@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "riftworld:block/lab_tile_cracked"
+  }
+}

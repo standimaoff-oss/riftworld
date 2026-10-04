@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "riftworld:block/lab_tile_slab"
+    },
+    "type=top": {
+      "model": "riftworld:block/lab_tile_slab_top"
+    },
+    "type=double": {
+      "model": "riftworld:block/lab_tile"
+    }
+  }
+}

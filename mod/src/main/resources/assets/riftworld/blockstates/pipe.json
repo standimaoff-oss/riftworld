@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "axis=y": {
+      "model": "riftworld:block/pipe"
+    },
+    "axis=z": {
+      "model": "riftworld:block/pipe",
+      "x": 90
+    },
+    "axis=x": {
+      "model": "riftworld:block/pipe",
+      "x": 90,
+      "y": 90
+    }
+  }
+}

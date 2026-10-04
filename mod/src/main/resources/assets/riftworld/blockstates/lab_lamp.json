@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "lit=false": {
+      "model": "riftworld:block/lab_lamp"
+    },
+    "lit=true": {
+      "model": "riftworld:block/lab_lamp_on"
+    }
+  }
+}

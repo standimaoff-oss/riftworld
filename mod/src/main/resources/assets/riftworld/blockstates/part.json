@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "open=false": {
+      "model": "riftworld:block/part"
+    },
+    "open=true": {
+      "model": "riftworld:block/part"
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "lit=false": {
+      "model": "riftworld:block/emergency_lamp"
+    },
+    "lit=true": {
+      "model": "riftworld:block/emergency_lamp_on"
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "riftworld:block/debris",
+        "y": 0
+      },
+      {
+        "model": "riftworld:block/debris",
+        "y": 90
+      },
+      {
+        "model": "riftworld:block/debris",
+        "y": 180
+      },
+      {
+        "model": "riftworld:block/debris",
+        "y": 270
+      }
+    ]
+  }
+}

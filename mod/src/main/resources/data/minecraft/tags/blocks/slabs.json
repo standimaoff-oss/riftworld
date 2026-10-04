@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "riftworld:lab_concrete_slab",
+    "riftworld:lab_tile_slab",
+    "riftworld:steel_floor_slab"
+  ]
+}
