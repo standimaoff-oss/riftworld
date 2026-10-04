@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/door_top_left",
+  "textures": {
+    "bottom": "riftworld:block/elisar_door_bottom",
+    "top": "riftworld:block/elisar_door_top"
+  },
+  "render_type": "minecraft:cutout"
+}

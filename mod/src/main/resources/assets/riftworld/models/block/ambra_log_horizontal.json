@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column_horizontal",
+  "textures": {
+    "end": "riftworld:block/ambra_log_top",
+    "side": "riftworld:block/ambra_log"
+  }
+}

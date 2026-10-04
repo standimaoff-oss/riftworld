@@ -35,6 +35,14 @@ public final class ClientHooks {
     }
 
     @SubscribeEvent
+    public static void setup(net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent e) {
+        e.enqueueWork(() -> {
+            net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(ru.aiforge.riftworld.registry.ModFluids.SOURCE.get(), net.minecraft.client.renderer.RenderType.translucent());
+            net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(ru.aiforge.riftworld.registry.ModFluids.FLOWING.get(), net.minecraft.client.renderer.RenderType.translucent());
+        });
+    }
+
+    @SubscribeEvent
     public static void reload(RegisterClientReloadListenersEvent e) {
         e.registerReloadListener((PreparableReloadListener) (ResourceManagerReloadListener) rm -> GlbAssets.clear());
     }

@@ -40,7 +40,7 @@ public final class ModBlocks {
     private ModBlocks() {
     }
 
-    private static <T extends Block> RegistryObject<T> reg(String id, Supplier<T> s) {
+    static <T extends Block> RegistryObject<T> reg(String id, Supplier<T> s) {
         RegistryObject<T> r = BLOCKS.register(id, s);
         WITH_ITEM.add(r);
         return r;
@@ -122,6 +122,7 @@ public final class ModBlocks {
         for (ModelKind k : ModelKind.values()) {
             if (!MODELS.containsKey(k)) model(k);
         }
+        ElisarBlocks.init();
     }
 
     private static RegistryObject<ModelBlock> model(ModelKind k) {
@@ -132,6 +133,12 @@ public final class ModBlocks {
                 || k == ModelKind.BOX_PILE || k == ModelKind.TRASH_BIN_TIPPED) p = p.strength(0.8F);
         if (k == ModelKind.PAPER_PILE || k == ModelKind.WALL_NOTES || k == ModelKind.BOX_PILE) p = p.sound(SoundType.WOOL);
         if (k.passable()) p = p.noCollission();
+        if (k.isElisar()) {
+            p = p.sound(SoundType.WOOD).strength(1.5F, 3.0F).mapColor(MapColor.WOOD).lightLevel(s -> k.light(s.getValue(ModelBlock.POWERED)));
+            if (k == ModelKind.WELL || k == ModelKind.IDOL || k == ModelKind.ALTAR_STONE || k == ModelKind.FORGE_HEARTH || k == ModelKind.FIREPLACE)
+                p = p.sound(SoundType.STONE).strength(3.0F, 6.0F).mapColor(MapColor.STONE);
+            if (k == ModelKind.RUG) p = p.sound(SoundType.WOOL).strength(0.5F);
+        }
         if (k == ModelKind.CHANDELIER) p = p.lightLevel(s -> s.getValue(ModelBlock.POWERED) ? 15 : 0);
         if (k == ModelKind.SIREN) p = p.lightLevel(s -> s.getValue(ModelBlock.POWERED) ? 6 : 0);
         if (k == ModelKind.PORTAL_HELM || k == ModelKind.PORTAL_LEVER) p = p.strength(-1.0F, 3600000.0F).noLootTable();

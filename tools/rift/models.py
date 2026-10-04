@@ -69,6 +69,53 @@ def mat(name):
 
 
 MATDEF = {
+    "e_wood": {"tex": "m_e_wood", "rough": 0.85},
+    "e_wood_dark": {"tex": "m_e_wood_dark", "rough": 0.85},
+    "e_sizo": {"tex": "m_e_sizo", "rough": 0.85},
+    "e_bark": {"tex": "m_e_bark", "rough": 0.95},
+    "e_stone": {"tex": "m_e_stone", "rough": 0.9},
+    "e_rock": {"tex": "m_e_rock", "rough": 0.9},
+    "e_iron": {"tex": "m_e_iron", "metal": 0.6, "rough": 0.55},
+    "e_canvas": {"tex": "m_e_canvas", "rough": 0.95},
+    "e_stripe": {"tex": "m_e_stripe", "rough": 0.9},
+    "e_stripe_blue": {"tex": "m_e_stripe_blue", "rough": 0.9},
+    "e_parch": {"tex": "m_e_parchment", "rough": 0.95},
+    "e_hide": {"tex": "m_e_hide", "rough": 0.9},
+    "e_cloth": {"tex": "m_e_cloth", "rough": 0.9},
+    "e_embers": {"tex": "m_e_embers", "emit": True},
+    "e_fire": {"tex": "m_e_fire", "emit": True},
+    "e_lamp": {"tex": "m_e_lampglow", "emit": True},
+    "e_rug": {"tex": "m_e_rug", "rough": 0.95},
+    "e_fish": {"tex": "m_e_fish", "rough": 0.4},
+    "e_fish2": {"tex": "m_e_fish2", "rough": 0.4},
+    "e_fur": {"tex": "m_e_fur", "rough": 1.0},
+    "e_gold": {"tex": "m_e_gold", "metal": 0.8, "rough": 0.35},
+    "e_foliage": {"tex": "m_e_foliage", "rough": 0.9, "mask": True},
+    "e_flowers": {"tex": "m_e_flowers", "rough": 0.9, "mask": True},
+    "e_produce": {"tex": "m_e_produce", "rough": 0.7},
+    "e_rope": {"color": (0.70, 0.60, 0.42, 1.0), "rough": 0.95},
+    "e_bone": {"color": (0.88, 0.84, 0.74, 1.0), "rough": 0.8},
+    "e_water": {"color": (0.30, 0.65, 0.80, 0.7), "rough": 0.05},
+    "e_ice": {"color": (0.82, 0.93, 0.97, 1.0), "rough": 0.2},
+    "e_candle": {"color": (0.95, 0.90, 0.78, 1.0), "rough": 0.6},
+    "e_flame": {"color": (1.0, 0.72, 0.30, 1.0), "emit": True},
+    "e_glow": {"color": (0.45, 1.0, 0.92, 1.0), "emit": True},
+    "e_coal": {"color": (0.06, 0.05, 0.05, 1.0), "rough": 0.9},
+    "e_cork": {"color": (0.78, 0.62, 0.40, 1.0), "rough": 0.9},
+    "e_red": {"color": (0.70, 0.12, 0.10, 1.0), "rough": 0.6},
+    "e_leaf_cyan": {"color": (0.18, 0.60, 0.58, 1.0), "rough": 0.9},
+    "roof_r": {"tex": "m_e_roofred", "rough": 0.8},
+    "wanted1": {"tex": "m_wanted1", "rough": 0.95},
+    "wanted2": {"tex": "m_wanted2", "rough": 0.95},
+    "wanted3": {"tex": "m_wanted3", "rough": 0.95},
+    "sign_shop": {"tex": "m_sign_shop", "rough": 0.85},
+    "sign_tavern": {"tex": "m_sign_tavern", "rough": 0.85},
+    "sign_forge": {"tex": "m_sign_forge", "rough": 0.85},
+    "sign_fish": {"tex": "m_sign_fish", "rough": 0.85},
+    "sign_police": {"tex": "m_sign_police", "rough": 0.85},
+    "sign_hunter": {"tex": "m_sign_hunter", "rough": 0.85},
+    "sign_market": {"tex": "m_sign_market", "rough": 0.85},
+    "sign_temple": {"tex": "m_sign_temple", "rough": 0.85},
     "white": {"tex": "m_labwhite", "rough": 0.6},
     "dark": {"tex": "m_darkmetal", "metal": 0.6, "rough": 0.5},
     "steel": {"tex": "m_steel", "metal": 0.8, "rough": 0.35},
@@ -1111,6 +1158,848 @@ def m_scan_ring():
         _obj("ring%d" % k, bm, m, (0, 0, 0.07), (0, 0, 0))
     node("ring")
     export("scan_ring")
+
+
+
+# ====================================================================================== Elisar (city «Странники»)
+def fit_face(ob, axis, sign, u0, u1, v0, v1, flip=False):
+    """Map faces whose normal is sign*axis to the full texture: u over (u0,u1), v over (v0,v1)."""
+    me = ob.data
+    bm = bmesh.new()
+    bm.from_mesh(me)
+    uv = bm.loops.layers.uv.verify()
+    for f in bm.faces:
+        if f.normal[axis] * sign > 0.9:
+            for l in f.loops:
+                co = l.vert.co
+                if axis == 0:
+                    u, v = co.y, co.z
+                elif axis == 1:
+                    u, v = co.x, co.z
+                else:
+                    u, v = co.x, co.y
+                uu = (u - u0) / (u1 - u0)
+                l[uv].uv = (1 - uu if flip else uu, (v - v0) / (v1 - v0))
+    bm.to_mesh(me)
+    bm.free()
+
+
+def plane(name, w, h, loc, m, rot=(0, 0, 0)):
+    """Two-sided quad (w along local X, h along local Z) with full-texture UV, for foliage/posters."""
+    bm = bmesh.new()
+    vs = [bm.verts.new(p) for p in ((-w / 2, 0, -h / 2), (w / 2, 0, -h / 2), (w / 2, 0, h / 2), (-w / 2, 0, h / 2))]
+    f1 = bm.faces.new(vs)
+    f2 = bm.faces.new(list(reversed([bm.verts.new(v.co) for v in vs])))
+    uv = bm.loops.layers.uv.verify()
+    for f, rev in ((f1, False), (f2, True)):
+        for l, t in zip(f.loops, ((0, 0), (1, 0), (1, 1), (0, 1)) if not rev else ((0, 1), (1, 1), (1, 0), (0, 0))):
+            l[uv].uv = t
+    me = bpy.data.meshes.new(name)
+    bm.to_mesh(me)
+    bm.free()
+    ob = bpy.data.objects.new(name, me)
+    bpy.context.scene.collection.objects.link(ob)
+    me.materials.append(mat(m))
+    ob.location = loc
+    ob.rotation_euler = rot
+    bpy.context.view_layer.update()
+    me.transform(ob.matrix_world)
+    ob.matrix_world = Matrix.Identity(4)
+    PARTS.append(ob)
+    return ob
+
+
+def tuft(name, loc, s=0.4, m="e_foliage", n=2, rz=0.0):
+    for k in range(n):
+        plane("%s%d" % (name, k), s, s, (loc[0], loc[1], loc[2] + s / 2), m, (0, 0, rz + math.pi * k / n))
+
+
+def barrel(name, loc, r=0.26, h=0.8, m="e_wood", band="e_iron", open_top=False):
+    x, y, z = loc
+    cyl(name, r, h, (x, y, z + h / 2), m, seg=14, r2=None)
+    cyl(name + "b", r * 1.06, h * 0.55, (x, y, z + h / 2), m, seg=14)
+    for t in (0.12, 0.88):
+        torus(name + "r%d" % int(t * 10), r * 1.03, 0.012, (x, y, z + h * t), band, seg=14, seg2=4)
+    if open_top:
+        cyl(name + "in", r * 0.92, 0.01, (x, y, z + h - 0.06), "e_coal", seg=14)
+
+
+def spoked_wheel(name, loc, R, rot, spokes=8, broken=False):
+    torus(name + "rim", R, 0.035, loc, "e_wood_dark", rot, seg=20, seg2=4)
+    torus(name + "tyre", R + 0.03, 0.018, loc, "e_iron", rot, seg=20, seg2=4)
+    cyl(name + "hub", 0.07, 0.16, loc, "e_wood_dark", (rot[0] + math.radians(90), rot[1], rot[2]), seg=10)
+    M = Euler(rot).to_matrix()
+    for k in range(spokes):
+        if broken and k in (2, 3):
+            continue
+        a = 2 * math.pi * k / spokes
+        d = M @ Vector((math.cos(a), math.sin(a), 0))
+        rod(name + "sp%d" % k, tuple(Vector(loc) + d * 0.07), tuple(Vector(loc) + d * (R - 0.02)), 0.018, "e_wood_dark", seg=5)
+
+
+# ------------------------------------------------------------------ street
+def m_street_lamp():
+    cyl("base", 0.22, 0.25, (0, 0, 0.125), "e_stone", seg=8)
+    cyl("base2", 0.15, 0.12, (0, 0, 0.31), "e_iron", seg=8)
+    rod("post", (0, 0, 0.3), (0, 0, 2.55), 0.055, "e_iron", seg=8)
+    for z in (0.9, 1.8):
+        torus("ring%d" % int(z * 10), 0.07, 0.015, (0, 0, z), "e_iron", seg=10, seg2=4)
+    rod("arm", (0, 0, 2.45), (0, -0.42, 2.6), 0.03, "e_iron", seg=6)
+    rod("brace", (0, 0, 2.1), (0, -0.3, 2.56), 0.018, "e_iron", seg=5)
+    cyl("finial", 0.06, 0.12, (0, 0, 2.62), "e_iron", seg=8, r2=0.0)
+    rod("hook", (0, -0.42, 2.6), (0, -0.42, 2.48), 0.012, "e_iron", seg=4)
+    cyl("cap", 0.16, 0.12, (0, -0.42, 2.42), "e_iron", seg=6, r2=0.04)
+    cyl("bottom", 0.12, 0.05, (0, -0.42, 2.05), "e_iron", seg=6)
+    for k in range(6):
+        a = 2 * math.pi * k / 6 + math.pi / 6
+        rod("frame%d" % k, (math.cos(a) * 0.12, -0.42 + math.sin(a) * 0.12, 2.07), (math.cos(a) * 0.14, -0.42 + math.sin(a) * 0.14, 2.37), 0.008, "e_iron", seg=4)
+    node("body")
+    cyl("glow", 0.115, 0.29, (0, -0.42, 2.22), "e_lamp", seg=6)
+    cyl("flame", 0.03, 0.1, (0, -0.42, 2.16), "e_flame", seg=6, r2=0.0)
+    node("lamp_on")
+    export("street_lamp")
+
+
+def m_lantern_hanging():
+    # rustic iron ring chandelier (ref: wrought-iron tavern chandeliers): ceiling plate, 3 chains, ring, 4 crowned candle cups
+    cyl("plate", 0.09, 0.03, (0, 0, 0.985), "e_iron", seg=8)
+    rod("hook_top", (0, 0, 0.97), (0, 0, 0.9), 0.012, "e_iron", seg=4)
+    for k in range(7):  # short centre chain (links overlap -> no floating parts)
+        torus("cc%d" % k, 0.022, 0.006, (0, 0, 0.895 - k * 0.032), "e_iron", (0, math.radians(90) if k % 2 else 0, 0), seg=6, seg2=3)
+    cyl("hub", 0.03, 0.04, (0, 0, 0.68), "e_iron", seg=6)
+    R, zr = 0.3, 0.42
+    for k in range(3):
+        a = 2 * math.pi * k / 3 + math.pi / 6
+        rod("chain%d" % k, (0, 0, 0.67), (math.cos(a) * R, math.sin(a) * R, zr + 0.01), 0.007, "e_iron", seg=4)
+    torus("ring", R, 0.016, (0, 0, zr), "e_iron", seg=20, seg2=4)
+    torus("ring_low", R * 0.55, 0.01, (0, 0, zr - 0.08), "e_iron", seg=14, seg2=4)
+    for k in range(4):
+        a = 2 * math.pi * k / 4
+        cx, cy = math.cos(a) * R, math.sin(a) * R
+        rod("spoke%d" % k, (cx * 0.55, cy * 0.55, zr - 0.08), (cx, cy, zr), 0.008, "e_iron", seg=4)
+        cyl("cup%d" % k, 0.04, 0.05, (cx, cy, zr + 0.03), "e_iron", seg=6, r2=0.05)
+        cyl("drip%d" % k, 0.012, 0.09, (cx, cy, zr - 0.05), "e_iron", seg=5, r2=0.0)
+        for j in range(4):  # crown spikes around the candle
+            b = 2 * math.pi * j / 4 + math.pi / 4
+            rod("sp%d%d" % (k, j), (cx + math.cos(b) * 0.045, cy + math.sin(b) * 0.045, zr + 0.05), (cx + math.cos(b) * 0.06, cy + math.sin(b) * 0.06, zr + 0.16), 0.006, "e_iron", seg=3)
+        cyl("candle%d" % k, 0.026, 0.1, (cx, cy, zr + 0.1), "e_candle", seg=6)
+    node("body")
+    for k in range(4):
+        a = 2 * math.pi * k / 4
+        cyl("flame%d" % k, 0.016, 0.06, (math.cos(a) * R, math.sin(a) * R, zr + 0.18), "e_flame", seg=5, r2=0.0)
+    node("lamp_on")
+    export("lantern_hanging")
+
+
+def _hanging_sign(name, tex, shape="rect"):
+    # wall at +Y; iron bracket reaches out along -Y, board hangs below it, faces +-X
+    box("plate", (0.16, 0.04, 0.34), (0, 0.48, 0.78), "e_iron")
+    rod("bar", (0, 0.46, 0.9), (0, -0.62, 0.9), 0.022, "e_iron", seg=6)
+    rod("strut", (0, 0.46, 0.64), (0, -0.05, 0.9), 0.016, "e_iron", seg=5)
+    for k in range(3):
+        torus("curl%d" % k, 0.06, 0.01, (0, 0.25 - k * 0.22, 0.97), "e_iron", (0, math.radians(90), 0), seg=10, seg2=4)
+    cyl("knob", 0.03, 0.05, (0, -0.64, 0.9), "e_iron", (math.radians(90), 0, 0), seg=8)
+    for y in (0.22, -0.48):
+        for k in range(3):
+            torus("ch%d%d" % (int(y * 10), k), 0.022, 0.006, (0, y, 0.86 - k * 0.04), "e_iron", (0, math.radians(90) if k % 2 else 0, 0), seg=6, seg2=3)
+    node("bracket")
+    W, H, zc = 0.82, 0.41, 0.53
+    ob = box("board", (0.05, W, H), (0, -0.13, zc), tex)
+    for sgn in (1, -1):
+        fit_face(ob, 0, sgn, -0.54 if sgn > 0 else 0.28, 0.28 if sgn > 0 else -0.54, zc - H / 2, zc + H / 2)
+    box("frame_t", (0.06, W + 0.03, 0.03), (0, -0.13, zc + H / 2), "e_wood_dark")
+    box("frame_b", (0.06, W + 0.03, 0.03), (0, -0.13, zc - H / 2), "e_wood_dark")
+    node("board", pivot=(0, -0.13, 0.86))
+    export(name)
+
+
+def m_sign_shop(): _hanging_sign("sign_shop", "sign_shop")
+def m_sign_tavern(): _hanging_sign("sign_tavern", "sign_tavern")
+def m_sign_forge(): _hanging_sign("sign_forge", "sign_forge")
+def m_sign_fish(): _hanging_sign("sign_fish", "sign_fish")
+def m_sign_police(): _hanging_sign("sign_police", "sign_police")
+def m_sign_hunter(): _hanging_sign("sign_hunter", "sign_hunter")
+def m_sign_market(): _hanging_sign("sign_market", "sign_market")
+def m_sign_temple(): _hanging_sign("sign_temple", "sign_temple")
+
+
+def m_bounty_board():
+    # free standing, 2 cells wide (x 0..1), front -Y
+    for x in (-0.38, 1.38):
+        box("post%d" % int(x * 10), (0.12, 0.12, 2.2), (x, 0.1, 1.1), "e_wood_dark")
+        box("foot%d" % int(x * 10), (0.16, 0.5, 0.1), (x, 0.1, 0.05), "e_wood_dark")
+    box("board", (1.72, 0.06, 1.15), (0.5, 0.1, 1.25), "e_wood")
+    box("rim_t", (1.8, 0.09, 0.07), (0.5, 0.08, 1.84), "e_wood_dark")
+    box("rim_b", (1.8, 0.09, 0.07), (0.5, 0.08, 0.66), "e_wood_dark")
+    for sgn in (-1, 1):
+        box("roof%d" % sgn, (2.0, 0.42, 0.05), (0.5, 0.1 + sgn * 0.17, 2.22), "e_wood_dark", (math.radians(28) * -sgn, 0, 0))
+    box("ridge", (2.02, 0.07, 0.07), (0.5, 0.1, 2.32), "e_wood_dark")
+    r = random.Random(4)
+    spots = [(-0.1, 1.42, "wanted1"), (0.35, 1.38, "wanted2"), (0.82, 1.43, "wanted3"), (1.18, 1.2, "wanted1"), (0.1, 0.98, "parch"), (0.6, 0.95, "wanted3")]
+    for k, (x, z, t) in enumerate(spots):
+        w, h = (0.34, 0.47) if t.startswith("wanted") else (0.3, 0.24)
+        tilt = r.uniform(-0.12, 0.12)
+        ob = box("poster%d" % k, (w, 0.006, h), (x, 0.064 - k * 0.002, z), "e_parch" if t == "parch" else t, (0, tilt, 0))
+        if t != "parch":
+            fit_face(ob, 1, -1, -1e3, 1e3, -1e3, 1e3)
+            mn = min(v.co.x for v in ob.data.vertices); mx = max(v.co.x for v in ob.data.vertices)
+            zn = min(v.co.z for v in ob.data.vertices); zx = max(v.co.z for v in ob.data.vertices)
+            fit_face(ob, 1, -1, mn, mx, zn, zx)
+        cyl("nail%d" % k, 0.012, 0.02, (x, 0.055 - k * 0.002, z + h / 2 - 0.03), "e_iron", (math.radians(90), 0, 0), seg=5)
+    # dagger stuck through a poster
+    rod("blade", (0.48, -0.02, 1.34), (0.48, 0.12, 1.34), 0.012, "e_iron", seg=4)
+    box("guard", (0.12, 0.015, 0.02), (0.48, -0.03, 1.34), "e_gold")
+    rod("grip", (0.48, -0.03, 1.34), (0.48, -0.15, 1.34), 0.018, "e_wood_dark", seg=6)
+    cyl("pommel", 0.022, 0.02, (0.48, -0.16, 1.34), "e_gold", (math.radians(90), 0, 0), seg=6)
+    node("body")
+    export("bounty_board")
+
+
+def _stall(name, stripe, goods):
+    # 3 wide (x -1..1), 2 deep (back row), front -Y
+    for x in (-1.35, 1.35):
+        for y in (-0.4, 1.35):
+            box("post%d%d" % (int(x * 10), int(y * 10)), (0.1, 0.1, 2.3 if y > 0 else 2.0), (x, y, 1.15 if y > 0 else 1.0), "e_wood_dark")
+    ob = box("canopy", (2.95, 2.2, 0.03), (0, 0.45, 2.15), stripe, (math.radians(-9), 0, 0))
+    fit_face(ob, 2, 1, -1.5, 1.5, -0.7, 1.6)
+    fit_face(ob, 2, -1, -1.5, 1.5, -0.7, 1.6)
+    for k in range(10):
+        x = -1.35 + k * 0.3
+        box("flap%d" % k, (0.28, 0.02, 0.22), (x + 0.14, -0.66, 1.92), stripe, (math.radians(-4), 0, 0))
+    box("counter", (2.6, 0.6, 0.85), (0, -0.15, 0.43), "e_wood", bevel=0.02)
+    box("ctop", (2.75, 0.72, 0.05), (0, -0.15, 0.88), "e_wood_dark")
+    box("back", (2.6, 0.05, 1.1), (0, 1.3, 0.75), "e_wood")
+    box("shelf", (2.5, 0.3, 0.04), (0, 1.15, 1.25), "e_wood_dark")
+    goods()
+    node("body")
+    export(name)
+
+
+def _goods_produce():
+    r = random.Random(8)
+    for k, x in enumerate((-0.95, -0.35, 0.3, 0.9)):
+        box("crate%d" % k, (0.5, 0.42, 0.14), (x, -0.15, 0.98), "e_wood_dark")
+        for j in range(7):
+            cyl("fr%d%d" % (k, j), 0.05, 0.08, (x + r.uniform(-0.18, 0.18), -0.15 + r.uniform(-0.14, 0.14), 1.08), "e_produce", seg=6, r2=0.03)
+    for k in range(5):
+        cyl("jar%d" % k, 0.06, 0.16, (-1.0 + k * 0.48, 1.15, 1.35), "e_gold" if k % 2 else "glass", seg=8)
+    for k in range(3):
+        rod("hang%d" % k, (-0.6 + k * 0.6, -0.4, 1.95), (-0.6 + k * 0.6, -0.4, 1.7), 0.006, "e_rope", seg=3)
+        cyl("onion%d" % k, 0.07, 0.16, (-0.6 + k * 0.6, -0.4, 1.62), "e_produce", seg=6, r2=0.02)
+
+
+def _goods_fish():
+    r = random.Random(9)
+    box("ice", (2.4, 0.55, 0.06), (0, -0.15, 0.93), "e_ice")
+    for k in range(9):
+        x = -1.05 + k * 0.26
+        _fish("f%d" % k, (x, -0.15 + r.uniform(-0.12, 0.12), 0.99), 0.32, "e_fish" if k % 3 else "e_fish2", rz=math.radians(90) + r.uniform(-0.3, 0.3))
+    for k in range(3):
+        _fish("hf%d" % k, (-0.7 + k * 0.7, -0.45, 1.6), 0.36, "e_fish", rx=math.radians(90))
+        rod("hr%d" % k, (-0.7 + k * 0.7, -0.45, 1.95), (-0.7 + k * 0.7, -0.45, 1.78), 0.006, "e_rope", seg=3)
+    barrel("bar", (1.0, 1.0, 0), 0.22, 0.7, open_top=True)
+
+
+def _fish(name, loc, L, m, rz=0.0, rx=0.0):
+    """Alien fish: fat lens body, double tail fin, dorsal crest and two glowing spots."""
+    x, y, z = loc
+    R = Euler((rx, 0, rz)).to_matrix()
+    def at(dx, dy, dz):
+        return tuple(Vector((x, y, z)) + R @ Vector((dx, dy, dz)))
+    cyl(name + "body", L * 0.22, L * 0.62, at(0, 0, 0), m, (Euler((rx, 0, rz)).to_matrix() @ Euler((0, math.radians(90), 0)).to_matrix()).to_euler(), seg=8, r2=L * 0.1)
+    for s in (1, -1):
+        box(name + "tail%d" % s, (L * 0.22, 0.01, L * 0.12), at(-L * 0.42, 0, s * L * 0.07), m, (rx + 0, s * 0.5, rz) if False else (rx, s * 0.5, rz))
+    box(name + "crest", (L * 0.3, 0.008, L * 0.1), at(0, 0, L * 0.2), "e_fish2" if m == "e_fish" else "e_fish", (rx, 0, rz))
+    for s in (1, -1):
+        cyl(name + "eye%d" % s, L * 0.035, 0.01, at(L * 0.22, s * L * 0.12, L * 0.03), "e_glow", (rx + math.radians(90), 0, rz), seg=5)
+
+
+def m_market_stall(): _stall("market_stall", "e_stripe", _goods_produce)
+def m_market_stall_fish(): _stall("market_stall_fish", "e_stripe_blue", _goods_fish)
+
+
+def m_wagon_overgrown():
+    # abandoned cart, no horse: 3 long (x -1..1), 2 wide (back row), nose of the bed resting on the ground
+    rot = (0, math.radians(-7), 0)
+    def T(p):
+        return tuple(Euler(rot).to_matrix() @ Vector(p) + Vector((0, 0.45, 0.12)))
+    box("bed", (2.5, 1.2, 0.07), T((0.1, 0, 0.6)), "e_wood", rot)
+    for y in (-0.6, 0.6):
+        box("side%d" % int(y * 10), (2.5, 0.06, 0.32), T((0.1, y, 0.8)), "e_wood", rot)
+    box("tail", (0.06, 1.2, 0.32), T((1.35, 0, 0.8)), "e_wood", rot)
+    box("frontb", (0.06, 1.2, 0.5), T((-1.15, 0, 0.88)), "e_wood_dark", rot)
+    for x in (-0.5, 0.7):
+        box("axle%d" % int(x * 10), (0.1, 1.5, 0.1), T((x, 0, 0.45)), "e_wood_dark", rot)
+    spoked_wheel("w1", T((0.7, -0.78, 0.45)), 0.42, (math.radians(90), 0, 0))
+    spoked_wheel("w2", T((0.7, 0.78, 0.45)), 0.42, (math.radians(90), 0, 0))
+    spoked_wheel("w3", T((-0.5, -0.78, 0.4)), 0.38, (math.radians(90), 0, 0))
+    spoked_wheel("w4", (-0.75, 1.45, 0.06), 0.38, (0, math.radians(8), 0.4), broken=True)     # fallen off, lying in the grass
+    # drawbar lying on the ground where the horse once stood
+    rod("shaft1", T((-1.15, -0.35, 0.45)), (-1.95, 0.12, 0.05), 0.04, "e_wood_dark", seg=6)
+    rod("shaft2", T((-1.15, 0.35, 0.45)), (-1.95, 0.8, 0.05), 0.04, "e_wood_dark", seg=6)
+    rod("yoke", (-1.95, 0.12, 0.05), (-1.95, 0.8, 0.05), 0.035, "e_wood_dark", seg=6)
+    # canvas hoops, one broken, torn canvas
+    for k, x in enumerate((-0.8, 0.1, 1.0)):
+        for s in range(9):
+            a0, a1 = math.pi * s / 9, math.pi * (s + 1) / 9
+            if k == 2 and s > 4:
+                continue
+            rod("hoop%d_%d" % (k, s), T((x, 0.62 * math.cos(a0), 0.85 + 0.65 * math.sin(a0))), T((x, 0.62 * math.cos(a1), 0.85 + 0.65 * math.sin(a1))), 0.018, "e_wood_dark", seg=4)
+    for s in range(7):
+        a0, a1 = math.pi * s / 9, math.pi * (s + 1) / 9
+        p0 = T((-0.35, 0.63 * math.cos(a0), 0.85 + 0.66 * math.sin(a0)))
+        p1 = T((-0.35, 0.63 * math.cos(a1), 0.85 + 0.66 * math.sin(a1)))
+        mid = tuple((Vector(p0) + Vector(p1)) / 2)
+        ln = (Vector(p1) - Vector(p0)).length
+        ang = math.atan2(p1[2] - p0[2], p1[1] - p0[1])
+        box("canv%d" % s, (0.95 - (s % 3) * 0.12, ln + 0.02, 0.012), mid, "e_canvas", (ang, 0, 0))
+    box("rag", (0.5, 0.012, 0.6), T((0.55, 0.64, 0.95)), "e_canvas", (0.2, 0.1, 0))
+    # overgrowth: grass tufts, flowers through the planks, ivy on the wheels, a sapling growing in the bed
+    r = random.Random(12)
+    for k in range(14):
+        p = (r.uniform(-1.9, 1.6), r.uniform(-0.3, 1.5), 0.0)
+        tuft("g%d" % k, p, r.uniform(0.35, 0.65), "e_foliage" if k % 3 else "e_flowers", 2, r.random() * 3)
+    for k in range(5):
+        p = T((r.uniform(-0.9, 1.1), r.uniform(-0.45, 0.45), 0.64))
+        tuft("bg%d" % k, p, r.uniform(0.35, 0.6), "e_foliage" if k % 2 else "e_flowers", 2, r.random() * 3)
+    for (wx, wy) in ((0.7, -0.84), (-0.5, -0.84)):
+        plane("ivy%d" % int(wx * 10), 0.7, 0.8, T((wx, wy - 0.02, 0.42)), "e_foliage", (0, 0, 0))
+    rod("sapling", T((0.2, 0.1, 0.62)), T((0.25, 0.15, 1.5)), 0.025, "e_bark", seg=5)
+    for k in range(4):
+        cyl("crown%d" % k, 0.25 - k * 0.04, 0.18, T((0.25, 0.15, 1.45 + k * 0.14)), "e_leaf_cyan", seg=7, r2=0.1)
+    node("body")
+    export("wagon_overgrown")
+
+
+def m_bench():
+    box("seat", (1.7, 0.4, 0.06), (0.5, 0.0, 0.45), "e_wood")
+    box("back", (1.7, 0.05, 0.3), (0.5, 0.2, 0.75), "e_wood", (math.radians(-10), 0, 0))
+    for x in (-0.25, 1.25):
+        box("leg%d" % int(x * 10), (0.08, 0.42, 0.44), (x, 0.0, 0.22), "e_iron")
+        rod("arm%d" % int(x * 10), (x, 0.2, 0.9), (x, -0.18, 0.62), 0.025, "e_iron", seg=5)
+        rod("bk%d" % int(x * 10), (x, 0.18, 0.44), (x, 0.24, 0.9), 0.025, "e_iron", seg=5)
+    node("body")
+    export("bench")
+
+
+def m_well():
+    # 2x2 (x 0..1, back row), stone ring centred between the 4 cells
+    c = (0.5, 0.5)
+    cyl("ring", 0.85, 0.75, (c[0], c[1], 0.375), "e_stone", seg=16)
+    cyl("water", 0.68, 0.02, (c[0], c[1], 0.55), "e_water", seg=16)
+    torus("lip", 0.8, 0.07, (c[0], c[1], 0.76), "e_rock", seg=16, seg2=5)
+    for x in (-0.35, 1.35):
+        box("post%d" % int(x * 10), (0.12, 0.12, 2.0), (x, c[1], 1.0), "e_wood_dark")
+    rod("axle", (-0.4, c[1], 1.45), (1.4, c[1], 1.45), 0.06, "e_wood", seg=8)
+    cyl("rope_coil", 0.1, 0.5, (c[0], c[1], 1.45), "e_rope", (0, math.radians(90), 0), seg=10)
+    rod("crank1", (1.42, c[1], 1.45), (1.42, c[1] - 0.25, 1.45), 0.02, "e_iron", seg=4)
+    rod("crank2", (1.42, c[1] - 0.25, 1.45), (1.55, c[1] - 0.25, 1.45), 0.02, "e_iron", seg=4)
+    rod("rope", (c[0], c[1] - 0.08, 1.4), (c[0], c[1] - 0.08, 1.0), 0.012, "e_rope", seg=4)
+    cyl("bucket", 0.12, 0.2, (c[0], c[1] - 0.08, 0.9), "e_wood", seg=10, r2=0.1)
+    for s in (-1, 1):
+        box("roof%d" % s, (2.1, 0.75, 0.05), (c[0], c[1] + s * 0.32, 2.12), "roof_r", (math.radians(32) * -s, 0, 0))
+    box("ridge", (2.15, 0.08, 0.08), (c[0], c[1], 2.32), "e_wood_dark")
+    node("body")
+    export("well")
+
+
+# ------------------------------------------------------------------ fishermen
+def m_fish_barrel():
+    barrel("b", (0, 0.02, 0), 0.3, 0.78, open_top=True)
+    r = random.Random(14)
+    for k in range(6):
+        _fish("f%d" % k, (r.uniform(-0.12, 0.12), r.uniform(-0.1, 0.12), 0.78 + k * 0.012), 0.34, "e_fish" if k % 2 else "e_fish2",
+              rz=r.random() * 3, rx=math.radians(r.uniform(40, 70)))
+    _fish("ground", (0.22, -0.32, 0.03), 0.3, "e_fish2", rz=0.7)
+    node("body")
+    export("fish_barrel")
+
+
+def m_fish_rack():
+    # drying rack 2 wide (x 0..1)
+    for x in (-0.4, 1.4):
+        rod("a%d" % int(x * 10), (x, -0.3, 0), (x, 0, 1.6), 0.035, "e_wood_dark", seg=5)
+        rod("b%d" % int(x * 10), (x, 0.3, 0), (x, 0, 1.6), 0.035, "e_wood_dark", seg=5)
+    rod("top", (-0.45, 0, 1.55), (1.45, 0, 1.55), 0.03, "e_wood_dark", seg=6)
+    rod("mid", (-0.4, 0, 1.0), (1.4, 0, 1.0), 0.025, "e_wood_dark", seg=6)
+    for k in range(7):
+        x = -0.25 + k * 0.25
+        rod("s%d" % k, (x, 0, 1.55), (x, 0, 1.42), 0.005, "e_rope", seg=3)
+        _fish("f%d" % k, (x, 0, 1.28), 0.3, "e_fish" if k % 2 else "e_fish2", rx=math.radians(90))
+    for k in range(5):
+        x = -0.15 + k * 0.33
+        rod("t%d" % k, (x, 0, 1.0), (x, 0, 0.88), 0.005, "e_rope", seg=3)
+        _fish("g%d" % k, (x, 0, 0.74), 0.28, "e_fish2", rx=math.radians(90))
+    node("body")
+    export("fish_rack")
+
+
+def m_fishing_net():
+    # wall piece 2 wide (x 0..1), wall at +Y
+    for k in range(3):
+        cyl("peg%d" % k, 0.025, 0.12, (-0.3 + k * 0.8, 0.44, 1.6), "e_wood_dark", (math.radians(90), 0, 0), seg=6)
+    for i in range(9):
+        x = -0.35 + i * 0.21
+        sag = 0.12 * math.sin(math.pi * i / 8)
+        rod("v%d" % i, (x, 0.4, 1.6 - sag), (x + 0.05 * math.sin(i), 0.36, 0.25), 0.006, "e_rope", seg=3)
+    for j in range(7):
+        z = 1.55 - j * 0.2
+        pts = [(-0.35 + i * 0.21 + 0.05 * math.sin(i) * (1.55 - z) / 1.3, 0.38, z - 0.1 * math.sin(math.pi * i / 8)) for i in range(9)]
+        for i in range(8):
+            rod("h%d%d" % (j, i), pts[i], pts[i + 1], 0.005, "e_rope", seg=3)
+    for k, (x, z, m) in enumerate(((0.0, 0.6, "e_cork"), (0.45, 0.4, "e_red"), (0.9, 0.7, "e_cork"), (1.25, 0.45, "e_red"))):
+        cyl("float%d" % k, 0.06, 0.18, (x, 0.33, z), m, seg=8, r2=0.04)
+    node("body")
+    export("fishing_net")
+
+
+def hull_loft(name, secs, m):
+    """secs: list of (x, [(y,z),...]) open U sections -> quad strip shell (two-sided via thickness-free faces)."""
+    bm = bmesh.new()
+    rings = [[bm.verts.new((x, y, z)) for (y, z) in pts] for x, pts in secs]
+    inner = [[bm.verts.new((x, y * 0.95, z - 0.025)) for (y, z) in pts] for x, pts in secs]
+    for i in range(len(rings) - 1):
+        for j in range(len(rings[i]) - 1):
+            bm.faces.new((rings[i][j], rings[i + 1][j], rings[i + 1][j + 1], rings[i][j + 1]))
+            bm.faces.new((inner[i][j + 1], inner[i + 1][j + 1], inner[i + 1][j], inner[i][j]))
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
+    return _obj(name, bm, m, (0, 0, 0), (0, 0, 0))
+
+
+def m_rowboat():
+    # upside down on two trestles, 3 long (x -1..1); hull = lofted planked shell, keel up
+    secs = []
+    for k in range(13):
+        t = k / 12
+        x = -1.35 + 2.7 * t
+        w = 0.56 * math.sin(math.pi * (0.04 + 0.92 * t)) ** 0.6 + 0.02
+        d = 0.36 * (0.55 + 0.45 * math.sin(math.pi * t))
+        sheer = 0.1 * (2 * t - 1) ** 2            # gunwale rises toward bow/stern (points down when flipped)
+        pts = []
+        for j in range(9):
+            a = math.pi * j / 8
+            y = -w * math.cos(a)
+            z = 0.75 + d * math.sin(a) ** 0.8 - sheer
+            pts.append((y, z))
+        secs.append((x, pts))
+    hull_loft("hull", secs, "e_wood")
+    for j in (1, 3, 5, 7):          # strakes: thin battens along the planking
+        pts = [(x, p[j][0] * 1.01, p[j][1] + 0.005) for x, p in secs]
+        for i in range(len(pts) - 1):
+            rod("strk%d_%d" % (j, i), pts[i], pts[i + 1], 0.012, "e_wood_dark", seg=4)
+    gun = [(x, p[0][0], p[0][1]) for x, p in secs]
+    gun2 = [(x, p[-1][0], p[-1][1]) for x, p in secs]
+    for i in range(len(gun) - 1):
+        rod("gw%d" % i, gun[i], gun[i + 1], 0.025, "e_wood_dark", seg=4)
+        rod("gx%d" % i, gun2[i], gun2[i + 1], 0.025, "e_wood_dark", seg=4)
+    keel = [(x, 0, p[4][1] + 0.03) for x, p in secs]
+    for i in range(len(keel) - 1):
+        rod("keel%d" % i, keel[i], keel[i + 1], 0.03, "e_wood_dark", seg=4)
+    box("stem", (0.06, 0.06, 0.4), (-1.37, 0, 0.8), "e_wood_dark")
+    box("transom", (0.05, 0.6, 0.32), (1.35, 0, 0.88), "e_wood_dark")
+    for x in (-0.7, 0.7):
+        for s_ in (1, -1):
+            rod("tr%d%d" % (int(x * 10), s_), (x - 0.25 * s_, 0.0, 0), (x, 0.0, 0.66), 0.03, "e_wood_dark", seg=5)
+        rod("trt%d" % int(x * 10), (x, -0.62, 0.68), (x, 0.62, 0.68), 0.035, "e_wood_dark", seg=5)
+    rod("oar", (-1.2, -0.75, 0.04), (1.0, -0.6, 0.04), 0.025, "e_wood", seg=5)
+    box("blade", (0.4, 0.14, 0.02), (1.1, -0.59, 0.04), "e_wood")
+    node("body")
+    export("rowboat")
+
+
+# ------------------------------------------------------------------ hunters
+def m_trophy_antlers():
+    box("plaque", (0.42, 0.04, 0.5), (0, 0.48, 1.0), "e_wood_dark", bevel=0.01)
+    cyl("skull", 0.1, 0.22, (0, 0.38, 1.02), "e_bone", (math.radians(90), 0, 0), seg=8, r2=0.06)
+    for s in (1, -1):
+        p0 = Vector((s * 0.07, 0.36, 1.1))
+        p1 = p0 + Vector((s * 0.22, -0.05, 0.25)); p2 = p1 + Vector((s * 0.12, 0.0, 0.25))
+        rod("a%d" % s, tuple(p0), tuple(p1), 0.02, "e_bone", seg=5); rod("b%d" % s, tuple(p1), tuple(p2), 0.017, "e_bone", seg=5)
+        for k, (q, d) in enumerate(((p1, Vector((s * -0.05, -0.08, 0.15))), (p1 + (p2 - p1) * 0.5, Vector((s * 0.12, -0.04, 0.1))), (p2, Vector((s * -0.02, -0.06, 0.14))))):
+            rod("t%d%d" % (s, k), tuple(q), tuple(q + d), 0.012, "e_bone", seg=4)
+            cyl("tip%d%d" % (s, k), 0.016, 0.02, tuple(q + d), "e_glow", seg=5)
+    node("body")
+    export("trophy_antlers")
+
+
+def m_hide_rack():
+    for x in (-0.42, 0.42):
+        rod("p%d" % int(x * 10), (x, 0.05, 0), (x, 0.05, 1.85), 0.04, "e_wood_dark", seg=6)
+    for z in (0.35, 1.7):
+        rod("h%d" % int(z * 10), (-0.45, 0.05, z), (0.45, 0.05, z), 0.03, "e_wood_dark", seg=6)
+    ob = box("hide", (0.7, 0.015, 1.2), (0, 0.05, 1.02), "e_hide")
+    for k in range(10):
+        a = 2 * math.pi * k / 10
+        rod("lace%d" % k, (0.33 * math.cos(a), 0.05, 1.02 + 0.58 * math.sin(a)), (0.42 * math.cos(a) / max(abs(math.cos(a)), 0.01) * min(1, abs(math.cos(a)) * 3) if False else (0.42 if math.cos(a) > 0 else -0.42), 0.05, 1.02 + 0.6 * math.sin(a)), 0.004, "e_rope", seg=3)
+    box("fur", (0.35, 0.3, 0.2), (0.3, -0.25, 0.1), "e_fur", (0, 0, 0.4), bevel=0.04)
+    node("body")
+    export("hide_rack")
+
+
+def m_weapon_rack():
+    box("base", (0.8, 0.3, 0.12), (0, 0.15, 0.06), "e_wood_dark")
+    box("top", (0.8, 0.3, 0.06), (0, 0.25, 1.4), "e_wood_dark")
+    for x in (-0.38, 0.38):
+        box("side%d" % int(x * 10), (0.05, 0.08, 1.4), (x, 0.38, 0.7), "e_wood_dark")
+    for k, x in enumerate((-0.25, -0.08, 0.09)):
+        rod("spear%d" % k, (x, 0.18, 0.1), (x + 0.02, 0.28, 1.9), 0.018, "e_wood", seg=5)
+        cyl("tip%d" % k, 0.035, 0.18, (x + 0.02, 0.29, 1.98), "e_iron", seg=4, r2=0.0)
+    rod("bow", (0.25, 0.3, 0.2), (0.25, 0.3, 1.5), 0.015, "e_wood_dark", seg=4)
+    for k in range(6):
+        a0, a1 = -0.9 + k * 0.3, -0.9 + (k + 1) * 0.3
+        rod("limb%d" % k, (0.25 + 0.0, 0.3 - 0.16 * math.cos(a0), 0.85 + 0.65 * math.sin(a0)), (0.25, 0.3 - 0.16 * math.cos(a1), 0.85 + 0.65 * math.sin(a1)), 0.02, "e_wood", seg=4)
+    cyl("quiver", 0.07, 0.5, (0.32, 0.05, 0.37), "e_hide", seg=8)
+    for k in range(4):
+        rod("arrow%d" % k, (0.30 + k * 0.012, 0.05, 0.55), (0.28 + k * 0.02, 0.03, 0.8), 0.006, "e_wood", seg=3)
+    node("body")
+    export("weapon_rack")
+
+
+# ------------------------------------------------------------------ forge
+def m_forge_hearth():
+    # 3 wide (x -1..1), back row; stone hearth, glowing coals, hood + chimney, bellows on the left
+    box("hearth", (1.8, 1.2, 0.8), (0, 0.4, 0.4), "e_stone", bevel=0.02)
+    box("bed", (1.4, 0.85, 0.06), (0, 0.4, 0.82), "e_rock")
+    node("body0")
+    box("coals", (1.1, 0.6, 0.06), (0, 0.4, 0.86), "e_embers")
+    for k in range(5):
+        box("coal%d" % k, (0.12, 0.1, 0.06), (-0.4 + k * 0.2, 0.3 + (k % 2) * 0.15, 0.9), "e_embers", (0, 0, k))
+    cyl("flame", 0.15, 0.3, (0, 0.45, 1.02), "e_fire", seg=6, r2=0.0)
+    node("fire")
+    for x in (-0.85, 0.85):
+        box("pill%d" % int(x * 10), (0.15, 0.15, 1.0), (x, 0.9, 1.3), "e_stone")
+    bm = bmesh.new()
+    bmesh.ops.create_cone(bm, cap_ends=False, segments=4, radius1=1.15, radius2=0.42, depth=0.9)
+    _obj("hood", bm, "e_stone", (0, 0.45, 2.15), (0, 0, math.radians(45)))
+    box("chimney", (0.55, 0.55, 1.0), (0, 0.45, 3.0), "e_stone")
+    box("cap", (0.7, 0.7, 0.08), (0, 0.45, 3.5), "e_rock")
+    # bellows
+    box("bel_top", (0.5, 0.75, 0.04), (-1.25, 0.25, 0.75), "e_wood", (0, math.radians(6), 0))
+    box("bel_bot", (0.5, 0.75, 0.04), (-1.25, 0.25, 0.5), "e_wood")
+    box("bel_leather", (0.44, 0.7, 0.22), (-1.25, 0.25, 0.62), "e_hide")
+    rod("nozzle", (-1.0, 0.25, 0.6), (-0.85, 0.25, 0.65), 0.03, "e_iron", seg=6)
+    rod("handle", (-1.25, -0.15, 0.78), (-1.25, -0.45, 0.85), 0.02, "e_wood_dark", seg=4)
+    for k in range(3):
+        rod("tong%d" % k, (0.75, 0.0 + k * 0.08, 0.84), (0.25, 0.1 + k * 0.08, 0.95), 0.012, "e_iron", seg=4)
+    node("body")
+    export("forge_hearth")
+
+
+def m_anvil_stump():
+    cyl("stump", 0.3, 0.5, (0, 0, 0.25), "e_bark", seg=10)
+    cyl("stumptop", 0.28, 0.01, (0, 0, 0.505), "e_wood", seg=10)
+    box("foot", (0.36, 0.22, 0.08), (0, 0, 0.55), "e_iron")
+    box("waist", (0.18, 0.14, 0.12), (0, 0, 0.65), "e_iron")
+    box("face", (0.5, 0.2, 0.1), (0, 0, 0.76), "e_iron", bevel=0.01)
+    cyl("horn", 0.09, 0.28, (0.37, 0, 0.77), "e_iron", (0, math.radians(90), 0), seg=8, r2=0.01)
+    rod("hammer_h", (-0.15, -0.05, 0.82), (0.15, -0.25, 0.83), 0.015, "e_wood_dark", seg=4)
+    box("hammer", (0.06, 0.06, 0.12), (-0.17, -0.04, 0.85), "e_iron", (0, math.radians(90), 0.6))
+    node("body")
+    export("anvil_stump")
+
+
+def m_quench_barrel():
+    barrel("b", (0, 0, 0), 0.3, 0.7)
+    cyl("water", 0.27, 0.01, (0, 0, 0.65), "e_water", seg=14)
+    for k in range(2):
+        rod("tong%d" % k, (0.05 + k * 0.05, 0.0, 0.5), (0.15 + k * 0.05, -0.1, 1.0), 0.012, "e_iron", seg=4)
+    node("body")
+    export("quench_barrel")
+
+
+def m_tool_wall():
+    box("board", (1.8, 0.04, 0.9), (0.5, 0.47, 1.4), "e_wood_dark")
+    tools = [(-0.2, "hammer"), (0.1, "tongs"), (0.4, "hammer"), (0.7, "saw"), (1.0, "tongs"), (1.25, "file")]
+    for k, (x, t) in enumerate(tools):
+        cyl("peg%d" % k, 0.015, 0.08, (x, 0.42, 1.75), "e_wood", (math.radians(90), 0, 0), seg=5)
+        if t == "hammer":
+            rod("h%d" % k, (x, 0.4, 1.72), (x, 0.4, 1.2), 0.016, "e_wood", seg=4); box("hh%d" % k, (0.16, 0.06, 0.06), (x, 0.4, 1.19), "e_iron")
+        elif t == "tongs":
+            rod("t%da" % k, (x, 0.4, 1.72), (x - 0.04, 0.4, 1.15), 0.01, "e_iron", seg=4); rod("t%db" % k, (x, 0.4, 1.72), (x + 0.04, 0.4, 1.15), 0.01, "e_iron", seg=4)
+        elif t == "saw":
+            box("s%d" % k, (0.12, 0.01, 0.45), (x, 0.4, 1.45), "e_iron"); box("sh%d" % k, (0.12, 0.04, 0.1), (x, 0.4, 1.72), "e_wood")
+        else:
+            rod("f%d" % k, (x, 0.4, 1.72), (x, 0.4, 1.3), 0.012, "e_iron", seg=4)
+    node("body")
+    export("tool_wall")
+
+
+# ------------------------------------------------------------------ temple
+def m_idol():
+    # carved log god, 4 tall: three stacked faces, carved belt, cap
+    cyl("log", 0.3, 3.6, (0, 0, 1.8), "e_bark", seg=10)
+    cyl("cap", 0.36, 0.25, (0, 0, 3.72), "e_wood_dark", seg=10, r2=0.1)
+    for k, z in enumerate((3.15, 2.25, 1.35)):
+        box("brow%d" % k, (0.5, 0.14, 0.09), (0, -0.28, z + 0.14), "e_wood_dark", bevel=0.02)
+        for s in (1, -1):
+            box("eye%d%d" % (k, s), (0.13, 0.06, 0.09), (s * 0.13, -0.285, z + 0.03), "e_glow" if k == 0 else "e_coal")
+            box("cheek%d%d" % (k, s), (0.1, 0.08, 0.14), (s * 0.2, -0.27, z - 0.12), "e_wood_dark", bevel=0.02)
+        box("nose%d" % k, (0.11, 0.16, 0.26), (0, -0.34, z - 0.08), "e_wood_dark", bevel=0.02)
+        box("mouth%d" % k, (0.3, 0.07, 0.07), (0, -0.285, z - 0.27), "e_coal")
+        box("chin%d" % k, (0.26, 0.1, 0.08), (0, -0.28, z - 0.36), "e_wood_dark", bevel=0.02)
+        torus("band%d" % k, 0.305, 0.03, (0, 0, z - 0.42), "e_wood_dark", seg=10, seg2=4)
+    for s in (1, -1):
+        rod("arm%d" % s, (s * 0.28, -0.1, 1.95), (s * 0.12, -0.3, 1.7), 0.06, "e_wood_dark", seg=6)
+    cyl("stone", 0.45, 0.2, (0, 0, 0.1), "e_rock", seg=8)
+    for k in range(5):
+        cyl("cl%d" % k, 0.02, 0.5, (0.25 * math.cos(k), -0.31, 0.9 + 0.08 * k), "e_cloth", seg=4)
+    node("body")
+    export("idol")
+
+
+def m_altar_stone():
+    for x in (-0.25, 1.25):
+        box("leg%d" % int(x * 10), (0.4, 0.55, 0.55), (x, 0, 0.275), "e_rock", bevel=0.04)
+    box("slab", (2.0, 0.85, 0.22), (0.5, 0, 0.66), "e_rock", bevel=0.03)
+    box("cloth", (0.6, 0.87, 0.012), (0.5, 0, 0.775), "e_cloth")
+    box("clothf", (0.6, 0.012, 0.35), (0.5, -0.43, 0.6), "e_cloth")
+    for k, x in enumerate((-0.2, 0.1, 0.9, 1.2)):
+        cyl("cnd%d" % k, 0.04, 0.12 + 0.06 * (k % 2), (x, 0.2, 0.83 + 0.03 * (k % 2)), "e_candle", seg=8)
+    cyl("bowl", 0.16, 0.08, (0.5, 0.1, 0.81), "e_gold", seg=12, r2=0.1)
+    for k in range(5):
+        cyl("fruit%d" % k, 0.04, 0.06, (0.45 + 0.04 * k, 0.08 + 0.02 * (k % 2), 0.87), "e_produce", seg=6)
+    cyl("skullb", 0.08, 0.13, (1.05, -0.15, 0.84), "e_bone", seg=8, r2=0.06)
+    node("body")
+    for k, x in enumerate((-0.2, 0.1, 0.9, 1.2)):
+        cyl("fl%d" % k, 0.018, 0.05, (x, 0.2, 0.92 + 0.06 * (k % 2)), "e_flame", seg=5, r2=0.0)
+    node("lamp_on")
+    export("altar_stone")
+
+
+def m_fire_bowl():
+    for k in range(3):
+        a = 2 * math.pi * k / 3
+        rod("leg%d" % k, (0.35 * math.cos(a), 0.35 * math.sin(a), 0), (0.12 * math.cos(a), 0.12 * math.sin(a), 0.8), 0.025, "e_iron", seg=5)
+    cyl("bowl", 0.34, 0.2, (0, 0, 0.9), "e_iron", seg=12, r2=0.18)
+    torus("rim", 0.34, 0.02, (0, 0, 1.0), "e_iron", seg=12, seg2=4)
+    box("coals", (0.4, 0.4, 0.04), (0, 0, 0.99), "e_embers", (0, 0, 0.3))
+    node("body")
+    for k in range(3):
+        cyl("fl%d" % k, 0.1 - k * 0.02, 0.16 + k * 0.05, (0.07 * math.cos(k * 2), 0.07 * math.sin(k * 2), 1.08 + k * 0.03), "e_fire", (0, 0, k), seg=5, r2=0.0)
+    node("lamp_on")
+    export("fire_bowl")
+
+
+def m_sacred_poles():
+    # crossed poles with cloth strips (like the taiga sanctuaries)
+    rod("p1", (-0.45, 0.05, 0), (0.35, 0.0, 2.7), 0.06, "e_bark", seg=6)
+    rod("p2", (0.45, -0.05, 0), (-0.35, 0.0, 2.7), 0.06, "e_bark", seg=6)
+    torus("tie", 0.08, 0.025, (0.08, 0.0, 1.75), "e_rope", (math.radians(90), 0, 0), seg=8, seg2=4)
+    for k in range(6):
+        x = -0.25 + k * 0.1
+        box("strip%d" % k, (0.07, 0.01, 0.5 + 0.1 * (k % 3)), (x, -0.07, 1.4 - 0.05 * (k % 3)), "e_cloth" if k % 2 else "e_canvas", (0, 0.05 * k, 0))
+    cyl("skull", 0.08, 0.12, (0.0, -0.08, 2.0), "e_bone", (math.radians(90), 0, 0), seg=8, r2=0.05)
+    node("body")
+    export("sacred_poles")
+
+
+# ------------------------------------------------------------------ furniture
+def m_table_wood():
+    box("top", (1.85, 0.85, 0.07), (0.5, 0, 0.78), "e_wood", bevel=0.01)
+    for x in (-0.33, 1.33):
+        for y in (-0.33, 0.33):
+            box("leg%d%d" % (int(x * 10), int(y * 10)), (0.08, 0.08, 0.75), (x, y, 0.375), "e_wood_dark")
+    box("str", (1.6, 0.05, 0.05), (0.5, 0, 0.2), "e_wood_dark")
+    cyl("mug", 0.045, 0.1, (0.1, -0.1, 0.87), "e_wood_dark", seg=8)
+    cyl("plate", 0.12, 0.015, (0.7, 0.1, 0.825), "e_bone", seg=12)
+    cyl("candle", 0.03, 0.12, (1.1, 0.05, 0.88), "e_candle", seg=6)
+    node("body")
+    cyl("fl", 0.015, 0.04, (1.1, 0.05, 0.96), "e_flame", seg=5, r2=0.0)
+    node("lamp_on")
+    export("table_wood")
+
+
+def m_chair_wood():
+    box("seat", (0.45, 0.45, 0.05), (0, 0, 0.46), "e_wood")
+    for x in (-0.19, 0.19):
+        for y in (-0.19, 0.19):
+            box("l%d%d" % (int(x * 100), int(y * 100)), (0.05, 0.05, 0.45 if y < 0 else 1.0), (x, y, 0.225 if y < 0 else 0.5), "e_wood_dark")
+    for z in (0.75, 0.92):
+        box("rail%d" % int(z * 100), (0.4, 0.04, 0.06), (0, 0.19, z), "e_wood")
+    node("body")
+    export("chair_wood")
+
+
+def m_stool():
+    cyl("seat", 0.2, 0.06, (0, 0, 0.62), "e_wood", seg=12)
+    for k in range(3):
+        a = 2 * math.pi * k / 3
+        rod("l%d" % k, (0.16 * math.cos(a), 0.16 * math.sin(a), 0), (0.1 * math.cos(a), 0.1 * math.sin(a), 0.6), 0.025, "e_wood_dark", seg=5)
+    torus("ring", 0.13, 0.012, (0, 0, 0.25), "e_wood_dark", seg=10, seg2=4)
+    node("body")
+    export("stool")
+
+
+def m_bed_wood():
+    # 1 wide, 2 long (back row): headboard at the back (+Y)
+    box("frame", (0.9, 1.9, 0.25), (0, 0.5, 0.25), "e_wood_dark")
+    box("mattress", (0.82, 1.82, 0.16), (0, 0.5, 0.45), "e_canvas", bevel=0.03)
+    box("blanket", (0.86, 1.2, 0.05), (0, 0.18, 0.54), "e_cloth", bevel=0.02)
+    box("pillow", (0.6, 0.32, 0.12), (0, 1.22, 0.58), "e_canvas", bevel=0.04)
+    box("head", (0.95, 0.08, 0.95), (0, 1.43, 0.48), "e_wood_dark")
+    box("foot", (0.95, 0.08, 0.6), (0, -0.43, 0.3), "e_wood_dark")
+    box("pelt", (0.7, 0.5, 0.03), (0.05, -0.15, 0.57), "e_fur", (0, 0, 0.2))
+    node("body")
+    export("bed_wood")
+
+
+def m_wardrobe():
+    box("body", (0.9, 0.55, 1.9), (0, 0.18, 0.95), "e_wood_dark", bevel=0.02)
+    box("crown", (0.98, 0.62, 0.08), (0, 0.18, 1.92), "e_wood")
+    for s in (-1, 1):
+        box("door%d" % s, (0.42, 0.03, 1.55), (s * 0.22, -0.11, 1.0), "e_wood")
+        cyl("knob%d" % s, 0.02, 0.04, (s * 0.04, -0.13, 1.0), "e_gold", (math.radians(90), 0, 0), seg=6)
+    box("drawer", (0.84, 0.03, 0.18), (0, -0.11, 0.13), "e_wood")
+    node("body")
+    export("wardrobe")
+
+
+def m_bar_counter():
+    # 3 wide (x -1..1); customers stand at the front (-Y)
+    box("front", (2.9, 0.12, 1.0), (0, -0.25, 0.5), "e_wood_dark")
+    for k in range(6):
+        box("panel%d" % k, (0.4, 0.02, 0.7), (-1.2 + k * 0.48, -0.32, 0.5), "e_wood")
+    box("top", (3.0, 0.62, 0.07), (0, -0.05, 1.04), "e_wood", bevel=0.01)
+    box("shelf", (2.9, 0.45, 0.05), (0, 0.15, 0.55), "e_wood_dark")
+    rod("rail", (-1.45, -0.42, 0.15), (1.45, -0.42, 0.15), 0.025, "e_gold", seg=6)
+    for k, x in enumerate((-0.9, -0.5)):
+        cyl("tapb%d" % k, 0.05, 0.25, (x, 0.05, 1.2), "e_gold", seg=8)
+        rod("tap%d" % k, (x, 0.05, 1.3), (x, -0.12, 1.25), 0.015, "e_gold", seg=4)
+    for k in range(5):
+        cyl("mug%d" % k, 0.045, 0.11, (0.1 + k * 0.25, -0.12 + 0.05 * (k % 2), 1.13), "e_wood_dark" if k % 2 else "glass", seg=8)
+    for k in range(4):
+        cyl("bot%d" % k, 0.035, 0.22, (-1.2 + k * 0.12, 0.2, 0.69), ["e_gold", "glass", "e_red", "glass"][k], seg=6)
+    node("body")
+    export("bar_counter")
+
+
+def m_keg_rack():
+    box("cradle", (1.8, 0.7, 0.08), (0.5, 0.05, 0.3), "e_wood_dark")
+    for x in (-0.3, 1.3):
+        box("leg%d" % int(x * 10), (0.1, 0.7, 0.3), (x, 0.05, 0.15), "e_wood_dark")
+    for k, x in enumerate((-0.05, 0.5, 1.05)):
+        cyl("keg%d" % k, 0.27, 0.6, (x, 0.05, 0.62), "e_wood", (math.radians(90), 0, 0), seg=12)
+        for y in (-0.15, 0.15):
+            torus("hp%d%d" % (k, int(y * 10)), 0.275, 0.012, (x, 0.05 + y, 0.62), "e_iron", (math.radians(90), 0, 0), seg=12, seg2=4)
+        rod("tap%d" % k, (x, -0.26, 0.55), (x, -0.36, 0.55), 0.02, "e_gold", seg=4)
+    cyl("keg_top", 0.24, 0.5, (0.22, 0.05, 1.15), "e_wood", (math.radians(90), 0, 0), seg=12)
+    node("body")
+    export("keg_rack")
+
+
+def m_fireplace():
+    # 3 wide (x -1..1), against a wall at +Y
+    box("back", (2.2, 0.5, 1.3), (0, 0.25, 0.65), "e_stone")
+    box("mantel", (2.4, 0.62, 0.12), (0, 0.2, 1.36), "e_wood_dark")
+    box("chimney", (1.4, 0.45, 1.6), (0, 0.28, 2.2), "e_stone")
+    box("hole", (1.1, 0.05, 0.8), (0, 0.0, 0.5), "e_coal")
+    for k, x in enumerate((-0.25, 0.0, 0.25)):
+        rod("log%d" % k, (x - 0.3, -0.05, 0.12), (x + 0.3, 0.1, 0.16), 0.06, "e_bark", seg=6)
+    box("cand1", (0.07, 0.07, 0.15), (-0.9, 0.2, 1.5), "e_candle")
+    box("jar", (0.1, 0.1, 0.16), (0.8, 0.2, 1.5), "e_gold")
+    node("body")
+    box("embers", (0.8, 0.3, 0.05), (0, 0.0, 0.1), "e_embers")
+    for k in range(3):
+        cyl("fl%d" % k, 0.12, 0.35 + 0.1 * k, (-0.2 + 0.2 * k, 0.03, 0.3), "e_fire", (0, 0, k), seg=5, r2=0.0)
+    node("lamp_on")
+    export("fireplace")
+
+
+def m_shop_counter():
+    box("body", (1.85, 0.7, 0.95), (0.5, 0, 0.475), "e_wood_dark", bevel=0.01)
+    box("top", (1.95, 0.78, 0.06), (0.5, 0, 0.98), "e_wood")
+    for k in range(3):
+        box("pan%d" % k, (0.5, 0.02, 0.6), (-0.1 + k * 0.6, -0.36, 0.48), "e_wood")
+    # scales
+    cyl("sbase", 0.08, 0.03, (0.0, 0.05, 1.025), "e_gold", seg=10)
+    rod("spost", (0.0, 0.05, 1.03), (0.0, 0.05, 1.35), 0.012, "e_gold", seg=5)
+    rod("sbeam", (-0.2, 0.05, 1.35), (0.2, 0.05, 1.35), 0.008, "e_gold", seg=4)
+    for s in (1, -1):
+        cyl("span%d" % s, 0.08, 0.015, (s * 0.2, 0.05, 1.15), "e_gold", seg=10)
+        rod("sch%d" % s, (s * 0.2, 0.05, 1.35), (s * 0.2, 0.05, 1.16), 0.004, "e_gold", seg=3)
+    for k in range(6):
+        cyl("coin%d" % k, 0.03, 0.006, (0.5 + 0.035 * k, -0.1 + 0.01 * k, 1.015 + 0.006 * k), "e_gold", seg=8)
+    box("ledger", (0.3, 0.22, 0.04), (1.0, -0.05, 1.03), "e_hide")
+    cyl("jar1", 0.07, 0.2, (1.3, 0.15, 1.11), "glass", seg=8)
+    cyl("candy", 0.06, 0.12, (1.3, 0.15, 1.08), "e_produce", seg=8)
+    node("body")
+    export("shop_counter")
+
+
+def m_shop_shelf():
+    # 2 wide (x 0..1), 2 tall, against a wall at +Y
+    box("back", (1.9, 0.04, 1.95), (0.5, 0.45, 0.98), "e_wood_dark")
+    for x in (-0.43, 1.43):
+        box("side%d" % int(x * 10), (0.05, 0.45, 1.95), (x, 0.24, 0.98), "e_wood_dark")
+    r = random.Random(21)
+    for j, z in enumerate((0.05, 0.55, 1.05, 1.55)):
+        box("sh%d" % j, (1.86, 0.44, 0.04), (0.5, 0.24, z), "e_wood")
+        x = -0.32
+        while x < 1.3:
+            t = r.randint(0, 4)
+            if t == 0:
+                cyl("j%d_%d" % (j, int(x * 100)), 0.06, 0.18, (x, 0.22, z + 0.11), "glass", seg=8); cyl("jc%d_%d" % (j, int(x * 100)), 0.05, 0.12, (x, 0.22, z + 0.08), "e_produce", seg=8); x += 0.16
+            elif t == 1:
+                box("bag%d_%d" % (j, int(x * 100)), (0.2, 0.18, 0.24), (x + 0.04, 0.22, z + 0.14), "e_canvas", (0, 0, r.random()), bevel=0.04); x += 0.26
+            elif t == 2:
+                cyl("bt%d_%d" % (j, int(x * 100)), 0.035, 0.24, (x, 0.2, z + 0.14), ["e_red", "glass", "e_gold"][r.randint(0, 2)], seg=6); x += 0.1
+            elif t == 3:
+                box("box%d_%d" % (j, int(x * 100)), (0.22, 0.25, 0.16), (x + 0.05, 0.22, z + 0.1), "e_wood", (0, 0, r.uniform(-0.2, 0.2))); x += 0.28
+            else:
+                cyl("roll%d_%d" % (j, int(x * 100)), 0.07, 0.3, (x + 0.08, 0.2, z + 0.09), "e_cloth", (0, math.radians(90), 0), seg=8); x += 0.34
+    node("body")
+    export("shop_shelf")
+
+
+def m_rug():
+    box("rug", (1.9, 1.9, 0.015), (0.5, 0.5, 0.008), "e_rug")
+    ob = PARTS[-1]
+    fit_face(ob, 2, 1, -0.45, 1.45, -0.45, 1.45)
+    for s in (-1, 1):
+        for k in range(10):
+            box("fr%d%d" % (s, k), (0.02, 0.08, 0.006), (-0.4 + k * 0.2, 0.5 + s * 1.0, 0.005), "e_gold")
+    node("body")
+    export("rug")
+
+
+def m_cooking_pot():
+    for k in range(3):
+        a = 2 * math.pi * k / 3
+        rod("leg%d" % k, (0.4 * math.cos(a), 0.4 * math.sin(a), 0), (0, 0, 1.2), 0.025, "e_wood_dark", seg=5)
+    rod("chain", (0, 0, 1.2), (0, 0, 0.75), 0.01, "e_iron", seg=4)
+    cyl("pot", 0.24, 0.3, (0, 0, 0.55), "e_iron", seg=12, r2=0.2)
+    cyl("stew", 0.2, 0.01, (0, 0, 0.7), "e_produce", seg=12)
+    for k in range(6):
+        a = 2 * math.pi * k / 6
+        box("stone%d" % k, (0.14, 0.12, 0.1), (0.3 * math.cos(a), 0.3 * math.sin(a), 0.05), "e_rock", (0, 0, a))
+    node("body")
+    box("embers", (0.35, 0.35, 0.05), (0, 0, 0.06), "e_embers", (0, 0, 0.4))
+    cyl("fl", 0.12, 0.25, (0, 0, 0.2), "e_fire", seg=5, r2=0.0)
+    node("lamp_on")
+    export("cooking_pot")
+
+
+def m_wanted_wall():
+    for k, (x, z, t, tilt) in enumerate(((-0.18, 1.35, "wanted2", 0.08), (0.2, 1.25, "wanted1", -0.1))):
+        ob = box("p%d" % k, (0.34, 0.008, 0.47), (x, 0.49, z), t, (0, tilt, 0))
+        mn = min(v.co.x for v in ob.data.vertices); mx = max(v.co.x for v in ob.data.vertices)
+        zn = min(v.co.z for v in ob.data.vertices); zx = max(v.co.z for v in ob.data.vertices)
+        fit_face(ob, 1, -1, mn, mx, zn, zx)
+        cyl("n%d" % k, 0.012, 0.02, (x, 0.485, z + 0.2), "e_iron", (math.radians(90), 0, 0), seg=5)
+    node("body")
+    export("wanted_wall")
+
+
+def m_crate_stack():
+    box("c1", (0.7, 0.7, 0.55), (-0.05, 0.05, 0.275), "e_wood", bevel=0.01)
+    box("c2", (0.55, 0.55, 0.45), (0.05, 0.0, 0.775), "e_wood_dark", (0, 0, 0.3), bevel=0.01)
+    for k in range(4):
+        box("sl%d" % k, (0.72, 0.03, 0.06), (-0.05, -0.31, 0.08 + k * 0.14), "e_wood_dark")
+    cyl("sack", 0.18, 0.35, (0.3, -0.3, 0.17), "e_canvas", seg=8, r2=0.1)
+    node("body")
+    export("crate_stack")
+
+
 
 
 

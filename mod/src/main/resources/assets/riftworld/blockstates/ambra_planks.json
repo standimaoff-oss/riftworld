@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "riftworld:block/ambra_planks",
+        "y": 0
+      }
+    ]
+  }
+}

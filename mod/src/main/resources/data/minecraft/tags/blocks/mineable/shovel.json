@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "riftworld:elisar_grass",
+    "riftworld:elisar_soil",
+    "riftworld:elisar_seabed",
+    "riftworld:elisar_path"
+  ]
+}

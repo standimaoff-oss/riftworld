@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/slab",
+  "textures": {
+    "bottom": "riftworld:block/elisar_cobble",
+    "top": "riftworld:block/elisar_cobble",
+    "side": "riftworld:block/elisar_cobble"
+  }
+}

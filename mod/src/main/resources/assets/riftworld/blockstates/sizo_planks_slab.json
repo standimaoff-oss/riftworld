@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "riftworld:block/sizo_planks_slab"
+    },
+    "type=top": {
+      "model": "riftworld:block/sizo_planks_slab_top"
+    },
+    "type=double": {
+      "model": "riftworld:block/sizo_planks"
+    }
+  }
+}

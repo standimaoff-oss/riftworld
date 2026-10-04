@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "riftworld:block/timber_frame_cross",
+        "y": 0
+      }
+    ]
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "riftworld:block/elisar_cobble",
+        "y": 0
+      }
+    ]
+  }
+}

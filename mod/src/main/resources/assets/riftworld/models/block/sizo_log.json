@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "riftworld:block/sizo_log_top",
+    "side": "riftworld:block/sizo_log"
+  }
+}

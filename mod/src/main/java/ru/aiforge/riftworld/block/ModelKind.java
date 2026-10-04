@@ -41,7 +41,53 @@ public enum ModelKind {
     FIRE_EXTINGUISHER("fire_extinguisher", 0, 0, 0, 1, Block.box(4, 2, 0, 12, 13, 9)),
     BOX_PILE("box_pile", 0, 0, 0, 1, Block.box(1, 0, 1, 15, 13, 15)),
     PAPER_PILE("paper_pile", 0, 0, 0, 1, Block.box(0, 0, 0, 16, 1, 16)),
-    CHAIR_FALLEN("chair_fallen", 0, 0, 0, 1, Block.box(1, 0, 1, 15, 9, 15));
+    CHAIR_FALLEN("chair_fallen", 0, 0, 0, 1, Block.box(1, 0, 1, 15, 9, 15)),
+    // ---- Elisar city «Странники» (Part 3)
+    STREET_LAMP("street_lamp", 0, 0, 0, 3, Block.box(5, 0, 5, 11, 16, 11)),
+    SIGN_SHOP("sign_shop", 0, 0, 0, 1, Block.box(6, 6, 0, 10, 16, 16)),
+    SIGN_TAVERN("sign_tavern", 0, 0, 0, 1, Block.box(6, 6, 0, 10, 16, 16)),
+    SIGN_FORGE("sign_forge", 0, 0, 0, 1, Block.box(6, 6, 0, 10, 16, 16)),
+    SIGN_FISH("sign_fish", 0, 0, 0, 1, Block.box(6, 6, 0, 10, 16, 16)),
+    SIGN_POLICE("sign_police", 0, 0, 0, 1, Block.box(6, 6, 0, 10, 16, 16)),
+    SIGN_HUNTER("sign_hunter", 0, 0, 0, 1, Block.box(6, 6, 0, 10, 16, 16)),
+    SIGN_MARKET("sign_market", 0, 0, 0, 1, Block.box(6, 6, 0, 10, 16, 16)),
+    SIGN_TEMPLE("sign_temple", 0, 0, 0, 1, Block.box(6, 6, 0, 10, 16, 16)),
+    BOUNTY_BOARD("bounty_board", 0, 1, 0, 3, Block.box(0, 0, 6, 16, 16, 10)),
+    MARKET_STALL("market_stall", -1, 1, 1, 3, Block.box(0, 0, 0, 16, 15, 16)),
+    MARKET_STALL_FISH("market_stall_fish", -1, 1, 1, 3, Block.box(0, 0, 0, 16, 15, 16)),
+    WAGON_OVERGROWN("wagon_overgrown", -1, 1, 1, 2, Block.box(0, 0, 0, 16, 14, 16)),
+    BENCH("bench", 0, 1, 0, 1, Block.box(0, 0, 2, 16, 8, 14)),
+    WELL("well", 0, 1, 1, 3, Block.box(0, 0, 0, 16, 12, 16)),
+    FISH_BARREL("fish_barrel", 0, 0, 0, 1, Block.box(2, 0, 2, 14, 13, 14)),
+    FISH_RACK("fish_rack", 0, 1, 0, 2, Block.box(0, 0, 6, 16, 16, 10)),
+    FISHING_NET("fishing_net", 0, 1, 0, 2, Block.box(0, 0, 13, 16, 16, 16)),
+    ROWBOAT("rowboat", -1, 1, 0, 1, Block.box(0, 0, 0, 16, 16, 16)),
+    TROPHY_ANTLERS("trophy_antlers", 0, 0, 0, 2, Block.box(3, 0, 12, 13, 16, 16)),
+    HIDE_RACK("hide_rack", 0, 0, 0, 2, Block.box(1, 0, 6, 15, 16, 10)),
+    WEAPON_RACK("weapon_rack", 0, 0, 0, 2, Block.box(1, 0, 3, 15, 16, 16)),
+    FORGE_HEARTH("forge_hearth", -1, 1, 1, 4, Block.box(0, 0, 0, 16, 13, 16)),
+    ANVIL_STUMP("anvil_stump", 0, 0, 0, 1, Block.box(2, 0, 2, 14, 14, 14)),
+    QUENCH_BARREL("quench_barrel", 0, 0, 0, 1, Block.box(3, 0, 3, 13, 12, 13)),
+    TOOL_WALL("tool_wall", 0, 1, 0, 2, Block.box(0, 0, 13, 16, 16, 16)),
+    IDOL("idol", 0, 0, 0, 4, Block.box(3, 0, 3, 13, 16, 13)),
+    ALTAR_STONE("altar_stone", 0, 1, 0, 1, Block.box(0, 0, 1, 16, 13, 15)),
+    FIRE_BOWL("fire_bowl", 0, 0, 0, 2, Block.box(2, 0, 2, 14, 16, 14)),
+    SACRED_POLES("sacred_poles", 0, 0, 0, 3, Block.box(4, 0, 4, 12, 16, 12)),
+    TABLE_WOOD("table_wood", 0, 1, 0, 1, Block.box(0, 0, 0, 16, 14, 16)),
+    CHAIR_WOOD("chair_wood", 0, 0, 0, 1, Block.box(3, 0, 3, 13, 8, 13)),
+    STOOL("stool", 0, 0, 0, 1, Block.box(4, 0, 4, 12, 10, 12)),
+    BED_WOOD("bed_wood", 0, 0, 1, 1, Block.box(1, 0, 0, 15, 9, 16)),
+    WARDROBE("wardrobe", 0, 0, 0, 2, Block.box(1, 0, 1, 15, 16, 15)),
+    BAR_COUNTER("bar_counter", -1, 1, 0, 2, Block.box(0, 0, 2, 16, 16, 16)),
+    KEG_RACK("keg_rack", 0, 1, 0, 2, Block.box(0, 0, 1, 16, 16, 15)),
+    FIREPLACE("fireplace", -1, 1, 0, 3, Block.box(0, 0, 0, 16, 16, 16)),
+    SHOP_COUNTER("shop_counter", 0, 1, 0, 2, Block.box(0, 0, 2, 16, 16, 14)),
+    SHOP_SHELF("shop_shelf", 0, 1, 0, 2, Block.box(0, 0, 8, 16, 16, 16)),
+    RUG("rug", 0, 1, 1, 1, Block.box(0, 0, 0, 16, 1, 16)),
+    COOKING_POT("cooking_pot", 0, 0, 0, 2, Block.box(2, 0, 2, 14, 16, 14)),
+    WANTED_WALL("wanted_wall", 0, 0, 0, 2, Block.box(1, 0, 14, 15, 16, 16)),
+    CRATE_STACK("crate_stack", 0, 0, 0, 1, Block.box(1, 0, 1, 15, 16, 15)),
+    LANTERN_HANGING("lantern_hanging", 0, 0, 0, 1, Block.box(4, 4, 4, 12, 16, 12));
 
     public final String glb;
     public final int x0, x1, back, h;
@@ -57,7 +103,31 @@ public enum ModelKind {
     }
 
     public boolean passable() {
-        return this == WALL_NOTES || this == FIRE_EXTINGUISHER || this == PAPER_PILE || this == CHANDELIER;
+        return switch (this) {
+            case WALL_NOTES, FIRE_EXTINGUISHER, PAPER_PILE, CHANDELIER, SIGN_SHOP, SIGN_TAVERN, SIGN_FORGE, SIGN_FISH,
+                 SIGN_POLICE, SIGN_HUNTER, SIGN_MARKET, SIGN_TEMPLE, FISHING_NET, TROPHY_ANTLERS, TOOL_WALL, RUG,
+                 WANTED_WALL, SACRED_POLES, LANTERN_HANGING -> true;
+            default -> false;
+        };
+    }
+
+    /** Light emitted by Elisar props while POWERED (lit by the city generator); forge coals glow always. */
+    public int light(boolean powered) {
+        if (this == FORGE_HEARTH) return 12;
+        if (!powered) return 0;
+        return switch (this) {
+            case STREET_LAMP, FIRE_BOWL -> 15;
+            case LANTERN_HANGING -> 14;
+            case FIREPLACE -> 13;
+            case COOKING_POT -> 11;
+            case ALTAR_STONE -> 9;
+            case TABLE_WOOD -> 6;
+            default -> 0;
+        };
+    }
+
+    public boolean isElisar() {
+        return this.ordinal() >= STREET_LAMP.ordinal();
     }
 
     public boolean isContainer() {

@@ -1,0 +1,86 @@
+package ru.aiforge.riftworld.registry;
+
+import com.mojang.blaze3d.shaders.FogShape;
+import java.util.function.Consumer;
+import net.minecraft.client.Camera;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.FogRenderer;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.item.BucketItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.minecraftforge.common.SoundActions;
+import net.minecraftforge.fluids.FluidType;
+import net.minecraftforge.fluids.ForgeFlowingFluid;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
+import org.joml.Vector3f;
+import ru.aiforge.riftworld.RiftWorld;
+
+/** Elisar water: clear sky-blue, behaves like water (swim, flow, waterfalls). */
+public final class ModFluids {
+    public static final DeferredRegister<FluidType> TYPES = DeferredRegister.create(ForgeRegistries.Keys.FLUID_TYPES, RiftWorld.MODID);
+    public static final DeferredRegister<Fluid> FLUIDS = DeferredRegister.create(ForgeRegistries.FLUIDS, RiftWorld.MODID);
+    public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, RiftWorld.MODID);
+
+    public static final RegistryObject<FluidType> TYPE = TYPES.register("elisar_water", () -> new FluidType(FluidType.Properties.create()
+            .descriptionId("block.riftworld.elisar_water").canSwim(true).canDrown(true).canExtinguish(true).canHydrate(true)
+            .supportsBoating(true).fallDistanceModifier(0F).motionScale(0.014D).canPushEntity(true)
+            .sound(SoundActions.BUCKET_FILL, SoundEvents.BUCKET_FILL).sound(SoundActions.BUCKET_EMPTY, SoundEvents.BUCKET_EMPTY)) {
+        @Override
+        public void initializeClient(Consumer<IClientFluidTypeExtensions> consumer) {
+            consumer.accept(new IClientFluidTypeExtensions() {
+                private final ResourceLocation still = new ResourceLocation(RiftWorld.MODID, "block/elisar_water_still");
+                private final ResourceLocation flow = new ResourceLocation(RiftWorld.MODID, "block/elisar_water_flow");
+
+                @Override
+                public ResourceLocation getStillTexture() {
+                    return still;
+                }
+
+                @Override
+                public ResourceLocation getFlowingTexture() {
+                    return flow;
+                }
+
+                @Override
+                public ResourceLocation getOverlayTexture() {
+                    return still;
+                }
+
+                @Override
+                public int getTintColor() {
+                    return 0xFFFFFFFF;
+                }
+
+                @Override
+                public Vector3f modifyFogColor(Camera camera, float partialTick, ClientLevel level, int renderDistance, float darkenWorldAmount, Vector3f fluidFogColor) {
+                    return new Vector3f(0.22F, 0.55F, 0.78F);
+                }
+
+                @Override
+                public void modifyFogRender(Camera camera, FogRenderer.FogMode mode, float renderDistance, float partialTick, float nearDistance, float farDistance, FogShape shape) {
+                    com.mojang.blaze3d.systems.RenderSystem.setShaderFogStart(-4F);
+                    com.mojang.blaze3d.systems.RenderSystem.setShaderFogEnd(48F);
+                }
+            });
+        }
+    });
+
+    public static final RegistryObject<ForgeFlowingFluid.Source> SOURCE = FLUIDS.register("elisar_water", () -> new ForgeFlowingFluid.Source(props()));
+    public static final RegistryObject<ForgeFlowingFluid.Flowing> FLOWING = FLUIDS.register("flowing_elisar_water", () -> new ForgeFlowingFluid.Flowing(props()));
+    public static final RegistryObject<Item> BUCKET = ITEMS.register("elisar_water_bucket",
+            () -> new BucketItem(SOURCE, new Item.Properties().craftRemainder(Items.BUCKET).stacksTo(1)));
+
+    private static ForgeFlowingFluid.Properties props() {
+        return new ForgeFlowingFluid.Properties(TYPE, SOURCE, FLOWING).block(ElisarBlocks.WATER).bucket(BUCKET)
+                .slopeFindDistance(4).levelDecreasePerBlock(1).tickRate(5);
+    }
+
+    private ModFluids() {
+    }
+}

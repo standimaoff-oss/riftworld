@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "riftworld:block/sizo_planks",
+        "y": 0
+      }
+    ]
+  }
+}

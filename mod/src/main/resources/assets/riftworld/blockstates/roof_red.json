@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "riftworld:block/roof_red",
+        "y": 0
+      }
+    ]
+  }
+}

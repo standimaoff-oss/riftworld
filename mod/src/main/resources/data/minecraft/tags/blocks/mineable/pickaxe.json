@@ -55,6 +55,26 @@
     "riftworld:lab_concrete_slab",
     "riftworld:lab_tile_slab",
     "riftworld:steel_floor_slab",
-    "riftworld:part"
+    "riftworld:part",
+    "riftworld:elisar_stone",
+    "riftworld:elisar_stone_mossy",
+    "riftworld:elisar_cobble",
+    "riftworld:elisar_bricks",
+    "riftworld:elisar_bricks_mossy",
+    "riftworld:elisar_plaster",
+    "riftworld:roof_red",
+    "riftworld:roof_blue",
+    "riftworld:roof_red_stairs",
+    "riftworld:roof_blue_stairs",
+    "riftworld:roof_red_slab",
+    "riftworld:roof_blue_slab",
+    "riftworld:elisar_bricks_stairs",
+    "riftworld:elisar_cobble_stairs",
+    "riftworld:elisar_cobble_slab",
+    "riftworld:altar_stone",
+    "riftworld:fireplace",
+    "riftworld:forge_hearth",
+    "riftworld:idol",
+    "riftworld:well"
   ]
 }

@@ -108,6 +108,7 @@ public class ModelBlock extends HorizontalDirectionalBlock implements EntityBloc
 
     public void placeParts(LevelAccessor level, BlockPos pos, BlockState state) {
         BlockState part = ModBlocks.PART.get().defaultBlockState();
+        if (kind.passable()) part = part.setValue(PartBlock.OPEN, true);
         for (BlockPos off : kind.partOffsets(state.getValue(FACING))) {
             level.setBlock(pos.offset(off), part, 3);
         }

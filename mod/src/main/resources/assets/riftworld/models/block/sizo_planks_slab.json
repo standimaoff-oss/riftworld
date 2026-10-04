@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/slab",
+  "textures": {
+    "bottom": "riftworld:block/sizo_planks",
+    "top": "riftworld:block/sizo_planks",
+    "side": "riftworld:block/sizo_planks"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "riftworld:block/elisar_bricks_mossy",
+        "y": 0
+      }
+    ]
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "riftworld:block/thatch",
+        "y": 0
+      }
+    ]
+  }
+}

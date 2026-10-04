@@ -3,6 +3,12 @@
   "values": [
     "riftworld:lab_concrete_stairs",
     "riftworld:steel_floor_stairs",
-    "riftworld:lab_tile_stairs"
+    "riftworld:lab_tile_stairs",
+    "riftworld:roof_red_stairs",
+    "riftworld:roof_blue_stairs",
+    "riftworld:thatch_stairs",
+    "riftworld:sizo_planks_stairs",
+    "riftworld:elisar_bricks_stairs",
+    "riftworld:elisar_cobble_stairs"
   ]
 }

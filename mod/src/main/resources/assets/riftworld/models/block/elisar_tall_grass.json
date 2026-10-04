@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cross",
+  "textures": {
+    "cross": "riftworld:block/elisar_tall_grass"
+  },
+  "render_type": "minecraft:cutout"
+}

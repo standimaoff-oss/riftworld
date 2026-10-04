@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/vine",
+  "textures": {
+    "vine": "riftworld:block/elisar_ivy",
+    "particle": "riftworld:block/elisar_ivy"
+  },
+  "render_type": "minecraft:cutout"
+}

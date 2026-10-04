@@ -17,6 +17,7 @@ public final class ModTabs {
             .icon(() -> new ItemStack(ModItems.RESONANCE_STONE.get()))
             .displayItems((params, out) -> {
                 out.accept(ModItems.RESONANCE_STONE.get());
+                out.accept(ModFluids.BUCKET.get());
                 for (var b : ModBlocks.WITH_ITEM) {
                     var item = ForgeRegistries.ITEMS.getValue(b.getId());
                     if (item != null) out.accept(item);

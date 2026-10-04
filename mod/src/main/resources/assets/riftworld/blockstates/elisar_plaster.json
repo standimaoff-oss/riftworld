@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "riftworld:block/elisar_plaster",
+        "y": 0
+      }
+    ]
+  }
+}
