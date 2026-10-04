@@ -99,6 +99,17 @@ public final class ModBlocks {
     public static final RegistryObject<Block> DEAD_VINES = reg("dead_vines", () -> new VineBlock(BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_BROWN)
             .replaceable().noCollission().randomTicks().strength(0.2F).sound(SoundType.VINE).pushReaction(PushReaction.DESTROY)));
 
+    public static final RegistryObject<Block> DIRT_PILE = reg("dirt_pile", () -> new CarpetBlock(BlockBehaviour.Properties.of().mapColor(MapColor.DIRT)
+            .strength(0.1F).sound(SoundType.SAND).noOcclusion().pushReaction(PushReaction.DESTROY)));
+    public static final RegistryObject<Block> LAB_RAILING = reg("lab_railing", () -> new net.minecraft.world.level.block.IronBarsBlock(metal().noOcclusion()));
+    public static final RegistryObject<Block> LAB_TILE_STAIRS = reg("lab_tile_stairs", () -> new StairBlock(() -> LAB_TILE.get().defaultBlockState(), stone().mapColor(MapColor.QUARTZ)));
+    public static final RegistryObject<Block> WALL_VENT = cube("wall_vent", metal());
+    public static final RegistryObject<Block> LAUNCH_CORE = BLOCKS.register("launch_core", () -> new ru.aiforge.riftworld.block.LaunchCoreBlock(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.METAL).strength(-1.0F, 3600000.0F).sound(SoundType.METAL).noOcclusion().noLootTable()
+            .isViewBlocking((s, l, p) -> false).isSuffocating((s, l, p) -> false)));
+    public static final RegistryObject<Block> CAPSULE_TERMINAL = BLOCKS.register("capsule_terminal", () -> new ru.aiforge.riftworld.block.CapsuleTerminalBlock(
+            BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(-1.0F, 3600000.0F).noOcclusion().noLootTable()));
+
     // --- invisible multiblock filler
     public static final RegistryObject<Block> PART = BLOCKS.register("part", () -> new PartBlock(BlockBehaviour.Properties.of()
             .mapColor(MapColor.METAL).strength(3.0F, 6.0F).sound(SoundType.METAL).noOcclusion().noLootTable().pushReaction(PushReaction.BLOCK)
@@ -117,7 +128,12 @@ public final class ModBlocks {
         BlockBehaviour.Properties p = BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(3.0F, 6.0F).sound(SoundType.METAL)
                 .noOcclusion().pushReaction(PushReaction.BLOCK).isViewBlocking((s, l, pp) -> false).isSuffocating((s, l, pp) -> false);
         if (k == ModelKind.CRATE_WOOD || k == ModelKind.LAB_TABLE || k == ModelKind.SHELF) p = p.sound(SoundType.WOOD).strength(2.0F, 3.0F).mapColor(MapColor.WOOD);
-        if (k == ModelKind.OFFICE_CHAIR) p = p.strength(1.0F);
+        if (k == ModelKind.OFFICE_CHAIR || k == ModelKind.CHAIR_FALLEN || k == ModelKind.PAPER_PILE || k == ModelKind.WALL_NOTES
+                || k == ModelKind.BOX_PILE || k == ModelKind.TRASH_BIN_TIPPED) p = p.strength(0.8F);
+        if (k == ModelKind.PAPER_PILE || k == ModelKind.WALL_NOTES || k == ModelKind.BOX_PILE) p = p.sound(SoundType.WOOL);
+        if (k.passable()) p = p.noCollission();
+        if (k == ModelKind.CHANDELIER) p = p.lightLevel(s -> s.getValue(ModelBlock.POWERED) ? 15 : 0);
+        if (k == ModelKind.SIREN) p = p.lightLevel(s -> s.getValue(ModelBlock.POWERED) ? 6 : 0);
         if (k == ModelKind.PORTAL_HELM || k == ModelKind.PORTAL_LEVER) p = p.strength(-1.0F, 3600000.0F).noLootTable();
         final BlockBehaviour.Properties props = p;
         RegistryObject<ModelBlock> r = reg(k.name().toLowerCase(java.util.Locale.ROOT), () -> switch (k) {

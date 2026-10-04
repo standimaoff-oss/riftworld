@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/stairs",
+  "textures": {
+    "bottom": "riftworld:block/lab_tile",
+    "top": "riftworld:block/lab_tile",
+    "side": "riftworld:block/lab_stair_side"
+  }
+}

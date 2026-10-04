@@ -68,6 +68,10 @@ public class ModelBER<T extends BlockEntity> implements BlockEntityRenderer<T> {
                 pose.rotate("handle", -Mth.DEG_TO_RAD * 70F * Mth.clamp(p, 0, 1), 1, 0, 0);
                 pose.hide("lamp_on", p <= 0.01F && !powered);
             }
+            case SIREN -> {
+                if (powered) pose.rotate("rotor", time * 0.9F, 0, 0, 1);
+                pose.hide("lamp_on", !powered || ((int) (time / 6)) % 2 == 0);
+            }
             case LAB_DOOR -> {
                 float o = be == null ? 0 : be.doorOpen;
                 pose.translate("door_l", -0.84F * o, 0, 0);

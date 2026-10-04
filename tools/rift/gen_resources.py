@@ -9,16 +9,18 @@ def w(path, obj):
 NS = "riftworld:block/"
 CUBES = ["lab_panel", "lab_panel_dirty", "lab_panel_stripe", "lab_panel_stripe_dirty", "lab_tile", "lab_tile_cracked",
          "steel_floor", "steel_floor_rusty", "lab_concrete", "lab_concrete_cracked", "lab_facade", "lab_ceiling",
-         "lab_ceiling_dirty", "hazard_block", "hazard_block_worn", "shaft_wall"]
+         "lab_ceiling_dirty", "hazard_block", "hazard_block_worn", "shaft_wall", "wall_vent"]
 CUTOUT = ["metal_grate", "rusty_grate"]
 GLASS = ["lab_glass", "lab_glass_cracked"]
 LAMPS = ["lab_lamp", "emergency_lamp"]
-STAIRS = {"lab_concrete_stairs": "lab_concrete", "steel_floor_stairs": "steel_floor"}
+STAIRS = {"lab_concrete_stairs": "lab_concrete", "steel_floor_stairs": "steel_floor", "lab_tile_stairs": "lab_tile"}
+STAIR_SIDE = {"lab_tile_stairs": "lab_stair_side"}
 SLABS = {"lab_concrete_slab": "lab_concrete", "lab_tile_slab": "lab_tile", "steel_floor_slab": "steel_floor"}
-CARPETS = ["debris", "dead_moss"]
+CARPETS = ["debris", "dead_moss", "dirt_pile"]
 MODELS = ["portal_helm", "portal_lever", "control_console", "lathe", "milling_machine", "specimen_tank", "electrical_cabinet",
           "generator", "transformer", "server_rack", "security_desk", "crate_wood", "crate_metal", "lab_door", "lab_table",
-          "shelf", "office_chair", "locker"]
+          "shelf", "office_chair", "locker", "trash_bin_tipped", "chandelier", "siren", "shelf_fallen", "wall_notes",
+          "desk_computer", "table_flipped", "barrels", "fire_extinguisher", "box_pile", "paper_pile", "chair_fallen"]
 UNBREAKABLE = {"portal_helm", "portal_lever"}
 WOOD = {"crate_wood", "lab_table", "shelf"}
 
@@ -40,7 +42,7 @@ for n in LAMPS:
     w(f"{A}/models/block/{n}_on.json", {"parent": "minecraft:block/cube_all", "textures": {"all": NS + n + "_on"}})
     simple_item(n)
 for n, base in STAIRS.items():
-    t = {"bottom": NS + base, "top": NS + base, "side": NS + base}
+    t = {"bottom": NS + base, "top": NS + base, "side": NS + STAIR_SIDE.get(n, base)}
     for suf, par in (("", "stairs"), ("_inner", "inner_stairs"), ("_outer", "outer_stairs")):
         w(f"{A}/models/block/{n}{suf}.json", {"parent": "minecraft:block/" + par, "textures": t})
     v = {}
@@ -93,6 +95,28 @@ mp.append({"when": {"OR": [{d: "false" for d in ("east", "north", "south", "up",
 mp = mp[:-1]  # (the all-false state is impossible for placed vines)
 w(f"{A}/blockstates/dead_vines.json", {"multipart": mp})
 w(f"{A}/models/item/dead_vines.json", {"parent": "minecraft:item/generated", "textures": {"layer0": NS + "dead_vines"}})
+# railing: vanilla iron-bars templates
+bars = {"bars": NS + "lab_railing", "edge": NS + "lab_railing", "particle": NS + "lab_railing"}
+for sub in ("post_ends", "post", "cap", "cap_alt", "side", "side_alt"):
+    w(f"{A}/models/block/lab_railing_{sub}.json", {"parent": "minecraft:block/iron_bars_" + sub, "textures": bars, "render_type": "minecraft:cutout"})
+B = NS + "lab_railing_"
+F = lambda **k: {kk: str(v).lower() for kk, v in k.items()}
+w(f"{A}/blockstates/lab_railing.json", {"multipart": [
+    {"apply": {"model": B + "post_ends"}},
+    {"when": F(north=False, east=False, south=False, west=False), "apply": {"model": B + "post"}},
+    {"when": F(north=True, east=False, south=False, west=False), "apply": {"model": B + "cap"}},
+    {"when": F(north=False, east=True, south=False, west=False), "apply": {"model": B + "cap", "y": 90}},
+    {"when": F(north=False, east=False, south=True, west=False), "apply": {"model": B + "cap_alt"}},
+    {"when": F(north=False, east=False, south=False, west=True), "apply": {"model": B + "cap_alt", "y": 90}},
+    {"when": F(north=True), "apply": {"model": B + "side"}},
+    {"when": F(east=True), "apply": {"model": B + "side", "y": 90}},
+    {"when": F(south=True), "apply": {"model": B + "side_alt"}},
+    {"when": F(west=True), "apply": {"model": B + "side_alt", "y": 90}}]})
+w(f"{A}/models/item/lab_railing.json", {"parent": "minecraft:item/generated", "textures": {"layer0": NS + "lab_railing"}})
+for n in ("launch_core", "capsule_terminal"):
+    w(f"{A}/models/block/{n}.json", {"textures": {"particle": NS + "steel_floor"}, "elements": []})
+w(f"{A}/blockstates/launch_core.json", {"variants": {f"facing={d}": {"model": NS + "launch_core"} for d in ("north", "south", "east", "west")}})
+w(f"{A}/blockstates/capsule_terminal.json", {"variants": {"": {"model": NS + "capsule_terminal"}}})
 # part (invisible)
 w(f"{A}/models/block/part.json", {"textures": {"particle": "minecraft:block/iron_block"}, "elements": []})
 w(f"{A}/blockstates/part.json", {"variants": {"open=false": {"model": NS + "part"}, "open=true": {"model": NS + "part"}}})
@@ -116,7 +140,7 @@ w(f"{A}/models/item/resonance_stone.json", {"parent": "minecraft:item/generated"
 def drop_self(n):
     return {"type": "minecraft:block", "pools": [{"rolls": 1, "entries": [{"type": "minecraft:item", "name": "riftworld:" + n}],
                                                   "conditions": [{"condition": "minecraft:survives_explosion"}]}]}
-ALL = CUBES + CUTOUT + LAMPS + list(STAIRS) + CARPETS + ["pipe"] + [m for m in MODELS if m not in UNBREAKABLE]
+ALL = CUBES + CUTOUT + LAMPS + list(STAIRS) + CARPETS + ["pipe", "lab_railing"] + [m for m in MODELS if m not in UNBREAKABLE]
 for n in ALL:
     w(f"{D}/loot_tables/blocks/{n}.json", drop_self(n))
 for n in SLABS:
@@ -176,6 +200,15 @@ NAMES = {  # id: (en, ru)
     "crate_metal": ("Metal Crate", "Металлический ящик"), "lab_door": ("Sliding Lab Door", "Раздвижная дверь"),
     "lab_table": ("Lab Table", "Лабораторный стол"), "shelf": ("Storage Shelf", "Стеллаж"),
     "office_chair": ("Office Chair", "Офисное кресло"), "locker": ("Locker", "Шкафчик"),
+    "wall_vent": ("Wall Vent", "Вентиляционная решётка"), "dirt_pile": ("Dirt Pile", "Куча грязи"),
+    "lab_railing": ("Lab Railing", "Перила"), "lab_tile_stairs": ("Lab Tile Stairs", "Ступени из плитки"),
+    "launch_core": ("Launch Shaft Core", "Ядро шахты запуска"), "capsule_terminal": ("Capsule Terminal", "Терминал капсулы"),
+    "trash_bin_tipped": ("Tipped Trash Bin", "Опрокинутая урна"), "chandelier": ("Chandelier", "Люстра"),
+    "siren": ("Old Siren", "Старая сирена"), "shelf_fallen": ("Fallen Shelf", "Упавший стеллаж"),
+    "wall_notes": ("Notice Board", "Доска с записками"), "desk_computer": ("Office Desk", "Рабочий стол с компьютером"),
+    "table_flipped": ("Flipped Table", "Перевёрнутый стол"), "barrels": ("Barrels", "Бочки"),
+    "fire_extinguisher": ("Fire Extinguisher", "Огнетушитель"), "box_pile": ("Box Pile", "Груда коробок"),
+    "paper_pile": ("Scattered Papers", "Разбросанные бумаги"), "chair_fallen": ("Fallen Chair", "Упавшее кресло"),
 }
 en = {"itemGroup.riftworld": "Rift", "item.riftworld.resonance_stone": "Resonance Stone",
       "item.riftworld.resonance_stone.desc": "Hums softly. Fits a socket of the launch helm.",
@@ -184,6 +217,11 @@ en = {"itemGroup.riftworld": "Rift", "item.riftworld.resonance_stone": "Resonanc
       "message.riftworld.stones_status": "Resonance stones: %s/5",
       "message.riftworld.not_enough": "Not enough stones (%s/5). Something fell from above...",
       "message.riftworld.ready": "The helm hums. Launch systems answer...",
+      "message.riftworld.booting": "Power is coming back... wait for the lights.",
+      "message.riftworld.launch": "LAUNCH! The shaft is opening...",
+      "message.riftworld.launch_busy": "The launch sequence is already running.",
+      "message.riftworld.terminal_route": "[Capsule] Route: ELISAR. Coordinates locked. Beam emitter: charging...",
+      "message.riftworld.terminal_wait": "The beam emitter is not ready yet",
       "book.riftworld.note.p1": "Not enough stones: %s of 5.\n\nFind the missing resonance stones and insert them into the helm sockets.",
       "book.riftworld.note.p2": "We hid them when the evacuation started:\n- basement warehouse\n- technical department\n- electrical department\n- security room, 2nd floor\n\n— Dr. Veresov"}
 ru = {"itemGroup.riftworld": "Разлом", "item.riftworld.resonance_stone": "Камень резонанса",
@@ -193,6 +231,11 @@ ru = {"itemGroup.riftworld": "Разлом", "item.riftworld.resonance_stone": "
       "message.riftworld.stones_status": "Камни резонанса: %s/5",
       "message.riftworld.not_enough": "Не хватает камней (%s/5). Сверху что-то упало...",
       "message.riftworld.ready": "Руль гудит. Системы запуска отвечают...",
+      "message.riftworld.booting": "Питание возвращается... дождитесь света.",
+      "message.riftworld.launch": "ЗАПУСК! Шахта открывается...",
+      "message.riftworld.launch_busy": "Последовательность запуска уже идёт.",
+      "message.riftworld.terminal_route": "[Капсула] Маршрут: ЭЛИСАР. Координаты зафиксированы. Излучатель луча: зарядка...",
+      "message.riftworld.terminal_wait": "Излучатель луча ещё не готов",
       "book.riftworld.note.p1": "Не хватает камней: %s из 5.\n\nНайдите недостающие камни резонанса и вставьте их в гнёзда руля.",
       "book.riftworld.note.p2": "Мы спрятали их, когда началась эвакуация:\n- склад в подвале\n- технический отдел\n- электротехнический отдел\n- комната охраны, 2 этаж\n\n— Д-р Вересов"}
 for k, (e, r) in NAMES.items():

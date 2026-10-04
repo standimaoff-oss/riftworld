@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/carpet",
+  "textures": {
+    "wool": "riftworld:block/dirt_pile"
+  },
+  "render_type": "minecraft:cutout"
+}

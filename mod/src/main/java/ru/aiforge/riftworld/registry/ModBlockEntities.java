@@ -21,6 +21,10 @@ public final class ModBlockEntities {
             ModBlocks.MODELS.entrySet().stream().filter(e -> !e.getKey().isContainer()).map(e -> (Block) e.getValue().get()).toArray(Block[]::new)).build(null));
 
     @SuppressWarnings("DataFlowIssue")
+    public static final RegistryObject<BlockEntityType<ru.aiforge.riftworld.block.LaunchCoreBlockEntity>> LAUNCH_CORE = TYPES.register("launch_core",
+            () -> BlockEntityType.Builder.of(ru.aiforge.riftworld.block.LaunchCoreBlockEntity::new, ModBlocks.LAUNCH_CORE.get()).build(null));
+
+    @SuppressWarnings("DataFlowIssue")
     public static final RegistryObject<BlockEntityType<CrateBlockEntity>> CRATE = TYPES.register("crate", () -> BlockEntityType.Builder.of(CrateBlockEntity::new,
             ModBlocks.MODELS.get(ModelKind.CRATE_WOOD).get(), ModBlocks.MODELS.get(ModelKind.CRATE_METAL).get()).build(null));
 }

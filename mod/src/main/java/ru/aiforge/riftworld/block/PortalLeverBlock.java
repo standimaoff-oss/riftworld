@@ -67,9 +67,17 @@ public class PortalLeverBlock extends ModelBlock {
             e.setDeltaMovement(0, -0.05, 0);
             e.setPickUpDelay(10);
             level.addFreshEntity(e);
+        } else if (helm.stage != LabPower.POWERED) {
+            level.playSound(null, pos, SoundEvents.BEACON_DEACTIVATE, SoundSource.BLOCKS, 1.0F, 1.2F);
+            player.displayClientMessage(Component.translatable("message.riftworld.booting"), true);
         } else {
-            level.playSound(null, pos, SoundEvents.BEACON_ACTIVATE, SoundSource.BLOCKS, 1.5F, 0.5F);
-            player.displayClientMessage(Component.translatable("message.riftworld.ready"), true);
+            LaunchCoreBlockEntity core = LaunchCoreBlock.find(level, pos);
+            if (core != null && core.startLaunch()) {
+                level.playSound(null, pos, SoundEvents.BEACON_ACTIVATE, SoundSource.BLOCKS, 1.5F, 0.5F);
+                player.displayClientMessage(Component.translatable("message.riftworld.launch"), true);
+            } else {
+                player.displayClientMessage(Component.translatable(core == null ? "message.riftworld.ready" : "message.riftworld.launch_busy"), true);
+            }
         }
         return InteractionResult.CONSUME;
     }

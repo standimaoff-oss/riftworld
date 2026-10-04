@@ -37,6 +37,10 @@ public class PortalHelmBlock extends ModelBlock {
             level.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.BLOCKS, 1.2F, 0.7F + 0.1F * n);
             level.playSound(null, pos, SoundEvents.END_PORTAL_FRAME_FILL, SoundSource.BLOCKS, 0.8F, 1.0F);
             player.displayClientMessage(Component.translatable(n >= 5 ? "message.riftworld.stones_all" : "message.riftworld.stone_set", n), true);
+            if (n >= 5) LabPower.start((net.minecraft.server.level.ServerLevel) level, pos, be);
+        } else if (be.stoneCount() >= 5 && be.stage == LabPower.IDLE) {
+            LabPower.start((net.minecraft.server.level.ServerLevel) level, pos, be);
+            player.displayClientMessage(Component.translatable("message.riftworld.stones_all", 5), true);
         } else {
             player.displayClientMessage(Component.translatable("message.riftworld.stones_status", be.stoneCount()), true);
         }

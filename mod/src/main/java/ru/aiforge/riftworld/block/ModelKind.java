@@ -29,7 +29,19 @@ public enum ModelKind {
     LAB_TABLE("lab_table", 0, 1, 0, 1, Block.box(0, 0, 0, 16, 15, 16)),
     SHELF("shelf", 0, 1, 0, 3, Block.box(0, 0, 1, 16, 16, 15)),
     OFFICE_CHAIR("office_chair", 0, 0, 0, 1, Block.box(3, 0, 3, 13, 15, 13)),
-    LOCKER("locker", 0, 0, 0, 2, Block.box(1, 0, 1, 15, 16, 15));
+    LOCKER("locker", 0, 0, 0, 2, Block.box(1, 0, 1, 15, 16, 15)),
+    TRASH_BIN_TIPPED("trash_bin_tipped", 0, 0, 0, 1, Block.box(1, 0, 1, 15, 8, 15)),
+    CHANDELIER("chandelier", 0, 0, 0, 1, Block.box(4, 5, 4, 12, 16, 12)),
+    SIREN("siren", 0, 0, 0, 1, Block.box(3, 4, 0, 13, 14, 10)),
+    SHELF_FALLEN("shelf_fallen", -1, 1, 0, 1, Block.box(0, 0, 1, 16, 10, 15)),
+    WALL_NOTES("wall_notes", 0, 0, 0, 1, Block.box(1, 2, 0, 15, 14, 2)),
+    DESK_COMPUTER("desk_computer", 0, 1, 0, 2, Block.box(0, 0, 0, 16, 13, 16)),
+    TABLE_FLIPPED("table_flipped", 0, 1, 0, 1, Block.box(0, 0, 0, 16, 16, 16)),
+    BARRELS("barrels", 0, 0, 0, 1, Block.box(1, 0, 1, 15, 14, 15)),
+    FIRE_EXTINGUISHER("fire_extinguisher", 0, 0, 0, 1, Block.box(4, 2, 0, 12, 13, 9)),
+    BOX_PILE("box_pile", 0, 0, 0, 1, Block.box(1, 0, 1, 15, 13, 15)),
+    PAPER_PILE("paper_pile", 0, 0, 0, 1, Block.box(0, 0, 0, 16, 1, 16)),
+    CHAIR_FALLEN("chair_fallen", 0, 0, 0, 1, Block.box(1, 0, 1, 15, 9, 15));
 
     public final String glb;
     public final int x0, x1, back, h;
@@ -42,6 +54,10 @@ public enum ModelKind {
         this.back = back;
         this.h = h;
         this.masterShape = shape;
+    }
+
+    public boolean passable() {
+        return this == WALL_NOTES || this == FIRE_EXTINGUISHER || this == PAPER_PILE || this == CHANDELIER;
     }
 
     public boolean isContainer() {

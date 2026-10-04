@@ -152,6 +152,16 @@ public class ModelBlock extends HorizontalDirectionalBlock implements EntityBloc
         return new RiftBlockEntity(pos, state);
     }
 
+    @Nullable
+    @Override
+    public <T extends BlockEntity> net.minecraft.world.level.block.entity.BlockEntityTicker<T> getTicker(Level level, BlockState state,
+            net.minecraft.world.level.block.entity.BlockEntityType<T> type) {
+        if (level.isClientSide || kind != ModelKind.PORTAL_HELM) return null;
+        return (l, p, s, be) -> {
+            if (be instanceof RiftBlockEntity r) LabPower.tick((net.minecraft.server.level.ServerLevel) l, p, r);
+        };
+    }
+
     @Override
     public BlockState rotate(BlockState state, Rotation rot) {
         return state.setValue(FACING, rot.rotate(state.getValue(FACING)));

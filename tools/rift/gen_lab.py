@@ -72,7 +72,10 @@ KINDS = {  # name: (x0, x1, back, h)
     "milling_machine": (0, 0, 0, 2), "specimen_tank": (0, 0, 0, 3), "electrical_cabinet": (0, 0, 0, 2),
     "generator": (-1, 1, 1, 2), "transformer": (0, 1, 0, 2), "server_rack": (0, 0, 0, 2), "security_desk": (-1, 1, 0, 2),
     "crate_wood": (0, 0, 0, 1), "crate_metal": (0, 0, 0, 1), "lab_door": (0, 1, 0, 3), "lab_table": (0, 1, 0, 1),
-    "shelf": (0, 1, 0, 3), "office_chair": (0, 0, 0, 1), "locker": (0, 0, 0, 2)}
+    "shelf": (0, 1, 0, 3), "office_chair": (0, 0, 0, 1), "locker": (0, 0, 0, 2),
+    "trash_bin_tipped": (0, 0, 0, 1), "chandelier": (0, 0, 0, 1), "siren": (0, 0, 0, 1), "shelf_fallen": (-1, 1, 0, 1),
+    "wall_notes": (0, 0, 0, 1), "desk_computer": (0, 1, 0, 2), "table_flipped": (0, 1, 0, 1), "barrels": (0, 0, 0, 1),
+    "fire_extinguisher": (0, 0, 0, 1), "box_pile": (0, 0, 0, 1), "paper_pile": (0, 0, 0, 1), "chair_fallen": (0, 0, 0, 1)}
 
 
 def rot(x, y, z, f):
@@ -171,7 +174,9 @@ for y in range(2, G - 1, 6):                                       # rings of re
     for i in (28, 31, 34):
         for (x, z) in ((i, 25), (i, 37), (25, i), (37, i)):
             put(x, y, z, S("emergency_lamp", lit=(y < 12)))
-fill(26, G, 26, 36, G, 36, lambda: S("rusty_grate") if rng.random() < 0.35 else S("metal_grate"))
+fill(26, G, 26, 36, G, 36, S("part", open=False))
+put(31, G, 31, S("launch_core", facing="south"), {"id": "riftworld:launch_core"})
+MODEL_CELLS.update((x, G, z) for x in range(26, 37) for z in range(26, 37))
 for i in range(24, 39):                                            # hazard border
     for (x, z) in ((i, 24), (i, 38), (24, i), (38, i), (i, 25), (i, 37), (25, i), (37, i)):
         if 25 <= x <= 37 and 25 <= z <= 37 and not (x in (25, 37) or z in (25, 37)):
@@ -221,7 +226,7 @@ for i in range(19, 44):                                            # gallery rai
     for (x, z) in ((i, 19), (i, 43), (19, i), (43, i)):
         if 19 <= x <= 43 and 19 <= z <= 43:
             put(x, F2, z, S("steel_floor_slab", type="top"))
-            put(x, F2 + 1, z, S("lab_glass") if rng.random() > 0.12 else S("lab_glass_cracked"))
+            put(x, F2 + 1, z, S("lab_railing", north=(x in (19, 43)), south=(x in (19, 43)), east=(z in (19, 43)), west=(z in (19, 43)), waterlogged=False))
 fill(20, 39, 20, 42, 42, 42, AIR)
 # skylight
 for x in range(20, 43):
@@ -290,7 +295,7 @@ def stairwell(mirror):
             for z in range(zs[0], zs[1] + 1):
                 for y in range(BAS + 1, L - 1):
                     put(X(x), y, z, S("lab_concrete"))
-                put(X(x), L - 1, z, S("lab_concrete_stairs", facing=fm(f), half="bottom", shape="straight", waterlogged=False)
+                put(X(x), L - 1, z, S("lab_tile_stairs", facing=fm(f), half="bottom", shape="straight", waterlogged=False)
                     if f else tile())
     # basement start landing (NE corner of the well) and 2nd-floor landing (west band north end, NW corner, north band)
     fill(X(10), BAS, 2, X(11), BAS, 3, steel)
@@ -520,6 +525,135 @@ for (x, z) in ((14, 30), (48, 30), (31, 52)):
     put(x, ROOF + 3, z, S("metal_grate")); put(x + 1, ROOF + 3, z, S("metal_grate")); put(x, ROOF + 3, z + 1, S("metal_grate")); put(x + 1, ROOF + 3, z + 1, S("metal_grate"))
 for z in range(10, 53):
     put(12, ROOF + 1, z, S("pipe", axis="z")); put(50, ROOF + 1, z, S("pipe", axis="z"))
+
+
+# ---------------------------------------------------------------- r2 decor: wall pieces, chandeliers, fallen furniture, edge clutter
+def free(c):
+    return c not in MODEL_CELLS and get(*c) == AIR
+
+
+def solid_at(x, y, z):
+    n = get(x, y, z)[0]
+    return n != "minecraft:air" and any(k in n for k in ("panel", "concrete", "facade", "shaft_wall", "hazard", "tile", "steel_floor", "ceiling", "vent")) \
+        and "stairs" not in n and "slab" not in n and (x, y, z) not in MODEL_CELLS
+
+
+def try_model(kind, x, y, z, f, floor=True, **props):
+    cs = [(x + dx, y + dy, z + dz) for dx, dy, dz in cells(kind, f)]
+    for c in cs:
+        if not (0 <= c[0] < W and 0 <= c[1] < H and 0 <= c[2] < D) or not free(c):
+            return False
+        if floor and c[1] == y and not solid_at(c[0], y - 1, c[2]):
+            return False
+    model(kind, x, y, z, f, **props)
+    return True
+
+
+WALL_DIRS = (("south", 0, -1), ("north", 0, 1), ("east", -1, 0), ("west", 1, 0))   # facing, wall offset
+
+
+def wall_piece(kind, x, y, z, floor=False):
+    for f, dx, dz in WALL_DIRS:
+        if solid_at(x + dx, y, z + dz):
+            return try_model(kind, x, y, z, f, floor=floor)
+    return False
+
+
+def hang(x, y, z):
+    """Chandelier right under the first ceiling above (x, y, z)."""
+    yy = y
+    while yy < H - 1 and get(x, yy + 1, z) == AIR:
+        yy += 1
+    if solid_at(x, yy + 1, z) and yy - y >= 2:
+        return try_model("chandelier", x, yy, z, "south", floor=False)
+    return False
+
+
+# chandeliers: lobby, security room, offices, hall (hanging from the gallery ceiling ring)
+for (x, z) in ((21, 55), (41, 55), (27, 58), (35, 58)):
+    hang(x, G + 1, z)
+hang(31, F2 + 1, 57); hang(28, F2 + 1, 59) if False else None
+for x in (17, 23, 29, 35, 41):
+    hang(x, F2 + 1, 5)
+for (x, z) in ((6, 30), (6, 48), (56, 36), (56, 44), (6, F2), (31, 5)):
+    hang(x, G + 1, z)
+for (x, z) in ((18, 18), (44, 18), (18, 44), (44, 44)):
+    hang(x, F2 + 1, z)
+for (x, z) in ((28, 2), (34, 2)):
+    hang(x, BAS + 1, z + 20) if False else None
+for (x, z) in ((14, 20), (14, 42), (48, 20), (48, 42), (31, 14)):
+    hang(x, G + 1, z)                                          # corridor ring
+# old sirens high on the walls (spin + horn during the launch)
+for (x, y, z) in ((18, 35, 31), (44, 35, 31), (31, 35, 18), (25, 35, 44), (37, 35, 44), (14, 34, 14), (48, 34, 48),
+                  (2, 27, 31), (60, 27, 31), (31, 41, 49), (13, 41, 31), (49, 41, 31)):
+    wall_piece("siren", x, y, z)
+# notice boards with notes / fire extinguishers
+NOTES = [(31, G + 2, 61), (20, G + 2, 61), (13, G + 2, 30), (49, G + 2, 34), (2, G + 2, 50), (60, G + 2, 50), (16, G + 2, 9),
+         (46, G + 2, 9), (26, L2 + 1, 52) if False else (25, L2 + 1, 52), (37, L2 + 1, 60), (15, L2 + 1, 7), (39, L2 + 1, 7),
+         (2, L2 + 1, 52), (60, L2 + 1, 52), (61, BAS + 2, 40), (1, BAS + 2, 20), (14, L2 + 1, 30)]
+for (x, y, z) in NOTES:
+    wall_piece("wall_notes", x, y, z)
+for (x, y, z) in ((16, G + 1, 30), (46, G + 1, 34), (13, G + 1, 48), (49, G + 1, 14), (24, G + 1, 61), (38, G + 1, 61),
+                  (13, L2, 20), (49, L2, 40), (25, L2, 58), (13, BAS + 1, 31), (49, BAS + 1, 31), (1, G + 1, 12) if False else (2, G + 1, 50)):
+    wall_piece("fire_extinguisher", x, y, z)
+# fallen / knocked-over furniture
+for (k, x, y, z, f) in (("shelf_fallen", 20, BAS + 1, 32, "east"), ("shelf_fallen", 44, BAS + 1, 46, "south"),
+                        ("shelf_fallen", 9, L2, 18, "south"), ("shelf_fallen", 31, G + 1, 4, "south"),
+                        ("table_flipped", 20, G + 1, 4, "north"), ("table_flipped", 42, G + 1, 9, "south"),
+                        ("table_flipped", 53, G + 1, 40, "west"), ("table_flipped", 28, L2, 57, "east"),
+                        ("desk_computer", 15, L2, 7, "north"), ("desk_computer", 27, L2, 3, "south"), ("desk_computer", 39, L2, 6, "south"),
+                        ("desk_computer", 33, L2, 60, "north"), ("desk_computer", 4, G + 1, 52, "south"), ("desk_computer", 26, G + 1, 60, "north"),
+                        ("desk_computer", 36, G + 1, 60, "north"), ("desk_computer", 54, L2, 52, "south"),
+                        ("chair_fallen", 18, G + 1, 8, "west"), ("chair_fallen", 34, L2, 55, "east"), ("chair_fallen", 9, G + 1, 55, "south"),
+                        ("trash_bin_tipped", 30, G + 1, 53, "east"), ("trash_bin_tipped", 47, G + 1, 31, "north"),
+                        ("trash_bin_tipped", 15, G + 1, 31, "south"), ("trash_bin_tipped", 23, L2, 5, "west"),
+                        ("barrels", 10, BAS + 1, 40, "south"), ("barrels", 52, BAS + 1, 40, "west"), ("barrels", 58, G + 1, 40, "south"),
+                        ("barrels", 3, BAS + 1, 10 + 4, "east")):
+    try_model(k, x, y, z, f)
+# edge clutter: things pushed against walls on every floor (never in the middle of a corridor)
+CLUTTER = (("paper_pile", 30), ("box_pile", 14), ("dirt_pile", 30), ("trash_bin_tipped", 6), ("barrels", 6), ("chair_fallen", 5))
+TOTC = sum(w for _, w in CLUTTER)
+PROTECT = [(31, G + 1, 62), (31, G + 1, 45), (31, G + 1, 50)]
+for y in (BAS + 1, G + 1, L2):
+    for x in range(1, W - 1):
+        for z in range(1, 62):
+            c = (x, y, z)
+            if not free(c) or not solid_at(x, y - 1, z) or not free((x, y + 1, z)):
+                continue
+            if 24 <= x <= 38 and 24 <= z <= 45 and y == G + 1:
+                continue                                                   # shaft rim + dais stay clear
+            if any(abs(x - px) <= 2 and abs(z - pz) <= 2 and y == py for px, py, pz in PROTECT):
+                continue
+            walls = [(dx, dz) for _, dx, dz in WALL_DIRS if solid_at(x + dx, y, z + dz)]
+            if len(walls) != 1:
+                continue
+            dx, dz = walls[0]
+            # keep the walkway: the 2 cells away from the wall and the side neighbours must be open floor
+            if not (free((x - dx, y, z - dz)) and free((x - 2 * dx, y, z - 2 * dz))):
+                continue
+            if rng.random() > 0.075:
+                continue
+            r = rng.random() * TOTC
+            for k, wgt in CLUTTER:
+                r -= wgt
+                if r <= 0:
+                    break
+            if k == "barrels" and y != BAS + 1:
+                k = "box_pile"
+            if k == "dirt_pile":
+                put(x, y, z, S("dirt_pile"))
+            else:
+                try_model(k, x, y, z, rng.choice(("south", "north", "east", "west")))
+# loose dirt in the open too (the cleaning wave removes it)
+for (x, y, z), st in list(B.items()):
+    if st == AIR and (x, y, z) not in MODEL_CELLS and y in (BAS + 1, G + 1, L2) and solid_at(x, y - 1, z) and rng.random() < 0.03:
+        if not (25 <= x <= 37 and 25 <= z <= 37):
+            put(x, y, z, S("dirt_pile"))
+# wall vents just under the ceilings
+for (x, y, z), st in list(B.items()):
+    if y in (35, 41, 27) and st[0].endswith("lab_panel") and rng.random() < 0.08:
+        if any(get(x + dx, y, z + dz) == AIR for _, dx, dz in WALL_DIRS):
+            put(x, y, z, S("wall_vent"))
 
 # ---------------------------------------------------------------- ruin dressing
 

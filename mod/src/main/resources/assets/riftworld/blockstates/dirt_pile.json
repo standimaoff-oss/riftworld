@@ -1,0 +1,22 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "riftworld:block/dirt_pile",
+        "y": 0
+      },
+      {
+        "model": "riftworld:block/dirt_pile",
+        "y": 90
+      },
+      {
+        "model": "riftworld:block/dirt_pile",
+        "y": 180
+      },
+      {
+        "model": "riftworld:block/dirt_pile",
+        "y": 270
+      }
+    ]
+  }
+}

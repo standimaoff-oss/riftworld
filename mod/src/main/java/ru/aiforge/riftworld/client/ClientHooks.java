@@ -31,6 +31,7 @@ public final class ClientHooks {
     public static void renderers(EntityRenderersEvent.RegisterRenderers e) {
         e.registerBlockEntityRenderer(ModBlockEntities.MODEL.get(), ModelBER::new);
         e.registerBlockEntityRenderer(ModBlockEntities.CRATE.get(), ModelBER::new);
+        e.registerBlockEntityRenderer(ModBlockEntities.LAUNCH_CORE.get(), LaunchCoreRenderer::new);
     }
 
     @SubscribeEvent

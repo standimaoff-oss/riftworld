@@ -492,4 +492,136 @@ mtex("m_deadplant", '#5f5946', 219, 8, 64, deadplant)
 mtex("m_crate_olive", '#58603f', 220, 6, 64, labels)
 mtex("m_rubber", '#222426', 221, 4, 64)
 mtex("m_copper", '#b06a3c', 222, 8, 64, metal)
+
+# ================================================================ r2: decor / capsule textures
+# dust & grime patch (carpet, cutout) - removed by the cleaning strip
+a = np.zeros((N, N, 4))
+r2 = np.random.RandomState(301)
+for y in range(N):
+    for x in range(N):
+        d = math.hypot(x - 7.5, y - 7.5) / 8.0 + r2.rand() * 0.45
+        if d < 1.0:
+            c = rgb('#5d4a35') * (0.85 + 0.3 * r2.rand())
+            if r2.rand() < 0.15:
+                c = rgb('#7b6a50')
+            a[y, x, :3] = c
+            a[y, x, 3] = 255 if d < 0.8 else 170
+save(a, "dirt_pile")
+# handrail / railing (iron-bars style, cutout)
+a = np.zeros((N, N, 4))
+for x in range(N):
+    for y in (1, 2):
+        setp(a, x, y, '#2f8f8c' if y == 1 else '#256f6c')
+    setp(a, x, 14, '#5d6366')
+for x in (1, 5, 9, 13):
+    for y in range(3, 14):
+        setp(a, x, y, '#8d9497')
+        setp(a, x + 1, y, '#6c7276')
+a[..., :3] += noise(302, 4)[..., None] * (a[..., 3:4] > 0)
+save(a, "lab_railing")
+# stair riser with hazard nosing
+a = base('#d9dcd8', 303, 4)
+for y in range(0, 4):
+    for x in range(N):
+        a[y, x, :3] = rgb('#e0b020') if ((x + y) // 3) % 2 == 0 else rgb('#262626')
+for x in range(N):
+    shade(a, x, 4, 0.7)
+bevel(a, 0, 5, 15, 15)
+save(age(a, 304, 0.18, 1, 0, 0.0), "lab_stair_side")
+# wall vent
+a = base('#9aa1a4', 305, 4)
+bevel(a, 0, 0, 15, 15, 1.15, 0.7)
+for y in range(3, 13, 2):
+    for x in range(2, 14):
+        a[y, x, :3] = rgb('#1e2224')
+        shade(a, x, y + 1, 1.1)
+save(age(a, 306, 0.25, 2, 0, 0.0), "wall_vent")
+
+
+def mtex_rgba(name, a):
+    Image.fromarray(np.clip(a, 0, 255).astype(np.uint8), "RGBA").save(os.path.join(MOD, name + ".png"))
+
+
+def notes(a, n):
+    r = np.random.RandomState(310)
+    for y in range(6, n - 4, 4):
+        x = 4
+        while x < n - 6:
+            L = r.randint(2, 7)
+            for k in range(L):
+                if r.rand() < 0.85:
+                    a[y, x + k, :3] = rgb('#3a3f6a') if r.rand() < 0.7 else rgb('#7a2a2a')
+            x += L + r.randint(1, 3)
+    for k in range(n):
+        shade(a, k, 2, 0.85)
+    age(a, 311, 0.25, 3, 0, 0.0)
+
+
+def cork(a, n):
+    r = np.random.RandomState(312)
+    for _ in range(n * n // 3):
+        x, y = r.randint(0, n), r.randint(0, n)
+        a[y, x, :3] *= 0.75 + r.rand() * 0.5
+
+
+def trash(a, n):
+    r = np.random.RandomState(313)
+    cols = ['#d8d2c0', '#7b6a50', '#3b4a3a', '#aa3333', '#5a6670', '#c9b35a', '#2c2c2c', '#e8e8e8']
+    for _ in range(n * n // 2):
+        x, y = r.randint(0, n - 2), r.randint(0, n - 2)
+        c = rgb(cols[r.randint(0, len(cols))])
+        a[y:y + 2, x:x + 2, :3] = c
+
+
+def barrel(a, n):
+    for y in range(n):
+        if y % 21 in (0, 1):
+            a[y, :, :3] *= 0.65
+    rust(a, n)
+    age(a, 314, 0.3, 6, 0, 0.0)
+
+
+def siren(a, n):
+    r = np.random.RandomState(315)
+    for _ in range(n * n // 6):
+        x, y = r.randint(0, n), r.randint(0, n)
+        a[y, x, :3] = [rgb('#8a4b2a'), rgb('#6e3b22'), rgb('#9a2b22')][r.randint(0, 3)]
+    age(a, 316, 0.3, 5, 1, 0.0)
+
+
+def ext(a, n):
+    age(a, 317, 0.15, 3, 0, 0.0)
+    for y in range(n // 3, n // 3 + 10):
+        for x in range(n // 4, 3 * n // 4):
+            a[y, x, :3] = rgb('#e8e1c8')
+
+
+mtex("m_notes", '#e9e4d2', 320, 3, 64, notes)
+mtex("m_cork", '#a57c4f', 321, 10, 64, cork)
+mtex("m_trash", '#6a6052', 322, 10, 64, trash)
+mtex("m_barrel", '#2f5b8a', 323, 6, 64, barrel)
+mtex("m_siren", '#a3271f', 324, 6, 64, siren)
+mtex("m_extinguisher", '#c0261c', 325, 5, 64, ext)
+mtex("m_cardboard", '#a07f55', 326, 7, 64, lambda a, n: age(a, 327, 0.2, 3, 0, 0.0))
+mtex("m_crt", '#cfc8b4', 328, 4, 64, lambda a, n: age(a, 329, 0.35, 4, 0, 0.0))
+mtex("m_capdeck", '#7d8588', 330, 5, 64, metal)
+# hatch leaf: 5.5 x 11 blocks of grate (88 x 176 px, cutout) with rust patches
+g1 = np.array(Image.open(os.path.join(BLK, "metal_grate.png")).convert("RGBA"), float)
+g2 = np.array(Image.open(os.path.join(BLK, "rusty_grate.png")).convert("RGBA"), float)
+leaf = np.zeros((176, 88, 4))
+rr = np.random.RandomState(331)
+for ty in range(11):
+    for tx in range(6):
+        t = g2 if rr.rand() < 0.35 else g1
+        y0, x0 = ty * 16, tx * 16
+        h, w = min(16, 176 - y0), min(16, 88 - x0)
+        leaf[y0:y0 + h, x0:x0 + w] = t[:h, :w]
+for k in range(88):
+    for j in (0, 1, 174, 175):
+        leaf[j, k] = [70, 74, 77, 255]
+for j in range(176):
+    for k in (0, 1, 86, 87):
+        leaf[j, k] = [70, 74, 77, 255]
+mtex_rgba("m_hatch", leaf)
+
 print("textures OK", len(os.listdir(BLK)), "block,", len(os.listdir(MOD)), "model")

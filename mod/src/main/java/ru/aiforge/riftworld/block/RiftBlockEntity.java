@@ -16,6 +16,12 @@ public class RiftBlockEntity extends BlockEntity {
     public int stones;
     /** Game time of the last activation (lever pull, book drop cooldown). */
     public long animStart = -1000;
+    /** Helm power state ({@link LabPower}) and the game time it was entered. */
+    public int stage;
+    public long stageTime;
+    /** Transient lamp / model lists of the building (helm only, rebuilt after load). */
+    java.util.List<BlockPos> lamps, basementLamps, chandeliers, models;
+    long[] flickerOn;
     /** Client-side smoothed door opening 0..1. */
     public float doorOpen, doorOpenPrev;
 
@@ -32,6 +38,8 @@ public class RiftBlockEntity extends BlockEntity {
         super.saveAdditional(tag);
         tag.putInt("Stones", stones);
         tag.putLong("AnimStart", animStart);
+        tag.putInt("Stage", stage);
+        tag.putLong("StageTime", stageTime);
     }
 
     @Override
@@ -39,6 +47,8 @@ public class RiftBlockEntity extends BlockEntity {
         super.load(tag);
         stones = tag.getInt("Stones");
         animStart = tag.contains("AnimStart") ? tag.getLong("AnimStart") : -1000;
+        stage = tag.getInt("Stage");
+        stageTime = tag.getLong("StageTime");
     }
 
     public void sync() {

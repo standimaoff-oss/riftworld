@@ -3,7 +3,7 @@
 # Units: 1 Blender unit = 1 block. Master block centre at (0,0), floor z = 0. Front of every model faces -Y
 # (glTF +Z = Minecraft south = towards the player for FACING=south); +X = the viewer's right.
 # Animated parts are separate nodes whose origin is the pivot (Pose.rotate / translate in the renderer).
-import bpy, bmesh, math, os, sys
+import bpy, bmesh, math, os, sys, random
 from mathutils import Vector, Matrix, Euler
 
 TEX = "/home/user/tools/rift/tex_models"
@@ -41,6 +41,12 @@ def mat(name):
         tn.image = im
         tn.interpolation = 'Closest'
         nt.links.new(tn.outputs["Color"], bsdf.inputs["Base Color"])
+        if spec.get("mask"):
+            mn = nt.nodes.new("ShaderNodeMath")
+            mn.operation = 'GREATER_THAN'
+            mn.inputs[1].default_value = 0.5
+            nt.links.new(tn.outputs["Alpha"], mn.inputs[0])
+            nt.links.new(mn.outputs[0], bsdf.inputs["Alpha"])
         if spec.get("emit"):
             nt.links.new(tn.outputs["Color"], bsdf.inputs["Emission Color"])
             bsdf.inputs["Emission Strength"].default_value = 1.0
@@ -88,6 +94,20 @@ MATDEF = {
     "crystal": {"color": (0.22, 0.27, 0.33, 1.0), "rough": 0.25, "metal": 0.2},
     "core": {"color": (0.45, 0.95, 1.0, 1.0), "emit": True},
     "yellow": {"color": (0.88, 0.70, 0.12, 1.0), "rough": 0.6},
+    "notes": {"tex": "m_notes", "rough": 0.95},
+    "cork": {"tex": "m_cork", "rough": 0.95},
+    "trash": {"tex": "m_trash", "rough": 0.95},
+    "barrel": {"tex": "m_barrel", "metal": 0.4, "rough": 0.7},
+    "siren": {"tex": "m_siren", "metal": 0.4, "rough": 0.7},
+    "extinguisher": {"tex": "m_extinguisher", "metal": 0.3, "rough": 0.5},
+    "cardbox": {"tex": "m_cardboard", "rough": 0.95},
+    "crt": {"tex": "m_crt", "rough": 0.7},
+    "capdeck": {"tex": "m_capdeck", "metal": 0.7, "rough": 0.45},
+    "hatch": {"tex": "m_hatch", "metal": 0.6, "rough": 0.5, "mask": True},
+    "bulb_on": {"color": (1.0, 0.86, 0.55, 1.0), "emit": True},
+    "bulb_off": {"color": (0.55, 0.53, 0.48, 1.0), "rough": 0.3},
+    "beacon_off": {"color": (0.35, 0.08, 0.06, 1.0), "rough": 0.3},
+    "puddle": {"color": (0.10, 0.09, 0.07, 1.0), "rough": 0.1},
 }
 
 
@@ -715,6 +735,383 @@ def m_locker():
         box("tag%d" % sx, (0.12, 0.005, 0.06), (sx * 0.22, -0.112, 1.4), "paper")
     node("body")
     export("locker")
+
+
+# ====================================================================================== r2 decor
+def fit_uv(ob, x0, x1, y0, y1, axis=2):
+    """UV of faces facing +-axis mapped to the [0,1] rect over (x0..x1, y0..y1)."""
+    me = ob.data
+    bm = bmesh.new()
+    bm.from_mesh(me)
+    uv = bm.loops.layers.uv.verify()
+    for f in bm.faces:
+        if abs(f.normal[axis]) > 0.9:
+            for l in f.loops:
+                co = l.vert.co
+                l[uv].uv = ((co.x - x0) / (x1 - x0), (co.y - y0) / (y1 - y0))
+    bm.to_mesh(me)
+    bm.free()
+
+
+def xform_parts(rot, offset=(0, 0, 0), ground=True):
+    """Rotate every not-yet-noded part about the origin, then drop it onto z=0 (fallen furniture)."""
+    M = Euler(rot).to_matrix().to_4x4()
+    for o in PARTS:
+        o.data.transform(M)
+    if ground:
+        mz = min((v.co.z for o in PARTS for v in o.data.vertices))
+        offset = (offset[0], offset[1], offset[2] - mz)
+    for o in PARTS:
+        o.data.transform(Matrix.Translation(Vector(offset)))
+        o.data.update()
+
+
+def m_trash_bin_tipped():
+    rot = (0, math.radians(90), math.radians(25))
+    d = Euler(rot).to_matrix() @ Vector((0, 0, 1))
+    c = Vector((0.12, 0.18, 0.22))
+    cyl("bin", 0.22, 0.62, tuple(c), "teal", rot, seg=16)
+    for k in (-1, 1):
+        torus("rim%d" % k, 0.22, 0.018, tuple(c + d * 0.3 * k), "steel", rot, seg=16, seg2=4)
+    cyl("hole", 0.2, 0.012, tuple(c - d * 0.312), "black", rot, seg=16)
+    cyl("lid", 0.235, 0.03, (-0.32, 0.3, 0.015), "teal", (0, 0, 0), seg=16)
+    cyl("lidk", 0.05, 0.04, (-0.32, 0.3, 0.04), "dark", seg=8)
+    r = random.Random(5)
+    o = c - d * 0.36
+    for k in range(9):
+        p = o + Vector((-r.random() * 0.45, -r.random() * 0.5 + 0.1, 0))
+        box("tr%d" % k, (0.12 + r.random() * 0.14, 0.1 + r.random() * 0.12, 0.03 + r.random() * 0.04),
+            (p.x, p.y, 0.025), "trash", (0, 0, r.random() * 3))
+    for k in range(4):
+        box("pp%d" % k, (0.2, 0.15, 0.006), (-0.1 - r.random() * 0.3, -0.25 - r.random() * 0.2, 0.004 + k * 0.002), "notes", (0, 0, r.random() * 3))
+    for k in range(3):
+        cyl("can%d" % k, 0.033, 0.12, (-0.25 + k * 0.17, -0.05 - k * 0.12, 0.033), ["red", "steel", "yellow"][k],
+            (math.radians(90), 0, r.random() * 3), seg=8)
+    node("body")
+    export("trash_bin_tipped")
+
+
+def m_chandelier():
+    box("plate", (0.32, 0.32, 0.04), (0, 0, 0.98), "dark", bevel=0.01)
+    rod("chain", (0, 0, 0.96), (0, 0, 0.5), 0.015, "steel", seg=6)
+    cyl("hub", 0.07, 0.12, (0, 0, 0.46), "dark", seg=10)
+    torus("ring", 0.34, 0.022, (0, 0, 0.42), "steel", seg=28, seg2=6)
+    bulbs_on, bulbs = [], []
+    for k in range(6):
+        a = 2 * math.pi * k / 6
+        e = Vector((math.cos(a) * 0.34, math.sin(a) * 0.34, 0.42))
+        rod("arm%d" % k, (0, 0, 0.44), tuple(e), 0.012, "steel", seg=5)
+        rod("chn%d" % k, (0, 0, 0.5), tuple(e + Vector((0, 0, 0.0))), 0.006, "dark", seg=4)
+        cyl("shade%d" % k, 0.04, 0.09, tuple(e - Vector((0, 0, 0.06))), "white", seg=10, r2=0.085)
+        cyl("sock%d" % k, 0.025, 0.04, tuple(e - Vector((0, 0, 0.03))), "dark", seg=8)
+    node("body")
+    for k in range(6):
+        a = 2 * math.pi * k / 6
+        e = Vector((math.cos(a) * 0.34, math.sin(a) * 0.34, 0.33))
+        cyl("bo%d" % k, 0.035, 0.06, tuple(e), "bulb_off", seg=8, r2=0.02)
+    node("bulbs")
+    for k in range(6):
+        a = 2 * math.pi * k / 6
+        e = Vector((math.cos(a) * 0.34, math.sin(a) * 0.34, 0.33))
+        cyl("bn%d" % k, 0.038, 0.064, tuple(e), "bulb_on", seg=8, r2=0.022)
+    node("lamp_on")
+    export("chandelier")
+
+
+def m_siren():
+    box("plate", (0.34, 0.06, 0.4), (0, 0.47, 0.55), "dark", bevel=0.01)
+    for sx in (-1, 1):
+        for sz in (-1, 1):
+            cyl("bolt%d%d" % (sx, sz), 0.02, 0.02, (sx * 0.12, 0.435, 0.55 + sz * 0.15), "steel", (math.radians(90), 0, 0), seg=6)
+    rod("arm", (0, 0.45, 0.55), (0, 0.2, 0.55), 0.04, "dark")
+    rx = (math.radians(90), 0, 0)
+    cyl("motor", 0.13, 0.22, (0, 0.12, 0.55), "siren", rx, seg=14)
+    cyl("motorc", 0.135, 0.03, (0, 0.24, 0.55), "dark", rx, seg=14)
+    for k in range(6):
+        box("fin%d" % k, (0.02, 0.18, 0.04), (0, 0.12, 0.55), "dark", (0, math.radians(60 * k), 0)) if False else None
+    cyl("stator", 0.19, 0.12, (0, -0.04, 0.55), "siren", rx, seg=16)
+    for k in range(8):
+        a = 2 * math.pi * k / 8
+        box("slot%d" % k, (0.06, 0.125, 0.05), (math.cos(a) * 0.17, -0.04, 0.55 + math.sin(a) * 0.17), "black", (0, -a, 0))
+    cyl("domef", 0.16, 0.05, (0, -0.12, 0.55), "siren", rx, seg=16, r2=0.12)
+    cyl("cable", 0.02, 0.4, (0.08, 0.45, 0.3), "rubber", seg=6)
+    cyl("lampb", 0.07, 0.04, (0, 0.12, 0.7), "dark", seg=10)
+    cyl("lampoff", 0.06, 0.08, (0, 0.12, 0.76), "beacon_off", seg=10, r2=0.04)
+    node("body")
+    for k in range(4):
+        a = math.pi * k / 2
+        box("blade%d" % k, (0.3, 0.025, 0.06), (math.cos(a) * 0.0, -0.165, 0.55), "steel", (0, -a, 0))
+    cyl("rcap", 0.05, 0.03, (0, -0.18, 0.55), "dark", rx, seg=10)
+    node("rotor", pivot=(0, -0.165, 0.55))
+    cyl("lampon", 0.062, 0.082, (0, 0.12, 0.76), "led_r", seg=10, r2=0.042)
+    node("lamp_on")
+    export("siren")
+
+
+def m_shelf_fallen():
+    # 2x3 storage shelf lying on its back along X, one end propped on a crate
+    for y in (-0.22, 0.22):
+        for z in (0.04, 0.56):
+            rod("up%d%d" % (int(y * 10), int(z * 10)), (-1.45, y, z), (1.4, y, z), 0.025, "dark")
+    for x in (-1.35, -0.45, 0.45, 1.3):
+        box("board%d" % int(x * 10), (0.03, 0.46, 0.56), (x, 0, 0.3), "steel")
+        for y in (-0.22, 0.22):
+            rod("x%d%d" % (int(x * 10), int(y * 10)), (x, y, 0.04), (x, y, 0.56), 0.02, "dark")
+    r = random.Random(9)
+    for k in range(7):
+        sx = -1.3 + k * 0.42
+        box("bx%d" % k, (0.26, 0.22, 0.2), (sx + r.random() * 0.1, -0.45 - r.random() * 0.1, 0.1), "cardbox", (0, 0, r.random() * 0.8))
+    box("bxopen", (0.3, 0.25, 0.04), (0.6, 0.4, 0.02), "cardbox", (0, 0, 0.4))
+    for k in range(5):
+        box("pp%d" % k, (0.2, 0.15, 0.006), (-1 + r.random() * 2, 0.32 + r.random() * 0.1, 0.004), "notes", (0, 0, r.random() * 3))
+    xform_parts((0, math.radians(-6), 0))
+    node("body")
+    export("shelf_fallen")
+
+
+def m_wall_notes():
+    box("board", (0.92, 0.04, 0.62), (0, 0.475, 0.5), "cork", bevel=0.005)
+    box("frame", (0.96, 0.03, 0.66), (0, 0.49, 0.5), "wood")
+    r = random.Random(3)
+    spots = [(-0.3, 0.62), (-0.05, 0.66), (0.22, 0.6), (-0.32, 0.36), (0.02, 0.38), (0.3, 0.34)]
+    pins = []
+    for k, (x, z) in enumerate(spots):
+        w, h = 0.18 + r.random() * 0.06, 0.2 + r.random() * 0.06
+        rot = (0, r.uniform(-0.25, 0.25), 0)
+        box("note%d" % k, (w, 0.006, h), (x, 0.452, z), "notes" if k != 4 else "black", rot)
+        if k == 4:
+            box("photo", (w - 0.03, 0.007, h - 0.03), (x, 0.449, z), "crt", rot)
+        cyl("pin%d" % k, 0.012, 0.02, (x, 0.44, z + h / 2 - 0.02), "red", (math.radians(90), 0, 0), seg=6)
+        pins.append(Vector((x, 0.438, z + h / 2 - 0.02)))
+    rod("string1", tuple(pins[0]), tuple(pins[4]), 0.003, "red", seg=4)
+    rod("string2", tuple(pins[4]), tuple(pins[2]), 0.003, "red", seg=4)
+    box("loose", (0.2, 0.006, 0.26), (0.36, 0.45, 0.12), "notes", (0, 0.6, 0))
+    node("body")
+    export("wall_notes")
+
+
+def m_desk_computer():
+    box("top", (1.9, 0.75, 0.05), (0.5, 0.05, 0.76), "wood", bevel=0.01)
+    box("drawers", (0.45, 0.68, 0.72), (1.2, 0.05, 0.37), "white", bevel=0.01)
+    for k in range(3):
+        box("dr%d" % k, (0.4, 0.01, 0.2), (1.2, -0.29, 0.6 - k * 0.23), "white")
+        box("dh%d" % k, (0.12, 0.02, 0.02), (1.2, -0.3, 0.62 - k * 0.23), "steel")
+    for (x, y) in ((-0.38, -0.27), (-0.38, 0.37), (0.9, 0.37)):
+        box("leg%d%d" % (int(x * 10), int(y * 10)), (0.05, 0.05, 0.74), (x, y, 0.37), "dark")
+    box("modesty", (1.25, 0.02, 0.4), (0.25, 0.4, 0.5), "white")
+    live, dead = [], []
+    box("crt", (0.48, 0.45, 0.4), (0.25, 0.17, 1.0), "crt", bevel=0.02)
+    box("crtback", (0.36, 0.25, 0.3), (0.25, 0.4, 0.98), "crt", bevel=0.02)
+    box("crtbase", (0.28, 0.25, 0.04), (0.25, 0.17, 0.8), "crt")
+    a, b = screen_pair("crt", (0.38, 0.3), (0.25, -0.06, 1.01), (0, 0, 0))
+    for o in (a, b):
+        PARTS.remove(o)
+    live.append(a)
+    dead.append(b)
+    box("kbd", (0.45, 0.16, 0.025), (0.25, -0.18, 0.795), "crt", (math.radians(5), 0, 0))
+    for k in range(4):
+        box("keys%d" % k, (0.4, 0.025, 0.006), (0.25, -0.235 + k * 0.035, 0.81), "dark", (math.radians(5), 0, 0))
+    box("mouse", (0.05, 0.08, 0.025), (0.6, -0.15, 0.795), "crt")
+    cyl("mug", 0.04, 0.09, (0.85, 0.15, 0.83), "white", seg=10)
+    box("phone", (0.2, 0.18, 0.06), (-0.25, 0.15, 0.81), "black", (0, 0, 0.3))
+    r = random.Random(7)
+    for k in range(5):
+        box("pp%d" % k, (0.21, 0.29, 0.004), (-0.25 + r.random() * 0.4, -0.12 + r.random() * 0.15, 0.786 + k * 0.003), "notes", (0, 0, r.uniform(-0.6, 0.6)))
+    box("folder", (0.24, 0.31, 0.02), (1.05, -0.1, 0.795), "teal", (0, 0, 0.2))
+    node("body")
+    finish_screens(live, dead)
+    export("desk_computer")
+
+
+def m_table_flipped():
+    # lab table knocked onto its side: top is now a vertical wall at the back, legs point at the viewer
+    box("top", (1.9, 0.75, 0.05), (0.5, 0.05, 0.76), "white", bevel=0.01)
+    box("edge", (1.92, 0.77, 0.03), (0.5, 0.05, 0.73), "teal")
+    for x in (-0.4, 1.4):
+        for y in (-0.28, 0.38):
+            box("leg%d%d" % (int(x * 10), int(y * 10)), (0.05, 0.05, 0.72), (x, y, 0.37), "steel")
+    box("rail", (1.8, 0.03, 0.06), (0.5, 0.38, 0.12), "steel")
+    xform_parts((math.radians(-90), 0, 0), (0, 0.35, 0))
+    r = random.Random(11)
+    for k in range(4):
+        cyl("bk%d" % k, 0.035, 0.1, (r.random() * 1.6 - 0.3, -0.2 - r.random() * 0.25, 0.035), "glass",
+            (math.radians(90), 0, r.random() * 3), seg=8)
+    for k in range(4):
+        box("pp%d" % k, (0.21, 0.29, 0.004), (r.random() * 1.6 - 0.3, -0.1 - r.random() * 0.3, 0.003 + k * 0.002), "notes", (0, 0, r.random() * 3))
+    box("glassbits", (0.2, 0.15, 0.01), (0.9, -0.35, 0.005), "glass", (0, 0, 0.7))
+    node("body")
+    export("table_flipped")
+
+
+def m_barrels():
+    cyl("b1", 0.26, 0.86, (-0.2, 0.22, 0.43), "barrel", seg=16)
+    for z in (0.22, 0.64):
+        torus("b1r%d" % int(z * 10), 0.262, 0.015, (-0.2, 0.22, z), "dark", seg=16, seg2=4)
+    cyl("b1t", 0.24, 0.01, (-0.2, 0.22, 0.865), "dark", seg=16)
+    cyl("b1c", 0.04, 0.02, (-0.1, 0.3, 0.87), "steel", seg=8)
+    rot = (0, math.radians(90), math.radians(-12))
+    d = Euler(rot).to_matrix() @ Vector((0, 0, 1))
+    c = Vector((0.06, -0.24, 0.26))
+    cyl("b2", 0.26, 0.8, tuple(c), "rust", rot, seg=16)
+    for k in (-1, 1):
+        torus("b2r%d" % k, 0.262, 0.015, tuple(c + d * 0.2 * k), "dark", rot, seg=16, seg2=4)
+    cyl("puddle", 0.32, 0.004, (0.3, -0.05, 0.003), "puddle", seg=14)
+    node("body")
+    export("barrels")
+
+
+def m_fire_extinguisher():
+    box("plate", (0.22, 0.03, 0.12), (0, 0.48, 0.55), "dark")
+    rod("strap", (-0.1, 0.42, 0.5), (0.1, 0.42, 0.5), 0.012, "dark", seg=4)
+    cyl("tank", 0.09, 0.46, (0, 0.36, 0.38), "extinguisher", seg=14)
+    cyl("dome", 0.09, 0.05, (0, 0.36, 0.635), "extinguisher", seg=14, r2=0.04)
+    cyl("valve", 0.03, 0.08, (0, 0.36, 0.69), "steel", seg=8)
+    box("handle", (0.12, 0.03, 0.02), (0.03, 0.36, 0.74), "black", (0, math.radians(-10), 0))
+    cyl("gauge", 0.025, 0.02, (0.03, 0.32, 0.69), "white", (math.radians(90), 0, 0), seg=10)
+    rod("hose1", (-0.03, 0.36, 0.7), (-0.1, 0.3, 0.6), 0.012, "rubber", seg=5)
+    rod("hose2", (-0.1, 0.3, 0.6), (-0.11, 0.27, 0.3), 0.012, "rubber", seg=5)
+    cyl("nozzle", 0.02, 0.06, (-0.11, 0.27, 0.26), "black", seg=6)
+    node("body")
+    export("fire_extinguisher")
+
+
+def m_box_pile():
+    r = random.Random(13)
+    specs = [((0.5, 0.42, 0.36), (-0.18, 0.15, 0.18), 0.1), ((0.42, 0.38, 0.3), (0.22, 0.2, 0.15), -0.15),
+             ((0.38, 0.34, 0.3), (0.0, 0.16, 0.51), 0.35), ((0.3, 0.28, 0.24), (0.18, -0.22, 0.12), 0.6)]
+    for k, (sz, loc, rz) in enumerate(specs):
+        box("bx%d" % k, sz, loc, "cardbox", (0, 0, rz), bevel=0.008)
+        box("tape%d" % k, (0.06, sz[1] + 0.004, sz[2] + 0.004), loc, "yellow" if k % 2 else "white", (0, 0, rz))
+        box("lbl%d" % k, (0.12, 0.004, 0.08), (loc[0], loc[1] - sz[1] / 2 - 0.003, loc[2]), "notes", (0, 0, 0)) if rz == 0 else None
+    box("flap", (0.28, 0.16, 0.01), (0.25, -0.3, 0.25), "cardbox", (math.radians(40), 0, 0.6))
+    node("body")
+    export("box_pile")
+
+
+def m_paper_pile():
+    r = random.Random(17)
+    for k in range(14):
+        box("pp%d" % k, (0.21, 0.29, 0.004), (r.uniform(-0.4, 0.4), r.uniform(-0.4, 0.4), 0.003 + k * 0.0025), "notes", (0, 0, r.random() * 3))
+    for k, c in enumerate(("teal", "red", "olive")):
+        box("fold%d" % k, (0.25, 0.32, 0.015), (r.uniform(-0.3, 0.3), r.uniform(-0.3, 0.3), 0.04 + k * 0.016), c, (0, 0, r.random() * 3))
+    box("binder", (0.08, 0.3, 0.26), (0.3, 0.25, 0.04), "dark", (math.radians(90), 0, 0.5))
+    node("body")
+    export("paper_pile")
+
+
+def m_chair_fallen():
+    for k in range(5):
+        a = 2 * math.pi * k / 5
+        rod("leg%d" % k, (0, 0, 0.1), (math.cos(a) * 0.3, math.sin(a) * 0.3, 0.06), 0.02, "dark")
+        cyl("wheel%d" % k, 0.035, 0.03, (math.cos(a) * 0.3, math.sin(a) * 0.3, 0.035), "black", (0, math.radians(90), a), seg=8)
+    cyl("gas", 0.03, 0.35, (0, 0, 0.28), "steel", seg=10)
+    box("seat", (0.48, 0.46, 0.08), (0, 0, 0.5), "black", bevel=0.03)
+    rod("back", (0, 0.2, 0.5), (0, 0.24, 0.75), 0.025, "dark")
+    box("backrest", (0.44, 0.07, 0.42), (0, 0.25, 0.92), "black", (math.radians(-8), 0, 0), bevel=0.03)
+    for sx in (-1, 1):
+        rod("arm%d" % sx, (sx * 0.24, 0.05, 0.5), (sx * 0.24, 0.05, 0.68), 0.015, "dark")
+        box("armp%d" % sx, (0.06, 0.25, 0.03), (sx * 0.24, 0.02, 0.69), "black")
+    xform_parts((0, math.radians(84), math.radians(30)), (0.1, 0, 0))
+    node("body")
+    export("chair_fallen")
+
+
+# ====================================================================================== capsule / shaft
+def m_capsule():
+    live, dead = [], []
+    S, C, R = 10.4, Vector((0, 0, 4.6)), 4.5
+    box("deck", (S, S, 0.35), (0, 0, 0.825), "capdeck", bevel=0.03)
+    for k, (x, y, w, d) in enumerate(((0, -S / 2 + 0.2, S - 0.1, 0.3), (0, S / 2 - 0.2, S - 0.1, 0.3),
+                                       (-S / 2 + 0.2, 0, 0.3, S - 0.1), (S / 2 - 0.2, 0, 0.3, S - 0.1))):
+        box("hz%d" % k, (w, d, 0.02), (x, y, 1.005), "hazard")
+    for k in range(-2, 3):
+        box("beamx%d" % k, (S - 0.4, 0.3, 0.5), (0, k * 2.2, 0.35), "dark")
+    box("beamy", (0.3, S - 0.4, 0.5), (0, 0, 0.3), "dark")
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            cyl("roll%d%d" % (sx, sy), 0.16, 0.9, (sx * (S / 2 - 0.2), sy * (S / 2 - 0.2), 0.45), "steel", seg=12)
+    torus("base", 2.75, 0.13, (0, 0, 1.06), "steel", seg=48, seg2=8)
+    torus("equator", R + 0.02, 0.07, tuple(C), "dark", seg=64, seg2=6)
+    for k in range(4):
+        torus("mer%d" % k, R + 0.02, 0.055, tuple(C), "steel", (math.radians(90), 0, math.radians(45 * k + 22.5)), seg=64, seg2=6)
+    cyl("cap", 0.75, 0.3, (0, 0, C.z + R - 0.05), "dark", seg=24)
+    cyl("cap2", 0.45, 0.2, (0, 0, C.z + R + 0.15), "white", seg=20)
+    cyl("beacon0", 0.2, 0.25, (0, 0, C.z + R + 0.35), "beacon_off", seg=12, r2=0.12)
+    # vestibule with two sliding iron doors (front = -Y)
+    VY0, VY1, VW, VH = -2.3, -4.05, 1.3, 4.0
+    for sx in (-1, 1):
+        box("vwall%d" % sx, (0.14, VY0 - VY1, VH - 1.0), (sx * VW, (VY0 + VY1) / 2, (VH + 1.0) / 2), "steel")
+        box("pocket%d" % sx, (1.3, 0.32, VH - 1.0), (sx * (VW + 0.65), VY1 + 0.05, (VH + 1.0) / 2), "white", bevel=0.02)
+        box("pband%d" % sx, (1.32, 0.34, 0.12), (sx * (VW + 0.65), VY1 + 0.05, 2.0), "teal")
+    box("vroof", (2 * VW + 2.6, (VY0 - VY1) + 0.2, 0.18), (0, (VY0 + VY1) / 2, VH + 0.05), "white", bevel=0.02)
+    box("vstripe", (2 * VW + 2.6, 0.05, 0.1), (0, VY1 - 0.1, VH + 0.05), "hazard")
+    box("vlamp0", (0.5, 0.06, 0.08), (0, VY1 - 0.15, VH + 0.05), "beacon_off")
+    # console with monitor + PC (back)
+    box("desk", (1.5, 0.6, 0.85), (0, 1.75, 1.43), "white", bevel=0.03)
+    box("deskband", (1.52, 0.62, 0.07), (0, 1.75, 1.6), "teal")
+    box("deskslope", (1.5, 0.45, 0.06), (0, 1.55, 1.9), "dark", (math.radians(-18), 0, 0))
+    monitor("mon", 0.8, 0.5, (0, 1.9, 2.35), tilt=-8, live=live, dead=dead)
+    rod("monpost", (0, 2.0, 1.86), (0, 2.0, 2.15), 0.04, "steel")
+    box("pc", (0.28, 0.5, 0.55), (1.05, 1.75, 1.28), "dark", bevel=0.01)
+    box("pcled", (0.02, 0.01, 0.02), (1.0, 1.495, 1.45), "led_g")
+    box("kbd", (0.5, 0.16, 0.025), (0, 1.48, 1.94), "crt", (math.radians(-18), 0, 0))
+    cyl("stool", 0.22, 0.06, (0, 0.95, 1.55), "black", seg=14)
+    cyl("stoolp", 0.04, 0.5, (0, 0.95, 1.27), "steel", seg=8)
+    cyl("stoolb", 0.25, 0.04, (0, 0.95, 1.02), "dark", seg=14)
+    node("body")
+    # glass sphere with a hole where the vestibule joins
+    bm = bmesh.new()
+    bmesh.ops.create_uvsphere(bm, u_segments=40, v_segments=20, radius=R)
+    kill = [f for f in bm.faces if (abs(f.calc_center_median().x) < VW and f.calc_center_median().y < -1.0
+                                    and f.calc_center_median().z + C.z < VH)
+            or f.calc_center_median().z + C.z < 0.95]
+    bmesh.ops.delete(bm, geom=kill, context='FACES')
+    _obj("sphere", bm, "glass", tuple(C), (0, 0, 0))
+    node("glass")
+    for sx, nm in ((-1, "door_l"), (1, "door_r")):
+        x = sx * VW / 2
+        box("leaf" + nm, (VW - 0.02, 0.09, VH - 1.05), (x, VY1 + 0.05, (VH + 1.0) / 2), "steel", bevel=0.01)
+        box("band" + nm, (VW, 0.1, 0.1), (x, VY1 + 0.05, 2.0), "dark")
+        cyl("win" + nm, 0.18, 0.1, (x, VY1 + 0.05, 2.9), "glass", (math.radians(90), 0, 0), seg=16)
+        torus("winr" + nm, 0.19, 0.03, (x, VY1 + 0.0, 2.9), "dark", (math.radians(90), 0, 0), seg=16, seg2=4)
+        box("seal" + nm, (0.03, 0.11, VH - 1.05), (sx * 0.015, VY1 + 0.05, (VH + 1.0) / 2), "rubber")
+        node(nm, pivot=(x, VY1 + 0.05, 2.5))
+    torus("ringlight", 2.62, 0.04, (0, 0, 1.08), "core", seg=48, seg2=4)
+    cyl("beacon1", 0.21, 0.26, (0, 0, C.z + R + 0.35), "core", seg=12, r2=0.13)
+    box("vlamp1", (0.52, 0.065, 0.085), (0, VY1 - 0.155, VH + 0.05), "led_g")
+    node("lights_on")
+    finish_screens(live, dead)
+    export("capsule")
+
+
+def m_shaft_hatch():
+    H = 5.45
+    for sx, nm in ((-1, "leaf_l"), (1, "leaf_r")):
+        xc = sx * H / 2
+        ob = box("plate" + nm, (H, 2 * H, 0.1), (xc, 0, 0.95), "hatch")
+        fit_uv(ob, min(0, sx * H), max(0, sx * H), -H, H)
+        for k in range(3):
+            box("rib%s%d" % (nm, k), (0.12, 2 * H - 0.2, 0.22), (sx * (0.9 + k * 1.75), 0, 0.79), "dark")
+        for k in range(4):
+            box("cross%s%d" % (nm, k), (H - 0.2, 0.12, 0.18), (xc, -H + 1.4 + k * 2.75, 0.81), "dark")
+        box("edge" + nm, (0.1, 2 * H, 0.18), (sx * 0.05, 0, 0.9), "hazard")
+        for k in range(4):
+            cyl("hinge%s%d" % (nm, k), 0.08, 1.2, (sx * H, -H + 1.2 + k * 2.9, 0.92), "steel", (math.radians(90), 0, 0), seg=10)
+        node(nm, pivot=(sx * H, 0, 0.92))
+    export("shaft_hatch")
+
+
+def m_scan_ring():
+    for k, (r, m) in enumerate(((1.0, "core"),)):
+        bm = bmesh.new()
+        bmesh.ops.create_cone(bm, cap_ends=False, cap_tris=False, segments=96, radius1=r, radius2=r, depth=0.14)
+        inner = [f.copy() for f in list(bm.faces)]
+        for f in inner:
+            f.normal_flip()
+        _obj("ring%d" % k, bm, m, (0, 0, 0.07), (0, 0, 0))
+    node("ring")
+    export("scan_ring")
+
 
 
 ALL = {k[2:]: v for k, v in list(globals().items()) if k.startswith("m_") and callable(v)}
