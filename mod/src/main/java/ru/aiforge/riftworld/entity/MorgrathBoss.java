@@ -48,10 +48,10 @@ import ru.aiforge.riftworld.registry.ModItems;
  */
 public class MorgrathBoss extends RiftMob {
     public static final int A_IDLE = 0, A_WALK = 1, A_AWAKEN = 2, A_OVER = 3, A_PULL = 4, A_SIDE = 5, A_DIAG = 6, A_PULL_DIAG = 7,
-            A_ROAR = 8, A_CLIMB = 9, A_DEATH = 10, A_DEAD = 11, A_LUNGE = 12, A_SCRAPE = 13;
+            A_ROAR = 8, A_CLIMB = 9, A_DEATH = 10, A_DEAD = 11, A_LUNGE = 12, A_SCRAPE = 13, A_STAGGER = 14;
     private static final String[] CLIPS = {"idle", "walk", "awaken", "swing_over", "pull", "swing_side", "swing_diag", "pull_diag",
-            "roar", "climb", "death", "dead", "lunge", "scrape"};
-    enum S { DORMANT, RISING, WAITING, ROAR, FIGHT, ATTACK, PULL, CLIMB_GO, CLIMB, HOP }
+            "roar", "climb", "death", "dead", "lunge", "scrape", "stagger"};
+    enum S { DORMANT, RISING, WAITING, ROAR, FIGHT, ATTACK, PULL, CLIMB_GO, CLIMB, HOP, STAGGER }
 
     static final int RISE_T = 92, ROAR_T = 44, SUMMON_AT = 20, LIE_T = 340;
     /** Lunge: crouch (direction tracks until LUNGE_LOCK), leap LUNGE_GO..LUNGE_HIT, cut. Scrape: blade drags, rips at SCRAPE_HIT. */
@@ -62,7 +62,10 @@ public class MorgrathBoss extends RiftMob {
     S state = S.FIGHT;
     int st, atk, cooldown = 30, twitch, twitchYaw, climbTicks, lungeCd = 60, scrapeCd = 100, farTicks;
     boolean second, combo;
-    int stuckTicks;
+    int stuckTicks, staggerCd, recentT;
+    float recentDmg;
+    /** Client: walk-cycle phase of the previous tick (footstep dust). */
+    private float cStepPhase = -1;
     @Nullable Player pendingClimb;
     /** Fire waves still running across the floor after a scrape: {x, y, z, dirX, dirZ, step}. */
     final List<double[]> waves = new ArrayList<>();
@@ -168,6 +171,33 @@ public class MorgrathBoss extends RiftMob {
         return state == S.DORMANT || state == S.RISING || state == S.WAITING;
     }
 
+    /** Client: heavy footfalls in sync with the walk clip (contacts at ~5 % and ~55 % of the 1.2 s cycle). */
+    private void footsteps() {
+        if (anim() != A_IDLE || walkAnimation.speed() < 0.08F || !onGround()) {
+            cStepPhase = -1;
+            return;
+        }
+        float ph = (walkAnimation.position() * strideScale() / 1.2F) % 1.0F;
+        if (ph < 0) ph += 1.0F;
+        float prev = cStepPhase;
+        cStepPhase = ph;
+        if (prev < 0) return;
+        boolean left = crossed(prev, ph, 0.05F), right = crossed(prev, ph, 0.55F);
+        if (!left && !right) return;
+        Vec3 f = forward(yBodyRot), sd = new Vec3(f.z, 0, -f.x).scale(left ? 0.38 : -0.38);
+        double x = getX() + sd.x + f.x * 0.3, z = getZ() + sd.z + f.z * 0.3;
+        for (int k = 0; k < 5; ++k) {
+            level().addParticle(ParticleTypes.CAMPFIRE_COSY_SMOKE, x + (random.nextDouble() - 0.5) * 0.5, getY() + 0.05,
+                    z + (random.nextDouble() - 0.5) * 0.5, (random.nextDouble() - 0.5) * 0.02, 0.006, (random.nextDouble() - 0.5) * 0.02);
+        }
+        level().addParticle(ParticleTypes.SMALL_FLAME, x, getY() + 0.05, z, 0, 0.01, 0);
+        level().playLocalSound(x, getY(), z, SoundEvents.RAVAGER_STEP, getSoundSource(), 0.9F, 0.55F + random.nextFloat() * 0.1F, false);
+    }
+
+    private static boolean crossed(float a, float b, float m) {
+        return a <= b ? a < m && b >= m : a < m || b >= m;
+    }
+
     private void go(S s) {
         state = s;
         st = 0;
@@ -185,6 +215,7 @@ public class MorgrathBoss extends RiftMob {
     public void aiStep() {
         super.aiStep();
         if (level().isClientSide) {
+            footsteps();
             if (!isDeadOrDying() && random.nextInt(3) == 0 && anim() != A_DEAD) {
                 Vec3 f = forward(yBodyRot);
                 level().addParticle(ParticleTypes.SMALL_FLAME, getX() + f.x * 0.8 + (random.nextDouble() - 0.5) * 0.3, getY() + 2.45,
@@ -198,6 +229,7 @@ public class MorgrathBoss extends RiftMob {
         if (cooldown > 0) --cooldown;
         if (lungeCd > 0) --lungeCd;
         if (scrapeCd > 0) --scrapeCd;
+        if (staggerCd > 0) --staggerCd;
         if (!waves.isEmpty()) tickWaves(sl);
         if (tickCount % 10 == 0) updateBar(sl);
         LivingEntity tgt = target(sl);
@@ -253,6 +285,20 @@ public class MorgrathBoss extends RiftMob {
                     go(S.FIGHT);
                     setAnim(A_IDLE);
                     cooldown = 16 + random.nextInt(14);
+                }
+            }
+            case STAGGER -> {
+                // knocked off balance by a heavy blow: reels back and recovers - a short opening, no attacks
+                getNavigation().stop();
+                if (st == 1) {
+                    sound(SoundEvents.WARDEN_HURT, 2.0F, 0.5F);
+                    sound(SoundEvents.ANVIL_PLACE, 0.6F, 0.5F);
+                }
+                if (st == 11) sound(SoundEvents.RAVAGER_STEP, 1.6F, 0.5F);
+                if (st >= 20) {
+                    go(S.FIGHT);
+                    setAnim(A_IDLE);
+                    cooldown = 8;
                 }
             }
             case CLIMB_GO -> climbGo(tgt);
@@ -733,7 +779,20 @@ public class MorgrathBoss extends RiftMob {
             }
         }
         if (state == S.PULL || state == S.ATTACK && (atk == A_OVER || atk == A_DIAG) && st > (atk == A_OVER ? OVER_HIT : DIAG_HIT)) amount *= 1.5F;   // scythe stuck
-        return super.hurt(src, amount);
+        boolean ok = super.hurt(src, amount);
+        if (ok && !level().isClientSide && !isDeadOrDying()) {
+            // 24+ damage within 1.5 s (a scythe super attack, a crit into the stuck scythe...) staggers him
+            if (tickCount - recentT > 30) recentDmg = 0;
+            recentT = tickCount;
+            recentDmg += amount;
+            if (recentDmg >= 24 && staggerCd <= 0 && (state == S.FIGHT || state == S.PULL)) {
+                recentDmg = 0;
+                staggerCd = 240;
+                go(S.STAGGER);
+                setAnim(A_STAGGER, true);
+            }
+        }
+        return ok;
     }
 
     @Override

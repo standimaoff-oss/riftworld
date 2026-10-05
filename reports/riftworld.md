@@ -507,3 +507,20 @@ Passable: chandelier, sconce, shackles, tapestry, bones. New 16×16 blocks: `cas
   top of their volumetric light. The glass itself keeps light 10 + emissive faces.
 - Geometry refresh spread over frames (≤ 48 columns/frame, every 5 in-game seconds), range 72 blocks.
 - Verified live at 2500 / 3000 / 5200 / 6000 / 9800 / 16000 ticks; screenshots `release/riftworld_screens/session12/`.
+
+## Part A-4 — final polish (v0.6.0, Part A complete)
+
+- **Boss stagger** (new Blender clip `stagger`, 1.0 s): 24+ damage within 1.5 s while he is idle/walking or pulling a stuck
+  scythe (scythe super attacks, crits into the stuck scythe) knocks him off balance — reels back with arms and scythe flung
+  out, jaw open, head snapping aside, then a low crouch and recovery. 20 ticks without attacks = a punish window;
+  cooldown 12 s so it can't be chain-locked. Sounds: warden hurt + metal clang + heavy step.
+- **Hit reactions on top of any clip** (`RiftMobRenderer`): on every hit the torso jerks back and the head snaps sideways,
+  decaying over ~0.5 s (guards 22°, boss 11°) — reactions now visible even mid-swing.
+- **Heavy footfalls**: client-side dust puffs + an ember spark and a low step sound exactly at the walk clip's foot contacts.
+- **Window light patch follows the geometry**: the coloured leaded patch is now projected on a half-pane grid (each grid
+  point marched separately), so it lies on the dais steps, kerbs and wall bases instead of stretching over vertical faces;
+  cells torn across very different surfaces are skipped. Refresh budget lowered to 12 columns/frame.
+- Verified live (survival + resistance): stagger triggers from FIGHT (not during attack swings; PULL path same code, not separately filmed); recovers into
+  normal combat; patches on stairs at noon and on the floor in the morning; no exceptions. Screenshots: `session13/`.
+- Lightweight biome + structure for normal play = the Ashen Lands (R≈235, burnt islands, fallen islands with ruined house and
+  broken bridge, lava meanders) + the castle, located with the castle compass — already shipped in A-1..A-3.

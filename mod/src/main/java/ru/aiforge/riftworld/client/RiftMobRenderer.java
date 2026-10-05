@@ -137,6 +137,21 @@ public class RiftMobRenderer<T extends RiftMob> extends EntityRenderer<T> {
             pose.rotateInModel(head, new Quaternionf().rotationY(-rel * 0.6F).rotateX(pitch * 0.8F).rotateZ(roll * Mth.DEG_TO_RAD));
             pose.compute();
         }
+        if (e.hurtTime > 0 && e.isAlive()) {
+            // hit reaction on top of any clip: the torso jerks back and the head snaps aside, decaying over ~0.5 s
+            float k = (e.hurtTime - partial) / Math.max(1, e.hurtDuration);
+            float amp = (e instanceof EmberGuard ? 22.0F : 11.0F) * k * k * Mth.DEG_TO_RAD;
+            float side = (e.getId() & 1) == 0 ? 1.0F : -1.0F;
+            int chest = m.nodeIndex("chest"), head = m.nodeIndex("head");
+            if (chest >= 0) {
+                pose.rotateInModel(chest, new Quaternionf().rotationX(-amp).rotateZ(amp * 0.4F * side));
+                pose.compute();
+            }
+            if (head >= 0) {
+                pose.rotateInModel(head, new Quaternionf().rotationY(amp * 1.4F * side).rotateX(-amp * 0.6F));
+                pose.compute();
+            }
+        }
         float bodyYaw = Mth.rotLerp(partial, e.yBodyRotO, e.yBodyRot);
         ps.pushPose();
         ps.mulPose(Axis.YP.rotationDegrees(-bodyYaw));

@@ -477,6 +477,19 @@ def m_boss():
                     "thigh_L": (-40, 0, 0), "shin_L": (30, 0, 0), "thigh_R": (22, 0, 0), "shin_R": (20, 0, 0),
                     "arm_R": (-84, 0, 0), "fore_R": (-6, 0, 0), "arm_L": (-80, 20, 0), "fore_L": (-8, 0, 0), "scythe": (52, 0, 0)}),
             (1.7, I)],
+        # stagger: a heavy blow knocks him off balance - reels back, scythe arm flung out, head snaps aside, recovers
+        "stagger": [
+            (0, I),
+            (0.12, {"root_loc": (0, 0.22, -0.06), "chest": (-24, 0, 14), "hips": (-6, 0, 4), "neck": (-20, 0, -18), "head": (-26, 0, -34), "jaw": (44, 0, 0),
+                    "arm_L": (-30, -62, 0), "fore_L": (-34, 0, 0), "arm_R": (-36, 58, 0), "fore_R": (-28, 0, 0), "scythe": (-10, 0, 40),
+                    "thigh_L": (12, 0, 0), "shin_L": (14, 0, 0), "thigh_R": (-30, 0, 0), "shin_R": (34, 0, 0)}),
+            (0.3, {"root_loc": (0, 0.34, -0.12), "chest": (-14, 0, 20), "hips": (-4, 0, 6), "neck": (-12, 0, -22), "head": (-18, 0, -26), "jaw": (36, 0, 0),
+                   "arm_L": (-20, -70, 0), "fore_L": (-30, 0, 0), "arm_R": (-30, 62, 0), "fore_R": (-24, 0, 0), "scythe": (-6, 0, 46),
+                   "thigh_L": (20, 0, 0), "shin_L": (20, 0, 0), "thigh_R": (-42, 0, 0), "shin_R": (52, 0, 0)}),
+            (0.55, {"root_loc": (0, 0.2, -0.22), "chest": (30, 0, -6), "neck": (-30, 0, 8), "head": (-10, 0, 12), "jaw": (30, 0, 0),
+                    "arm_L": (-40, -20, 0), "fore_L": (-40, 0, 0), "arm_R": (-20, 20, 0), "fore_R": (-30, 0, 0), "scythe": (20, 0, 10),
+                    "thigh_L": (-50, 0, 0), "shin_L": (64, 0, 0), "thigh_R": (-30, 0, 0), "shin_R": (40, 0, 0)}),
+            (0.75, P(I, head=(-6, 0, 26), neck=(0, 0, 8), jaw=(20, 0, 0))), (0.82, P(I, head=(-4, 0, -18))), (1.0, I)],
         # «Огненный разрез»: the blade drags through the floor on his right, then rips across - a wave of fire runs at the player
         "scrape": [
             (0, I),

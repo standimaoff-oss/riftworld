@@ -70,6 +70,7 @@ public final class WindowLights {
         long geomKey = Long.MIN_VALUE;
         Vec3 dir;                // light direction used for the geometry
         double lenB, lenT;       // distance from the bottom/top edge to the hit along dir
+        float[][] grid;          // hit distance per projection grid point [3 across][2h+1 up] (-1 = no hit)
         float power;             // 0..1 (0 = no shaft now)
 
         Col(BlockPos base, int h, int axis) {
@@ -157,7 +158,7 @@ public final class WindowLights {
     }
 
     private static double march(ClientLevel lvl, Vec3 from, Vec3 d, double skip) {
-        for (double t = skip; t < MAX_LEN; t += 0.2) {
+        for (double t = skip; t < MAX_LEN; t += 0.25) {
             if (solidAt(lvl, from.add(d.scale(t)))) return t;
         }
         return -1;
@@ -205,6 +206,16 @@ public final class WindowLights {
         double skip = 1.6 / Math.max(Math.abs(d.dot(inward)), 0.2);      // pass the deep window reveal and its sill
         double lb = march(lvl, o.add(0, 0.05, 0), d, skip), lt = march(lvl, o.add(0, c.h - 0.05, 0), d, skip);
         if (lb < 0 || lt < 0) return;
+        // projection grid (half-pane resolution) so the coloured patch follows steps, kerbs and wall bases
+        Vec3 a = along(c);
+        float[][] g = new float[3][2 * c.h + 1];
+        for (int i = 0; i < 3; ++i) {
+            for (int j = 0; j <= 2 * c.h; ++j) {
+                double vy = Mth.clamp(j * 0.5, 0.05, c.h - 0.05);
+                g[i][j] = (float) march(lvl, o.add(a.scale((i - 1) * 0.49)).add(0, vy, 0), d, skip);
+            }
+        }
+        c.grid = g;
         c.dir = d;
         c.lenB = lb;
         c.lenT = lt;
@@ -228,7 +239,7 @@ public final class WindowLights {
                 : (float) Mth.clamp(-sun.y * 4.0, 0.0, 1.0) * 0.32F;
         long key = (long) Math.floor(lvl.getDayTime() / 100.0) * 2 + (day ? 1 : 0);
         List<Col> vis = new ArrayList<>();
-        int budget = 48;                                            // geometry refreshes per frame (spread out)
+        int budget = 12;                                            // geometry refreshes per frame (spread out)
         for (List<Col> l : CHUNKS.values()) {
             for (Col c : l) {
                 if (c.base.distToCenterSqr(cam) > RANGE * RANGE) continue;
@@ -307,23 +318,31 @@ public final class WindowLights {
     }
 
     private static void patch(BufferBuilder bb, Matrix4f m, Col c, Vec3 cam, TextureAtlasSprite sp, float moon) {
+        if (c.grid == null) return;
         Vec3 a = along(c), d = c.dir;
         Vec3 o = Vec3.atBottomCenterOf(c.base);
         Vec3 lift = d.scale(-0.03);
         int alpha = (int) (255 * 0.8F * c.power);
         int r = moon > 0 ? 150 : 255, g = moon > 0 ? 175 : 245, b = moon > 0 ? 255 : 225;
         float u0 = sp.getU0(), u1 = sp.getU1(), v0 = sp.getV0(), v1 = sp.getV1();
-        for (int k = 0; k < c.h; ++k) {
-            // one textured cell per pane: the pane's corners projected along the light onto the surface it hits
-            double fl = c.lenB + (c.lenT - c.lenB) * k / c.h, fh = c.lenB + (c.lenT - c.lenB) * (k + 1) / c.h;
-            Vec3 lo0 = o.subtract(a.scale(0.5)).add(0, k, 0), lo1 = o.add(a.scale(0.5)).add(0, k, 0);
-            Vec3 p00 = lo0.add(d.scale(fl)).add(lift), p10 = lo1.add(d.scale(fl)).add(lift);
-            Vec3 p11 = lo1.add(0, 1, 0).add(d.scale(fh)).add(lift), p01 = lo0.add(0, 1, 0).add(d.scale(fh)).add(lift);
-            Vector3f q;
-            q = v(p00, cam); bb.vertex(m, q.x, q.y, q.z).color(r, g, b, alpha).uv(u0, v1).endVertex();
-            q = v(p10, cam); bb.vertex(m, q.x, q.y, q.z).color(r, g, b, alpha).uv(u1, v1).endVertex();
-            q = v(p11, cam); bb.vertex(m, q.x, q.y, q.z).color(r, g, b, alpha).uv(u1, v0).endVertex();
-            q = v(p01, cam); bb.vertex(m, q.x, q.y, q.z).color(r, g, b, alpha).uv(u0, v0).endVertex();
+        float[][] gr = c.grid;
+        for (int i = 0; i < 2; ++i) {
+            for (int j = 0; j < 2 * c.h; ++j) {
+                float l00 = gr[i][j], l10 = gr[i + 1][j], l11 = gr[i + 1][j + 1], l01 = gr[i][j + 1];
+                if (l00 < 0 || l10 < 0 || l11 < 0 || l01 < 0) continue;
+                // skip cells torn across very different surfaces (e.g. one corner on the gallery, one on the floor)
+                float mx = Math.max(Math.max(l00, l10), Math.max(l11, l01)), mn = Math.min(Math.min(l00, l10), Math.min(l11, l01));
+                if (mx - mn > 3.5F) continue;
+                Vec3 s00 = o.add(a.scale(i * 0.5 - 0.5)).add(0, j * 0.5, 0), s10 = o.add(a.scale(i * 0.5)).add(0, j * 0.5, 0);
+                Vec3 s11 = s10.add(0, 0.5, 0), s01 = s00.add(0, 0.5, 0);
+                float uA = Mth.lerp(i * 0.5F, u0, u1), uB = Mth.lerp(i * 0.5F + 0.5F, u0, u1);
+                float vB = (j & 1) == 0 ? v1 : Mth.lerp(0.5F, v0, v1), vT = (j & 1) == 0 ? Mth.lerp(0.5F, v0, v1) : v0;
+                Vector3f q;
+                q = v(s00.add(d.scale(l00)).add(lift), cam); bb.vertex(m, q.x, q.y, q.z).color(r, g, b, alpha).uv(uA, vB).endVertex();
+                q = v(s10.add(d.scale(l10)).add(lift), cam); bb.vertex(m, q.x, q.y, q.z).color(r, g, b, alpha).uv(uB, vB).endVertex();
+                q = v(s11.add(d.scale(l11)).add(lift), cam); bb.vertex(m, q.x, q.y, q.z).color(r, g, b, alpha).uv(uB, vT).endVertex();
+                q = v(s01.add(d.scale(l01)).add(lift), cam); bb.vertex(m, q.x, q.y, q.z).color(r, g, b, alpha).uv(uA, vT).endVertex();
+            }
         }
     }
 
