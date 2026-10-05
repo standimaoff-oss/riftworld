@@ -2,8 +2,8 @@
   "replace": false,
   "values": [
     "riftworld:shelf",
-    "riftworld:crate_wood",
     "riftworld:lab_table",
+    "riftworld:crate_wood",
     "riftworld:sizo_log",
     "riftworld:ambra_log",
     "riftworld:sizo_planks",
@@ -55,6 +55,21 @@
     "riftworld:cooking_pot",
     "riftworld:wanted_wall",
     "riftworld:crate_stack",
-    "riftworld:lantern_hanging"
+    "riftworld:lantern_hanging",
+    "riftworld:lantern_hang",
+    "riftworld:lantern_post",
+    "riftworld:lantern_wall",
+    "riftworld:painting_islands",
+    "riftworld:painting_portrait",
+    "riftworld:painting_eye",
+    "riftworld:kitchen_stove",
+    "riftworld:kitchen_counter",
+    "riftworld:dish_cupboard",
+    "riftworld:bookshelf_e",
+    "riftworld:sacks",
+    "riftworld:firewood_stack",
+    "riftworld:fire_pit",
+    "riftworld:flower_pot_e",
+    "riftworld:herbs_hanging"
   ]
 }

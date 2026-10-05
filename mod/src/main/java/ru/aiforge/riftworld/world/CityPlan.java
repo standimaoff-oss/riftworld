@@ -219,6 +219,17 @@ public final class CityPlan {
         return b == null ? EMPTY : b;
     }
 
+    /** Island whose rim is closest (largest t, may be negative outside every island). */
+    public Island nearest(double x, double z) {
+        Island best = null;
+        double bt = -1e9;
+        for (Island i : islands) {
+            double t = i.t(x, z);
+            if (t > bt) { bt = t; best = i; }
+        }
+        return best;
+    }
+
     public Island islandAt(double x, double z) {
         for (Island i : islands) {
             if (i.t(x, z) > 0) return i;

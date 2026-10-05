@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "axis=x": {
+      "model": "riftworld:block/elisar_chain",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y": {
+      "model": "riftworld:block/elisar_chain"
+    },
+    "axis=z": {
+      "model": "riftworld:block/elisar_chain",
+      "x": 90
+    }
+  }
+}

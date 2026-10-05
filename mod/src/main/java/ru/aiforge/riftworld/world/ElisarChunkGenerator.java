@@ -75,7 +75,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         int fallTop = Integer.MIN_VALUE, fallBottom;        // falling water column
         // bridge
         int deckY = Integer.MIN_VALUE;
-        boolean rail, post;
+        boolean rail, post, railX;
     }
 
     static double hash(int x, int z, int s) {
@@ -95,6 +95,30 @@ public class ElisarChunkGenerator extends ChunkGenerator {
     static double smooth(double t) {
         t = Math.max(0, Math.min(1, t));
         return t * t * (3 - 2 * t);
+    }
+
+    /** Floating debris: 2x2x2 chunks of rock / soil / brick drifting a little off the island rims. */
+    private static void debris(CityPlan plan, ChunkAccess chunk, BlockPos.MutableBlockPos mp, int x, int z) {
+        int gx = Math.floorDiv(x, 5), gz = Math.floorDiv(z, 5);
+        int lx = Math.floorMod(x, 5) - (int) (hash(gx, gz, 94) * 3), lz = Math.floorMod(z, 5) - (int) (hash(gx, gz, 95) * 3);
+        if (lx < 0 || lx > 1 || lz < 0 || lz > 1 || hash(gx, gz, 91) > 0.11) return;
+        double cx = gx * 5 + 2.5, cz = gz * 5 + 2.5;
+        CityPlan.Island n = plan.nearest(cx, cz);
+        if (n == null) return;
+        double t = n.t(cx, cz);
+        if (t > -0.03 || t < -0.30) return;
+        if (plan.islandAt(cx, cz) != null) return;
+        double k = hash(gx, gz, 93);
+        int y0 = (int) Math.floor(n.base - 4 - hash(gx, gz, 92) * 18);
+        BlockState top = k < 0.4 ? st(ElisarBlocks.GRASS) : k < 0.6 ? st(ElisarBlocks.BRICKS) : k < 0.8 ? st(ElisarBlocks.COBBLE) : st(ElisarBlocks.STONE);
+        BlockState body = k < 0.4 ? st(ElisarBlocks.SOIL) : top;
+        int h = 1 + (int) (hash(gx, gz, 96) * 2);
+        for (int y = y0; y < y0 + h; ++y) chunk.setBlockState(mp.set(x, y, z), y == y0 + h - 1 ? top : body, false);
+    }
+
+    private static boolean land(CityPlan plan, double px, double pz) {
+        CityPlan.Island i = plan.islandAt(px, pz);
+        return i != null;
     }
 
     static Col column(CityPlan plan, int x, int z) {
@@ -162,7 +186,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 c.deckY = y;
                 c.rail = true;
                 int step = (int) Math.floor(tt[0] * b.length());
-                c.post = step % 6 == 0;
+                c.post = step % 4 == 0;
+                c.railX = Math.abs(b.bx() - b.ax()) >= Math.abs(b.bz() - b.az());
             }
             if (isl != null && c.top >= y) {
                 c.top = y;
@@ -175,10 +200,12 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             double d = CityPlan.segDist(px, pz, ch.ax(), ch.az(), ch.bx(), ch.bz(), tt);
             int L = ch.level();
             if (d > ch.hw()) {
-                if (isl != null && ch.depth() > 1 && d <= ch.hw() + 3.5 && c.top < L + 1 && isl.t(px, pz) > 0.14) c.top = L + 1;  // banks
+                // banks: keep the channel walls up to the very rim (the lowered rim lip would otherwise leave water hanging)
+                if (isl != null && d <= ch.hw() + (ch.depth() > 1 ? 3.5 : 1.5) && c.top < L + 1) { c.top = L + 1; c.bottom = Math.min(c.bottom, c.top - 3); }
                 continue;
             }
-            boolean onLand = isl != null && c.top >= L + 1 && isl.t(px, pz) > 0.04;
+            if (isl != null && c.top < L + 1) { c.top = L + 1; c.bottom = Math.min(c.bottom, c.top - 3); }
+            boolean onLand = isl != null;
             if (onLand) {
                 int depth = ch.depth() == 1 ? 1 : (d < ch.hw() - 1 ? ch.depth() : Math.max(1, ch.depth() - 1));
                 c.waterTop = L;
@@ -188,8 +215,12 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 c.surface = S_GRASS;
                 c.bottom = Math.min(c.bottom, c.top - 2);
             } else {
+                // the fall starts right at the island edge: only the first void column next to land carries falling water,
+                // the channel never "hangs" over the void beyond the rim
+                boolean overLand = isl != null;
+                if (!overLand && !(land(plan, px + 1, pz) || land(plan, px - 1, pz) || land(plan, px, pz + 1) || land(plan, px, pz - 1))) continue;
                 c.fallTop = L;
-                c.fallBottom = isl != null ? c.top + 1 : plan.ocean + 1;
+                c.fallBottom = overLand ? c.top + 1 : plan.ocean + 1;
             }
         }
         return c;
@@ -223,6 +254,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                     chunk.setBlockState(mp.set(x, plan.ocean - 1, z), seabed, false);
                     chunk.setBlockState(mp.set(x, plan.ocean, z), water, false);
                 }
+                if (c.isl == null && c.fallTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE) debris(plan, chunk, mp, x, z);
                 if (c.isl != null) {
                     for (int y = c.bottom; y <= c.top; ++y) {
                         BlockState s;
@@ -281,13 +313,9 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                             chunk.setBlockState(mp.set(x, c.deckY + 1, z), log, false);
                             chunk.setBlockState(mp.set(x, c.deckY + 2, z), log, false);
                         } else {
-                            BlockState f = st(ElisarBlocks.ROPE_POST);
-                            for (Direction d : Direction.Plane.HORIZONTAL) {
-                                Col n = cols[dx + 1 + d.getStepX()][dz + 1 + d.getStepZ()];
-                                boolean con = n.rail && n.deckY != Integer.MIN_VALUE && Math.abs(n.deckY - c.deckY) <= 1;
-                                f = f.setValue(prop(d), con);
-                            }
-                            chunk.setBlockState(mp.set(x, c.deckY + 1, z), f, false);
+                            // chain railing strung between the posts (as on the reference bridges)
+                            chunk.setBlockState(mp.set(x, c.deckY + 2, z), st(ElisarBlocks.CHAIN).setValue(net.minecraft.world.level.block.ChainBlock.AXIS,
+                                    c.railX ? Direction.Axis.X : Direction.Axis.Z), false);
                         }
                     }
                 }

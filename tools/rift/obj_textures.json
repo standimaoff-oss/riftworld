@@ -1,0 +1,212 @@
+{
+"m_e_stone": {
+"src": "/home/user/tools/rift/tex_models/m_e_stone.png"
+},
+"m_e_iron": {
+"src": "/home/user/tools/rift/tex_models/m_e_iron.png"
+},
+"m_e_lampglow": {
+"src": "/home/user/tools/rift/tex_models/m_e_lampglow.png"
+},
+"c_e_flame": {
+"col": [
+1.0,
+0.7200000286102295,
+0.30000001192092896
+]
+},
+"m_sign_shop": {
+"src": "/home/user/tools/rift/tex_models/m_sign_shop.png"
+},
+"m_e_wood_dark": {
+"src": "/home/user/tools/rift/tex_models/m_e_wood_dark.png"
+},
+"m_sign_tavern": {
+"src": "/home/user/tools/rift/tex_models/m_sign_tavern.png"
+},
+"m_sign_forge": {
+"src": "/home/user/tools/rift/tex_models/m_sign_forge.png"
+},
+"m_sign_fish": {
+"src": "/home/user/tools/rift/tex_models/m_sign_fish.png"
+},
+"m_sign_police": {
+"src": "/home/user/tools/rift/tex_models/m_sign_police.png"
+},
+"m_sign_hunter": {
+"src": "/home/user/tools/rift/tex_models/m_sign_hunter.png"
+},
+"m_sign_market": {
+"src": "/home/user/tools/rift/tex_models/m_sign_market.png"
+},
+"m_sign_temple": {
+"src": "/home/user/tools/rift/tex_models/m_sign_temple.png"
+},
+"m_e_wood": {
+"src": "/home/user/tools/rift/tex_models/m_e_wood.png"
+},
+"m_wanted1": {
+"src": "/home/user/tools/rift/tex_models/m_wanted1.png"
+},
+"m_wanted2": {
+"src": "/home/user/tools/rift/tex_models/m_wanted2.png"
+},
+"m_wanted3": {
+"src": "/home/user/tools/rift/tex_models/m_wanted3.png"
+},
+"m_e_parchment": {
+"src": "/home/user/tools/rift/tex_models/m_e_parchment.png"
+},
+"m_e_gold": {
+"src": "/home/user/tools/rift/tex_models/m_e_gold.png"
+},
+"m_e_stripe": {
+"src": "/home/user/tools/rift/tex_models/m_e_stripe.png"
+},
+"m_e_produce": {
+"src": "/home/user/tools/rift/tex_models/m_e_produce.png"
+},
+"c_glass": {
+"col": [
+0.7799999713897705,
+0.9200000166893005,
+0.949999988079071
+]
+},
+"c_e_rope": {
+"col": [
+0.7799999713897705,
+0.7300000190734863,
+0.6200000047683716
+]
+},
+"m_e_stripe_blue": {
+"src": "/home/user/tools/rift/tex_models/m_e_stripe_blue.png"
+},
+"c_e_ice": {
+"col": [
+0.8199999928474426,
+0.9300000071525574,
+0.9700000286102295
+]
+},
+"m_e_fish2": {
+"src": "/home/user/tools/rift/tex_models/m_e_fish2.png"
+},
+"m_e_fish": {
+"src": "/home/user/tools/rift/tex_models/m_e_fish.png"
+},
+"c_e_glow": {
+"col": [
+0.44999998807907104,
+1.0,
+0.9200000166893005
+]
+},
+"c_e_coal": {
+"col": [
+0.05999999865889549,
+0.05000000074505806,
+0.05000000074505806
+]
+},
+"m_e_canvas": {
+"src": "/home/user/tools/rift/tex_models/m_e_canvas.png"
+},
+"m_e_flowers": {
+"src": "/home/user/tools/rift/tex_models/m_e_flowers.png"
+},
+"m_e_foliage": {
+"src": "/home/user/tools/rift/tex_models/m_e_foliage.png"
+},
+"m_e_bark": {
+"src": "/home/user/tools/rift/tex_models/m_e_bark.png"
+},
+"c_e_leaf_cyan": {
+"col": [
+0.6600000262260437,
+0.6700000166893005,
+0.5600000023841858
+]
+},
+"c_e_water": {
+"col": [
+0.6399999856948853,
+0.8299999833106995,
+0.9100000262260437
+]
+},
+"m_e_rock": {
+"src": "/home/user/tools/rift/tex_models/m_e_rock.png"
+},
+"m_e_roofred": {
+"src": "/home/user/tools/rift/tex_models/m_e_roofred.png"
+},
+"c_e_cork": {
+"col": [
+0.7799999713897705,
+0.6200000047683716,
+0.4000000059604645
+]
+},
+"c_e_red": {
+"col": [
+0.41999998688697815,
+0.3700000047683716,
+0.33000001311302185
+]
+},
+"c_e_bone": {
+"col": [
+0.8799999952316284,
+0.8399999737739563,
+0.7400000095367432
+]
+},
+"m_e_hide": {
+"src": "/home/user/tools/rift/tex_models/m_e_hide.png"
+},
+"m_e_fur": {
+"src": "/home/user/tools/rift/tex_models/m_e_fur.png"
+},
+"m_e_embers": {
+"src": "/home/user/tools/rift/tex_models/m_e_embers.png"
+},
+"m_e_fire": {
+"src": "/home/user/tools/rift/tex_models/m_e_fire.png"
+},
+"m_e_cloth": {
+"src": "/home/user/tools/rift/tex_models/m_e_cloth.png"
+},
+"c_e_candle": {
+"col": [
+0.949999988079071,
+0.8999999761581421,
+0.7799999713897705
+]
+},
+"m_e_rug": {
+"src": "/home/user/tools/rift/tex_models/m_e_rug.png"
+},
+"m_e_sizo": {
+"src": "/home/user/tools/rift/tex_models/m_e_sizo.png"
+},
+"m_paint_islands": {
+"src": "/home/user/tools/rift/tex_models/m_paint_islands.png"
+},
+"m_paint_portrait": {
+"src": "/home/user/tools/rift/tex_models/m_paint_portrait.png"
+},
+"m_paint_eye": {
+"src": "/home/user/tools/rift/tex_models/m_paint_eye.png"
+},
+"m_e_ceramic": {
+"src": "/home/user/tools/rift/tex_models/m_e_ceramic.png"
+},
+"m_e_plate": {
+"src": "/home/user/tools/rift/tex_models/m_e_plate.png"
+},
+"m_e_books": {
+"src": "/home/user/tools/rift/tex_models/m_e_books.png"
+}
+}

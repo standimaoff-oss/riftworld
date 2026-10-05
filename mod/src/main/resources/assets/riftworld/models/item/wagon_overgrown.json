@@ -1,5 +1,5 @@
 {
-  "parent": "minecraft:builtin/entity",
+  "parent": "riftworld:block/wagon_overgrown",
   "gui_light": "front",
   "display": {
     "gui": {
@@ -10,7 +10,7 @@
       ],
       "translation": [
         0,
-        -2,
+        0,
         0
       ],
       "scale": [

@@ -1,0 +1,15 @@
+newmtl e_iron
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_iron
+
+newmtl e_candle
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/c_e_candle
+
+newmtl e_flame
+Ka 1 1 1
+Kd 1 1 1
+map_Kd riftworld:block/obj/c_e_flame
+

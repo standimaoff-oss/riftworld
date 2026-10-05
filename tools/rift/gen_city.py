@@ -13,8 +13,11 @@ JAVA_KINDS = MOD + "/src/main/java/ru/aiforge/riftworld/block/ModelKind.java"
 KINDS = {m.group(1): tuple(int(m.group(i)) for i in (2, 3, 4, 5))
          for m in re.finditer(r'[A-Z_]+\("([a-z_]+)", (-?\d+), (-?\d+), (\d+), (\d+),', open(JAVA_KINDS).read())}
 PASSABLE = {"sign_shop", "sign_tavern", "sign_forge", "sign_fish", "sign_police", "sign_hunter", "sign_market", "sign_temple",
-            "fishing_net", "trophy_antlers", "tool_wall", "rug", "wanted_wall", "sacred_poles", "lantern_hanging"}
-LIT = {"lantern_hanging", "street_lamp", "fire_bowl", "fireplace", "cooking_pot", "altar_stone", "table_wood"}
+            "fishing_net", "trophy_antlers", "tool_wall", "rug", "wanted_wall", "sacred_poles", "lantern_hanging",
+            "lantern_hang", "lantern_wall", "painting_islands", "painting_portrait", "painting_eye", "herbs_hanging"}
+LIT = {"lantern_hanging", "street_lamp", "fire_bowl", "fireplace", "cooking_pot", "altar_stone", "table_wood",
+       "lantern_hang", "lantern_post", "lantern_wall", "fire_pit", "kitchen_stove"}
+PAINTINGS = ("painting_islands", "painting_portrait", "painting_eye")
 
 
 def S(name, **p):
@@ -37,10 +40,11 @@ def cells(kind, f):
 
 # =============================================================================================== templates
 class Tpl:
-    def __init__(self, name, wx, wz, floors=1, wall_h=4, seed=0):
+    def __init__(self, name, wx, wz, floors=1, wall_h=4, seed=0, front=1):
         self.name, self.wx, self.wz, self.floors, self.wall_h = name, wx, wz, floors, wall_h
-        self.W, self.D = wx + 2, wz + 2
+        self.W, self.D = wx + 2, wz + 1 + front
         self.B, self.NBT, self.MC = {}, {}, set()
+        self.RES = set()          # interior cells kept clear (walkways in front of furniture)
         self.rng = random.Random(hash(name) & 0xffff ^ seed)
         self.top = floors * (wall_h + 1) - 1          # last wall row (floors separated by a beam/floor row)
         self.door_x = None
@@ -76,8 +80,8 @@ class Tpl:
         st.update(props)
         for c in cs:
             if c == (x, y, z):
-                self.B[c] = S(kind, **st)
-                self.NBT[c] = {"id": "riftworld:model"}
+                self.B[c] = S(kind, **st)          # Elisar props are plain blocks (baked OBJ model, no block entity)
+                self.NBT.pop(c, None)
             else:
                 self.B[c] = S("part", open=kind in PASSABLE)
                 self.NBT.pop(c, None)
@@ -129,7 +133,7 @@ class Tpl:
         if style == "brick":
             return S("elisar_bricks_mossy") if r < 0.12 else S("elisar_bricks")
         if style == "stone":
-            return S("elisar_stone_mossy") if r < 0.15 else S("elisar_cobble") if ly == 0 else S("elisar_bricks")
+            return S("elisar_cobble") if ly == 0 or r < 0.18 else S("elisar_bricks")
         if style == "plaster":
             return S("timber_frame_post") if ly == 0 else S("elisar_plaster")
         if style in ("sizo", "ambra"):
@@ -253,12 +257,134 @@ class Tpl:
                     got.append((x, y, z))
                 if len(got) >= want:
                     break
+            kind = "lantern_hanging" if self.name in ("tavern", "police") else "lantern_hang"
             for x, y, z in got:
-                self.model("lantern_hanging", x, y, z, "south")
+                self.model(kind, x, y, z, "south")
             placed += got
         return len(placed)
 
+    # -- furnishing ------------------------------------------------------------------------------
+    def free(self, c):
+        return c not in self.MC and self.B.get(c, AIR) == AIR
+
+    def solid_wall(self, c):
+        b = self.B.get(c)
+        return b is not None and b != AIR and c not in self.MC and not any(k in b[0] for k in ("window", "door", "stairs", "slab", "fence"))
+
+    def near_stairs(self, x, z, ylo, yhi):
+        return any(self.B.get((x + dx, y, z + dz), AIR)[0].endswith("stairs") for dx in (-1, 0, 1) for dz in (-1, 0, 1) for y in range(ylo, yhi + 1))
+
+    def place_wall(self, kind, fi, mode="floor", near=None):
+        """Put a model against an interior wall of storey fi. mode: floor | wall (hung at eye height) | ceiling."""
+        wh = self.wall_h
+        y0 = fi * (wh + 1) + 1
+        best = None
+        for x in range(2, self.wx):
+            for z in range(2, self.wz):
+                if self.near_stairs(x, z, y0 - wh - 1, y0 + wh):
+                    continue
+                if fi == 0 and self.door_x is not None and abs(x - self.door_x) <= 1 and z >= self.wz - 1:
+                    continue
+                for f, bx, bz in (("east", -1, 0), ("west", 1, 0), ("south", 0, -1), ("north", 0, 1)):
+                    if not self.is_wall(x + bx, z + bz):
+                        continue
+                    if mode == "ceiling":
+                        yc = next((y for y in range(y0, y0 + wh + 6) if not self.free((x, y, z))), None)
+                        if yc is None or yc - 1 < y0 + 2 or self.B.get((x, yc, z), AIR) == AIR:
+                            continue
+                        y = yc - 1
+                    else:
+                        y = y0 + 1 if mode == "wall" else y0
+                    cs = [(x + dx, y + dy, z + dz) for dx, dy, dz in cells(kind, f)]
+                    if not all(1 < cx < self.wx and 1 < cz < self.wz and self.free((cx, cy, cz)) and (cx, cy, cz) not in self.RES for cx, cy, cz in cs):
+                        continue
+                    if not all(self.solid_wall((cx + bx, cy, cz + bz)) for cx, cy, cz in cs):
+                        continue
+                    if mode == "floor":
+                        if not all(self.solid_wall((cx, y0 - 1, cz)) or self.B.get((cx, y0 - 1, cz), AIR)[0].endswith("planks") for cx, _, cz in cs):
+                            continue
+                        fr = (x - bx, y0, z - bz)
+                        if not self.free(fr):
+                            continue
+                    sc = self.rng.random() + (abs(x - near[0]) + abs(z - near[1]) if near else 0)
+                    if best is None or sc < best[0]:
+                        best = (sc, x, y, z, f, bx, bz, cs)
+        if best is None:
+            return None
+        _, x, y, z, f, bx, bz, cs = best
+        self.model(kind, x, y, z, f)
+        if mode == "floor":
+            for cx, cy, cz in cs:
+                self.RES.add((cx - bx, y0, cz - bz))
+                self.RES.add((cx - bx, y0 + 1, cz - bz))
+        return (x, z)
+
+    def furnish(self):
+        """Fill every house with lived-in detail: kitchen corner, cupboards, books, sacks, flowers, paintings, drying herbs."""
+        if self.name in ("forge", "temple"):
+            return
+        r = self.rng
+        for fi in range(self.floors):
+            ground = fi == 0
+            if ground and self.name not in ("police",):
+                k = self.place_wall("kitchen_stove", fi)
+                if k:
+                    self.place_wall("kitchen_counter", fi, near=k)
+                    self.place_wall("dish_cupboard", fi, near=k)
+                    self.place_wall("herbs_hanging", fi, "ceiling", near=k)
+            if not ground or self.floors == 1 or self.name == "police":
+                self.place_wall("bookshelf_e", fi)
+            if self.name in ("shop", "shop2", "tavern", "fisher_house", "hunter_house") or r.random() < 0.6:
+                self.place_wall("sacks", fi)
+            if r.random() < 0.7:
+                self.place_wall("flower_pot_e", fi)
+            for pk in r.sample(PAINTINGS, 2 if self.wx >= 8 else 1):
+                self.place_wall(pk, fi, "wall")
+            if self.name in ("hunter_house", "fisher_house") or r.random() < 0.4:
+                self.place_wall("herbs_hanging", fi, "ceiling")
+
+    def outside(self):
+        """Exterior life: a wall lantern beside the door, a flower pot on the step, firewood against a side wall."""
+        if self.door_x is None:
+            return
+        fz = self.wz + 1
+        for dx in (1, -1):
+            x = self.door_x + dx
+            if 1 < x < self.wx and self.free((x, 3, fz)) and self.solid_wall((x, 3, self.wz)) and all(self.free((x, y, fz)) for y in (1, 2, 3)):
+                self.model("lantern_wall", x, 3, fz, "south")
+                break
+        x = self.door_x - 1 if self.free((self.door_x - 1, 1, fz)) and self.door_x - 1 >= 1 else self.door_x + 1
+        if self.rng.random() < 0.6 and self.free((x, 1, fz)) and self.B.get((x, 3, fz)) is None:
+            self.model("flower_pot_e", x, 1, fz, "south")
+        if self.name not in ("temple", "police") and self.rng.random() < 0.75:
+            side = self.rng.choice((0, self.W - 1))
+            z = self.rng.randint(2, max(2, self.wz - 1))
+            if self.free((side, 1, z)) and self.free((side, 2, z)):
+                self.model("firewood_stack", side, 1, z, "west" if side == 0 else "east")
+
+    def balcony(self, x0, x1):
+        """Plank balcony on posts in front of the upper storey with a fence rail and a door out of the upper room (needs front=2)."""
+        yb = self.wall_h + 1
+        z1, z2 = self.wz + 1, self.wz + 2
+        assert z2 < self.D, (self.name, "balcony needs front=2")
+        for x in range(x0, x1 + 1):
+            for z in (z1, z2):
+                self.put(x, yb, z, S("sizo_planks"))
+            self.put(x, yb + 1, z2, S("elisar_fence", waterlogged=False))
+        for z in (z1,):
+            self.put(x0, yb + 1, z, S("elisar_fence", waterlogged=False)); self.put(x1, yb + 1, z, S("elisar_fence", waterlogged=False))
+        for x in (x0, x1):
+            for y in range(1, yb):
+                self.put(x, y, z2, S("sizo_log", axis="y"))
+        mid = (x0 + x1) // 2
+        for half, yy in (("lower", yb + 1), ("upper", yb + 2)):
+            self.put(mid, yy, self.wz, S("elisar_door", facing="north", half=half, hinge="left", open=False, powered=False))
+        self.model("lantern_hang", x1 - 1 if x1 - 1 != mid else x0 + 1, yb - 1, z1, "south")
+
     def save(self):
+        self.furnish()
+        self.outside()
+        fix_fences(self)
         self.nlights = self.lights()
         H = max(p[1] for p in self.B) + 1
         n, pal = write_template(OUT + "/structures/city/%s.nbt" % self.name, (self.W, H, self.D), self.B, self.NBT)
@@ -356,6 +482,71 @@ def T_house_d():
     t.model("bed_wood", 2, 6, 3, "south"); t.model("bed_wood", 3, 6, 3, "south")
     t.model("rug", 2, 6, 6, "south")
     t.roof("roof_red", "z", gable="elisar_plaster")
+    return t
+
+
+def T_house_e():
+    """Pale stone ground floor, plank upper storey with a front balcony (reference village)."""
+    t = Tpl("house_e", 8, 6, floors=2, front=2)
+    t.shell(["stone", "sizo"])
+    t.door(3)
+    t.window(6, 2, 6); t.window(1, 2, 3); t.window(8, 2, 3); t.window(8, 7, 3); t.window(1, 7, 4); t.window(3, 7, 1); t.window(6, 7, 1); t.window(2, 7, 6)
+    t.stairs_up(7, 2, 1, rail_dx=-1)
+    t.model("table_wood", 4, 1, 3, "south"); t.model("chair_wood", 4, 1, 4, "north")
+    t.model("bed_wood", 2, 6, 3, "south"); t.model("wardrobe", 5, 6, 2, "south")
+    t.balcony(4, 7)
+    t.roof("thatch", "x", gable="sizo_planks")
+    t.chimney(1, 3, 5, "elisar_cobble")
+    return t
+
+
+def T_house_f():
+    """Small whitewashed cottage, thatched."""
+    t = Tpl("house_f", 5, 5)
+    t.shell(["plaster"])
+    t.door(3)
+    t.window(1, 2, 3); t.window(5, 2, 3); t.window(3, 2, 1)
+    t.model("bed_wood", 2, 1, 3, "south")
+    t.roof("thatch", "z", gable="elisar_plaster")
+    return t
+
+
+def T_house_g():
+    """Narrow two-storey town house, brick below, plaster above, slate roof."""
+    t = Tpl("house_g", 5, 7, floors=2)
+    t.shell(["brick", "plaster"])
+    t.door(2)
+    t.window(4, 2, 7); t.window(2, 7, 7); t.window(4, 7, 7); t.window(1, 2, 4); t.window(5, 7, 4); t.window(1, 7, 4); t.window(3, 7, 1)
+    t.stairs_up(4, 2, 1, rail_dx=-1)
+    t.model("bed_wood", 2, 6, 3, "south")
+    t.roof("roof_blue", "z", gable="elisar_plaster")
+    return t
+
+
+def T_house_h():
+    """Wide single-storey stone house with a tall shingle roof and a chimney."""
+    t = Tpl("house_h", 9, 6)
+    t.shell(["stone"])
+    t.door(5)
+    t.window(3, 2, 6); t.window(7, 2, 6); t.window(1, 2, 3); t.window(9, 2, 4); t.window(3, 2, 1); t.window(7, 2, 1)
+    t.model("bed_wood", 8, 1, 3, "south")
+    t.model("table_wood", 5, 1, 3, "south"); t.model("chair_wood", 5, 1, 4, "north"); t.model("stool", 4, 1, 3, "east")
+    t.roof("roof_red", "x", gable="elisar_bricks")
+    t.chimney(9, 2, 5)
+    return t
+
+
+def T_house_i():
+    """Timber-framed house with an amber-plank upper storey and a balcony."""
+    t = Tpl("house_i", 7, 7, floors=2, front=2)
+    t.shell(["timber", "ambra"], floor="ambra_planks", corner="ambra_log", beam="ambra_log")
+    t.door(2)
+    t.window(5, 2, 7); t.window(1, 2, 4); t.window(7, 2, 4); t.window(2, 7, 1); t.window(5, 7, 1); t.window(1, 7, 4); t.window(2, 7, 7)
+    t.stairs_up(6, 2, 1, rail_dx=-1)
+    t.model("table_wood", 3, 1, 3, "south"); t.model("chair_wood", 3, 1, 4, "north")
+    t.model("bed_wood", 2, 6, 3, "south")
+    t.balcony(3, 6)
+    t.roof("roof_blue", "z", gable="ambra_planks")
     return t
 
 
@@ -533,7 +724,7 @@ def T_temple():
     return t
 
 
-for fn in (T_house_a, T_house_b, T_house_c, T_house_d, T_tavern, T_police, T_fisher, T_hunter, T_forge, T_temple):
+for fn in (T_house_a, T_house_b, T_house_c, T_house_d, T_house_e, T_house_f, T_house_g, T_house_h, T_house_i, T_tavern, T_police, T_fisher, T_hunter, T_forge, T_temple):
     tp = fn()
     TPL[tp.name] = tp
 TPL["shop"] = T_shop()
@@ -826,7 +1017,7 @@ def rect_free(x0, z0, w, d, isl, margin=2):
     return max(hs) - min(hs) <= 4
 
 
-def place_building(name, isl, tries=900, near=None):
+def place_building(name, isl, tries=900, near=None, margin=2, quiet=False):
     segs = [r for r in ROADS if island_at(*r["a"]) is isl or island_at(*r["b"]) is isl]
     best = None
     for _ in range(tries):
@@ -842,10 +1033,11 @@ def place_building(name, isl, tries=900, near=None):
         f = ("east" if fx > 0 else "west") if abs(fx) > abs(fz) else ("south" if fz > 0 else "north")
         w, d = tpl_dims(name, f)
         depth = d if f in ("south", "north") else w
-        off = r["w"] / 2 + 2.5 + depth / 2 + rng.uniform(0, 3)
+        back_row = near is None and margin < 2 and rng.random() < 0.35
+        off = r["w"] / 2 + 2.0 + depth / 2 + (rng.uniform(10, 16) if back_row else rng.uniform(0, 2.5))
         cx, cz = px + nx * off, pz + nz * off
         x0, z0 = int(round(cx - w / 2)), int(round(cz - d / 2))
-        if not rect_free(x0, z0, w, d, isl):
+        if not rect_free(x0, z0, w, d, isl, margin):
             continue
         score = rng.random()
         if near is not None:
@@ -855,7 +1047,8 @@ def place_building(name, isl, tries=900, near=None):
             if near is None:
                 break
     if best is None:
-        print("  !! no room for", name, "on", isl.name)
+        if not quiet:
+            print("  !! no room for", name, "on", isl.name)
         return None
     _, x0, z0, w, d, f, r = best
     hs = sorted(math.floor(isl.raw(x + 0.5, z + 0.5)) for x in range(x0, x0 + w) for z in range(z0, z0 + d))
@@ -870,7 +1063,7 @@ def place_building(name, isl, tries=900, near=None):
     step = {"south": (0, 1), "north": (0, -1), "east": (1, 0), "west": (-1, 0)}[f]
     sx, sz = dx + step[0], dz + step[1]
     ex, ez = sx, sz
-    for k in range(1, 14):
+    for k in range(1, 24):
         ex, ez = sx + step[0] * k, sz + step[1] * k
         if oget(ex, ez) == ROAD:
             break
@@ -880,18 +1073,29 @@ def place_building(name, isl, tries=900, near=None):
 
 
 ORDER = {
-    "main": ["police", "tavern", "shop", "shop2", "house_b", "house_c", "house_d", "house_b", "house_a", "house_d", "house_c", "house_a"],
-    "temple": ["temple", "house_a", "house_d"],
-    "fishers": ["fisher_house", "fisher_house", "fisher_house", "house_a", "shop2"],
-    "homes": ["hunter_house", "house_b", "house_c", "house_a", "house_d", "house_c"],
-    "forge": ["forge", "house_b", "shop", "house_a", "house_d"],
-    "farms": ["house_a", "house_c", "house_d", "house_a", "house_b"],
+    "main": ["police", "tavern", "shop", "shop2", "house_e", "house_b", "house_i", "house_g", "house_c", "house_e", "house_d", "house_h"],
+    "temple": ["temple", "house_f", "house_h"],
+    "fishers": ["fisher_house", "fisher_house", "fisher_house", "house_f", "shop2", "house_e"],
+    "homes": ["hunter_house", "house_i", "house_c", "house_e", "house_g", "house_b"],
+    "forge": ["forge", "house_h", "shop", "house_e", "house_g"],
+    "farms": ["house_f", "house_h", "house_e", "house_f", "house_i"],
 }
+# fill pass: keep squeezing houses along every street (and a second row on lanes) until the island is full
+FILL = ["house_a", "house_b", "house_c", "house_d", "house_e", "house_e", "house_f", "house_f", "house_g", "house_g", "house_h", "house_i", "house_i"]
+FILL_MAX = {"main": 26, "temple": 7, "fishers": 14, "homes": 20, "forge": 14, "farms": 14}
 NEAR = {"police": MARKET, "tavern": MARKET, "shop": MARKET}
 for i in ISL:
     for name in ORDER[i.name]:
         near = NEAR.get(name) if i is I0 else getattr(i, "centre", None) if name in ("temple", "forge", "hunter_house") else None
         place_building(name, i, near=near)
+for i in ISL:
+    fails, n = 0, 0
+    while fails < 40 and n < FILL_MAX[i.name]:
+        if place_building(rng.choice(FILL), i, tries=300, margin=1, quiet=True):
+            n, fails = n + 1, 0
+        else:
+            fails += 1
+    print("  fill", i.name, n)
 
 
 # --- props ---------------------------------------------------------------------------------------
@@ -934,21 +1138,21 @@ for r in ROADS:
     if L < 6:
         continue
     vx, vz = (bx - ax) / L, (bz - az) / L
-    n = int(L // 15)
+    n = int(L // 11)
     for k in range(n + 1):
         u = (k + 0.5) / (n + 1)
         side = 1 if k % 2 == 0 else -1
         px, pz = ax + (bx - ax) * u - vz * side * (r["w"] / 2 + 1.2), az + (bz - az) * u + vx * side * (r["w"] / 2 + 1.2)
-        if any(math.hypot(px - p["x"], pz - p["z"]) < 10 for p in PROPS if p["k"] == "street_lamp"):
+        if any(math.hypot(px - p["x"], pz - p["z"]) < 9 for p in PROPS if p["k"] == "lantern_post"):
             continue
-        add_prop("street_lamp", px, pz, face_to(vz * side, -vx * side))
+        add_prop("lantern_post", px, pz, face_to(vz * side, -vx * side))
 # lamps at both ends of every bridge
 for b in BRIDGES:
     for (ex, ez), (ox, oz) in ((b["a"], b["b"]), (b["b"], b["a"])):
         L = math.hypot(ox - ex, oz - ez)
         vx, vz = (ox - ex) / L, (oz - ez) / L
         for side in (-1, 1):
-            add_prop("street_lamp", ex - vx * 1.5 - vz * side * 3.2, ez - vz * 1.5 + vx * side * 3.2, face_to(vx, vz), allow=(FREE, KEEP, TREE, ROAD))
+            add_prop("lantern_post", ex - vx * 1.5 - vz * side * 2.6, ez - vz * 1.5 + vx * side * 2.6, face_to(vx, vz), allow=(FREE, KEEP, TREE, ROAD))
 # market: stalls in a ring facing the centre, well in the middle, benches, crates and the market sign post
 mx, mz = MARKET
 add_prop("well", mx - 0.5, mz - 0.5, "south", allow=(ROAD,))
@@ -1002,10 +1206,14 @@ for p in PLOTS:
     elif t in ("shop", "shop2", "tavern"):
         near_plot("crate_stack", p, 1, (1, 3)); near_plot("bench", p, 1, (1, 3))
     elif t.startswith("house"):
-        if rng.random() < 0.5:
+        if rng.random() < 0.4:
             near_plot("bench", p, 1, (1, 3))
-        if rng.random() < 0.35:
+        if rng.random() < 0.2:
             near_plot("cooking_pot", p, 1, (2, 5))
+        if rng.random() < 0.3:
+            near_plot("sacks", p, 1, (1, 2))
+        if rng.random() < 0.15:
+            near_plot("hide_rack", p, 1, (2, 4))
 # fish stalls on the fishers' plaza
 fc = BY["fishers"].centre
 for ang in (20, 160, 260):
@@ -1027,16 +1235,24 @@ for _ in range(400):
     if add_prop("wagon_overgrown", px, pz, f):
         wag += 1
 # benches + wells on satellite plazas
+# fire-pit plazas (reference: stone ring + benches around it), a well beside on the farm islands
 for i in ISL[1:]:
     c = i.centre
+    if i.name == "temple":
+        continue
+    fx, fz = c[0] - 2.5, c[1] + 0.5
+    add_prop("fire_pit", fx - 0.5, fz - 0.5, "south", allow=(ROAD, FREE, KEEP, TREE))
+    for k in range(4):
+        a = math.radians(45 + 90 * k + i.idx * 10)
+        add_prop("bench", fx + math.cos(a) * 3.0, fz + math.sin(a) * 3.0, face_to(-math.cos(a), -math.sin(a)), allow=(ROAD, FREE, KEEP, TREE))
+    for k in range(2):
+        a = math.radians(90 * k + 10)
+        add_prop("lantern_post", fx + math.cos(a) * 5.2, fz + math.sin(a) * 5.2, "south", allow=(ROAD, FREE, KEEP, TREE))
     if i.name in ("farms", "homes", "forge"):
-        add_prop("well", c[0] + 3, c[1] - 0.5, "south", allow=(ROAD, FREE, KEEP))
-    for ang in (60, 200):
-        a = math.radians(ang + i.idx * 30)
-        add_prop("bench", c[0] + math.cos(a) * 5.5, c[1] + math.sin(a) * 5.5, face_to(math.cos(a), math.sin(a)), allow=(ROAD, FREE, KEEP))
+        add_prop("well", c[0] + 4, c[1] - 0.5, "south", allow=(ROAD, FREE, KEEP))
 
 # --- trees --------------------------------------------------------------------------------------
-DENS = {"main": 0.35, "temple": 0.85, "fishers": 0.45, "homes": 0.6, "forge": 0.5, "farms": 0.4}
+DENS = {"main": 0.12, "temple": 0.5, "fishers": 0.18, "homes": 0.25, "forge": 0.2, "farms": 0.15}
 for i in ISL:
     R = int(i.R * 1.2)
     for gx in range(int(i.cx - R), int(i.cx + R), 6):

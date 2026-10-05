@@ -67,14 +67,15 @@ def blotch(a, seed, cols, count, rmax=2):
 
 
 # ------------------------------------------------------------------------------------------- terrain
-GRASS = ['#4c9a83', '#3f8a78', '#5aa88c', '#468f88', '#64b096']
-a = base('#4c9a83', 1, 7); blotch(a, 2, GRASS, 40, 1)
+GRASS = ['#d6d0c2', '#cbc5b6', '#e0dbcf', '#c2bcab', '#e8e4da']
+SAGE = ['#a9aa8e', '#9c9d80', '#b5b69b']
+a = base('#d8d2c4', 1, 5); blotch(a, 2, GRASS, 40, 1); blotch(a, 3, SAGE, 4, 1)
 for k in range(10):
-    setp(a, (k * 7) % 16, (k * 5 + 3) % 16, '#7cc4a6')
+    setp(a, (k * 7) % 16, (k * 5 + 3) % 16, '#f0ede6')
 save(a, "elisar_grass_top")
-soil = base('#7a4a3a', 3, 9); blotch(soil, 4, ['#6a3e31', '#8a5644', '#5e372c', '#94604c'], 30, 1)
+soil = base('#aaa396', 3, 7); blotch(soil, 4, ['#9e978a', '#b4ada0', '#948d80', '#bdb6a9'], 30, 1)
 for k in range(6):
-    setp(soil, (k * 11 + 2) % 16, (k * 7 + 5) % 16, '#a9a092')        # pebbles
+    setp(soil, (k * 11 + 2) % 16, (k * 7 + 5) % 16, '#77726a')        # pebbles
 save(soil, "elisar_soil")
 side = soil.copy()
 r = np.random.RandomState(5)
@@ -83,16 +84,16 @@ for x in range(16):
     for y in range(d):
         side[y, x, :3] = rgb(GRASS[r.randint(len(GRASS))]) + r.randint(-6, 6)
 save(side, "elisar_grass_side")
-st = base('#8d8496', 6, 8); blotch(st, 7, ['#7d7487', '#9a91a3', '#857c90', '#a49bae'], 26, 2)
+st = base('#4a4a4d', 6, 7); blotch(st, 7, ['#404043', '#545457', '#3a3a3d', '#5d5d60'], 26, 2)
 for (x0, y0, x1, y1) in ((2, 5, 7, 7), (9, 11, 14, 12), (11, 2, 14, 4)):
     for x in range(x0, x1 + 1):
         shade(st, x, y0 + (x % 2), 0.72)
 save(st, "elisar_stone")
-m = st.copy(); blotch(m, 8, ['#4f8f6c', '#5c9c76', '#3f7f5f'], 16, 2); save(m, "elisar_stone_mossy")
-sb = base('#2f5f78', 8, 7); blotch(sb, 10, ['#28526a', '#3a6f88', '#24485e'], 30, 1); save(sb, "elisar_seabed")
+m = st.copy(); blotch(m, 8, ['#6b6e52', '#787b5e', '#5e6148'], 16, 2); save(m, "elisar_stone_mossy")
+sb = base('#c9d6da', 8, 3); save(sb, "elisar_seabed")
 
 
-def cobble(col, seed, mortar='#4e4a52'):
+def cobble(col, seed, mortar='#8e8a83'):
     a = base(mortar, seed, 4)
     r = np.random.RandomState(seed)
     stones = [(1, 1, 6, 5), (8, 0, 14, 4), (0, 7, 4, 11), (6, 6, 11, 10), (12, 6, 15, 11), (1, 13, 7, 15), (9, 12, 14, 15)]
@@ -110,11 +111,11 @@ def cobble(col, seed, mortar='#4e4a52'):
     return a
 
 
-save(cobble('#9a8f88', 11), "elisar_cobble")
-pa = base('#a58a66', 12, 7); blotch(pa, 13, ['#947a58', '#b49a74', '#8d7656', '#c0aa86'], 40, 1); save(pa, "elisar_path")
+save(cobble('#c6c1b7', 11), "elisar_cobble")
+pa = base('#c4beb2', 12, 6); blotch(pa, 13, ['#b2ac a0'.replace(' ', ''), '#d2ccc0', '#a29c90', '#dcd7cc'], 44, 1); save(pa, "elisar_path")
 
 
-def bricks(col, seed, mortar='#6d6570', moss=0):
+def bricks(col, seed, mortar='#a49c8e', moss=0):
     a = base(mortar, seed, 3)
     r = np.random.RandomState(seed)
     for row in range(4):
@@ -132,14 +133,14 @@ def bricks(col, seed, mortar='#6d6570', moss=0):
                         if y == y0 + 2:
                             a[y, x, :3] *= 0.86
     if moss:
-        blotch(a, seed + 1, ['#4f8f6c', '#5c9c76'], moss, 1)
+        blotch(a, seed + 1, ['#7d805e', '#8a8d6a'], moss, 1)
     return a
 
 
-save(bricks('#a69aa6', 14), "elisar_bricks")
-save(bricks('#a69aa6', 14, moss=14), "elisar_bricks_mossy")
-pl = base('#e6d9bd', 15, 5); blotch(pl, 16, ['#dccfb2', '#efe3c8', '#d6c8aa'], 20, 1); save(pl, "elisar_plaster")
-BEAM = '#4a3426'
+save(bricks('#ddd6c6', 14), "elisar_bricks")
+save(bricks('#ddd6c6', 14, moss=14), "elisar_bricks_mossy")
+pl = base('#e9e4d8', 15, 4); blotch(pl, 16, ['#dfd9cc', '#f0ece2', '#d8d2c4'], 20, 1); save(pl, "elisar_plaster")
+BEAM = '#857b6b'
 
 
 def timber(kind):
@@ -217,14 +218,14 @@ def leaves(cols, seed):
     return a
 
 
-save(log_side('#5d6b78', 20, '#46525e'), "sizo_log")
-save(log_top('#a9b7a8', '#7d8c80', '#4d5a66'), "sizo_log_top")
-save(planks('#7f8f96', 21, '#56636a'), "sizo_planks")
-save(leaves(['#2f9a96', '#3fb3a6', '#25807f', '#56c2b2', '#1f6e74'], 22), "sizo_leaves")
-save(log_side('#6e3f2e', 23, '#542e22'), "ambra_log")
-save(log_top('#c99566', '#a67248', '#5a3426'), "ambra_log_top")
-save(planks('#a2673f', 24, '#6e4128'), "ambra_planks")
-save(leaves(['#e09a32', '#f0b443', '#c97b25', '#f5c862', '#b8661e'], 25), "ambra_leaves")
+save(log_side('#a29b8e', 20, '#857e72'), "sizo_log")
+save(log_top('#d3cbbb', '#b3ab9b', '#857e72'), "sizo_log_top")
+save(planks('#cdc3ae', 21, '#9c917d'), "sizo_planks")
+save(leaves(['#b3b8a6', '#a6ab98', '#c1c6b4', '#9a9f8c', '#cbcfbf'], 22), "sizo_leaves")
+save(log_side('#6d665c', 23, '#57514a'), "ambra_log")
+save(log_top('#bdb2a0', '#9f9482', '#57514a'), "ambra_log_top")
+save(planks('#b5a68c', 24, '#867861'), "ambra_planks")
+save(leaves(['#e2dccd', '#d6cfbe', '#ece7db', '#c9c2b0', '#f2eee6'], 25), "ambra_leaves")
 
 
 def roof(col, dark, seed):
@@ -244,9 +245,9 @@ def roof(col, dark, seed):
     return a
 
 
-save(roof('#b5543a', '#6e2f22', 26), "roof_red")
-save(roof('#566c8a', '#2f3d52', 27), "roof_blue")
-th = base('#c2a25c', 28, 10)
+save(roof('#b8ad98', '#7f7564', 26), "roof_red")
+save(roof('#8e8d88', '#5c5b57', 27), "roof_blue")
+th = base('#d2c7a6', 28, 8)
 for x in range(16):
     for y in range(16):
         th[y, x, :3] += 14 * math.sin(x * 2.3 + (y // 4) * 1.7)
@@ -257,17 +258,32 @@ w = np.zeros((16, 16, 4))
 for y in range(16):
     for x in range(16):
         if x in (0, 15, 7, 8) or y in (0, 15, 7, 8):
-            w[y, x] = list(rgb('#3b2b20')) + [255]
+            w[y, x] = list(rgb('#6b6253')) + [255]
         else:
-            w[y, x] = [170, 205, 215, 90 + (15 if (x + y) % 7 == 0 else 0)]
+            w[y, x] = [205, 214, 214, 110 + (20 if (x + y) % 7 == 0 else 0)]
 save(w, "elisar_window")
-fen = planks('#7f8f96', 29, '#56636a'); save(fen, "elisar_fence")
-rope = base('#b39a6a', 30, 8)
+fen = planks('#d3c9b4', 29, '#a39882'); save(fen, "elisar_fence")
+rope = base('#c9bc9c', 30, 6)
 for y in range(16):
     for x in range(16):
         if (x + y) % 4 == 0:
             rope[y, x, :3] *= 0.78
 save(rope, "rope_post")
+# chain (vanilla chain UV layout: front links in u 0..3, side links in u 3..6), pale weathered iron
+ch = np.zeros((16, 16, 4))
+for y in range(16):
+    ly = y % 8
+    for x in range(3):                      # front-facing oval link with a hole
+        if not (x == 1 and 1 <= ly <= 6):
+            ch[y, x] = list(rgb('#9c9a94')) + [255]
+    for x in range(3, 6):                   # side-on link: solid bar, offset half a link
+        if (y + 4) % 8 not in (0, 7):
+            ch[y, x] = list(rgb('#b9b6ae' if x == 4 else '#8a8882')) + [255]
+for y in range(16):
+    for x in range(6):
+        if ch[y, x, 3] > 0 and (x + y) % 5 == 0:
+            ch[y, x, :3] *= 0.86
+save(ch, "elisar_chain")
 # plants
 tg = np.zeros((16, 16, 4))
 r = np.random.RandomState(31)
@@ -281,13 +297,13 @@ for k in range(9):
             tg[15 - t, xx] = list(rgb(GRASS[r.randint(len(GRASS))]) * (0.8 + 0.3 * t / h)) + [255]
 save(tg, "elisar_tall_grass")
 fl = np.zeros((16, 16, 4))
-for (x, top, col) in ((3, 6, '#c86cf0'), (8, 3, '#f0e66c'), (12, 7, '#6ce8f0')):
+for (x, top, col) in ((3, 6, '#e8e0f0'), (8, 3, '#f2ecd8'), (12, 7, '#dfe8ea')):
     for t in range(15, top, -1):
-        fl[t, x] = list(rgb('#3f7f5f')) + [255]
+        fl[t, x] = list(rgb('#9a9c80')) + [255]
     for dx, dy in ((0, 0), (-1, 0), (1, 0), (0, -1), (0, 1)):
         fl[top + dy, x + dx] = list(rgb(col)) + [255]
     fl[top, x] = list(rgb('#fff6d0')) + [255]
-    fl[11, x - 1] = list(rgb('#4c9a5f')) + [255]; fl[12, x + 1] = list(rgb('#4c9a5f')) + [255]
+    fl[11, x - 1] = list(rgb('#a9aa8e')) + [255]; fl[12, x + 1] = list(rgb('#a9aa8e')) + [255]
 save(fl, "elisar_flowers")
 iv = np.zeros((16, 16, 4))
 r = np.random.RandomState(32)
@@ -295,21 +311,21 @@ for k in range(5):
     x = r.randint(16)
     for y in range(16):
         x = (x + r.randint(-1, 2)) % 16
-        iv[y, x] = list(rgb(['#3f8a78', '#2f7a68', '#5aa88c'][r.randint(3)])) + [255]
+        iv[y, x] = list(rgb(['#7d805e', '#6e7152', '#8c8f6c'][r.randint(3)])) + [255]
         if r.rand() < 0.3:
-            iv[y, (x + 1) % 16] = list(rgb('#64b096')) + [255]
+            iv[y, (x + 1) % 16] = list(rgb('#9a9d7a')) + [255]
 save(iv, "elisar_ivy")
 # door (2 halves)
 for half in ("bottom", "top"):
-    d = planks('#7a5038', 33 if half == "bottom" else 34, '#4f3424')
+    d = planks('#a89a80', 33 if half == "bottom" else 34, '#7a6e5a')
     for y in range(16):
-        d[y, 0, :3] = d[y, 15, :3] = rgb('#3b2a1e')
+        d[y, 0, :3] = d[y, 15, :3] = rgb('#5e5446')
     for x in range(16):
-        d[0 if half == "top" else 15, x, :3] = rgb('#3b2a1e')
+        d[0 if half == "top" else 15, x, :3] = rgb('#5e5446')
     if half == "top":
         for y in range(4, 10):
             for x in range(4, 12):
-                d[y, x] = [150, 190, 200, 255] if not (x in (7, 8) or y == 7) else list(rgb('#3b2a1e')) + [255]
+                d[y, x] = [196, 206, 206, 255] if not (x in (7, 8) or y == 7) else list(rgb('#5e5446')) + [255]
     else:
         for x in range(2, 14):
             d[6, x, :3] = rgb('#2a2a2e')
@@ -326,10 +342,8 @@ def water(size, frames, seed):
         for y in range(size):
             for x in range(size):
                 v = math.sin(x * 2 * math.pi / size * 2 + ph) + math.sin((y + x * 0.5) * 2 * math.pi / size * 2 - ph * 2)
-                c = np.array([34, 112, 192]) + v * 13
-                if v > 1.55:
-                    c = np.array([120, 196, 240])          # sun glints on the wave crests
-                out[f * size + y, x] = list(np.clip(c, 0, 255)) + [178]
+                c = np.array([164, 212, 232]) + v * 0.8   # flat sky-reflection colour, no visible waves
+                out[f * size + y, x] = list(np.clip(c, 0, 255)) + [205]
     return out
 
 
@@ -374,66 +388,66 @@ def wood64(col, dark, seed):
     return a
 
 
-mtex("m_e_wood", wood64('#8a6244', '#5a3e2a', 50))
-mtex("m_e_wood_dark", wood64('#5a3e2c', '#3a271b', 51))
-mtex("m_e_sizo", wood64('#7f8f96', '#56636a', 52))
-mtex("m_e_bark", up(log_side('#6e3f2e', 53, '#542e22')))
-mtex("m_e_stone", up(bricks('#a69aa6', 54)))
+mtex("m_e_wood", wood64('#b8ab93', '#857963', 50))
+mtex("m_e_wood_dark", wood64('#7d7262', '#5a5145', 51))
+mtex("m_e_sizo", wood64('#cdc3ae', '#9c917d', 52))
+mtex("m_e_bark", up(log_side('#8a8276', 53, '#6d665c')))
+mtex("m_e_stone", up(bricks('#d6cfbf', 54)))
 mtex("m_e_rock", up(st))
 ir = base('#2f2f34', 55, 6, 64); mtex("m_e_iron", ir)
-cv = base('#d8ccb0', 56, 6, 64)
+cv = base('#e4ded2', 56, 5, 64)
 for y in range(64):
     for x in range(64):
         if (x + y) % 3 == 0:
             cv[y, x, :3] *= 0.95
-blotch(cv, 57, ['#b8a888', '#a89878', '#8a8a6a'], 14, 3)
+blotch(cv, 57, ['#d0c9bb', '#c6bfb0', '#bab3a4'], 14, 3)
 mtex("m_e_canvas", cv)
-sp = base('#c84a3a', 58, 4, 64)
+sp = base('#a39783', 58, 4, 64)
 for x in range(64):
     if (x // 8) % 2:
-        sp[:, x, :3] = rgb('#efe4cc') + noise(59, 4, 64)[:, x:x + 1]
+        sp[:, x, :3] = rgb('#ebe6db') + noise(59, 4, 64)[:, x:x + 1]
 mtex("m_e_stripe", sp)
 sp2 = sp.copy()
 for x in range(64):
     if not (x // 8) % 2:
-        sp2[:, x, :3] = rgb('#3a7aa8')
+        sp2[:, x, :3] = rgb('#7f8a90')
 mtex("m_e_stripe_blue", sp2)
 pa = base('#e3cf9f', 60, 5, 64); blotch(pa, 61, ['#d2bb88', '#c9ad78'], 18, 4)
 for k in range(64):
     for j in (0, 1, 62, 63):
         pa[j, k, :3] *= 0.8; pa[k, j, :3] *= 0.8
 mtex("m_e_parchment", pa)
-hide = base('#9a6a44', 62, 8, 64); blotch(hide, 63, ['#8a5a38', '#b07c52', '#6a4a30'], 30, 4); mtex("m_e_hide", hide)
-cloth = base('#8a2a2a', 64, 6, 64)
+hide = base('#7a5a40', 62, 8, 64); blotch(hide, 63, ['#6a4c34', '#8c6a4c', '#5a4030'], 30, 4); mtex("m_e_hide", hide)
+cloth = base('#8f8577', 64, 5, 64)
 for y in range(0, 64, 8):
-    cloth[y, :, :3] = rgb('#d8b040')
+    cloth[y, :, :3] = rgb('#d8d0c0')
 mtex("m_e_cloth", cloth)
 coal = base('#2a1a14', 65, 10, 64); blotch(coal, 66, ['#ff7a1a', '#ffb040', '#e04a10', '#401a10'], 70, 2); mtex("m_e_embers", coal)
 fire = base('#ff9a2a', 67, 20, 64); mtex("m_e_fire", fire)
-glass = base('#fff1b0', 68, 8, 64); mtex("m_e_lampglow", glass)
-rug = base('#7a2a3a', 69, 4, 64)
+glass = base('#ffb257', 68, 8, 64); mtex("m_e_lampglow", glass)
+rug = base('#8a7e6e', 69, 4, 64)
 for y in range(64):
     for x in range(64):
         d = max(abs(x - 31.5), abs(y - 31.5))
         if int(d) % 8 in (0, 1):
-            rug[y, x, :3] = rgb('#d8b040')
+            rug[y, x, :3] = rgb('#e2dccd')
         elif abs(abs(x - 31.5) - abs(y - 31.5)) < 2 and d < 20:
-            rug[y, x, :3] = rgb('#2a4a7a')
+            rug[y, x, :3] = rgb('#5e564a')
 mtex("m_e_rug", rug)
-fish = base('#2a6ab0', 70, 8, 64)
+fish = base('#6f8a96', 70, 8, 64)
 for y in range(64):
     for x in range(64):
         if (x // 4 + y // 4) % 2 == 0:
             fish[y, x, :3] *= 0.86
         if y > 40:
             fish[y, x, :3] = rgb('#d8e8f0')
-blotch(fish, 71, ['#5af0e0', '#a0fff0'], 10, 1)
+blotch(fish, 71, ['#a8c4cc', '#c8dade'], 10, 1)
 mtex("m_e_fish", fish)
-fish2 = base('#c84aa0', 72, 8, 64)
+fish2 = base('#8a7f90', 72, 8, 64)
 for y in range(64):
     for x in range(64):
         if (x // 3) % 3 == 0:
-            fish2[y, x, :3] = rgb('#f0c040')
+            fish2[y, x, :3] = rgb('#c9c0b0')
 mtex("m_e_fish2", fish2)
 fur = base('#7a6248', 73, 12, 64); mtex("m_e_fur", fur)
 gold = base('#c9a24a', 74, 10, 64); mtex("m_e_gold", gold)
@@ -442,15 +456,15 @@ r = np.random.RandomState(75)
 for y in range(64):
     for x in range(64):
         if r.rand() < 0.7:
-            leafm[y, x] = list(rgb(GRASS[r.randint(len(GRASS))]) * (0.75 + 0.4 * r.rand())) + [255]
+            leafm[y, x] = list(rgb(SAGE[r.randint(len(SAGE))]) * (0.8 + 0.3 * r.rand())) + [255]
 mtex("m_e_foliage", leafm)
-flw = leafm.copy(); blotch(flw, 76, ['#c86cf0', '#f0e66c', '#6ce8f0', '#ffffff'], 26, 1); mtex("m_e_flowers", flw)
-food = base('#c04030', 77, 20, 64); blotch(food, 78, ['#e0a020', '#60a030', '#a03070', '#f0e0a0'], 60, 3); mtex("m_e_produce", food)
+flw = leafm.copy(); blotch(flw, 76, ['#e8e0f0', '#f2ecd8', '#ffffff'], 26, 1); mtex("m_e_flowers", flw)
+food = base('#b0a07a', 77, 14, 64); blotch(food, 78, ['#c8b070', '#8a9a60', '#a07060', '#e6dcc0'], 60, 3); mtex("m_e_produce", food)
 
 
-def sign_tex(name, word, emblem, board='#6a4a32', paint='#e8d8a8'):
+def sign_tex(name, word, emblem, board='#6a5e4e', paint='#f2ecdf'):
     W, H = 128, 64
-    a = wood64('#7a5236', '#4f3424', 80 + len(word))
+    a = wood64('#8a7c66', '#5e5446', 80 + len(word))
     img = Image.fromarray(np.clip(np.kron(a, np.ones((1, 2, 1))), 0, 255).astype(np.uint8), "RGBA").resize((W, H))
     d = ImageDraw.Draw(img)
     d.rectangle([2, 2, W - 3, H - 3], outline=(58, 40, 28, 255), width=3)
@@ -545,3 +559,90 @@ print("elisar textures OK", len(os.listdir(BLK)), "block,", len(os.listdir(MOD))
 # block roof texture reused by Blender models (well roof)
 import shutil as _sh
 _sh.copy(os.path.join(BLK, "roof_red.png"), os.path.join(MOD, "m_e_roofred.png"))
+
+
+# ------------------------------------------------------------------------------------------- paintings (interiors)
+def frame_img(img, col=(110, 98, 80)):
+    d = ImageDraw.Draw(img)
+    W, H = img.size
+    d.rectangle([0, 0, W - 1, H - 1], outline=col, width=4)
+    d.rectangle([4, 4, W - 5, H - 5], outline=(200, 180, 120), width=1)
+    return img
+
+
+def paint_islands(name, W=64, H=64, seed=1):
+    r = np.random.RandomState(seed)
+    img = Image.new("RGBA", (W, H), (236, 233, 226, 255))
+    d = ImageDraw.Draw(img)
+    for y in range(H):                                   # misty sky gradient
+        c = int(240 - y * 0.35)
+        d.line([(0, y), (W, y)], fill=(c, c - 2, c - 8))
+    for k in range(4):                                   # floating islands with dark undersides
+        cx, cy, w = r.randint(8, W - 8), r.randint(14, H - 20), r.randint(8, 20)
+        d.polygon([(cx - w, cy), (cx + w, cy), (cx + w // 3, cy + w), (cx, cy + w + 6), (cx - w // 2, cy + w // 2)], fill=(70, 70, 74))
+        d.rectangle([cx - w, cy - 3, cx + w, cy], fill=(214, 208, 194))
+        for j in range(r.randint(1, 3)):
+            hx = cx - w + 4 + j * 7
+            d.rectangle([hx, cy - 9, hx + 4, cy - 3], fill=(196, 186, 168)); d.polygon([(hx - 1, cy - 9), (hx + 5, cy - 9), (hx + 2, cy - 13)], fill=(150, 140, 125))
+            d.point((hx + 2, cy - 6), fill=(255, 170, 80))
+    d.rectangle([0, H - 8, W, H], fill=(170, 205, 220))  # mirror ocean
+    return frame_img(img)
+
+
+def paint_portrait(name, W=64, H=64, seed=2):
+    img = Image.new("RGBA", (W, H), (92, 84, 72, 255))
+    d = ImageDraw.Draw(img)
+    for y in range(H):
+        d.line([(0, y), (W, y)], fill=(96 - y // 4, 88 - y // 4, 76 - y // 4))
+    d.ellipse([22, 14, 42, 38], fill=(206, 182, 156))                    # face
+    d.chord([20, 10, 44, 30], 180, 360, fill=(60, 52, 44))               # hair
+    d.ellipse([27, 23, 30, 26], fill=(50, 44, 38)); d.ellipse([34, 23, 37, 26], fill=(50, 44, 38))
+    d.line([(29, 32), (35, 32)], fill=(150, 110, 100))
+    d.polygon([(14, 62), (18, 44), (32, 38), (46, 44), (50, 62)], fill=(176, 168, 150))   # robe
+    d.polygon([(28, 40), (32, 50), (36, 40)], fill=(220, 214, 200))
+    return frame_img(img, (90, 76, 58))
+
+
+def paint_eye(name, W=128, H=64):
+    img = Image.new("RGBA", (W, H), (236, 233, 226, 255))
+    d = ImageDraw.Draw(img)
+    for y in range(H):
+        c = int(238 - abs(y - 32) * 0.4)
+        d.line([(0, y), (W, y)], fill=(c, c - 2, c - 6))
+    d.ellipse([20, 14, 108, 50], outline=(150, 144, 132), width=3)
+    d.ellipse([48, 16, 80, 48], fill=(196, 190, 178), outline=(130, 124, 112), width=2)
+    d.ellipse([57, 25, 71, 39], fill=(80, 76, 70)); d.ellipse([60, 27, 64, 31], fill=(240, 238, 232))
+    for k in range(9):
+        x = 28 + k * 9
+        d.line([(x, 14 + abs(k - 4)), (x - 2, 8 + abs(k - 4))], fill=(150, 144, 132), width=2)
+    return frame_img(img)
+
+
+paint_islands("m_paint_islands").save(os.path.join(MOD, "m_paint_islands.png"))
+paint_portrait("m_paint_portrait").save(os.path.join(MOD, "m_paint_portrait.png"))
+paint_eye("m_paint_eye").save(os.path.join(MOD, "m_paint_eye.png"))
+cer = base('#b49a80', 90, 6, 64); blotch(cer, 91, ['#a68c72', '#c4ab90'], 12, 3)
+for y in range(0, 64, 16):
+    cer[y:y + 2, :, :3] = rgb('#e6dccb')
+mtex("m_e_ceramic", cer)
+plate = base('#ece8df', 92, 3, 64)
+for y in range(64):
+    for x in range(64):
+        if 22 < math.hypot(x - 31.5, y - 31.5) < 25:
+            plate[y, x, :3] = rgb('#9fb3bf')
+mtex("m_e_plate", plate)
+books = np.zeros((64, 64, 4)); books[..., 3] = 255
+r = np.random.RandomState(93); x = 0
+while x < 64:
+    w_ = r.randint(4, 9); c = rgb(['#7d6a58', '#5e6a72', '#8a7e6a', '#6e5e50', '#a0907a', '#4f5552'][r.randint(6)])
+    books[:, x:x + w_, :3] = c + r.randint(-8, 8)
+    books[8:10, x:x + w_, :3] = rgb('#d8cfa8'); books[52:54, x:x + w_, :3] = rgb('#d8cfa8')
+    books[:, x, :3] *= 0.7; x += w_
+mtex("m_e_books", books)
+logend = np.zeros((64, 64, 4)); logend[..., 3] = 255
+for y in range(64):
+    for x in range(64):
+        d_ = math.hypot((x % 32) - 15.5, (y % 32) - 15.5)
+        logend[y, x, :3] = rgb('#7a7064') if d_ > 14 else (rgb('#cfc4ad') if int(d_) % 4 else rgb('#b0a58e'))
+mtex("m_e_logend", logend)
+print("paintings OK")

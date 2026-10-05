@@ -1,0 +1,35 @@
+newmtl e_stone
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_stone
+
+newmtl e_iron
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_iron
+
+newmtl e_coal
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/c_e_coal
+
+newmtl e_fire
+Ka 1 1 1
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_fire
+
+newmtl e_embers
+Ka 1 1 1
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_embers
+
+newmtl e_produce
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_produce
+
+newmtl e_ceramic
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_ceramic
+

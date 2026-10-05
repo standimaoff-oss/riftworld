@@ -75,6 +75,8 @@ public final class ElisarBlocks {
     public static final RegistryObject<SlabBlock> COBBLE_SLAB = slab("elisar_cobble_slab", MapColor.STONE, SoundType.STONE);
     public static final RegistryObject<FenceBlock> FENCE = ModBlocks.reg("elisar_fence", () -> new FenceBlock(p(MapColor.COLOR_BROWN, 2.0F, SoundType.WOOD)));
     public static final RegistryObject<FenceBlock> ROPE_POST = ModBlocks.reg("rope_post", () -> new FenceBlock(p(MapColor.COLOR_BROWN, 1.0F, SoundType.WOOD)));
+    public static final RegistryObject<net.minecraft.world.level.block.ChainBlock> CHAIN = ModBlocks.reg("elisar_chain",
+            () -> new net.minecraft.world.level.block.ChainBlock(p(MapColor.METAL, 2.0F, SoundType.CHAIN).noOcclusion()));
     public static final RegistryObject<IronBarsBlock> WINDOW = ModBlocks.reg("elisar_window", () -> new IronBarsBlock(p(MapColor.NONE, 0.3F, SoundType.GLASS).noOcclusion()));
     public static final RegistryObject<DoorBlock> DOOR = ModBlocks.reg("elisar_door", () -> new DoorBlock(p(MapColor.COLOR_BROWN, 3.0F, SoundType.WOOD).noOcclusion().pushReaction(PushReaction.DESTROY), BlockSetType.SPRUCE));
     // plants

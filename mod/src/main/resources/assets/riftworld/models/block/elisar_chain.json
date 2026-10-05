@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/chain",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "particle": "riftworld:block/elisar_chain",
+    "all": "riftworld:block/elisar_chain"
+  }
+}

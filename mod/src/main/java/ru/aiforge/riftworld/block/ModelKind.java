@@ -87,7 +87,23 @@ public enum ModelKind {
     COOKING_POT("cooking_pot", 0, 0, 0, 2, Block.box(2, 0, 2, 14, 16, 14)),
     WANTED_WALL("wanted_wall", 0, 0, 0, 2, Block.box(1, 0, 14, 15, 16, 16)),
     CRATE_STACK("crate_stack", 0, 0, 0, 1, Block.box(1, 0, 1, 15, 16, 15)),
-    LANTERN_HANGING("lantern_hanging", 0, 0, 0, 1, Block.box(4, 4, 4, 12, 16, 12));
+    LANTERN_HANGING("lantern_hanging", 0, 0, 0, 1, Block.box(4, 4, 4, 12, 16, 12)),
+    // ---- Elisar v2 (baked OBJ block models)
+    LANTERN_HANG("lantern_hang", 0, 0, 0, 1, Block.box(5, 5, 5, 11, 16, 11)),
+    LANTERN_POST("lantern_post", 0, 0, 0, 2, Block.box(5, 0, 5, 11, 16, 11)),
+    LANTERN_WALL("lantern_wall", 0, 0, 0, 1, Block.box(5, 5, 4, 11, 16, 16)),
+    PAINTING_ISLANDS("painting_islands", 0, 0, 0, 2, Block.box(1, 0, 14, 15, 2, 16)),
+    PAINTING_PORTRAIT("painting_portrait", 0, 0, 0, 2, Block.box(1, 0, 14, 15, 2, 16)),
+    PAINTING_EYE("painting_eye", 0, 1, 0, 2, Block.box(0, 0, 14, 16, 2, 16)),
+    KITCHEN_STOVE("kitchen_stove", 0, 0, 0, 2, Block.box(0, 0, 1, 16, 14, 16)),
+    KITCHEN_COUNTER("kitchen_counter", 0, 0, 0, 1, Block.box(0, 0, 2, 16, 15, 16)),
+    DISH_CUPBOARD("dish_cupboard", 0, 0, 0, 2, Block.box(0, 0, 8, 16, 16, 16)),
+    BOOKSHELF_E("bookshelf_e", 0, 0, 0, 2, Block.box(0, 0, 8, 16, 16, 16)),
+    SACKS("sacks", 0, 0, 0, 1, Block.box(1, 0, 1, 15, 14, 15)),
+    FIREWOOD_STACK("firewood_stack", 0, 0, 0, 1, Block.box(0, 0, 0, 16, 16, 16)),
+    FIRE_PIT("fire_pit", 0, 0, 0, 1, Block.box(1, 0, 1, 15, 5, 15)),
+    FLOWER_POT_E("flower_pot_e", 0, 0, 0, 1, Block.box(5, 0, 5, 11, 10, 11)),
+    HERBS_HANGING("herbs_hanging", 0, 0, 0, 1, Block.box(1, 9, 6, 15, 16, 10));
 
     public final String glb;
     public final int x0, x1, back, h;
@@ -106,7 +122,8 @@ public enum ModelKind {
         return switch (this) {
             case WALL_NOTES, FIRE_EXTINGUISHER, PAPER_PILE, CHANDELIER, SIGN_SHOP, SIGN_TAVERN, SIGN_FORGE, SIGN_FISH,
                  SIGN_POLICE, SIGN_HUNTER, SIGN_MARKET, SIGN_TEMPLE, FISHING_NET, TROPHY_ANTLERS, TOOL_WALL, RUG,
-                 WANTED_WALL, SACRED_POLES, LANTERN_HANGING -> true;
+                 WANTED_WALL, SACRED_POLES, LANTERN_HANGING, LANTERN_HANG, LANTERN_WALL, PAINTING_ISLANDS,
+                 PAINTING_PORTRAIT, PAINTING_EYE, HERBS_HANGING -> true;
             default -> false;
         };
     }
@@ -118,6 +135,9 @@ public enum ModelKind {
         return switch (this) {
             case STREET_LAMP, FIRE_BOWL -> 15;
             case LANTERN_HANGING -> 14;
+            case LANTERN_HANG, LANTERN_POST, LANTERN_WALL -> 15;
+            case FIRE_PIT -> 14;
+            case KITCHEN_STOVE -> 10;
             case FIREPLACE -> 13;
             case COOKING_POT -> 11;
             case ALTAR_STONE -> 9;

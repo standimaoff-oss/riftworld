@@ -171,3 +171,19 @@ dirt_pile (carpet, cleaned by the wave), lab_railing (iron-bars type, gallery), 
 
 ### Next (Part 3b)
 Flight: confirm on the capsule console → the sphere rises in real time along a multicolour laser that wraps the bottom 20% of the sphere. Earth from orbit → deep space → approach to Элисар; no breaking or exiting; 15 s; landing in the intact lab twin in «Странники».
+
+## Part 3 revision 1 (v0.3.1): matching the user references
+
+| Request | What was done |
+|---|---|
+| White/bleached look as in the references | All Elisar block and model textures re-coloured to the pale palette (grass #d6d0c2, plaster #e9e4d8, bricks #ddd6c6, roofs #b8ad98/#8e8d88, dark-grey undersides #4a4a4d). Custom `DimensionSpecialEffects riftworld:elisar`: no clouds, fog pulled to cream, fog starts at 45 % of render distance. Biome sky #d7e1e6, fog #ece8de. |
+| Many more houses | 5 new templates: `house_e` (stone base + plank upper storey + balcony on posts), `house_f` (cottage), `house_g` (narrow two-storey), `house_h` (wide stone house), `house_i` (timber + amber planks + balcony). Fill pass along every street, plus a second row on lanes: **127 buildings** (was 37). Trees 523 → 137. |
+| More things inside (paintings, kitchen…) | 15 new Blender models: 3 lanterns (hanging/post/wall), 3 paintings, kitchen stove, kitchen counter, dish cupboard, bookshelf, sacks, firewood stack, fire pit, flower pot, drying herbs. An auto-furnisher puts a kitchen corner, cupboards, books, sacks, flowers, 1–2 paintings and herbs into every storey of every house (walkways kept clear). Outside: a wall lantern by the door, a flower pot on the step, firewood against a side wall. |
+| Everything as blocks, not entities | All 60 Elisar props are now **baked block models** (Forge OBJ loader, `RenderShape.MODEL`, no block entity). Exported from the Blender `.blend` by `tools/rift/obj_export.py`; UVs normalised per face into [0,1] (atlas sprites do not tile). Emissive lamp/flame materials through the MTL Ka. `_off` variants for powered=false. Lab machines keep their animated GLB renderers. |
+| Waterfall hangs past the island | Falling water only in the first void column next to land; the channel banks are raised to river level up to the rim, so the water runs to the edge and drops straight down. The same rule applies to the 13 rim springs. |
+| Water: only colour, like a reflection | Flat sky-reflection colour (164,212,232), no wave pattern. |
+| Reference details | Chain railing (`elisar_chain`, vanilla ChainBlock class, own texture) between bridge posts every 4 blocks. Lantern posts along streets (124) and at bridge ends. Fire-pit plazas with 4 benches on each satellite island. Floating 2×2 debris cubes around the rims. |
+
+Screenshots: `release/riftworld_screens/p3r_01…p3r_08_*.jpg`.
+
+**Next (revision 2):** the giant eye + hand in the sky, the inverted floating tower, the rising water spiral with fish, and a check against `loc12_void`. **Then:** the flight (Part 3b).

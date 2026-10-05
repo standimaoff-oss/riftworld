@@ -1,7 +1,34 @@
 {
   "variants": {
-    "": {
+    "facing=south,powered=false": {
       "model": "riftworld:block/forge_hearth"
+    },
+    "facing=south,powered=true": {
+      "model": "riftworld:block/forge_hearth"
+    },
+    "facing=west,powered=false": {
+      "model": "riftworld:block/forge_hearth",
+      "y": 90
+    },
+    "facing=west,powered=true": {
+      "model": "riftworld:block/forge_hearth",
+      "y": 90
+    },
+    "facing=north,powered=false": {
+      "model": "riftworld:block/forge_hearth",
+      "y": 180
+    },
+    "facing=north,powered=true": {
+      "model": "riftworld:block/forge_hearth",
+      "y": 180
+    },
+    "facing=east,powered=false": {
+      "model": "riftworld:block/forge_hearth",
+      "y": 270
+    },
+    "facing=east,powered=true": {
+      "model": "riftworld:block/forge_hearth",
+      "y": 270
     }
   }
 }

@@ -1,4 +1,5 @@
 """Elisar blocks: blockstates / models / items / loot / tags / lang. Run AFTER gen_resources.py (merges lang + tags)."""
+import os
 import json, os
 R = "/home/user/mods/riftworld/src/main/resources"
 A = R + "/assets/riftworld"; D = R + "/data/riftworld"
@@ -159,15 +160,27 @@ gen_item("elisar_water_bucket", "riftworld:item/elisar_water_bucket")
 # Elisar model props: particle + builtin item model
 PROPS = open("/home/user/notes/elisar_models.txt").read().strip().split(",")
 STONEY = {"well", "idol", "altar_stone", "forge_hearth", "fireplace"}
+ROT = {"south": 0, "west": 90, "north": 180, "east": 270}
 for n in PROPS:
-    w(f"{A}/models/block/{n}.json", {"textures": {"particle": NS + ("elisar_stone" if n in STONEY else "sizo_planks")}, "elements": []})
-    w(f"{A}/blockstates/{n}.json", {"variants": {"": {"model": NS + n}}})
-    big = n in ("market_stall", "market_stall_fish", "wagon_overgrown", "forge_hearth", "fireplace", "bar_counter", "rowboat", "well", "idol")
-    s = 0.3 if big else 0.5
-    w(f"{A}/models/item/{n}.json", {"parent": "minecraft:builtin/entity", "gui_light": "front", "display": {
-        "gui": {"rotation": [30, 225, 0], "translation": [0, -2 if big else 0, 0], "scale": [s, s, s]},
+    tex = "riftworld:block/obj/" + ("m_e_stone" if n in STONEY else "m_e_wood")
+    has_off = os.path.exists(f"{A}/models/block/obj/{n}_off.obj")
+    for suffix in ("", "_off") if has_off else ("",):
+        w(f"{A}/models/block/{n}{suffix}.json", {"loader": "forge:obj", "model": f"riftworld:models/block/obj/{n}{suffix}.obj",
+                                                 "flip_v": False, "emissive_ambient": True, "automatic_culling": False, "shade_quads": True,
+                                                 "render_type": "minecraft:cutout", "ambientocclusion": False, "textures": {"particle": tex}})
+    v = {}
+    for f, y in ROT.items():
+        for pw in ("false", "true"):
+            m = NS + n + ("_off" if has_off and pw == "false" else "")
+            v[f"facing={f},powered={pw}"] = {"model": m, "y": y} if y else {"model": m}
+    w(f"{A}/blockstates/{n}.json", {"variants": v})
+    big = n in ("market_stall", "market_stall_fish", "wagon_overgrown", "forge_hearth", "fireplace", "bar_counter", "rowboat", "well", "idol", "painting_eye")
+    tall = n in ("lantern_post", "kitchen_stove", "dish_cupboard", "bookshelf_e", "street_lamp", "painting_islands", "painting_portrait")
+    s_ = 0.3 if big else (0.4 if tall else 0.6)
+    w(f"{A}/models/item/{n}.json", {"parent": NS + n, "gui_light": "front", "display": {
+        "gui": {"rotation": [30, 225, 0], "translation": [0, -3 if tall else 0, 0], "scale": [s_, s_, s_]},
         "ground": {"rotation": [0, 0, 0], "translation": [0, 3, 0], "scale": [0.25, 0.25, 0.25]},
-        "fixed": {"rotation": [0, 180, 0], "translation": [0, 0, 0], "scale": [s, s, s]},
+        "fixed": {"rotation": [0, 180, 0], "translation": [0, 0, 0], "scale": [s_, s_, s_]},
         "thirdperson_righthand": {"rotation": [75, 45, 0], "translation": [0, 2.5, 0], "scale": [0.3, 0.3, 0.3]},
         "firstperson_righthand": {"rotation": [0, 45, 0], "translation": [0, 0, 0], "scale": [0.3, 0.3, 0.3]}}})
     DROPS.append(n)
@@ -178,13 +191,20 @@ for n in DROPS + ["sizo_leaves", "ambra_leaves", "elisar_tall_grass", "elisar_fl
     else:
         w(f"{D}/loot_tables/blocks/{n}.json", {"type": "minecraft:block", "pools": [{"rolls": 1, "entries": [{"type": "minecraft:item", "name": "riftworld:" + n}],
                                                                                   "conditions": [{"condition": "minecraft:survives_explosion"}]}]})
+# chain (vanilla ChainBlock): parented to the vanilla chain geometry, own texture
+w(f"{A}/models/block/elisar_chain.json", {"parent": "minecraft:block/chain", "render_type": "minecraft:cutout", "textures": {"particle": "riftworld:block/elisar_chain", "all": "riftworld:block/elisar_chain"}})
+w(f"{A}/blockstates/elisar_chain.json", {"variants": {"axis=x": {"model": NS + "elisar_chain", "x": 90, "y": 90}, "axis=y": {"model": NS + "elisar_chain"},
+                                                      "axis=z": {"model": NS + "elisar_chain", "x": 90}}})
+gen_item("elisar_chain", "riftworld:block/elisar_chain")
+w(f"{D}/loot_tables/blocks/elisar_chain.json", {"type": "minecraft:block", "pools": [{"rolls": 1, "entries": [{"type": "minecraft:item", "name": "riftworld:elisar_chain"}],
+                                                                                  "conditions": [{"condition": "minecraft:survives_explosion"}]}]})
 # tags
 T = R + "/data/minecraft/tags/"
 ID = lambda l: ["riftworld:" + x for x in l]
 WOODY = ["sizo_log", "ambra_log", "sizo_planks", "ambra_planks", "sizo_planks_stairs", "sizo_planks_slab", "ambra_planks_slab", "elisar_fence",
          "rope_post", "elisar_door", "timber_frame_cross", "timber_frame_post"] + [p for p in PROPS if p not in STONEY]
 STONES = ["elisar_stone", "elisar_stone_mossy", "elisar_cobble", "elisar_bricks", "elisar_bricks_mossy", "elisar_plaster", "roof_red", "roof_blue",
-          "roof_red_stairs", "roof_blue_stairs", "roof_red_slab", "roof_blue_slab", "elisar_bricks_stairs", "elisar_cobble_stairs", "elisar_cobble_slab"] + sorted(STONEY)
+          "roof_red_stairs", "roof_blue_stairs", "elisar_chain", "roof_red_slab", "roof_blue_slab", "elisar_bricks_stairs", "elisar_cobble_stairs", "elisar_cobble_slab"] + sorted(STONEY)
 merge(T + "blocks/mineable/axe.json", {"values": ID(WOODY)})
 merge(T + "blocks/mineable/pickaxe.json", {"values": ID(STONES)})
 merge(T + "blocks/mineable/shovel.json", {"values": ID(["elisar_grass", "elisar_soil", "elisar_seabed", "elisar_path"])})
@@ -222,10 +242,15 @@ NAMES = {
     "roof_red_slab": ("Red Roof Slab", "Плита красной черепицы"), "roof_blue_slab": ("Blue Roof Slab", "Плита синей черепицы"),
     "thatch_slab": ("Thatch Slab", "Соломенная плита"), "sizo_planks_slab": ("Sizotrunk Slab", "Плита из сизоствола"),
     "ambra_planks_slab": ("Ambertree Slab", "Плита из янтарника"), "elisar_cobble_slab": ("Cobblestone Slab", "Плита мостовой"),
-    "elisar_fence": ("Elisar Fence", "Забор Элисара"), "rope_post": ("Rope Post", "Столбик с канатом"), "elisar_window": ("Leaded Window", "Окно с переплётом"),
+    "elisar_fence": ("Elisar Fence", "Забор Элисара"), "rope_post": ("Rope Post", "Столбик с канатом"), "elisar_chain": ("Elisar Chain", "Цепь Элисара"), "elisar_window": ("Leaded Window", "Окно с переплётом"),
     "elisar_door": ("Plank Door", "Дощатая дверь"), "elisar_tall_grass": ("Blue Grass", "Синяя трава"), "elisar_flowers": ("Starbells", "Звездоцветы"),
     "elisar_ivy": ("Elisar Ivy", "Плющ Элисара"), "elisar_water": ("Elisar Water", "Вода Элисара"),
-    "street_lamp": ("Street Lamp", "Уличный фонарь"), "lantern_hanging": ("Hanging Candle Chandelier", "Подвесная люстра со свечами"), "sign_shop": ("Shop Sign", "Вывеска «Лавка»"), "sign_tavern": ("Tavern Sign", "Вывеска «Трактир»"),
+    "street_lamp": ("Street Lamp", "Уличный фонарь"), "lantern_hanging": ("Hanging Candle Chandelier", "Подвесная люстра со свечами"),
+    "lantern_hang": ("Hanging Lantern", "Подвесной фонарь"), "lantern_post": ("Lantern Post", "Фонарный столб"), "lantern_wall": ("Wall Lantern", "Настенный фонарь"),
+    "painting_islands": ("Painting «Islands»", "Картина «Острова»"), "painting_portrait": ("Portrait", "Портрет"), "painting_eye": ("Painting «The Eye»", "Картина «Око»"),
+    "kitchen_stove": ("Kitchen Stove", "Кухонная печь"), "kitchen_counter": ("Kitchen Counter", "Кухонный стол"), "dish_cupboard": ("Dish Cupboard", "Буфет с посудой"),
+    "bookshelf_e": ("Bookshelf", "Книжный шкаф"), "sacks": ("Grain Sacks", "Мешки с зерном"), "firewood_stack": ("Firewood Stack", "Поленница"),
+    "fire_pit": ("Fire Pit", "Кострище"), "flower_pot_e": ("Flower Pot", "Цветочный горшок"), "herbs_hanging": ("Drying Herbs", "Сушёные травы"), "sign_shop": ("Shop Sign", "Вывеска «Лавка»"), "sign_tavern": ("Tavern Sign", "Вывеска «Трактир»"),
     "sign_forge": ("Forge Sign", "Вывеска «Кузница»"), "sign_fish": ("Fishmonger Sign", "Вывеска «Рыба»"), "sign_police": ("Guard Post Sign", "Вывеска «Стража»"),
     "sign_hunter": ("Hunter Sign", "Вывеска «Охотник»"), "sign_market": ("Market Sign", "Вывеска «Рынок»"), "sign_temple": ("Temple Sign", "Вывеска «Храм»"),
     "bounty_board": ("Bounty Board", "Доска розыска"), "market_stall": ("Produce Stall", "Прилавок с овощами"),

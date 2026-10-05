@@ -1,0 +1,15 @@
+newmtl e_wood_dark
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_wood_dark
+
+newmtl e_bone
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/c_e_bone
+
+newmtl e_glow
+Ka 1 1 1
+Kd 1 1 1
+map_Kd riftworld:block/obj/c_e_glow
+

@@ -69,7 +69,8 @@ public class ModelBlock extends HorizontalDirectionalBlock implements EntityBloc
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.ENTITYBLOCK_ANIMATED;
+        // Elisar props are real blocks: static OBJ geometry baked into the chunk mesh (no block entity, shader friendly)
+        return kind.isElisar() ? RenderShape.MODEL : RenderShape.ENTITYBLOCK_ANIMATED;
     }
 
     @Override
@@ -150,7 +151,7 @@ public class ModelBlock extends HorizontalDirectionalBlock implements EntityBloc
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new RiftBlockEntity(pos, state);
+        return kind.isElisar() ? null : new RiftBlockEntity(pos, state);
     }
 
     @Nullable
