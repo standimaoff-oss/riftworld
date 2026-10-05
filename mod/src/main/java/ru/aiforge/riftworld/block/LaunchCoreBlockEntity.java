@@ -1,13 +1,10 @@
 package ru.aiforge.riftworld.block;
 
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
@@ -29,29 +26,24 @@ import ru.aiforge.riftworld.registry.ModBlocks;
 
 /**
  * Launch sequence of the shaft: the lid leaves swing down (OPEN_T), the capsule rides up 29 blocks (RISE_T), lands
- * flush with the hall floor and a cyan cleaning wave spreads block by block. The wave only removes plants and dirt
- * (dead moss/vines, dirt piles, cobwebs) and washes dirty panels; everything broken or knocked over stays as it is.
+ * flush with the hall floor and the lab lights flicker back to life (FLICKER_T). Nothing in the lab is changed or cleaned -
+ * only the ceiling and emergency lamps blink and then stay on.
  */
 public class LaunchCoreBlockEntity extends BlockEntity {
-    public static final int IDLE = 0, OPENING = 1, RISING = 2, CLEANING = 3, DONE = 4, FLIGHT = 5, ARRIVE = 6;
+    public static final int IDLE = 0, OPENING = 1, RISING = 2, FLICKER = 3, DONE = 4, FLIGHT = 5, ARRIVE = 6;
+    /** Lights flicker after the capsule lands (ticks). */
+    public static final int FLICKER_T = 70;
     /** Flight: lift-off on the laser (overworld) and the arrival rise in the Elisar shaft (ticks). */
     public static final int LIFT_T = 40, ARRIVE_T = 60;
     public static final float LIFT_H = 1.6F;
     public static final int OPEN_T = 60, RISE_T = 200, DEPTH = 29, HALF = 5;
-    public static final float WAVE_SPEED = 0.3F, WAVE_MAX = 46F;
-    public static final int WAVE_DOWN = -8, WAVE_UP = 16;
-    /** Floor levels (relative to the core) where the client draws the scan ring. */
-    public static final int[] RING_LEVELS = {-5, 1, 9, 15};
 
     public int stage;
     public long start;
     public boolean door;
     /** Client-side smoothed door opening. */
     public float doorAnim, doorAnimPrev;
-    private int waveIndex;
-    private List<BlockPos> sirens;
-
-    private static int[][] OFFSETS;
+    private List<BlockPos> sirens, lamps;
 
     public LaunchCoreBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.LAUNCH_CORE.get(), pos, state);
@@ -70,13 +62,9 @@ public class LaunchCoreBlockEntity extends BlockEntity {
     public float capsuleOffset(float t) {
         if (stage == FLIGHT) return LIFT_H * ease(t / LIFT_T);
         if (stage == ARRIVE) return -DEPTH + DEPTH * ease(t / ARRIVE_T);
-        if (stage == CLEANING || stage == DONE) return 0;
+        if (stage == FLICKER || stage == DONE) return 0;
         if (stage == IDLE || t < OPEN_T) return -DEPTH;
         return -DEPTH + DEPTH * ease((t - OPEN_T) / RISE_T);
-    }
-
-    public float waveRadius(float t) {
-        return Math.max(0, (t - OPEN_T - RISE_T - 10) * WAVE_SPEED);
     }
 
     // ------------------------------------------------------------------------------------------------ server
@@ -84,7 +72,6 @@ public class LaunchCoreBlockEntity extends BlockEntity {
         if (level == null || stage != IDLE) return false;
         stage = OPENING;
         start = level.getGameTime();
-        waveIndex = 0;
         sync();
         level.playSound(null, worldPosition, SoundEvents.RAID_HORN.value(), SoundSource.BLOCKS, 6.0F, 0.8F);
         level.playSound(null, worldPosition, SoundEvents.PISTON_EXTEND, SoundSource.BLOCKS, 3.0F, 0.5F);
@@ -120,7 +107,6 @@ public class LaunchCoreBlockEntity extends BlockEntity {
             }
         stage = ARRIVE;
         start = level.getGameTime();
-        waveIndex = 0;
         door = false;
         sync();
     }
@@ -157,8 +143,8 @@ public class LaunchCoreBlockEntity extends BlockEntity {
             if (t % 6 == 0) sl.playSound(null, worldPosition.offset(0, Mth.floor(off) + 2, 0), SoundEvents.BEACON_AMBIENT, SoundSource.BLOCKS, 3.0F, 0.9F);
             if (t >= ARRIVE_T) {
                 land(sl, f);
-                stage = CLEANING;
-                start = now - OPEN_T - RISE_T;              // the cleaning wave starts from the capsule right now
+                stage = FLICKER;
+                start = now;
                 sync();
                 sl.playSound(null, worldPosition, SoundEvents.ANVIL_LAND, SoundSource.BLOCKS, 2.0F, 0.4F);
                 sl.playSound(null, worldPosition, SoundEvents.BEACON_POWER_SELECT, SoundSource.BLOCKS, 4.0F, 0.6F);
@@ -197,23 +183,27 @@ public class LaunchCoreBlockEntity extends BlockEntity {
             }
             if (t >= OPEN_T + RISE_T) {
                 land(sl, f);
-                stage = CLEANING;
+                stage = FLICKER;
+                start = now;
                 sync();
                 sl.playSound(null, worldPosition, SoundEvents.ANVIL_LAND, SoundSource.BLOCKS, 2.0F, 0.4F);
                 sl.playSound(null, worldPosition, SoundEvents.BEACON_POWER_SELECT, SoundSource.BLOCKS, 4.0F, 0.6F);
             }
-        } else if (stage == CLEANING) {
-            float r = waveRadius(t);
-            wave(sl, r);
-            if (t % 6 == 0) sl.playSound(null, worldPosition, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 2.5F, 0.6F + r / 60F);
-            if (r >= WAVE_MAX) {
+        } else if (stage == FLICKER) {
+            Boolean on = flickerState(t);
+            if (on != null) {
+                setLamps(sl, on);
+                if (on) sl.playSound(null, worldPosition.above(6), SoundEvents.REDSTONE_TORCH_BURNOUT, SoundSource.BLOCKS, 0.6F, 1.6F + sl.random.nextFloat() * 0.3F);
+            }
+            if (t >= FLICKER_T) {
+                setLamps(sl, true);
                 stage = DONE;
                 setSirens(false);
                 sync();
                 sl.playSound(null, worldPosition, SoundEvents.BEACON_ACTIVATE, SoundSource.BLOCKS, 3.0F, 1.2F);
             }
         }
-        if ((stage == CLEANING || stage == DONE) && t % 4 == 0) doors(sl, f);
+        if ((stage == FLICKER || stage == DONE) && t % 4 == 0) doors(sl, f);
     }
 
     /** Capsule cells (model frame: x right, z toward the front) that receive invisible collision parts. */
@@ -279,61 +269,31 @@ public class LaunchCoreBlockEntity extends BlockEntity {
         sync();
     }
 
-    private static Map<Block, BlockState> cleanMap() {
-        Map<Block, BlockState> m = new HashMap<>();
-        BlockState air = Blocks.AIR.defaultBlockState();
-        m.put(ModBlocks.DEAD_MOSS.get(), air);
-        m.put(ModBlocks.DEAD_VINES.get(), air);
-        m.put(ModBlocks.DIRT_PILE.get(), air);
-        m.put(Blocks.COBWEB, air);
-        m.put(Blocks.VINE, air);
-        m.put(ModBlocks.LAB_PANEL_DIRTY.get(), ModBlocks.LAB_PANEL.get().defaultBlockState());
-        m.put(ModBlocks.LAB_PANEL_STRIPE_DIRTY.get(), ModBlocks.LAB_PANEL_STRIPE.get().defaultBlockState());
-        m.put(ModBlocks.LAB_CEILING_DIRTY.get(), ModBlocks.LAB_CEILING.get().defaultBlockState());
-        return m;
+    /** Irregular power-up blink: short stutters that get longer until the lamps hold. null = no change this tick. */
+    private static final int[] BLINK = {2, 5, 8, 9, 14, 16, 22, 23, 26, 33, 41, 44, 52, 54, 58};
+
+    static Boolean flickerState(long t) {
+        for (int k = 0; k < BLINK.length; ++k) if (BLINK[k] == t) return k % 2 == 0;
+        return null;
     }
 
-    private static Map<Block, BlockState> CLEAN;
+    /** Lamp state at time t of the flicker (used by the capsule renderer for its own lights). */
+    public static boolean lightsOn(float t) {
+        boolean on = false;
+        for (int k = 0; k < BLINK.length && BLINK[k] <= t; ++k) on = k % 2 == 0;
+        return on || t >= FLICKER_T;
+    }
 
-    private void wave(ServerLevel sl, float r) {
-        if (OFFSETS == null) {
-            int R = (int) Math.ceil(WAVE_MAX);
-            List<int[]> l = new ArrayList<>();
-            for (int x = -R; x <= R; ++x)
-                for (int z = -R; z <= R; ++z)
-                    if (x * x + z * z <= WAVE_MAX * WAVE_MAX) l.add(new int[] {x, z});
-            l.sort(Comparator.comparingInt(a -> a[0] * a[0] + a[1] * a[1]));
-            OFFSETS = l.toArray(new int[0][]);
-        }
-        if (CLEAN == null) CLEAN = cleanMap();
-        DustParticleOptions dust = new DustParticleOptions(new Vector3f(0.35F, 0.95F, 1.0F), 1.4F);
-        BlockPos.MutableBlockPos m = new BlockPos.MutableBlockPos();
-        float r2 = r * r;
-        int cleaned = 0;
-        while (waveIndex < OFFSETS.length) {
-            int[] o = OFFSETS[waveIndex];
-            if (o[0] * o[0] + o[1] * o[1] > r2) break;
-            ++waveIndex;
-            for (int dy = WAVE_DOWN; dy <= WAVE_UP; ++dy) {
-                m.set(worldPosition.getX() + o[0], worldPosition.getY() + dy, worldPosition.getZ() + o[1]);
-                if (!sl.isLoaded(m)) continue;
-                BlockState s = sl.getBlockState(m);
-                BlockState to = CLEAN.get(s.getBlock());
-                if (to == null) continue;
-                sl.setBlock(m, to, 2);
-                if (cleaned++ < 40) {
-                    sl.sendParticles(dust, m.getX() + 0.5, m.getY() + 0.5, m.getZ() + 0.5, 3, 0.3, 0.3, 0.3, 0);
-                    if (sl.random.nextInt(3) == 0) sl.sendParticles(ParticleTypes.END_ROD, m.getX() + 0.5, m.getY() + 0.5, m.getZ() + 0.5, 1, 0.2, 0.2, 0.2, 0.02);
-                }
+    private void setLamps(ServerLevel sl, boolean on) {
+        if (lamps == null) {
+            lamps = new ArrayList<>();
+            for (BlockPos p : BlockPos.betweenClosed(worldPosition.offset(-40, -8, -40), worldPosition.offset(40, 16, 40))) {
+                if (sl.getBlockState(p).getBlock() instanceof LabLampBlock) lamps.add(p.immutable());
             }
         }
-        // sparkles along the wave front on each floor
-        for (int lv : RING_LEVELS) {
-            for (int k = 0; k < 5; ++k) {
-                double a = sl.random.nextDouble() * Math.PI * 2;
-                sl.sendParticles(dust, worldPosition.getX() + 0.5 + Math.cos(a) * r, worldPosition.getY() + lv + 0.2,
-                        worldPosition.getZ() + 0.5 + Math.sin(a) * r, 1, 0.05, 0.1, 0.05, 0);
-            }
+        for (BlockPos p : lamps) {
+            BlockState s = sl.getBlockState(p);
+            if (s.getBlock() instanceof LabLampBlock && s.getValue(LabLampBlock.LIT) != on) sl.setBlock(p, s.setValue(LabLampBlock.LIT, on), 2);
         }
     }
 
@@ -355,7 +315,6 @@ public class LaunchCoreBlockEntity extends BlockEntity {
         tag.putInt("Stage", stage);
         tag.putLong("Start", start);
         tag.putBoolean("Door", door);
-        tag.putInt("Wave", waveIndex);
     }
 
     @Override
@@ -364,7 +323,6 @@ public class LaunchCoreBlockEntity extends BlockEntity {
         stage = tag.getInt("Stage");
         start = tag.getLong("Start");
         door = tag.getBoolean("Door");
-        waveIndex = tag.getInt("Wave");
     }
 
     @Override

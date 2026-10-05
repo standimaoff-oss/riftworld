@@ -25,7 +25,7 @@ import ru.aiforge.riftworld.registry.ModBlockEntities;
 
 /**
  * Invisible anchor in the centre of the shaft lid. Its block entity draws the two hatch leaves, the capsule waiting at
- * the shaft bottom and runs the launch sequence (hatch -> rise -> landing -> cleaning wave).
+ * the shaft bottom and runs the launch sequence (hatch -> rise -> landing -> lights flicker on).
  */
 public class LaunchCoreBlock extends BaseEntityBlock {
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;

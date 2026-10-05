@@ -14,11 +14,10 @@ import ru.aiforge.riftworld.RiftWorld;
 import ru.aiforge.riftworld.block.LaunchCoreBlockEntity;
 import ru.aiforge.riftworld.glb.Pose;
 
-/** Draws shaft lid leaves, the capsule (waiting / rising / landed) and the cleaning-wave rings. */
+/** Draws shaft lid leaves and the capsule (waiting / rising / landed, its lights blinking while the lab powers up). */
 public class LaunchCoreRenderer implements BlockEntityRenderer<LaunchCoreBlockEntity> {
     private static final ResourceLocation HATCH = new ResourceLocation(RiftWorld.MODID, "models/glb/shaft_hatch.glb");
     private static final ResourceLocation CAPSULE = new ResourceLocation(RiftWorld.MODID, "models/glb/capsule.glb");
-    private static final ResourceLocation RING = new ResourceLocation(RiftWorld.MODID, "models/glb/scan_ring.glb");
 
     public LaunchCoreRenderer(BlockEntityRendererProvider.Context ctx) {
     }
@@ -49,8 +48,9 @@ public class LaunchCoreRenderer implements BlockEntityRenderer<LaunchCoreBlockEn
             int cl = LevelRenderer.getLightColor(be.getLevel(), be.getBlockPos().offset(0, Mth.floor(off) + 2, 0));
             if (be.stage != LaunchCoreBlockEntity.IDLE) cl = Math.max(cl, LightTexture.pack(9, 0));
             Pose p = c.scratch();
-            p.hide("lights_on", be.stage == LaunchCoreBlockEntity.IDLE);
-            boolean live = be.stage >= LaunchCoreBlockEntity.CLEANING;
+            boolean flick = be.stage == LaunchCoreBlockEntity.FLICKER && !LaunchCoreBlockEntity.lightsOn(t);
+            p.hide("lights_on", be.stage == LaunchCoreBlockEntity.IDLE || flick);
+            boolean live = be.stage >= LaunchCoreBlockEntity.FLICKER && !flick;
             p.hide("screens_live", !live);
             p.hide("screens_dead", live);
             float d = Mth.lerp(partial, be.doorAnimPrev, be.doorAnim);
@@ -61,22 +61,6 @@ public class LaunchCoreRenderer implements BlockEntityRenderer<LaunchCoreBlockEn
             ps.translate(0, off, 0);
             GlbRenderer.render(c, p, ps, buffers, cl, OverlayTexture.NO_OVERLAY);
             ps.popPose();
-        }
-        // --- cleaning wave
-        if (be.stage == LaunchCoreBlockEntity.CLEANING) {
-            float r = be.waveRadius(t);
-            GlbAssets.Loaded rg = GlbAssets.get(RING);
-            if (rg != null && r > 0.5F && r < LaunchCoreBlockEntity.WAVE_MAX) {
-                Pose p = rg.scratch();
-                p.compute();
-                for (int lv : LaunchCoreBlockEntity.RING_LEVELS) {
-                    ps.pushPose();
-                    ps.translate(0, lv + 0.01, 0);
-                    ps.scale(r, 3.0F, r);
-                    GlbRenderer.render(rg, p, ps, buffers, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
-                    ps.popPose();
-                }
-            }
         }
         ps.popPose();
     }
