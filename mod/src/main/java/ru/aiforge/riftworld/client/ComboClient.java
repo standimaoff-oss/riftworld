@@ -169,11 +169,15 @@ public final class ComboClient {
 
     private static HumanoidModel.ArmPose poseScythe, poseSickle;
 
-    static HumanoidModel.ArmPose pose(boolean sc) {
+    /** Custom poses must exist before the first player render (the vanilla switch map caches ArmPose.values()). */
+    public static void init() {
         if (poseScythe == null) {
             poseScythe = HumanoidModel.ArmPose.create("RIFTWORLD_SCYTHE", true, (m, e, a) -> armPose(m, e, a, true));
             poseSickle = HumanoidModel.ArmPose.create("RIFTWORLD_SICKLE", false, (m, e, a) -> armPose(m, e, a, false));
         }
+    }
+
+    static HumanoidModel.ArmPose pose(boolean sc) {
         return sc ? poseScythe : poseSickle;
     }
 
@@ -187,7 +191,9 @@ public final class ComboClient {
 
             @Override
             public HumanoidModel.ArmPose getArmPose(LivingEntity e, InteractionHand hand, ItemStack st) {
-                return hand == InteractionHand.MAIN_HAND ? pose(sc) : null;
+                if (hand != InteractionHand.MAIN_HAND) return null;
+                Minecraft mc = Minecraft.getInstance();
+                return e == mc.player && mc.options.getCameraType().isFirstPerson() ? null : pose(sc); // FP arm is posed by applyForgeHandTransform
             }
 
             @Override
