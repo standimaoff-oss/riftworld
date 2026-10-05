@@ -41,12 +41,20 @@ public class PartBlock extends Block {
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
+        BlockPos m = findMaster(level, pos);
+        if (m != null && level.getBlockState(m).getBlock() instanceof ModelBlock mb) {
+            VoxelShape ms = mb.getShape(level.getBlockState(m), level, m, ctx);
+            if (!ModelBlock.FULL.equals(ms)) return ms.move(m.getX() - pos.getX(), m.getY() - pos.getY(), m.getZ() - pos.getZ());
+        }
         return Shapes.block();
     }
 
     @Override
     public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
-        return state.getValue(OPEN) ? Shapes.empty() : Shapes.block();
+        if (state.getValue(OPEN)) return Shapes.empty();
+        BlockPos m = findMaster(level, pos);
+        if (m != null && level.getBlockState(m).getBlock() instanceof ModelBlock mb && mb.kind.passable()) return Shapes.empty();
+        return Shapes.block();
     }
 
     @Override

@@ -92,8 +92,8 @@ public enum ModelKind {
     LANTERN_HANG("lantern_hang", 0, 0, 0, 1, Block.box(5, 5, 5, 11, 16, 11)),
     LANTERN_POST("lantern_post", 0, 0, 0, 2, Block.box(5, 0, 5, 11, 16, 11)),
     LANTERN_WALL("lantern_wall", 0, 0, 0, 1, Block.box(5, 5, 4, 11, 16, 16)),
-    PAINTING_ISLANDS("painting_islands", 0, 0, 0, 2, Block.box(1, 0, 14, 15, 2, 16)),
-    PAINTING_PORTRAIT("painting_portrait", 0, 0, 0, 2, Block.box(1, 0, 14, 15, 2, 16)),
+    PAINTING_ISLANDS("painting_islands", 0, 0, 0, 2, Block.box(1, 1, 14, 15, 16, 16)),
+    PAINTING_PORTRAIT("painting_portrait", 0, 0, 0, 2, Block.box(1, 1, 14, 15, 16, 16)),
     PAINTING_EYE("painting_eye", 0, 1, 0, 2, Block.box(0, 0, 14, 16, 2, 16)),
     KITCHEN_STOVE("kitchen_stove", 0, 0, 0, 2, Block.box(0, 0, 1, 16, 14, 16)),
     KITCHEN_COUNTER("kitchen_counter", 0, 0, 0, 1, Block.box(0, 0, 2, 16, 15, 16)),
@@ -125,7 +125,11 @@ public enum ModelKind {
     WALL_SHACKLES("wall_shackles", 0, 0, 0, 2, Block.box(1, 0, 12, 15, 16, 16)),
     GOLD_HOARD("gold_hoard", 0, 0, 0, 1, Block.box(0, 0, 0, 16, 9, 16)),
     TAPESTRY_HORN("tapestry_horn", 0, 0, 0, 3, Block.box(1, 0, 14, 15, 16, 16)),
-    BONE_PILE("bone_pile", 0, 0, 0, 1, Block.box(1, 0, 1, 15, 4, 15));
+    BONE_PILE("bone_pile", 0, 0, 0, 1, Block.box(1, 0, 1, 15, 4, 15)),
+    // ---- Rev 4 item 14: decor toppers split out of the combo props (same footprint, sit on the furniture)
+    ALCHEMY_SET("alchemy_set", 0, 1, 0, 2, Block.box(0, 13, 1, 16, 16, 14)),
+    CHAINED_BOOKS("chained_books", 0, 0, 0, 2, Block.box(1, 10, 2, 15, 16, 15)),
+    KITCHEN_SET("kitchen_set", 0, 0, 0, 2, Block.box(0, 13, 0, 16, 16, 15));
 
     public final String glb;
     public final int x0, x1, back, h;

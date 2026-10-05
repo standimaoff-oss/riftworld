@@ -109,14 +109,15 @@ def rot(x, y, z, f):
     return {"south": (x, y, z), "north": (-x, y, -z), "west": (-z, y, x), "east": (z, y, -x)}[f]
 
 
-def model(kind, x, y, z, f, powered=False):
+def model(kind, x, y, z, f, powered=False, overlay=False):
     x0, x1, back, hh = KINDS[kind]
     cs = [(x + a, y + b, z + c) for (a, b, c) in (rot(i, j, -k, f) for i in range(x0, x1 + 1) for k in range(back + 1) for j in range(hh))]
-    for c in cs:
-        assert c not in MODEL_CELLS, (kind, c)
-        B[c] = S("part", open=False)
+    if not overlay:
+        for c in cs:
+            assert c not in MODEL_CELLS, (kind, c)
+            B[c] = S("part", open=False)
+        MODEL_CELLS.update(cs)
     B[(x, y, z)] = S(kind, facing=f, powered=powered, broken=False)
-    MODEL_CELLS.update(cs)
     MODELS.append(((x, y, z), cs))
 
 

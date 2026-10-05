@@ -88,6 +88,9 @@
     "riftworld:castle_chest",
     "riftworld:chained_lectern",
     "riftworld:alchemy_table",
-    "riftworld:tapestry_horn"
+    "riftworld:tapestry_horn",
+    "riftworld:alchemy_set",
+    "riftworld:chained_books",
+    "riftworld:kitchen_set"
   ]
 }

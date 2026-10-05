@@ -278,5 +278,8 @@
   "riftworld.compass.none": "Поблизости нет Тлеющих руин.",
   "item.riftworld.castle_compass.tip": "Присед + ПКМ: замок / ближайшие Тлеющие руины",
   "item.riftworld.morgrath_scythe.combo": "Комбо ЛКМ: «Косой мах» → «Рубящий удар» → «Пепельная жатва» (кольцо углей)",
-  "item.riftworld.guard_sickle.combo": "Комбо ЛКМ: «Рассечение» → «Крюк» (притягивает) → «Крестовый разрез» (замедляет, кровотечение)"
+  "item.riftworld.guard_sickle.combo": "Комбо ЛКМ: «Рассечение» → «Крюк» (притягивает) → «Крестовый разрез» (замедляет, кровотечение)",
+  "block.riftworld.alchemy_set": "Алхимическая посуда",
+  "block.riftworld.chained_books": "Фолиант на цепи",
+  "block.riftworld.kitchen_set": "Кухонная утварь"
 }

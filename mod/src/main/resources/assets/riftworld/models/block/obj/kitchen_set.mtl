@@ -1,0 +1,30 @@
+newmtl e_wood_dark
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_wood_dark
+
+newmtl e_produce
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_produce
+
+newmtl e_iron
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_iron
+
+newmtl e_ceramic
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_ceramic
+
+newmtl e_cork
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/c_e_cork
+
+newmtl e_plate
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_plate
+

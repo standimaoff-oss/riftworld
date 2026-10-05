@@ -313,6 +313,9 @@ class Tpl:
             return None
         _, x, y, z, f, bx, bz, cs = best
         self.model(kind, x, y, z, f)
+        if kind in ("kitchen_counter", "alchemy_table", "chained_lectern"):   # Rev 4 item 14: decor topper pair
+            self.model({"kitchen_counter": "kitchen_set", "alchemy_table": "alchemy_set",
+                        "chained_lectern": "chained_books"}[kind], x, y, z, f)
         if mode == "floor":
             for cx, cy, cz in cs:
                 self.RES.add((cx - bx, y0, cz - bz))

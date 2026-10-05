@@ -40,6 +40,8 @@ public class ModelBlock extends HorizontalDirectionalBlock {
     public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
     public static final BooleanProperty BROKEN = BooleanProperty.create("broken");
 
+    public static final VoxelShape FULL = Shapes.block();
+
     public final ModelKind kind;
     private final Map<Direction, VoxelShape> shapes = new EnumMap<>(Direction.class);
 

@@ -243,20 +243,20 @@ def box(name, size, loc, m, rot=(0, 0, 0), bevel=0.0):
     return _obj(name, bm, m, loc, rot)
 
 
-def cyl(name, r, h, loc, m, rot=(0, 0, 0), seg=16, r2=None):
+def cyl(name, r, h, loc, m, rot=(0, 0, 0), seg=10, r2=None):
     bm = bmesh.new()
     bmesh.ops.create_cone(bm, cap_ends=True, cap_tris=False, segments=seg, radius1=r, radius2=r if r2 is None else r2, depth=h)
     return _obj(name, bm, m, loc, rot)
 
 
-def rod(name, a, b, r, m, seg=8):
+def rod(name, a, b, r, m, seg=6):
     a, b = Vector(a), Vector(b)
     d = b - a
     q = d.to_track_quat('Z', 'Y')
     return cyl(name, r, d.length, tuple((a + b) / 2), m, rot=q.to_euler(), seg=seg)
 
 
-def torus(name, R, r, loc, m, rot=(0, 0, 0), seg=32, seg2=8):
+def torus(name, R, r, loc, m, rot=(0, 0, 0), seg=24, seg2=6):
     bm = bmesh.new()
     verts = []
     for i in range(seg):
@@ -2142,15 +2142,7 @@ def m_kitchen_counter():
     for x in (-0.22, 0.22):
         box("dr%d" % int(x * 100), (0.4, 0.02, 0.6), (x, -0.18, 0.44), "e_wood")
         cyl("kn%d" % int(x * 100), 0.02, 0.03, (x * 0.4, -0.2, 0.55), "e_iron", (math.radians(90), 0, 0), seg=6)
-    box("board", (0.36, 0.24, 0.03), (-0.15, 0.05, 0.925), "e_wood_dark")
-    cyl("bread", 0.09, 0.16, (-0.15, 0.05, 0.98), "e_produce", (0, math.radians(90), 0), seg=8)
-    box("knife", (0.18, 0.025, 0.01), (-0.05, -0.05, 0.945), "e_iron")
-    for k, (x, y, h) in enumerate(((0.22, 0.3, 0.2), (0.34, 0.28, 0.14), (0.3, 0.12, 0.16))):
-        cyl("jar%d" % k, 0.055, h, (x, y, 0.91 + h / 2), "e_ceramic", seg=8)
-        cyl("lid%d" % k, 0.04, 0.02, (x, y, 0.91 + h + 0.01), "e_cork", seg=8)
-    cyl("bowl", 0.11, 0.06, (0.12, -0.05, 0.94), "e_plate", seg=10, r2=0.07)
-    for k in range(3):
-        cyl("fr%d" % k, 0.035, 0.05, (0.08 + k * 0.04, -0.05 + (k % 2) * 0.03, 0.98), "e_produce", seg=6)
+    # (Rev 4 item 14: dishes/food are a separate block `kitchen_set`)
     node("body")
     export("kitchen_counter")
 
@@ -2741,15 +2733,7 @@ def m_chained_lectern():
         torus("knop%d" % int(zz * 10), 0.08, 0.02, (0, 0.05, zz), "c_dark", seg=10, seg2=4)
     desk = box("desk", (0.62, 0.46, 0.05), (0, 0.02, 1.13), "c_dark", (math.radians(-22), 0, 0))
     box("lip", (0.62, 0.04, 0.05), (0, -0.2, 1.06), "c_dark")
-    bk = box("book", (0.5, 0.36, 0.035), (0, 0.0, 1.17), "c_pages", (math.radians(-22), 0, 0))
-    box("bcov", (0.54, 0.38, 0.015), (0, 0.005, 1.15), "c_velvet", (math.radians(-22), 0, 0))
-    for k in range(10):                                      # chain from the book board to a ring on the column
-        t0, t1 = k / 10, (k + 0.75) / 10
-        a = (0.22, 0.12, 1.19); b = (0.06, 0.08, 0.72)
-        sag = lambda t: 0.08 * math.sin(math.pi * t)
-        p0 = (a[0] + (b[0] - a[0]) * t0 + sag(t0), a[1] + (b[1] - a[1]) * t0, a[2] + (b[2] - a[2]) * t0)
-        p1 = (a[0] + (b[0] - a[0]) * t1 + sag(t1), a[1] + (b[1] - a[1]) * t1, a[2] + (b[2] - a[2]) * t1)
-        rod("ch%d" % k, p0, p1, 0.008, "e_iron", seg=4)
+    # (Rev 4 item 14: the chained folio is a separate block `chained_books`)
     node("body")
     export("chained_lectern")
 
@@ -2831,33 +2815,8 @@ def m_alchemy_table():
     for zz in (1.2, 1.55, 1.73):
         box("hs%d" % int(zz * 100), (1.86, 0.26, 0.03), (0.5, 0.26, zz), "c_dark")
     # flasks on the hutch shelves (glowing liquids = lamp node), jars, skull
-    cols = ["c_glow_red", "c_glow_green", "c_glow_blue", "c_glow_amber"]
-    rnd = random.Random(7)
-    for k in range(7):
-        x = -0.3 + k * 0.26
-        r = 0.04 + rnd.random() * 0.03
-        cyl("fl%d" % k, r, 0.14, (x, 0.26, 1.29), "e_ice", seg=8, r2=r * 0.5)
-        cyl("liq%d" % k, r * 0.9, 0.06, (x, 0.26, 1.25), cols[k % 4], seg=8)
-    for k in range(5):
-        cyl("jar%d" % k, 0.05, 0.12, (-0.25 + k * 0.32, 0.26, 1.63), "e_ceramic", seg=8)
-        cyl("jc%d" % k, 0.04, 0.02, (-0.25 + k * 0.32, 0.26, 1.7), "e_cork", seg=8)
-    _skull("sk", 1.2, 0.0, 0.95, 0.35)
-    # alembic: round boiler on a little brazier + bent copper pipe to a receiver flask
-    cyl("braz", 0.1, 0.08, (-0.15, -0.05, 0.9), "e_iron", seg=8, r2=0.12)
-    cyl("boil", 0.12, 0.2, (-0.15, -0.05, 1.05), "c_copper", seg=10, r2=0.07)
-    rod("neck", (-0.15, -0.05, 1.15), (-0.15, -0.05, 1.3), 0.025, "c_copper", seg=6)
-    rod("pipe", (-0.15, -0.05, 1.3), (0.25, -0.1, 1.0), 0.015, "c_copper", seg=5)
-    cyl("recv", 0.07, 0.14, (0.28, -0.1, 0.93), "e_ice", seg=8, r2=0.035)
-    cyl("recvl", 0.06, 0.05, (0.28, -0.1, 0.885), "c_glow_green", seg=8)
-    box("book", (0.34, 0.26, 0.05), (0.75, -0.12, 0.88), "e_books", (0, 0, 0.3))
-    cyl("mortar", 0.07, 0.07, (1.0, -0.2, 0.89), "c_ashlar", seg=8, r2=0.05)
-    rod("pestle", (1.0, -0.2, 0.9), (1.05, -0.15, 1.02), 0.012, "c_ashlar", seg=4)
-    _candle("cn", 1.25, -0.25, 0.855, h=0.1, r=0.03)
+    # (Rev 4 item 14: the flasks/alembic/books decor is a separate block `alchemy_set`)
     node("body")
-    for k in range(7):
-        x = -0.3 + k * 0.26
-        cyl("gl%d" % k, 0.025, 0.02, (x, 0.26, 1.29), cols[k % 4], seg=6)
-    _flames()
     node("lamp_on")
     export("alchemy_table")
 
@@ -3058,6 +3017,71 @@ def m_boss_column():
                 rot=(1.3 + rnd.random() * 0.4, 0, a))
     node("shards")
     export("boss_column")
+
+
+
+def m_alchemy_set():
+    # Rev 4 item 14: the tabletop/hutch decor of the alchemist's bench as its own 2x2-tall topper block
+    # flasks on the hutch shelves (glowing liquids = lamp node), jars, skull
+    cols = ["c_glow_red", "c_glow_green", "c_glow_blue", "c_glow_amber"]
+    rnd = random.Random(7)
+    for k in range(7):
+        x = -0.3 + k * 0.26
+        r = 0.04 + rnd.random() * 0.03
+        cyl("fl%d" % k, r, 0.14, (x, 0.26, 1.29), "e_ice", seg=8, r2=r * 0.5)
+        cyl("liq%d" % k, r * 0.9, 0.06, (x, 0.26, 1.25), cols[k % 4], seg=8)
+    for k in range(5):
+        cyl("jar%d" % k, 0.05, 0.12, (-0.25 + k * 0.32, 0.26, 1.63), "e_ceramic", seg=8)
+        cyl("jc%d" % k, 0.04, 0.02, (-0.25 + k * 0.32, 0.26, 1.7), "e_cork", seg=8)
+    _skull("sk", 1.2, 0.0, 0.95, 0.35)
+    # alembic: round boiler on a little brazier + bent copper pipe to a receiver flask
+    cyl("braz", 0.1, 0.08, (-0.15, -0.05, 0.9), "e_iron", seg=8, r2=0.12)
+    cyl("boil", 0.12, 0.2, (-0.15, -0.05, 1.05), "c_copper", seg=10, r2=0.07)
+    rod("neck", (-0.15, -0.05, 1.15), (-0.15, -0.05, 1.3), 0.025, "c_copper", seg=6)
+    rod("pipe", (-0.15, -0.05, 1.3), (0.25, -0.1, 1.0), 0.015, "c_copper", seg=5)
+    cyl("recv", 0.07, 0.14, (0.28, -0.1, 0.93), "e_ice", seg=8, r2=0.035)
+    cyl("recvl", 0.06, 0.05, (0.28, -0.1, 0.885), "c_glow_green", seg=8)
+    box("book", (0.34, 0.26, 0.05), (0.75, -0.12, 0.88), "e_books", (0, 0, 0.3))
+    cyl("mortar", 0.07, 0.07, (1.0, -0.2, 0.89), "c_ashlar", seg=8, r2=0.05)
+    rod("pestle", (1.0, -0.2, 0.9), (1.05, -0.15, 1.02), 0.012, "c_ashlar", seg=4)
+    _candle("cn", 1.25, -0.25, 0.855, h=0.1, r=0.03)
+    node("body")
+    for k in range(7):
+        x = -0.3 + k * 0.26
+        cyl("gl%d" % k, 0.025, 0.02, (x, 0.26, 1.29), cols[k % 4], seg=6)
+    _flames()
+    node("lamp_on")
+    export("alchemy_set")
+
+
+def m_chained_books():
+    # Rev 4 item 14: chained folio topper for the bare lectern
+    bk = box("book", (0.5, 0.36, 0.035), (0, 0.0, 1.17), "c_pages", (math.radians(-22), 0, 0))
+    box("bcov", (0.54, 0.38, 0.015), (0, 0.005, 1.15), "c_velvet", (math.radians(-22), 0, 0))
+    for k in range(10):                                      # chain from the book board to a ring on the column
+        t0, t1 = k / 10, (k + 0.75) / 10
+        a = (0.22, 0.12, 1.19); b = (0.06, 0.08, 0.72)
+        sag = lambda t: 0.08 * math.sin(math.pi * t)
+        p0 = (a[0] + (b[0] - a[0]) * t0 + sag(t0), a[1] + (b[1] - a[1]) * t0, a[2] + (b[2] - a[2]) * t0)
+        p1 = (a[0] + (b[0] - a[0]) * t1 + sag(t1), a[1] + (b[1] - a[1]) * t1, a[2] + (b[2] - a[2]) * t1)
+        rod("ch%d" % k, p0, p1, 0.008, "e_iron", seg=4)
+    node("body")
+    export("chained_books")
+
+
+def m_kitchen_set():
+    # Rev 4 item 14: dishes & food topper for the bare counter
+    box("board", (0.36, 0.24, 0.03), (-0.15, 0.05, 0.925), "e_wood_dark")
+    cyl("bread", 0.09, 0.16, (-0.15, 0.05, 0.98), "e_produce", (0, math.radians(90), 0), seg=8)
+    box("knife", (0.18, 0.025, 0.01), (-0.05, -0.05, 0.945), "e_iron")
+    for k, (x, y, h) in enumerate(((0.22, 0.3, 0.2), (0.34, 0.28, 0.14), (0.3, 0.12, 0.16))):
+        cyl("jar%d" % k, 0.055, h, (x, y, 0.91 + h / 2), "e_ceramic", seg=8)
+        cyl("lid%d" % k, 0.04, 0.02, (x, y, 0.91 + h + 0.01), "e_cork", seg=8)
+    cyl("bowl", 0.11, 0.06, (0.12, -0.05, 0.94), "e_plate", seg=10, r2=0.07)
+    for k in range(3):
+        cyl("fr%d" % k, 0.035, 0.05, (0.08 + k * 0.04, -0.05 + (k % 2) * 0.03, 0.98), "e_produce", seg=6)
+    node("body")
+    export("kitchen_set")
 
 ALL = {k[2:]: v for k, v in list(globals().items()) if k.startswith("m_") and callable(v)}
 for name, fn in ALL.items():

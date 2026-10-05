@@ -163,7 +163,8 @@ for n, tex, s_ in (("candle_stand", "m_e_iron", 0.4), ("boss_throne", "m_c_darkw
                    ("long_table", "m_c_darkwood", 0.25), ("castle_bench", "m_c_darkwood", 0.25), ("high_chair", "m_c_darkwood", 0.3),
                    ("guard_weapon_rack", "m_c_darkwood", 0.2), ("guard_armor", "m_c_blacksteel", 0.3), ("canopy_bed", "m_c_velvet", 0.2),
                    ("castle_chest", "m_c_darkwood", 0.5), ("chained_lectern", "m_c_darkwood", 0.3), ("chapel_altar", "m_c_ashlar", 0.25),
-                   ("hearth_cauldron", "m_e_iron", 0.3), ("alchemy_table", "m_c_darkwood", 0.22), ("wall_shackles", "m_e_iron", 0.3),
+                   ("hearth_cauldron", "m_e_iron", 0.3), ("alchemy_table", "m_c_darkwood", 0.22), ("alchemy_set", "m_c_darkwood", 0.22), ("wall_shackles", "m_e_iron", 0.3),
+                   ("chained_books", "m_c_darkwood", 0.3), ("kitchen_set", "e_wood", 0.5),
                    ("gold_hoard", "m_c_coins", 0.5), ("tapestry_horn", "m_c_tapestry", 0.22), ("bone_pile", "m_e_bone", 0.5)):
     has_off = os.path.exists(f"{A}/models/block/obj/{n}_off.obj")
     for suffix in ("", "_off") if has_off else ("",):
@@ -193,7 +194,7 @@ STONES = ["castle_bricks", "castle_bricks_cracked", "castle_bricks_mossy", "cast
           "wall_shackles", "guard_armor", "gold_hoard", "hearth_cauldron"]
 WOODY = ["dark_planks", "dark_planks_stairs", "dark_planks_slab", "dark_beam", "dark_fence", "charred_log", "boss_throne", "castle_bookshelf",
          "feast_table", "long_table", "castle_bench", "high_chair", "guard_weapon_rack", "canopy_bed", "castle_chest", "chained_lectern",
-         "alchemy_table", "tapestry_horn"]
+         "alchemy_table", "alchemy_set", "chained_books", "kitchen_set", "tapestry_horn"]
 merge(T + "blocks/mineable/pickaxe.json", {"values": ID(STONES)})
 merge(T + "blocks/mineable/axe.json", {"values": ID(WOODY)})
 merge(T + "blocks/mineable/shovel.json", {"values": ID(["ash_block", "burnt_soil"])})
@@ -251,6 +252,9 @@ L = {
     "chapel_altar": ("Chapel Altar", "Алтарь часовни"),
     "hearth_cauldron": ("Hearth Cauldron", "Котёл над очагом"),
     "alchemy_table": ("Alchemist's Bench", "Алхимический стол"),
+    "alchemy_set": ("Alchemist's Glassware", "Алхимическая посуда"),
+    "chained_books": ("Chained Folio", "Фолиант на цепи"),
+    "kitchen_set": ("Kitchen Dishes", "Кухонная утварь"),
     "wall_shackles": ("Wall Shackles", "Кандалы"),
     "gold_hoard": ("Gold Hoard", "Груда золота"),
     "tapestry_horn": ("Horned Tapestry", "Гобелен с рогатым черепом"),

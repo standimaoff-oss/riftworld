@@ -20,13 +20,16 @@ def cells(kind, x, y, z, f):
     return [(x + a, y + b, z + c) for (a, b, c) in (rot(i, j, -k, f) for i in range(x0, x1 + 1) for k in range(back + 1) for j in range(hh))]
 
 
-def place(kind, x, y, z, f, lit=True, loot=None):
+def place(kind, x, y, z, f, lit=True, loot=None, topper=None):
     cs = cells(kind, x, y, z, f)
     bad = [c for c in cs if c in MODEL_CELLS or (c in B and B[c] != AIR and B[c][0] not in SOFT)]
     if bad:
         SKIPPED.append((kind, (x, y, z), bad[:2]))
         return False
     model(kind, x, y, z, f, powered=(lit and kind in LIT))
+    if topper:
+        model(topper, x, y, z, f, powered=(lit and topper in LIT), overlay=True)
+        PLACED.append(topper)
     if loot:
         NBT[(x, y, z)] = {"LootTable": "riftworld:chests/castle_" + loot}
     PLACED.append(kind)
@@ -174,7 +177,7 @@ place("tapestry_horn", 6, 1, 37, "east")
 place("tapestry_horn", 6, 1, 41, "east")
 place("keg_rack", 23, 1, 37, "west")
 place("keg_rack", 23, 1, 40, "west")
-place("kitchen_counter", 23, 1, 43, "west")
+place("kitchen_counter", 23, 1, 43, "west", topper="kitchen_set")
 place("dish_cupboard", 23, 1, 35, "west")
 
 # W-G3 kitchen (z46..60): cauldron over the fire, pot, firewood, work table with hanging herbs, counters, sacks, kegs
@@ -186,7 +189,7 @@ place("long_table", 17, 1, 52, "east")
 place("herbs_hanging", 16, 4, 52, "east")
 place("herbs_hanging", 18, 4, 52, "west")
 for z in (48, 49, 50):
-    place("kitchen_counter", 23, 1, z, "west")
+    place("kitchen_counter", 23, 1, z, "west", topper="kitchen_set")
 place("keg_rack", 23, 1, 55, "west")
 for (x, z) in ((23, 58), (23, 59), (22, 59)):
     place("sacks", x, 1, z, "west")
@@ -222,11 +225,11 @@ place("bookshelf_e", 16, 7, 37, "north")
 place("bookshelf_e", 17, 7, 37, "north")
 
 # W-U3 alchemist's laboratory (z39..51): benches with flasks, cauldron, book wall, lectern, bones, cobwebs
-place("alchemy_table", 6, 7, 43, "east")
-place("alchemy_table", 6, 7, 47, "east")
+place("alchemy_table", 6, 7, 43, "east", topper="alchemy_set")
+place("alchemy_table", 6, 7, 47, "east", topper="alchemy_set")
 place("hearth_cauldron", 14, 7, 45, "south")
 shelves(23, 40, 23, 50, 7, 9)
-place("chained_lectern", 19, 7, 45, "west")
+place("chained_lectern", 19, 7, 45, "west", topper="chained_books")
 chest(7, 7, 50, "east", "alchemy")
 place("bone_pile", 17, 7, 49, "south")
 place("wall_sconce", 6, 9, 45, "east")
@@ -251,8 +254,8 @@ shelves(54, 12, 59, 12, 1, 4)
 shelves(55, 15, 59, 16, 1, 3)
 shelves(55, 21, 59, 22, 1, 3)
 shelves(64, 27, 68, 27, 1, 3)
-place("chained_lectern", 65, 1, 15, "west")
-place("chained_lectern", 65, 1, 21, "west")
+place("chained_lectern", 65, 1, 15, "west", topper="chained_books")
+place("chained_lectern", 65, 1, 21, "west", topper="chained_books")
 place("long_table", 66, 1, 25, "north")
 place("castle_bench", 66, 1, 24, "north")
 chest(70, 1, 26, "west", "library")
@@ -293,7 +296,7 @@ for (xc, zc) in ((58, 17), (64, 17), (58, 22), (64, 22)):
     place("long_table", xc, 7, zc, "north")
     place("high_chair", xc, 7, zc + 1, "north")
 shelves(53, 12, 53, 25, 7, 9)
-place("chained_lectern", 67, 7, 25, "west")
+place("chained_lectern", 67, 7, 25, "west", topper="chained_books")
 chest(70, 7, 26, "west", "library")
 place("wall_sconce", 62, 9, 12, "south")
 place("wall_sconce", 70, 9, 22, "west")
@@ -535,7 +538,7 @@ place("castle_chandelier", 68, 23, 56, "south")
 place("bed_wood", 67, 25, 56, "east")
 place("table_wood", 69, 25, 57, "south")
 place("high_chair", 69, 25, 58, "north")
-place("chained_lectern", 67, 25, 59, "north")
+place("chained_lectern", 67, 25, 59, "north", topper="chained_books")
 chest(70, 25, 55, "west", "treasury")
 place("castle_chandelier", 68, 31, 57, "south")
 # y33 store loft
@@ -604,12 +607,12 @@ place("wardrobe", 14, 7, 37, "north")
 place("candle_stand", 23, 7, 27, "west")
 place("candle_stand", 23, 7, 30, "west")
 place("castle_bench", 20, 7, 28, "west")
-place("chained_lectern", 10, 7, 32, "east")
+place("chained_lectern", 10, 7, 32, "east", topper="chained_books")
 place("tapestry_horn", 17, 7, 21, "south")
 place("tapestry_horn", 20, 7, 37, "north")
 # alchemy: shelf row, third bench, work table, crates, candles, bones in the corner
 shelves(15, 41, 20, 41, 7, 8)
-place("alchemy_table", 15, 7, 39, "south")
+place("alchemy_table", 15, 7, 39, "south", topper="alchemy_set")
 place("long_table", 10, 7, 48, "east")
 place("crate_wood", 23, 7, 51, "west", loot="alchemy")
 place("sacks", 22, 7, 51, "north")
