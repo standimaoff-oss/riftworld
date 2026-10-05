@@ -33,13 +33,13 @@ import ru.aiforge.riftworld.registry.ModItems;
 public class EmberGuard extends RiftMob {
     public static final int A_IDLE = 0, A_RUN = 1, A_CRAWL = 2, A_LEAP = 3, A_WINDUP = 4, A_DASH = 5, A_SLASH = 6, A_DEATH = 7, A_LAND = 8;
     private static final String[] CLIPS = {"idle", "run", "crawl", "leap", "windup", "dash", "slash", "death", "land"};
-    enum S { WAIT, LEAP, CHASE, WINDUP, DASH, RECOVER, SLASH, MANTLE }
+    enum S { WAIT, LEAP, CHASE, WINDUP, DASH, RECOVER, SLASH, MANTLE, PERCH }
     private static final int F_CLIMB = 1;
 
     S state = S.CHASE;
     int st, cooldown = 40, leapDir, leapDelay, windT;
     @Nullable Vec3 leapF;
-    boolean dashHit;
+    boolean dashHit, sentry;
     float phase;
     int stuck;
     double lastY;
@@ -112,6 +112,14 @@ public class EmberGuard extends RiftMob {
         setAnim(A_IDLE, true);
     }
 
+    /** Ruins sentry: crouches motionless on a wall / roof until a player comes close, then leaps down at him. */
+    public void perch() {
+        sentry = true;
+        state = S.PERCH;
+        st = 0;
+        setAnim(A_IDLE, true);
+    }
+
     private void go(S s) {
         state = s;
         st = 0;
@@ -138,6 +146,18 @@ public class EmberGuard extends RiftMob {
         if (cooldown > 0) --cooldown;
         LivingEntity tgt = target(sl);
         switch (state) {
+            case PERCH -> {
+                getNavigation().stop();
+                setDeltaMovement(getDeltaMovement().multiply(0, 1, 0));
+                Player near = sl.getNearestPlayer(getX(), getY(), getZ(), 15, e -> e instanceof Player pl && !pl.isSpectator() && !pl.isCreative());
+                if (near != null && (hasLineOfSight(near) || distanceTo(near) < 7)) {
+                    face(near, 360);
+                    setTarget(near);
+                    prepareLeap(0, 6 + random.nextInt(24), null);
+                } else if (st % 80 == 0 && random.nextInt(2) == 0) {
+                    setYRot(yBodyRot = yHeadRot = getYRot() + (random.nextFloat() - 0.5F) * 90.0F);   // looks around
+                }
+            }
             case WAIT -> {
                 getNavigation().stop();
                 if (st == 1) sound(SoundEvents.SKELETON_AMBIENT, 1.0F, 0.5F);
@@ -337,7 +357,11 @@ public class EmberGuard extends RiftMob {
 
     @Override
     public boolean hurt(DamageSource src, float amount) {
-        if (state == S.WAIT && st < leapDelay) return false;
+        if (state == S.WAIT && st < leapDelay && !sentry) return false;        // balcony guards (boss summon) only
+        if (state == S.PERCH && src.getEntity() instanceof LivingEntity le && !level().isClientSide) {
+            setTarget(le);
+            go(S.CHASE);
+        }
         return super.hurt(src, amount);
     }
 
@@ -396,11 +420,13 @@ public class EmberGuard extends RiftMob {
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
+        if (state == S.PERCH) tag.putBoolean("Perch", true);
     }
 
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
-        state = S.CHASE;
+        state = tag.getBoolean("Perch") ? S.PERCH : S.CHASE;
+        sentry = tag.getBoolean("Perch");
     }
 }

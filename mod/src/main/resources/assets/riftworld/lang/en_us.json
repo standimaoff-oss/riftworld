@@ -272,5 +272,9 @@
   "biome.riftworld.ashen_lands": "Ashen Lands",
   "block.riftworld.magma_meander": "Lava Meander",
   "item.riftworld.castle_compass": "Compass to the Hall of the Smouldering Horn",
-  "riftworld.castle_compass.got": "A compass found in your pocket points to the Ashen Lands - to the Hall of the Smouldering Horn (40, 470)."
+  "riftworld.castle_compass.got": "A compass found in your pocket points to the Ashen Lands - to the Hall of the Smouldering Horn (40, 470).",
+  "riftworld.compass.ruins": "The compass needle swings towards the nearest Smouldering Ruins (%s, %s).",
+  "riftworld.compass.castle": "The compass points to the Hall of the Smouldering Horn again.",
+  "riftworld.compass.none": "No Smouldering Ruins nearby.",
+  "item.riftworld.castle_compass.tip": "Sneak + right click: castle / nearest Smouldering Ruins"
 }

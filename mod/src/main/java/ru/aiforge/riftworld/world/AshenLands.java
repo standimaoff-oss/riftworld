@@ -64,7 +64,7 @@ public final class AshenLands {
     /** 0 outside .. 1 inside, with a wobbly edge. */
     public static double weight(double x, double z) {
         double dx = x - CX, dz = z - CZ;
-        if (Math.abs(dx) > R + 60 || Math.abs(dz) > R + 60) return 0;
+        if (Math.abs(dx) > R + 60 || Math.abs(dz) > R + 60) return EmberRuins.weight(x, z);
         double d = Math.hypot(dx, dz) + (ElisarChunkGenerator.vnoise(x * 0.015, z * 0.015, 81) - 0.5) * 40;
         return Math.max(0, Math.min(1, (R - d) / 30.0));
     }

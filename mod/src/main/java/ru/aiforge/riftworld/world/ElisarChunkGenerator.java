@@ -203,6 +203,12 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             if (isl.kind == 5) {                                       // castle plateau
                 double o = CastleSite.outside(px, pz);
                 top = o <= 0 ? CastleSite.Y : CastleSite.Y + (top - CastleSite.Y) * smooth(o / 9.0);
+            } else if (isl.kind == 6) {                                // ruined chapel plateau
+                EmberRuins.Site es = EmberRuins.siteAt(px, pz);
+                if (es != null) {
+                    double o = es.outside(px, pz);
+                    top = o <= 0 ? es.y : es.y + (top - es.y) * smooth(o / 6.0);
+                }
             }
             c.top = (int) Math.floor(top);
             double t = isl.t(px, pz);
@@ -322,7 +328,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 if (!ashen && c.isl == null && c.fallTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE) debris(plan, chunk, mp, x, z);
                 tower(chunk, mp, x, z);
                 if (c.isl != null) {
-                    if (c.isl.kind == 5 || ashen && c.isl.kind != 0) {
+                    if (c.isl.kind == 5 || c.isl.kind == 6 || ashen && c.isl.kind != 0) {
                         scorched(chunk, mp, c, x, z);
                     } else for (int y = c.bottom; y <= c.top; ++y) {
                         BlockState s;
@@ -417,7 +423,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             chunk.setBlockState(mp.set(x, y, z), s, false);
         }
         // boulders of scorched stone (outside the castle)
-        if (!CastleSite.inFootprint(x, z, 3) && c.top - c.bottom > 3) {
+        if (!CastleSite.inFootprint(x, z, 3) && !EmberRuins.inFootprint(x, z, 3) && c.top - c.bottom > 3) {
             int gx = Math.floorDiv(x, 9), gz = Math.floorDiv(z, 9);
             if (hash(gx, gz, 53) < 0.22) {
                 double bx = gx * 9 + 2 + hash(gx, gz, 54) * 5, bz = gz * 9 + 2 + hash(gx, gz, 55) * 5, br = 1.2 + hash(gx, gz, 56) * 1.6;
@@ -552,6 +558,25 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 BlockPos pos = new BlockPos(CastleSite.X0, CastleSite.Y, CastleSite.Z0);
                 tpl.placeInWorld(level, pos, pos, s, rnd, 2);
             });
+        }
+        EmberRuins.Site es = EmberRuins.siteAt(x0 + 8, z0 + 8);
+        if (es != null && x0 + 15 >= es.x0 && x0 <= es.x0 + EmberRuins.TW - 1 && z0 + 15 >= es.z0 && z0 <= es.z0 + EmberRuins.TD - 1) {
+            stm.get(new ResourceLocation("riftworld", "ruins/chapel")).ifPresent(tpl -> {
+                StructurePlaceSettings s = new StructurePlaceSettings().setBoundingBox(box).setIgnoreEntities(true).setKnownShape(true);
+                BlockPos pos = new BlockPos(es.x0, es.y, es.z0);
+                tpl.placeInWorld(level, pos, pos, s, rnd, 2);
+            });
+            for (int g = 0; g < es.guards && g < EmberRuins.PERCHES.length; ++g) {
+                int[] pc = EmberRuins.PERCHES[g];
+                int gx = es.x0 + pc[0], gy = es.y + pc[1], gz = es.z0 + pc[2];
+                if (gx < x0 || gx > x0 + 15 || gz < z0 || gz > z0 + 15) continue;
+                ru.aiforge.riftworld.entity.EmberGuard guard = ru.aiforge.riftworld.registry.ModEntities.GUARD.get().create(level.getLevel());
+                if (guard == null) continue;
+                guard.moveTo(gx + 0.5, gy, gz + 0.5, 180.0F, 0.0F);
+                guard.perch();
+                guard.setPersistenceRequired();
+                level.addFreshEntity(guard);
+            }
         }
         if (AshenLands.weight(x0 + 8, z0 + 8) > 0) {
             for (AshenLands.Placed pl : AshenLands.decor()) {

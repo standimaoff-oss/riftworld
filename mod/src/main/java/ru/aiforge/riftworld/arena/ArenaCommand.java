@@ -25,6 +25,18 @@ public final class ArenaCommand {
                 .then(Commands.literal("status").executes(c -> run(c, 0)))
                 .then(Commands.literal("start").executes(c -> run(c, 1)))
                 .then(Commands.literal("reset").executes(c -> run(c, 2))));
+        // /riftruins - nearest Smouldering Ruins site (chapel) to the caller
+        d.register(Commands.literal("riftruins").requires(s -> s.hasPermission(2)).executes(c -> {
+            net.minecraft.world.phys.Vec3 p = c.getSource().getPosition();
+            ru.aiforge.riftworld.world.EmberRuins.Site st = ru.aiforge.riftworld.world.EmberRuins.nearest(p.x, p.z);
+            if (st == null) {
+                c.getSource().sendFailure(Component.literal("no ruins nearby"));
+                return 0;
+            }
+            String line = "ruins at " + st.cx + " " + st.y + " " + st.cz + " chapel origin " + st.x0 + " " + st.y + " " + st.z0 + " guards " + st.guards;
+            c.getSource().sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }));
     }
 
     private static int run(CommandContext<CommandSourceStack> c, int op) {

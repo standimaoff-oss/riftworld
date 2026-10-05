@@ -46,6 +46,8 @@ public final class WildIslands {
         if (Math.hypot(x, z) < CITY_CLEAR - 120) return Collections.emptyList();
         List<CityPlan.Island> out = new ArrayList<>(8);
         if (CastleSite.near(x, z, 2)) out.add(CastleSite.ISLAND);
+        EmberRuins.Site es = EmberRuins.siteAt(x, z);
+        if (es != null && Math.abs(x - es.cx) < es.island.R * 1.2 + 2 && Math.abs(z - es.cz) < es.island.R * 1.2 + 2) out.add(es.island);
         for (int dx = -1; dx <= 1; ++dx)
             for (int dz = -1; dz <= 1; ++dz) {
                 for (CityPlan.Island i : cell(cx + dx, cz + dz).islands) {
@@ -61,7 +63,10 @@ public final class WildIslands {
         List<CityPlan.Tree> out = new ArrayList<>();
         if (CastleSite.near(x, z, 6))
             for (CityPlan.Tree t : CastleSite.TREES) if (Math.abs(x - t.x) <= 4 && Math.abs(z - t.z) <= 4) out.add(t);
-        if (AshenLands.weight(x, z) > 0) out.addAll(AshenLands.treesNear(x, z));
+        if (AshenLands.weight(x, z) > 0) {
+            out.addAll(AshenLands.treesNear(x, z));
+            out.addAll(EmberRuins.treesNear(x, z));
+        }
         for (int dx = -1; dx <= 1; ++dx)
             for (int dz = -1; dz <= 1; ++dz)
                 for (CityPlan.Tree t : cell(cx + dx, cz + dz).trees)
@@ -91,6 +96,8 @@ public final class WildIslands {
                 double x = ox + m + r.nextDouble() * (CELL - 2 * m), z = oz + m + r.nextDouble() * (CELL - 2 * m);
                 if (Math.hypot(x, z) - R * 1.15 < CITY_CLEAR) continue;
                 if (Math.hypot(x - CastleSite.CX, z - CastleSite.CZ) < R * 1.15 + CastleSite.R * 1.15 + 14) continue;   // castle site
+                EmberRuins.Site es = EmberRuins.siteAt(x, z);
+                if (es != null && Math.hypot(x - es.cx, z - es.cz) < R * 1.15 + es.island.R * 1.15 + 10) continue;     // ruins island
                 boolean ok = true;
                 for (CityPlan.Island o : c.islands) {
                     if (Math.hypot(x - o.cx, z - o.cz) < (R + o.R) * 1.15 + 6) { ok = false; break; }

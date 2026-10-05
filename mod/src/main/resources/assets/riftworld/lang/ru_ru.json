@@ -272,5 +272,9 @@
   "biome.riftworld.ashen_lands": "Адские угодья",
   "block.riftworld.magma_meander": "Лавовая извилина",
   "item.riftworld.castle_compass": "Компас к Чертогу Тлеющего Рога",
-  "riftworld.castle_compass.got": "В кармане оказался компас: он указывает на Адские угодья — к Чертогу Тлеющего Рога (40, 470)."
+  "riftworld.castle_compass.got": "В кармане оказался компас: он указывает на Адские угодья — к Чертогу Тлеющего Рога (40, 470).",
+  "riftworld.compass.ruins": "Стрелка компаса качнулась к ближайшим Тлеющим руинам (%s, %s).",
+  "riftworld.compass.castle": "Компас снова указывает на Чертог Тлеющего Рога.",
+  "riftworld.compass.none": "Поблизости нет Тлеющих руин.",
+  "item.riftworld.castle_compass.tip": "Присед + ПКМ: замок / ближайшие Тлеющие руины"
 }
