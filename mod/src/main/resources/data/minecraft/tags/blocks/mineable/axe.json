@@ -1,9 +1,9 @@
 {
   "replace": false,
   "values": [
+    "riftworld:crate_wood",
     "riftworld:shelf",
     "riftworld:lab_table",
-    "riftworld:crate_wood",
     "riftworld:sizo_log",
     "riftworld:ambra_log",
     "riftworld:sizo_planks",

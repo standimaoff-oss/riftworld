@@ -52,8 +52,8 @@ def smooth_noise(n, seed, scale=4):
 
 
 # ------------------------------------------------------------------ red brick
-BRICK_COLS = ['#93402c', '#8a3826', '#a2492f', '#7d3122', '#9a4530', '#6c2c20', '#a85236']
-MORTAR = '#a39684'
+BRICK_COLS = ['#80301f', '#76291b', '#8c3823', '#6a2418', '#853421', '#5a2016', '#933e26']
+MORTAR = '#8c8172'
 
 
 def bricks(seed, cracked=False, mossy=False):
@@ -220,7 +220,7 @@ sg = np.zeros((16, 16, 4))
 r = np.random.RandomState(3501)
 LEAD = rgb('#26221f')
 cells = {}
-CELLC = [('#a8261d', 175), ('#c98d22', 165), ('#2c4a8c', 185), ('#a8261d', 175), ('#7b1c2a', 185), ('#c98d22', 165)]
+CELLC = [('#a8261d', 222), ('#c98d22', 214), ('#2c4a8c', 228), ('#a8261d', 222), ('#7b1c2a', 230), ('#c98d22', 214)]
 for y in range(16):
     for x in range(16):
         cid = (x // 4 + (1 if (y // 4) % 2 else 0)) // 1, y // 4
@@ -236,7 +236,7 @@ for y in range(16):
             sg[y, x, :3] = LEAD; sg[y, x, 3] = 255
 yy, xx = np.mgrid[0:16, 0:16]
 cent = (np.hypot(xx - 7.5, yy - 7.5) < 2.4)
-sg[cent, :3] = rgb('#e4b640'); sg[cent, 3] = 170             # amber rose in the middle
+sg[cent, :3] = rgb('#e4b640'); sg[cent, 3] = 215             # amber rose in the middle
 save(sg, "stained_glass")
 
 
@@ -256,13 +256,13 @@ save(rf, "castle_roof")
 
 
 # ------------------------------------------------------------------ scorched site
-ash = base('#7a7671', 3701, 6)
+ash = base('#4b4744', 3701, 6)
 ash[..., :3] += (smooth_noise(16, 3702, 4) * 22)[..., None]
 r = np.random.RandomState(3703)
 for _ in range(16):
     ash[r.randint(0, 16), r.randint(0, 16), :3] = rgb('#3e3a37')
 for _ in range(6):
-    ash[r.randint(0, 16), r.randint(0, 16), :3] = rgb('#a8a39c')
+    ash[r.randint(0, 16), r.randint(0, 16), :3] = rgb('#6e6a64')
 save(ash, "ash_block")
 so = base('#2f2723', 3704, 6)
 so[..., :3] += (smooth_noise(16, 3705, 4) * 14)[..., None]

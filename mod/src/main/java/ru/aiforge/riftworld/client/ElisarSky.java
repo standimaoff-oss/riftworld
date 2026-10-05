@@ -55,9 +55,29 @@ public final class ElisarSky extends DimensionSpecialEffects {
             if (!inElisar() || e.getMode() != net.minecraft.client.renderer.FogRenderer.FogMode.FOG_TERRAIN) return;
             if (e.getCamera().getFluidInCamera() != net.minecraft.world.level.material.FogType.NONE) return;
             float far = e.getFarPlaneDistance();
-            e.setNearPlaneDistance(far * 0.45F);
-            e.setFarPlaneDistance(far * 1.05F);
+            float g = gloom(e.getCamera().getPosition());
+            e.setNearPlaneDistance(far * Mth.lerp(g, 0.45F, 0.55F));
+            e.setFarPlaneDistance(far * Mth.lerp(g, 1.05F, 1.0F));
             e.setCanceled(true);
+        }
+
+        /** 0 in the white Elisar haze, 1 over the castle's scorched island (ash-brown, gloomy air). */
+        public static float gloom(Vec3 cam) {
+            double d = Math.hypot(cam.x - ru.aiforge.riftworld.world.CastleSite.CX, cam.z - ru.aiforge.riftworld.world.CastleSite.CZ);
+            double t = Mth.clamp((170 - d) / 80.0, 0, 1);
+            return (float) (t * t * (3 - 2 * t));
+        }
+
+        private static final Vec3 ASH = new Vec3(0.30, 0.265, 0.25);
+
+        @SubscribeEvent
+        public static void fogColor(ViewportEvent.ComputeFogColor e) {
+            if (!inElisar()) return;
+            float g = gloom(e.getCamera().getPosition());
+            if (g <= 0) return;
+            e.setRed((float) Mth.lerp(g, e.getRed(), ASH.x));
+            e.setGreen((float) Mth.lerp(g, e.getGreen(), ASH.y));
+            e.setBlue((float) Mth.lerp(g, e.getBlue(), ASH.z));
         }
     }
 }

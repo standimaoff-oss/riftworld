@@ -63,20 +63,50 @@ public final class ElisarEye {
         RenderSystem.defaultBlendFunc();
         RenderSystem.depthMask(false);
         RenderSystem.disableCull();
+        float gloom = ElisarSky.Fog.gloom(cam);
+        if (gloom > 0) ashVeil(m, gloom);
         RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+        if (gloom > 0.95F) { RenderSystem.enableCull(); RenderSystem.depthMask(true); RenderSystem.disableBlend(); return; }
         if (lid == 0) {
             // the iris looks at the player: offset by where the camera stands relative to the city, plus a slow drift
             double t = (mc.level.getGameTime() + pt) * 0.01;
             float ox = (float) Mth.clamp(-(cam.x * right.x + cam.z * right.z) / 350.0 + Math.sin(t) * 0.15, -1, 1) * W * 0.045F;
             float oy = (float) Mth.clamp((cam.y - 110) / 120.0 + Math.cos(t * 0.7) * 0.15, -1, 1) * H * 0.07F;
             Vector3f ci = new Vector3f(c).add(new Vector3f(right).mul(ox)).add(new Vector3f(up).mul(oy)).add(new Vector3f(DIR).mul(-0.2F));
-            quad(m, IRIS, ci, right, up, ALPHA);
+            quad(m, IRIS, ci, right, up, ALPHA * (1 - gloom));
         }
-        quad(m, lid == 0 ? OPEN : lid == 1 ? HALF : CLOSED, c, right, up, ALPHA);
+        quad(m, lid == 0 ? OPEN : lid == 1 ? HALF : CLOSED, c, right, up, ALPHA * (1 - gloom));
         RenderSystem.enableCull();
         RenderSystem.depthMask(true);
         RenderSystem.disableBlend();
         RenderSystem.setShaderColor(1, 1, 1, 1);
+    }
+
+    /** Over the castle's scorched island the bright Elisar sky is veiled by a low ash-brown pall (a preview of the Hell lands). */
+    private static void ashVeil(Matrix4f m, float g) {
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        BufferBuilder b = Tesselator.getInstance().getBuilder();
+        b.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        float s = 60F, r = 0.27F, gr = 0.235F, bl = 0.22F, top = 0.80F * g, side = 0.62F * g;
+        // top
+        b.vertex(m, -s, s, -s).color(r, gr, bl, top).endVertex();
+        b.vertex(m, s, s, -s).color(r, gr, bl, top).endVertex();
+        b.vertex(m, s, s, s).color(r, gr, bl, top).endVertex();
+        b.vertex(m, -s, s, s).color(r, gr, bl, top).endVertex();
+        // four sides: denser at the top, thinning toward the horizon band where the fog takes over
+        float[][] c = {{-s, -s}, {s, -s}, {s, s}, {-s, s}};
+        for (int i = 0; i < 4; i++) {
+            float[] p0 = c[i], p1 = c[(i + 1) % 4];
+            b.vertex(m, p0[0], s, p0[1]).color(r, gr, bl, top).endVertex();
+            b.vertex(m, p1[0], s, p1[1]).color(r, gr, bl, top).endVertex();
+            b.vertex(m, p1[0], -s, p1[1]).color(r, gr, bl, side).endVertex();
+            b.vertex(m, p0[0], -s, p0[1]).color(r, gr, bl, side).endVertex();
+        }
+        b.vertex(m, -s, -s, s).color(r, gr, bl, side).endVertex();
+        b.vertex(m, s, -s, s).color(r, gr, bl, side).endVertex();
+        b.vertex(m, s, -s, -s).color(r, gr, bl, side).endVertex();
+        b.vertex(m, -s, -s, -s).color(r, gr, bl, side).endVertex();
+        Tesselator.getInstance().end();
     }
 
     private static void quad(Matrix4f m, ResourceLocation tex, Vector3f c, Vector3f r, Vector3f u, float a) {

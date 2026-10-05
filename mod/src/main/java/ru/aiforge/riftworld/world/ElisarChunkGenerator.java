@@ -433,7 +433,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         if (dx == 0 && dz == 0) for (int y = base; y < base + t.h; ++y) chunk.setBlockState(mp.set(x, y, z), logY, false);
         int nb = 2 + (t.seed & 3);
         for (int b = 0; b < nb; ++b) {
-            double a = hash(t.seed, b, 61) * Math.PI * 2;
+            double a = (b + hash(t.seed, b, 61) * 0.5) * Math.PI * 2 / nb + hash(t.seed, 7, 60) * Math.PI * 2;   // spread evenly, no clumping
             int len = 2 + (int) (hash(t.seed, b, 62) * 3);
             int y0 = base + t.h - 1 - (int) (hash(t.seed, b, 63) * Math.min(4, t.h - 2));
             for (int k = 1; k <= len; ++k) {

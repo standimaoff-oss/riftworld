@@ -24,6 +24,7 @@ public final class CastleSite {
             double a = r.nextDouble() * Math.PI * 2, d = 20 + r.nextDouble() * (R - 26);
             int x = (int) Math.floor(CX + Math.cos(a) * d), z = (int) Math.floor(CZ + Math.sin(a) * d);
             if (ISLAND.t(x, z) < 0.12 || inFootprint(x, z, 7)) continue;
+            if (Math.abs(x - CX) < 12 && z < Z0) continue;          // keep the approach to the gatehouse clear
             boolean ok = true;
             for (CityPlan.Tree t : TREES) if (Math.abs(t.x - x) < 6 && Math.abs(t.z - z) < 6) { ok = false; break; }
             if (!ok) continue;
