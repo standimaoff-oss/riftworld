@@ -10,7 +10,7 @@ import java.util.Random;
  * ash / burnt soil ground and leafless charred trees.  The castle front (gatehouse, template z = 0) faces north - the city.
  */
 public final class CastleSite {
-    public static final int TW = 76, TD = 68;                   // template footprint
+    public static final int TW = 76, TD = 76;                   // template footprint
     public static final int CX = 40, CZ = 470;                  // island centre
     public static final int Y = 104;                            // island top = template floor layer
     public static final int X0 = CX - 38, Z0 = CZ - 34;         // template origin (min corner)

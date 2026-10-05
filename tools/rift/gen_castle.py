@@ -36,6 +36,7 @@ def S(name, **p):
 AIR = S("minecraft:air")
 B = {}
 MODEL_CELLS = set()
+MODELS = []           # (master, cells) - needed to shift whole models when the hall is lengthened
 CANDLES = []          # candle masters in lighting order (entrance -> throne)
 
 
@@ -116,6 +117,7 @@ def model(kind, x, y, z, f, powered=False):
         B[c] = S("part", open=False)
     B[(x, y, z)] = S(kind, facing=f, powered=powered, broken=False)
     MODEL_CELLS.update(cs)
+    MODELS.append(((x, y, z), cs))
 
 
 # ------------------------------------------------------------------ primitives
@@ -728,6 +730,64 @@ for (x, y, z), st in list(B.items()):
 # ================================================================== C-2: rooms
 exec(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "castle_rooms.py"), encoding="utf-8").read())
 
+# ================================================================== Rev 4: lengthen the throne hall
+# Insert DZ rows (copies of row ZC-1: side galleries, balustrades, walls, floor, roof) between the 3rd and the 4th candle
+# pair rows' sockets: everything at z >= ZC (back half of the hall, dais, throne, arena heart, north range) moves by DZ,
+# models move as a whole with their master; glass / brass marks in the copied rows become plain masonry / floor.
+ZC, DZ = 36, 8
+
+
+def zmap(z):
+    return z + DZ if z >= ZC else z
+
+
+def _remap():
+    global B, MODEL_CELLS, NBT, MODELS
+    shift = {}
+    for (m, cs) in MODELS:
+        d = DZ if m[2] >= ZC else 0
+        for c in cs:
+            shift[c] = d
+    nb = {}
+    for (x, y, z), st in B.items():
+        nb[(x, y, z + shift[(x, y, z)] if (x, y, z) in shift else zmap(z))] = st
+    for (x, y, z), st in B.items():
+        if z != ZC - 1 or (x, y, z) in MODEL_CELLS or (x, y, z) in NBT:
+            continue
+        n = st[0].split(":")[1]
+        if "stained_glass" in n or n in ("castle_bars",):
+            st = brick(x, y, z)
+        elif n == "brass_block":
+            st = ASH
+        for k in range(DZ):
+            nb.setdefault((x, y, ZC + k), st)
+    B = nb
+    MODEL_CELLS = {(x, y, z + shift[(x, y, z)]) for (x, y, z) in MODEL_CELLS}
+    NBT = {(x, y, z + shift.get((x, y, z), DZ if z >= ZC else 0)): v for (x, y, z), v in NBT.items()}
+    MODELS = [((m[0], m[1], m[2] + (DZ if m[2] >= ZC else 0)), [(c[0], c[1], c[2] + (DZ if m[2] >= ZC else 0)) for c in cs]) for m, cs in MODELS]
+
+
+_remap()
+D += DZ
+CANDLES[:] = [(x, y, zmap(z)) for (x, y, z) in CANDLES]
+SOCKETS = [(x, zmap(z)) for (x, z) in SOCKETS]
+JUMPS = {(x, zmap(z)) for (x, z) in JUMPS}
+CORE = (CORE[0], CORE[1], zmap(CORE[2]))
+THRONE = (38, 4, zmap(46))
+# two more candle pairs along the new stretch of the aisle (lit in order with the others)
+_extra = []
+for z in (ZC + 2, ZC + 5):
+    for x in (35, 41):
+        model("candle_stand", x, 1, z, "north")
+        _extra.append((x, 1, z))
+_i = max(i for i, c in enumerate(CANDLES) if c[2] < ZC) + 1
+CANDLES[_i:_i] = _extra
+ARENA_NBT = {"Candles": _rel(CANDLES), "Sockets": _rel([(sx, 2, sz) for sx, sz in SOCKETS]), "Throne": _rel([THRONE]),
+             "HallMin": _rel([(25, 1, 15)]), "HallMax": _rel([(51, 20, zmap(49))])}
+NW_STEPS = [[a, b, zmap(c)] + list(r) for (a, b, c, *r) in NW_STEPS] if NW_STEPS and len(NW_STEPS[0]) >= 3 else NW_STEPS
+SW_STEPS = [[a, b, zmap(c)] + list(r) for (a, b, c, *r) in SW_STEPS] if SW_STEPS and len(SW_STEPS[0]) >= 3 else SW_STEPS
+KEEP_STEPS = [[a, b, zmap(c)] + list(r) for (a, b, c, *r) in KEEP_STEPS] if KEEP_STEPS and len(KEEP_STEPS[0]) >= 3 else KEEP_STEPS
+
 # ================================================================== connections (panes / fences / walls)
 SOLID_SKIP = ("stairs", "slab", "part", "candle_stand", "boss_throne", "fence", "_wall", "stained_glass")
 
@@ -768,7 +828,7 @@ for sx, sz in SOCKETS:              # keep the rise path of the columns clear of
 NBT[CORE] = ARENA_NBT
 n, pal = write_template(OUT + "/castle.nbt", (W, H, D), B, {k: v for k, v in NBT.items() if k in B})
 meta = {"size": [W, H, D], "blocks": n, "palette": pal, "candles": CANDLES, "sockets": SOCKETS, "jumps": sorted(JUMPS),
-        "throne": [38, 4, 46], "entrance": [38, 1, 2], "core": list(CORE)}
+        "throne": list(THRONE), "entrance": [38, 1, 2], "core": list(CORE)}
 json.dump(meta, open(OUT + "/castle_meta.json", "w"), indent=1)
 json.dump({"NW": NW_STEPS, "SW": SW_STEPS, "KEEP": KEEP_STEPS},
           open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "tower_steps.json"), "w"))

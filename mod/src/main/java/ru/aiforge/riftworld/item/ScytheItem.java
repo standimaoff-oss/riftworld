@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -64,6 +63,7 @@ public class ScytheItem extends SwordItem implements GlbItem {
         tip.add(Component.translatable("item.riftworld.morgrath_scythe.tip3").withStyle(ChatFormatting.GRAY));
         tip.add(Component.translatable("item.riftworld.morgrath_scythe.tip4").withStyle(ChatFormatting.GRAY));
         tip.add(Component.translatable("item.riftworld.morgrath_scythe.tip5").withStyle(ChatFormatting.GRAY));
+        tip.add(Component.translatable("item.riftworld.morgrath_scythe.combo").withStyle(ChatFormatting.RED));
     }
 
     @Override
@@ -81,11 +81,7 @@ public class ScytheItem extends SwordItem implements GlbItem {
 
     @Override
     public void initializeClient(Consumer<IClientItemExtensions> consumer) {
-        consumer.accept(new IClientItemExtensions() {
-            @Override
-            public BlockEntityWithoutLevelRenderer getCustomRenderer() {
-                return ru.aiforge.riftworld.client.ClientHooks.itemRenderer();
-            }
-        });
+        consumer.accept(ru.aiforge.riftworld.client.ComboClient.ext(true));
     }
+
 }

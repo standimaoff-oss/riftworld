@@ -276,5 +276,7 @@
   "riftworld.compass.ruins": "The compass needle swings towards the nearest Smouldering Ruins (%s, %s).",
   "riftworld.compass.castle": "The compass points to the Hall of the Smouldering Horn again.",
   "riftworld.compass.none": "No Smouldering Ruins nearby.",
-  "item.riftworld.castle_compass.tip": "Sneak + right click: castle / nearest Smouldering Ruins"
+  "item.riftworld.castle_compass.tip": "Sneak + right click: castle / nearest Smouldering Ruins",
+  "item.riftworld.morgrath_scythe.combo": "LMB combo: Slanting Sweep → Cleaving Chop → Ashen Reaping (ring of embers)",
+  "item.riftworld.guard_sickle.combo": "LMB combo: Slash → Hook (pulls the foe) → Cross Cut (slows, bleeds)"
 }

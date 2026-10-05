@@ -34,6 +34,8 @@ L = {
     "item.riftworld.morgrath_scythe.tip3": ("  sneaking - Fire Furrow (fire along the ground)", "  присед - «Огненная борозда» (огонь по земле)"),
     "item.riftworld.morgrath_scythe.tip4": ("  sprinting - Reaper's Dash", "  бег - «Рывок жнеца»"),
     "item.riftworld.morgrath_scythe.tip5": ("  in the air - Comet Fall (shock wave)", "  в прыжке - «Падение кометы» (ударная волна)"),
+    "item.riftworld.morgrath_scythe.combo": ("LMB combo: Slanting Sweep → Cleaving Chop → Ashen Reaping (ring of embers)", "Комбо ЛКМ: «Косой мах» → «Рубящий удар» → «Пепельная жатва» (кольцо углей)"),
+    "item.riftworld.guard_sickle.combo": ("LMB combo: Slash → Hook (pulls the foe) → Cross Cut (slows, bleeds)", "Комбо ЛКМ: «Рассечение» → «Крюк» (притягивает) → «Крестовый разрез» (замедляет, кровотечение)"),
     "item.riftworld.guard_sickle": ("Warden's Hook-Sickle", "Крюк-серп стража"),
     "item.riftworld.morgrath_spawn_egg": ("Morgrath Spawn Egg", "Яйцо призыва: Морграт"),
     "item.riftworld.ember_guard_spawn_egg": ("Smouldering Warden Spawn Egg", "Яйцо призыва: Тлеющий страж"),

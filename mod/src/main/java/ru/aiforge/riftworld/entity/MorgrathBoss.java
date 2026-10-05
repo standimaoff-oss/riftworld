@@ -87,8 +87,8 @@ public class MorgrathBoss extends RiftMob {
     }
 
     public static AttributeSupplier.Builder attributes() {
-        return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 200.0).add(Attributes.MOVEMENT_SPEED, 0.24)
-                .add(Attributes.ATTACK_DAMAGE, 12.0).add(Attributes.ARMOR, 8.0).add(Attributes.ARMOR_TOUGHNESS, 4.0)
+        return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 280.0).add(Attributes.MOVEMENT_SPEED, 0.26)
+                .add(Attributes.ATTACK_DAMAGE, 14.0).add(Attributes.ARMOR, 10.0).add(Attributes.ARMOR_TOUGHNESS, 4.0)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 0.95).add(Attributes.FOLLOW_RANGE, 48.0);
     }
 
@@ -284,7 +284,7 @@ public class MorgrathBoss extends RiftMob {
                 if (st >= PULL_END) {
                     go(S.FIGHT);
                     setAnim(A_IDLE);
-                    cooldown = 16 + random.nextInt(14);
+                    cooldown = cd(16, 14);
                 }
             }
             case STAGGER -> {
@@ -360,14 +360,14 @@ public class MorgrathBoss extends RiftMob {
         if (cooldown <= 0 && lungeCd <= 0 && level && d > 5.2 && d < 10.5 && Math.abs(diff) < 45 && hasLineOfSight(tgt)
                 && random.nextInt(10) == 0) {
             begin(A_LUNGE, want);
-            lungeCd = 110 + random.nextInt(60);
+            lungeCd = (second ? 70 : 90) + random.nextInt(50);
             sound(SoundEvents.WARDEN_AGITATED, 1.6F, 0.55F);
             return;
         }
         if (cooldown <= 0 && scrapeCd <= 0 && Math.abs(tgt.getY() - getY()) < 2.5 && d > 7.0 && d < 20 && farTicks > 50
                 && Math.abs(diff) < 60 && hasLineOfSight(tgt)) {
             begin(A_SCRAPE, want);
-            scrapeCd = 170 + random.nextInt(80);
+            scrapeCd = (second ? 110 : 140) + random.nextInt(60);
             farTicks = 0;
             sound(SoundEvents.GRINDSTONE_USE, 1.6F, 0.4F);
             return;
@@ -474,7 +474,7 @@ public class MorgrathBoss extends RiftMob {
         }
         if (st >= end) {
             if (atk == A_SIDE && !combo && tgt != null && distanceTo(tgt) < 4.6 && Math.abs(tgt.getY() - getY()) < 2.0
-                    && random.nextInt(100) < (second ? 60 : 40)) {
+                    && random.nextInt(100) < (second ? 75 : 55)) {
                 // combo: the sweep flows straight into an overhead chop (shortened wind-up, still telegraphed)
                 atk = A_OVER;
                 combo = true;
@@ -488,7 +488,7 @@ public class MorgrathBoss extends RiftMob {
             if (atk == A_SIDE) {
                 go(S.FIGHT);
                 setAnim(A_IDLE);
-                cooldown = 18 + random.nextInt(16);
+                cooldown = cd(18, 16);
             } else {
                 go(S.PULL);
                 setAnim(atk == A_OVER ? A_PULL : A_PULL_DIAG, true);
@@ -528,7 +528,7 @@ public class MorgrathBoss extends RiftMob {
         if (st >= LUNGE_END) {
             go(S.FIGHT);
             setAnim(A_IDLE);
-            cooldown = 20 + random.nextInt(14);
+            cooldown = cd(20, 14);
         }
     }
 
@@ -557,7 +557,7 @@ public class MorgrathBoss extends RiftMob {
         if (st >= SCRAPE_END) {
             go(S.FIGHT);
             setAnim(A_IDLE);
-            cooldown = 18 + random.nextInt(12);
+            cooldown = cd(18, 12);
         }
     }
 
@@ -649,7 +649,7 @@ public class MorgrathBoss extends RiftMob {
         List<Vec3> spots = new ArrayList<>();
         List<Integer> dirs = new ArrayList<>();
         if (core != null) {
-            int[][] rel = {{-10, 9, -20}, {-10, 9, -12}, {10, 9, -20}, {10, 9, -12}};
+            int[][] rel = {{-10, 9, -28}, {-10, 9, -20}, {10, 9, -28}, {10, 9, -20}};
             for (int[] r : rel) {
                 spots.add(new Vec3(core.getX() + r[0] + 0.5, core.getY() + r[1], core.getZ() + r[2] + 0.5));
                 dirs.add(r[0] < 0 ? 1 : -1);
@@ -690,6 +690,12 @@ public class MorgrathBoss extends RiftMob {
         guards.clear();
     }
 
+    /** Rev 4: harder boss - shorter pauses between attacks (and even shorter in the second phase). */
+    private int cd(int base, int rnd) {
+        float k = second ? 0.62F : 0.8F;
+        return Math.max(6, (int) ((base + random.nextInt(rnd)) * k));
+    }
+
     // ------------------------------------------------------------------------------------------------ wall climbing
     private void startClimb(Player p) {
         if (core == null) return;
@@ -701,9 +707,9 @@ public class MorgrathBoss extends RiftMob {
         climbTarget = p;
         boolean west = p.getX() < core.getX() + 0.5;
         double bx = core.getX() + (west ? -7.5 : 8.5);
-        double bz = Mth.clamp(p.getZ(), core.getZ() - 26.5, core.getZ() + 1.5);
+        double bz = Mth.clamp(p.getZ(), core.getZ() - 34.5, core.getZ() + 1.5);
         if (bz > core.getZ() - 9 && bz < core.getZ() - 3 && !west) bz = core.getZ() - 10.5;    // east gallery is fallen there
-        for (int sz : new int[] {-23, -16, -9}) {                 // keep clear of the column sockets along the walls
+        for (int sz : new int[] {-31, -24, -9}) {                 // keep clear of the column sockets along the walls
             double c = core.getZ() + sz + 0.5;
             if (Math.abs(bz - c) < 2.2) bz = c + (bz >= c ? 2.6 : -2.6);
         }
@@ -785,7 +791,7 @@ public class MorgrathBoss extends RiftMob {
             if (tickCount - recentT > 30) recentDmg = 0;
             recentT = tickCount;
             recentDmg += amount;
-            if (recentDmg >= 24 && staggerCd <= 0 && (state == S.FIGHT || state == S.PULL)) {
+            if (recentDmg >= 30 && staggerCd <= 0 && (state == S.FIGHT || state == S.PULL)) {
                 recentDmg = 0;
                 staggerCd = 240;
                 go(S.STAGGER);

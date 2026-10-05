@@ -276,5 +276,7 @@
   "riftworld.compass.ruins": "Стрелка компаса качнулась к ближайшим Тлеющим руинам (%s, %s).",
   "riftworld.compass.castle": "Компас снова указывает на Чертог Тлеющего Рога.",
   "riftworld.compass.none": "Поблизости нет Тлеющих руин.",
-  "item.riftworld.castle_compass.tip": "Присед + ПКМ: замок / ближайшие Тлеющие руины"
+  "item.riftworld.castle_compass.tip": "Присед + ПКМ: замок / ближайшие Тлеющие руины",
+  "item.riftworld.morgrath_scythe.combo": "Комбо ЛКМ: «Косой мах» → «Рубящий удар» → «Пепельная жатва» (кольцо углей)",
+  "item.riftworld.guard_sickle.combo": "Комбо ЛКМ: «Рассечение» → «Крюк» (притягивает) → «Крестовый разрез» (замедляет, кровотечение)"
 }

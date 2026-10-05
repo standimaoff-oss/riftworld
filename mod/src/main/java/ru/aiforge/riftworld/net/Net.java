@@ -9,7 +9,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
 import ru.aiforge.riftworld.RiftWorld;
 
 public final class Net {
-    private static final String V = "1";
+    private static final String V = "2";
     public static final SimpleChannel CH = NetworkRegistry.newSimpleChannel(new ResourceLocation(RiftWorld.MODID, "main"), () -> V, V::equals, V::equals);
 
     private Net() {}
@@ -17,6 +17,8 @@ public final class Net {
     public static void init() {
         CH.messageBuilder(FlightMsg.class, 0, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(FlightMsg::encode).decoder(FlightMsg::decode).consumerMainThread(FlightMsg::handle).add();
+        CH.messageBuilder(ComboMsg.class, 1, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(ComboMsg::encode).decoder(ComboMsg::decode).consumerMainThread(ComboMsg::handle).add();
     }
 
     public static void send(ServerPlayer p, Object msg) {

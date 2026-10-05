@@ -10,6 +10,7 @@ _argv = sys.argv[:]
 WANT = set(_argv[_argv.index("--") + 1].split(",")) if "--" in _argv else None
 sys.argv = [_argv[0], "--", "__none__"]
 exec(open("/home/user/tools/rift/models.py").read())          # helpers only (builds nothing)
+exec(open("/home/user/tools/rift/mc_geo.py").read())          # Rev 4: Minecraft-style cuboid geometry
 sys.argv = _argv
 from mathutils import Quaternion
 
@@ -242,149 +243,7 @@ BOSS_BONES = [
 def m_boss():
     H = {b: h for b, _, h in BOSS_BONES}
     arm = make_rig("boss", BOSS_BONES)
-    rnd = random.Random(21)
-    # ---- hips: pelvis, belt with skull buckle, ragged loincloth front and back
-    box("pelvis", (0.58, 0.40, 0.30), (0, 0.08, 1.25), "b_hide", bevel=0.06)
-    for s in (-1, 1):
-        box("hipbone%d" % s, (0.12, 0.30, 0.14), (s * 0.30, 0.05, 1.33), "b_bone", (0, s * 0.3, 0), bevel=0.03)
-    box("belt", (0.64, 0.46, 0.07), (0, 0.08, 1.39), "e_hide", bevel=0.02)
-    _skull("buckle", 0, -0.19, 1.38, s=0.34)
-    for k in range(6):
-        x = -0.25 + k * 0.1
-        L = 0.42 + rnd.random() * 0.25
-        box("lf%d" % k, (0.09, 0.02, L), (x, -0.17 - k % 2 * 0.01, 1.36 - L / 2), "b_rag", (0.06 * math.sin(k), 0, 0.12 * math.cos(k * 1.7)))
-        L = 0.5 + rnd.random() * 0.3
-        box("lb%d" % k, (0.09, 0.02, L), (x, 0.31 + k % 2 * 0.01, 1.36 - L / 2), "b_rag", (-0.08, 0, 0.1 * math.sin(k * 2.1)))
-    for s in (-1, 1):
-        for k in range(3):
-            L = 0.35 + rnd.random() * 0.2
-            box("ls%d%d" % (s, k), (0.02, 0.09, L), (s * 0.31, -0.06 + k * 0.12, 1.36 - L / 2), "b_rag", (0, 0.1 * s, 0))
-    attach("m_hips", arm, "hips", H["hips"])
-    # ---- spine: belly + exposed ribs + vertebrae
-    taper("belly", (0, 0.10, 1.32), (0, -0.02, 1.76), 0.22, 0.28, "b_hide", seg=10)
-    for s in (-1, 1):
-        for k in range(4):
-            z = 1.50 + k * 0.08
-            rod("rib%d%d" % (s, k), (s * 0.08, -0.24, z), (s * 0.27, -0.06, z - 0.03), 0.022, "b_bone", seg=5)
-            rod("ribb%d%d" % (s, k), (s * 0.27, -0.06, z - 0.03), (s * 0.24, 0.13, z + 0.01), 0.02, "b_bone", seg=5)
-    for k in range(3):
-        box("vert%d" % k, (0.07, 0.06, 0.06), (0, 0.27 - k * 0.04, 1.42 + k * 0.12), "b_bone", bevel=0.015)
-    attach("m_spine", arm, "spine", H["spine"])
-    # ---- chest: hunched ribcage, trapezius hump, sternum, ember cracks, dorsal spikes, mane, bone pauldrons, rag cape
-    box("ribcage", (0.80, 0.52, 0.62), (0, -0.12, 1.95), "b_hide", (0.45, 0, 0), bevel=0.1)
-    box("hump", (0.88, 0.46, 0.36), (0, 0.0, 2.2), "b_hide", (0.6, 0, 0), bevel=0.1)
-    box("sternum", (0.16, 0.04, 0.44), (0, -0.42, 1.93), "b_bone", (0.45, 0, 0), bevel=0.01)
-    for s in (-1, 1):
-        for k in range(3):
-            rod("crib%d%d" % (s, k), (s * 0.06, -0.44, 1.78 + k * 0.11), (s * 0.36, -0.30, 1.74 + k * 0.12), 0.02, "b_bone", seg=5)
-    for k, (x, z, a) in enumerate(((-0.18, 2.02, 0.5), (0.12, 1.95, -0.7), (0.22, 2.1, 0.2), (-0.05, 1.86, 1.2), (0.3, 1.86, -0.3))):
-        box("ember%d" % k, (0.2, 0.012, 0.014), (x, -0.43 + abs(x) * 0.25, z), "c_ember", (0.45, a, 0))
-    for k in range(7):
-        u = k / 6
-        p = lerp3((0, 0.24, 1.72), (0, -0.08, 2.44), u)
-        L = 0.14 + math.sin(u * math.pi) * 0.22
-        tip = add(p, (0, 0.6 * L, 0.8 * L))
-        spike("dsp%d" % k, p, tip, 0.045 + math.sin(u * math.pi) * 0.03, "c_horn")
-        if 2 <= k <= 4:
-            crystal("dspg%d" % k, add(tip, (0, -0.01, -0.02)), "c_ember", h=0.07, r=0.02, rot=(-0.6, 0, 0))
-    for k in range(18):
-        x = -0.32 + (k % 9) * 0.08
-        row = k // 9
-        a = (x * 0.9, -0.16 + row * 0.12, 2.42 - row * 0.06)
-        b = (x * 1.25 + rnd.uniform(-0.04, 0.04), 0.30 + row * 0.04, 1.98 - row * 0.12 - rnd.random() * 0.1)
-        rod("mane%d" % k, a, b, 0.032, "b_fur", seg=4)
-    for s in (-1, 1):
-        box("paul%d" % s, (0.32, 0.34, 0.08), (s * 0.48, -0.24, 2.32), "b_bone", (0.15, s * -0.55, 0), bevel=0.03)
-        box("paul2%d" % s, (0.26, 0.28, 0.06), (s * 0.56, -0.26, 2.24), "b_bone", (0.15, s * -0.85, 0), bevel=0.02)
-        for k in range(3):
-            spike("pspk%d%d" % (s, k), (s * (0.42 + k * 0.07), -0.34 + k * 0.08, 2.36), (s * (0.5 + k * 0.1), -0.30 + k * 0.1, 2.62 - k * 0.04), 0.03, "c_horn")
-    for k in range(7):
-        x = -0.36 + k * 0.12
-        L = 0.75 + rnd.random() * 0.45
-        box("cape%d" % k, (0.11, 0.02, L), (x, 0.30 + abs(x) * 0.1, 2.12 - L / 2), "b_rag", (-0.22, 0, 0.08 * math.sin(k * 1.3)))
-    attach("m_chest", arm, "chest", H["chest"])
-    # ---- neck
-    taper("neck", (0, -0.26, 2.16), (0, -0.66, 2.40), 0.17, 0.12, "b_hide", seg=8)
-    for k in range(3):
-        spike("nsp%d" % k, (0, -0.32 - k * 0.11, 2.28 + k * 0.04), (0, -0.28 - k * 0.11, 2.42 + k * 0.04), 0.03, "b_bone")
-    for k in range(6):
-        x = -0.12 + k * 0.05
-        rod("nmane%d" % k, (x, -0.5, 2.48), (x * 1.6, -0.18, 2.3), 0.03, "b_fur", seg=4)
-    attach("m_neck", arm, "neck", H["neck"])
-    # ---- head: long canine bone skull (wendigo-like), brow, glowing eyes in deep sockets, fangs, torn ears, bison horns
-    box("cranium", (0.32, 0.30, 0.26), (0, -0.70, 2.48), "b_bone", bevel=0.05)
-    taper("snout", (0, -0.80, 2.44), (0, -1.24, 2.38), 0.125, 0.06, "b_bone", seg=8)
-    box("snoutridge", (0.08, 0.40, 0.05), (0, -1.0, 2.5), "b_bone", (-0.1, 0, 0), bevel=0.015)
-    box("nose", (0.10, 0.06, 0.07), (0, -1.25, 2.40), "c_wick", bevel=0.015)
-    box("brow", (0.36, 0.08, 0.07), (0, -0.85, 2.56), "b_bone", (-0.25, 0, 0), bevel=0.02)
-    for s in (-1, 1):
-        box("sock%d" % s, (0.08, 0.04, 0.06), (s * 0.10, -0.865, 2.50), "c_wick")
-        box("eye%d" % s, (0.045, 0.02, 0.032), (s * 0.10, -0.88, 2.50), "b_eye")
-        box("cheek%d" % s, (0.05, 0.22, 0.08), (s * 0.13, -0.86, 2.40), "b_bone", (0, 0, s * 0.18), bevel=0.015)
-        for k in range(5):
-            crystal("ft%d%d" % (s, k), (s * 0.075, -0.92 - k * 0.065, 2.335), "b_tooth", h=0.075 if k else 0.11, r=0.013, rot=(math.pi, 0, 0))
-        box("ear%d" % s, (0.035, 0.12, 0.2), (s * 0.16, -0.56, 2.62), "b_hide", (-0.6, s * 0.45, 0))
-        box("eart%d" % s, (0.03, 0.06, 0.08), (s * 0.19, -0.5, 2.73), "b_hide", (-0.9, s * 0.45, 0.3))
-        _horn("horn%d" % s, s, (s * 0.15, -0.66, 2.56), s=1.3)
-        cyl("hornring%d" % s, 0.1, 0.05, (s * 0.17, -0.66, 2.57), "c_blacksteel", rot=(0, math.pi / 2, 0), seg=10)
-    for k in range(5):
-        rod("hmane%d" % k, (-0.1 + k * 0.05, -0.64, 2.61), (-0.14 + k * 0.07, -0.42, 2.45), 0.028, "b_fur", seg=4)
-    attach("m_head", arm, "head", H["head"])
-    # ---- jaw
-    taper("jawb", (0, -0.74, 2.30), (0, -1.16, 2.31), 0.075, 0.045, "b_bone", seg=8)
-    box("gum", (0.11, 0.38, 0.02), (0, -0.96, 2.345), "b_gum")
-    for s in (-1, 1):
-        for k in range(4):
-            crystal("lt%d%d" % (s, k), (s * 0.055, -0.95 - k * 0.06, 2.35), "b_tooth", h=0.06 if k else 0.09, r=0.011)
-    attach("m_jaw", arm, "jaw", H["jaw"])
-    # ---- arms (long, reaching the knees), bone pauldron spikes, black-steel bracers, long clawed fingers
-    for side, s in (("L", 1), ("R", -1)):
-        sh, el, wr = H["arm_" + side], H["fore_" + side], H["hand_" + side]
-        taper("ua" + side, sh, el, 0.13, 0.095, "b_hide", seg=8)
-        box("uaw" + side, (0.2, 0.2, 0.08), lerp3(sh, el, 0.55), "b_rag", (0.25, s * 0.25, 0), bevel=0.02)
-        attach("m_arm_" + side, arm, "arm_" + side, sh)
-        taper("fa" + side, el, wr, 0.095, 0.068, "b_hide", seg=8)
-        spike("elb" + side, el, add(el, (s * 0.05, 0.22, -0.02)), 0.045, "b_bone")
-        m = lerp3(el, wr, 0.62)
-        d = Vector(wr) - Vector(el)
-        cyl("brac" + side, 0.088, 0.24, m, "c_blacksteel", rot=d.to_track_quat('Z', 'Y').to_euler(), seg=10)
-        for k in range(3):
-            p = lerp3(el, wr, 0.5 + k * 0.1)
-            spike("bsp%s%d" % (side, k), add(p, (s * 0.07, 0.03, 0)), add(p, (s * 0.2, 0.08, 0.02)), 0.02, "c_blacksteel", seg=4)
-        attach("m_fore_" + side, arm, "fore_" + side, el)
-        box("palm" + side, (0.12, 0.15, 0.16), add(wr, (0, -0.03, -0.09)), "b_hide", bevel=0.03)
-        for k in range(4):
-            o = (k - 1.5) * 0.034
-            base = add(wr, (s * 0.02 + o, -0.07, -0.16))
-            if side == "R":
-                tip = add(wr, (o * 1.2 + 0.02, -0.12, -0.26))           # curled round the snath
-            else:
-                tip = add(wr, (s * 0.04 + o * 1.4, -0.24, -0.42))
-            _talon("fg%s%d" % (side, k), base, tip, 0.024, 0.006, 0.04, m="b_hide", n=3)
-            spike("cl%s%d" % (side, k), tip, add(tip, (0, -0.07, -0.08)), 0.012, "c_horn", seg=4)
-        _talon("th" + side, add(wr, (-s * 0.06, -0.06, -0.1)), add(wr, (-s * 0.08, -0.2, -0.22)), 0.026, 0.008, 0.03, m="b_hide", n=3)
-        attach("m_hand_" + side, arm, "hand_" + side, wr)
-    # ---- legs: digitigrade, thick thighs, backward hock, long clawed feet, knee spikes
-    for side, s in (("L", 1), ("R", -1)):
-        hp, kn, an = H["thigh_" + side], H["shin_" + side], H["foot_" + side]
-        taper("th" + side, hp, kn, 0.17, 0.115, "b_hide", seg=8)
-        box("thw" + side, (0.24, 0.26, 0.1), lerp3(hp, kn, 0.4), "b_rag", (-0.4, 0, 0), bevel=0.02)
-        attach("m_thigh_" + side, arm, "thigh_" + side, hp)
-        taper("sh" + side, kn, an, 0.105, 0.068, "b_hide", seg=8)
-        cyl("kneecap" + side, 0.1, 0.08, add(kn, (0, -0.06, 0)), "b_bone", rot=(math.pi / 2, 0, 0), seg=8)
-        spike("knsp" + side, add(kn, (0, -0.08, 0.02)), add(kn, (s * 0.02, -0.3, 0.12)), 0.045, "b_bone")
-        box("shplate" + side, (0.1, 0.03, 0.26), add(lerp3(kn, an, 0.5), (0, -0.05, 0)), "b_bone", (-0.65, 0, 0), bevel=0.01)
-        attach("m_shin_" + side, arm, "shin_" + side, kn)
-        toe = (an[0], -0.20, 0.06)
-        taper("ft" + side, an, toe, 0.075, 0.06, "b_hide", seg=8)
-        for k in range(3):
-            o = (k - 1) * 0.06
-            spike("toe%s%d" % (side, k), (an[0] + o, -0.22, 0.05), (an[0] + o * 1.3, -0.44, 0.0), 0.034, "c_horn", seg=5)
-        spike("spur" + side, add(an, (0, 0.04, -0.02)), add(an, (0, 0.22, -0.18)), 0.03, "c_horn", seg=5)
-        attach("m_foot_" + side, arm, "foot_" + side, an)
-    # ---- scythe (own node "scythe" so the renderer can hide it the moment it drops)
-    scythe_parts("scy", (-0.72, -0.60, 0.92))
-    attach("scythe", arm, "scythe_b", H["scythe_b"])
+    mc_boss_geo(arm, H)
 
     # ------------------------------------------------------------------------------------ clips
     I = {"chest": (4, 0, 0), "jaw": (6, 0, 0), "arm_L": (-6, -8, 0), "fore_L": (-12, 0, 0), "arm_R": (-8, 6, 0), "fore_R": (-16, 0, 0)}
@@ -559,92 +418,7 @@ GUARD_BONES = [
 def m_guard():
     H = {b: h for b, _, h in GUARD_BONES}
     arm = make_rig("guard", GUARD_BONES)
-    rnd = random.Random(7)
-    # hips: bony pelvis, rope belt, ragged red tabard skirt
-    box("pelvis", (0.34, 0.24, 0.18), (0, 0.04, 0.93), "b_ash", bevel=0.04)
-    for s in (-1, 1):
-        box("ilium%d" % s, (0.08, 0.18, 0.1), (s * 0.18, 0.03, 0.98), "b_bone", (0, s * 0.35, 0), bevel=0.02)
-    torus("belt", 0.2, 0.02, (0, 0.04, 1.02), "e_rope", seg=14, seg2=4)
-    for k in range(5):
-        x = -0.14 + k * 0.07
-        L = 0.38 + rnd.random() * 0.22
-        box("tf%d" % k, (0.065, 0.015, L), (x, -0.13, 1.02 - L / 2), "b_rag", (0.05, 0, 0.12 * math.sin(k * 2.3)))
-        L = 0.42 + rnd.random() * 0.2
-        box("tb%d" % k, (0.065, 0.015, L), (x, 0.2, 1.02 - L / 2), "b_rag", (-0.06, 0, 0.1 * math.cos(k * 1.9)))
-    attach("m_hips", arm, "hips", H["hips"])
-    # chest: emaciated ribcage, spine knobs, tabard with brass horn emblem, collar of chains, back spikes
-    box("torso", (0.40, 0.26, 0.40), (0, -0.06, 1.34), "b_ash", (0.35, 0, 0), bevel=0.06)
-    taper("waist", (0, 0.04, 0.98), (0, -0.02, 1.2), 0.11, 0.15, "b_ash", seg=8)
-    for s in (-1, 1):
-        for k in range(5):
-            z = 1.17 + k * 0.065
-            rod("rib%d%d" % (s, k), (s * 0.04, -0.21 + k * 0.012, z), (s * 0.21, -0.07, z - 0.02), 0.014, "b_bone", seg=4)
-            rod("ribb%d%d" % (s, k), (s * 0.21, -0.07, z - 0.02), (s * 0.18, 0.08, z + 0.01), 0.013, "b_bone", seg=4)
-    box("tabard", (0.26, 0.02, 0.34), (0, -0.215, 1.24), "b_rag", (0.3, 0, 0))
-    box("emb", (0.07, 0.01, 0.07), (0, -0.235, 1.33), "c_brass", (0.3, 0, 0.785))
-    for k in range(5):
-        u = k / 4
-        p = lerp3((0, 0.14, 1.12), (0, 0.04, 1.56), u)
-        spike("bsp%d" % k, p, add(p, (0, 0.13, 0.08)), 0.025, "b_bone")
-    for k in range(6):
-        a = k / 6 * math.pi * 2
-        torus("col%d" % k, 0.03, 0.008, (math.cos(a) * 0.17, -0.2 + math.sin(a) * 0.1, 1.55), "c_blacksteel", rot=(0, math.pi / 2 * (k % 2), a), seg=8, seg2=3)
-    for s in (-1, 1):
-        box("shp%d" % s, (0.18, 0.2, 0.05), (s * 0.27, -0.16, 1.58), "b_bone", (0.1, s * -0.6, 0), bevel=0.015)
-        spike("shs%d" % s, (s * 0.3, -0.16, 1.6), (s * 0.4, -0.1, 1.8), 0.025, "c_horn")
-    attach("m_chest", arm, "chest", H["chest"])
-    taper("neck", (0, -0.18, 1.5), (0, -0.42, 1.65), 0.075, 0.055, "b_ash", seg=6)
-    attach("m_neck", arm, "neck", H["neck"])
-    # head: bone mask with eye slits glowing, short curled horns, hood rag
-    box("skull", (0.2, 0.22, 0.2), (0, -0.44, 1.7), "b_ash", bevel=0.04)
-    box("mask", (0.22, 0.05, 0.26), (0, -0.56, 1.68), "b_bone", (-0.1, 0, 0), bevel=0.02)
-    taper("masksn", (0, -0.58, 1.62), (0, -0.70, 1.56), 0.06, 0.03, "b_bone", seg=6)
-    for s in (-1, 1):
-        box("slit%d" % s, (0.06, 0.02, 0.018), (s * 0.05, -0.59, 1.72), "b_eye", (0, 0, s * -0.3))
-        _horn("horn%d" % s, s, (s * 0.09, -0.46, 1.79), s=0.55)
-    for k in range(5):
-        x = -0.1 + k * 0.05
-        box("hood%d" % k, (0.06, 0.02, 0.3), (x, -0.32, 1.66), "b_rag", (-0.25, 0, 0.1 * (k - 2)))
-    box("hoodtop", (0.24, 0.24, 0.04), (0, -0.42, 1.81), "b_rag", (-0.1, 0, 0))
-    attach("m_head", arm, "head", H["head"])
-    box("jawb", (0.12, 0.16, 0.04), (0, -0.55, 1.56), "b_bone", bevel=0.01)
-    for k in range(4):
-        crystal("jt%d" % k, (-0.045 + k * 0.03, -0.62, 1.585), "b_tooth", h=0.04, r=0.008)
-    attach("m_jaw", arm, "jaw", H["jaw"])
-    for side, s in (("L", 1), ("R", -1)):
-        sh, el, wr = H["arm_" + side], H["fore_" + side], H["hand_" + side]
-        taper("ua" + side, sh, el, 0.065, 0.05, "b_ash", seg=6)
-        cyl("uaw" + side, 0.07, 0.12, lerp3(sh, el, 0.5), "b_rag", rot=(Vector(el) - Vector(sh)).to_track_quat('Z', 'Y').to_euler(), seg=6)
-        attach("m_arm_" + side, arm, "arm_" + side, sh)
-        taper("fa" + side, el, wr, 0.05, 0.038, "b_ash", seg=6)
-        spike("elb" + side, el, add(el, (s * 0.02, 0.14, 0)), 0.025, "b_bone")
-        torus("fw" + side, 0.048, 0.012, lerp3(el, wr, 0.7), "e_rope", rot=(Vector(wr) - Vector(el)).to_track_quat('Z', 'Y').to_euler(), seg=8, seg2=3)
-        attach("m_fore_" + side, arm, "fore_" + side, el)
-        box("palm" + side, (0.07, 0.09, 0.09), add(wr, (0, -0.02, -0.05)), "b_ash", bevel=0.02)
-        for k in range(4):
-            o = (k - 1.5) * 0.02
-            base = add(wr, (o, -0.05, -0.09))
-            tip = add(wr, (o * 1.4, -0.1, -0.16)) if side == "R" else add(wr, (s * 0.02 + o * 1.6, -0.17, -0.3))
-            _talon("fg%s%d" % (side, k), base, tip, 0.014, 0.004, 0.025, m="b_ash", n=3)
-            spike("cl%s%d" % (side, k), tip, add(tip, (0, -0.05, -0.06)), 0.008, "c_horn", seg=4)
-        attach("m_hand_" + side, arm, "hand_" + side, wr)
-    for side, s in (("L", 1), ("R", -1)):
-        hp, kn, an = H["thigh_" + side], H["shin_" + side], H["foot_" + side]
-        taper("th" + side, hp, kn, 0.08, 0.06, "b_ash", seg=6)
-        attach("m_thigh_" + side, arm, "thigh_" + side, hp)
-        taper("sh" + side, kn, an, 0.055, 0.04, "b_ash", seg=6)
-        cyl("kn" + side, 0.06, 0.05, add(kn, (0, -0.04, 0)), "b_bone", rot=(math.pi / 2, 0, 0), seg=6)
-        for k in range(3):
-            torus("lw%s%d" % (side, k), 0.05, 0.01, lerp3(kn, an, 0.3 + k * 0.2), "b_rag", rot=(Vector(an) - Vector(kn)).to_track_quat('Z', 'Y').to_euler(), seg=8, seg2=3)
-        attach("m_shin_" + side, arm, "shin_" + side, kn)
-        toe = (an[0], -0.16, 0.04)
-        taper("ft" + side, an, toe, 0.045, 0.035, "b_ash", seg=6)
-        for k in range(3):
-            o = (k - 1) * 0.035
-            spike("toe%s%d" % (side, k), (an[0] + o, -0.17, 0.035), (an[0] + o * 1.3, -0.32, 0.0), 0.02, "c_horn", seg=4)
-        attach("m_foot_" + side, arm, "foot_" + side, an)
-    sickle_parts("wp", H["wpn_b"])
-    attach("weapon", arm, "wpn_b", H["wpn_b"])
+    mc_guard_geo(arm, H)
 
     I = {"chest": (24, 0, 0), "neck": (-18, 0, 0), "head": (-10, 0, 0), "jaw": (8, 0, 0), "arm_L": (-12, -6, 0), "fore_L": (-18, 0, 0),
          "arm_R": (-20, 6, 0), "fore_R": (-30, 0, 0), "thigh_L": (-14, 0, 0), "shin_L": (18, 0, 0), "thigh_R": (-10, 0, 0), "shin_R": (14, 0, 0),
@@ -737,14 +511,12 @@ def m_guard():
 
 # ================================================================================================ weapon items
 def m_scythe():
-    scythe_parts("scy", (0, 0, 0))
-    node("scythe")
+    mc_weapon_item("scythe")
     export("scythe")
 
 
 def m_guard_sickle():
-    sickle_parts("wp", (0, 0, 0))
-    node("guard_sickle")
+    mc_weapon_item("guard_sickle")
     export("guard_sickle")
 
 

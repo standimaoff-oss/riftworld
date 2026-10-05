@@ -43,7 +43,7 @@ public class ArenaCoreBlockEntity extends BlockEntity {
     static final float HEAL_PER_COLUMN = 1.0F;
 
     int[] candles = new int[0], sockets = new int[0];
-    int[] throne = {0, 2, 0}, hallMin = {-13, -1, -31}, hallMax = {13, 18, 3};
+    int[] throne = {0, 2, 0}, hallMin = {-13, -1, -39}, hallMax = {13, 18, 3};
     State state = State.DORMANT;
     long stateTime;
     int lit, idle, lastLeft = -1;
