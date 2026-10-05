@@ -33,3 +33,5 @@
 
 Порядок: разделить на 4–5 сообщений; в конце — видео изменений и фото (для разделения блоков видео не нужно; для анимаций
 ударов косы и т.п. — нужно).
+
+**Addition (re-sent message):** photo **01** (`01_drowned_spire_arena.png`) = drowned-spire sea arena structure for the future **origami/paper dragon boss** (flies above and under water). Extra boss-style refs: `maxresdefault (33).jpg`, `maxresdefault (34).jpg`, `KVGKafz.jpeg`.
