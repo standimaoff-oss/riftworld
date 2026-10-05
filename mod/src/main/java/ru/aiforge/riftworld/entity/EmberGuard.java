@@ -149,8 +149,8 @@ public class EmberGuard extends RiftMob {
             case PERCH -> {
                 getNavigation().stop();
                 setDeltaMovement(getDeltaMovement().multiply(0, 1, 0));
-                Player near = sl.getNearestPlayer(getX(), getY(), getZ(), 15, e -> e instanceof Player pl && !pl.isSpectator() && !pl.isCreative());
-                if (near != null && (hasLineOfSight(near) || distanceTo(near) < 7)) {
+                Player near = sl.getNearestPlayer(getX(), getY(), getZ(), 24, e -> e instanceof Player pl && !pl.isSpectator() && !pl.isCreative());
+                if (near != null && (hasLineOfSight(near) || Math.hypot(near.getX() - getX(), near.getZ() - getZ()) < 16)) {
                     face(near, 360);
                     setTarget(near);
                     prepareLeap(0, 6 + random.nextInt(24), null);

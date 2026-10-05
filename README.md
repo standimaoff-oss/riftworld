@@ -524,3 +524,29 @@ Passable: chandelier, sconce, shackles, tapestry, bones. New 16×16 blocks: `cas
   normal combat; patches on stairs at noon and on the floor in the morning; no exceptions. Screenshots: `session13/`.
 - Lightweight biome + structure for normal play = the Ashen Lands (R≈235, burnt islands, fallen islands with ruined house and
   broken bridge, lava meanders) + the castle, located with the castle compass — already shipped in A-1..A-3.
+
+## v0.6.1 — «Тлеющие руины»: lightweight biome + structure for normal play
+
+- **Where:** the wild archipelago of Элисар is split into 640-block super-cells; ~70 % of them (outside the city ring
+  r<520 and away from the real Ashen Lands) get one site (`world/EmberRuins.java`, deterministic, no saved data).
+  `/riftruins` (op) prints the nearest one; the first one from spawn on the test seed is at (490, 98, −197).
+- **Biome patch (R≈78):** reuses the Ashen Lands logic — burnt neighbouring islands with bare charred trees, ash plain with
+  lava meanders instead of the ocean, ash-brown haze and particles (biome = ashen).
+- **Island:** scorched island R 26–32 with a flattened plateau for the chapel, scorched-stone boulders, dead trees.
+- **«Тлеющая часовня»** (`tools/rift/gen_chapel.py` → `structures/ruins/chapel.nbt`, 19×21×28, same red brick / grey
+  ashlar / rare brass palette as the castle): nave with custom stained-glass lancets (3 per side wall, a triple lancet over the
+  altar, a round window over the door — all emit coloured light and cast the A-3 light shafts), broken NW bell tower,
+  collapsed NE corner and roof hole, altar on a dais with lit candle stands, pews, horn tapestries, wall sconces, bone piles,
+  gold hoard, cobwebs, rubble, small graveyard and broken piers at the approach.
+- **Loot:** chest behind the altar, table `chests/castle_chapel_ruin` (candles, gold, iron, arrows, food, stained glass,
+  blaze powder, glowstone, enchanted book, rare golden apple / diamond, 10 % warden's hook-sickle).
+- **Guards:** 2–3 Smouldering Wardens per site, spawned at worldgen as persistent **sentries** (new `PERCH` state, saved in
+  NBT): they crouch motionless on the roof slopes / broken wall top, look around, and when a survival player comes within
+  16 blocks horizontally (or 24 with line of sight) they turn and leap down at him, then fight as usual. Hitting a sentry
+  wakes it immediately.
+- **Compass:** the castle compass now has a tooltip; **sneak + right click** toggles the needle between the castle and the
+  nearest Smouldering Ruins (lodestone sound, action-bar message ru/en).
+- **Verified live:** site generation (island, haze, dead trees, chapel, interior, light shaft through the triple lancet),
+  3 guards present on their perches, no exceptions. The perch trigger radius was widened after the first live test
+  (guards on the roof did not see a player in front of the door through the roof); the widened trigger compiles but its
+  live leap was not re-filmed because of sandbox resets.
