@@ -272,6 +272,13 @@ public class MorgrathBoss extends RiftMob {
                 return;
             }
         }
+        if (tgt.getY() > getY() + 5.0) {
+            // the player is up on the gallery: he does not take the stairs - waits below, glaring (climbs only when shot)
+            getNavigation().stop();
+            faceTo(tgt, 10);
+            getLookControl().setLookAt(tgt, 30, 30);
+            return;
+        }
         double d = distanceTo(tgt);
         float want = yawTo(tgt);
         float diff = Mth.wrapDegrees(want - getYRot());
@@ -447,6 +454,11 @@ public class MorgrathBoss extends RiftMob {
         double bx = core.getX() + (west ? -7.5 : 8.5);
         double bz = Mth.clamp(p.getZ(), core.getZ() - 26.5, core.getZ() + 1.5);
         if (bz > core.getZ() - 9 && bz < core.getZ() - 3 && !west) bz = core.getZ() - 10.5;    // east gallery is fallen there
+        for (int sz : new int[] {-23, -16, -9}) {                 // keep clear of the column sockets along the walls
+            double c = core.getZ() + sz + 0.5;
+            if (Math.abs(bz - c) < 2.2) bz = c + (bz >= c ? 2.6 : -2.6);
+        }
+        if (bz > core.getZ() - 9 && bz < core.getZ() - 3 && !west) bz = core.getZ() - 11.6;
         climbBase = new Vec3(bx, getY(), bz);
         climbTop = new Vec3(core.getX() + (west ? -9.5 : 10.5), core.getY() + 9, bz);
         go(S.CLIMB_GO);

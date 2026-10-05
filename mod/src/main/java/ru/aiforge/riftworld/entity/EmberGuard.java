@@ -33,13 +33,16 @@ import ru.aiforge.riftworld.registry.ModItems;
 public class EmberGuard extends RiftMob {
     public static final int A_IDLE = 0, A_RUN = 1, A_CRAWL = 2, A_LEAP = 3, A_WINDUP = 4, A_DASH = 5, A_SLASH = 6, A_DEATH = 7;
     private static final String[] CLIPS = {"idle", "run", "crawl", "leap", "windup", "dash", "slash", "death"};
-    enum S { WAIT, LEAP, CHASE, WINDUP, DASH, RECOVER, SLASH }
+    enum S { WAIT, LEAP, CHASE, WINDUP, DASH, RECOVER, SLASH, MANTLE }
     private static final int F_CLIMB = 1;
 
     S state = S.CHASE;
     int st, cooldown = 40, leapDir, leapDelay, windT;
     boolean dashHit;
     float phase;
+    int stuck;
+    double lastY;
+    Vec3 m0, m1, m2;
     Vec3 dashDir = Vec3.ZERO;
 
     public EmberGuard(EntityType<? extends Monster> type, Level level) {
@@ -116,7 +119,13 @@ public class EmberGuard extends RiftMob {
     @Override
     public void tick() {
         super.tick();
-        if (!level().isClientSide) setFlag(F_CLIMB, horizontalCollision && (state == S.CHASE));
+        if (!level().isClientSide) {
+            setFlag(F_CLIMB, horizontalCollision && (state == S.CHASE));
+            if (state != S.MANTLE && isNoGravity()) {            // e.g. reloaded in the middle of a vault
+                setNoGravity(false);
+                noPhysics = false;
+            }
+        }
     }
 
     @Override
@@ -153,6 +162,24 @@ public class EmberGuard extends RiftMob {
                 }
             }
             case CHASE -> chase(tgt);
+            case MANTLE -> {
+                // vault over an overhang (gallery floor, balcony): out from the wall, up over the railing, onto the floor
+                getNavigation().stop();
+                double u = Math.min(1.0, st / 13.0), a = 1 - u;
+                Vec3 p = m0.scale(a * a).add(m1.scale(2 * a * u)).add(m2.scale(u * u));
+                setDeltaMovement(Vec3.ZERO);
+                setPos(p.x, p.y, p.z);
+                if (tgt != null) face(tgt, 30);
+                if (st >= 13) {
+                    noPhysics = false;
+                    setNoGravity(false);
+                    sl.sendParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE, getX(), getY() + 0.1, getZ(), 3, 0.3, 0.05, 0.3, 0.01);
+                    sound(SoundEvents.ZOMBIE_BREAK_WOODEN_DOOR, 0.4F, 1.7F);
+                    go(S.RECOVER);
+                    setAnim(A_IDLE);
+                    cooldown = 20;
+                }
+            }
             case WINDUP -> {
                 getNavigation().stop();
                 setAnim(A_WINDUP);
@@ -210,6 +237,16 @@ public class EmberGuard extends RiftMob {
             getNavigation().stop();
             return;
         }
+        // stuck on a wall under an overhang while the target stands above -> vault onto its floor
+        double hd = Math.hypot(tgt.getX() - getX(), tgt.getZ() - getZ());
+        if (climbing() && tgt.getY() - getY() > 1.5 && hd < 7.5) {
+            stuck = Math.abs(getY() - lastY) < 0.05 ? stuck + 1 : 0;
+            if (stuck > 10) {
+                stuck = 0;
+                if (startMantle(tgt)) return;
+            }
+        } else stuck = 0;
+        lastY = getY();
         double d = distanceTo(tgt);
         if (d < 2.3 && cooldown <= 0) {
             go(S.SLASH);
@@ -231,6 +268,39 @@ public class EmberGuard extends RiftMob {
             getNavigation().moveTo(tgt.getX() + side.x * sw, tgt.getY(), tgt.getZ() + side.z * sw, 1.0);
         }
         getLookControl().setLookAt(tgt, 40, 40);
+    }
+
+    private boolean startMantle(LivingEntity tgt) {
+        Vec3 tp = tgt.position();
+        Vec3 toMe = new Vec3(getX() - tp.x, 0, getZ() - tp.z);
+        Vec3 land = null;
+        for (double o : new double[] {1.3, 0.8, 2.0}) {
+            for (int k = 0; k < 9 && land == null; ++k) {
+                Vec3 dir = k == 0 ? (toMe.lengthSqr() > 1e-3 ? toMe.normalize() : MorgrathBoss.forward(0)) : MorgrathBoss.forward(k * 40);
+                Vec3 c = tp.add(dir.scale(o));
+                net.minecraft.world.phys.AABB bb = getDimensions(getPose()).makeBoundingBox(c);
+                if (level().noCollision(this, bb) && !level().noCollision(this, bb.move(0, -0.25, 0))) land = c;
+            }
+            if (land != null) break;
+        }
+        if (land == null) return false;
+        Vec3 out = Vec3.ZERO;
+        BlockPos bp = blockPosition().above();
+        for (net.minecraft.core.Direction dd : net.minecraft.core.Direction.Plane.HORIZONTAL) {
+            BlockPos q = bp.relative(dd);
+            if (!level().getBlockState(q).getCollisionShape(level(), q).isEmpty()) out = out.add(-dd.getStepX(), 0, -dd.getStepZ());
+        }
+        if (out.lengthSqr() < 1e-3) out = new Vec3(getX() - land.x, 0, getZ() - land.z);
+        out = out.lengthSqr() > 1e-3 ? out.normalize() : Vec3.ZERO;
+        m0 = position();
+        m2 = land;
+        m1 = new Vec3(m0.x + out.x * 3.0, Math.max(m0.y, land.y) + 2.6, m0.z + out.z * 3.0);
+        go(S.MANTLE);
+        setAnim(A_LEAP, true);
+        noPhysics = true;
+        setNoGravity(true);
+        sound(SoundEvents.PHANTOM_FLAP, 1.0F, 0.7F);
+        return true;
     }
 
     private void face(LivingEntity e, float step) {
