@@ -752,4 +752,6 @@ n, pal = write_template(OUT + "/castle.nbt", (W, H, D), B, {k: v for k, v in NBT
 meta = {"size": [W, H, D], "blocks": n, "palette": pal, "candles": CANDLES, "sockets": SOCKETS, "jumps": sorted(JUMPS),
         "throne": [38, 4, 46], "entrance": [38, 1, 2]}
 json.dump(meta, open(OUT + "/castle_meta.json", "w"), indent=1)
+json.dump({"NW": NW_STEPS, "SW": SW_STEPS, "KEEP": KEEP_STEPS},
+          open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "tower_steps.json"), "w"))
 print("castle", W, H, D, "blocks", n, "palette", pal, "candles", len(CANDLES))

@@ -344,3 +344,30 @@ Passable: chandelier, sconce, shackles, tapestry, bones. New 16×16 blocks: `cas
 ### Next (C-2b)
 - Spiral stairs inside the towers to their upper floors (prison levels, keep lookout), tower upper rooms.
 - Then C-3: column mechanics, the entry candle sequence as a game mechanic.
+
+## Rev 3 / C-2b — tower spiral stairs, every storey furnished (v0.5.0-c3)
+
+### Spiral stairs (`castle_rooms.py`: `ring_path`, `spiral`, `tower_lights`)
+- A closed 4-connected ring of cells along the inner wall of each tower; one `ashlar_stairs` tread per cell, rising 1 per
+  cell (facing = towards the next cell); grey ashlar masonry fills under each flight down to the floor below (contrasts
+  with the red brick); the last tread of each flight lies in the floor plane; headroom y+1..y+3 is cut through the floors.
+- Automatic check in the generator: every tread has 2 free blocks above it (no "HEADROOM" warnings), no tower prop skipped.
+- **NW round tower** (24 treads, floors y8/16/24): prison (ground; the first flight stays in the corridor outside the
+  bars) → jailers' room (table, stools, weapon rack, chest, bones) → torture chamber (bar cage, shackles, brazier with
+  cauldron, bones) → watch room under the roof (armour, chest, bench, candle stand, webs).
+- **SW octagonal ruin** (21 treads, floors y8/16, landing y21): watch room (ground) → store (sacks, crates, gatehouse
+  loot chest) → archers' room (rack, bench, chest) → open lookout platform among the broken walls.
+- **NE keep** (44 treads along the perimeter, floors y8/16/24/32/40/44; the doorway stays free): store with chandelier →
+  guards' hall (2 beds, long table, bench, chest) → armoury (2 racks, 2 armour stands, chest) → commander's room (bed,
+  table, high chair, chained lectern, chest) → loft (crates, sacks, chest, webs) → upper hall (armour, candle stand,
+  chest) → crenellated roof (candle stand, rack).
+- Wall sconces (light 12) above head height on every storey: 31 added, placed clear of the stair headroom.
+- Total 416 props in the castle.
+
+### Verification
+- Built `riftworld-0.5.0-c3.jar`, regenerated Элисар on the Forge server, walked every tower in spectator.
+- Screenshots (15): `release/riftworld_screens/session8/`. Video (54 s, climbing all three towers): `release/riftworld_session8.mp4`.
+
+### Next (C-3)
+- Column mechanics (6 healing columns: hit the top or use a pickaxe), the candle entry sequence as a game mechanic,
+  boss chair trigger zone.

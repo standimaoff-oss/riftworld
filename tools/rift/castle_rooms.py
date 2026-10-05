@@ -357,40 +357,203 @@ place("guard_armor", 39, 8, 11, "north")
 place("wall_sconce", 38, 10, 11, "north")
 web((33, 12, 11), (43, 12, 11))
 
-# ============================================================ TOWERS (ground storeys)
-# NW prison: bars split the far half into two cells; shackles, bones, cobwebs; one sconce in the corridor
-for x in range(0, 11):
+# ============================================================ TOWERS: spiral stairs + every storey furnished (C-2b)
+def ring_path(interior, cx, cz, a_start, sign):
+    """Ordered, closed, 4-connected ring of interior cells along the wall, from angle a_start (deg) in direction sign."""
+    I = set(interior)
+    R = [c for c in I if any((c[0] + dx, c[1] + dz) not in I for dx, dz in ((1, 0), (-1, 0), (0, 1), (0, -1)))]
+    ang = lambda c: math.degrees(math.atan2(c[1] - cz, c[0] - cx))
+    R.sort(key=lambda c: ((ang(c) - a_start) * sign) % 360)
+    out = []
+    for c in R + [R[0]]:
+        if out:
+            p_ = out[-1]
+            if abs(c[0] - p_[0]) == 1 and abs(c[1] - p_[1]) == 1:
+                for m in ((c[0], p_[1]), (p_[0], c[1])):
+                    if m in I and m not in out:
+                        out.append(m)
+                        break
+        if c not in out:
+            out.append(c)
+    return out
+
+
+DIRS = {(1, 0): "east", (-1, 0): "west", (0, 1): "south", (0, -1): "north"}
+
+
+def spiral(path, floors, ytop, mat="ashlar"):
+    """Spiral stair along the tower wall: one riser per ring cell; solid masonry under each flight (built into the wall);
+    the last tread of each flight lies in the floor plane above; headroom cut through the floors."""
+    n = len(path)
+    steps = []
+    for k in range(ytop):
+        y = 1 + k
+        x, z = path[k % n]
+        nx, nz = path[(k + 1) % n]
+        base = max([f for f in [0] + floors if f < y])
+        for yy in range(base + 1, y):
+            put(x, yy, z, ASH)
+        put(x, y, z, stairs(mat, DIRS[(nx - x, nz - z)]))
+        steps.append((x, y, z))
+    for (x, y, z) in steps:
+        for yy in (y + 1, y + 2, y + 3):
+            if (x, yy, z) not in steps and yy <= ytop:
+                clear(x, yy, z)
+    return steps
+
+
+def interior_round(cx, cz, r):
+    return [(x, z) for x in range(cx - 6, cx + 7) for z in range(cz - 6, cz + 7) if math.hypot(x - cx, z - cz) <= r]
+
+
+def interior_oct(cx, cz, r):
+    return [(x, z) for x in range(cx - 6, cx + 7) for z in range(cz - 6, cz + 7)
+            if max(abs(x - cx), abs(z - cz), (abs(x - cx) + abs(z - cz)) * 0.7071) <= r]
+
+
+def tower_lights(interior, cx, cz, floors, steps, n):
+    """Wall sconces above head height (floor+3) on every storey, spread around the wall, clear of the stair headroom."""
+    ins = set(interior)
+    head = {(x, yy, z) for (x, y, z) in steps for yy in range(y - 1, y + 4)}
+    for fy in floors:
+        y = fy + 3
+        cand = []
+        for (x, z) in interior:
+            if (x, y, z) in head or (x, y, z) in MODEL_CELLS or (B.get((x, y, z), AIR) != AIR):
+                continue
+            ax, az = cx - x, cz - z
+            d = (1 if ax > 0 else -1, 0) if abs(ax) >= abs(az) else (0, 1 if az > 0 else -1)
+            bx, bz = x - d[0], z - d[1]
+            wb = B.get((bx, y, bz))
+            if (bx, bz) in ins or wb is None or wb == AIR or "stairs" in wb[0]:
+                continue
+            cand.append((math.atan2(z - cz, x - cx), x, z, DIRS[d]))
+        cand.sort()
+        have = [c for c in MODEL_CELLS if c[1] == y and (c[0], c[2]) in ins]
+        for i in range(n):
+            if not cand:
+                break
+            a, x, z, f = cand[(i * len(cand)) // n]
+            if any(abs(h[0] - x) + abs(h[2] - z) < 3 for h in have):
+                continue
+            if place("wall_sconce", x, y, z, f):
+                have.append((x, y, z))
+
+
+# ---- NW tower: prison (ground), jailers' room (y9), torture chamber (y17), watch room under the roof (y25)
+NW_IN = interior_round(5, 61, 4.3)
+NW_STEPS = spiral(ring_path(NW_IN, 5, 61, -60, -1), [8, 16, 24], 24)
+for x in range(0, 11):                      # bars split the far half of the prison into two cells
     for y in range(1, 8):
-        if (x, y, 61) not in B and math.hypot(x - 5, 0) <= 4.3:
+        if (x, y, 61) not in B and (x, 61) in NW_IN:
             put(x, y, 61, BARS)
 for z in range(62, 67):
     for y in range(1, 8):
-        if (5, y, z) not in B and math.hypot(0, z - 61) <= 4.3:
+        if (5, y, z) not in B and (5, z) in NW_IN:
             put(5, y, z, BARS)
 place("wall_shackles", 2, 1, 64, "east")
 place("wall_shackles", 8, 1, 64, "west")
 place("bone_pile", 3, 1, 63, "south")
 place("bone_pile", 7, 1, 62, "south")
-chest(2, 1, 59, "east", "prison")
-place("wall_sconce", 5, 4, 57, "south")
-web((4, 7, 65), (6, 7, 65), (2, 6, 62), (8, 7, 63), (3, 7, 58))
+chest(7, 1, 60, "west", "prison")
+place("wall_sconce", 9, 3, 60, "west")
+web((4, 7, 65), (6, 7, 65), (2, 7, 62), (8, 7, 63), (6, 7, 59))
+# y9 jailers' room
+place("table_wood", 5, 9, 60, "south")
+place("stool", 4, 9, 61, "south")
+place("stool", 7, 9, 60, "south")
+place("guard_weapon_rack", 9, 9, 61, "west")
+chest(6, 9, 64, "north", "prison")
+place("wall_sconce", 5, 11, 65, "north")
+place("bone_pile", 3, 9, 62, "south")
+# y17 torture chamber: shackles, a cage of bars, bones, a hearth cauldron (glowing coals), cobwebs
+for (x, z) in ((3, 60), (3, 61)):
+    for y in range(17, 20):
+        put(x, y, z, BARS)
+place("wall_shackles", 2, 17, 61, "east")
+place("hearth_cauldron", 5, 17, 61, "south")
+place("bone_pile", 6, 17, 59, "south")
+place("wall_sconce", 9, 19, 61, "west")
+web((5, 23, 57), (2, 23, 63), (7, 22, 58))
+# y25 watch room under the roof: armour, chest, bench, candles, tapestry
+place("guard_armor", 5, 25, 64, "north")
+chest(2, 25, 61, "east", "keep")
+place("castle_bench", 5, 25, 58, "south")
+place("candle_stand", 7, 25, 61, "south")
+web((5, 33, 57), (8, 33, 64), (2, 34, 62))
 
-# SW watch tower: weapon rack, chest, bones, cobwebs
-place("guard_weapon_rack", 5, 1, 7, "south")
+# ---- SW watch tower (octagon, broken top): guard post (ground), store (y9), archers' room (y17), lookout landing y21
+SW_IN = interior_oct(5, 10, 3.3)
+fill(4, 21, 9, 6, 21, 11, PL)                # landing at the broken top
+SW_STEPS = spiral(ring_path(SW_IN, 5, 10, 20, -1), [8, 16], 21)
+for (x, z) in ((7, 11), (7, 12), (6, 12), (6, 13), (7, 10)):
+    if (x, 21, z) not in B:
+        put(x, 21, z, PL)
+put(4, 22, 9, FENCE) if (4, 22, 9) not in B else None
+place("guard_weapon_rack", 5, 1, 9, "south")
 chest(2, 1, 10, "east", "keep")
 place("bone_pile", 5, 1, 12, "south")
-web((3, 7, 8), (7, 7, 12), (4, 7, 13), (2, 6, 9))
+web((3, 7, 8), (4, 7, 13), (2, 6, 9))
+place("sacks", 4, 9, 10, "south")
+place("crate_stack", 5, 9, 11, "south")
+place("crate_wood", 6, 9, 10, "south", loot="gatehouse")
+place("wall_sconce", 5, 11, 13, "north")
+place("guard_weapon_rack", 5, 17, 11, "north")
+place("castle_bench", 5, 17, 9, "south")
+chest(3, 17, 10, "east", "gatehouse")
+web((5, 20, 13), (2, 19, 11))
 
-# NE keep: stores of the garrison
-chest(71, 1, 60, "west", "keep")
-place("guard_weapon_rack", 71, 1, 56, "west")
-place("guard_armor", 66, 1, 60, "north")
-for (x, z) in ((70, 54), (71, 54)):
+# ---- NE keep: garrison store (ground), guards' hall (y9), keep armoury (y17), commander (y25), store loft (y33),
+#      upper hall (y41) and the open crenellated roof (y44)
+KEEP_IN = [(x, z) for x in range(65, 72) for z in range(54, 61)]
+KEEP_STEPS = spiral(ring_path(KEEP_IN, 68, 57, 165, -1), [8, 16, 24, 32, 40, 44], 44)
+# ground
+chest(67, 1, 56, "south", "keep")
+place("table_wood", 68, 1, 57, "south")
+place("stool", 68, 1, 58, "south")
+place("stool", 70, 1, 57, "south")
+for (x, z) in ((66, 55), (66, 56)):
     place("sacks", x, 1, z, "south")
-place("wall_sconce", 68, 3, 60, "north")
-web((65, 7, 54), (71, 7, 60))
+place("crate_stack", 70, 1, 55, "south")
+place("crate_stack", 70, 2, 55, "south")
+place("castle_chandelier", 68, 7, 57, "south")
+# y9 guards' hall
+for (x, z) in ((66, 55), (66, 57)):
+    place("bed_wood", x + 1, 9, z, "east")
+place("long_table", 69, 9, 57, "north")
+place("castle_bench", 69, 9, 58, "north")
+place("castle_chandelier", 68, 15, 57, "south")
+chest(70, 9, 55, "west", "barracks")
+# y17 keep armoury
+place("guard_weapon_rack", 68, 17, 55, "south")
+place("guard_weapon_rack", 68, 17, 59, "north")
+place("guard_armor", 66, 17, 57, "east")
+place("guard_armor", 70, 17, 57, "west")
+chest(68, 17, 57, "south", "armory")
+place("castle_chandelier", 68, 23, 56, "south")
+# y25 commander's chamber
+place("bed_wood", 67, 25, 56, "east")
+place("table_wood", 69, 25, 57, "south")
+place("high_chair", 69, 25, 58, "north")
+place("chained_lectern", 67, 25, 59, "north")
+chest(70, 25, 55, "west", "treasury")
+place("castle_chandelier", 68, 31, 57, "south")
+# y33 store loft
+for (x, y, z) in ((66, 33, 55), (67, 33, 55), (66, 34, 55), (70, 33, 59), (70, 33, 58)):
+    place("crate_stack", x, y, z, "south")
+for (x, z) in ((66, 58), (67, 59)):
+    place("sacks", x, 33, z, "south")
+chest(70, 33, 55, "west", "storeroom")
+web((66, 39, 55), (70, 39, 59), (67, 39, 59))
+# y41 upper hall (low, under the roof platform)
+place("guard_armor", 67, 41, 57, "east")
+place("candle_stand", 70, 41, 57, "south")
+chest(68, 41, 59, "north", "keep")
+# roof: watch post
+place("candle_stand", 69, 45, 56, "south")
+place("guard_weapon_rack", 68, 45, 59, "north")
 
-# SE ruin: bones, a forgotten chest, cobwebs, rubble
+# ---- SE ruin: bones, a forgotten chest, cobwebs, rubble
 place("bone_pile", 69, 1, 5, "south")
 chest(72, 1, 7, "west", "prison")
 web((68, 7, 4), (72, 7, 8), (68, 6, 8), (70, 7, 4))
@@ -468,12 +631,6 @@ place("tapestry_horn", 57, 1, 48, "south")
 place("tapestry_horn", 65, 1, 48, "south")
 place("candle_stand", 58, 1, 52, "south")
 place("candle_stand", 58, 1, 55, "south")
-# keep: crates, a table with stools
-for (x, y, z) in ((65, 1, 54), (66, 1, 54), (65, 2, 54)):
-    place("crate_stack", x, y, z, "south")
-place("table_wood", 68, 1, 57, "south")
-place("stool", 68, 1, 58, "south")
-place("stool", 69, 1, 56, "south")
 
 # storeroom: crate stacks, more sacks, keg rack, barrel, wall shelf, herbs drying under the ceiling
 for (x, y, z) in ((31, 1, 56), (32, 1, 56), (33, 1, 56), (31, 1, 57), (32, 1, 57), (31, 2, 56), (32, 2, 56)):
@@ -496,6 +653,16 @@ place("stool", 67, 7, 49, "south")
 place("stool", 70, 7, 49, "south")
 place("crate_wood", 70, 7, 51, "west", loot="storeroom")
 
+tower_lights(NW_IN, 5, 61, [0, 8, 16, 24], NW_STEPS, 3)
+tower_lights(SW_IN, 5, 10, [0, 8, 16], SW_STEPS, 2)
+tower_lights(KEEP_IN, 68, 57, [0, 8, 16, 24, 32, 40], KEEP_STEPS, 3)
+# headroom check on all spiral treads
+for name_, st_ in (("NW", NW_STEPS), ("SW", SW_STEPS), ("KEEP", KEEP_STEPS)):
+    for (x, y, z) in st_:
+        for yy in (y + 1, y + 2):
+            b_ = B.get((x, yy, z))
+            if b_ is not None and b_ != AIR and "stairs" not in b_[0] and b_[0] not in SOFT:
+                print("  HEADROOM", name_, (x, y, z), yy, b_[0])
 print("rooms: placed", len(PLACED), "skipped", len(SKIPPED))
 for s_ in SKIPPED:
     print("  SKIP", s_)
