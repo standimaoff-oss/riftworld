@@ -491,3 +491,19 @@ Passable: chandelier, sconce, shackles, tapestry, bones. New 16×16 blocks: `cas
 - Status polling: lunge (moves 4–5 blocks), scrape (player burned at 11 blocks ~0.7 s after the rip), combo,
   pending climb during roar → gallery, unstick from a socket (≈3 s), guard leap positions; burst screenshots of the
   leap arc and both new attacks; 0 exceptions in the server log.
+
+## Part A-3 (v0.6.0-a3) — coloured light through the stained glass (vanilla, shader-safe)
+
+- `client/WindowLights.java` (client only, no template change, works on already generated castles and on any window
+  a player builds from the castle stained glass). Every vertical run of panes is found when its chunk arrives.
+- The light direction follows the real sun path (tilted 28° to the south like shader packs): mornings light the east
+  windows, noon fills the great rose window over the throne, evenings the west side; at night a faint cold moonlight.
+  Rain dims it. The room side is detected by sky light (open ruins get no shaft).
+- Per window column: a soft additive shaft in the glass colours (amber, ruby, cobalt, gold, wine, green — sampled from
+  the texture) from the pane to whatever it hits (ray-marched against real collision shapes, the window reveal and sill
+  are skipped), fading with distance; where it lands, the leaded glass pattern itself is projected as a coloured
+  additive patch (black lead lines stay dark); coloured dust motes drift in the beams.
+- Rendered after translucent blocks, depth-tested, no depth write; with shader packs it draws as an emissive overlay on
+  top of their volumetric light. The glass itself keeps light 10 + emissive faces.
+- Geometry refresh spread over frames (≤ 48 columns/frame, every 5 in-game seconds), range 72 blocks.
+- Verified live at 2500 / 3000 / 5200 / 6000 / 9800 / 16000 ticks; screenshots `release/riftworld_screens/session12/`.
