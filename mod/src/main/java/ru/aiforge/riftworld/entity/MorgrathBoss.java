@@ -472,7 +472,7 @@ public class MorgrathBoss extends RiftMob {
             return;
         }
         double dx = climbBase.x - getX(), dz = climbBase.z - getZ();
-        if (dx * dx + dz * dz < 1.0 || st > 200) {
+        if (dx * dx + dz * dz < 1.0 || st > 30 && dx * dx + dz * dz < 12.0 || st > 140) {   // close enough (sockets, rubble) -> jump on the wall
             go(S.CLIMB);
             setAnim(A_CLIMB, true);
             setNoGravity(true);

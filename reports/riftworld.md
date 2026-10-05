@@ -405,3 +405,53 @@ Passable: chandelier, sconce, shackles, tapestry, bones. New 16×16 blocks: `cas
   `BossHooks.awaken` (lies as if dead, jerks, stands and waits by the chair).
 - 4 guards jumping from the balconies (spider-like wall running, pause before a dash).
 - Death: lies 15–20 s, vanishes; the scythe drops (glowing large item, super attacks).
+
+## Rev 3 / Part A — boss, guards, weapons, animations, Ashen Lands, glowing glass (v0.6.0-a1)
+
+### Models (Blender, `tools/rift/creatures.py` → `boss.glb`, `guard.glb`, `scythe.glb`, `guard_sickle.glb` + `.blend`)
+- Rigid detailed parts parented to armatures; every clip is an armature action exported as a glTF animation, sampled
+  in the mod by `glb/Pose.sample/sampleBlend` with cross-fades (`RiftMob` syncs clip id + start tick).
+- **Morgrath, Master of the Hall** (~3 m, strongly hunched biped, long canine skull, bison horns, bone plates, rags,
+  war scythe): clips idle, walk, awaken (jerk + rise), swing_over, pull, swing_side, swing_diag, pull_diag, roar,
+  climb, death, dead.
+- **Smouldering Warden** (gaunt hunched guard, bone mask, spiked back, hooked sickle): idle, run, crawl, leap,
+  windup, dash, slash, death.
+
+### Boss (`entity/MorgrathBoss`), 200 HP, boss bar
+- Entry: during the candle sequence he lies as if dead in front of the chair, jerks and rises, then waits by the chair.
+- Throne trigger: roar → four guards appear on the balconies and leap down into the hall.
+- Swings are telegraphed (wind-up, flare + sound 0.45 s before the blow, aim locks before the hit):
+  overhead (line, buries the scythe → he tugs it out, vulnerable, +50% damage), diagonal (also sticks),
+  horizontal sweep (never sticks). Below 50% HP he roars again and calls new guards if fewer than 2 remain.
+- Healed by the standing columns (1 HP/s each) — beams follow him.
+- Climbs walls only when shot with an arrow by a player on the 2nd-floor gallery (path clear of the column sockets);
+  otherwise a player on the gallery is not followed up the stairs — he waits below. Never leaves the hall.
+- Death: falls, lies 17 s (no red tint), crumbles; the scythe drops at once.
+
+### Guards (`entity/EmberGuard`)
+- Zombie-strength (20 HP, 3 dmg), weave from side to side while closing in, run up walls like spiders, vault over
+  overhangs (gallery floor) onto the target's floor, crouch-tremble ~1.5–2.3 s before a dash, slash up close.
+
+### Weapons
+- **Morgrath's Scythe** (13 dmg, slow; normal look in hand): right click — «Жатва» 360° spin; sneak — «Огненная
+  борозда» fire furrow; sprint — «Рывок жнеца» dash; in the air — «Падение кометы» shock-wave slam. Dropped, it lies
+  as a large glowing blade with embers and a real light block under it (picks up normally).
+- **Warden's hook-sickle** (guard weapon item).
+
+### Ashen Lands (biome `riftworld:ashen_lands`, R 235 around the castle) + finding it
+- Ash-brown/red fog, white-ash particles, basalt ambience; burnt islands with leafless trees; the ocean plane turns
+  into an ash plain with winding lava meanders (`magma_meander`, harms), boulders, three huge fallen islands
+  (a ruined house, a broken bridge). The castle stands in the middle.
+- The first arrival on Elisar gives a compass bound to the castle (40, 470) — «Компас к Чертогу Тлеющего Рога».
+
+### Glass
+- Castle stained glass: light level 10, emissive (full-bright) faces, translucent render type → in shader packs the
+  sun passes through and is tinted, and the glass itself glows.
+
+### Verification (live server + client, survival, first/third person)
+- Entry/rise/wait, trigger + roar + guard leap (positions logged from balcony y115 to floor y105), swings and knockback,
+  bow from the gallery → wall climb → landing on the gallery, guard vault onto the gallery, death 17 s → corpse gone,
+  scythe drop + light + pickup, all four super attacks on husks, biome views, compass on dimension change.
+- Fixed while testing: client crash on scythe pickup (renderer cast), boss following out of the hall / up the stairs,
+  red corpse tint, scythe not visible enough (light), guards stuck under the gallery, climb blocked by sockets.
+- Screenshots: `release/riftworld_screens/session10/`.
