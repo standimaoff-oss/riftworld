@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/iron_bars_cap",
+  "textures": {
+    "bars": "riftworld:block/castle_bars",
+    "edge": "riftworld:block/castle_bars",
+    "particle": "riftworld:block/castle_bars"
+  },
+  "render_type": "minecraft:cutout_mipped"
+}

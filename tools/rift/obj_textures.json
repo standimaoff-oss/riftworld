@@ -233,5 +233,93 @@
 },
 "m_c_horn": {
 "src": "/home/user/tools/rift/tex_models/m_c_horn.png"
+},
+"c_c_wine": {
+"col": [
+0.18000000715255737,
+0.009999999776482582,
+0.029999999329447746
+]
+},
+"c_c_roast": {
+"col": [
+0.30000001192092896,
+0.10000000149011612,
+0.03999999910593033
+]
+},
+"c_c_bread": {
+"col": [
+0.550000011920929,
+0.30000001192092896,
+0.10000000149011612
+]
+},
+"c_c_apple": {
+"col": [
+0.44999998807907104,
+0.05000000074505806,
+0.03999999910593033
+]
+},
+"m_c_pages": {
+"src": "/home/user/tools/rift/tex_models/m_c_pages.png"
+},
+"m_c_blacksteel": {
+"src": "/home/user/tools/rift/tex_models/m_c_blacksteel.png"
+},
+"m_c_linen": {
+"src": "/home/user/tools/rift/tex_models/m_c_linen.png"
+},
+"m_c_brick": {
+"src": "/home/user/tools/rift/tex_models/m_c_brick.png"
+},
+"c_c_soup": {
+"col": [
+0.2800000011920929,
+0.17000000178813934,
+0.05999999865889549
+]
+},
+"c_c_glow_red": {
+"col": [
+0.8999999761581421,
+0.11999999731779099,
+0.07999999821186066
+]
+},
+"c_c_glow_green": {
+"col": [
+0.25,
+0.8999999761581421,
+0.30000001192092896
+]
+},
+"c_c_glow_blue": {
+"col": [
+0.20000000298023224,
+0.44999998807907104,
+1.0
+]
+},
+"c_c_glow_amber": {
+"col": [
+1.0,
+0.6499999761581421,
+0.15000000596046448
+]
+},
+"c_c_copper": {
+"col": [
+0.550000011920929,
+0.2199999988079071,
+0.10000000149011612
+]
+},
+"m_c_coins": {
+"src": "/home/user/tools/rift/tex_models/m_c_coins.png"
+},
+"m_c_tapestry": {
+"src": "/home/user/tools/rift/tex_models/m_c_tapestry.png"
 }
 }

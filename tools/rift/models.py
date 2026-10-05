@@ -171,6 +171,22 @@ MATDEF = {
     "c_wax": {"tex": "m_c_wax", "rough": 0.6},
     "c_horn": {"tex": "m_c_horn", "rough": 0.6},
     "c_wick": {"color": (0.04, 0.03, 0.03, 1.0), "rough": 0.9},
+    # ---- rev 3 castle rooms (C-2)
+    "c_tapestry": {"tex": "m_c_tapestry", "rough": 1.0, "mask": True},
+    "c_linen": {"tex": "m_c_linen", "rough": 0.95},
+    "c_blacksteel": {"tex": "m_c_blacksteel", "metal": 0.7, "rough": 0.45},
+    "c_pages": {"tex": "m_c_pages", "rough": 0.95},
+    "c_coins": {"tex": "m_c_coins", "metal": 0.85, "rough": 0.35},
+    "c_bread": {"color": (0.55, 0.30, 0.10, 1.0), "rough": 0.9},
+    "c_roast": {"color": (0.30, 0.10, 0.04, 1.0), "rough": 0.6},
+    "c_apple": {"color": (0.45, 0.05, 0.04, 1.0), "rough": 0.5},
+    "c_wine": {"color": (0.18, 0.01, 0.03, 1.0), "rough": 0.1},
+    "c_soup": {"color": (0.28, 0.17, 0.06, 1.0), "rough": 0.2},
+    "c_copper": {"color": (0.55, 0.22, 0.10, 1.0), "metal": 0.8, "rough": 0.35},
+    "c_glow_red": {"color": (0.9, 0.12, 0.08, 1.0), "emit": True},
+    "c_glow_green": {"color": (0.25, 0.9, 0.3, 1.0), "emit": True},
+    "c_glow_blue": {"color": (0.2, 0.45, 1.0, 1.0), "emit": True},
+    "c_glow_amber": {"color": (1.0, 0.65, 0.15, 1.0), "emit": True},
 }
 
 
@@ -2367,6 +2383,554 @@ def m_boss_throne():
             box("stud%d_%d" % (sx, k), (0.04, 0.04, 0.04), (sx * 1.03, 0.81, 1.45 + k * 0.5), "c_brass")
     node("body")
     export("boss_throne")
+
+
+
+# ======================================================================================== Rev 3 / C-2: castle rooms
+def _candle(tag, x, y, z, h=0.16, r=0.035, flame=True):
+    """Short church candle standing at z with wax drips; the flame goes to FLAMES (joined into lamp_on later)."""
+    cyl(tag + "c", r, h, (x, y, z + h / 2), "c_wax", seg=8)
+    cyl(tag + "d", r * 0.9, 0.01, (x, y, z + h), "c_wax", seg=8, r2=r * 0.7)
+    rod(tag + "w", (x, y, z + h), (x, y, z + h + 0.025), 0.004, "c_wick", seg=3)
+    if flame:
+        FLAMES.append((x, y, z + h + 0.03))
+
+
+def _flames(scale=1.0):
+    for k, (x, y, z) in enumerate(FLAMES):
+        cyl("fl%d" % k, 0.018 * scale, 0.07 * scale, (x, y, z + 0.035 * scale), "e_flame", seg=5, r2=0.0)
+        cyl("fc%d" % k, 0.01 * scale, 0.04 * scale, (x, y, z + 0.02 * scale), "e_lamp", seg=4, r2=0.0)
+    FLAMES.clear()
+
+
+FLAMES = []
+
+
+def m_castle_chandelier():
+    # forged ring chandelier (ref: hand-forged iron ring chandelier, 3-4 chains to a top ring, scroll arms, drip cups)
+    R, zr = 0.62, 0.22
+    torus("ring", R, 0.03, (0, 0, zr), "e_iron", seg=24, seg2=5)
+    torus("ring2", R - 0.08, 0.016, (0, 0, zr + 0.03), "e_iron", seg=24, seg2=4)
+    for k in range(8):                                       # little twisted bars between the rings
+        a = k * math.pi / 4 + math.pi / 8
+        rod("tw%d" % k, (math.cos(a) * (R - 0.08), math.sin(a) * (R - 0.08), zr + 0.03), (math.cos(a) * R, math.sin(a) * R, zr), 0.01, "e_iron", seg=4)
+    for k in range(6):
+        a = k * math.pi / 3
+        cx, cy = math.cos(a) * R, math.sin(a) * R
+        torus("scr%d" % k, 0.06, 0.012, (math.cos(a) * (R + 0.04), math.sin(a) * (R + 0.04), zr - 0.06), "e_iron", (math.radians(90), 0, a + math.pi / 2), seg=10, seg2=3)
+        cyl("cup%d" % k, 0.05, 0.03, (cx, cy, zr + 0.045), "e_iron", seg=8, r2=0.065)
+        _candle("cd%d" % k, cx, cy, zr + 0.06, h=0.14 + 0.03 * (k % 2))
+    # chains to a crown hook at the top of the cell
+    for k in range(4):
+        a = k * math.pi / 2 + math.pi / 4
+        p0 = (math.cos(a) * (R - 0.04), math.sin(a) * (R - 0.04), zr + 0.02)
+        p1 = (0, 0, 0.82)
+        n = 9
+        for i in range(n):
+            t0, t1 = i / n, (i + 0.8) / n
+            a0 = tuple(p0[j] + (p1[j] - p0[j]) * t0 for j in range(3))
+            a1 = tuple(p0[j] + (p1[j] - p0[j]) * t1 for j in range(3))
+            rod("ch%d_%d" % (k, i), a0, a1, 0.009, "e_iron", seg=4)
+    torus("crown", 0.07, 0.015, (0, 0, 0.84), "e_iron", seg=10, seg2=4)
+    rod("hook", (0, 0, 0.86), (0, 0, 1.0), 0.015, "e_iron", seg=5)
+    cyl("rose", 0.09, 0.03, (0, 0, 0.985), "e_iron", seg=8)
+    # centre boss with a hanging finial
+    for k in range(3):
+        a = k * 2 * math.pi / 3
+        rod("sp%d" % k, (math.cos(a) * (R - 0.02), math.sin(a) * (R - 0.02), zr), (0, 0, zr - 0.12), 0.012, "e_iron", seg=4)
+    cyl("boss", 0.05, 0.08, (0, 0, zr - 0.14), "e_iron", seg=8)
+    cyl("fin", 0.04, 0.16, (0, 0, zr - 0.26), "e_iron", seg=6, r2=0.0, rot=(math.pi, 0, 0))
+    node("body")
+    _flames()
+    node("lamp_on")
+    export("castle_chandelier")
+
+
+def m_wall_sconce():
+    # wrought-iron wall sconce (refs: forged leaf back-plate, curled arm, drip pan with a thick candle)
+    box("plate", (0.16, 0.02, 0.42), (0, 0.48, 0.55), "e_iron", bevel=0.01)
+    for sz in (-1, 1):
+        cyl("tip%d" % sz, 0.05, 0.12, (0, 0.48, 0.55 + sz * 0.27), "e_iron", seg=4, r2=0.0, rot=(0 if sz > 0 else math.pi, 0, 0))
+        rod("nail%d" % sz, (0, 0.49, 0.55 + sz * 0.15), (0, 0.46, 0.55 + sz * 0.15), 0.014, "e_iron", seg=5)
+    rod("arm1", (0, 0.47, 0.45), (0, 0.25, 0.42), 0.016, "e_iron", seg=5)
+    rod("arm2", (0, 0.25, 0.42), (0, 0.12, 0.5), 0.016, "e_iron", seg=5)
+    torus("curl", 0.05, 0.012, (0, 0.33, 0.36), "e_iron", (0, math.radians(90), 0), seg=10, seg2=3)
+    rod("brace", (0, 0.47, 0.3), (0, 0.3, 0.41), 0.012, "e_iron", seg=4)
+    cyl("pan", 0.1, 0.02, (0, 0.12, 0.51), "e_iron", seg=12)
+    torus("rim", 0.1, 0.008, (0, 0.12, 0.52), "e_iron", seg=12, seg2=3)
+    _candle("c", 0, 0.12, 0.52, h=0.2, r=0.04)
+    for k, a in enumerate((0.4, 2.5, 4.4)):
+        cyl("drip%d" % k, 0.01, 0.07, (math.cos(a) * 0.04, 0.12 + math.sin(a) * 0.04, 0.68), "c_wax", seg=4, r2=0.006)
+    node("body")
+    _flames(1.3)
+    node("lamp_on")
+    export("wall_sconce")
+
+
+def _trestle_table(L=2.9, W=0.9, H=0.82, top="c_dark"):
+    box("top", (L, W, 0.08), (0, 0, H - 0.04), top, bevel=0.012)
+    box("apron_f", (L - 0.3, 0.04, 0.1), (0, -W / 2 + 0.08, H - 0.13), "c_dark")
+    box("apron_b", (L - 0.3, 0.04, 0.1), (0, W / 2 - 0.08, H - 0.13), "c_dark")
+    for sx in (-1, 1):                                       # trestle ends: foot, post, cross-head, chamfered
+        x = sx * (L / 2 - 0.3)
+        box("foot%d" % sx, (0.12, W - 0.05, 0.1), (x, 0, 0.05), "c_dark", bevel=0.015)
+        box("post%d" % sx, (0.1, 0.16, H - 0.25), (x, 0, 0.1 + (H - 0.25) / 2), "c_dark")
+        box("head%d" % sx, (0.12, W - 0.15, 0.08), (x, 0, H - 0.12), "c_dark")
+        for sy in (-1, 1):
+            rod("brc%d%d" % (sx, sy), (x, sy * 0.35, 0.1), (x, sy * 0.07, 0.35), 0.025, "c_dark", seg=4)
+    box("stretch", (L - 0.6, 0.07, 0.07), (0, 0, 0.28), "c_dark")
+    for sx in (-1, 1):
+        box("peg%d" % sx, (0.03, 0.12, 0.05), (sx * (L / 2 - 0.22), 0, 0.28), "c_dark")
+
+
+def _plate(tag, x, y, z):
+    cyl(tag + "p", 0.12, 0.015, (x, y, z + 0.008), "e_iron", seg=12, r2=0.1)
+    torus(tag + "r", 0.11, 0.008, (x, y, z + 0.016), "e_iron", seg=12, seg2=3)
+
+
+def _goblet(tag, x, y, z):
+    cyl(tag + "f", 0.035, 0.01, (x, y, z + 0.005), "c_brass", seg=8)
+    rod(tag + "s", (x, y, z), (x, y, z + 0.08), 0.008, "c_brass", seg=5)
+    cyl(tag + "b", 0.022, 0.06, (x, y, z + 0.11), "c_brass", seg=8, r2=0.038)
+    cyl(tag + "w", 0.03, 0.005, (x, y, z + 0.13), "c_wine", seg=8)
+
+
+def m_feast_table():
+    # long trestle table of the refectory (ref: oak trestle table + benches in a 14th c. hall, castle feast tables)
+    _trestle_table()
+    z = 0.82
+    box("runner", (2.5, 0.34, 0.006), (0, 0, z + 0.003), "c_velvet")
+    for k, x in enumerate((-1.1, -0.4, 0.4, 1.1)):
+        for sy in (-1, 1):
+            _plate("pl%d%d" % (k, sy), x, sy * 0.3, z)
+            _goblet("gb%d%d" % (k, sy), x + 0.17, sy * 0.24, z)
+    # roast on a platter, bread loaves, a jug, apples, a knife
+    cyl("platter", 0.22, 0.02, (-0.75, 0.0, z + 0.016), "e_iron", seg=14, r2=0.19)
+    box("roast", (0.26, 0.17, 0.12), (-0.75, 0.0, z + 0.09), "c_roast", bevel=0.05)
+    rod("bone1", (-0.9, 0.03, z + 0.12), (-0.98, 0.05, z + 0.2), 0.016, "e_bone", seg=5)
+    rod("bone2", (-0.62, -0.03, z + 0.1), (-0.52, -0.06, z + 0.16), 0.014, "e_bone", seg=5)
+    for k, (x, y) in enumerate(((0.75, 0.02), (0.92, -0.05))):
+        box("bread%d" % k, (0.2, 0.1, 0.08), (x, y, z + 0.045), "c_bread", (0, 0, 0.3 * k), bevel=0.035)
+    cyl("jug", 0.06, 0.18, (0.3, 0.05, z + 0.1), "e_ceramic", seg=10, r2=0.04)
+    torus("jh", 0.04, 0.01, (0.36, 0.05, z + 0.12), "e_ceramic", (math.radians(90), 0, 0), seg=8, seg2=3)
+    for k in range(3):
+        cyl("apl%d" % k, 0.03, 0.045, (0.55 + k * 0.05, -0.05 + (k % 2) * 0.05, z + 0.025), "c_apple", seg=7)
+    box("knife", (0.18, 0.02, 0.006), (-0.5, 0.15, z + 0.006), "e_iron", (0, 0, 0.4))
+    # three-armed brass candelabrum in the middle
+    cyl("cbase", 0.08, 0.03, (0, 0, z + 0.015), "c_brass", seg=10)
+    rod("cstem", (0, 0, z), (0, 0, z + 0.28), 0.014, "c_brass", seg=6)
+    torus("carm", 0.12, 0.01, (0, 0, z + 0.26), "c_brass", (math.radians(90), 0, 0), seg=12, seg2=3)
+    for sx in (-1, 0, 1):
+        cyl("ccup%d" % sx, 0.025, 0.03, (sx * 0.12, 0, z + 0.28 + (0.06 if sx == 0 else 0)), "c_brass", seg=8)
+        _candle("cc%d" % sx, sx * 0.12, 0, z + 0.295 + (0.06 if sx == 0 else 0), h=0.12, r=0.02)
+    node("body")
+    _flames()
+    node("lamp_on")
+    export("feast_table")
+
+
+def m_long_table():
+    # plain oak work table (library / guard rooms): books, a candle in a dish, parchment, ink pot
+    _trestle_table()
+    z = 0.82
+    for k, (x, y, rz, hgt) in enumerate(((-1.0, 0.1, 0.1, 0.07), (-0.95, 0.12, -0.15, 0.06), (-0.98, 0.1, 0.3, 0.05))):
+        box("bk%d" % k, (0.3, 0.22, hgt), (x, y, z + 0.035 + k * 0.065), "e_books", (0, 0, rz), bevel=0.008)
+    ob = box("open", (0.42, 0.28, 0.03), (0.15, -0.05, z + 0.015), "c_pages", (0, 0, 0.12))
+    box("cover", (0.44, 0.3, 0.012), (0.15, -0.05, z + 0.004), "c_velvet", (0, 0, 0.12))
+    for k in range(3):
+        box("parch%d" % k, (0.22, 0.3, 0.004), (0.7 + k * 0.05, 0.1 - k * 0.03, z + 0.002 + k * 0.004), "e_parch", (0, 0, 0.3 * k - 0.2))
+    cyl("ink", 0.03, 0.05, (0.55, -0.25, z + 0.025), "c_wick", seg=8)
+    rod("quill", (0.55, -0.25, z + 0.04), (0.62, -0.18, z + 0.22), 0.006, "e_bone", seg=4)
+    cyl("dish", 0.07, 0.015, (-0.4, -0.2, z + 0.008), "e_iron", seg=10)
+    _candle("c", -0.4, -0.2, z + 0.015, h=0.12, r=0.03)
+    node("body")
+    _flames()
+    node("lamp_on")
+    export("long_table")
+
+
+def m_castle_bench():
+    box("seat", (2.9, 0.34, 0.06), (0, 0, 0.45), "c_dark", bevel=0.01)
+    for sx in (-1, 1):
+        x = sx * 1.25
+        box("slab%d" % sx, (0.07, 0.32, 0.42), (x, 0, 0.21), "c_dark")
+        box("cut%d" % sx, (0.075, 0.12, 0.12), (x, 0, 0.06), "e_coal")        # foot cut-out (dark notch)
+    box("stretch", (2.4, 0.05, 0.08), (0, 0, 0.2), "c_dark")
+    box("apron", (2.6, 0.03, 0.07), (0, -0.15, 0.38), "c_dark")
+    node("body")
+    export("castle_bench")
+
+
+def m_high_chair():
+    # gothic high-back chair (ref: french gothic oak armchair - pointed crest, tracery panel, leather seat)
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            hgt = 1.95 if sy > 0 else 0.7
+            box("leg%d%d" % (sx, sy), (0.07, 0.07, hgt), (sx * 0.26, sy * 0.22, hgt / 2), "c_dark")
+        box("arm%d" % sx, (0.07, 0.5, 0.05), (sx * 0.27, 0.0, 0.72), "c_dark", bevel=0.01)
+        cyl("fin%d" % sx, 0.045, 0.12, (sx * 0.26, 0.22, 2.01), "c_dark", seg=4, r2=0.0, rot=(0, 0, math.radians(45)))
+        box("rail%d" % sx, (0.05, 0.4, 0.05), (sx * 0.26, 0, 0.12), "c_dark")
+    box("seat", (0.56, 0.5, 0.06), (0, 0, 0.47), "c_dark")
+    box("cush", (0.5, 0.44, 0.06), (0, -0.01, 0.52), "c_velvet", bevel=0.02)
+    box("apron", (0.56, 0.03, 0.1), (0, -0.24, 0.41), "c_dark")
+    box("backp", (0.46, 0.04, 1.2), (0, 0.23, 1.15), "c_velvet")
+    box("backf", (0.46, 0.05, 0.08), (0, 0.23, 0.58), "c_dark")
+    box("backt", (0.46, 0.05, 0.08), (0, 0.23, 1.76), "c_dark")
+    for k in range(4):                                       # pointed crest
+        box("crest%d" % k, (0.46 - k * 0.12, 0.05, 0.06), (0, 0.23, 1.83 + k * 0.06), "c_dark")
+    for x in (-0.11, 0.11):
+        box("mull%d" % int(x * 100), (0.03, 0.05, 1.1), (x, 0.215, 1.17), "c_dark")
+    torus("ros", 0.08, 0.012, (0, 0.205, 1.5), "c_brass", (math.radians(90), 0, 0), seg=10, seg2=3)
+    node("body")
+    export("high_chair")
+
+
+def _glaive(tag, x, y, z0, lean=0.0, h=2.6):
+    """Guards' weapon: long black-steel glaive with a hooked, serrated blade and a spiked butt."""
+    M = Matrix.Translation(Vector((x, y, z0))) @ Euler((lean, 0, 0)).to_matrix().to_4x4()
+    parts = []
+    parts.append(rod(tag + "p", (0, 0, 0.05), (0, 0, h - 0.55), 0.022, "c_dark", seg=6))
+    for zz in (0.9, 1.3):
+        parts.append(cyl(tag + "g%d" % int(zz * 10), 0.028, 0.12, (0, 0, zz), "e_hide", seg=6))
+    parts.append(cyl(tag + "sk", 0.03, 0.1, (0, 0, h - 0.55), "e_iron", seg=6))
+    parts.append(box(tag + "bl", (0.05, 0.012, 0.5), (0.03, 0, h - 0.27), "c_blacksteel"))
+    parts.append(box(tag + "tip", (0.05, 0.012, 0.12), (0.045, 0, h - 0.02), "c_blacksteel", (0, math.radians(-25), 0)))
+    parts.append(box(tag + "hk", (0.16, 0.012, 0.04), (-0.08, 0, h - 0.42), "c_blacksteel", (0, math.radians(-30), 0)))
+    for k in range(4):
+        parts.append(box(tag + "sr%d" % k, (0.03, 0.012, 0.03), (0.065, 0, h - 0.45 + k * 0.11), "c_blacksteel", (0, math.radians(45), 0)))
+    parts.append(cyl(tag + "bt", 0.025, 0.08, (0, 0, 0.04), "e_iron", seg=5, r2=0.0, rot=(math.pi, 0, 0)))
+    for o in parts:
+        o.data.transform(M)
+
+
+def _sickle(tag, x, y, z, flip=1):
+    """Hooked claw-sickle of the wall-running guards, hung on a peg."""
+    rod(tag + "h", (x, y, z), (x, y, z - 0.3), 0.02, "e_hide", seg=5)
+    cyl(tag + "pm", 0.03, 0.04, (x, y, z - 0.32), "e_iron", seg=6)
+    for k in range(6):
+        a0, a1 = k / 6 * 2.4, (k + 1) / 6 * 2.4
+        p0 = (x + flip * math.sin(a0) * 0.18, y, z + 0.18 - math.cos(a0) * 0.18)
+        p1 = (x + flip * math.sin(a1) * 0.18, y, z + 0.18 - math.cos(a1) * 0.18)
+        rod(tag + "b%d" % k, p0, p1, 0.022 - k * 0.003, "c_blacksteel", seg=4)
+
+
+def m_guard_weapon_rack():
+    # wall rack of the guards' arms (ref: medieval armoury pole-arm racks): uprights, notched rails, 3 glaives, 2 claw
+    # sickles on pegs, a spiked round buckler; brass caps
+    for sx in (-1, 1):
+        box("up%d" % sx, (0.12, 0.12, 2.9), (sx * 1.35, 0.4, 1.45), "c_dark", bevel=0.01)
+        cyl("cap%d" % sx, 0.08, 0.1, (sx * 1.35, 0.4, 2.95), "c_brass", seg=4, r2=0.0, rot=(0, 0, math.radians(45)))
+        box("ft%d" % sx, (0.18, 0.5, 0.08), (sx * 1.35, 0.25, 0.04), "c_dark")
+    box("rail_lo", (2.6, 0.18, 0.08), (0, 0.38, 0.12), "c_dark")
+    box("rail_hi", (2.6, 0.12, 0.08), (0, 0.42, 1.95), "c_dark")
+    box("rail_top", (2.6, 0.08, 0.1), (0, 0.44, 2.75), "c_dark")
+    for k in range(5):
+        box("notch%d" % k, (0.05, 0.13, 0.09), (-0.9 + k * 0.45, 0.35, 1.95), "e_coal")
+    for k, x in enumerate((-0.9, 0.0, 0.9)):
+        _glaive("gl%d" % k, x, 0.33, 0.1, lean=-0.05, h=2.75)
+    for k, (x, f) in enumerate(((-0.45, 1), (0.45, -1))):
+        rod("peg%d" % k, (x, 0.45, 2.45), (x, 0.32, 2.45), 0.018, "c_dark", seg=5)
+        _sickle("sk%d" % k, x, 0.32, 2.42, f)
+    cyl("shield", 0.36, 0.05, (1.0, 0.3, 1.1), "c_dark", seg=14, rot=(math.radians(90), 0, 0))
+    torus("srim", 0.36, 0.025, (1.0, 0.27, 1.1), "e_iron", (math.radians(90), 0, 0), seg=14, seg2=4)
+    cyl("boss", 0.09, 0.08, (1.0, 0.24, 1.1), "e_iron", seg=8, r2=0.03, rot=(math.radians(90), 0, 0))
+    cyl("spike", 0.03, 0.12, (1.0, 0.16, 1.1), "c_blacksteel", seg=5, r2=0.0, rot=(math.radians(90), 0, 0))
+    node("body")
+    export("guard_weapon_rack")
+
+
+def m_guard_armor():
+    # spare harness of the guards on a stand: horned helm, spiked pauldrons, black plate, torn red tabard
+    cyl("base", 0.3, 0.06, (0, 0, 0.03), "c_dark", seg=8)
+    rod("pole", (0, 0, 0.05), (0, 0, 1.55), 0.03, "c_dark", seg=6)
+    box("cross", (0.62, 0.06, 0.06), (0, 0, 1.4), "c_dark")
+    box("chest", (0.46, 0.28, 0.5), (0, -0.02, 1.15), "c_blacksteel", bevel=0.06)
+    box("fauld", (0.48, 0.3, 0.12), (0, -0.02, 0.86), "c_blacksteel", bevel=0.03)
+    box("tabard", (0.3, 0.02, 0.62), (0, -0.17, 0.82), "c_velvet")
+    box("belt", (0.5, 0.31, 0.05), (0, -0.02, 0.93), "e_hide")
+    cyl("buckle", 0.035, 0.02, (0, -0.18, 0.93), "c_brass", seg=6, rot=(math.radians(90), 0, 0))
+    for sx in (-1, 1):
+        box("paul%d" % sx, (0.22, 0.3, 0.12), (sx * 0.3, -0.02, 1.38), "c_blacksteel", (0, math.radians(sx * 20), 0), bevel=0.04)
+        for k in range(3):
+            cyl("psp%d%d" % (sx, k), 0.025, 0.12, (sx * (0.25 + k * 0.06), -0.08 + k * 0.06, 1.48), "e_iron", seg=5, r2=0.0)
+    cyl("gorget", 0.12, 0.08, (0, -0.02, 1.47), "c_blacksteel", seg=10)
+    cyl("helm", 0.14, 0.24, (0, -0.02, 1.64), "c_blacksteel", seg=10, r2=0.12)
+    box("visor", (0.2, 0.02, 0.03), (0, -0.155, 1.66), "e_coal")
+    box("snout", (0.1, 0.1, 0.1), (0, -0.16, 1.58), "c_blacksteel", bevel=0.02)
+    for sx in (-1, 1):
+        _horn("hn%d" % sx, sx, (sx * 0.12, -0.02, 1.7), 0.45)
+    node("body")
+    export("guard_armor")
+
+
+def m_canopy_bed():
+    # four-poster bed with a red canopy and hangings (refs: castle bedchamber, Williamsburg red bed hangings)
+    # footprint: x -0.5..1.5, y -0.5..2.5 (foot at the front)
+    cx, cy = 0.5, 1.0
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            x, y = cx + sx * 0.92, cy + sy * 1.42
+            box("post%d%d" % (sx, sy), (0.1, 0.1, 2.7), (x, y, 1.35), "c_dark")
+            for zz in (0.5, 1.1):
+                cyl("turn%d%d%d" % (sx, sy, int(zz * 10)), 0.075, 0.1, (x, y, zz), "c_dark", seg=8)
+            cyl("fin%d%d" % (sx, sy), 0.06, 0.18, (x, y, 2.8), "c_dark", seg=6, r2=0.0)
+    box("frame", (1.9, 2.9, 0.2), (cx, cy, 0.35), "c_dark")
+    box("matt", (1.76, 2.7, 0.18), (cx, cy - 0.02, 0.54), "c_linen", bevel=0.05)
+    box("blanket", (1.82, 1.9, 0.08), (cx, cy - 0.42, 0.63), "c_velvet", bevel=0.03)
+    box("fold", (1.82, 0.18, 0.1), (cx, cy + 0.5, 0.65), "c_linen", bevel=0.04)
+    for sx in (-1, 1):
+        box("pillow%d" % sx, (0.7, 0.36, 0.14), (cx + sx * 0.42, cy + 1.08, 0.7), "c_linen", bevel=0.06)
+        box("drape%d" % sx, (0.03, 1.9, 0.32), (cx + sx * 0.92, cy - 0.42, 0.45), "c_velvet")
+    box("head", (1.84, 0.08, 1.5), (cx, cy + 1.42, 1.2), "c_dark")
+    box("headp", (1.5, 0.02, 1.0), (cx, cy + 1.37, 1.25), "c_velvet")
+    for k in range(4):
+        box("hcr%d" % k, (1.84 - k * 0.4, 0.08, 0.08), (cx, cy + 1.42, 1.98 + k * 0.08), "c_dark")
+    box("foot", (1.84, 0.08, 0.55), (cx, cy - 1.42, 0.55), "c_dark")
+    # canopy: tester frame + valance + roof cloth
+    box("tester", (2.0, 3.0, 0.06), (cx, cy, 2.62), "c_velvet")
+    for sy in (-1, 1):
+        box("valf%d" % sy, (2.02, 0.03, 0.26), (cx, cy + sy * 1.5, 2.5), "c_velvet")
+        box("valtrim%d" % sy, (2.04, 0.035, 0.03), (cx, cy + sy * 1.5, 2.38), "c_brass")
+    for sx in (-1, 1):
+        box("vals%d" % sx, (0.03, 3.02, 0.26), (cx + sx * 1.0, cy, 2.5), "c_velvet")
+        box("valstrim%d" % sx, (0.035, 3.04, 0.03), (cx + sx * 1.0, cy, 2.38), "c_brass")
+        # curtains gathered at the head posts and tied at the foot posts
+        box("curh%d" % sx, (0.16, 0.22, 2.0), (cx + sx * 0.94, cy + 1.25, 1.4), "c_velvet", bevel=0.05)
+        box("curf%d" % sx, (0.14, 0.18, 1.9), (cx + sx * 0.94, cy - 1.3, 1.45), "c_velvet", bevel=0.05)
+        torus("tie%d" % sx, 0.1, 0.015, (cx + sx * 0.94, cy - 1.3, 1.2), "c_brass", seg=10, seg2=3)
+    box("curback", (1.7, 0.03, 2.0), (cx, cy + 1.48, 1.4), "c_velvet")
+    node("body")
+    export("canopy_bed")
+
+
+def m_castle_chest():
+    # iron-bound oak strongbox (refs: 17th c. iron-bound oak chest, 1700's treasure chest): straps, corner plates,
+    # hasp + brass lock plate, ring handles, low round lid
+    box("body", (0.86, 0.56, 0.44), (0, 0, 0.24), "c_dark", bevel=0.01)
+    cyl("lid", 0.28, 0.86, (0, 0, 0.46), "c_dark", rot=(0, math.radians(90), 0), seg=12)
+    box("lidcut", (0.88, 0.58, 0.02), (0, 0, 0.46), "e_coal")
+    for x in (-0.32, 0.0, 0.32):
+        box("strap%d" % int(x * 100), (0.06, 0.58, 0.46), (x, 0, 0.24), "e_iron")
+        torus("lstrap%d" % int(x * 100), 0.285, 0.02, (x, 0, 0.46), "e_iron", (0, math.radians(90), 0), seg=12, seg2=3)
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            box("corner%d%d" % (sx, sy), (0.1, 0.1, 0.1), (sx * 0.42, sy * 0.27, 0.07), "e_iron")
+        torus("ring%d" % sx, 0.06, 0.012, (sx * 0.445, 0, 0.36), "e_iron", (0, math.radians(90), 0), seg=10, seg2=3)
+    box("lock", (0.14, 0.03, 0.14), (0, -0.29, 0.38), "c_brass", bevel=0.01)
+    box("hasp", (0.05, 0.03, 0.16), (0, -0.305, 0.48), "e_iron")
+    box("keyh", (0.02, 0.035, 0.05), (0, -0.3, 0.37), "e_coal")
+    for k in range(6):
+        cyl("rivet%d" % k, 0.012, 0.01, (-0.32 + (k % 3) * 0.32, -0.29, 0.12 + (k // 3) * 0.22), "e_iron", seg=5, rot=(math.radians(90), 0, 0))
+    box("plinth", (0.9, 0.6, 0.04), (0, 0, 0.02), "c_dark")
+    node("body")
+    export("castle_chest")
+
+
+def m_chained_lectern():
+    # library lectern with a chained folio (ref: monastic chained library, gothic reading desk)
+    box("base", (0.5, 0.5, 0.08), (0, 0, 0.04), "c_dark", bevel=0.01)
+    for k in range(4):
+        a = k * math.pi / 2
+        box("foot%d" % k, (0.08, 0.3, 0.06), (math.cos(a) * 0.22, math.sin(a) * 0.22, 0.03), "c_dark", (0, 0, a))
+    cyl("col", 0.07, 0.95, (0, 0.05, 0.55), "c_dark", seg=8)
+    for zz in (0.25, 0.7, 1.0):
+        torus("knop%d" % int(zz * 10), 0.08, 0.02, (0, 0.05, zz), "c_dark", seg=10, seg2=4)
+    desk = box("desk", (0.62, 0.46, 0.05), (0, 0.02, 1.13), "c_dark", (math.radians(-22), 0, 0))
+    box("lip", (0.62, 0.04, 0.05), (0, -0.2, 1.06), "c_dark")
+    bk = box("book", (0.5, 0.36, 0.035), (0, 0.0, 1.17), "c_pages", (math.radians(-22), 0, 0))
+    box("bcov", (0.54, 0.38, 0.015), (0, 0.005, 1.15), "c_velvet", (math.radians(-22), 0, 0))
+    for k in range(10):                                      # chain from the book board to a ring on the column
+        t0, t1 = k / 10, (k + 0.75) / 10
+        a = (0.22, 0.12, 1.19); b = (0.06, 0.08, 0.72)
+        sag = lambda t: 0.08 * math.sin(math.pi * t)
+        p0 = (a[0] + (b[0] - a[0]) * t0 + sag(t0), a[1] + (b[1] - a[1]) * t0, a[2] + (b[2] - a[2]) * t0)
+        p1 = (a[0] + (b[0] - a[0]) * t1 + sag(t1), a[1] + (b[1] - a[1]) * t1, a[2] + (b[2] - a[2]) * t1)
+        rod("ch%d" % k, p0, p1, 0.008, "e_iron", seg=4)
+    node("body")
+    export("chained_lectern")
+
+
+def m_chapel_altar():
+    # chapel altar (ref: gothic stone altar, brass altar candlesticks): ashlar mensa on a blind-arcade front, red frontal,
+    # two tall brass candlesticks, a horned beast skull relic on a brass stand, open book
+    box("mensa", (2.9, 0.95, 0.12), (0, 0, 1.0), "c_ashlar", bevel=0.02)
+    box("body", (2.7, 0.8, 0.94), (0, 0.03, 0.47), "c_ashlar")
+    for k in range(5):
+        x = -1.08 + k * 0.54
+        box("arc%d" % k, (0.3, 0.02, 0.55), (x, -0.375, 0.45), "c_brick")
+        box("arct%d" % k, (0.22, 0.021, 0.22), (x, -0.376, 0.72), "c_brick", (0, math.radians(45), 0))
+    box("frontal", (1.2, 0.02, 0.7), (0, -0.39, 0.62), "c_velvet")
+    box("fringe", (1.22, 0.025, 0.04), (0, -0.395, 0.27), "c_brass")
+    box("cloth", (2.92, 0.97, 0.01), (0, 0, 1.065), "c_linen")
+    for sx in (-1, 1):
+        x = sx * 1.15
+        cyl("cb%d" % sx, 0.1, 0.05, (x, 0.1, 1.095), "c_brass", seg=10, r2=0.07)
+        rod("cs%d" % sx, (x, 0.1, 1.1), (x, 0.1, 1.55), 0.022, "c_brass", seg=6)
+        for zz in (1.25, 1.45):
+            torus("ck%d%d" % (sx, int(zz * 10)), 0.03, 0.012, (x, 0.1, zz), "c_brass", seg=8, seg2=3)
+        cyl("cp%d" % sx, 0.06, 0.02, (x, 0.1, 1.56), "c_brass", seg=10)
+        _candle("cd%d" % sx, x, 0.1, 1.57, h=0.3, r=0.035)
+    cyl("relb", 0.13, 0.06, (0, 0.18, 1.1), "c_brass", seg=10)
+    rod("rels", (0, 0.18, 1.12), (0, 0.18, 1.35), 0.03, "c_brass", seg=6)
+    _skull("rel", 0, 0.16, 1.47, 0.7)
+    box("book", (0.36, 0.26, 0.03), (-0.5, -0.1, 1.085), "c_pages", (0, 0, 0.15))
+    box("bookc", (0.38, 0.28, 0.012), (-0.5, -0.1, 1.074), "c_velvet", (0, 0, 0.15))
+    box("step", (3.0, 0.4, 0.1), (0, -0.6, 0.05), "c_ashlar")
+    node("body")
+    _flames(1.2)
+    node("lamp_on")
+    export("chapel_altar")
+
+
+def m_hearth_cauldron():
+    # kitchen fire with a cauldron on an iron tripod (ref: medieval castle kitchen hearth, small roasting spit)
+    for k in range(9):
+        a = k * 2 * math.pi / 9
+        box("stone%d" % k, (0.2, 0.16, 0.12), (math.cos(a) * 0.4, math.sin(a) * 0.4, 0.06), "c_ashlar", (0, 0, a), bevel=0.03)
+    cyl("ash", 0.36, 0.03, (0, 0, 0.015), "e_coal", seg=12)
+    for k in range(4):
+        a = k * math.pi / 2 + 0.3
+        rod("log%d" % k, (math.cos(a) * 0.3, math.sin(a) * 0.3, 0.05), (math.cos(a) * 0.04, math.sin(a) * 0.04, 0.16), 0.05, "e_bark", seg=6)
+    for k in range(3):                                        # tripod
+        a = k * 2 * math.pi / 3 + 0.5
+        rod("leg%d" % k, (math.cos(a) * 0.48, math.sin(a) * 0.48, 0.0), (0, 0, 1.3), 0.018, "e_iron", seg=5)
+    cyl("top", 0.04, 0.06, (0, 0, 1.3), "e_iron", seg=6)
+    for k in range(8):
+        rod("ch%d" % k, (0, 0, 1.28 - k * 0.07), (0, 0, 1.23 - k * 0.07), 0.01, "e_iron", seg=4)
+    rod("bail", (-0.22, 0, 0.62), (0, 0, 0.72), 0.01, "e_iron", seg=4)
+    rod("bail2", (0.22, 0, 0.62), (0, 0, 0.72), 0.01, "e_iron", seg=4)
+    cyl("pot", 0.22, 0.3, (0, 0, 0.47), "c_blacksteel", seg=14, r2=0.25)
+    cyl("potb", 0.18, 0.08, (0, 0, 0.29), "c_blacksteel", seg=14, r2=0.22)
+    torus("lip", 0.25, 0.02, (0, 0, 0.62), "c_blacksteel", seg=14, seg2=4)
+    cyl("soup", 0.235, 0.01, (0, 0, 0.6), "c_soup", seg=14)
+    rod("ladle", (0.1, 0.05, 0.6), (0.28, 0.12, 0.9), 0.012, "c_dark", seg=4)
+    node("body")
+    cyl("emb", 0.28, 0.02, (0, 0, 0.04), "e_embers", seg=12)
+    for k in range(5):
+        a = k * 2 * math.pi / 5
+        cyl("fl%d" % k, 0.07, 0.28 - 0.04 * (k % 2), (math.cos(a) * 0.08, math.sin(a) * 0.08, 0.2), "e_fire", seg=5, r2=0.0)
+    cyl("flc", 0.09, 0.34, (0, 0, 0.2), "e_flame", seg=6, r2=0.0)
+    node("lamp_on")
+    export("hearth_cauldron")
+
+
+def m_alchemy_table():
+    # alchemist's bench (ref: alchemy workbench with flasks, alembic, books, candles); 2 wide, hutch at the back
+    box("top", (1.9, 0.8, 0.07), (0.5, 0, 0.82), "c_dark", bevel=0.01)
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            box("leg%d%d" % (sx, sy), (0.08, 0.08, 0.78), (0.5 + sx * 0.88, sy * 0.33, 0.39), "c_dark")
+    box("shelf_lo", (1.8, 0.7, 0.04), (0.5, 0, 0.2), "c_dark")
+    box("hutch_b", (1.9, 0.04, 0.9), (0.5, 0.38, 1.3), "c_dark")
+    for sx in (-1, 1):
+        box("hutch_s%d" % sx, (0.04, 0.26, 0.9), (0.5 + sx * 0.93, 0.26, 1.3), "c_dark")
+    for zz in (1.2, 1.55, 1.73):
+        box("hs%d" % int(zz * 100), (1.86, 0.26, 0.03), (0.5, 0.26, zz), "c_dark")
+    # flasks on the hutch shelves (glowing liquids = lamp node), jars, skull
+    cols = ["c_glow_red", "c_glow_green", "c_glow_blue", "c_glow_amber"]
+    rnd = random.Random(7)
+    for k in range(7):
+        x = -0.3 + k * 0.26
+        r = 0.04 + rnd.random() * 0.03
+        cyl("fl%d" % k, r, 0.14, (x, 0.26, 1.29), "e_ice", seg=8, r2=r * 0.5)
+        cyl("liq%d" % k, r * 0.9, 0.06, (x, 0.26, 1.25), cols[k % 4], seg=8)
+    for k in range(5):
+        cyl("jar%d" % k, 0.05, 0.12, (-0.25 + k * 0.32, 0.26, 1.63), "e_ceramic", seg=8)
+        cyl("jc%d" % k, 0.04, 0.02, (-0.25 + k * 0.32, 0.26, 1.7), "e_cork", seg=8)
+    _skull("sk", 1.2, 0.0, 0.95, 0.35)
+    # alembic: round boiler on a little brazier + bent copper pipe to a receiver flask
+    cyl("braz", 0.1, 0.08, (-0.15, -0.05, 0.9), "e_iron", seg=8, r2=0.12)
+    cyl("boil", 0.12, 0.2, (-0.15, -0.05, 1.05), "c_copper", seg=10, r2=0.07)
+    rod("neck", (-0.15, -0.05, 1.15), (-0.15, -0.05, 1.3), 0.025, "c_copper", seg=6)
+    rod("pipe", (-0.15, -0.05, 1.3), (0.25, -0.1, 1.0), 0.015, "c_copper", seg=5)
+    cyl("recv", 0.07, 0.14, (0.28, -0.1, 0.93), "e_ice", seg=8, r2=0.035)
+    cyl("recvl", 0.06, 0.05, (0.28, -0.1, 0.885), "c_glow_green", seg=8)
+    box("book", (0.34, 0.26, 0.05), (0.75, -0.12, 0.88), "e_books", (0, 0, 0.3))
+    cyl("mortar", 0.07, 0.07, (1.0, -0.2, 0.89), "c_ashlar", seg=8, r2=0.05)
+    rod("pestle", (1.0, -0.2, 0.9), (1.05, -0.15, 1.02), 0.012, "c_ashlar", seg=4)
+    _candle("cn", 1.25, -0.25, 0.855, h=0.1, r=0.03)
+    node("body")
+    for k in range(7):
+        x = -0.3 + k * 0.26
+        cyl("gl%d" % k, 0.025, 0.02, (x, 0.26, 1.29), cols[k % 4], seg=6)
+    _flames()
+    node("lamp_on")
+    export("alchemy_table")
+
+
+def m_wall_shackles():
+    # prison wall shackles (ref: hand-forged dungeon shackles, chained cuffs)
+    for sx in (-1, 1):
+        x = sx * 0.28
+        box("plate%d" % sx, (0.12, 0.02, 0.12), (x, 0.48, 1.6), "e_iron")
+        torus("eye%d" % sx, 0.035, 0.01, (x, 0.45, 1.6), "e_iron", (math.radians(90), 0, 0), seg=8, seg2=3)
+        for k in range(8):
+            z = 1.56 - k * 0.075
+            torus("ch%d%d" % (sx, k), 0.025, 0.007, (x + sx * 0.01 * k, 0.43, z), "e_iron",
+                  ((math.radians(90) if k % 2 else 0), 0, 0), seg=8, seg2=3)
+        torus("cuff%d" % sx, 0.06, 0.016, (x + sx * 0.09, 0.42, 0.93), "e_iron", (0, math.radians(90), 0), seg=12, seg2=4)
+        box("hinge%d" % sx, (0.03, 0.04, 0.04), (x + sx * 0.09, 0.42, 0.87), "e_iron")
+    box("plate_lo", (0.12, 0.02, 0.1), (0, 0.48, 0.2), "e_iron")
+    for k in range(10):
+        torus("fc%d" % k, 0.03, 0.008, (-0.25 + k * 0.05, 0.38 - k * 0.02, 0.02 + (0.18 if k == 0 else 0.0) if k < 2 else 0.015), "e_iron",
+              ((math.radians(90) if k % 2 else 0), 0, 0), seg=8, seg2=3)
+    node("body")
+    export("wall_shackles")
+
+
+def m_gold_hoard():
+    # treasury hoard: coin heap, spilled coins, goblet, a crown, gems
+    cyl("heap", 0.48, 0.16, (0, 0, 0.08), "c_coins", seg=14, r2=0.4)
+    cyl("heap_m", 0.4, 0.16, (0.02, 0.02, 0.24), "c_coins", seg=12, r2=0.28)
+    cyl("heap_t", 0.28, 0.14, (0.03, 0.03, 0.39), "c_coins", seg=10, r2=0.1)
+    cyl("heap2", 0.26, 0.18, (0.22, 0.2, 0.09), "c_coins", seg=10, r2=0.12)
+    cyl("heap3", 0.22, 0.14, (-0.24, -0.18, 0.07), "c_coins", seg=10, r2=0.1)
+    rnd = random.Random(11)
+    for k in range(16):
+        a, d = rnd.random() * 6.28, 0.3 + rnd.random() * 0.18
+        cyl("coin%d" % k, 0.035, 0.008, (math.cos(a) * d, math.sin(a) * d, 0.005), "c_brass", seg=7)
+    _goblet("gob", -0.3, 0.25, 0.0)
+    cyl("crown", 0.1, 0.06, (0.05, -0.08, 0.47), "c_brass", seg=10, rot=(0.25, 0.1, 0))
+    for k in range(5):
+        a = k * 2 * math.pi / 5
+        cyl("cp%d" % k, 0.018, 0.06, (0.05 + math.cos(a) * 0.1, -0.08 + math.sin(a) * 0.1, 0.53), "c_brass", seg=4, r2=0.0)
+    for k, (m, x, y, z) in enumerate((("c_glow_red", 0.25, -0.2, 0.06), ("c_glow_green", -0.2, -0.25, 0.04), ("c_glow_blue", 0.0, 0.2, 0.42))):
+        crystal("gem%d" % k, (x, y, z), m, h=0.09, r=0.035)
+    node("body")
+    export("gold_hoard")
+
+
+def m_tapestry_horn():
+    # red wall hanging with the horned-skull arms of the castle, on an iron rod with finials
+    w, h, zc = 0.92, 2.5, 1.62
+    ob = box("cloth", (w, 0.02, h), (0, 0.46, zc), "c_tapestry")
+    fit_face(ob, 1, -1, -w / 2, w / 2, zc - h / 2, zc + h / 2)
+    rod("rod", (-0.55, 0.44, zc + h / 2 + 0.03), (0.55, 0.44, zc + h / 2 + 0.03), 0.018, "e_iron", seg=6)
+    for sx in (-1, 1):
+        cyl("fin%d" % sx, 0.03, 0.08, (sx * 0.58, 0.44, zc + h / 2 + 0.03), "c_brass", seg=6, r2=0.0, rot=(0, math.radians(90 * sx), 0))
+        rod("brk%d" % sx, (sx * 0.4, 0.5, zc + h / 2 + 0.03), (sx * 0.4, 0.43, zc + h / 2 + 0.03), 0.012, "e_iron", seg=4)
+    node("body")
+    export("tapestry_horn")
+
+
+def m_bone_pile():
+    # gnawed bones and a skull in a corner (prison, guards' lair)
+    rnd = random.Random(5)
+    for k in range(9):
+        a = rnd.random() * 6.28
+        x, y = (rnd.random() - 0.5) * 0.6, (rnd.random() - 0.5) * 0.6
+        L = 0.2 + rnd.random() * 0.2
+        p0 = (x - math.cos(a) * L / 2, y - math.sin(a) * L / 2, 0.03 + (k % 3) * 0.03)
+        p1 = (x + math.cos(a) * L / 2, y + math.sin(a) * L / 2, 0.03 + ((k + 1) % 3) * 0.03)
+        rod("b%d" % k, p0, p1, 0.022, "e_bone", seg=5)
+        cyl("k%da" % k, 0.035, 0.04, p0, "e_bone", seg=6)
+        cyl("k%db" % k, 0.035, 0.04, p1, "e_bone", seg=6)
+    box("skull", (0.2, 0.24, 0.18), (0.1, -0.05, 0.12), "e_bone", (0, 0, 0.5), bevel=0.06)
+    box("jaw", (0.14, 0.1, 0.06), (0.05, -0.15, 0.04), "e_bone", (0, 0, 0.5))
+    for sx in (-1, 1):
+        box("eye%d" % sx, (0.05, 0.02, 0.05), (0.1 + sx * 0.05, -0.16, 0.14), "c_wick", (0, 0, 0.5))
+    node("body")
+    export("bone_pile")
 
 ALL = {k[2:]: v for k, v in list(globals().items()) if k.startswith("m_") and callable(v)}
 for name, fn in ALL.items():

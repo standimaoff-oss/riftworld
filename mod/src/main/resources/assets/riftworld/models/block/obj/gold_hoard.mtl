@@ -1,0 +1,30 @@
+newmtl c_coins
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_c_coins
+
+newmtl c_brass
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_c_brass
+
+newmtl c_wine
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/c_c_wine
+
+newmtl c_glow_red
+Ka 1 1 1
+Kd 1 1 1
+map_Kd riftworld:block/obj/c_c_glow_red
+
+newmtl c_glow_green
+Ka 1 1 1
+Kd 1 1 1
+map_Kd riftworld:block/obj/c_c_glow_green
+
+newmtl c_glow_blue
+Ka 1 1 1
+Kd 1 1 1
+map_Kd riftworld:block/obj/c_c_glow_blue
+

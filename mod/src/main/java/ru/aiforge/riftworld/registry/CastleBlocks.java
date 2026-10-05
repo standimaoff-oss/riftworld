@@ -1,6 +1,8 @@
 package ru.aiforge.riftworld.registry;
 
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.CarpetBlock;
+import net.minecraft.world.level.block.WebBlock;
 import net.minecraft.world.level.block.FenceBlock;
 import net.minecraft.world.level.block.IronBarsBlock;
 import net.minecraft.world.level.block.RotatedPillarBlock;
@@ -71,6 +73,16 @@ public final class CastleBlocks {
     public static final RegistryObject<Block> SCORCHED_STONE = cube("scorched_stone", p(MapColor.COLOR_GRAY, 2.0F, SoundType.BASALT));
     public static final RegistryObject<RotatedPillarBlock> CHARRED_LOG = ModBlocks.reg("charred_log",
             () -> new RotatedPillarBlock(p(MapColor.COLOR_BLACK, 1.5F, SoundType.WOOD)));
+
+    // C-2: room furnishing
+    public static final RegistryObject<RotatedPillarBlock> BOOKSHELF = ModBlocks.reg("castle_bookshelf",
+            () -> new RotatedPillarBlock(p(MapColor.COLOR_BROWN, 1.5F, SoundType.WOOD)));
+    public static final RegistryObject<IronBarsBlock> BARS = ModBlocks.reg("castle_bars",
+            () -> new IronBarsBlock(p(MapColor.METAL, 5.0F, SoundType.METAL).noOcclusion()));
+    public static final RegistryObject<CarpetBlock> CARPET = ModBlocks.reg("castle_carpet",
+            () -> new CarpetBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).strength(0.1F).sound(SoundType.WOOL)));
+    public static final RegistryObject<WebBlock> COBWEB = ModBlocks.reg("castle_cobweb",
+            () -> new WebBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOL).noCollission().strength(4.0F).noOcclusion()));
 
     public static void init() {
     }

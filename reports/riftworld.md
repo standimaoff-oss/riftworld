@@ -308,3 +308,39 @@ The work follows the Rev 3 TZ (`reports/TZ_rev3.md`). The user picked variant C 
   - the entry candle sequence as a game mechanic;
   - tuning the collapse and ruins;
   - loot.
+
+## Rev 3 / C-2a — v0.5.0-c2: castle rooms + launch without the cleaning strip
+
+### Launch (both labs)
+- The cleaning-wave strip is gone. After the capsule rises, the stage is now FLICKER (70 ticks): lab lamps blink in a broken
+  pattern with a burnt-out torch sound, then all switch on; sirens stop; beacon sound. Core reaches DONE (checked: `Stage: 4`).
+
+### 18 new Blender props (baked OBJ, `.blend` + `.glb`, 40–1250 faces each)
+`castle_chandelier` (wrought-iron ring, 6 candles, chains; light 15), `wall_sconce` (12), `feast_table` (food, goblets,
+candelabra; 8), `long_table` (books, papers; 6), `castle_bench`, `high_chair`, `guard_weapon_rack` (glaives, sickle, shield),
+`guard_armor`, `canopy_bed`, `castle_chest` (container, 27 slots, loot table, chest sound), `chained_lectern`,
+`chapel_altar` (10), `hearth_cauldron` (tripod over embers; 13), `alchemy_table` (coloured flasks, alembic; 7),
+`wall_shackles`, `gold_hoard`, `tapestry_horn` (horned-skull arms), `bone_pile`.
+Passable: chandelier, sconce, shackles, tapestry, bones. New 16×16 blocks: `castle_bookshelf`, `castle_bars`,
+`castle_carpet`, `castle_cobweb`.
+
+### Rooms (`tools/rift/castle_rooms.py`, exec'd by `gen_castle.py`; 335 props)
+- **W wing, ground:** armoury (racks, armour stands, anvil, tool wall, 2 chandeliers), refectory (6 feast tables, benches,
+  high chairs, kegs, sideboard), kitchen (cauldron, fireplace, stove, work tables, hanging herbs, sacks, kegs).
+- **W wing, upper:** barracks (7 cots, table, chests), lord's bedchamber (canopy bed, fireplace with chairs, carpet,
+  wardrobes, tapestries), alchemist's lab (3 benches, cauldron, book wall), storage loft.
+- **E wing:** library (book walls, shelf rows, chained lecterns, reading table), chapel (pews, altar, candles; choir gallery
+  along the hall wall fixes the upper doors that opened into the void), treasury (gold, chests, armour at the door);
+  upper scriptorium and guest chamber.
+- **North range:** storeroom, wine cellar, upper trophy gallery / dormitory with a new stair.
+- **Gatehouse:** the back wall sealed the gate passage — now open; new stair to the guard room.
+- **Towers:** doorways into the NW prison (bars, two cells, shackles, bones), SW watch tower, NE keep; breach into the SE ruin.
+- 12 loot tables `chests/castle_*` (vanilla items) — all verified with `/loot spawn`.
+
+### Verification
+- Built `riftworld-0.5.0-c2.jar`, regenerated Элисар on the Forge server, client walk-through.
+- Screenshots (20): `release/riftworld_screens/session7/`. Video (57 s): `release/riftworld_session7.mp4`.
+
+### Next (C-2b)
+- Spiral stairs inside the towers to their upper floors (prison levels, keep lookout), tower upper rooms.
+- Then C-3: column mechanics, the entry candle sequence as a game mechanic.

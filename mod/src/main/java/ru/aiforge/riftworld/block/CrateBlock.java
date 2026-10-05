@@ -26,7 +26,8 @@ public class CrateBlock extends ModelEntityBlock {
         if (level.isClientSide) return InteractionResult.SUCCESS;
         if (level.getBlockEntity(pos) instanceof CrateBlockEntity crate) {
             player.openMenu(crate);
-            level.playSound(null, pos, kind == ModelKind.CRATE_WOOD ? SoundEvents.BARREL_OPEN : SoundEvents.IRON_TRAPDOOR_OPEN,
+            level.playSound(null, pos, kind == ModelKind.CASTLE_CHEST ? SoundEvents.CHEST_OPEN
+                    : kind == ModelKind.CRATE_WOOD ? SoundEvents.BARREL_OPEN : SoundEvents.IRON_TRAPDOOR_OPEN,
                     SoundSource.BLOCKS, 0.6F, 0.9F + level.random.nextFloat() * 0.2F);
         }
         return InteractionResult.CONSUME;

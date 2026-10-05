@@ -106,7 +106,26 @@ public enum ModelKind {
     HERBS_HANGING("herbs_hanging", 0, 0, 0, 1, Block.box(1, 9, 6, 15, 16, 10)),
     // ---- Rev 3: castle «Чертог Тлеющего Рога» (baked OBJ)
     CANDLE_STAND("candle_stand", 0, 0, 0, 2, Block.box(4, 0, 4, 12, 16, 12)),
-    BOSS_THRONE("boss_throne", -1, 1, 1, 4, Block.box(0, 0, 0, 16, 16, 16));
+    BOSS_THRONE("boss_throne", -1, 1, 1, 4, Block.box(0, 0, 0, 16, 16, 16)),
+    // ---- Rev 3 C-2: castle rooms (baked OBJ)
+    CASTLE_CHANDELIER("castle_chandelier", 0, 0, 0, 1, Block.box(2, 4, 2, 14, 16, 14)),
+    WALL_SCONCE("wall_sconce", 0, 0, 0, 1, Block.box(5, 3, 10, 11, 14, 16)),
+    FEAST_TABLE("feast_table", -1, 1, 0, 1, Block.box(0, 0, 2, 16, 13, 14)),
+    LONG_TABLE("long_table", -1, 1, 0, 1, Block.box(0, 0, 2, 16, 13, 14)),
+    CASTLE_BENCH("castle_bench", -1, 1, 0, 1, Block.box(0, 0, 4, 16, 8, 12)),
+    HIGH_CHAIR("high_chair", 0, 0, 0, 2, Block.box(2, 0, 2, 14, 16, 14)),
+    GUARD_WEAPON_RACK("guard_weapon_rack", -1, 1, 0, 3, Block.box(0, 0, 4, 16, 16, 12)),
+    GUARD_ARMOR("guard_armor", 0, 0, 0, 2, Block.box(3, 0, 3, 13, 16, 13)),
+    CANOPY_BED("canopy_bed", 0, 1, 2, 3, Block.box(0, 0, 0, 16, 10, 16)),
+    CASTLE_CHEST("castle_chest", 0, 0, 0, 1, Block.box(1, 0, 2, 15, 14, 14)),
+    CHAINED_LECTERN("chained_lectern", 0, 0, 0, 2, Block.box(3, 0, 3, 13, 16, 13)),
+    CHAPEL_ALTAR("chapel_altar", -1, 1, 0, 2, Block.box(0, 0, 1, 16, 16, 15)),
+    HEARTH_CAULDRON("hearth_cauldron", 0, 0, 0, 2, Block.box(1, 0, 1, 15, 16, 15)),
+    ALCHEMY_TABLE("alchemy_table", 0, 1, 0, 2, Block.box(0, 0, 2, 16, 16, 16)),
+    WALL_SHACKLES("wall_shackles", 0, 0, 0, 2, Block.box(1, 0, 12, 15, 16, 16)),
+    GOLD_HOARD("gold_hoard", 0, 0, 0, 1, Block.box(0, 0, 0, 16, 9, 16)),
+    TAPESTRY_HORN("tapestry_horn", 0, 0, 0, 3, Block.box(1, 0, 14, 15, 16, 16)),
+    BONE_PILE("bone_pile", 0, 0, 0, 1, Block.box(1, 0, 1, 15, 4, 15));
 
     public final String glb;
     public final int x0, x1, back, h;
@@ -126,7 +145,8 @@ public enum ModelKind {
             case WALL_NOTES, FIRE_EXTINGUISHER, PAPER_PILE, CHANDELIER, SIGN_SHOP, SIGN_TAVERN, SIGN_FORGE, SIGN_FISH,
                  SIGN_POLICE, SIGN_HUNTER, SIGN_MARKET, SIGN_TEMPLE, FISHING_NET, TROPHY_ANTLERS, TOOL_WALL, RUG,
                  WANTED_WALL, SACRED_POLES, LANTERN_HANGING, LANTERN_HANG, LANTERN_WALL, PAINTING_ISLANDS,
-                 PAINTING_PORTRAIT, PAINTING_EYE, HERBS_HANGING -> true;
+                 PAINTING_PORTRAIT, PAINTING_EYE, HERBS_HANGING, CASTLE_CHANDELIER, WALL_SCONCE, WALL_SHACKLES,
+                 TAPESTRY_HORN, BONE_PILE -> true;
             default -> false;
         };
     }
@@ -141,6 +161,13 @@ public enum ModelKind {
             case LANTERN_HANG, LANTERN_POST, LANTERN_WALL -> 15;
             case FIRE_PIT -> 14;
             case CANDLE_STAND -> 12;
+            case CASTLE_CHANDELIER -> 15;
+            case WALL_SCONCE -> 12;
+            case HEARTH_CAULDRON -> 13;
+            case CHAPEL_ALTAR -> 10;
+            case FEAST_TABLE -> 8;
+            case ALCHEMY_TABLE -> 7;
+            case LONG_TABLE -> 6;
             case KITCHEN_STOVE -> 10;
             case FIREPLACE -> 13;
             case COOKING_POT -> 11;
@@ -155,7 +182,7 @@ public enum ModelKind {
     }
 
     public boolean isContainer() {
-        return this == CRATE_WOOD || this == CRATE_METAL;
+        return this == CRATE_WOOD || this == CRATE_METAL || this == CASTLE_CHEST;
     }
 
     public int width() {

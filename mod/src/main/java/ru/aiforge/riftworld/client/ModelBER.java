@@ -86,6 +86,7 @@ public class ModelBER<T extends BlockEntity> implements BlockEntityRenderer<T> {
     public void render(T be, float partial, PoseStack ps, MultiBufferSource buffers, int light, int overlay) {
         BlockState state = be.getBlockState();
         if (!(state.getBlock() instanceof ModelBlock mb)) return;
+        if (mb.kind.isElisar()) return; // baked OBJ (e.g. castle chest) - drawn by the chunk mesher
         GlbAssets.Loaded lm = GlbAssets.get(path(mb.kind));
         if (lm == null) return;
         RiftBlockEntity rbe = be instanceof RiftBlockEntity r ? r : null;

@@ -1,0 +1,20 @@
+newmtl c_dark
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_c_darkwood
+
+newmtl e_coal
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/c_e_coal
+
+newmtl e_iron
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_iron
+
+newmtl c_brass
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_c_brass
+

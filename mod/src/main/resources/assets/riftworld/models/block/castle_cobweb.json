@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cross",
+  "textures": {
+    "cross": "riftworld:block/castle_cobweb"
+  },
+  "render_type": "minecraft:cutout"
+}

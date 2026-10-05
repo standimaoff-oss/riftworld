@@ -140,6 +140,12 @@ public final class ModBlocks {
                 p = p.sound(SoundType.STONE).strength(3.0F, 6.0F).mapColor(MapColor.STONE);
             if (k == ModelKind.CANDLE_STAND) p = p.sound(SoundType.LANTERN).strength(1.0F, 2.0F).mapColor(MapColor.METAL);
             if (k == ModelKind.BOSS_THRONE) p = p.strength(25.0F, 1200.0F).mapColor(MapColor.COLOR_BLACK);
+            if (k == ModelKind.CASTLE_CHANDELIER || k == ModelKind.WALL_SCONCE || k == ModelKind.WALL_SHACKLES)
+                p = p.sound(SoundType.LANTERN).strength(1.0F, 2.0F).mapColor(MapColor.METAL);
+            if (k == ModelKind.GUARD_ARMOR || k == ModelKind.GOLD_HOARD) p = p.sound(SoundType.METAL).strength(2.0F, 4.0F).mapColor(MapColor.METAL);
+            if (k == ModelKind.CHAPEL_ALTAR) p = p.sound(SoundType.STONE).strength(3.0F, 6.0F).mapColor(MapColor.STONE);
+            if (k == ModelKind.BONE_PILE) p = p.sound(SoundType.BONE_BLOCK).strength(0.6F);
+            if (k == ModelKind.TAPESTRY_HORN || k == ModelKind.CANOPY_BED) p = p.sound(SoundType.WOOL).strength(0.8F);
             if (k == ModelKind.RUG) p = p.sound(SoundType.WOOL).strength(0.5F);
         }
         if (k == ModelKind.CHANDELIER) p = p.lightLevel(s -> s.getValue(ModelBlock.POWERED) ? 15 : 0);
@@ -150,7 +156,7 @@ public final class ModBlocks {
             case PORTAL_HELM -> new PortalHelmBlock(k, props);
             case PORTAL_LEVER -> new PortalLeverBlock(k, props);
             case LAB_DOOR -> new LabDoorBlock(k, props);
-            case CRATE_WOOD, CRATE_METAL -> new CrateBlock(k, props);
+            case CRATE_WOOD, CRATE_METAL, CASTLE_CHEST -> new CrateBlock(k, props);
             default -> k.isElisar() ? new ModelBlock(k, props) : new ru.aiforge.riftworld.block.ModelEntityBlock(k, props);
         });
         MODELS.put(k, r);

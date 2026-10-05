@@ -1,9 +1,9 @@
 {
   "replace": false,
   "values": [
+    "riftworld:lab_table",
     "riftworld:crate_wood",
     "riftworld:shelf",
-    "riftworld:lab_table",
     "riftworld:sizo_log",
     "riftworld:ambra_log",
     "riftworld:sizo_planks",
@@ -77,6 +77,17 @@
     "riftworld:dark_beam",
     "riftworld:dark_fence",
     "riftworld:charred_log",
-    "riftworld:boss_throne"
+    "riftworld:boss_throne",
+    "riftworld:castle_bookshelf",
+    "riftworld:feast_table",
+    "riftworld:long_table",
+    "riftworld:castle_bench",
+    "riftworld:high_chair",
+    "riftworld:guard_weapon_rack",
+    "riftworld:canopy_bed",
+    "riftworld:castle_chest",
+    "riftworld:chained_lectern",
+    "riftworld:alchemy_table",
+    "riftworld:tapestry_horn"
   ]
 }

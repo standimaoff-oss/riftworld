@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "axis=y": {
+      "model": "riftworld:block/castle_bookshelf"
+    },
+    "axis=z": {
+      "model": "riftworld:block/castle_bookshelf_horizontal",
+      "x": 90
+    },
+    "axis=x": {
+      "model": "riftworld:block/castle_bookshelf_horizontal",
+      "x": 90,
+      "y": 90
+    }
+  }
+}

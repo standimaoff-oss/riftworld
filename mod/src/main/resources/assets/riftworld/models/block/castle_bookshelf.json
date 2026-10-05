@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "riftworld:block/castle_bookshelf_top",
+    "side": "riftworld:block/castle_bookshelf"
+  }
+}

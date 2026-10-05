@@ -26,5 +26,6 @@ public final class ModBlockEntities {
 
     @SuppressWarnings("DataFlowIssue")
     public static final RegistryObject<BlockEntityType<CrateBlockEntity>> CRATE = TYPES.register("crate", () -> BlockEntityType.Builder.of(CrateBlockEntity::new,
-            ModBlocks.MODELS.get(ModelKind.CRATE_WOOD).get(), ModBlocks.MODELS.get(ModelKind.CRATE_METAL).get()).build(null));
+            ModBlocks.MODELS.get(ModelKind.CRATE_WOOD).get(), ModBlocks.MODELS.get(ModelKind.CRATE_METAL).get(),
+            ModBlocks.MODELS.get(ModelKind.CASTLE_CHEST).get()).build(null));
 }

@@ -1,0 +1,15 @@
+newmtl c_tapestry
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_c_tapestry
+
+newmtl e_iron
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_iron
+
+newmtl c_brass
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_c_brass
+

@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "riftworld:block/castle_bars"
+  },
+  "render_type": "minecraft:cutout"
+}

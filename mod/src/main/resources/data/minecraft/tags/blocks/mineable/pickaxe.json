@@ -98,6 +98,14 @@
     "riftworld:castle_roof_stairs",
     "riftworld:castle_roof_slab",
     "riftworld:scorched_stone",
-    "riftworld:candle_stand"
+    "riftworld:candle_stand",
+    "riftworld:castle_bars",
+    "riftworld:chapel_altar",
+    "riftworld:castle_chandelier",
+    "riftworld:wall_sconce",
+    "riftworld:wall_shackles",
+    "riftworld:guard_armor",
+    "riftworld:gold_hoard",
+    "riftworld:hearth_cauldron"
   ]
 }

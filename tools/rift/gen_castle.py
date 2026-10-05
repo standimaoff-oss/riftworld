@@ -711,24 +711,28 @@ for (x, y, z), st in list(B.items()):
     if st == ASH and y >= 16 and h(x, y, z, 77) < 0.04:
         B[(x, y, z)] = BRC
 
+# ================================================================== C-2: rooms
+exec(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "castle_rooms.py"), encoding="utf-8").read())
+
 # ================================================================== connections (panes / fences / walls)
 SOLID_SKIP = ("stairs", "slab", "part", "candle_stand", "boss_throne", "fence", "_wall", "stained_glass")
 
 
 def solid(st):
-    return st is not None and st != AIR and not any(k in st[0] for k in SOLID_SKIP)
+    return (st is not None and st != AIR and not any(k in st[0] for k in SOLID_SKIP)
+            and st[0].split(":")[1] not in KINDS and st[0].split(":")[1] not in ("castle_carpet", "castle_cobweb", "castle_bars"))
 
 
 for (x, y, z), st in list(B.items()):
     name = st[0].split(":")[1]
-    if name in ("stained_glass", "dark_fence", "castle_bricks_wall"):
+    if name in ("stained_glass", "dark_fence", "castle_bricks_wall", "castle_bars"):
         con = {}
         for d, dx, dz in (("north", 0, -1), ("south", 0, 1), ("west", -1, 0), ("east", 1, 0)):
             nb = B.get((x + dx, y, z + dz))
             same = nb is not None and nb[0] == st[0]
             if name == "dark_fence":
                 ok = same or solid(nb)
-            elif name == "stained_glass":
+            elif name in ("stained_glass", "castle_bars"):
                 ok = same or solid(nb)
             else:
                 ok = same or solid(nb) or (nb is not None and "fence" in nb[0])
@@ -744,7 +748,7 @@ for (x, y, z), st in list(B.items()):
 # ================================================================== save
 B = {k: v for k, v in B.items() if v != AIR and 0 <= k[0] < W and 0 <= k[2] < D and k[1] >= 0}
 H = max(p[1] for p in B) + 1
-n, pal = write_template(OUT + "/castle.nbt", (W, H, D), B, {})
+n, pal = write_template(OUT + "/castle.nbt", (W, H, D), B, {k: v for k, v in NBT.items() if k in B})
 meta = {"size": [W, H, D], "blocks": n, "palette": pal, "candles": CANDLES, "sockets": SOCKETS, "jumps": sorted(JUMPS),
         "throne": [38, 4, 46], "entrance": [38, 1, 2]}
 json.dump(meta, open(OUT + "/castle_meta.json", "w"), indent=1)
