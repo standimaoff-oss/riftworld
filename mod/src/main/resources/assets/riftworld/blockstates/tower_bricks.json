@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "riftworld:block/tower_bricks",
+        "y": 0
+      }
+    ]
+  }
+}

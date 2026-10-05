@@ -33,7 +33,10 @@ import ru.aiforge.riftworld.registry.ModBlocks;
  * (dead moss/vines, dirt piles, cobwebs) and washes dirty panels; everything broken or knocked over stays as it is.
  */
 public class LaunchCoreBlockEntity extends BlockEntity {
-    public static final int IDLE = 0, OPENING = 1, RISING = 2, CLEANING = 3, DONE = 4;
+    public static final int IDLE = 0, OPENING = 1, RISING = 2, CLEANING = 3, DONE = 4, FLIGHT = 5, ARRIVE = 6;
+    /** Flight: lift-off on the laser (overworld) and the arrival rise in the Elisar shaft (ticks). */
+    public static final int LIFT_T = 40, ARRIVE_T = 60;
+    public static final float LIFT_H = 1.6F;
     public static final int OPEN_T = 60, RISE_T = 200, DEPTH = 29, HALF = 5;
     public static final float WAVE_SPEED = 0.3F, WAVE_MAX = 46F;
     public static final int WAVE_DOWN = -8, WAVE_UP = 16;
@@ -65,6 +68,9 @@ public class LaunchCoreBlockEntity extends BlockEntity {
 
     /** Capsule vertical offset (blocks) at time t since launch. */
     public float capsuleOffset(float t) {
+        if (stage == FLIGHT) return LIFT_H * ease(t / LIFT_T);
+        if (stage == ARRIVE) return -DEPTH + DEPTH * ease(t / ARRIVE_T);
+        if (stage == CLEANING || stage == DONE) return 0;
         if (stage == IDLE || t < OPEN_T) return -DEPTH;
         return -DEPTH + DEPTH * ease((t - OPEN_T) / RISE_T);
     }
@@ -86,6 +92,39 @@ public class LaunchCoreBlockEntity extends BlockEntity {
         return true;
     }
 
+    /** Flight start: the landed capsule lifts off on the laser (the player is carried by {@code Flight}). */
+    public boolean startFlight() {
+        if (level == null || stage != DONE) return false;
+        stage = FLIGHT;
+        start = level.getGameTime();
+        door = false;
+        for (int y = 1; y <= 3; ++y)
+            for (int x = -1; x <= 1; ++x) {
+                BlockPos p = worldPosition.offset(ModelKind.rotate(x, y, 4, facing()));
+                BlockState s = level.getBlockState(p);
+                if (s.is(ModBlocks.PART.get())) level.setBlock(p, s.setValue(PartBlock.OPEN, false), 2);
+            }
+        sync();
+        return true;
+    }
+
+    /** Arrival at the Elisar lab: the shaft lid is gone at once and the capsule rises from the bottom. */
+    public void startArrive() {
+        if (level == null) return;
+        for (int dx = -HALF; dx <= HALF; ++dx)
+            for (int dz = -HALF; dz <= HALF; ++dz) {
+                if (dx == 0 && dz == 0) continue;
+                BlockPos p = worldPosition.offset(dx, 0, dz);
+                BlockState s = level.getBlockState(p);
+                if (s.is(ModBlocks.PART.get()) || s.getBlock() instanceof GrateBlock) level.setBlock(p, Blocks.AIR.defaultBlockState(), 3);
+            }
+        stage = ARRIVE;
+        start = level.getGameTime();
+        waveIndex = 0;
+        door = false;
+        sync();
+    }
+
     private void setSirens(boolean on) {
         if (sirens == null) {
             sirens = new ArrayList<>();
@@ -105,6 +144,27 @@ public class LaunchCoreBlockEntity extends BlockEntity {
         long now = sl.getGameTime();
         long t = now - start;
         Direction f = facing();
+        if (stage == FLIGHT) {
+            if (t % 5 == 0) sl.playSound(null, worldPosition, SoundEvents.BEACON_AMBIENT, SoundSource.BLOCKS, 3.0F, 1.4F);
+            if (t >= LIFT_T + 4) {                          // the capsule is far away now; the shaft shows the landed state again
+                stage = DONE;
+                sync();
+            }
+            return;
+        }
+        if (stage == ARRIVE) {
+            float off = capsuleOffset(t);
+            if (t % 6 == 0) sl.playSound(null, worldPosition.offset(0, Mth.floor(off) + 2, 0), SoundEvents.BEACON_AMBIENT, SoundSource.BLOCKS, 3.0F, 0.9F);
+            if (t >= ARRIVE_T) {
+                land(sl, f);
+                stage = CLEANING;
+                start = now - OPEN_T - RISE_T;              // the cleaning wave starts from the capsule right now
+                sync();
+                sl.playSound(null, worldPosition, SoundEvents.ANVIL_LAND, SoundSource.BLOCKS, 2.0F, 0.4F);
+                sl.playSound(null, worldPosition, SoundEvents.BEACON_POWER_SELECT, SoundSource.BLOCKS, 4.0F, 0.6F);
+            }
+            return;
+        }
         if (stage == OPENING) {
             if (t == 12) {
                 for (int dx = -HALF; dx <= HALF; ++dx)
@@ -153,7 +213,7 @@ public class LaunchCoreBlockEntity extends BlockEntity {
                 sl.playSound(null, worldPosition, SoundEvents.BEACON_ACTIVATE, SoundSource.BLOCKS, 3.0F, 1.2F);
             }
         }
-        if (stage >= CLEANING && t % 4 == 0) doors(sl, f);
+        if ((stage == CLEANING || stage == DONE) && t % 4 == 0) doors(sl, f);
     }
 
     /** Capsule cells (model frame: x right, z toward the front) that receive invisible collision parts. */

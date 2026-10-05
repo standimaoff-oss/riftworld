@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "hanging=false": {
+      "model": "riftworld:block/elisar_lantern"
+    },
+    "hanging=true": {
+      "model": "riftworld:block/elisar_lantern_hanging"
+    }
+  }
+}

@@ -187,3 +187,59 @@ Flight: confirm on the capsule console → the sphere rises in real time along a
 Screenshots: `release/riftworld_screens/p3r_01…p3r_08_*.jpg`.
 
 **Next (revision 2):** the giant eye + hand in the sky, the inverted floating tower, the rising water spiral with fish, and a check against `loc12_void`. **Then:** the flight (Part 3b).
+
+## Revision 2 (v0.4.0): the village reference, wild islands, the tower, the eye, the flight
+
+### Islands and ground
+- Layering under the surface: the top block is the surface (grass/moss/cobble/path), then **one pale crust block** (`elisar_crust`), then grey stone straight away (mossy near the bottom). The old 3-block soil layer is gone, so the stone now starts right under the top.
+- Moss patches (`elisar_moss`) from value noise, a pebble apron (cobble) around every house plot, tall grass about 9 %, fewer flowers.
+- **Wild islands** (`WildIslands`, 160-block cells, kept 300+ blocks clear of the city): large (R 40–62), medium (17–30), small (7–13) and islets (3–6), each with its own depth and hill profile, plus grove trees.
+- Debris: swarms of small cubes (1×1, some 2×2) in crust, stone, gravel, grass, mossy stone and tower bricks. They are densest right at the island rims and around the tower.
+
+### Village details (from `struct1_village.png`)
+- Pale wooden fences along the terrace edges of city islands near houses and streets.
+- Bridges: a 3-wide crosswise plank deck with no middle posts and two chains on each side (at deck level and at hand height). At both ends stand pale stone pillars (`elisar_stone_wall` ×2) with an `elisar_lantern` on top.
+- Street lamps are now block stacks (wall ×2 + lantern) instead of a model.
+- Every house template has hanging lanterns on chains at its front eave corners (gen_city `eave_lanterns`).
+- 30 pale wheat fields (`pale_wheat` on dark soil with a moss border) next to houses, many of them on the farm island. More crates, sacks, barrels and hide racks: 450 props in total.
+- New blocks: `elisar_crust`, `elisar_moss`, `tower_bricks`, `tower_bricks_cracked`, `elisar_lantern` (standing and hanging), `elisar_stone_wall`, `pale_wheat`. All are custom 16×16 textures.
+
+### Sky
+- **Inverted tower** at (−104, 22), built from dark stone bricks:
+  - a downward spike from y 148;
+  - an overhanging battlement ring;
+  - an octagonal hollow shaft with slit windows and string courses;
+  - an upper ring and a spire up to about y 250.
+- **The eye** (`ElisarEye`, client only, Elisar only): a faint pixel-line eye in the north-east sky, drawn behind everything so it can never be reached.
+  - It blinks every 9 s and is closed with hanging lashes at night (13000–23000).
+  - Its iris follows the player.
+  - There is no hand.
+
+### Flight (15 s, no cutscenes)
+- Pressing the capsule console asks for confirmation. A second press within 5 s starts the flight. This works only in the overworld, with the capsule landed and the player inside it.
+- **LIFT (2 s):** the capsule lifts 1.6 blocks on the laser.
+  - A rainbow band wraps the bottom 20 % of the sphere.
+  - Six twisting coloured strands plus a white core run down the shaft and up into the sky.
+  - The camera rumbles, then flashes white.
+- **TRANSIT (10 s):** a void dimension `riftworld:transit` with black fog and no sky. The capsule GLB floats there, and the space around it is drawn without depth:
+  - 900 stars;
+  - Earth (textured, sun-lit, with an atmosphere glow and the Moon) filling the view ahead and below, then shrinking and drifting away;
+  - the beam still tying the capsule to Earth;
+  - the jump, where stars stretch into colour streaks;
+  - Elisar growing ahead from a dot until it fills the view.
+- **ARRIVE (3 s):** the capsule rises up the shaft of the Elisar lab, lands, and the doors and the cleaning wave work as usual.
+- While flying, the player cannot move, break, use, attack or take damage, and the first-person hand is hidden.
+  - The server owns the timeline and resyncs the client every 5 ticks.
+  - The client clock never runs ahead of the server.
+  - The loading screens of the dimension change are replaced with plain white.
+- The Elisar lab chunks are generated in the background (tickets) during the flight, so the server does not stall.
+- Logging out mid-flight never leaves a player in the transit dimension.
+
+### Fixes
+- Baked Elisar props are no longer `EntityBlock`s. This removes about 2000 "Tried to load a block entity" warnings per city load.
+
+### Verification
+- Built (0.4.0) and run on the Forge server and client.
+- Flight recorded from inside: lift, white flash, Earth and Moon, streaks, Elisar, arrival and the cleaning wave.
+- City, bridges, undersides, tower and eye were checked on screenshots.
+- Screenshots: `release/riftworld_screens/session1…session5`. Video: `release/riftworld_session5.mp4`.

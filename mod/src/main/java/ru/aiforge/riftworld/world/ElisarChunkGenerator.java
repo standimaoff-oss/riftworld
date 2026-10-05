@@ -76,6 +76,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         // bridge
         int deckY = Integer.MIN_VALUE;
         boolean rail, post, railX;
+        boolean fence;            // rim fence of the city terraces
     }
 
     static double hash(int x, int z, int s) {
@@ -97,23 +98,74 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         return t * t * (3 - 2 * t);
     }
 
-    /** Floating debris: 2x2x2 chunks of rock / soil / brick drifting a little off the island rims. */
+    /** Floating debris (reference): swarms of small cubes - mostly single blocks, some 2x2 - around every rim and the tower. */
     private static void debris(CityPlan plan, ChunkAccess chunk, BlockPos.MutableBlockPos mp, int x, int z) {
-        int gx = Math.floorDiv(x, 5), gz = Math.floorDiv(z, 5);
-        int lx = Math.floorMod(x, 5) - (int) (hash(gx, gz, 94) * 3), lz = Math.floorMod(z, 5) - (int) (hash(gx, gz, 95) * 3);
-        if (lx < 0 || lx > 1 || lz < 0 || lz > 1 || hash(gx, gz, 91) > 0.11) return;
-        double cx = gx * 5 + 2.5, cz = gz * 5 + 2.5;
-        CityPlan.Island n = plan.nearest(cx, cz);
-        if (n == null) return;
-        double t = n.t(cx, cz);
-        if (t > -0.03 || t < -0.30) return;
-        if (plan.islandAt(cx, cz) != null) return;
+        int gx = Math.floorDiv(x, 3), gz = Math.floorDiv(z, 3);
+        double pick = hash(gx, gz, 91);
+        boolean big = hash(gx, gz, 97) < 0.22;
+        int lx = Math.floorMod(x, 3) - (int) (hash(gx, gz, 94) * (big ? 2 : 3)), lz = Math.floorMod(z, 3) - (int) (hash(gx, gz, 95) * (big ? 2 : 3));
+        if (lx < 0 || lz < 0 || lx > (big ? 1 : 0) || lz > (big ? 1 : 0)) return;
+        double cx = gx * 3 + 1.5, cz = gz * 3 + 1.5;
+        double towerD = Math.hypot(cx - TOWER_X, cz - TOWER_Z);
+        int y0;
+        if (towerD < 34 && towerD > 8 && pick < 0.10) {
+            y0 = (int) (TOWER_Y0 + hash(gx, gz, 92) * 95);
+        } else {
+            CityPlan.Island n = plan.nearest(cx, cz);
+            if (n == null) return;
+            double t = n.t(cx, cz);
+            if (t > -0.015 || t < -0.5) return;
+            double p = 0.16 * (1 + t * 2.2);                 // denser right at the rim, thinning outwards
+            if (pick > p || plan.islandAt(cx, cz) != null) return;
+            y0 = (int) Math.floor(n.base - 22 + hash(gx, gz, 92) * 34);
+        }
         double k = hash(gx, gz, 93);
-        int y0 = (int) Math.floor(n.base - 4 - hash(gx, gz, 92) * 18);
-        BlockState top = k < 0.4 ? st(ElisarBlocks.GRASS) : k < 0.6 ? st(ElisarBlocks.BRICKS) : k < 0.8 ? st(ElisarBlocks.COBBLE) : st(ElisarBlocks.STONE);
-        BlockState body = k < 0.4 ? st(ElisarBlocks.SOIL) : top;
-        int h = 1 + (int) (hash(gx, gz, 96) * 2);
-        for (int y = y0; y < y0 + h; ++y) chunk.setBlockState(mp.set(x, y, z), y == y0 + h - 1 ? top : body, false);
+        BlockState s = k < 0.3 ? st(ElisarBlocks.CRUST) : k < 0.55 ? st(ElisarBlocks.STONE) : k < 0.7 ? st(ElisarBlocks.COBBLE)
+                : k < 0.82 ? st(ElisarBlocks.GRASS) : k < 0.92 ? st(ElisarBlocks.STONE_MOSSY) : st(ElisarBlocks.TOWER_BRICKS);
+        int h = big ? 2 : 1;
+        for (int y = y0; y < y0 + h; ++y) chunk.setBlockState(mp.set(x, y, z), s, false);
+    }
+
+    // ------------------------------------------------------------------ the inverted tower (reference): hangs high over the gap west of the main island
+    static final int TOWER_X = -104, TOWER_Z = 22, TOWER_Y0 = 148;
+
+    private static double oct(double dx, double dz) {
+        double ax = Math.abs(dx), az = Math.abs(dz);
+        return Math.max(Math.max(ax, az), (ax + az) * 0.7071);
+    }
+
+    private static void tower(ChunkAccess chunk, BlockPos.MutableBlockPos mp, int x, int z) {
+        double dx = x + 0.5 - (TOWER_X + 0.5), dz = z + 0.5 - (TOWER_Z + 0.5);
+        if (Math.abs(dx) > 10 || Math.abs(dz) > 10) return;
+        double d = oct(dx, dz);
+        BlockState br = st(ElisarBlocks.TOWER_BRICKS), cr = st(ElisarBlocks.TOWER_BRICKS_CRACKED);
+        int y0 = TOWER_Y0;
+        for (int y = y0; y <= y0 + 100 && y < MIN_Y + HEIGHT; ++y) {
+            int ly = y - y0;
+            boolean solid = false;
+            if (ly < 22) {                                           // downward spike
+                double r = 6.2 * ly / 22.0;
+                solid = d <= r + 0.3 && (d > r - 1.6 || ly < 4);
+            } else if (ly < 27) {                                    // overhanging battlement ring (upside-down crenellation)
+                double r = 7.6;
+                solid = d <= r && d > 3.4 && !(ly == 22 && ((int) Math.floor(Math.atan2(dz, dx) / (Math.PI / 8)) & 1) == 0 && d > 6.4);
+            } else if (ly < 32) {                                    // corbels stepping back to the shaft
+                double r = 7.2 - (ly - 27) * 0.4;
+                solid = d <= r && d > 3.4;
+            } else if (ly < 82) {                                    // hollow shaft with slit windows
+                solid = d <= 5.3 && d > 3.4;
+                boolean slitRow = (ly - 36) % 13 < 3;
+                boolean slit = Math.abs(dx) < 0.6 || Math.abs(dz) < 0.6;
+                if (solid && slitRow && slit && d > 4.4) solid = false;
+                if (ly % 13 == 8 && d <= 5.9 && d > 4.6) solid = true; // string course
+            } else if (ly < 86) {                                    // upper ring
+                solid = d <= 6.6 && d > 3.4;
+            } else {                                                 // spire
+                double r = 6.6 * (1 - (ly - 86) / 15.0);
+                solid = d <= r && d > r - 1.7;
+            }
+            if (solid) chunk.setBlockState(mp.set(x, y, z), hash(x * 7 + y, z, 31) < 0.18 ? cr : br, false);
+        }
     }
 
     private static boolean land(CityPlan plan, double px, double pz) {
@@ -173,6 +225,10 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 else c.surface = S_PLANK;
             }
             if (c.plot) c.surface = S_PLOT;
+            if (isl.kind == 0 && !c.plot && c.surface == S_GRASS && t >= 0.05 && (!bk.plots.isEmpty() || rd < 9)) {
+                double tm = Math.min(Math.min(isl.t(px + 1, pz), isl.t(px - 1, pz)), Math.min(isl.t(px, pz + 1), isl.t(px, pz - 1)));
+                c.fence = tm < 0.05;
+            }
         }
         // bridges
         for (CityPlan.Bridge b : bk.bridges) {
@@ -186,7 +242,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 c.deckY = y;
                 c.rail = true;
                 int step = (int) Math.floor(tt[0] * b.length());
-                c.post = step % 4 == 0;
+                c.post = step <= 0 || step >= (int) Math.floor(b.length()) - 1;
                 c.railX = Math.abs(b.bx() - b.ax()) >= Math.abs(b.bz() - b.az());
             }
             if (isl != null && c.top >= y) {
@@ -241,6 +297,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         BlockState seabed = st(ElisarBlocks.SEABED), stone = st(ElisarBlocks.STONE), mossy = st(ElisarBlocks.STONE_MOSSY), soil = st(ElisarBlocks.SOIL);
         BlockState grass = st(ElisarBlocks.GRASS), cobble = st(ElisarBlocks.COBBLE), path = st(ElisarBlocks.PATH), plank = st(ElisarBlocks.SIZO_PLANKS);
         BlockState tall = st(ElisarBlocks.TALL_GRASS), flowers = st(ElisarBlocks.FLOWERS), log = st(ElisarBlocks.SIZO_LOG);
+        BlockState moss = st(ElisarBlocks.MOSS), crust = st(ElisarBlocks.CRUST);
         Col[][] cols = new Col[18][18];
         for (int dx = -1; dx <= 16; ++dx)
             for (int dz = -1; dz <= 16; ++dz)
@@ -255,6 +312,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                     chunk.setBlockState(mp.set(x, plan.ocean, z), water, false);
                 }
                 if (c.isl == null && c.fallTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE) debris(plan, chunk, mp, x, z);
+                tower(chunk, mp, x, z);
                 if (c.isl != null) {
                     for (int y = c.bottom; y <= c.top; ++y) {
                         BlockState s;
@@ -263,11 +321,11 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                 case S_COBBLE -> cobble;
                                 case S_PATH -> path;
                                 case S_PLANK -> plank;
-                                case S_PLOT -> grass;          // trimmed turf around houses (no tall grass)
-                                default -> grass;
+                                case S_PLOT -> cobble;         // pebble apron around the houses (reference)
+                                default -> (c.isl.kind != 4 && vnoise(x * 0.11, z * 0.11, 21) > 0.74 || hash(x, z, 23) < 0.012) ? moss : grass;
                             };
-                        } else if (y >= c.top - 3) {
-                            s = soil;
+                        } else if (y == c.top - 1) {
+                            s = crust;
                         } else if (y <= c.bottom + 1 && hash(x, z, y) < 0.5 || hash(x, y, z) < 0.07) {
                             s = mossy;
                         } else {
@@ -288,8 +346,15 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                     }
                     if (c.surface == S_GRASS && c.waterTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE) {
                         double h = hash(x, z, 77);
-                        if (h < 0.2) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
-                        else if (h < 0.235) chunk.setBlockState(mp.set(x, c.top + 1, z), flowers, false);
+                        if (c.fence) {
+                            BlockState fs = st(ElisarBlocks.FENCE);
+                            for (Direction d : Direction.Plane.HORIZONTAL) {
+                                Col n = cols[dx + 1 + d.getStepX()][dz + 1 + d.getStepZ()];
+                                fs = fs.setValue(prop(d), n.fence && n.top == c.top);
+                            }
+                            chunk.setBlockState(mp.set(x, c.top + 1, z), fs, false);
+                        } else if (h < 0.09) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
+                        else if (h < 0.105) chunk.setBlockState(mp.set(x, c.top + 1, z), flowers, false);
                     }
                 }
                 if (c.waterTop != Integer.MIN_VALUE) {
@@ -310,12 +375,15 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                     } else if (c.isl == null || c.top < c.deckY + 1) {
                         chunk.setBlockState(mp.set(x, c.deckY, z), plank, false);
                         if (c.post) {
-                            chunk.setBlockState(mp.set(x, c.deckY + 1, z), log, false);
-                            chunk.setBlockState(mp.set(x, c.deckY + 2, z), log, false);
+                            BlockState wall = st(ElisarBlocks.STONE_WALL);
+                            chunk.setBlockState(mp.set(x, c.deckY + 1, z), wall, false);
+                            chunk.setBlockState(mp.set(x, c.deckY + 2, z), wall, false);
+                            chunk.setBlockState(mp.set(x, c.deckY + 3, z), st(ElisarBlocks.LANTERN), false);
                         } else {
                             // chain railing strung between the posts (as on the reference bridges)
-                            chunk.setBlockState(mp.set(x, c.deckY + 2, z), st(ElisarBlocks.CHAIN).setValue(net.minecraft.world.level.block.ChainBlock.AXIS,
-                                    c.railX ? Direction.Axis.X : Direction.Axis.Z), false);
+                            BlockState ch = st(ElisarBlocks.CHAIN).setValue(net.minecraft.world.level.block.ChainBlock.AXIS, c.railX ? Direction.Axis.X : Direction.Axis.Z);
+                            chunk.setBlockState(mp.set(x, c.deckY, z), ch, false);       // lower chain along the deck edge
+                            chunk.setBlockState(mp.set(x, c.deckY + 1, z), ch, false);   // hand chain
                         }
                     }
                 }
@@ -337,7 +405,10 @@ public class ElisarChunkGenerator extends ChunkGenerator {
 
     // ------------------------------------------------------------------ native trees
     private static void trees(CityPlan plan, ChunkAccess chunk, BlockPos.MutableBlockPos mp, int x, int z) {
-        for (CityPlan.Tree t : plan.at(x, z).trees) {
+        java.util.List<CityPlan.Tree> wild = WildIslands.treesNear(x, z);
+        java.util.List<CityPlan.Tree> all = wild.isEmpty() ? plan.at(x, z).trees : new java.util.ArrayList<>(plan.at(x, z).trees);
+        if (!wild.isEmpty()) all.addAll(wild);
+        for (CityPlan.Tree t : all) {
             int dx = x - t.x, dz = z - t.z;
             if (Math.abs(dx) > 4 || Math.abs(dz) > 4) continue;
             int base = t.baseY;
@@ -428,6 +499,28 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 for (int k = 0; k < 4; ++k) setIn(level, box, mp.set(p.x(), y + k, p.z()), log);
                 ModelKind sk = kind(p.sign());
                 if (sk != null) placeModel(level, box, sk, new BlockPos(p.x() + f.getStepX(), y + 2, p.z() + f.getStepZ()), f, false);
+                continue;
+            }
+            if (p.kind().equals("lantern_post")) {                  // pale stone pillar with a lantern on top (reference)
+                BlockState wall = st(ElisarBlocks.STONE_WALL);
+                setIn(level, box, mp.set(p.x(), y, p.z()), wall);
+                setIn(level, box, mp.set(p.x(), y + 1, p.z()), wall);
+                setIn(level, box, mp.set(p.x(), y + 2, p.z()), st(ElisarBlocks.LANTERN));
+                continue;
+            }
+            if (p.kind().equals("wheat_field") && p.sign() != null) {  // pale wheat on dark soil, moss border
+                String[] wd = p.sign().split("x");
+                int w = Integer.parseInt(wd[0]), dd = Integer.parseInt(wd[1]);
+                for (int i = -1; i <= w; ++i)
+                    for (int j = -1; j <= dd; ++j) {
+                        int fx = p.x() + i, fz = p.z() + j;
+                        if (!box.isInside(fx, c.top, fz)) continue;
+                        Col fc = column(plan, fx, fz);
+                        if (fc.isl == null || fc.surface != S_GRASS || fc.waterTop != Integer.MIN_VALUE || fc.deckY != Integer.MIN_VALUE) continue;
+                        boolean edge = i < 0 || j < 0 || i >= w || j >= dd;
+                        setIn(level, box, mp.set(fx, fc.top, fz), edge ? st(ElisarBlocks.MOSS) : st(ElisarBlocks.SOIL));
+                        setIn(level, box, mp.set(fx, fc.top + 1, fz), edge ? Blocks.AIR.defaultBlockState() : st(ElisarBlocks.PALE_WHEAT));
+                    }
                 continue;
             }
             ModelKind k = kind(p.kind());

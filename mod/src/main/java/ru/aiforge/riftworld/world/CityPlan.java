@@ -49,6 +49,14 @@ public final class CityPlan {
     // ------------------------------------------------------------------ data
     public static final class Island {
         public final double cx, cz, R, base, depth, p1, p2, p3;
+        /** 0 = city island, 1 large, 2 medium, 3 small, 4 bowl islet (wild islands of the main biome). */
+        public int kind;
+        public double hill = 1.0;
+
+        public Island(double cx, double cz, double R, double base, double depth, double p1, double p2, double p3, int kind, double hill) {
+            this.cx = cx; this.cz = cz; this.R = R; this.base = base; this.depth = depth;
+            this.p1 = p1; this.p2 = p2; this.p3 = p3; this.kind = kind; this.hill = hill;
+        }
 
         Island(JsonObject o) {
             cx = o.get("cx").getAsDouble(); cz = o.get("cz").getAsDouble(); R = o.get("R").getAsDouble();
@@ -67,7 +75,8 @@ public final class CityPlan {
         }
 
         public double raw(double x, double z) {
-            double h = base + 1.6 * Math.sin(x * 0.043 + p1) * Math.cos(z * 0.037 + p2) + 0.9 * Math.sin((x - z) * 0.071 + p3);
+            double h = base + hill * (1.6 * Math.sin(x * 0.043 + p1) * Math.cos(z * 0.037 + p2) + 0.9 * Math.sin((x - z) * 0.071 + p3));
+            if (kind == 1 || kind == 2) h += hill * 2.2 * Math.max(0, Math.sin(x * 0.09 + p2 * 2) * Math.sin(z * 0.08 + p3 * 2));  // knolls
             double t = t(x, z);
             if (t < 0.12) {
                 double k = 1 - Math.max(t, 0) / 0.12;
@@ -106,6 +115,10 @@ public final class CityPlan {
     public static final class Tree {
         public final int x, z, kind, h, seed;
         public volatile int baseY = Integer.MIN_VALUE;
+
+        public Tree(int x, int z, int kind, int h, int seed) {
+            this.x = x; this.z = z; this.kind = kind; this.h = h; this.seed = seed;
+        }
 
         Tree(JsonArray a) {
             x = a.get(0).getAsInt(); z = a.get(1).getAsInt(); kind = a.get(2).getAsInt(); h = a.get(3).getAsInt(); seed = a.get(4).getAsInt();
@@ -154,7 +167,8 @@ public final class CityPlan {
             Prop p = new Prop(r.get("k").getAsString(), r.get("x").getAsInt(), r.get("z").getAsInt(), r.get("f").getAsString(), r.get("lit").getAsBoolean(),
                     r.has("sign") ? r.get("sign").getAsString() : null);
             props.add(p);
-            index(p.x - 4, p.z - 4, p.x + 4, p.z + 4, bk -> bk.props.add(p));
+            int ext = p.kind.equals("wheat_field") ? 14 : 4;
+            index(p.x - 4, p.z - 4, p.x + ext, p.z + ext, bk -> bk.props.add(p));
         }
         for (JsonElement e : o.getAsJsonArray("bridges")) {
             JsonObject r = e.getAsJsonObject();
@@ -227,11 +241,18 @@ public final class CityPlan {
             double t = i.t(x, z);
             if (t > bt) { bt = t; best = i; }
         }
+        for (Island i : WildIslands.near(x, z)) {
+            double t = i.t(x, z);
+            if (t > bt) { bt = t; best = i; }
+        }
         return best;
     }
 
     public Island islandAt(double x, double z) {
         for (Island i : islands) {
+            if (i.t(x, z) > 0) return i;
+        }
+        for (Island i : WildIslands.near(x, z)) {
             if (i.t(x, z) > 0) return i;
         }
         return null;

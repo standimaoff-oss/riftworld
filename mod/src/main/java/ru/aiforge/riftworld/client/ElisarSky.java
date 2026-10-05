@@ -39,6 +39,7 @@ public final class ElisarSky extends DimensionSpecialEffects {
         @SubscribeEvent
         public static void effects(RegisterDimensionSpecialEffectsEvent e) {
             e.register(ID, new ElisarSky());
+            e.register(FlightFx.TRANSIT_FX, new FlightFx.TransitEffects());
         }
     }
 

@@ -45,7 +45,7 @@ public class LaunchCoreRenderer implements BlockEntityRenderer<LaunchCoreBlockEn
         // --- capsule
         GlbAssets.Loaded c = GlbAssets.get(CAPSULE);
         if (c != null) {
-            float off = be.stage >= LaunchCoreBlockEntity.CLEANING ? 0 : be.capsuleOffset(t);
+            float off = be.capsuleOffset(t);
             int cl = LevelRenderer.getLightColor(be.getLevel(), be.getBlockPos().offset(0, Mth.floor(off) + 2, 0));
             if (be.stage != LaunchCoreBlockEntity.IDLE) cl = Math.max(cl, LightTexture.pack(9, 0));
             Pose p = c.scratch();

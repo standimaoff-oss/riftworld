@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "riftworld:block/elisar_crust",
+        "y": 0
+      }
+    ]
+  }
+}

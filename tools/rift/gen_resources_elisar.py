@@ -33,7 +33,7 @@ def gen_item(n, tex):
 DROPS = []
 CUBES = ["elisar_soil", "elisar_stone", "elisar_stone_mossy", "elisar_seabed", "elisar_cobble", "elisar_path", "elisar_bricks",
          "elisar_bricks_mossy", "elisar_plaster", "timber_frame_cross", "timber_frame_post", "sizo_planks", "ambra_planks",
-         "thatch", "roof_red", "roof_blue"]
+         "thatch", "roof_red", "roof_blue", "elisar_crust", "elisar_moss", "tower_bricks", "tower_bricks_cracked"]
 for n in CUBES:
     rots = (0, 90, 180, 270) if n in ("elisar_soil", "elisar_seabed", "elisar_path", "elisar_stone") else (0,)
     w(f"{A}/blockstates/{n}.json", {"variants": {"": [{"model": NS + n, "y": r} for r in rots]}})
@@ -140,7 +140,7 @@ gen_item("elisar_door", "riftworld:item/elisar_door")
 w(f"{D}/loot_tables/blocks/elisar_door.json", {"type": "minecraft:block", "pools": [{"rolls": 1, "entries": [{"type": "minecraft:item", "name": "riftworld:elisar_door",
     "conditions": [{"condition": "minecraft:block_state_property", "block": "riftworld:elisar_door", "properties": {"half": "lower"}}]}]}]})
 # plants
-for n in ("elisar_tall_grass", "elisar_flowers"):
+for n in ("elisar_tall_grass", "elisar_flowers", "pale_wheat"):
     w(f"{A}/models/block/{n}.json", {"parent": "minecraft:block/cross", "textures": {"cross": NS + n}, "render_type": "minecraft:cutout"})
     w(f"{A}/blockstates/{n}.json", {"variants": {"": {"model": NS + n}}})
     gen_item(n, NS + n)
@@ -198,13 +198,46 @@ w(f"{A}/blockstates/elisar_chain.json", {"variants": {"axis=x": {"model": NS + "
 gen_item("elisar_chain", "riftworld:block/elisar_chain")
 w(f"{D}/loot_tables/blocks/elisar_chain.json", {"type": "minecraft:block", "pools": [{"rolls": 1, "entries": [{"type": "minecraft:item", "name": "riftworld:elisar_chain"}],
                                                                                   "conditions": [{"condition": "minecraft:survives_explosion"}]}]})
+# lantern (own geometry, vanilla LanternBlock): standing + hanging
+def lantern_model(hanging):
+    y = 1 if hanging else 0
+    el = [{"from": [5, y, 5], "to": [11, y + 7, 11], "faces": {d: {"uv": [0, 0, 6, 7], "texture": "#t"} for d in ("north", "south", "east", "west")}
+           | {"up": {"uv": [0, 9, 6, 15], "texture": "#t"}, "down": {"uv": [0, 9, 6, 15], "texture": "#t"}}},
+          {"from": [6, y + 7, 6], "to": [10, y + 9, 10], "faces": {d: {"uv": [8, 0, 12, 2], "texture": "#t"} for d in ("north", "south", "east", "west")}
+           | {"up": {"uv": [1, 10, 5, 14], "texture": "#t"}}},
+          {"from": [6.5, y + 9, 8], "to": [9.5, y + (15 if hanging else 11), 8], "rotation": {"angle": 45, "axis": "y", "origin": [8, 8, 8]},
+           "faces": {"north": {"uv": [11, 10, 14, 16], "texture": "#t"}, "south": {"uv": [11, 10, 14, 16], "texture": "#t"}}},
+          {"from": [8, y + 9, 6.5], "to": [8, y + (15 if hanging else 11), 9.5], "rotation": {"angle": 45, "axis": "y", "origin": [8, 8, 8]},
+           "faces": {"east": {"uv": [11, 10, 14, 16], "texture": "#t"}, "west": {"uv": [11, 10, 14, 16], "texture": "#t"}}}]
+    return {"parent": "minecraft:block/block", "render_type": "minecraft:cutout", "ambientocclusion": False,
+            "textures": {"t": "riftworld:block/elisar_lantern", "particle": "riftworld:block/elisar_lantern"}, "elements": el}
+w(f"{A}/models/block/elisar_lantern.json", lantern_model(False))
+w(f"{A}/models/block/elisar_lantern_hanging.json", lantern_model(True))
+w(f"{A}/blockstates/elisar_lantern.json", {"variants": {"hanging=false": {"model": NS + "elisar_lantern"}, "hanging=true": {"model": NS + "elisar_lantern_hanging"}}})
+gen_item("elisar_lantern", "riftworld:block/elisar_lantern")
+# stone wall (vanilla WallBlock): own post / side geometry
+_wt = {"wall": "riftworld:block/elisar_stone_wall", "particle": "riftworld:block/elisar_stone_wall"}
+def _box(f, t):
+    return {"from": f, "to": t, "faces": {d: {"texture": "#wall"} for d in ("north", "south", "east", "west", "up", "down")}}
+w(f"{A}/models/block/elisar_stone_wall_post.json", {"parent": "minecraft:block/block", "textures": _wt, "elements": [_box([4, 0, 4], [12, 16, 12])]})
+w(f"{A}/models/block/elisar_stone_wall_side.json", {"parent": "minecraft:block/block", "textures": _wt, "elements": [_box([5, 0, 0], [11, 14, 8])]})
+w(f"{A}/models/block/elisar_stone_wall_side_tall.json", {"parent": "minecraft:block/block", "textures": _wt, "elements": [_box([5, 0, 0], [11, 16, 8])]})
+mp_ = [{"when": {"up": "true"}, "apply": {"model": NS + "elisar_stone_wall_post"}}]
+for d, y in (("north", 0), ("east", 90), ("south", 180), ("west", 270)):
+    for h, m in (("low", "elisar_stone_wall_side"), ("tall", "elisar_stone_wall_side_tall")):
+        mp_.append({"when": {d: h}, "apply": {"model": NS + m, "y": y, "uvlock": True}})
+w(f"{A}/blockstates/elisar_stone_wall.json", {"multipart": mp_})
+w(f"{A}/models/item/elisar_stone_wall.json", {"parent": NS + "elisar_stone_wall_post"})
+for n in ("elisar_lantern", "elisar_stone_wall"):
+    w(f"{D}/loot_tables/blocks/{n}.json", {"type": "minecraft:block", "pools": [{"rolls": 1, "entries": [{"type": "minecraft:item", "name": "riftworld:" + n}],
+                                                                       "conditions": [{"condition": "minecraft:survives_explosion"}]}]})
 # tags
 T = R + "/data/minecraft/tags/"
 ID = lambda l: ["riftworld:" + x for x in l]
 WOODY = ["sizo_log", "ambra_log", "sizo_planks", "ambra_planks", "sizo_planks_stairs", "sizo_planks_slab", "ambra_planks_slab", "elisar_fence",
          "rope_post", "elisar_door", "timber_frame_cross", "timber_frame_post"] + [p for p in PROPS if p not in STONEY]
 STONES = ["elisar_stone", "elisar_stone_mossy", "elisar_cobble", "elisar_bricks", "elisar_bricks_mossy", "elisar_plaster", "roof_red", "roof_blue",
-          "roof_red_stairs", "roof_blue_stairs", "elisar_chain", "roof_red_slab", "roof_blue_slab", "elisar_bricks_stairs", "elisar_cobble_stairs", "elisar_cobble_slab"] + sorted(STONEY)
+          "roof_red_stairs", "roof_blue_stairs", "elisar_chain", "elisar_crust", "tower_bricks", "tower_bricks_cracked", "elisar_lantern", "elisar_stone_wall", "roof_red_slab", "roof_blue_slab", "elisar_bricks_stairs", "elisar_cobble_stairs", "elisar_cobble_slab"] + sorted(STONEY)
 merge(T + "blocks/mineable/axe.json", {"values": ID(WOODY)})
 merge(T + "blocks/mineable/pickaxe.json", {"values": ID(STONES)})
 merge(T + "blocks/mineable/shovel.json", {"values": ID(["elisar_grass", "elisar_soil", "elisar_seabed", "elisar_path"])})
@@ -213,6 +246,7 @@ merge(T + "blocks/logs.json", {"values": ID(["sizo_log", "ambra_log"])})
 merge(T + "blocks/leaves.json", {"values": ID(["sizo_leaves", "ambra_leaves"])})
 merge(T + "blocks/planks.json", {"values": ID(["sizo_planks", "ambra_planks"])})
 merge(T + "blocks/wooden_fences.json", {"values": ID(["elisar_fence", "rope_post"])})
+merge(T + "blocks/walls.json", {"values": ID(["elisar_stone_wall"])})
 merge(T + "blocks/fences.json", {"values": ID(["elisar_fence", "rope_post"])})
 merge(T + "blocks/wooden_doors.json", {"values": ID(["elisar_door"])})
 merge(T + "blocks/doors.json", {"values": ID(["elisar_door"])})
@@ -242,7 +276,11 @@ NAMES = {
     "roof_red_slab": ("Red Roof Slab", "Плита красной черепицы"), "roof_blue_slab": ("Blue Roof Slab", "Плита синей черепицы"),
     "thatch_slab": ("Thatch Slab", "Соломенная плита"), "sizo_planks_slab": ("Sizotrunk Slab", "Плита из сизоствола"),
     "ambra_planks_slab": ("Ambertree Slab", "Плита из янтарника"), "elisar_cobble_slab": ("Cobblestone Slab", "Плита мостовой"),
-    "elisar_fence": ("Elisar Fence", "Забор Элисара"), "rope_post": ("Rope Post", "Столбик с канатом"), "elisar_chain": ("Elisar Chain", "Цепь Элисара"), "elisar_window": ("Leaded Window", "Окно с переплётом"),
+    "elisar_fence": ("Elisar Fence", "Забор Элисара"), "rope_post": ("Rope Post", "Столбик с канатом"), "elisar_chain": ("Elisar Chain", "Цепь Элисара"),
+    "elisar_crust": ("Bleached Crust", "Выбеленная корка"), "elisar_moss": ("Elisar Moss", "Мох Элисара"),
+    "tower_bricks": ("Tower Bricks", "Кирпич башни"), "tower_bricks_cracked": ("Cracked Tower Bricks", "Треснувший кирпич башни"),
+    "elisar_lantern": ("Elisar Lantern", "Фонарь Элисара"), "elisar_stone_wall": ("Pale Stone Pillar", "Светлый каменный столбик"),
+    "pale_wheat": ("Pale Wheat", "Бледная пшеница"), "elisar_window": ("Leaded Window", "Окно с переплётом"),
     "elisar_door": ("Plank Door", "Дощатая дверь"), "elisar_tall_grass": ("Blue Grass", "Синяя трава"), "elisar_flowers": ("Starbells", "Звездоцветы"),
     "elisar_ivy": ("Elisar Ivy", "Плющ Элисара"), "elisar_water": ("Elisar Water", "Вода Элисара"),
     "street_lamp": ("Street Lamp", "Уличный фонарь"), "lantern_hanging": ("Hanging Candle Chandelier", "Подвесная люстра со свечами"),

@@ -39,13 +39,44 @@ public class CapsuleTerminalBlock extends Block {
         return true;
     }
 
+    private static final java.util.Map<java.util.UUID, Long> CONFIRM = new java.util.HashMap<>();
+
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if (level.isClientSide) return InteractionResult.SUCCESS;
+        if (!(player instanceof net.minecraft.server.level.ServerPlayer sp) || ru.aiforge.riftworld.flight.Flight.locked(player)) return InteractionResult.CONSUME;
         level.playSound(null, pos, SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.BLOCKS, 0.6F, 1.4F);
+        LaunchCoreBlockEntity core = null;
+        for (BlockPos p : BlockPos.betweenClosed(pos.offset(-3, -2, -3), pos.offset(3, 0, 3)))
+            if (level.getBlockEntity(p) instanceof LaunchCoreBlockEntity c) {
+                core = c;
+                break;
+            }
+        if (level.dimension() != Level.OVERWORLD) {
+            player.displayClientMessage(Component.translatable("message.riftworld.terminal_arrived"), false);
+            return InteractionResult.CONSUME;
+        }
+        if (core == null || core.stage != LaunchCoreBlockEntity.DONE) {
+            player.displayClientMessage(Component.translatable("message.riftworld.terminal_wait"), true);
+            return InteractionResult.CONSUME;
+        }
+        BlockPos c = core.getBlockPos();
+        if (player.position().distanceToSqr(c.getX() + 0.5, c.getY() + 1, c.getZ() + 0.5) > 16) {
+            player.displayClientMessage(Component.translatable("message.riftworld.terminal_center"), true);
+            return InteractionResult.CONSUME;
+        }
+        long now = level.getGameTime();
+        Long last = CONFIRM.get(player.getUUID());
+        if (last != null && now - last <= 100) {
+            CONFIRM.remove(player.getUUID());
+            if (ru.aiforge.riftworld.flight.Flight.start(sp, core))
+                player.displayClientMessage(Component.translatable("message.riftworld.terminal_launch"), true);
+            return InteractionResult.CONSUME;
+        }
+        CONFIRM.put(player.getUUID(), now);
         level.playSound(null, pos, SoundEvents.BEACON_AMBIENT, SoundSource.BLOCKS, 0.8F, 1.6F);
         player.displayClientMessage(Component.translatable("message.riftworld.terminal_route"), false);
-        player.displayClientMessage(Component.translatable("message.riftworld.terminal_wait"), true);
+        player.displayClientMessage(Component.translatable("message.riftworld.terminal_confirm"), true);
         return InteractionResult.CONSUME;
     }
 }

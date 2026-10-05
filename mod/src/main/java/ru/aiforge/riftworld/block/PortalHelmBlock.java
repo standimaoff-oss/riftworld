@@ -14,7 +14,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import ru.aiforge.riftworld.registry.ModItems;
 
 /** The big control wheel with five resonance-stone sockets. */
-public class PortalHelmBlock extends ModelBlock {
+public class PortalHelmBlock extends ModelEntityBlock {
     public PortalHelmBlock(ModelKind kind, Properties props) {
         super(kind, props);
     }

@@ -222,6 +222,11 @@ en = {"itemGroup.riftworld": "Rift", "item.riftworld.resonance_stone": "Resonanc
       "message.riftworld.launch_busy": "The launch sequence is already running.",
       "message.riftworld.terminal_route": "[Capsule] Route: ELISAR. Coordinates locked. Beam emitter: charging...",
       "message.riftworld.terminal_wait": "The beam emitter is not ready yet",
+      "message.riftworld.terminal_confirm": "[Capsule] Beam emitter ready. Press the console again within 5 s to launch",
+      "message.riftworld.terminal_launch": "[Capsule] LAUNCH. Hold on.",
+      "message.riftworld.terminal_center": "Stand inside the capsule to launch",
+      "message.riftworld.terminal_arrived": "[Capsule] Arrived: ELISAR. Return route not calculated.",
+      "message.riftworld.flight_locked": "The capsule is in flight",
       "book.riftworld.note.p1": "Not enough stones: %s of 5.\n\nFind the missing resonance stones and insert them into the helm sockets.",
       "book.riftworld.note.p2": "We hid them when the evacuation started:\n- basement warehouse\n- technical department\n- electrical department\n- security room, 2nd floor\n\n— Dr. Veresov"}
 ru = {"itemGroup.riftworld": "Разлом", "item.riftworld.resonance_stone": "Камень резонанса",
@@ -236,6 +241,11 @@ ru = {"itemGroup.riftworld": "Разлом", "item.riftworld.resonance_stone": "
       "message.riftworld.launch_busy": "Последовательность запуска уже идёт.",
       "message.riftworld.terminal_route": "[Капсула] Маршрут: ЭЛИСАР. Координаты зафиксированы. Излучатель луча: зарядка...",
       "message.riftworld.terminal_wait": "Излучатель луча ещё не готов",
+      "message.riftworld.terminal_confirm": "[Капсула] Излучатель готов. Нажмите на пульт ещё раз в течение 5 с для старта",
+      "message.riftworld.terminal_launch": "[Капсула] СТАРТ. Держитесь.",
+      "message.riftworld.terminal_center": "Встаньте внутрь капсулы, чтобы стартовать",
+      "message.riftworld.terminal_arrived": "[Капсула] Прибытие: ЭЛИСАР. Обратный маршрут не рассчитан.",
+      "message.riftworld.flight_locked": "Капсула в полёте",
       "book.riftworld.note.p1": "Не хватает камней: %s из 5.\n\nНайдите недостающие камни резонанса и вставьте их в гнёзда руля.",
       "book.riftworld.note.p2": "Мы спрятали их, когда началась эвакуация:\n- склад в подвале\n- технический отдел\n- электротехнический отдел\n- комната охраны, 2 этаж\n\n— Д-р Вересов"}
 for k, (e, r) in NAMES.items():

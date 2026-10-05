@@ -80,6 +80,16 @@ public final class ElisarBlocks {
     public static final RegistryObject<IronBarsBlock> WINDOW = ModBlocks.reg("elisar_window", () -> new IronBarsBlock(p(MapColor.NONE, 0.3F, SoundType.GLASS).noOcclusion()));
     public static final RegistryObject<DoorBlock> DOOR = ModBlocks.reg("elisar_door", () -> new DoorBlock(p(MapColor.COLOR_BROWN, 3.0F, SoundType.WOOD).noOcclusion().pushReaction(PushReaction.DESTROY), BlockSetType.SPRUCE));
     // plants
+    // ---- revision 2: reference-village style
+    public static final RegistryObject<Block> CRUST = cube("elisar_crust", MapColor.SAND, 1.2F, SoundType.STONE);
+    public static final RegistryObject<Block> MOSS = cube("elisar_moss", MapColor.COLOR_LIGHT_GREEN, 0.6F, SoundType.MOSS);
+    public static final RegistryObject<Block> TOWER_BRICKS = cube("tower_bricks", MapColor.COLOR_GRAY, 50.0F, SoundType.DEEPSLATE_BRICKS);
+    public static final RegistryObject<Block> TOWER_BRICKS_CRACKED = cube("tower_bricks_cracked", MapColor.COLOR_GRAY, 50.0F, SoundType.DEEPSLATE_BRICKS);
+    public static final RegistryObject<net.minecraft.world.level.block.LanternBlock> LANTERN = ModBlocks.reg("elisar_lantern",
+            () -> new net.minecraft.world.level.block.LanternBlock(p(MapColor.METAL, 1.0F, SoundType.LANTERN).lightLevel(s -> 15).noOcclusion()));
+    public static final RegistryObject<net.minecraft.world.level.block.WallBlock> STONE_WALL = ModBlocks.reg("elisar_stone_wall",
+            () -> new net.minecraft.world.level.block.WallBlock(p(MapColor.SAND, 2.0F, SoundType.STONE)));
+    public static final RegistryObject<PlantBlock> PALE_WHEAT = ModBlocks.reg("pale_wheat", () -> new PlantBlock(plant()));
     public static final RegistryObject<PlantBlock> TALL_GRASS = ModBlocks.reg("elisar_tall_grass", () -> new PlantBlock(plant()));
     public static final RegistryObject<PlantBlock> FLOWERS = ModBlocks.reg("elisar_flowers", () -> new PlantBlock(plant()));
     public static final RegistryObject<VineBlock> IVY = ModBlocks.reg("elisar_ivy", () -> new VineBlock(plant().randomTicks()));
@@ -120,7 +130,7 @@ public final class ElisarBlocks {
 
         @Override
         protected boolean mayPlaceOn(BlockState s, BlockGetter level, BlockPos pos) {
-            return s.is(GRASS.get()) || s.is(SOIL.get()) || s.is(PATH.get());
+            return s.is(GRASS.get()) || s.is(SOIL.get()) || s.is(PATH.get()) || s.is(MOSS.get());
         }
 
         @Override

@@ -19,7 +19,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import ru.aiforge.riftworld.registry.ModBlocks;
 
 /** Main launch lever. With fewer than five stones a note falls from the ceiling. */
-public class PortalLeverBlock extends ModelBlock {
+public class PortalLeverBlock extends ModelEntityBlock {
     public static final int PULL_TICKS = 30;
 
     public PortalLeverBlock(ModelKind kind, Properties props) {

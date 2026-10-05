@@ -362,6 +362,21 @@ class Tpl:
             if self.free((side, 1, z)) and self.free((side, 2, z)):
                 self.model("firewood_stack", side, 1, z, "west" if side == 0 else "east")
 
+    def eave_lanterns(self):
+        """Reference: lanterns hanging on short chains from both front eave corners."""
+        if self.name in ("temple", "laboratory") or not hasattr(self, "top"):
+            return
+        fz = self.wz + 1
+        for x in (0, self.wx + 1):
+            if not (0 <= x < self.W and fz < self.D):
+                continue
+            y = next((yy for yy in range(self.top + 1, self.top + 4) if self.B.get((x, yy, fz), AIR) != AIR), None)
+            if y is None or y - 3 < 2:
+                continue
+            if all(self.B.get((x, yy, fz), AIR) == AIR and (x, yy, fz) not in self.MC for yy in range(1, y)):
+                self.put(x, y - 1, fz, S("elisar_chain", axis="y", waterlogged=False))
+                self.put(x, y - 2, fz, S("elisar_lantern", hanging=True, waterlogged=False))
+
     def balcony(self, x0, x1):
         """Plank balcony on posts in front of the upper storey with a fence rail and a door out of the upper room (needs front=2)."""
         yb = self.wall_h + 1
@@ -384,6 +399,7 @@ class Tpl:
     def save(self):
         self.furnish()
         self.outside()
+        self.eave_lanterns()
         fix_fences(self)
         self.nlights = self.lights()
         H = max(p[1] for p in self.B) + 1
@@ -1210,10 +1226,53 @@ for p in PLOTS:
             near_plot("bench", p, 1, (1, 3))
         if rng.random() < 0.2:
             near_plot("cooking_pot", p, 1, (2, 5))
-        if rng.random() < 0.3:
+        if rng.random() < 0.45:
             near_plot("sacks", p, 1, (1, 2))
-        if rng.random() < 0.15:
+        if rng.random() < 0.25:
             near_plot("hide_rack", p, 1, (2, 4))
+        if rng.random() < 0.35:
+            near_plot("crate_stack", p, 1, (1, 3))
+        if rng.random() < 0.2:
+            near_plot("fish_barrel", p, 1, (1, 2))
+def add_field(p, w, d):
+    for _ in range(60):
+        side = rng.choice(("w", "e", "n", "s"))
+        gap = rng.randint(2, 4)
+        if side == "w":
+            x, z = p["x0"] - gap - w, rng.randint(p["z0"] - 1, p["z0"] + p["d"] - d + 1)
+        elif side == "e":
+            x, z = p["x0"] + p["w"] + gap, rng.randint(p["z0"] - 1, p["z0"] + p["d"] - d + 1)
+        elif side == "n":
+            x, z = rng.randint(p["x0"] - 1, p["x0"] + p["w"] - w + 1), p["z0"] - gap - d
+        else:
+            x, z = rng.randint(p["x0"] - 1, p["x0"] + p["w"] - w + 1), p["z0"] + p["d"] + gap
+        ok = True
+        for i in range(-1, w + 1):
+            for j in range(-1, d + 1):
+                isl = island_at(x + i + 0.5, z + j + 0.5)
+                if isl is None or isl.t(x + i + 0.5, z + j + 0.5) < 0.1 or oget(x + i, z + j) not in (FREE, KEEP):
+                    ok = False
+                    break
+            if not ok:
+                break
+        if ok:
+            PROPS.append({"k": "wheat_field", "sign": "%dx%d" % (w, d), "x": x, "z": z, "f": "south", "lit": False})
+            for i in range(-1, w + 1):
+                for j in range(-1, d + 1):
+                    oset(x + i, z + j, PROP)
+            return True
+    return False
+
+
+NFIELD = 0
+for p in PLOTS:
+    if not p["t"].startswith("house") and p["t"] not in ("hunter_house", "fisher_house"):
+        continue
+    isl = island_at(p["x0"] + p["w"] / 2, p["z0"] + p["d"] / 2)
+    chance = 0.85 if isl is not None and isl.name == "farms" else 0.22
+    if rng.random() < chance and add_field(p, rng.randint(4, 7), rng.randint(3, 5)):
+        NFIELD += 1
+print("  wheat fields", NFIELD)
 # fish stalls on the fishers' plaza
 fc = BY["fishers"].centre
 for ang in (20, 160, 260):

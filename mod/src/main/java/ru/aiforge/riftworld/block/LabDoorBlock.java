@@ -21,7 +21,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import ru.aiforge.riftworld.registry.ModBlocks;
 
 /** 2x3 sliding lab door. Right-click or redstone toggles; open cells have no collision. */
-public class LabDoorBlock extends ModelBlock {
+public class LabDoorBlock extends ModelEntityBlock {
     public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
 
     public LabDoorBlock(ModelKind kind, Properties props) {

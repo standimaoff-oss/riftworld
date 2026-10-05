@@ -11,7 +11,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 
-public class CrateBlock extends ModelBlock {
+public class CrateBlock extends ModelEntityBlock {
     public CrateBlock(ModelKind kind, Properties props) {
         super(kind, props);
     }

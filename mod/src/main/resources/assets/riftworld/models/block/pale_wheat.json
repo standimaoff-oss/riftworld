@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cross",
+  "textures": {
+    "cross": "riftworld:block/pale_wheat"
+  },
+  "render_type": "minecraft:cutout"
+}
