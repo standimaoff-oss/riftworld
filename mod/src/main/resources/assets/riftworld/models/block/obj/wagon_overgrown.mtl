@@ -1,0 +1,40 @@
+newmtl e_wood
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_wood
+
+newmtl e_wood_dark
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_wood_dark
+
+newmtl e_iron
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_iron
+
+newmtl e_canvas
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_canvas
+
+newmtl e_flowers
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_flowers
+
+newmtl e_foliage
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_foliage
+
+newmtl e_bark
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_bark
+
+newmtl e_leaf_cyan
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/c_e_leaf_cyan
+

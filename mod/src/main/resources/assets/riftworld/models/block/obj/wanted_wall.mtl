@@ -1,0 +1,15 @@
+newmtl wanted2
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_wanted2
+
+newmtl e_iron
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_iron
+
+newmtl wanted1
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_wanted1
+

@@ -1,0 +1,30 @@
+newmtl e_bark
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_bark
+
+newmtl e_wood_dark
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_wood_dark
+
+newmtl e_glow
+Ka 1 1 1
+Kd 1 1 1
+map_Kd riftworld:block/obj/c_e_glow
+
+newmtl e_coal
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/c_e_coal
+
+newmtl e_rock
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_rock
+
+newmtl e_cloth
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_cloth
+

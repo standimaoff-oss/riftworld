@@ -1,0 +1,55 @@
+newmtl c_dark
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_c_darkwood
+
+newmtl e_books
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_books
+
+newmtl c_pages
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_c_pages
+
+newmtl c_velvet
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_c_velvet
+
+newmtl e_parch
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_parchment
+
+newmtl c_wick
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/c_c_wick
+
+newmtl e_bone
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/c_e_bone
+
+newmtl e_iron
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_iron
+
+newmtl c_wax
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_c_wax
+
+newmtl e_flame
+Ka 1 1 1
+Kd 1 1 1
+map_Kd riftworld:block/obj/c_e_flame
+
+newmtl e_lamp
+Ka 1 1 1
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_lampglow
+

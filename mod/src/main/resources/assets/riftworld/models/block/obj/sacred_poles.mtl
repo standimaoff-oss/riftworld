@@ -1,0 +1,25 @@
+newmtl e_bark
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_bark
+
+newmtl e_rope
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/c_e_rope
+
+newmtl e_canvas
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_canvas
+
+newmtl e_cloth
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_cloth
+
+newmtl e_bone
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/c_e_bone
+

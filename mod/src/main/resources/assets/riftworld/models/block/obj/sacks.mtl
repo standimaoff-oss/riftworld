@@ -1,0 +1,15 @@
+newmtl e_canvas
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_canvas
+
+newmtl e_rope
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/c_e_rope
+
+newmtl e_produce
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_produce
+

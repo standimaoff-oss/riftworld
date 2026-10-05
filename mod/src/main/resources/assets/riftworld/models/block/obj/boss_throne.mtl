@@ -1,0 +1,35 @@
+newmtl c_ashlar
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_c_ashlar
+
+newmtl c_brass
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_c_brass
+
+newmtl c_dark
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_c_darkwood
+
+newmtl c_velvet
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_c_velvet
+
+newmtl e_bone
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/c_e_bone
+
+newmtl c_wick
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/c_c_wick
+
+newmtl c_horn
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_c_horn
+

@@ -1,0 +1,25 @@
+newmtl e_wood_dark
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_wood_dark
+
+newmtl e_paint_eye
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_paint_eye
+
+newmtl e_wood
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_wood
+
+newmtl e_iron
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/m_e_iron
+
+newmtl e_rope
+Ka 0 0 0
+Kd 1 1 1
+map_Kd riftworld:block/obj/c_e_rope
+
