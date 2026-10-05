@@ -365,6 +365,20 @@ for z in (44, 47):
         model("candle_stand", x, 4, z, "north")
         CANDLES.append((x, 4, z))
 
+# C-3: the six healing columns (sunk in their sockets until the boss awakens) and the hidden arena heart in the dais
+for sx, sz in SOCKETS:
+    put(sx, 2, sz, S("boss_column", part=0, phase=0))
+CORE = (38, 2, 46)
+put(*CORE, S("arena_core"))
+
+
+def _rel(pts):
+    return [v for (x, y, z) in pts for v in (x - CORE[0], y - CORE[1], z - CORE[2])]
+
+
+ARENA_NBT = {"Candles": _rel(CANDLES), "Sockets": _rel([(sx, 2, sz) for sx, sz in SOCKETS]), "Throne": _rel([(38, 4, 46)]),
+             "HallMin": _rel([(25, 1, 15)]), "HallMax": _rel([(51, 20, 49)])}
+
 # ---- galleries (y10) on the west, east and front sides
 GY = 10
 fill(26, GY, 16, 28, GY, 48, PL)
@@ -748,9 +762,13 @@ for (x, y, z), st in list(B.items()):
 # ================================================================== save
 B = {k: v for k, v in B.items() if v != AIR and 0 <= k[0] < W and 0 <= k[2] < D and k[1] >= 0}
 H = max(p[1] for p in B) + 1
+for sx, sz in SOCKETS:              # keep the rise path of the columns clear of later rubble
+    for yy in (3, 4, 5):
+        B.pop((sx, yy, sz), None)
+NBT[CORE] = ARENA_NBT
 n, pal = write_template(OUT + "/castle.nbt", (W, H, D), B, {k: v for k, v in NBT.items() if k in B})
 meta = {"size": [W, H, D], "blocks": n, "palette": pal, "candles": CANDLES, "sockets": SOCKETS, "jumps": sorted(JUMPS),
-        "throne": [38, 4, 46], "entrance": [38, 1, 2]}
+        "throne": [38, 4, 46], "entrance": [38, 1, 2], "core": list(CORE)}
 json.dump(meta, open(OUT + "/castle_meta.json", "w"), indent=1)
 json.dump({"NW": NW_STEPS, "SW": SW_STEPS, "KEEP": KEEP_STEPS},
           open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "tower_steps.json"), "w"))

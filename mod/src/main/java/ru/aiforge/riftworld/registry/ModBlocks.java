@@ -124,6 +124,7 @@ public final class ModBlocks {
         }
         ElisarBlocks.init();
         CastleBlocks.init();
+        ArenaBlocks.init();
     }
 
     private static RegistryObject<ModelBlock> model(ModelKind k) {

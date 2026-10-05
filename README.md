@@ -371,3 +371,37 @@ Passable: chandelier, sconce, shackles, tapestry, bones. New 16×16 blocks: `cas
 ### Next (C-3)
 - Column mechanics (6 healing columns: hit the top or use a pickaxe), the candle entry sequence as a game mechanic,
   boss chair trigger zone.
+
+## Rev 3 / C-3 — healing columns, entry candle sequence, boss-chair trigger (v0.5.0-c4)
+
+### Arena controller (`arena/ArenaCoreBlockEntity`, hidden block `arena_core` under the throne)
+- States DORMANT → ENTRY → WAITING → AWAKENING → FIGHT → CLEARED; persisted in block-entity NBT.
+- **ENTRY** (a survival/adventure player enters the hall box): the hall candles go out, then after 1.5 s light pair by pair
+  from the door to the throne (14 ticks per pair, flame burst + sound); not a cutscene — the player moves freely.
+- **WAITING**: a low heartbeat sound every 2 s; trigger zone = within 6.5 blocks of the seat on the dais (|dy| < 5).
+- **AWAKENING**: message, the 6 columns rise from their sockets one after another (10-tick stagger, 3 s rise animation with
+  dust), ember beams connect each crystal to the throne.
+- **FIGHT**: each standing column heals the boss 1 HP/s (hook `BossHooks` — the boss entity is Part A).
+- **CLEARED**: all 6 broken → «Все колонны разрушены — его больше ничто не лечит».
+- **Reset**: hall empty of non-spectator players for 60 s → candles out, columns sink back and are restored.
+- Command `/riftarena status|start|reset` (op level 2).
+
+### Healing column (`arena/BossColumnBlock` + `BossColumnBlockEntity` + `BossColumnRenderer`)
+- Blender model `boss_column.glb` (2.6k faces): socket base, carved shaft with grotesque masks, talon crown cupping a
+  large ember crystal; 3 crack stages and a broken stump as separate nodes.
+- Hit the crystal (top part) 3 times — or an arrow into it — cracks grow, then it shatters (fire, smoke, sound);
+  any hit with a pickaxe on any part breaks it immediately. Hitting the shaft with anything else shows a hint.
+- The column cannot be mined; it is indestructible apart from this mechanic.
+
+### Verification
+- Live survival run on the Forge server (first person): entry candles, awakening, beams, wrong hit, 3 crystal hits,
+  pickaxe, all six down, reset. Fixed during testing: first column never rose (tick 0 skipped), trigger height,
+  beam width, bigger crystal, smoke instead of the explosion sprite on shatter.
+- Screenshots (11): `release/riftworld_screens/session9/`. Video (69 s): `release/riftworld_session9.mp4`.
+
+### Next (Part A)
+- Boss model + animations (hunched biped, dog-like skull, bison horns, scythe), 200 HP, AI with telegraphed swings,
+  scythe stuck in the floor on some swings, wall climbing only against a bow user on the 2nd floor; spawn via
+  `BossHooks.awaken` (lies as if dead, jerks, stands and waits by the chair).
+- 4 guards jumping from the balconies (spider-like wall running, pause before a dash).
+- Death: lies 15–20 s, vanishes; the scythe drops (glowing large item, super attacks).

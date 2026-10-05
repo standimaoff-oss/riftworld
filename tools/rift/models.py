@@ -187,6 +187,10 @@ MATDEF = {
     "c_glow_green": {"color": (0.25, 0.9, 0.3, 1.0), "emit": True},
     "c_glow_blue": {"color": (0.2, 0.45, 1.0, 1.0), "emit": True},
     "c_glow_amber": {"color": (1.0, 0.65, 0.15, 1.0), "emit": True},
+    "c_ember": {"color": (1.0, 0.36, 0.10, 1.0), "emit": True},
+    "c_ember_core": {"color": (1.0, 0.82, 0.45, 1.0), "emit": True},
+    "c_ember_dim": {"color": (0.42, 0.10, 0.05, 1.0), "emit": True},
+    "c_crack": {"color": (0.08, 0.02, 0.01, 1.0), "rough": 0.9},
 }
 
 
@@ -2931,6 +2935,129 @@ def m_bone_pile():
         box("eye%d" % sx, (0.05, 0.02, 0.05), (0.1 + sx * 0.05, -0.16, 0.14), "c_wick", (0, 0, 0.5))
     node("body")
     export("bone_pile")
+
+
+def _spin_new(before, ang, centre=(0, 0)):
+    """Rotate the objects created since `before` (index into PARTS) about the vertical axis through centre."""
+    m = Matrix.Translation((centre[0], centre[1], 0)) @ Matrix.Rotation(ang, 4, 'Z') @ Matrix.Translation((-centre[0], -centre[1], 0))
+    for o in PARTS[before:]:
+        o.data.transform(m)
+
+
+def _talon(tag, base, tip, r0, r1, bend, m="c_blacksteel", n=5):
+    """Curved claw from base to tip, bowing outwards by `bend` (chain of tapering segments)."""
+    b, t = Vector(base), Vector(tip)
+    out = Vector((b.x, b.y, 0)).normalized() if (b.x or b.y) else Vector((1, 0, 0))
+    pts = []
+    for k in range(n + 1):
+        u = k / n
+        pts.append(b.lerp(t, u) + out * (math.sin(u * math.pi) * bend))
+    for k in range(n):
+        a, c = pts[k], pts[k + 1]
+        ra, rc = r0 + (r1 - r0) * k / n, r0 + (r1 - r0) * (k + 1) / n
+        cyl(tag + "%d" % k, ra, (c - a).length + 0.012, tuple((a + c) / 2), m, rot=(c - a).to_track_quat('Z', 'Y').to_euler(), seg=6, r2=rc)
+
+
+def m_boss_column():
+    # healing column of the throne hall (refs: Romanesque cushion capitals with carved masks on round ashlar shafts,
+    # brass-banded pier bases; a black iron claw holding an ember crystal). 1 x 3 blocks; the crystal (top block) is the
+    # weak spot. Nodes: plinth | shaft, runes, crystal, crack_1, crack_2 (intact) | stub, rubble, shards (broken).
+    box("pl0", (0.98, 0.98, 0.12), (0, 0, 0.06), "c_ashlar", bevel=0.02)
+    box("pl1", (0.84, 0.84, 0.12), (0, 0, 0.18), "c_ashlar", bevel=0.02)
+    box("pl_trim", (0.86, 0.86, 0.025), (0, 0, 0.125), "c_brass")
+    torus("pl_torus", 0.31, 0.045, (0, 0, 0.27), "c_ashlar", seg=16, seg2=5)
+    cyl("pl_scotia", 0.3, 0.06, (0, 0, 0.33), "c_ashlar", seg=16, r2=0.275)
+    for k in range(4):                                     # griffes: leaf spurs from the torus to the plinth corners
+        a = math.radians(45 + 90 * k)
+        box("griffe%d" % k, (0.2, 0.07, 0.05), (math.cos(a) * 0.38, math.sin(a) * 0.38, 0.255), "c_ashlar", (0, math.radians(-18), a), bevel=0.012)
+    node("plinth")
+    # shaft: ashlar drums, red brick flutes, brass bands
+    cyl("shaft", 0.27, 1.6, (0, 0, 1.16), "c_ashlar", seg=16)
+    for k in range(8):
+        a = math.radians(k * 45 + 22.5)
+        box("flute%d" % k, (0.045, 0.02, 1.44), (math.cos(a) * 0.262, math.sin(a) * 0.262, 1.16), "c_brick", (0, 0, a + math.pi / 2))
+    for z in (0.42, 0.95, 1.5, 1.9):
+        torus("band%d" % int(z * 100), 0.278, 0.022, (0, 0, z), "c_brass", seg=16, seg2=4)
+    for z in (0.95, 1.5):
+        for k in range(4):                                 # rivets on the middle bands
+            a = math.radians(k * 90)
+            cyl("riv%d_%d" % (int(z * 100), k), 0.022, 0.03, (math.cos(a) * 0.3, math.sin(a) * 0.3, z), "c_brass", (0, math.radians(90), a), seg=6)
+    # cushion capital (octagon -> square) with four horned masks
+    cyl("necking", 0.3, 0.06, (0, 0, 1.99), "c_brass", seg=16)
+    cyl("cap", 0.29, 0.26, (0, 0, 2.15), "c_ashlar", rot=(0, 0, math.radians(22.5)), seg=8, r2=0.48)
+    for k in range(4):
+        i0 = len(PARTS)
+        _skull("mk%d_" % k, 0, -0.45, 2.12, s=0.4)
+        _spin_new(i0, math.radians(90 * k))
+    box("abacus", (0.88, 0.88, 0.1), (0, 0, 2.33), "c_ashlar", bevel=0.015)
+    box("abacus_trim", (0.9, 0.9, 0.025), (0, 0, 2.29), "c_brass")
+    # iron claw: four talons from the abacus corners curling over the crystal, knuckle rings
+    for k in range(4):
+        a = math.radians(45 + 90 * k)
+        c, s_ = math.cos(a), math.sin(a)
+        cyl("socket%d" % k, 0.05, 0.06, (c * 0.34, s_ * 0.34, 2.41), "c_brass", seg=6)
+        _talon("tal%d_" % k, (c * 0.34, s_ * 0.34, 2.42), (c * 0.07, s_ * 0.07, 2.98), 0.042, 0.008, 0.12)
+        torus("knk%d" % k, 0.045, 0.012, (c * 0.37, s_ * 0.37, 2.62), "c_brass", (math.radians(90), 0, a + math.pi / 2), seg=8, seg2=4)
+    cyl("cradle", 0.16, 0.05, (0, 0, 2.41), "c_blacksteel", seg=8, r2=0.1)
+    node("shaft")
+    # runes: glowing glyph strokes between the bands (dim ember)
+    rnd = random.Random(7)
+    for k in range(4):
+        a = math.radians(k * 90)
+        for j in range(4):
+            z = 1.05 + j * 0.1
+            w = 0.04 + rnd.random() * 0.05
+            box("rn%d_%d" % (k, j), (w, 0.012, 0.022), (math.cos(a) * 0.275 + math.sin(a) * (rnd.random() - 0.5) * 0.06,
+                                                       math.sin(a) * 0.275 - math.cos(a) * (rnd.random() - 0.5) * 0.06, z),
+                "c_ember", (0, rnd.random() * 0.8 - 0.4, a + math.pi / 2))
+            box("rv%d_%d" % (k, j), (0.016, 0.012, 0.06), (math.cos(a) * 0.275, math.sin(a) * 0.275, z + 0.04), "c_ember", (0, 0, a + math.pi / 2))
+    node("runes")
+    # ember crystal (pivot at its centre: bobs and turns)
+    crystal("cr_main", (0, 0, 2.62), "c_ember", h=0.84, r=0.2)
+    crystal("cr_core", (0, 0, 2.64), "c_ember_core", h=0.5, r=0.1, rot=(0, 0, 0.4))
+    for k in range(3):
+        a = k * 2.1
+        crystal("cr_side%d" % k, (math.cos(a) * 0.11, math.sin(a) * 0.11, 2.5), "c_ember", h=0.24, r=0.05,
+                rot=(math.cos(a) * 0.5, math.sin(a) * -0.5, 0))
+    node("crystal", pivot=(0, 0, 2.6))
+    for stage, pts in ((1, [((0.13, -0.08, 2.7), 0.4), ((0.1, -0.11, 2.61), -0.6), ((0.12, -0.09, 2.52), 0.3)]),
+                       (2, [((-0.12, -0.09, 2.74), -0.5), ((-0.14, -0.04, 2.64), 0.7), ((-0.08, 0.12, 2.58), -0.2),
+                            ((0.02, 0.15, 2.68), 0.5), ((0.1, 0.1, 2.48), -0.7)])):
+        for j, (p, r) in enumerate(pts):
+            a = math.atan2(p[1], p[0])
+            p = (p[0] * 1.22, p[1] * 1.22, p[2] + 0.02)
+            box("ck%d_%d" % (stage, j), (0.014, 0.14, 0.016), p, "c_crack", (r, 0, a))
+        node("crack_%d" % stage, pivot=(0, 0, 2.6))
+    # ---- broken state: jagged stump, fallen masonry, scattered dim shards
+    cyl("stub", 0.27, 0.62, (0, 0, 0.65), "c_ashlar", seg=16)
+    torus("stub_band", 0.278, 0.022, (0, 0, 0.42), "c_brass", seg=16, seg2=4)
+    for k in range(7):
+        a = k * 0.9
+        h = 0.08 + (k * 37 % 11) / 11 * 0.22
+        box("jag%d" % k, (0.16, 0.12, h), (math.cos(a) * 0.17, math.sin(a) * 0.17, 0.96 + h / 2), "c_ashlar", (0.2 * math.sin(k), 0.25 * math.cos(k), a))
+    box("flute_st", (0.045, 0.02, 0.5), (0.262, 0, 0.62), "c_brick", (0, 0, math.pi / 2))
+    node("stub")
+    rnd = random.Random(3)
+    for k in range(9):
+        a = rnd.random() * 6.28
+        d = 0.35 + rnd.random() * 0.5
+        sz = 0.12 + rnd.random() * 0.16
+        z = 0.32 if d < 0.42 else sz / 2
+        box("rub%d" % k, (sz, sz * 0.8, sz * 0.7), (math.cos(a) * d, math.sin(a) * d, z), "c_ashlar" if k % 3 else "c_brick",
+            (rnd.random(), rnd.random(), rnd.random()), bevel=0.01)
+    i0 = len(PARTS)
+    box("fallen_abacus", (0.6, 0.5, 0.1), (0, 0, 0.05), "c_ashlar", (0, 0, 0.3), bevel=0.012)
+    _talon("ftal", (0.15, -0.1, 0.1), (0.5, 0.2, 0.06), 0.04, 0.01, 0.1)
+    for o in PARTS[i0:]:
+        o.data.transform(Matrix.Translation((0.75, 0.45, 0)))
+    node("rubble")
+    for k in range(7):
+        a = rnd.random() * 6.28
+        d = 0.4 + rnd.random() * 0.6
+        crystal("sh%d" % k, (math.cos(a) * d, math.sin(a) * d, 0.03), "c_ember_dim", h=0.1 + rnd.random() * 0.08, r=0.03,
+                rot=(1.3 + rnd.random() * 0.4, 0, a))
+    node("shards")
+    export("boss_column")
 
 ALL = {k[2:]: v for k, v in list(globals().items()) if k.startswith("m_") and callable(v)}
 for name, fn in ALL.items():

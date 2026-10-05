@@ -247,5 +247,13 @@
   "block.riftworld.wall_shackles": "Wall Shackles",
   "block.riftworld.gold_hoard": "Gold Hoard",
   "block.riftworld.tapestry_horn": "Horned Tapestry",
-  "block.riftworld.bone_pile": "Bone Pile"
+  "block.riftworld.bone_pile": "Bone Pile",
+  "block.riftworld.boss_column": "Healing Column",
+  "block.riftworld.arena_core": "Heart of the Hall",
+  "riftworld.arena.enter": "The hall falls silent… something stirs in the dark…",
+  "riftworld.arena.awaken": "The Lord of the Hall awakens! The columns feed him.",
+  "riftworld.arena.columns_left": "Healing columns left: %s",
+  "riftworld.arena.columns_down": "All columns are broken — nothing heals him now",
+  "riftworld.column.crack": "The crystal cracks (%s/%s)",
+  "riftworld.column.hint": "Strike the crystal at the top — or use a pickaxe"
 }

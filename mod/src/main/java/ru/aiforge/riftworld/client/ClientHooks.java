@@ -32,6 +32,7 @@ public final class ClientHooks {
         e.registerBlockEntityRenderer(ModBlockEntities.MODEL.get(), ModelBER::new);
         e.registerBlockEntityRenderer(ModBlockEntities.CRATE.get(), ModelBER::new);
         e.registerBlockEntityRenderer(ModBlockEntities.LAUNCH_CORE.get(), LaunchCoreRenderer::new);
+        e.registerBlockEntityRenderer(ru.aiforge.riftworld.registry.ArenaBlocks.COLUMN_BE.get(), BossColumnRenderer::new);
     }
 
     @SubscribeEvent
