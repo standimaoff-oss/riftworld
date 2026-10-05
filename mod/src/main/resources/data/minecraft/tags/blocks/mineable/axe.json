@@ -70,6 +70,13 @@
     "riftworld:firewood_stack",
     "riftworld:fire_pit",
     "riftworld:flower_pot_e",
-    "riftworld:herbs_hanging"
+    "riftworld:herbs_hanging",
+    "riftworld:dark_planks",
+    "riftworld:dark_planks_stairs",
+    "riftworld:dark_planks_slab",
+    "riftworld:dark_beam",
+    "riftworld:dark_fence",
+    "riftworld:charred_log",
+    "riftworld:boss_throne"
   ]
 }

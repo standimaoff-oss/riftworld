@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/template_glass_pane_side",
+  "textures": {
+    "pane": "riftworld:block/stained_glass",
+    "edge": "riftworld:block/stained_glass",
+    "particle": "riftworld:block/stained_glass"
+  },
+  "render_type": "minecraft:translucent"
+}

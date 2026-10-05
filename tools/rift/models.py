@@ -162,6 +162,15 @@ MATDEF = {
     "bulb_off": {"color": (0.55, 0.53, 0.48, 1.0), "rough": 0.3},
     "beacon_off": {"color": (0.35, 0.08, 0.06, 1.0), "rough": 0.3},
     "puddle": {"color": (0.10, 0.09, 0.07, 1.0), "rough": 0.1},
+    # ---- rev 3 castle
+    "c_brick": {"tex": "m_c_brick", "rough": 0.9},
+    "c_ashlar": {"tex": "m_c_ashlar", "rough": 0.9},
+    "c_dark": {"tex": "m_c_darkwood", "rough": 0.8},
+    "c_brass": {"tex": "m_c_brass", "metal": 0.85, "rough": 0.35},
+    "c_velvet": {"tex": "m_c_velvet", "rough": 1.0},
+    "c_wax": {"tex": "m_c_wax", "rough": 0.6},
+    "c_horn": {"tex": "m_c_horn", "rough": 0.6},
+    "c_wick": {"color": (0.04, 0.03, 0.03, 1.0), "rough": 0.9},
 }
 
 
@@ -2242,6 +2251,122 @@ def m_herbs_hanging():
             plane("h%d_%d" % (k, j), 0.12, 0.26, (x, 0, 0.66), "e_foliage" if k % 2 else "e_flowers", (math.radians(180), 0, j * math.pi / 3))
     node("body")
     export("herbs_hanging")
+
+
+# ------------------------------------------------------------------ rev 3: castle «Чертог Тлеющего Рога»
+def m_candle_stand():
+    # wrought-iron floor pricket stand (refs: 18th c. hammered iron floor prickets): curled tripod, twisted square stem with
+    # knops, scalloped drip pan, thick church candle with wax runs; the flame is the lamp_on node (off model = unlit)
+    for k in range(3):
+        a = math.radians(90 + k * 120)
+        fx, fy = math.cos(a) * 0.32, math.sin(a) * 0.32
+        rod("leg%d" % k, (0, 0, 0.24), (fx * 0.8, fy * 0.8, 0.05), 0.018, "e_iron", seg=5)
+        rod("toe%d" % k, (fx * 0.8, fy * 0.8, 0.05), (fx, fy, 0.03), 0.016, "e_iron", seg=5)
+        torus("curl%d" % k, 0.035, 0.011, (fx * 1.05, fy * 1.05, 0.05), "e_iron", (math.radians(90), 0, a + math.pi / 2), seg=8, seg2=3)
+        cyl("pad%d" % k, 0.03, 0.02, (fx * 1.08, fy * 1.08, 0.01), "e_iron", seg=6)
+    cyl("hub", 0.045, 0.08, (0, 0, 0.25), "e_iron", seg=8)
+    n = 14
+    for k in range(n):                                       # twisted square bar: each segment turned a little further
+        z0 = 0.29 + k * (1.0 / n)
+        box("tw%d" % k, (0.042, 0.042, 1.0 / n + 0.004), (0, 0, z0 + 0.5 / n), "e_iron", (0, 0, math.radians(k * 13)))
+    for z in (0.62, 1.02):
+        torus("knop%d" % int(z * 100), 0.04, 0.018, (0, 0, z), "e_iron", seg=10, seg2=5)
+        cyl("kc%d" % int(z * 100), 0.03, 0.05, (0, 0, z), "e_iron", seg=8)
+    cyl("cup", 0.05, 0.05, (0, 0, 1.31), "e_iron", seg=8, r2=0.08)
+    cyl("pan", 0.17, 0.02, (0, 0, 1.345), "e_iron", seg=16)
+    torus("rim", 0.17, 0.012, (0, 0, 1.36), "e_iron", seg=16, seg2=4)
+    for k in range(6):
+        a = k * math.pi / 3
+        box("leaf%d" % k, (0.07, 0.03, 0.012), (math.cos(a) * 0.19, math.sin(a) * 0.19, 1.35), "e_iron", (0, math.radians(-20), a))
+    cyl("puddle", 0.1, 0.012, (0, 0, 1.36), "c_wax", seg=10)
+    rod("spike", (0, 0, 1.35), (0, 0, 1.4), 0.008, "e_iron", seg=4)
+    cyl("candle", 0.062, 0.22, (0, 0, 1.47), "c_wax", seg=12)
+    cyl("melt", 0.055, 0.015, (0, 0, 1.585), "c_wax", seg=12, r2=0.045)
+    for k, (a, L) in enumerate(((0.3, 0.12), (2.2, 0.07), (4.1, 0.15), (5.3, 0.05))):
+        cyl("drip%d" % k, 0.014, L, (math.cos(a) * 0.062, math.sin(a) * 0.062, 1.58 - L / 2), "c_wax", seg=5, r2=0.008)
+    rod("wick", (0, 0, 1.58), (0, 0, 1.615), 0.005, "c_wick", seg=4)
+    node("body")
+    cyl("fl1", 0.026, 0.1, (0, 0, 1.655), "e_flame", seg=6, r2=0.0)
+    cyl("fl2", 0.016, 0.06, (0, 0, 1.64), "e_lamp", seg=5, r2=0.0)
+    node("lamp_on")
+    export("candle_stand")
+
+
+def _horn(tag, side, base, s=1.0):
+    """Bison horn: short thick base sweeping out, then up and slightly forward to a dark tip (chain of tapering segments)."""
+    pts = [(0, 0, 0), (0.16, 0.0, 0.02), (0.30, -0.02, 0.09), (0.38, -0.05, 0.21), (0.40, -0.09, 0.33), (0.36, -0.13, 0.42)]
+    rads = [0.075, 0.068, 0.058, 0.045, 0.032, 0.018]
+    for k in range(len(pts) - 1):
+        a = tuple(base[i] + (pts[k][i] * side if i == 0 else pts[k][i]) * s for i in range(3))
+        b = tuple(base[i] + (pts[k + 1][i] * side if i == 0 else pts[k + 1][i]) * s for i in range(3))
+        cyl(tag + "%d" % k, rads[k] * s, math.dist(a, b) + 0.02, tuple((a[i] + b[i]) / 2 for i in range(3)), "c_horn",
+            rot=(Vector(b) - Vector(a)).to_track_quat('Z', 'Y').to_euler(), seg=8, r2=rads[k + 1] * s)
+
+
+def _skull(tag, cx, cy, cz, s=1.0):
+    """Long-snouted beast skull with bison horns (crest of the throne / arm heads)."""
+    box(tag + "cr", (0.26 * s, 0.22 * s, 0.2 * s), (cx, cy, cz), "e_bone", bevel=0.03 * s)
+    box(tag + "sn", (0.15 * s, 0.26 * s, 0.12 * s), (cx, cy - 0.2 * s, cz - 0.05 * s), "e_bone", bevel=0.02 * s)
+    for sx in (-1, 1):
+        box(tag + "ey%d" % sx, (0.06 * s, 0.02 * s, 0.05 * s), (cx + sx * 0.065 * s, cy - 0.11 * s, cz + 0.02 * s), "c_wick")
+        _horn(tag + "h%d" % sx, sx, (cx + sx * 0.12 * s, cy, cz + 0.04 * s), s)
+    for k in range(3):
+        box(tag + "t%d" % k, (0.02 * s, 0.02 * s, 0.04 * s), (cx - 0.04 * s + k * 0.04 * s, cy - 0.3 * s, cz - 0.12 * s), "e_bone")
+
+
+def m_boss_throne():
+    # 3x2x4 high seat for a 3 m beast (ref: gothic carved throne: pointed back with pinnacles, tufted velvet, beast-head arms)
+    box("plinth", (3.0, 2.0, 0.25), (0, 0.5, 0.125), "c_ashlar", bevel=0.02)
+    box("step", (2.6, 0.4, 0.12), (0, -0.3, 0.31), "c_ashlar", bevel=0.015)
+    box("trim", (3.02, 0.04, 0.05), (0, -0.5, 0.22), "c_brass")
+    # carcass with blind tracery
+    box("carcass", (2.1, 1.25, 0.8), (0, 0.15, 0.65), "c_dark", bevel=0.02)
+    for k in range(5):
+        x = -0.8 + k * 0.4
+        box("arch%d" % k, (0.26, 0.03, 0.5), (x, -0.485, 0.6), "c_velvet")
+        box("ap%d" % k, (0.2, 0.031, 0.2), (x, -0.487, 0.85), "c_velvet", (0, math.radians(45), 0))
+        box("mul%d" % k, (0.05, 0.05, 0.62), (x + 0.2, -0.49, 0.62), "c_dark")
+    box("rail", (2.12, 0.08, 0.06), (0, -0.48, 1.02), "c_brass")
+    # seat
+    box("seat", (2.0, 1.2, 0.18), (0, 0.15, 1.14), "c_velvet", bevel=0.05)
+    box("seatfront", (2.02, 0.1, 0.1), (0, -0.44, 1.06), "c_dark")
+    # arms with beast heads
+    for sx in (-1, 1):
+        x = sx * 1.2
+        box("armbase%d" % sx, (0.34, 1.35, 1.3), (x, 0.18, 0.9), "c_dark", bevel=0.03)
+        box("armpad%d" % sx, (0.4, 1.4, 0.14), (x, 0.15, 1.62), "c_velvet", bevel=0.04)
+        box("armcap%d" % sx, (0.44, 0.3, 0.12), (x, -0.42, 1.66), "c_dark", bevel=0.02)
+        _skull("ah%d" % sx, x, -0.55, 1.82, 0.65)
+        for k in range(3):
+            box("panel%d_%d" % (sx, k), (0.02, 0.32, 0.6), (x + sx * 0.171, -0.2 + k * 0.42, 0.85), "c_velvet")
+            box("pst%d_%d" % (sx, k), (0.03, 0.04, 0.03), (x + sx * 0.18, -0.2 + k * 0.42, 1.2), "c_brass")
+    # back: tall frame, pointed arch top, tufted velvet inset
+    box("back", (2.1, 0.3, 2.1), (0, 0.98, 2.2), "c_dark", bevel=0.03)
+    for k in range(6):                                       # stepped gable of the pointed arch
+        w = 2.1 - k * 0.34
+        box("gab%d" % k, (w, 0.3, 0.16), (0, 0.98, 3.33 + k * 0.15), "c_dark")
+    box("inset", (1.6, 0.04, 1.75), (0, 0.81, 2.15), "c_velvet")
+    box("insettop", (1.13, 0.041, 1.13), (0, 0.81, 3.0), "c_velvet", (0, math.radians(45), 0))
+    for z in (1.35, 2.95):
+        box("hb%d" % int(z * 10), (1.7, 0.06, 0.06), (0, 0.79, z), "c_brass")
+    torus("rose", 0.22, 0.03, (0, 0.78, 2.55), "c_brass", (math.radians(90), 0, 0), seg=16, seg2=4)
+    for k in range(8):
+        a = k * math.pi / 4
+        rod("sp%d" % k, (0, 0.78, 2.55), (math.cos(a) * 0.21, 0.78, 2.55 + math.sin(a) * 0.21), 0.012, "c_brass", seg=4)
+    # pinnacles
+    for sx, x, z1 in ((-1, -1.2, 3.25), (1, 1.2, 3.25), (-1, -0.62, 3.6), (1, 0.62, 3.6)):
+        box("pin%d_%d" % (sx, int(abs(x) * 10)), (0.2, 0.2, z1 - 0.25), (x, 0.98, 0.25 + (z1 - 0.25) / 2), "c_dark")
+        cyl("cap%d_%d" % (sx, int(abs(x) * 10)), 0.15, 0.35, (x, 0.98, z1 + 0.175), "c_dark", seg=4, r2=0.0, rot=(0, 0, math.radians(45)))
+        box("cb%d_%d" % (sx, int(abs(x) * 10)), (0.24, 0.24, 0.05), (x, 0.98, z1 + 0.02), "c_brass")
+        for zz in (z1 - 0.6, z1 - 1.3):
+            box("crk%d_%d_%d" % (sx, int(abs(x) * 10), int(zz * 10)), (0.08, 0.08, 0.14), (x + sx * 0.11, 0.98, zz), "c_dark", (0, math.radians(-25 * sx), 0))
+    # crest: horned skull
+    _skull("cr", 0, 0.8, 3.68, 1.15)
+    for sx in (-1, 1):
+        for k in range(4):
+            box("stud%d_%d" % (sx, k), (0.04, 0.04, 0.04), (sx * 1.03, 0.81, 1.45 + k * 0.5), "c_brass")
+    node("body")
+    export("boss_throne")
 
 ALL = {k[2:]: v for k, v in list(globals().items()) if k.startswith("m_") and callable(v)}
 for name, fn in ALL.items():

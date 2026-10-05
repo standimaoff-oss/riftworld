@@ -9,6 +9,10 @@
     "riftworld:thatch_slab",
     "riftworld:sizo_planks_slab",
     "riftworld:ambra_planks_slab",
-    "riftworld:elisar_cobble_slab"
+    "riftworld:elisar_cobble_slab",
+    "riftworld:castle_bricks_slab",
+    "riftworld:ashlar_slab",
+    "riftworld:dark_planks_slab",
+    "riftworld:castle_roof_slab"
   ]
 }

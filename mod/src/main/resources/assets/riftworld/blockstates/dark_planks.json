@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "riftworld:block/dark_planks",
+        "y": 0
+      }
+    ]
+  }
+}

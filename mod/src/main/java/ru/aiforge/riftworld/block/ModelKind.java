@@ -103,7 +103,10 @@ public enum ModelKind {
     FIREWOOD_STACK("firewood_stack", 0, 0, 0, 1, Block.box(0, 0, 0, 16, 16, 16)),
     FIRE_PIT("fire_pit", 0, 0, 0, 1, Block.box(1, 0, 1, 15, 5, 15)),
     FLOWER_POT_E("flower_pot_e", 0, 0, 0, 1, Block.box(5, 0, 5, 11, 10, 11)),
-    HERBS_HANGING("herbs_hanging", 0, 0, 0, 1, Block.box(1, 9, 6, 15, 16, 10));
+    HERBS_HANGING("herbs_hanging", 0, 0, 0, 1, Block.box(1, 9, 6, 15, 16, 10)),
+    // ---- Rev 3: castle «Чертог Тлеющего Рога» (baked OBJ)
+    CANDLE_STAND("candle_stand", 0, 0, 0, 2, Block.box(4, 0, 4, 12, 16, 12)),
+    BOSS_THRONE("boss_throne", -1, 1, 1, 4, Block.box(0, 0, 0, 16, 16, 16));
 
     public final String glb;
     public final int x0, x1, back, h;
@@ -137,6 +140,7 @@ public enum ModelKind {
             case LANTERN_HANGING -> 14;
             case LANTERN_HANG, LANTERN_POST, LANTERN_WALL -> 15;
             case FIRE_PIT -> 14;
+            case CANDLE_STAND -> 12;
             case KITCHEN_STOVE -> 10;
             case FIREPLACE -> 13;
             case COOKING_POT -> 11;

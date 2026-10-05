@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "riftworld:elisar_stone_wall"
+    "riftworld:elisar_stone_wall",
+    "riftworld:castle_bricks_wall"
   ]
 }

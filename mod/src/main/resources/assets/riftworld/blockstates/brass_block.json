@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "riftworld:block/brass_block",
+        "y": 0
+      }
+    ]
+  }
+}

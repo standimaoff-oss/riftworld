@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "riftworld:block/ashlar_slab"
+    },
+    "type=top": {
+      "model": "riftworld:block/ashlar_slab_top"
+    },
+    "type=double": {
+      "model": "riftworld:block/ashlar"
+    }
+  }
+}

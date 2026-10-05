@@ -125,5 +125,8 @@ def export(name):
 
 for n in NAMES:
     export(n)
-json.dump(MANI, open("/home/user/tools/rift/obj_textures.json", "w"), indent=0)
+_P = "/home/user/tools/rift/obj_textures.json"
+_OLD = json.load(open(_P)) if os.path.exists(_P) else {}
+_OLD.update(MANI)
+json.dump(_OLD, open(_P, "w"), indent=0)
 print("OBJ_DONE")

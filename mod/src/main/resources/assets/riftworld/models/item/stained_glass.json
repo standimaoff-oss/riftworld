@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "riftworld:block/stained_glass"
+  },
+  "render_type": "minecraft:translucent"
+}

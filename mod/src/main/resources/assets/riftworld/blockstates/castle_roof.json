@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "riftworld:block/castle_roof",
+        "y": 0
+      }
+    ]
+  }
+}

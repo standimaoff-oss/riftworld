@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "axis=y": {
+      "model": "riftworld:block/ashlar_pillar"
+    },
+    "axis=z": {
+      "model": "riftworld:block/ashlar_pillar_horizontal",
+      "x": 90
+    },
+    "axis=x": {
+      "model": "riftworld:block/ashlar_pillar_horizontal",
+      "x": 90,
+      "y": 90
+    }
+  }
+}

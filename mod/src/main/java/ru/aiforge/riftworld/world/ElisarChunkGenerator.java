@@ -200,6 +200,10 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                     }
                 }
             }
+            if (isl.kind == 5) {                                       // castle plateau
+                double o = CastleSite.outside(px, pz);
+                top = o <= 0 ? CastleSite.Y : CastleSite.Y + (top - CastleSite.Y) * smooth(o / 9.0);
+            }
             c.top = (int) Math.floor(top);
             double t = isl.t(px, pz);
             double depth = 3 + isl.depth * Math.pow(Math.max(t, 0), 0.55) * (0.72 + 0.28 * vnoise(px * 0.07, pz * 0.07, 11));
@@ -314,7 +318,9 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 if (c.isl == null && c.fallTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE) debris(plan, chunk, mp, x, z);
                 tower(chunk, mp, x, z);
                 if (c.isl != null) {
-                    for (int y = c.bottom; y <= c.top; ++y) {
+                    if (c.isl.kind == 5) {
+                        scorched(chunk, mp, c, x, z);
+                    } else for (int y = c.bottom; y <= c.top; ++y) {
                         BlockState s;
                         if (y == c.top) {
                             s = switch (c.surface) {
@@ -344,7 +350,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                             }
                         }
                     }
-                    if (c.surface == S_GRASS && c.waterTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE) {
+                    if (c.surface == S_GRASS && c.isl.kind != 5 && c.waterTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE) {
                         double h = hash(x, z, 77);
                         if (c.fence) {
                             BlockState fs = st(ElisarBlocks.FENCE);
@@ -394,6 +400,54 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         return CompletableFuture.completedFuture(chunk);
     }
 
+    /** Scorched castle island: ash / burnt soil top with ember-dark patches, scorched stone body, a few boulders. */
+    private static void scorched(ChunkAccess chunk, BlockPos.MutableBlockPos mp, Col c, int x, int z) {
+        BlockState ash = st(ru.aiforge.riftworld.registry.CastleBlocks.ASH), soil = st(ru.aiforge.riftworld.registry.CastleBlocks.BURNT_SOIL);
+        BlockState sst = st(ru.aiforge.riftworld.registry.CastleBlocks.SCORCHED_STONE), stone = st(ElisarBlocks.STONE);
+        double n = vnoise(x * 0.09, z * 0.09, 51);
+        for (int y = c.bottom; y <= c.top; ++y) {
+            BlockState s;
+            if (y == c.top) s = n > 0.62 ? soil : (n < 0.3 && hash(x, z, 52) < 0.5) ? sst : ash;
+            else if (y >= c.top - 2) s = n > 0.5 ? soil : sst;
+            else s = hash(x, y, z) < 0.25 ? stone : sst;
+            chunk.setBlockState(mp.set(x, y, z), s, false);
+        }
+        // boulders of scorched stone (outside the castle)
+        if (!CastleSite.inFootprint(x, z, 3)) {
+            int gx = Math.floorDiv(x, 9), gz = Math.floorDiv(z, 9);
+            if (hash(gx, gz, 53) < 0.22) {
+                double bx = gx * 9 + 2 + hash(gx, gz, 54) * 5, bz = gz * 9 + 2 + hash(gx, gz, 55) * 5, br = 1.2 + hash(gx, gz, 56) * 1.6;
+                double d = Math.hypot(x + 0.5 - bx, z + 0.5 - bz);
+                if (d < br) {
+                    int hgt = (int) Math.round((br - d) * 1.3 + 0.4);
+                    for (int y = 1; y <= hgt; ++y) chunk.setBlockState(mp.set(x, c.top + y, z), hash(x, y, z) < 0.3 ? stone : sst, false);
+                }
+            }
+        }
+    }
+
+    /** Leafless charred tree: crooked trunk and a few bare branches that fork upwards (no foliage). */
+    private static void deadTree(ChunkAccess chunk, BlockPos.MutableBlockPos mp, CityPlan.Tree t, int base, int x, int z) {
+        BlockState logY = st(ru.aiforge.riftworld.registry.CastleBlocks.CHARRED_LOG);
+        int dx = x - t.x, dz = z - t.z;
+        if (dx == 0 && dz == 0) for (int y = base; y < base + t.h; ++y) chunk.setBlockState(mp.set(x, y, z), logY, false);
+        int nb = 2 + (t.seed & 3);
+        for (int b = 0; b < nb; ++b) {
+            double a = hash(t.seed, b, 61) * Math.PI * 2;
+            int len = 2 + (int) (hash(t.seed, b, 62) * 3);
+            int y0 = base + t.h - 1 - (int) (hash(t.seed, b, 63) * Math.min(4, t.h - 2));
+            for (int k = 1; k <= len; ++k) {
+                int bx = (int) Math.round(Math.cos(a) * k), bz = (int) Math.round(Math.sin(a) * k);
+                int by = y0 + k / 2;
+                if (bx == dx && bz == dz) {
+                    Direction.Axis ax = k % 2 == 0 ? Direction.Axis.Y : (Math.abs(Math.cos(a)) > Math.abs(Math.sin(a)) ? Direction.Axis.X : Direction.Axis.Z);
+                    chunk.setBlockState(mp.set(x, by, z), logY.setValue(RotatedPillarBlock.AXIS, ax), false);
+                    if (k == len) chunk.setBlockState(mp.set(x, by + 1, z), logY, false);
+                }
+            }
+        }
+    }
+
     private static net.minecraft.world.level.block.state.properties.BooleanProperty prop(Direction d) {
         return switch (d) {
             case NORTH -> FenceBlock.NORTH;
@@ -418,6 +472,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 t.baseY = base;
             }
             if (base < 0) continue;
+            if (t.kind == 2) { deadTree(chunk, mp, t, base, x, z); continue; }
             boolean sizo = t.kind == 0;
             BlockState logS = (sizo ? ElisarBlocks.SIZO_LOG : ElisarBlocks.AMBRA_LOG).get().defaultBlockState().setValue(RotatedPillarBlock.AXIS, Direction.Axis.Y);
             BlockState leaf = (sizo ? ElisarBlocks.SIZO_LEAVES : ElisarBlocks.AMBRA_LEAVES).get().defaultBlockState()
@@ -486,6 +541,13 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             BoundingBox bb = tpl.get().getBoundingBox(s, BlockPos.ZERO);
             BlockPos pos = new BlockPos(p.x0() - bb.minX(), p.h() + p.yOff(), p.z0() - bb.minZ());
             tpl.get().placeInWorld(level, pos, pos, s, rnd, 2);
+        }
+        if (x0 + 15 >= CastleSite.X0 && x0 <= CastleSite.X0 + CastleSite.TW - 1 && z0 + 15 >= CastleSite.Z0 && z0 <= CastleSite.Z0 + CastleSite.TD - 1) {
+            stm.get(new ResourceLocation("riftworld", "castle/castle")).ifPresent(tpl -> {
+                StructurePlaceSettings s = new StructurePlaceSettings().setBoundingBox(box).setIgnoreEntities(true).setKnownShape(true);
+                BlockPos pos = new BlockPos(CastleSite.X0, CastleSite.Y, CastleSite.Z0);
+                tpl.placeInWorld(level, pos, pos, s, rnd, 2);
+            });
         }
         BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
         for (CityPlan.Prop p : props) {

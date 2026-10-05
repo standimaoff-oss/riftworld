@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "riftworld:block/dark_planks_slab"
+    },
+    "type=top": {
+      "model": "riftworld:block/dark_planks_slab_top"
+    },
+    "type=double": {
+      "model": "riftworld:block/dark_planks"
+    }
+  }
+}

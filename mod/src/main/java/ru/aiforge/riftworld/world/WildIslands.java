@@ -45,6 +45,7 @@ public final class WildIslands {
         int cx = Math.floorDiv((int) Math.floor(x), CELL), cz = Math.floorDiv((int) Math.floor(z), CELL);
         if (Math.hypot(x, z) < CITY_CLEAR - 120) return Collections.emptyList();
         List<CityPlan.Island> out = new ArrayList<>(8);
+        if (CastleSite.near(x, z, 2)) out.add(CastleSite.ISLAND);
         for (int dx = -1; dx <= 1; ++dx)
             for (int dz = -1; dz <= 1; ++dz) {
                 for (CityPlan.Island i : cell(cx + dx, cz + dz).islands) {
@@ -58,6 +59,8 @@ public final class WildIslands {
         if (Math.hypot(x, z) < CITY_CLEAR - 120) return Collections.emptyList();
         int cx = Math.floorDiv(x, CELL), cz = Math.floorDiv(z, CELL);
         List<CityPlan.Tree> out = new ArrayList<>();
+        if (CastleSite.near(x, z, 6))
+            for (CityPlan.Tree t : CastleSite.TREES) if (Math.abs(x - t.x) <= 4 && Math.abs(z - t.z) <= 4) out.add(t);
         for (int dx = -1; dx <= 1; ++dx)
             for (int dz = -1; dz <= 1; ++dz)
                 for (CityPlan.Tree t : cell(cx + dx, cz + dz).trees)
@@ -86,6 +89,7 @@ public final class WildIslands {
                 if (m * 2 >= CELL) break;
                 double x = ox + m + r.nextDouble() * (CELL - 2 * m), z = oz + m + r.nextDouble() * (CELL - 2 * m);
                 if (Math.hypot(x, z) - R * 1.15 < CITY_CLEAR) continue;
+                if (Math.hypot(x - CastleSite.CX, z - CastleSite.CZ) < R * 1.15 + CastleSite.R * 1.15 + 14) continue;   // castle site
                 boolean ok = true;
                 for (CityPlan.Island o : c.islands) {
                     if (Math.hypot(x - o.cx, z - o.cz) < (R + o.R) * 1.15 + 6) { ok = false; break; }

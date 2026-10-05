@@ -4,6 +4,8 @@
     "riftworld:elisar_grass",
     "riftworld:elisar_soil",
     "riftworld:elisar_seabed",
-    "riftworld:elisar_path"
+    "riftworld:elisar_path",
+    "riftworld:ash_block",
+    "riftworld:burnt_soil"
   ]
 }

@@ -208,5 +208,30 @@
 },
 "m_e_books": {
 "src": "/home/user/tools/rift/tex_models/m_e_books.png"
+},
+"m_c_wax": {
+"src": "/home/user/tools/rift/tex_models/m_c_wax.png"
+},
+"c_c_wick": {
+"col": [
+0.03999999910593033,
+0.029999999329447746,
+0.029999999329447746
+]
+},
+"m_c_ashlar": {
+"src": "/home/user/tools/rift/tex_models/m_c_ashlar.png"
+},
+"m_c_brass": {
+"src": "/home/user/tools/rift/tex_models/m_c_brass.png"
+},
+"m_c_darkwood": {
+"src": "/home/user/tools/rift/tex_models/m_c_darkwood.png"
+},
+"m_c_velvet": {
+"src": "/home/user/tools/rift/tex_models/m_c_velvet.png"
+},
+"m_c_horn": {
+"src": "/home/user/tools/rift/tex_models/m_c_horn.png"
 }
 }

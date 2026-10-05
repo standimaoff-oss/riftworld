@@ -9,6 +9,10 @@
     "riftworld:thatch_stairs",
     "riftworld:sizo_planks_stairs",
     "riftworld:elisar_bricks_stairs",
-    "riftworld:elisar_cobble_stairs"
+    "riftworld:elisar_cobble_stairs",
+    "riftworld:castle_bricks_stairs",
+    "riftworld:ashlar_stairs",
+    "riftworld:dark_planks_stairs",
+    "riftworld:castle_roof_stairs"
   ]
 }

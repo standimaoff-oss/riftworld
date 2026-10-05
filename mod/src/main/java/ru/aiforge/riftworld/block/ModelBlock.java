@@ -171,4 +171,13 @@ public class ModelBlock extends HorizontalDirectionalBlock {
     public BlockState mirror(BlockState state, Mirror mirror) {
         return state.rotate(mirror.getRotation(state.getValue(FACING)));
     }
+
+    /** Castle candle stands: a living flame (and a wisp of smoke) while lit. */
+    @Override
+    public void animateTick(BlockState state, Level level, BlockPos pos, net.minecraft.util.RandomSource r) {
+        if (kind != ModelKind.CANDLE_STAND || !state.getValue(POWERED)) return;
+        double x = pos.getX() + 0.5, y = pos.getY() + 1.62, z = pos.getZ() + 0.5;
+        if (r.nextInt(3) == 0) level.addParticle(net.minecraft.core.particles.ParticleTypes.SMALL_FLAME, x, y, z, 0, 0.002, 0);
+        if (r.nextInt(9) == 0) level.addParticle(net.minecraft.core.particles.ParticleTypes.SMOKE, x, y + 0.1, z, 0, 0.01, 0);
+    }
 }

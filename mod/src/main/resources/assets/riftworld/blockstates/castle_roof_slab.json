@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "riftworld:block/castle_roof_slab"
+    },
+    "type=top": {
+      "model": "riftworld:block/castle_roof_slab_top"
+    },
+    "type=double": {
+      "model": "riftworld:block/castle_roof"
+    }
+  }
+}

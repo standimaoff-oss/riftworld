@@ -81,6 +81,23 @@
     "riftworld:fireplace",
     "riftworld:forge_hearth",
     "riftworld:idol",
-    "riftworld:well"
+    "riftworld:well",
+    "riftworld:castle_bricks",
+    "riftworld:castle_bricks_cracked",
+    "riftworld:castle_bricks_mossy",
+    "riftworld:castle_bricks_stairs",
+    "riftworld:castle_bricks_slab",
+    "riftworld:castle_bricks_wall",
+    "riftworld:ashlar",
+    "riftworld:ashlar_stairs",
+    "riftworld:ashlar_slab",
+    "riftworld:ashlar_pillar",
+    "riftworld:brass_block",
+    "riftworld:castle_mosaic",
+    "riftworld:castle_roof",
+    "riftworld:castle_roof_stairs",
+    "riftworld:castle_roof_slab",
+    "riftworld:scorched_stone",
+    "riftworld:candle_stand"
   ]
 }

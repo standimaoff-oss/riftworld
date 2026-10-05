@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "riftworld:block/ashlar",
+        "y": 0
+      }
+    ]
+  }
+}

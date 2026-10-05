@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "riftworld:block/castle_mosaic",
+        "y": 0
+      }
+    ]
+  }
+}

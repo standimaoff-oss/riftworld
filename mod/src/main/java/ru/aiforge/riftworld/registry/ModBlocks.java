@@ -123,6 +123,7 @@ public final class ModBlocks {
             if (!MODELS.containsKey(k)) model(k);
         }
         ElisarBlocks.init();
+        CastleBlocks.init();
     }
 
     private static RegistryObject<ModelBlock> model(ModelKind k) {
@@ -137,6 +138,8 @@ public final class ModBlocks {
             p = p.sound(SoundType.WOOD).strength(1.5F, 3.0F).mapColor(MapColor.WOOD).lightLevel(s -> k.light(s.getValue(ModelBlock.POWERED)));
             if (k == ModelKind.WELL || k == ModelKind.IDOL || k == ModelKind.ALTAR_STONE || k == ModelKind.FORGE_HEARTH || k == ModelKind.FIREPLACE)
                 p = p.sound(SoundType.STONE).strength(3.0F, 6.0F).mapColor(MapColor.STONE);
+            if (k == ModelKind.CANDLE_STAND) p = p.sound(SoundType.LANTERN).strength(1.0F, 2.0F).mapColor(MapColor.METAL);
+            if (k == ModelKind.BOSS_THRONE) p = p.strength(25.0F, 1200.0F).mapColor(MapColor.COLOR_BLACK);
             if (k == ModelKind.RUG) p = p.sound(SoundType.WOOL).strength(0.5F);
         }
         if (k == ModelKind.CHANDELIER) p = p.lightLevel(s -> s.getValue(ModelBlock.POWERED) ? 15 : 0);

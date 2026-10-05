@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "axis=y": {
+      "model": "riftworld:block/dark_beam"
+    },
+    "axis=z": {
+      "model": "riftworld:block/dark_beam_horizontal",
+      "x": 90
+    },
+    "axis=x": {
+      "model": "riftworld:block/dark_beam_horizontal",
+      "x": 90,
+      "y": 90
+    }
+  }
+}

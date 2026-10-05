@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "riftworld:block/castle_bricks_cracked",
+        "y": 0
+      }
+    ]
+  }
+}
