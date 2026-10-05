@@ -270,5 +270,7 @@
   "item.riftworld.ember_guard_spawn_egg": "Яйцо призыва: Тлеющий страж",
   "riftworld.arena.defeated": "Хозяин Чертога повержен. Его коса лежит на полу…",
   "biome.riftworld.ashen_lands": "Адские угодья",
-  "block.riftworld.magma_meander": "Лавовая извилина"
+  "block.riftworld.magma_meander": "Лавовая извилина",
+  "item.riftworld.castle_compass": "Компас к Чертогу Тлеющего Рога",
+  "riftworld.castle_compass.got": "В кармане оказался компас: он указывает на Адские угодья — к Чертогу Тлеющего Рога (40, 470)."
 }

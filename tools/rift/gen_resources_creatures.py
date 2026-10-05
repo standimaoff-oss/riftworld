@@ -15,6 +15,9 @@ def merge(path, obj):
 
 
 L = {
+    "item.riftworld.castle_compass": ("Compass to the Hall of the Smouldering Horn", "Компас к Чертогу Тлеющего Рога"),
+    "riftworld.castle_compass.got": ("A compass found in your pocket points to the Ashen Lands - to the Hall of the Smouldering Horn (40, 470).",
+                                     "В кармане оказался компас: он указывает на Адские угодья — к Чертогу Тлеющего Рога (40, 470)."),
     "entity.riftworld.morgrath": ("Morgrath, Master of the Hall", "Морграт, Хозяин Чертога"),
     "entity.riftworld.ember_guard": ("Smouldering Warden", "Тлеющий страж"),
     "entity.riftworld.scythe_item": ("Morgrath's Scythe", "Коса Морграта"),

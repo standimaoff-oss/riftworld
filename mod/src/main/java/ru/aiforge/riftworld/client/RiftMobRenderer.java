@@ -111,7 +111,7 @@ public class RiftMobRenderer<T extends RiftMob> extends EntityRenderer<T> {
             ps.translate(0, -0.9, 0);
         }
         ps.scale(scale, scale, scale);
-        int overlay = LivingEntityRenderer.getOverlayCoords(e, 0.0F);
+        int overlay = e.deathTime > 0 ? net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY : LivingEntityRenderer.getOverlayCoords(e, 0.0F);
         GlbRenderer.render(lm, pose, ps, buffers, light, overlay);
         ps.popPose();
         super.render(e, yaw, partial, ps, buffers, light);

@@ -256,8 +256,12 @@ public class MorgrathBoss extends RiftMob {
 
     private void fight(ServerLevel sl, @Nullable LivingEntity tgt) {
         setAnim(A_IDLE);
+        ArenaCoreBlockEntity ar = arena();
+        if (ar != null && tgt != null && !ar.hallBox().inflate(0.5).contains(tgt.position())) tgt = null;   // never follows out of the hall
         if (tgt == null) {
-            getNavigation().stop();
+            if (core != null && distanceToSqr(core.getX() + 0.5, core.getY(), core.getZ() - 4.5) > 25) {
+                if (tickCount % 20 == 0) getNavigation().moveTo(core.getX() + 0.5, core.getY(), core.getZ() - 4.5, 0.9);
+            } else getNavigation().stop();
             return;
         }
         if (!second && getHealth() < getMaxHealth() * 0.5F) {

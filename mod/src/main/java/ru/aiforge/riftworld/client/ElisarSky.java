@@ -69,7 +69,7 @@ public final class ElisarSky extends DimensionSpecialEffects {
             return (float) (t * t * (3 - 2 * t));
         }
 
-        private static final Vec3 ASH = new Vec3(0.30, 0.265, 0.25);
+        private static final Vec3 ASH = new Vec3(0.34, 0.235, 0.20);
 
         @SubscribeEvent
         public static void fogColor(ViewportEvent.ComputeFogColor e) {

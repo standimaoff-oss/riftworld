@@ -270,5 +270,7 @@
   "item.riftworld.ember_guard_spawn_egg": "Smouldering Warden Spawn Egg",
   "riftworld.arena.defeated": "The Master of the Hall has fallen. His scythe lies on the floor...",
   "biome.riftworld.ashen_lands": "Ashen Lands",
-  "block.riftworld.magma_meander": "Lava Meander"
+  "block.riftworld.magma_meander": "Lava Meander",
+  "item.riftworld.castle_compass": "Compass to the Hall of the Smouldering Horn",
+  "riftworld.castle_compass.got": "A compass found in your pocket points to the Ashen Lands - to the Hall of the Smouldering Horn (40, 470)."
 }
