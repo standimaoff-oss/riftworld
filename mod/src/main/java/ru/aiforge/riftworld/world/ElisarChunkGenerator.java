@@ -311,14 +311,18 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 int x = x0 + dx, z = z0 + dz;
                 Col c = cols[dx + 1][dz + 1];
                 // ocean plane
-                if (c.isl == null || c.bottom > plan.ocean + 1) {
+                double aw = AshenLands.weight(x + 0.5, z + 0.5);
+                boolean ashen = aw > 0 && aw > hash(x, z, 88);
+                if (ashen) {
+                    if (c.isl == null || c.bottom > plan.ocean + 1) AshenLands.column(chunk, mp, x, z, c.isl != null);
+                } else if (c.isl == null || c.bottom > plan.ocean + 1) {
                     chunk.setBlockState(mp.set(x, plan.ocean - 1, z), seabed, false);
                     chunk.setBlockState(mp.set(x, plan.ocean, z), water, false);
                 }
-                if (c.isl == null && c.fallTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE) debris(plan, chunk, mp, x, z);
+                if (!ashen && c.isl == null && c.fallTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE) debris(plan, chunk, mp, x, z);
                 tower(chunk, mp, x, z);
                 if (c.isl != null) {
-                    if (c.isl.kind == 5) {
+                    if (c.isl.kind == 5 || ashen && c.isl.kind != 0) {
                         scorched(chunk, mp, c, x, z);
                     } else for (int y = c.bottom; y <= c.top; ++y) {
                         BlockState s;
@@ -350,7 +354,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                             }
                         }
                     }
-                    if (c.surface == S_GRASS && c.isl.kind != 5 && c.waterTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE) {
+                    if (c.surface == S_GRASS && c.isl.kind != 5 && !ashen && c.waterTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE) {
                         double h = hash(x, z, 77);
                         if (c.fence) {
                             BlockState fs = st(ElisarBlocks.FENCE);
@@ -413,7 +417,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             chunk.setBlockState(mp.set(x, y, z), s, false);
         }
         // boulders of scorched stone (outside the castle)
-        if (!CastleSite.inFootprint(x, z, 3)) {
+        if (!CastleSite.inFootprint(x, z, 3) && c.top - c.bottom > 3) {
             int gx = Math.floorDiv(x, 9), gz = Math.floorDiv(z, 9);
             if (hash(gx, gz, 53) < 0.22) {
                 double bx = gx * 9 + 2 + hash(gx, gz, 54) * 5, bz = gz * 9 + 2 + hash(gx, gz, 55) * 5, br = 1.2 + hash(gx, gz, 56) * 1.6;
@@ -549,6 +553,12 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 tpl.placeInWorld(level, pos, pos, s, rnd, 2);
             });
         }
+        if (AshenLands.weight(x0 + 8, z0 + 8) > 0) {
+            for (AshenLands.Placed pl : AshenLands.decor()) {
+                BlockPos bp = pl.pos();
+                if (bp.getX() >= x0 && bp.getX() <= x0 + 15 && bp.getZ() >= z0 && bp.getZ() <= z0 + 15) level.setBlock(bp, pl.state(), 2);
+            }
+        }
         BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
         for (CityPlan.Prop p : props) {
             Direction f = Direction.byName(p.facing());
@@ -646,6 +656,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
     @Override
     public int getBaseHeight(int x, int z, Heightmap.Types type, LevelHeightAccessor level, RandomState rs) {
         Col c = column(CityPlan.get(), x, z);
+        int mt = AshenLands.weight(x, z) > 0 ? AshenLands.moundTop(x, z) : Integer.MIN_VALUE;
+        if (c.isl == null && mt != Integer.MIN_VALUE) return mt + 1;
         return c.isl == null ? CityPlan.get().ocean + 1 : c.top + 1;
     }
 

@@ -18,11 +18,13 @@ public final class RiftWorld {
     public RiftWorld() {
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
         ModBlocks.BLOCKS.register(bus);
+        ru.aiforge.riftworld.registry.ModEntities.TYPES.register(bus);
         ModItems.ITEMS.register(bus);
         ModFluids.TYPES.register(bus);
         ModFluids.FLUIDS.register(bus);
         ModFluids.ITEMS.register(bus);
         ModWorldgen.GENERATORS.register(bus);
+        ModWorldgen.BIOME_SOURCES.register(bus);
         ModBlockEntities.TYPES.register(bus);
         ModTabs.TABS.register(bus);
         ru.aiforge.riftworld.net.Net.init();

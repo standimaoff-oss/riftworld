@@ -36,7 +36,7 @@ import ru.aiforge.riftworld.registry.ArenaBlocks;
  * Positions come from the castle template NBT (offsets relative to this block).
  */
 public class ArenaCoreBlockEntity extends BlockEntity {
-    public enum State { DORMANT, ENTRY, WAITING, AWAKENING, FIGHT, CLEARED }
+    public enum State { DORMANT, ENTRY, WAITING, AWAKENING, FIGHT, CLEARED, DEFEATED }
 
     public static final Set<ArenaCoreBlockEntity> LOADED = Collections.newSetFromMap(new WeakHashMap<>());
     static final int CANDLE_DELAY = 30, CANDLE_STEP = 14, COL_STAGGER = 10, RESET_IDLE = 1200;
@@ -90,7 +90,7 @@ public class ArenaCoreBlockEntity extends BlockEntity {
         boolean check = now % 10 == 0;
         List<ServerPlayer> ps = check ? players(sl) : List.of();
         if (check) {
-            if (state != State.DORMANT && ps.isEmpty()) {
+            if (state != State.DORMANT && state != State.DEFEATED && ps.isEmpty()) {
                 idle += 10;
                 if (idle >= RESET_IDLE) {
                     reset(sl);
@@ -107,17 +107,14 @@ public class ArenaCoreBlockEntity extends BlockEntity {
             case ENTRY -> {
                 int pairs = candles.length / 6;
                 if (lit < pairs && t >= CANDLE_DELAY + (long) lit * CANDLE_STEP) lightPair(sl, lit++);
-                if (lit >= pairs && t >= CANDLE_DELAY + (long) pairs * CANDLE_STEP + 10) go(State.WAITING, now);
+                if (lit >= pairs && t >= CANDLE_DELAY + (long) pairs * CANDLE_STEP + 10) {
+                    go(State.WAITING, now);
+                    BossHooks.stand(sl, this, boss);
+                }
             }
             case WAITING -> {
                 if (now % 40 == 0) sound(sl, seat(), SoundEvents.WARDEN_HEARTBEAT, 1.6F, 0.6F);
-                if (check && nearThrone(ps)) {
-                    go(State.AWAKENING, now);
-                    sound(sl, seat(), SoundEvents.WARDEN_ROAR, 2.5F, 0.6F);
-                    sound(sl, seat(), SoundEvents.WITHER_SPAWN, 0.6F, 0.5F);
-                    msg(ps, "riftworld.arena.awaken", ChatFormatting.RED);
-                    boss = BossHooks.awaken(sl, this);
-                }
+                if (check && nearThrone(ps)) trigger(sl);
             }
             case AWAKENING -> {
                 List<BossColumnBlockEntity> cols = columns(sl);
@@ -149,13 +146,41 @@ public class ArenaCoreBlockEntity extends BlockEntity {
                 if (now % 20 == 0 && left > 0) heal(sl, left);
             }
             case CLEARED -> {
+                if (check && boss(sl) == null && boss != null) go(State.DEFEATED, now);
+            }
+            case DEFEATED -> {
             }
         }
+    }
+
+    /** WAITING -> AWAKENING: a player reached the throne or struck the waiting boss. */
+    public void trigger(ServerLevel sl) {
+        if (state != State.WAITING && state != State.ENTRY) return;
+        if (state == State.ENTRY) setLitAll(sl, true);
+        long now = sl.getGameTime();
+        go(State.AWAKENING, now);
+        sound(sl, seat(), SoundEvents.WITHER_SPAWN, 0.6F, 0.5F);
+        msg(players(sl), "riftworld.arena.awaken", ChatFormatting.RED);
+        boss = BossHooks.awaken(sl, this, boss);
+    }
+
+    /** The boss died: columns go dark, the hall stays quiet until /riftarena reset. */
+    public void bossDefeated(ServerLevel sl) {
+        for (BossColumnBlockEntity c : columns(sl)) if (c.standing()) c.setBeam(false, 0, 0, 0);
+        go(State.DEFEATED, sl.getGameTime());
+        msg(players(sl), "riftworld.arena.defeated", ChatFormatting.GOLD);
+        sound(sl, seat(), SoundEvents.BEACON_DEACTIVATE, 2.0F, 0.5F);
+    }
+
+    public AABB hallBox() {
+        BlockPos a = rel(hallMin, 0), b = rel(hallMax, 0);
+        return new AABB(a.getX() - 2, a.getY() - 2, a.getZ() - 2, b.getX() + 3, b.getY() + 3, b.getZ() + 3);
     }
 
     /** Begin the entry sequence (also used by /riftarena start). */
     public void start(ServerLevel sl, List<ServerPlayer> ps) {
         setLitAll(sl, false);
+        boss = BossHooks.prepare(sl, this);
         lit = 0;
         go(State.ENTRY, sl.getGameTime());
         msg(ps, "riftworld.arena.enter", ChatFormatting.DARK_RED);

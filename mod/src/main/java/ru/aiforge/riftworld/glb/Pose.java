@@ -108,6 +108,45 @@ public final class Pose {
         }
     }
 
+    /** Samples {@code anim} at {@code time} and blends it over the current pose with weight w (0..1). One-shot clips
+     *  (loop = false) hold their last frame. */
+    public void sampleBlend(GlbModel.Animation anim, float time, float w, boolean loop) {
+        if (anim == null || anim.duration <= 0.0f || w <= 0.0f) return;
+        float tt = loop ? time % anim.duration : Math.min(Math.max(time, 0.0f), anim.duration - 1.0e-4f);
+        if (tt < 0.0f) tt += anim.duration;
+        Vector3f v = new Vector3f();
+        Quaternionf q = new Quaternionf();
+        for (GlbModel.Channel ch : anim.channels) {
+            float[] ts = ch.times;
+            if (ts.length == 0) continue;
+            int hi = 0;
+            while (hi < ts.length - 1 && ts[hi] < tt) ++hi;
+            int lo = Math.max(0, hi - 1);
+            float f = 0.0f;
+            if (hi != lo && ts[hi] > ts[lo]) f = Math.min(1.0f, Math.max(0.0f, (tt - ts[lo]) / (ts[hi] - ts[lo])));
+            if (ch.step) f = 0.0f;
+            int n = ch.node;
+            switch (ch.path) {
+                case "translation" -> {
+                    v.set(ch.values[lo * 3], ch.values[lo * 3 + 1], ch.values[lo * 3 + 2]);
+                    if (f > 0.0f) v.lerp(new Vector3f(ch.values[hi * 3], ch.values[hi * 3 + 1], ch.values[hi * 3 + 2]), f);
+                    if (w >= 1.0f) this.t[n].set(v); else this.t[n].lerp(v, w);
+                }
+                case "rotation" -> {
+                    q.set(ch.values[lo * 4], ch.values[lo * 4 + 1], ch.values[lo * 4 + 2], ch.values[lo * 4 + 3]);
+                    if (f > 0.0f) q.slerp(new Quaternionf(ch.values[hi * 4], ch.values[hi * 4 + 1], ch.values[hi * 4 + 2], ch.values[hi * 4 + 3]), f);
+                    if (w >= 1.0f) this.r[n].set(q); else this.r[n].slerp(q, w);
+                }
+                case "scale" -> {
+                    v.set(ch.values[lo * 3], ch.values[lo * 3 + 1], ch.values[lo * 3 + 2]);
+                    if (f > 0.0f) v.lerp(new Vector3f(ch.values[hi * 3], ch.values[hi * 3 + 1], ch.values[hi * 3 + 2]), f);
+                    if (w >= 1.0f) this.s[n].set(v); else this.s[n].lerp(v, w);
+                }
+                default -> { }
+            }
+        }
+    }
+
     public void rotate(String node, float rad, float ax, float ay, float az) {
         int i = this.model.nodeIndex(node);
         if (i < 0) {
@@ -153,6 +192,14 @@ public final class Pose {
 
     public void rotateIdx(int i, float rad, float ax, float ay, float az) {
         if (i >= 0) this.r[i].mul(new Quaternionf().fromAxisAngleRad(ax, ay, az, rad));
+    }
+
+    /** Rotates node i about a MODEL-space axis through its pivot (needs a prior {@link #compute()}; call compute() after). */
+    public void rotateInModel(int i, Quaternionf q) {
+        if (i < 0) return;
+        Quaternionf w = this.world[i].getUnnormalizedRotation(new Quaternionf()).normalize();
+        Quaternionf d = new Quaternionf(w).conjugate().mul(q).mul(w);
+        this.r[i].mul(d);
     }
 
     public void compute() {

@@ -1,1 +1,1 @@
-{"type": "riftworld:elisar", "generator": {"type": "riftworld:elisar", "biome_source": {"type": "minecraft:fixed", "biome": "riftworld:elisar_city"}}}
+{"type": "riftworld:elisar", "generator": {"type": "riftworld:elisar", "biome_source": {"type": "riftworld:elisar", "default": "riftworld:elisar_city", "ashen": "riftworld:ashen_lands"}}}

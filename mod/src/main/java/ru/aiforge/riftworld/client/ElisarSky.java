@@ -65,6 +65,7 @@ public final class ElisarSky extends DimensionSpecialEffects {
         public static float gloom(Vec3 cam) {
             double d = Math.hypot(cam.x - ru.aiforge.riftworld.world.CastleSite.CX, cam.z - ru.aiforge.riftworld.world.CastleSite.CZ);
             double t = Mth.clamp((170 - d) / 80.0, 0, 1);
+            t = Math.max(t, ru.aiforge.riftworld.world.AshenLands.weight(cam.x, cam.z) * 0.85);   // the whole Ashen Lands are gloomy
             return (float) (t * t * (3 - 2 * t));
         }
 

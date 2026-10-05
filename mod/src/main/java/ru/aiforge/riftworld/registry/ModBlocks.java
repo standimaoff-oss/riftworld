@@ -103,6 +103,9 @@ public final class ModBlocks {
             .strength(0.1F).sound(SoundType.SAND).noOcclusion().pushReaction(PushReaction.DESTROY)));
     public static final RegistryObject<Block> LAB_RAILING = reg("lab_railing", () -> new net.minecraft.world.level.block.IronBarsBlock(metal().noOcclusion()));
     public static final RegistryObject<Block> LAB_TILE_STAIRS = reg("lab_tile_stairs", () -> new StairBlock(() -> LAB_TILE.get().defaultBlockState(), stone().mapColor(MapColor.QUARTZ)));
+    public static final RegistryObject<Block> MAGMA_MEANDER = reg("magma_meander", () -> new ru.aiforge.riftworld.block.MagmaMeanderBlock(
+            BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_ORANGE).strength(1.5F).sound(SoundType.BASALT).lightLevel(st -> 13)
+                    .emissiveRendering((st, l, pos) -> true).hasPostProcess((st, l, pos) -> true).requiresCorrectToolForDrops()));
     public static final RegistryObject<Block> WALL_VENT = cube("wall_vent", metal());
     public static final RegistryObject<Block> LAUNCH_CORE = BLOCKS.register("launch_core", () -> new ru.aiforge.riftworld.block.LaunchCoreBlock(BlockBehaviour.Properties.of()
             .mapColor(MapColor.METAL).strength(-1.0F, 3600000.0F).sound(SoundType.METAL).noOcclusion().noLootTable()

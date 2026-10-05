@@ -18,6 +18,10 @@ public final class ModTabs {
             .displayItems((params, out) -> {
                 out.accept(ModItems.RESONANCE_STONE.get());
                 out.accept(ModFluids.BUCKET.get());
+                out.accept(ModItems.MORGRATH_SCYTHE.get());
+                out.accept(ModItems.GUARD_SICKLE.get());
+                out.accept(ModItems.MORGRATH_EGG.get());
+                out.accept(ModItems.GUARD_EGG.get());
                 for (var b : ModBlocks.WITH_ITEM) {
                     var item = ForgeRegistries.ITEMS.getValue(b.getId());
                     if (item != null) out.accept(item);

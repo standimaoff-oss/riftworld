@@ -12,6 +12,11 @@ public final class ModWorldgen {
     public static final DeferredRegister<Codec<? extends ChunkGenerator>> GENERATORS = DeferredRegister.create(Registries.CHUNK_GENERATOR, RiftWorld.MODID);
     public static final RegistryObject<Codec<? extends ChunkGenerator>> ELISAR = GENERATORS.register("elisar", () -> ElisarChunkGenerator.CODEC);
 
+    public static final DeferredRegister<Codec<? extends net.minecraft.world.level.biome.BiomeSource>> BIOME_SOURCES =
+            DeferredRegister.create(Registries.BIOME_SOURCE, RiftWorld.MODID);
+    public static final RegistryObject<Codec<? extends net.minecraft.world.level.biome.BiomeSource>> ELISAR_BIOMES =
+            BIOME_SOURCES.register("elisar", () -> ru.aiforge.riftworld.world.ElisarBiomeSource.CODEC);
+
     private ModWorldgen() {
     }
 }

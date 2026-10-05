@@ -220,7 +220,7 @@ sg = np.zeros((16, 16, 4))
 r = np.random.RandomState(3501)
 LEAD = rgb('#26221f')
 cells = {}
-CELLC = [('#a8261d', 222), ('#c98d22', 214), ('#2c4a8c', 228), ('#a8261d', 222), ('#7b1c2a', 230), ('#c98d22', 214)]
+CELLC = [('#c8301f', 160), ('#e0a52a', 150), ('#3460b8', 168), ('#c8301f', 160), ('#9a2440', 170), ('#3f8f4a', 160), ('#e0a52a', 150), ('#6a3a9c', 168)]   # rev3: lighter, more see-through (glows)
 for y in range(16):
     for x in range(16):
         cid = (x // 4 + (1 if (y // 4) % 2 else 0)) // 1, y // 4
@@ -236,7 +236,7 @@ for y in range(16):
             sg[y, x, :3] = LEAD; sg[y, x, 3] = 255
 yy, xx = np.mgrid[0:16, 0:16]
 cent = (np.hypot(xx - 7.5, yy - 7.5) < 2.4)
-sg[cent, :3] = rgb('#e4b640'); sg[cent, 3] = 215             # amber rose in the middle
+sg[cent, :3] = rgb('#f0c450'); sg[cent, 3] = 150             # amber rose in the middle
 save(sg, "stained_glass")
 
 

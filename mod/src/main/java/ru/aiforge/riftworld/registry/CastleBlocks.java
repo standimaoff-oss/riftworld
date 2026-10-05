@@ -63,7 +63,8 @@ public final class CastleBlocks {
     public static final RegistryObject<Block> BRASS = cube("brass_block", p(MapColor.GOLD, 4.0F, SoundType.METAL));
     public static final RegistryObject<Block> MOSAIC = cube("castle_mosaic", p(MapColor.TERRACOTTA_YELLOW, 2.0F, SoundType.STONE));
     public static final RegistryObject<IronBarsBlock> STAINED_GLASS = ModBlocks.reg("stained_glass",
-            () -> new IronBarsBlock(p(MapColor.COLOR_RED, 0.3F, SoundType.GLASS).noOcclusion()));
+            () -> new IronBarsBlock(p(MapColor.COLOR_RED, 0.3F, SoundType.GLASS).noOcclusion()
+                    .lightLevel(st -> 10).emissiveRendering((st, l, pos) -> true)));   // rev3: the glass glows and lights the room
     public static final RegistryObject<Block> ROOF = cube("castle_roof", p(MapColor.TERRACOTTA_BROWN, 2.0F, SoundType.STONE));
     public static final RegistryObject<StairBlock> ROOF_STAIRS = stairs("castle_roof_stairs", ROOF);
     public static final RegistryObject<SlabBlock> ROOF_SLAB = slab("castle_roof_slab", ROOF);

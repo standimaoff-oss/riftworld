@@ -61,6 +61,7 @@ public final class WildIslands {
         List<CityPlan.Tree> out = new ArrayList<>();
         if (CastleSite.near(x, z, 6))
             for (CityPlan.Tree t : CastleSite.TREES) if (Math.abs(x - t.x) <= 4 && Math.abs(z - t.z) <= 4) out.add(t);
+        if (AshenLands.weight(x, z) > 0) out.addAll(AshenLands.treesNear(x, z));
         for (int dx = -1; dx <= 1; ++dx)
             for (int dz = -1; dz <= 1; ++dz)
                 for (CityPlan.Tree t : cell(cx + dx, cz + dz).trees)
@@ -129,6 +130,10 @@ public final class WildIslands {
             if (!ok) continue;
             int kind = r.nextDouble() < 0.55 ? 0 : 1;
             int h = kind == 0 ? 8 + r.nextInt(6) : 5 + r.nextInt(4);
+            if (AshenLands.weight(x, z) > 0.3) {             // burnt: bare dead trees only
+                kind = 2;
+                h = 5 + r.nextInt(6);
+            }
             c.trees.add(new CityPlan.Tree((int) Math.floor(x), (int) Math.floor(z), kind, h, r.nextInt(1 << 30)));
             ++k;
         }
