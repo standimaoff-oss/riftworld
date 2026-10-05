@@ -31,13 +31,14 @@ import ru.aiforge.riftworld.registry.ModItems;
  * dashes; close up it slashes. Summoned by Morgrath: appears on a balcony and leaps down into the hall.
  */
 public class EmberGuard extends RiftMob {
-    public static final int A_IDLE = 0, A_RUN = 1, A_CRAWL = 2, A_LEAP = 3, A_WINDUP = 4, A_DASH = 5, A_SLASH = 6, A_DEATH = 7;
-    private static final String[] CLIPS = {"idle", "run", "crawl", "leap", "windup", "dash", "slash", "death"};
+    public static final int A_IDLE = 0, A_RUN = 1, A_CRAWL = 2, A_LEAP = 3, A_WINDUP = 4, A_DASH = 5, A_SLASH = 6, A_DEATH = 7, A_LAND = 8;
+    private static final String[] CLIPS = {"idle", "run", "crawl", "leap", "windup", "dash", "slash", "death", "land"};
     enum S { WAIT, LEAP, CHASE, WINDUP, DASH, RECOVER, SLASH, MANTLE }
     private static final int F_CLIMB = 1;
 
     S state = S.CHASE;
     int st, cooldown = 40, leapDir, leapDelay, windT;
+    @Nullable Vec3 leapF;
     boolean dashHit;
     float phase;
     int stuck;
@@ -145,7 +146,8 @@ public class EmberGuard extends RiftMob {
                     if (st >= leapDelay + 7) {
                         float yaw = getYRot();
                         Vec3 f = leapDir != 0 ? new Vec3(leapDir, 0, 0) : MorgrathBoss.forward(yaw);
-                        setDeltaMovement(f.x * 0.36, 0.48, f.z * 0.36);
+                        leapF = f;
+                        setDeltaMovement(f.x * 0.12, 0.6, f.z * 0.12);   // up over the railing first, then out (LEAP st 3)
                         hasImpulse = true;
                         sound(SoundEvents.PHANTOM_FLAP, 1.0F, 0.6F);
                         go(S.LEAP);
@@ -153,11 +155,24 @@ public class EmberGuard extends RiftMob {
                 }
             }
             case LEAP -> {
+                if (st == 3 && leapF != null) {
+                    // the arc out into the hall: ~5-6 blocks from the balcony, slightly spread so they do not land in a heap
+                    double sp = 0.6 + random.nextDouble() * 0.08, side = (random.nextDouble() - 0.5) * 0.14;
+                    setDeltaMovement(leapF.x * sp - leapF.z * side, getDeltaMovement().y, leapF.z * sp + leapF.x * side);
+                    hasImpulse = true;
+                }
+                if (st > 3 && st < 40 && !onGround()) {
+                    Vec3 v = getDeltaMovement();
+                    if (v.horizontalDistanceSqr() > 1.0E-4) setYRot(yBodyRot = (float) (Mth.atan2(v.z, v.x) * Mth.RAD_TO_DEG) - 90.0F);
+                }
                 if (st > 4 && onGround() || st > 80) {
-                    sound(SoundEvents.ZOMBIE_BREAK_WOODEN_DOOR, 0.5F, 1.6F);
-                    sl.sendParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE, getX(), getY() + 0.1, getZ(), 4, 0.3, 0.05, 0.3, 0.01);
+                    sound(SoundEvents.ZOMBIE_BREAK_WOODEN_DOOR, 0.6F, 1.4F);
+                    sound(SoundEvents.RAVAGER_STEP, 0.8F, 1.3F);
+                    sl.sendParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE, getX(), getY() + 0.1, getZ(), 8, 0.5, 0.05, 0.5, 0.015);
+                    sl.sendParticles(ParticleTypes.LAVA, getX(), getY() + 0.1, getZ(), 3, 0.3, 0.0, 0.3, 0.0);
+                    setDeltaMovement(getDeltaMovement().multiply(0.2, 1, 0.2));
                     go(S.RECOVER);
-                    setAnim(A_IDLE);
+                    setAnim(A_LAND, true);
                     cooldown = 30;
                 }
             }
@@ -214,7 +229,7 @@ public class EmberGuard extends RiftMob {
             case RECOVER -> {
                 getNavigation().stop();
                 if (tgt != null) face(tgt, 15);
-                if (st >= 16) go(S.CHASE);
+                if (st >= (anim() == A_LAND ? 18 : 16)) go(S.CHASE);
             }
             case SLASH -> {
                 getNavigation().stop();

@@ -19,6 +19,8 @@ public abstract class RiftMob extends Monster {
     /** Client-side cross-fade bookkeeping (renderer only). */
     public int cLast = -1, cPrev = -1, cLastStart, cPrevStart;
     public float cSwitch;
+    /** Client-side head snap state (renderer only): the head holds a direction and jerks to a new one, never glides. */
+    public float cHeadFrom, cHeadTo, cHeadT0 = -100, cHeadPitch;
 
     protected RiftMob(EntityType<? extends Monster> type, Level level) {
         super(type, level);
@@ -51,6 +53,12 @@ public abstract class RiftMob extends Monster {
     public void setAnim(int a, boolean restart) {
         if (!restart && anim() == a) return;
         this.entityData.set(ANIM_T, (int) level().getGameTime());
+        this.entityData.set(ANIM, a);
+    }
+
+    /** Start a clip as if it had begun `ticksAgo` ticks earlier (skips into the middle, e.g. combo follow-ups). */
+    public void setAnimAt(int a, int ticksAgo) {
+        this.entityData.set(ANIM_T, (int) level().getGameTime() - ticksAgo);
         this.entityData.set(ANIM, a);
     }
 

@@ -455,3 +455,39 @@ Passable: chandelier, sconce, shackles, tapestry, bones. New 16×16 blocks: `cas
 - Fixed while testing: client crash on scythe pickup (renderer cast), boss following out of the hall / up the stairs,
   red corpse tint, scythe not visible enough (light), guards stuck under the gallery, climb blocked by sockets.
 - Screenshots: `release/riftworld_screens/session10/`.
+
+## Part A-2 (v0.6.0-a2) — fight depth, guard leap, sharp head turns
+
+### Boss — new attacks (new Blender clips `lunge`, `scrape` in `boss.glb`)
+- **«Выпад жнеца»** (lunge, 1.7 s): at 5–10 blocks with a clear line, a deep spring crouch with the scythe drawn back
+  (direction tracks for 0.35 s, then locks; flame flash + smoke under the feet), then a ~5-block low leap and a forward
+  cut (14 dmg along a 1.1-wide line). The leap cannot climb column sockets (step height lowered during the leap) and
+  stops short of the target/walls. Cooldown 5.5–8.5 s. Never sticks.
+- **«Огненный разрез»** (scrape, 2.0 s): if the player keeps away (> 7 blocks for 2.5 s), the blade grinds through the
+  floor on his right (sparks, embers, grinding sound — 0.75 s warning), then rips across: close arc 9 dmg, and a narrow
+  fire furrow runs straight along the floor at the locked direction (0.8 block/tick, 18 blocks, stops at walls),
+  7 dmg + 4 s fire, hits each victim once — dodge sideways. Cooldown 8.5–12.5 s.
+- **Combo**: a horizontal sweep can flow straight into an overhead chop (40 %, 60 % in phase 2), wind-up shortened by
+  0.4 s but still telegraphed (flame flash + locked direction 0.45 s before the blow); the chop sticks as usual.
+- **Climb trigger is no longer lost**: an arrow from the gallery during the roar/swing/tug is remembered and he goes to
+  the wall as soon as he is free (tested: arrow at roar st≈30 → CLIMB_GO right after the roar → on the gallery).
+- **Unstick**: if he tries to reach the target but has not moved for 2.5 s (wedged at a column socket / rubble),
+  he hops to the nearest free floor spot towards the target inside the hall.
+- `/riftarena status` also prints the boss state/clip/HP/position (testing aid).
+
+### Sharp head turns (TZ «резкие повороты головы»)
+- Client renderer: the head no longer glides after the gaze. It holds a direction and, when the gaze drifts past a
+  threshold (13° boss / 9° guards), snaps to the new one in ~2 ticks with a small overshoot. On top, a seeded
+  involuntary twitch every few seconds (14–30° yaw + roll, 0.3 s), identical for all viewers. Server-side head jerks
+  (35–60°) during waiting/fight remain.
+
+### Guards — balcony leap
+- New `leap` clip: a spring crouch (claw on the railing) → stretched launch → tucked fall; new `land` clip: absorbs the
+  drop in a deep crouch with the claw on the floor, head snapping up. Physics: up over the railing first (0.6), then out
+  into the hall (0.60–0.68 + small side spread), body turned along the flight. Logged: from x30.5 / x50.5 they land at
+  x≈36.9–37.1 / x≈43.7 (6–7 blocks out, was ~2), dust + embers on landing.
+
+### Verification (live server + client, survival + resistance)
+- Status polling: lunge (moves 4–5 blocks), scrape (player burned at 11 blocks ~0.7 s after the rip), combo,
+  pending climb during roar → gallery, unstick from a socket (≈3 s), guard leap positions; burst screenshots of the
+  leap arc and both new attacks; 0 exceptions in the server log.

@@ -48,18 +48,25 @@ import ru.aiforge.riftworld.registry.ModItems;
  */
 public class MorgrathBoss extends RiftMob {
     public static final int A_IDLE = 0, A_WALK = 1, A_AWAKEN = 2, A_OVER = 3, A_PULL = 4, A_SIDE = 5, A_DIAG = 6, A_PULL_DIAG = 7,
-            A_ROAR = 8, A_CLIMB = 9, A_DEATH = 10, A_DEAD = 11;
+            A_ROAR = 8, A_CLIMB = 9, A_DEATH = 10, A_DEAD = 11, A_LUNGE = 12, A_SCRAPE = 13;
     private static final String[] CLIPS = {"idle", "walk", "awaken", "swing_over", "pull", "swing_side", "swing_diag", "pull_diag",
-            "roar", "climb", "death", "dead"};
+            "roar", "climb", "death", "dead", "lunge", "scrape"};
     enum S { DORMANT, RISING, WAITING, ROAR, FIGHT, ATTACK, PULL, CLIMB_GO, CLIMB, HOP }
 
     static final int RISE_T = 92, ROAR_T = 44, SUMMON_AT = 20, LIE_T = 340;
+    /** Lunge: crouch (direction tracks until LUNGE_LOCK), leap LUNGE_GO..LUNGE_HIT, cut. Scrape: blade drags, rips at SCRAPE_HIT. */
+    static final int LUNGE_LOCK = 7, LUNGE_GO = 12, LUNGE_HIT = 16, LUNGE_END = 34, SCRAPE_LOCK = 12, SCRAPE_HIT = 21, SCRAPE_END = 40, COMBO_SKIP = 8;
     static final int OVER_HIT = 21, OVER_END = 48, SIDE_HIT = 18, SIDE_END = 36, DIAG_HIT = 20, DIAG_END = 44, PULL_END = 30, LOCK_BEFORE = 9;
     private static final int F_SCYTHE_GONE = 0;
 
     S state = S.FIGHT;
-    int st, atk, cooldown = 30, twitch, twitchYaw, climbTicks;
-    boolean second;
+    int st, atk, cooldown = 30, twitch, twitchYaw, climbTicks, lungeCd = 60, scrapeCd = 100, farTicks;
+    boolean second, combo;
+    int stuckTicks;
+    @Nullable Player pendingClimb;
+    /** Fire waves still running across the floor after a scrape: {x, y, z, dirX, dirZ, step}. */
+    final List<double[]> waves = new ArrayList<>();
+    final List<List<UUID>> waveHit = new ArrayList<>();
     float lockYaw;
     @Nullable BlockPos core;
     @Nullable Player climbTarget;
@@ -114,6 +121,13 @@ public class MorgrathBoss extends RiftMob {
         return a == A_IDLE || a == A_WALK;
     }
 
+    /** One-line state summary for /riftarena status. */
+    public String debugLine() {
+        int a = anim();
+        return String.format(java.util.Locale.ROOT, "boss %s/%s st=%d hp=%.0f at %.1f %.1f %.1f", state, a >= 0 && a < CLIPS.length ? CLIPS[a] : "?", st,
+                getHealth(), getX(), getY(), getZ());
+    }
+
     public boolean scytheGone() {
         return flag(F_SCYTHE_GONE);
     }
@@ -157,6 +171,7 @@ public class MorgrathBoss extends RiftMob {
     private void go(S s) {
         state = s;
         st = 0;
+        stuckTicks = 0;
     }
 
     @Nullable
@@ -181,6 +196,9 @@ public class MorgrathBoss extends RiftMob {
         ServerLevel sl = (ServerLevel) level();
         ++st;
         if (cooldown > 0) --cooldown;
+        if (lungeCd > 0) --lungeCd;
+        if (scrapeCd > 0) --scrapeCd;
+        if (!waves.isEmpty()) tickWaves(sl);
         if (tickCount % 10 == 0) updateBar(sl);
         LivingEntity tgt = target(sl);
         switch (state) {
@@ -256,6 +274,14 @@ public class MorgrathBoss extends RiftMob {
 
     private void fight(ServerLevel sl, @Nullable LivingEntity tgt) {
         setAnim(A_IDLE);
+        if (pendingClimb != null) {             // shot from the gallery while busy (roar / swing): climb now
+            Player q = pendingClimb;
+            pendingClimb = null;
+            if (q.isAlive() && core != null && q.getY() > core.getY() + 6) {
+                startClimb(q);
+                if (state == S.CLIMB_GO) return;
+            }
+        }
         ArenaCoreBlockEntity ar = arena();
         if (ar != null && tgt != null && !ar.hallBox().inflate(0.5).contains(tgt.position())) tgt = null;   // never follows out of the hall
         if (tgt == null) {
@@ -280,15 +306,29 @@ public class MorgrathBoss extends RiftMob {
             return;
         }
         double d = distanceTo(tgt);
+        if (unstick(tgt, d)) return;
         float want = yawTo(tgt);
         float diff = Mth.wrapDegrees(want - getYRot());
+        farTicks = d > 7.0 ? farTicks + 1 : 0;
+        boolean level = Math.abs(tgt.getY() - getY()) < 1.6;
+        if (cooldown <= 0 && lungeCd <= 0 && level && d > 5.2 && d < 10.5 && Math.abs(diff) < 45 && hasLineOfSight(tgt)
+                && random.nextInt(10) == 0) {
+            begin(A_LUNGE, want);
+            lungeCd = 110 + random.nextInt(60);
+            sound(SoundEvents.WARDEN_AGITATED, 1.6F, 0.55F);
+            return;
+        }
+        if (cooldown <= 0 && scrapeCd <= 0 && Math.abs(tgt.getY() - getY()) < 2.5 && d > 7.0 && d < 20 && farTicks > 50
+                && Math.abs(diff) < 60 && hasLineOfSight(tgt)) {
+            begin(A_SCRAPE, want);
+            scrapeCd = 170 + random.nextInt(80);
+            farTicks = 0;
+            sound(SoundEvents.GRINDSTONE_USE, 1.6F, 0.4F);
+            return;
+        }
         if (d < 4.1 && cooldown <= 0 && Math.abs(diff) < 55 && Math.abs(tgt.getY() - getY()) < 2.5) {
             int r = random.nextInt(100);
-            atk = r < 36 ? A_OVER : r < 72 ? A_SIDE : A_DIAG;
-            go(S.ATTACK);
-            setAnim(atk, true);
-            lockYaw = want;
-            getNavigation().stop();
+            begin(r < 36 ? A_OVER : r < 72 ? A_SIDE : A_DIAG, want);
             sound(SoundEvents.RAVAGER_ATTACK, 1.4F, 0.55F);
             return;
         }
@@ -301,8 +341,61 @@ public class MorgrathBoss extends RiftMob {
         getLookControl().setLookAt(tgt, 30, 30);
     }
 
+    /** Wedged against a column/socket or rubble (no progress for 2 s while the target is away): hop to free floor. */
+    private boolean unstick(LivingEntity tgt, double d) {
+        double moved = (getX() - xo) * (getX() - xo) + (getZ() - zo) * (getZ() - zo);
+        stuckTicks = d > 4.5 && moved < 4.0E-4 ? stuckTicks + 1 : 0;   // trying to reach the target but not moving
+        if (stuckTicks < 50) return false;
+        stuckTicks = 0;
+        double floorY = core != null ? core.getY() - 1 : Math.floor(getY());
+        Vec3 best = null;
+        double bestD = 1e9;
+        for (int r = 2; r <= 4; ++r) {
+            for (int k = 0; k < 16; ++k) {
+                double a = k * Math.PI / 8;
+                Vec3 c = new Vec3(getX() + Math.cos(a) * r, floorY, getZ() + Math.sin(a) * r);
+                net.minecraft.world.phys.AABB bb = getBoundingBox().move(c.x - getX(), c.y - getY(), c.z - getZ());
+                if (!level().noCollision(this, bb) || level().noCollision(this, bb.move(0, -0.2, 0))) continue;   // free + floor below
+                ArenaCoreBlockEntity ar = arena();
+                if (ar != null && !ar.hallBox().contains(c)) continue;
+                double dd = c.distanceToSqr(tgt.position()) + r * 2;
+                if (dd < bestD) {
+                    bestD = dd;
+                    best = c;
+                }
+            }
+            if (best != null) break;
+        }
+        if (best == null) return false;
+        climbTop = best;
+        noPhysics = true;
+        setNoGravity(true);
+        getNavigation().stop();
+        go(S.HOP);
+        setAnim(A_IDLE);
+        sound(SoundEvents.RAVAGER_STEP, 1.6F, 0.6F);
+        return true;
+    }
+
+    private void begin(int a, float yaw) {
+        atk = a;
+        combo = false;
+        go(S.ATTACK);
+        setAnim(a, true);
+        lockYaw = yaw;
+        getNavigation().stop();
+    }
+
     private void attack(ServerLevel sl, @Nullable LivingEntity tgt) {
         getNavigation().stop();
+        if (atk == A_LUNGE) {
+            lunge(sl, tgt);
+            return;
+        }
+        if (atk == A_SCRAPE) {
+            scrape(sl, tgt);
+            return;
+        }
         int hit = atk == A_OVER ? OVER_HIT : atk == A_SIDE ? SIDE_HIT : DIAG_HIT;
         int end = atk == A_OVER ? OVER_END : atk == A_SIDE ? SIDE_END : DIAG_END;
         if (st < hit - LOCK_BEFORE && tgt != null) lockYaw = Mth.approachDegrees(lockYaw, yawTo(tgt), 8);
@@ -334,6 +427,18 @@ public class MorgrathBoss extends RiftMob {
             }
         }
         if (st >= end) {
+            if (atk == A_SIDE && !combo && tgt != null && distanceTo(tgt) < 4.6 && Math.abs(tgt.getY() - getY()) < 2.0
+                    && random.nextInt(100) < (second ? 60 : 40)) {
+                // combo: the sweep flows straight into an overhead chop (shortened wind-up, still telegraphed)
+                atk = A_OVER;
+                combo = true;
+                state = S.ATTACK;
+                st = COMBO_SKIP;
+                setAnimAt(A_OVER, COMBO_SKIP);
+                lockYaw = Mth.approachDegrees(lockYaw, yawTo(tgt), 40);
+                sound(SoundEvents.RAVAGER_ATTACK, 1.4F, 0.65F);
+                return;
+            }
             if (atk == A_SIDE) {
                 go(S.FIGHT);
                 setAnim(A_IDLE);
@@ -342,6 +447,99 @@ public class MorgrathBoss extends RiftMob {
                 go(S.PULL);
                 setAnim(atk == A_OVER ? A_PULL : A_PULL_DIAG, true);
             }
+        }
+    }
+
+    private void lunge(ServerLevel sl, @Nullable LivingEntity tgt) {
+        if (st < LUNGE_LOCK && tgt != null) lockYaw = Mth.approachDegrees(lockYaw, yawTo(tgt), 10);
+        setYRot(lockYaw);
+        yBodyRot = lockYaw;
+        yHeadRot = lockYaw;
+        Vec3 f = forward(lockYaw);
+        if (st == LUNGE_LOCK) {
+            sound(SoundEvents.FIRECHARGE_USE, 1.0F, 0.5F);
+            Vec3 p = position().add(f.scale(-0.8)).add(0, 2.6, 0);
+            sl.sendParticles(ParticleTypes.FLAME, p.x, p.y, p.z, 14, 0.3, 0.3, 0.3, 0.02);
+        }
+        if (st < LUNGE_GO && st % 3 == 0) sl.sendParticles(ParticleTypes.LARGE_SMOKE, getX(), getY() + 0.1, getZ(), 3, 0.5, 0.0, 0.5, 0.01);
+        if (st >= LUNGE_GO && st < LUNGE_HIT) {
+            if (st == LUNGE_GO) {
+                sound(SoundEvents.RAVAGER_ROAR, 1.2F, 0.75F);
+                sl.sendParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE, getX(), getY() + 0.1, getZ(), 8, 0.5, 0.05, 0.5, 0.02);
+            }
+            // a long low leap: ~1.3 blocks a tick, stops short of walls and of the target itself
+            boolean close = tgt != null && distanceTo(tgt) < 2.3;
+            setMaxUpStep(0.6F);                       // the leap stops at column sockets instead of climbing onto them
+            if (!close) move(net.minecraft.world.entity.MoverType.SELF, new Vec3(f.x * 1.3, -0.05, f.z * 1.3));
+            setMaxUpStep(1.1F);
+            setDeltaMovement(Vec3.ZERO);
+        }
+        if (st == LUNGE_HIT) {
+            sound(SoundEvents.PLAYER_ATTACK_SWEEP, 2.0F, 0.6F);
+            hitLine(sl, 0.4, 4.2, 1.1, 14.0F);
+            impact(sl, blade(3.0));
+        }
+        if (st >= LUNGE_END) {
+            go(S.FIGHT);
+            setAnim(A_IDLE);
+            cooldown = 20 + random.nextInt(14);
+        }
+    }
+
+    private void scrape(ServerLevel sl, @Nullable LivingEntity tgt) {
+        if (st < SCRAPE_LOCK && tgt != null) lockYaw = Mth.approachDegrees(lockYaw, yawTo(tgt), 8);
+        setYRot(lockYaw);
+        yBodyRot = lockYaw;
+        yHeadRot = lockYaw;
+        if (st > 6 && st < SCRAPE_HIT) {
+            // the blade grinds in the floor on his right: sparks + embers (readable warning)
+            Vec3 p = position().add(forward(lockYaw + 70).scale(2.2));
+            sl.sendParticles(ParticleTypes.LAVA, p.x, getY() + 0.1, p.z, 1, 0.1, 0.0, 0.1, 0.0);
+            sl.sendParticles(ParticleTypes.FLAME, p.x, getY() + 0.1, p.z, 3, 0.2, 0.05, 0.2, 0.02);
+            if (st % 4 == 0) sound(SoundEvents.GRINDSTONE_USE, 1.0F, 0.6F);
+        }
+        if (st == SCRAPE_LOCK) sound(SoundEvents.FIRECHARGE_USE, 1.2F, 0.45F);
+        if (st == SCRAPE_HIT) {
+            sound(SoundEvents.BLAZE_SHOOT, 2.0F, 0.5F);
+            sound(SoundEvents.PLAYER_ATTACK_SWEEP, 2.0F, 0.5F);
+            hitArc(sl, 3.6, 70, 9.0F, 0.8);
+            Vec3 f = forward(lockYaw);
+            Vec3 o = position().add(f.scale(1.5));
+            waves.add(new double[] {o.x, getY(), o.z, f.x, f.z, 0});
+            waveHit.add(new ArrayList<>());
+        }
+        if (st >= SCRAPE_END) {
+            go(S.FIGHT);
+            setAnim(A_IDLE);
+            cooldown = 18 + random.nextInt(12);
+        }
+    }
+
+    /** A narrow fire furrow running straight along the floor, 0.8 block a tick, 18 blocks; burns each victim once. */
+    private void tickWaves(ServerLevel sl) {
+        for (int i = waves.size() - 1; i >= 0; --i) {
+            double[] w = waves.get(i);
+            double x = w[0] + w[3] * w[5] * 0.8, y = w[1], z = w[2] + w[4] * w[5] * 0.8;
+            BlockPos bp = BlockPos.containing(x, y + 0.5, z);
+            boolean blocked = !sl.getBlockState(bp).getCollisionShape(sl, bp).isEmpty();
+            if (blocked || w[5] > 22 || isDeadOrDying()) {
+                if (blocked) sl.sendParticles(ParticleTypes.LAVA, x, y + 0.5, z, 6, 0.3, 0.3, 0.3, 0.1);
+                waves.remove(i);
+                waveHit.remove(i);
+                continue;
+            }
+            sl.sendParticles(ParticleTypes.FLAME, x, y + 0.15, z, 10, 0.35, 0.12, 0.35, 0.03);
+            sl.sendParticles(ParticleTypes.LAVA, x, y + 0.1, z, 1, 0.2, 0.0, 0.2, 0.0);
+            if (w[5] % 2 == 0) sl.sendParticles(ParticleTypes.LARGE_SMOKE, x, y + 0.4, z, 2, 0.3, 0.2, 0.3, 0.01);
+            if (w[5] % 5 == 0) sl.playSound(null, x, y, z, SoundEvents.FIRECHARGE_USE, getSoundSource(), 0.7F, 0.6F);
+            List<UUID> hit = waveHit.get(i);
+            for (LivingEntity e : sl.getEntitiesOfClass(LivingEntity.class, new net.minecraft.world.phys.AABB(x - 0.75, y - 0.5, z - 0.75, x + 0.75, y + 1.5, z + 0.75),
+                    e -> e != this && e.isAlive() && !(e instanceof EmberGuard) && !(e instanceof Player p && (p.isCreative() || p.isSpectator())))) {
+                if (hit.contains(e.getUUID())) continue;
+                hit.add(e.getUUID());
+                if (e.hurt(damageSources().mobAttack(this), 7.0F)) e.setSecondsOnFire(4);
+            }
+            w[5] += 1;
         }
     }
 
@@ -448,7 +646,12 @@ public class MorgrathBoss extends RiftMob {
 
     // ------------------------------------------------------------------------------------------------ wall climbing
     private void startClimb(Player p) {
-        if (core == null || !(state == S.FIGHT || state == S.ATTACK && st > 30)) return;
+        if (core == null) return;
+        if (state == S.ROAR || state == S.ATTACK || state == S.PULL) {   // busy: remember the shot, climb as soon as he is free
+            pendingClimb = p;
+            return;
+        }
+        if (state != S.FIGHT) return;
         climbTarget = p;
         boolean west = p.getX() < core.getX() + 0.5;
         double bx = core.getX() + (west ? -7.5 : 8.5);
@@ -529,7 +732,7 @@ public class MorgrathBoss extends RiftMob {
                 startClimb(p);
             }
         }
-        if (state == S.PULL || state == S.ATTACK && atk != A_SIDE && st > (atk == A_OVER ? OVER_HIT : DIAG_HIT)) amount *= 1.5F;   // scythe stuck
+        if (state == S.PULL || state == S.ATTACK && (atk == A_OVER || atk == A_DIAG) && st > (atk == A_OVER ? OVER_HIT : DIAG_HIT)) amount *= 1.5F;   // scythe stuck
         return super.hurt(src, amount);
     }
 

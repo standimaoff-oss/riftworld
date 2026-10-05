@@ -60,6 +60,13 @@ public class RiftMobRenderer<T extends RiftMob> extends EntityRenderer<T> {
         }
     }
 
+    /** Ease-out with a small overshoot (~6%) - reads as a snap that "lands". */
+    private static float snapEase(float u) {
+        float c = 1.9F;
+        float v = u - 1.0F;
+        return 1.0F + (c + 1.0F) * v * v * v + c * v * v;
+    }
+
     @Override
     public void render(T e, float yaw, float partial, PoseStack ps, MultiBufferSource buffers, int light) {
         GlbAssets.Loaded lm = GlbAssets.get(glb);
@@ -93,12 +100,41 @@ public class RiftMobRenderer<T extends RiftMob> extends EntityRenderer<T> {
         if (e.headLook() && e.isAlive()) {
             float bodyYaw = Mth.rotLerp(partial, e.yBodyRotO, e.yBodyRot);
             float headYaw = Mth.rotLerp(partial, e.yHeadRotO, e.yHeadRot);
-            float rel = Mth.clamp(Mth.wrapDegrees(headYaw - bodyYaw), -70.0F, 70.0F) * Mth.DEG_TO_RAD;
-            float pitch = Mth.clamp(Mth.lerp(partial, e.xRotO, e.getXRot()), -40.0F, 40.0F) * Mth.DEG_TO_RAD;
+            float want = Mth.clamp(Mth.wrapDegrees(headYaw - bodyYaw), -70.0F, 70.0F);
+            float wantPitch = Mth.clamp(Mth.lerp(partial, e.xRotO, e.getXRot()), -40.0F, 40.0F);
+            // sharp, predatory head turns: the head keeps its direction until the gaze drifts past a threshold, then
+            // snaps to the new one in ~2 ticks (ease-out), with a tiny overshoot - never a smooth glide
+            float snapT = e instanceof EmberGuard ? 1.6F : 2.4F;
+            float u0 = Mth.clamp((now - e.cHeadT0) / snapT, 0.0F, 1.0F);
+            float curNow = Mth.lerp(snapEase(u0), e.cHeadFrom, e.cHeadTo);
+            if (Math.abs(want - e.cHeadTo) > (e instanceof EmberGuard ? 9.0F : 13.0F) || now < e.cHeadT0 - 1) {
+                e.cHeadFrom = curNow;
+                e.cHeadTo = want;
+                e.cHeadT0 = now;
+            }
+            if (Math.abs(wantPitch - e.cHeadPitch) > 10.0F) e.cHeadPitch = wantPitch;
+            float u = Mth.clamp((now - e.cHeadT0) / snapT, 0.0F, 1.0F);
+            float relDeg = Mth.lerp(snapEase(u), e.cHeadFrom, e.cHeadTo);
+            // a quick involuntary twitch every few seconds (seeded per mob, so all viewers see the same jerk)
+            float roll = 0.0F;
+            int period = e instanceof EmberGuard ? 46 : 70;
+            int slot = (int) Math.floor(now / period);
+            long seed = (long) e.getId() * 341873128712L + slot * 132897987541L;
+            java.util.Random rnd = new java.util.Random(seed);
+            float tStart = slot * period + rnd.nextInt(period - 10);
+            float k = now - tStart;
+            if (k >= 0 && k < 6) {
+                float amp = (rnd.nextBoolean() ? 1 : -1) * (14 + rnd.nextInt(16));
+                float env = k < 1 ? k : k < 3.5F ? 1.0F : Math.max(0.0F, 1.0F - (k - 3.5F) / 2.5F);
+                relDeg += amp * env;
+                roll = amp * 0.6F * env;
+            }
+            float rel = relDeg * Mth.DEG_TO_RAD;
+            float pitch = e.cHeadPitch * Mth.DEG_TO_RAD;
             int neck = m.nodeIndex("neck"), head = m.nodeIndex("head");
             pose.rotateInModel(neck, new Quaternionf().rotationY(-rel * 0.4F));
             pose.compute();
-            pose.rotateInModel(head, new Quaternionf().rotationY(-rel * 0.6F).rotateX(pitch * 0.8F));
+            pose.rotateInModel(head, new Quaternionf().rotationY(-rel * 0.6F).rotateX(pitch * 0.8F).rotateZ(roll * Mth.DEG_TO_RAD));
             pose.compute();
         }
         float bodyYaw = Mth.rotLerp(partial, e.yBodyRotO, e.yBodyRot);

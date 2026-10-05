@@ -40,7 +40,10 @@ public final class ArenaCommand {
                 if (col.standing()) ++up;
                 if (col.shattered()) ++broken;
             }
-            String line = "arena " + a.getBlockPos().toShortString() + ": " + a.state() + ", columns standing " + up + ", broken " + broken;
+            StringBuilder sb = new StringBuilder("arena " + a.getBlockPos().toShortString() + ": " + a.state() + ", columns standing " + up + ", broken " + broken);
+            for (ru.aiforge.riftworld.entity.MorgrathBoss b : sl.getEntitiesOfClass(ru.aiforge.riftworld.entity.MorgrathBoss.class,
+                    new net.minecraft.world.phys.AABB(a.getBlockPos()).inflate(48))) sb.append("; ").append(b.debugLine());
+            String line = sb.toString();
             c.getSource().sendSuccess(() -> Component.literal(line), false);
         }
         if (n == 0) c.getSource().sendFailure(Component.literal("no loaded arena in this dimension"));
