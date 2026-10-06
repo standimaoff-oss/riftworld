@@ -238,7 +238,7 @@ def box(name, size, loc, m, rot=(0, 0, 0), bevel=0.0):
     bmesh.ops.create_cube(bm, size=1.0)
     for v in bm.verts:
         v.co = Vector((v.co.x * size[0], v.co.y * size[1], v.co.z * size[2]))
-    if bevel > 0:
+    if bevel > 0 and min(size) >= 0.05:                    # Rev4: thin trims/studs don't waste 20+ faces on bevels
         bmesh.ops.bevel(bm, geom=list(bm.edges), offset=bevel, segments=1, affect='EDGES', profile=0.5)
     return _obj(name, bm, m, loc, rot)
 
@@ -919,7 +919,7 @@ def m_siren():
     cyl("domef", 0.16, 0.05, (0, -0.12, 0.55), "siren", rx, seg=16, r2=0.12)
     cyl("cable", 0.02, 0.4, (0.08, 0.45, 0.3), "rubber", seg=6)
     cyl("lampb", 0.07, 0.04, (0, 0.12, 0.7), "dark", seg=10)
-    cyl("lampoff", 0.06, 0.08, (0, 0.12, 0.76), "beacon_off", seg=10, r2=0.04)
+    cyl("lampoff", 0.06, 0.08, (0, 0.12, 0.76), "beacon_off", seg=8, r2=0.04)
     node("body")
     for k in range(4):
         a = math.pi * k / 2
@@ -1260,10 +1260,10 @@ def barrel(name, loc, r=0.26, h=0.8, m="e_wood", band="e_iron", open_top=False):
         cyl(name + "in", r * 0.92, 0.01, (x, y, z + h - 0.06), "e_coal", seg=14)
 
 
-def spoked_wheel(name, loc, R, rot, spokes=8, broken=False):
-    torus(name + "rim", R, 0.035, loc, "e_wood_dark", rot, seg=20, seg2=4)
-    torus(name + "tyre", R + 0.03, 0.018, loc, "e_iron", rot, seg=20, seg2=4)
-    cyl(name + "hub", 0.07, 0.16, loc, "e_wood_dark", (rot[0] + math.radians(90), rot[1], rot[2]), seg=10)
+def spoked_wheel(name, loc, R, rot, spokes=6, broken=False):
+    torus(name + "rim", R, 0.035, loc, "e_wood_dark", rot, seg=14, seg2=3)
+    torus(name + "tyre", R + 0.03, 0.018, loc, "e_iron", rot, seg=14, seg2=3)
+    cyl(name + "hub", 0.07, 0.16, loc, "e_wood_dark", (rot[0] + math.radians(90), rot[1], rot[2]), seg=8)
     M = Euler(rot).to_matrix()
     for k in range(spokes):
         if broken and k in (2, 3):
@@ -2354,14 +2354,14 @@ def m_boss_throne():
             box("pst%d_%d" % (sx, k), (0.03, 0.04, 0.03), (x + sx * 0.18, -0.2 + k * 0.42, 1.2), "c_brass")
     # back: tall frame, pointed arch top, tufted velvet inset
     box("back", (2.1, 0.3, 2.1), (0, 0.98, 2.2), "c_dark", bevel=0.03)
-    for k in range(6):                                       # stepped gable of the pointed arch
-        w = 2.1 - k * 0.34
-        box("gab%d" % k, (w, 0.3, 0.16), (0, 0.98, 3.33 + k * 0.15), "c_dark")
+    for k in range(5):                                       # stepped gable of the pointed arch
+        w = 2.1 - k * 0.42
+        box("gab%d" % k, (w, 0.3, 0.19), (0, 0.98, 3.33 + k * 0.18), "c_dark")
     box("inset", (1.6, 0.04, 1.75), (0, 0.81, 2.15), "c_velvet")
     box("insettop", (1.13, 0.041, 1.13), (0, 0.81, 3.0), "c_velvet", (0, math.radians(45), 0))
     for z in (1.35, 2.95):
         box("hb%d" % int(z * 10), (1.7, 0.06, 0.06), (0, 0.79, z), "c_brass")
-    torus("rose", 0.22, 0.03, (0, 0.78, 2.55), "c_brass", (math.radians(90), 0, 0), seg=16, seg2=4)
+    torus("rose", 0.22, 0.03, (0, 0.78, 2.55), "c_brass", (math.radians(90), 0, 0), seg=12, seg2=3)
     for k in range(8):
         a = k * math.pi / 4
         rod("sp%d" % k, (0, 0.78, 2.55), (math.cos(a) * 0.21, 0.78, 2.55 + math.sin(a) * 0.21), 0.012, "c_brass", seg=4)
@@ -2385,8 +2385,7 @@ def m_boss_throne():
 # ======================================================================================== Rev 3 / C-2: castle rooms
 def _candle(tag, x, y, z, h=0.16, r=0.035, flame=True):
     """Short church candle standing at z with wax drips; the flame goes to FLAMES (joined into lamp_on later)."""
-    cyl(tag + "c", r, h, (x, y, z + h / 2), "c_wax", seg=8)
-    cyl(tag + "d", r * 0.9, 0.01, (x, y, z + h), "c_wax", seg=8, r2=r * 0.7)
+    cyl(tag + "c", r, h, (x, y, z + h / 2), "c_wax", seg=6, r2=r * 0.85)
     rod(tag + "w", (x, y, z + h), (x, y, z + h + 0.025), 0.004, "c_wick", seg=3)
     if flame:
         FLAMES.append((x, y, z + h + 0.03))
@@ -2405,31 +2404,31 @@ FLAMES = []
 def m_castle_chandelier():
     # forged ring chandelier (ref: hand-forged iron ring chandelier, 3-4 chains to a top ring, scroll arms, drip cups)
     R, zr = 0.62, 0.22
-    torus("ring", R, 0.03, (0, 0, zr), "e_iron", seg=24, seg2=5)
-    torus("ring2", R - 0.08, 0.016, (0, 0, zr + 0.03), "e_iron", seg=24, seg2=4)
+    torus("ring", R, 0.03, (0, 0, zr), "e_iron", seg=16, seg2=4)
+    torus("ring2", R - 0.08, 0.016, (0, 0, zr + 0.03), "e_iron", seg=16, seg2=3)
     for k in range(8):                                       # little twisted bars between the rings
         a = k * math.pi / 4 + math.pi / 8
         rod("tw%d" % k, (math.cos(a) * (R - 0.08), math.sin(a) * (R - 0.08), zr + 0.03), (math.cos(a) * R, math.sin(a) * R, zr), 0.01, "e_iron", seg=4)
     for k in range(6):
         a = k * math.pi / 3
         cx, cy = math.cos(a) * R, math.sin(a) * R
-        torus("scr%d" % k, 0.06, 0.012, (math.cos(a) * (R + 0.04), math.sin(a) * (R + 0.04), zr - 0.06), "e_iron", (math.radians(90), 0, a + math.pi / 2), seg=10, seg2=3)
-        cyl("cup%d" % k, 0.05, 0.03, (cx, cy, zr + 0.045), "e_iron", seg=8, r2=0.065)
+        torus("scr%d" % k, 0.06, 0.012, (math.cos(a) * (R + 0.04), math.sin(a) * (R + 0.04), zr - 0.06), "e_iron", (math.radians(90), 0, a + math.pi / 2), seg=8, seg2=3)
+        cyl("cup%d" % k, 0.05, 0.03, (cx, cy, zr + 0.045), "e_iron", seg=6, r2=0.065)
         _candle("cd%d" % k, cx, cy, zr + 0.06, h=0.14 + 0.03 * (k % 2))
     # chains to a crown hook at the top of the cell
     for k in range(4):
         a = k * math.pi / 2 + math.pi / 4
         p0 = (math.cos(a) * (R - 0.04), math.sin(a) * (R - 0.04), zr + 0.02)
         p1 = (0, 0, 0.82)
-        n = 9
+        n = 5
         for i in range(n):
             t0, t1 = i / n, (i + 0.8) / n
             a0 = tuple(p0[j] + (p1[j] - p0[j]) * t0 for j in range(3))
             a1 = tuple(p0[j] + (p1[j] - p0[j]) * t1 for j in range(3))
             rod("ch%d_%d" % (k, i), a0, a1, 0.009, "e_iron", seg=4)
-    torus("crown", 0.07, 0.015, (0, 0, 0.84), "e_iron", seg=10, seg2=4)
+    torus("crown", 0.07, 0.015, (0, 0, 0.84), "e_iron", seg=8, seg2=3)
     rod("hook", (0, 0, 0.86), (0, 0, 1.0), 0.015, "e_iron", seg=5)
-    cyl("rose", 0.09, 0.03, (0, 0, 0.985), "e_iron", seg=8)
+    cyl("rose", 0.09, 0.03, (0, 0, 0.985), "e_iron", seg=6)
     # centre boss with a hanging finial
     for k in range(3):
         a = k * 2 * math.pi / 3
@@ -2480,15 +2479,14 @@ def _trestle_table(L=2.9, W=0.9, H=0.82, top="c_dark"):
 
 
 def _plate(tag, x, y, z):
-    cyl(tag + "p", 0.12, 0.015, (x, y, z + 0.008), "e_iron", seg=12, r2=0.1)
-    torus(tag + "r", 0.11, 0.008, (x, y, z + 0.016), "e_iron", seg=12, seg2=3)
+    cyl(tag + "p", 0.12, 0.015, (x, y, z + 0.008), "e_iron", seg=8, r2=0.1)
 
 
 def _goblet(tag, x, y, z):
-    cyl(tag + "f", 0.035, 0.01, (x, y, z + 0.005), "c_brass", seg=8)
-    rod(tag + "s", (x, y, z), (x, y, z + 0.08), 0.008, "c_brass", seg=5)
-    cyl(tag + "b", 0.022, 0.06, (x, y, z + 0.11), "c_brass", seg=8, r2=0.038)
-    cyl(tag + "w", 0.03, 0.005, (x, y, z + 0.13), "c_wine", seg=8)
+    cyl(tag + "f", 0.035, 0.01, (x, y, z + 0.005), "c_brass", seg=6)
+    rod(tag + "s", (x, y, z), (x, y, z + 0.08), 0.008, "c_brass", seg=4)
+    cyl(tag + "b", 0.022, 0.06, (x, y, z + 0.11), "c_brass", seg=6, r2=0.038)
+    cyl(tag + "w", 0.03, 0.005, (x, y, z + 0.13), "c_wine", seg=6)
 
 
 def m_feast_table():
@@ -2501,23 +2499,23 @@ def m_feast_table():
             _plate("pl%d%d" % (k, sy), x, sy * 0.3, z)
             _goblet("gb%d%d" % (k, sy), x + 0.17, sy * 0.24, z)
     # roast on a platter, bread loaves, a jug, apples, a knife
-    cyl("platter", 0.22, 0.02, (-0.75, 0.0, z + 0.016), "e_iron", seg=14, r2=0.19)
+    cyl("platter", 0.22, 0.02, (-0.75, 0.0, z + 0.016), "e_iron", seg=10, r2=0.19)
     box("roast", (0.26, 0.17, 0.12), (-0.75, 0.0, z + 0.09), "c_roast", bevel=0.05)
     rod("bone1", (-0.9, 0.03, z + 0.12), (-0.98, 0.05, z + 0.2), 0.016, "e_bone", seg=5)
     rod("bone2", (-0.62, -0.03, z + 0.1), (-0.52, -0.06, z + 0.16), 0.014, "e_bone", seg=5)
     for k, (x, y) in enumerate(((0.75, 0.02), (0.92, -0.05))):
         box("bread%d" % k, (0.2, 0.1, 0.08), (x, y, z + 0.045), "c_bread", (0, 0, 0.3 * k), bevel=0.035)
     cyl("jug", 0.06, 0.18, (0.3, 0.05, z + 0.1), "e_ceramic", seg=10, r2=0.04)
-    torus("jh", 0.04, 0.01, (0.36, 0.05, z + 0.12), "e_ceramic", (math.radians(90), 0, 0), seg=8, seg2=3)
+    torus("jh", 0.04, 0.01, (0.36, 0.05, z + 0.12), "e_ceramic", (math.radians(90), 0, 0), seg=6, seg2=3)
     for k in range(3):
-        cyl("apl%d" % k, 0.03, 0.045, (0.55 + k * 0.05, -0.05 + (k % 2) * 0.05, z + 0.025), "c_apple", seg=7)
+        cyl("apl%d" % k, 0.03, 0.045, (0.55 + k * 0.05, -0.05 + (k % 2) * 0.05, z + 0.025), "c_apple", seg=5)
     box("knife", (0.18, 0.02, 0.006), (-0.5, 0.15, z + 0.006), "e_iron", (0, 0, 0.4))
     # three-armed brass candelabrum in the middle
     cyl("cbase", 0.08, 0.03, (0, 0, z + 0.015), "c_brass", seg=10)
     rod("cstem", (0, 0, z), (0, 0, z + 0.28), 0.014, "c_brass", seg=6)
-    torus("carm", 0.12, 0.01, (0, 0, z + 0.26), "c_brass", (math.radians(90), 0, 0), seg=12, seg2=3)
+    torus("carm", 0.12, 0.01, (0, 0, z + 0.26), "c_brass", (math.radians(90), 0, 0), seg=10, seg2=3)
     for sx in (-1, 0, 1):
-        cyl("ccup%d" % sx, 0.025, 0.03, (sx * 0.12, 0, z + 0.28 + (0.06 if sx == 0 else 0)), "c_brass", seg=8)
+        cyl("ccup%d" % sx, 0.025, 0.03, (sx * 0.12, 0, z + 0.28 + (0.06 if sx == 0 else 0)), "c_brass", seg=6)
         _candle("cc%d" % sx, sx * 0.12, 0, z + 0.295 + (0.06 if sx == 0 else 0), h=0.12, r=0.02)
     node("body")
     _flames()
