@@ -281,5 +281,15 @@
   "item.riftworld.guard_sickle.combo": "Комбо ЛКМ: «Рассечение» → «Крюк» (притягивает) → «Крестовый разрез» (замедляет, кровотечение)",
   "block.riftworld.alchemy_set": "Алхимическая посуда",
   "block.riftworld.chained_books": "Фолиант на цепи",
-  "block.riftworld.kitchen_set": "Кухонная утварь"
+  "block.riftworld.kitchen_set": "Кухонная утварь",
+  "block.riftworld.temple_bricks": "Храмовый кирпич",
+  "block.riftworld.temple_bricks_stairs": "Храмовая лестница",
+  "block.riftworld.temple_bricks_slab": "Храмовая плита",
+  "block.riftworld.temple_gold": "Золочёный храмовый блок",
+  "block.riftworld.temple_pillar": "Храмовая колонна",
+  "block.riftworld.temple_floor": "Храмовый пол",
+  "block.riftworld.temple_mosaic": "Ритуальная мозаика",
+  "block.riftworld.mosaic_core": "Сигил Перехода",
+  "block.riftworld.ritual_candle": "Ритуальная свеча",
+  "block.riftworld.light_bridge": "Жидкий свет"
 }

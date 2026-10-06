@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "axis=x": {
+      "model": "riftworld:block/temple_pillar",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y": {
+      "model": "riftworld:block/temple_pillar"
+    },
+    "axis=z": {
+      "model": "riftworld:block/temple_pillar",
+      "x": 90
+    }
+  }
+}

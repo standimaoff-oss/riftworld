@@ -28,4 +28,9 @@ public final class ModBlockEntities {
     public static final RegistryObject<BlockEntityType<CrateBlockEntity>> CRATE = TYPES.register("crate", () -> BlockEntityType.Builder.of(CrateBlockEntity::new,
             ModBlocks.MODELS.get(ModelKind.CRATE_WOOD).get(), ModBlocks.MODELS.get(ModelKind.CRATE_METAL).get(),
             ModBlocks.MODELS.get(ModelKind.CASTLE_CHEST).get()).build(null));
+
+    @SuppressWarnings("DataFlowIssue")
+    public static final RegistryObject<BlockEntityType<ru.aiforge.riftworld.block.MosaicCoreBE>> MOSAIC_CORE = TYPES.register("mosaic_core",
+            () -> BlockEntityType.Builder.of(ru.aiforge.riftworld.block.MosaicCoreBE::new, TempleBlocks.MOSAIC_CORE.get()).build(null));
 }
+

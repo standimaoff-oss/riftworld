@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "side": "riftworld:block/temple_pillar",
+    "end": "riftworld:block/temple_pillar_top"
+  }
+}

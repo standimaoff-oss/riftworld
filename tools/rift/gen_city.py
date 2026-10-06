@@ -367,7 +367,7 @@ class Tpl:
 
     def eave_lanterns(self):
         """Reference: lanterns hanging on short chains from both front eave corners."""
-        if self.name in ("temple", "laboratory") or not hasattr(self, "top"):
+        if self.name in ("temple", "temple_great", "laboratory") or not hasattr(self, "top"):
             return
         fz = self.wz + 1
         for x in (0, self.wx + 1):
@@ -860,11 +860,11 @@ def add_plaza(x, z, r, kind=0):
                 oset(xx, zz, ROAD)
 
 
-# --- the laboratory twin on the main island (template 63 x 70, ground floor at template y 30)
+# --- the Great Temple on the main island (template 63 x 70, ground floor at template y 30; replaces the old lab)
 LAB_W, LAB_D = 63, 70
 lab_x0, lab_z0 = -31, -35
 lab_h = round(sum(math.floor(I0.raw(lab_x0 + i * 6, lab_z0 + j * 7)) for i in range(11) for j in range(11)) / 121)
-PLOTS.append({"t": "laboratory", "x0": lab_x0, "z0": lab_z0, "w": LAB_W, "d": LAB_D, "f": "south", "h": lab_h, "yo": -30, "m": 6})
+PLOTS.append({"t": "temple_great", "x0": lab_x0, "z0": lab_z0, "w": LAB_W, "d": LAB_D, "f": "south", "h": lab_h, "yo": -30, "m": 6})
 for x in range(lab_x0 - 3, lab_x0 + LAB_W + 3):
     for z in range(lab_z0 - 3, lab_z0 + LAB_D + 3):
         oset(x, z, PLOT)

@@ -281,5 +281,15 @@
   "item.riftworld.guard_sickle.combo": "LMB combo: Slash → Hook (pulls the foe) → Cross Cut (slows, bleeds)",
   "block.riftworld.alchemy_set": "Alchemist's Glassware",
   "block.riftworld.chained_books": "Chained Folio",
-  "block.riftworld.kitchen_set": "Kitchen Dishes"
+  "block.riftworld.kitchen_set": "Kitchen Dishes",
+  "block.riftworld.temple_bricks": "Temple Bricks",
+  "block.riftworld.temple_bricks_stairs": "Temple Brick Stairs",
+  "block.riftworld.temple_bricks_slab": "Temple Brick Slab",
+  "block.riftworld.temple_gold": "Gilded Temple Block",
+  "block.riftworld.temple_pillar": "Temple Pillar",
+  "block.riftworld.temple_floor": "Temple Floor",
+  "block.riftworld.temple_mosaic": "Ritual Mosaic",
+  "block.riftworld.mosaic_core": "Sigil of the Crossing",
+  "block.riftworld.ritual_candle": "Ritual Candle",
+  "block.riftworld.light_bridge": "Liquid Light"
 }

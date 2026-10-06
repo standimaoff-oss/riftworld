@@ -537,8 +537,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         plots.addAll(plan.at(x0 + 15, z0 + 15).plots);
         for (CityPlan.Plot p : plots) {
             if (p.x0() > x0 + 15 || p.x0() + p.w() - 1 < x0 || p.z0() > z0 + 15 || p.z0() + p.d() - 1 < z0) continue;
-            ResourceLocation id = p.template().equals("laboratory") ? new ResourceLocation("riftworld", "laboratory")
-                    : new ResourceLocation("riftworld", "city/" + p.template());
+            ResourceLocation id = new ResourceLocation("riftworld", "city/" + p.template());
             Optional<StructureTemplate> tpl = stm.get(id);
             if (tpl.isEmpty()) continue;
             Rotation rot = switch (p.facing()) {

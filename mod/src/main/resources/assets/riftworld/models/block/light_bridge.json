@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "riftworld:block/light_bridge"
+  },
+  "render_type": "minecraft:translucent"
+}
