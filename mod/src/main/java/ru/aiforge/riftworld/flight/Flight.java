@@ -20,9 +20,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
@@ -40,19 +37,18 @@ import ru.aiforge.riftworld.net.Net;
 import ru.aiforge.riftworld.world.CityPlan;
 
 /**
- * The 15-second ride from the overworld lab to Elisar - no cutscene, the player stays in the capsule the whole time:
+ * The 15-second ride from the surviving overworld launch lab to the Great Temple of the Crossing on Elisar:
  * <ol>
- * <li>LIFT (2 s): the capsule lifts off its floor on the multicolour laser;</li>
- * <li>TRANSIT (10 s): the capsule hangs in a void "transit" dimension, the client draws orbit, Earth falling away,
- * the jump and the approach to Elisar around it;</li>
- * <li>ARRIVE (3 s): the capsule rises up the shaft of the Elisar lab and lands; the doors open as usual.</li>
+ * <li>LIFT (2 s): the source capsule lifts off its floor on the multicolour laser;</li>
+ * <li>TRANSIT (10 s): the capsule hangs in the void transit dimension while the client draws the journey;</li>
+ * <li>ARRIVE (3 s): the player descends into a brief temple arrival sigil on the front apron; the destination has no capsule.</li>
  * </ol>
  * While flying the player cannot move, break, use, attack or be hurt. The server owns the timeline, the client mirrors it.
  */
 @Mod.EventBusSubscriber(modid = RiftWorld.MODID)
 public final class Flight {
     public static final int NONE = 0, LIFT = 1, TRANSIT = 2, ARRIVE = 3;
-    public static final int LIFT_T = LaunchCoreBlockEntity.LIFT_T, TRANSIT_T = 200, ARRIVE_T = LaunchCoreBlockEntity.ARRIVE_T;
+    public static final int LIFT_T = LaunchCoreBlockEntity.LIFT_T, TRANSIT_T = 200, ARRIVE_T = 60;
     public static final int TOTAL = LIFT_T + TRANSIT_T + ARRIVE_T;          // 300 ticks = 15 s
     public static final ResourceKey<Level> TRANSIT_DIM = ResourceKey.create(Registries.DIMENSION, new ResourceLocation(RiftWorld.MODID, "transit"));
     public static final ResourceKey<Level> ELISAR_DIM = ResourceKey.create(Registries.DIMENSION, new ResourceLocation(RiftWorld.MODID, "elisar"));
@@ -89,23 +85,39 @@ public final class Flight {
         return LaunchCoreBlockEntity.LIFT_H * LaunchCoreBlockEntity.ease(t / LIFT_T);
     }
 
+    /** The temple has no arrival capsule or shaft: its sigil is ground-level and the player stays on the apron. */
     public static float arriveOffset(float t) {
-        return -LaunchCoreBlockEntity.DEPTH + LaunchCoreBlockEntity.DEPTH * LaunchCoreBlockEntity.ease(t / ARRIVE_T);
+        return 0;
     }
 
     // ------------------------------------------------------------------------------------------------ start
+    /** Safe center of the temple's south apron: template-local (31, 68), one block above its custom floor. */
+    private static BlockPos templeLanding(CityPlan.Plot temple) {
+        return new BlockPos(temple.x0() + 31, temple.h(), temple.z0() + 68);
+    }
+
+    private static BlockPos templeLanding() {
+        for (CityPlan.Plot pl : CityPlan.get().plots)
+            if (pl.template().equals("temple_great")) return templeLanding(pl);
+        return new BlockPos(0, 104, 33);
+    }
+
     public static boolean start(ServerPlayer p, LaunchCoreBlockEntity core) {
-        if (ACTIVE.containsKey(p.getUUID()) || !core.startFlight()) return false;
+        if (ACTIVE.containsKey(p.getUUID())) return false;
+        CityPlan.Plot temple = null;
+        for (CityPlan.Plot pl : CityPlan.get().plots)
+            if (pl.template().equals("temple_great")) { temple = pl; break; }
+        if (temple == null || !core.startFlight()) return false;
+
         State s = new State();
         s.from = core.getBlockPos();
-        for (CityPlan.Plot pl : CityPlan.get().plots) {
-            if (!pl.template().equals("temple_great")) continue;
-            int cx0 = (pl.x0() - 8) >> 4, cz0 = (pl.z0() - 8) >> 4, cx1 = (pl.x0() + pl.w() + 8) >> 4, cz1 = (pl.z0() + pl.d() + 8) >> 4;
-            for (int cx = cx0; cx <= cx1; ++cx)
-                for (int cz = cz0; cz <= cz1; ++cz) s.scan.add(new ChunkPos(cx, cz));
-            double mx = pl.x0() + pl.w() / 2.0, mz = pl.z0() + pl.d() / 2.0;
-            s.scan.sort(Comparator.comparingDouble(c -> Math.hypot(c.getMiddleBlockX() - mx, c.getMiddleBlockZ() - mz)));
-        }
+        s.to = templeLanding(temple);
+        int cx0 = (temple.x0() - 8) >> 4, cz0 = (temple.z0() - 8) >> 4;
+        int cx1 = (temple.x0() + temple.w() + 8) >> 4, cz1 = (temple.z0() + temple.d() + 8) >> 4;
+        for (int cx = cx0; cx <= cx1; ++cx)
+            for (int cz = cz0; cz <= cz1; ++cz) s.scan.add(new ChunkPos(cx, cz));
+        double mx = temple.x0() + temple.w() / 2.0, mz = temple.z0() + temple.d() / 2.0;
+        s.scan.sort(Comparator.comparingDouble(c -> Math.hypot(c.getMiddleBlockX() - mx, c.getMiddleBlockZ() - mz)));
         ACTIVE.put(p.getUUID(), s);
         lock(p);
         p.level().playSound(null, s.from, SoundEvents.BEACON_ACTIVATE, SoundSource.BLOCKS, 3.0F, 0.7F);
@@ -159,42 +171,29 @@ public final class Flight {
                 Net.send(p, new FlightMsg(NONE, BlockPos.ZERO, 0));
                 continue;
             }
-            // find the Elisar lab capsule while flying: the chunks around the lab centre are generated in the background
-            // (tickets), we only look at the ones that are ready - the server never stalls on world generation
-            if (s.to == null && s.tick == LIFT_T + 1)                 // hidden behind the white of the jump
-                for (int k = 0; k < Math.min(4, s.scan.size()); ++k)
-                    elisar.getChunkSource().addRegionTicket(net.minecraft.server.level.TicketType.PORTAL, s.scan.get(k), 2, s.scan.get(k).getMiddleBlockPosition(100));
-            if (s.to == null && s.tick > LIFT_T + 1) {
-                boolean late = s.tick > LIFT_T + TRANSIT_T - 12;
-                for (int k = 0; k < s.scan.size() && s.to == null; ++k) {
-                    ChunkPos cp = s.scan.get(k);
-                    LevelChunk ch = late && k == s.scanI ? elisar.getChunk(cp.x, cp.z) : elisar.getChunkSource().getChunkNow(cp.x, cp.z);
-                    if (ch == null) continue;
-                    for (BlockEntity be : ch.getBlockEntities().values())
-                        if (be instanceof LaunchCoreBlockEntity) {
-                            s.to = be.getBlockPos();
-                            break;
-                        }
+            // Pre-generate the temple footprint behind the transition flash; add a few region tickets per tick so
+            // the sizeable undercroft never forces one synchronous world-generation spike at arrival.
+            if (s.tick == LIFT_T + 1) {
+                int initial = Math.min(4, s.scan.size());
+                for (int k = 0; k < initial; ++k)
+                    elisar.getChunkSource().addRegionTicket(net.minecraft.server.level.TicketType.PORTAL, s.scan.get(k), 2, s.scan.get(k).getMiddleBlockPosition(s.to.getY()));
+                s.scanI = initial;
+            } else if (s.tick > LIFT_T + 1 && s.scanI < s.scan.size()) {
+                int end = Math.min(s.scanI + 2, s.scan.size());
+                while (s.scanI < end) {
+                    ChunkPos cp = s.scan.get(s.scanI++);
+                    elisar.getChunkSource().addRegionTicket(net.minecraft.server.level.TicketType.PORTAL, cp, 2, cp.getMiddleBlockPosition(s.to.getY()));
                 }
-                if (late && s.scanI < s.scan.size()) ++s.scanI;
             }
-            if (s.to != null && s.tick == LIFT_T + TRANSIT_T - 30)       // make the Elisar lab tick before we get there
+            if (s.tick == LIFT_T + TRANSIT_T - 30)
                 elisar.getChunkSource().addRegionTicket(net.minecraft.server.level.TicketType.PORTAL, new ChunkPos(s.to), 3, s.to);
             if (s.tick == LIFT_T) {
                 p.teleportTo(transit, TRANSIT_CORE.getX() + 0.5, TRANSIT_CORE.getY() + 1, TRANSIT_CORE.getZ() + 0.5, 180F, 0F);
                 lock(p);
                 send(p, s);
             } else if (s.tick == LIFT_T + TRANSIT_T) {
-                if (s.to == null) {                                   // no lab found: land on the city square
-                    BlockPos top = elisar.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, new BlockPos(-34, 0, 58));
-                    p.teleportTo(elisar, top.getX() + 0.5, top.getY() + 1, top.getZ() + 0.5, 180F, 0F);
-                    unlock(p);
-                    it.remove();
-                    Net.send(p, new FlightMsg(NONE, BlockPos.ZERO, 0));
-                    continue;
-                }
-                if (elisar.getBlockEntity(s.to) instanceof LaunchCoreBlockEntity core) core.startArrive();
-                p.teleportTo(elisar, s.to.getX() + 0.5, s.to.getY() + 1 + arriveOffset(0), s.to.getZ() + 0.5, 180F, 0F);
+                // The destination is a fixed, generated landing point on the Great Temple's front apron; it has no capsule.
+                p.teleportTo(elisar, s.to.getX() + 0.5, s.to.getY() + 1, s.to.getZ() + 0.5, 180F, 0F);
                 lock(p);
                 send(p, s);
             } else if (s.tick >= TOTAL + 1) {
@@ -206,7 +205,7 @@ public final class Flight {
             } else if (s.tick % 5 == 0) {
                 send(p, s);                                           // resync the client clock
             }
-            // keep the player in the capsule
+            // Keep the player on the source lift, in transit, or anchored to the temple apron sigil.
             int ph = phaseOf(s.tick);
             float t = s.tick - phaseStart(ph);
             Vec3 want = ph == LIFT ? Vec3.atBottomCenterOf(s.from).add(0, 1 + liftOffset(t), 0)
@@ -275,9 +274,9 @@ public final class Flight {
         if (e.getEntity() instanceof ServerPlayer p && p.level().dimension().equals(TRANSIT_DIM)) {
             ServerLevel elisar = p.server.getLevel(ELISAR_DIM);
             if (elisar == null) return;
-            BlockPos top = elisar.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, new BlockPos(-34, 0, 58));
+            BlockPos landing = templeLanding();
             unlock(p);
-            p.teleportTo(elisar, top.getX() + 0.5, top.getY() + 1, top.getZ() + 0.5, 180F, 0F);
+            p.teleportTo(elisar, landing.getX() + 0.5, landing.getY() + 1, landing.getZ() + 0.5, 180F, 0F);
         }
     }
 }

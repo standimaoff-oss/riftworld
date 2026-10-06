@@ -16,6 +16,8 @@ public final class ModItems {
 
     public static final RegistryObject<Item> RESONANCE_STONE = ITEMS.register("resonance_stone",
             () -> new ResonanceStoneItem(new Item.Properties().stacksTo(16).rarity(Rarity.EPIC)));
+    public static final RegistryObject<Item> TEMPLE_RELIC = ITEMS.register("temple_relic",
+            () -> new Item(new Item.Properties().stacksTo(16).rarity(Rarity.RARE)));
 
     public static final RegistryObject<Item> MORGRATH_SCYTHE = ITEMS.register("morgrath_scythe",
             () -> new ru.aiforge.riftworld.item.ScytheItem(new Item.Properties().rarity(Rarity.EPIC).fireResistant()));

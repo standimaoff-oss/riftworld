@@ -1,0 +1,22 @@
+{
+  "variants": {
+    "kind=0,armed=false": {
+      "model": "riftworld:block/temple_trap_spike_spent"
+    },
+    "kind=0,armed=true": {
+      "model": "riftworld:block/temple_trap_spike_armed"
+    },
+    "kind=1,armed=false": {
+      "model": "riftworld:block/temple_trap_ember_spent"
+    },
+    "kind=1,armed=true": {
+      "model": "riftworld:block/temple_trap_ember_armed"
+    },
+    "kind=2,armed=false": {
+      "model": "riftworld:block/temple_trap_drain_spent"
+    },
+    "kind=2,armed=true": {
+      "model": "riftworld:block/temple_trap_drain_armed"
+    }
+  }
+}

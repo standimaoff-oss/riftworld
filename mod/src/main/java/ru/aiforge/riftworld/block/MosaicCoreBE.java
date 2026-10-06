@@ -120,7 +120,8 @@ public class MosaicCoreBE extends BlockEntity {
     private static void openBridge(ServerLevel sl, BlockPos pos, MosaicCoreBE be) {
         BlockState bridge = TempleBlocks.LIGHT_BRIDGE.get().defaultBlockState();
         for (BlockPos p : BlockPos.betweenClosed(pos.offset(-2, 0, -2), pos.offset(2, 0, 2)))
-            if (sl.getBlockState(p).getBlock() instanceof MosaicBlock) sl.setBlock(p.immutable(), bridge, 3);
+            if (sl.getBlockState(p).getBlock() instanceof MosaicBlock && !(sl.getBlockState(p).getBlock() instanceof MosaicCoreBlock))
+                sl.setBlock(p.immutable(), bridge, 3);
         sl.playSound(null, pos, SoundEvents.END_PORTAL_SPAWN, SoundSource.BLOCKS, 2.0F, 1.0F);
         sl.sendParticles(ParticleTypes.FLASH, pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5, 3, 1.5, 0.5, 1.5, 0);
         sl.sendParticles(ParticleTypes.TOTEM_OF_UNDYING, pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5, 120, 2.2, 1.2, 2.2, 0.35);
@@ -130,9 +131,14 @@ public class MosaicCoreBE extends BlockEntity {
     }
 
     private static void teleportStep(ServerLevel sl, BlockPos pos) {
-        AABB pool = new AABB(pos.getX() - 2, pos.getY() + 0.05, pos.getZ() - 2, pos.getX() + 3, pos.getY() + 0.75, pos.getZ() + 3);
-        for (ServerPlayer p : sl.getEntitiesOfClass(ServerPlayer.class, pool.inflate(0.2))) {
-            if (p.isSpectator() || !p.onGround()) continue;
+        // The bridge is a non-colliding pool, so detect a player crossing into its cells rather than requiring onGround.
+        AABB pool = new AABB(pos.getX() - 2, pos.getY() + 0.8, pos.getZ() - 2,
+                pos.getX() + 3, pos.getY() + 3.0, pos.getZ() + 3);
+        for (ServerPlayer p : sl.getEntitiesOfClass(ServerPlayer.class, pool)) {
+            if (p.isSpectator()) continue;
+            BlockPos feet = p.blockPosition();
+            if (!sl.getBlockState(feet).is(TempleBlocks.LIGHT_BRIDGE.get())
+                    && !sl.getBlockState(feet.below()).is(TempleBlocks.LIGHT_BRIDGE.get())) continue;
             Long last = TP_CD.get(p.getUUID());
             if (last != null && sl.getGameTime() - last < 100) continue;
             TP_CD.put(p.getUUID(), sl.getGameTime());
