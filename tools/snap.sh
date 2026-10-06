@@ -1,4 +1,12 @@
-#!/bin/bash
-# snap.sh out.jpg [crop]  - grab the game area (window at 0,60 800x480)
-export DISPLAY=:99
-import -window root /tmp/snap.png; convert /tmp/snap.png -crop ${2:-854x480+85+144} -quality 88 "$1"
+#!/usr/bin/env bash
+# Capture the headless client display. Usage: snap.sh out.png [WxH+X+Y crop]
+set -euo pipefail
+OUT=${1:?usage: snap.sh out.png [WxH+X+Y crop]}
+DISPLAY_NUM=${DISPLAY_NUM:-99}
+export DISPLAY=":$DISPLAY_NUM"
+if [[ $# -ge 2 ]]; then
+  import -window root -crop "$2" +repage "$OUT"
+else
+  import -window root "$OUT"
+fi
+identify "$OUT"

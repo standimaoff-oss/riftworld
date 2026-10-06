@@ -291,5 +291,15 @@
   "block.riftworld.temple_mosaic": "Ритуальная мозаика",
   "block.riftworld.mosaic_core": "Сигил Перехода",
   "block.riftworld.ritual_candle": "Ритуальная свеча",
-  "block.riftworld.light_bridge": "Жидкий свет"
+  "block.riftworld.light_bridge": "Жидкий свет",
+  "block.riftworld.temple_understone": "Сумрачный храмовый камень",
+  "block.riftworld.temple_maze_floor": "Рунная плита крипты",
+  "block.riftworld.temple_garden_soil": "Почва святилища",
+  "block.riftworld.temple_moss": "Храмовый мох",
+  "block.riftworld.temple_fern": "Сумрачный папоротник",
+  "block.riftworld.temple_bloom": "Звездоцвет",
+  "block.riftworld.temple_root_vine": "Корневая завеса",
+  "block.riftworld.temple_lumen_crystal": "Люмен-кристалл",
+  "block.riftworld.temple_trap_plate": "Рунная ловушка",
+  "item.riftworld.temple_relic": "Токен реликвария"
 }

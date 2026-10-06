@@ -33,6 +33,10 @@
     "riftworld:wall_shackles",
     "riftworld:guard_armor",
     "riftworld:gold_hoard",
-    "riftworld:hearth_cauldron"
+    "riftworld:hearth_cauldron",
+    "riftworld:temple_understone",
+    "riftworld:temple_maze_floor",
+    "riftworld:temple_lumen_crystal",
+    "riftworld:temple_trap_plate"
   ]
 }

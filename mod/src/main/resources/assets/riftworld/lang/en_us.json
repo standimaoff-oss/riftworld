@@ -291,5 +291,15 @@
   "block.riftworld.temple_mosaic": "Ritual Mosaic",
   "block.riftworld.mosaic_core": "Sigil of the Crossing",
   "block.riftworld.ritual_candle": "Ritual Candle",
-  "block.riftworld.light_bridge": "Liquid Light"
+  "block.riftworld.light_bridge": "Liquid Light",
+  "block.riftworld.temple_understone": "Vesper Understone",
+  "block.riftworld.temple_maze_floor": "Runed Crypt Tile",
+  "block.riftworld.temple_garden_soil": "Sanctum Soil",
+  "block.riftworld.temple_moss": "Temple Moss",
+  "block.riftworld.temple_fern": "Vesper Fern",
+  "block.riftworld.temple_bloom": "Starbloom",
+  "block.riftworld.temple_root_vine": "Root Veil",
+  "block.riftworld.temple_lumen_crystal": "Lumen Crystal",
+  "block.riftworld.temple_trap_plate": "Runic Trap Plate",
+  "item.riftworld.temple_relic": "Reliquary Token"
 }

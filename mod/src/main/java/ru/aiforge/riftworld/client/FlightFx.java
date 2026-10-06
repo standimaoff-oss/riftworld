@@ -123,20 +123,31 @@ public final class FlightFx {
         if (transit) capsule(ps, cam, mc);
         if (FlightClient.phase == Flight.NONE) return;
         Vec3 base = Vec3.atBottomCenterOf(transit ? Flight.TRANSIT_CORE : FlightClient.core);
+        if (FlightClient.phase == Flight.ARRIVE) base = base.add(0, 1, 0); // align the arrival sigil with the apron surface
         float off = transit ? 0 : FlightClient.offset(pt);
         float t = (mc.level.getGameTime() % 100000L) + pt;
         Matrix4f m = ps.last().pose();
         Vector3f c = new Vector3f((float) (base.x - cam.x), (float) (base.y + off - cam.y), (float) (base.z - cam.z));
         beginAdditive();
-        laserCap(m, c, t, 1F);
-        if (!transit) {
-            // the beam the capsule rides on: from the bottom of the shaft through the sphere and on into the sky
-            float fade = FlightClient.phase == Flight.ARRIVE ? 1 - Mth.clamp((FlightClient.time(pt) - 52F) / 8F, 0, 1) : 1;
-            Vector3f bottom = new Vector3f(c.x, (float) (base.y - LaunchCoreBlockEntity.DEPTH - 1 - cam.y), c.z);
-            Vector3f under = new Vector3f(c.x, c.y + 0.15F, c.z);
-            rainbowBeam(m, bottom, under, 0.42F, t, 0.85F * fade);
-            Vector3f top = new Vector3f(c.x, c.y + SPHERE_Y + SPHERE_R, c.z), sky = new Vector3f(c.x, c.y + 160F, c.z);
-            rainbowBeam(m, top, sky, 0.3F, t, 0.6F * fade);
+        if (FlightClient.phase == Flight.ARRIVE) {
+            // A floor-level portal sigil replaces the old capsule/shaft at the temple destination.
+            float u = FlightClient.time(pt) / Flight.ARRIVE_T;
+            float fadeIn = smooth(u / 0.22F);
+            float fadeOut = 1 - smooth((u - 0.55F) / 0.45F);
+            float alpha = fadeIn * fadeOut;
+            arrivalSigil(m, c, t, alpha);
+            rainbowBeam(m, new Vector3f(c.x, c.y + 0.05F, c.z), new Vector3f(c.x, c.y + 3.2F, c.z),
+                    0.52F, t, 0.48F * alpha);
+        } else {
+            laserCap(m, c, t, 1F);
+            if (!transit) {
+                // The source-lab beam wraps the capsule and runs from the bottom of its shaft into the sky.
+                Vector3f bottom = new Vector3f(c.x, (float) (base.y - LaunchCoreBlockEntity.DEPTH - 1 - cam.y), c.z);
+                Vector3f under = new Vector3f(c.x, c.y + 0.15F, c.z);
+                rainbowBeam(m, bottom, under, 0.42F, t, 0.85F);
+                Vector3f top = new Vector3f(c.x, c.y + SPHERE_Y + SPHERE_R, c.z), sky = new Vector3f(c.x, c.y + 160F, c.z);
+                rainbowBeam(m, top, sky, 0.3F, t, 0.6F);
+            }
         }
         endAdditive();
     }
@@ -181,6 +192,44 @@ public final class FlightFx {
 
     private static void col(BufferBuilder b, Matrix4f m, float x, float y, float z, int argb) {
         b.vertex(m, x, y, z).color((argb >> 16) & 255, (argb >> 8) & 255, argb & 255, (argb >>> 24)).endVertex();
+    }
+
+    /** Sweeping, segmented portal glyphs drawn flush with the temple's custom apron. */
+    private static void arrivalSigil(Matrix4f m, Vector3f c, float t, float alpha) {
+        if (alpha <= 0.01F) return;
+        BufferBuilder b = Tesselator.getInstance().getBuilder();
+        b.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        int seg = 72;
+        for (int ring = 0; ring < 3; ++ring) {
+            float radius = 1.05F + ring * 0.25F + 0.045F * Mth.sin(t * 0.08F + ring);
+            float half = ring == 1 ? 0.026F : 0.045F;
+            float y = 0.035F + ring * 0.028F;
+            float spin = (ring == 1 ? -1F : 1F) * t * 0.006F;
+            for (int i = 0; i < seg; ++i) {
+                float u0 = (float) i / seg, u1 = (float) (i + 1) / seg;
+                if (ring == 1 && i % 3 == 0) continue; // broken rune arcs, not three solid rings
+                float a0 = u0 * Mth.TWO_PI + spin, a1 = u1 * Mth.TWO_PI + spin;
+                float r0 = radius - half, r1 = radius + half;
+                int ca = hue(u0 + t * 0.003F, alpha * (ring == 1 ? 0.58F : 0.88F));
+                int cb = hue(u1 + t * 0.003F, alpha * (ring == 1 ? 0.58F : 0.88F));
+                col(b, m, c.x + Mth.cos(a0) * r0, c.y + y, c.z + Mth.sin(a0) * r0, ca);
+                col(b, m, c.x + Mth.cos(a0) * r1, c.y + y, c.z + Mth.sin(a0) * r1, ca);
+                col(b, m, c.x + Mth.cos(a1) * r1, c.y + y, c.z + Mth.sin(a1) * r1, cb);
+                col(b, m, c.x + Mth.cos(a1) * r0, c.y + y, c.z + Mth.sin(a1) * r0, cb);
+            }
+        }
+        // Twelve short spokes echo the temple mosaic's candle positions.
+        for (int i = 0; i < 12; ++i) {
+            float angle = i * Mth.TWO_PI / 12F + t * 0.004F;
+            float r0 = 1.48F, r1 = 1.78F, w = 0.025F;
+            float px = -Mth.sin(angle) * w, pz = Mth.cos(angle) * w;
+            int color = hue((float) i / 12F + t * 0.002F, alpha * 0.85F);
+            col(b, m, c.x + Mth.cos(angle) * r0 + px, c.y + 0.11F, c.z + Mth.sin(angle) * r0 + pz, color);
+            col(b, m, c.x + Mth.cos(angle) * r0 - px, c.y + 0.11F, c.z + Mth.sin(angle) * r0 - pz, color);
+            col(b, m, c.x + Mth.cos(angle) * r1 - px, c.y + 0.11F, c.z + Mth.sin(angle) * r1 - pz, color);
+            col(b, m, c.x + Mth.cos(angle) * r1 + px, c.y + 0.11F, c.z + Mth.sin(angle) * r1 + pz, color);
+        }
+        Tesselator.getInstance().end();
     }
 
     /** Shimmering rainbow band over the lower 20 % of the sphere (y 0.1 .. 1.9 above the capsule floor block). */

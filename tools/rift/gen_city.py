@@ -7,7 +7,8 @@ import json, math, os, random, re, sys
 sys.path.insert(0, os.path.dirname(__file__))
 from nbtio import write_template
 
-MOD = "/home/user/mods/riftworld"
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+MOD = os.environ.get("RIFT_MOD_DIR", os.path.join(ROOT, "mod"))
 OUT = MOD + "/src/main/resources/data/riftworld"
 JAVA_KINDS = MOD + "/src/main/java/ru/aiforge/riftworld/block/ModelKind.java"
 KINDS = {m.group(1): tuple(int(m.group(i)) for i in (2, 3, 4, 5))
@@ -45,7 +46,8 @@ class Tpl:
         self.W, self.D = wx + 2, wz + 1 + front
         self.B, self.NBT, self.MC = {}, {}, set()
         self.RES = set()          # interior cells kept clear (walkways in front of furniture)
-        self.rng = random.Random(hash(name) & 0xffff ^ seed)
+        stable_name_seed = sum((i + 1) * ord(c) for i, c in enumerate(name))
+        self.rng = random.Random((stable_name_seed ^ seed) & 0xffffffff)
         self.top = floors * (wall_h + 1) - 1          # last wall row (floors separated by a beam/floor row)
         self.door_x = None
 
@@ -69,23 +71,26 @@ class Tpl:
                 for z in range(min(z0, z1), max(z0, z1) + 1):
                     self.put(x, y, z, st)
 
-    def model(self, kind, x, y, z, f, **props):
+    def model(self, kind, x, y, z, f, overlay=False, **props):
         cs = [(x + dx, y + dy, z + dz) for dx, dy, dz in cells(kind, f)]
         for c in cs:
-            assert c not in self.MC, (self.name, kind, (x, y, z), c, "overlap")
+            if not overlay:
+                assert c not in self.MC, (self.name, kind, (x, y, z), c, "overlap")
             assert 0 <= c[0] < self.W and 0 <= c[2] < self.D, (self.name, kind, c, "out of template")
             cur = self.B.get(c)
-            assert cur is None or cur == AIR, (self.name, kind, c, "cell occupied by", cur)
+            if not overlay:
+                assert cur is None or cur == AIR, (self.name, kind, c, "cell occupied by", cur)
         st = dict(facing=f, powered=kind in LIT, broken=False)
         st.update(props)
         for c in cs:
             if c == (x, y, z):
                 self.B[c] = S(kind, **st)          # Elisar props are plain blocks (baked OBJ model, no block entity)
                 self.NBT.pop(c, None)
-            else:
+            elif not overlay:
                 self.B[c] = S("part", open=kind in PASSABLE)
                 self.NBT.pop(c, None)
-        self.MC.update(cs)
+        if not overlay:
+            self.MC.update(cs)
 
     # -- shell
     def is_corner(self, x, z):
@@ -315,7 +320,7 @@ class Tpl:
         self.model(kind, x, y, z, f)
         if kind in ("kitchen_counter", "alchemy_table", "chained_lectern"):   # Rev 4 item 14: decor topper pair
             self.model({"kitchen_counter": "kitchen_set", "alchemy_table": "alchemy_set",
-                        "chained_lectern": "chained_books"}[kind], x, y, z, f)
+                        "chained_lectern": "chained_books"}[kind], x, y, z, f, overlay=True)
         if mode == "floor":
             for cx, cy, cz in cs:
                 self.RES.add((cx - bx, y0, cz - bz))
@@ -367,7 +372,7 @@ class Tpl:
 
     def eave_lanterns(self):
         """Reference: lanterns hanging on short chains from both front eave corners."""
-        if self.name in ("temple", "temple_great", "laboratory") or not hasattr(self, "top"):
+        if self.name in ("temple", "temple_great") or not hasattr(self, "top"):
             return
         fz = self.wz + 1
         for x in (0, self.wx + 1):
@@ -860,13 +865,13 @@ def add_plaza(x, z, r, kind=0):
                 oset(xx, zz, ROAD)
 
 
-# --- the Great Temple on the main island (template 63 x 70, ground floor at template y 30; replaces the old lab)
-LAB_W, LAB_D = 63, 70
-lab_x0, lab_z0 = -31, -35
-lab_h = round(sum(math.floor(I0.raw(lab_x0 + i * 6, lab_z0 + j * 7)) for i in range(11) for j in range(11)) / 121)
-PLOTS.append({"t": "temple_great", "x0": lab_x0, "z0": lab_z0, "w": LAB_W, "d": LAB_D, "f": "south", "h": lab_h, "yo": -30, "m": 6})
-for x in range(lab_x0 - 3, lab_x0 + LAB_W + 3):
-    for z in range(lab_z0 - 3, lab_z0 + LAB_D + 3):
+# --- Great Temple on the main island (63 x 70; the architectural ground floor is template y=56)
+TEMPLE_W, TEMPLE_D, TEMPLE_GROUND = 63, 70, 56
+temple_x0, temple_z0 = -31, -35
+temple_h = round(sum(math.floor(I0.raw(temple_x0 + i * 6, temple_z0 + j * 7)) for i in range(11) for j in range(11)) / 121)
+PLOTS.append({"t": "temple_great", "x0": temple_x0, "z0": temple_z0, "w": TEMPLE_W, "d": TEMPLE_D, "f": "south", "h": temple_h, "yo": -TEMPLE_GROUND, "m": 6})
+for x in range(temple_x0 - 3, temple_x0 + TEMPLE_W + 3):
+    for z in range(temple_z0 - 3, temple_z0 + TEMPLE_D + 3):
         oset(x, z, PLOT)
 
 # --- bridges (main -> every satellite, plus temple <-> fishers)

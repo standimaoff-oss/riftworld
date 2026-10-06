@@ -12,6 +12,9 @@ import struct
 import sys
 import time
 
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+DEFAULT_RCON_LOG = os.path.join(ROOT, "reports", "session_temple", "logs", "rcon.txt")
+
 AUTH, EXEC, RESPONSE = 3, 2, 0
 ERROR_MARKERS = ("Unknown command", "Incorrect argument", "Unknown or incomplete command",
                  "Expected ", "Invalid ", "No entity was found", "No player was found",
@@ -69,7 +72,7 @@ def main():
     ap.add_argument("--port", type=int, default=25575)
     ap.add_argument("--password", default=os.environ.get("RCON_PASSWORD", "bm21test"))
     ap.add_argument("--timeout", type=float, default=10.0)
-    ap.add_argument("--log", default=os.environ.get("RCON_LOG", "/home/user/logs/bm21grad-1-rcon.txt"))
+    ap.add_argument("--log", default=os.environ.get("RCON_LOG", DEFAULT_RCON_LOG))
     ap.add_argument("--expect", help="answer must contain this substring (else exit 4)")
     ap.add_argument("command", nargs="+")
     a = ap.parse_args()
