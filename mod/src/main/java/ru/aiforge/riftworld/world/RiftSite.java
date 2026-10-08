@@ -119,7 +119,7 @@ public final class RiftSite {
         // 3) the temple itself (the air of the template opens the crypt under the nave)
         StructurePlaceSettings set = new StructurePlaceSettings().setRotation(Rotation.NONE).setIgnoreEntities(true);
         BoundingBox bb = tpl.get().getBoundingBox(set, BlockPos.ZERO);
-        BlockPos pos = origin.offset(-bb.minX, 0, -bb.minZ);
+        BlockPos pos = origin.offset(-bb.minX(), 0, -bb.minZ());
         tpl.get().placeInWorld(ow, pos, pos, set, ow.getRandom(), 2);
         // 4) the altar of the Rift: even a world without the plot must get its gate
         BlockPos altar = pos.offset(ALTAR_X, GROUND, ALTAR_Z);
