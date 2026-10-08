@@ -3,11 +3,17 @@
 # Units: 1 Blender unit = 1 block. Master block centre at (0,0), floor z = 0. Front of every model faces -Y
 # (glTF +Z = Minecraft south = towards the player for FACING=south); +X = the viewer's right.
 # Animated parts are separate nodes whose origin is the pivot (Pose.rotate / translate in the renderer).
+import os as _os, sys as _sys
+if _sys.argv and _os.path.basename(_sys.argv[0]) == "models.py":
+    raise SystemExit(
+        "obsolete: the laboratory models were deleted in Rev 5 - this generator would rebuild\n"
+        "lab assets that no longer exist. Helpers only: exec this file from another script\n"
+        "(creatures.py does). See README, Rev 5.")
 import bpy, bmesh, math, os, sys, random
 from mathutils import Vector, Matrix, Euler
 
 TEX = "/home/user/tools/rift/tex_models"
-OUT = "/home/user/mods/riftworld/src/main/resources/assets/riftworld/models/glb"
+OUT = "/home/user/riftworld/mod/src/main/resources/assets/riftworld/models/glb"
 BLEND = "/home/user/models/rift"
 os.makedirs(OUT, exist_ok=True)
 os.makedirs(BLEND, exist_ok=True)

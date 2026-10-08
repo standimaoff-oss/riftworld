@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "stage=0,open=false": {
+      "model": "riftworld:block/rift_altar_0"
+    },
+    "stage=0,open=true": {
+      "model": "riftworld:block/rift_altar_0"
+    },
+    "stage=1,open=false": {
+      "model": "riftworld:block/rift_altar_1"
+    },
+    "stage=1,open=true": {
+      "model": "riftworld:block/rift_altar_1"
+    },
+    "stage=2,open=false": {
+      "model": "riftworld:block/rift_altar_2"
+    },
+    "stage=2,open=true": {
+      "model": "riftworld:block/rift_altar_2"
+    },
+    "stage=3,open=false": {
+      "model": "riftworld:block/rift_altar_3"
+    },
+    "stage=3,open=true": {
+      "model": "riftworld:block/rift_altar_3"
+    }
+  }
+}

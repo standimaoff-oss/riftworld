@@ -1,7 +1,7 @@
 """Rev 3 / C-1 castle blocks: blockstates / models / items / loot / tags / lang. Run AFTER gen_resources_elisar.py (merges)."""
 import json, os
 
-R = "/home/user/mods/riftworld/src/main/resources"
+R = "/home/user/riftworld/mod/src/main/resources"
 A = R + "/assets/riftworld"; D = R + "/data/riftworld"
 NS = "riftworld:block/"
 

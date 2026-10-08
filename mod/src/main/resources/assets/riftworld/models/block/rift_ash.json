@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/carpet",
+  "textures": {
+    "wool": "riftworld:block/rift_ash"
+  },
+  "render_type": "minecraft:cutout"
+}

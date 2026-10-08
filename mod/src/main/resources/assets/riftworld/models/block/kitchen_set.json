@@ -8,6 +8,6 @@
   "render_type": "minecraft:cutout",
   "ambientocclusion": false,
   "textures": {
-    "particle": "riftworld:block/obj/e_wood"
+    "particle": "riftworld:block/obj/m_e_wood"
   }
 }

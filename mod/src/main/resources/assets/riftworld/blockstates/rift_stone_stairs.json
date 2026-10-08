@@ -1,0 +1,50 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "facing": "east",
+        "half": "bottom",
+        "shape": "straight"
+      },
+      "apply": {
+        "model": "riftworld:block/rift_stone_stairs"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "half": "bottom",
+        "shape": "straight"
+      },
+      "apply": {
+        "model": "riftworld:block/rift_stone_stairs",
+        "y": 180,
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "half": "bottom",
+        "shape": "straight"
+      },
+      "apply": {
+        "model": "riftworld:block/rift_stone_stairs",
+        "y": 90,
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "half": "bottom",
+        "shape": "straight"
+      },
+      "apply": {
+        "model": "riftworld:block/rift_stone_stairs",
+        "y": 270,
+        "uvlock": true
+      }
+    }
+  ]
+}

@@ -19,7 +19,7 @@ import math, os, random, re, json, sys
 sys.path.insert(0, os.path.dirname(__file__))
 from nbtio import write_template
 
-MOD = "/home/user/mods/riftworld"
+MOD = "/home/user/riftworld/mod"
 OUT = MOD + "/src/main/resources/data/riftworld/structures/castle"
 os.makedirs(OUT, exist_ok=True)
 KINDS = {m.group(1): tuple(int(m.group(i)) for i in (2, 3, 4, 5))

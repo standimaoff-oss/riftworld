@@ -3,8 +3,9 @@
 
 A huge ivory & gold temple in vanilla-block style: twin front towers with spires, deep porch with a pediment, tall nave
 with stained-glass lancets, colonnades, crossing lantern tower, raised apse with the altar, two side chapels (east
-reliquary + west quiet), the ritual sanctum (5x5 mosaic + Sigil core ringed by 8 unlit ritual candles) and a crypt
-below holding the salvaged launch core, so the flight mechanic survives the lab.
+reliquary + west quiet), the hellish ritual hall of the Rift (dark rift stone, the red hexagram inlaid into the floor
+with glowing veins, the altar of the Rift and 8 unlit candles of the Rift) and a crypt below with the reliquary of the
+first wound of the Rift. The laboratory and its launch core are gone: the rift is the only way out of the world.
 
 Template frame: x -> east, z -> south, front porch at high z (face = south), ground floor at y = 30.
 """
@@ -25,11 +26,44 @@ TB = S("temple_bricks")
 TG = S("temple_gold")
 TF = S("temple_floor")
 TP = lambda a: S("temple_pillar", axis=a)
-MOS_T = S("temple_mosaic", stage=0)
-CORE = S("mosaic_core", stage=0)
-CANDLE = S("ritual_candle", lit=False)
 TBS = lambda f, **kw: S("temple_bricks_stairs", facing=f, **kw)
 TSL = lambda t="bottom": S("temple_bricks_slab", type=t)
+# ---- the hellish masonry of the ritual hall (Rev 5)
+RSB = S("rift_stone_bricks")
+RST = S("rift_stone")
+RSC = S("rift_stone_bricks_cracked")
+RVEIN = S("rift_vein")
+RASH = S("rift_ash")
+RPIL = S("rift_pillar", axis="y")
+RSLAB = S("rift_stone_slab", type="bottom")
+RCANDLE = S("rift_candle", lit=False)
+RALTAR = S("rift_altar", stage=0, open=False)
+
+
+def line_cells(x0, z0, x1, z1):
+    """Bresenham cells of a line of the sign (13x13 grid, the altar in the middle cell 6,6)."""
+    cells, dx, dz = [], abs(x1 - x0), -abs(z1 - z0)
+    sx, sz = (1 if x0 < x1 else -1), (1 if z0 < z1 else -1)
+    err = dx + dz
+    while True:
+        cells.append((x0, z0))
+        if x0 == x1 and z0 == z1:
+            return cells
+        e2 = 2 * err
+        if e2 >= dz:
+            err += dz; x0 += sx
+        if e2 <= dx:
+            err += dx; z0 += sz
+
+
+SIGN = set()                                                     # the demon sign: two triangles + the outer ring
+for (a, b) in (((6, 0), (0, 12)), ((6, 0), (12, 12)), ((0, 12), (12, 12)),
+               ((6, 12), (0, 0)), ((6, 12), (12, 0)), ((0, 0), (12, 0))):
+    SIGN.update(line_cells(a[0], a[1], b[0], b[1]))
+for i in range(13):
+    for j in range(13):
+        if abs(((i - 6) ** 2 + (j - 6) ** 2) ** 0.5 - 6.0) < 0.5:
+            SIGN.add((i, j))
 
 # ------------------------------------------------------------------ platform & apron
 fill(1, G - 1, 1, 61, G, 68, TB)                                  # plinth 2 thick
@@ -72,20 +106,37 @@ model("chapel_altar", 30, G + 2, 5, "south", powered=True)
 model("wall_sconce", 22, G + 3, 5, "west", powered=True)
 model("wall_sconce", 40, G + 3, 5, "east", powered=True)
 
-# ------------------------------------------------------------------ ritual sanctum: 5x5 mosaic + core + 8 candles
-MX0, MZ0 = 29, 32
-fill(MX0, G, MZ0, MX0 + 4, G, MZ0 + 4, MOS_T)
-put(MX0 + 2, G, MZ0 + 2, CORE)
-for (cx, cz) in ((27, 30), (35, 30), (27, 38), (35, 38),
+# ------------------------------------------------------------------ the hellish ritual hall of the Rift
+SX0, SZ0 = 25, 28                                                # the 13x13 sign around the altar (31, G, 34)
+fill(23, G, 26, 39, G, 42, RSB)                                  # 17x17 dark plate of the hall
+fill(24, G, 27, 38, G, 41, RST)                                  # plain rift stone inside it
+for (i, j) in SIGN:                                              # the red hexagram, inlaid with glowing veins
+    put(SX0 + i, G, SZ0 + j, RVEIN)
+for (vx, vz) in ((24, 30), (38, 30), (24, 38), (38, 38), (31, 27), (31, 41)):
+    put(vx, G, vz, RVEIN)                                        # veins bleeding out of the sign
+for (ax, az) in ((30, 27), (32, 41)):
+    put(ax, G, az, RSC)                                          # cracked slab in the plate
+put(31, G, 34, RALTAR)                                           # the altar of the Rift rises out of the floor layer
+for (cx, cz) in ((27, 30), (35, 30), (27, 38), (35, 38),         # the 8 unlit candles of the Rift
                  (31, 29), (31, 39), (26, 34), (36, 34)):
-    put(cx, G + 1, cz, CANDLE)
-for k in range(MX0 - 3, MX0 + 8, 2):                              # gold studs outlining the square
-    put(k, G, MZ0 - 3, TG); put(k, G, MZ0 + 7, TG)
-for k in range(MZ0 - 1, MZ0 + 7, 2):
-    put(MX0 - 3, G, k, TG); put(MX0 + 7, G, k, TG)
+    put(cx, G + 1, cz, RCANDLE)
+for (px, pz) in ((24, 27), (38, 27), (24, 41), (38, 41)):
+    fill(px, G + 1, pz, px, G + 3, pz, RPIL)                     # pillars of the rift at the corners of the plate
+for x in range(23, 40):                                          # low dark enclosure with four gates
+    if not 29 <= x <= 33:
+        put(x, G + 1, 26, RSB); put(x, G + 1, 42, RSB)
+        put(x, G + 2, 26, RSLAB); put(x, G + 2, 42, RSLAB)
+for z in range(27, 42):
+    if not 31 <= z <= 35:
+        put(23, G + 1, z, RSB); put(39, G + 1, z, RSB)
+        put(23, G + 2, z, RSLAB); put(39, G + 2, z, RSLAB)
+for (ax, az) in ((23, 26), (39, 26), (23, 42), (39, 42), (25, 33), (37, 35)):
+    put(ax, G, az, RASH)                                         # ash of the burnt world
+for z in range(12, 56, 7):                                       # ash at the feet of the colonnade
+    put(19, G, z, RASH); put(43, G, z, RASH)
 
-# crimson runner from the doors to the sanctum
-fill(30, G, 38, 32, G, 55, S("castle_carpet"))
+# crimson runner from the doors to the gate of the hall
+fill(30, G, 43, 32, G, 55, S("castle_carpet"))
 
 # ------------------------------------------------------------------ side chapels (east reliquary, west quiet)
 walls(50, 23, 61, 41, G + 1, G + 10, t=1, mat=lambda x, y, z: TB)  # east
@@ -192,10 +243,14 @@ fill(22, G + 1, 44, 23, G + 2, 44, AIR)                           # entry hole i
 for p in ((22, 44), (23, 44)):
     pass
 fill(21, G - 7, 43, 24, G - 7, 45, S("ashlar"))                   # landing floor at the entry bottom
-# launch-core chamber (relic of the Rift), crypt south room z 39..44
+# crypt reliquary of the Rift (the room that once held the launch core of the laboratory)
 fill(28, G - 6, 40, 34, G - 3, 44, AIR)
-put(31, G - 7, 42, TG)
-put(31, G - 6, 42, S("launch_core"))
+fill(28, G - 7, 40, 34, G - 7, 44, RSB)                           # dark floor of the reliquary
+put(31, G - 7, 42, RSC)                                           # cracked slab under the first wound
+put(31, G - 6, 42, RVEIN)                                         # the glowing wound the rift left in the world
+for (px, pz) in ((28, 40), (34, 40), (28, 44), (34, 44)):
+    fill(px, G - 6, pz, px, G - 5, pz, RPIL)                      # black pillars around it
+put(30, G - 6, 41, RCANDLE); put(32, G - 6, 41, RCANDLE)          # two candles nobody has lit yet
 model("wall_sconce", 27, G - 5, 41, "east", powered=True)
 model("wall_sconce", 35, G - 5, 41, "west", powered=True)
 

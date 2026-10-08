@@ -29,7 +29,7 @@ public class ModelItemRenderer extends BlockEntityWithoutLevelRenderer {
         GlbAssets.Loaded lm = GlbAssets.get(ModelBER.path(k));
         if (lm == null) return;
         Pose pose = lm.scratch();
-        ModelBER.pose(pose, k, mb.defaultBlockState(), null, 0);
+        ModelBER.pose(pose, k, 0);
         pose.compute();
         float s = 1.0F / Math.max(Math.max(k.width(), k.depth()), k.h);
         ps.pushPose();

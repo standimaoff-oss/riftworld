@@ -1,7 +1,7 @@
 """Make the block-atlas textures listed by obj_export.py (power-of-two copies of model textures, 4x4 solid colours)."""
 import json, os
 from PIL import Image
-TEXD = "/home/user/mods/riftworld/src/main/resources/assets/riftworld/textures/block/obj"
+TEXD = "/home/user/riftworld/mod/src/main/resources/assets/riftworld/textures/block/obj"
 os.makedirs(TEXD, exist_ok=True)
 
 

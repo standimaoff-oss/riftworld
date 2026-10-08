@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+release/
+out/
+build/
+.gradle/
+mod/build/
+mod/.gradle/
+mod/run/
+mod/run-*/
+mod/src/generated/

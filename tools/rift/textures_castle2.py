@@ -10,7 +10,7 @@ import numpy as np
 sys.path.insert(0, os.path.dirname(__file__))
 from PIL import Image
 
-ROOT = "/home/user/mods/riftworld/src/main/resources/assets/riftworld/textures/block"
+ROOT = "/home/user/riftworld/mod/src/main/resources/assets/riftworld/textures/block"
 TM = "/home/user/tools/rift/tex_models"
 
 

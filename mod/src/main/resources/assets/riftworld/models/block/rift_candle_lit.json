@@ -1,0 +1,309 @@
+{
+  "textures": {
+    "side": "riftworld:block/rift_candle",
+    "flame": "riftworld:block/rift_flame",
+    "particle": "riftworld:block/rift_candle"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        0,
+        3
+      ],
+      "to": [
+        13,
+        2,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#side",
+          "uv": [
+            0,
+            13,
+            16,
+            15
+          ]
+        },
+        "east": {
+          "texture": "#side",
+          "uv": [
+            0,
+            13,
+            16,
+            15
+          ]
+        },
+        "south": {
+          "texture": "#side",
+          "uv": [
+            0,
+            13,
+            16,
+            15
+          ]
+        },
+        "west": {
+          "texture": "#side",
+          "uv": [
+            0,
+            13,
+            16,
+            15
+          ]
+        },
+        "up": {
+          "texture": "#side",
+          "uv": [
+            0,
+            13,
+            16,
+            15
+          ]
+        },
+        "down": {
+          "texture": "#side",
+          "uv": [
+            0,
+            13,
+            16,
+            15
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        2,
+        5
+      ],
+      "to": [
+        11,
+        14,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#side",
+          "uv": [
+            5,
+            0,
+            11,
+            12
+          ]
+        },
+        "east": {
+          "texture": "#side",
+          "uv": [
+            5,
+            0,
+            11,
+            12
+          ]
+        },
+        "south": {
+          "texture": "#side",
+          "uv": [
+            5,
+            0,
+            11,
+            12
+          ]
+        },
+        "west": {
+          "texture": "#side",
+          "uv": [
+            5,
+            0,
+            11,
+            12
+          ]
+        },
+        "up": {
+          "texture": "#side",
+          "uv": [
+            5,
+            0,
+            11,
+            6
+          ]
+        },
+        "down": {
+          "texture": "#side",
+          "uv": [
+            5,
+            0,
+            11,
+            6
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        8,
+        13,
+        4
+      ],
+      "to": [
+        8,
+        15,
+        12
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          13,
+          8
+        ],
+        "axis": "y",
+        "angle": 0
+      },
+      "faces": {
+        "north": {
+          "texture": "#flame",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#flame",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        8,
+        13,
+        4
+      ],
+      "to": [
+        8,
+        15,
+        12
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          13,
+          8
+        ],
+        "axis": "y",
+        "angle": 90
+      },
+      "faces": {
+        "north": {
+          "texture": "#flame",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#flame",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        4,
+        13,
+        8
+      ],
+      "to": [
+        12,
+        15,
+        8
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          13,
+          8
+        ],
+        "axis": "x",
+        "angle": 0
+      },
+      "faces": {
+        "east": {
+          "texture": "#flame",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#flame",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        4,
+        13,
+        8
+      ],
+      "to": [
+        12,
+        15,
+        8
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          13,
+          8
+        ],
+        "axis": "x",
+        "angle": 90
+      },
+      "faces": {
+        "east": {
+          "texture": "#flame",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#flame",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    }
+  ]
+}

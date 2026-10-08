@@ -14,7 +14,7 @@ import os
 import numpy as np
 from PIL import Image
 
-ROOT = "/home/user/mods/riftworld/src/main/resources/assets/riftworld/textures/block"
+ROOT = "/home/user/riftworld/mod/src/main/resources/assets/riftworld/textures/block"
 TM = "/home/user/tools/rift/tex_models"
 os.makedirs(ROOT, exist_ok=True)
 os.makedirs(TM, exist_ok=True)

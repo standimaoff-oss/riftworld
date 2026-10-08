@@ -33,8 +33,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import ru.aiforge.riftworld.registry.ModBlocks;
 
 /**
- * Master block of a GLB-rendered machine. The visible model is drawn by the block-entity renderer;
- * the remaining cells of the footprint are invisible {@link PartBlock}s.
+ * Master block of a 3D model block (baked OBJ or a GLB drawn by the block-entity renderer).
+ * The remaining cells of the footprint are invisible {@link PartBlock}s.
  */
 public class ModelBlock extends HorizontalDirectionalBlock {
     public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
@@ -148,20 +148,6 @@ public class ModelBlock extends HorizontalDirectionalBlock {
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         return InteractionResult.PASS;
-    }
-
-    @Nullable
-    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return kind.isElisar() ? null : new RiftBlockEntity(pos, state);
-    }
-
-    @Nullable
-    public <T extends BlockEntity> net.minecraft.world.level.block.entity.BlockEntityTicker<T> getTicker(Level level, BlockState state,
-            net.minecraft.world.level.block.entity.BlockEntityType<T> type) {
-        if (level.isClientSide || kind != ModelKind.PORTAL_HELM) return null;
-        return (l, p, s, be) -> {
-            if (be instanceof RiftBlockEntity r) LabPower.tick((net.minecraft.server.level.ServerLevel) l, p, r);
-        };
     }
 
     @Override

@@ -8,7 +8,7 @@ import math
 import bpy, os, sys, math
 import numpy as np
 
-A = "/home/user/mods/riftworld/src/main/resources/assets/riftworld"
+A = "/home/user/riftworld/mod/src/main/resources/assets/riftworld"
 OBJD = A + "/models/block/obj"
 TEXD = A + "/textures/block/obj"
 BLEND = "/home/user/models/rift"

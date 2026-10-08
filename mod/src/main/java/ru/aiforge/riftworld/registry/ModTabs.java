@@ -14,9 +14,8 @@ public final class ModTabs {
 
     public static final RegistryObject<CreativeModeTab> MAIN = TABS.register("main", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.riftworld"))
-            .icon(() -> new ItemStack(ModItems.RESONANCE_STONE.get()))
+            .icon(() -> new ItemStack(RiftBlocks.ALTAR.get()))
             .displayItems((params, out) -> {
-                out.accept(ModItems.RESONANCE_STONE.get());
                 out.accept(ModFluids.BUCKET.get());
                 out.accept(ModItems.MORGRATH_SCYTHE.get());
                 out.accept(ModItems.GUARD_SICKLE.get());

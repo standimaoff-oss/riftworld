@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "lit=false": {
+      "model": "riftworld:block/rift_candle"
+    },
+    "lit=true": {
+      "model": "riftworld:block/rift_candle_lit"
+    }
+  }
+}

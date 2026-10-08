@@ -1,7 +1,7 @@
 """Elisar blocks: blockstates / models / items / loot / tags / lang. Run AFTER gen_resources.py (merges lang + tags)."""
 import os
 import json, os
-R = "/home/user/mods/riftworld/src/main/resources"
+R = "/home/user/riftworld/mod/src/main/resources"
 A = R + "/assets/riftworld"; D = R + "/data/riftworld"
 NS = "riftworld:block/"
 

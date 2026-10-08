@@ -7,7 +7,7 @@ import json, math, os, random, re, sys
 sys.path.insert(0, os.path.dirname(__file__))
 from nbtio import write_template
 
-MOD = "/home/user/mods/riftworld"
+MOD = "/home/user/riftworld/mod"
 OUT = MOD + "/src/main/resources/data/riftworld"
 JAVA_KINDS = MOD + "/src/main/java/ru/aiforge/riftworld/block/ModelKind.java"
 KINDS = {m.group(1): tuple(int(m.group(i)) for i in (2, 3, 4, 5))
@@ -367,7 +367,7 @@ class Tpl:
 
     def eave_lanterns(self):
         """Reference: lanterns hanging on short chains from both front eave corners."""
-        if self.name in ("temple", "temple_great", "laboratory") or not hasattr(self, "top"):
+        if self.name in ("temple", "temple_great") or not hasattr(self, "top"):
             return
         fz = self.wz + 1
         for x in (0, self.wx + 1):

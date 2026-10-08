@@ -11,7 +11,7 @@ SHOTS = "/home/user/release/riftworld_screens/session6"
 VID = "/home/user/.cache/vid"
 FONT = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 os.makedirs(SHOTS, exist_ok=True); os.makedirs(VID, exist_ok=True)
-META = json.load(open("/home/user/mods/riftworld/src/main/resources/data/riftworld/structures/castle/castle_meta.json"))
+META = json.load(open("/home/user/riftworld/mod/src/main/resources/data/riftworld/structures/castle/castle_meta.json"))
 R = Rcon()
 HZ = 20
 

@@ -5,11 +5,15 @@ Lab palette: off-white panels, cool grey concrete, teal accent band, hazard yell
 water stains, cracks and dead brown-grey moss (the complex has been abandoned for decades).
 Output: mods/riftworld/src/main/resources/assets/riftworld/textures/{block,item}/ and tools/rift/tex_models/
 """
+
+raise SystemExit(
+    "obsolete: the laboratory was deleted in Rev 5 - running this generator would rebuild lab\n"
+    "assets that no longer exist in the mod. Lab content is kept only in git history; see README.")
 import os, math, random
 import numpy as np
 from PIL import Image
 
-ROOT = "/home/user/mods/riftworld/src/main/resources/assets/riftworld/textures"
+ROOT = "/home/user/riftworld/mod/src/main/resources/assets/riftworld/textures"
 BLK = os.path.join(ROOT, "block")
 ITM = os.path.join(ROOT, "item")
 MOD = "/home/user/tools/rift/tex_models"

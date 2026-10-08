@@ -10,7 +10,7 @@ import ru.aiforge.riftworld.registry.ModItems;
 import ru.aiforge.riftworld.registry.ModWorldgen;
 import ru.aiforge.riftworld.registry.ModTabs;
 
-/** «Разлом» — abandoned laboratory and the road to planet Elysar. */
+/** «Разлом» — the Great Temple, the rift ritual and the pale world Elysar behind the black rift. */
 @Mod(RiftWorld.MODID)
 public final class RiftWorld {
     public static final String MODID = "riftworld";

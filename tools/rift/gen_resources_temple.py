@@ -1,7 +1,12 @@
 """Rev 4 item 3: blockstates / models / lang / loot for the Great Temple blocks (run after the castle one)."""
+
+raise SystemExit(
+    "obsolete: this generator belongs to content that was deleted from the mod\n"
+    "(the laboratory and the Rev 4 temple mosaic). It would rebuild assets that no longer\n"
+    "exist - see README, Rev 5. The files are kept only for reference.")
 import json, os
 
-R = "/home/user/mods/riftworld/src/main/resources"
+R = "/home/user/riftworld/mod/src/main/resources"
 A = R + "/assets/riftworld"
 D = R + "/data/riftworld"
 NS = "riftworld:block/"

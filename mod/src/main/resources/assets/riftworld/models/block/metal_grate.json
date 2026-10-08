@@ -1,7 +1,0 @@
-{
-  "parent": "minecraft:block/cube_all",
-  "textures": {
-    "all": "riftworld:block/metal_grate"
-  },
-  "render_type": "minecraft:cutout"
-}

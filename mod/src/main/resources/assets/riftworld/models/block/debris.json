@@ -1,7 +1,0 @@
-{
-  "parent": "minecraft:block/carpet",
-  "textures": {
-    "wool": "riftworld:block/debris"
-  },
-  "render_type": "minecraft:cutout"
-}
