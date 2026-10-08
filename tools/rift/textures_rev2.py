@@ -11,7 +11,7 @@ import os, math
 import numpy as np
 from PIL import Image, ImageDraw
 
-ROOT = "/home/user/mods/riftworld/src/main/resources/assets/riftworld/textures"
+ROOT = "/home/user/riftworld/mod/src/main/resources/assets/riftworld/textures"
 BLK = os.path.join(ROOT, "block")
 ENV = os.path.join(ROOT, "environment")
 os.makedirs(ENV, exist_ok=True)

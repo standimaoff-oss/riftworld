@@ -1,7 +1,7 @@
 """Rev 3 / C-3 throne-hall mechanics: blockstates / models / lang for boss_column + arena_core (merges; run after the others)."""
 import json, os
 
-R = "/home/user/mods/riftworld/src/main/resources"
+R = "/home/user/riftworld/mod/src/main/resources"
 A = R + "/assets/riftworld"
 NS = "riftworld:block/"
 

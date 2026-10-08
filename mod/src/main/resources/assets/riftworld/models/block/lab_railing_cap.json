@@ -1,9 +1,0 @@
-{
-  "parent": "minecraft:block/iron_bars_cap",
-  "textures": {
-    "bars": "riftworld:block/lab_railing",
-    "edge": "riftworld:block/lab_railing",
-    "particle": "riftworld:block/lab_railing"
-  },
-  "render_type": "minecraft:cutout"
-}

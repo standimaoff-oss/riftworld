@@ -1,7 +1,7 @@
 """Quick orthographic previews of castle.nbt (top / front / side / hall section) for fast iteration before the game."""
 import gzip, io, struct, sys
 from PIL import Image, ImageDraw
-P = sys.argv[1] if len(sys.argv) > 1 else "/home/user/mods/riftworld/src/main/resources/data/riftworld/structures/castle/castle.nbt"
+P = sys.argv[1] if len(sys.argv) > 1 else "/home/user/riftworld/mod/src/main/resources/data/riftworld/structures/castle/castle.nbt"
 
 def rd(f, t):
     if t == 1: return struct.unpack(">b", f.read(1))[0]

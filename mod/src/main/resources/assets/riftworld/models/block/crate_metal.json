@@ -1,6 +1,6 @@
 {
   "textures": {
-    "particle": "riftworld:block/lab_panel"
+    "particle": "riftworld:block/obj/m_e_iron"
   },
   "elements": []
 }

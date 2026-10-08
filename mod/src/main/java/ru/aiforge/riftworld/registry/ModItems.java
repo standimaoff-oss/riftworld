@@ -9,13 +9,9 @@ import net.minecraftforge.registries.RegistryObject;
 import ru.aiforge.riftworld.RiftWorld;
 import ru.aiforge.riftworld.block.ModelBlock;
 import ru.aiforge.riftworld.item.ModelBlockItem;
-import ru.aiforge.riftworld.item.ResonanceStoneItem;
 
 public final class ModItems {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, RiftWorld.MODID);
-
-    public static final RegistryObject<Item> RESONANCE_STONE = ITEMS.register("resonance_stone",
-            () -> new ResonanceStoneItem(new Item.Properties().stacksTo(16).rarity(Rarity.EPIC)));
 
     public static final RegistryObject<Item> MORGRATH_SCYTHE = ITEMS.register("morgrath_scythe",
             () -> new ru.aiforge.riftworld.item.ScytheItem(new Item.Properties().rarity(Rarity.EPIC).fireResistant()));

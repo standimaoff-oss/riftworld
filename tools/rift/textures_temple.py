@@ -1,8 +1,13 @@
 """Rev 4 item 3: 16x16 vanilla-style textures of the Great Temple (ivory & gold, ritual mosaic)."""
+
+raise SystemExit(
+    "obsolete: this generator belongs to content that was deleted from the mod\n"
+    "(the laboratory and the Rev 4 temple mosaic). It would rebuild assets that no longer\n"
+    "exist - see README, Rev 5. The files are kept only for reference.")
 from PIL import Image, ImageDraw
 import math, random
 
-A = "/home/user/mods/riftworld/src/main/resources/assets/riftworld/textures/block/"
+A = "/home/user/riftworld/mod/src/main/resources/assets/riftworld/textures/block/"
 rng = random.Random(41)
 
 def grain(d, base, amp=8):

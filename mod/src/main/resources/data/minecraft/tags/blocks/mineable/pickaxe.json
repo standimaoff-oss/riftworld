@@ -7,8 +7,6 @@
     "riftworld:temple_gold",
     "riftworld:temple_pillar",
     "riftworld:temple_floor",
-    "riftworld:temple_mosaic",
-    "riftworld:mosaic_core",
     "riftworld:castle_bricks",
     "riftworld:castle_bricks_cracked",
     "riftworld:castle_bricks_mossy",
@@ -33,6 +31,14 @@
     "riftworld:wall_shackles",
     "riftworld:guard_armor",
     "riftworld:gold_hoard",
-    "riftworld:hearth_cauldron"
+    "riftworld:hearth_cauldron",
+    "riftworld:rift_stone",
+    "riftworld:rift_stone_bricks",
+    "riftworld:rift_stone_bricks_cracked",
+    "riftworld:rift_stone_stairs",
+    "riftworld:rift_stone_slab",
+    "riftworld:rift_stone_wall",
+    "riftworld:rift_pillar",
+    "riftworld:rift_vein"
   ]
 }

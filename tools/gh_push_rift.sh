@@ -2,6 +2,13 @@
 # Publishes riftworld sources to the private repo standimaoff-oss/riftworld (token only in ~/.git-credentials).
 set -euo pipefail
 H=/home/user; R=$H/.cache/riftworld-git; URL=https://github.com/standimaoff-oss/riftworld.git; MSG=${1:-update}
+# Rev 5: the sources live in the repository itself (this checkout, branch arena/3e6d6463-riftworld) and are
+# published with git push; this script is the legacy publisher of the sandbox layout ~/mods/riftworld and only
+# runs when that layout is present.
+if [ ! -d $H/mods/riftworld ]; then
+  echo "gh_push_rift.sh: $H/mods/riftworld not found - publish with: git push origin $(git rev-parse --abbrev-ref HEAD)" >&2
+  exit 2
+fi
 if [ ! -d $R/.git ]; then
   rm -rf $R; git clone -q $URL $R 2>/dev/null || { mkdir -p $R; cd $R; git init -q -b main; git remote add origin $URL; }
 fi

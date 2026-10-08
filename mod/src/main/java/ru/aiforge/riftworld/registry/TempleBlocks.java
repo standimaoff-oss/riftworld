@@ -8,13 +8,13 @@ import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraftforge.registries.RegistryObject;
-import ru.aiforge.riftworld.block.LightBridgeBlock;
-import ru.aiforge.riftworld.block.MosaicBlock;
-import ru.aiforge.riftworld.block.MosaicCoreBlock;
 import ru.aiforge.riftworld.block.RitualCandleBlock;
 
 /**
- * Rev 4 item 3: building blocks of the Great Temple on the main island (ivory & gold; the ritual floor). 16x16 textures.
+ * Building blocks of the Great Temple of the Crossing (ivory &amp; gold). 16x16 textures of the mod only.
+ * <p>
+ * Rev 5: the ritual floor of the old mosaic is gone - the ritual now runs on the red hexagram of the
+ * {@code rift_altar} in the middle of a hall paved with {@link RiftBlocks} (see that class).
  */
 public final class TempleBlocks {
     private TempleBlocks() {
@@ -32,11 +32,10 @@ public final class TempleBlocks {
     public static final RegistryObject<RotatedPillarBlock> PILLAR = ModBlocks.reg("temple_pillar",
             () -> new RotatedPillarBlock(p(MapColor.TERRACOTTA_WHITE, 2.5F, SoundType.STONE)));
     public static final RegistryObject<Block> FLOOR = ModBlocks.reg("temple_floor", () -> new Block(p(MapColor.QUARTZ, 2.0F, SoundType.STONE)));
-    public static final RegistryObject<MosaicBlock> MOSAIC = ModBlocks.reg("temple_mosaic",
-            () -> new MosaicBlock(p(MapColor.COLOR_BLUE, 3.0F, SoundType.STONE)));
-    public static final RegistryObject<MosaicCoreBlock> MOSAIC_CORE = ModBlocks.reg("mosaic_core",
-            () -> new MosaicCoreBlock(p(MapColor.COLOR_BLUE, 3.0F, SoundType.STONE)));
     public static final RegistryObject<RitualCandleBlock> RITUAL_CANDLE = ModBlocks.reg("ritual_candle",
             () -> new RitualCandleBlock(p(MapColor.QUARTZ, 0.5F, SoundType.CANDLE).noOcclusion()));
-    public static final RegistryObject<LightBridgeBlock> LIGHT_BRIDGE = ModBlocks.reg("light_bridge", LightBridgeBlock::new);
+
+    /** Touched by {@link ModBlocks} so the class (and its DeferredRegister entries) is loaded. */
+    public static void init() {
+    }
 }

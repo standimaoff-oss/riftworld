@@ -10,7 +10,7 @@ import os, math
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
-ROOT = "/home/user/mods/riftworld/src/main/resources/assets/riftworld/textures"
+ROOT = "/home/user/riftworld/mod/src/main/resources/assets/riftworld/textures"
 BLK = os.path.join(ROOT, "block")
 ITM = os.path.join(ROOT, "item")
 MOD = "/home/user/tools/rift/tex_models"

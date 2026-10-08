@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/vine",
-  "textures": {
-    "vine": "riftworld:block/dead_vines",
-    "particle": "riftworld:block/dead_vines"
-  },
-  "render_type": "minecraft:cutout"
-}

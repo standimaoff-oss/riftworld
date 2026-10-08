@@ -8,40 +8,13 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * Footprint and GLB of every 3D-model block. Offsets are given in the model frame (front = south):
+ * Footprint and GLB/OBJ of every 3D-model block. Offsets are given in the model frame (front = south):
  * x = to the viewer's right (east), back = rows behind the front row (north), h = height in blocks.
  */
 public enum ModelKind {
-    PORTAL_HELM("portal_helm", -1, 1, 1, 3, Block.box(0, 0, 0, 16, 16, 16)),
-    PORTAL_LEVER("portal_lever", 0, 0, 0, 2, Block.box(3, 0, 3, 13, 16, 13)),
-    CONTROL_CONSOLE("control_console", 0, 1, 0, 2, Block.box(0, 0, 0, 16, 16, 16)),
-    LATHE("lathe", 0, 1, 0, 1, Block.box(0, 0, 2, 16, 16, 14)),
-    MILLING_MACHINE("milling_machine", 0, 0, 0, 2, Block.box(1, 0, 1, 15, 16, 15)),
-    SPECIMEN_TANK("specimen_tank", 0, 0, 0, 3, Block.box(1, 0, 1, 15, 16, 15)),
-    ELECTRICAL_CABINET("electrical_cabinet", 0, 0, 0, 2, Block.box(1, 0, 1, 15, 16, 15)),
-    GENERATOR("generator", -1, 1, 1, 2, Block.box(0, 0, 0, 16, 16, 16)),
-    TRANSFORMER("transformer", 0, 1, 0, 2, Block.box(0, 0, 0, 16, 16, 16)),
-    SERVER_RACK("server_rack", 0, 0, 0, 2, Block.box(1, 0, 1, 15, 16, 15)),
-    SECURITY_DESK("security_desk", -1, 1, 0, 2, Block.box(0, 0, 0, 16, 16, 16)),
+    // ---- containers (GLB, drawn by the block entity renderer)
     CRATE_WOOD("crate_wood", 0, 0, 0, 1, Block.box(1, 0, 1, 15, 15, 15)),
     CRATE_METAL("crate_metal", 0, 0, 0, 1, Block.box(1, 0, 1, 15, 14, 15)),
-    LAB_DOOR("lab_door", 0, 1, 0, 3, Block.box(0, 0, 6, 16, 16, 10)),
-    LAB_TABLE("lab_table", 0, 1, 0, 1, Block.box(0, 0, 0, 16, 15, 16)),
-    SHELF("shelf", 0, 1, 0, 3, Block.box(0, 0, 1, 16, 16, 15)),
-    OFFICE_CHAIR("office_chair", 0, 0, 0, 1, Block.box(3, 0, 3, 13, 15, 13)),
-    LOCKER("locker", 0, 0, 0, 2, Block.box(1, 0, 1, 15, 16, 15)),
-    TRASH_BIN_TIPPED("trash_bin_tipped", 0, 0, 0, 1, Block.box(1, 0, 1, 15, 8, 15)),
-    CHANDELIER("chandelier", 0, 0, 0, 1, Block.box(4, 5, 4, 12, 16, 12)),
-    SIREN("siren", 0, 0, 0, 1, Block.box(3, 4, 0, 13, 14, 10)),
-    SHELF_FALLEN("shelf_fallen", -1, 1, 0, 1, Block.box(0, 0, 1, 16, 10, 15)),
-    WALL_NOTES("wall_notes", 0, 0, 0, 1, Block.box(1, 2, 0, 15, 14, 2)),
-    DESK_COMPUTER("desk_computer", 0, 1, 0, 2, Block.box(0, 0, 0, 16, 13, 16)),
-    TABLE_FLIPPED("table_flipped", 0, 1, 0, 1, Block.box(0, 0, 0, 16, 16, 16)),
-    BARRELS("barrels", 0, 0, 0, 1, Block.box(1, 0, 1, 15, 14, 15)),
-    FIRE_EXTINGUISHER("fire_extinguisher", 0, 0, 0, 1, Block.box(4, 2, 0, 12, 13, 9)),
-    BOX_PILE("box_pile", 0, 0, 0, 1, Block.box(1, 0, 1, 15, 13, 15)),
-    PAPER_PILE("paper_pile", 0, 0, 0, 1, Block.box(0, 0, 0, 16, 1, 16)),
-    CHAIR_FALLEN("chair_fallen", 0, 0, 0, 1, Block.box(1, 0, 1, 15, 9, 15)),
     // ---- Elisar city «Странники» (Part 3)
     STREET_LAMP("street_lamp", 0, 0, 0, 3, Block.box(5, 0, 5, 11, 16, 11)),
     SIGN_SHOP("sign_shop", 0, 0, 0, 1, Block.box(6, 6, 0, 10, 16, 16)),
@@ -146,7 +119,7 @@ public enum ModelKind {
 
     public boolean passable() {
         return switch (this) {
-            case WALL_NOTES, FIRE_EXTINGUISHER, PAPER_PILE, CHANDELIER, SIGN_SHOP, SIGN_TAVERN, SIGN_FORGE, SIGN_FISH,
+            case SIGN_SHOP, SIGN_TAVERN, SIGN_FORGE, SIGN_FISH,
                  SIGN_POLICE, SIGN_HUNTER, SIGN_MARKET, SIGN_TEMPLE, FISHING_NET, TROPHY_ANTLERS, TOOL_WALL, RUG,
                  WANTED_WALL, SACRED_POLES, LANTERN_HANGING, LANTERN_HANG, LANTERN_WALL, PAINTING_ISLANDS,
                  PAINTING_PORTRAIT, PAINTING_EYE, HERBS_HANGING, CASTLE_CHANDELIER, WALL_SCONCE, WALL_SHACKLES,

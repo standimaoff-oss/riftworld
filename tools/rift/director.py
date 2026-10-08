@@ -2,11 +2,15 @@
 """Camera director for the riftworld video: smooth spectator camera paths over RCON + scripted clicks.
 
 usage: director.py <scene> [...]   (scenes listed in SCENES; 'all' runs the full film)
-World origin of the test lab: template (0,0,0) -> world (0,-63,0).
+
+Rev 5: the laboratory is gone, the film is about the Great Temple and its rift. `reset` places
+`structures/city/temple_great.nbt` (63 x 71 x 70, ritual floor at template y = 30) with its origin at
+(0, -91, 0), so template (31, 30, 34) - the rift altar - lands on world (31, -61, 34); W() maps the
+rest. The camera paths below are a first pass in template space and are meant to be tuned in game.
 """
 import math, os, socket, struct, subprocess, sys, time
 
-OY = -63
+OY = -91   # template origin of `place template riftworld:city/temple_great 0 -91 0` (ground = template y 30)
 HZ = 20
 
 
@@ -137,97 +141,68 @@ def setup():
 
 
 def reset():
-    R("place template riftworld:laboratory 0 -63 0")
     R("kill @e[type=item]")
+    R("fill -40 -95 -40 110 -20 110 air")
+    R("place template riftworld:city/temple_great 0 -91 0")
+    R("riftrift close")
 
 
 # ------------------------------------------------------------------------------------------------ scenes
 def s_exterior():
     R("time set 1000")
-    move([(31, 52, 110), (31, 46, 92), (31, 40, 78)], [(31, 34, 50), (31, 34, 50), (31, 33, 62)], 9)
-    move([(-12, 50, 75), (-14, 54, 30), (2, 58, -12)], [(31, 36, 35), (31, 36, 31), (31, 36, 28)], 10)
+    move([(31.5, 44, 76), (31.5, 36, 62), (31.5, 32, 50)], [(31, 34, 40), (31, 32, 36), (31, 31, 34)], 9)
+    move([(-8, 42, 68), (12, 48, 30), (44, 54, 6)], [(31, 36, 35), (31, 36, 31), (31, 36, 28)], 10)
+    move([(44, 54, 6), (44, 46, 44), (31.5, 40, 62)], [(31, 36, 28), (31, 34, 34), (31, 33, 36)], 8)
 
 
 def s_hall():
-    move([(31, 44, 4), (31, 46, 31), (31, 41, 52)], [(31, 31, 30), (31, 30, 31), (31, 31, 30)], 8)
-    move([(43, 40, 44), (44, 39, 31), (43, 40, 19)], [(31, 31, 31), (31, 31, 31), (31, 31, 31)], 6)
-    # siren + chandeliers on the gallery
-    hold((37.5, 34.6, 41.5), (37.5, 35.4, 44.5), 2.5)
+    """The ritual hall: the hexagram on the floor, the altar, the pillars."""
+    R("time set 1000")
+    move([(31.5, 33, 54), (31.5, 33, 46), (31.5, 32, 39)], [(31, 31, 34), (31, 30.5, 34), (31, 30.5, 34)], 8)
+    move([(31.5, 32, 39), (24, 33, 30), (31, 33, 24), (38, 33, 30), (38, 33, 39)],
+         [(31, 30.5, 34)] * 5, 12)                                     # round the sign
+    move([(38, 33, 39), (34, 30.5, 44), (26, 30.5, 44)], [(31, 31, 30), (31, 31, 30), (31, 31, 30)], 6)
+    move([(26, 30.5, 44), (24, 31, 38), (26, 31, 27)], [(31, 31, 34)] * 3, 6)   # the 4 pillars
+    move([(26, 31, 27), (31.5, 30.5, 22), (31.5, 30.5, 20)], [(31, 30.5, 34), (31, 30.5, 34), (31, 30, 34)], 5)
 
 
-def s_decor():
+def s_candles():
+    """Light the eight candles of the ritual (flint and steel, right click)."""
+    R("time set 1000")
+    R("gamemode creative @a")
+    R("give @a minecraft:flint_and_steel 1")
     R("effect give @a minecraft:night_vision 600 0 true")
-    # lobby: desks, notes, extinguishers, chandeliers
-    move([(31.5, 33.6, 52.5), (28.5, 33, 56.5), (22.5, 33, 57.5)], [(26.5, 32, 61), (24.5, 32.5, 61), (20.5, 32.2, 61)], 7)
-    # north labs: flipped table, fallen shelf, fallen chair
-    move([(26.5, 33.5, 11), (24.5, 33, 8.5), (19.5, 33, 9.5)], [(31.5, 31.5, 4), (25, 31.5, 4), (20.5, 31.3, 4.5)], 6)
-    # basement warehouse: fallen shelf, barrels, boxes, trash bin
-    move([(15.5, 27.5, 36.5), (18.5, 27.3, 38), (20.5, 27, 39)], [(20.5, 25.5, 32), (19, 25.4, 33), (10.5, 25.5, 40.5)], 6)
-    move([(46.5, 27.3, 41.5), (45.5, 27.3, 45.5)], [(44.5, 25.4, 46.5), (52.5, 25.4, 40.5)], 4)
-    # 2nd floor security room + offices
-    move([(31.5, 41.5, 52), (30, 41.3, 56), (33, 41.4, 57)], [(33.5, 39.6, 60.5), (37.5, 40.5, 60.5), (28.5, 39.4, 57.5)], 6)
-    move([(15.5, 41.3, 10), (16.5, 41.2, 7.5)], [(15.5, 39.8, 6.5), (17.5, 42, 5.5)], 4)
+    pairs = (((27, 30, 30), (26, 30, 30)), ((35, 30, 30), (36, 30, 30)),
+             ((27, 30, 38), (26, 30, 38)), ((35, 30, 38), (36, 30, 38)),
+             ((31, 30, 29), (31, 30, 28)), ((31, 30, 39), (31, 30, 40)),
+             ((26, 30, 34), (25, 30, 34)), ((36, 30, 34), (37, 30, 34)))
+    for (cand, stand) in pairs:
+        use_block(stand, (cand[0] + 0.5, cand[1] + 0.6, cand[2] + 0.5))
     R("effect clear @a")
 
 
-def s_note():
+def s_ritual():
+    """Stand inside the sign: the altar charges, space breaks, the rift opens."""
     R("time set 18000")
-    R("clear @a")
-    hold((31.5, 34.0, 36.5), (31.5, 33, 39.5), 1.5)
-    use_block((30.5, 32, 40.5), (31.5, 32.4, 39.5))
-    R("gamemode spectator @a")
-    move([(31.5, 34.0, 36.5), (33.5, 33.6, 37.0)], [(31.5, 33.5, 39.5), (31.5, 32.5, 39.5)], 4.5)
+    hold((31.5, 30, 40), (31.5, 31.5, 34), 4)
+    R("gamemode survival @a")
+    hold((31.5, 30, 38), (31.5, 31.5, 34), 12)      # in the sign box -> CHARGE -> BREAK -> OPEN
+    move([(31.5, 30, 38), (27, 30.5, 30), (27, 33, 27)], [(31.5, 31.5, 34), (31, 32, 34), (31, 33, 34)], 8)
+    hold((27, 33, 27), (31, 33, 34), 4)
 
 
-def s_power():
+def s_rift():
+    """The rift itself: a black hole that swallows the light - and the step through it."""
     R("time set 18000")
-    R("data merge block 31 -31 41 {Stones:15,Stage:0}")
-    R("clear @a")
-    R("give @a riftworld:resonance_stone 1")
-    hold((31.5, 34.2, 47.5), (31.5, 33, 41.5), 2)
-    use_block((30.5, 32, 40.5), (31.5, 32.6, 41.5))
+    R("riftrift status")
+    move([(31.5, 33, 44), (31.5, 33.5, 39)], [(31, 33.5, 34), (31, 33.5, 34)], 5)
+    hold((31.5, 33.5, 39), (31, 33.5, 34), 3)
+    move([(31.5, 33.5, 39), (33.5, 32, 36.5), (31.5, 33.5, 34.2)], [(31, 33.5, 34)] * 3, 6)   # into the rift
     R("gamemode spectator @a")
-    move([(31.5, 34.0, 45.0), (31.5, 41, 50)], [(31.5, 33, 41.5), (31.5, 33, 26)], 4)
-    hold((31.5, 41, 50), (31.5, 33, 26), 2)
-    move([(31.5, 41, 50), (20, 41, 44)], [(31.5, 33, 26), (31, 32, 31)], 3)
-    # basement flicker
-    move([(20.5, 27.3, 50.5), (30.5, 27.3, 50.5)], [(20.5, 28.5, 40.5), (35.5, 28.5, 40.5)], 5)
+    hold((31.5, 36, 42), (31, 33.5, 34), 3)          # ... and back, from the other side
 
 
-def s_launch():
-    use_block((30.5, 32, 40.5), (31.5, 32.4, 39.5))
-    R("gamemode spectator @a")
-    move([(31.5, 34.0, 41.0), (34, 41.5, 46)], [(31.5, 33, 39.5), (31.5, 30, 31.5)], 2.5)
-    hold((34, 41.5, 46), (31.5, 30, 31.5), 1.5)                   # hatch opening
-    move([(34, 41.5, 46), (40, 40, 40), (39, 40, 22)], [(31.5, 28, 31.5), (31.5, 30, 31.5), (31.5, 31, 31.5)], 6)
-    move([(39, 40, 22), (33, 37, 18)], [(31.5, 32, 31.5), (31.5, 34, 31.5)], 4)   # capsule arrives (rise ends ~13 s)
-    # cleaning wave: hall, then basement, then 2nd floor
-    move([(33, 37, 18), (22, 36, 20)], [(31.5, 32, 31.5), (40, 31, 40)], 3)
-    move([(20.5, 27.4, 46.5), (25.5, 27.4, 50.5)], [(30, 25.5, 40), (40, 25.5, 45)], 3)
-    move([(15.5, 41.3, 14), (24.5, 41.3, 14)], [(30.5, 39, 14), (40.5, 39, 14)], 3)
-
-
-def s_capsule():
-    R("clear @a")
-    move([(31.5, 36, 52), (31.5, 33.2, 41.0), (31.5, 32.7, 38.6)], [(31.5, 33, 35.5), (31.5, 33, 35), (31.5, 32.6, 35)], 4)
-    R("gamemode creative @a")
-    for i in range(25):
-        z = 38.6 - i * 0.06
-        tp(W(31.5, 31, z), 180, 5)
-        time.sleep(0.05)
-    time.sleep(1.2)
-    for i in range(45):
-        z = 37.1 - i * 0.12
-        tp(W(31.5, 31, z), 180, 8)
-        time.sleep(0.05)
-    use_block((31.5, 31, 31.5), (31.5, 31.8, 29.5))
-    time.sleep(3)
-    R("gamemode spectator @a")
-    move([(31.5, 33.8, 31.5), (33.5, 34.5, 34.5)], [(31.5, 33.0, 29.0), (30.5, 32.5, 28)], 4)
-    move([(31.5, 36, 44), (31.5, 44, 50)], [(31.5, 34, 31.5), (31.5, 35, 31.5)], 5)
-
-
-SCENES = {"note": s_note, "exterior": s_exterior, "hall": s_hall, "decor": s_decor, "power": s_power, "launch": s_launch, "capsule": s_capsule}
+SCENES = {"exterior": s_exterior, "hall": s_hall, "candles": s_candles, "ritual": s_ritual, "rift": s_rift}
 
 if __name__ == "__main__":
     setup()
@@ -237,7 +212,8 @@ if __name__ == "__main__":
         elif a == "focus":
             focus()
         elif a == "all":
-            for f in ("exterior", "hall", "decor", "note", "power", "launch", "capsule"):
+            reset()
+            for f in ("exterior", "hall", "candles", "ritual", "rift"):
                 SCENES[f]()
         else:
             SCENES[a]()

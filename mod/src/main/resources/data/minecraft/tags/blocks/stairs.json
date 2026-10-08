@@ -1,9 +1,6 @@
 {
   "replace": false,
   "values": [
-    "riftworld:lab_concrete_stairs",
-    "riftworld:steel_floor_stairs",
-    "riftworld:lab_tile_stairs",
     "riftworld:roof_red_stairs",
     "riftworld:roof_blue_stairs",
     "riftworld:thatch_stairs",
