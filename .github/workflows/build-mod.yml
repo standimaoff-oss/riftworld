@@ -23,11 +23,14 @@ jobs:
       - name: Build mod
         working-directory: mod
         run: |
+          set -o pipefail
           chmod +x gradlew
           ./gradlew build --stacktrace 2>&1 | tee /tmp/build.log
           echo "EXIT CODE: $?"
-          echo "=== LAST 100 LINES ==="
-          tail -100 /tmp/build.log
+
+      - name: Show build output
+        if: always()
+        run: tail -100 /tmp/build.log
 
       - name: Upload mod jar
         uses: actions/upload-artifact@v4
