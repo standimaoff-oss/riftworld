@@ -22,7 +22,17 @@ jobs:
 
       - name: Build mod
         working-directory: mod
-        run: chmod +x gradlew && ./gradlew build
+        run: |
+          chmod +x gradlew
+          for i in 1 2 3; do
+            echo "=== Attempt $i ==="
+            if ./gradlew build --no-daemon; then
+              echo "BUILD SUCCESS"
+              break
+            fi
+            echo "Attempt $i failed, retrying..."
+            sleep 10
+          done
 
       - name: Upload mod jar
         if: success()
