@@ -19,8 +19,6 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
-        with:
-          cache-disabled: true
 
       - name: Build mod jar
         working-directory: mod
@@ -28,18 +26,16 @@ jobs:
           chmod +x gradlew
           for attempt in 1 2 3 4 5; do
             echo "=== Build attempt $attempt ==="
-            rm -rf .gradle build
-            if ./gradlew build --no-daemon --no-build-cache --refresh-dependencies; then
+            if ./gradlew build --no-daemon; then
               echo "=== BUILD SUCCESS on attempt $attempt ==="
               ls -la build/libs/
-              break
+              exit 0
             fi
             echo "=== Attempt $attempt FAILED ==="
             if [ $attempt -eq 5 ]; then
-              echo "All attempts failed"
               exit 1
             fi
-            sleep 30
+            sleep 60
           done
 
       - name: Upload mod jar
