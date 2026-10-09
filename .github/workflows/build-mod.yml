@@ -19,15 +19,28 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-disabled: true
 
       - name: Build mod jar
         working-directory: mod
         run: |
           chmod +x gradlew
-          ./gradlew clean build --no-daemon || ./gradlew clean build --no-daemon || ./gradlew clean build --no-daemon
-
-      - name: Verify jar
-        run: ls -la mod/build/libs/ || echo "NO JAR FOUND"
+          for attempt in 1 2 3 4 5; do
+            echo "=== Build attempt $attempt ==="
+            rm -rf .gradle build
+            if ./gradlew build --no-daemon --no-build-cache --refresh-dependencies; then
+              echo "=== BUILD SUCCESS on attempt $attempt ==="
+              ls -la build/libs/
+              break
+            fi
+            echo "=== Attempt $attempt FAILED ==="
+            if [ $attempt -eq 5 ]; then
+              echo "All attempts failed"
+              exit 1
+            fi
+            sleep 30
+          done
 
       - name: Upload mod jar
         if: success()
