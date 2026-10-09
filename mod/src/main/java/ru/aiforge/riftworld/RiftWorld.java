@@ -17,6 +17,11 @@ public final class RiftWorld {
 
     public RiftWorld() {
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
+        
+        // Eagerly load TempleBlocks before ModBlocks to ensure blocks are registered
+        // before RegisterEvent fires (prevents IllegalStateException)
+        ru.aiforge.riftworld.registry.TempleBlocks.init();
+        
         ModBlocks.BLOCKS.register(bus);
         ru.aiforge.riftworld.registry.ModEntities.TYPES.register(bus);
         ModItems.ITEMS.register(bus);
