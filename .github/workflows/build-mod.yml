@@ -19,20 +19,17 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-disabled: true
 
       - name: Build mod
         working-directory: mod
         run: |
-          set -o pipefail
           chmod +x gradlew
-          ./gradlew build --stacktrace 2>&1 | tee /tmp/build.log
-          echo "EXIT CODE: $?"
-
-      - name: Show build output
-        if: always()
-        run: tail -100 /tmp/build.log
+          ./gradlew build --stacktrace --no-daemon
 
       - name: Upload mod jar
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: riftworld-mod
