@@ -22,7 +22,12 @@ jobs:
 
       - name: Build mod
         working-directory: mod
-        run: chmod +x gradlew && ./gradlew build --stacktrace 2>&1 || (echo "BUILD FAILED" && exit 1)
+        run: |
+          chmod +x gradlew
+          ./gradlew build --stacktrace 2>&1 | tee /tmp/build.log
+          echo "EXIT CODE: $?"
+          echo "=== LAST 100 LINES ==="
+          tail -100 /tmp/build.log
 
       - name: Upload mod jar
         uses: actions/upload-artifact@v4
