@@ -125,10 +125,9 @@ public final class ModBlocks {
         for (ModelKind k : ModelKind.values()) {
             if (!MODELS.containsKey(k)) model(k);
         }
-        ElisarBlocks.init();
-        CastleBlocks.init();
-        TempleBlocks.init();
-        ArenaBlocks.init();
+            ElisarBlocks.init();
+            CastleBlocks.init();
+            ArenaBlocks.init();
     }
 
     private static RegistryObject<ModelBlock> model(ModelKind k) {
