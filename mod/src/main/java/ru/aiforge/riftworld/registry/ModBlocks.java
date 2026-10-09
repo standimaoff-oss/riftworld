@@ -127,6 +127,7 @@ public final class ModBlocks {
         }
         ElisarBlocks.init();
         CastleBlocks.init();
+        TempleBlocks.init();
         ArenaBlocks.init();
     }
 
