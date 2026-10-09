@@ -22,7 +22,7 @@ jobs:
 
       - name: Build mod
         working-directory: mod
-        run: chmod +x gradlew && ./gradlew build
+        run: chmod +x gradlew && ./gradlew build --stacktrace 2>&1 || (echo "BUILD FAILED" && exit 1)
 
       - name: Upload mod jar
         uses: actions/upload-artifact@v4
