@@ -25,29 +25,30 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Build mod jar
-        id: build_step
-        continue-on-error: true
         run: |
           cd mod
           chmod +x gradlew
           ./gradlew jar --no-daemon 2>&1 | tee ../build.log
 
-      - name: Report log
+      - name: Report failure on error
+        if: failure()
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          grep -C 5 -E "(error:|FAILURE:|FAILED|> Task :compileJava)" build.log | head -n 100 > /tmp/err.txt
+          grep -C 5 -E "(error:|FAILURE:|FAILED)" build.log | head -n 100 > /tmp/err.txt
           gh issue create --title "Gradle Compile Error" --body-file /tmp/err.txt || true
-          if [ "${{ steps.build_step.outcome }}" != "success" ]; then
-            echo "Build failed!"
-            exit 1
-          fi
 
       - name: Prepare release asset
         if: success()
         run: |
           mkdir -p release
+          echo "Finding jar in mod/build/libs:"
+          find mod/build/libs -type f -name "*.jar"
           JAR_FILE=$(find mod/build/libs -type f -name "*.jar" | head -n 1)
+          if [ -z "$JAR_FILE" ]; then
+            echo "ERROR: No jar produced in mod/build/libs!"
+            exit 1
+          fi
           cp "$JAR_FILE" release/riftworld-0.6.4-p16.jar
           ls -lh release/riftworld-0.6.4-p16.jar
 
@@ -64,6 +65,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          gh issue close 4 || true
+          gh issue close 5 || true
           gh release delete v0.6.4-p16 --yes || true
           git tag -d v0.6.4-p16 || true
           git push origin :refs/tags/v0.6.4-p16 || true

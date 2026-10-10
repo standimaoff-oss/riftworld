@@ -284,6 +284,7 @@ public class MosaicCoreBE extends BlockEntity {
             player.displayClientMessage(Component.translatable("riftworld.ritual.open"), true);
             return;
         }
+        BlockPos pos = getBlockPos();
         int total = 0, lit = 0;
         for (BlockPos p : BlockPos.betweenClosed(pos.offset(-8, -1, -8), pos.offset(8, 3, 8))) {
             BlockState s = sl.getBlockState(p);
