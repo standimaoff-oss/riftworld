@@ -68,32 +68,37 @@ def floor():
     im.save(A + "temple_floor.png")
 
 def mosaic(core, stage):
-    im = Image.new("RGB", (16, 16), (20, 18, 46))
+    # Part 14: the demonic call reads CRIMSON - deep maroon tiles with gold sigils, glow ramping to scarlet fire
+    im = Image.new("RGB", (16, 16), (36, 12, 18))
     d = ImageDraw.Draw(im)
     for k in range(0, 16, 4):
-        d.line([(0, k), (15, k)], fill=(30, 28, 60)); d.line([(k, 0), (k, 15)], fill=(30, 28, 60))
+        d.line([(0, k), (15, k)], fill=(58, 20, 26)); d.line([(k, 0), (k, 15)], fill=(58, 20, 26))
     if core:
         # centre sigil: horned disc in a circle
         d.ellipse([1, 1, 14, 14], outline=(212, 172, 80))
         d.ellipse([5, 5, 10, 10], outline=(212, 172, 80))
         d.line([(3, 2), (6, 6)], fill=(212, 172, 80)); d.line([(12, 2), (9, 6)], fill=(212, 172, 80))
-        d.point((8, 8), fill=(230, 60, 60))
+        d.point((8, 8), fill=(255, 40, 40))
     else:
         # ring tiles: arc quadrant + little runes
         d.arc([4, 4, 11, 11], 30, 330, fill=(196, 158, 70))
         d.point((2, 2), fill=(196, 158, 70)); d.point((13, 13), fill=(196, 158, 70))
-    if stage > 0:                                 # the glow bleeds through the seams
-        glow = [(0, 0, 0), (90, 30, 40), (176, 52, 44), (255, 96, 48)][stage]
-        for k in range(stage * 26):
+    if stage > 0:                                 # the glow bleeds through the seams, RED
+        glow = [(0, 0, 0), (150, 28, 36), (226, 50, 38), (255, 104, 44)][stage]
+        for k in range(stage * 30):
             x, y = rng.randrange(16), rng.randrange(16)
             if (x + y) % 2 == 0:
                 d.point((x, y), fill=glow)
         if stage >= 2:
             d.ellipse([1, 1, 14, 14], outline=glow) if core else d.arc([4, 4, 11, 11], 30, 330, fill=glow)
         if stage == 3:
+            # scarlet vein-lightning racing through the tile + a white-hot heart
             for x in range(8):
-                d.line([(x, 15 - x), (x + 0, 15 - x)], fill=(255, 200, 120))
-            d.point((8, 8), fill=(255, 220, 160))
+                d.line([(x, 15 - x), (x + 0, 15 - x)], fill=(255, 170, 90))
+            for _ in range(9):
+                px, py = rng.randrange(16), rng.randrange(15)
+                d.line([(px, py), (min(15, px + 3), py + 1)], fill=(255, 84, 52))
+            d.point((8, 8), fill=(255, 226, 170))
     im.save(A + ("mosaic_core" if core else "temple_mosaic") + f"_{stage}.png")
 
 def candle():
@@ -111,13 +116,17 @@ def candle():
     im.save(A + "ritual_flame.png")
 
 def bridge():
-    im = Image.new("RGBA", (16, 16), (190, 230, 255, 200))
+    # Part 14: the pool of the ritual is liquid CRIMSON light now - dark scarlet depth with hot seams
+    im = Image.new("RGBA", (16, 16), (150, 22, 30, 210))
     d = ImageDraw.Draw(im)
-    for _ in range(24):
+    for _ in range(26):
         x, y = rng.randrange(16), rng.randrange(16)
-        d.point((x, y), fill=(255, 255, 255, 220))
+        d.point((x, y), fill=(255, 120, 70, 220))
     for k in (3, 11):
-        d.line([(0, k), (15, k)], fill=(150, 210, 250, 180))
+        d.line([(0, k), (15, k)], fill=(255, 70, 46, 200))
+    for _ in range(8):
+        x, y = rng.randrange(16), rng.randrange(15)
+        d.line([(x, y), (min(15, x + 3), y + 1)], fill=(120, 10, 18, 200))
     im.save(A + "light_bridge.png")
 
 bricks(); gold(); pillar(); floor()

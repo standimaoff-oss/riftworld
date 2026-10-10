@@ -121,14 +121,17 @@ minecraft {
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
-    // Put repositories for dependencies here
-    // ForgeGradle automatically adds the Forge maven and Maven Central for you
-
-    // If you have mod jar dependencies in ./libs, you can declare them as a repository like so.
-    // See https://docs.gradle.org/current/userguide/declaring_repositories.html#sub:flat_dir_resolver
-    // flatDir {
-    //     dir 'libs'
-    // }
+    // Offline-friendly: anything we manually pre-seeded into ~/.m2 is honoured first (flaky-network repair path).
+    mavenLocal()
+    maven {
+        name = 'MinecraftForge'
+        url = 'https://maven.minecraftforge.net'
+    }
+    maven {
+        name = 'MojangLibraries'
+        url = 'https://libraries.minecraft.net'
+    }
+    mavenCentral()
 }
 
 dependencies {

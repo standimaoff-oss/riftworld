@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Publishes riftworld sources to the private repo standimaoff-oss/riftworld (token only in ~/.git-credentials).
 set -euo pipefail
-H=/home/user; R=$H/.cache/riftworld-git; URL=https://github.com/standimaoff-oss/riftworld.git; MSG=${1:-update}
+H=/home/user; R=$H/.cache/riftworld-git; URL=https://${GH_TOKEN:+x-access-token:$GH_TOKEN@}github.com/standimaoff-oss/riftworld.git; MSG=${1:-update}
 if [ ! -d $R/.git ]; then
   rm -rf $R; git clone -q $URL $R 2>/dev/null || { mkdir -p $R; cd $R; git init -q -b main; git remote add origin $URL; }
 fi

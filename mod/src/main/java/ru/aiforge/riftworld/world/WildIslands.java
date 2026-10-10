@@ -48,6 +48,12 @@ public final class WildIslands {
         if (CastleSite.near(x, z, 2)) out.add(CastleSite.ISLAND);
         EmberRuins.Site es = EmberRuins.siteAt(x, z);
         if (es != null && Math.abs(x - es.cx) < es.island.R * 1.2 + 2 && Math.abs(z - es.cz) < es.island.R * 1.2 + 2) out.add(es.island);
+        VioletHills.Region vr = VioletHills.regionAt(x, z);
+        if (vr != null && Math.abs(x - vr.meadow.cx) < vr.meadow.R * 1.2 + 2 && Math.abs(z - vr.meadow.cz) < vr.meadow.R * 1.2 + 2) out.add(vr.meadow);
+        SizoGrove.Region sr = SizoGrove.regionAt(x, z);
+        if (sr != null && Math.abs(x - sr.hub.cx) < sr.hub.R * 1.2 + 2 && Math.abs(z - sr.hub.cz) < sr.hub.R * 1.2 + 2) out.add(sr.hub);
+        WaterfallGardens.Region gr = WaterfallGardens.regionAt(x, z);
+        if (gr != null && Math.abs(x - gr.hub.cx) < gr.hub.R * 1.2 + 2 && Math.abs(z - gr.hub.cz) < gr.hub.R * 1.2 + 2) out.add(gr.hub);
         for (int dx = -1; dx <= 1; ++dx)
             for (int dz = -1; dz <= 1; ++dz) {
                 for (CityPlan.Island i : cell(cx + dx, cz + dz).islands) {
@@ -67,6 +73,9 @@ public final class WildIslands {
             out.addAll(AshenLands.treesNear(x, z));
             out.addAll(EmberRuins.treesNear(x, z));
         }
+        out.addAll(VioletHills.treesNear(x, z));
+        out.addAll(SizoGrove.treesNear(x, z));
+        out.addAll(WaterfallGardens.treesNear(x, z));
         for (int dx = -1; dx <= 1; ++dx)
             for (int dz = -1; dz <= 1; ++dz)
                 for (CityPlan.Tree t : cell(cx + dx, cz + dz).trees)
@@ -98,6 +107,14 @@ public final class WildIslands {
                 if (Math.hypot(x - CastleSite.CX, z - CastleSite.CZ) < R * 1.15 + CastleSite.R * 1.15 + 14) continue;   // castle site
                 EmberRuins.Site es = EmberRuins.siteAt(x, z);
                 if (es != null && Math.hypot(x - es.cx, z - es.cz) < R * 1.15 + es.island.R * 1.15 + 10) continue;     // ruins island
+                VioletHills.Region vr = VioletHills.regionAt(x, z);                                                 // violet meadow island
+                if (vr != null && Math.hypot(x - vr.meadow.cx, z - vr.meadow.cz) < R * 1.15 + vr.meadow.R * 1.15 + 12) continue;
+                SizoGrove.Region sr = SizoGrove.regionAt(x, z);                                                     // sizo grove hub
+                if (sr != null && Math.hypot(x - sr.hub.cx, z - sr.hub.cz) < R * 1.15 + sr.hub.R * 1.15 + 12) continue;
+                WaterfallGardens.Region gr = WaterfallGardens.regionAt(x, z);                                       // waterfall gardens hub
+                if (gr != null && Math.hypot(x - gr.hub.cx, z - gr.hub.cz) < R * 1.15 + gr.hub.R * 1.15 + 12) continue;
+                MistKeep.Region mk = MistKeep.regionAt(x, z);                                                          // туманный данж: вода между столбами остаётся морем
+                if (mk != null && Math.hypot(x - mk.cx, z - mk.cz) < R * 1.15 + mk.Rr + 40) continue;
                 boolean ok = true;
                 for (CityPlan.Island o : c.islands) {
                     if (Math.hypot(x - o.cx, z - o.cz) < (R + o.R) * 1.15 + 6) { ok = false; break; }

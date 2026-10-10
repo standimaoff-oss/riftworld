@@ -1,0 +1,10 @@
+{
+ "variants": {
+  "awake=false": {
+   "model": "riftworld:block/temple_spirit"
+  },
+  "awake=true": {
+   "model": "riftworld:block/temple_spirit_awake"
+  }
+ }
+}

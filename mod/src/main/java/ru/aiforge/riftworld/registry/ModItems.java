@@ -14,8 +14,20 @@ import ru.aiforge.riftworld.item.ResonanceStoneItem;
 public final class ModItems {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, RiftWorld.MODID);
 
+    /** Biome 01: creative spawn egg of the paper dragon. */
+    public static final RegistryObject<Item> PAPER_DRAGON_EGG = ITEMS.register("paper_dragon_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.PAPER_DRAGON, 0xF3EFE4, 0xD22E28, new Item.Properties()));
+
+    /** Rev 4 item 13: rope for self-assembling bridges (craft: 3 string in a column). */
+    public static final RegistryObject<Item> BRIDGE_ROPE = ITEMS.register("bridge_rope",
+            () -> new Item(new Item.Properties().stacksTo(32)));
+
     public static final RegistryObject<Item> RESONANCE_STONE = ITEMS.register("resonance_stone",
             () -> new ResonanceStoneItem(new Item.Properties().stacksTo(16).rarity(Rarity.EPIC)));
+
+    /** Валюта города: выплавляется из ауритовой руды, что змеится в ярусах Висячих садов (биом 07). */
+    public static final RegistryObject<Item> ELISAR_DUCAT = ITEMS.register("elisar_ducat",
+            () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)));
 
     public static final RegistryObject<Item> MORGRATH_SCYTHE = ITEMS.register("morgrath_scythe",
             () -> new ru.aiforge.riftworld.item.ScytheItem(new Item.Properties().rarity(Rarity.EPIC).fireResistant()));

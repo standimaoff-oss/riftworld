@@ -25,6 +25,8 @@ public final class RiftWorld {
         ModFluids.ITEMS.register(bus);
         ModWorldgen.GENERATORS.register(bus);
         ModWorldgen.BIOME_SOURCES.register(bus);
+        ModWorldgen.STRUCTURE_TYPES.register(bus);
+        ModWorldgen.PIECES.register(bus);
         ModBlockEntities.TYPES.register(bus);
         ModTabs.TABS.register(bus);
         ru.aiforge.riftworld.net.Net.init();

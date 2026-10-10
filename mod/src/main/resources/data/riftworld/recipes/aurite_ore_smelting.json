@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:smelting",
+  "ingredient": { "item": "riftworld:aurite_ore" },
+  "result": "riftworld:elisar_ducat",
+  "experience": 1.0,
+  "cookingtime": 200
+}

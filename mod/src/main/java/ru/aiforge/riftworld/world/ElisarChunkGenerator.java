@@ -43,7 +43,7 @@ import ru.aiforge.riftworld.registry.ElisarBlocks;
 import ru.aiforge.riftworld.registry.ModBlocks;
 
 /**
- * Planet Elisar: floating sky islands over a flat 1-block ocean. Everything is analytic and deterministic
+ * Planet Elisar: floating sky islands over a deep open ocean (40-50 blocks, currents, sea mist). Everything is analytic and deterministic
  * (independent of the world seed) so the city «Странники» from plan.json is always identical.
  */
 public class ElisarChunkGenerator extends ChunkGenerator {
@@ -77,6 +77,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         int deckY = Integer.MIN_VALUE;
         boolean rail, post, railX;
         boolean fence;            // rim fence of the city terraces
+        boolean garden;           // biome 07 zone (terraced hub or its sea fringe)
+        boolean pond, pondRim, springy;   // biome 07 terrace pools and hot-spring cores
     }
 
     static double hash(int x, int z, int s) {
@@ -126,7 +128,10 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         for (int y = y0; y < y0 + h; ++y) chunk.setBlockState(mp.set(x, y, z), s, false);
     }
 
-    // ------------------------------------------------------------------ the inverted tower (reference): hangs high over the gap west of the main island
+    // ------------------------------------------------------------------ the Inverted Tower (Rev 4 items 5+6): hangs upside-down high over the
+    // deep ocean gap west of the main island - the spike and the upside-down battlement deck point at the sea, the torn
+    // root crown is on top. A WHOLE enterable structure: spike reliquary with the treasure, round deck hall, shaft with
+    // three landings, roof hatch. Lit by lanterns; ladders link every level. EXISTS ONLY HERE (riftworld:elisar).
     static final int TOWER_X = -104, TOWER_Z = 22, TOWER_Y0 = 148;
 
     private static double oct(double dx, double dz) {
@@ -134,38 +139,103 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         return Math.max(Math.max(ax, az), (ax + az) * 0.7071);
     }
 
+    /** Decor cells of the tower interior (world coords are TOWER_X + entry[0], TOWER_Y0 + entry[1], TOWER_Z + entry[2]). */
+    static final String[][] TOWER_DECOR = {
+        {"gold_hoard",     "0",  "10", "0",  "south", "false"},   // spike reliquary (tapered: only the core cells are open at floor level)
+        {"castle_chest",   "0",  "10", "-1", "south", "false"},
+        {"candle_stand",   "-1", "10", "0",  "east",  "true"},
+        {"castle_chest",   "-4", "23", "-4", "east",  "false"},   // deck hall
+        {"castle_bench",   "4",  "23", "-3", "west",  "false"},
+        {"chained_lectern","0",  "23", "5",  "north", "false"},
+        {"wall_sconce",    "-5", "24", "0",  "east",  "true"},
+        {"wall_sconce",    "5",  "24", "0",  "west",  "true"},
+        {"wall_sconce",    "0",  "24", "-5", "south", "true"},
+        {"castle_chest",   "-2", "41", "0",  "east",  "false"},   // shaft landing 1
+        {"wall_sconce",    "0",  "42", "-3", "south", "true"},
+        {"gold_hoard",     "0",  "57", "-1", "south", "false"},   // shaft landing 2
+        {"candle_stand",   "-2", "57", "1",  "east",  "true"},
+        {"wall_sconce",    "0",  "58", "-3", "south", "true"},
+        {"castle_chest",   "-2", "73", "-1", "east",  "false"},   // shaft landing 3
+        {"wall_sconce",    "0",  "74", "-3", "south", "true"},
+    };
+
     private static void tower(ChunkAccess chunk, BlockPos.MutableBlockPos mp, int x, int z) {
-        double dx = x + 0.5 - (TOWER_X + 0.5), dz = z + 0.5 - (TOWER_Z + 0.5);
-        if (Math.abs(dx) > 10 || Math.abs(dz) > 10) return;
+        int ix = x - TOWER_X, iz = z - TOWER_Z;
+        if (Math.abs(ix) > 10 || Math.abs(iz) > 10) return;
+        double dx = ix + 0.5, dz = iz + 0.5;
         double d = oct(dx, dz);
         BlockState br = st(ElisarBlocks.TOWER_BRICKS), cr = st(ElisarBlocks.TOWER_BRICKS_CRACKED);
+        BlockState lant = st(ElisarBlocks.LANTERN);
         int y0 = TOWER_Y0;
-        for (int y = y0; y <= y0 + 100 && y < MIN_Y + HEIGHT; ++y) {
+        // ladder wells: EAST well (cell ix 2, iz 0) pierces every landing and the roof and climbs the shaft on the spine
+        // rib (ix 3); SOUTH drop links the deck hall with the spike reliquary (cells ix 0, iz 1..3, ladder on the rib ix 0, iz 4).
+        boolean eastOpen = ix == 2 && iz == 0;
+        boolean southOpen = ix == 0 && (iz == 2 || iz == 3);
+        boolean southChute = ix == 0 && iz >= 1 && iz <= 3;
+        boolean ribE = ix == 3 && iz == 0, ribS = ix == 0 && iz == 4;
+        for (int y = y0; y <= y0 + 101 && y < MIN_Y + HEIGHT; ++y) {
             int ly = y - y0;
             boolean solid = false;
-            if (ly < 22) {                                           // downward spike
+            if (ly <= 5) {                                         // spike tip
                 double r = 6.2 * ly / 22.0;
-                solid = d <= r + 0.3 && (d > r - 1.6 || ly < 4);
-            } else if (ly < 27) {                                    // overhanging battlement ring (upside-down crenellation)
-                double r = 7.6;
-                solid = d <= r && d > 3.4 && !(ly == 22 && ((int) Math.floor(Math.atan2(dz, dx) / (Math.PI / 8)) & 1) == 0 && d > 6.4);
-            } else if (ly < 32) {                                    // corbels stepping back to the shaft
-                double r = 7.2 - (ly - 27) * 0.4;
+                solid = d <= r + 0.3;
+            } else if (ly < 22) {                                  // spike shell, hollow inside -> the reliquary
+                double r = 6.2 * ly / 22.0;
+                solid = d <= r + 0.3 && d > Math.max(r - 1.7, 0);
+                if (ly == 9) solid = d <= r + 0.3 || southOpen;    // reliquary floor (plugs the drop chute)
+                if (ribS && ly >= 10) solid = true;                // ladder rib
+                if (solid && southChute && ly >= 10 && ly != 9) solid = false;  // the drop chute through the shell
+            } else if (ly == 22) {                                 // upside-down battlement deck floor (full disc)
+                solid = d <= 7.6;
+                if (southOpen) solid = false;                      // reliquary hatch in the floor
+            } else if (ly < 27) {                                  // deck hall wall ring with merlons on the top row
+                solid = d <= 7.6 && d > 6.4;
+                if (ly == 26 && solid && ((int) Math.floor((Math.atan2(dz, dx) + Math.PI) / (Math.PI / 10)) & 1) == 0) solid = false;
+                if (ribE) solid = true;   // shaft ladder spine rib continues through the hall (the shaft wall owns it higher up)
+            } else if (ly == 27) {                                 // hall ceiling under the corbels
+                solid = d <= 7.3;
+                if (eastOpen) solid = false;
+            } else if (ly < 32) {                                  // corbels stepping back to the shaft
+                double r = 7.2 - (ly - 28) * 0.4;
                 solid = d <= r && d > 3.4;
-            } else if (ly < 82) {                                    // hollow shaft with slit windows
+            } else if (ly < 86) {                                  // hollow shaft
                 solid = d <= 5.3 && d > 3.4;
                 boolean slitRow = (ly - 36) % 13 < 3;
-                boolean slit = Math.abs(dx) < 0.6 || Math.abs(dz) < 0.6;
+                boolean slit = Math.abs(ix) == 0 || Math.abs(iz) == 0;
                 if (solid && slitRow && slit && d > 4.4) solid = false;
-                if (ly % 13 == 8 && d <= 5.9 && d > 4.6) solid = true; // string course
-            } else if (ly < 86) {                                    // upper ring
-                solid = d <= 6.6 && d > 3.4;
-            } else {                                                 // spire
-                double r = 6.6 * (1 - (ly - 86) / 15.0);
-                solid = d <= r && d > r - 1.7;
+                if (ly % 13 == 8 && d <= 5.9 && d > 4.6) solid = true;   // string course
+                if ((ly == 40 || ly == 56 || ly == 72) && d <= 3.4) solid = true;   // the three landings
+                if ((ly == 40 || ly == 56 || ly == 72) && eastOpen) solid = false;  // hatch in every landing
+                if (ly >= 82) solid = d <= 6.6 && d > 3.4;         // upper ring
+            } else if (ly == 86) {                                 // roof disc with the entry hatch
+                solid = d <= 6.6;
+                if (eastOpen) solid = false;
+            } else if (ly == 87) {                                 // torn root crown: jagged ring
+                solid = d <= 6.6 && d > 5.4 && ((ix + 3 * iz) % 5 != 0);
+            } else {                                               // root spire shell
+                double r = 6.6 * (1 - (ly - 87) / 15.0);
+                if (r > 0.2) solid = d <= r && d > r - 1.7;
             }
-            if (solid) chunk.setBlockState(mp.set(x, y, z), hash(x * 7 + y, z, 31) < 0.18 ? cr : br, false);
+            if (!solid) {
+                // interior dressing that lives INSIDE the air cells: the east ladder well and the south drop ladder
+                if ((ix == 2 && iz == 0 && ly >= 23 && ly <= 85) || (ix == 0 && iz == 3 && ly >= 10 && ly <= 21)) {
+                    chunk.setBlockState(mp.set(x, y, z), net.minecraft.world.level.block.Blocks.LADDER.defaultBlockState()
+                            .setValue(net.minecraft.world.level.block.LadderBlock.FACING, ix == 2 ? net.minecraft.core.Direction.WEST : net.minecraft.core.Direction.NORTH), false);
+                } else if (ix == 0 && iz == 0 && (ly == 41 || ly == 57 || ly == 73)) {
+                    chunk.setBlockState(mp.set(x, y, z), lant, false);   // sitting lanterns on each landing
+                } else if (ix == 0 && iz == 0 && ly == 26 || ix == -1 && iz == 1 && ly == 21) {
+                    chunk.setBlockState(mp.set(x, y, z), lant.setValue(net.minecraft.world.level.block.LanternBlock.HANGING, true), false);
+                }
+                continue;
+            }
+            chunk.setBlockState(mp.set(x, y, z), hash(x * 7 + y, z, 31) < 0.18 ? cr : br, false);
         }
+    }
+
+    /** Seabed height: gentle dunes around ocean-45 so the water column is 40-50 blocks deep everywhere (Rev 4 item 6). */
+    static int oceanFloor(CityPlan plan, int x, int z) {
+        double n = vnoise(x * 0.016, z * 0.016, 77) * 0.72 + vnoise(x * 0.052, z * 0.052, 78) * 0.28;
+        return plan.ocean - 1 - 41 - (int) Math.round(n * 8);
     }
 
     private static boolean land(CityPlan plan, double px, double pz) {
@@ -209,8 +279,46 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                     double o = es.outside(px, pz);
                     top = o <= 0 ? es.y : es.y + (top - es.y) * smooth(o / 6.0);
                 }
+            } else if (isl.kind == 7) {                                // violet meadow: plateaus under the two churches
+                VioletHills.Region vr = VioletHills.regionAt(px, pz);
+                if (vr != null && vr.meadow == isl) {
+                    double oA = vr.churchA.outside(px, pz), oB = vr.churchB.outside(px, pz);
+                    double o = Math.min(oA, oB);
+                    int fy = oA <= oB ? vr.churchA.y : vr.churchB.y;
+                    if (o < 7) top = o <= 0 ? fy : fy + (top - fy) * smooth(o / 7.0);
+                }
+            }
+            else if (isl.kind == SizoGrove.KIND) {                     // sizo grove: terrace under the rare ruined temple
+                SizoGrove.Region sr = SizoGrove.regionAt(px, pz);
+                if (sr != null && sr.temple && sr.hub == isl) {
+                    double o = Math.max(Math.abs(px - sr.tx), Math.abs(pz - sr.tz)) - 8.0;
+                    if (o < 7) top = o <= 0 ? sr.ty : sr.ty + (top - sr.ty) * smooth(o / 7.0);
+                }
+            }
+            else if (isl.kind == WaterfallGardens.KIND) {              // biome 07: limestone terraces stepping to the sea
+                top = terraceTop(top, plan.ocean);
             }
             c.top = (int) Math.floor(top);
+            // biome 07: terrace pools / hot springs carve back into the shelves
+            WaterfallGardens.Region gr = WaterfallGardens.regionAt(px, pz);
+            if (isl.kind == WaterfallGardens.KIND && gr != null && gr.hub == isl) {
+                c.garden = true;
+                int ct = c.top;
+                double pn = vnoise(px * 0.09, pz * 0.09, 131);
+                if (pondAt(plan, gr, px, pz, ct)) {
+                    int pd = pn > 0.75 ? 3 : 2;
+                    c.waterTop = ct;
+                    c.waterBottom = ct - pd + 1;
+                    c.top = ct - pd;
+                    c.pond = true;
+                    c.springy = hash(x, z, 132) < 0.30;       // geothermal core: warm glow under the water
+                } else {
+                    c.pondRim = pondAt(plan, gr, px + 1, pz, ct) || pondAt(plan, gr, px - 1, pz, ct)
+                            || pondAt(plan, gr, px, pz + 1, ct) || pondAt(plan, gr, px, pz - 1, ct);
+                }
+            } else if (isl.kind != 4 && WaterfallGardens.inside(px, pz)) {
+                c.garden = true;                                            // islet fringe inside the biome blob
+            }
             double t = isl.t(px, pz);
             double depth = 3 + isl.depth * Math.pow(Math.max(t, 0), 0.55) * (0.72 + 0.28 * vnoise(px * 0.07, pz * 0.07, 11));
             double stal = Math.max(0, vnoise(px * 0.21, pz * 0.21, 12) - 0.6) * 48 * Math.pow(Math.max(t, 0), 0.3);
@@ -233,6 +341,13 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 if (rk == 0) c.surface = edge < 0.7 && hash(x, z, 3) < 0.45 ? S_PATH : S_COBBLE;
                 else if (rk == 1) c.surface = edge < 0.6 && hash(x, z, 4) < 0.35 ? S_GRASS : S_PATH;
                 else c.surface = S_PLANK;
+            }
+            if (isl.kind == 7 && c.surface == S_GRASS) {               // violet meadow: footpath church <-> church
+                VioletHills.Region vr = VioletHills.regionAt(px, pz);
+                if (vr != null && vr.meadow == isl) {
+                    double pd = vr.pathDist(px, pz);
+                    if (pd <= 1.05 && !(pd < 0.5 && hash(x, z, 54) < 0.16)) c.surface = S_PATH;   // grass creeps back onto the centre line
+                }
             }
             if (c.plot) c.surface = S_PLOT;
             if (isl.kind == 0 && !c.plot && c.surface == S_GRASS && t >= 0.05 && (!bk.plots.isEmpty() || rd < 9)) {
@@ -261,35 +376,107 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 c.bottom = Math.min(c.bottom, y - 2);
             }
         }
-        // water channels (river, pond, springs)
-        for (CityPlan.Channel ch : bk.channels) {
-            double d = CityPlan.segDist(px, pz, ch.ax(), ch.az(), ch.bx(), ch.bz(), tt);
-            int L = ch.level();
-            if (d > ch.hw()) {
-                // banks: keep the channel walls up to the very rim (the lowered rim lip would otherwise leave water hanging)
-                if (isl != null && d <= ch.hw() + (ch.depth() > 1 ? 3.5 : 1.5) && c.top < L + 1) { c.top = L + 1; c.bottom = Math.min(c.bottom, c.top - 3); }
-                continue;
+        // biome 07: the rare sagging plank bridges of the waterfall gardens
+        WaterfallGardens.Region grb = c.isl != null && c.isl.kind == WaterfallGardens.KIND ? WaterfallGardens.regionAt(px, pz) : null;
+        if (grb != null)
+            for (CityPlan.Bridge b : grb.bridges) {
+                double d = CityPlan.segDist(px, pz, b.ax(), b.az(), b.bx(), b.bz(), tt);
+                if (d > b.hw() + 1.05 || tt[0] <= 0 && d > b.hw() || tt[0] >= 1 && d > b.hw()) continue;
+                int y = b.deckY(tt[0]);
+                if (d <= b.hw()) {
+                    c.deckY = y;
+                    c.rail = false;
+                } else if (c.deckY == Integer.MIN_VALUE) {
+                    c.deckY = y;
+                    c.rail = true;
+                    int step = (int) Math.floor(tt[0] * b.length());
+                    c.post = step <= 0 || step >= (int) Math.floor(b.length()) - 1;
+                    c.railX = Math.abs(b.bx() - b.ax()) >= Math.abs(b.bz() - b.az());
+                }
+                if (c.isl != null && c.top >= y - 1) {
+                    c.top = y;
+                    c.surface = S_PLANK;
+                    c.bottom = Math.min(c.bottom, y - 2);
+                }
             }
-            if (isl != null && c.top < L + 1) { c.top = L + 1; c.bottom = Math.min(c.bottom, c.top - 3); }
-            boolean onLand = isl != null;
-            if (onLand) {
-                int depth = ch.depth() == 1 ? 1 : (d < ch.hw() - 1 ? ch.depth() : Math.max(1, ch.depth() - 1));
-                c.waterTop = L;
-                c.waterBottom = L - depth + 1;
-                c.top = Math.min(c.top, c.waterBottom - 1);       // bed under the water; air above
-                if (c.surface == S_COBBLE || c.surface == S_PATH || c.surface == S_PLANK) c.deckY = Math.max(c.deckY, L + 1);  // ford -> plank bridge
-                c.surface = S_GRASS;
-                c.bottom = Math.min(c.bottom, c.top - 2);
-            } else {
-                // the fall starts right at the island edge: only the first void column next to land carries falling water,
-                // the channel never "hangs" over the void beyond the rim
-                boolean overLand = isl != null;
-                if (!overLand && !(land(plan, px + 1, pz) || land(plan, px - 1, pz) || land(plan, px, pz + 1) || land(plan, px, pz - 1))) continue;
-                c.fallTop = L;
-                c.fallBottom = overLand ? c.top + 1 : plan.ocean + 1;
+        // water channels (river, pond, springs)
+        for (CityPlan.Channel ch : bk.channels)
+            applyChannel(c, plan, px, pz, ch.ax(), ch.az(), ch.bx(), ch.bz(), ch.hw(), ch.level(), ch.depth(), tt);
+        // biome 04: the violet meadow river - a chord across the island that spills off both rims
+        VioletHills.Region vr = VioletHills.regionAt(px, pz);
+        if (vr != null)
+            applyChannel(c, plan, px, pz, vr.rax, vr.raz, vr.rbx, vr.rbz, VioletHills.Region.RIVER_HW, vr.riverLevel, 2, tt);
+        // biome 07: waterfalls - this column is low while a garden shelf with a pool/spring looms beside it
+        if (c.fallTop == Integer.MIN_VALUE && c.waterTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE) {
+            WaterfallGardens.Region grf = WaterfallGardens.regionAt(px, pz);
+            if (grf != null) {
+                boolean rim = grf.hub.t(px, pz) < 0.1;
+                for (int gdk = 0; gdk < 4; ++gdk) {
+                    double gx = px + (gdk == 0 ? 1 : gdk == 1 ? -1 : 0), gz = pz + (gdk == 2 ? 1 : gdk == 3 ? -1 : 0);
+                    if (grf.hub.t(gx, gz) < 0.12) continue;
+                    double gnt = terraceTop(grf.hub.raw(gx, gz), plan.ocean);
+                    if (gnt <= c.top + (rim ? 2.0 : 3.5)) continue;
+                    // rim takes wide pond spills and broad springs; interior only real pond lips and sharp springs
+                    boolean feed = vnoise(gx * 0.09, gz * 0.09, 131) > (rim ? 0.66 : 0.685)
+                            || vnoise(gx * 0.13, gz * 0.13, 141) > (rim ? 0.72 : 0.765);
+                    if (!feed) continue;
+                    c.fallTop = (int) Math.floor(gnt);
+                    c.fallBottom = c.isl != null ? c.top + 1 : plan.ocean + 1;
+                    break;
+                }
             }
         }
         return c;
+    }
+
+    /** Biome 07 terrace transform: horizontal limestone shelves with ~1-block steep rises, lowest shelf hugging the sea. */
+    private static double terraceTop(double top, int ocean) {
+        double h = top - (ocean + 1);
+        if (h <= 0) return top;
+        double L = Math.floor(h / WaterfallGardens.STEP), band = h - L * WaterfallGardens.STEP;
+        double rise = band <= 1.2 ? smooth(band / 1.2) : 1.0;
+        return ocean + 1 + (L + rise) * WaterfallGardens.STEP;
+    }
+
+    /** Terraced top estimate of a garden column (bridge anchor heights in WaterfallGardens). */
+    public static int gardenTerraceTop(CityPlan.Island isl, double px, double pz, int ocean) {
+        return (int) Math.floor(terraceTop(isl.raw(px, pz), ocean));
+    }
+
+    /** Biome 07 pond-mask test stateless over garden region: shelf cells the pond noise claims. */
+    private static boolean pondAt(CityPlan plan, WaterfallGardens.Region rg, double px, double pz, int maxTop) {
+        if (vnoise(px * 0.09, pz * 0.09, 131) <= 0.685) return false;
+        if (Math.hypot(px - rg.cx, pz - rg.cz) > rg.hub.R * 0.95) return false;
+        return maxTop > plan.ocean + 3 && maxTop < plan.ocean + 46;
+    }
+
+    /** Carves one straight water channel into the column (shared by city rivers and the violet meadow river). */
+    private static void applyChannel(Col c, CityPlan plan, double px, double pz, double ax, double az, double bx, double bz,
+                                     double hw, int L, int chDepth, double[] tt) {
+        CityPlan.Island isl = c.isl;
+        double d = CityPlan.segDist(px, pz, ax, az, bx, bz, tt);
+        if (d > hw) {
+            // banks: keep the channel walls up to the very rim (the lowered rim lip would otherwise leave water hanging)
+            if (isl != null && d <= hw + (chDepth > 1 ? 3.5 : 1.5) && c.top < L + 1) { c.top = L + 1; c.bottom = Math.min(c.bottom, c.top - 3); }
+            return;
+        }
+        if (isl != null && c.top < L + 1) { c.top = L + 1; c.bottom = Math.min(c.bottom, c.top - 3); }
+        if (isl != null) {
+            int depth = chDepth == 1 ? 1 : (d < hw - 1 ? chDepth : Math.max(1, chDepth - 1));
+            c.waterTop = L;
+            c.waterBottom = L - depth + 1;
+            c.top = Math.min(c.top, c.waterBottom - 1);       // bed under the water; air above
+            if (c.surface == S_COBBLE || c.surface == S_PATH || c.surface == S_PLANK) c.deckY = Math.max(c.deckY, L + 1);  // ford -> plank bridge
+            c.surface = S_GRASS;
+            c.bottom = Math.min(c.bottom, c.top - 2);
+        } else {
+            // the fall starts right at the island edge: only the first void column next to land carries falling water,
+            // the channel never "hangs" over the void beyond the rim
+            boolean overLand = isl != null;
+            if (!overLand && !(land(plan, px + 1, pz) || land(plan, px - 1, pz) || land(plan, px, pz + 1) || land(plan, px, pz - 1))) return;
+            c.fallTop = L;
+            c.fallBottom = overLand ? c.top + 1 : plan.ocean + 1;
+        }
     }
 
     // ================================================================== blocks
@@ -308,6 +495,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         BlockState grass = st(ElisarBlocks.GRASS), cobble = st(ElisarBlocks.COBBLE), path = st(ElisarBlocks.PATH), plank = st(ElisarBlocks.SIZO_PLANKS);
         BlockState tall = st(ElisarBlocks.TALL_GRASS), flowers = st(ElisarBlocks.FLOWERS), log = st(ElisarBlocks.SIZO_LOG);
         BlockState moss = st(ElisarBlocks.MOSS), crust = st(ElisarBlocks.CRUST);
+        BlockState aurite = st(ElisarBlocks.AURITE_ORE);
         Col[][] cols = new Col[18][18];
         for (int dx = -1; dx <= 16; ++dx)
             for (int dz = -1; dz <= 16; ++dz)
@@ -322,10 +510,29 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 if (ashen) {
                     if (c.isl == null || c.bottom > plan.ocean + 1) AshenLands.column(chunk, mp, x, z, c.isl != null);
                 } else if (c.isl == null || c.bottom > plan.ocean + 1) {
-                    chunk.setBlockState(mp.set(x, plan.ocean - 1, z), seabed, false);
-                    chunk.setBlockState(mp.set(x, plan.ocean, z), water, false);
+                    // deep ocean (Rev 4 item 6): 42..50 blocks of water over a dune floor, stone beneath
+                    int floor = oceanFloor(plan, x, z);
+                    chunk.setBlockState(mp.set(x, floor, z), seabed, false);
+                    chunk.setBlockState(mp.set(x, floor - 1, z), seabed, false);
+                    for (int y = floor - 4; y <= floor - 2; ++y) chunk.setBlockState(mp.set(x, y, z), hash(x, y, z) < 0.3 ? mossy : stone, false);
+                    for (int y = floor + 1; y <= plan.ocean; ++y) chunk.setBlockState(mp.set(x, y, z), water, false);
+                    // мини-биом «Туманный данж»: серые каменные столбы из воды + центральный утёс под руину
+                    MistKeep.Region mr = MistKeep.regionAt(x + 0.5, z + 0.5);
+                    if (mr != null) {
+                        int top = MistKeep.rockTop(plan.ocean, x + 0.5, z + 0.5, mr);
+                        if (top > floor) {
+                            BlockState rock = st(ElisarBlocks.KEEP_STONE), cracked = st(ElisarBlocks.KEEP_STONE_CRACKED), mossRock = st(ElisarBlocks.KEEP_STONE_MOSSY);
+                            for (int y = floor + 1; y <= top; ++y) {
+                                BlockState s = y == top
+                                        ? (hash(x, z, 887) < 0.30 ? mossRock : rock)
+                                        : (hash(x, y, z) < 0.10 ? cracked : (hash(x, y, z) < 0.14 ? mossRock : rock));
+                                chunk.setBlockState(mp.set(x, y, z), s, false);
+                            }
+                        }
+                    }
                 }
-                if (!ashen && c.isl == null && c.fallTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE) debris(plan, chunk, mp, x, z);
+                if (!ashen && c.isl == null && c.fallTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE) debris(plan, chunk, mp, x, z);                if (dx == 15 && dz == 15) mistKeepDressing(plan, chunk, mp, x0, z0);
+
                 tower(chunk, mp, x, z);
                 if (c.isl != null) {
                     if (c.isl.kind == 5 || c.isl.kind == 6 || ashen && c.isl.kind != 0) {
@@ -338,7 +545,17 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                 case S_PATH -> path;
                                 case S_PLANK -> plank;
                                 case S_PLOT -> cobble;         // pebble apron around the houses (reference)
-                                default -> (c.isl.kind != 4 && vnoise(x * 0.11, z * 0.11, 21) > 0.74 || hash(x, z, 23) < 0.012) ? moss : grass;
+                                default -> {
+                                    if (c.garden) {
+                                        if (c.springy) yield ElisarBlocks.LANTERN.get().defaultBlockState();   // hot spring: warm glow in the pool bed
+                                        if (c.pondRim || c.pond) yield st(ru.aiforge.riftworld.registry.CastleBlocks.ASHLAR);            // travertine
+                                        yield vnoise(x * 0.14, z * 0.14, 67) > 0.60 ? moss : grass;
+                                    }
+                                    boolean groveTan = c.isl.kind == SizoGrove.KIND || (c.isl.kind != 4 && SizoGrove.inside(x + 0.5, z + 0.5));
+                                    yield groveTan
+                                            ? (vnoise(x * 0.15, z * 0.15, 66) > 0.58 ? moss : grass)
+                                            : (c.isl.kind != 4 && vnoise(x * 0.11, z * 0.11, 21) > 0.74 || hash(x, z, 23) < 0.012) ? moss : grass;
+                                }
                             };
                         } else if (y == c.top - 1) {
                             s = crust;
@@ -346,6 +563,10 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                             s = mossy;
                         } else {
                             s = stone;
+                            // улучшение биомов: ауритовая руда (монетоносная) змеится вдоль ярусов Висячих садов,
+                            // прячась на глубине 2..6 под поверхностью полки - волно-лентовые прожилки с промывками
+                            if (c.garden && y <= c.top - 2 && y >= c.top - 6
+                                    && vnoise(x * 0.33, z * 0.33, 313) > 0.80 && hash(x, y, z) < 0.88) s = aurite;
                         }
                         chunk.setBlockState(mp.set(x, y, z), s, false);
                     }
@@ -369,8 +590,68 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                 fs = fs.setValue(prop(d), n.fence && n.top == c.top);
                             }
                             chunk.setBlockState(mp.set(x, c.top + 1, z), fs, false);
-                        } else if (h < 0.09) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
-                        else if (h < 0.105) chunk.setBlockState(mp.set(x, c.top + 1, z), flowers, false);
+                        } else {
+                            boolean violet = c.isl.kind == 7 || (c.isl.kind != 4 && VioletHills.inside(x + 0.5, z + 0.5));
+                            if (violet) {                                  // biome 04: drift FIELDS of lavender rows (the reference carpet)
+                                double field = vnoise(x * 0.021, z * 0.021, 92);
+                                double edge = vnoise(x * 0.09, z * 0.09, 90);
+                                if (field > 0.62) {                        // planted drift: wavy stripes, ~90% cover on rows
+                                    double ph = x * 0.866 + z * 0.5 + vnoise(x * 0.03, z * 0.03, 93) * 4.2;
+                                    int per = (int) Math.floor(ph) & 7;
+                                    boolean planted = per <= 2 || per == 5;
+                                    if (planted && h < 0.93) {
+                                        int f = (int) (hash(x, z, 91) * 100);
+                                        chunk.setBlockState(mp.set(x, c.top + 1, z), st(f < 58 ? ElisarBlocks.VIOLET_BLOOM : f < 86 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
+                                    } else if (h < 0.09) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
+                                } else if (field > 0.55) {                 // field fringe: mixed drifts
+                                    if (h < 0.30 && edge > 0.52) {
+                                        int f = (int) (hash(x, z, 91) * 100);
+                                        chunk.setBlockState(mp.set(x, c.top + 1, z), st(f < 50 ? ElisarBlocks.VIOLET_BLOOM : f < 80 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
+                                    } else if (h < 0.16) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
+                                } else {                                   // wild lilac meadows between fields
+                                    if (h < 0.14) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
+                                    else if (h < 0.17 && edge > 0.58) {
+                                        int f = (int) (hash(x, z, 91) * 3);
+                                        chunk.setBlockState(mp.set(x, c.top + 1, z), st(f == 0 ? ElisarBlocks.VIOLET_BLOOM : f == 1 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
+                                    }
+                                }
+                            } else if (c.garden) {
+                                // biome 07: nearly-jungle - thick grass, colour splashes, creeping shrubs (tiny trees handled at region)
+                                if (h < 0.40) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
+                                else if (h < 0.50 && vnoise(x * 0.1, z * 0.1, 154) > 0.55) {
+                                    int f = (int) (hash(x, z, 155) * 100);
+                                    chunk.setBlockState(mp.set(x, c.top + 1, z), st(f < 46 ? ElisarBlocks.FLOWERS : f < 66 ? ElisarBlocks.VIOLET_BLOOM : f < 84 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
+                                } else if (h < 0.55 && chunk.getBlockState(mp.set(x, c.top + 1, z)).isAir()) {
+                                    chunk.setBlockState(mp.set(x, c.top + 1, z), ElisarBlocks.SIZO_LEAVES.get().defaultBlockState()
+                                            .setValue(LeavesBlock.PERSISTENT, true).setValue(LeavesBlock.DISTANCE, 1), false);   // low creeping shrub
+                                }
+                            } else if (c.isl.kind == SizoGrove.KIND || (c.isl.kind != 4 && SizoGrove.inside(x + 0.5, z + 0.5))) {
+                                // biome 05: mint floor with violet bloom drifts among the giants (no paths - TZ)
+                                if (h < 0.20) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
+                                else if (h < 0.42 && vnoise(x * 0.075, z * 0.075, 95) > 0.60) {
+                                    int f = (int) (hash(x, z, 96) * 100);
+                                    chunk.setBlockState(mp.set(x, c.top + 1, z), st(f < 40 ? ElisarBlocks.VIOLET_BLOOM : f < 72 ? ElisarBlocks.LILAC_BLOOM : f < 88 ? ElisarBlocks.PALE_BLOOM : ElisarBlocks.FLOWERS), false);
+                                }
+                            } else if (h < 0.09) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
+                            else if (h < 0.105) chunk.setBlockState(mp.set(x, c.top + 1, z), flowers, false);
+                        }
+                    }
+                }
+                // biome 07: hanging vine curtains draped from the cliff lip above this column (the reference look)
+                if (c.garden && c.surface == S_GRASS && c.waterTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE) {
+                    int maxN = Integer.MIN_VALUE;
+                    for (Direction d : Direction.Plane.HORIZONTAL) {
+                        Col n = cols[dx + 1 + d.getStepX()][dz + 1 + d.getStepZ()];
+                        if (n.isl != null) maxN = Math.max(maxN, n.top);
+                    }
+                    if (maxN > c.top + 2.5 && vnoise(x * 0.21, z * 0.21, 151) > 0.40) {
+                        int len = 2 + (int) (hash(x, z, 152) * 3.0);
+                        for (int y = Math.max(c.top + 1, maxN - len); y < maxN; ++y) {
+                            BlockPos vp = mp.set(x, y, z);
+                            if (chunk.getBlockState(vp).isAir() || chunk.getBlockState(vp).canBeReplaced())
+                                chunk.setBlockState(vp, ElisarBlocks.SIZO_LEAVES.get().defaultBlockState()
+                                        .setValue(LeavesBlock.PERSISTENT, true).setValue(LeavesBlock.DISTANCE, 2), false);
+                        }
                     }
                 }
                 if (c.waterTop != Integer.MIN_VALUE) {
@@ -474,7 +755,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         if (!wild.isEmpty()) all.addAll(wild);
         for (CityPlan.Tree t : all) {
             int dx = x - t.x, dz = z - t.z;
-            if (Math.abs(dx) > 4 || Math.abs(dz) > 4) continue;
+            int reach = t.kind == SizoGrove.TREE_GIANT ? 7 : 4;
+            if (Math.abs(dx) > reach || Math.abs(dz) > reach) continue;
             int base = t.baseY;
             if (base == Integer.MIN_VALUE) {
                 Col c = column(plan, t.x, t.z);
@@ -483,6 +765,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             }
             if (base < 0) continue;
             if (t.kind == 2) { deadTree(chunk, mp, t, base, x, z); continue; }
+            if (t.kind == SizoGrove.TREE_GIANT) { giantSizo(chunk, mp, t, base, x, z); continue; }
             boolean sizo = t.kind == 0;
             BlockState logS = (sizo ? ElisarBlocks.SIZO_LOG : ElisarBlocks.AMBRA_LOG).get().defaultBlockState().setValue(RotatedPillarBlock.AXIS, Direction.Axis.Y);
             BlockState leaf = (sizo ? ElisarBlocks.SIZO_LEAVES : ElisarBlocks.AMBRA_LEAVES).get().defaultBlockState()
@@ -515,6 +798,43 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 if (dist > 0 && dist < 1.5 && Math.abs(dx) + Math.abs(dz) == 1 && hash(dx, dz, t.seed) < 0.5) {
                     chunk.setBlockState(mp.set(x, base + t.h - 2, z), logS.setValue(RotatedPillarBlock.AXIS, dx != 0 ? Direction.Axis.X : Direction.Axis.Z), false);
                 }
+            }
+        }
+    }
+
+    /** Biome 05 «Роща Сизо» giant: 2x2 trunk, branch cross, 3 stacked flat disc canopies + small crown (the reference silhouette). */
+    private static void giantSizo(ChunkAccess chunk, BlockPos.MutableBlockPos mp, CityPlan.Tree t, int base, int x, int z) {
+        int dx = x - t.x, dz = z - t.z;
+        BlockState logS = ElisarBlocks.SIZO_LOG.get().defaultBlockState().setValue(RotatedPillarBlock.AXIS, Direction.Axis.Y);
+        BlockState leaf = ElisarBlocks.SIZO_LEAVES.get().defaultBlockState()
+                .setValue(LeavesBlock.PERSISTENT, true).setValue(LeavesBlock.DISTANCE, 1);
+        boolean inTrunk = dx >= 0 && dx <= 1 && dz >= 0 && dz <= 1;
+        int topY = base + t.h + 2;                       // first disc altitude (trunk tops out here)
+        if (inTrunk) {
+            for (int y = base; y <= topY; ++y) chunk.setBlockState(mp.set(x, y, z), logS, false);
+            return;
+        }
+        // branch cross under the discs (trunk centre sits between the 4 trunk cells)
+        if ((dz == 0 || dz == 1) && ((dx >= 2 && dx <= 4) || (dx <= -1 && dx >= -3))
+                 && !(dx == 0 || dx == 1)) {
+            chunk.setBlockState(mp.set(x, base + t.h + 1, z), logS.setValue(RotatedPillarBlock.AXIS, Direction.Axis.X), false);
+        } else if ((dx == 0 || dx == 1) && ((dz >= 2 && dz <= 4) || (dz <= -1 && dz >= -3))) {
+            chunk.setBlockState(mp.set(x, base + t.h + 1, z), logS.setValue(RotatedPillarBlock.AXIS, Direction.Axis.Z), false);
+        }
+        // stacked discs: centre (0.5, 0.5); tiers {radius, dy}
+        double dc = Math.hypot(dx - 0.5, dz - 0.5);
+        double[][] tiers = new double[][] {{1.7, 1}, {2.6, 0}, {3.6, -2}, {2.8, -4}};
+        long seed = t.seed;
+        for (double[] ti : tiers) {
+            double r = ti[0]; int yy = topY + (int) ti[1];
+            if (dc > r) continue;
+            boolean rim = dc > r - 0.85;
+            if (rim && hash(x * 7 + yy, z * 7, (int) (seed & 0x3FFFFFFF)) < 0.18) continue;          // ragged edge
+            BlockPos pp = mp.set(x, yy, z);
+            if (chunk.getBlockState(pp).isAir() || chunk.getBlockState(pp).canBeReplaced()) chunk.setBlockState(pp, leaf, false);
+            if (rim && hash(x * 13 - yy, z * 11, (int) ((seed >>> 20) & 0x3FFFFFFF)) < 0.4) {         // drooping skirt
+                BlockPos lo = mp.set(x, yy - 1, z);
+                if (chunk.getBlockState(lo).isAir()) chunk.setBlockState(lo, leaf, false);
             }
         }
     }
@@ -558,6 +878,95 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 tpl.placeInWorld(level, pos, pos, s, rnd, 2);
             });
         }
+        // Inverted Tower interior dressing (reliquary, deck hall, landings)
+        if (x0 + 15 >= TOWER_X - 12 && x0 <= TOWER_X + 12 && z0 + 15 >= TOWER_Z - 12 && z0 <= TOWER_Z + 12) {
+            for (String[] dec : TOWER_DECOR) {
+                ModelKind k = kind(dec[0]);
+                if (k == null) continue;
+                BlockPos at = new BlockPos(TOWER_X + Integer.parseInt(dec[1]), TOWER_Y0 + Integer.parseInt(dec[2]), TOWER_Z + Integer.parseInt(dec[3]));
+                if (!box.isInside(at)) continue;
+                Direction f = switch (dec[4]) {
+                    case "north" -> Direction.NORTH; case "east" -> Direction.EAST; case "west" -> Direction.WEST; default -> Direction.SOUTH;
+                };
+                placeModel(level, box, k, at, f, Boolean.parseBoolean(dec[5]));
+            }
+        }
+        // biome 04: the two Violet Hills churches (one intact, one ruined), max 2 per biome region
+        VioletHills.Region vreg = VioletHills.regionAt(x0 + 8, z0 + 8);
+        if (vreg != null && (vreg.churchA.outside(x0 + 8, z0 + 8) < 48 || vreg.churchB.outside(x0 + 8, z0 + 8) < 48)) {
+            for (VioletHills.Church ch : new VioletHills.Church[] { vreg.churchA, vreg.churchB }) {
+                if (x0 + 15 < ch.x0 || x0 > ch.x0 + ch.wx - 1 || z0 + 15 < ch.z0 || z0 > ch.z0 + ch.wz - 1) continue;
+                Optional<StructureTemplate> t = stm.get(new ResourceLocation("riftworld", ch.ruined ? "ruins/church_violet_ruins" : "ruins/church_violet"));
+                if (t.isEmpty()) continue;
+                Rotation rot = switch (ch.facing) {
+                    case "west" -> Rotation.CLOCKWISE_90;
+                    case "north" -> Rotation.CLOCKWISE_180;
+                    case "east" -> Rotation.COUNTERCLOCKWISE_90;
+                    default -> Rotation.NONE;
+                };
+                StructurePlaceSettings sp = new StructurePlaceSettings().setRotation(rot).setBoundingBox(box).setIgnoreEntities(true);
+                BoundingBox bb = t.get().getBoundingBox(sp, BlockPos.ZERO);
+                BlockPos pos = new BlockPos(ch.x0 - bb.minX(), ch.y, ch.z0 - bb.minZ());
+                t.get().placeInWorld(level, pos, pos, sp, rnd, 2);
+            }
+        }
+        // biome 05: grove dressing - mossy boulders & amber-band way pillars (also on islets inside the grove sea-ring)
+        BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
+        SizoGrove.Region greg = SizoGrove.regionAt(x0 + 8, z0 + 8);
+        if (greg != null) {
+            for (SizoGrove.Boulder b : greg.boulders) {
+                if (b.x + b.r < x0 - 1 || b.x - b.r > x0 + 16 || b.z + b.r < z0 - 1 || b.z - b.r > z0 + 16) continue;
+                Col bc = column(plan, b.x, b.z);
+                if (bc.isl == null || bc.top <= plan.ocean + 1) continue;
+                double rx = b.r, ry = b.r * 0.72;
+                int cy = bc.top + (int) Math.round(ry * 0.28);
+                int cx0 = Math.max(x0, (int) Math.floor(b.x - rx)), cx1 = Math.min(x0 + 15, (int) Math.ceil(b.x + rx));
+                int cz0 = Math.max(z0, (int) Math.floor(b.z - rx)), cz1 = Math.min(z0 + 15, (int) Math.ceil(b.z + rx));
+                for (int bx = cx0; bx <= cx1; ++bx)
+                    for (int bz = cz0; bz <= cz1; ++bz) {
+                        double dx2 = bx - b.x, dz2 = bz - b.z;
+                        double hq = (dx2 * dx2 + dz2 * dz2) / (rx * rx);
+                        if (hq >= 1) continue;
+                        int maxDy = (int) Math.floor(ry * Math.sqrt(1 - hq) + 0.4);
+                        for (int dy = -maxDy; dy <= maxDy; ++dy) {
+                            int yy = cy + dy;
+                            if (yy <= plan.ocean) continue;
+                            // moss cap wherever sky faces the boulder, yellowed stone core beneath (the reference look)
+                            boolean cap = dy >= maxDy - 1 && hash(bx, bz, (int) (b.seed & 0x3FFFFFFF)) < (dy == maxDy ? 0.85 : 0.3);
+                            chunk.setBlockState(mp.set(bx, yy, bz), st(cap ? ElisarBlocks.MOSS : ElisarBlocks.STONE), false);
+                        }
+                    }
+            }
+            for (int[] pp : SizoGrove.pillarsIn(greg, x0, z0)) {
+                if (pp[0] < x0 || pp[0] > x0 + 15 || pp[1] < z0 || pp[1] > z0 + 15) continue;
+                Col pc = column(plan, pp[0], pp[1]);
+                if (pc.isl == null || pc.top <= plan.ocean + 1) continue;
+                BlockState pl = ru.aiforge.riftworld.registry.TempleBlocks.PILLAR.get().defaultBlockState().setValue(RotatedPillarBlock.AXIS, Direction.Axis.Y);
+                for (int dy = 1; dy <= 3; ++dy) chunk.setBlockState(mp.set(pp[0], pc.top + dy, pp[1]), pl, false);
+                chunk.setBlockState(mp.set(pp[0], pc.top + 4, pp[1]), st(ru.aiforge.riftworld.registry.TempleBlocks.GOLD), false);
+                chunk.setBlockState(mp.set(pp[0], pc.top + 5, pp[1]), pl, false);
+                chunk.setBlockState(mp.set(pp[0], pc.top + 6, pp[1]), st(ru.aiforge.riftworld.registry.TempleBlocks.SLAB), false);
+            }
+        }
+        // biome 05: the rare RUINED pale temple, alone on its terrace
+        SizoGrove.Region treg = SizoGrove.templeIn(x0, z0);
+        if (treg != null) {
+            Optional<StructureTemplate> t = stm.get(new ResourceLocation("riftworld", "ruins/temple_sizo_ruins"));
+            if (!t.isEmpty()) {
+                Rotation rot = switch (treg.trot) {
+                    case 1 -> Rotation.CLOCKWISE_90;
+                    case 2 -> Rotation.CLOCKWISE_180;
+                    case 3 -> Rotation.COUNTERCLOCKWISE_90;
+                    default -> Rotation.NONE;
+                };
+                StructurePlaceSettings sp = new StructurePlaceSettings().setRotation(rot).setBoundingBox(box).setIgnoreEntities(true);
+                BoundingBox bb = t.get().getBoundingBox(sp, BlockPos.ZERO);
+                int cwx = (int) Math.floor(treg.tx - (bb.minX() + bb.maxX()) / 2.0);
+                int cwz = (int) Math.floor(treg.tz - (bb.minZ() + bb.maxZ()) / 2.0);
+                BlockPos pos = new BlockPos(cwx, treg.ty, cwz);      // floor layer replaces the flattened terrace top
+                t.get().placeInWorld(level, pos, pos, sp, rnd, 2);
+            }
+        }
         EmberRuins.Site es = EmberRuins.siteAt(x0 + 8, z0 + 8);
         if (es != null && x0 + 15 >= es.x0 && x0 <= es.x0 + EmberRuins.TW - 1 && z0 + 15 >= es.z0 && z0 <= es.z0 + EmberRuins.TD - 1) {
             stm.get(new ResourceLocation("riftworld", "ruins/chapel")).ifPresent(tpl -> {
@@ -583,7 +992,6 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 if (bp.getX() >= x0 && bp.getX() <= x0 + 15 && bp.getZ() >= z0 && bp.getZ() <= z0 + 15) level.setBlock(bp, pl.state(), 2);
             }
         }
-        BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
         for (CityPlan.Prop p : props) {
             Direction f = Direction.byName(p.facing());
             if (f == null || f.getAxis() == Direction.Axis.Y) f = Direction.SOUTH;
@@ -645,6 +1053,93 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         for (BlockPos off : k.partOffsets(f)) setIn(level, box, master.offset(off), part);
     }
 
+
+    /** Мини-биом «Туманный данж» (обходом за чанк): почти сломанная ротонда на центральном утёсе + обрушенная винтовая лестница. */
+    private static void mistKeepDressing(CityPlan plan, ChunkAccess chunk, BlockPos.MutableBlockPos mp, int x0, int z0) {
+        MistKeep.Region rg = MistKeep.regionAt(x0 + 8, z0 + 8);
+        if (rg == null) return;
+        double cx = rg.cx + 0.5, cz = rg.cz + 0.5;
+        // bbox руины (r~13 + лестница ~4) должен пересекать чанк; пишем только собственные клетки чанка
+        if (cx + 16 < x0 || cx - 16 > x0 + 15 || cz + 16 < z0 || cz - 16 > z0 + 15) return;
+        BlockState rock = st(ElisarBlocks.KEEP_STONE), cracked = st(ElisarBlocks.KEEP_STONE_CRACKED), mossyK = st(ElisarBlocks.KEEP_STONE_MOSSY);
+        BlockState slabB = st(ElisarBlocks.KEEP_SLAB), cage = st(ElisarBlocks.CAGE_LANTERN), chain = st(ElisarBlocks.CHAIN);
+        int floorY = plan.ocean + 4;                                    // пол над массивом утёса (ocean+4)
+        java.util.function.BiPredicate<Integer, Integer> own = (bx, bz) -> bx >= x0 && bx <= x0 + 15 && bz >= z0 && bz <= z0 + 15;
+        // --- пол: диск r<=8 с кольцевым узором (центр остаётся под постамент)
+        for (int ox = -9; ox <= 9; ++ox) for (int oz = -9; oz <= 9; ++oz) {
+            double dd = Math.hypot(ox, oz);
+            if (dd > 8.4 || dd < 1) continue;
+            int bx = (int) Math.floor(cx + ox), bz = (int) Math.floor(cz + oz);
+            if (!own.test(bx, bz)) continue;
+            BlockState f = dd > 6.8 ? cracked : (hash(bx, bz, 891) < 0.18 ? mossyK : (hash(bx, bz, 892) < 0.10 ? cracked : rock));
+            chunk.setBlockState(mp.set(bx, floorY - 1, bz), f, false);
+        }
+        // --- 12 пролётов ротонды: столпы до острий, обломки рёбер арок, зазубренные макушки
+        for (int i = 0; i < 12; ++i) {
+            double a = i * Math.PI / 6 + (rg.seed & 63) * 0.004;
+            int px = (int) Math.floor(cx + Math.cos(a) * 7.0), pz = (int) Math.floor(cz + Math.sin(a) * 7.0);
+            int ph = 3 + (int) (hash(px, pz, 893) * 4);                  // высота уцелевшего столпа
+            if (hash(px, pz, 894) < 0.16) ph = Math.min(1, ph);          // некоторые почти снесены
+            if (own.test(px, pz))
+                for (int y = 0; y < ph; ++y)
+                    chunk.setBlockState(mp.set(px, floorY + y, pz), y == ph - 1 ? cracked : rock, false);
+            // арка из столпа i в i+1: остриё по двум дугам, ~половина пролётов упала
+            double survive = hash(px, pz, 895);
+            double a2 = (i + 1) * Math.PI / 6 + (rg.seed & 63) * 0.004;
+            for (int k = 1; k < 12; ++k) {
+                double t = k / 12.0;
+                double spike = t < 0.5 ? Math.sqrt(t * 2) : Math.sqrt((1 - t) * 2);
+                if (survive < 0.45 || hash((int) (t * 100), px ^ pz, 896) < 0.28) continue;    // пролёт или его кусок отвалился
+                int ax = (int) Math.floor(cx + (Math.cos(a) * (1 - t) + Math.cos(a2) * t) * 7.0);
+                int az = (int) Math.floor(cz + (Math.sin(a) * (1 - t) + Math.sin(a2) * t) * 7.0);
+                int ay = floorY + 3 + (int) Math.round(spike * 3.4);
+                if (own.test(ax, az)) chunk.setBlockState(mp.set(ax, ay, az), slabB, false);
+                // свисающая цепь с уцелевшего острия
+                if (t > 0.44 && t < 0.56 && survive >= 0.45 && hash(px, pz, 897) < 0.5 && own.test(ax, az))
+                    for (int chl = 0; chl < 4 && hash(ax, az - chl, 898) > 0.2; ++chl)
+                        chunk.setBlockState(mp.set(ax, ay - 1 - chl, az), chain, false);
+            }
+        }
+        // --- центр: постамент + клетка-фонарь (сердце данжа)
+        int hx = (int) Math.floor(cx), hz = (int) Math.floor(cz);
+        if (own.test(hx, hz)) {
+            chunk.setBlockState(mp.set(hx, floorY, hz), rock, false);
+            chunk.setBlockState(mp.set(hx, floorY + 1, hz), cage, false);
+        }
+        // --- обрушенная винтовая лестница: с края пола спиралью вниз в воду
+        double dirA = ((rg.seed >> 8) & 255) * (Math.PI * 2 / 256.0);
+        for (int k = 0; k < 16; ++k) {
+            double sa = dirA + k * 0.42;
+            int sx = (int) Math.floor(cx + Math.cos(sa) * (9.6 + k * 0.18));
+            int sz = (int) Math.floor(cz + Math.sin(sa) * (9.6 + k * 0.18));
+            int sy = floorY - 1 - k;                                     // уходит под воду
+            if (!own.test(sx, sz)) continue;
+            double br = hash(sx, sz - k, 899);
+            if (br < 0.30) continue;                                     // выпавшая ступень
+            BlockState step;
+            if (br > 0.62) {
+                int card = Math.abs(Math.cos(sa)) > Math.abs(Math.sin(sa)) ? (Math.cos(sa) < 0 ? 1 : 3) : (Math.sin(sa) < 0 ? 2 : 0);
+                step = st(ElisarBlocks.KEEP_STAIRS)
+                        .setValue(net.minecraft.world.level.block.StairBlock.FACING, switch (card) {
+                            case 0 -> net.minecraft.core.Direction.NORTH;
+                            case 1 -> net.minecraft.core.Direction.WEST;
+                            case 2 -> net.minecraft.core.Direction.SOUTH;
+                            default -> net.minecraft.core.Direction.EAST;
+                        }).setValue(net.minecraft.world.level.block.StairBlock.HALF, net.minecraft.world.level.block.state.properties.Half.BOTTOM);
+            } else step = br > 0.45 ? cracked : rock;
+            chunk.setBlockState(mp.set(sx, sy, sz), step, false);
+        }
+        // --- парочка обломков-колодцев внутри (был хребет крыши)
+        for (int s1 = 0; s1 < 3; ++s1) {
+            double ra = ((rg.seed >> (12 + s1 * 4)) & 15) * (Math.PI * 2 / 16.0);
+            int rx = (int) Math.floor(cx + Math.cos(ra) * 3), rz = (int) Math.floor(cz + Math.sin(ra) * 3);
+            int rh = 1 + (int) (hash(rx, rz, 900) * 3);
+            if (own.test(rx, rz))
+                for (int y = 0; y < rh; ++y)
+                    chunk.setBlockState(mp.set(rx, floorY + y, rz), y == rh - 1 ? cracked : rock, false);
+        }
+    }
+
     // ================================================================== misc ChunkGenerator plumbing
     @Override
     public void applyCarvers(WorldGenRegion region, long seed, RandomState rs, BiomeManager bm, StructureManager sm, ChunkAccess chunk, GenerationStep.Carving step) {
@@ -691,8 +1186,11 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         Col c = column(plan, x, z);
         BlockState[] arr = new BlockState[HEIGHT];
         java.util.Arrays.fill(arr, Blocks.AIR.defaultBlockState());
-        arr[plan.ocean - 1] = ElisarBlocks.SEABED.get().defaultBlockState();
-        arr[plan.ocean] = ElisarBlocks.WATER.get().defaultBlockState();
+        int of = oceanFloor(plan, x, z);
+        arr[of] = ElisarBlocks.SEABED.get().defaultBlockState();
+        arr[of - 1] = ElisarBlocks.SEABED.get().defaultBlockState();
+        for (int y = of - 4; y <= of - 2; ++y) arr[y] = ElisarBlocks.STONE.get().defaultBlockState();
+        for (int y = of + 1; y <= plan.ocean; ++y) arr[y] = ElisarBlocks.WATER.get().defaultBlockState();
         if (c.isl != null) {
             for (int y = Math.max(0, c.bottom); y <= Math.min(HEIGHT - 1, c.top); ++y) arr[y] = ElisarBlocks.STONE.get().defaultBlockState();
         }

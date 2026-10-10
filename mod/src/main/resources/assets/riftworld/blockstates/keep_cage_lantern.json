@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "hanging=false": {
+      "model": "riftworld:block/keep_cage_lantern"
+    },
+    "hanging=true": {
+      "model": "riftworld:block/keep_cage_lantern_hanging"
+    }
+  }
+}

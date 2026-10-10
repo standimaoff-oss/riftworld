@@ -1,0 +1,17 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "pattern": [
+  "P",
+  "P",
+  "P"
+ ],
+ "key": {
+  "P": {
+   "item": "minecraft:spruce_planks"
+  }
+ },
+ "result": {
+  "item": "riftworld:bridge_post",
+  "count": 4
+ }
+}

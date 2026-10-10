@@ -55,10 +55,23 @@ public final class ElisarSky extends DimensionSpecialEffects {
             if (!inElisar() || e.getMode() != net.minecraft.client.renderer.FogRenderer.FogMode.FOG_TERRAIN) return;
             if (e.getCamera().getFluidInCamera() != net.minecraft.world.level.material.FogType.NONE) return;
             float far = e.getFarPlaneDistance();
-            float g = gloom(e.getCamera().getPosition());
-            e.setNearPlaneDistance(far * Mth.lerp(g, 0.45F, 0.55F));
-            e.setFarPlaneDistance(far * Mth.lerp(g, 1.05F, 1.0F));
+            Vec3 pos = e.getCamera().getPosition();
+            float g = gloom(pos);
+            float m = mist(pos);
+            float nearF = far * Mth.lerp(g, 0.45F, 0.55F);
+            float farF = far * Mth.lerp(g, 1.05F, 1.0F);
+            // the sea breathes: close over the water the horizon dissolves in a milky band (Rev 4: light optimised sea mist)
+            e.setNearPlaneDistance(nearF * Mth.lerp(m, 1.0F, 0.42F));
+            e.setFarPlaneDistance(farF * Mth.lerp(m, 1.0F, 0.62F));
             e.setCanceled(true);
+        }
+
+        /** 1 on the rolling crest, fading out ~26 blocks above the sea; 0 underwater (the fluid fog owns that space). */
+        public static float mist(Vec3 cam) {
+            double sea = ru.aiforge.riftworld.world.CityPlan.get().ocean + 1;
+            double dy = cam.y - sea;
+            if (dy < -2) return 0.0F;
+            return (float) Mth.clamp(1.0 - dy / 26.0, 0.0, 1.0);
         }
 
         /** 0 in the white Elisar haze, 1 over the castle's scorched island (ash-brown, gloomy air). */
@@ -70,11 +83,18 @@ public final class ElisarSky extends DimensionSpecialEffects {
         }
 
         private static final Vec3 ASH = new Vec3(0.34, 0.235, 0.20);
+        private static final Vec3 SEA_MIST = new Vec3(0.965, 0.945, 0.885);   // warm milk of the sea haze (TZ_atmosphere_fx palette)
 
         @SubscribeEvent
         public static void fogColor(ViewportEvent.ComputeFogColor e) {
             if (!inElisar()) return;
             float g = gloom(e.getCamera().getPosition());
+            float m = mist(e.getCamera().getPosition()) * 0.62F;
+            if (m > 0) {
+                e.setRed((float) Mth.lerp(m, e.getRed(), SEA_MIST.x));
+                e.setGreen((float) Mth.lerp(m, e.getGreen(), SEA_MIST.y));
+                e.setBlue((float) Mth.lerp(m, e.getBlue(), SEA_MIST.z));
+            }
             if (g <= 0) return;
             e.setRed((float) Mth.lerp(g, e.getRed(), ASH.x));
             e.setGreen((float) Mth.lerp(g, e.getGreen(), ASH.y));

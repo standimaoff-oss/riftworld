@@ -62,6 +62,8 @@ public class MorgrathBoss extends RiftMob {
     S state = S.FIGHT;
     int st, atk, cooldown = 30, twitch, twitchYaw, climbTicks, lungeCd = 60, scrapeCd = 100, farTicks;
     boolean second, combo;
+    /** Rev 4 p.11: final enrage under 30% - faster, angrier (persisted, survives chunk reloads). */
+    boolean enrage;
     int stuckTicks, staggerCd, recentT;
     float recentDmg;
     /** Client: walk-cycle phase of the previous tick (footstep dust). */
@@ -87,8 +89,8 @@ public class MorgrathBoss extends RiftMob {
     }
 
     public static AttributeSupplier.Builder attributes() {
-        return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 280.0).add(Attributes.MOVEMENT_SPEED, 0.26)
-                .add(Attributes.ATTACK_DAMAGE, 14.0).add(Attributes.ARMOR, 10.0).add(Attributes.ARMOR_TOUGHNESS, 4.0)
+        return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 340.0).add(Attributes.MOVEMENT_SPEED, 0.26)
+                .add(Attributes.ATTACK_DAMAGE, 16.0).add(Attributes.ARMOR, 10.0).add(Attributes.ARMOR_TOUGHNESS, 4.0)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 0.95).add(Attributes.FOLLOW_RANGE, 48.0);
     }
 
@@ -343,6 +345,13 @@ public class MorgrathBoss extends RiftMob {
                 setAnim(A_ROAR, true);
                 return;
             }
+        }
+        if (!enrage && getHealth() < getMaxHealth() * 0.30F) {
+            enrage = true;
+            var ms = getAttribute(Attributes.MOVEMENT_SPEED);
+            if (ms != null) ms.setBaseValue(0.30);
+            sound(SoundEvents.RAVAGER_ROAR, 2.0F, 0.7F);
+            sl.sendParticles(net.minecraft.core.particles.ParticleTypes.SOUL_FIRE_FLAME, getX(), getY() + 2.0, getZ(), 24, 0.6, 1.0, 0.6, 0.02);
         }
         if (tgt.getY() > getY() + 5.0) {
             // the player is up on the gallery: he does not take the stairs - waits below, glaring (climbs only when shot)
@@ -693,6 +702,7 @@ public class MorgrathBoss extends RiftMob {
     /** Rev 4: harder boss - shorter pauses between attacks (and even shorter in the second phase). */
     private int cd(int base, int rnd) {
         float k = second ? 0.62F : 0.8F;
+        if (enrage) k = second ? 0.52F : 0.66F;
         return Math.max(6, (int) ((base + random.nextInt(rnd)) * k));
     }
 
@@ -928,6 +938,7 @@ public class MorgrathBoss extends RiftMob {
         super.addAdditionalSaveData(tag);
         tag.putInt("BossState", state.ordinal());
         tag.putBoolean("Second", second);
+        tag.putBoolean("Enrage", enrage);
         if (core != null) tag.put("Core", NbtUtils.writeBlockPos(core));
         ListTag l = new ListTag();
         for (UUID u : guards) l.add(NbtUtils.createUUID(u));
@@ -942,6 +953,8 @@ public class MorgrathBoss extends RiftMob {
         if (state == S.ATTACK || state == S.PULL || state == S.CLIMB_GO || state == S.CLIMB || state == S.HOP || state == S.ROAR) state = S.FIGHT;
         if (state == S.RISING) state = S.WAITING;
         second = tag.getBoolean("Second");
+        enrage = tag.getBoolean("Enrage");
+        if (enrage) { var ms = getAttribute(Attributes.MOVEMENT_SPEED); if (ms != null) ms.setBaseValue(0.30); }
         core = tag.contains("Core") ? NbtUtils.readBlockPos(tag.getCompound("Core")) : null;
         guards.clear();
         for (Tag t : tag.getList("Guards", Tag.TAG_INT_ARRAY)) guards.add(NbtUtils.loadUUID(t));

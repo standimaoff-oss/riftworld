@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cross",
+  "textures": {
+    "cross": "riftworld:block/violet_bloom"
+  },
+  "render_type": "minecraft:cutout"
+}

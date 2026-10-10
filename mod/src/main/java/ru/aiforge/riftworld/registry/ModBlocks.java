@@ -128,6 +128,8 @@ public final class ModBlocks {
         ElisarBlocks.init();
         CastleBlocks.init();
         ArenaBlocks.init();
+        TempleBlocks.init();   // was never class-loaded at startup: late-load after registry freeze would crash the server
+        BridgeBlocks.init();   // Rev 4 item 13: rope bridges
     }
 
     private static RegistryObject<ModelBlock> model(ModelKind k) {

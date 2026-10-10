@@ -17,6 +17,19 @@ public final class ModWorldgen {
     public static final RegistryObject<Codec<? extends net.minecraft.world.level.biome.BiomeSource>> ELISAR_BIOMES =
             BIOME_SOURCES.register("elisar", () -> ru.aiforge.riftworld.world.ElisarBiomeSource.CODEC);
 
+    // Part 7 «Храм полностью»: the overgrown temple of the common overworld
+    public static final DeferredRegister<net.minecraft.world.level.levelgen.structure.StructureType<?>> STRUCTURE_TYPES =
+            DeferredRegister.create(Registries.STRUCTURE_TYPE, RiftWorld.MODID);
+    private static final net.minecraft.world.level.levelgen.structure.StructureType<ru.aiforge.riftworld.world.OvergrownTempleStructure> OGT_TYPE =
+            () -> ru.aiforge.riftworld.world.OvergrownTempleStructure.CODEC.codec();
+    public static final RegistryObject<net.minecraft.world.level.levelgen.structure.StructureType<ru.aiforge.riftworld.world.OvergrownTempleStructure>> OVERGROWN_TEMPLE =
+            STRUCTURE_TYPES.register("overgrown_temple", () -> OGT_TYPE);
+
+    public static final DeferredRegister<net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType> PIECES =
+            DeferredRegister.create(Registries.STRUCTURE_PIECE, RiftWorld.MODID);
+    public static final RegistryObject<net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType> OVERGROWN_TEMPLE_PIECE =
+            PIECES.register("overgrown_temple", () -> ru.aiforge.riftworld.world.OvergrownTemplePiece::new);
+
     private ModWorldgen() {
     }
 }

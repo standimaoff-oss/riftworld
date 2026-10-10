@@ -57,22 +57,30 @@ public final class ModFluids {
                     return 0xFFFFFFFF;
                 }
 
+                /** 0 floating on the crest, 1 kneeling on the dunes 42+ blocks down. */
+                private static float depth(Camera cam) {
+                    int sea = ru.aiforge.riftworld.world.CityPlan.get().ocean;
+                    return net.minecraft.util.Mth.clamp((sea - (float) cam.getPosition().y) / 42.0F, 0.0F, 1.0F);
+                }
+
                 @Override
                 public Vector3f modifyFogColor(Camera camera, float partialTick, ClientLevel level, int renderDistance, float darkenWorldAmount, Vector3f fluidFogColor) {
-                    return new Vector3f(0.22F, 0.55F, 0.78F);
+                    float d = depth(camera);
+                    return new Vector3f(net.minecraft.util.Mth.lerp(d, 0.22F, 0.05F), net.minecraft.util.Mth.lerp(d, 0.55F, 0.16F), net.minecraft.util.Mth.lerp(d, 0.78F, 0.30F));
                 }
 
                 @Override
                 public void modifyFogRender(Camera camera, FogRenderer.FogMode mode, float renderDistance, float partialTick, float nearDistance, float farDistance, FogShape shape) {
-                    com.mojang.blaze3d.systems.RenderSystem.setShaderFogStart(-4F);
-                    com.mojang.blaze3d.systems.RenderSystem.setShaderFogEnd(48F);
+                    float d = depth(camera);
+                    com.mojang.blaze3d.systems.RenderSystem.setShaderFogStart(-4F + d);
+                    com.mojang.blaze3d.systems.RenderSystem.setShaderFogEnd(net.minecraft.util.Mth.lerp(d, 54F, 22F));
                 }
             });
         }
     });
 
-    public static final RegistryObject<ForgeFlowingFluid.Source> SOURCE = FLUIDS.register("elisar_water", () -> new ForgeFlowingFluid.Source(props()));
-    public static final RegistryObject<ForgeFlowingFluid.Flowing> FLOWING = FLUIDS.register("flowing_elisar_water", () -> new ForgeFlowingFluid.Flowing(props()));
+    public static final RegistryObject<ForgeFlowingFluid.Source> SOURCE = FLUIDS.register("elisar_water", () -> new ru.aiforge.riftworld.block.ElisarWaterFluid.Source(props()));
+    public static final RegistryObject<ForgeFlowingFluid.Flowing> FLOWING = FLUIDS.register("flowing_elisar_water", () -> new ru.aiforge.riftworld.block.ElisarWaterFluid.Flowing(props()));
     public static final RegistryObject<Item> BUCKET = ITEMS.register("elisar_water_bucket",
             () -> new BucketItem(SOURCE, new Item.Properties().craftRemainder(Items.BUCKET).stacksTo(1)));
 

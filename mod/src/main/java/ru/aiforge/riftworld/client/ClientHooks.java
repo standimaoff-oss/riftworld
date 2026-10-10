@@ -11,6 +11,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import ru.aiforge.riftworld.RiftWorld;
 import ru.aiforge.riftworld.registry.ModBlockEntities;
+import ru.aiforge.riftworld.registry.ModEntities;
 
 @Mod.EventBusSubscriber(modid = RiftWorld.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class ClientHooks {
@@ -33,6 +34,9 @@ public final class ClientHooks {
         e.registerBlockEntityRenderer(ModBlockEntities.CRATE.get(), ModelBER::new);
         e.registerBlockEntityRenderer(ModBlockEntities.LAUNCH_CORE.get(), LaunchCoreRenderer::new);
         e.registerBlockEntityRenderer(ru.aiforge.riftworld.registry.ArenaBlocks.COLUMN_BE.get(), BossColumnRenderer::new);
+        e.registerBlockEntityRenderer(ModBlockEntities.BRIDGE_POST.get(), BridgePostRenderer::new);
+        e.registerBlockEntityRenderer(ModBlockEntities.DEMON_GATE.get(), DemonGateRenderer::new);
+        e.registerEntityRenderer(ModEntities.PAPER_DRAGON.get(), PaperDragonRenderer::new);
         e.registerEntityRenderer(ru.aiforge.riftworld.registry.ModEntities.BOSS.get(), RiftMobRenderer::boss);
         e.registerEntityRenderer(ru.aiforge.riftworld.registry.ModEntities.GUARD.get(), RiftMobRenderer::guard);
         e.registerEntityRenderer(ru.aiforge.riftworld.registry.ModEntities.SCYTHE_ITEM.get(), ScytheDropRenderer::new);
@@ -45,6 +49,19 @@ public final class ClientHooks {
             net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(ru.aiforge.riftworld.registry.ModFluids.SOURCE.get(), net.minecraft.client.renderer.RenderType.translucent());
             net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(ru.aiforge.riftworld.registry.ModFluids.FLOWING.get(), net.minecraft.client.renderer.RenderType.translucent());
         });
+    }
+
+    /** Biome-aware greys → per-biome grass tint (violet meadows, mint grove). */
+    @SubscribeEvent
+    public static void blockTints(net.minecraftforge.client.event.RegisterColorHandlersEvent.Block e) {
+        e.register((state, level, pos, idx) -> level != null && pos != null
+                        ? net.minecraft.client.renderer.BiomeColors.getAverageGrassColor(level, pos)
+                        : net.minecraft.world.level.GrassColor.get(0.5, 1.0),
+                ru.aiforge.riftworld.registry.ElisarBlocks.GRASS.get(),
+                ru.aiforge.riftworld.registry.ElisarBlocks.SIZO_LEAVES.get(),
+                ru.aiforge.riftworld.registry.ElisarBlocks.AMBRA_LEAVES.get(),
+                ru.aiforge.riftworld.registry.ElisarBlocks.TALL_GRASS.get(),
+                ru.aiforge.riftworld.registry.ElisarBlocks.FLOWERS.get());
     }
 
     @SubscribeEvent

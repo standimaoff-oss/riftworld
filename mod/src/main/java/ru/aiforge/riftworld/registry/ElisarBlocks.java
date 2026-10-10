@@ -82,6 +82,17 @@ public final class ElisarBlocks {
     // plants
     // ---- revision 2: reference-village style
     public static final RegistryObject<Block> CRUST = cube("elisar_crust", MapColor.SAND, 1.2F, SoundType.STONE);
+    // улучшение биомов: монетоносная руда города - змеится прожилками в известняковых ярусах Висячих садов (биом 07)
+    public static final RegistryObject<Block> AURITE_ORE = ModBlocks.reg("aurite_ore",
+            () -> new Block(p(MapColor.GOLD, 3.0F, SoundType.STONE).requiresCorrectToolForDrops()));
+    // мини-биом «Туманный данж» (рев 5): обломчатый серо-зелёный камень утёсов, частичные блоки для почти сломанной руины
+    public static final RegistryObject<Block> KEEP_STONE = cube("keep_stone", MapColor.TERRACOTTA_LIGHT_GRAY, 2.2F, SoundType.STONE);
+    public static final RegistryObject<Block> KEEP_STONE_CRACKED = cube("keep_stone_cracked", MapColor.TERRACOTTA_LIGHT_GRAY, 2.2F, SoundType.STONE);
+    public static final RegistryObject<Block> KEEP_STONE_MOSSY = cube("keep_stone_mossy", MapColor.COLOR_LIGHT_GREEN, 2.2F, SoundType.STONE);
+    public static final RegistryObject<StairBlock> KEEP_STAIRS = stairs("keep_stone_stairs", KEEP_STONE);
+    public static final RegistryObject<SlabBlock> KEEP_SLAB = slab("keep_stone_slab", MapColor.TERRACOTTA_LIGHT_GRAY, SoundType.STONE);
+    public static final RegistryObject<net.minecraft.world.level.block.LanternBlock> CAGE_LANTERN = ModBlocks.reg("keep_cage_lantern",
+            () -> new net.minecraft.world.level.block.LanternBlock(p(MapColor.METAL, 1.0F, SoundType.LANTERN).lightLevel(s -> 13).noOcclusion()));
     public static final RegistryObject<Block> MOSS = cube("elisar_moss", MapColor.COLOR_LIGHT_GREEN, 0.6F, SoundType.MOSS);
     public static final RegistryObject<Block> TOWER_BRICKS = cube("tower_bricks", MapColor.COLOR_GRAY, 50.0F, SoundType.DEEPSLATE_BRICKS);
     public static final RegistryObject<Block> TOWER_BRICKS_CRACKED = cube("tower_bricks_cracked", MapColor.COLOR_GRAY, 50.0F, SoundType.DEEPSLATE_BRICKS);
@@ -92,6 +103,10 @@ public final class ElisarBlocks {
     public static final RegistryObject<PlantBlock> PALE_WHEAT = ModBlocks.reg("pale_wheat", () -> new PlantBlock(plant()));
     public static final RegistryObject<PlantBlock> TALL_GRASS = ModBlocks.reg("elisar_tall_grass", () -> new PlantBlock(plant()));
     public static final RegistryObject<PlantBlock> FLOWERS = ModBlocks.reg("elisar_flowers", () -> new PlantBlock(plant()));
+    // biome 04 «Фиолетовые холмы»: three violet bloom types, a tone apart from each other (Rev 4 item 8: "3 типа цветов")
+    public static final RegistryObject<PlantBlock> VIOLET_BLOOM = ModBlocks.reg("violet_bloom", () -> new PlantBlock(plant()));
+    public static final RegistryObject<PlantBlock> LILAC_BLOOM = ModBlocks.reg("lilac_bloom", () -> new PlantBlock(plant()));
+    public static final RegistryObject<PlantBlock> PALE_BLOOM = ModBlocks.reg("pale_bloom", () -> new PlantBlock(plant()));
     public static final RegistryObject<VineBlock> IVY = ModBlocks.reg("elisar_ivy", () -> new VineBlock(plant().randomTicks()));
     // water (no item: the bucket is the item)
     public static final RegistryObject<LiquidBlock> WATER = ModBlocks.BLOCKS.register("elisar_water", () -> new LiquidBlock(ModFluids.SOURCE,

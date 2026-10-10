@@ -26,6 +26,10 @@ public final class ModEntities {
     public static final RegistryObject<EntityType<ScytheItemEntity>> SCYTHE_ITEM = TYPES.register("scythe_item", () -> EntityType.Builder
             .<ScytheItemEntity>of(ScytheItemEntity::new, MobCategory.MISC).sized(0.5F, 0.3F).fireImmune().clientTrackingRange(8)
             .updateInterval(20).build("riftworld:scythe_item"));
+    /** Biome 01: the paper-dragons / kites drifting over the Paper-Dragon Sea (ambient, harmless). */
+    public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.PaperDragonEntity>> PAPER_DRAGON = TYPES.register("paper_dragon",
+            () -> EntityType.Builder.<ru.aiforge.riftworld.entity.PaperDragonEntity>of(ru.aiforge.riftworld.entity.PaperDragonEntity::new, MobCategory.AMBIENT)
+                    .sized(1.6F, 0.9F).updateInterval(3).clientTrackingRange(16).build("riftworld:paper_dragon"));
 
     private ModEntities() {
     }
@@ -34,5 +38,6 @@ public final class ModEntities {
     public static void attributes(EntityAttributeCreationEvent e) {
         e.put(BOSS.get(), MorgrathBoss.attributes().build());
         e.put(GUARD.get(), EmberGuard.attributes().build());
+        e.put(PAPER_DRAGON.get(), net.minecraft.world.entity.monster.Monster.createMonsterAttributes().build());
     }
 }

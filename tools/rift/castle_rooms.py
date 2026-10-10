@@ -28,7 +28,8 @@ def place(kind, x, y, z, f, lit=True, loot=None, topper=None):
         return False
     model(kind, x, y, z, f, powered=(lit and kind in LIT))
     if topper:
-        model(topper, x, y, z, f, powered=(lit and topper in LIT), overlay=True)
+        # Rev 4 item 14 "разделение блоков": decor stands ON TOP of its host (y+1), not mashed into the same anchor
+        model(topper, x, y + KINDS[kind][3], z, f, powered=(lit and topper in LIT))
         PLACED.append(topper)
     if loot:
         NBT[(x, y, z)] = {"LootTable": "riftworld:chests/castle_" + loot}

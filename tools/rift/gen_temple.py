@@ -26,6 +26,7 @@ TG = S("temple_gold")
 TF = S("temple_floor")
 TP = lambda a: S("temple_pillar", axis=a)
 MOS_T = S("temple_mosaic", stage=0)
+RUNE = S("temple_gold_rune")
 CORE = S("mosaic_core", stage=0)
 CANDLE = S("ritual_candle", lit=False)
 TBS = lambda f, **kw: S("temple_bricks_stairs", facing=f, **kw)
@@ -40,6 +41,11 @@ band(1, 1, 61, 68, G, TG)                                         # gilded plint
 # ------------------------------------------------------------------ nave shell (x 13..49, z 9..57, walls to G+16)
 walls(13, 9, 49, 57, G + 1, G + 16, t=2, mat=lambda x, y, z: TB)
 fill(14, G, 10, 48, G, 56, TF)                                    # inner floor
+# Part 7: gilded rune inlay borders - the central aisle rails + the sanctum frame (glow among the spread mosaic)
+for z in range(12, 56):
+    put(26, G, z, RUNE); put(36, G, z, RUNE)
+for x in range(26, 37):
+    put(x, G, 28, RUNE); put(x, G, 40, RUNE)
 for z in range(12, 56, 7):                                        # buttresses with slab caps
     fill(11, G + 1, z, 12, G + 6, z, TB)
     fill(50, G + 1, z, 51, G + 6, z, TB)
@@ -61,6 +67,8 @@ for z in range(14, 54, 5):
 
 # ------------------------------------------------------------------ apse (raised, z 4..9) + altar
 fill(15, G + 1, 4, 47, G + 1, 9, TF)
+for x in range(15, 48):                                           # runic rail across the apse front
+    put(x, G + 1, 9, RUNE)
 for x in range(16, 47):
     put(x, G + 1, 10, TBS("north"))
 for x in (24, 31, 38):                                            # tall lancets over the altar
@@ -99,7 +107,6 @@ for z in range(26, 40, 4):
 opening("z", 0, 31, 33, G + 1, G + 4, [48, 49, 50])                # nave -> east chapel
 opening("z", 0, 31, 33, G + 1, G + 4, [12, 13, 14])                # nave -> west chapel
 model("chained_lectern", 55, G + 1, 30, "west")
-model("chained_books", 55, G + 1, 30, "west", overlay=True)
 model("gold_hoard", 53, G + 1, 36, "south", powered=False)
 model("candle_stand", 58, G + 1, 26, "east", powered=True)
 model("candle_stand", 58, G + 1, 38, "east", powered=True)
@@ -198,6 +205,29 @@ put(31, G - 7, 42, TG)
 put(31, G - 6, 42, S("launch_core"))
 model("wall_sconce", 27, G - 5, 41, "east", powered=True)
 model("wall_sconce", 35, G - 5, 41, "west", powered=True)
+
+# ----------------------------------- Part 11: the sleeping SPIRIT faces of the walls + a deeper, darker crypt
+SPIR = S("temple_spirit")
+for z in (17, 27, 37, 47):                                        # nave side walls, below the lower lancets
+    put(14, G + 2, z, SPIR); put(48, G + 2, z, SPIR)
+for z in (17, 37):                                                # between the upper lancets
+    put(14, G + 8, z, SPIR); put(48, G + 8, z, SPIR)
+for x in (22, 40):                                                # north wall flanking the aisle to the apse
+    put(x, G + 3, 10, SPIR); put(x, G + 7, 10, SPIR)
+put(61, G + 2, 28, SPIR); put(61, G + 2, 36, SPIR)                # reliquary chapel
+put(1, G + 2, 30, SPIR); put(1, G + 2, 39, SPIR)                  # quiet chapel
+# crypt: two more tombs (six in total), spirit faces watching from the north wall, webs in the dead corners
+for x in (29, 33):
+    for z in (30, 34):
+        put(x, G - 7, z, ASH); put(x, G - 6, z, TSL("top"))
+for x in (26, 31, 36):
+    put(x, G - 5, 25, SPIR)
+model("candle_stand", 24, G - 6, 41, "east", powered=True)
+model("candle_stand", 38, G - 6, 41, "west", powered=True)
+for (wx, wy, wz) in ((23, G - 1, 26), (39, G - 1, 26), (23, G - 1, 38), (39, G - 1, 38)):
+    put(wx, wy, wz, S("castle_cobweb"))
+for (cx, cz) in ((27, 35), (35, 31), (24, 32), (37, 29)):
+    put(cx, G - 7, cz, TSL())
 
 # ------------------------------------------------------------------ write
 n, pal = write_template(OUT + "/temple_great.nbt", (W, H, D), B, {k: v for k, v in NBT.items() if k in B})

@@ -1,0 +1,10 @@
+{
+ "variants": {
+  "lit=false": {
+   "model": "riftworld:block/temple_gold_rune"
+  },
+  "lit=true": {
+   "model": "riftworld:block/temple_gold_rune_lit"
+  }
+ }
+}
