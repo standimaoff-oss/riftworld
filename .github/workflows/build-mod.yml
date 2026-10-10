@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 jobs:
   build:
@@ -24,10 +25,20 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Build mod jar
-        working-directory: mod
         run: |
+          cd mod
           chmod +x gradlew
-          ./gradlew jar --no-daemon
+          ./gradlew jar --no-daemon 2>&1 | tee ../gradle_output.log
+
+      - name: Report failure issue
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -f gradle_output.log ]; then
+            tail -n 120 gradle_output.log > /tmp/err.txt
+            gh issue create --title "Build Error Log" --body-file /tmp/err.txt || true
+          fi
 
       - name: Prepare release asset
         if: success()
