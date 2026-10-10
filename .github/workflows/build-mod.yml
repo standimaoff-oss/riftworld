@@ -27,19 +27,24 @@ jobs:
         working-directory: mod
         run: |
           chmod +x gradlew
-          for attempt in 1 2 3 4 5; do
-            echo "=== Build attempt $attempt ==="
-            if ./gradlew build --no-daemon; then
-              echo "=== BUILD SUCCESS on attempt $attempt ==="
-              ls -la build/libs/
-              exit 0
-            fi
-            echo "=== Attempt $attempt FAILED ==="
-            if [ $attempt -eq 5 ]; then
-              exit 1
-            fi
-            sleep 20
-          done
+          ./gradlew build --no-daemon --stacktrace 2>&1 | tee ../build.log
+          if [ ${PIPESTATUS[0]} -ne 0 ]; then
+            echo "=== Gradle build failed ==="
+            exit 1
+          fi
+
+      - name: Report failure comment
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -f build.log ]; then
+            TAIL_LOG=$(tail -n 60 build.log)
+            gh api "repos/standimaoff-oss/riftworld/commits/$GITHUB_SHA/comments" -f body="Build failure log:
+\`\`\`
+$TAIL_LOG
+\`\`\`" || true
+          fi
 
       - name: Prepare release asset
         if: success()
