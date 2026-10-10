@@ -25,24 +25,29 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Build mod jar
+        id: build_step
+        continue-on-error: true
         run: |
           cd mod
           chmod +x gradlew
-          ./gradlew jar --no-daemon
+          ./gradlew jar --no-daemon --stacktrace 2>&1 | tee ../build.log
+
+      - name: Report log
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tail -n 120 build.log > /tmp/err.txt
+          gh issue create --title "Gradle Build Log" --body-file /tmp/err.txt || true
+          if [ "${{ steps.build_step.outcome }}" != "success" ]; then
+            echo "Build failed!"
+            exit 1
+          fi
 
       - name: Prepare release asset
         if: success()
         run: |
           mkdir -p release
-          echo "Listing all jar files:"
-          find mod/build -type f -name "*.jar"
           JAR_FILE=$(find mod/build/libs -type f -name "*.jar" | head -n 1)
-          if [ -z "$JAR_FILE" ]; then
-            echo "No jar found in mod/build/libs! Searching whole mod directory:"
-            find mod -type f -name "*.jar"
-            exit 1
-          fi
-          echo "Using jar: $JAR_FILE"
           cp "$JAR_FILE" release/riftworld-0.6.4-p16.jar
           ls -lh release/riftworld-0.6.4-p16.jar
 
