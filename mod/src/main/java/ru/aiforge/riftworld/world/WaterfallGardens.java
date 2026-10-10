@@ -30,7 +30,7 @@ public final class WaterfallGardens {
 
         Region(int cx, int cz, Random rnd) {
             this.cx = cx; this.cz = cz;
-            double R = 30 + rnd.nextDouble() * 14;                        // «биом небольшой»
+            double R = 46 + rnd.nextDouble() * 20;                        // «биом небольшой»
             this.Rr = R * 2.1;
             double base = 96 + rnd.nextDouble() * 16;                     // верх - на высоте островов
             this.hub = new CityPlan.Island(cx, cz, R, base, R * 1.15 + 10, rnd.nextDouble() * 6.283, rnd.nextDouble() * 6.283,

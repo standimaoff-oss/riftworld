@@ -91,10 +91,10 @@ public final class WildIslands {
         List<double[]> want = new ArrayList<>();          // {kind, R}
         if (large) want.add(new double[] {1, 40 + r.nextDouble() * 22});
         int med = large ? r.nextInt(2) : 1 + r.nextInt(2);
-        for (int k = 0; k < med; ++k) want.add(new double[] {2, 17 + r.nextDouble() * 13});
-        int small = 2 + r.nextInt(3);
+        for (int k = 0; k < med; ++k) want.add(new double[] {2, 20 + r.nextDouble() * 16});
+        int small = 1 + r.nextInt(2);
         for (int k = 0; k < small; ++k) want.add(new double[] {3, 7 + r.nextDouble() * 6});
-        int islets = 3 + r.nextInt(5);
+        int islets = 2 + r.nextInt(3);
         for (int k = 0; k < islets; ++k) want.add(new double[] {4, 3 + r.nextDouble() * 3});
         for (double[] w : want) {
             int kind = (int) w[0];

@@ -70,7 +70,7 @@ public final class VioletHills {
         Region(int cx, int cz, Random rnd) {
             this.cx = cx; this.cz = cz;
             this.Rr = 130 + rnd.nextDouble() * 40;
-            double R = 54 + rnd.nextDouble() * 12;
+            double R = 76 + rnd.nextDouble() * 18;
             double base = 98 + rnd.nextDouble() * 14;
             this.meadow = new CityPlan.Island(cx, cz, R, base, R * 0.6 + 12, rnd.nextDouble() * 6.283, rnd.nextDouble() * 6.283,
                     rnd.nextDouble() * 6.283, 7, 0.9);

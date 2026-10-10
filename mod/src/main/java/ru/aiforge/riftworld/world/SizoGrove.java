@@ -48,7 +48,7 @@ public final class SizoGrove {
         Region(int cx, int cz, Random rnd) {
             this.cx = cx; this.cz = cz;
             this.Rr = 140 + rnd.nextDouble() * 40;
-            double R = 52 + rnd.nextDouble() * 20;
+            double R = 74 + rnd.nextDouble() * 28;
             double base = 100 + rnd.nextDouble() * 10;
             this.hub = new CityPlan.Island(cx, cz, R, base, R * 0.6 + 14, rnd.nextDouble() * 6.283, rnd.nextDouble() * 6.283,
                     rnd.nextDouble() * 6.283, KIND, 0.7);

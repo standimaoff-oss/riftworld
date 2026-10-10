@@ -36,7 +36,7 @@ public final class MistKeep {
         Random r = new Random(FIXED ^ (sx * 53982894593057L + sz * 317074912223L) * 0x9E3779B97F4A7C15L);
         if (r.nextDouble() > 0.30) return null;             // ~3 из 10 секторов
         int cx = sx * SUPER + 180 + r.nextInt(SUPER - 360), cz = sz * SUPER + 180 + r.nextInt(SUPER - 360);
-        int Rr = 26 + r.nextInt(13);
+        int Rr = 42 + r.nextInt(21);
         if (Math.hypot(cx, cz) < 700) return null;          // городское море - просто море
         if (Math.hypot(cx - AshenLands.CX, cz - AshenLands.CZ) < AshenLands.R + 300) return null;
         if (Math.hypot(cx - CastleSite.CX, cz - CastleSite.CZ) < CastleSite.R + 300) return null;

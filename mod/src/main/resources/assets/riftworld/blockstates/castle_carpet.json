@@ -1,7 +1,45 @@
 {
-  "variants": {
-    "": {
-      "model": "riftworld:block/castle_carpet"
+  "forge_marker": 1,
+  "multipart": [
+    {
+      "apply": {
+        "model": "riftworld:block/castle_carpet"
+      }
+    },
+    {
+      "when": {
+        "north": "false"
+      },
+      "apply": {
+        "model": "riftworld:block/castle_carpet_border_n"
+      }
+    },
+    {
+      "when": {
+        "south": "false"
+      },
+      "apply": {
+        "model": "riftworld:block/castle_carpet_border_n",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "east": "false"
+      },
+      "apply": {
+        "model": "riftworld:block/castle_carpet_border_n",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "west": "false"
+      },
+      "apply": {
+        "model": "riftworld:block/castle_carpet_border_n",
+        "y": 90
+      }
     }
-  }
+  ]
 }
