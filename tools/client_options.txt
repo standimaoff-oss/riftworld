@@ -2,7 +2,7 @@ tutorialStep:none
 onboardAccessibility:false
 skipMultiplayerWarning:true
 joinedFirstServer:true
-renderDistance:8
+renderDistance:24
 simulationDistance:6
 maxFps:30
 guiScale:2
