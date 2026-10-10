@@ -30,8 +30,8 @@ public class OvergrownTempleStructure extends Structure {
         int x = cp.getMiddleBlockX(), z = cp.getMiddleBlockZ();
         int[] hs = new int[9];
         int i = 0, sum = 0;
-        for (int dx = -12; dx <= 12; dx += 8)
-            for (int dz = -12; dz <= 12; dz += 8) {
+        for (int dx = -12; dx <= 12; dx += 12)
+            for (int dz = -12; dz <= 12; dz += 12) {
                 int h = ctx.chunkGenerator().getBaseHeight(x + dx, z + dz, Heightmap.Types.WORLD_SURFACE_WG,
                         ctx.heightAccessor(), ctx.randomState());
                 hs[i++] = h;

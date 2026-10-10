@@ -52,6 +52,13 @@ public final class TempleBlocks {
             () -> new ru.aiforge.riftworld.block.TempleSpiritBlock(p(MapColor.TERRACOTTA_WHITE, 2.5F, SoundType.STONE)));
 public static final RegistryObject<DemonGateBlock> DEMON_GATE = ModBlocks.reg("demon_gate", DemonGateBlock::new);
 
+    /** Rev 6 «Храм с нуля»: детализированная резная колонна (3D модель с канелюрами). */
+    public static final RegistryObject<RotatedPillarBlock> GRAND_COLUMN = ModBlocks.reg("temple_grand_column",
+            () -> new RotatedPillarBlock(p(MapColor.TERRACOTTA_WHITE, 2.5F, SoundType.STONE).noOcclusion()));
+    /** Rev 6: витраж-проём (роза) - светящийся цветной камень. */
+    public static final RegistryObject<Block> ROSE_WINDOW = ModBlocks.reg("temple_rose_window",
+            () -> new Block(p(MapColor.COLOR_ORANGE, 1.5F, SoundType.GLASS).lightLevel(l -> 11).noOcclusion()));
+
     public static void init() {
     }
 }
