@@ -27,24 +27,7 @@ jobs:
         working-directory: mod
         run: |
           chmod +x gradlew
-          ./gradlew build --no-daemon --stacktrace 2>&1 | tee ../build.log
-          if [ ${PIPESTATUS[0]} -ne 0 ]; then
-            echo "=== Gradle build failed ==="
-            exit 1
-          fi
-
-      - name: Report failure comment
-        if: failure()
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          if [ -f build.log ]; then
-            TAIL_LOG=$(tail -n 60 build.log)
-            gh api "repos/standimaoff-oss/riftworld/commits/$GITHUB_SHA/comments" -f body="Build failure log:
-\`\`\`
-$TAIL_LOG
-\`\`\`" || true
-          fi
+          ./gradlew jar --no-daemon
 
       - name: Prepare release asset
         if: success()

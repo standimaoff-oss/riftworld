@@ -3,9 +3,6 @@ package ru.aiforge.riftworld.world;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -15,41 +12,33 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.saveddata.SavedData;
 import ru.aiforge.riftworld.block.DemonGateBlock;
 import ru.aiforge.riftworld.flight.Flight;
 
 /**
  * Two-way dimensional travel across the Rift:
  * Overworld (ruined abandoned temple) &lt;-&gt; Elisar (intact Great Temple in the city).
- * Remembers the Overworld temple location in SavedData so the return journey always lands right at the ruin.
+ * Remembers the Overworld temple location so the return journey always lands right at the ruin.
  */
 public final class RiftTravel {
+    private static volatile BlockPos overworldAltar = null;
+
     private RiftTravel() {
     }
 
     /** Overworld portal used: remember it so travel from Elisar returns here. */
     public static void remember(ServerLevel from, BlockPos altar) {
         if (!from.dimension().equals(Level.OVERWORLD)) return;
-        setOverworldAltar(from, altar);
+        overworldAltar = altar.immutable();
     }
 
     public static void setOverworldAltar(ServerLevel overworld, BlockPos altar) {
-        Links l = Links.get(overworld);
-        if (l.set && l.x == altar.getX() && l.y == altar.getY() && l.z == altar.getZ()) return;
-        l.x = altar.getX();
-        l.y = altar.getY();
-        l.z = altar.getZ();
-        l.set = true;
-        l.setDirty();
+        overworldAltar = altar.immutable();
     }
 
     @Nullable
     public static BlockPos overworldAltar(MinecraftServer server) {
-        ServerLevel ow = server.overworld();
-        if (ow == null) return null;
-        Links l = Links.get(ow);
-        return l.set ? new BlockPos(l.x, l.y, l.z) : null;
+        return overworldAltar;
     }
 
     /** Teleports player from Overworld ruined temple to Elisar Great Temple. */
@@ -98,34 +87,5 @@ public final class RiftTravel {
         ow.sendParticles(ParticleTypes.SQUID_INK, arr.getX() + 0.5, arr.getY() + 1.0, arr.getZ() + 0.5, 60, 1.0, 1.0, 1.0, 0.03);
         ow.sendParticles(ParticleTypes.FLASH, arr.getX() + 0.5, arr.getY() + 1.2, arr.getZ() + 0.5, 2, 0.4, 0.4, 0.4, 0);
         p.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 40, 0, false, false));
-    }
-
-    /** Saved data remembering the overworld temple portal position. */
-    public static final class Links extends SavedData {
-        private static final String ID = "riftworld_temple_links";
-        private int x, y, z;
-        private boolean set;
-
-        public static Links get(ServerLevel overworld) {
-            return overworld.getDataStorage().computeIfAbsent(Links::load, Links::new, ID);
-        }
-
-        private static Links load(CompoundTag t) {
-            Links l = new Links();
-            l.x = t.getInt("x");
-            l.y = t.getInt("y");
-            l.z = t.getInt("z");
-            l.set = t.contains("set") && t.getBoolean("set");
-            return l;
-        }
-
-        @Override
-        public CompoundTag save(CompoundTag t) {
-            t.putInt("x", x);
-            t.putInt("y", y);
-            t.putInt("z", z);
-            t.putBoolean("set", set);
-            return t;
-        }
     }
 }
