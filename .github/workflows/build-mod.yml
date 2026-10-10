@@ -28,23 +28,21 @@ jobs:
         run: |
           cd mod
           chmod +x gradlew
-          ./gradlew jar --no-daemon 2>&1 | tee ../gradle_output.log
-
-      - name: Report failure issue
-        if: failure()
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          if [ -f gradle_output.log ]; then
-            tail -n 120 gradle_output.log > /tmp/err.txt
-            gh issue create --title "Build Error Log" --body-file /tmp/err.txt || true
-          fi
+          ./gradlew jar --no-daemon
 
       - name: Prepare release asset
         if: success()
         run: |
           mkdir -p release
-          JAR_FILE=$(ls mod/build/libs/*.jar | grep -v "sources" | head -n 1)
+          echo "Listing all jar files:"
+          find mod/build -type f -name "*.jar"
+          JAR_FILE=$(find mod/build/libs -type f -name "*.jar" | head -n 1)
+          if [ -z "$JAR_FILE" ]; then
+            echo "No jar found in mod/build/libs! Searching whole mod directory:"
+            find mod -type f -name "*.jar"
+            exit 1
+          fi
+          echo "Using jar: $JAR_FILE"
           cp "$JAR_FILE" release/riftworld-0.6.4-p16.jar
           ls -lh release/riftworld-0.6.4-p16.jar
 
