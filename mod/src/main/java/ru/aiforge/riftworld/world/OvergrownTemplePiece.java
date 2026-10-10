@@ -66,5 +66,7 @@ public class OvergrownTemplePiece extends StructurePiece {
         BoundingBox bb = t.get().getBoundingBox(s, BlockPos.ZERO);
         BlockPos origin = new BlockPos(anchor.getX() - (bb.minX() + bb.maxX()) / 2, y - 1, anchor.getZ() - (bb.minZ() + bb.maxZ()) / 2);
         t.get().placeInWorld(level, origin, origin, s, rnd, 2);
+        BlockPos portalPos = StructureTemplate.calculateRelativePosition(s, new BlockPos(13, 2, 4)).offset(origin);
+        RiftTravel.setOverworldAltar(level.getLevel(), portalPos);
     }
 }
