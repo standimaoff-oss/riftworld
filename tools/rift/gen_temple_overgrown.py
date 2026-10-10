@@ -144,5 +144,69 @@ SPIR = S("temple_spirit")
 put(8, 2, 2, SPIR); put(18, 2, 2, SPIR)
 put(9, 2, D - 2, SPIR)
 
+
+# ================================================================== REV 6 П2 «много растительности»
+LEAF = S("minecraft:oak_leaves", persistent=True)
+VINE = lambda f: S("minecraft:vine", **{f: True})
+MCARP = S("minecraft:moss_carpet")
+AZALEA = S("minecraft:azalea")
+FERN = S("minecraft:fern")
+GRASS = S("minecraft:short_grass")
+BIG_FERN = S("minecraft:large_fern", half="lower")
+BIG_FERN_T = S("minecraft:large_fern", half="upper")
+BEET = S("minecraft:dead_bush")
+import random as _r2
+_r2.seed(777)
+
+# 1) Плотные ковры мха: большие пятна на полу нефа (переплетение с уже имеющимся)
+for _ in range(26):
+    x = _r2.randrange(3, W - 3); z = _r2.randrange(3, D - 3); rr = _r2.randrange(1, 3)
+    for xx in range(x - rr, x + rr + 1):
+        for zz in range(z - rr, z + rr + 1):
+            if 0 <= xx < W and 0 <= zz < D and B.get((xx, 0, zz)) not in (None,) and B.get((xx, 1, zz)) is None:
+                if _r2.random() < 0.75:
+                    put(xx, 1, zz, MCARP)
+
+# 2) Плющ-ткань: свешенные гирлянды вин по стенам (внешка редка, внутри густо)
+for x in range(2, W - 2):
+    for side, z, face in ((0, 1, "south"), (1, D - 2, "north")):
+        if _r2.random() < 0.7:
+            h = _r2.randrange(2, 6)
+            for y in range(6, 6 - h, -1):
+                put(x, y, z if side == 0 else z, VINE(face))
+for z in range(2, D - 2):
+    for side, x, face in ((0, 1, "east"), (1, W - 2, "west")):
+        if _r2.random() < 0.7:
+            h = _r2.randrange(2, 6)
+            for y in range(6, 6 - h, -1):
+                put(x, y, z, VINE(face))
+# … и внутренние отсеки колон
+for z in range(4, D - 4, 2):
+    for x, face in ((7, "east"), (19 if False else 18, "west")):
+        if _r2.random() < 0.5:
+            for y in range(5, 5 - _r2.randrange(1, 4), -1):
+                put(x, y, z, VINE(face))
+
+# 3) Кроновые шапки листвы на уцелевших обломках крыши и стенах
+for _ in range(14):
+    x = _r2.randrange(2, W - 2); z = _r2.randrange(1, D - 1)
+    for xx in range(x - 1, x + 2):
+        for zz in range(z - 1, z + 2):
+            if _r2.random() < 0.8:
+                yy = 6 + (1 if _r2.random() < 0.3 else 0)
+                if B.get((xx, yy, zz)) is None:
+                    put(xx, yy, zz, LEAF)
+
+# 4) Подлесок: азалии, большие папоротники, осока в проходах
+for _ in range(18):
+    x = _r2.randrange(3, W - 3); z = _r2.randrange(3, D - 3)
+    if B.get((x, 1, z), None) is None and B.get((x, 0, z)) not in (None,):
+        r = _r2.random()
+        if r < 0.30: put(x, 1, z, AZALEA)
+        elif r < 0.55: put(x, 1, z, BIG_FERN); put(x, 2, z, BIG_FERN_T)
+        elif r < 0.75: put(x, 1, z, FERN)
+        elif r < 0.9: put(x, 1, z, GRASS)
+        else: put(x, 1, z, BEET)
+
 n, pal = write_template(OUT + "/temple_overgrown.nbt", (W, H, D), dict(B), {k: v for k, v in NBT.items() if k in B})
 print("temple_overgrown ->", n, "blocks,", pal, "palette, skips", len(SKIPPED))

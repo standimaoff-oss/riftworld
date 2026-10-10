@@ -229,6 +229,48 @@ for (wx, wy, wz) in ((23, G - 1, 26), (39, G - 1, 26), (23, G - 1, 38), (39, G -
 for (cx, cz) in ((27, 35), (35, 31), (24, 32), (37, 29)):
     put(cx, G - 7, cz, TSL())
 
+
+# ================================================================== REV 6 PART 2 «храм красивее»: второй дизайн-проход
+# 1) Удвоенный портик: вторая колонна пара + золотая антаблюдэт поп-полоса
+for x in (29, 33):
+    for z in (60, 66):
+        fill(x, G + 1, z, x, G + 8, z, TP("y"))
+        put(x, G + 9, z, TG)
+fill(24, G + 10, 59, 38, G + 10, 59, TG)                        # золотой пояс антаблемента спереди
+fill(24, G + 10, 67, 38, G + 10, 67, TG)                        # ... и сзади для второй ноги колонн
+
+# 2) Пинакли по углам обеих башен (кирпичные свечи с золотыми искрами)
+for xa, xb in ((2, 10), (52, 60)):
+    for xx in (xa, xb):
+        for zz in (56, 68):
+            fill(xx, G + 29, zz, xx, G + 33, zz, TB)
+            put(xx, G + 34, zz, TG)
+
+# 3) Ребристый купол-воротник вокруг фонаря средокрестия
+for ring, rad in enumerate((9, 8, 7, 6)):
+    yy = G + 31 + ring
+    for xx in range(31 - rad, 32 + rad):
+        for zz in range(36 - rad, 37 + rad):
+            dx, dz = abs(xx - 31), abs(zz - 36)
+            if max(dx, dz) == rad and (dx == rad or dz == rad) and dx + dz >= rad:
+                face = "east" if dx >= dz else "south"
+                put(xx, yy, zz, TBS(face))
+
+# 4) Золотые раскреповки между витражами (vertikальные муллионы, южный и северный неф)
+for z in range(11, 56, 5):
+    for xx in (13, 49):
+        fill(xx, G + 6, z, xx, G + 7, z, TG)
+
+# 5) Висячие фонари под карнизом нефа (по внешним стенам, пятно тёплого света через ребра)
+for z in range(14, 56, 8):
+    put(13, G + 15, z, S("elisar_lantern", hanging=True))
+    put(49, G + 15, z, S("elisar_lantern", hanging=True))
+
+# 6) Трёхполосная мозаичная дорожка центрального придела
+for z in range(12, 56):
+    if z % 2 == 0:
+        put(30, G, z, MOS_T); put(32, G, z, MOS_T)
+
 # ------------------------------------------------------------------ write
 n, pal = write_template(OUT + "/temple_great.nbt", (W, H, D), B, {k: v for k, v in NBT.items() if k in B})
 print("temple_great", W, H, D, "blocks", n, "palette", pal, "skips", len(SKIPPED))
