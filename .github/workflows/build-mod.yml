@@ -29,6 +29,10 @@ jobs:
           cd mod
           chmod +x gradlew
           ./gradlew jar --no-daemon 2>&1 | tee ../build.log
+          if [ ${PIPESTATUS[0]} -ne 0 ]; then
+            echo "Gradle build failed!"
+            exit 1
+          fi
 
       - name: Report failure on error
         if: failure()

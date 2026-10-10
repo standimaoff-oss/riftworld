@@ -7,8 +7,6 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.util.Mth;
-import org.joml.Matrix4f;
 import ru.aiforge.riftworld.block.DemonGateBE;
 
 /**
@@ -40,35 +38,31 @@ public class DemonGateRenderer implements BlockEntityRenderer<DemonGateBE> {
         ps.pushPose();
         ps.translate(0.5, 1.2, 0.5); // elevate to hover freely in mid-air above the pedestal
 
-        VertexConsumer vcSolid = buffers.getBuffer(RenderType.debugQuads());
-        VertexConsumer vcGlow = buffers.getBuffer(RenderType.lightning());
-        Matrix4f m = ps.last().pose();
+        VertexConsumer vc = buffers.getBuffer(RenderType.debugQuads());
 
         // 1. ORGANIC JAGGED SPATIAL TEAR (Вертикальный пролом пространства)
         // Both south-facing and north-facing double-sided rendering
-        drawSpatialTear(vcSolid, vcGlow, m, time, phase, 1.0);
-        drawSpatialTear(vcSolid, vcGlow, m, time, phase, -1.0);
+        drawSpatialTear(vc, ps, time, phase, 1.0);
+        drawSpatialTear(vc, ps, time, phase, -1.0);
 
         // 2. 3D ACCRETION RINGS (Кольца космического горизонта, наклоненные в 3D)
         ps.pushPose();
         ps.mulPose(Axis.XP.rotationDegrees(28.0F));
         ps.mulPose(Axis.YP.rotationDegrees((float) (time * 1.8 + phase * 10.0)));
-        Matrix4f rm1 = ps.last().pose();
-        drawAccretionRing(vcGlow, rm1, 1.8, 2.2, 0.04, time, 40, 15, 80, 180);
+        drawAccretionRing(vc, ps, 1.8, 2.2, 0.04, time, 40, 15, 80, 0.7F);
         ps.popPose();
 
         ps.pushPose();
         ps.mulPose(Axis.ZP.rotationDegrees(-35.0F));
         ps.mulPose(Axis.YP.rotationDegrees((float) (-time * 2.4 - phase * 15.0)));
-        Matrix4f rm2 = ps.last().pose();
-        drawAccretionRing(vcGlow, rm2, 1.3, 1.6, 0.03, time * 1.3, 80, 20, 140, 200);
+        drawAccretionRing(vc, ps, 1.3, 1.6, 0.03, time * 1.3, 80, 20, 140, 0.8F);
         ps.popPose();
 
         // 3. JAGGED 3D SPATIAL LIGHTNING FRACTURES (Молнии разлома в 3D)
-        drawSpatialCracks(vcGlow, m, time, phase);
+        drawSpatialCracks(vc, ps, time, phase);
 
         // 4. ORBITING 3D SHATTERS OF REALITY (Падающие осколки реальности)
-        drawRealityShards(vcGlow, ps, time, phase);
+        drawRealityShards(vc, ps, time, phase);
 
         ps.popPose();
     }
@@ -78,7 +72,6 @@ public class DemonGateRenderer implements BlockEntityRenderer<DemonGateBE> {
         // Vertical eye / lancet profile: tall along Y (theta = +/- PI/2), narrower along X (theta = 0, PI)
         double cos = Math.cos(theta);
         double sin = Math.sin(theta);
-        // Base profile: vertical tear (height ~ 2.2m from center = 4.4m total; width ~ 1.1m from center)
         double base = Math.sqrt(0.85 * cos * cos + 4.2 * sin * sin);
 
         // Harmonic turbulence ripples
@@ -89,7 +82,7 @@ public class DemonGateRenderer implements BlockEntityRenderer<DemonGateBE> {
         return Math.max(0.2, base + turb);
     }
 
-    private static void drawSpatialTear(VertexConsumer vcSolid, VertexConsumer vcGlow, Matrix4f m,
+    private static void drawSpatialTear(VertexConsumer vc, PoseStack ps,
                                         double time, double phase, double dir) {
         double zOff = dir * 0.02;
 
@@ -105,12 +98,12 @@ public class DemonGateRenderer implements BlockEntityRenderer<DemonGateBE> {
             double x1 = r1 * Math.cos(a1), y1 = r1 * Math.sin(a1);
 
             // Absolute black void core
-            quad(vcSolid, m,
+            quad(vc, ps,
                     0, 0, zOff,
                     x0, y0, zOff,
                     x1, y1, zOff,
                     0, 0, zOff,
-                    2, 0, 5, 255);
+                    2, 0, 5, 1.0F);
         }
 
         // B. BURNING FLARING EVENT-HORIZON RIM (Горящая кромка)
@@ -132,9 +125,9 @@ public class DemonGateRenderer implements BlockEntityRenderer<DemonGateBE> {
             int r = (int) (140 + 100 * flick);
             int g = (int) (30 + 80 * flick);
             int b = (int) (190 + 65 * flick);
-            int al = (int) (180 + 70 * flick);
+            float al = (float) (0.75 + 0.25 * flick);
 
-            quad(vcGlow, m,
+            quad(vc, ps,
                     x0, y0, zOff + dir * 0.01,
                     x1, y1, zOff + dir * 0.01,
                     x2, y2, zOff + dir * 0.01,
@@ -143,8 +136,8 @@ public class DemonGateRenderer implements BlockEntityRenderer<DemonGateBE> {
         }
     }
 
-    private static void drawAccretionRing(VertexConsumer vc, Matrix4f m, double r0, double r1, double h,
-                                          double time, int cr, int cg, int cb, int al) {
+    private static void drawAccretionRing(VertexConsumer vc, PoseStack ps, double r0, double r1, double h,
+                                          double time, int cr, int cg, int cb, float al) {
         for (int i = 0; i < ACCRETION_SEGS; ++i) {
             double a0 = i * Math.PI * 2.0 / ACCRETION_SEGS;
             double a1 = (i + 1) * Math.PI * 2.0 / ACCRETION_SEGS;
@@ -155,7 +148,7 @@ public class DemonGateRenderer implements BlockEntityRenderer<DemonGateBE> {
             double wob0 = Math.sin(a0 * 3.0 + time * 0.2) * 0.04;
             double wob1 = Math.sin(a1 * 3.0 + time * 0.2) * 0.04;
 
-            quad(vc, m,
+            quad(vc, ps,
                     r0 * c0, wob0 - h, r0 * s0,
                     r1 * c0, wob0 + h, r1 * s0,
                     r1 * c1, wob1 + h, r1 * s1,
@@ -164,7 +157,7 @@ public class DemonGateRenderer implements BlockEntityRenderer<DemonGateBE> {
         }
     }
 
-    private static void drawSpatialCracks(VertexConsumer vc, Matrix4f m, double time, double phase) {
+    private static void drawSpatialCracks(VertexConsumer vc, PoseStack ps, double time, double phase) {
         for (int c = 0; c < CRACK_COUNT; ++c) {
             double baseAngle = c * Math.PI * 2.0 / CRACK_COUNT + phase * 0.5;
             double tearR = getTearRadius(baseAngle, time, phase);
@@ -187,18 +180,18 @@ public class DemonGateRenderer implements BlockEntityRenderer<DemonGateBE> {
                 double nextZ = curZ + zZig * segLen;
 
                 double w = 0.04 * (1.0 - s / (double) segments);
-                quad(vc, m,
+                quad(vc, ps,
                         curX - w, curY, curZ,
                         curX + w, curY, curZ,
                         nextX + w, nextY, nextZ,
                         nextX - w, nextY, nextZ,
-                        210, 180, 255, 220);
-                quad(vc, m,
+                        210, 180, 255, 0.85F);
+                quad(vc, ps,
                         curX, curY - w, curZ,
                         curX, curY + w, curZ,
                         nextX, nextY + w, nextZ,
                         nextX, nextY - w, nextZ,
-                        255, 230, 255, 240);
+                        255, 230, 255, 0.95F);
 
                 curX = nextX;
                 curY = nextY;
@@ -224,43 +217,45 @@ public class DemonGateRenderer implements BlockEntityRenderer<DemonGateBE> {
             ps.mulPose(Axis.XP.rotationDegrees((float) (time * 2.5 + i * 40.0)));
             ps.mulPose(Axis.YP.rotationDegrees((float) (time * 3.1 + i * 60.0)));
 
-            Matrix4f sm = ps.last().pose();
             float szModel = (float) (0.05 + 0.035 * (1.0 - cycle));
 
             int sr = (i % 3 == 0) ? 255 : ((i % 3 == 1) ? 140 : 80);
             int sg = (i % 3 == 0) ? 220 : ((i % 3 == 1) ? 60 : 200);
             int sb = 255;
-            int sal = (int) (200 * (1.0 - cycle * 0.3));
+            float sal = (float) (0.85 * (1.0 - cycle * 0.3));
 
-            drawShardBox(vc, sm, szModel, sr, sg, sb, sal);
+            drawShardBox(vc, ps, szModel, sr, sg, sb, sal);
             ps.popPose();
         }
     }
 
-    private static void drawShardBox(VertexConsumer vc, Matrix4f m, float s, int r, int g, int b, int a) {
+    private static void drawShardBox(VertexConsumer vc, PoseStack ps, float s, int r, int g, int b, float a) {
         float h = s * 1.8F;
         // 4 triangular facets
-        quad(vc, m, 0, h, 0, s, 0, 0, 0, 0, s, 0, h, 0, r, g, b, a);
-        quad(vc, m, 0, h, 0, 0, 0, s, -s, 0, 0, 0, h, 0, (int) (r * 0.8), (int) (g * 0.8), (int) (b * 0.8), a);
-        quad(vc, m, 0, h, 0, -s, 0, 0, 0, 0, -s, 0, h, 0, r, g, b, a);
-        quad(vc, m, 0, h, 0, 0, 0, -s, s, 0, 0, 0, h, 0, (int) (r * 0.8), (int) (g * 0.8), (int) (b * 0.8), a);
+        quad(vc, ps, 0, h, 0, s, 0, 0, 0, 0, s, 0, h, 0, r, g, b, a);
+        quad(vc, ps, 0, h, 0, 0, 0, s, -s, 0, 0, 0, h, 0, (int) (r * 0.8), (int) (g * 0.8), (int) (b * 0.8), a);
+        quad(vc, ps, 0, h, 0, -s, 0, 0, 0, 0, -s, 0, h, 0, r, g, b, a);
+        quad(vc, ps, 0, h, 0, 0, 0, -s, s, 0, 0, 0, h, 0, (int) (r * 0.8), (int) (g * 0.8), (int) (b * 0.8), a);
 
-        quad(vc, m, 0, -h, 0, 0, 0, s, s, 0, 0, 0, -h, 0, (int) (r * 0.7), (int) (g * 0.7), (int) (b * 0.7), a);
-        quad(vc, m, 0, -h, 0, -s, 0, 0, 0, 0, s, 0, -h, 0, (int) (r * 0.6), (int) (g * 0.6), (int) (b * 0.6), a);
-        quad(vc, m, 0, -h, 0, 0, 0, -s, -s, 0, 0, 0, -h, 0, (int) (r * 0.7), (int) (g * 0.7), (int) (b * 0.7), a);
-        quad(vc, m, 0, -h, 0, s, 0, 0, 0, 0, -s, 0, -h, 0, (int) (r * 0.6), (int) (g * 0.6), (int) (b * 0.6), a);
+        quad(vc, ps, 0, -h, 0, 0, 0, s, s, 0, 0, 0, -h, 0, (int) (r * 0.7), (int) (g * 0.7), (int) (b * 0.7), a);
+        quad(vc, ps, 0, -h, 0, -s, 0, 0, 0, 0, s, 0, -h, 0, (int) (r * 0.6), (int) (g * 0.6), (int) (b * 0.6), a);
+        quad(vc, ps, 0, -h, 0, 0, 0, -s, -s, 0, 0, 0, -h, 0, (int) (r * 0.7), (int) (g * 0.7), (int) (b * 0.7), a);
+        quad(vc, ps, 0, -h, 0, s, 0, 0, 0, 0, -s, 0, -h, 0, (int) (r * 0.6), (int) (g * 0.6), (int) (b * 0.6), a);
     }
 
-    private static void quad(VertexConsumer vc, Matrix4f m,
+    private static void quad(VertexConsumer vc, PoseStack ps,
                              double x0, double y0, double z0,
                              double x1, double y1, double z1,
                              double x2, double y2, double z2,
                              double x3, double y3, double z3,
-                             int r, int g, int b, int a) {
-        vc.vertex(m, (float) x0, (float) y0, (float) z0).color(r, g, b, a).endVertex();
-        vc.vertex(m, (float) x1, (float) y1, (float) z1).color(r, g, b, a).endVertex();
-        vc.vertex(m, (float) x2, (float) y2, (float) z2).color(r, g, b, a).endVertex();
-        vc.vertex(m, (float) x3, (float) y3, (float) z3).color(r, g, b, a).endVertex();
+                             int r, int g, int b, float a) {
+        var m = ps.last().pose();
+        var n = ps.last().normal();
+        float rf = r / 255.0F, gf = g / 255.0F, bf = b / 255.0F;
+        vc.vertex(m, (float) x0, (float) y0, (float) z0).color(rf, gf, bf, a).normal(n, 0, 0, 1).endVertex();
+        vc.vertex(m, (float) x1, (float) y1, (float) z1).color(rf, gf, bf, a).normal(n, 0, 0, 1).endVertex();
+        vc.vertex(m, (float) x2, (float) y2, (float) z2).color(rf, gf, bf, a).normal(n, 0, 0, 1).endVertex();
+        vc.vertex(m, (float) x3, (float) y3, (float) z3).color(rf, gf, bf, a).normal(n, 0, 0, 1).endVertex();
     }
 
     @Override
