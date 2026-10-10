@@ -87,7 +87,9 @@ public class DemonGateBlock extends Block implements EntityBlock {
 
     private static void tick(ServerLevel sl, BlockPos pos, DemonGateBE be) {
         if (sl.getGameTime() % 10 != 0) return;
-        for (ServerPlayer p : sl.getEntitiesOfClass(ServerPlayer.class, new AABB(pos).inflate(0.35))) {
+        // Spatial tear collision envelope (covers the 4.5m tall free-floating 3D rift)
+        AABB riftBounds = new AABB(pos).inflate(1.6, 2.2, 1.2);
+        for (ServerPlayer p : sl.getEntitiesOfClass(ServerPlayer.class, riftBounds)) {
             if (!p.isAlive() || p.isSpectator()) continue;
             Long last = CD.get(p.getUUID());
             if (last != null && sl.getGameTime() - last < 120) continue;

@@ -119,14 +119,16 @@ for x in range(W):
         if B.get((x, 0, z)) in (TB,) and ((x * 131071 + z * 524287) & 0xFF) < 26:
             put(x, 0, z, MOSS)
 
-# ------------------------------------------------------------------ the DEMON GATE arch (same sport as ruin A)
+# ------------------------------------------------------------------ the DEMON GATE arch (same spot as ruin A)
 for y in range(1, 7):
     put(11, y, 4, D_FR); put(15, y, 4, D_FR)
 for x in range(11, 16):
     put(x, 6, 4, D_FR)
 for x in range(12, 15):
-    for y in range(2, 5):
-        put(x, y, 4, D_GT)
+    for y in range(1, 6):
+        put(x, y, 4, AIR)
+# Single focal point for the organic 3D Spatial Rift tear
+put(13, 2, 4, D_GT)
 for x in (11, 15):
     put(x, 1, 5, D_FR)
 put(12, 1, 5, D_FR); put(14, 1, 5, D_FR)

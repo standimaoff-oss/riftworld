@@ -36,6 +36,7 @@ public final class ClientHooks {
         e.registerBlockEntityRenderer(ru.aiforge.riftworld.registry.ArenaBlocks.COLUMN_BE.get(), BossColumnRenderer::new);
         e.registerBlockEntityRenderer(ModBlockEntities.BRIDGE_POST.get(), BridgePostRenderer::new);
         e.registerBlockEntityRenderer(ModBlockEntities.DEMON_GATE.get(), DemonGateRenderer::new);
+        e.registerBlockEntityRenderer(ModBlockEntities.MOSAIC_CORE.get(), MosaicCoreRenderer::new);
         e.registerEntityRenderer(ModEntities.PAPER_DRAGON.get(), PaperDragonRenderer::new);
         e.registerEntityRenderer(ru.aiforge.riftworld.registry.ModEntities.BOSS.get(), RiftMobRenderer::boss);
         e.registerEntityRenderer(ru.aiforge.riftworld.registry.ModEntities.GUARD.get(), RiftMobRenderer::guard);

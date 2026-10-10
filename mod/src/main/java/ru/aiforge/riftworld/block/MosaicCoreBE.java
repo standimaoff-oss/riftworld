@@ -230,11 +230,19 @@ public class MosaicCoreBE extends BlockEntity {
 
     /** The culmination: the Black Rift tears open in the ceremonial archway behind the altar! */
     private static void openRift(ServerLevel sl, BlockPos pos, MosaicCoreBE be) {
-        // 1. Fill the 3x3 ceremonial portal opening in the arch behind the altar with the Black Rift (DemonGateBlock)
-        for (int dx = -1; dx <= 1; dx++) {
-            for (int dy = 1; dy <= 3; dy++) {
-                BlockPos archPos = pos.offset(dx, dy + 1, -5);
-                sl.setBlock(archPos, TempleBlocks.DEMON_GATE.get().defaultBlockState(), 3);
+        // 1. Open the free-floating 3D Black Rift tear (NOT made of square blocks!)
+        BlockPos riftPos = pos.offset(0, 2, -5);
+        sl.setBlock(riftPos, TempleBlocks.DEMON_GATE.get().defaultBlockState(), 3);
+        // Clear surrounding space so the organic 3D rift hovers freely in mid-air
+        for (int dx = -2; dx <= 2; dx++) {
+            for (int dy = 1; dy <= 5; dy++) {
+                BlockPos p = pos.offset(dx, dy, -5);
+                if (!p.equals(riftPos)) {
+                    BlockState cur = sl.getBlockState(p);
+                    if (cur.is(TempleBlocks.DEMON_GATE.get())) {
+                        sl.setBlock(p, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+                    }
+                }
             }
         }
 
