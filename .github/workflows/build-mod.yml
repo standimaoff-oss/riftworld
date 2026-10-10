@@ -30,14 +30,14 @@ jobs:
         run: |
           cd mod
           chmod +x gradlew
-          ./gradlew jar --no-daemon --stacktrace 2>&1 | tee ../build.log
+          ./gradlew jar --no-daemon 2>&1 | tee ../build.log
 
       - name: Report log
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tail -n 120 build.log > /tmp/err.txt
-          gh issue create --title "Gradle Build Log" --body-file /tmp/err.txt || true
+          grep -C 5 -E "(error:|FAILURE:|FAILED|> Task :compileJava)" build.log | head -n 100 > /tmp/err.txt
+          gh issue create --title "Gradle Compile Error" --body-file /tmp/err.txt || true
           if [ "${{ steps.build_step.outcome }}" != "success" ]; then
             echo "Build failed!"
             exit 1
