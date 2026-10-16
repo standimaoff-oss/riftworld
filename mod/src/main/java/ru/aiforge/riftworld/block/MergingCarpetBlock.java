@@ -66,7 +66,7 @@ public class MergingCarpetBlock extends CarpetBlock {
         // if super would break to air because below not solid, check if below is actually walkable
         if (dir == Direction.DOWN && newState.isAir()) {
             BlockState below = level.getBlockState(pos.below());
-            if (below.getBlock() instanceof BridgeWalkBlock || below.isSolid() || below.getBlock() instanceof ru.aiforge.riftworld.block.ModelBlock) {
+            if (holds(below, level, pos.below())) {
                 return state;
             }
         }
@@ -77,9 +77,20 @@ public class MergingCarpetBlock extends CarpetBlock {
     public boolean canSurvive(BlockState state, net.minecraft.world.level.LevelReader level, BlockPos pos) {
         BlockPos below = pos.below();
         BlockState belowState = level.getBlockState(below);
-        // allow on bridge_walk, model blocks, and any solid
-        if (belowState.getBlock() instanceof BridgeWalkBlock) return true;
-        if (belowState.isSolid()) return true;
+        // allow on bridge_walk, model blocks, and any sturdy-top block (1.20.1-safe checks)
+        if (holds(belowState, level, below)) return true;
         return super.canSurvive(state, level, pos);
+    }
+
+    /** True when the carpet may rest on this block: sturdy top face, bridge deck or any model block. */
+    private static boolean holds(BlockState below, net.minecraft.world.level.LevelReader level, BlockPos belowPos) {
+        if (below.getBlock() instanceof BridgeWalkBlock) return true;
+        if (below.getBlock() instanceof ru.aiforge.riftworld.block.ModelBlock) return true;
+        if (below.getBlock() instanceof ru.aiforge.riftworld.block.PartBlock) return true;
+        try {
+            return below.isFaceSturdy(level, belowPos, Direction.UP) || below.isSolidRender(level, belowPos);
+        } catch (RuntimeException e) {
+            return false;
+        }
     }
 }
