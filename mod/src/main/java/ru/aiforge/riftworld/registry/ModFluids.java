@@ -66,7 +66,11 @@ public final class ModFluids {
                 @Override
                 public Vector3f modifyFogColor(Camera camera, float partialTick, ClientLevel level, int renderDistance, float darkenWorldAmount, Vector3f fluidFogColor) {
                     float d = depth(camera);
-                    return new Vector3f(net.minecraft.util.Mth.lerp(d, 0.22F, 0.05F), net.minecraft.util.Mth.lerp(d, 0.55F, 0.16F), net.minecraft.util.Mth.lerp(d, 0.78F, 0.30F));
+                    // базовый оттенок - из water_fog_color биома камеры: в садах бирюза, в холмах лаванда, в обители сталь
+                    int wf = level.getBiome(net.minecraft.core.BlockPos.containing(camera.getPosition())).value().getWaterFogColor();
+                    float br = ((wf >> 16) & 255) / 255.0F, bg = ((wf >> 8) & 255) / 255.0F, bb = (wf & 255) / 255.0F;
+                    float k = net.minecraft.util.Mth.lerp(d, 1.0F, 0.38F);   // с глубиной темнее и глуше
+                    return new Vector3f(br * k, bg * k, bb * k);
                 }
 
                 @Override

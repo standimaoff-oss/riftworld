@@ -6,7 +6,6 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -28,19 +27,20 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import ru.aiforge.riftworld.world.CityPlan;
-import ru.aiforge.riftworld.flight.Flight;
+import ru.aiforge.riftworld.world.RiftTravel;
 
 /**
- * Part 7 «Храм полностью»: the DEMONIC TELEPORT found roaring in the overgrown temple of the common world.
- * A churning crimson pane - step in and it drags you across the Rift to the Great Temple of the floating city.
- * Walk-through, unmineable, glows like an ember.
+ * ЧЕРНЫЙ ПРОЛОМ ПРОСТРАНСТВА (Black Rift in Space):
+ * The portal torn between dimensions.
+ * Found in the ancient overgrown temple in the Overworld and opened through the ritual in the City's Great Temple.
+ * Walk-through, unmineable, emits deep dark void particles and ambient whispers.
  */
 public class DemonGateBlock extends Block implements EntityBlock {
     private static final Map<UUID, Long> CD = new HashMap<>();
 
     public DemonGateBlock() {
-        super(Properties.of().mapColor(MapColor.COLOR_RED).noCollission().strength(-1.0F, 3600000.0F)
-                .sound(SoundType.SCULK).lightLevel(s -> 12).noLootTable());
+        super(Properties.of().mapColor(MapColor.COLOR_BLACK).noCollission().strength(-1.0F, 3600000.0F)
+                .sound(SoundType.SCULK).lightLevel(s -> 11).noLootTable());
     }
 
     @Nullable
@@ -63,30 +63,46 @@ public class DemonGateBlock extends Block implements EntityBlock {
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource rnd) {
         double x = pos.getX() + 0.5, y = pos.getY() + 0.5, z = pos.getZ() + 0.5;
-        if (rnd.nextInt(3) == 0) level.addParticle(ParticleTypes.CRIMSON_SPORE, x + rnd.nextGaussian() * 0.3, y + rnd.nextDouble(), z + rnd.nextGaussian() * 0.3, 0, -0.02, 0);
-        if (rnd.nextInt(6) == 0) level.addParticle(ParticleTypes.SOUL_FIRE_FLAME, x, y, z, rnd.nextGaussian() * 0.05, 0.03, rnd.nextGaussian() * 0.05);
+        // Deep black void ink smoke billowing from the tear
+        if (rnd.nextInt(2) == 0) {
+            level.addParticle(ParticleTypes.SQUID_INK,
+                    x + rnd.nextGaussian() * 0.28, y + rnd.nextGaussian() * 0.35, z + rnd.nextGaussian() * 0.28,
+                    0, 0.015, 0);
+        }
+        // Spatial distortion particles spiraling inward
+        if (rnd.nextInt(3) == 0) {
+            double dx = (rnd.nextDouble() - 0.5) * 1.4, dy = (rnd.nextDouble() - 0.5) * 1.4, dz = (rnd.nextDouble() - 0.5) * 1.4;
+            level.addParticle(ParticleTypes.PORTAL, x + dx, y + dy, z + dz, -dx * 0.3, -dy * 0.3, -dz * 0.3);
+        }
+        // Burning event-horizon sparks
+        if (rnd.nextInt(5) == 0) {
+            level.addParticle(ParticleTypes.SOUL_FIRE_FLAME, x + rnd.nextGaussian() * 0.2, y + rnd.nextGaussian() * 0.2, z + rnd.nextGaussian() * 0.2,
+                    rnd.nextGaussian() * 0.02, 0.03, rnd.nextGaussian() * 0.02);
+        }
+        // Occasional dimensional hum
+        if (rnd.nextInt(80) == 0) {
+            level.playLocalSound(x, y, z, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 0.6F, 0.5F + rnd.nextFloat() * 0.2F, false);
+        }
     }
 
     private static void tick(ServerLevel sl, BlockPos pos, DemonGateBE be) {
         if (sl.getGameTime() % 10 != 0) return;
-        for (ServerPlayer p : sl.getEntitiesOfClass(ServerPlayer.class, new AABB(pos).inflate(0.35))) {
+        // Spatial tear collision envelope (covers the 4.5m tall free-floating 3D rift)
+        AABB riftBounds = new AABB(pos).inflate(1.6, 2.2, 1.2);
+        for (ServerPlayer p : sl.getEntitiesOfClass(ServerPlayer.class, riftBounds)) {
             if (!p.isAlive() || p.isSpectator()) continue;
             Long last = CD.get(p.getUUID());
             if (last != null && sl.getGameTime() - last < 120) continue;
-            ServerLevel elisar = sl.getServer().getLevel(Flight.ELISAR_DIM);
-            if (elisar == null) continue;
             CD.put(p.getUUID(), sl.getGameTime());
-            BlockPos target = templeApron(elisar);
-            sl.playSound(null, p.blockPosition(), SoundEvents.PORTAL_TRAVEL, SoundSource.PLAYERS, 0.9F, 0.5F);
-            sl.playSound(null, p.blockPosition(), SoundEvents.SCULK_SHRIEKER_SHRIEK, SoundSource.PLAYERS, 1.2F, 0.6F);
-            elisar.sendParticles(ParticleTypes.CRIMSON_SPORE, p.getX(), p.getY() + 1.0, p.getZ(), 4, 0.4, 0.6, 0.4, 0.01);
-            p.teleportTo(elisar, target.getX() + 0.5, target.getY(), target.getZ() + 0.5, p.getYRot(), p.getXRot());
-            elisar.playSound(null, target, SoundEvents.END_PORTAL_SPAWN, SoundSource.PLAYERS, 0.7F, 1.4F);
-            // arrival burst (Part 12): a soul-spray, a heartbeat of darkness, then the temple light
-            elisar.playSound(null, target, SoundEvents.WARDEN_HEARTBEAT, SoundSource.PLAYERS, 1.0F, 0.8F);
-            elisar.sendParticles(ParticleTypes.CRIMSON_SPORE, target.getX() + 0.5, target.getY() + 1.0, target.getZ() + 0.5, 40, 1.2, 1.0, 1.2, 0.02);
-            elisar.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, target.getX() + 0.5, target.getY() + 0.5, target.getZ() + 0.5, 24, 1.0, 0.6, 1.0, 0.02);
-            p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.DARKNESS, 50, 0, false, false));
+
+            if (sl.dimension().equals(Level.OVERWORLD)) {
+                // OVERWORLD -> ELISAR
+                RiftTravel.remember(sl, pos);
+                RiftTravel.travelToElisar(p, sl);
+            } else {
+                // ELISAR -> OVERWORLD
+                RiftTravel.travelToOverworld(p, sl);
+            }
         }
     }
 

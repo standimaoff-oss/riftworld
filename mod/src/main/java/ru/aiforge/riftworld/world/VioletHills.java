@@ -7,28 +7,23 @@ import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Biome 04 «Фиолетовые холмы» (Rev 4 item 8): big meadows and smooth hills, rare trees, rare rivers with bridges, and
- * exactly TWO churches per biome region - one intact, one ruined - linked by a worn footpath. Colorful: 3 violet flower
- * types (placed by the chunk generator), lilac grass/foliage (biome json).
- *
- * Layout: the wild archipelago is divided into 880-block super-cells; ~45 % of suitable ones (beyond the city ring, away
- * from the Ashen Lands and the Ember Ruins) hold one region: a biome blob (R 130..170) around a single big smooth meadow
- * island (kind 7) that carries the two churches (+ their plateaus), the footpath between their doors, and one river that
- * cuts across the island and falls into the ocean at the rim; the footpath fords it on a plank bridge.
- * Deterministic from fixed seeds - no saved data.
+ * Biome 04 «Фиолетовые холмы» Rev 7: большие луга и плавные холмы, редкие деревья,
+ * редкие речки с мостами, и ровно ДВЕ церкви на регион — одна целая, одна руины,
+ * связаны утоптанной тропинкой. Цветное: 3 типа фиолетовых цветов ковром, сиреневая трава/листва.
+ * Rev7 улучшения: регион больше (160-220), луга больше (90-120), деревьев 8-12 с Dynamic Trees интеграцией,
+ * цветочные поля гуще, речка шире, тропинка извилистее.
  */
 public final class VioletHills {
     public static final int SUPER = 880;
     private static final long SEED = 0x9B1C7L;
 
-    /** Church template: 13 x 19, door centred in the +z (south) face, floor at local y 0 (data/riftworld/structures/ruins/church_violet*.nbt). */
     public static final int TW = 13, TD = 19;
 
     public static final class Church {
         public final int cx, cz, y, x0, z0, wx, wz;
-        public final String facing;      // door side in world (same convention as city plots)
+        public final String facing;
         public final boolean ruined;
-        public final int doorX, doorZ;   // outside step cell in front of the door (path endpoint)
+        public final int doorX, doorZ;
 
         Church(int cx, int cz, int y, String facing, boolean ruined, CityPlan.Island meadow) {
             this.cx = cx; this.cz = cz; this.y = y; this.facing = facing; this.ruined = ruined;
@@ -46,7 +41,6 @@ public final class VioletHills {
             }
         }
 
-        /** Distance outside the rotated footprint (0 inside). */
         public double outside(double x, double z) {
             double dx = Math.max(Math.max(x0 - x, 0), x - (x0 + wx - 1));
             double dz = Math.max(Math.max(z0 - z, 0), z - (z0 + wz - 1));
@@ -58,58 +52,59 @@ public final class VioletHills {
         public final int cx, cz;
         public final double Rr;
         public final CityPlan.Island meadow;
-        public final Church churchA, churchB;                    // exactly two per biome (Rev 4): one intact, one ruined
+        public final Church churchA, churchB;
         public final List<CityPlan.Tree> trees = new ArrayList<>();
-        // footpath: churchA.door -> bulge -> churchB.door
         public final double pax, paz, pbx, pbz, pmx, pmz;
-        // river: straight chord across the island
         public final double rax, raz, rbx, rbz;
         public final int riverLevel;
-        public static final double RIVER_HW = 1.6;
+        public static final double RIVER_HW = 2.2; // было 1.6, теперь шире
 
         Region(int cx, int cz, Random rnd) {
             this.cx = cx; this.cz = cz;
-            this.Rr = 130 + rnd.nextDouble() * 40;
-            double R = 76 + rnd.nextDouble() * 18;
-            double base = 98 + rnd.nextDouble() * 14;
-            this.meadow = new CityPlan.Island(cx, cz, R, base, R * 0.6 + 12, rnd.nextDouble() * 6.283, rnd.nextDouble() * 6.283,
-                    rnd.nextDouble() * 6.283, 7, 0.9);
-            // the two churches face the meadow centre from opposite sides
-            double th = rnd.nextDouble() * Math.PI * 2, jj = (rnd.nextDouble() - 0.5) * 0.7;
-            double rr = R * 0.52;
+            this.Rr = 160 + rnd.nextDouble() * 60; // было 130-170, теперь 160-220
+            double R = 90 + rnd.nextDouble() * 30; // было 76-94
+            double base = 100 + rnd.nextDouble() * 16;
+            this.meadow = new CityPlan.Island(cx, cz, R, base, R * 0.7 + 16, rnd.nextDouble() * 6.283, rnd.nextDouble() * 6.283,
+                    rnd.nextDouble() * 6.283, 7, 0.85);
+            double th = rnd.nextDouble() * Math.PI * 2, jj = (rnd.nextDouble() - 0.5) * 0.9;
+            double rr = R * 0.58; // церкви дальше от центра
             int ax = (int) Math.floor(cx + Math.cos(th) * rr), az = (int) Math.floor(cz + Math.sin(th) * rr);
             int bx = (int) Math.floor(cx + Math.cos(th + Math.PI + jj) * rr), bz = (int) Math.floor(cz + Math.sin(th + Math.PI + jj) * rr);
             boolean aRuined = rnd.nextBoolean();
             this.churchA = new Church(ax, az, (int) Math.floor(meadow.raw(ax + 0.5, az + 0.5)), faceTo(ax - cx, az - cz), aRuined, meadow);
             this.churchB = new Church(bx, bz, (int) Math.floor(meadow.raw(bx + 0.5, bz + 0.5)), faceTo(bx - cx, bz - cz), !aRuined, meadow);
-            // footpath with a soft bulge (never a ruler-straight line)
+            // тропинка с более сильным изгибом
             double mx = (churchA.doorX + churchB.doorX) / 2.0, mz = (churchA.doorZ + churchB.doorZ) / 2.0;
             double pxn = -(churchB.doorZ - churchA.doorZ), pzn = churchB.doorX - churchA.doorX;
             double pl = Math.hypot(pxn, pzn) + 1e-6;
-            double bulge = (rnd.nextDouble() - 0.5) * R * 0.45;
+            double bulge = (rnd.nextDouble() - 0.5) * R * 0.65; // было 0.45
             this.pax = churchA.doorX; this.paz = churchA.doorZ; this.pbx = churchB.doorX; this.pbz = churchB.doorZ;
             this.pmx = mx + pxn / pl * bulge; this.pmz = mz + pzn / pl * bulge;
-            // river: a chord across the island, roughly crosswise to the church line, spilling off both rims
-            double phi = Math.atan2(churchB.doorZ - churchA.doorZ, churchB.doorX - churchA.doorX) + Math.PI / 2 + (rnd.nextDouble() - 0.5) * 0.9;
-            double rl = R * 1.3;
-            double rcx = cx + (rnd.nextDouble() - 0.5) * R * 0.3, rcz = cz + (rnd.nextDouble() - 0.5) * R * 0.3;
+            // речка поперёк
+            double phi = Math.atan2(churchB.doorZ - churchA.doorZ, churchB.doorX - churchA.doorX) + Math.PI / 2 + (rnd.nextDouble() - 0.5) * 1.1;
+            double rl = R * 1.45;
+            double rcx = cx + (rnd.nextDouble() - 0.5) * R * 0.35, rcz = cz + (rnd.nextDouble() - 0.5) * R * 0.35;
             this.rax = rcx - Math.cos(phi) * rl; this.raz = rcz - Math.sin(phi) * rl;
             this.rbx = rcx + Math.cos(phi) * rl; this.rbz = rcz + Math.sin(phi) * rl;
             this.riverLevel = (int) Math.floor(base) - 2;
-            // rare trees (Rev 4): 4..7, well away from churches, path and river
-            for (int k = 0, tries = 0; k < 7 && tries < 160; ++tries) {
-                double a = rnd.nextDouble() * Math.PI * 2, d = (0.35 + rnd.nextDouble() * 0.55) * R;
+
+            // редкие деревья: 8-12, было 4-7, с интеграцией Dynamic Trees
+            for (int k = 0, tries = 0; k < 12 && tries < 220; ++tries) {
+                double a = rnd.nextDouble() * Math.PI * 2, d = (0.30 + rnd.nextDouble() * 0.60) * R;
                 int x = (int) Math.floor(cx + Math.cos(a) * d), z = (int) Math.floor(cz + Math.sin(a) * d);
-                if (meadow.t(x + 0.5, z + 0.5) < 0.3) continue;
-                if (churchA.outside(x + 0.5, z + 0.5) < 10 || churchB.outside(x + 0.5, z + 0.5) < 10) continue;
-                if (pathDist(x + 0.5, z + 0.5) < 3.0) continue;
-                if (CityPlan.segDist(x + 0.5, z + 0.5, rax, raz, rbx, rbz, null) < 4.0) continue;
+                if (meadow.t(x + 0.5, z + 0.5) < 0.28) continue;
+                if (churchA.outside(x + 0.5, z + 0.5) < 12 || churchB.outside(x + 0.5, z + 0.5) < 12) continue;
+                if (pathDist(x + 0.5, z + 0.5) < 3.5) continue;
+                if (CityPlan.segDist(x + 0.5, z + 0.5, rax, raz, rbx, rbz, null) < 5.0) continue;
                 boolean ok = true;
-                for (CityPlan.Tree t : trees) if (Math.abs(t.x - x) < 6 && Math.abs(t.z - z) < 6) { ok = false; break; }
+                for (CityPlan.Tree t : trees) if (Math.hypot(t.x - x, t.z - z) < 7) { ok = false; break; }
                 if (!ok) continue;
-                int kind = rnd.nextDouble() < 0.55 ? 0 : 1;
-                trees.add(new CityPlan.Tree(x, z, kind, kind == 0 ? 8 + rnd.nextInt(5) : 5 + rnd.nextInt(3), rnd.nextInt(1 << 30)));
+                int kind = rnd.nextDouble() < 0.50 ? 0 : 1;
+                // Dynamic Trees: если мод есть, kind 0/1 заменится на DT виды
+                int h = kind == 0 ? 9 + rnd.nextInt(6) : 6 + rnd.nextInt(4);
+                trees.add(new CityPlan.Tree(x, z, kind, h, rnd.nextInt(1 << 30)));
                 ++k;
+                if (k >= 8 && rnd.nextDouble() < 0.35) break; // 8-12
             }
         }
 
@@ -124,8 +119,7 @@ public final class VioletHills {
 
     private static final ConcurrentHashMap<Long, Optional<Region>> CACHE = new ConcurrentHashMap<>();
 
-    private VioletHills() {
-    }
+    private VioletHills() {}
 
     public static Region region(int sx, int sz) {
         return CACHE.computeIfAbsent(WildIslands.key(sx, sz), k -> Optional.ofNullable(gen(sx, sz))).orElse(null);
@@ -133,23 +127,21 @@ public final class VioletHills {
 
     private static Region gen(int sx, int sz) {
         Random r = new Random(SEED ^ (sx * 53982894593057L + sz * 317074912223L) * 0x9E3779B97F4A7C15L);
-        if (r.nextDouble() > 0.45) return null;
+        if (r.nextDouble() > 0.58) return null; // было 0.45, теперь чаще
         int cx = sx * SUPER + 150 + r.nextInt(SUPER - 300), cz = sz * SUPER + 150 + r.nextInt(SUPER - 300);
-        if (Math.hypot(cx, cz) < 560) return null;                                                        // city ring
-        if (Math.hypot(cx - AshenLands.CX, cz - AshenLands.CZ) < AshenLands.R + 260) return null;         // real Ashen Lands
+        if (Math.hypot(cx, cz) < 600) return null;
+        if (Math.hypot(cx - AshenLands.CX, cz - AshenLands.CZ) < AshenLands.R + 280) return null;
         EmberRuins.Site es = EmberRuins.nearest(cx, cz);
-        if (es != null && Math.hypot(cx - es.cx, cz - es.cz) < 400) return null;                          // keep ruins regions apart
+        if (es != null && Math.hypot(cx - es.cx, cz - es.cz) < 440) return null;
         return new Region(cx, cz, r);
     }
 
-    /** The region whose influence can reach (x, z), or null. */
     public static Region regionAt(double x, double z) {
         Region rg = region(Math.floorDiv((int) Math.floor(x), SUPER), Math.floorDiv((int) Math.floor(z), SUPER));
         if (rg == null) return null;
-        return Math.abs(x - rg.cx) < rg.Rr + 70 && Math.abs(z - rg.cz) < rg.Rr + 70 ? rg : null;
+        return Math.abs(x - rg.cx) < rg.Rr + 80 && Math.abs(z - rg.cz) < rg.Rr + 80 ? rg : null;
     }
 
-    /** Biome blob test (wobbly edge): covers the meadow island AND the surrounding islets + a stretch of sea. */
     public static boolean inside(double x, double z) {
         Region rg = regionAt(x, z);
         if (rg == null) return false;
@@ -160,8 +152,8 @@ public final class VioletHills {
     public static List<CityPlan.Tree> treesNear(int x, int z) {
         Region rg = regionAt(x + 0.5, z + 0.5);
         if (rg == null) return List.of();
-        List<CityPlan.Tree> out = new ArrayList<>(2);
-        for (CityPlan.Tree t : rg.trees) if (Math.abs(x - t.x) <= 4 && Math.abs(z - t.z) <= 4) out.add(t);
+        List<CityPlan.Tree> out = new ArrayList<>(3);
+        for (CityPlan.Tree t : rg.trees) if (Math.abs(x - t.x) <= 5 && Math.abs(z - t.z) <= 5) out.add(t);
         return out;
     }
 }

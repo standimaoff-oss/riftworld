@@ -1,1 +1,21 @@
-{"has_precipitation": true, "temperature": 0.75, "downfall": 0.5, "effects": {"sky_color": 14280412, "fog_color": 15592159, "water_color": 4879296, "water_fog_color": 2837132, "grass_color": 10273458, "foliage_color": 9682856, "particle": {"type": "minecraft:spore_blossom_air", "probability": 0.0006}}, "spawners": {}, "spawn_costs": {}, "carvers": {}, "features": []}
+{
+  "has_precipitation": true,
+  "temperature": 0.75,
+  "downfall": 0.5,
+  "effects": {
+    "sky_color": 14280412,
+    "fog_color": 15592159,
+    "water_color": 7321510,
+    "water_fog_color": 2775632,
+    "grass_color": 10273458,
+    "foliage_color": 9682856,
+    "particle": {
+      "type": "minecraft:spore_blossom_air",
+      "probability": 0.0006
+    }
+  },
+  "spawners": {},
+  "spawn_costs": {},
+  "carvers": {},
+  "features": []
+}

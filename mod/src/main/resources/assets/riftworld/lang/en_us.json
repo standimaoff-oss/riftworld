@@ -313,5 +313,9 @@
   "block.riftworld.keep_stone_stairs": "Keep Stone Stairs",
   "block.riftworld.keep_stone_slab": "Keep Stone Slab",
   "block.riftworld.keep_cage_lantern": "Dungeon Cage Lantern",
-  "biome.riftworld.mist_keep": "Misty Dungeon"
+  "biome.riftworld.mist_keep": "Misty Dungeon",
+  "riftworld.ritual.open": "The Black Rift of space is open — step into the void",
+  "riftworld.ritual.candles": "Light all ritual candles around the altar (%s of %s)",
+  "riftworld.ritual.stand": "Stand upon the ritual circle in the center",
+  "riftworld.ritual.charging": "Space fractures... the ritual is tearing the Rift (%s/3)"
 }

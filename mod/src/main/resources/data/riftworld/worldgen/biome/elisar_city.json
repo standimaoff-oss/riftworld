@@ -1,3 +1,17 @@
-{"has_precipitation": true, "temperature": 0.7, "downfall": 0.5,
- "effects": {"sky_color": 14148070, "fog_color": 15526110, "water_color": 4502491, "water_fog_color": 2460292, "grass_color": 14078146, "foliage_color": 11778214},
- "spawners": {}, "spawn_costs": {}, "carvers": {}, "features": []}
+{
+  "has_precipitation": true,
+  "temperature": 0.7,
+  "downfall": 0.5,
+  "effects": {
+    "sky_color": 14148070,
+    "fog_color": 15526110,
+    "water_color": 4103876,
+    "water_fog_color": 1327196,
+    "grass_color": 14078146,
+    "foliage_color": 11778214
+  },
+  "spawners": {},
+  "spawn_costs": {},
+  "carvers": {},
+  "features": []
+}

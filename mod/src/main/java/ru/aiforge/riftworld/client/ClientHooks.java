@@ -36,6 +36,7 @@ public final class ClientHooks {
         e.registerBlockEntityRenderer(ru.aiforge.riftworld.registry.ArenaBlocks.COLUMN_BE.get(), BossColumnRenderer::new);
         e.registerBlockEntityRenderer(ModBlockEntities.BRIDGE_POST.get(), BridgePostRenderer::new);
         e.registerBlockEntityRenderer(ModBlockEntities.DEMON_GATE.get(), DemonGateRenderer::new);
+        e.registerBlockEntityRenderer(ModBlockEntities.MOSAIC_CORE.get(), MosaicCoreRenderer::new);
         e.registerEntityRenderer(ModEntities.PAPER_DRAGON.get(), PaperDragonRenderer::new);
         e.registerEntityRenderer(ru.aiforge.riftworld.registry.ModEntities.BOSS.get(), RiftMobRenderer::boss);
         e.registerEntityRenderer(ru.aiforge.riftworld.registry.ModEntities.GUARD.get(), RiftMobRenderer::guard);
@@ -62,6 +63,12 @@ public final class ClientHooks {
                 ru.aiforge.riftworld.registry.ElisarBlocks.AMBRA_LEAVES.get(),
                 ru.aiforge.riftworld.registry.ElisarBlocks.TALL_GRASS.get(),
                 ru.aiforge.riftworld.registry.ElisarBlocks.FLOWERS.get());
+        // REV7 п.2/п.3: вода Элисара тонируется ЦВЕТОМ ВОДЫ СВОЕГО БИОМА - океан, реки, водопады и пруды
+        // одного биома всегда одного оттенка (biome json water_color), в разных биомах - разного.
+        e.register((state, level, pos, idx) -> level != null && pos != null
+                        ? level.getBiome(pos).value().getWaterColor()
+                        : 0x3E9EC4,
+                ru.aiforge.riftworld.registry.ElisarBlocks.WATER.get());
     }
 
     @SubscribeEvent

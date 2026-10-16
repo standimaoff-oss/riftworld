@@ -142,10 +142,27 @@ w(f"{A}/blockstates/{n}.json", {"multipart": [
     {"when": {"south": "true"}, "apply": {"model": P + "side_alt"}}, {"when": {"west": "true"}, "apply": {"model": P + "side_alt", "y": 90}}]})
 w(f"{A}/models/item/{n}.json", {"parent": "minecraft:item/generated", "textures": {"layer0": NS + n}, "render_type": "minecraft:cutout"})
 drop(n)
-# carpet
+# carpet - merging (Rev4 item 9)
 n = "castle_carpet"
-w(f"{A}/models/block/{n}.json", {"parent": "minecraft:block/carpet", "textures": {"wool": NS + n}})
-w(f"{A}/blockstates/{n}.json", {"variants": {"": {"model": NS + n}}})
+w(f"{A}/models/block/{n}.json", {"parent": "minecraft:block/carpet", "render_type": "minecraft:cutout", "textures": {"wool": NS + n, "particle": NS + n}})
+# edge overlay for fringe
+w(f"{A}/models/block/{n}_edge.json", {"render_type": "minecraft:cutout", "textures": {"border": NS + n + \"_border\", \"particle\": NS + n},
+                                      \"elements\": [{\"from\": [0, 1.01, 0], \"to\": [16, 1.01, 3], \"faces\": {\"up\": {\"uv\": [0, 0, 16, 3], \"texture\": \"#border\"}}}]})
+# keep old border_n for compat
+w(f"{A}/models/block/{n}_border_n.json", {\"parent\": \"minecraft:block/block\", \"textures\": {\"t\": NS + n + \"_border\", \"particle\": NS + n},
+                                          \"elements\": [{\"from\": [0, 0, 0], \"to\": [16, 1, 3], \"faces\": {
+                                              \"up\": {\"uv\": [0, 0, 16, 3], \"texture\": \"#t\"},
+                                              \"down\": {\"uv\": [0, 13, 16, 16], \"texture\": \"#t\"},
+                                              \"north\": {\"uv\": [0, 0, 16, 3], \"texture\": \"#t\"},
+                                              \"south\": {\"uv\": [0, 13, 16, 16], \"texture\": \"#t\"},
+                                              \"east\": {\"uv\": [16, 0, 19, 3], \"texture\": \"#t\"},
+                                              \"west\": {\"uv\": [0, 0, 3, 3], \"texture\": \"#t\"}}}]})
+w(f"{A}/blockstates/{n}.json", {\"forge_marker\": 1, \"multipart\": [
+    {\"apply\": {\"model\": NS + n}},
+    {\"when\": {\"north\": \"false\"}, \"apply\": {\"model\": NS + n + \"_edge\"}},
+    {\"when\": {\"south\": \"false\"}, \"apply\": {\"model\": NS + n + \"_edge\", \"y\": 180}},
+    {\"when\": {\"east\": \"false\"}, \"apply\": {\"model\": NS + n + \"_edge\", \"y\": 270}},
+    {\"when\": {\"west\": \"false\"}, \"apply\": {\"model\": NS + n + \"_edge\", \"y\": 90}}]})
 item(n); drop(n)
 # cobweb (cross, cutout; drops nothing without shears/silk like vanilla - simplified: drops string)
 n = "castle_cobweb"

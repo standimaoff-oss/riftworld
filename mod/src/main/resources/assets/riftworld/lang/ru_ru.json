@@ -313,5 +313,9 @@
   "block.riftworld.keep_stone_stairs": "Ступени утёсного камня",
   "block.riftworld.keep_stone_slab": "Плита утёсного камня",
   "block.riftworld.keep_cage_lantern": "Клеточный фонарь данжа",
-  "biome.riftworld.mist_keep": "Туманный данж"
+  "biome.riftworld.mist_keep": "Туманный данж",
+  "riftworld.ritual.open": "Черный пролом пространства открыт — шагните в бездну",
+  "riftworld.ritual.candles": "Зажгите все ритуальные свечи вокруг алтаря (%s из %s)",
+  "riftworld.ritual.stand": "Встаньте в ритуальный круг в центре",
+  "riftworld.ritual.charging": "Пространство трещит... ритуал открывает Разлом (%s/3)"
 }

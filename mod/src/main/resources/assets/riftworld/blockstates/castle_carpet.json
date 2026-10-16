@@ -11,7 +11,7 @@
         "north": "false"
       },
       "apply": {
-        "model": "riftworld:block/castle_carpet_border_n"
+        "model": "riftworld:block/castle_carpet_edge"
       }
     },
     {
@@ -19,7 +19,7 @@
         "south": "false"
       },
       "apply": {
-        "model": "riftworld:block/castle_carpet_border_n",
+        "model": "riftworld:block/castle_carpet_edge",
         "y": 180
       }
     },
@@ -28,7 +28,7 @@
         "east": "false"
       },
       "apply": {
-        "model": "riftworld:block/castle_carpet_border_n",
+        "model": "riftworld:block/castle_carpet_edge",
         "y": 270
       }
     },
@@ -37,7 +37,7 @@
         "west": "false"
       },
       "apply": {
-        "model": "riftworld:block/castle_carpet_border_n",
+        "model": "riftworld:block/castle_carpet_edge",
         "y": 90
       }
     }

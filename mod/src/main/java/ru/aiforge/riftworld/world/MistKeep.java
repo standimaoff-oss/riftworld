@@ -45,7 +45,7 @@ public final class MistKeep {
         for (int dx = -1; dx <= 1; ++dx)
             for (int dz = -1; dz <= 1; ++dz) {
                 WaterfallGardens.Region gr = WaterfallGardens.region(Math.floorDiv(cx, WaterfallGardens.SUPER) + dx, Math.floorDiv(cz, WaterfallGardens.SUPER) + dz);
-                if (gr != null && Math.hypot(cx - gr.cx, cz - gr.cz) < gr.Rr + 260) return null;
+                if (gr != null && Math.hypot(cx - gr.cx, cz - gr.cz) < gr.Rr + 420) return null;  // REV7b: обитель не стоит рядом с садами
                 SizoGrove.Region sr = SizoGrove.region(Math.floorDiv(cx, SizoGrove.SUPER) + dx, Math.floorDiv(cz, SizoGrove.SUPER) + dz);
                 if (sr != null && Math.hypot(cx - sr.cx, cz - sr.cz) < sr.Rr + 260) return null;
                 VioletHills.Region vr = VioletHills.region(Math.floorDiv(cx, VioletHills.SUPER) + dx, Math.floorDiv(cz, VioletHills.SUPER) + dz);

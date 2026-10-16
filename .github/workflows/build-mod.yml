@@ -1,0 +1,90 @@
+name: Build Riftworld Mod
+
+on:
+  push:
+    branches: [ main, "arena/**" ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build mod jar
+        run: |
+          cd mod
+          chmod +x gradlew
+          ./gradlew jar --no-daemon 2>&1 | tee ../build.log
+          if [ ${PIPESTATUS[0]} -ne 0 ]; then
+            echo "Gradle build failed!"
+            exit 1
+          fi
+
+      - name: Report failure on error
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          grep -C 5 -E "(error:|FAILURE:|FAILED)" build.log | head -n 100 > /tmp/err.txt
+          gh issue create --title "Gradle Compile Error" --body-file /tmp/err.txt || true
+
+      - name: Prepare release asset
+        if: success()
+        run: |
+          mkdir -p release
+          echo "Finding jar in mod/build/libs:"
+          find mod/build/libs -type f -name "*.jar"
+          JAR_FILE=$(find mod/build/libs -type f -name "*.jar" | head -n 1)
+          if [ -z "$JAR_FILE" ]; then
+            echo "ERROR: No jar produced in mod/build/libs!"
+            exit 1
+          fi
+          cp "$JAR_FILE" release/riftworld-0.6.4-p18.jar
+          ls -lh release/riftworld-0.6.4-p18.jar
+
+      - name: Upload mod jar artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: riftworld-0.6.4-p18
+          path: release/riftworld-0.6.4-p18.jar
+          if-no-files-found: error
+
+      - name: Create GitHub Release
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue close 4 || true
+          gh issue close 5 || true
+          gh release delete v0.6.4-p18 --yes || true
+          git tag -d v0.6.4-p18 || true
+          git push origin :refs/tags/v0.6.4-p18 || true
+          gh release create v0.6.4-p18 release/riftworld-0.6.4-p18.jar \
+            --title "RiftWorld 0.6.4-p18 (rev7: Великий Храм V6 с нуля + мосты/ковры починены)" \
+            --notes "### Обновление Riftworld 0.6.4-p18 (rev 7, партия: п.1 храм + п.6 мосты + п.4 ковры):
+          - **ВЕЛИКИЙ ХРАМ ПЕРЕХОДА V6 «Собор Разлома» — спроектирован и построен с нуля** (81x106x95, 88 395 блоков, 22 блока палитры, только блоки мода):
+            трёхъярусный склеп-подземелье (3 уровня, колонны, саркофаги, духи-стражи, реликварий с ядром), подиум с лестницами на 4 стороны,
+            гексастильный портик в два ряда с фронтоном и розой, трёхневная базилика с аркадой гранд-колонн и нервюрным сводом,
+            клирстор со стрельчатыми витражами и розами, трансепт со световым барабаном и куполом, полукруглая апсида с алтарём и полукуполом,
+            8 башен разной высоты с шатрами и золотыми шпилями, контрфорсы с пинаклями, двускатная кровля с золотым коньком,
+            ритуальный мозаичный круг с ядром и 8 свечами, руны дорожкой, висячие клетки-фонари, скамьи, заросшие/треснувшие кирпичи.
+          - **/rifttemple [x y z]** - возвести храм в любой точке любого мира (лечит старые миры, где город сгенерировался без храма).
+          - **Мосты**: /riftbridge repair перестилает настилы верёвочных мостов рядом; фиксы рев7 (генерация городских мостов над океаном,
+            сборка вручную любой рукой с верёвкой, настил поверх земли) теперь действительно в сборке.
+          - **Ковры**: больше не ломаются о мосты/модельные блоки (canSurvive/updateShape через isFaceSturdy, 1.20.1-safe), соединение 2x2+ в один ковёр с бахромой по периметру.
+          - Сборка проверена GitHub Actions (Forge 1.20.1-47.4.23, Java 17)."

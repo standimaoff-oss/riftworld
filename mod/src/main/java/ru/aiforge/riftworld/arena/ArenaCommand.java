@@ -1,6 +1,8 @@
 package ru.aiforge.riftworld.arena;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.context.CommandContext;
 import java.util.ArrayList;
 import net.minecraft.commands.CommandSourceStack;
@@ -18,9 +20,123 @@ public final class ArenaCommand {
     private ArenaCommand() {
     }
 
+    private static int buildTemple(CommandContext<CommandSourceStack> c, net.minecraft.core.BlockPos at) {
+        CommandSourceStack src = c.getSource();
+        ServerLevel level = src.getLevel();
+        net.minecraft.core.BlockPos target = at != null ? at : net.minecraft.core.BlockPos.containing(src.getPosition());
+        java.util.Optional<net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate> tpl =
+                level.getServer().getStructureManager().get(new net.minecraft.resources.ResourceLocation(RiftWorld.MODID, "city/temple_great"));
+        if (tpl.isEmpty()) {
+            src.sendFailure(Component.literal("шаблон city/temple_great не найден"));
+            return 0;
+        }
+        net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings s =
+                new net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings()
+                        .setRotation(net.minecraft.world.level.block.Rotation.NONE)
+                        .setIgnoreEntities(true);
+        // центр храма (40, *, 47), пол собора на nbt-y=30 -> ставим пол под ноги игрока
+        net.minecraft.core.BlockPos origin = new net.minecraft.core.BlockPos(target.getX() - 40, target.getY() - 30, target.getZ() - 47);
+        tpl.get().placeInWorld(level, origin, origin, s, level.getRandom(), 2);
+        String line = "Великий Храм Перехода возведён: центр " + target.getX() + " " + target.getY() + " " + target.getZ()
+                + " (ризница/склеп уходят на 30 блоков вниз)";
+        src.sendSuccess(() -> Component.literal(line), true);
+        return 1;
+    }
+
+    private static int biome(CommandContext<CommandSourceStack> c, int kind) {
+        CommandSourceStack src = c.getSource();
+        net.minecraft.world.phys.Vec3 p = src.getPosition();
+        int bestX = 0, bestZ = 0;
+        double best = Double.MAX_VALUE;
+        if (kind == 4) {
+            bestX = (int) ru.aiforge.riftworld.world.AshenLands.CX;
+            bestZ = (int) ru.aiforge.riftworld.world.AshenLands.CZ;
+            best = Math.hypot(bestX - p.x, bestZ - p.z);
+        } else {
+            int superCell = kind == 0 ? ru.aiforge.riftworld.world.WaterfallGardens.SUPER
+                    : kind == 1 ? ru.aiforge.riftworld.world.VioletHills.SUPER
+                    : kind == 2 ? ru.aiforge.riftworld.world.SizoGrove.SUPER
+                    : ru.aiforge.riftworld.world.MistKeep.SUPER;
+            int sx = Math.floorDiv((int) Math.floor(p.x), superCell), sz = Math.floorDiv((int) Math.floor(p.z), superCell);
+            for (int dx = -3; dx <= 3; ++dx)
+                for (int dz = -3; dz <= 3; ++dz) {
+                    int cx, cz;
+                    if (kind == 0) {
+                        ru.aiforge.riftworld.world.WaterfallGardens.Region rg = ru.aiforge.riftworld.world.WaterfallGardens.region(sx + dx, sz + dz);
+                        if (rg == null) continue;
+                        cx = rg.cx; cz = rg.cz;
+                    } else if (kind == 1) {
+                        ru.aiforge.riftworld.world.VioletHills.Region rg = ru.aiforge.riftworld.world.VioletHills.region(sx + dx, sz + dz);
+                        if (rg == null) continue;
+                        cx = rg.cx; cz = rg.cz;
+                    } else if (kind == 2) {
+                        ru.aiforge.riftworld.world.SizoGrove.Region rg = ru.aiforge.riftworld.world.SizoGrove.region(sx + dx, sz + dz);
+                        if (rg == null) continue;
+                        cx = rg.cx; cz = rg.cz;
+                    } else {
+                        ru.aiforge.riftworld.world.MistKeep.Region rg = ru.aiforge.riftworld.world.MistKeep.region(sx + dx, sz + dz);
+                        if (rg == null) continue;
+                        cx = rg.cx; cz = rg.cz;
+                    }
+                    double dd = Math.hypot(cx - p.x, cz - p.z);
+                    if (dd < best) { best = dd; bestX = cx; bestZ = cz; }
+                }
+        }
+        if (best == Double.MAX_VALUE) {
+            src.sendFailure(Component.literal("регион не найден в радиусе 3 супер-ячеек"));
+            return 0;
+        }
+        String[] names = {"Висячие сады", "Фиолетовые холмы", "Роща Сизо", "Туманная обитель", "Пепельные земли"};
+        int fx = bestX, fz = bestZ;
+        double fd = best;
+        src.sendSuccess(() -> Component.literal(names[kind] + ": центр " + fx + " " + fz + " (~" + (int) fd + " блоков)"), false);
+        return 1;
+    }
+
+    private static int repairBridges(CommandContext<CommandSourceStack> c) {
+        CommandSourceStack src = c.getSource();
+        ServerLevel level = src.getLevel();
+        net.minecraft.core.BlockPos p = net.minecraft.core.BlockPos.containing(src.getPosition());
+        int decks = 0, planks = 0;
+        for (int x = p.getX() - 32; x <= p.getX() + 32; ++x)
+            for (int y = p.getY() - 16; y <= p.getY() + 16; ++y)
+                for (int z = p.getZ() - 32; z <= p.getZ() + 32; ++z) {
+                    net.minecraft.core.BlockPos bp = new net.minecraft.core.BlockPos(x, y, z);
+                    if (!(level.getBlockEntity(bp) instanceof ru.aiforge.riftworld.block.BridgePostBE be)) continue;
+                    ru.aiforge.riftworld.bridge.BridgeDeckGeom.Deck deck = be.deck();
+                    if (deck == null) continue;
+                    if (!bp.equals(deck.master())) continue;
+                    ++decks;
+                    for (net.minecraft.core.BlockPos cell : deck.plankCells()) {
+                        net.minecraft.world.level.block.state.BlockState cur = level.getBlockState(cell);
+                        if (cur.isAir() || cur.canBeReplaced()) {
+                            level.setBlock(cell, ru.aiforge.riftworld.registry.BridgeBlocks.WALK.get().defaultBlockState(), 3);
+                            ++planks;
+                        }
+                    }
+                }
+        String line = "мостов восстановлено: " + decks + ", настил-ячеек: " + planks;
+        src.sendSuccess(() -> Component.literal(line), true);
+        return decks;
+    }
+
     @SubscribeEvent
     public static void register(RegisterCommandsEvent e) {
         CommandDispatcher<CommandSourceStack> d = e.getDispatcher();
+        // /rifttemple [x y z] - возвести Великий Храм Перехода (шаблон city/temple_great) в любой точке любого мира.
+        // Спасает старые миры, где город уже сгенерировался без храма.
+        d.register(Commands.literal("rifttemple").requires(s -> s.hasPermission(2))
+                .executes(c -> buildTemple(c, null))
+                .then(Commands.argument("x", IntegerArgumentType.integer())
+                        .then(Commands.argument("y", IntegerArgumentType.integer())
+                                .then(Commands.argument("z", IntegerArgumentType.integer())
+                                        .executes(c -> buildTemple(c, new net.minecraft.core.BlockPos(
+                                                IntegerArgumentType.getInteger(c, "x"),
+                                                IntegerArgumentType.getInteger(c, "y"),
+                                                IntegerArgumentType.getInteger(c, "z"))))))));
+        // /riftbridge repair - перестелить настилы всех верёвочных мостов рядом (лечит «мост не собрался»)
+        d.register(Commands.literal("riftbridge").requires(s -> s.hasPermission(2))
+                .then(Commands.literal("repair").executes(ArenaCommand::repairBridges)));
         d.register(Commands.literal("riftarena").requires(s -> s.hasPermission(2))
                 .then(Commands.literal("status").executes(c -> run(c, 0)))
                 .then(Commands.literal("start").executes(c -> run(c, 1)))

@@ -111,14 +111,16 @@ for z in range(9, 14):
 put(6, 1, 7, PIL("x")); put(7, 1, 7, PIL("x"))
 
 # ------------------------------------------------------------------ the DEMON GATE arch in the apse
-# demonstone arch 5 wide x 6 high at z = 4, portal panes 3x3 inside
+# demonstone arch 5 wide x 6 high at z = 4, with free-floating 3D Spatial Tear in the center
 for y in range(1, 7):
     put(11, y, 4, D_FR); put(15, y, 4, D_FR)
 for x in range(11, 16):
     put(x, 6, 4, D_FR)
 for x in range(12, 15):
-    for y in range(2, 5):
-        put(x, y, 4, D_GT)
+    for y in range(1, 6):
+        put(x, y, 4, AIR)
+# Single focal point for the organic 3D Spatial Rift tear (not a square of blocks!)
+put(13, 2, 4, D_GT)
 # altar teeth at the gate foot
 for x in (11, 15):
     put(x, 1, 5, D_FR)
