@@ -26,9 +26,10 @@ OPAQUE_FALLBACK = {
     "light_bridge": (250, 240, 200), "demon_frame": (46, 34, 40), "demon_gate": (150, 30, 44),
     "keep_stone": (150, 150, 152), "keep_stone_cracked": (132, 132, 136), "keep_stone_mossy": (120, 138, 116),
     "keep_cage_lantern": (250, 202, 110), "elisar_chain": (70, 70, 78), "castle_carpet": (140, 40, 48),
-    "elisar_lantern": (250, 214, 140),
+    "elisar_lantern": (250, 214, 140), "bridge_walk": (122, 92, 58), "bridge_post": (96, 72, 46),
+    "elisar_stone": (128, 132, 138), "dark_planks": (62, 44, 34),
 }
-ALPHA = {"light_blue_stained_glass": 0.42, "temple_rose_window": 0.75, "light_bridge": 0.5, "demon_gate": 0.8,
+ALPHA = {"elisar_water_still": 0.5, "light_blue_stained_glass": 0.42, "temple_rose_window": 0.75, "light_bridge": 0.5, "demon_gate": 0.8,
          "elisar_chain": 0.9, "ritual_candle": 0.95}
 EMISSIVE = {"mosaic_core": 1.0, "temple_gold_rune": 0.55, "keep_cage_lantern": 0.85, "ritual_candle": 0.7,
             "temple_rose_window": 0.5, "light_bridge": 0.9, "demon_gate": 0.6, "elisar_lantern": 0.8}
@@ -105,7 +106,9 @@ def main():
         i += 1
     size, vox = load(nbt)
     W, H, D = size
-    cx, cy, cz = W / 2.0, H * 0.42, D / 2.0
+    ks = np.array(list(vox.keys()), np.float64)
+    mn = ks.min(axis=0); mx = ks.max(axis=0)
+    cx, cy, cz = (mn[0] + mx[0] + 1) / 2, mn[1] + (mx[1] - mn[1]) * 0.45, (mn[2] + mx[2] + 1) / 2
     cols = {n: color_of(n) for n in set(vox.values())}
     opaque = {n: (n not in ALPHA) for n in cols}
 

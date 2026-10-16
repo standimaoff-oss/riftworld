@@ -83,7 +83,7 @@ public class MergingCarpetBlock extends CarpetBlock {
     }
 
     /** True when the carpet may rest on this block: sturdy top face, bridge deck or any model block. */
-    private static boolean holds(BlockState below, net.minecraft.world.level.LevelReader level, BlockPos belowPos) {
+    private static boolean holds(BlockState below, net.minecraft.world.level.BlockGetter level, BlockPos belowPos) {
         if (below.getBlock() instanceof BridgeWalkBlock) return true;
         if (below.getBlock() instanceof ru.aiforge.riftworld.block.ModelBlock) return true;
         if (below.getBlock() instanceof ru.aiforge.riftworld.block.PartBlock) return true;
