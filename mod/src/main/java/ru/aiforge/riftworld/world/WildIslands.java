@@ -113,6 +113,7 @@ public final class WildIslands {
                 if (sr != null && Math.hypot(x - sr.hub.cx, z - sr.hub.cz) < R * 1.15 + sr.hub.R * 1.15 + 12) continue;
                 WaterfallGardens.Region gr = WaterfallGardens.regionAt(x, z);                                       // waterfall gardens hub
                 if (gr != null && Math.hypot(x - gr.hub.cx, z - gr.hub.cz) < R * 1.15 + gr.hub.R * 1.15 + 12) continue;
+                if (DragonArena.near(x, z, R * 1.15 + 70)) continue;                                                    // морская арена дракона
                 MistKeep.Region mk = MistKeep.regionAt(x, z);                                                          // туманный данж: вода между столбами остаётся морем
                 if (mk != null && Math.hypot(x - mk.cx, z - mk.cz) < R * 1.15 + mk.Rr + 40) continue;
                 boolean ok = true;

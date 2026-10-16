@@ -184,6 +184,19 @@ public final class ArenaCommand {
                                                 IntegerArgumentType.getInteger(c, "x"),
                                                 IntegerArgumentType.getInteger(c, "y"),
                                                 IntegerArgumentType.getInteger(c, "z"))))))));
+        // /riftdragon - телепорт к морской арене дракона-оригами (и дракон там появится)
+        d.register(Commands.literal("riftdragon").requires(s2 -> s2.hasPermission(2)).executes(c -> {
+            CommandSourceStack src = c.getSource();
+            if (src.getLevel().isClientSide()) return 0;
+            ServerLevel level = src.getLevel();
+            net.minecraft.server.level.ServerPlayer sp = src.getPlayer();
+            if (sp == null) return 0;
+            sp.teleportTo(level, ru.aiforge.riftworld.world.DragonArena.AX + 34, level.getLevelData().getDayTime() >= 0 ? 78 : 78,
+                    ru.aiforge.riftworld.world.DragonArena.AZ - 34, 135, -12);
+            src.sendSuccess(() -> Component.literal("арена дракона: " + (int) ru.aiforge.riftworld.world.DragonArena.AX
+                    + " " + (int) ru.aiforge.riftworld.world.DragonArena.AZ + " (дракон прилетит сам)"), false);
+            return 1;
+        }));
         // /riftshot <temple|city|ocean|bridge|gardens|tour> - телепорт в видовую точку + игровой скриншот в <gameDir>/riftshots
         d.register(Commands.literal("riftshot").requires(s2 -> s2.hasPermission(2))
                 .then(Commands.literal("temple").executes(c -> shot(c, "temple")))

@@ -50,6 +50,13 @@ public final class PaperDragonKeeper {
         java.util.List<ServerPlayer> ps = new java.util.ArrayList<>(sl.players());  // снимок списка игроков
         if (ps.isEmpty()) return;
         ServerPlayer sp = ps.get(0);
+        // REV7b: если игрок у морской арены - дракон вылупляется над ней
+        if (DragonArena.near(sp.getX(), sp.getZ(), 300)) {
+            PaperDragonEntity d = new PaperDragonEntity(ru.aiforge.riftworld.registry.ModEntities.PAPER_DRAGON.get(), sl);
+            d.moveTo(DragonArena.AX, CityPlan.get().ocean + 22, DragonArena.AZ, sl.getRandom().nextFloat() * 360, 0);
+            sl.addFreshEntity(d);
+            return;
+        }
         // точка вылупления: край ближайшего острова, над поверхностью на 10..14
         CityPlan.Island isl = null;
         double bd = 1e9;

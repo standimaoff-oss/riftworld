@@ -1,8 +1,64 @@
 {
-  "render_type": "minecraft:cutout",
-  "textures": { "border": "riftworld:block/castle_carpet_border", "particle": "riftworld:block/castle_carpet" },
-  "elements": [
-    { "from": [0, 1.01, 0], "to": [16, 1.01, 3],
-      "faces": { "up": { "uv": [0, 0, 16, 3], "texture": "#border", "cullface": "up" } } }
-  ]
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "border": "riftworld:block/castle_carpet_border",
+  "particle": "riftworld:block/castle_carpet"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    1.0,
+    0
+   ],
+   "to": [
+    16,
+    1.01,
+    3
+   ],
+   "faces": {
+    "up": {
+     "uv": [
+      0,
+      0,
+      16,
+      3
+     ],
+     "texture": "#border"
+    }
+   }
+  },
+  {
+   "from": [
+    0,
+    0,
+    0
+   ],
+   "to": [
+    16,
+    1.0,
+    0.6
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#border"
+    },
+    "up": {
+     "uv": [
+      0,
+      0,
+      16,
+      1
+     ],
+     "texture": "#border"
+    }
+   }
+  }
+ ]
 }

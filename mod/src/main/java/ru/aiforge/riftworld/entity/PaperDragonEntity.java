@@ -60,9 +60,18 @@ public class PaperDragonEntity extends Monster {
                 // круги вокруг острова: радиус немного дышит, высота - над крышами
                 orbitA += 0.010 * orbitDir + random.nextDouble() * 0.004;
                 if (random.nextInt(8) == 0) orbitDir = -orbitDir;
-                double R = isl.R + 16 + Math.sin(orbitA * 0.7) * 7;
-                double y = isl.base + 13 + Math.sin(orbitA * 1.6) * 4;
-                way = new Vec3(isl.cx + Math.cos(orbitA) * R, y, isl.cz + Math.sin(orbitA) * R);
+                if (ru.aiforge.riftworld.world.DragonArena.near(getX(), getZ(), 240)) {
+                    // REV7b: обитель дракона - морская арена: облёт ротонды с нырками под воду (ref 01)
+                    double R = 15 + Math.sin(orbitA * 0.7) * 5;
+                    double y = CityPlan.get().ocean + 18 + Math.sin(orbitA * 1.6) * 12;
+                    if (Math.sin(orbitA * 0.21) > 0.86) y = CityPlan.get().ocean - 5;      // нырок под воду
+                    way = new Vec3(ru.aiforge.riftworld.world.DragonArena.AX + Math.cos(orbitA) * R, y,
+                            ru.aiforge.riftworld.world.DragonArena.AZ + Math.sin(orbitA) * R);
+                } else {
+                    double R = isl.R + 16 + Math.sin(orbitA * 0.7) * 7;
+                    double y = isl.base + 13 + Math.sin(orbitA * 1.6) * 4;
+                    way = new Vec3(isl.cx + Math.cos(orbitA) * R, y, isl.cz + Math.sin(orbitA) * R);
+                }
                 wayAge = 100 + random.nextInt(120);
                 if (random.nextInt(6) == 0) { mode = MODE_TRANSIT; islIdx = -1; way = null; }
             } else if (isl != null) {

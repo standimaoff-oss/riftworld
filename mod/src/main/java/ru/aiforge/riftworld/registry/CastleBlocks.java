@@ -81,7 +81,7 @@ public final class CastleBlocks {
     public static final RegistryObject<IronBarsBlock> BARS = ModBlocks.reg("castle_bars",
             () -> new IronBarsBlock(p(MapColor.METAL, 5.0F, SoundType.METAL).noOcclusion()));
     public static final RegistryObject<CarpetBlock> CARPET = ModBlocks.reg("castle_carpet",
-            () -> new ru.aiforge.riftworld.block.MergingCarpetBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).strength(0.1F).sound(SoundType.WOOL)));
+            () -> new ru.aiforge.riftworld.block.MergingCarpetBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).strength(0.9F).sound(SoundType.WOOL)));
     public static final RegistryObject<WebBlock> COBWEB = ModBlocks.reg("castle_cobweb",
             () -> new WebBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOL).noCollission().strength(4.0F).noOcclusion()));
 

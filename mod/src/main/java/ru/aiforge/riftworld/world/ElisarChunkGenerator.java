@@ -544,6 +544,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                     }
                 }
                 if (!ashen && c.isl == null && c.fallTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE) debris(plan, chunk, mp, x, z);                if (dx == 15 && dz == 15) mistKeepDressing(plan, chunk, mp, x0, z0);
+                if (dx == 15 && dz == 15) dragonArenaDressing(plan, chunk, mp, x0, z0);
 
                 tower(chunk, mp, x, z);
                 if (c.isl != null) {
@@ -1071,6 +1072,87 @@ public class ElisarChunkGenerator extends ChunkGenerator {
 
 
     /** Мини-биом «Туманный данж» (обходом за чанк): почти сломанная ротонда на центральном утёсе + обрушенная винтовая лестница. */
+    /** REV7b: drowned-spire sea arena of the paper dragon (ref 01): spike, rotunda deck, torn gothic
+     *  arches with hanging chains, cage-lantern pedestal, spiral stair into the sea, mossy stump ring. */
+    private static void dragonArenaDressing(CityPlan plan, ChunkAccess chunk, BlockPos.MutableBlockPos mp, int x0, int z0) {
+        int ox = (int) DragonArena.AX, oz = (int) DragonArena.AZ;
+        if (x0 + 15 < ox - 30 || x0 > ox + 30 || z0 + 15 < oz - 30 || z0 > oz + 30) return;
+        int sea = plan.ocean;
+        int deck = DragonArena.deckY(sea);
+        java.util.function.BiPredicate<Integer, Integer> inchunk = (x, z) -> x >= x0 && x <= x0 + 15 && z >= z0 && z <= z0 + 15;
+        java.util.Random r = new java.util.Random(0xD4A60L);
+        // каменный шпиль из воды
+        for (int y = sea - 12; y <= deck; ++y) {
+            int rad = Math.max(2, Math.round(11 - (y - (sea - 12)) * 0.34F));
+            for (int dx = -rad; dx <= rad; ++dx)
+                for (int dz = -rad; dz <= rad; ++dz) {
+                    if (dx * dx + dz * dz > rad * rad) continue;
+                    if (inchunk.test(ox + dx, oz + dz))
+                        chunk.setBlockState(mp.set(ox + dx, y, oz + dz), st(ElisarBlocks.KEEP_STONE), false);
+                }
+        }
+        // площадка-дек с чёрной палубой
+        for (int dx = -9; dx <= 9; ++dx)
+            for (int dz = -9; dz <= 9; ++dz) {
+                if (dx * dx + dz * dz > 81) continue;
+                if (!inchunk.test(ox + dx, oz + dz)) continue;
+                chunk.setBlockState(mp.set(ox + dx, deck, oz + dz), st(ElisarBlocks.KEEP_STONE), false);
+                if (dx * dx + dz * dz <= 64) chunk.setBlockState(mp.set(ox + dx, deck + 1, oz + dz), st(ElisarBlocks.KEEP_STONE_CRACKED), false);
+            }
+        // 8 столбов разной обрубленности + готические арки-рёбра между высокими
+        int[] ph = {13, 6, 12, 4, 13, 8, 5, 11};
+        int[][] pp = new int[8][];
+        for (int i = 0; i < 8; ++i) {
+            double a = i * Math.PI / 4 + 0.2;
+            int px = ox + (int) Math.round(Math.cos(a) * 7), pz = oz + (int) Math.round(Math.sin(a) * 7);
+            pp[i] = new int[]{px, pz, ph[i]};
+            for (int y = deck + 1; y <= deck + ph[i]; ++y)
+                if (inchunk.test(px, pz)) chunk.setBlockState(mp.set(px, y, pz), st(ElisarBlocks.KEEP_STONE), false);
+            if (inchunk.test(px, pz) && ph[i] > 10) chunk.setBlockState(mp.set(px, deck + ph[i] + 1, pz), st(ElisarBlocks.KEEP_STAIRS), false);
+        }
+        for (int i = 0; i < 8; ++i) {
+            int[] a1 = pp[i], a2 = pp[(i + 1) % 8];
+            if (a1[2] < 10 || a2[2] < 10) continue;                       // рваные арки: часть пролётов упала
+            int top = deck + Math.min(a1[2], a2[2]);
+            for (int t = 0; t <= 10; ++t) {
+                double u = t / 10.0;
+                int x = (int) Math.round(a1[0] + (a2[0] - a1[0]) * u), z = (int) Math.round(a1[1] + (a2[1] - a1[1]) * u);
+                int y = (int) Math.round(top + Math.sin(u * Math.PI) * 3.5);
+                if (inchunk.test(x, z)) chunk.setBlockState(mp.set(x, y, z), st(ElisarBlocks.KEEP_STONE), false);
+                if (t == 5) for (int k = 1; k <= 5; ++k)                  // цепь с замкового камня арки
+                    if (inchunk.test(x, z)) chunk.setBlockState(mp.set(x, y - k, z), st(ElisarBlocks.CHAIN), false);
+            }
+        }
+        // постамент с кованой клеткой-фонарём в центре
+        for (int dx = -1; dx <= 1; ++dx)
+            for (int dz = -1; dz <= 1; ++dz)
+                if (inchunk.test(ox + dx, oz + dz)) {
+                    chunk.setBlockState(mp.set(ox + dx, deck + 2, oz + dz), st(ElisarBlocks.KEEP_STAIRS), false);
+                }
+        if (inchunk.test(ox, oz)) {
+            chunk.setBlockState(mp.set(ox, deck + 3, oz), st(ElisarBlocks.KEEP_STONE), false);
+            chunk.setBlockState(mp.set(ox, deck + 4, oz), st(ElisarBlocks.KEEP_CAGE_LANTERN), false);
+        }
+        // винтовая лестница с палубы в воду
+        for (int t = 0; t <= 46; ++t) {
+            double a = t * 0.42, rad = 10.5 - t * 0.06;
+            int x = ox + (int) Math.round(Math.cos(a) * rad), z = oz + (int) Math.round(Math.sin(a) * rad);
+            int y = deck + 1 - t / 3;
+            if (y < sea - 2) break;
+            if (inchunk.test(x, z)) chunk.setBlockState(mp.set(x, y, z), st(ElisarBlocks.KEEP_STAIRS), false);
+        }
+        // кольцо моховых останцов в воде
+        for (int i = 0; i < 12; ++i) {
+            double a = i * Math.PI / 6 + r.nextDouble() * 0.4;
+            double d = 16 + r.nextDouble() * 10;
+            int x = ox + (int) Math.round(Math.cos(a) * d), z = oz + (int) Math.round(Math.sin(a) * d);
+            int h = 2 + r.nextInt(5);
+            for (int y = sea - 3; y <= sea + h; ++y)
+                if (inchunk.test(x, z)) chunk.setBlockState(mp.set(x, y, z), st(ElisarBlocks.KEEP_STONE_MOSSY), false);
+            if (inchunk.test(x, z) && r.nextBoolean()) chunk.setBlockState(mp.set(x, sea + h + 1, z), st(ElisarBlocks.IVY), false);
+        }
+    }
+
     private static void mistKeepDressing(CityPlan plan, ChunkAccess chunk, BlockPos.MutableBlockPos mp, int x0, int z0) {
         MistKeep.Region rg = MistKeep.regionAt(x0 + 8, z0 + 8);
         if (rg == null) return;
