@@ -415,10 +415,11 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                     double gx = px + (gdk == 0 ? 1 : gdk == 1 ? -1 : 0), gz = pz + (gdk == 2 ? 1 : gdk == 3 ? -1 : 0);
                     if (grf.hub.t(gx, gz) < 0.12) continue;
                     double gnt = terraceTop(grf.hub.raw(gx, gz), plan.ocean);
-                    if (gnt <= c.top + (rim ? 2.0 : 3.5)) continue;
-                    // rim takes wide pond spills and broad springs; interior only real pond lips and sharp springs
-                    boolean feed = vnoise(gx * 0.09, gz * 0.09, 131) > (rim ? 0.66 : 0.685)
-                            || vnoise(gx * 0.13, gz * 0.13, 141) > (rim ? 0.72 : 0.765);
+                    if (gnt <= c.top + (rim ? 1.2 : 2.5)) continue;
+                    // REV7: более эпичные водопады — чаще, с каждого карниза
+                    boolean feed = vnoise(gx * 0.09, gz * 0.09, 131) > (rim ? 0.52 : 0.58)
+                            || vnoise(gx * 0.13, gz * 0.13, 141) > (rim ? 0.58 : 0.64)
+                            || vnoise(gx * 0.07, gz * 0.07, 133) > 0.68;
                     if (!feed) continue;
                     c.fallTop = (int) Math.floor(gnt);
                     c.fallBottom = c.isl != null ? c.top + 1 : plan.ocean + 1;
@@ -443,11 +444,13 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         return (int) Math.floor(terraceTop(isl.raw(px, pz), ocean));
     }
 
-    /** Biome 07 pond-mask test stateless over garden region: shelf cells the pond noise claims. */
+    /** Biome 07 pond-mask test stateless over garden region: shelf cells the pond noise claims. REV7 more pools. */
     private static boolean pondAt(CityPlan plan, WaterfallGardens.Region rg, double px, double pz, int maxTop) {
-        if (vnoise(px * 0.09, pz * 0.09, 131) <= 0.685) return false;
-        if (Math.hypot(px - rg.cx, pz - rg.cz) > rg.hub.R * 0.95) return false;
-        return maxTop > plan.ocean + 3 && maxTop < plan.ocean + 46;
+        double n1 = vnoise(px * 0.09, pz * 0.09, 131);
+        double n2 = vnoise(px * 0.13, pz * 0.13, 141);
+        if (n1 <= 0.56 && n2 <= 0.60) return false;
+        if (Math.hypot(px - rg.cx, pz - rg.cz) > rg.hub.R * 0.98) return false;
+        return maxTop > plan.ocean + 1 && maxTop < plan.ocean + 78;
     }
 
     /** Carves one straight water channel into the column (shared by city rivers and the violet meadow river). */
@@ -592,38 +595,42 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                             chunk.setBlockState(mp.set(x, c.top + 1, z), fs, false);
                         } else {
                             boolean violet = c.isl.kind == 7 || (c.isl.kind != 4 && VioletHills.inside(x + 0.5, z + 0.5));
-                            if (violet) {                                  // biome 04: drift FIELDS of lavender rows (the reference carpet)
+                            if (violet) {                                  // biome 04 REV7: drift FIELDS of lavender rows — гуще, ярче
                                 double field = vnoise(x * 0.021, z * 0.021, 92);
                                 double edge = vnoise(x * 0.09, z * 0.09, 90);
-                                if (field > 0.62) {                        // planted drift: wavy stripes, ~90% cover on rows
+                                if (field > 0.52) {                        // planted drift: wavy stripes, ~95% cover on rows (было 0.62)
                                     double ph = x * 0.866 + z * 0.5 + vnoise(x * 0.03, z * 0.03, 93) * 4.2;
                                     int per = (int) Math.floor(ph) & 7;
-                                    boolean planted = per <= 2 || per == 5;
-                                    if (planted && h < 0.93) {
+                                    boolean planted = per <= 3 || per == 5; // больше рядов
+                                    if (planted && h < 0.96) {
                                         int f = (int) (hash(x, z, 91) * 100);
-                                        chunk.setBlockState(mp.set(x, c.top + 1, z), st(f < 58 ? ElisarBlocks.VIOLET_BLOOM : f < 86 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
-                                    } else if (h < 0.09) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
-                                } else if (field > 0.55) {                 // field fringe: mixed drifts
-                                    if (h < 0.30 && edge > 0.52) {
+                                        chunk.setBlockState(mp.set(x, c.top + 1, z), st(f < 55 ? ElisarBlocks.VIOLET_BLOOM : f < 84 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
+                                    } else if (h < 0.18) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
+                                } else if (field > 0.42) {                 // field fringe: mixed drifts, было 0.55
+                                    if (h < 0.42 && edge > 0.42) {
                                         int f = (int) (hash(x, z, 91) * 100);
-                                        chunk.setBlockState(mp.set(x, c.top + 1, z), st(f < 50 ? ElisarBlocks.VIOLET_BLOOM : f < 80 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
-                                    } else if (h < 0.16) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
+                                        chunk.setBlockState(mp.set(x, c.top + 1, z), st(f < 48 ? ElisarBlocks.VIOLET_BLOOM : f < 78 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
+                                    } else if (h < 0.26) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
                                 } else {                                   // wild lilac meadows between fields
-                                    if (h < 0.14) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
-                                    else if (h < 0.17 && edge > 0.58) {
+                                    if (h < 0.22) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
+                                    else if (h < 0.30 && edge > 0.48) {
                                         int f = (int) (hash(x, z, 91) * 3);
                                         chunk.setBlockState(mp.set(x, c.top + 1, z), st(f == 0 ? ElisarBlocks.VIOLET_BLOOM : f == 1 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
                                     }
                                 }
                             } else if (c.garden) {
-                                // biome 07: nearly-jungle - thick grass, colour splashes, creeping shrubs (tiny trees handled at region)
-                                if (h < 0.40) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
-                                else if (h < 0.50 && vnoise(x * 0.1, z * 0.1, 154) > 0.55) {
+                                // biome 07 REV7: nearly-jungle - ОЧЕНЬ густо: 55% трава, 15% цветы, 8% кусты/мох, лианы с карнизов
+                                if (h < 0.55) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
+                                else if (h < 0.70 && vnoise(x * 0.1, z * 0.1, 154) > 0.38) {
                                     int f = (int) (hash(x, z, 155) * 100);
-                                    chunk.setBlockState(mp.set(x, c.top + 1, z), st(f < 46 ? ElisarBlocks.FLOWERS : f < 66 ? ElisarBlocks.VIOLET_BLOOM : f < 84 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
-                                } else if (h < 0.55 && chunk.getBlockState(mp.set(x, c.top + 1, z)).isAir()) {
-                                    chunk.setBlockState(mp.set(x, c.top + 1, z), ElisarBlocks.SIZO_LEAVES.get().defaultBlockState()
-                                            .setValue(LeavesBlock.PERSISTENT, true).setValue(LeavesBlock.DISTANCE, 1), false);   // low creeping shrub
+                                    chunk.setBlockState(mp.set(x, c.top + 1, z), st(f < 36 ? ElisarBlocks.FLOWERS : f < 56 ? ElisarBlocks.VIOLET_BLOOM : f < 76 ? ElisarBlocks.LILAC_BLOOM : f < 88 ? ElisarBlocks.PALE_BLOOM : ElisarBlocks.SIZO_LEAVES), false);
+                                } else if (h < 0.78) {
+                                    if (hash(x, z, 156) < 0.6 && chunk.getBlockState(mp.set(x, c.top + 1, z)).isAir()) {
+                                        chunk.setBlockState(mp.set(x, c.top + 1, z), ElisarBlocks.SIZO_LEAVES.get().defaultBlockState()
+                                                .setValue(LeavesBlock.PERSISTENT, true).setValue(LeavesBlock.DISTANCE, 1), false);
+                                    } else if (hash(x, z, 157) < 0.3) {
+                                        chunk.setBlockState(mp.set(x, c.top + 1, z), moss, false);
+                                    }
                                 }
                             } else if (c.isl.kind == SizoGrove.KIND || (c.isl.kind != 4 && SizoGrove.inside(x + 0.5, z + 0.5))) {
                                 // biome 05: mint floor with violet bloom drifts among the giants (no paths - TZ)
@@ -637,15 +644,15 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                         }
                     }
                 }
-                // biome 07: hanging vine curtains draped from the cliff lip above this column (the reference look)
+                // biome 07: hanging vine curtains draped from the cliff lip above this column (the reference look) REV7 чаще и длиннее
                 if (c.garden && c.surface == S_GRASS && c.waterTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE) {
                     int maxN = Integer.MIN_VALUE;
                     for (Direction d : Direction.Plane.HORIZONTAL) {
                         Col n = cols[dx + 1 + d.getStepX()][dz + 1 + d.getStepZ()];
                         if (n.isl != null) maxN = Math.max(maxN, n.top);
                     }
-                    if (maxN > c.top + 2.5 && vnoise(x * 0.21, z * 0.21, 151) > 0.40) {
-                        int len = 2 + (int) (hash(x, z, 152) * 3.0);
+                    if (maxN > c.top + 1.5 && vnoise(x * 0.21, z * 0.21, 151) > 0.22) {
+                        int len = 3 + (int) (hash(x, z, 152) * 5.0);
                         for (int y = Math.max(c.top + 1, maxN - len); y < maxN; ++y) {
                             BlockPos vp = mp.set(x, y, z);
                             if (chunk.getBlockState(vp).isAir() || chunk.getBlockState(vp).canBeReplaced())
