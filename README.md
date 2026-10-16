@@ -533,3 +533,25 @@ chained_lectern/chained_books, castle_bookshelf/paper_pile. Результат �
 и CI-джоба `gameshots` (headless-клиент под Xvfb → PNG в `reports/gameshots/`). Джоба стартует сама, как
 только на аккаунте GitHub починится биллинг Actions (сейчас ран-ы падают на оплате, dispatch API = 403);
 последний собранный jar — p17 на странице Releases.
+
+## Часть 25. Кадры «из игры» без GPU: программный растеризатор от первого лица
+
+ТЗ требует съёмку без графического процессора (Xvfb + программный GL / software-путь, §17.4 TZ_atmosphere_fx:
+«Программный растеризатор | Не крашится, скриншот не чёрный»). В этой песочнице нет ни Java, ни доступа к
+Mojang/Forge/adoptium/apt (проверено: HTTP 000 на piston-data, maven.minecraftforge.net, api.adoptium.net,
+archive.ubuntu.com), поэтому движковый кадр возможен только двумя путями: CI-джоба `gameshots` (стартует
+после починки биллинга Actions) и `/riftshot` в вашей игре. Чтобы кадры были уже сейчас, добавлен
+**`tools/rift/shot_fps.py`** — CPU-растеризатор от первого лица: берёт воксели реального мира (NBT-сцены того
+же генератора, что в игре) и **реальные текстуры мода 16×16** из `assets/riftworld/textures/block`,
+z-буфер, перспективная проекция с FOV 72°, шейдинг граней как в MC (верх 1.0, бок 0.62–0.8, низ 0.5),
+полупрозрачная вода, пейзажный туман и градиент неба day/dusk/night. Никакого GPU — только numpy.
+
+Кадры (960×540, первый лицо, высота глаз 1.62):
+- `reports/shots_rev7/fps_gardens_day.png` — Висячие сады: мраморные террасы, бассейны, кроны-куполы днём;
+- `reports/shots_rev7/fps_gardens_dusk.png` — те же сады на закате;
+- `reports/shots_rev7/fps_arena_dusk.png` — морская арена дракона: пьедестал с горящим `keep_cage_lantern`,
+  колонны ротонды, потрескавшаяся палуба (взгляд с палубы);
+- `reports/shots_rev7/fps_arena_water.png` — арена с воды, от кольца мшистых пней;
+- `reports/shots_rev7/fps_bridge_dusk.png` — стоя на настиле моста: доски, тумбы с цепями по бортам, закат.
+
+Применение: `shot_fps.py scene.nbt out.png X Y Z YAW PITCH [FOV] [--res W H] [--sky day|dusk|night] [--far N]`.
