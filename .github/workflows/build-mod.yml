@@ -10,6 +10,60 @@ permissions:
   issues: write
 
 jobs:
+  gameshots:
+    # «ФОТО ИЗ ИГРЫ ПРЯМ»: headless-клиент (Xvfb + Mesa llvmpipe) заходит на свой офлайн-сервер,
+    # мод сам снимает тур (/riftshot tour через -Driftworld.shotauto=1), PNG коммитятся в репо.
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Download mod jar
+        uses: actions/download-artifact@v4
+        with:
+          name: riftworld-0.6.4-p18
+          path: modjar
+      - name: Install Forge server+client, run headless, shoot tour
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -x
+          sudo apt-get update -qq && sudo apt-get install -y -qq xvfb xdotool > /dev/null
+          FORGE=1.20.1-47.4.23
+          curl -fsSL -o /tmp/forge-installer.jar "https://maven.minecraftforge.net/net/minecraftforge/forge/$FORGE/forge-$FORGE-installer.jar"
+          java -jar /tmp/forge-installer.jar --installServer "$PWD/srv" > /tmp/srvinstall.log 2>&1 || tail -20 /tmp/srvinstall.log
+          java -jar /tmp/forge-installer.jar --installClient "$PWD/cli" > /tmp/cliinstall.log 2>&1 || tail -20 /tmp/cliinstall.log
+          mkdir -p srv/mods cli/mods
+          cp modjar/*.jar srv/mods/ && cp modjar/*.jar cli/mods/
+          echo "eula=true" > srv/eula.txt
+          printf "online-mode=false\nlevel-name=shotworld\nview-distance=4\nsimulation-distance=4\n" > srv/server.properties
+          chmod +x srv/run.sh
+          (cd srv && nohup ./run.sh nogui > /tmp/srv.log 2>&1 &)
+          for i in $(seq 1 150); do grep -q 'Done (' /tmp/srv.log && break; sleep 2; done
+          tail -3 /tmp/srv.log
+          python3 tools/rift/ci_client_cmd.py "$PWD/cli" 127.0.0.1 25565 > /tmp/client_cmd.sh
+          cat /tmp/client_cmd.sh
+          (timeout 480 xvfb-run -a -s "-screen 0 1600x1000x24" bash /tmp/client_cmd.sh > /tmp/cli.log 2>&1 &)
+          for i in $(seq 1 200); do ls cli/riftshots/*.png 2>/dev/null | grep -q png && [ $(ls cli/riftshots/*.png 2>/dev/null | wc -l) -ge 4 ] && break; sleep 3; done
+          sleep 20
+          mkdir -p reports/gameshots
+          cp cli/riftshots/*.png reports/gameshots/ 2>/dev/null || true
+          ls -la reports/gameshots || true
+          tail -30 /tmp/cli.log || true
+          pkill -f bootstraplauncher || true
+          pkill -f fmlloader || true
+          git config user.name arena-agent
+          git config user.email 297053741+arena-agent@users.noreply.github.com
+          if ls reports/gameshots/*.png > /dev/null 2>&1; then
+            git add reports/gameshots
+            git commit -m "gameshots: real in-game captures (headless Xvfb tour)" || true
+            git push "https://x-access-token:${GH_TOKEN}@github.com/standimaoff-oss/riftworld.git" HEAD:arena/f9c17275-riftworld || true
+          fi
+
   build:
     runs-on: ubuntu-latest
     steps:

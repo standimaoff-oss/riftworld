@@ -43,6 +43,56 @@ public final class ArenaCommand {
         return 1;
     }
 
+    private static int shot(CommandContext<CommandSourceStack> c, String spot) {
+        CommandSourceStack src = c.getSource();
+        if (src.getLevel().isClientSide()) {
+            ru.aiforge.riftworld.client.ShotTour.scheduleShot(40);
+            return 1;
+        }
+        ServerLevel level = src.getLevel();
+        net.minecraft.server.level.ServerPlayer sp = src.getPlayer();
+        if (sp == null) {
+            src.sendFailure(Component.literal("нужен игрок"));
+            return 0;
+        }
+        double x = sp.getX(), y = sp.getY(), z = sp.getZ();
+        float yaw = sp.getYRot(), pitch = sp.getXRot();
+        long time = 1000;
+        switch (spot) {
+            case "temple" -> { x = 0; y = 107; z = -74; yaw = 0; pitch = -8; time = 12500; }
+            case "city" -> { x = 0; y = 110; z = -30; yaw = 0; pitch = -14; }
+            case "ocean" -> { x = 210; y = 63.5; z = 210; yaw = 315; pitch = 0; }
+            case "bridge" -> { x = 84; y = 107.5; z = -66; yaw = 308; pitch = -5; time = 9000; }
+            case "gardens" -> {
+                ru.aiforge.riftworld.world.WaterfallGardens.Region rg = nearestGardens(src.getPosition());
+                if (rg == null) {
+                    src.sendFailure(Component.literal("сады не найдены рядом"));
+                    return 0;
+                }
+                x = rg.cx + 130; y = 66; z = rg.cz + 130; yaw = 45; pitch = -18;
+            }
+            default -> { return 0; }
+        }
+        sp.teleportTo(level, x, y, z, yaw, pitch);
+        level.setDayTime(time);
+        return 1;
+    }
+
+    private static ru.aiforge.riftworld.world.WaterfallGardens.Region nearestGardens(net.minecraft.world.phys.Vec3 p) {
+        int sx = Math.floorDiv((int) Math.floor(p.x), ru.aiforge.riftworld.world.WaterfallGardens.SUPER);
+        int sz = Math.floorDiv((int) Math.floor(p.z), ru.aiforge.riftworld.world.WaterfallGardens.SUPER);
+        ru.aiforge.riftworld.world.WaterfallGardens.Region best = null;
+        double bd = Double.MAX_VALUE;
+        for (int dx = -3; dx <= 3; ++dx)
+            for (int dz = -3; dz <= 3; ++dz) {
+                ru.aiforge.riftworld.world.WaterfallGardens.Region rg = ru.aiforge.riftworld.world.WaterfallGardens.region(sx + dx, sz + dz);
+                if (rg == null) continue;
+                double dd = Math.hypot(rg.cx - p.x, rg.cz - p.z);
+                if (dd < bd) { bd = dd; best = rg; }
+            }
+        return best;
+    }
+
     private static int biome(CommandContext<CommandSourceStack> c, int kind) {
         CommandSourceStack src = c.getSource();
         net.minecraft.world.phys.Vec3 p = src.getPosition();
@@ -134,6 +184,21 @@ public final class ArenaCommand {
                                                 IntegerArgumentType.getInteger(c, "x"),
                                                 IntegerArgumentType.getInteger(c, "y"),
                                                 IntegerArgumentType.getInteger(c, "z"))))))));
+        // /riftshot <temple|city|ocean|bridge|gardens|tour> - телепорт в видовую точку + игровой скриншот в <gameDir>/riftshots
+        d.register(Commands.literal("riftshot").requires(s2 -> s2.hasPermission(2))
+                .then(Commands.literal("temple").executes(c -> shot(c, "temple")))
+                .then(Commands.literal("city").executes(c -> shot(c, "city")))
+                .then(Commands.literal("ocean").executes(c -> shot(c, "ocean")))
+                .then(Commands.literal("bridge").executes(c -> shot(c, "bridge")))
+                .then(Commands.literal("gardens").executes(c -> shot(c, "gardens")))
+                .then(Commands.literal("tour").executes(c -> {
+                    if (c.getSource().getLevel().isClientSide()) {
+                        ru.aiforge.riftworld.client.ShotTour.startTour();
+                        c.getSource().sendSuccess(() -> Component.literal("тур запущен: 5 кадров в <gameDir>/riftshots"), false);
+                        return 1;
+                    }
+                    return 0;
+                })));
         // /riftbridge repair - перестелить настилы всех верёвочных мостов рядом (лечит «мост не собрался»)
         d.register(Commands.literal("riftbridge").requires(s -> s.hasPermission(2))
                 .then(Commands.literal("repair").executes(ArenaCommand::repairBridges)));
