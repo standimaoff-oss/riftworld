@@ -657,34 +657,34 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 if (c.waterTop != Integer.MIN_VALUE) {
                     for (int y = c.waterBottom; y <= c.waterTop; ++y) chunk.setBlockState(mp.set(x, y, z), water, false);
                 }
-                if (c.fallTop != Integer.MIN_VALUE) {
-                    for (int y = c.fallBottom; y <= c.fallTop; ++y) chunk.setBlockState(mp.set(x, y, z), falling, false);
-                }
-                if (c.deckY != Integer.MIN_VALUE) {
-                    if (!c.rail) {
-                        chunk.setBlockState(mp.set(x, c.deckY, z), plank, false);
-                        BlockState above = Blocks.AIR.defaultBlockState();
-                        for (Direction d : Direction.Plane.HORIZONTAL) {     // half step where the sagging deck rises
-                            Col n = cols[dx + 1 + d.getStepX()][dz + 1 + d.getStepZ()];
-                            if (!n.rail && n.deckY == c.deckY + 1) { above = st(ElisarBlocks.SIZO_SLAB); break; }
-                        }
-                        chunk.setBlockState(mp.set(x, c.deckY + 1, z), above, false);
-                    } else if (c.isl == null || c.top < c.deckY + 1) {
-                        chunk.setBlockState(mp.set(x, c.deckY, z), plank, false);
-                        if (c.post) {
-                            BlockState wall = st(ElisarBlocks.STONE_WALL);
-                            chunk.setBlockState(mp.set(x, c.deckY + 1, z), wall, false);
-                            chunk.setBlockState(mp.set(x, c.deckY + 2, z), wall, false);
-                            chunk.setBlockState(mp.set(x, c.deckY + 3, z), st(ElisarBlocks.LANTERN), false);
-                        } else {
-                            // chain railing strung between the posts (as on the reference bridges)
-                            BlockState ch = st(ElisarBlocks.CHAIN).setValue(net.minecraft.world.level.block.ChainBlock.AXIS, c.railX ? Direction.Axis.X : Direction.Axis.Z);
-                            chunk.setBlockState(mp.set(x, c.deckY, z), ch, false);       // lower chain along the deck edge
-                            chunk.setBlockState(mp.set(x, c.deckY + 1, z), ch, false);   // hand chain
-                        }
+                trees(plan, chunk, mp, x, z);
+            }
+            // ----- bridges & waterfalls over ocean AND islands (fix: city bridges were inside island-only block)
+            if (c.fallTop != Integer.MIN_VALUE) {
+                for (int y = c.fallBottom; y <= c.fallTop; ++y) chunk.setBlockState(mp.set(x, y, z), falling, false);
+            }
+            if (c.deckY != Integer.MIN_VALUE) {
+                if (!c.rail) {
+                    chunk.setBlockState(mp.set(x, c.deckY, z), plank, false);
+                    BlockState above = Blocks.AIR.defaultBlockState();
+                    for (Direction d : Direction.Plane.HORIZONTAL) {
+                        Col n = cols[dx + 1 + d.getStepX()][dz + 1 + d.getStepZ()];
+                        if (!n.rail && n.deckY == c.deckY + 1) { above = st(ElisarBlocks.SIZO_SLAB); break; }
+                    }
+                    chunk.setBlockState(mp.set(x, c.deckY + 1, z), above, false);
+                } else if (c.isl == null || c.top < c.deckY + 1) {
+                    chunk.setBlockState(mp.set(x, c.deckY, z), plank, false);
+                    if (c.post) {
+                        BlockState wall = st(ElisarBlocks.STONE_WALL);
+                        chunk.setBlockState(mp.set(x, c.deckY + 1, z), wall, false);
+                        chunk.setBlockState(mp.set(x, c.deckY + 2, z), wall, false);
+                        chunk.setBlockState(mp.set(x, c.deckY + 3, z), st(ElisarBlocks.LANTERN), false);
+                    } else {
+                        BlockState ch = st(ElisarBlocks.CHAIN).setValue(net.minecraft.world.level.block.ChainBlock.AXIS, c.railX ? Direction.Axis.X : Direction.Axis.Z);
+                        chunk.setBlockState(mp.set(x, c.deckY, z), ch, false);
+                        chunk.setBlockState(mp.set(x, c.deckY + 1, z), ch, false);
                     }
                 }
-                trees(plan, chunk, mp, x, z);
             }
         }
         Heightmap.primeHeightmaps(chunk, EnumSet.of(Heightmap.Types.OCEAN_FLOOR_WG, Heightmap.Types.WORLD_SURFACE_WG));
