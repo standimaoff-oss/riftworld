@@ -122,10 +122,24 @@ public class BridgePostRenderer implements BlockEntityRenderer<BridgePostBE> {
         pose.popPose();
     }
 
-    /** True while the deck's collision cell stands at u (the plank exists). */
+    /** True while the deck's collision cell stands at u (the plank exists) — fixed to also allow solid ground. */
     private static boolean hasCell(Level level, BridgeDeckGeom.Deck deck, double u) {
         Vec3 p = deck.pt(u, 0.5);
-        return level.getBlockState(BlockPos.containing(p.x, p.y - 0.85, p.z)).is(BridgeBlocks.WALK.get());
+        BlockPos bp = BlockPos.containing(p.x, p.y - 0.85, p.z);
+        var st = level.getBlockState(bp);
+        if (st.is(BridgeBlocks.WALK.get())) return true;
+        // punched hole: air with air below -> false (hole stays open)
+        // solid ground or walkable terrain -> treat as walkable so plank still renders over terrain
+        if (st.isSolidRender(level, bp)) return true;
+        BlockPos below = bp.below();
+        var belowSt = level.getBlockState(below);
+        if (belowSt.isSolidRender(level, below) && !belowSt.isAir()) {
+            // bridge over solid ground, WALK may not have been placed to preserve ground
+            return true;
+        }
+        // if current is air but below is WALK or solid, still render? No, for gap we need WALK
+        // For gap, we only render if WALK exists, so if we reach here and st is air and below is air -> hole
+        return false;
     }
 
     /** Client-side spring on the sway amplitude. */
