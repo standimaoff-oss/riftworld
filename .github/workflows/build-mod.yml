@@ -1,0 +1,37 @@
+name: Build Riftworld Mod
+
+# Сборка мода на GitHub-раннере (там есть доступ к maven.minecraftforge.net и services.gradle.org).
+# Артефакт: riftworld-<версия>.jar. Запускается на push в ветки arena/** и вручную.
+
+on:
+  push:
+    branches: [ main, "arena/**" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build mod jar
+        working-directory: mod
+        run: |
+          chmod +x gradlew
+          ./gradlew jar --no-daemon --stacktrace
+
+      - name: Upload mod jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: riftworld-jar
+          path: mod/build/libs/*.jar
+          if-no-files-found: error
