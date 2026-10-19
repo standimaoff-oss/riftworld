@@ -183,6 +183,24 @@ stairs_z(35, 41, 19, -1, 0)    # СЗАДИ одиночный пролёт на
 stairs_x(36, 42, 16, -1, 0)    # ЗАПАД
 stairs_x(36, 42, 60, 1, 0)     # ВОСТОК
 
+# ------------------------------------------------------------------ 7) СВЯТИЛИЩЕ РИТУАЛА (восстановлено после V5)
+# Без него в храме нет мозаики, ядра перехода, свечей и ядра запуска (полёт на Элисар и мост ритуала не работали).
+# Пол зала на G, интерьер на G+1 пуст. Мозаика 5x5 на полу, сигил-ядро в центре, 8 свечей на кольце r=3,
+# ядро запуска на оси зала (z=SC_Z+8) на золотом постаменте.
+MOS_T  = S("temple_mosaic", stage=0)
+CORE_T = S("mosaic_core", stage=0)
+CANDLE = S("ritual_candle", lit=False)
+LCORE  = S("launch_core", facing="north")
+SC_X, SC_Z = CX, 38
+for x in range(SC_X - 2, SC_X + 3):
+    for z in range(SC_Z - 2, SC_Z + 3):
+        put(x, G, z, MOS_T)
+put(SC_X, G, SC_Z, CORE_T)
+for dx, dz in ((0, -3), (3, 0), (0, 3), (-3, 0), (-3, -3), (3, -3), (3, 3), (-3, 3)):
+    put(SC_X + dx, G + 1, SC_Z + dz, CANDLE)
+put(SC_X, G, SC_Z + 8, TG)
+put(SC_X, G + 1, SC_Z + 8, LCORE)
+
 # ------------------------------------------------------------------ write
 n, pal = write_template(OUT + "/temple_great.nbt", (W, H, D), B, {k: v for k, v in NBT.items() if k in B})
 print("temple_great V5 (строго по фото, без глаза/гало) ", W, H, D, "blocks", n, "palette", pal, "skips", len(SKIPPED))
