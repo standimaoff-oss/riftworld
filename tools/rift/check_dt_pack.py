@@ -109,6 +109,42 @@ def check_types(kind: str, path: str, data: dict, schema: dict) -> None:
             err(f"{name}: «{key}» — {got}, а DT ждёт {', '.join(java_types)}")
 
 
+def gradle_prop(path: str, key: str, default: str) -> str:
+    try:
+        with open(path, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith(key + "="):
+                    return line.split("=", 1)[1].strip()
+    except OSError:
+        pass
+    return default
+
+
+def version_in_range(version: str, rng: str) -> bool:
+    """Maven version ranges as Forge reads them, limited to what this pack uses: [a,) [a,b) (a,b] and plain a."""
+    rng = (rng or "").replace(" ", "")
+    if not rng or rng in ("*", "[*]", "[*,)"):
+        return True
+    if not rng[0] in "[(":
+        return version == rng
+    close = "]" if rng.endswith("]") else ")"
+    body = rng[1:-1]
+    lo, _, hi = body.partition(",")
+    def key(v: str) -> tuple:
+        return tuple(int(x) if x.isdigit() else x for x in re.split(r"[.\-]", v))
+    v = key(version)
+    if lo and not lo.startswith("*"):
+        l = key(lo)
+        if v < l or (v == l and rng[0] == "("):
+            return False
+    if hi and not hi.startswith("*"):
+        h = key(hi)
+        if v > h or (v == h and close == ")"):
+            return False
+    return True
+
+
 def load(path):
     with open(path, encoding="utf-8") as f:
         return json.load(f)
@@ -361,6 +397,22 @@ def main() -> int:
     if pmeta["pack"]["pack_format"] != 15:
         err(f"pack.mcmeta: pack_format={pmeta['pack']['pack_format']}, для 1.20.1 нужен 15")
 
+    # ---------------------------------------------------------------- versions
+    # Forge refuses to load an add-on whose required dependency range does not contain the installed mod version
+    mod_version = gradle_prop(os.path.join(ROOT, "mod", "gradle.properties"), "mod_version", "0.0.0")
+    addon_version = gradle_prop(os.path.join(ROOT, "dtcompat", "gradle.properties"), "dt_addon_version", "0.0.0")
+    if toml["mods"][0]["version"] != addon_version:
+        err(f"mods.toml: version={toml['mods'][0]['version']}, а в dtcompat/gradle.properties "
+            f"dt_addon_version={addon_version} — соберётся jar с другой версией")
+    dep_rw = deps.get("riftworld")
+    if not dep_rw:
+        err("mods.toml: нет зависимости от riftworld (пак ссылается на его блоки и биомы)")
+    elif not version_in_range(mod_version, dep_rw.get("versionRange", "")):
+        err(f"mods.toml: riftworld {mod_version} не попадает в versionRange "
+            f"«{dep_rw.get('versionRange')}» — Forge не загрузит аддон")
+    if deps.get("forge", {}).get("type") != "required":
+        err("mods.toml: forge должен быть required")
+
     # ---------------------------------------------------------------- report
     print(f"пак {PACK_ID}: {len(species)} пород, {len(families)} семейств, {len(leaves)} листв, "
           f"{len(os.listdir(soil_dir)) if os.path.isdir(soil_dir) else 0} типов почвы, {len(wg)} записей world_gen")
@@ -415,9 +467,9 @@ def selftest() -> int:
     import shutil
     import tempfile
 
-    global PACK
+    global PACK, DT_RES
     original = _pack_snapshot()
-    real_pack = PACK
+    real_pack, real_res = PACK, DT_RES
     tmp = tempfile.mkdtemp(prefix="rift-dt-selftest-")
 
     def mutate_species(name: str, **changes):
@@ -445,6 +497,15 @@ def selftest() -> int:
     def sapling(files):
         files["species/fern_tree.json"]["generate_sapling"] = True
 
+    def toml_edit(old: str, new: str):
+        """Mutates META-INF/mods.toml (a version range that Forge would reject)."""
+        def apply(files, res):
+            p = os.path.join(res, "META-INF", "mods.toml")
+            text = open(p, encoding="utf-8").read()
+            assert old in text, old
+            open(p, "w", encoding="utf-8").write(text.replace(old, new))
+        return apply
+
     # (title, mutation, must the checker fail?)
     cases = [
         ("неизвестный ключ DT", mutate_species("lilac", definately_not_a_key=1), True),
@@ -458,19 +519,29 @@ def selftest() -> int:
         ("удалены soil_properties", no_soil, True),
         ("включён generate_sapling без модели", sapling, True),
         ("плотность 0.2 (только предупреждение)", lambda files: files["world_gen/riftworld.json"][0]["apply"].update(density=[0.2]), False),
+        ("диапазон версий riftworld не содержит версию мода",
+         toml_edit('versionRange = "[0.6.1,)"', 'versionRange = "[1.0,)"'), True),
+        ("версия аддона в mods.toml расходится с gradle.properties",
+         toml_edit('version = "1.0.0"', 'version = "9.9.9"'), True),
     ]
     caught = 0
     for i, (title, mutation, must_fail) in enumerate(cases, 1):
         files = copy.deepcopy(original)
-        mutation(files)
-        pack_dir = os.path.join(tmp, f"case{i}", "trees", PACK_ID)
-        shutil.rmtree(os.path.dirname(pack_dir), ignore_errors=True)
+        case_res = os.path.join(tmp, f"case{i}")
+        shutil.rmtree(case_res, ignore_errors=True)
+        shutil.copytree(real_res, case_res)          # assets, mods.toml, pack.mcmeta: everything but the tree files
+        try:
+            mutation(files, case_res)
+        except TypeError:                             # plain pack mutation
+            mutation(files)
+        pack_dir = os.path.join(case_res, "trees", PACK_ID)
+        shutil.rmtree(pack_dir, ignore_errors=True)
         _write_pack(pack_dir, files)
-        PACK = pack_dir
+        PACK, DT_RES = pack_dir, case_res
         buf = io.StringIO()
         with contextlib.redirect_stdout(buf):
             code = main()
-        PACK = real_pack
+        PACK, DT_RES = real_pack, real_res
         ok = (code != 0) == must_fail
         caught += ok
         detail = "поймано" if code != 0 else "пропущено"

@@ -41,7 +41,8 @@
 - **Настоящий data-only аддон** `dtcompat/` — 4 породы (`lilac` — 04, `sizo_v2` — 05, `fern_tree` — 07,
   `mist_pine` — туманный данж): параметры силуэта (energy, up, ветки с какой высоты, tapering, радиус, cell kit),
   свои текстуры коры/спила, листва, `world_gen` по биомам, почвы на наших блоках земли и семена 16×16.
-  Генератор: `python3 tools/rift/gen_dt_addon.py`. Мягкая зависимость (`only_if_loaded: dynamictrees`).
+  Генератор: `python3 tools/rift/gen_dt_addon.py`. Мягкая зависимость (`only_if_loaded: dynamictrees`);
+  версии в `mods.toml` берутся из `gradle.properties` (иначе Forge отказывается грузить аддон).
 - **Схема ключей DT — из самого DT**: `tools/rift/dt_schema.json` собирается из кода лоадеров **и** из
   собственного пака Dynamic Trees 1.20.1 (`python3 tools/rift/fetch_dt_schema.py`): 60/28/25/12 ключей + типы
   значений + 8 cell kit'ов + 7 growth logic + 12 типов почв.

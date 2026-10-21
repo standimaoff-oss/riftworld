@@ -215,16 +215,37 @@ def lang() -> None:
     write(os.path.join(DT, "assets", PACK, "lang", "en_us.json"), en)
 
 
-MODS_TOML = '''modLoader = "javafml"
+def gradle_prop(path: str, key: str, default: str) -> str:
+    """Reads `key=value` from a gradle.properties — the single source of truth for versions."""
+    try:
+        with open(path, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith(key + "="):
+                    return line.split("=", 1)[1].strip()
+    except OSError:
+        pass
+    return default
+
+
+# Versions must not be typed twice: a wrong versionRange makes Forge refuse to load the add-on before the game even
+# starts (an add-on that asks for riftworld [1.0,) does not load against riftworld 0.6.1 — that bug existed here).
+ADDON_VERSION = gradle_prop(os.path.join(ROOT, "dtcompat", "gradle.properties"), "dt_addon_version", "1.0.0")
+MOD_VERSION = gradle_prop(os.path.join(ROOT, "mod", "gradle.properties"), "mod_version", "0.6.1")
+# the tree pack was validated against this exact Dynamic Trees source tree (tools/rift/fetch_dt_schema.py)
+DT_VALIDATED = "1.4.11"
+
+MODS_TOML = f'''modLoader = "javafml"
 loaderVersion = "[47,)"
 license = "All Rights Reserved"
 issueTrackerURL = "https://github.com/standimaoff-oss/riftworld/issues"
 
 [[mods]]
 modId = "riftworld_dt"
-version = "1.0"
+version = "{ADDON_VERSION}"
 displayName = "Разлом: Dynamic Trees"
-description = """Dynamic Trees add-on for Rift (Разлом): four species (lilac, sizo v2, fern tree, mist pine)."""
+description = """Dynamic Trees add-on for Rift (Разлом): four species (lilac, sizo v2, fern tree, mist pine).
+Tree pack validated against Dynamic Trees {DT_VALIDATED} for Minecraft 1.20.1."""
 
 [[dependencies.riftworld_dt]]
     modId = "forge"
@@ -236,14 +257,14 @@ description = """Dynamic Trees add-on for Rift (Разлом): four species (lil
 [[dependencies.riftworld_dt]]
     modId = "riftworld"
     type = "required"
-    versionRange = "[1.0,)"
+    versionRange = "[{MOD_VERSION},)"
     ordering = "AFTER"
     side = "BOTH"
 
 [[dependencies.riftworld_dt]]
     modId = "dynamictrees"
     type = "optional"
-    versionRange = "[1.3,)"
+    versionRange = "[1.4,)"
     ordering = "AFTER"
     side = "BOTH"
 '''
