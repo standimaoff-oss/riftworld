@@ -32,7 +32,7 @@ def rnd(a: int, b: int, c: int) -> float:
 
 class Spec:
     def __init__(self, hmin, hmax, trunk, lean, tiers, crown, squash, droop, branches,
-                 accent, skirt, vines, fronds=0, cone=False):
+                 accent, skirt, vines, fronds=0, cone=False, slim=False):
         self.hmin, self.hmax = hmin, hmax
         self.trunk = trunk          # trunk half-width in blocks (0 => 1x1, 0.5 => 2x2)
         self.lean = lean            # max horizontal drift of the top
@@ -46,13 +46,14 @@ class Spec:
         self.vines = vines          # chance of a hanging vine under the rim
         self.fronds = fronds        # fern: number of fronds
         self.cone = cone            # conifer silhouette
+        self.slim = slim            # a tree fern: a single 1x1 trunk instead of the usual 2x2 base
 
 
 SPECS = {
     SIZO: Spec(10, 13, 0, 1.0, 3, [3.4, 2.7, 1.8], 0.30, 1.2, 3, 0.06, 0.34, 0.05),
     SIZO_GIANT: Spec(17, 22, 1.5, 1.4, 4, [5.6, 4.8, 3.8, 2.2], 0.26, 2.0, 4, 0.05, 0.42, 0.10),
     LILAC: Spec(12, 17, 0, 1.6, 4, [4.6, 4.2, 3.4, 2.2], 0.30, 1.6, 4, 0.20, 0.34, 0.03),
-    FERN: Spec(7, 10, 0, 1.6, 0, [3.4], 0.55, 0.8, 0, 0.10, 0.22, 0.22, fronds=7),
+    FERN: Spec(7, 10, 0, 1.6, 0, [3.4], 0.55, 0.8, 0, 0.10, 0.22, 0.22, fronds=8, slim=True),
     MIST_PINE: Spec(14, 20, 0, 0.8, 0, [3.8], 0.60, 0.0, 0, 0.03, 0.14, 0.0, cone=True),
     AMBRA: Spec(7, 10, 0, 1.0, 3, [3.4, 2.6, 1.8], 0.36, 0.5, 2, 0.02, 0.26, 0.0),
     OAK: Spec(8, 12, 0, 1.2, 3, [3.9, 3.3, 2.3], 0.34, 1.0, 3, 0.03, 0.32, 0.02),
@@ -89,7 +90,7 @@ def build(kind: int, height: int, seed: int):
         cx = lean_x * t + wob_x * (1 - t * 0.35)
         cz = lean_z * t + wob_z * (1 - t * 0.35)
         centers.append((cx, cz))
-        base_rad = sp.trunk if sp.trunk >= 1.0 else (0.75 if H >= 12 else 0.55)
+        base_rad = sp.trunk if sp.trunk >= 1.0 else (0.10 if sp.slim else (0.75 if H >= 12 else 0.55))
         rad = base_rad * (1.0 - 0.52 * t) + 0.08
         r_cells = int(math.ceil(rad)) if rad > 0.2 else 0
         if r_cells == 0:
@@ -242,7 +243,7 @@ def build(kind: int, height: int, seed: int):
 
         for i in range(sp.fronds):
             a = i * 2 * math.pi / sp.fronds + rnd(seed, i, 901) * 0.5
-            L = int(round(2.8 + rnd(seed, i, 902) * 1.8))
+            L = int(round(3.2 + rnd(seed, i, 902) * 2.0))
             ax = AXIS_X if abs(math.cos(a)) > abs(math.sin(a)) else AXIS_Z
             prev = (fx, trunk_top - 1, fz)
             for k in range(1, L + 1):

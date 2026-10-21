@@ -32,9 +32,10 @@ public final class TreeGen {
         final int tiers, branches, fronds;
         final double[] crown;
         final boolean cone;
+        final boolean slim;
 
         Spec(int hmin, int hmax, double trunk, double lean, int tiers, double[] crown, double squash, double droop,
-             int branches, double accent, double skirt, double vines, int fronds, boolean cone) {
+             int branches, double accent, double skirt, double vines, int fronds, boolean cone, boolean slim) {
             this.hmin = hmin;
             this.hmax = hmax;
             this.trunk = trunk;
@@ -49,19 +50,20 @@ public final class TreeGen {
             this.vines = vines;
             this.fronds = fronds;
             this.cone = cone;
+            this.slim = slim;
         }
     }
 
     private static final Map<Integer, Spec> SPECS = new HashMap<>();
 
     static {
-        SPECS.put(TreeSpecies.SIZO, new Spec(10, 13, 0.0, 1.0, 3, new double[] {3.4, 2.7, 1.8}, 0.30, 1.2, 3, 0.06, 0.34, 0.05, 0, false));
-        SPECS.put(TreeSpecies.SIZO_GIANT, new Spec(17, 22, 1.5, 1.4, 4, new double[] {5.6, 4.8, 3.8, 2.2}, 0.26, 2.0, 4, 0.05, 0.42, 0.10, 0, false));
-        SPECS.put(TreeSpecies.LILAC, new Spec(12, 17, 0.0, 1.6, 4, new double[] {4.6, 4.2, 3.4, 2.2}, 0.30, 1.6, 4, 0.20, 0.34, 0.03, 0, false));
-        SPECS.put(TreeSpecies.AMBRA, new Spec(7, 10, 0.0, 1.0, 3, new double[] {3.4, 2.6, 1.8}, 0.36, 0.5, 2, 0.02, 0.26, 0.0, 0, false));
-        SPECS.put(TreeSpecies.OAK, new Spec(8, 12, 0.0, 1.2, 3, new double[] {3.9, 3.3, 2.3}, 0.34, 1.0, 3, 0.03, 0.32, 0.02, 0, false));
-        SPECS.put(TreeSpecies.FERN, new Spec(7, 10, 0.0, 1.6, 0, new double[] {3.4}, 0.55, 0.8, 0, 0.10, 0.22, 0.22, 7, false));
-        SPECS.put(TreeSpecies.MIST_PINE, new Spec(14, 20, 0.0, 0.8, 0, new double[] {3.8}, 0.60, 0.0, 0, 0.03, 0.14, 0.0, 0, true));
+        SPECS.put(TreeSpecies.SIZO, new Spec(10, 13, 0.0, 1.0, 3, new double[] {3.4, 2.7, 1.8}, 0.30, 1.2, 3, 0.06, 0.34, 0.05, 0, false, false));
+        SPECS.put(TreeSpecies.SIZO_GIANT, new Spec(17, 22, 1.5, 1.4, 4, new double[] {5.6, 4.8, 3.8, 2.2}, 0.26, 2.0, 4, 0.05, 0.42, 0.10, 0, false, false));
+        SPECS.put(TreeSpecies.LILAC, new Spec(12, 17, 0.0, 1.6, 4, new double[] {4.6, 4.2, 3.4, 2.2}, 0.30, 1.6, 4, 0.20, 0.34, 0.03, 0, false, false));
+        SPECS.put(TreeSpecies.AMBRA, new Spec(7, 10, 0.0, 1.0, 3, new double[] {3.4, 2.6, 1.8}, 0.36, 0.5, 2, 0.02, 0.26, 0.0, 0, false, false));
+        SPECS.put(TreeSpecies.OAK, new Spec(8, 12, 0.0, 1.2, 3, new double[] {3.9, 3.3, 2.3}, 0.34, 1.0, 3, 0.03, 0.32, 0.02, 0, false, false));
+        SPECS.put(TreeSpecies.FERN, new Spec(7, 10, 0.0, 1.6, 0, new double[] {3.4}, 0.55, 0.8, 0, 0.10, 0.22, 0.22, 8, false, true));
+        SPECS.put(TreeSpecies.MIST_PINE, new Spec(14, 20, 0.0, 0.8, 0, new double[] {3.8}, 0.60, 0.0, 0, 0.03, 0.14, 0.0, 0, true, false));
     }
 
     // ------------------------------------------------------------------ deterministic noise
@@ -108,7 +110,8 @@ public final class TreeGen {
             double cz = leanZ * t + 0.45 * Math.cos(t * 3.0 + wobPhaseZ) * (1 - t * 0.35);
             centers[y][0] = cx;
             centers[y][1] = cz;
-            double baseRad = sp.trunk >= 1.0 ? sp.trunk : (H >= 12 ? 0.75 : 0.55);
+            // a tree fern keeps a 1x1 trunk (slim): baseRad <= 0.2 means "no extra cells around the core"
+            double baseRad = sp.trunk >= 1.0 ? sp.trunk : (sp.slim ? 0.10 : (H >= 12 ? 0.75 : 0.55));
             double rad = baseRad * (1.0 - 0.52 * t) + 0.08;
             int cells = rad > 0.2 ? (int) Math.ceil(rad) : 0;
             int bx = (int) Math.round(cx), bz = (int) Math.round(cz);
@@ -183,7 +186,7 @@ public final class TreeGen {
         if (sp.fronds > 0) {
             for (int i = 0; i < sp.fronds; ++i) {
                 double a = i * 2 * Math.PI / sp.fronds + rnd(seed, i, 901) * 0.5;
-                int len = (int) Math.round(2.8 + rnd(seed, i, 902) * 1.8);
+                int len = (int) Math.round(3.2 + rnd(seed, i, 902) * 2.0);
                 int axis = Math.abs(Math.cos(a)) > Math.abs(Math.sin(a)) ? AXIS_X : AXIS_Z;
                 int px0 = topX, py0 = trunkTop - 1, pz0 = topZ;      // the rachis starts at the trunk apex
                 for (int k = 1; k <= len; ++k) {
