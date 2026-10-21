@@ -9,8 +9,9 @@ What is checked, and why each check exists:
   1. java syntax      — every .java file parses (tree-sitter if installed, otherwise a bracket/string scan). Catches a
                         broken file in the huge generator that the Java test bench does not compile.
   2. asset validation — blockstates/models/textures/loot/translations of all registered blocks.
-  3. DT pack          — the tree add-on against Dynamic Trees' own keys, types, kits, soils, references. The checkout
-                        of the pack validator runs 11 mutations of the pack and must catch all of them.
+  3. DT pack          — the tree add-on against Dynamic Trees' own keys, types, kits, soils, references, versions.
+                        The checkout of the pack validator runs 13 mutations of the pack and must catch all of them,
+                        and the pack must still be exactly what its generator would write (no silent drift).
   4. Java test bench  — real compiled and executed checks: tree invariants, bridge geometry, DT soft dependency, and
                         byte-for-byte parity of the Java tree engine with the Python reference used for the photos.
   5. renders          — regenerates the tree and scene sheets, so the pictures in reports/ are reproducible.
@@ -142,6 +143,9 @@ def main() -> int:
         return 1
     if not run("пак Dynamic Trees против схемы DT",
                [PY, os.path.join(HERE, "check_dt_pack.py")] + (["--no-selftest"] if quick else []))[0]:
+        return 1
+    if not run("пак совпадает со своим генератором (запись не выполняется)",
+               [PY, os.path.join(HERE, "gen_dt_addon.py"), "--check"])[0]:
         return 1
     if not run("Java-стенд: движок деревьев, геометрия мостов, soft-dependency DT, паритет",
                [PY, os.path.join(HERE, "jtests", "run.py")])[0]:

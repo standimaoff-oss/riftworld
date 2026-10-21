@@ -11,13 +11,16 @@ Output:
   dtcompat/src/main/resources/assets/riftworld_dt/lang/{ru_ru,en_us}.json
   dtcompat/src/main/resources/{META-INF/mods.toml,pack.mcmeta}
 
-Run: python3 tools/rift/gen_dt_addon.py
+Run:
+  python3 tools/rift/gen_dt_addon.py           # rebuild the pack
+  python3 tools/rift/gen_dt_addon.py --check   # only verify the pack matches the generator (exit 1 on drift)
 """
 from __future__ import annotations
 
 import json
 import os
 import random
+import sys
 import zlib
 
 from PIL import Image, ImageDraw
@@ -63,14 +66,32 @@ SPECIES = {
 }
 
 
+# --check: compare what the generator WOULD write with what is on disk, without touching anything. A generated pack
+# that silently drifted from its generator is a real hazard: the JSON on disk is what ships, the generator is what
+# everyone believes ships.
+CHECK = "--check" in sys.argv
+DRIFT: list[str] = []
+
+
+def _render(data) -> str:
+    if isinstance(data, (dict, list)):
+        return json.dumps(data, ensure_ascii=False, indent=2) + "\n"
+    return data
+
+
 def write(path: str, data) -> None:
+    text = _render(data)
+    if CHECK:
+        try:
+            current = open(path, encoding="utf-8").read()
+        except OSError:
+            current = None
+        if current != text:
+            DRIFT.append(os.path.relpath(path, ROOT))
+        return
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
-        if isinstance(data, str):
-            f.write(data)
-        else:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-            f.write("\n")
+        f.write(text)
 
 
 def family_tree(name: str, s: dict) -> None:
@@ -195,6 +216,16 @@ def seed_sprite(name: str, palette) -> None:
     for (x, y) in ((7, 2), (8, 2), (8, 1)):
         d.point((x, y), mid + (255,))
     path = os.path.join(DT, "assets", PACK, "textures", "item", name + "_seed.png")
+    if CHECK:
+        if not os.path.exists(path):
+            DRIFT.append(os.path.relpath(path, ROOT))
+        else:
+            import io
+            buf = io.BytesIO()
+            img.save(buf, format="PNG")
+            if open(path, "rb").read() != buf.getvalue():
+                DRIFT.append(os.path.relpath(path, ROOT))
+        return
     os.makedirs(os.path.dirname(path), exist_ok=True)
     img.save(path)
 
@@ -277,31 +308,49 @@ PACK_MC_META = '''{
 }
 '''
 
-README = '''# riftworld_dt — дополнение к Dynamic Trees
+def readme_text() -> str:
+    rows = []
+    for n, d in SPECIES.items():
+        rows.append(f"| `{PACK}:{n}` | {d['ru']} | `{d['biomes'][0]}` | {d['kit']} | {d['logic'] or 'по умолчанию'} | "
+                    f"{d['energy']} / {d['up']} / {d['branch']} / {d['tapering']} / {d['radius']} / {d['rate']} |")
+    return f"""# riftworld_dt — дополнение к Dynamic Trees
 
-Data-only мод: ни одного класса, только дерево-пак Dynamic Trees (`trees/riftworld_dt/`) и ресурсы семян.
+Data-only мод: ни одного класса, только дерево-пак Dynamic Trees (`trees/{PACK}/`) и ресурсы семян.
 Если Dynamic Trees не установлен, пак ничего не делает (`only_if_loaded`), а мод просто грузится пустым.
+Собран и проверен против **Dynamic Trees {DT_VALIDATED}** для Minecraft 1.20.1 (ветка `release/1.20.1`).
 
 ## Породы
 
-| id | порода | биом | cell kit | growth logic |
-|----|--------|------|----------|--------------|
-| `riftworld_dt:lilac` | сиреневое древо | `riftworld:violet_hills` | deciduous | по умолчанию |
-| `riftworld_dt:sizo_v2` | сизо второго поколения (толстое) | `riftworld:sizo_grove` | deciduous | dark_oak |
-| `riftworld_dt:fern_tree` | древовидный папоротник | `riftworld:waterfall_gardens` | palm | palm |
-| `riftworld_dt:mist_pine` | туманная сосна | `riftworld:mist_keep` | conifer | conifer |
+Деревья строит сам Dynamic Trees. Наш вклад — параметры силуэта, текстуры коры/спила и листвы, семена.
+Если DT не установлен, мод выращивает деревья своим встроенным движком, так что биомы не пустеют.
+
+| id | порода | биом | cell kit | growth logic | energy / up / ветки с / taper / радиус / rate |
+|----|--------|------|----------|--------------|-----------------------------------------------|
+{chr(10).join(rows)}
 
 Породы босса/приспешников и «Адские угодья» не затрагиваются: в `ashen_lands` и `elisar_city` прописано
 `species: null`, там растут только собственные обгоревшие деревья мода.
 
+## Почему ключи именно такие
+
+Ключи, типы и kit'ы сверены с исходниками Dynamic Trees: `python3 tools/rift/fetch_dt_schema.py` собирает
+`tools/rift/dt_schema.json` (ключи лоадеров + собственный пак DT + типы значений + типы почв), а
+`python3 tools/rift/check_dt_pack.py` проверяет пак против него — включая ссылки на блоки, биомы, текстуры,
+модели семян, `world_gen` и диапазоны версий в `mods.toml`. У валидатора есть самопроверка мутациями.
+
 ## Сборка
 
-Пак генерируется скриптом: `python3 tools/rift/gen_dt_addon.py`.
+Пак генерируется скриптом: `python3 tools/rift/gen_dt_addon.py` (идемпотентно; спрайты семян детерминированы).
 Дальше это обычный Forge-проект: `cd dtcompat && ./gradlew build` (нужен интернет для Forge/Mojang).
 Файл `libs/DynamicTrees-1.20.1-*.jar` для компиляции **не нужен** — в моде нет кода, обращающегося к API
 Dynamic Trees, только ресурсы, поэтому несовпадение версий API пак не ломает.
-'''
 
+Версии в `mods.toml` берутся из `gradle.properties`: `dt_addon_version` — версия аддона, `mod_version` мода —
+нижняя граница зависимости `riftworld`. Руками их править не надо (иначе Forge откажется грузить аддон).
+"""
+
+
+README = readme_text()
 
 def main() -> None:
     for name, s in SPECIES.items():
@@ -317,6 +366,15 @@ def main() -> None:
     n = 0
     for _, _, files in os.walk(DT):
         n += len(files)
+    if CHECK:
+        if DRIFT:
+            print(f"РАСХОЖДЕНИЕ: {len(DRIFT)} файлов пака не совпадают с генератором")
+            for d in DRIFT:
+                print("  -", d)
+            print("исправляется прогоном: python3 tools/rift/gen_dt_addon.py")
+            raise SystemExit(1)
+        print(f"пак соответствует генератору: {len(SPECIES)} пород, {n} файлов, расхождений 0")
+        return
     print(f"riftworld_dt: {len(SPECIES)} пород, {n} файлов в dtcompat/src/main/resources")
 
 
