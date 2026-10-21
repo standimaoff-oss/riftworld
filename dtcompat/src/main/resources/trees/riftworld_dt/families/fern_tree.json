@@ -2,7 +2,7 @@
   "common_leaves": "riftworld_dt:fern_tree",
   "common_species": "riftworld_dt:fern_tree",
   "primitive_log": "riftworld:fern_log",
-  "max_branch_radius": 5,
+  "max_branch_radius": 6,
   "primary_thickness": 3,
   "secondary_thickness": 2,
   "loot_volume_multiplier": 1.0,

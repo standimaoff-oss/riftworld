@@ -5,7 +5,7 @@
   "growth_rate": 0.6,
   "up_probability": 5,
   "lowest_branch_height": 9,
-  "max_branch_radius": 12,
+  "max_branch_radius": 24,
   "soil_longevity": 14,
   "world_gen_leaf_map_height": 10,
   "drop_seeds": true,

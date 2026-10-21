@@ -38,10 +38,13 @@ PACK = "riftworld_dt"
 #   tapering       -> how fast branches thin out;  max_branch_radius -> thickness of the main branches
 #   cell_kit       -> shape of the leaf clusters (deciduous / conifer / palm / dark_oak / acacia / bare)
 #
-# Two values sit outside the band Dynamic Trees uses in its own pack, on purpose:
-#   fern_tree tapering 0.55 and mist_pine tapering 0.42 (DT: 0.0..0.40). Both species must look thin and gnarled
-#   rather than sturdy; a higher tapering makes the branches lose radius faster. Everything else stays inside DT's
-#   own ranges, so a strange-looking tree is always explainable by a deliberate value and never by a typo.
+# Every value lies inside the band Dynamic Trees uses for its own species of the same growth logic, because that band
+# is the only evidence available without launching the game:
+#   sizo_v2    <- DT dark_oak (taper .30, energy 18, up 4, branch 6, radius 24); ours is taller, same thickness
+#   mist_pine  <- DT spruce (taper .25, energy 16, up 3, branch 3) with a thinner trunk than a spruce
+#   fern_tree  <- DT's palm kit: the thinnest taper allowed is 0.40 (the top of DT's own range)
+#   lilac      <- DT cherry / apple_oak (deciduous, taper .3-.4, energy 10-12); ours is a bit larger
+# If a tree ends up looking wrong in game, the cause is a design choice here, not a typo.
 SPECIES = {
     "lilac": dict(log="lilac_log", leaves="lilac_leaves", kit="deciduous", logic=None,
                   tapering=0.34, energy=16.0, rate=0.72, branch=5, radius=7, up=3,
@@ -49,17 +52,17 @@ SPECIES = {
                   biomes=["riftworld:violet_hills"], ru="Сиреневое древо", en="Lilac Tree",
                   seed=((122, 112, 158), (168, 158, 196), (72, 66, 96))),
     "sizo_v2": dict(log="sizo_log", leaves="sizo_leaves", kit="dark_oak", logic="dark_oak",
-                    tapering=0.26, energy=24.0, rate=0.60, branch=9, radius=12, up=5,
+                    tapering=0.26, energy=24.0, rate=0.60, branch=9, radius=24, up=5,
                     smother=4, flamm=30, fire=20, leaf_map=10, longevity=14,
                     biomes=["riftworld:sizo_grove"], ru="Сизо (второе поколение)", en="Sizo v2",
                     seed=((104, 116, 118), (150, 162, 162), (62, 70, 72))),
     "fern_tree": dict(log="fern_log", leaves="fern_leaves", kit="palm", logic="palm",
-                      tapering=0.55, energy=7.0, rate=1.15, branch=2, radius=5, up=1,
+                      tapering=0.40, energy=7.0, rate=1.15, branch=2, radius=6, up=1,
                       smother=2, flamm=40, fire=30, leaf_map=6, longevity=8,
                       biomes=["riftworld:waterfall_gardens"], ru="Древовидный папоротник", en="Fern Tree",
                       seed=((78, 100, 70), (118, 140, 104), (48, 66, 44))),
     "mist_pine": dict(log="mist_pine_log", leaves="mist_pine_leaves", kit="conifer", logic="conifer",
-                      tapering=0.42, energy=14.0, rate=0.66, branch=3, radius=6, up=4,
+                      tapering=0.30, energy=14.0, rate=0.66, branch=3, radius=12, up=4,
                       smother=4, flamm=20, fire=15, leaf_map=9, longevity=12,
                       biomes=["riftworld:mist_keep"], ru="Туманная сосна", en="Mist Pine",
                       seed=((92, 106, 100), (140, 154, 148), (56, 66, 64))),

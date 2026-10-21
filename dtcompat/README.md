@@ -12,9 +12,9 @@ Data-only мод: ни одного класса, только дерево-па
 | id | порода | биом | cell kit | growth logic | energy / up / ветки с / taper / радиус / rate |
 |----|--------|------|----------|--------------|-----------------------------------------------|
 | `riftworld_dt:lilac` | Сиреневое древо | `riftworld:violet_hills` | deciduous | по умолчанию | 16.0 / 3 / 5 / 0.34 / 7 / 0.72 |
-| `riftworld_dt:sizo_v2` | Сизо (второе поколение) | `riftworld:sizo_grove` | dark_oak | dark_oak | 24.0 / 5 / 9 / 0.26 / 12 / 0.6 |
-| `riftworld_dt:fern_tree` | Древовидный папоротник | `riftworld:waterfall_gardens` | palm | palm | 7.0 / 1 / 2 / 0.55 / 5 / 1.15 |
-| `riftworld_dt:mist_pine` | Туманная сосна | `riftworld:mist_keep` | conifer | conifer | 14.0 / 4 / 3 / 0.42 / 6 / 0.66 |
+| `riftworld_dt:sizo_v2` | Сизо (второе поколение) | `riftworld:sizo_grove` | dark_oak | dark_oak | 24.0 / 5 / 9 / 0.26 / 24 / 0.6 |
+| `riftworld_dt:fern_tree` | Древовидный папоротник | `riftworld:waterfall_gardens` | palm | palm | 7.0 / 1 / 2 / 0.4 / 6 / 1.15 |
+| `riftworld_dt:mist_pine` | Туманная сосна | `riftworld:mist_keep` | conifer | conifer | 14.0 / 4 / 3 / 0.3 / 12 / 0.66 |
 
 Породы босса/приспешников и «Адские угодья» не затрагиваются: в `ashen_lands` и `elisar_city` прописано
 `species: null`, там растут только собственные обгоревшие деревья мода.
