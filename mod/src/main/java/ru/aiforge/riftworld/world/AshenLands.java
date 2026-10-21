@@ -158,7 +158,9 @@ public final class AshenLands {
         if (decor == null) {
             List<Placed> out = new ArrayList<>();
             house(out, MOUNDS.get(0));
-            bridge(out, MOUNDS.get(1));
+            // Rev 7: the old block-stair bridge was replaced by a four-post burnt suspension bridge
+            // (bridge/WorldBridges.java, style BURNT with a collapsed span) - only the fallen debris stays here.
+            bridgeDebris(out, MOUNDS.get(1));
             decor = out;
         }
         return decor;
@@ -213,48 +215,20 @@ public final class AshenLands {
         out.add(new Placed(new BlockPos(x0 + 7, y0, z0 + 5), Blocks.AIR.defaultBlockState()));
     }
 
-    /** Broken bridge: a stone abutment on the fallen island and a plank deck on posts that ends in mid-air; the rest lies below. */
-    private static void bridge(List<Placed> out, Mound m) {
-        int bz = (int) m.z;
-        int xa = (int) (m.x - m.r * 0.45);
-        int ya = moundTop(xa, bz) + 1;
-        BlockState ashl = s(CastleBlocks.ASHLAR), plank = s(CastleBlocks.DARK_PLANKS), fence = s(CastleBlocks.DARK_FENCE);
+    /** Fallen debris of the old bridge on the plain: planks, a snapped beam and a dangling chain under the new span. */
+    private static void bridgeDebris(List<Placed> out, Mound m) {
+        int bz = (int) m.z + 6;
+        int xa = (int) m.x + 44;
+        BlockState plank = s(CastleBlocks.DARK_PLANKS);
         BlockState slab = s(CastleBlocks.DARK_SLAB);
         BlockState chainY = s(ElisarBlocks.CHAIN).setValue(ChainBlock.AXIS, Direction.Axis.Y);
-        // abutment
-        for (int dz = -2; dz <= 2; ++dz)
-            for (int y = ya - 3; y <= ya; ++y) out.add(new Placed(new BlockPos(xa, y, bz + dz), ashl));
-        out.add(new Placed(new BlockPos(xa, ya + 1, bz - 2), ashl));
-        out.add(new Placed(new BlockPos(xa, ya + 1, bz + 2), ashl));
-        out.add(new Placed(new BlockPos(xa, ya + 2, bz - 2), s(ElisarBlocks.LANTERN)));
-        // deck westwards, sagging, with gaps and a ragged end
-        int len = 16;
-        for (int k = 1; k <= len; ++k) {
-            int x = xa - k;
-            int y = ya - (int) Math.round(Math.sin(Math.PI * k / 30.0) * 2.2);
-            for (int dz = -1; dz <= 1; ++dz) {
-                if (k > len - 3 && (dz + k) % 3 == 0) continue;                  // ragged end
-                if (k == 9 && dz == 0) continue;                                  // missing plank
-                out.add(new Placed(new BlockPos(x, y, bz + dz), k > len - 2 ? slab.setValue(SlabBlock.TYPE, SlabType.TOP) : plank));
-            }
-            if (k % 5 == 0 && k < len - 2) {
-                for (int dz : new int[] {-2, 2}) {
-                    out.add(new Placed(new BlockPos(x, y, bz + dz), plank));
-                    out.add(new Placed(new BlockPos(x, y + 1, bz + dz), fence));
-                    out.add(new Placed(new BlockPos(x, y + 2, bz + dz), fence));
-                }
-                // pier down to the plain
-                for (int y2 = ocean() + 1; y2 < y; ++y2) out.add(new Placed(new BlockPos(x, y2, bz), k == 10 && y2 > y - 4 ? Blocks.AIR.defaultBlockState() : s(CastleBlocks.DARK_BEAM)));
-            }
-            if (k == len - 1) for (int y2 = y - 1; y2 > y - 5; --y2) out.add(new Placed(new BlockPos(x, y2, bz + 1), chainY));   // dangling chain
-        }
         // fallen pieces on the plain below the gap
         int o = ocean();
         for (int k = 0; k < 7; ++k) {
-            int x = xa - len - 2 - k, z = bz - 2 + (k * 5) % 5;
+            int x = xa - 4 - k, z = bz - 2 + (k * 5) % 5;
             if (!meander(x, z)) out.add(new Placed(new BlockPos(x, o + 1, z), k % 2 == 0 ? plank : slab));
         }
-        out.add(new Placed(new BlockPos(xa - len - 4, o + 1, bz + 2), s(CastleBlocks.DARK_BEAM).setValue(RotatedPillarBlock.AXIS, Direction.Axis.X)));
-        out.add(new Placed(new BlockPos(xa - len - 5, o + 1, bz + 2), s(CastleBlocks.DARK_BEAM).setValue(RotatedPillarBlock.AXIS, Direction.Axis.X)));
+        out.add(new Placed(new BlockPos(xa - 9, o + 1, bz + 2), s(CastleBlocks.DARK_BEAM).setValue(RotatedPillarBlock.AXIS, Direction.Axis.X)));
+        out.add(new Placed(new BlockPos(xa - 10, o + 1, bz + 2), s(CastleBlocks.DARK_BEAM).setValue(RotatedPillarBlock.AXIS, Direction.Axis.X)));
     }
 }

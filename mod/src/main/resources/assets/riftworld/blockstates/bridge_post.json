@@ -1,7 +1,19 @@
 {
- "variants": {
-  "": {
-   "model": "riftworld:block/bridge_post"
+  "variants": {
+    "style=0": {
+      "model": "riftworld:block/bridge_post_plains"
+    },
+    "style=1": {
+      "model": "riftworld:block/bridge_post_garden"
+    },
+    "style=2": {
+      "model": "riftworld:block/bridge_post_grove"
+    },
+    "style=3": {
+      "model": "riftworld:block/bridge_post_burnt"
+    },
+    "style=4": {
+      "model": "riftworld:block/bridge_post_mist"
+    }
   }
- }
 }

@@ -26,7 +26,7 @@
   "block.riftworld.bounty_board": "Доска розыска",
   "block.riftworld.box_pile": "Груда коробок",
   "block.riftworld.brass_block": "Латунный орнамент",
-  "block.riftworld.bridge_post": "Опора качающегося моста",
+  "block.riftworld.bridge_post": "Опора подвесного моста",
   "block.riftworld.burnt_soil": "Выжженная земля",
   "block.riftworld.candle_stand": "Железный подсвечник",
   "block.riftworld.canopy_bed": "Кровать с балдахином",
@@ -313,5 +313,6 @@
   "block.riftworld.keep_stone_stairs": "Ступени утёсного камня",
   "block.riftworld.keep_stone_slab": "Плита утёсного камня",
   "block.riftworld.keep_cage_lantern": "Клеточный фонарь данжа",
-  "biome.riftworld.mist_keep": "Туманный данж"
+  "biome.riftworld.mist_keep": "Туманный данж",
+  "block.riftworld.bridge_walk": "Невидимый настил"
 }

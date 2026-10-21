@@ -376,36 +376,13 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 c.bottom = Math.min(c.bottom, y - 2);
             }
         }
-        // biome 07: the rare sagging plank bridges of the waterfall gardens
-        WaterfallGardens.Region grb = c.isl != null && c.isl.kind == WaterfallGardens.KIND ? WaterfallGardens.regionAt(px, pz) : null;
-        if (grb != null)
-            for (CityPlan.Bridge b : grb.bridges) {
-                double d = CityPlan.segDist(px, pz, b.ax(), b.az(), b.bx(), b.bz(), tt);
-                if (d > b.hw() + 1.05 || tt[0] <= 0 && d > b.hw() || tt[0] >= 1 && d > b.hw()) continue;
-                int y = b.deckY(tt[0]);
-                if (d <= b.hw()) {
-                    c.deckY = y;
-                    c.rail = false;
-                } else if (c.deckY == Integer.MIN_VALUE) {
-                    c.deckY = y;
-                    c.rail = true;
-                    int step = (int) Math.floor(tt[0] * b.length());
-                    c.post = step <= 0 || step >= (int) Math.floor(b.length()) - 1;
-                    c.railX = Math.abs(b.bx() - b.ax()) >= Math.abs(b.bz() - b.az());
-                }
-                if (c.isl != null && c.top >= y - 1) {
-                    c.top = y;
-                    c.surface = S_PLANK;
-                    c.bottom = Math.min(c.bottom, y - 2);
-                }
-            }
         // water channels (river, pond, springs)
         for (CityPlan.Channel ch : bk.channels)
-            applyChannel(c, plan, px, pz, ch.ax(), ch.az(), ch.bx(), ch.bz(), ch.hw(), ch.level(), ch.depth(), tt);
+            applyChannel(c, plan, px, pz, ch.ax(), ch.az(), ch.bx(), ch.bz(), ch.hw(), ch.level(), ch.depth(), tt, true);
         // biome 04: the violet meadow river - a chord across the island that spills off both rims
         VioletHills.Region vr = VioletHills.regionAt(px, pz);
         if (vr != null)
-            applyChannel(c, plan, px, pz, vr.rax, vr.raz, vr.rbx, vr.rbz, VioletHills.Region.RIVER_HW, vr.riverLevel, 2, tt);
+            applyChannel(c, plan, px, pz, vr.rax, vr.raz, vr.rbx, vr.rbz, VioletHills.Region.RIVER_HW, vr.riverLevel, 2, tt, false);
         // biome 07: waterfalls - this column is low while a garden shelf with a pool/spring looms beside it
         if (c.fallTop == Integer.MIN_VALUE && c.waterTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE) {
             WaterfallGardens.Region grf = WaterfallGardens.regionAt(px, pz);
@@ -452,7 +429,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
 
     /** Carves one straight water channel into the column (shared by city rivers and the violet meadow river). */
     private static void applyChannel(Col c, CityPlan plan, double px, double pz, double ax, double az, double bx, double bz,
-                                     double hw, int L, int chDepth, double[] tt) {
+                                     double hw, int L, int chDepth, double[] tt, boolean ford) {
         CityPlan.Island isl = c.isl;
         double d = CityPlan.segDist(px, pz, ax, az, bx, bz, tt);
         if (d > hw) {
@@ -466,7 +443,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             c.waterTop = L;
             c.waterBottom = L - depth + 1;
             c.top = Math.min(c.top, c.waterBottom - 1);       // bed under the water; air above
-            if (c.surface == S_COBBLE || c.surface == S_PATH || c.surface == S_PLANK) c.deckY = Math.max(c.deckY, L + 1);  // ford -> plank bridge
+            // city channels keep their plank ford; the violet river is spanned by a four-post suspension bridge instead
+            if (ford && (c.surface == S_COBBLE || c.surface == S_PATH || c.surface == S_PLANK)) c.deckY = Math.max(c.deckY, L + 1);
             c.surface = S_GRASS;
             c.bottom = Math.min(c.bottom, c.top - 2);
         } else {
@@ -1030,6 +1008,9 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             ModelKind k = kind(p.kind());
             if (k != null) placeModel(level, box, k, new BlockPos(p.x(), y, p.z()), f, p.lit());
         }
+        // Rev 7: four-post suspension bridges of the world (04 river, 07 gullies, burnt Ashen spans).
+        // Every chunk places only its own posts and its own collision plates - the span may cross any number of chunks.
+        ru.aiforge.riftworld.bridge.WorldBridges.place(level, x0, z0);
     }
 
     private static ModelKind kind(String name) {

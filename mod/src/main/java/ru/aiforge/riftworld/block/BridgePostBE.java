@@ -9,10 +9,14 @@ import net.minecraft.world.level.block.state.BlockState;
 import ru.aiforge.riftworld.bridge.BridgeDeckGeom;
 import ru.aiforge.riftworld.registry.ModBlockEntities;
 
-/** One rope-bridge post: its cable partner («в длину») and, once the rectangle closes, the built deck. */
+/**
+ * One suspension-bridge post: its cable partner («в длину») and, once the rectangle closes, the built deck. The deck
+ * record carries the style and the missing span of a collapsed (burnt) bridge, so every corner can render and save the
+ * same bridge (Rev 7).
+ */
 public class BridgePostBE extends BlockEntity {
-    private BlockPos partner;                    // the post the lengthwise cable is tied to
-    private BridgeDeckGeom.Deck deck;            // set on all four corners when the bridge stands
+    private BlockPos partner;
+    private BridgeDeckGeom.Deck deck;
 
     public BridgePostBE(BlockPos pos, BlockState state) {
         super(ModBlockEntities.BRIDGE_POST.get(), pos, state);
@@ -78,6 +82,9 @@ public class BridgePostBE extends BlockEntity {
             d.put("b", NbtUtils.writeBlockPos(deck.b()));
             d.put("a2", NbtUtils.writeBlockPos(deck.a2()));
             d.put("b2", NbtUtils.writeBlockPos(deck.b2()));
+            d.putInt("style", deck.styleId());
+            d.putFloat("breakFrom", deck.breakFrom());
+            d.putFloat("breakTo", deck.breakTo());
             t.put("deck", d);
         }
     }
@@ -89,7 +96,8 @@ public class BridgePostBE extends BlockEntity {
         if (t.contains("deck")) {
             CompoundTag d = t.getCompound("deck");
             deck = new BridgeDeckGeom.Deck(NbtUtils.readBlockPos(d.getCompound("a")), NbtUtils.readBlockPos(d.getCompound("b")),
-                    NbtUtils.readBlockPos(d.getCompound("a2")), NbtUtils.readBlockPos(d.getCompound("b2")));
+                    NbtUtils.readBlockPos(d.getCompound("a2")), NbtUtils.readBlockPos(d.getCompound("b2")),
+                    d.getInt("style"), d.getFloat("breakFrom"), d.getFloat("breakTo"));
         } else deck = null;
     }
 }

@@ -8,7 +8,10 @@ import net.minecraftforge.registries.RegistryObject;
 import ru.aiforge.riftworld.block.BridgePostBlock;
 import ru.aiforge.riftworld.block.BridgeWalkBlock;
 
-/** Rev 4 item 13: the self-assembling swaying rope bridge (4 posts, rope, planks). */
+/**
+ * Rev 7: the four-post suspension footbridge. The post is a real 2.5-block tower whose look (style) follows the biome;
+ * the deck itself is a rendered mesh with per-cell collision plates ({@link BridgeWalkBlock}, invisible, 1/16 steps).
+ */
 public final class BridgeBlocks {
     private BridgeBlocks() {
     }
@@ -17,7 +20,13 @@ public final class BridgeBlocks {
         return BlockBehaviour.Properties.of().mapColor(c).strength(h, h * 3).sound(s);
     }
 
-    public static final RegistryObject<BridgePostBlock> POST = ModBlocks.reg("bridge_post", () -> new BridgePostBlock(p(MapColor.WOOD, 2.0F, SoundType.WOOD)));
+    public static final RegistryObject<BridgePostBlock> POST = ModBlocks.reg("bridge_post", () -> new BridgePostBlock(
+            p(MapColor.WOOD, 2.5F, SoundType.WOOD)
+                    .noOcclusion()
+                    .lightLevel(state -> BridgePostBlock.styleOf(state).light)
+                    .isViewBlocking((s, l, pp) -> false)
+                    .isSuffocating((s, l, pp) -> false)));
+
     /** Invisible collision cells of the deck (no item, no loot - owned by the posts). */
     public static final RegistryObject<BridgeWalkBlock> WALK =
             ModBlocks.BLOCKS.register("bridge_walk", () -> new BridgeWalkBlock(BlockBehaviour.Properties.of().mapColor(MapColor.NONE)

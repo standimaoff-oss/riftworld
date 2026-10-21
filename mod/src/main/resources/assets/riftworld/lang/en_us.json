@@ -26,7 +26,7 @@
   "block.riftworld.bounty_board": "Bounty Board",
   "block.riftworld.box_pile": "Box Pile",
   "block.riftworld.brass_block": "Brass Ornament",
-  "block.riftworld.bridge_post": "Swaying Bridge Post",
+  "block.riftworld.bridge_post": "Suspension Bridge Post",
   "block.riftworld.burnt_soil": "Burnt Soil",
   "block.riftworld.candle_stand": "Iron Candle Stand",
   "block.riftworld.canopy_bed": "Canopy Bed",
@@ -313,5 +313,6 @@
   "block.riftworld.keep_stone_stairs": "Keep Stone Stairs",
   "block.riftworld.keep_stone_slab": "Keep Stone Slab",
   "block.riftworld.keep_cage_lantern": "Dungeon Cage Lantern",
-  "biome.riftworld.mist_keep": "Misty Dungeon"
+  "biome.riftworld.mist_keep": "Misty Dungeon",
+  "block.riftworld.bridge_walk": "Invisible deck"
 }

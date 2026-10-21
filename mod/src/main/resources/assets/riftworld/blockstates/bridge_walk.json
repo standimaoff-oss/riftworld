@@ -1,7 +1,52 @@
 {
- "variants": {
-  "": {
-   "model": "minecraft:block/air"
+  "variants": {
+    "top=1": {
+      "model": "riftworld:block/bridge_walk"
+    },
+    "top=2": {
+      "model": "riftworld:block/bridge_walk"
+    },
+    "top=3": {
+      "model": "riftworld:block/bridge_walk"
+    },
+    "top=4": {
+      "model": "riftworld:block/bridge_walk"
+    },
+    "top=5": {
+      "model": "riftworld:block/bridge_walk"
+    },
+    "top=6": {
+      "model": "riftworld:block/bridge_walk"
+    },
+    "top=7": {
+      "model": "riftworld:block/bridge_walk"
+    },
+    "top=8": {
+      "model": "riftworld:block/bridge_walk"
+    },
+    "top=9": {
+      "model": "riftworld:block/bridge_walk"
+    },
+    "top=10": {
+      "model": "riftworld:block/bridge_walk"
+    },
+    "top=11": {
+      "model": "riftworld:block/bridge_walk"
+    },
+    "top=12": {
+      "model": "riftworld:block/bridge_walk"
+    },
+    "top=13": {
+      "model": "riftworld:block/bridge_walk"
+    },
+    "top=14": {
+      "model": "riftworld:block/bridge_walk"
+    },
+    "top=15": {
+      "model": "riftworld:block/bridge_walk"
+    },
+    "top=16": {
+      "model": "riftworld:block/bridge_walk"
+    }
   }
- }
 }

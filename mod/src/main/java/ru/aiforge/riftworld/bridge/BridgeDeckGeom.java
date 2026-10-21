@@ -1,84 +1,195 @@
 package ru.aiforge.riftworld.bridge;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Shared math of the self-assembling rope bridge (Rev 4 item 13). A deck is defined by FOUR posts: two paired cable
- * lines (cables are tied lengthwise first - «в длину», then closed across - «в ширину»): endA/endB and endA2/endB2.
- * Diagonal builds are allowed: nothing here assumes a cardinal axis.
+ * Rev 7: math of the REAL suspension footbridge. A deck is defined by FOUR posts (Rev 4 item 13: cables are tied
+ * lengthwise first «в длину», then the rectangle closes «в ширину»). Nothing here assumes a cardinal axis - the bridge
+ * may stand at ANY angle and the two ends may sit on different heights.
+ *
+ * <p>Geometry of one span (as on the user's photo):</p>
+ * <ul>
+ *   <li>the DECK is anchored low on the posts ({@link #DECK_ANCHOR}) and sags between them;</li>
+ *   <li>the MAIN CABLE on each side is anchored on the post caps ({@link #CABLE_ANCHOR}), sags a bit less and carries
+ *       vertical hangers down to the deck edge;</li>
+ *   <li>a diamond safety net fills the band between the hand cable and the deck edge.</li>
+ * </ul>
+ *
+ * <p>Collision is not "a plate per block any more": {@link #collisionCells()} samples the sagging surface every quarter
+ * of a block and returns a per-cell top height in 1/16 steps, so walking feels continuous even at 20-30 degrees.</p>
  */
 public final class BridgeDeckGeom {
-    public static final int MAX_LEN = 22;
+    public static final int MAX_LEN = 26;
     public static final int MAX_WID = 6;
-    public static final double PLANK_STEP = 0.62;
+    /** Distance between the two plank rows (render only, in blocks). */
+    public static final double PLANK_STEP = 0.5;
+    /** Deck surface height above the post base (the anchor of the deck ends). */
+    public static final double DECK_ANCHOR = 0.22;
+    /** Main cable height above the post base (the post cap). */
+    public static final double CABLE_ANCHOR = 1.62;
+    /** Plank thickness (blocks). */
+    public static final double PLANK_TH = 0.11;
 
     /** A built deck: the 4 corner posts. a -> b is the bridge DIRECTION; a -> a2 is the deck WIDTH. */
-    public record Deck(BlockPos a, BlockPos b, BlockPos a2, BlockPos b2) {
+    public record Deck(BlockPos a, BlockPos b, BlockPos a2, BlockPos b2, int styleId, float breakFrom, float breakTo) {
 
-        public Vec3 tipA() { return new Vec3(a.getX() + 0.5, a.getY() + 1.0, a.getZ() + 0.5); }
-        public Vec3 tipB() { return new Vec3(b.getX() + 0.5, b.getY() + 1.0, b.getZ() + 0.5); }
+        public BridgeStyle style() {
+            return BridgeStyle.of(styleId);
+        }
+
+        // ----- anchors -------------------------------------------------------------------------------------
+        /** Deck-end point on a post (low, where the walking surface is tied). */
+        private static Vec3 post(BlockPos p, double dy) {
+            return new Vec3(p.getX() + 0.5, p.getY() + dy, p.getZ() + 0.5);
+        }
+
+        public Vec3 tipA() { return post(a, DECK_ANCHOR); }
+        public Vec3 tipB() { return post(b, DECK_ANCHOR); }
+        public Vec3 tipA2() { return post(a2, DECK_ANCHOR); }
+        public Vec3 tipB2() { return post(b2, DECK_ANCHOR); }
+
+        public Vec3 cableA() { return post(a, CABLE_ANCHOR); }
+        public Vec3 cableB() { return post(b, CABLE_ANCHOR); }
+        public Vec3 cableA2() { return post(a2, CABLE_ANCHOR); }
+        public Vec3 cableB2() { return post(b2, CABLE_ANCHOR); }
 
         public double len() { return tipA().distanceTo(tipB()); }
 
-        public double sag() { return Math.min(0.9, Math.max(0.28, len() * 0.05)); }
+        public double width() { return tipA().distanceTo(tipA2()); }
 
-        /** Deck surface point at u (0..1) - sagging catwalk between the two cable lines. */
+        /** Deck sag (blocks) - grows with length, wear and a broken span. */
+        public double sag() {
+            // a shallow catenary as on the reference photo: ~2 % of the span, a bit more on worn/burnt decks
+            double s = len() * 0.0205 * style().sagMul;
+            if (isBroken()) s *= 1.30;
+            return Math.min(1.25, Math.max(0.16, s));
+        }
+
+        /** Main-cable sag: the cable is tighter than the deck (it carries it). */
+        public double cableSag() {
+            return sag() * 0.78;
+        }
+
+        public boolean isBroken() {
+            return breakTo > breakFrom;
+        }
+
+        /** True inside the missing span of a collapsed bridge. */
+        public boolean open(double u) {
+            return isBroken() && u > breakFrom && u < breakTo;
+        }
+
+        /** Width direction (horizontal, a -> a2 flattened). */
+        public Vec3 widthDir() {
+            Vec3 w = tipA2().subtract(tipA());
+            if (w.lengthSqr() < 1e-6) w = tipB2().subtract(tipB());
+            w = new Vec3(w.x, 0, w.z);
+            return w.lengthSqr() < 1e-6 ? new Vec3(1, 0, 0) : w.normalize();
+        }
+
+        // ----- curves --------------------------------------------------------------------------------------
+        /** Deck centre point at u (0..1) - the sagging catenary. */
         public Vec3 pt(double u) {
             Vec3 p = tipA().lerp(tipB(), u);
             return new Vec3(p.x, p.y - sag() * 4 * u * (1 - u), p.z);
         }
 
-        /** Unit-ish horizontal width direction (a -> a2 about its bridge partner line, flattened). */
-        public Vec3 widthDir() {
-            Vec3 w = tipB2().subtract(tipB());    // use the FAR line so the direction matches walking
-            if (tipA2().distanceTo(tipA()) > tipB2().distanceTo(tipB())) w = tipA2().subtract(tipA());
-            w = new Vec3(w.x, 0, w.z);
-            return w.lengthSqr() < 1e-6 ? new Vec3(1, 0, 0) : w.normalize();
-        }
-
-        public double width() { return tipA().distanceTo(tipA2()); }
-
-        public Vec3 tipA2() { return new Vec3(a2.getX() + 0.5, a2.getY() + 1.0, a2.getZ() + 0.5); }
-        public Vec3 tipB2() { return new Vec3(b2.getX() + 0.5, b2.getY() + 1.0, b2.getZ() + 0.5); }
-
-        /** The across-deck curve of BOTH side lines at u, interpolated on the width (w in 0..1). */
+        /** Deck surface point at (u, w): w = 0 is the a-side edge, w = 1 the a2-side edge. */
         public Vec3 pt(double u, double w) {
-            Vec3 p1 = tipA().lerp(tipB(), u);
+            Vec3 p1 = pt(u);
             Vec3 p2 = tipA2().lerp(tipB2(), u);
-            double s = sag() * 4 * u * (1 - u);
-            return p1.lerp(p2, w).add(0, -s, 0);
+            p2 = new Vec3(p2.x, p2.y - sag() * 4 * u * (1 - u), p2.z);
+            return p1.lerp(p2, w);
         }
 
-        /** Collision cells for the planks (deduped, exact - removal recomputes this same set). */
-        public Set<BlockPos> plankCells() {
-            Set<BlockPos> out = new LinkedHashSet<>();
-            int n = Math.max(2, (int) Math.ceil(len() / 0.5));
-            int nw = Math.max(0, (int) Math.round(width() - 1));
-            for (int i = 0; i <= n; ++i) {
-                double u = i / (double) n;
-                for (int j = 0; j <= nw; ++j) {
-                    Vec3 p = pt(u, nw == 0 ? 0.5 : j / (double) nw);
-                    out.add(BlockPos.containing(p.x, p.y - 0.85, p.z));
+        /** Hand-cable point at u on side 0 (a-side) or 1 (a2-side). */
+        public Vec3 railTop(double u, int side) {
+            Vec3 from = side == 0 ? cableA() : cableA2();
+            Vec3 to = side == 0 ? cableB() : cableB2();
+            Vec3 p = from.lerp(to, u);
+            // the cable hangs from the caps: shallow catenary, never below the handrail line
+            double sag = cableSag() * 4 * u * (1 - u);
+            return new Vec3(p.x, p.y - sag, p.z);
+        }
+
+        /** Mid strand (the second cable of the safety net) - follows the deck a bit closer. */
+        public Vec3 railMid(double u, int side) {
+            Vec3 deckP = pt(u, side);
+            Vec3 top = railTop(u, side);
+            return new Vec3((deckP.x + top.x) / 2, deckP.y + (top.y - deckP.y) * 0.55, (deckP.z + top.z) / 2);
+        }
+
+        /** Deck edge point (where hangers land). */
+        public Vec3 edge(double u, int side) {
+            return pt(u, side);
+        }
+
+        /** u samples for the vertical hangers. */
+        public double[] hangerUs() {
+            int n = Math.max(2, (int) Math.round(len() / 1.25));
+            double[] out = new double[n + 1];
+            for (int i = 0; i <= n; ++i) out[i] = i / (double) n;
+            return out;
+        }
+
+        /** Plank index / count of the planks along the span. */
+        public int plankCount() {
+            return Math.max(2, (int) Math.ceil(len() / PLANK_STEP));
+        }
+
+        /** A plank is really there (wear + the broken gap). */
+        public boolean plankAt(double u) {
+            if (open(u)) return false;
+            int h = (int) Math.floor(u * plankCount());
+            int r = mix(h, a.getX() * 31 + a.getZ() * 17, styleId);
+            return (r & 0xFF) / 255.0 >= style().holes;
+        }
+
+        private static int mix(int a, int b, int c) {
+            int h = a * 374761393 + b * 668265263 + c * 2147483647;
+            h = (h ^ (h >>> 13)) * 1274126177;
+            return h ^ (h >>> 16);
+        }
+
+        // ----- collision -----------------------------------------------------------------------------------
+        /**
+         * Invisible collision cells: block pos -> top height in 1/16 of a block (1..16). Quarter-block sampling keeps
+         * the walking surface continuous on steep and diagonal spans.
+         */
+        public Map<BlockPos, Integer> collisionCells() {
+            Map<BlockPos, Integer> out = new LinkedHashMap<>();
+            int steps = Math.max(4, (int) Math.ceil(len() / 0.25));
+            for (int i = 0; i <= steps; ++i) {
+                double u = i / (double) steps;
+                if (open(u)) continue;
+                for (int j = 0; j <= 4; ++j) {
+                    Vec3 p = pt(u, j / 4.0);
+                    double top = p.y;
+                    int cellY = (int) Math.floor(top - 1.0E-3);
+                    int frac = (int) Math.round((top - cellY) * 16.0);
+                    if (frac < 2) { cellY -= 1; frac = 16; }
+                    frac = Math.max(2, Math.min(16, frac));
+                    BlockPos bp = new BlockPos((int) Math.floor(p.x), cellY, (int) Math.floor(p.z));
+                    out.merge(bp, frac, Math::max);
                 }
             }
             return out;
         }
 
-        /** Axis bounds of the whole swinging volume (stir detection on the client). */
+        /** Axis bounds of the whole swinging volume (client-side stir detection). */
         public net.minecraft.world.phys.AABB stirBox() {
-            Vec3 lo = new Vec3(Math.min(Math.min(a.getX(), b.getX()), Math.min(a2.getX(), b2.getX())),
-                    Math.min(Math.min(a.getY(), b.getY()), Math.min(a2.getY(), b2.getY())) - 1.5,
-                    Math.min(Math.min(a.getZ(), b.getZ()), Math.min(a2.getZ(), b2.getZ())));
-            Vec3 hi = new Vec3(Math.max(Math.max(a.getX(), b.getX()), Math.max(a2.getX(), b2.getX())) + 1,
-                    Math.max(Math.max(a.getY(), b.getY()), Math.max(a2.getY(), b2.getY())) + 2.6,
-                    Math.max(Math.max(a.getZ(), b.getZ()), Math.max(a2.getZ(), b2.getZ())) + 1);
-            return new net.minecraft.world.phys.AABB(lo.x, lo.y, lo.z, hi.x, hi.y, hi.z);
+            double minX = Math.min(Math.min(a.getX(), b.getX()), Math.min(a2.getX(), b2.getX())) - 1;
+            double minZ = Math.min(Math.min(a.getZ(), b.getZ()), Math.min(a2.getZ(), b2.getZ())) - 1;
+            double maxX = Math.max(Math.max(a.getX(), b.getX()), Math.max(a2.getX(), b2.getX())) + 2;
+            double maxZ = Math.max(Math.max(a.getZ(), b.getZ()), Math.max(a2.getZ(), b2.getZ())) + 2;
+            return new net.minecraft.world.phys.AABB(minX, Math.min(a.getY(), Math.min(b.getY(), Math.min(a2.getY(), b2.getY()))) - 1.5,
+                    minZ, maxX, Math.max(a.getY(), Math.max(b.getY(), Math.max(a2.getY(), b2.getY()))) + CABLE_ANCHOR + 1.2, maxZ);
         }
 
-        /** The deck-owner post (renders the mesh): the lexicographically smallest corner. */
+        /** The deck-owner post (renders the whole mesh): the lexicographically smallest corner. */
         public BlockPos master() {
             BlockPos m = a;
             if (b.compareTo(m) < 0) m = b;
@@ -91,5 +202,18 @@ public final class BridgeDeckGeom {
     }
 
     private BridgeDeckGeom() {
+    }
+
+    /** Style that fits a biome / region key (used by placement and by the world generator). */
+    public static int styleFor(String biomePath) {
+        if (biomePath == null) return BridgeStyle.PLAINS.id;
+        return switch (biomePath) {
+            case "violet_hills" -> BridgeStyle.GARDEN.id;
+            case "sizo_grove" -> BridgeStyle.GROVE.id;
+            case "waterfall_gardens" -> BridgeStyle.GARDEN.id;
+            case "ashen_lands" -> BridgeStyle.BURNT.id;
+            case "mist_keep" -> BridgeStyle.MIST.id;
+            default -> BridgeStyle.PLAINS.id;
+        };
     }
 }
