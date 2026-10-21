@@ -1,0 +1,33 @@
+{
+  "family": "riftworld_dt:lilac",
+  "tapering": 0.34,
+  "signal_energy": 16.0,
+  "growth_rate": 0.72,
+  "lowest_branch_height": 5,
+  "max_branch_radius": 7,
+  "leaves_properties": "riftworld_dt:lilac",
+  "perfect_biomes": {
+    "name": "riftworld:violet_hills"
+  },
+  "generate_seed": true,
+  "up_probability": 2,
+  "acceptable_growth_blocks": [
+    "riftworld:elisar_grass",
+    "riftworld:elisar_soil",
+    "minecraft:grass_block"
+  ],
+  "acceptable_soils": [
+    "dirt_like"
+  ],
+  "world_gen_acceptable_soils": [
+    "dirt_like"
+  ],
+  "seed_name": "lilac_seed",
+  "texture_overrides": {
+    "seed": "riftworld_dt:item/lilac_seed"
+  },
+  "lang_overrides": {
+    "seed": "Lilac Tree Seed"
+  },
+  "only_if_loaded": "dynamictrees"
+}

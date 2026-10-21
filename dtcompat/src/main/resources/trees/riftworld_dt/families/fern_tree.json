@@ -1,0 +1,11 @@
+{
+  "common_leaves": "riftworld_dt:fern_tree",
+  "common_species": "riftworld_dt:fern_tree",
+  "primitive_log": "riftworld:fern_log",
+  "max_branch_radius": 5,
+  "texture_overrides": {
+    "branch": "riftworld:block/fern_log",
+    "branch_top": "riftworld:block/fern_log_top"
+  },
+  "only_if_loaded": "dynamictrees"
+}

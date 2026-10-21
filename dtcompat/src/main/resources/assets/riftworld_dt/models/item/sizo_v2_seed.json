@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "riftworld_dt:item/sizo_v2_seed"
+  }
+}

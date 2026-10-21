@@ -1,0 +1,38 @@
+{
+  "family": "riftworld_dt:mist_pine",
+  "tapering": 0.42,
+  "signal_energy": 13.0,
+  "growth_rate": 0.66,
+  "lowest_branch_height": 4,
+  "max_branch_radius": 6,
+  "leaves_properties": "riftworld_dt:mist_pine",
+  "perfect_biomes": {
+    "name": "riftworld:mist_keep"
+  },
+  "generate_seed": true,
+  "up_probability": 3,
+  "acceptable_growth_blocks": [
+    "riftworld:elisar_grass",
+    "riftworld:elisar_soil",
+    "minecraft:grass_block"
+  ],
+  "acceptable_soils": [
+    "dirt_like"
+  ],
+  "world_gen_acceptable_soils": [
+    "dirt_like"
+  ],
+  "seed_name": "mist_pine_seed",
+  "texture_overrides": {
+    "seed": "riftworld_dt:item/mist_pine_seed"
+  },
+  "lang_overrides": {
+    "seed": "Mist Pine Seed"
+  },
+  "only_if_loaded": "dynamictrees",
+  "growth_logic_kit": "conifer",
+  "environment_factors": {
+    "#forge:is_cold": 1.1,
+    "#forge:is_hot": 0.8
+  }
+}

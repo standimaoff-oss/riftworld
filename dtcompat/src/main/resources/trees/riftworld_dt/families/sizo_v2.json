@@ -1,0 +1,11 @@
+{
+  "common_leaves": "riftworld_dt:sizo_v2",
+  "common_species": "riftworld_dt:sizo_v2",
+  "primitive_log": "riftworld:sizo_log",
+  "max_branch_radius": 10,
+  "texture_overrides": {
+    "branch": "riftworld:block/sizo_log",
+    "branch_top": "riftworld:block/sizo_log_top"
+  },
+  "only_if_loaded": "dynamictrees"
+}

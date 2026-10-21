@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "riftworld:block/lilac_blossom"
+  },
+  "render_type": "minecraft:cutout"
+}

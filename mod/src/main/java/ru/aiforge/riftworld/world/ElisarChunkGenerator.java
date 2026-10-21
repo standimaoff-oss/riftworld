@@ -509,7 +509,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                         }
                     }
                 }
-                if (!ashen && c.isl == null && c.fallTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE) debris(plan, chunk, mp, x, z);                if (dx == 15 && dz == 15) mistKeepDressing(plan, chunk, mp, x0, z0);
+                if (!ashen && c.isl == null && c.fallTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE) debris(plan, chunk, mp, x, z);                if (dx == 15 && dz == 15) { treesChunk(plan, chunk, mp, x0, z0); mistKeepDressing(plan, chunk, mp, x0, z0); }
 
                 tower(chunk, mp, x, z);
                 if (c.isl != null) {
@@ -662,7 +662,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                         }
                     }
                 }
-                trees(plan, chunk, mp, x, z);
+                deadTrees(plan, chunk, mp, x, z);
             }
         }
         Heightmap.primeHeightmaps(chunk, EnumSet.of(Heightmap.Types.OCEAN_FLOOR_WG, Heightmap.Types.WORLD_SURFACE_WG));
@@ -727,94 +727,104 @@ public class ElisarChunkGenerator extends ChunkGenerator {
     }
 
     // ------------------------------------------------------------------ native trees
-    private static void trees(CityPlan plan, ChunkAccess chunk, BlockPos.MutableBlockPos mp, int x, int z) {
+    /**
+     * Rev 7 part 2: dead (charred) trees only - they keep their own shape and are cheap. All living species are grown
+     * by {@link #treesChunk} once per chunk through the new {@link ru.aiforge.riftworld.tree.TreeGen} engine.
+     */
+    private static void deadTrees(CityPlan plan, ChunkAccess chunk, BlockPos.MutableBlockPos mp, int x, int z) {
         java.util.List<CityPlan.Tree> wild = WildIslands.treesNear(x, z);
         java.util.List<CityPlan.Tree> all = wild.isEmpty() ? plan.at(x, z).trees : new java.util.ArrayList<>(plan.at(x, z).trees);
         if (!wild.isEmpty()) all.addAll(wild);
         for (CityPlan.Tree t : all) {
-            int dx = x - t.x, dz = z - t.z;
-            int reach = t.kind == SizoGrove.TREE_GIANT ? 7 : 4;
-            if (Math.abs(dx) > reach || Math.abs(dz) > reach) continue;
-            int base = t.baseY;
-            if (base == Integer.MIN_VALUE) {
-                Col c = column(plan, t.x, t.z);
-                base = c.isl == null ? -999 : c.top + 1;
-                t.baseY = base;
-            }
+            if (t.kind != ru.aiforge.riftworld.tree.TreeSpecies.DEAD) continue;
+            if (Math.abs(x - t.x) > 4 || Math.abs(z - t.z) > 4) continue;
+            int base = baseOf(plan, t);
             if (base < 0) continue;
-            if (t.kind == 2) { deadTree(chunk, mp, t, base, x, z); continue; }
-            if (t.kind == SizoGrove.TREE_GIANT) { giantSizo(chunk, mp, t, base, x, z); continue; }
-            boolean sizo = t.kind == 0;
-            BlockState logS = (sizo ? ElisarBlocks.SIZO_LOG : ElisarBlocks.AMBRA_LOG).get().defaultBlockState().setValue(RotatedPillarBlock.AXIS, Direction.Axis.Y);
-            BlockState leaf = (sizo ? ElisarBlocks.SIZO_LEAVES : ElisarBlocks.AMBRA_LEAVES).get().defaultBlockState()
-                    .setValue(LeavesBlock.PERSISTENT, true).setValue(LeavesBlock.DISTANCE, 1);
-            double dist = Math.sqrt(dx * dx + dz * dz);
-            if (dx == 0 && dz == 0) {
-                for (int y = base; y < base + t.h; ++y) chunk.setBlockState(mp.set(x, y, z), logS, false);
-            }
-            if (sizo) {
-                for (int j = 3; j <= t.h + 1; ++j) {
-                    double r = (1 - (j - 3) / (double) (t.h - 1)) * 3.3 + 0.55;
-                    if ((j & 1) == 1) r *= 0.72;
-                    if (dist > r || dx == 0 && dz == 0 && j < t.h) continue;
-                    if (dist > r - 1 && hash(x * 3 + j, z, t.seed) < 0.3) continue;
-                    BlockPos p = mp.set(x, base + j, z);
-                    if (chunk.getBlockState(p).isAir() || chunk.getBlockState(p).canBeReplaced()) chunk.setBlockState(p, leaf, false);
-                }
-            } else {
-                double R = 2.7 + (t.seed % 3) * 0.3;
-                int cy = base + t.h - 1;
-                for (int y = cy - 3; y <= cy + 3; ++y) {
-                    double dy = (y - cy) * 1.25;
-                    double q = dx * dx + dz * dz + dy * dy;
-                    if (q > R * R || dx == 0 && dz == 0 && y < base + t.h) continue;
-                    if (q > (R - 1) * (R - 1) && hash(x, z * 5 + y, t.seed) < 0.28) continue;
-                    BlockPos p = mp.set(x, y, z);
-                    if (chunk.getBlockState(p).isAir() || chunk.getBlockState(p).canBeReplaced()) chunk.setBlockState(p, leaf, false);
-                }
-                // two short branches into the crown
-                if (dist > 0 && dist < 1.5 && Math.abs(dx) + Math.abs(dz) == 1 && hash(dx, dz, t.seed) < 0.5) {
-                    chunk.setBlockState(mp.set(x, base + t.h - 2, z), logS.setValue(RotatedPillarBlock.AXIS, dx != 0 ? Direction.Axis.X : Direction.Axis.Z), false);
-                }
-            }
+            deadTree(chunk, mp, t, base, x, z);
         }
     }
 
-    /** Biome 05 «Роща Сизо» giant: 2x2 trunk, branch cross, 3 stacked flat disc canopies + small crown (the reference silhouette). */
-    private static void giantSizo(ChunkAccess chunk, BlockPos.MutableBlockPos mp, CityPlan.Tree t, int base, int x, int z) {
-        int dx = x - t.x, dz = z - t.z;
-        BlockState logS = ElisarBlocks.SIZO_LOG.get().defaultBlockState().setValue(RotatedPillarBlock.AXIS, Direction.Axis.Y);
-        BlockState leaf = ElisarBlocks.SIZO_LEAVES.get().defaultBlockState()
-                .setValue(LeavesBlock.PERSISTENT, true).setValue(LeavesBlock.DISTANCE, 1);
-        boolean inTrunk = dx >= 0 && dx <= 1 && dz >= 0 && dz <= 1;
-        int topY = base + t.h + 2;                       // first disc altitude (trunk tops out here)
-        if (inTrunk) {
-            for (int y = base; y <= topY; ++y) chunk.setBlockState(mp.set(x, y, z), logS, false);
-            return;
+    /** Base Y of a tree (cached on the tree object - shared by every chunk that touches it). */
+    private static int baseOf(CityPlan plan, CityPlan.Tree t) {
+        int base = t.baseY;
+        if (base == Integer.MIN_VALUE) {
+            Col c = column(plan, t.x, t.z);
+            base = c.isl == null ? -999 : c.top + 1;
+            t.baseY = base;
         }
-        // branch cross under the discs (trunk centre sits between the 4 trunk cells)
-        if ((dz == 0 || dz == 1) && ((dx >= 2 && dx <= 4) || (dx <= -1 && dx >= -3))
-                 && !(dx == 0 || dx == 1)) {
-            chunk.setBlockState(mp.set(x, base + t.h + 1, z), logS.setValue(RotatedPillarBlock.AXIS, Direction.Axis.X), false);
-        } else if ((dx == 0 || dx == 1) && ((dz >= 2 && dz <= 4) || (dz <= -1 && dz >= -3))) {
-            chunk.setBlockState(mp.set(x, base + t.h + 1, z), logS.setValue(RotatedPillarBlock.AXIS, Direction.Axis.Z), false);
+        return base;
+    }
+
+    /**
+     * Rev 7 part 2: all living trees whose canopy can reach this chunk, grown by the TreeGen engine and written once
+     * per chunk (quarter of the work the old per-column pass did, and with real branches instead of a "ball on a stick").
+     */
+    private static void treesChunk(CityPlan plan, ChunkAccess chunk, BlockPos.MutableBlockPos mp, int x0, int z0) {
+        java.util.Set<CityPlan.Tree> near = new java.util.LinkedHashSet<>();
+        for (int sx = x0; sx <= x0 + 16; sx += 8)
+            for (int sz = z0; sz <= z0 + 16; sz += 8) near.addAll(WildIslands.treesNear(sx, sz));
+        for (int bx = x0 - 8; bx <= x0 + 24; bx += 8)
+            for (int bz = z0 - 8; bz <= z0 + 24; bz += 8) near.addAll(plan.at(bx, bz).trees);
+        if (near.isEmpty()) return;
+        for (CityPlan.Tree t : near) {
+            if (!ru.aiforge.riftworld.tree.TreeSpecies.usesEngine(t.kind)) continue;
+            if (Math.abs(t.x - (x0 + 8)) > 26 || Math.abs(t.z - (z0 + 8)) > 26) continue;
+            int base = baseOf(plan, t);
+            if (base < 0) continue;
+            int kind = t.kind;
+            BlockState log = logState(kind);
+            BlockState leaf = leafState(kind);
+            BlockState accent = accentState(kind);
+            final int fx = t.x, fz = t.z;
+            ru.aiforge.riftworld.tree.TreeGen.build(kind, t.h, t.seed, (dx, dy, dz, k, axis) -> {
+                int wx = fx + dx, wz = fz + dz, wy = base + dy;
+                if (wx < x0 || wx > x0 + 15 || wz < z0 || wz > z0 + 15) return;      // write only this chunk's cells
+                BlockPos pos = mp.set(wx, wy, wz);
+                if (k == ru.aiforge.riftworld.tree.TreeGen.LEAF) {
+                    BlockState cur = chunk.getBlockState(pos);
+                    if (!cur.isAir() && !cur.canBeReplaced()) return;
+                    chunk.setBlockState(pos, leaf, false);
+                } else {
+                    BlockState st = log;
+                    if (k == ru.aiforge.riftworld.tree.TreeGen.ACCENT && accent != null) st = accent;
+                    if (axis != ru.aiforge.riftworld.tree.TreeGen.AXIS_Y && st.hasProperty(RotatedPillarBlock.AXIS))
+                        st = st.setValue(RotatedPillarBlock.AXIS, axis == ru.aiforge.riftworld.tree.TreeGen.AXIS_X ? Direction.Axis.X : Direction.Axis.Z);
+                    chunk.setBlockState(pos, st, false);
+                }
+            });
         }
-        // stacked discs: centre (0.5, 0.5); tiers {radius, dy}
-        double dc = Math.hypot(dx - 0.5, dz - 0.5);
-        double[][] tiers = new double[][] {{1.7, 1}, {2.6, 0}, {3.6, -2}, {2.8, -4}};
-        long seed = t.seed;
-        for (double[] ti : tiers) {
-            double r = ti[0]; int yy = topY + (int) ti[1];
-            if (dc > r) continue;
-            boolean rim = dc > r - 0.85;
-            if (rim && hash(x * 7 + yy, z * 7, (int) (seed & 0x3FFFFFFF)) < 0.18) continue;          // ragged edge
-            BlockPos pp = mp.set(x, yy, z);
-            if (chunk.getBlockState(pp).isAir() || chunk.getBlockState(pp).canBeReplaced()) chunk.setBlockState(pp, leaf, false);
-            if (rim && hash(x * 13 - yy, z * 11, (int) ((seed >>> 20) & 0x3FFFFFFF)) < 0.4) {         // drooping skirt
-                BlockPos lo = mp.set(x, yy - 1, z);
-                if (chunk.getBlockState(lo).isAir()) chunk.setBlockState(lo, leaf, false);
-            }
-        }
+    }
+
+    private static BlockState logState(int kind) {
+        return switch (kind) {
+            case ru.aiforge.riftworld.tree.TreeSpecies.LILAC -> ElisarBlocks.LILAC_LOG.get().defaultBlockState();
+            case ru.aiforge.riftworld.tree.TreeSpecies.FERN -> ElisarBlocks.FERN_LOG.get().defaultBlockState();
+            case ru.aiforge.riftworld.tree.TreeSpecies.MIST_PINE -> ElisarBlocks.MIST_PINE_LOG.get().defaultBlockState();
+            case ru.aiforge.riftworld.tree.TreeSpecies.OAK -> ElisarBlocks.OAK_LOG.get().defaultBlockState();
+            case ru.aiforge.riftworld.tree.TreeSpecies.AMBRA -> ElisarBlocks.AMBRA_LOG.get().defaultBlockState();
+            default -> ElisarBlocks.SIZO_LOG.get().defaultBlockState();
+        };
+    }
+
+    private static BlockState leafState(int kind) {
+        var b = switch (kind) {
+            case ru.aiforge.riftworld.tree.TreeSpecies.LILAC -> ElisarBlocks.LILAC_LEAVES;
+            case ru.aiforge.riftworld.tree.TreeSpecies.FERN -> ElisarBlocks.FERN_LEAVES;
+            case ru.aiforge.riftworld.tree.TreeSpecies.MIST_PINE -> ElisarBlocks.MIST_PINE_LEAVES;
+            case ru.aiforge.riftworld.tree.TreeSpecies.OAK -> ElisarBlocks.OAK_LEAVES;
+            case ru.aiforge.riftworld.tree.TreeSpecies.AMBRA -> ElisarBlocks.AMBRA_LEAVES;
+            default -> ElisarBlocks.SIZO_LEAVES;
+        };
+        return b.get().defaultBlockState().setValue(LeavesBlock.PERSISTENT, true).setValue(LeavesBlock.DISTANCE, 1);
+    }
+
+    /** Accent block of a species (blossom / moss / nothing). */
+    private static BlockState accentState(int kind) {
+        return switch (kind) {
+            case ru.aiforge.riftworld.tree.TreeSpecies.LILAC -> ElisarBlocks.LILAC_BLOSSOM.get().defaultBlockState();
+            case ru.aiforge.riftworld.tree.TreeSpecies.SIZO_GIANT -> ElisarBlocks.MOSS.get().defaultBlockState();
+            default -> null;
+        };
     }
 
     // ================================================================== decoration: buildings + props

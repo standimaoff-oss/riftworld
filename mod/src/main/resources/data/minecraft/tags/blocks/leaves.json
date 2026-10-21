@@ -2,6 +2,10 @@
   "replace": false,
   "values": [
     "riftworld:sizo_leaves",
-    "riftworld:ambra_leaves"
+    "riftworld:ambra_leaves",
+    "riftworld:lilac_leaves",
+    "riftworld:fern_leaves",
+    "riftworld:mist_pine_leaves",
+    "riftworld:oak_leaves"
   ]
 }

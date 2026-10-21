@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "axis=y": {
+      "model": "riftworld:block/lilac_log"
+    },
+    "axis=z": {
+      "model": "riftworld:block/lilac_log_horizontal",
+      "x": 90
+    },
+    "axis=x": {
+      "model": "riftworld:block/lilac_log_horizontal",
+      "x": 90,
+      "y": 90
+    }
+  }
+}

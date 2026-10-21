@@ -60,7 +60,7 @@ public final class SizoGrove {
                 boolean ok = true;
                 for (CityPlan.Tree t : trees) if (Math.abs(t.x - x) < 9 && Math.abs(t.z - z) < 9) { ok = false; break; }
                 if (!ok) continue;
-                trees.add(new CityPlan.Tree(x, z, TREE_GIANT, 13 + rnd.nextInt(5), rnd.nextInt(1 << 30)));
+                trees.add(new CityPlan.Tree(x, z, TREE_GIANT, 17 + rnd.nextInt(6), rnd.nextInt(1 << 30)));
                 ++k;
             }
             // mossy boulders between the trunks

@@ -1,0 +1,11 @@
+{
+  "common_leaves": "riftworld_dt:lilac",
+  "common_species": "riftworld_dt:lilac",
+  "primitive_log": "riftworld:lilac_log",
+  "max_branch_radius": 7,
+  "texture_overrides": {
+    "branch": "riftworld:block/lilac_log",
+    "branch_top": "riftworld:block/lilac_log_top"
+  },
+  "only_if_loaded": "dynamictrees"
+}

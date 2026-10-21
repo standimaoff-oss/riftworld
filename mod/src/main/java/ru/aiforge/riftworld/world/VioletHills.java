@@ -96,19 +96,24 @@ public final class VioletHills {
             this.rax = rcx - Math.cos(phi) * rl; this.raz = rcz - Math.sin(phi) * rl;
             this.rbx = rcx + Math.cos(phi) * rl; this.rbz = rcz + Math.sin(phi) * rl;
             this.riverLevel = (int) Math.floor(base) - 2;
-            // rare trees (Rev 4): 4..7, well away from churches, path and river
-            for (int k = 0, tries = 0; k < 7 && tries < 160; ++tries) {
-                double a = rnd.nextDouble() * Math.PI * 2, d = (0.35 + rnd.nextDouble() * 0.55) * R;
-                int x = (int) Math.floor(cx + Math.cos(a) * d), z = (int) Math.floor(cz + Math.sin(a) * d);
+            // Rev 7: lilac groves instead of 4-7 lonely balls - 10..15 trees in 3-4 groves, away from the path/river
+            double[][] groves = {{0.35, 0.6}, {0.75, 0.3}, {0.55, 0.85}, {0.15, 0.25}};
+            for (int k = 0, tries = 0; k < 15 && tries < 420; ++tries) {
+                double[] g = groves[(int) (rnd.nextDouble() * groves.length) % groves.length];
+                double a = rnd.nextDouble() * Math.PI * 2, d = (0.4 + rnd.nextDouble() * 0.55) * R;
+                int x = (int) Math.floor(cx + Math.cos(a) * d + (g[0] - 0.5) * R * 0.35);
+                int z = (int) Math.floor(cz + Math.sin(a) * d + (g[1] - 0.5) * R * 0.35);
                 if (meadow.t(x + 0.5, z + 0.5) < 0.3) continue;
                 if (churchA.outside(x + 0.5, z + 0.5) < 10 || churchB.outside(x + 0.5, z + 0.5) < 10) continue;
                 if (pathDist(x + 0.5, z + 0.5) < 3.0) continue;
                 if (CityPlan.segDist(x + 0.5, z + 0.5, rax, raz, rbx, rbz, null) < 4.0) continue;
                 boolean ok = true;
-                for (CityPlan.Tree t : trees) if (Math.abs(t.x - x) < 6 && Math.abs(t.z - z) < 6) { ok = false; break; }
+                for (CityPlan.Tree t : trees) if (Math.abs(t.x - x) < 10 && Math.abs(t.z - z) < 10) { ok = false; break; }
                 if (!ok) continue;
-                int kind = rnd.nextDouble() < 0.55 ? 0 : 1;
-                trees.add(new CityPlan.Tree(x, z, kind, kind == 0 ? 8 + rnd.nextInt(5) : 5 + rnd.nextInt(3), rnd.nextInt(1 << 30)));
+                // Rev 7: lilac ash everywhere in 04, a single elisar oak now and then for contrast
+                int kind = rnd.nextDouble() < 0.88 ? ru.aiforge.riftworld.tree.TreeSpecies.LILAC
+                        : ru.aiforge.riftworld.tree.TreeSpecies.OAK;
+                trees.add(new CityPlan.Tree(x, z, kind, 12 + rnd.nextInt(6), rnd.nextInt(1 << 30)));
                 ++k;
             }
         }

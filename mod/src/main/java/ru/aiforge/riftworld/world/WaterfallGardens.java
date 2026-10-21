@@ -51,8 +51,9 @@ public final class WaterfallGardens {
                     break;
                 }
             }
-            // tiny trees only (TZ): mostly round ambra puffballs, sparse slim sizo - elbow room 5
-            for (int k = 0, want = 18 + rnd.nextInt(9), tries = 0; k < want && tries < want * 20; ++tries) {
+            // Rev 7: fern trees with umbrella crowns + a few slim sizo; still low (TZ «деревья очень маленькие»),
+            // but real branching canopies instead of puffballs
+            for (int k = 0, want = 26 + rnd.nextInt(10), tries = 0; k < want && tries < want * 20; ++tries) {
                 double a = rnd.nextDouble() * Math.PI * 2, d = (0.15 + rnd.nextDouble() * 0.7) * R;
                 int x = (int) Math.floor(cx + Math.cos(a) * d), z = (int) Math.floor(cz + Math.sin(a) * d);
                 if (hub.t(x + 0.5, z + 0.5) < 0.34) continue;
@@ -61,8 +62,9 @@ public final class WaterfallGardens {
                 for (CityPlan.Bridge b : bridges)
                     if (CityPlan.segDist(x + 0.5, z + 0.5, b.ax(), b.az(), b.bx(), b.bz(), null) < 3.0) { ok = false; break; }
                 if (!ok) continue;
-                int kind = rnd.nextDouble() < 0.6 ? 1 : 0;
-                trees.add(new CityPlan.Tree(x, z, kind, 4 + rnd.nextInt(3), rnd.nextInt(1 << 30)));
+                int kind = rnd.nextDouble() < 0.72 ? ru.aiforge.riftworld.tree.TreeSpecies.FERN
+                        : ru.aiforge.riftworld.tree.TreeSpecies.SIZO;
+                trees.add(new CityPlan.Tree(x, z, kind, (kind == ru.aiforge.riftworld.tree.TreeSpecies.FERN ? 7 : 9) + rnd.nextInt(3), rnd.nextInt(1 << 30)));
                 ++k;
             }
         }

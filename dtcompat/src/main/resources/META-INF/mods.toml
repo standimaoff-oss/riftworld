@@ -1,0 +1,31 @@
+modLoader = "javafml"
+loaderVersion = "[47,)"
+license = "All Rights Reserved"
+issueTrackerURL = "https://github.com/standimaoff-oss/riftworld/issues"
+
+[[mods]]
+modId = "riftworld_dt"
+version = "1.0"
+displayName = "Разлом: Dynamic Trees"
+description = """Dynamic Trees add-on for Rift (Разлом): four species (lilac, sizo v2, fern tree, mist pine)."""
+
+[[dependencies.riftworld_dt]]
+    modId = "forge"
+    type = "required"
+    versionRange = "[47,)"
+    ordering = "NONE"
+    side = "BOTH"
+
+[[dependencies.riftworld_dt]]
+    modId = "riftworld"
+    type = "required"
+    versionRange = "[1.0,)"
+    ordering = "AFTER"
+    side = "BOTH"
+
+[[dependencies.riftworld_dt]]
+    modId = "dynamictrees"
+    type = "optional"
+    versionRange = "[1.3,)"
+    ordering = "AFTER"
+    side = "BOTH"

@@ -314,5 +314,16 @@
   "block.riftworld.keep_stone_slab": "Плита утёсного камня",
   "block.riftworld.keep_cage_lantern": "Клеточный фонарь данжа",
   "biome.riftworld.mist_keep": "Туманный данж",
-  "block.riftworld.bridge_walk": "Невидимый настил"
+  "block.riftworld.bridge_walk": "Невидимый настил",
+  "block.riftworld.lilac_blossom": "Лиловый цвет",
+  "block.riftworld.lilac_log": "Бревно: лиловый ясень",
+  "block.riftworld.lilac_leaves": "Листва: лиловый ясень",
+  "block.riftworld.fern_log": "Бревно: папоротниковое дерево",
+  "block.riftworld.fern_leaves": "Листва: папоротниковое дерево",
+  "block.riftworld.mist_pine_log": "Бревно: туманная сосна",
+  "block.riftworld.mist_pine_leaves": "Листва: туманная сосна",
+  "block.riftworld.oak_log": "Бревно: элисарский дуб",
+  "block.riftworld.oak_leaves": "Листва: элисарский дуб",
+  "block.riftworld.temple_grand_column": "Храмовая колонна",
+  "block.riftworld.temple_rose_window": "Храмовая роза-витраж"
 }

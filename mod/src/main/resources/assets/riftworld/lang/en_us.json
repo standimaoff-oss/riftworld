@@ -314,5 +314,16 @@
   "block.riftworld.keep_stone_slab": "Keep Stone Slab",
   "block.riftworld.keep_cage_lantern": "Dungeon Cage Lantern",
   "biome.riftworld.mist_keep": "Misty Dungeon",
-  "block.riftworld.bridge_walk": "Invisible deck"
+  "block.riftworld.bridge_walk": "Invisible deck",
+  "block.riftworld.lilac_blossom": "Lilac Blossom",
+  "block.riftworld.lilac_log": "Lilac Ash Log",
+  "block.riftworld.lilac_leaves": "Lilac Ash Leaves",
+  "block.riftworld.fern_log": "Fern Tree Log",
+  "block.riftworld.fern_leaves": "Fern Tree Leaves",
+  "block.riftworld.mist_pine_log": "Mist Pine Log",
+  "block.riftworld.mist_pine_leaves": "Mist Pine Leaves",
+  "block.riftworld.oak_log": "Elisar Oak Log",
+  "block.riftworld.oak_leaves": "Elisar Oak Leaves",
+  "block.riftworld.temple_grand_column": "Temple Grand Column",
+  "block.riftworld.temple_rose_window": "Temple Rose Window"
 }

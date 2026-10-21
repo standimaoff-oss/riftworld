@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "riftworld:fern_log_top",
+    "side": "riftworld:fern_log"
+  }
+}

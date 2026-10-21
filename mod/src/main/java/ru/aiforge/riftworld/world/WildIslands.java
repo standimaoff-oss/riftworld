@@ -76,6 +76,7 @@ public final class WildIslands {
         out.addAll(VioletHills.treesNear(x, z));
         out.addAll(SizoGrove.treesNear(x, z));
         out.addAll(WaterfallGardens.treesNear(x, z));
+        out.addAll(MistKeep.treesNear(x, z));
         for (int dx = -1; dx <= 1; ++dx)
             for (int dz = -1; dz <= 1; ++dz)
                 for (CityPlan.Tree t : cell(cx + dx, cz + dz).trees)
@@ -150,10 +151,12 @@ public final class WildIslands {
             double x = (r.nextDouble() < 0.6 ? gx : isl.cx) + Math.cos(a) * d, z = (r.nextDouble() < 0.6 ? gz : isl.cz) + Math.sin(a) * d;
             if (isl.t(x, z) < 0.28) continue;
             boolean ok = true;
-            for (CityPlan.Tree t : c.trees) if (Math.abs(t.x - x) < 4 && Math.abs(t.z - z) < 4) { ok = false; break; }
+            for (CityPlan.Tree t : c.trees) if (Math.abs(t.x - x) < 6 && Math.abs(t.z - z) < 6) { ok = false; break; }
             if (!ok) continue;
-            int kind = r.nextDouble() < 0.55 ? 0 : 1;
-            int h = kind == 0 ? 8 + r.nextInt(6) : 5 + r.nextInt(4);
+            // Rev 7: elisar oak (broadleaf) and ambra - the same species the old trees were, now grown with branches
+            int kind = r.nextDouble() < 0.62 ? ru.aiforge.riftworld.tree.TreeSpecies.OAK
+                    : ru.aiforge.riftworld.tree.TreeSpecies.AMBRA;
+            int h = kind == ru.aiforge.riftworld.tree.TreeSpecies.OAK ? 9 + r.nextInt(4) : 7 + r.nextInt(4);
             if (AshenLands.weight(x, z) > 0.3) {             // burnt: bare dead trees only
                 kind = 2;
                 h = 5 + r.nextInt(6);

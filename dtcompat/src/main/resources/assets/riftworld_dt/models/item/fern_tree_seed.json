@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "riftworld_dt:item/fern_tree_seed"
+  }
+}

@@ -1,0 +1,64 @@
+[
+  {
+    "select": "riftworld:violet_hills",
+    "apply": {
+      "species": "riftworld_dt:lilac",
+      "density": [
+        1.0
+      ],
+      "chance": 1.0
+    }
+  },
+  {
+    "select": "riftworld:sizo_grove",
+    "apply": {
+      "species": "riftworld_dt:sizo_v2",
+      "density": [
+        1.0
+      ],
+      "chance": 1.0
+    }
+  },
+  {
+    "select": "riftworld:waterfall_gardens",
+    "apply": {
+      "species": "riftworld_dt:fern_tree",
+      "density": [
+        1.0
+      ],
+      "chance": 1.0
+    }
+  },
+  {
+    "select": "riftworld:mist_keep",
+    "apply": {
+      "species": "riftworld_dt:mist_pine",
+      "density": [
+        1.0
+      ],
+      "chance": 1.0
+    }
+  },
+  {
+    "_comment": "Ashen Lands stay bare - the mod renders its own charred dead trees there.",
+    "select": "riftworld:ashen_lands",
+    "apply": {
+      "species": "null",
+      "density": [
+        1.0
+      ],
+      "chance": 1.0
+    }
+  },
+  {
+    "_comment": "The city island is hand-built: no dynamic trees inside it.",
+    "select": "riftworld:elisar_city",
+    "apply": {
+      "species": "null",
+      "density": [
+        1.0
+      ],
+      "chance": 1.0
+    }
+  }
+]

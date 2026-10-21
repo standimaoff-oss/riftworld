@@ -1,0 +1,11 @@
+{
+  "common_leaves": "riftworld_dt:mist_pine",
+  "common_species": "riftworld_dt:mist_pine",
+  "primitive_log": "riftworld:mist_pine_log",
+  "max_branch_radius": 6,
+  "texture_overrides": {
+    "branch": "riftworld:block/mist_pine_log",
+    "branch_top": "riftworld:block/mist_pine_log_top"
+  },
+  "only_if_loaded": "dynamictrees"
+}

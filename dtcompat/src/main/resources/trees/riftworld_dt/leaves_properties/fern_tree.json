@@ -1,0 +1,6 @@
+{
+  "primitive_leaves": "riftworld:fern_leaves",
+  "cell_kit": "dynamictrees:palm",
+  "smother": 3,
+  "only_if_loaded": "dynamictrees"
+}

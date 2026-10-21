@@ -1,0 +1,34 @@
+{
+  "family": "riftworld_dt:fern_tree",
+  "tapering": 0.55,
+  "signal_energy": 8.0,
+  "growth_rate": 1.15,
+  "lowest_branch_height": 3,
+  "max_branch_radius": 5,
+  "leaves_properties": "riftworld_dt:fern_tree",
+  "perfect_biomes": {
+    "name": "riftworld:waterfall_gardens"
+  },
+  "generate_seed": true,
+  "up_probability": 2,
+  "acceptable_growth_blocks": [
+    "riftworld:elisar_grass",
+    "riftworld:elisar_soil",
+    "minecraft:grass_block"
+  ],
+  "acceptable_soils": [
+    "dirt_like"
+  ],
+  "world_gen_acceptable_soils": [
+    "dirt_like"
+  ],
+  "seed_name": "fern_tree_seed",
+  "texture_overrides": {
+    "seed": "riftworld_dt:item/fern_tree_seed"
+  },
+  "lang_overrides": {
+    "seed": "Fern Tree Seed"
+  },
+  "only_if_loaded": "dynamictrees",
+  "growth_logic_kit": "palm"
+}

@@ -1,0 +1,6 @@
+{
+  "primitive_leaves": "riftworld:lilac_leaves",
+  "cell_kit": "dynamictrees:deciduous",
+  "smother": 3,
+  "only_if_loaded": "dynamictrees"
+}

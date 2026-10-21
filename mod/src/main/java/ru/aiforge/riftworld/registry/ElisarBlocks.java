@@ -60,6 +60,16 @@ public final class ElisarBlocks {
     public static final RegistryObject<RotatedPillarBlock> AMBRA_LOG = ModBlocks.reg("ambra_log", () -> new RotatedPillarBlock(p(MapColor.COLOR_BROWN, 2.0F, SoundType.WOOD)));
     public static final RegistryObject<LeavesBlock> SIZO_LEAVES = ModBlocks.reg("sizo_leaves", () -> new LeavesBlock(leaves(MapColor.COLOR_CYAN)));
     public static final RegistryObject<LeavesBlock> AMBRA_LEAVES = ModBlocks.reg("ambra_leaves", () -> new LeavesBlock(leaves(MapColor.COLOR_ORANGE)));
+    // ---- Rev 7 part 2: new tree species (muted palettes: lilac / fern / mist pine / elisar oak)
+    public static final RegistryObject<RotatedPillarBlock> LILAC_LOG = ModBlocks.reg("lilac_log", () -> new RotatedPillarBlock(p(MapColor.COLOR_PURPLE, 2.0F, SoundType.WOOD)));
+    public static final RegistryObject<LeavesBlock> LILAC_LEAVES = ModBlocks.reg("lilac_leaves", () -> new LeavesBlock(leaves(MapColor.COLOR_PURPLE)));
+    public static final RegistryObject<Block> LILAC_BLOSSOM = cube("lilac_blossom", MapColor.COLOR_PURPLE, 0.3F, SoundType.GRASS);
+    public static final RegistryObject<RotatedPillarBlock> FERN_LOG = ModBlocks.reg("fern_log", () -> new RotatedPillarBlock(p(MapColor.COLOR_BROWN, 1.6F, SoundType.WOOD)));
+    public static final RegistryObject<LeavesBlock> FERN_LEAVES = ModBlocks.reg("fern_leaves", () -> new LeavesBlock(leaves(MapColor.PLANT)));
+    public static final RegistryObject<RotatedPillarBlock> MIST_PINE_LOG = ModBlocks.reg("mist_pine_log", () -> new RotatedPillarBlock(p(MapColor.COLOR_GRAY, 2.0F, SoundType.WOOD)));
+    public static final RegistryObject<LeavesBlock> MIST_PINE_LEAVES = ModBlocks.reg("mist_pine_leaves", () -> new LeavesBlock(leaves(MapColor.COLOR_GRAY)));
+    public static final RegistryObject<RotatedPillarBlock> OAK_LOG = ModBlocks.reg("oak_log", () -> new RotatedPillarBlock(p(MapColor.WOOD, 2.0F, SoundType.WOOD)));
+    public static final RegistryObject<LeavesBlock> OAK_LEAVES = ModBlocks.reg("oak_leaves", () -> new LeavesBlock(leaves(MapColor.PLANT)));
     // shapes
     public static final RegistryObject<StairBlock> ROOF_RED_STAIRS = stairs("roof_red_stairs", ROOF_RED);
     public static final RegistryObject<StairBlock> ROOF_BLUE_STAIRS = stairs("roof_blue_stairs", ROOF_BLUE);

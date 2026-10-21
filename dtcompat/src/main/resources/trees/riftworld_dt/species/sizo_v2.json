@@ -1,0 +1,34 @@
+{
+  "family": "riftworld_dt:sizo_v2",
+  "tapering": 0.28,
+  "signal_energy": 20.0,
+  "growth_rate": 0.62,
+  "lowest_branch_height": 6,
+  "max_branch_radius": 10,
+  "leaves_properties": "riftworld_dt:sizo_v2",
+  "perfect_biomes": {
+    "name": "riftworld:sizo_grove"
+  },
+  "generate_seed": true,
+  "up_probability": 2,
+  "acceptable_growth_blocks": [
+    "riftworld:elisar_grass",
+    "riftworld:elisar_soil",
+    "minecraft:grass_block"
+  ],
+  "acceptable_soils": [
+    "dirt_like"
+  ],
+  "world_gen_acceptable_soils": [
+    "dirt_like"
+  ],
+  "seed_name": "sizo_v2_seed",
+  "texture_overrides": {
+    "seed": "riftworld_dt:item/sizo_v2_seed"
+  },
+  "lang_overrides": {
+    "seed": "Sizo v2 Seed"
+  },
+  "only_if_loaded": "dynamictrees",
+  "growth_logic_kit": "dark_oak"
+}

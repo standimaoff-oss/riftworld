@@ -1,0 +1,6 @@
+{
+  "primitive_leaves": "riftworld:mist_pine_leaves",
+  "cell_kit": "dynamictrees:conifer",
+  "smother": 4,
+  "only_if_loaded": "dynamictrees"
+}

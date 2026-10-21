@@ -1,0 +1,24 @@
+# build output
+build/
+.gradle/
+out/
+*.class
+
+# ide
+.idea/
+*.iml
+.eclipse/
+.settings/
+bin/
+.classpath
+.project
+run/
+run-*/
+run-data/
+
+# os
+.DS_Store
+Thumbs.db
+
+# local libs (Dynamic Trees jar etc. are not vendored)
+libs/*.jar

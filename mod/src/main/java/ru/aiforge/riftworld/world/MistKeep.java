@@ -69,6 +69,30 @@ public final class MistKeep {
         return rg != null && Math.hypot(x - rg.cx, z - rg.cz) < rg.Rr + 14;
     }
 
+    /**
+     * Rev 7: cold mist pines stand on the tall ring rocks (deterministic per 5x5 cell, so chunk generation agrees).
+     * The base height is stored on the tree itself - these trunks root on the rocks, not on the island floor.
+     */
+    public static List<CityPlan.Tree> treesNear(int x, int z) {
+        Region rg = regionAt(x + 0.5, z + 0.5);
+        if (rg == null) return List.of();
+        List<CityPlan.Tree> out = new ArrayList<>(2);
+        int gx0 = Math.floorDiv(x, 5), gz0 = Math.floorDiv(z, 5);
+        for (int gx = gx0 - 1; gx <= gx0 + 1; ++gx)
+            for (int gz = gz0 - 1; gz <= gz0 + 1; ++gz) {
+                if (ElisarChunkGenerator.hash(gx, gz, 7101) > 0.15) continue;              // rare
+                int tx = gx * 5 + 2, tz = gz * 5 + 2;
+                if (Math.abs(tx - x) > 4 || Math.abs(tz - z) > 4) continue;
+                int top = rockTop(CityPlan.get().ocean, tx + 0.5, tz + 0.5, rg);
+                if (top < CityPlan.get().ocean + 4) continue;                              // only on the tall rocks
+                CityPlan.Tree t = new CityPlan.Tree(tx, tz, ru.aiforge.riftworld.tree.TreeSpecies.MIST_PINE,
+                        14 + ElisarChunkGenerator.hash(gx, gz, 7102) % 6, ElisarChunkGenerator.hash(gx, gz, 7103));
+                t.baseY = top + 1;
+                out.add(t);
+            }
+        return out;
+    }
+
     /** Высота скалы в столбце (центральный утёс + кольцо столбов), либо -1 если скалы нет. */
     public static int rockTop(int ocean, double x, double z, Region rg) {
         double dx = x - rg.cx, dz = z - rg.cz;

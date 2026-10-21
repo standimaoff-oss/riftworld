@@ -1,0 +1,100 @@
+plugins {
+    id 'eclipse'
+    id 'idea'
+    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+}
+
+version = dt_addon_version
+group = mod_group_id
+
+base {
+    archivesName = dt_addon_id
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+// ---------------------------------------------------------------------------------------------------------------
+// Dynamic Trees add-on for Rift.
+//
+// This project has NO java sources on purpose: a Dynamic Trees tree pack is pure JSON under trees/<pack>/ and
+// everything else is a normal resource pack. That keeps the add-on independent from DT internals, so it never
+// fails to build or to load because of an API change, and it stays inert when Dynamic Trees is not installed
+// (every family/species carries "only_if_loaded": "dynamictrees").
+//
+// Content is generated:  python3 ../tools/rift/gen_dt_addon.py
+// Build:                 ./gradlew build      -> build/libs/riftworld_dt-<version>.jar
+// ---------------------------------------------------------------------------------------------------------------
+
+minecraft {
+    mappings channel: mapping_channel, version: mapping_version
+    copyIdeResources = true
+
+    runs {
+        client {
+            workingDirectory project.file('run')
+            property 'forge.logging.console.level', 'info'
+            mods {
+                "${dt_addon_id}" {
+                    source sourceSets.main
+                }
+            }
+            property 'fml.earlyprogresswindow', 'false'
+            property 'fml.earlyWindowControl', 'false'
+            args '--username', 'TestPlayer'
+        }
+        server {
+            workingDirectory project.file('run-server')
+            property 'forge.logging.console.level', 'info'
+            mods {
+                "${dt_addon_id}" {
+                    source sourceSets.main
+                }
+            }
+            args '--nogui'
+        }
+    }
+}
+
+repositories {
+    maven { name = 'MinecraftForge'; url = 'https://maven.minecraftforge.net/' }
+    maven { name = 'BlameJared'; url = 'https://maven.blamejared.com/' }
+}
+
+dependencies {
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    // Optional, only for the in-IDE runtime: drop the DT jar into libs/ to test the pack together with the mod.
+    if (file('libs').exists()) {
+        fileTree(dir: 'libs', include: ['*.jar']).each { jar ->
+            runtimeOnly files(jar)
+            compileOnly files(jar)
+        }
+    }
+}
+
+processResources {
+    inputs.property 'version', project.version
+    inputs.property 'modId', dt_addon_id
+    inputs.property 'modName', dt_addon_name
+
+    filesMatching(['META-INF/mods.toml']) {
+        expand(
+                version: project.version,
+                modId: dt_addon_id,
+                modName: dt_addon_name
+        )
+    }
+}
+
+tasks.named('jar', Jar).configure {
+    manifest {
+        attributes([
+                'Specification-Title'     : dt_addon_id,
+                'Specification-Vendor'    : mod_authors,
+                'Specification-Version'   : '1',
+                'Implementation-Title'    : project.name,
+                'Implementation-Version'  : project.jar.archiveVersion,
+                'Implementation-Vendor'   : mod_authors
+        ])
+    }
+    finalizedBy 'reobfJar'
+}
