@@ -1,6 +1,10 @@
 {
   "primitive_leaves": "riftworld:sizo_leaves",
-  "cell_kit": "dynamictrees:deciduous",
-  "smother": 3,
+  "cell_kit": "dynamictrees:dark_oak",
+  "smother": 4,
+  "light_requirement": 7,
+  "fire_spread": 20,
+  "flammability": 30,
+  "requires_shears": false,
   "only_if_loaded": "dynamictrees"
 }

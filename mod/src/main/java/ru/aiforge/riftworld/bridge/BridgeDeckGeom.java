@@ -204,6 +204,30 @@ public final class BridgeDeckGeom {
     private BridgeDeckGeom() {
     }
 
+    /**
+     * Whole-block offset of the second post pair: perpendicular to the span and {@code width} blocks long.
+     * Plain rounding of the ideal vector skews short diagonal spans by up to ~14 degrees (the deck becomes a
+     * rhombus), so every candidate offset is scored and the squarest one wins.
+     *
+     * @return {dx, dz} of the offset from a to a2
+     */
+    public static int[] perpOffset(double dx, double dz, int width) {
+        double l = Math.hypot(dx, dz);
+        if (l < 1.0) l = 1.0;
+        double ux = dx / l, uz = dz / l;
+        int px = 0, pz = 0;
+        double best = Double.MAX_VALUE;
+        for (int ax = -width - 1; ax <= width + 1; ++ax)
+            for (int az = -width - 1; az <= width + 1; ++az) {
+                if (ax == 0 && az == 0) continue;
+                double alen = Math.hypot(ax, az);
+                double skew = Math.abs(ax * ux + az * uz) / alen;     // 0 = perfectly square
+                double score = skew * 3.0 + Math.abs(alen - width) * 0.5;
+                if (score < best) { best = score; px = ax; pz = az; }
+            }
+        return new int[] {px, pz};
+    }
+
     /** Style that fits a biome / region key (used by placement and by the world generator). */
     public static int styleFor(String biomePath) {
         if (biomePath == null) return BridgeStyle.PLAINS.id;

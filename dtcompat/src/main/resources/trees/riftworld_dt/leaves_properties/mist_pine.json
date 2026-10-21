@@ -2,5 +2,9 @@
   "primitive_leaves": "riftworld:mist_pine_leaves",
   "cell_kit": "dynamictrees:conifer",
   "smother": 4,
+  "light_requirement": 7,
+  "fire_spread": 15,
+  "flammability": 20,
+  "requires_shears": false,
   "only_if_loaded": "dynamictrees"
 }

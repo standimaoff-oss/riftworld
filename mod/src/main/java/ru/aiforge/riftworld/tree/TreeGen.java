@@ -75,6 +75,7 @@ public final class TreeGen {
         return (hash(a, b, c) & 0xFFFFFF) / (double) 0xFFFFFF;
     }
 
+    /** Clamped crown height H of a species; the trunk itself reaches H + 1. */
     public static int trunkHeight(int kind, int h) {
         Spec sp = SPECS.get(kind);
         if (sp == null) return h;
@@ -103,8 +104,8 @@ public final class TreeGen {
         // ----- trunk: cone with a lean and a wobble
         for (int y = 0; y <= trunkTop; ++y) {
             double t = y / (double) Math.max(1, trunkTop);
-            double cx = leanX * t + 0.9 * Math.sin(t * 3.4 + wobPhaseX) * (1 - t * 0.35);
-            double cz = leanZ * t + 0.9 * Math.cos(t * 3.0 + wobPhaseZ) * (1 - t * 0.35);
+            double cx = leanX * t + 0.45 * Math.sin(t * 3.4 + wobPhaseX) * (1 - t * 0.35);
+            double cz = leanZ * t + 0.45 * Math.cos(t * 3.0 + wobPhaseZ) * (1 - t * 0.35);
             centers[y][0] = cx;
             centers[y][1] = cz;
             double baseRad = sp.trunk >= 1.0 ? sp.trunk : (H >= 12 ? 0.75 : 0.55);
@@ -116,11 +117,14 @@ public final class TreeGen {
             } else {
                 for (int ox = -cells; ox <= cells; ++ox)
                     for (int oz = -cells; oz <= cells; ++oz)
-                        if ((ox + 0.5) * (ox + 0.5) + (oz + 0.5) * (oz + 0.5) <= Math.max(0.30, rad * rad + 0.35))
+                        if ((ox + 0.5) * (ox + 0.5) + (oz + 0.5) * (oz + 0.5) <= Math.max(0.50, rad * rad + 0.35))   // 0.50 keeps the centre cell: no trunk hole on taper
                             nodes.put(key(bx + ox, y, bz + oz), new int[] {LOG, AXIS_Y});
             }
         }
         int topX = (int) Math.round(centers[trunkTop][0]), topZ = (int) Math.round(centers[trunkTop][1]);
+        // the crowns above the trunk top reuse the last filled centre; without this they sit at (0,0)
+        centers[trunkTop + 1][0] = centers[trunkTop][0];
+        centers[trunkTop + 1][1] = centers[trunkTop][1];
 
         // ----- crown: limbs (broadleaf). A limb is a real log reaching out of the trunk; its tip carries a
         //       ragged leaf cloud, so the silhouette is a union of clouds - the Dynamic Trees look.
@@ -180,16 +184,26 @@ public final class TreeGen {
             for (int i = 0; i < sp.fronds; ++i) {
                 double a = i * 2 * Math.PI / sp.fronds + rnd(seed, i, 901) * 0.5;
                 int len = (int) Math.round(2.8 + rnd(seed, i, 902) * 1.8);
+                int axis = Math.abs(Math.cos(a)) > Math.abs(Math.sin(a)) ? AXIS_X : AXIS_Z;
+                int px0 = topX, py0 = trunkTop - 1, pz0 = topZ;      // the rachis starts at the trunk apex
                 for (int k = 1; k <= len; ++k) {
                     int bx = (int) Math.round(topX + Math.cos(a) * k);
                     int bz = (int) Math.round(topZ + Math.sin(a) * k);
                     int by = trunkTop - 1 + (int) Math.round(Math.sin(Math.PI * k / (len + 1.0)) * 2.0) - (k * 2) / 3;
-                    int axis = Math.abs(Math.cos(a)) > Math.abs(Math.sin(a)) ? AXIS_X : AXIS_Z;
-                    nodes.put(key(bx, by, bz), new int[] {LOG, axis});
+                    // walk one block at a time, so rounding can never tear the frond apart
+                    int steps = Math.max(Math.abs(bx - px0), Math.max(Math.abs(by - py0), Math.abs(bz - pz0)));
+                    for (int j = 1; j <= steps; ++j) {
+                        double t = j / (double) steps;
+                        nodes.put(key((int) Math.round(px0 + (bx - px0) * t),
+                                        (int) Math.round(py0 + (by - py0) * t),
+                                        (int) Math.round(pz0 + (bz - pz0) * t)),
+                                new int[] {LOG, axis});
+                    }
+                    px0 = bx; py0 = by; pz0 = bz;
                     for (int s = -1; s <= 1; s += 2) {
-                        int px = (int) Math.round(topX + Math.cos(a) * k + Math.cos(a + Math.PI / 2) * s * 0.9);
-                        int pz = (int) Math.round(topZ + Math.sin(a) * k + Math.sin(a + Math.PI / 2) * s * 0.9);
-                        putSoft(nodes, px, k > len - 2 ? by - 1 : by, pz, rnd(seed, i * 7 + k, s + 3) > 0.12 ? LEAF : ACCENT);
+                        int lx = (int) Math.round(topX + Math.cos(a) * k + Math.cos(a + Math.PI / 2) * s * 0.9);
+                        int lz = (int) Math.round(topZ + Math.sin(a) * k + Math.sin(a + Math.PI / 2) * s * 0.9);
+                        putSoft(nodes, lx, k > len - 2 ? by - 1 : by, lz, rnd(seed, i * 7 + k, s + 3) > 0.12 ? LEAF : ACCENT);
                     }
                     putSoft(nodes, bx, k < len - 1 ? by + 1 : by, bz, LEAF);
                 }
@@ -207,6 +221,9 @@ public final class TreeGen {
                 crown(nodes, seed, centers, y, rad, rad, sp.squash, sp.skirt, 200 + tier, sp.accent, 0, sp.vines, 0, 0);
             }
             crown(nodes, seed, centers, trunkTop + 2, 0.9, 0.9, 0.8, 0.1, 299, sp.accent, 0, 0, 0, 0);
+            // the tip must touch the ring below, otherwise a single leaf block floats in the air
+            int tipX = (int) Math.round(centers[trunkTop][0]), tipZ = (int) Math.round(centers[trunkTop][1]);
+            for (int y = trunkTop - 1; y <= trunkTop + 2; ++y) putSoft(nodes, tipX, y, tipZ, LEAF);
         }
 
         for (Map.Entry<Long, int[]> e : nodes.entrySet()) {

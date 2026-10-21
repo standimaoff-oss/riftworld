@@ -22,3 +22,8 @@ Thumbs.db
 
 # local libs (Dynamic Trees jar etc. are not vendored)
 libs/*.jar
+
+# python caches of the tooling
+__pycache__/
+tools/rift/.cache/
+tools/rift/jtests/.cache/

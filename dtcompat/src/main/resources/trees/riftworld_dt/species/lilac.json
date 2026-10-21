@@ -3,14 +3,19 @@
   "tapering": 0.34,
   "signal_energy": 16.0,
   "growth_rate": 0.72,
+  "up_probability": 3,
   "lowest_branch_height": 5,
   "max_branch_radius": 7,
+  "soil_longevity": 10,
+  "world_gen_leaf_map_height": 8,
+  "drop_seeds": true,
+  "seed_composter_chance": 0.3,
   "leaves_properties": "riftworld_dt:lilac",
   "perfect_biomes": {
     "name": "riftworld:violet_hills"
   },
   "generate_seed": true,
-  "up_probability": 2,
+  "generate_sapling": false,
   "acceptable_growth_blocks": [
     "riftworld:elisar_grass",
     "riftworld:elisar_soil",

@@ -3,6 +3,9 @@
   "common_species": "riftworld_dt:fern_tree",
   "primitive_log": "riftworld:fern_log",
   "max_branch_radius": 5,
+  "primary_thickness": 3,
+  "secondary_thickness": 2,
+  "loot_volume_multiplier": 1.0,
   "texture_overrides": {
     "branch": "riftworld:block/fern_log",
     "branch_top": "riftworld:block/fern_log_top"

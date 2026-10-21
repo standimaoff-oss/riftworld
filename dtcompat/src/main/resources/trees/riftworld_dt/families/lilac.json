@@ -3,6 +3,9 @@
   "common_species": "riftworld_dt:lilac",
   "primitive_log": "riftworld:lilac_log",
   "max_branch_radius": 7,
+  "primary_thickness": 3,
+  "secondary_thickness": 2,
+  "loot_volume_multiplier": 1.0,
   "texture_overrides": {
     "branch": "riftworld:block/lilac_log",
     "branch_top": "riftworld:block/lilac_log_top"

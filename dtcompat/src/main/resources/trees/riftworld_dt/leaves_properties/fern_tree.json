@@ -1,6 +1,10 @@
 {
   "primitive_leaves": "riftworld:fern_leaves",
   "cell_kit": "dynamictrees:palm",
-  "smother": 3,
+  "smother": 2,
+  "light_requirement": 7,
+  "fire_spread": 30,
+  "flammability": 40,
+  "requires_shears": false,
   "only_if_loaded": "dynamictrees"
 }

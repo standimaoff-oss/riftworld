@@ -509,7 +509,12 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                         }
                     }
                 }
-                if (!ashen && c.isl == null && c.fallTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE) debris(plan, chunk, mp, x, z);                if (dx == 15 && dz == 15) { treesChunk(plan, chunk, mp, x0, z0); mistKeepDressing(plan, chunk, mp, x0, z0); }
+                if (!ashen && c.isl == null && c.fallTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE) debris(plan, chunk, mp, x, z);                if (dx == 15 && dz == 15) {
+                    // Rev 7 part 2: when Dynamic Trees is installed IT grows the trees (our species parameters and
+                    // textures live in the riftworld_dt tree pack); the built-in engine is then only a fallback.
+                    if (ru.aiforge.riftworld.compat.DynamicTreesCompat.ownTreesEnabled()) treesChunk(plan, chunk, mp, x0, z0);
+                    mistKeepDressing(plan, chunk, mp, x0, z0);
+                }
 
                 tower(chunk, mp, x, z);
                 if (c.isl != null) {

@@ -1,0 +1,885 @@
+{
+ "species": {
+  "keys": [
+   "acceptable_growth_blocks",
+   "acceptable_soils",
+   "allowed_water_height_for_world_gen",
+   "always_show_on_waila",
+   "big_tree_sound_threshold",
+   "can_bone_meal_tree",
+   "can_craft_mega_seed",
+   "common_override",
+   "does_rot",
+   "drop_seeds",
+   "environment_factors",
+   "family",
+   "features",
+   "force_soil",
+   "fruits",
+   "generate_sapling",
+   "generate_seed",
+   "growth_logic_kit",
+   "growth_rate",
+   "inherit_fruiting_offset_to_fruits",
+   "inherit_fruiting_offset_to_pods",
+   "lang_overrides",
+   "leaves_properties",
+   "lowest_branch_height",
+   "max_branch_radius",
+   "max_world_gen_height_offset",
+   "mega_species",
+   "min_world_gen_height_offset",
+   "model_overrides",
+   "only_if_loaded",
+   "perfect_biomes",
+   "plantable_on_fluid",
+   "pods",
+   "primitive_sapling",
+   "primitive_saplings",
+   "root_growth_multiplier",
+   "root_signal_energy",
+   "root_tapering",
+   "roots_growth_logic_kit",
+   "sapling_grows_naturally",
+   "sapling_name",
+   "sapling_shape",
+   "sapling_sound",
+   "seasonal_fruiting_offset",
+   "seasonal_growth_offset",
+   "seasonal_seed_drop_offset",
+   "seed",
+   "seed_composter_chance",
+   "seed_name",
+   "signal_energy",
+   "soil_longevity",
+   "tapering",
+   "texture_overrides",
+   "tint_sapling",
+   "transformable",
+   "type",
+   "up_probability",
+   "update_soil_on_water_radius",
+   "world_gen_acceptable_soils",
+   "world_gen_leaf_map_height"
+  ],
+  "types": {
+   "acceptable_growth_blocks": {
+    "array": [
+     "Block"
+    ]
+   },
+   "acceptable_soils": {
+    "array": [
+     "String"
+    ]
+   },
+   "allowed_water_height_for_world_gen": {
+    "single": [
+     "Integer"
+    ]
+   },
+   "always_show_on_waila": {
+    "single": [
+     "Boolean"
+    ]
+   },
+   "big_tree_sound_threshold": {
+    "single": [
+     "Float"
+    ]
+   },
+   "can_bone_meal_tree": {
+    "single": [
+     "Boolean"
+    ]
+   },
+   "can_craft_mega_seed": {
+    "single": [
+     "Boolean"
+    ]
+   },
+   "common_override": {
+    "single": [
+     "CommonOverride"
+    ]
+   },
+   "does_rot": {
+    "single": [
+     "Boolean"
+    ]
+   },
+   "drop_seeds": {
+    "single": [
+     "Boolean"
+    ]
+   },
+   "environment_factors": {
+    "single": [
+     "JsonObject"
+    ]
+   },
+   "features": {
+    "array": [
+     "GenFeatureConfiguration"
+    ]
+   },
+   "force_soil": {
+    "single": [
+     "SoilProperties"
+    ]
+   },
+   "generate_sapling": {
+    "single": [
+     "Boolean"
+    ]
+   },
+   "generate_seed": {
+    "single": [
+     "Boolean"
+    ]
+   },
+   "growth_logic_kit": {
+    "single": [
+     "GrowthLogicKitConfiguration"
+    ]
+   },
+   "growth_rate": {
+    "single": [
+     "Float"
+    ]
+   },
+   "inherit_fruiting_offset_to_fruits": {
+    "single": [
+     "Boolean"
+    ]
+   },
+   "inherit_fruiting_offset_to_pods": {
+    "single": [
+     "Boolean"
+    ]
+   },
+   "lang_overrides": {
+    "map": [
+     "String"
+    ]
+   },
+   "leaves_properties": {
+    "single": [
+     "LeavesProperties"
+    ]
+   },
+   "lowest_branch_height": {
+    "single": [
+     "Integer"
+    ]
+   },
+   "max_branch_radius": {
+    "single": [
+     "Integer"
+    ]
+   },
+   "max_world_gen_height_offset": {
+    "single": [
+     "MangroveSpecies"
+    ]
+   },
+   "mega_species": {
+    "single": [
+     "ResourceLocation"
+    ]
+   },
+   "min_world_gen_height_offset": {
+    "single": [
+     "MangroveSpecies"
+    ]
+   },
+   "model_overrides": {
+    "map": [
+     "ResourceLocation"
+    ]
+   },
+   "only_if_loaded": {
+    "single": [
+     "String"
+    ],
+    "array": [
+     "String"
+    ]
+   },
+   "perfect_biomes": {
+    "single": [
+     "DTBiomeHolderSet"
+    ]
+   },
+   "plantable_on_fluid": {
+    "single": [
+     "Boolean"
+    ]
+   },
+   "primitive_sapling": {
+    "single": [
+     "SeedSaplingRecipe"
+    ]
+   },
+   "primitive_saplings": {
+    "array": [
+     "SeedSaplingRecipe"
+    ]
+   },
+   "root_growth_multiplier": {
+    "single": [
+     "MangroveSpecies"
+    ]
+   },
+   "root_signal_energy": {
+    "single": [
+     "MangroveSpecies"
+    ]
+   },
+   "root_tapering": {
+    "single": [
+     "MangroveSpecies"
+    ]
+   },
+   "roots_growth_logic_kit": {
+    "single": [
+     "MangroveSpecies"
+    ]
+   },
+   "sapling_grows_naturally": {
+    "single": [
+     "Boolean"
+    ]
+   },
+   "sapling_name": {
+    "single": [
+     "String"
+    ]
+   },
+   "sapling_shape": {
+    "single": [
+     "VoxelShape",
+     "VoxelShape"
+    ]
+   },
+   "sapling_sound": {
+    "single": [
+     "SoundType"
+    ]
+   },
+   "seasonal_fruiting_offset": {
+    "single": [
+     "Float"
+    ]
+   },
+   "seasonal_growth_offset": {
+    "single": [
+     "Float"
+    ]
+   },
+   "seasonal_seed_drop_offset": {
+    "single": [
+     "Float"
+    ]
+   },
+   "seed": {
+    "single": [
+     "ResourceLocation",
+     "Seed"
+    ]
+   },
+   "seed_composter_chance": {
+    "single": [
+     "Float"
+    ]
+   },
+   "seed_name": {
+    "single": [
+     "String"
+    ]
+   },
+   "signal_energy": {
+    "single": [
+     "Float"
+    ]
+   },
+   "soil_longevity": {
+    "single": [
+     "Integer"
+    ]
+   },
+   "tapering": {
+    "single": [
+     "Float"
+    ]
+   },
+   "texture_overrides": {
+    "map": [
+     "ResourceLocation"
+    ]
+   },
+   "tint_sapling": {
+    "single": [
+     "Boolean"
+    ]
+   },
+   "transformable": {
+    "single": [
+     "Boolean"
+    ]
+   },
+   "up_probability": {
+    "single": [
+     "Integer"
+    ]
+   },
+   "update_soil_on_water_radius": {
+    "single": [
+     "MangroveSpecies"
+    ]
+   },
+   "world_gen_acceptable_soils": {
+    "array": [
+     "String"
+    ]
+   },
+   "world_gen_leaf_map_height": {
+    "single": [
+     "Integer"
+    ]
+   }
+  },
+  "reference_ranges": {
+   "growth_rate": [
+    0.6,
+    1.5,
+    19
+   ],
+   "lowest_branch_height": [
+    0.0,
+    10.0,
+    19
+   ],
+   "max_branch_radius": [
+    20.0,
+    24.0,
+    5
+   ],
+   "signal_energy": [
+    1.2,
+    35.0,
+    21
+   ],
+   "soil_longevity": [
+    1.0,
+    16.0,
+    12
+   ],
+   "tapering": [
+    0.0,
+    0.4,
+    19
+   ],
+   "up_probability": [
+    0.0,
+    10.0,
+    19
+   ]
+  }
+ },
+ "family": {
+  "keys": [
+   "branch_is_ladder",
+   "common_leaves",
+   "common_species",
+   "conifer_variants",
+   "default_soil",
+   "fire_proof",
+   "generate_stripped_branch",
+   "generate_surface_root",
+   "lang_overrides",
+   "loot_volume_multiplier",
+   "max_branch_radius",
+   "max_signal_depth",
+   "min_radius_for_stripping",
+   "model_overrides",
+   "only_if_loaded",
+   "primary_thickness",
+   "primitive_covered_root",
+   "primitive_filled_root",
+   "primitive_log",
+   "primitive_root",
+   "primitive_stripped_log",
+   "reduce_radius_when_stripping",
+   "replaceable_by_roots",
+   "root_system_acceptable_soils",
+   "secondary_thickness",
+   "stick",
+   "texture_overrides",
+   "type"
+  ],
+  "types": {
+   "branch_is_ladder": {
+    "single": [
+     "Boolean"
+    ]
+   },
+   "common_leaves": {
+    "single": [
+     "LeavesProperties"
+    ]
+   },
+   "common_species": {
+    "single": [
+     "ResourceLocation"
+    ]
+   },
+   "default_soil": {
+    "single": [
+     "MangroveFamily",
+     "MangroveFamily"
+    ]
+   },
+   "fire_proof": {
+    "single": [
+     "Boolean"
+    ]
+   },
+   "generate_stripped_branch": {
+    "single": [
+     "Boolean"
+    ]
+   },
+   "generate_surface_root": {
+    "single": [
+     "Boolean"
+    ]
+   },
+   "lang_overrides": {
+    "map": [
+     "String"
+    ]
+   },
+   "loot_volume_multiplier": {
+    "single": [
+     "Float"
+    ]
+   },
+   "max_branch_radius": {
+    "single": [
+     "Integer"
+    ]
+   },
+   "max_signal_depth": {
+    "single": [
+     "Integer"
+    ]
+   },
+   "min_radius_for_stripping": {
+    "single": [
+     "Integer"
+    ]
+   },
+   "model_overrides": {
+    "map": [
+     "ResourceLocation"
+    ]
+   },
+   "only_if_loaded": {
+    "single": [
+     "String"
+    ],
+    "array": [
+     "String"
+    ]
+   },
+   "primary_thickness": {
+    "single": [
+     "Integer"
+    ]
+   },
+   "primitive_covered_root": {
+    "single": [
+     "MangroveFamily",
+     "MangroveFamily"
+    ]
+   },
+   "primitive_filled_root": {
+    "single": [
+     "MangroveFamily",
+     "MangroveFamily"
+    ]
+   },
+   "primitive_log": {
+    "single": [
+     "Block",
+     "Block"
+    ]
+   },
+   "primitive_root": {
+    "single": [
+     "MangroveFamily",
+     "MangroveFamily"
+    ]
+   },
+   "primitive_stripped_log": {
+    "single": [
+     "Block",
+     "Block"
+    ]
+   },
+   "reduce_radius_when_stripping": {
+    "single": [
+     "Boolean"
+    ]
+   },
+   "replaceable_by_roots": {
+    "single": [
+     "MangroveFamily"
+    ]
+   },
+   "root_system_acceptable_soils": {
+    "array": [
+     "MangroveFamily"
+    ]
+   },
+   "secondary_thickness": {
+    "single": [
+     "Integer"
+    ]
+   },
+   "stick": {
+    "single": [
+     "Item",
+     "Item"
+    ]
+   },
+   "texture_overrides": {
+    "map": [
+     "ResourceLocation"
+    ]
+   }
+  },
+  "reference_ranges": {
+   "max_branch_radius": [
+    8.0,
+    24.0,
+    10
+   ]
+  }
+ },
+ "leaves_properties": {
+  "keys": [
+   "ageing_configuration",
+   "can_grow_on_ground",
+   "cell_kit",
+   "color",
+   "connect_any_radius",
+   "does_age",
+   "family",
+   "fire_spread",
+   "flammability",
+   "frond_model_loader",
+   "generate_block",
+   "has_tick_particles",
+   "lang_overrides",
+   "light_requirement",
+   "material_color",
+   "model_overrides",
+   "only_if_loaded",
+   "primitive_leaves",
+   "requires_shears",
+   "scruffy_leaf_chance",
+   "scruffy_max_hydro",
+   "smother",
+   "sound",
+   "texture_overrides",
+   "type"
+  ],
+  "types": {
+   "ageing_configuration": {
+    "single": [
+     "AgeingConfiguration"
+    ]
+   },
+   "can_grow_on_ground": {
+    "single": [
+     "Boolean"
+    ]
+   },
+   "cell_kit": {
+    "single": [
+     "CellKit"
+    ]
+   },
+   "color": {
+    "single": [
+     "String",
+     "Integer"
+    ]
+   },
+   "connect_any_radius": {
+    "single": [
+     "Boolean"
+    ]
+   },
+   "does_age": {
+    "single": [
+     "String"
+    ]
+   },
+   "family": {
+    "single": [
+     "ResourceLocation"
+    ]
+   },
+   "fire_spread": {
+    "single": [
+     "Integer"
+    ]
+   },
+   "flammability": {
+    "single": [
+     "Integer"
+    ]
+   },
+   "frond_model_loader": {
+    "single": [
+     "PalmLeavesProperties"
+    ]
+   },
+   "has_tick_particles": {
+    "single": [
+     "Boolean"
+    ]
+   },
+   "lang_overrides": {
+    "map": [
+     "String"
+    ]
+   },
+   "light_requirement": {
+    "single": [
+     "Integer"
+    ]
+   },
+   "model_overrides": {
+    "map": [
+     "ResourceLocation"
+    ]
+   },
+   "only_if_loaded": {
+    "single": [
+     "String"
+    ],
+    "array": [
+     "String"
+    ]
+   },
+   "primitive_leaves": {
+    "single": [
+     "Block",
+     "Block"
+    ]
+   },
+   "requires_shears": {
+    "single": [
+     "Boolean"
+    ]
+   },
+   "scruffy_leaf_chance": {
+    "single": [
+     "ScruffyLeavesProperties"
+    ]
+   },
+   "scruffy_max_hydro": {
+    "single": [
+     "ScruffyLeavesProperties"
+    ]
+   },
+   "smother": {
+    "single": [
+     "Integer"
+    ]
+   },
+   "texture_overrides": {
+    "map": [
+     "ResourceLocation"
+    ]
+   }
+  },
+  "reference_ranges": {
+   "light_requirement": [
+    0.0,
+    14.0,
+    6
+   ],
+   "smother": [
+    2.0,
+    7.0,
+    7
+   ]
+  }
+ },
+ "soil_properties": {
+  "keys": [
+   "acceptable_soils",
+   "foliage_tint_index",
+   "model_overrides",
+   "only_if_loaded",
+   "primitive_soil",
+   "required_light",
+   "roots_tint_index",
+   "spread_item",
+   "spreadable_soils",
+   "substitute_soil",
+   "texture_overrides",
+   "type"
+  ],
+  "types": {
+   "acceptable_soils": {
+    "array": [
+     "String"
+    ]
+   },
+   "foliage_tint_index": {
+    "single": [
+     "Integer"
+    ]
+   },
+   "model_overrides": {
+    "map": [
+     "ResourceLocation"
+    ]
+   },
+   "only_if_loaded": {
+    "single": [
+     "String"
+    ],
+    "array": [
+     "String"
+    ]
+   },
+   "primitive_soil": {
+    "single": [
+     "Block",
+     "Block"
+    ]
+   },
+   "required_light": {
+    "single": [
+     "SpreadableSoilProperties"
+    ]
+   },
+   "roots_tint_index": {
+    "single": [
+     "Integer"
+    ]
+   },
+   "spread_item": {
+    "single": [
+     "SpreadableSoilProperties"
+    ]
+   },
+   "spreadable_soils": {
+    "array": [
+     "SpreadableSoilProperties"
+    ]
+   },
+   "substitute_soil": {
+    "single": [
+     "String"
+    ]
+   },
+   "texture_overrides": {
+    "map": [
+     "ResourceLocation"
+    ]
+   }
+  },
+  "reference_ranges": {}
+ },
+ "soil_tags": [
+  "dirt_like",
+  "end_like",
+  "fungus_like",
+  "gravel_like",
+  "mud_like",
+  "nether_like",
+  "nether_soil_like",
+  "sand_like",
+  "slime_like",
+  "snow_like",
+  "terracotta_like",
+  "water_like"
+ ],
+ "cell_kits": [
+  "acacia",
+  "azalea",
+  "bare",
+  "conifer",
+  "dark_oak",
+  "deciduous",
+  "nether_fungus",
+  "palm"
+ ],
+ "growth_logic_kits": [
+  "azalea",
+  "conifer",
+  "dark_oak",
+  "jungle",
+  "mangrove_roots",
+  "nether_fungus",
+  "palm"
+ ],
+ "_meta": {
+  "dynamic_trees": "release/1.20.1",
+  "note": "объединение ключей из код-лоадеров DT и из его собственного пака; см. fetch_dt_schema.py",
+  "provenance": {
+   "species": {
+    "loader": "src/main/java/com/ferreusveritas/dynamictrees/resources/loader/SpeciesResourceLoader.java",
+    "pack_files": 21,
+    "only_in_pack": [
+     "fruits",
+     "pods",
+     "type"
+    ]
+   },
+   "family": {
+    "loader": "src/main/java/com/ferreusveritas/dynamictrees/resources/loader/FamilyResourceLoader.java",
+    "pack_files": 10,
+    "only_in_pack": [
+     "conifer_variants",
+     "type"
+    ]
+   },
+   "leaves_properties": {
+    "loader": "src/main/java/com/ferreusveritas/dynamictrees/resources/loader/LeavesPropertiesResourceLoader.java",
+    "pack_files": 15,
+    "only_in_pack": [
+     "generate_block",
+     "material_color",
+     "sound",
+     "type"
+    ]
+   },
+   "soil_properties": {
+    "loader": "src/main/java/com/ferreusveritas/dynamictrees/resources/loader/SoilPropertiesResourceLoader.java",
+    "pack_files": 31,
+    "only_in_pack": [
+     "type"
+    ]
+   },
+   "soil_tags": {
+    "source": "src/main/java/com/ferreusveritas/dynamictrees/block/rooty/SoilHelper.java",
+    "note": "константы SoilHelper + все значения acceptable_soils в паке DT"
+   },
+   "cell_kits": {
+    "source": "src/main/java/com/ferreusveritas/dynamictrees/cell/CellKits.java"
+   },
+   "growth_logic_kits": {
+    "source": "src/main/java/com/ferreusveritas/dynamictrees/growthlogic/GrowthLogicKits.java"
+   }
+  }
+ }
+}

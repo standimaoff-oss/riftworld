@@ -18,6 +18,7 @@ from __future__ import annotations
 import json
 import os
 import random
+import zlib
 
 from PIL import Image, ImageDraw
 
@@ -27,21 +28,36 @@ PACK = "riftworld_dt"
 
 # name -> (log, leaves, cell kit, growth logic, tapering, signal energy, growth rate, lowest branch, max radius,
 #          perfect biomes, russian name, english name, seed palette)
+# Shape knobs are Dynamic Trees' own (see tools/rift/dt_schema.json):
+#   signal_energy  -> overall size/height of the grown tree
+#   up_probability -> how often a branch grows up instead of out: LOW = many branches, HIGH = tall bare trunk
+#   lowest_branch_height -> trunk height before the first branch
+#   tapering       -> how fast branches thin out;  max_branch_radius -> thickness of the main branches
+#   cell_kit       -> shape of the leaf clusters (deciduous / conifer / palm / dark_oak / acacia / bare)
+#
+# Two values sit outside the band Dynamic Trees uses in its own pack, on purpose:
+#   fern_tree tapering 0.55 and mist_pine tapering 0.42 (DT: 0.0..0.40). Both species must look thin and gnarled
+#   rather than sturdy; a higher tapering makes the branches lose radius faster. Everything else stays inside DT's
+#   own ranges, so a strange-looking tree is always explainable by a deliberate value and never by a typo.
 SPECIES = {
     "lilac": dict(log="lilac_log", leaves="lilac_leaves", kit="deciduous", logic=None,
-                  tapering=0.34, energy=16.0, rate=0.72, branch=5, radius=7,
+                  tapering=0.34, energy=16.0, rate=0.72, branch=5, radius=7, up=3,
+                  smother=3, flamm=30, fire=20, leaf_map=8, longevity=10,
                   biomes=["riftworld:violet_hills"], ru="Сиреневое древо", en="Lilac Tree",
                   seed=((122, 112, 158), (168, 158, 196), (72, 66, 96))),
-    "sizo_v2": dict(log="sizo_log", leaves="sizo_leaves", kit="deciduous", logic="dark_oak",
-                    tapering=0.28, energy=20.0, rate=0.62, branch=6, radius=10,
+    "sizo_v2": dict(log="sizo_log", leaves="sizo_leaves", kit="dark_oak", logic="dark_oak",
+                    tapering=0.26, energy=24.0, rate=0.60, branch=9, radius=12, up=5,
+                    smother=4, flamm=30, fire=20, leaf_map=10, longevity=14,
                     biomes=["riftworld:sizo_grove"], ru="Сизо (второе поколение)", en="Sizo v2",
                     seed=((104, 116, 118), (150, 162, 162), (62, 70, 72))),
     "fern_tree": dict(log="fern_log", leaves="fern_leaves", kit="palm", logic="palm",
-                      tapering=0.55, energy=8.0, rate=1.15, branch=3, radius=5,
+                      tapering=0.55, energy=7.0, rate=1.15, branch=2, radius=5, up=1,
+                      smother=2, flamm=40, fire=30, leaf_map=6, longevity=8,
                       biomes=["riftworld:waterfall_gardens"], ru="Древовидный папоротник", en="Fern Tree",
                       seed=((78, 100, 70), (118, 140, 104), (48, 66, 44))),
     "mist_pine": dict(log="mist_pine_log", leaves="mist_pine_leaves", kit="conifer", logic="conifer",
-                      tapering=0.42, energy=13.0, rate=0.66, branch=4, radius=6,
+                      tapering=0.42, energy=14.0, rate=0.66, branch=3, radius=6, up=4,
+                      smother=4, flamm=20, fire=15, leaf_map=9, longevity=12,
                       biomes=["riftworld:mist_keep"], ru="Туманная сосна", en="Mist Pine",
                       seed=((92, 106, 100), (140, 154, 148), (56, 66, 64))),
 }
@@ -63,6 +79,9 @@ def family_tree(name: str, s: dict) -> None:
         "common_species": f"{PACK}:{name}",
         "primitive_log": f"riftworld:{s['log']}",
         "max_branch_radius": s["radius"],
+        "primary_thickness": 3,
+        "secondary_thickness": 2,
+        "loot_volume_multiplier": 1.0,
         # the bark and the rings come straight from the mod's own log textures
         "texture_overrides": {
             "branch": f"riftworld:block/{s['log']}",
@@ -76,7 +95,11 @@ def family_tree(name: str, s: dict) -> None:
     leaves = {
         "primitive_leaves": f"riftworld:{s['leaves']}",
         "cell_kit": f"dynamictrees:{s['kit']}",
-        "smother": 3 if s["kit"] != "conifer" else 4,
+        "smother": s["smother"],
+        "light_requirement": 7,
+        "fire_spread": s["fire"],
+        "flammability": s["flamm"],
+        "requires_shears": False,
         "only_if_loaded": "dynamictrees",
     }
     write(os.path.join(DT, "trees", PACK, "leaves_properties", name + ".json"), leaves)
@@ -86,13 +109,20 @@ def family_tree(name: str, s: dict) -> None:
         "tapering": s["tapering"],
         "signal_energy": s["energy"],
         "growth_rate": s["rate"],
+        "up_probability": s["up"],
         "lowest_branch_height": s["branch"],
         "max_branch_radius": s["radius"],
+        "soil_longevity": s["longevity"],
+        "world_gen_leaf_map_height": s["leaf_map"],
+        "drop_seeds": True,
+        "seed_composter_chance": 0.3,
         "leaves_properties": f"{PACK}:{name}",
         # a regex over biome ids (DT: NameRegexMatchHolderSet), one pattern per species
         "perfect_biomes": {"name": s["biomes"][0]},
         "generate_seed": True,
-        "up_probability": 3 if s["kit"] == "conifer" else 2,
+        # seeds only: a sapling would need a generated model we do not ship, seeds are enough (and DT-spawned trees
+        # drop them, so the player can grow the same species anywhere)
+        "generate_sapling": False,
         # the mod's own ground blocks have to be accepted, otherwise nothing can ever grow
         "acceptable_growth_blocks": ["riftworld:elisar_grass", "riftworld:elisar_soil", "minecraft:grass_block"],
         "acceptable_soils": ["dirt_like"],
@@ -147,7 +177,8 @@ def seed_sprite(name: str, palette) -> None:
     dark, light, mid = palette
     img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
-    rng = random.Random(hash(name) & 0xFFFF)
+    # NOT Python's hash(): it is salted per process, which made every generator run produce a different sprite
+    rng = random.Random(zlib.crc32(name.encode("utf-8")) & 0xFFFF)
     body = [(7, 3), (8, 3), (6, 4), (7, 4), (8, 4), (9, 4),
             (5, 5), (6, 5), (7, 5), (8, 5), (9, 5), (10, 5),
             (5, 6), (6, 6), (7, 6), (8, 6), (9, 6), (10, 6),

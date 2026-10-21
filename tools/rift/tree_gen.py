@@ -8,6 +8,12 @@ from __future__ import annotations
 import math
 
 LOG, LEAF, ACCENT = 0, 1, 2
+
+
+def round(v: float) -> int:          # noqa: A001 - deliberate shadowing
+    """Java's Math.round: half-up. Python's built-in rounds half to even, which made the reference drift from
+    TreeGen.java by one block on .5 coordinates (the parity test in tools/rift/jtests catches it)."""
+    return int(math.floor(v + 0.5))
 AXIS_Y, AXIS_X, AXIS_Z = 0, 1, 2
 
 # species ids (see tree/TreeSpecies.java)
@@ -67,7 +73,7 @@ def build(kind: int, height: int, seed: int):
 
     def put_soft(x, y, z, k, ax=AXIS_Y):
         cur = nodes.get((x, y, z))
-        if cur is not None and cur[0] == LOG and k == LEAF:
+        if cur is not None and cur[0] == LOG:      # wood always wins over leaves AND over blossom
             return
         nodes[(x, y, z)] = (k, ax)
 
@@ -91,7 +97,7 @@ def build(kind: int, height: int, seed: int):
         else:
             for ox in range(-r_cells, r_cells + 1):
                 for oz in range(-r_cells, r_cells + 1):
-                    if (ox + 0.5) ** 2 + (oz + 0.5) ** 2 <= max(0.30, rad * rad + 0.35):
+                    if (ox + 0.5) ** 2 + (oz + 0.5) ** 2 <= max(0.50, rad * rad + 0.35):   # 0.50 keeps the centre cell: no trunk hole on taper
                         put(int(round(cx)) + ox, y, int(round(cz)) + oz, LOG)
     top_x, top_z = int(round(centers[-1][0])), int(round(centers[-1][1]))
 
@@ -220,15 +226,30 @@ def build(kind: int, height: int, seed: int):
     # ---------------------------------------------------------------- crown: fern fronds
     if sp.fronds:
         fx, fz = top_x, top_z
+
+        def walk(prev, target, ax):
+            """Steps of one block from prev to target, so the frond never breaks apart (26-connected)."""
+            sx, sy, sz = prev
+            tx, ty, tz = target
+            n = max(abs(tx - sx), abs(ty - sy), abs(tz - sz))
+            for j in range(1, n + 1):
+                t = j / float(n)
+                px = int(round(sx + (tx - sx) * t))
+                py = int(round(sy + (ty - sy) * t))
+                pz = int(round(sz + (tz - sz) * t))
+                put(px, py, pz, LOG, ax)
+            return target
+
         for i in range(sp.fronds):
             a = i * 2 * math.pi / sp.fronds + rnd(seed, i, 901) * 0.5
             L = int(round(2.8 + rnd(seed, i, 902) * 1.8))
+            ax = AXIS_X if abs(math.cos(a)) > abs(math.sin(a)) else AXIS_Z
+            prev = (fx, trunk_top - 1, fz)
             for k in range(1, L + 1):
                 bx = int(round(fx + math.cos(a) * k))
                 bz = int(round(fz + math.sin(a) * k))
                 by = trunk_top - 1 + int(round(math.sin(math.pi * k / (L + 1.0)) * 2.0)) - (k * 2) // 3
-                ax = AXIS_X if abs(math.cos(a)) > abs(math.sin(a)) else AXIS_Z
-                put(bx, by, bz, LOG, ax)
+                prev = walk(prev, (bx, by, bz), ax)
                 # leaf blade of the frond: one block on each side, drooping
                 for s in (-1, 1):
                     px = int(round(fx + math.cos(a) * k + math.cos(a + math.pi / 2) * s * 0.9))
@@ -250,6 +271,9 @@ def build(kind: int, height: int, seed: int):
             y += step
             tier += 1
         crown(trunk_top + 2, 0.9, 0.9, 0.8, 0.1, 299, sp.accent)
+        # the tip must touch the ring below, otherwise a single leaf block floats in the air
+        for y in range(trunk_top - 1, trunk_top + 3):
+            put_soft(top_x, y, top_z, LEAF)
 
     out = []
     for (x, y, z), (k, ax) in nodes.items():

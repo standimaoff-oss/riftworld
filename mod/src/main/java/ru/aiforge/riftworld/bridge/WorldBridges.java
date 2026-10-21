@@ -31,11 +31,8 @@ public final class WorldBridges {
 
     /** 4-post deck between two opposite corners: width is given in blocks (2 = narrow footbridge). */
     public static BridgeDeckGeom.Deck deckOf(BlockPos a, BlockPos b, int halfWidth, int style, float breakFrom, float breakTo) {
-        double dx = b.getX() - a.getX(), dz = b.getZ() - a.getZ();
-        double l = Math.hypot(dx, dz);
-        if (l < 1.0) l = 1.0;
-        int px = (int) Math.round(-dz / l * halfWidth);
-        int pz = (int) Math.round(dx / l * halfWidth);
+        int[] off = BridgeDeckGeom.perpOffset(b.getX() - a.getX(), b.getZ() - a.getZ(), halfWidth);
+        int px = off[0], pz = off[1];
         if (px == 0 && pz == 0) px = halfWidth;
         BlockPos a2 = a.offset(px, 0, pz);
         BlockPos b2 = b.offset(px, 0, pz);

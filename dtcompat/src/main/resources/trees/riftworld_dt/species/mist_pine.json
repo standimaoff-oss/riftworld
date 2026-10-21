@@ -1,16 +1,21 @@
 {
   "family": "riftworld_dt:mist_pine",
   "tapering": 0.42,
-  "signal_energy": 13.0,
+  "signal_energy": 14.0,
   "growth_rate": 0.66,
-  "lowest_branch_height": 4,
+  "up_probability": 4,
+  "lowest_branch_height": 3,
   "max_branch_radius": 6,
+  "soil_longevity": 12,
+  "world_gen_leaf_map_height": 9,
+  "drop_seeds": true,
+  "seed_composter_chance": 0.3,
   "leaves_properties": "riftworld_dt:mist_pine",
   "perfect_biomes": {
     "name": "riftworld:mist_keep"
   },
   "generate_seed": true,
-  "up_probability": 3,
+  "generate_sapling": false,
   "acceptable_growth_blocks": [
     "riftworld:elisar_grass",
     "riftworld:elisar_soil",
