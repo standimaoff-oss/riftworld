@@ -7,12 +7,12 @@
   {
     "test": "измерение riftworld:elisar загружено",
     "ok": true,
-    "detail": "Dim minecraft, Dim riftworld, Dim minecraft, Dim minecraft, Dim riftworld"
+    "detail": "Dim minecraft, Dim minecraft, Dim riftworld, Dim minecraft, Dim riftworld"
   },
   {
     "test": "тестовая зона форс-лочится",
     "ok": true,
-    "detail": "No chunks were marked for force loading"
+    "detail": "Marked [-3, -3] chunks in riftworld:elisar from [-3, -3] to [7, 7] to be force loaded"
   },
   {
     "test": "команда мода /riftarena отвечает",
@@ -75,14 +75,49 @@
     "detail": "The nearest riftworld:sizo_grove is at [800, 112, -2208] (2348 blocks away)"
   },
   {
-    "test": "деревья реально растут в биоме (листва найдена)",
+    "test": "riftworld:sizo_grove: биом в чанке совпадает с планировщиком",
     "ok": true,
-    "detail": "примеры: [(752, 99, -2144), (768, 102, -2144)]"
+    "detail": "locate 800,112,-2208; if_biome=да; probe=да | probe 800,-2208: wg.inside=false wg.region=none vh.inside=false sg.inside=true mk.inside=false"
+  },
+  {
+    "test": "riftworld:violet_hills: биом в чанке совпадает с планировщиком",
+    "ok": true,
+    "detail": "locate 1248,112,224; if_biome=да; probe=да | probe 1248,224: wg.inside=false wg.region=none vh.inside=true sg.inside=false mk.inside=false"
+  },
+  {
+    "test": "riftworld:waterfall_gardens: биом в чанке совпадает с планировщиком",
+    "ok": true,
+    "detail": "locate -1120,112,-1120; if_biome=да; probe=да | probe -1120,-1120: wg.inside=true wg.region=-1178,-1217 R=129 vh.inside=false sg.inside=false mk.inside=false"
+  },
+  {
+    "test": "riftworld:mist_keep: биом в чанке совпадает с планировщиком",
+    "ok": true,
+    "detail": "locate 1792,112,1088; if_biome=да; probe=да | probe 1792,1088: wg.inside=false wg.region=none vh.inside=false sg.inside=false mk.inside=true"
+  },
+  {
+    "test": "деревья в riftworld:sizo_grove: план 12 → в мире 12",
+    "ok": true,
+    "detail": "treeplan sg r=96 center=848,-2322 region_at_center=848,-2322 R=144: planned=12 in_world=12; 817 101 sizo_log -2330; 820  | treescan r=96 y=60..170 chunks=169: sizo_leaves=6238 sizo_log=2090; riftworld:sizo_log @812 112 -2331; riftworld:sizo_log @813 112 -2333; riftworld:sizo_log @813 111 -2332; riftworld:sizo_log @813 111 -2331; riftworld:si"
+  },
+  {
+    "test": "деревья в riftworld:violet_hills: план 15 → в мире 15",
+    "ok": true,
+    "detail": "treeplan vh r=96 center=1374,240 region_at_center=1374,240 R=139: planned=15 in_world=15; 1313 102 lilac_log 245; 1328 1 | treescan r=96 y=60..170 chunks=169: lilac_blossom=735 lilac_leaves=5594 lilac_log=1723 oak_leaves=293 oak_log=87; riftworld:lilac_log @1309 112 243; riftworld:lilac_log @1309 114 247; riftworld:lilac_log @1310 112 242; r"
+  },
+  {
+    "test": "деревья в riftworld:waterfall_gardens: план 32 → в мире 32",
+    "ok": true,
+    "detail": "treeplan wg r=96 center=-1178,-1217 region_at_center=-1178,-1217 R=129: planned=32 in_world=32; -1216 101 fern_log -1213 | treescan r=96 y=60..170 chunks=169: sizo_leaves=4156 fern_leaves=1209 fern_log=1094 sizo_log=889 oak_leaves=252 oak_log=84; riftworld:fern_log @-1218 108 -1217; riftworld:fern_log @-1222 107 -1214; riftworld:fern_log @-1"
+  },
+  {
+    "test": "деревья в riftworld:mist_keep: план 9 → в мире 9",
+    "ok": true,
+    "detail": "treeplan mk r=96 center=1837,1120 region_at_center=1837,1120 R=45: planned=9 in_world=9; 1832 65 mist_pine_log 1087; 183 | treescan r=45 y=60..170 chunks=49: mist_pine_leaves=2962 mist_pine_log=728; riftworld:mist_pine_log @1830 76 1084; riftworld:mist_pine_log @1831 73 1083; riftworld:mist_pine_log @1831 73 1085; riftworld:mist_pine_log @18"
   },
   {
     "test": "чанки форс-лочатся",
     "ok": true,
-    "detail": "No chunks were marked for force loading"
+    "detail": "Marked [75, 11] chunks in riftworld:elisar from [75, 11] to [77, 13] to be force loaded"
   },
   {
     "test": "генератор выдаёт непустую колонку на y=60",
@@ -92,6 +127,6 @@
   {
     "test": "TPS держится (20.0)",
     "ok": true,
-    "detail": "Overall: Mean tick time: 1.708 ms. Mean TPS: 20.000"
+    "detail": "Overall: Mean tick time: 3.098 ms. Mean TPS: 20.000"
   }
 ]

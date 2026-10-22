@@ -96,10 +96,28 @@ def args_file():
     return hits[-1]
 
 
-def start(mod_jar=None, wait_done=180):
+def fresh_world():
+    """Пересоздать мир: сохранённые биомы/чанки — это ДАННЫЕ, они не обновляются вместе с кодом генератора."""
+    world = SERVER / "world"
+    if not world.exists():
+        return "мир ещё не создан"
+    stamp = time.strftime("%Y%m%d-%H%M%S")
+    backup = SERVER / f"world-old-{stamp}"
+    world.rename(backup)
+    return f"старый мир отложен в {backup.name}"
+
+
+def start(mod_jar=None, wait_done=180, new_world=False):
+    if new_world:
+        print("[world]", fresh_world())
     if mod_jar:
         target = SERVER / "mods" / Path(mod_jar).name
         shutil.copy2(mod_jar, target)
+        # an older riftworld jar left in mods/ would win the mod-id clash and the new classes would never load
+        stale = [j for j in (SERVER / "mods").glob("riftworld*.jar") if j != target]
+        for j in stale:
+            j.unlink()
+            print(f"[mods] убран старый {j.name} (иначе Forge грузит его вместо нового)")
         print(f"[mods] {target}")
     log = SERVER / "run.log"
     handled = open(log, "w", encoding="utf-8")
@@ -123,11 +141,13 @@ def main():
     ap.add_argument("--prepare", action="store_true", help="только подготовить каталог")
     ap.add_argument("--start", action="store_true", help="запустить сервер и дождаться «Done»")
     ap.add_argument("--mod", default=None, help="путь к собранному jar мода")
+    ap.add_argument("--fresh-world", action="store_true",
+                    help="отложить world/ в сторону: биомы и чанки в сохранении не обновляются вместе с генератором")
     args = ap.parse_args()
 
     print("[prepare]", prepare())
     if args.start:
-        proc = start(args.mod)
+        proc = start(args.mod, new_world=args.fresh_world)
         print("[server] работает, порт 25565. Ctrl-C/stop_process для остановки.")
         try:
             proc.wait()

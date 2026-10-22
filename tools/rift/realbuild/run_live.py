@@ -7,6 +7,10 @@
 Usage:
     python3 tools/rift/realbuild/run_live.py [--jar dist/riftworld-<v>.jar] [--log-dir reports/rev8_playtest]
     python3 tools/rift/realbuild/run_live.py --no-playtest      # просто поднять и остановить
+    python3 tools/rift/realbuild/run_live.py --keep-world       # не пересоздавать мир (быстрее, но биомы старые)
+
+Мир по умолчанию пересоздаётся: сгенерированные биомы и чанки хранятся в сохранении и НЕ обновляются вместе с
+кодом генератора, поэтому старая карта легко «доказывает» то, чего в моде уже нет (и наоборот).
 """
 import argparse
 import os
@@ -75,9 +79,16 @@ def main():
     ap.add_argument("--jar", default=None)
     ap.add_argument("--log-dir", default=str(ROOT / "reports/rev8_playtest"))
     ap.add_argument("--no-playtest", action="store_true")
+    ap.add_argument("--keep-world", action="store_true", help="не пересоздавать world/ (биомы останутся старыми)")
     args = ap.parse_args()
 
     jar = args.jar or str(ROOT / "dist" / "riftworld.jar")
+    if not args.keep_world:
+        world = SERVER / "world"
+        if world.exists():
+            backup = SERVER / ("world-old-" + time.strftime("%Y%m%d-%H%M%S"))
+            world.rename(backup)
+            print(f"[мир] старый мир отложен в {backup.name}: биомы в сохранении не обновляются вместе с кодом")
     if not Path(jar).exists():
         build = HERE / "build_jar.py"
         subprocess.run([sys.executable, str(build), "--out", jar], check=True)

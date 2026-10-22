@@ -15,8 +15,10 @@ public class ElisarBiomeSource extends BiomeSource {
             Biome.CODEC.fieldOf("ashen").forGetter(s -> s.ashen),
             Biome.CODEC.fieldOf("violet").forGetter(s -> s.violet),
             Biome.CODEC.fieldOf("sizo").forGetter(s -> s.sizo),
-            Biome.CODEC.fieldOf("mist").forGetter(s -> s.mist),
-            Biome.CODEC.fieldOf("gardens").forGetter(s -> s.gardens)).apply(i, ElisarBiomeSource::new));
+            // ORDER MATTERS: RecordCodecBuilder feeds the constructor in field order, and the constructor is
+            // (…, sizo, gardens, mist). "mist" before "gardens" here silently swapped biomes 07 and the Mist Keep.
+            Biome.CODEC.fieldOf("gardens").forGetter(s -> s.gardens),
+            Biome.CODEC.fieldOf("mist").forGetter(s -> s.mist)).apply(i, ElisarBiomeSource::new));
 
     private final Holder<Biome> def, ashen, violet, sizo, gardens, mist;
 

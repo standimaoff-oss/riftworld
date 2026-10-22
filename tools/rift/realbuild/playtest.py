@@ -136,32 +136,69 @@ class Play:
         check = self.cmd(f"execute in {DIM} if block 60 90 60 #minecraft:logs")
         return self.ok("бревно мода попадает в #minecraft:logs", "Test passed" in check, check)
 
+    # каждая порода живёт в своём биоме; код — это короткое имя в /rifttreeplan
+    BIOMES = [
+        ("riftworld:sizo_grove", "sg", "sizo_log"),
+        ("riftworld:violet_hills", "vh", "lilac_log"),
+        ("riftworld:waterfall_gardens", "wg", "fern_log"),
+        ("riftworld:mist_keep", "mk", "mist_pine_log"),
+    ]
+
+    def biomes(self):
+        """Биом = своя логика генерации. Тут ловится класс ошибок «биом есть, но это не тот биом».
+
+        `locate biome` берёт биом из источника, а /riftprobe спрашивает сам планировщик биома: если они
+        расходятся, значит перепутаны Holder-ы в ElisarBiomeSource (так и было: «Висячие сады» и Туманный
+        дозор молча поменялись биомами из-за порядка полей в RecordCodecBuilder).
+        """
+        for biome, code, _ in self.BIOMES:
+            out = self.cmd(f"execute in {DIM} run locate biome {biome}")
+            m = re.search(r"\[(-?\d+), (-?\d+), (-?\d+)\]", out)
+            if not m:
+                self.ok(f"биом {biome} существует", False, out[:120])
+                continue
+            x, y, z = int(m.group(1)), int(m.group(2)), int(m.group(3))
+            self.cmd(f"execute in {DIM} run forceload add {x} {z} {x} {z}")   # чанк должен существовать
+            time.sleep(1.5)
+            saved = self.cmd(f"execute in {DIM} if biome {x} {y} {z} {biome}")
+            probe = self.cmd(f"execute in {DIM} positioned {x} 100 {z} run riftprobe")
+            mine = f"{code}.inside=true" in probe
+            self.ok(f"{biome}: биом в чанке совпадает с планировщиком",
+                    "Test passed" in saved and mine,
+                    f"locate {x},{y},{z}; if_biome={'да' if 'Test passed' in saved else 'НЕТ'}; "
+                    f"probe={'да' if mine else 'НЕТ'} | {probe[:150]}")
+
     def biome_trees(self):
-        """Настоящие деревья в биоме: идём поперёк биома и ищем листву над поверхностью (шаг 1 блок)."""
-        out = self.cmd(f"execute in {DIM} run locate biome riftworld:sizo_grove")
-        m = re.search(r"\[(-?\d+), (-?\d+), (-?\d+)\]", out)
-        if not m:
-            return self.ok("деревья в биоме", False, out[:100])
-        cx, cz = int(m.group(1)), int(m.group(3))
-        # точка от /locate — это просто точка внутри биома; деревья стоят на островах и могут быть в 50+ блоках
-        self.cmd(f"execute in {DIM} run forceload add {cx - 80} {cz - 80} {cx + 80} {cz + 80}")
-        time.sleep(6)
-        found = []
-        for dx in range(-64, 65, 16):
-            for dz in range(-64, 65, 16):
-                x, z = cx + dx, cz + dz
-                for y in range(66, 145, 3):
-                    hit = self.cmd(f"execute in {DIM} if block {x} {y} {z} #minecraft:leaves")
-                    if "Test passed" in hit or "Test passed" in self.cmd(
-                            f"execute in {DIM} if block {x} {y} {z} #minecraft:logs"):
-                        found.append((x, y, z))
-                        break
-                if len(found) >= 3:
-                    break
-            if len(found) >= 3:
-                break
-        return self.ok("деревья реально растут в биоме (листва найдена)", bool(found),
-                       f"примеры: {found[:3]}" if found else "листва не найдена в скан-сетке")
+        """Деревья по-настоящему: планировщик говорит, что сажает, а мир должен это содержать.
+
+        Раньше здесь был перебор точек вокруг `locate biome` — и он честно показывал ноль, потому что деревья
+        стоят на островах, а `locate` возвращает любую точку биома (до 170 блоков от острова). Теперь:
+        /rifttreeplan сверяет план генератора с блоками в мире, /rifttreescan считает стволы и листву.
+        """
+        for biome, code, log in self.BIOMES:
+            out = self.cmd(f"execute in {DIM} run locate biome {biome}")
+            m = re.search(r"\[(-?\d+), (-?\d+), (-?\d+)\]", out)
+            if not m:
+                self.ok(f"деревья в {biome}", False, out[:120])
+                continue
+            cx, cz = int(m.group(1)), int(m.group(3))
+            plan = self.cmd(f"execute in {DIM} positioned {cx} 100 {cz} run rifttreeplan {code} 160")
+            planned = int((re.search(r"planned=(\d+)", plan) or [0, 0])[1])
+            if planned == 0:
+                self.ok(f"деревья в {biome}: планировщик сажает деревья", False, plan[:160])
+                continue
+            # центр региона из плана — именно там стоят деревья; грузим квадрат вокруг него
+            rm = re.search(r"region_at_center=(-?\d+),(-?\d+) R=(\d+)", plan)
+            rx, rz = (int(rm.group(1)), int(rm.group(2))) if rm else (cx, cz)
+            rad = min(96, int(rm.group(3))) if rm else 96
+            self.cmd(f"execute in {DIM} run forceload add {rx - rad} {rz - rad} {rx + rad} {rz + rad}")
+            time.sleep(4)
+            again = self.cmd(f"execute in {DIM} positioned {rx} 100 {rz} run rifttreeplan {code} 96")
+            in_world = int((re.search(r"in_world=(\d+)", again) or [0, 0])[1])
+            total = int((re.search(r"planned=(\d+)", again) or [0, 0])[1])
+            scan = self.cmd(f"execute in {DIM} positioned {rx} 100 {rz} run rifttreescan {rad} 60 170")
+            self.ok(f"деревья в {biome}: план {total} → в мире {in_world}", in_world > 0 and in_world == total,
+                    f"{again[:120]} | {scan[:220]}")
 
     def biome_lookup(self):
         out = self.cmd(f"execute in {DIM} run locate biome riftworld:sizo_grove")
@@ -204,6 +241,7 @@ def main():
     p.tree_blocks()
     p.tags()
     p.biome_lookup()
+    p.biomes()
     p.biome_trees()
     p.worldgen()
     p.no_crash()

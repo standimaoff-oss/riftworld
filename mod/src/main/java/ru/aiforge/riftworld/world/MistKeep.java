@@ -82,11 +82,13 @@ public final class MistKeep {
         int gx0 = Math.floorDiv(x, 5), gz0 = Math.floorDiv(z, 5);
         for (int gx = gx0 - 1; gx <= gx0 + 1; ++gx)
             for (int gz = gz0 - 1; gz <= gz0 + 1; ++gz) {
-                if (ElisarChunkGenerator.hash(gx, gz, 7101) > 0.15) continue;              // rare
+                if (ElisarChunkGenerator.hash(gx, gz, 7101) > 0.22) continue;              // редкие, но не единичные
                 int tx = gx * 5 + 2, tz = gz * 5 + 2;
                 if (Math.abs(tx - x) > 4 || Math.abs(tz - z) > 4) continue;
                 int top = rockTop(CityPlan.get().ocean, tx + 0.5, tz + 0.5, rg);
-                if (top < CityPlan.get().ocean + 4) continue;                              // only on the tall rocks
+                // Rev 8: порог был ocean+4, а самый высокий останец в регионе выходил ~ocean+5 - в 6 регионах из 8
+                // не было НИ ОДНОЙ сосны (проверено /rifttreeplan). Порог опущен, высота столбов поднята ниже.
+                if (top < CityPlan.get().ocean + 2) continue;                              // only on the rocks above the water
                 int h = 14 + (int) (ElisarChunkGenerator.hash(gx, gz, 7102) * 6);          // hash() -> [0..1)
                 int seed = (int) (ElisarChunkGenerator.hash(gx, gz, 7103) * (1 << 30));
                 CityPlan.Tree t = new CityPlan.Tree(tx, tz, ru.aiforge.riftworld.tree.TreeSpecies.MIST_PINE, h, seed);
@@ -112,7 +114,7 @@ public final class MistKeep {
         double cell = ElisarChunkGenerator.vnoise(x * 0.16, z * 0.16, 883);               // разрезает кольцо на отдельные столбы
         if (cell < 0.60) return -1;
         double hgt = ElisarChunkGenerator.vnoise(x * 0.21, z * 0.21, 884);
-        int rise = 1 + (int) Math.round((cell - 0.60) * (6 + hgt * 14));                 // 1..13 над водой
+        int rise = 1 + (int) Math.round((cell - 0.60) * (14 + hgt * 20));                // Rev 8: столбы выше, соснам есть где стоять
         return Math.min(ocean + 13, ocean - 1 + rise);
     }
 }
