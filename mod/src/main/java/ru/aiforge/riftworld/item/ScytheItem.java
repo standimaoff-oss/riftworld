@@ -76,6 +76,13 @@ public class ScytheItem extends SwordItem implements GlbItem {
         ScytheItemEntity e = new ScytheItemEntity(level, location.getX(), location.getY(), location.getZ(), stack);
         e.setDeltaMovement(location.getDeltaMovement());
         e.setDefaultPickUpDelay();
+        // Forge подменяет entity и НЕ переносит на неё метки/имя (на живом сервере /summon с Tags их терял):
+        // переносим сами, иначе метка «это коса босса» теряется при любом пересоздании.
+        for (String tag : location.getTags()) e.addTag(tag);
+        if (location.hasCustomName()) {
+            e.setCustomName(location.getCustomName());
+            e.setCustomNameVisible(location.isCustomNameVisible());
+        }
         return e;
     }
 

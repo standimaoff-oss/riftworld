@@ -205,6 +205,71 @@ class Play:
         found = "nearest" in out
         return self.ok("биом riftworld:sizo_grove находится в мире", found, out[:120])
 
+    def entities(self):
+        """Сущности: summon реального моба и чтение его NBT (значит EntityType зарегистрирован и тикается)."""
+        for eid in ("morgrath", "ember_guard", "paper_dragon"):
+            out = self.cmd(f"execute in {DIM} run summon riftworld:{eid} 30 100 30")
+            spawned = "Summoned new" in out
+            data = self.cmd(f"execute in {DIM} run data get entity @e[type=riftworld:{eid},limit=1]")
+            self.ok(f"сущность riftworld:{eid} призывается и имеет NBT", spawned and "{" in data,
+                    f"{out[:60]} | {data[:90]}")
+            self.cmd(f"execute in {DIM} run kill @e[type=riftworld:{eid}]")
+
+    def items(self):
+        """Предметы: кладём их в мир как entity item — сервер сам проверит, что id предмета существует."""
+        for iid in ("bridge_rope", "resonance_stone", "elisar_ducat", "morgrath_scythe",
+                    "guard_sickle", "morgrath_spawn_egg"):
+            self.cmd(f"execute in {DIM} run kill @e[type=minecraft:item,tag=riftprobe]")
+            out = self.cmd(f'execute in {DIM} run summon minecraft:item 34 100 34 '
+                           f'{{Item:{{id:"riftworld:{iid}",Count:1b}},Tags:["riftprobe"]}}')
+            # «Коса Морграта» падает в мир как СВОЯ сущность (ScytheItemEntity: не исчезает, светит, горит),
+            # поэтому ищем предмет и среди обычных item, и среди riftworld:scythe_item
+            back = ""
+            for sel in ("type=minecraft:item,tag=riftprobe", "type=riftworld:scythe_item,tag=riftprobe",
+                        "type=riftworld:scythe_item"):
+                back = self.cmd(f"execute in {DIM} run data get entity @e[{sel},limit=1] Item.id")
+                if "No entity was found" not in back:
+                    break
+            self.ok(f"предмет riftworld:{iid} существует", "Summoned new" in out and iid in back,
+                    f"{out[:50]} | {back[:70]}")
+            self.cmd(f"execute in {DIM} run kill @e[type=minecraft:item,tag=riftprobe]")
+            self.cmd(f"execute in {DIM} run kill @e[type=riftworld:scythe_item,tag=riftprobe]")
+
+    def world_bridges(self):
+        """Мосты в настоящем мире: генератор планирует настил (`WorldBridges`), блоки должны стоять в чанках.
+
+        `/riftbridgeplan` прогоняет ту же математику, что и генератор чанков (без записи), и говорит, где настил;
+        `/riftblocks` считает блоки мода в загруженных чанках вокруг найденного моста.
+        """
+        found_any = 0
+        for biome, origin in (("riftworld:violet_hills", (0, 0)),
+                              ("riftworld:waterfall_gardens", (3000, 0)),
+                              ("riftworld:waterfall_gardens", (-3000, 2000)),
+                              ("riftworld:waterfall_gardens", (5000, -4000))):
+            out = self.cmd(f"execute in {DIM} positioned {origin[0]} 100 {origin[1]} run locate biome {biome}")
+            m = re.search(r"\[(-?\d+), (-?\d+), (-?\d+)\]", out)
+            if not m:
+                continue
+            cx, cz = int(m.group(1)), int(m.group(3))
+            plan = self.cmd(f"execute in {DIM} positioned {cx} 100 {cz} run riftbridgeplan 160")
+            decks = int((re.search(r"decks=(\d+)", plan) or [0, 0])[1])
+            if decks == 0:
+                # мост в «Висячих садах» редкий (гуляж через промоину с шансом ~0.6 на регион) — это не дефект
+                self.ok(f"{biome} ({cx},{cz}): моста в регионе нет (редкий мост, допустимо)", True, plan[:120])
+                continue
+            self.ok(f"генератор планирует мост в {biome} ({cx},{cz})", True, plan[:200])
+            dm = re.search(r"-->(\-?\d+),(\-?\d+)", plan) or re.search(r" (\-?\d+),(\-?\d+)->", plan)
+            bx, bz = (int(dm.group(1)), int(dm.group(2))) if dm else (cx, cz)
+            self.cmd(f"execute in {DIM} run forceload add {bx - 48} {bz - 48} {bx + 48} {bz + 48}")
+            time.sleep(4)
+            scan = self.cmd(f"execute in {DIM} positioned {bx} 100 {bz} run riftblocks 48")
+            posts = int((re.search(r"bridge_post=(\d+)", scan) or [0, 0])[1])
+            walks = int((re.search(r"bridge_walk=(\d+)", scan) or [0, 0])[1])
+            self.ok(f"мост стоит в мире ({biome} {cx},{cz}): 4 опоры и настил", posts >= 4 and walks > 0,
+                    f"bridge_post={posts} bridge_walk={walks} | {scan[:150]}")
+            found_any += 1 if (posts >= 4 and walks > 0) else 0
+        self.ok("мосты генерируются хотя бы в двух проверенных местах", found_any >= 2, f"подтверждено {found_any}")
+
     def worldgen(self):
         """Настоящая генерация: форс-лочим регион и смотрим, что поверхность не пустая."""
         out = self.cmd(f"execute in {DIM} run forceload add 1200 176 1240 216")
@@ -243,6 +308,9 @@ def main():
     p.biome_lookup()
     p.biomes()
     p.biome_trees()
+    p.world_bridges()
+    p.entities()
+    p.items()
     p.worldgen()
     p.no_crash()
     rcon.close()

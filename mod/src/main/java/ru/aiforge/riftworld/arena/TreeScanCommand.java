@@ -48,6 +48,25 @@ public final class TreeScanCommand {
                                                 com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "radius"),
                                                 com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "ymin"),
                                                 com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "ymax")))))));
+        // /riftblocks <radius> [ymin] [ymax] - все блоки мода в загруженных чанках (мосты, храм, арена, деревья)
+        d.register(Commands.literal("riftblocks").requires(s2 -> s2.hasPermission(2))
+                .then(Commands.argument("radius", com.mojang.brigadier.arguments.IntegerArgumentType.integer(1, 512))
+                        .executes(c -> count(c.getSource(),
+                                com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "radius"), 40, 200,
+                                false))
+                        .then(Commands.argument("ymin", com.mojang.brigadier.arguments.IntegerArgumentType.integer(-64, 319))
+                                .then(Commands.argument("ymax", com.mojang.brigadier.arguments.IntegerArgumentType.integer(-64, 319))
+                                        .executes(c -> count(c.getSource(),
+                                                com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "radius"),
+                                                com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "ymin"),
+                                                com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "ymax"),
+                                                false))))));
+        // /riftbridgeplan [radius] - какие мосты генератор собирается поставить вокруг (без чтения мира)
+        d.register(Commands.literal("riftbridgeplan").requires(s2 -> s2.hasPermission(2))
+                .executes(c -> bridgePlan(c.getSource(), 150))
+                .then(Commands.argument("radius", com.mojang.brigadier.arguments.IntegerArgumentType.integer(16, 400))
+                        .executes(c -> bridgePlan(c.getSource(),
+                                com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "radius")))));
         // /riftprobe - what the biome/gen code thinks about the caller's column (all four biome providers at once)
         d.register(Commands.literal("riftprobe").requires(s2 -> s2.hasPermission(2)).executes(c -> {
             CommandSourceStack st = c.getSource();
@@ -71,6 +90,30 @@ public final class TreeScanCommand {
                                 .executes(c -> plan(c.getSource(),
                                         com.mojang.brigadier.arguments.StringArgumentType.getString(c, "biome"),
                                         com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "radius"))))));
+    }
+
+    /** План мостов: те же вычисления, что у генератора чанков, но без записи в мир. */
+    private static int bridgePlan(CommandSourceStack src, int radius) {
+        int px = (int) Math.floor(src.getPosition().x), pz = (int) Math.floor(src.getPosition().z);
+        java.util.Map<String, ru.aiforge.riftworld.bridge.BridgeDeckGeom.Deck> decks = new LinkedHashMap<>();
+        int c0x = px >> 4, c0z = pz >> 4, cr = Math.max(1, (radius + 15) >> 4);
+        for (int cx = c0x - cr; cx <= c0x + cr; ++cx) {
+            for (int cz = c0z - cr; cz <= c0z + cr; ++cz) {
+                for (ru.aiforge.riftworld.bridge.BridgeDeckGeom.Deck d
+                        : ru.aiforge.riftworld.bridge.WorldBridges.decksNear(cx << 4, cz << 4)) {
+                    decks.putIfAbsent(d.a().getX() + "," + d.a().getZ() + "-" + d.b().getX() + "," + d.b().getZ(), d);
+                }
+            }
+        }
+        StringBuilder sb = new StringBuilder("bridgeplan r=" + radius + " center=" + px + "," + pz + ": decks=" + decks.size());
+        int n = 0;
+        for (ru.aiforge.riftworld.bridge.BridgeDeckGeom.Deck d : decks.values()) {
+            if (n++ < 4) sb.append("; style=").append(d.style()).append(" ").append(d.a().getX()).append(",")
+                    .append(d.a().getZ()).append("->").append(d.b().getX()).append(",").append(d.b().getZ());
+        }
+        String line = sb.toString();
+        src.sendSuccess(() -> Component.literal(line), false);
+        return decks.size();
     }
 
     private static String centre(Object rg) {
@@ -159,6 +202,11 @@ public final class TreeScanCommand {
     }
 
     private static int scan(CommandSourceStack src, int radius, int yMin, int yMax) {
+        return count(src, radius, yMin, yMax, true);
+    }
+
+    /** @param onlyWood true — только брёвна/листва, false — все блоки мода (мосты, храм, арена…) */
+    private static int count(CommandSourceStack src, int radius, int yMin, int yMax, boolean onlyWood) {
         ServerLevel level = src.getLevel();
         int px = (int) Math.floor(src.getPosition().x);
         int pz = (int) Math.floor(src.getPosition().z);
@@ -185,16 +233,16 @@ public final class TreeScanCommand {
                             String p = rl.getPath();
                             boolean log = isOurLog(rl);
                             boolean leaf = p.endsWith("_leaves") || p.endsWith("_blossom") || p.endsWith("_fronds");
-                            if (!log && !leaf) continue;
+                            if (onlyWood && !log && !leaf) continue;
                             String key = rl.toString();
                             counts.merge(key, 1, Integer::sum);
-                            if (samples.size() < 8 && log) samples.add(key + " @" + x + " " + y + " " + z);
+                            if (samples.size() < (onlyWood ? 8 : 0) && log) samples.add(key + " @" + x + " " + y + " " + z);
                         }
                     }
                 }
             }
         }
-        String head = "treescan r=" + radius + " y=" + lo + ".." + hi + " chunks=" + chunks + ":" + (counts.isEmpty() ? " nothing" : "");
+        String head = (onlyWood ? "treescan" : "blockscan") + " r=" + radius + " y=" + lo + ".." + hi + " chunks=" + chunks + ":" + (counts.isEmpty() ? " nothing" : "");
         StringBuilder sb = new StringBuilder(head);
         for (Map.Entry<String, Integer> en : counts.entrySet()) sb.append(' ').append(en.getKey().replace(RiftWorld.MODID + ":", "")).append('=').append(en.getValue());
         for (String s : samples) sb.append("; ").append(s);

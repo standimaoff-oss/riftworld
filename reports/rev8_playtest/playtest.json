@@ -7,7 +7,7 @@
   {
     "test": "измерение riftworld:elisar загружено",
     "ok": true,
-    "detail": "Dim minecraft, Dim minecraft, Dim riftworld, Dim minecraft, Dim riftworld"
+    "detail": "Dim minecraft, Dim riftworld, Dim minecraft, Dim minecraft, Dim riftworld"
   },
   {
     "test": "тестовая зона форс-лочится",
@@ -115,6 +115,86 @@
     "detail": "treeplan mk r=96 center=1837,1120 region_at_center=1837,1120 R=45: planned=9 in_world=9; 1832 65 mist_pine_log 1087; 183 | treescan r=45 y=60..170 chunks=49: mist_pine_leaves=2962 mist_pine_log=728; riftworld:mist_pine_log @1830 76 1084; riftworld:mist_pine_log @1831 73 1083; riftworld:mist_pine_log @1831 73 1085; riftworld:mist_pine_log @18"
   },
   {
+    "test": "генератор планирует мост в riftworld:violet_hills (1248,224)",
+    "ok": true,
+    "detail": "bridgeplan r=160 center=1248,224: decks=1; style=GARDEN 1380,242->1389,236"
+  },
+  {
+    "test": "мост стоит в мире (riftworld:violet_hills 1248,224): 4 опоры и настил",
+    "ok": true,
+    "detail": "bridge_post=4 bridge_walk=9 | blockscan r=48 y=40..200 chunks=49: elisar_water=289095 elisar_stone_mossy=38592 elisar_stone=346081 elisar_crust=12544 elisar_grass=9857 elisar_tall_"
+  },
+  {
+    "test": "riftworld:waterfall_gardens (2648,640): моста в регионе нет (редкий мост, допустимо)",
+    "ok": true,
+    "detail": "bridgeplan r=160 center=2648,640: decks=0"
+  },
+  {
+    "test": "riftworld:waterfall_gardens (-5880,1712): моста в регионе нет (редкий мост, допустимо)",
+    "ok": true,
+    "detail": "bridgeplan r=160 center=-5880,1712: decks=0"
+  },
+  {
+    "test": "генератор планирует мост в riftworld:waterfall_gardens (3624,-4160)",
+    "ok": true,
+    "detail": "bridgeplan r=160 center=3624,-4160: decks=1; style=GARDEN 3492,-4166->3527,-4202"
+  },
+  {
+    "test": "мост стоит в мире (riftworld:waterfall_gardens 3624,-4160): 4 опоры и настил",
+    "ok": true,
+    "detail": "bridge_post=4 bridge_walk=51 | blockscan r=48 y=40..200 chunks=49: elisar_water=292942 elisar_stone=250775 elisar_stone_mossy=29838 elisar_crust=10537 elisar_grass=5876 sizo_leaves="
+  },
+  {
+    "test": "мосты генерируются хотя бы в двух проверенных местах",
+    "ok": true,
+    "detail": "подтверждено 2"
+  },
+  {
+    "test": "сущность riftworld:morgrath призывается и имеет NBT",
+    "ok": true,
+    "detail": "Summoned new Morgrath, Master of the Hall | Morgrath, Master of the Hall has the following entity data: {Brain: {memories: {}}, HurtBy"
+  },
+  {
+    "test": "сущность riftworld:ember_guard призывается и имеет NBT",
+    "ok": true,
+    "detail": "Summoned new Smouldering Warden | Smouldering Warden has the following entity data: {Brain: {memories: {}}, HurtByTimestamp:"
+  },
+  {
+    "test": "сущность riftworld:paper_dragon призывается и имеет NBT",
+    "ok": true,
+    "detail": "Summoned new Paper Dragon | Paper Dragon has the following entity data: {Brain: {memories: {}}, HurtByTimestamp: 0, pd"
+  },
+  {
+    "test": "предмет riftworld:bridge_rope существует",
+    "ok": true,
+    "detail": "Summoned new Rope | Rope has the following entity data: \"riftworld:bridge_rope\""
+  },
+  {
+    "test": "предмет riftworld:resonance_stone существует",
+    "ok": true,
+    "detail": "Summoned new Resonance Stone | Resonance Stone has the following entity data: \"riftworld:resonance_st"
+  },
+  {
+    "test": "предмет riftworld:elisar_ducat существует",
+    "ok": true,
+    "detail": "Summoned new City Ducat | City Ducat has the following entity data: \"riftworld:elisar_ducat\""
+  },
+  {
+    "test": "предмет riftworld:morgrath_scythe существует",
+    "ok": true,
+    "detail": "Summoned new Morgrath's Scythe | Morgrath's Scythe has the following entity data: \"riftworld:morgrath_s"
+  },
+  {
+    "test": "предмет riftworld:guard_sickle существует",
+    "ok": true,
+    "detail": "Summoned new Warden's Hook-Sickle | Warden's Hook-Sickle has the following entity data: \"riftworld:guard_s"
+  },
+  {
+    "test": "предмет riftworld:morgrath_spawn_egg существует",
+    "ok": true,
+    "detail": "Summoned new Morgrath Spawn Egg | Morgrath Spawn Egg has the following entity data: \"riftworld:morgrath_"
+  },
+  {
     "test": "чанки форс-лочатся",
     "ok": true,
     "detail": "Marked [75, 11] chunks in riftworld:elisar from [75, 11] to [77, 13] to be force loaded"
@@ -127,6 +207,6 @@
   {
     "test": "TPS держится (20.0)",
     "ok": true,
-    "detail": "Overall: Mean tick time: 3.098 ms. Mean TPS: 20.000"
+    "detail": "Overall: Mean tick time: 4.749 ms. Mean TPS: 20.000"
   }
 ]
