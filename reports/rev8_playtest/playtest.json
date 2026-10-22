@@ -1,0 +1,97 @@
+[
+  {
+    "test": "сервер отвечает по RCON",
+    "ok": true,
+    "detail": "There are 0 of a max of 20 players online:"
+  },
+  {
+    "test": "измерение riftworld:elisar загружено",
+    "ok": true,
+    "detail": "Dim minecraft, Dim riftworld, Dim minecraft, Dim minecraft, Dim riftworld"
+  },
+  {
+    "test": "тестовая зона форс-лочится",
+    "ok": true,
+    "detail": "No chunks were marked for force loading"
+  },
+  {
+    "test": "команда мода /riftarena отвечает",
+    "ok": true,
+    "detail": "no loaded arena in this dimension"
+  },
+  {
+    "test": "blockstates мода найдены",
+    "ok": true,
+    "detail": "271 блоков"
+  },
+  {
+    "test": "ни один блок не падает с ошибкой регистрации",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "test": "все блоки ставятся в мире",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "test": "опора моста ставится",
+    "ok": true,
+    "detail": "Changed the block at 20, 92, 20"
+  },
+  {
+    "test": "у опоры моста есть блок-энтити",
+    "ok": true,
+    "detail": "20, 92, 20 has the following block data: {x: 20, y: 92, z: 20, id: \"riftworld:bridge_post\"}"
+  },
+  {
+    "test": "порода lilac: ствол+листва",
+    "ok": true,
+    "detail": "Changed the block at 40, 90, 40 / Changed the block at 40, 91, 40"
+  },
+  {
+    "test": "порода sizo: ствол+листва",
+    "ok": true,
+    "detail": "Changed the block at 44, 90, 40 / Changed the block at 44, 91, 40"
+  },
+  {
+    "test": "порода fern: ствол+листва",
+    "ok": true,
+    "detail": "Changed the block at 48, 90, 40 / Changed the block at 48, 91, 40"
+  },
+  {
+    "test": "порода mist_pine: ствол+листва",
+    "ok": true,
+    "detail": "Changed the block at 52, 90, 40 / Changed the block at 52, 91, 40"
+  },
+  {
+    "test": "бревно мода попадает в #minecraft:logs",
+    "ok": true,
+    "detail": "Test passed"
+  },
+  {
+    "test": "биом riftworld:sizo_grove находится в мире",
+    "ok": true,
+    "detail": "The nearest riftworld:sizo_grove is at [800, 112, -2208] (2348 blocks away)"
+  },
+  {
+    "test": "деревья реально растут в биоме (листва найдена)",
+    "ok": true,
+    "detail": "примеры: [(752, 99, -2144), (768, 102, -2144)]"
+  },
+  {
+    "test": "чанки форс-лочатся",
+    "ok": true,
+    "detail": "No chunks were marked for force loading"
+  },
+  {
+    "test": "генератор выдаёт непустую колонку на y=60",
+    "ok": true,
+    "detail": "блок на глубине есть (не океан пустоты)"
+  },
+  {
+    "test": "TPS держится (20.0)",
+    "ok": true,
+    "detail": "Overall: Mean tick time: 1.708 ms. Mean TPS: 20.000"
+  }
+]

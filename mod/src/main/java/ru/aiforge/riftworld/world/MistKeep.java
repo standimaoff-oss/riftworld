@@ -1,5 +1,7 @@
 package ru.aiforge.riftworld.world;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -85,8 +87,9 @@ public final class MistKeep {
                 if (Math.abs(tx - x) > 4 || Math.abs(tz - z) > 4) continue;
                 int top = rockTop(CityPlan.get().ocean, tx + 0.5, tz + 0.5, rg);
                 if (top < CityPlan.get().ocean + 4) continue;                              // only on the tall rocks
-                CityPlan.Tree t = new CityPlan.Tree(tx, tz, ru.aiforge.riftworld.tree.TreeSpecies.MIST_PINE,
-                        14 + ElisarChunkGenerator.hash(gx, gz, 7102) % 6, ElisarChunkGenerator.hash(gx, gz, 7103));
+                int h = 14 + (int) (ElisarChunkGenerator.hash(gx, gz, 7102) * 6);          // hash() -> [0..1)
+                int seed = (int) (ElisarChunkGenerator.hash(gx, gz, 7103) * (1 << 30));
+                CityPlan.Tree t = new CityPlan.Tree(tx, tz, ru.aiforge.riftworld.tree.TreeSpecies.MIST_PINE, h, seed);
                 t.baseY = top + 1;
                 out.add(t);
             }

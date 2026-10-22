@@ -119,7 +119,10 @@ public final class ElisarBlocks {
     public static final RegistryObject<PlantBlock> PALE_BLOOM = ModBlocks.reg("pale_bloom", () -> new PlantBlock(plant()));
     public static final RegistryObject<VineBlock> IVY = ModBlocks.reg("elisar_ivy", () -> new VineBlock(plant().randomTicks()));
     // water (no item: the bucket is the item)
-    public static final RegistryObject<LiquidBlock> WATER = ModBlocks.BLOCKS.register("elisar_water", () -> new LiquidBlock(ModFluids.SOURCE,
+    // ВАЖНО: именно Fluid, а не Supplier. Forge-конструктор LiquidBlock(Supplier, ..) оставляет поле fluid = null,
+    // а восемь методов (neighborChanged, onPlace, updateShape, skipRendering, isPathfindable, pickupBlock, ...) читают
+    // это поле напрямую — первый же тик воды в мире падал с NPE и ронял сервер (поймано живым прогоном).
+    public static final RegistryObject<LiquidBlock> WATER = ModBlocks.BLOCKS.register("elisar_water", () -> new LiquidBlock(ModFluids.SOURCE.get(),
             BlockBehaviour.Properties.of().mapColor(MapColor.WATER).replaceable().noCollission().strength(100.0F).pushReaction(PushReaction.DESTROY)
                     .noLootTable().liquid()));
 

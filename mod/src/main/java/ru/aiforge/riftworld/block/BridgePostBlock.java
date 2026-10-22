@@ -102,13 +102,13 @@ public class BridgePostBlock extends Block implements EntityBlock {
         //----- close the rectangle («в ширину»)
         if (!(level.getBlockEntity(be.partner()) instanceof BridgePostBE other)) return InteractionResult.CONSUME;
         BlockPos a = pos, b = be.partner();
-        BridgeDeckGeom.Deck deck = findRect(level, a, b);
-        if (deck == null) {
+        BlockPos[] rect = findRect(level, a, b);
+        if (rect == null) {
             msg(player, "Рядом нет второй связанной пары опор: протяни трос и для них (ширина до " + BridgeDeckGeom.MAX_WID + ").");
             return InteractionResult.CONSUME;
         }
         int style = state.getValue(STYLE);
-        deck = new BridgeDeckGeom.Deck(deck.a(), deck.b(), deck.a2(), deck.b2(), style, 0F, 0F);
+        BridgeDeckGeom.Deck deck = new BridgeDeckGeom.Deck(rect[0], rect[1], rect[2], rect[3], style, 0F, 0F);
         placeCells(level, deck);
         level.playSound(null, pos, SoundEvents.WOOD_PLACE, SoundSource.BLOCKS, 1.2F, 0.8F);
         level.playSound(null, pos, SoundEvents.LEASH_KNOT_BREAK, SoundSource.BLOCKS, 1.0F, 0.8F);
@@ -163,7 +163,7 @@ public class BridgePostBlock extends Block implements EntityBlock {
     }
 
     /** Looks for a second cabled pair near A that mirrors the A-B line into a rectangle. */
-    private static BridgeDeckGeom.Deck findRect(Level level, BlockPos a, BlockPos b) {
+    private static BlockPos[] findRect(Level level, BlockPos a, BlockPos b) {
         for (BlockPos wa : BlockPos.betweenClosed(a.offset(-BridgeDeckGeom.MAX_WID, -3, -BridgeDeckGeom.MAX_WID),
                 a.offset(BridgeDeckGeom.MAX_WID, 3, BridgeDeckGeom.MAX_WID))) {
             if (wa.equals(a) || wa.equals(b) || !(level.getBlockState(wa).getBlock() instanceof BridgePostBlock)) continue;
@@ -173,7 +173,7 @@ public class BridgePostBlock extends Block implements EntityBlock {
             if (wb.distManhattan(want) > 3) continue;
             double wid = Math.sqrt(wa.distSqr(a));
             if (wid > BridgeDeckGeom.MAX_WID) continue;
-            return new BridgeDeckGeom.Deck(a.immutable(), b, wa.immutable(), wb);
+            return new BlockPos[]{a.immutable(), b, wa.immutable(), wb};   // стиль/обрыв дорисовывает вызывающий
         }
         return null;
     }

@@ -74,7 +74,7 @@ public class BridgePostRenderer implements BlockEntityRenderer<BridgePostBE> {
             for (int i = 1; i <= segs; ++i) {
                 double u = i / (double) segs;
                 Vec3 p = from.lerp(to, u).add(0, -0.10 * from.distanceTo(to) * 0.25 * 4 * u * (1 - u), 0);
-                tube(pose, buf.getBuffer(cutout(tex)), prev, p, 0.035, light, u * 4);
+                tube(buf.getBuffer(cutout(tex)), pose, prev, p, 0.035, light, u * 4);
                 prev = p;
             }
         }
@@ -197,7 +197,7 @@ public class BridgePostRenderer implements BlockEntityRenderer<BridgePostBE> {
             for (int k = 0; k < 3; ++k) {
                 double u = deck.breakFrom() + 0.004 * k;
                 Vec3 p = deck.edge(Math.min(1, u), k % 2);
-                tube(cables, pose, p, p.add(0, -1.0 - k * 0.55, 0), 0.02, level.getLightColor(level, self), 0);
+                tube(cables, pose, p, p.add(0, -1.0 - k * 0.55, 0), 0.02, LevelRenderer.getLightColor(level, self), 0);
             }
             Vec3 mid = a.lerp(b, 0.5).add(0, -1.1, 0);
             tube(planks, pose, a.add(0, -0.05, 0), mid, 0.03, light, 0);
@@ -278,7 +278,7 @@ public class BridgePostRenderer implements BlockEntityRenderer<BridgePostBE> {
     }
 
     /** A cable/hanger/chunk of a chain: a square tube between two points. */
-    private static void tube(PoseStack pose, VertexConsumer vc, Vec3 from, Vec3 to, double r, int light, double uOff) {
+    private static void tube(VertexConsumer vc, PoseStack pose, Vec3 from, Vec3 to, double r, int light, double uOff) {
         Vec3 axis = to.subtract(from);
         double len = axis.length();
         if (len < 1e-4) return;
@@ -311,7 +311,7 @@ public class BridgePostRenderer implements BlockEntityRenderer<BridgePostBE> {
         vc.vertex(m, (float) p.x, (float) p.y, (float) p.z)
                 .color(r, g, b, a)
                 .uv((float) u, (float) v)
-                .overlay(OverlayTexture.NO_OVERLAY)
+                .overlayCoords(OverlayTexture.NO_OVERLAY)
                 .uv2(light)
                 .normal(nrm, (float) n.x, (float) n.y, (float) n.z)
                 .endVertex();

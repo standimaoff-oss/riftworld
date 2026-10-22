@@ -3,6 +3,7 @@
 
     python3 tools/rift/check_all.py            # всё, что можно проверить без Minecraft
     python3 tools/rift/check_all.py --quick    # без рендеров и без самопроверки валидатора
+    python3 tools/rift/check_all.py --live     # + настоящий сервер Forge 1.20.1 и RCON-playtest
 
 What is checked, and why each check exists:
 
@@ -15,9 +16,12 @@ What is checked, and why each check exists:
   4. Java test bench  — real compiled and executed checks: tree invariants, bridge geometry, DT soft dependency, and
                         byte-for-byte parity of the Java tree engine with the Python reference used for the photos.
   5. renders          — regenerates the tree and scene sheets, so the pictures in reports/ are reproducible.
+  6. live server      — only with --live: compiles the mod with ECJ, reobfuscates with ART, boots a real Forge
+                        1.20.1 dedicated server and plays a 19-step RCON test inside it. This is the only check that
+                        runs the mod in Minecraft; it needs the preflight deps (see preflight() below).
 
-There is no game launch here: it needs a JDK, the Forge maven and a display, none of which exist in this environment
-(see reports/rev7_part2_trees.md, "Чем это проверено").
+The offline checks need numpy (renders) and nothing else; the live run needs a JRE 17, ECJ and a downloaded
+Forge server. Missing deps are reported once, with the exact command that installs them.
 """
 from __future__ import annotations
 
@@ -30,6 +34,28 @@ import time
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 PY = sys.executable
+
+
+def preflight() -> list[str]:
+    """Возвращает список того, чего не хватает для полного набора проверок, с командой установки."""
+    missing = []
+    try:
+        import numpy  # noqa: F401
+    except Exception:
+        missing.append("numpy (рендеры листов): pip install --break-system-packages numpy")
+    try:
+        import PIL  # noqa: F401
+    except Exception:
+        missing.append("pillow (текстуры пака DT): pip install --break-system-packages pillow")
+    try:
+        import jdk4py  # noqa: F401
+    except Exception:
+        missing.append("jdk4py (JRE 17 для настоящего сервера): pip install --break-system-packages jdk4py==17.0.9.2")
+    try:
+        import karellen_jdtls  # noqa: F401
+    except Exception:
+        missing.append("karellen-jdtls (компилятор ECJ): pip install --break-system-packages karellen-jdtls")
+    return missing
 
 
 def run(title: str, cmd: list[str], cwd: str | None = None) -> tuple[bool, str]:
@@ -123,9 +149,34 @@ def json_sweep() -> tuple[bool, str]:
     return True, f"{n} JSON-файлов парсятся"
 
 
+def live_server_check() -> int:
+    """Живой прогон: собирает jar, поднимает настоящий сервер Forge и «играет» через RCON.
+
+    Выключен по умолчанию: нужен скачанный сервер (tools/rift/realbuild/fetch_server.py) и JRE из jdk4py.
+    """
+    real = os.path.join(HERE, "realbuild")
+    jar = "/tmp/riftbuild/riftworld-live.jar"
+    if not run("сборка мода настоящим компилятором (ECJ) + реобфускация (ART)",
+               [PY, os.path.join(real, "build_jar.py"), "--out", jar])[0]:
+        return 0
+    if not run("подготовка выделенного сервера Forge", [PY, os.path.join(real, "run_server.py"), "--prepare"])[0]:
+        return 0
+    if not run("живой сервер: запуск, мод в игре, RCON-проверки (playtest)",
+               [PY, os.path.join(real, "run_live.py"), "--jar", jar])[0]:
+        return 1
+    return 0
+
+
 def main() -> int:
     quick = "--quick" in sys.argv
-    print(f"проверка мода в {ROOT}\n")
+    live = "--live" in sys.argv
+    print(f"проверка мода в {ROOT}")
+    gaps = preflight()
+    if gaps:
+        print("не хватает зависимостей (часть проверок упадёт):")
+        for g in gaps:
+            print("  ! " + g)
+    print()
     steps: list[tuple[str, object]] = [
         ("синтаксис Java", java_syntax),
         ("JSON-файлы", json_sweep),
