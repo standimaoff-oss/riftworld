@@ -145,6 +145,15 @@ def version_in_range(version: str, rng: str) -> bool:
     return True
 
 
+def mandatory_is(dep, want: bool) -> bool:
+    """Есть ли у зависимости `mandatory` нужного значения (или старый `type` для обратной совместимости)."""
+    if not dep:
+        return False
+    if "mandatory" in dep:
+        return bool(dep["mandatory"]) is want
+    return dep.get("type") == ("required" if want else "optional")
+
+
 def load(path):
     with open(path, encoding="utf-8") as f:
         return json.load(f)
@@ -387,10 +396,12 @@ def main() -> int:
     # ---------------------------------------------------------------- mod metadata
     toml = tomllib.load(open(os.path.join(DT_RES, "META-INF", "mods.toml"), "rb"))
     deps = {d["modId"]: d for d in (toml.get("dependencies", {}).get(PACK_ID) or [])}
+    # Forge 1.20.1: обязательность зависимости задаётся полем `mandatory` (bool), а не старым `type`.
+    # Без `mandatory` Forge пишет «Missing required field mandatory in dependency» и мод не грузится вовсе.
     if "dynamictrees" not in deps:
         err("mods.toml: нет зависимости от dynamictrees")
-    elif deps["dynamictrees"].get("type") != "optional":
-        err("mods.toml: dynamictrees должна быть optional (мод обязан работать и без DT)")
+    elif deps["dynamictrees"].get("mandatory", True) is not False:
+        err("mods.toml: dynamictrees должна быть mandatory = false (мод обязан работать и без DT)")
     if toml["mods"][0]["modId"] != PACK_ID:
         err("mods.toml: modId не совпадает с именем пака")
     pmeta = load(os.path.join(DT_RES, "pack.mcmeta"))
@@ -410,8 +421,13 @@ def main() -> int:
     elif not version_in_range(mod_version, dep_rw.get("versionRange", "")):
         err(f"mods.toml: riftworld {mod_version} не попадает в versionRange "
             f"«{dep_rw.get('versionRange')}» — Forge не загрузит аддон")
-    if deps.get("forge", {}).get("type") != "required":
-        err("mods.toml: forge должен быть required")
+    if not mandatory_is(deps.get("forge"), True):
+        err("mods.toml: forge должен быть mandatory = true")
+    if not mandatory_is(deps.get("riftworld"), True):
+        err("mods.toml: riftworld должен быть mandatory = true")
+    for modid, dep in deps.items():
+        if "mandatory" not in dep:
+            err(f"mods.toml: у зависимости {modid} нет поля mandatory — Forge 1.20.1 такой мод не загрузит")
 
     # ---------------------------------------------------------------- report
     print(f"пак {PACK_ID}: {len(species)} пород, {len(families)} семейств, {len(leaves)} листв, "

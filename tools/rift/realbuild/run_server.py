@@ -114,7 +114,9 @@ def start(mod_jar=None, wait_done=180, new_world=False):
         target = SERVER / "mods" / Path(mod_jar).name
         shutil.copy2(mod_jar, target)
         # an older riftworld jar left in mods/ would win the mod-id clash and the new classes would never load
-        stale = [j for j in (SERVER / "mods").glob("riftworld*.jar") if j != target]
+        # ВАЖНО: только сам мод, аддон riftworld_dt-*.jar — это другой мод и его трогать нельзя
+        stale = [j for j in (SERVER / "mods").glob("riftworld-*.jar") if j != target]
+        stale += [j for j in (SERVER / "mods").glob("riftworld_live*.jar") if j != target]
         for j in stale:
             j.unlink()
             print(f"[mods] убран старый {j.name} (иначе Forge грузит его вместо нового)")

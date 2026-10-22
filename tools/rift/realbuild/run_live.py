@@ -80,9 +80,18 @@ def main():
     ap.add_argument("--log-dir", default=str(ROOT / "reports/rev8_playtest"))
     ap.add_argument("--no-playtest", action="store_true")
     ap.add_argument("--keep-world", action="store_true", help="не пересоздавать world/ (биомы останутся старыми)")
+    ap.add_argument("--addon", default=None, help="jar аддона Dynamic Trees; по умолчанию dist/riftworld_dt-*.jar")
     args = ap.parse_args()
 
     jar = args.jar or str(ROOT / "dist" / "riftworld.jar")
+    if args.addon is None:
+        cands = sorted((ROOT / "dist").glob("riftworld_dt-*.jar"))
+        args.addon = str(cands[-1]) if cands else None
+    if args.addon:
+        dst = SERVER / "mods" / Path(args.addon).name
+        dst.parent.mkdir(exist_ok=True)
+        shutil.copy2(args.addon, dst)
+        print(f"[аддон] {dst.name} -> mods/ (проверяем, что Forge его грузит)")
     if not args.keep_world:
         world = SERVER / "world"
         if world.exists():

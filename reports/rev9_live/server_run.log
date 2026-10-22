@@ -1,0 +1,1112 @@
+WARNING: Unknown module: jdk.naming.dns specified to --add-exports
+2026-10-22 11:06:34,146 main WARN Advanced terminal features are not available in this environment
+[11:06:34] [main/INFO] [cp.mo.mo.Launcher/MODLAUNCHER]: ModLauncher running: args [--launchTarget, forgeserver, --fml.forgeVersion, 47.4.3, --fml.mcVersion, 1.20.1, --fml.forgeGroup, net.minecraftforge, --fml.mcpVersion, 20230612.114412, nogui]
+[11:06:34] [main/INFO] [cp.mo.mo.Launcher/MODLAUNCHER]: ModLauncher 10.0.9+10.0.9+main.dcd20f30 starting: java version 17.0.9 by Eclipse Adoptium; OS Linux arch amd64 version 6.1.158+
+[11:06:34] [main/INFO] [ne.mi.fm.lo.ImmediateWindowHandler/]: ImmediateWindowProvider not loading because launch target is forgeserver
+[11:06:34] [main/INFO] [mixin/]: SpongePowered MIXIN Subsystem Version=0.8.5 Source=union:/tmp/mcserver/libraries/org/spongepowered/mixin/0.8.5/mixin-0.8.5.jar%2365!/ Service=ModLauncher Env=SERVER
+[11:06:34] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file /tmp/mcserver/libraries/net/minecraftforge/fmlcore/1.20.1-47.4.3/fmlcore-1.20.1-47.4.3.jar is missing mods.toml file
+[11:06:34] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file /tmp/mcserver/libraries/net/minecraftforge/javafmllanguage/1.20.1-47.4.3/javafmllanguage-1.20.1-47.4.3.jar is missing mods.toml file
+[11:06:34] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file /tmp/mcserver/libraries/net/minecraftforge/lowcodelanguage/1.20.1-47.4.3/lowcodelanguage-1.20.1-47.4.3.jar is missing mods.toml file
+[11:06:34] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file /tmp/mcserver/libraries/net/minecraftforge/mclanguage/1.20.1-47.4.3/mclanguage-1.20.1-47.4.3.jar is missing mods.toml file
+[11:06:34] [main/INFO] [ne.mi.fm.lo.mo.JarInJarDependencyLocator/]: No dependencies to load found. Skipping!
+[11:06:35] [main/INFO] [cp.mo.mo.LaunchServiceHandler/MODLAUNCHER]: Launching target 'forgeserver' with arguments [nogui]
+[11:06:40] [modloading-worker-0/INFO] [ne.mi.co.ForgeMod/FORGEMOD]: Forge mod loading, version 47.4.3, for MC 1.20.1 with MCP 20230612.114412
+[11:06:40] [modloading-worker-0/INFO] [ne.mi.co.MinecraftForge/FORGE]: MinecraftForge v47.4.3 Initialized
+[11:06:41] [Forge Version Check/INFO] [ne.mi.fm.VersionChecker/]: [forge] Starting version check at https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json
+[11:06:41] [Forge Version Check/WARN] [ne.mi.fm.VersionChecker/]: Failed to process update information
+javax.net.ssl.SSLHandshakeException: Remote host terminated the handshake
+	at jdk.internal.net.http.HttpClientImpl.send(Unknown Source) ~[java.net.http:?] {}
+	at jdk.internal.net.http.HttpClientFacade.send(Unknown Source) ~[java.net.http:?] {}
+	at net.minecraftforge.fml.VersionChecker$1.openUrlString(VersionChecker.java:142) ~[fmlcore-1.20.1-47.4.3.jar%23108!/:?] {}
+	at net.minecraftforge.fml.VersionChecker$1.process(VersionChecker.java:180) ~[fmlcore-1.20.1-47.4.3.jar%23108!/:?] {}
+	at java.lang.Iterable.forEach(Unknown Source) ~[?:?] {}
+	at net.minecraftforge.fml.VersionChecker$1.run(VersionChecker.java:117) ~[fmlcore-1.20.1-47.4.3.jar%23108!/:?] {}
+Caused by: javax.net.ssl.SSLHandshakeException: Remote host terminated the handshake
+	at jdk.internal.net.http.common.SSLTube.checkForHandshake(Unknown Source) ~[java.net.http:?] {}
+	at jdk.internal.net.http.common.SSLTube$SSLSubscriberWrapper.onComplete(Unknown Source) ~[java.net.http:?] {}
+	at jdk.internal.net.http.common.SubscriberWrapper.checkCompletion(Unknown Source) ~[java.net.http:?] {}
+	at jdk.internal.net.http.common.SubscriberWrapper$DownstreamPusher.run1(Unknown Source) ~[java.net.http:?] {}
+	at jdk.internal.net.http.common.SubscriberWrapper$DownstreamPusher.run(Unknown Source) ~[java.net.http:?] {}
+	at jdk.internal.net.http.common.SequentialScheduler$LockingRestartableTask.run(Unknown Source) ~[java.net.http:?] {}
+	at jdk.internal.net.http.common.SequentialScheduler$CompleteRestartableTask.run(Unknown Source) ~[java.net.http:?] {}
+	at jdk.internal.net.http.common.SequentialScheduler$SchedulableTask.run(Unknown Source) ~[java.net.http:?] {}
+	at jdk.internal.net.http.common.SequentialScheduler.runOrSchedule(Unknown Source) ~[java.net.http:?] {}
+	at jdk.internal.net.http.common.SequentialScheduler.runOrSchedule(Unknown Source) ~[java.net.http:?] {}
+	at jdk.internal.net.http.common.SubscriberWrapper.outgoing(Unknown Source) ~[java.net.http:?] {}
+	at jdk.internal.net.http.common.SSLFlowDelegate$Reader.processData(Unknown Source) ~[java.net.http:?] {}
+	at jdk.internal.net.http.common.SSLFlowDelegate$Reader$ReaderDownstreamPusher.run(Unknown Source) ~[java.net.http:?] {}
+	at jdk.internal.net.http.common.SequentialScheduler$LockingRestartableTask.run(Unknown Source) ~[java.net.http:?] {}
+	at jdk.internal.net.http.common.SequentialScheduler$CompleteRestartableTask.run(Unknown Source) ~[java.net.http:?] {}
+	at jdk.internal.net.http.common.SequentialScheduler$SchedulableTask.run(Unknown Source) ~[java.net.http:?] {}
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source) ~[?:?] {}
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source) ~[?:?] {}
+	at java.lang.Thread.run(Unknown Source) ~[?:?] {}
+[11:06:42] [main/INFO] [mojang/YggdrasilAuthenticationService]: Environment: authHost='https://authserver.mojang.com', accountsHost='https://api.mojang.com', sessionHost='https://sessionserver.mojang.com', servicesHost='https://api.minecraftservices.com', name='PROD'
+[11:06:42] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/tmp/mcserver/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23107!/assets/.mcassetsroot' uses unexpected schema
+[11:06:42] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/tmp/mcserver/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23107!/data/.mcassetsroot' uses unexpected schema
+[11:06:42] [Yggdrasil Key Fetcher/ERROR] [mojang/YggdrasilServicesKeyInfo]: Failed to request yggdrasil public key
+com.mojang.authlib.exceptions.AuthenticationUnavailableException: Cannot contact authentication server
+	at com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService.makeRequest(YggdrasilAuthenticationService.java:119) ~[authlib-4.0.43.jar%2375!/:?] {}
+	at com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService.makeRequest(YggdrasilAuthenticationService.java:91) ~[authlib-4.0.43.jar%2375!/:?] {}
+	at com.mojang.authlib.yggdrasil.YggdrasilServicesKeyInfo.fetch(YggdrasilServicesKeyInfo.java:94) ~[authlib-4.0.43.jar%2375!/:?] {}
+	at com.mojang.authlib.yggdrasil.YggdrasilServicesKeyInfo.lambda$get$1(YggdrasilServicesKeyInfo.java:81) ~[authlib-4.0.43.jar%2375!/:?] {}
+	at java.util.concurrent.Executors$RunnableAdapter.call(Unknown Source) ~[?:?] {}
+	at java.util.concurrent.FutureTask.runAndReset(Unknown Source) ~[?:?] {}
+	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(Unknown Source) ~[?:?] {}
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source) ~[?:?] {}
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source) ~[?:?] {}
+	at java.lang.Thread.run(Unknown Source) ~[?:?] {}
+Caused by: javax.net.ssl.SSLHandshakeException: Remote host terminated the handshake
+	at sun.security.ssl.SSLSocketImpl.handleEOF(Unknown Source) ~[?:?] {}
+	at sun.security.ssl.SSLSocketImpl.decode(Unknown Source) ~[?:?] {}
+	at sun.security.ssl.SSLSocketImpl.readHandshakeRecord(Unknown Source) ~[?:?] {}
+	at sun.security.ssl.SSLSocketImpl.startHandshake(Unknown Source) ~[?:?] {}
+	at sun.security.ssl.SSLSocketImpl.startHandshake(Unknown Source) ~[?:?] {}
+	at sun.net.www.protocol.https.HttpsClient.afterConnect(Unknown Source) ~[?:?] {}
+	at sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.connect(Unknown Source) ~[?:?] {}
+	at sun.net.www.protocol.http.HttpURLConnection.getInputStream0(Unknown Source) ~[?:?] {}
+	at sun.net.www.protocol.http.HttpURLConnection.getInputStream(Unknown Source) ~[?:?] {}
+	at sun.net.www.protocol.https.HttpsURLConnectionImpl.getInputStream(Unknown Source) ~[?:?] {}
+	at com.mojang.authlib.HttpAuthenticationService.performGetRequest(HttpAuthenticationService.java:140) ~[authlib-4.0.43.jar%2375!/:?] {}
+	at com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService.makeRequest(YggdrasilAuthenticationService.java:96) ~[authlib-4.0.43.jar%2375!/:?] {}
+	... 9 more
+Caused by: java.io.EOFException: SSL peer shut down incorrectly
+	at sun.security.ssl.SSLSocketInputRecord.read(Unknown Source) ~[?:?] {}
+	at sun.security.ssl.SSLSocketInputRecord.readHeader(Unknown Source) ~[?:?] {}
+	at sun.security.ssl.SSLSocketInputRecord.decode(Unknown Source) ~[?:?] {}
+	at sun.security.ssl.SSLTransport.decode(Unknown Source) ~[?:?] {}
+	at sun.security.ssl.SSLSocketImpl.decode(Unknown Source) ~[?:?] {}
+	at sun.security.ssl.SSLSocketImpl.readHandshakeRecord(Unknown Source) ~[?:?] {}
+	at sun.security.ssl.SSLSocketImpl.startHandshake(Unknown Source) ~[?:?] {}
+	at sun.security.ssl.SSLSocketImpl.startHandshake(Unknown Source) ~[?:?] {}
+	at sun.net.www.protocol.https.HttpsClient.afterConnect(Unknown Source) ~[?:?] {}
+	at sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.connect(Unknown Source) ~[?:?] {}
+	at sun.net.www.protocol.http.HttpURLConnection.getInputStream0(Unknown Source) ~[?:?] {}
+	at sun.net.www.protocol.http.HttpURLConnection.getInputStream(Unknown Source) ~[?:?] {}
+	at sun.net.www.protocol.https.HttpsURLConnectionImpl.getInputStream(Unknown Source) ~[?:?] {}
+	at com.mojang.authlib.HttpAuthenticationService.performGetRequest(HttpAuthenticationService.java:140) ~[authlib-4.0.43.jar%2375!/:?] {}
+	at com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService.makeRequest(YggdrasilAuthenticationService.java:96) ~[authlib-4.0.43.jar%2375!/:?] {}
+	... 9 more
+[11:06:44] [main/INFO] [minecraft/RecipeManager]: Loaded 7 recipes
+[11:06:44] [main/INFO] [minecraft/AdvancementList]: Loaded 1271 advancements
+[11:06:44] [Server thread/INFO] [minecraft/DedicatedServer]: Starting minecraft server version 1.20.1
+[11:06:44] [Server thread/INFO] [minecraft/DedicatedServer]: Loading properties
+[11:06:44] [Server thread/INFO] [minecraft/DedicatedServer]: Default game type: SURVIVAL
+[11:06:44] [Server thread/INFO] [minecraft/MinecraftServer]: Generating keypair
+[11:06:44] [Server thread/INFO] [minecraft/DedicatedServer]: Starting Minecraft server on *:25565
+[11:06:44] [Server thread/INFO] [minecraft/ServerConnectionListener]: Using epoll channel type
+[11:06:44] [Server thread/WARN] [minecraft/DedicatedServer]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+[11:06:44] [Server thread/WARN] [minecraft/DedicatedServer]: The server will make no attempt to authenticate usernames. Beware.
+[11:06:44] [Server thread/WARN] [minecraft/DedicatedServer]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+[11:06:44] [Server thread/WARN] [minecraft/DedicatedServer]: To change this, set "online-mode" to "true" in the server.properties file.
+[11:06:44] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Configuration file ./world/serverconfig/forge-server.toml is not correct. Correcting
+[11:06:44] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server was corrected from null to its default, SimpleCommentedConfig:{}. 
+[11:06:44] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.removeErroringBlockEntities was corrected from null to its default, false. 
+[11:06:44] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.removeErroringEntities was corrected from null to its default, false. 
+[11:06:44] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.fullBoundingBoxLadders was corrected from null to its default, false. 
+[11:06:44] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.zombieBaseSummonChance was corrected from null to its default, 0.1. 
+[11:06:44] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.zombieBabyChance was corrected from null to its default, 0.05. 
+[11:06:44] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.permissionHandler was corrected from null to its default, forge:default_handler. 
+[11:06:44] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.advertiseDedicatedServerToLan was corrected from null to its default, true. 
+[11:06:44] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.useItemWithDurationZero was corrected from null to its default, false. 
+[11:06:44] [Server thread/INFO] [minecraft/DedicatedServer]: Preparing level "world"
+[11:06:53] [Server thread/INFO] [minecraft/MinecraftServer]: Preparing start region for dimension minecraft:overworld
+[11:06:54] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:06:54] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:06:54] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:06:55] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:06:55] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:06:56] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:06:56] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:06:57] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:06:57] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:06:58] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:06:58] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:06:59] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:06:59] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:00] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:00] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:01] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:01] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:02] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:02] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:03] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:03] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:04] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:04] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:05] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:05] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:06] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:06] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:07] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:07] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:08] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:08] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:09] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:09] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:10] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:10] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:11] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:11] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:12] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:12] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:13] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:13] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:14] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:14] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:15] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:15] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:16] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:16] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:17] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:17] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:18] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:18] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:19] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:19] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:20] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:20] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:21] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:21] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:22] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:22] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:23] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:23] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:24] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:24] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:25] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:25] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:26] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:26] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:27] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:27] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:28] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:28] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:29] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[11:07:30] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 2%
+[11:07:30] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 2%
+[11:07:30] [Worker-Main-1/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 54%
+[11:07:32] [Server thread/INFO] [minecraft/LoggerChunkProgressListener]: Time elapsed: 38625 ms
+[11:07:32] [Server thread/INFO] [minecraft/DedicatedServer]: Done (47.317s)! For help, type "help"
+[11:07:32] [Server thread/INFO] [minecraft/DedicatedServer]: Starting remote control listener
+[11:07:32] [Server thread/INFO] [minecraft/GenericThread]: Thread RCON Listener started
+[11:07:32] [Server thread/INFO] [minecraft/RconThread]: RCON running on 0.0.0.0:25575
+[11:07:32] [Server thread/INFO] [ne.mi.se.pe.PermissionAPI/]: Successfully initialized permission handler forge:default_handler
+[11:07:32] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[11:07:37] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Marked [-3, -3] chunks in riftworld:elisar from [-3, -3] to [7, 7] to be force loaded]
+[11:07:37] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 5691ms or 113 ticks behind
+[11:07:41] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 4, 109, 4]
+[11:07:41] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 4, 110, 5]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 4, 110, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 8, 109, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 8, 110, 5]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 8, 110, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 12, 109, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 12, 110, 5]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 12, 110, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 16, 109, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 16, 110, 5]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 16, 110, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 20, 109, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 20, 110, 5]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 20, 110, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 24, 109, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 24, 110, 5]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 24, 110, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 28, 109, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 28, 110, 5]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 28, 110, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 32, 109, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 32, 110, 5]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 32, 110, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 32, 110, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 36, 109, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 36, 110, 5]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 36, 110, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 40, 109, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 40, 110, 5]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 40, 110, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 44, 109, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 44, 110, 5]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 44, 110, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 44, 110, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 48, 109, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 48, 110, 5]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 48, 110, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 48, 110, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 52, 109, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 52, 110, 5]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 52, 110, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 56, 109, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 56, 110, 5]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 56, 110, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 60, 109, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 60, 110, 5]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 60, 110, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 64, 109, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 64, 110, 5]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 64, 110, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 68, 109, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 68, 110, 5]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 68, 110, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 72, 109, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 72, 110, 5]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 72, 110, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 76, 109, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 76, 110, 5]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 76, 110, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 80, 109, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 80, 110, 5]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 80, 110, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 84, 109, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 84, 110, 5]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 84, 110, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 88, 109, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 88, 110, 5]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 88, 110, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 92, 109, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 92, 110, 5]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 92, 110, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 96, 109, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 96, 110, 5]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 96, 110, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 100, 109, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 100, 110, 5]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 100, 110, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 104, 109, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 104, 110, 5]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 104, 110, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 108, 109, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 108, 110, 5]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 108, 110, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 112, 109, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 112, 110, 5]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 112, 110, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 116, 109, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 116, 110, 5]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 116, 110, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 120, 109, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 120, 110, 5]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 120, 110, 4]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 4, 109, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 4, 110, 11]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 4, 110, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 8, 109, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 8, 110, 11]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 8, 110, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 12, 109, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 12, 110, 11]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 12, 110, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 16, 109, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 16, 110, 11]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 16, 110, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 20, 109, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 20, 110, 11]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 20, 110, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 20, 110, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 24, 109, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 24, 110, 11]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 24, 110, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 24, 110, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 28, 109, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 28, 110, 11]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 28, 110, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 32, 109, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 32, 110, 11]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 32, 110, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 36, 109, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 36, 110, 11]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 36, 110, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 40, 109, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 40, 110, 11]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 40, 110, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 44, 109, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 44, 110, 11]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 44, 110, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 48, 109, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 48, 110, 11]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 48, 110, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 52, 109, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 52, 110, 11]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 52, 110, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 56, 109, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 56, 110, 11]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 56, 110, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 60, 109, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 60, 110, 11]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 60, 110, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 60, 110, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 64, 109, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 64, 110, 11]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 64, 110, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 64, 110, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 68, 109, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 68, 110, 11]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 68, 110, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 72, 109, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 72, 110, 11]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 72, 110, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 76, 109, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 76, 110, 11]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 76, 110, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 80, 109, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 80, 110, 11]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 80, 110, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 84, 109, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 84, 110, 11]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 84, 110, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 88, 109, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 88, 110, 11]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 88, 110, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 92, 109, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 92, 110, 11]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 92, 110, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 96, 109, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 96, 110, 11]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 96, 110, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 100, 109, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 100, 110, 11]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 100, 110, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 104, 109, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 104, 110, 11]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 104, 110, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 108, 109, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 108, 110, 11]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 108, 110, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 112, 109, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 112, 110, 11]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 112, 110, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 116, 109, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 116, 110, 11]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 116, 110, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 120, 109, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 120, 110, 11]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 120, 110, 10]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 4, 109, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 4, 110, 17]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 4, 110, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 4, 110, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 8, 109, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 8, 110, 17]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 8, 110, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 8, 110, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 12, 109, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 12, 110, 17]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 12, 110, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 12, 110, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 16, 109, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 16, 110, 17]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 16, 110, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 16, 110, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 20, 109, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 20, 110, 17]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 20, 110, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 20, 110, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 24, 109, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 24, 110, 17]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 24, 110, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 24, 110, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 28, 109, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 28, 110, 17]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 28, 110, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 32, 109, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 32, 110, 17]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 32, 110, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 36, 109, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 36, 110, 17]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 36, 110, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 40, 109, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 40, 110, 17]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 40, 110, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 44, 109, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 44, 110, 17]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 44, 110, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 48, 109, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 48, 110, 17]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 48, 110, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 52, 109, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 52, 110, 17]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 52, 110, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 56, 109, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 56, 110, 17]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 56, 110, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 60, 109, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 60, 110, 17]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 60, 110, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 64, 109, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 64, 110, 17]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 64, 110, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 68, 109, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 68, 110, 17]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 68, 110, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 72, 109, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 72, 110, 17]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 72, 110, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 76, 109, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 76, 110, 17]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 76, 110, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 80, 109, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 80, 110, 17]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 80, 110, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 84, 109, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 84, 110, 17]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 84, 110, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 88, 109, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 88, 110, 17]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 88, 110, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 92, 109, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 92, 110, 17]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 92, 110, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 96, 109, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 96, 110, 17]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 96, 110, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 100, 109, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 100, 110, 17]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 100, 110, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 104, 109, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 104, 110, 17]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 104, 110, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 108, 109, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 108, 110, 17]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 108, 110, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 112, 109, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 112, 110, 17]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 112, 110, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 116, 109, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 116, 110, 17]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 116, 110, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 120, 109, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 120, 110, 17]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 120, 110, 16]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 4, 109, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 4, 110, 23]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 4, 110, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 8, 109, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 8, 110, 23]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 8, 110, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 12, 109, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 12, 110, 23]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 12, 110, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 16, 109, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 16, 110, 23]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 16, 110, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 20, 109, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 20, 110, 23]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 20, 110, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 24, 109, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 24, 110, 23]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 24, 110, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 28, 109, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 28, 110, 23]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 28, 110, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 32, 109, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 32, 110, 23]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 32, 110, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 36, 109, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 36, 110, 23]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 36, 110, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 40, 109, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 40, 110, 23]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 40, 110, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 44, 109, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 44, 110, 23]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 44, 110, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 48, 109, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 48, 110, 23]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 48, 110, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 52, 109, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 52, 110, 23]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 52, 110, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 56, 109, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 56, 110, 23]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 56, 110, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 60, 109, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 60, 110, 23]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 60, 110, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 64, 109, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 64, 110, 23]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 64, 110, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 68, 109, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 68, 110, 23]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 68, 110, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 72, 109, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 72, 110, 23]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 72, 110, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 76, 109, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 76, 110, 23]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 76, 110, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 80, 109, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 80, 110, 23]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 80, 110, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 84, 109, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 84, 110, 23]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 84, 110, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 88, 109, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 88, 110, 23]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 88, 110, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 92, 109, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 92, 110, 23]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 92, 110, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 96, 109, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 96, 110, 23]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 96, 110, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 100, 109, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 100, 110, 23]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 100, 110, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 104, 109, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 104, 110, 23]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 104, 110, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 108, 109, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 108, 110, 23]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 108, 110, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 112, 109, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 112, 110, 23]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 112, 110, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 116, 109, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 116, 110, 23]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 116, 110, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 120, 109, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 120, 110, 23]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 120, 110, 22]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 4, 109, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 4, 110, 29]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 4, 110, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 8, 109, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 8, 110, 29]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 8, 110, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 12, 109, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 12, 110, 29]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 12, 110, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 16, 109, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 16, 110, 29]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 16, 110, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 20, 109, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 20, 110, 29]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 20, 110, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 24, 109, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 24, 110, 29]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 24, 110, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 24, 110, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 28, 109, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 28, 110, 29]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 28, 110, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 32, 109, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 32, 110, 29]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 32, 110, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 32, 110, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 36, 109, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 36, 110, 29]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 36, 110, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 40, 109, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 40, 110, 29]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 40, 110, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 44, 109, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 44, 110, 29]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 44, 110, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 48, 109, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 48, 110, 29]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 48, 110, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 52, 109, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 52, 110, 29]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 52, 110, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 56, 109, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 56, 110, 29]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 56, 110, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 56, 110, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 60, 109, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 60, 110, 29]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 60, 110, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 64, 109, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 64, 110, 29]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 64, 110, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 68, 109, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 68, 110, 29]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 68, 110, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 72, 109, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 72, 110, 29]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 72, 110, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 76, 109, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 76, 110, 29]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 76, 110, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 80, 109, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 80, 110, 29]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 80, 110, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 84, 109, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 84, 110, 29]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 84, 110, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 88, 109, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 88, 110, 29]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 88, 110, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 92, 109, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 92, 110, 29]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 92, 110, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 96, 109, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 96, 110, 29]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 96, 110, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 100, 109, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 100, 110, 29]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 100, 110, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 104, 109, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 104, 110, 29]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 104, 110, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 108, 109, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 108, 110, 29]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 108, 110, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 112, 109, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 112, 110, 29]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 112, 110, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 116, 109, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 116, 110, 29]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 116, 110, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 120, 109, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 120, 110, 29]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 120, 110, 28]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 4, 109, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 4, 110, 35]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 4, 110, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 8, 109, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 8, 110, 35]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 8, 110, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 12, 109, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 12, 110, 35]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 12, 110, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 16, 109, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 16, 110, 35]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 16, 110, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 20, 109, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 20, 110, 35]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 20, 110, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 24, 109, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 24, 110, 35]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 24, 110, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 28, 109, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 28, 110, 35]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 28, 110, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 32, 109, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 32, 110, 35]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 32, 110, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 36, 109, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 36, 110, 35]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 36, 110, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 40, 109, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 40, 110, 35]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 40, 110, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 44, 109, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 44, 110, 35]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 44, 110, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 48, 109, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 48, 110, 35]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 48, 110, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 52, 109, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 52, 110, 35]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 52, 110, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 56, 109, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 56, 110, 35]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 56, 110, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 60, 109, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 60, 110, 35]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 60, 110, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 64, 109, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 64, 110, 35]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 64, 110, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 68, 109, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 68, 110, 35]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 68, 110, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 72, 109, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 72, 110, 35]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 72, 110, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 76, 109, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 76, 110, 35]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 76, 110, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 80, 109, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 80, 110, 35]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 80, 110, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 84, 109, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 84, 110, 35]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 84, 110, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 88, 109, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 88, 110, 35]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 88, 110, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 92, 109, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 92, 110, 35]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 92, 110, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 96, 109, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 96, 110, 35]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 96, 110, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 100, 109, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 100, 110, 35]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 100, 110, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 104, 109, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 104, 110, 35]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 104, 110, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 108, 109, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 108, 110, 35]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 108, 110, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 112, 109, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 112, 110, 35]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 112, 110, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 116, 109, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 116, 110, 35]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 116, 110, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 120, 109, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 120, 110, 35]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 120, 110, 34]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 4, 109, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 4, 110, 41]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 4, 110, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 8, 109, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 8, 110, 41]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 8, 110, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 12, 109, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 12, 110, 41]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 12, 110, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 16, 109, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 16, 110, 41]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 16, 110, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 20, 109, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 20, 110, 41]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 20, 110, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 24, 109, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 24, 110, 41]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 24, 110, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 28, 109, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 28, 110, 41]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 28, 110, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 32, 109, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 32, 110, 41]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 32, 110, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 36, 109, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 36, 110, 41]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 36, 110, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 40, 109, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 40, 110, 41]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 40, 110, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 44, 109, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 44, 110, 41]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 44, 110, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 44, 110, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 48, 109, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 48, 110, 41]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 48, 110, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 52, 109, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 52, 110, 41]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 52, 110, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 56, 109, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 56, 110, 41]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 56, 110, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 60, 109, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 60, 110, 41]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 60, 110, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 64, 109, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 64, 110, 41]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 64, 110, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 68, 109, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 68, 110, 41]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 68, 110, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 72, 109, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 72, 110, 41]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 72, 110, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 76, 109, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 76, 110, 41]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 76, 110, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 80, 109, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 80, 110, 41]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 80, 110, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 84, 109, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 84, 110, 41]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 84, 110, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 88, 109, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 88, 110, 41]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 88, 110, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 92, 109, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 92, 110, 41]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 92, 110, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 96, 109, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 96, 110, 41]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 96, 110, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 100, 109, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 100, 110, 41]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 100, 110, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 104, 109, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 104, 110, 41]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 104, 110, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 108, 109, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 108, 110, 41]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 108, 110, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 112, 109, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 112, 110, 41]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 112, 110, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 116, 109, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 116, 110, 41]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 116, 110, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 120, 109, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 120, 110, 41]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 120, 110, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 4, 109, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 4, 110, 47]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 4, 110, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 8, 109, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 8, 110, 47]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 8, 110, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 12, 109, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 12, 110, 47]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 12, 110, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 12, 110, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 16, 109, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 16, 110, 47]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 16, 110, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 16, 110, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 20, 109, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 20, 110, 47]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 20, 110, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 24, 109, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 24, 110, 47]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 24, 110, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 24, 110, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 28, 109, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 28, 110, 47]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 28, 110, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 28, 110, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 32, 109, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 32, 110, 47]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 32, 110, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 36, 109, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 36, 110, 47]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 36, 110, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 40, 109, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 40, 110, 47]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 40, 110, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 44, 109, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 44, 110, 47]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 44, 110, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 48, 109, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 48, 110, 47]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 48, 110, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 52, 109, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 52, 110, 47]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 52, 110, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 56, 109, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 56, 110, 47]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 56, 110, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 60, 109, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 60, 110, 47]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 60, 110, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 64, 109, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 64, 110, 47]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 64, 110, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 68, 109, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 68, 110, 47]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 68, 110, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 72, 109, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 72, 110, 47]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 72, 110, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 76, 109, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 76, 110, 47]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 76, 110, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 80, 109, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 80, 110, 47]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 80, 110, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 84, 109, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 84, 110, 47]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 84, 110, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 88, 109, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 88, 110, 47]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 88, 110, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 92, 109, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 92, 110, 47]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 92, 110, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 96, 109, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 96, 110, 47]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 96, 110, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 100, 109, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 100, 110, 47]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 100, 110, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 104, 109, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 104, 110, 47]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 104, 110, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 108, 109, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 108, 110, 47]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 108, 110, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 112, 109, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 112, 110, 47]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 112, 110, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 116, 109, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 116, 110, 47]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 116, 110, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 120, 109, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 120, 110, 47]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 120, 110, 46]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 4, 109, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 4, 110, 53]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 4, 110, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 8, 109, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 8, 110, 53]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 8, 110, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 12, 109, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 12, 110, 53]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 12, 110, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 12, 110, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 16, 109, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 16, 110, 53]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 16, 110, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 16, 110, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 20, 109, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 20, 110, 53]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 20, 110, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 24, 109, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 24, 110, 53]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 24, 110, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 28, 109, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 28, 110, 53]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 28, 110, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 32, 109, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 32, 110, 53]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 32, 110, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 36, 109, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 36, 110, 53]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 36, 110, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 40, 109, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 40, 110, 53]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 40, 110, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 44, 109, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 44, 110, 53]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 44, 110, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 48, 109, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 48, 110, 53]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 48, 110, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 52, 109, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 52, 110, 53]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 52, 110, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 56, 109, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 56, 110, 53]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 56, 110, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 60, 109, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 60, 110, 53]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 60, 110, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 64, 109, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 64, 110, 53]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 64, 110, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 68, 109, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 68, 110, 53]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 68, 110, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 72, 109, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 72, 110, 53]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 72, 110, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 76, 109, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 76, 110, 53]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 76, 110, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 80, 109, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 80, 110, 53]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 80, 110, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 84, 109, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 84, 110, 53]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 84, 110, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 88, 109, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 88, 110, 53]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 88, 110, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 92, 109, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 92, 110, 53]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 92, 110, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 96, 109, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 96, 110, 53]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 96, 110, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 100, 109, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 100, 110, 53]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 100, 110, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 104, 109, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 104, 110, 53]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 104, 110, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 108, 109, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 108, 110, 53]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 108, 110, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 112, 109, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 112, 110, 53]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 112, 110, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 116, 109, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 116, 110, 53]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 116, 110, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 120, 109, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 120, 110, 53]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 120, 110, 52]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 4, 109, 58]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 4, 110, 59]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 4, 110, 58]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 20, 92, 20]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 20, 92, 20]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 40, 90, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 40, 90, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 40, 91, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 40, 91, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 44, 90, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 44, 90, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 44, 91, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 44, 91, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 48, 90, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 48, 90, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 48, 91, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 48, 91, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 52, 90, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 52, 90, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 52, 91, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 52, 91, 40]
+[11:07:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 60, 90, 60]
+[11:07:43] [Server thread/INFO] [minecraft/LocateCommand]: Locating element riftworld:sizo_grove took 460 ms
+[11:07:43] [Server thread/INFO] [minecraft/LocateCommand]: Locating element riftworld:sizo_grove took 371 ms
+[11:07:44] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Marked chunk [50, -138] in riftworld:elisar to be force loaded]
+[11:07:45] [Server thread/INFO] [minecraft/LocateCommand]: Locating element riftworld:violet_hills took 154 ms
+[11:07:46] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Marked chunk [78, 14] in riftworld:elisar to be force loaded]
+[11:07:47] [Server thread/INFO] [minecraft/LocateCommand]: Locating element riftworld:waterfall_gardens took 63 ms
+[11:07:48] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Marked chunk [-70, -70] in riftworld:elisar to be force loaded]
+[11:07:50] [Server thread/INFO] [minecraft/LocateCommand]: Locating element riftworld:mist_keep took 369 ms
+[11:07:50] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Marked chunk [112, 68] in riftworld:elisar to be force loaded]
+[11:07:52] [Server thread/INFO] [minecraft/LocateCommand]: Locating element riftworld:sizo_grove took 315 ms
+[11:07:57] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Marked [47, -152] chunks in riftworld:elisar from [47, -152] to [59, -140] to be force loaded]
+[11:07:57] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 4484ms or 89 ticks behind
+[11:08:01] [Server thread/INFO] [minecraft/LocateCommand]: Locating element riftworld:violet_hills took 79 ms
+[11:08:05] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Marked [79, 9] chunks in riftworld:elisar from [79, 9] to [91, 21] to be force loaded]
+[11:08:09] [Server thread/INFO] [minecraft/LocateCommand]: Locating element riftworld:waterfall_gardens took 63 ms
+[11:08:15] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Marked [-80, -83] chunks in riftworld:elisar from [-80, -83] to [-68, -71] to be force loaded]
+[11:08:15] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 3027ms or 60 ticks behind
+[11:08:19] [Server thread/INFO] [minecraft/LocateCommand]: Locating element riftworld:mist_keep took 258 ms
+[11:08:20] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Marked [112, 67] chunks in riftworld:elisar from [112, 67] to [117, 72] to be force loaded]
+[11:08:24] [Server thread/INFO] [minecraft/LocateCommand]: Locating element riftworld:violet_hills took 119 ms
+[11:08:28] [Server thread/INFO] [minecraft/LocateCommand]: Locating element riftworld:waterfall_gardens took 23 ms
+[11:08:29] [Server thread/INFO] [minecraft/LocateCommand]: Locating element riftworld:waterfall_gardens took 553 ms
+[11:08:29] [Server thread/INFO] [minecraft/LocateCommand]: Locating element riftworld:waterfall_gardens took 137 ms
+[11:08:31] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Marked [215, -264] chunks in riftworld:elisar from [215, -264] to [221, -258] to be force loaded]
+[11:08:35] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Morgrath, Master of the Hall]
+[11:08:35] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Killed Morgrath, Master of the Hall]
+[11:08:35] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Smouldering Warden]
+[11:08:35] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Killed Smouldering Warden]
+[11:08:35] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Paper Dragon]
+[11:08:35] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Killed Paper Dragon]
+[11:08:35] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Rope]
+[11:08:35] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Killed Rope]
+[11:08:35] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Resonance Stone]
+[11:08:35] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Killed Resonance Stone]
+[11:08:35] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new City Ducat]
+[11:08:35] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Killed City Ducat]
+[11:08:35] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Morgrath's Scythe]
+[11:08:35] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Killed Morgrath's Scythe]
+[11:08:35] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Warden's Hook-Sickle]
+[11:08:35] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Killed Warden's Hook-Sickle]
+[11:08:35] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Morgrath Spawn Egg]
+[11:08:35] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Killed Morgrath Spawn Egg]
+[11:08:36] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Marked [75, 11] chunks in riftworld:elisar from [75, 11] to [77, 13] to be force loaded]
+[11:08:42] [RCON Client /127.0.0.1 #2/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[11:08:42] [Server thread/INFO] [minecraft/MinecraftServer]: Stopping the server
+[11:08:42] [Server thread/INFO] [minecraft/MinecraftServer]: Stopping server
+[11:08:42] [Server thread/INFO] [minecraft/MinecraftServer]: Saving players
+[11:08:42] [Server thread/INFO] [minecraft/MinecraftServer]: Saving worlds
+[11:08:46] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+[11:08:46] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[world]'/riftworld:elisar
+[11:08:46] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+[11:08:46] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+[11:08:46] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[world]'/riftworld:transit
+[11:08:46] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (world): All chunks are saved
+[11:08:46] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (elisar): All chunks are saved
+[11:08:46] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[11:08:46] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[11:08:46] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (transit): All chunks are saved
+[11:08:46] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage: All dimensions are saved
+[11:08:46] [Server thread/INFO] [minecraft/GenericThread]: Thread RCON Listener stopped

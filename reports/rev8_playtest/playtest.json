@@ -7,7 +7,7 @@
   {
     "test": "измерение riftworld:elisar загружено",
     "ok": true,
-    "detail": "Dim minecraft, Dim riftworld, Dim minecraft, Dim minecraft, Dim riftworld"
+    "detail": "Dim minecraft, Dim minecraft, Dim minecraft, Dim riftworld, Dim riftworld"
   },
   {
     "test": "тестовая зона форс-лочится",
@@ -150,6 +150,11 @@
     "detail": "подтверждено 2"
   },
   {
+    "test": "аддон riftworld_dt загружен сервером",
+    "ok": true,
+    "detail": "в списке модов"
+  },
+  {
     "test": "сущность riftworld:morgrath призывается и имеет NBT",
     "ok": true,
     "detail": "Summoned new Morgrath, Master of the Hall | Morgrath, Master of the Hall has the following entity data: {Brain: {memories: {}}, HurtBy"
@@ -207,6 +212,6 @@
   {
     "test": "TPS держится (20.0)",
     "ok": true,
-    "detail": "Overall: Mean tick time: 4.749 ms. Mean TPS: 20.000"
+    "detail": "Overall: Mean tick time: 4.580 ms. Mean TPS: 20.000"
   }
 ]

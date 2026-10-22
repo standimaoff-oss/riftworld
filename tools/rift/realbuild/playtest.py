@@ -270,6 +270,17 @@ class Play:
             found_any += 1 if (posts >= 4 and walks > 0) else 0
         self.ok("мосты генерируются хотя бы в двух проверенных местах", found_any >= 2, f"подтверждено {found_any}")
 
+    def addon_loaded(self):
+        """Аддон Dynamic Trees — отдельный data-only мод: он должен появиться в списке модов сервера.
+
+        Живой прогон поймал здесь настоящий баг: без поля `mandatory` в зависимостях Forge 1.20.1 считает
+        mods.toml невалидным и мод не грузится вовсе (валидатор пака этого не видел).
+        """
+        out = self.cmd("forge mods")
+        has = "riftworld_dt" in out
+        self.ok("аддон riftworld_dt загружен сервером", has,
+                "в списке модов" if has else out[:200])
+
     def worldgen(self):
         """Настоящая генерация: форс-лочим регион и смотрим, что поверхность не пустая."""
         out = self.cmd(f"execute in {DIM} run forceload add 1200 176 1240 216")
@@ -309,6 +320,7 @@ def main():
     p.biomes()
     p.biome_trees()
     p.world_bridges()
+    p.addon_loaded()
     p.entities()
     p.items()
     p.worldgen()

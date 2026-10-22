@@ -269,7 +269,9 @@ MOD_VERSION = gradle_prop(os.path.join(ROOT, "mod", "gradle.properties"), "mod_v
 # the tree pack was validated against this exact Dynamic Trees source tree (tools/rift/fetch_dt_schema.py)
 DT_VALIDATED = "1.4.11"
 
-MODS_TOML = f'''modLoader = "javafml"
+MODS_TOML = f'''# у аддона НЕТ ни одного java-класса: это дерево-пак Dynamic Trees и ресурсы семян.
+# javafml без @Mod Forge отвергает («has no mod class»), lowcodefml — штатный загрузчик для data-only модов.
+modLoader = "lowcodefml"
 loaderVersion = "[47,)"
 license = "All Rights Reserved"
 issueTrackerURL = "https://github.com/standimaoff-oss/riftworld/issues"
@@ -281,23 +283,25 @@ displayName = "Разлом: Dynamic Trees"
 description = """Dynamic Trees add-on for Rift (Разлом): four species (lilac, sizo v2, fern tree, mist pine).
 Tree pack validated against Dynamic Trees {DT_VALIDATED} for Minecraft 1.20.1."""
 
+# ВАЖНО: Forge 1.20.1 требует у КАЖДОЙ зависимости поле `mandatory`; без него мод не грузится вовсе
+# («Missing required field mandatory in dependency»). Поймано живым запуском сервера.
 [[dependencies.riftworld_dt]]
     modId = "forge"
-    type = "required"
+    mandatory = true
     versionRange = "[47,)"
     ordering = "NONE"
     side = "BOTH"
 
 [[dependencies.riftworld_dt]]
     modId = "riftworld"
-    type = "required"
+    mandatory = true
     versionRange = "[{MOD_VERSION},)"
     ordering = "AFTER"
     side = "BOTH"
 
 [[dependencies.riftworld_dt]]
     modId = "dynamictrees"
-    type = "optional"
+    mandatory = false
     versionRange = "[1.4,)"
     ordering = "AFTER"
     side = "BOTH"

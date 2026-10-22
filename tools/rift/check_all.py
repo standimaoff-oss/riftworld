@@ -16,6 +16,11 @@ What is checked, and why each check exists:
   4. Java test bench  — real compiled and executed checks: tree invariants, bridge geometry, DT soft dependency, and
                         byte-for-byte parity of the Java tree engine with the Python reference used for the photos.
   5. renders          — regenerates the tree and scene sheets, so the pictures in reports/ are reproducible.
+  5b. CPU world render — reads the real Anvil save (the world the Forge server generated) and ray-traces it on the CPU:
+                        asserts that no GPU/GL module is involved, that two runs are byte-identical, and that the frame
+                        is not empty. This is the "screen from the game" that a headless sandbox can actually produce.
+  5c. DT add-on jar   — packs dtcompat/ into a data-only Forge mod and checks mods.toml: lowcodefml (the add-on has no
+                        classes) and a `mandatory` flag on every dependency (Forge 1.20.1 refuses the mod otherwise).
   6. live server      — only with --live: compiles the mod with ECJ, reobfuscates with ART, boots a real Forge
                         1.20.1 dedicated server and plays a 19-step RCON test inside it. This is the only check that
                         runs the mod in Minecraft; it needs the preflight deps (see preflight() below).
@@ -200,6 +205,12 @@ def main() -> int:
         return 1
     if not run("Java-стенд: движок деревьев, геометрия мостов, soft-dependency DT, паритет",
                [PY, os.path.join(HERE, "jtests", "run.py")])[0]:
+        return 1
+    if not run("аддон Dynamic Trees: сборка data-only jar и проверка mods.toml",
+               [PY, os.path.join(HERE, "realbuild", "build_dt_addon.py")])[0]:
+        return 1
+    if not run("CPU-рендер настоящего мира: без видеокарты, детерминизм, непустой кадр",
+               [PY, os.path.join(HERE, "render_cpu.py"), "--check"])[0]:
         return 1
     if not quick:
         if not run("рендеры отчёта (листы деревьев и сцен)",
