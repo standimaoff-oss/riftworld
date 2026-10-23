@@ -53,7 +53,11 @@ jobs:
       - name: Boot Forge server with the mod and probe it
         run: bash tools/ci/server_check.sh
 
+      # без игрока в измерении сервер Элисар не генерирует — съёмка и настоящие пробы идут в шаге клиента
+
       - name: Launch real Minecraft client, enter Elisar and take screenshots
+        if: always()
+        timeout-minutes: 40
         run: bash tools/ci/client_check.sh
 
       - name: Publish jar as a GitHub release

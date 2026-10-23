@@ -120,10 +120,28 @@ probe() { # probe <x> <y> <z> <block> <label>
   ans=$(R execute in riftworld:elisar positioned "$1" "$2" "$3" run execute if block ~ ~ ~ "riftworld:$4" 2>/dev/null || true)
   case "$ans" in *"Test passed"*) echo "  OK   $5 ($1,$2,$3) = $4" ;; *) echo "  FAIL $5 ($1,$2,$3) != $4"; return 1 ;; esac
 }
-echo "== пробы моря (300,300) =="
-probe 300 40 300 elisar_water "вода на глубине"
-probe 300 13 300 elisar_seabed "донный песок"
-probe 600 66 666 elisar_water "вода над рифом"
+FAILS=0
+echo "== пробы моря =="
+probe 300 40 300 elisar_water "вода на глубине 40 (открытый океан)" || FAILS=$((FAILS+1))
+probe 300 13 300 elisar_seabed "донный песок под водой" || FAILS=$((FAILS+1))
+probe 600 60 666 elisar_water "вода над рифом" || FAILS=$((FAILS+1))
+
+# --- вертикальный профиль колонки: сколько воды и где дно (реальная генерация)
+echo "== профиль колонки (300,y,300) =="
+: > "$OUT/column.txt"
+for y in $(seq 0 68); do
+  a=$(R execute in riftworld:elisar positioned 300 "$y" 300 run execute if block ~ ~ ~ riftworld:elisar_water 2>/dev/null || true)
+  case "$a" in *"Test passed"*) w=W ;; *) w=. ;; esac
+  b=$(R execute in riftworld:elisar positioned 300 "$y" 300 run execute if block ~ ~ ~ riftworld:elisar_seabed 2>/dev/null || true)
+  case "$b" in *"Test passed"*) w="$w"S ;; esac
+  c=$(R execute in riftworld:elisar positioned 300 "$y" 300 run execute if block ~ ~ ~ minecraft:air 2>/dev/null || true)
+  case "$c" in *"Test passed"*) w="$w " ;; esac
+  printf '%s' "$w" >> "$OUT/column.txt"
+done
+echo >> "$OUT/column.txt"
+WATER=$(tr -cd 'W' < "$OUT/column.txt" | wc -c)
+echo "  воды в колонке: $WATER блоков"
+[ "$WATER" -ge 20 ] || { echo "  FAIL: море не сгенерировалось"; FAILS=$((FAILS+1)); }
 
 # --- скриншоты
 echo "== скриншоты =="
@@ -149,6 +167,22 @@ pkill -f forgeclientuserdev 2>/dev/null || true
 sleep 5
 kill $CPID 2>/dev/null || true
 
-grep -cE "Exception|ERROR" "$OUT/client.log" > "$OUT/client_errors.txt" 2>/dev/null || echo 0 > "$OUT/client_errors.txt"
-echo "строк Exception/ERROR в логе клиента: $(cat "$OUT/client_errors.txt")"
-ls -la "$OUT"
+ERRS=$(grep -cE "Exception|ERROR" "$OUT/client.log" 2>/dev/null || echo 0)
+echo "строк Exception/ERROR в логе клиента: $ERRS"
+
+{
+  echo "# CI, шаг 2: настоящий клиент Minecraft в Элисаре (съёмка)"
+  echo
+  echo "- клиент: ForgeGradle runClient под Xvfb (llvmpipe, без GPU)"
+  echo "- воды в колонке (300,y,300): **$WATER** блоков"
+  echo "- провалов проб: **$FAILS**"
+  echo "- строк Exception/ERROR в логе клиента: **$ERRS**"
+  echo
+  echo "## колонка (y=0..68; W=вода, S=донный песок, пробел=воздух)"; echo '```'; cat "$OUT/column.txt"; echo '```'
+  echo "## скриншоты"; ls -1 "$OUT"/*.jpg 2>/dev/null | sed 's/^/- /'
+} > "$OUT/report_client.md"
+cat "$OUT/report_client.md"
+
+# гасим сервер, чтобы раннер освободился чисто
+python3 tools/rcon.py --password "$RCON_PW" --log "" stop >/dev/null 2>&1 || true
+[ "$FAILS" -eq 0 ]
