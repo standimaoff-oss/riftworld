@@ -74,6 +74,10 @@ key() { # key <F1>
 }
 
 RCON() { python3 tools/rcon.py --password "$RCON_PW" --log "" --timeout 120 "$@" 2>&1; }
+if ! RCON list >/dev/null 2>&1; then
+  echo "FATAL: сервер не отвечает по RCON — клиенту некуда заходить (см. отчёт шага сервера)"
+  exit 1
+fi
 EL() { RCON execute in riftworld:elisar run "$@" 2>&1; }
 ELP() { local x=$1 y=$2 z=$3; shift 3; RCON execute in riftworld:elisar positioned "$x" "$y" "$z" run "$@" 2>&1; }
 
@@ -88,7 +92,7 @@ echo "== старт клиента через Gradle (runClient) =="
 ) > "$OUT/client.log" 2>&1 &
 CPID=$!
 
-for i in $(seq 1 300); do
+for i in $(seq 1 160); do
   grep -qi "Connecting to 127.0.0.1" "$OUT/client.log" && break
   grep -qiE "A fatal error|Exception in thread \"main\"" "$OUT/client.log" && break
   sleep 3
@@ -98,12 +102,12 @@ shot "01_boot"
 
 echo "== ждём игрока на сервере =="
 PLAYER=0
-for i in $(seq 1 120); do
+for i in $(seq 1 60); do
   ans=$(RCON list 2>/dev/null || true)
   case "$ans" in *TestPlayer*) PLAYER=1; echo "  игрок в игре: $ans"; break ;; esac
   sleep 5
 done
-[ "$PLAYER" = 1 ] || { echo "FAIL: клиент не зашёл в мир"; tail -40 "$OUT/client.log"; }
+[ "$PLAYER" = 1 ] || { echo "FATAL: клиент не зашёл в мир"; tail -40 "$OUT/client.log"; exit 1; }
 
 RCON gamerule doDaylightCycle false >/dev/null 2>&1 || true
 RCON gamerule doWeatherCycle false >/dev/null 2>&1 || true
