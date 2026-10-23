@@ -214,7 +214,7 @@ def main():
 
 
 # ------------------------------------------------------------------ подбор точек для съёмки
-def pick_spots(size=192, origin=(600, 600)):
+def pick_spots(size=192, origin=(600, 600), write=None):
     """Возвращает координаты «красивых» мест для скриншотов и RCON-проб."""
     ox, oz = origin
     best_reef, best_reef_v = None, -1
@@ -238,18 +238,37 @@ def pick_spots(size=192, origin=(600, 600)):
                 air = [y for y in range(3, f - 1) if cave(x, y, z, f)]
                 if len(air) >= 6 and f - air[-1] >= 6:      # есть полость с запасом породы сверху
                     caves.append((x, z, f, air[0], air[-1]))
+    spots = {}
+    spots["reef"] = {"x": best_reef[0], "z": best_reef[1], "floor": best_reef[2]}
+    spots["deep"] = {"x": best_deep[0], "z": best_deep[1], "floor": best_deep[2]}
     print(f"REEF={best_reef[0]} {best_reef[2] + 3} {best_reef[1]} REEFV={best_reef_v:.2f}")
     print(f"DEEP={best_deep[0]} {best_deep[2] + 4} {best_deep[1]} FLOOR={best_deep[2]}")
     if holes:
         hx, hz, hf, hy = holes[len(holes) // 2]
+        spots["hole"] = {"x": hx, "z": hz, "floor": hf, "top": hy}
         print(f"HOLE={hx} {hy} {hz} FLOOR={hf}")
     if caves:
         cx, cz, cf, lo, hi = caves[len(caves) // 2]
+        spots["cave"] = {"x": cx, "z": cz, "floor": cf, "low": lo, "high": hi}
         print(f"CAVE={cx} {lo + 1} {cz} LOW={lo} HIGH={hi} FLOOR={cf}")
+    # центр области и вертикальная колонка для проб
+    spots["origin"] = {"x": ox + size // 2, "z": oz + size // 2}
+    cx, cz = ox + size // 2, oz + size // 2
+    f = ocean_floor(cx, cz)
+    spots["column"] = {"x": cx, "z": cz, "floor": f, "water_bottom": f + 1, "water_top": OCEAN}
+    print(f"COLUMN={cx} {cz} FLOOR={f} WATER={f + 1}..{OCEAN}")
+    if write:
+        import json
+        with open(write, "w", encoding="utf-8") as fh:
+            json.dump(spots, fh, ensure_ascii=False, indent=2)
+        print("spots ->", write)
 
 
 if __name__ == "__main__":
     if "--spots" in sys.argv:
-        pick_spots()
+        wr = None
+        if "--json" in sys.argv:
+            wr = sys.argv[sys.argv.index("--json") + 1]
+        pick_spots(write=wr)
     else:
         sys.exit(main())

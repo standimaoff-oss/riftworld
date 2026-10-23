@@ -5,32 +5,34 @@
 # Почему клиент: dedicated-сервер не генерирует измерение, в котором нет игрока
 # (проверено: чанки Элисара остаются воздухом, сущности в них не спавнятся).
 #
-# usage: tools/ci/client_check.sh     (из корня репозитория, JDK 17 в PATH, DISPLAY свободен)
+# usage: tools/ci/client_check.sh     (из корня репозитория, JDK 17 в PATH)
 set -uo pipefail
 OUT=${OUT:-ci-shots}
 RUN=${RUN:-ci/runs}
-FORGE=${FORGE:-1.20.1-47.4.23}
 DISP=${DISP:-:99}
+RCON_PW=${RCON_PW:-riftci}
+SPOTS=tools/ci/spots.json
 mkdir -p "$OUT" "$RUN/client"
 
 # ---------------------------------------------------------------- зависимости
 sudo apt-get update -qq >/dev/null 2>&1 || true
-sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq xvfb x11-utils imagemagick libgl1 libglx-mesa0 \
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq xvfb x11-utils xdotool imagemagick libgl1 libglx-mesa0 \
   libxi6 libxxf86vm1 libxfixes3 libxrender1 libxkbcommon0 libsm6 libopenal1 >/dev/null 2>&1 || true
 command -v Xvfb >/dev/null || { echo "FATAL: нет Xvfb"; exit 1; }
 command -v import >/dev/null || { echo "FATAL: нет imagemagick"; exit 1; }
 
 # ---------------------------------------------------------------- настройки клиента
 python3 - <<'PY'
-import json, os
+import os
 run = os.environ.get("RUN", "ci/runs")
 opts = {
     "tutorialStep": "none", "onboardAccessibility": "false", "skipMultiplayerWarning": "true",
-    "joinedFirstServer": "true", "renderDistance": "6", "simulationDistance": "5", "maxFps": "20",
+    "joinedFirstServer": "true", "renderDistance": "8", "simulationDistance": "6", "maxFps": "30",
     "guiScale": "2", "fov": "0.0", "graphicsMode": "1", "renderClouds": "false",
     "pauseOnLostFocus": "false", "narrator": "0", "soundCategory_master": "0.0",
     "fullscreen": "false", "showSubtitles": "false", "autoJump": "false",
     "darkMojangStudiosBackground": "true", "skipRealms32bitWarning": "true",
+    "gamma": "1.0", "hideGui": "false", "bobView": "false",
 }
 os.makedirs(run + "/client", exist_ok=True)
 with open(run + "/client/options.txt", "w", encoding="utf-8") as f:
@@ -39,150 +41,163 @@ with open(run + "/client/options.txt", "w", encoding="utf-8") as f:
 print("client options ->", run + "/client/options.txt")
 PY
 
-# вечный «новый мир» + сразу в Элисар (быстрый вход без меню)
-cat > "$RUN/client/run.sh" <<'EOS'
-#!/usr/bin/env bash
-set -euo pipefail
-cd "$(dirname "$0")"
-exec ../jdk/bin/java -Xmx1500M -XX:+UseSerialGC \
-  -Djava.awt.headless=false -Dorg.lwjgl.util.Debug=false -Dfml.earlyprogresswindow=false \
-  -cp "$(dirname "$0")/../client/forge-client.jar" net.minecraft.launchwrapper.Launch \
-  --username TestPlayer --gameDir . --assetsDir ../client/assets --assetIndex 5 --version 1.20.1 2>/dev/null || true
-EOS
-echo "(fallback launcher не используется, если запуск идёт через Gradle)"
-
-# ---------------------------------------------------------------- запуск клиента
-xvfb_run() {
-  if ! pgrep -f "Xvfb $DISP" >/dev/null; then
-    Xvfb "$DISP" -screen 0 1280x800x24 -nolisten tcp >/tmp/xvfb.log 2>&1 &
-    sleep 3
-  fi
-}
-xvfb_run
+# ---------------------------------------------------------------- дисплей
+if ! pgrep -f "Xvfb $DISP" >/dev/null; then
+  Xvfb "$DISP" -screen 0 1280x800x24 -nolisten tcp >/tmp/xvfb.log 2>&1 &
+  sleep 3
+fi
 export DISPLAY=$DISP LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe MESA_GL_VERSION_OVERRIDE=3.3
 
-shot() { # shot <имя>: снять экран и уменьшить
-  import -window root "/tmp/$1_raw.png" 2>/dev/null || return 1
-  convert "/tmp/$1_raw.png" -resize 1280x800 -quality 88 "$OUT/$1.jpg" 2>/dev/null || cp "/tmp/$1_raw.png" "$OUT/$1.png"
+WID=""
+geom() {  # найти окно игры и его геометрию (x y w h)
+  WID=$(xdotool search --onlyvisible --name "Minecraft" 2>/dev/null | head -1)
+  [ -z "$WID" ] && WID=$(xdotool search --onlyvisible --class "Minecraft" 2>/dev/null | head -1)
+  [ -z "$WID" ] && WID=$(xdotool search --onlyvisible --classname ".*" 2>/dev/null | head -1)
+  [ -n "$WID" ] || return 1
+  eval "$(xdotool getwindowgeometry --shell "$WID")"    # X Y WIDTH HEIGHT
+  return 0
+}
+
+shot() {  # shot <имя>
+  if geom; then
+    import -window root /tmp/full.png 2>/dev/null || return 1
+    convert /tmp/full.png -crop "${WIDTH}x${HEIGHT}+${X}+${Y}" +repage -quality 90 "$OUT/$1.jpg" 2>/dev/null \
+      || cp /tmp/full.png "$OUT/$1.png"
+  else
+    import -window root -quality 90 "$OUT/$1.jpg" 2>/dev/null || return 1
+  fi
   echo "  shot: $OUT/$1.jpg"
 }
 
+key() { # key <F1>
+  if geom; then xdotool windowactivate --sync "$WID" 2>/dev/null || true; xdotool key --window "$WID" "$1" 2>/dev/null || xdotool key "$1"; fi
+}
+
+RCON() { python3 tools/rcon.py --password "$RCON_PW" --log "" --timeout 120 "$@" 2>&1; }
+EL() { RCON execute in riftworld:elisar run "$@" 2>&1; }
+
+# ---------------------------------------------------------------- запуск клиента
 echo "== старт клиента через Gradle (runClient) =="
 (
   cd mod
   chmod +x gradlew
   ./gradlew runClient --no-daemon --console=plain \
     -PrunDir="$PWD/../$RUN" \
-    -PautoJoin=127.0.0.1:25565 \
-    2>&1
+    -PautoJoin=127.0.0.1:25565 2>&1
 ) > "$OUT/client.log" 2>&1 &
 CPID=$!
 
-# ждём, пока клиент дойдёт до главного меню (по логу) или упадёт
-for i in $(seq 1 240); do
-  grep -qiE "Setting user:|Created: .*minecraft:textures|OpenAL initialized|LWJGL Version" "$OUT/client.log" && break
-  grep -qiE "FATAL|A fatal error|Exception in thread \"main\"" "$OUT/client.log" && break
+for i in $(seq 1 300); do
+  grep -qi "Connecting to 127.0.0.1" "$OUT/client.log" && break
+  grep -qiE "A fatal error|Exception in thread \"main\"" "$OUT/client.log" && break
   sleep 3
 done
-sleep 20
-shot "client_boot" || true
-echo "== клиент поднят, состояние лога: =="
-tail -5 "$OUT/client.log" || true
-
-# ---------------------------------------------------------------- сценарий в игре
-RCON_PW=${RCON_PW:-riftci}
-R() { python3 tools/rcon.py --password "$RCON_PW" --log "" --timeout 120 "$@" 2>&1; }
-step() { echo; echo "== $*"; sleep "${2:-3}"; }
+sleep 25
+shot "01_boot"
 
 echo "== ждём игрока на сервере =="
+PLAYER=0
 for i in $(seq 1 120); do
-  ans=$(R list 2>/dev/null || true)
-  case "$ans" in *TestPlayer*) echo "  игрок в игре: $ans"; break ;; esac
+  ans=$(RCON list 2>/dev/null || true)
+  case "$ans" in *TestPlayer*) PLAYER=1; echo "  игрок в игре: $ans"; break ;; esac
   sleep 5
 done
+[ "$PLAYER" = 1 ] || { echo "FAIL: клиент не зашёл в мир"; tail -40 "$OUT/client.log"; }
 
-R gamerule doDaylightCycle false >/dev/null 2>&1 || true
-R time set noon >/dev/null 2>&1 || true
-R weather clear >/dev/null 2>&1 || true
-R gamemode creative TestPlayer >/dev/null 2>&1 || true
+RCON gamerule doDaylightCycle false >/dev/null 2>&1 || true
+RCON gamerule doWeatherCycle false >/dev/null 2>&1 || true
+RCON time set noon >/dev/null 2>&1 || true
+RCON weather clear >/dev/null 2>&1 || true
+RCON gamemode creative TestPlayer >/dev/null 2>&1 || true
 
-echo "== телепорт в измерение Элисара (море) =="
-R execute in riftworld:elisar run tp TestPlayer 600 64 666 2>&1 | tail -2
-sleep 25                      # даём клиенту догрузить чанки
+# ---------------------------------------------------------------- координаты сцен
+read -r RX RZ RF < <(python3 -c "import json;d=json.load(open('$SPOTS'));print(d['reef']['x'],d['reef']['z'],d['reef']['floor'])")
+read -r DX DZ DF < <(python3 -c "import json;d=json.load(open('$SPOTS'));print(d['deep']['x'],d['deep']['z'],d['deep']['floor'])")
+read -r HX HZ HF < <(python3 -c "import json;d=json.load(open('$SPOTS'));print(d['hole']['x'],d['hole']['z'],d['hole']['floor'])")
+read -r CX CZ CLOW CHIGH < <(python3 -c "import json;d=json.load(open('$SPOTS'));print(d['cave']['x'],d['cave']['z'],d['cave']['low'],d['cave']['high'])")
+read -r KX KZ KF KB KT < <(python3 -c "import json;d=json.load(open('$SPOTS'));c=d['column'];print(c['x'],c['z'],c['floor'],c['water_bottom'],c['water_top'])")
+echo "  reef=$RX,$RZ floor=$RF | deep=$DX,$DZ floor=$DF | hole=$HX,$HZ floor=$HF | cave=$CX,$CZ $CLOW..$CHIGH | column=$KX,$KZ floor=$KF"
 
-echo "== генерация области для съёмки =="
-R execute in riftworld:elisar run forceload add 576 576 704 704 >/dev/null 2>&1 || true
-sleep 45
+echo "== телепорт в Элисар и прогрузка области =="
+EL tp TestPlayer "$RX" "$((RF + 6))" "$RZ" 90 40 | tail -1
+EL forceload add "$((RX - 80))" "$((RZ - 80))" "$((RX + 80))" "$((RZ + 80))" | tail -1
+sleep 60
 
-# --- пробы: вода, дно, кораллы
+# ---------------------------------------------------------------- пробы (реальная генерация)
+FAILS=0
+PROBES="$OUT/probes.txt"
+: > "$PROBES"
 probe() { # probe <x> <y> <z> <block> <label>
   local ans
-  ans=$(R execute in riftworld:elisar positioned "$1" "$2" "$3" run execute if block ~ ~ ~ "riftworld:$4" 2>/dev/null || true)
-  case "$ans" in *"Test passed"*) echo "  OK   $5 ($1,$2,$3) = $4" ;; *) echo "  FAIL $5 ($1,$2,$3) != $4"; return 1 ;; esac
+  ans=$(EL positioned "$1" "$2" "$3" run execute if block ~ ~ ~ "riftworld:$4")
+  if [[ "$ans" == *"Test passed"* ]]; then echo "  OK   $5 ($1,$2,$3) = $4" | tee -a "$PROBES"
+  else echo "  FAIL $5 ($1,$2,$3) != $4" | tee -a "$PROBES"; FAILS=$((FAILS + 1)); fi
 }
-FAILS=0
 echo "== пробы моря =="
-probe 300 40 300 elisar_water "вода на глубине 40 (открытый океан)" || FAILS=$((FAILS+1))
-probe 300 13 300 elisar_seabed "донный песок под водой" || FAILS=$((FAILS+1))
-probe 600 60 666 elisar_water "вода над рифом" || FAILS=$((FAILS+1))
+probe "$KX" "$((KT - 3))" "$KZ" elisar_water "вода на глубине"
+probe "$KX" "$KF" "$KZ" elisar_seabed "донный песок"
+probe "$RX" "$((RF + 1))" "$RZ" elisar_water "вода над рифом"
 
-# --- вертикальный профиль колонки: сколько воды и где дно (реальная генерация)
-echo "== профиль колонки (300,y,300) =="
-: > "$OUT/column.txt"
-for y in $(seq 0 68); do
-  a=$(R execute in riftworld:elisar positioned 300 "$y" 300 run execute if block ~ ~ ~ riftworld:elisar_water 2>/dev/null || true)
-  case "$a" in *"Test passed"*) w=W ;; *) w=. ;; esac
-  b=$(R execute in riftworld:elisar positioned 300 "$y" 300 run execute if block ~ ~ ~ riftworld:elisar_seabed 2>/dev/null || true)
-  case "$b" in *"Test passed"*) w="$w"S ;; esac
-  c=$(R execute in riftworld:elisar positioned 300 "$y" 300 run execute if block ~ ~ ~ minecraft:air 2>/dev/null || true)
-  case "$c" in *"Test passed"*) w="$w " ;; esac
-  printf '%s' "$w" >> "$OUT/column.txt"
+echo "== профиль колонки $KX,y,$KZ =="
+PROFILE="$OUT/column.txt"
+: > "$PROFILE"
+for y in $(seq 0 66); do
+  w="."
+  [[ "$(EL positioned "$KX" "$y" "$KZ" run execute if block ~ ~ ~ riftworld:elisar_water)" == *"Test passed"* ]] && w="W"
+  [[ "$(EL positioned "$KX" "$y" "$KZ" run execute if block ~ ~ ~ riftworld:elisar_seabed)" == *"Test passed"* ]] && w="S"
+  [[ "$(EL positioned "$KX" "$y" "$KZ" run execute if block ~ ~ ~ minecraft:air)" == *"Test passed"* ]] && w="a"
+  printf '%s' "$w" >> "$PROFILE"
 done
-echo >> "$OUT/column.txt"
-WATER=$(tr -cd 'W' < "$OUT/column.txt" | wc -c)
+echo >> "$PROFILE"
+WATER=$(tr -cd 'W' < "$PROFILE" | wc -c)
 echo "  воды в колонке: $WATER блоков"
-[ "$WATER" -ge 20 ] || { echo "  FAIL: море не сгенерировалось"; FAILS=$((FAILS+1)); }
+[ "$WATER" -ge 20 ] || { echo "  FAIL: море не сгенерировалось"; FAILS=$((FAILS + 1)); }
 
-# --- скриншоты
+# ---------------------------------------------------------------- скриншоты
 echo "== скриншоты =="
-tp_shot() { # tp_shot <x> <y> <z> <yaw> <pitch> <имя> <пауза>
-  R execute in riftworld:elisar run tp TestPlayer "$1" "$2" "$3" "$4" "$5" >/dev/null 2>&1
-  sleep "${7:-12}"
-  shot "$6" || true
+key F1                       # убрать HUD — «красивые» кадры
+sleep 2
+view() { # view <x> <y> <z> <yaw> <pitch> <pause> <name>
+  EL tp TestPlayer "$1" "$2" "$3" "$4" "$5" >/dev/null 2>&1
+  sleep "$6"
+  shot "$7"
 }
-tp_shot 600 20 666 90 35 sea_reef       14     # риф сверху-сбоку
-tp_shot 600 58 666 90 25 sea_surface    12     # поверхность воды
-tp_shot 626 16 770 45 5  sea_trench     14     # ущелье / глубина
-tp_shot 612 16 786 90 40 sea_blue_hole  14     # синяя дыра
-tp_shot 659 9 613 0 0    sea_cave       16     # внутри подводной пещеры
+view "$RX" "$((RF + 4))" "$RZ" 90 45 14 "02_reef_underwater"     # риф вплотную, чуть сверху
+view "$RX" 68 "$RZ" 90 -35 16 "03_reef_from_surface"             # сверху сквозь воду на риф
+view "$((RX + 40))" 66 "$((RZ + 40))" 225 -10 14 "04_sea_horizon"  # панорама моря
+view "$DX" "$((DF + 2))" "$DZ" 30 5 14 "05_trench"               # ущелье/глубина
+view "$HX" "$((HF + 3))" "$HZ" 90 70 14 "06_blue_hole"           # синяя дыра сверху
+view "$CX" "$((CLOW + 3))" "$CZ" 0 0 16 "07_cave"                # внутри подводной пещеры
+view "$CX" "$((CLOW + 3))" "$CZ" 180 0 12 "08_cave_back"         # пещера, другой ракурс
+key F1
+sleep 1
 
-# --- инвентарь/творческая вкладка: блоки моря
-R gamemode creative TestPlayer >/dev/null 2>&1 || true
-
+# ---------------------------------------------------------------- итог
 echo "== итог =="
-R list || true
-# гасим клиент и собираем лог
+RCON list || true
 pkill -f "GradleWrapperMain runClient" 2>/dev/null || true
 pkill -f forgeclientuserdev 2>/dev/null || true
 sleep 5
 kill $CPID 2>/dev/null || true
 
-ERRS=$(grep -cE "Exception|ERROR" "$OUT/client.log" 2>/dev/null || echo 0)
-echo "строк Exception/ERROR в логе клиента: $ERRS"
+# шум окружения (нет звуковой карты / нет flite для наратора) в ошибки не считаем
+ERRS=$(grep -E "Exception|ERROR" "$OUT/client.log" 2>/dev/null \
+       | grep -viE "Narrator|flite|text2speech|OpenAL|SoundSystem|SoundEngine|no sound|libflite" | wc -l)
+echo "строк Exception/ERROR в логе клиента (без звука/наратора): $ERRS"
 
 {
-  echo "# CI, шаг 2: настоящий клиент Minecraft в Элисаре (съёмка)"
+  echo "# CI, шаг 2: настоящий клиент Minecraft в Элисаре"
   echo
   echo "- клиент: ForgeGradle runClient под Xvfb (llvmpipe, без GPU)"
-  echo "- воды в колонке (300,y,300): **$WATER** блоков"
+  echo "- воды в колонке ($KX,y,$KZ): **$WATER** блоков"
   echo "- провалов проб: **$FAILS**"
-  echo "- строк Exception/ERROR в логе клиента: **$ERRS**"
+  echo "- строк Exception/ERROR в логе клиента (без звука/наратора): **$ERRS**"
   echo
-  echo "## колонка (y=0..68; W=вода, S=донный песок, пробел=воздух)"; echo '```'; cat "$OUT/column.txt"; echo '```'
+  echo "## пробы"; echo '```'; cat "$PROBES"; echo '```'
+  echo "## колонка (y=0..66; W=вода, S=донный песок, a=воздух/пещера, .=прочее)"; echo '```'; cat "$PROFILE"; echo '```'
   echo "## скриншоты"; ls -1 "$OUT"/*.jpg 2>/dev/null | sed 's/^/- /'
 } > "$OUT/report_client.md"
 cat "$OUT/report_client.md"
 
-# гасим сервер, чтобы раннер освободился чисто
 python3 tools/rcon.py --password "$RCON_PW" --log "" stop >/dev/null 2>&1 || true
-[ "$FAILS" -eq 0 ]
+[ "$FAILS" -eq 0 ] && [ "$ERRS" -eq 0 ]

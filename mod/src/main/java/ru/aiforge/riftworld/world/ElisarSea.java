@@ -170,13 +170,16 @@ public final class ElisarSea {
             double p = reef * 0.55;
             if (r < p) {
                 double k = hash(x, z, 462);
-                BlockState s = k < 0.34 ? st(ElisarBlocks.CORAL_BRANCH)
-                        : k < 0.62 ? st(ElisarBlocks.CORAL_FAN)
-                        : k < 0.84 ? st(ElisarBlocks.CORAL_TUBE)
-                        : k < 0.93 ? st(ElisarBlocks.CORAL_GLOW)
+                BlockState s = k < 0.30 ? st(ElisarBlocks.CORAL_BRANCH)
+                        : k < 0.54 ? st(ElisarBlocks.CORAL_FAN)
+                        : k < 0.72 ? st(ElisarBlocks.CORAL_TUBE)
+                        : k < 0.86 ? st(ElisarBlocks.CORAL_GLOW)
                         : st(ElisarBlocks.CORAL_BRAIN);
                 chunk.setBlockState(mp.set(x, y, z), s, false);
-                if (hash(x, z, 463) < 0.18) chunk.setBlockState(mp.set(x, y + 1, z), s, false);   // двухблочные шапки
+                // ярусы: шапки и «деревца» в 2-3 блока высотой — силуэт рифа виден издалека
+                double up = hash(x, z, 463);
+                if (up < 0.42) chunk.setBlockState(mp.set(x, y + 1, z), s, false);
+                if (up < 0.12) chunk.setBlockState(mp.set(x, y + 2, z), st(ElisarBlocks.CORAL_GLOW), false);
                 return;
             }
         }
@@ -205,9 +208,9 @@ public final class ElisarSea {
             BlockState up = chunk.getBlockState(mp.set(x, y + 1, z));
             BlockState down = chunk.getBlockState(mp.set(x, y - 1, z));
             double h = hash3(x, y, z, 471);
-            if (down.isSolidRender(chunk, mp.set(x, y - 1, z)) && h < 0.055) {
+            if (down.isSolidRender(chunk, mp.set(x, y - 1, z)) && h < 0.10) {
                 chunk.setBlockState(mp.set(x, y, z), st(ElisarBlocks.CAVE_GLOW), false);        // нарост на полу
-            } else if (up.isSolidRender(chunk, mp.set(x, y + 1, z)) && h > 0.975) {
+            } else if (up.isSolidRender(chunk, mp.set(x, y + 1, z)) && h > 0.955) {
                 chunk.setBlockState(mp.set(x, y, z), st(ElisarBlocks.CAVE_GLOW), false);        // друза на потолке
             }
         }
