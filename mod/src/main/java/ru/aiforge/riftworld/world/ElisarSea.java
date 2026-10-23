@@ -137,14 +137,21 @@ public final class ElisarSea {
         double reef = reefness(x, z);
         for (int y = 0; y <= floor; ++y) chunk.setBlockState(mp.set(x, y, z), rock(x, y, z, floor, reef), false);
 
-        // пещеры: вырезаем воздух (и «синие дыры»)
-        for (int y = 1; y < floor; ++y) {
-            if (cave(x, y, z, floor) || blueHole(x, y, z, floor)) chunk.setBlockState(mp.set(x, y, z), Blocks.AIR.defaultBlockState(), false);
+        // Пещеры: вырезаем полости и затопляем то, что связано с морем. Сверху вниз по колонке:
+        //   open=true (море сверху) -> полость заливается водой; упёрлись в породу -> полость закрыта,
+        //   дальше вниз это уже воздушный карман (там дышат рыбы и игрок).
+        boolean open = true;
+        boolean[] carved = new boolean[Math.max(floor, 1)];
+        for (int y = 1; y < floor; ++y) carved[y] = cave(x, y, z, floor) || blueHole(x, y, z, floor);
+        for (int y = floor - 1; y >= 1; --y) {
+            if (!carved[y]) { open = false; continue; }
+            if (open) chunk.setBlockState(mp.set(x, y, z), st(ElisarBlocks.WATER), false);
+            else chunk.setBlockState(mp.set(x, y, z), Blocks.AIR.defaultBlockState(), false);
         }
         // кромка дна не проваливается сквозь пещеры чаще, чем в 35% мест (свод держит)
-        if (floor > 2 && (cave(x, floor - 1, z, floor) || blueHole(x, floor, z, floor))) {
+        if (floor > 2 && carved[floor - 1]) {
             boolean shaft = blueHole(x, floor - 1, z, floor);
-            if (shaft || hash(x, z, 454) < 0.35) chunk.setBlockState(mp.set(x, floor, z), Blocks.AIR.defaultBlockState(), false);
+            if (shaft || hash(x, z, 454) < 0.35) chunk.setBlockState(mp.set(x, floor, z), st(ElisarBlocks.WATER), false);
         }
 
         for (int y = floor + 1; y <= sea; ++y) chunk.setBlockState(mp.set(x, y, z), st(ElisarBlocks.WATER), false);
