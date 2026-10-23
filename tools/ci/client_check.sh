@@ -75,6 +75,7 @@ key() { # key <F1>
 
 RCON() { python3 tools/rcon.py --password "$RCON_PW" --log "" --timeout 120 "$@" 2>&1; }
 EL() { RCON execute in riftworld:elisar run "$@" 2>&1; }
+ELP() { local x=$1 y=$2 z=$3; shift 3; RCON execute in riftworld:elisar positioned "$x" "$y" "$z" run "$@" 2>&1; }
 
 # ---------------------------------------------------------------- запуск клиента
 echo "== старт клиента через Gradle (runClient) =="
@@ -116,6 +117,8 @@ read -r DX DZ DF < <(python3 -c "import json;d=json.load(open('$SPOTS'));print(d
 read -r HX HZ HF < <(python3 -c "import json;d=json.load(open('$SPOTS'));print(d['hole']['x'],d['hole']['z'],d['hole']['floor'])")
 read -r CX CZ CLOW CHIGH < <(python3 -c "import json;d=json.load(open('$SPOTS'));print(d['cave']['x'],d['cave']['z'],d['cave']['low'],d['cave']['high'])")
 read -r KX KZ KF KB KT < <(python3 -c "import json;d=json.load(open('$SPOTS'));c=d['column'];print(c['x'],c['z'],c['floor'],c['water_bottom'],c['water_top'])")
+read -r VX VZ VF < <(python3 -c "import json;d=json.load(open('$SPOTS'));print(d['reef_vista']['x'],d['reef_vista']['z'],d['reef_vista']['floor'])")
+read -r LX LZ LF < <(python3 -c "import json;d=json.load(open('$SPOTS'));print(d['kelp']['x'],d['kelp']['z'],d['kelp']['floor'])")
 echo "  reef=$RX,$RZ floor=$RF | deep=$DX,$DZ floor=$DF | hole=$HX,$HZ floor=$HF | cave=$CX,$CZ $CLOW..$CHIGH | column=$KX,$KZ floor=$KF"
 
 echo "== телепорт в Элисар и прогрузка области =="
@@ -129,7 +132,7 @@ PROBES="$OUT/probes.txt"
 : > "$PROBES"
 probe() { # probe <x> <y> <z> <block> <label>
   local ans
-  ans=$(EL positioned "$1" "$2" "$3" run execute if block ~ ~ ~ "riftworld:$4")
+  ans=$(ELP "$1" "$2" "$3" execute if block ~ ~ ~ "riftworld:$4")
   if [[ "$ans" == *"Test passed"* ]]; then echo "  OK   $5 ($1,$2,$3) = $4" | tee -a "$PROBES"
   else echo "  FAIL $5 ($1,$2,$3) != $4" | tee -a "$PROBES"; FAILS=$((FAILS + 1)); fi
 }
@@ -143,9 +146,9 @@ PROFILE="$OUT/column.txt"
 : > "$PROFILE"
 for y in $(seq 0 66); do
   w="."
-  [[ "$(EL positioned "$KX" "$y" "$KZ" run execute if block ~ ~ ~ riftworld:elisar_water)" == *"Test passed"* ]] && w="W"
-  [[ "$(EL positioned "$KX" "$y" "$KZ" run execute if block ~ ~ ~ riftworld:elisar_seabed)" == *"Test passed"* ]] && w="S"
-  [[ "$(EL positioned "$KX" "$y" "$KZ" run execute if block ~ ~ ~ minecraft:air)" == *"Test passed"* ]] && w="a"
+  [[ "$(ELP "$KX" "$y" "$KZ" execute if block ~ ~ ~ riftworld:elisar_water)" == *"Test passed"* ]] && w="W"
+  [[ "$(ELP "$KX" "$y" "$KZ" execute if block ~ ~ ~ riftworld:elisar_seabed)" == *"Test passed"* ]] && w="S"
+  [[ "$(ELP "$KX" "$y" "$KZ" execute if block ~ ~ ~ minecraft:air)" == *"Test passed"* ]] && w="a"
   printf '%s' "$w" >> "$PROFILE"
 done
 echo >> "$PROFILE"
@@ -162,13 +165,14 @@ view() { # view <x> <y> <z> <yaw> <pitch> <pause> <name>
   sleep "$6"
   shot "$7"
 }
-view "$RX" "$((RF + 4))" "$RZ" 90 45 14 "02_reef_underwater"     # риф вплотную, чуть сверху
-view "$RX" 68 "$RZ" 90 -35 16 "03_reef_from_surface"             # сверху сквозь воду на риф
-view "$((RX + 40))" 66 "$((RZ + 40))" 225 -10 14 "04_sea_horizon"  # панорама моря
-view "$DX" "$((DF + 2))" "$DZ" 30 5 14 "05_trench"               # ущелье/глубина
-view "$HX" "$((HF + 3))" "$HZ" 90 70 14 "06_blue_hole"           # синяя дыра сверху
-view "$CX" "$((CLOW + 3))" "$CZ" 0 0 16 "07_cave"                # внутри подводной пещеры
-view "$CX" "$((CLOW + 3))" "$CZ" 180 0 12 "08_cave_back"         # пещера, другой ракурс
+view "$VX" "$((VF + 7))" "$VZ" 90 30 16 "02_reef_vista"           # рифовый сад: панорама с воды
+view "$VX" "$((VF + 3))" "$VZ" 200 12 14 "03_reef_closeup"          # риф вплотную
+view "$((LX + 6))" "$((LF + 6))" "$((LZ + 6))" 225 15 14 "04_kelp_forest"   # ламинария
+view "$VX" 59 "$VZ" 90 -28 14 "05_looking_up"                       # из-под воды на поверхность
+view "$DX" "$((DF + 3))" "$DZ" 30 0 14 "06_trench"                  # ущелье
+view "$HX" "$((HF + 5))" "$HZ" 90 60 14 "07_blue_hole"              # синяя дыра сверху
+view "$CX" "$((CLOW + 3))" "$CZ" 0 0 16 "08_cave"                   # подводная пещера
+view "$CX" "$((CLOW + 3))" "$CZ" 180 0 12 "09_cave_back"            # пещера, другой ракурс
 key F1
 sleep 1
 

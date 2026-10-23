@@ -252,6 +252,38 @@ def pick_spots(size=192, origin=(600, 600), write=None):
         spots["cave"] = {"x": cx, "z": cz, "floor": cf, "low": lo, "high": hi}
         print(f"CAVE={cx} {lo + 1} {cz} LOW={lo} HIGH={hi} FLOOR={cf}")
     # центр области и вертикальная колонка для проб
+    # виста рифа: центр самого большого пятна рифа (максимум суммы «рифовости» по 13x13)
+    best_vista, best_vista_v = None, -1
+    for x in range(ox, ox + size, 3):
+        for z in range(oz, oz + size, 3):
+            if reefness(x, z) < 0.6:
+                continue
+            acc = 0.0
+            for dx in range(-6, 7, 2):
+                for dz in range(-6, 7, 2):
+                    acc += reefness(x + dx, z + dz)
+            if acc > best_vista_v:
+                best_vista_v, best_vista = acc, (x, z, ocean_floor(x, z))
+    if best_vista:
+        spots["reef_vista"] = {"x": best_vista[0], "z": best_vista[1], "floor": best_vista[2]}
+        print(f"VISTA={best_vista[0]} {best_vista[2]} {best_vista[1]} SCORE={best_vista_v:.1f}")
+
+    # ламинария: колонки с густым лесом (там, где reefness низкая, а шум ламинарии высокий)
+    best_kelp, best_kelp_v = None, -1
+    for x in range(ox, ox + size):
+        for z in range(oz, oz + size):
+            if reefness(x, z) >= 0.35:
+                continue
+            if vnoise(x * 0.05, z * 0.05, 465) <= 0.66:
+                continue
+            cnt = sum(1 for dx in range(-4, 5) for dz in range(-4, 5)
+                      if reefness(x + dx, z + dz) < 0.35 and vnoise((x + dx) * 0.05, (z + dz) * 0.05, 465) > 0.66)
+            if cnt > best_kelp_v:
+                best_kelp_v, best_kelp = cnt, (x, z, ocean_floor(x, z))
+    if best_kelp:
+        spots["kelp"] = {"x": best_kelp[0], "z": best_kelp[1], "floor": best_kelp[2]}
+        print(f"KELP={best_kelp[0]} {best_kelp[2]} {best_kelp[1]} N={best_kelp_v}")
+
     spots["origin"] = {"x": ox + size // 2, "z": oz + size // 2}
     cx, cz = ox + size // 2, oz + size // 2
     f = ocean_floor(cx, cz)
