@@ -1,0 +1,129 @@
+name: Build + live Minecraft check
+
+# Собирает мод, поднимает настоящий Forge-сервер с ним, проверяет измерение Элисар по RCON
+# и коммитит отчёт в ветку ci-artifacts.
+# NB: workflow_dispatch требует файла на default-ветке, поэтому основной триггер — push в arena/**.
+on:
+  push:
+    branches: ["arena/**"]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Тег релиза для jar (пусто = не публиковать релиз)'
+        type: string
+        required: false
+        default: ''
+      release_title:
+        description: 'Заголовок релиза'
+        type: string
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sea-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Set up Gradle cache
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build mod jar
+        run: |
+          mkdir -p ci-out
+          cd mod
+          chmod +x gradlew
+          ./gradlew jar --no-daemon --console=plain 2>&1 | tee ../ci-out/build.log
+        continue-on-error: false
+
+      - name: Boot Forge server with the mod and probe it
+        run: bash tools/ci/server_check.sh
+
+      # без игрока в измерении сервер Элисар не генерирует — съёмка и настоящие пробы идут в шаге клиента
+
+      - name: Launch real Minecraft client, enter Elisar and take screenshots
+        if: always()
+        timeout-minutes: 40
+        run: bash tools/ci/client_check.sh
+
+      - name: Stage jar for artifacts
+        if: always()
+        run: |
+          mkdir -p ci-out
+          JAR=$(ls mod/build/libs/riftworld-*.jar 2>/dev/null | grep -v -e sources -e javadoc | head -1 || true)
+          if [ -n "$JAR" ]; then cp "$JAR" "ci-out/$(basename "$JAR")"; echo "staged $JAR"; fi
+
+      - name: Resolve release tag
+        id: tag
+        if: always()
+        run: |
+          TAG="${{ inputs.release_tag }}"
+          if [ -z "$TAG" ]; then
+            TAG=$(git log -1 --pretty=%B | sed -n 's/.*\[release \([^]]*\)\].*/\1/p')
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "release tag: [$TAG]"
+
+      - name: Publish jar as a GitHub release
+        if: success() && steps.tag.outputs.tag != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ steps.tag.outputs.tag }}"
+          TITLE="${{ inputs.release_title }}"
+          JAR=$(ls mod/build/libs/riftworld-*.jar | grep -v -e sources -e javadoc | head -1 || true)
+          NOTES=ci-out/report.md
+          [ -f "$NOTES" ] || NOTES=ci-shots/report_client.md
+          [ -f "$NOTES" ] || NOTES=ci-out/report_client.md
+          [ -f "$NOTES" ] || { printf '%s\n' "Живое море Элисара: релиз $TAG" > ci-out/notes.md; NOTES=ci-out/notes.md; }
+          {
+            set -x
+            [ -n "$JAR" ] || { echo "jar не найден"; exit 1; }
+            cp "$JAR" "ci-out/riftworld-$TAG.jar"
+            echo "notes: $NOTES ($(wc -c < "$NOTES" 2>/dev/null || echo none) байт)"
+            gh release delete "$TAG" --yes --cleanup-tag || true
+            gh release create "$TAG" "ci-out/riftworld-$TAG.jar" --title "${TITLE:-$TAG}" --notes-file "$NOTES"
+          } > ci-out/release.log 2>&1 || {
+            echo "== публикация релиза не удалась =="
+            tail -40 ci-out/release.log
+            exit 1
+          }
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-report
+          path: ci-out/
+          if-no-files-found: warn
+
+      - name: Commit report to ci-artifacts branch
+        if: always()
+        run: |
+          set -euo pipefail
+          git config user.name "riftworld-ci"
+          git config user.email "riftworld-ci@users.noreply.github.com"
+          cp -r ci-out /tmp/artifacts
+          cp -r ci-shots /tmp/artifacts/shots 2>/dev/null || true
+          git checkout --orphan ci-artifacts
+          git rm -rf -q --cached . >/dev/null 2>&1 || true
+          rm -rf ./* ./.github 2>/dev/null || true
+          cp -r /tmp/artifacts/* .
+          git add -A
+          git commit -qm "CI artifacts for ${{ github.sha }} (${{ github.run_number }})" || true
+          git push -f origin HEAD:ci-artifacts || echo 'WARN: ветка ci-artifacts занята параллельным прогоном'
+          echo "jar в ветке: $(ls -1 *.jar 2>/dev/null | head -1)"

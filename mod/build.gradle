@@ -60,7 +60,8 @@ minecraft {
     runs {
         // applies to all the run configs below
         configureEach {
-            workingDirectory file('/home/user/.cache/mc/runs/' + name)
+            // запуск из любого места: каталог прогонов задаётся -PrunDir=... (по умолчанию mod/run)
+            workingDirectory file((project.findProperty('runDir') ?: 'run').toString() + '/' + name)
 
             // Recommended logging data for a userdev environment
             // The markers can be added/remove as needed separated by commas.

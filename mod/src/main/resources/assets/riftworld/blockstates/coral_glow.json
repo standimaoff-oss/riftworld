@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "waterlogged=true": {
+      "model": "riftworld:block/coral_glow"
+    },
+    "waterlogged=false": {
+      "model": "riftworld:block/coral_glow"
+    }
+  }
+}

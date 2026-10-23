@@ -10,10 +10,11 @@ import os, math
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
-ROOT = "/home/user/mods/riftworld/src/main/resources/assets/riftworld/textures"
+ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..",
+                    "mod", "src", "main", "resources", "assets", "riftworld", "textures")
 BLK = os.path.join(ROOT, "block")
 ITM = os.path.join(ROOT, "item")
-MOD = "/home/user/tools/rift/tex_models"
+MOD = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tex_models")
 for d in (BLK, ITM, MOD):
     os.makedirs(d, exist_ok=True)
 FONT = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
@@ -90,7 +91,7 @@ for (x0, y0, x1, y1) in ((2, 5, 7, 7), (9, 11, 14, 12), (11, 2, 14, 4)):
         shade(st, x, y0 + (x % 2), 0.72)
 save(st, "elisar_stone")
 m = st.copy(); blotch(m, 8, ['#6b6e52', '#787b5e', '#5e6148'], 16, 2); save(m, "elisar_stone_mossy")
-sb = base('#c9d6da', 8, 3); save(sb, "elisar_seabed")
+sb = base('#cdbd9a', 8, 3); save(sb, "elisar_seabed")
 
 
 def cobble(col, seed, mortar='#8e8a83'):

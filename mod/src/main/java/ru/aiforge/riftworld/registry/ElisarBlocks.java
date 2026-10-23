@@ -108,6 +108,39 @@ public final class ElisarBlocks {
     public static final RegistryObject<PlantBlock> LILAC_BLOOM = ModBlocks.reg("lilac_bloom", () -> new PlantBlock(plant()));
     public static final RegistryObject<PlantBlock> PALE_BLOOM = ModBlocks.reg("pale_bloom", () -> new PlantBlock(plant()));
     public static final RegistryObject<VineBlock> IVY = ModBlocks.reg("elisar_ivy", () -> new VineBlock(plant().randomTicks()));
+    // ===== Рев 8 «Живое море»: дно, рифы и подводная флора =====
+    // породы дна
+    public static final RegistryObject<Block> SILT = cube("elisar_silt", MapColor.COLOR_BLACK, 0.7F, SoundType.SOUL_SAND);
+    public static final RegistryObject<Block> REEF_STONE = cube("reef_stone", MapColor.TERRACOTTA_PURPLE, 2.0F, SoundType.STONE);
+    public static final RegistryObject<Block> CORAL_BRAIN = ModBlocks.reg("coral_brain",
+            () -> new Block(p(MapColor.COLOR_PINK, 1.2F, SoundType.CORAL_BLOCK).lightLevel(s -> 6)));
+    // растения (крестики, живут только на дне)
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> CORAL_BRANCH =
+            ModBlocks.reg("coral_branch", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant()));
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> CORAL_FAN =
+            ModBlocks.reg("coral_fan", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant()));
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> CORAL_TUBE =
+            ModBlocks.reg("coral_tube", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant()));
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> CORAL_GLOW =
+            ModBlocks.reg("coral_glow", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant().lightLevel(s -> 12)));
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> SEA_GRASS =
+            ModBlocks.reg("sea_grass", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant()));
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> SEA_KELP =
+            ModBlocks.reg("sea_kelp", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant(), true));
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> SEA_KELP_TOP =
+            ModBlocks.reg("sea_kelp_top", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant(), true));
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> CAVE_GLOW =
+            ModBlocks.reg("cave_glow", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant().lightLevel(s -> 11)));
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaDecalBlock> SEA_SHELLS =
+            ModBlocks.reg("sea_shells", () -> new ru.aiforge.riftworld.block.SeaDecalBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.SAND).strength(0.2F).sound(SoundType.CORAL_BLOCK).noCollission()
+                    .pushReaction(PushReaction.DESTROY).noOcclusion()));
+
+    private static BlockBehaviour.Properties seaPlant() {
+        return BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_CYAN).replaceable().noCollission().instabreak()
+                .sound(SoundType.GRASS).offsetType(BlockBehaviour.OffsetType.XZ).pushReaction(PushReaction.DESTROY).noOcclusion();
+    }
+
     // water (no item: the bucket is the item)
     public static final RegistryObject<LiquidBlock> WATER = ModBlocks.BLOCKS.register("elisar_water", () -> new LiquidBlock(ModFluids.SOURCE,
             BlockBehaviour.Properties.of().mapColor(MapColor.WATER).replaceable().noCollission().strength(100.0F).pushReaction(PushReaction.DESTROY)

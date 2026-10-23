@@ -66,14 +66,15 @@ public final class ModFluids {
                 @Override
                 public Vector3f modifyFogColor(Camera camera, float partialTick, ClientLevel level, int renderDistance, float darkenWorldAmount, Vector3f fluidFogColor) {
                     float d = depth(camera);
-                    return new Vector3f(net.minecraft.util.Mth.lerp(d, 0.22F, 0.05F), net.minecraft.util.Mth.lerp(d, 0.55F, 0.16F), net.minecraft.util.Mth.lerp(d, 0.78F, 0.30F));
+                    // Рев 8: глубина больше не чёрная — холодный синий с бирюзовым свечением снизу
+                    return new Vector3f(net.minecraft.util.Mth.lerp(d, 0.20F, 0.07F), net.minecraft.util.Mth.lerp(d, 0.56F, 0.26F), net.minecraft.util.Mth.lerp(d, 0.80F, 0.45F));
                 }
 
                 @Override
                 public void modifyFogRender(Camera camera, FogRenderer.FogMode mode, float renderDistance, float partialTick, float nearDistance, float farDistance, FogShape shape) {
                     float d = depth(camera);
-                    com.mojang.blaze3d.systems.RenderSystem.setShaderFogStart(-4F + d);
-                    com.mojang.blaze3d.systems.RenderSystem.setShaderFogEnd(net.minecraft.util.Mth.lerp(d, 54F, 22F));
+                    com.mojang.blaze3d.systems.RenderSystem.setShaderFogStart(-6F + d * 2F);
+                    com.mojang.blaze3d.systems.RenderSystem.setShaderFogEnd(net.minecraft.util.Mth.lerp(d, 78F, 52F));
                 }
             });
         }

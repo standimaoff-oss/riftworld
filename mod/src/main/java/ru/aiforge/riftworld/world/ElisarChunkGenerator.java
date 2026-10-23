@@ -232,10 +232,11 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         }
     }
 
-    /** Seabed height: gentle dunes around ocean-45 so the water column is 40-50 blocks deep everywhere (Rev 4 item 6). */
+    /** Seabed height: gentle dunes around ocean-45 so the water column is 40-50 blocks deep everywhere (Rev 4 item 6).
+     *  Рев 8: плюс ущелья — дно местами прорезано на 6–12 блоков вглубь (каньоны и желоба). */
     static int oceanFloor(CityPlan plan, int x, int z) {
         double n = vnoise(x * 0.016, z * 0.016, 77) * 0.72 + vnoise(x * 0.052, z * 0.052, 78) * 0.28;
-        return plan.ocean - 1 - 41 - (int) Math.round(n * 8);
+        return Math.max(9, plan.ocean - 1 - 41 - (int) Math.round(n * 8) - ElisarSea.trenchDepth(x, z));
     }
 
     private static boolean land(CityPlan plan, double px, double pz) {
@@ -510,12 +511,10 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 if (ashen) {
                     if (c.isl == null || c.bottom > plan.ocean + 1) AshenLands.column(chunk, mp, x, z, c.isl != null);
                 } else if (c.isl == null || c.bottom > plan.ocean + 1) {
-                    // deep ocean (Rev 4 item 6): 42..50 blocks of water over a dune floor, stone beneath
+                    // Рев 8 «Живое море»: сплошной массив дна от y=0, ущелья, двухуровневые пещеры,
+                    // «синие дыры» и рифовые сады (было: 5-блочная скорлупа и лысое дно).
                     int floor = oceanFloor(plan, x, z);
-                    chunk.setBlockState(mp.set(x, floor, z), seabed, false);
-                    chunk.setBlockState(mp.set(x, floor - 1, z), seabed, false);
-                    for (int y = floor - 4; y <= floor - 2; ++y) chunk.setBlockState(mp.set(x, y, z), hash(x, y, z) < 0.3 ? mossy : stone, false);
-                    for (int y = floor + 1; y <= plan.ocean; ++y) chunk.setBlockState(mp.set(x, y, z), water, false);
+                    ElisarSea.fill(chunk, mp, x, z, floor, plan.ocean);
                     // мини-биом «Туманный данж»: серые каменные столбы из воды + центральный утёс под руину
                     MistKeep.Region mr = MistKeep.regionAt(x + 0.5, z + 0.5);
                     if (mr != null) {
@@ -1189,7 +1188,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         int of = oceanFloor(plan, x, z);
         arr[of] = ElisarBlocks.SEABED.get().defaultBlockState();
         arr[of - 1] = ElisarBlocks.SEABED.get().defaultBlockState();
-        for (int y = of - 4; y <= of - 2; ++y) arr[y] = ElisarBlocks.STONE.get().defaultBlockState();
+        // Рев 8: дно — сплошной массив породы (а не 5 блоков), для расстановки структур/высот
+        for (int y = 0; y <= of - 2; ++y) arr[y] = ElisarBlocks.STONE.get().defaultBlockState();
         for (int y = of + 1; y <= plan.ocean; ++y) arr[y] = ElisarBlocks.WATER.get().defaultBlockState();
         if (c.isl != null) {
             for (int y = Math.max(0, c.bottom); y <= Math.min(HEIGHT - 1, c.top); ++y) arr[y] = ElisarBlocks.STONE.get().defaultBlockState();

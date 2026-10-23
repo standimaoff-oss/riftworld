@@ -16,17 +16,22 @@ public class ElisarBiomeSource extends BiomeSource {
             Biome.CODEC.fieldOf("violet").forGetter(s -> s.violet),
             Biome.CODEC.fieldOf("sizo").forGetter(s -> s.sizo),
             Biome.CODEC.fieldOf("mist").forGetter(s -> s.mist),
-            Biome.CODEC.fieldOf("gardens").forGetter(s -> s.gardens)).apply(i, ElisarBiomeSource::new));
+            Biome.CODEC.fieldOf("gardens").forGetter(s -> s.gardens),
+            Biome.CODEC.fieldOf("reef").forGetter(s -> s.reef),
+            Biome.CODEC.fieldOf("abyss").forGetter(s -> s.abyss)).apply(i, ElisarBiomeSource::new));
 
-    private final Holder<Biome> def, ashen, violet, sizo, gardens, mist;
+    private final Holder<Biome> def, ashen, violet, sizo, gardens, mist, reef, abyss;
 
-    public ElisarBiomeSource(Holder<Biome> def, Holder<Biome> ashen, Holder<Biome> violet, Holder<Biome> sizo, Holder<Biome> gardens, Holder<Biome> mist) {
+    public ElisarBiomeSource(Holder<Biome> def, Holder<Biome> ashen, Holder<Biome> violet, Holder<Biome> sizo, Holder<Biome> gardens,
+                             Holder<Biome> mist, Holder<Biome> reef, Holder<Biome> abyss) {
         this.def = def;
         this.ashen = ashen;
         this.violet = violet;
         this.sizo = sizo;
         this.gardens = gardens;
         this.mist = mist;
+        this.reef = reef;
+        this.abyss = abyss;
     }
 
     @Override
@@ -36,7 +41,7 @@ public class ElisarBiomeSource extends BiomeSource {
 
     @Override
     protected Stream<Holder<Biome>> collectPossibleBiomes() {
-        return Stream.of(def, ashen, violet, sizo, gardens, mist);
+        return Stream.of(def, ashen, violet, sizo, gardens, mist, reef, abyss);
     }
 
     @Override
@@ -47,6 +52,14 @@ public class ElisarBiomeSource extends BiomeSource {
         if (SizoGrove.inside(x, z)) return sizo;
         if (VioletHills.inside(x, z)) return violet;
         if (MistKeep.inside(x, z)) return mist;                    // мини-биом «Туманный данж»: дымка над столбами-останцами
+        // Рев 8 «Живое море»: открытый океан получает собственные биомы по глубине и «рифовости» дна.
+        // Считаем только там, где есть смысл (у воды и ниже): небо над морем остаётся обычным.
+        CityPlan plan = CityPlan.get();
+        if (qy * 4 <= plan.ocean + 8 && plan.islandAt(x, z) == null) {
+            int floor = ElisarChunkGenerator.oceanFloor(plan, (int) Math.floor(x), (int) Math.floor(z));
+            if (ElisarSea.reefness((int) Math.floor(x), (int) Math.floor(z)) > 0.45) return reef;   // коралловые отмели
+            if (plan.ocean - floor > 46) return abyss;                                              // тёмные глубины
+        }
         return def;
     }
 }
