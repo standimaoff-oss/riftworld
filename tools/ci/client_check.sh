@@ -282,6 +282,14 @@ view "$HX" "$((HF - 2))" "$HZ" 0 55 14 "07_blue_hole"         # синяя ды�
 view "$CX" "$((CLOW + 3))" "$CZ" 0 0 16 "08_cave"            # подводная пещера
 view "$CX" "$((CLOW + 3))" "$CZ" 180 0 12 "09_cave_back"     # пещера, другой ракурс
 view "$KX" 46 "$((KZ + 6))" 180 4 12 "10_fish_reef"           # витрина мирных рыб (открытая вода)
+# крупный план: рыба в трёх блоках прямо по центру кадра — видно даже мелкие детали рендера
+EL tp TestPlayer "$KX" 44 "$KZ" 180 0 >/dev/null 2>&1
+sleep 2
+SUM_LOCAL 3 0 0 '{NoAI:1b,Silent:1b,sf_variant:0}'
+SUM_LOCAL 3.6 0.7 0.9 '{NoAI:1b,Silent:1b,sf_variant:1}'
+SUM_LOCAL 4.4 -0.9 -0.5 '{NoAI:1b,Silent:1b,sf_variant:4}'
+sleep 6
+shot "12_fish_closeup"
 view "$CX" "$((CLOW + 3))" "$((CZ + 5))" 180 0 12 "11_fish_cave"  # хищники пещеры
 RCON effect clear TestPlayer >/dev/null 2>&1 || true
 key F1
