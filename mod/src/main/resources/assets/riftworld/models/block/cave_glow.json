@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cross",
+  "textures": {
+    "cross": "riftworld:block/cave_glow"
+  },
+  "render_type": "minecraft:cutout"
+}

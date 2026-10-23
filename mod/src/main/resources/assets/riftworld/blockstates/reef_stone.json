@@ -1,0 +1,22 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "riftworld:block/reef_stone",
+        "y": 0
+      },
+      {
+        "model": "riftworld:block/reef_stone",
+        "y": 90
+      },
+      {
+        "model": "riftworld:block/reef_stone",
+        "y": 180
+      },
+      {
+        "model": "riftworld:block/reef_stone",
+        "y": 270
+      }
+    ]
+  }
+}
