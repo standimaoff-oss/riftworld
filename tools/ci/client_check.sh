@@ -147,6 +147,7 @@ read -r CX CZ CLOW CHIGH < <(python3 -c "import json;d=json.load(open('$SPOTS'))
 read -r KX KZ KF KB KT < <(python3 -c "import json;d=json.load(open('$SPOTS'));c=d['column'];print(c['x'],c['z'],c['floor'],c['water_bottom'],c['water_top'])")
 read -r VX VZ VF < <(python3 -c "import json;d=json.load(open('$SPOTS'));print(d['reef_vista']['x'],d['reef_vista']['z'],d['reef_vista']['floor'])")
 read -r LX LZ LF < <(python3 -c "import json;d=json.load(open('$SPOTS'));print(d['kelp']['x'],d['kelp']['z'],d['kelp']['floor'])")
+FY=$((RF + 22))          # «витринный» горизонт над рифом: толща воды, хорошо освещена
 echo "  reef=$RX,$RZ floor=$RF | deep=$DX,$DZ floor=$DF | hole=$HX,$HZ floor=$HF | cave=$CX,$CZ $CLOW..$CHIGH | column=$KX,$KZ floor=$KF"
 
 echo "== телепорт в Элисар и прогрузка области =="
@@ -158,15 +159,31 @@ EL forceload add "$((CX - 40))" "$((CZ - 40))" "$((CX + 40))" "$((CZ + 40))" | t
 sleep 60
 
 # ---------------------------------------------------------------- пробы (реальная генерация)
-FAILS=0
+FAILS=${FAILS:-0}
+WATER=${WATER:-0}
 PROBES="$OUT/probes.txt"
+write_report() {
+  {
+    echo "# CI, шаг 2: настоящий клиент Minecraft в Элисаре"
+    echo
+    echo "- клиент: ForgeGradle runClient под Xvfb (llvmpipe, без GPU)"
+    echo "- воды в колонке (${KX:-?},y,${KZ:-?}): **$WATER** блоков"
+    echo "- провалов проб: **$FAILS**"
+    echo "- строк Exception/ERROR в логе клиента (без звука/наратора): **$(grep -E "Exception|ERROR" "$OUT/client.log" 2>/dev/null | grep -viE "Narrator|flite|text2speech|OpenAL|SoundSystem|SoundEngine" | wc -l)**"
+    echo
+    echo "## пробы"; echo '```'; cat "$PROBES" 2>/dev/null; echo '```'
+    echo "## колонка (y; W=вода, S=донный песок, a=воздух/пещера, .=прочее)"; echo '```'; cat "$OUT/column.txt" 2>/dev/null; echo '```'
+    echo "## скриншоты"; ls -1 "$OUT"/*.jpg 2>/dev/null | sed 's/^/- /'
+  } > "$OUT/report_client.md"
+}
+trap write_report EXIT
 : > "$PROBES"
 log() { echo "$*" | tee -a "$PROBES"; }
 
 # проба «под игроком»: телепортируем игрока в точку и смотрим блок прямо под ним
 at_block() { # at_block <x> <y> <z> <block> <label>
   local ans
-  EL tp TestPlayer "$1" "$2" "$3" 0 0 >/dev/null 2>&1
+  EL tp TestPlayer "${1:-0}" "${2:-0}" "${3:-0}" 0 0 >/dev/null 2>&1
   sleep 2
   ans=$(EL execute at TestPlayer run execute if block \~ \~ \~ "riftworld:$4" 2>&1)
   if [[ "$ans" == *"Test passed"* ]]; then log "  OK   $5 ($1,$2,$3) = $4"
