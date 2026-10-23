@@ -17,30 +17,56 @@ OUT = os.path.join(ROOT, "mod/src/main/resources/assets/riftworld/textures/block
 FRAMES = 16
 
 
+def _hash(x, y, seed):
+    h = (x * 374761393 + y * 668265263 + seed * 2246822519) & 0xFFFFFFFF
+    h = (h ^ (h >> 13)) * 1274126177 & 0xFFFFFFFF
+    return ((h ^ (h >> 16)) & 0xFFFF) / 65535.0
+
+
+def _vnoise(x, y, seed):
+    xi, yi = math.floor(x), math.floor(y)
+    fx, fy = x - xi, y - yi
+    fx = fx * fx * (3 - 2 * fx)
+    fy = fy * fy * (3 - 2 * fy)
+    a, b = _hash(xi, yi, seed), _hash(xi + 1, yi, seed)
+    c, d = _hash(xi, yi + 1, seed), _hash(xi + 1, yi + 1, seed)
+    ab = a + (b - a) * fx
+    cd = c + (d - c) * fx
+    return ab + (cd - ab) * fy
+
+
 def wave_frame(size, t, seed, deep):
-    """Один кадр воды: полосы волн + мелкие блики, без «молочной» заливки."""
-    rnd = random.Random(seed)
+    """Кадр воды: органическое поле из трёх октав шума, медленно плывущее по кадру.
+
+    Никаких решёток — только мягкие пятна блика и тени, поэтому вода не «плиткой».
+    """
     im = Image.new("RGBA", (size, size))
     px = im.load()
+    ph = t / float(FRAMES)
+    lo = (26, 74, 116) if deep else (30, 86, 132)       # глубина
+    mid = (46, 118, 166)                                 # толща
+    hi = (120, 194, 222)                                 # блик
     for y in range(size):
         for x in range(size):
-            # две интерферирующие волны, медленно ползущие по кадру
-            a = math.sin((x / size) * math.tau * 2 + t * math.tau / FRAMES)
-            b = math.sin((y / size) * math.tau * 3 - t * math.tau / FRAMES * 1.5)
-            c = math.sin(((x + y) / size) * math.tau * 1.5 + t * math.tau / FRAMES * 0.5)
-            v = (a + b + c) / 3.0
-            # база: тёмно-синяя бездна -> синий -> бирюзовый блик
-            base = (34, 96, 152) if not deep else (26, 78, 130)
-            top = (92, 176, 214)
-            k = max(0.0, min(1.0, (v + 1) * 0.5))
-            r = int(base[0] + (top[0] - base[0]) * k)
-            g = int(base[1] + (top[1] - base[1]) * k)
-            bl = int(base[2] + (top[2] - base[2]) * k)
-            if k > 0.86:                                   # редкие яркие блики на гребне
-                r, g, bl = min(255, r + 26), min(255, g + 22), min(255, bl + 16)
-            if rnd.random() < 0.015:
-                r, g, bl = min(255, r + 14), min(255, g + 12), min(255, bl + 10)
-            px[x, y] = (r, g, bl, 196)
+            u = (x / size) * 2.0 + ph * 0.55
+            v = (y / size) * 2.0 + ph * 0.30
+            n = _vnoise(u * 2.0, v * 2.0, seed) * 0.60
+            n += _vnoise(u * 4.0 + 3.1, v * 4.0 - 1.7, seed + 7) * 0.28
+            n += _vnoise(u * 8.0 - 2.3, v * 8.0 + 5.4, seed + 13) * 0.12
+            n = max(0.0, min(1.0, (n - 0.30) / 0.55))
+            # мягкая кривая: много спокойной воды, редкие яркие гребни
+            k = n ** 1.7
+            if k < 0.55:
+                f = k / 0.55
+                r = int(lo[0] + (mid[0] - lo[0]) * f)
+                g = int(lo[1] + (mid[1] - lo[1]) * f)
+                b = int(lo[2] + (mid[2] - lo[2]) * f)
+            else:
+                f = (k - 0.55) / 0.45
+                r = int(mid[0] + (hi[0] - mid[0]) * f)
+                g = int(mid[1] + (hi[1] - mid[1]) * f)
+                b = int(mid[2] + (hi[2] - mid[2]) * f)
+            px[x, y] = (r, g, b, 196)
     return im
 
 
