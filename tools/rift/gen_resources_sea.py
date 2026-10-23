@@ -90,3 +90,29 @@ for lang, names in (("en_us", EN), ("ru_ru", RU)):
     merge_json(f"{A}/lang/{lang}.json", {f"block.riftworld.{n}": v for n, v in names.items()})
 
 print("ресурсы моря: %d блоков" % (len(CUBES) + len(CROSSES) + 1))
+
+# ---------------------------------------------------------------- яйца призыва рыбы
+EGGS = {
+    "silver_fish_spawn_egg": (0xC6D3DC, 0x2B3440),
+    "gold_fish_spawn_egg": (0xE9C25A, 0xC29A38),
+    "jelly_fish_spawn_egg": (0x9FE6FF, 0xD8F7FF),
+    "ray_fish_spawn_egg": (0x68798C, 0xDCE6EC),
+    "angler_fish_spawn_egg": (0x2C3947, 0xDFFFA8),
+}
+EGG_RU = {
+    "silver_fish_spawn_egg": "Яйцо серебристой рыбы", "gold_fish_spawn_egg": "Яйцо золотого диска",
+    "jelly_fish_spawn_egg": "Яйцо медузы", "ray_fish_spawn_egg": "Яйцо манты",
+    "angler_fish_spawn_egg": "Яйцо пещерного удильщика",
+}
+EGG_EN = {
+    "silver_fish_spawn_egg": "Silver Fish Spawn Egg", "gold_fish_spawn_egg": "Gold Disc Spawn Egg",
+    "jelly_fish_spawn_egg": "Jellyfish Spawn Egg", "ray_fish_spawn_egg": "Ray Spawn Egg",
+    "angler_fish_spawn_egg": "Cave Anglerfish Spawn Egg",
+}
+for n in EGGS:
+    gen_item(n, "riftworld:item/" + n)
+for lang, names in (("en_us", EGG_EN), ("ru_ru", EGG_RU)):
+    merge_json(f"{A}/lang/{lang}.json", {f"item.riftworld.{n}": v for n, v in names.items()})
+
+merge_json(f"{A}/lang/en_us.json", {"entity.riftworld.sea_fish": "Elisar Sea Fish"})
+merge_json(f"{A}/lang/ru_ru.json", {"entity.riftworld.sea_fish": "Морская рыба Элисара"})

@@ -325,5 +325,11 @@
   "block.riftworld.sea_kelp_top": "Верхушка ламинарии",
   "block.riftworld.sea_grass": "Морская трава",
   "block.riftworld.cave_glow": "Пещерный нарост",
-  "block.riftworld.sea_shells": "Ракушки и морские звёзды"
+  "block.riftworld.sea_shells": "Ракушки и морские звёзды",
+  "item.riftworld.silver_fish_spawn_egg": "Яйцо серебристой рыбы",
+  "item.riftworld.gold_fish_spawn_egg": "Яйцо золотого диска",
+  "item.riftworld.jelly_fish_spawn_egg": "Яйцо медузы",
+  "item.riftworld.ray_fish_spawn_egg": "Яйцо манты",
+  "item.riftworld.angler_fish_spawn_egg": "Яйцо пещерного удильщика",
+  "entity.riftworld.sea_fish": "Морская рыба Элисара"
 }

@@ -302,3 +302,38 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+def _egg(name, back, spots):
+    """Иконка яйца призыва: овальная скорлупа + пятна вторым цветом (16x16, как ванильные яйца)."""
+    im = img()
+    px = im.load()
+    b = rgb(back)
+    s = rgb(spots)
+    # силуэт яйца: уже сверху, шире в середине, узкий низ
+    for y in range(2, 15):
+        f = (y - 2) / 12.0
+        half = 2.6 + 2.6 * math.sin(math.pi * min(1.0, f * 1.15)) - 1.1 * max(0.0, f - 0.55) * 2
+        half = max(1.6, min(5.4, half))
+        for x in range(16):
+            if abs(x - 7.5) <= half:
+                shade = -10 if x < 6 else (8 if x > 9 else 0)
+                px[x, y] = (max(0, b[0] + shade), max(0, b[1] + shade), max(0, b[2] + shade), 255)
+    for (x, y) in ((5, 6), (6, 6), (5, 7), (9, 9), (10, 9), (9, 10), (7, 12), (8, 12), (10, 5), (4, 9), (8, 4)):
+        if 0 <= x < 16 and 0 <= y < 16 and px[x, y][3] > 0:
+            px[x, y] = (*s, 255)
+    return im
+
+
+EGGS = {
+    "silver_fish_spawn_egg": ("C6D3DC", "2B3440"),
+    "gold_fish_spawn_egg": ("E9C25A", "C29A38"),
+    "jelly_fish_spawn_egg": ("9FE6FF", "D8F7FF"),
+    "ray_fish_spawn_egg": ("68798C", "DCE6EC"),
+    "angler_fish_spawn_egg": ("2C3947", "DFFFA8"),
+}
+for _n, (_b, _s) in EGGS.items():
+    _d = os.path.join(OUT, "..", "item")
+    os.makedirs(_d, exist_ok=True)
+    _egg(_n, _b, _s).save(os.path.join(_d, _n + ".png"))
+    print("   item/" + _n)

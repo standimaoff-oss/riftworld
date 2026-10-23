@@ -156,6 +156,29 @@ WATER=$(tr -cd 'W' < "$PROFILE" | wc -c)
 echo "  воды в колонке: $WATER блоков"
 [ "$WATER" -ge 20 ] || { echo "  FAIL: море не сгенерировалось"; FAILS=$((FAILS + 1)); }
 
+echo "== рыбы: естественный спавн смотрителем =="
+sleep 25
+FISH=$(EL if entity @e[type=riftworld:sea_fish,distance=..80] 2>&1)
+if [[ "$FISH" == *"Test passed"* ]]; then echo "  OK   рыбы заспавнились сами (SeaLifeKeeper)" | tee -a "$PROBES"
+else echo "  FAIL рыб нет рядом с игроком" | tee -a "$PROBES"; FAILS=$((FAILS + 1)); fi
+EL execute run kill @e[type=riftworld:sea_fish] >/dev/null 2>&1 || true
+
+echo "== рыбы: витрина всех видов (summon с NBT) =="
+SUM() { EL summon riftworld:sea_fish "$1" "$2" "$3" "$4" 2>&1 | tail -1; }
+# витрина в открытой воде на рифе: 6 видов перед камерой
+SUM "$VX" "$((VF + 5))" "$VZ" '{sf_variant:0}' >/dev/null
+SUM "$((VX + 2))" "$((VF + 5))" "$((VZ - 1))" '{sf_variant:0}' >/dev/null
+SUM "$((VX + 3))" "$((VF + 4))" "$((VZ - 2))" '{sf_variant:1}' >/dev/null
+SUM "$((VX - 2))" "$((VF + 4))" "$((VZ - 2))" '{sf_variant:2}' >/dev/null
+SUM "$((VX + 1))" "$((VF + 6))" "$((VZ - 4))" '{sf_variant:3}' >/dev/null
+SUM "$((VX - 3))" "$((VF + 6))" "$((VZ - 5))" '{sf_variant:4}' >/dev/null
+# хищники — в пещере
+SUM "$CX" "$((CLOW + 2))" "$((CZ - 3))" '{sf_variant:5}' >/dev/null
+SUM "$((CX + 2))" "$((CLOW + 3))" "$((CZ - 2))" '{sf_variant:6}' >/dev/null
+sleep 6
+CNT=$(EL if entity @e[type=riftworld:sea_fish] 2>&1)
+[[ "$CNT" == *"Test passed"* ]] && echo "  OK   витрина рыб создана" | tee -a "$PROBES" || { echo "  FAIL не удалось создать рыб" | tee -a "$PROBES"; FAILS=$((FAILS + 1)); }
+
 # ---------------------------------------------------------------- скриншоты
 echo "== скриншоты =="
 key F1                       # убрать HUD — «красивые» кадры
@@ -173,6 +196,8 @@ view "$DX" "$((DF + 3))" "$DZ" 30 0 14 "06_trench"                  # ущель
 view "$HX" "$((HF + 5))" "$HZ" 90 60 14 "07_blue_hole"              # синяя дыра сверху
 view "$CX" "$((CLOW + 3))" "$CZ" 0 0 16 "08_cave"                   # подводная пещера
 view "$CX" "$((CLOW + 3))" "$CZ" 180 0 12 "09_cave_back"            # пещера, другой ракурс
+view "$VX" "$((VF + 5))" "$((VZ + 6))" 0 0 10 "10_fish_reef"        # витрина мирных рыб
+view "$CX" "$((CLOW + 3))" "$((CZ + 5))" 0 0 10 "11_fish_cave"      # хищники пещеры (удильщик/угорь)
 key F1
 sleep 1
 

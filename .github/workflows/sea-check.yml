@@ -60,16 +60,27 @@ jobs:
         timeout-minutes: 40
         run: bash tools/ci/client_check.sh
 
+      - name: Resolve release tag
+        id: tag
+        if: always()
+        run: |
+          TAG="${{ inputs.release_tag }}"
+          if [ -z "$TAG" ]; then
+            TAG=$(git log -1 --pretty=%B | sed -n 's/.*\[release \([^]]*\)\].*/\1/p')
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "release tag: [$TAG]"
+
       - name: Publish jar as a GitHub release
-        if: success() && inputs.release_tag != ''
+        if: success() && steps.tag.outputs.tag != ''
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           JAR=$(ls mod/build/libs/riftworld-*.jar | grep -v -e sources -e javadoc | head -1)
           cp "$JAR" "riftworld-${{ inputs.release_tag }}.jar"
-          gh release delete "${{ inputs.release_tag }}" --yes --cleanup-tag || true
-          gh release create "${{ inputs.release_tag }}" "riftworld-${{ inputs.release_tag }}.jar" \
-            --title "${{ inputs.release_title || inputs.release_tag }}" \
+          gh release delete "${{ steps.tag.outputs.tag }}" --yes --cleanup-tag || true
+          gh release create "${{ steps.tag.outputs.tag }}" "riftworld-${{ steps.tag.outputs.tag }}.jar" \
+            --title "${{ inputs.release_title || steps.tag.outputs.tag }}" \
             --notes-file ci-out/report.md
 
       - name: Upload artifacts

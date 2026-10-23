@@ -325,5 +325,11 @@
   "block.riftworld.sea_kelp_top": "Kelp Tip",
   "block.riftworld.sea_grass": "Seagrass",
   "block.riftworld.cave_glow": "Cave Growth",
-  "block.riftworld.sea_shells": "Shells & Starfish"
+  "block.riftworld.sea_shells": "Shells & Starfish",
+  "item.riftworld.silver_fish_spawn_egg": "Silver Fish Spawn Egg",
+  "item.riftworld.gold_fish_spawn_egg": "Gold Disc Spawn Egg",
+  "item.riftworld.jelly_fish_spawn_egg": "Jellyfish Spawn Egg",
+  "item.riftworld.ray_fish_spawn_egg": "Ray Spawn Egg",
+  "item.riftworld.angler_fish_spawn_egg": "Cave Anglerfish Spawn Egg",
+  "entity.riftworld.sea_fish": "Elisar Sea Fish"
 }
