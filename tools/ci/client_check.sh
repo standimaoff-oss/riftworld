@@ -245,7 +245,7 @@ SUM_LOCAL() {
 }
 
 # камера-витрина: игрок в толще воды над рифом, смотрит на север
-EL tp TestPlayer "$VX" "$((VF + 22))" "$((VZ + 12))" 180 6 >/dev/null 2>&1
+EL tp TestPlayer "$KX" 46 "$((KZ + 6))" 180 6 >/dev/null 2>&1
 sleep 3
 SUM_LOCAL 4 -2 0 '{NoAI:1b,Silent:1b,sf_variant:0}'
 SUM_LOCAL 5 -0.6 0.6 '{NoAI:1b,Silent:1b,sf_variant:0}'
@@ -266,6 +266,7 @@ else log "  FAIL рыб в мире нет"; FAILS=$((FAILS + 1)); fi
 # ---------------------------------------------------------------- скриншоты
 echo "== скриншоты =="
 key F1                       # убрать HUD — «красивые» кадры
+RCON effect give TestPlayer minecraft:night_vision 600 0 true >/dev/null 2>&1 || true
 sleep 2
 view() { # view <x> <y> <z> <yaw> <pitch> <pause> <name>
   EL tp TestPlayer "$1" "$2" "$3" "$4" "$5" >/dev/null 2>&1
@@ -280,8 +281,9 @@ view "$DX" 65 "$DZ" 30 55 14 "06_trench"                     # каньон св
 view "$HX" "$((HF - 2))" "$HZ" 0 55 14 "07_blue_hole"         # синяя дыра: внутри колодца, взгляд вниз
 view "$CX" "$((CLOW + 3))" "$CZ" 0 0 16 "08_cave"            # подводная пещера
 view "$CX" "$((CLOW + 3))" "$CZ" 180 0 12 "09_cave_back"     # пещера, другой ракурс
-view "$VX" "$FY" "$((VZ + 7))" 180 4 12 "10_fish_reef"       # витрина мирных рыб
+view "$KX" 46 "$((KZ + 6))" 180 4 12 "10_fish_reef"           # витрина мирных рыб (открытая вода)
 view "$CX" "$((CLOW + 3))" "$((CZ + 5))" 180 0 12 "11_fish_cave"  # хищники пещеры
+RCON effect clear TestPlayer >/dev/null 2>&1 || true
 key F1
 sleep 1
 
