@@ -60,6 +60,13 @@ jobs:
         timeout-minutes: 40
         run: bash tools/ci/client_check.sh
 
+      - name: Stage jar for artifacts
+        if: always()
+        run: |
+          mkdir -p ci-out
+          JAR=$(ls mod/build/libs/riftworld-*.jar 2>/dev/null | grep -v -e sources -e javadoc | head -1 || true)
+          if [ -n "$JAR" ]; then cp "$JAR" "ci-out/$(basename "$JAR")"; echo "staged $JAR"; fi
+
       - name: Resolve release tag
         id: tag
         if: always()
@@ -76,12 +83,16 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          set -euo pipefail
+          TAG="${{ steps.tag.outputs.tag }}"
+          TITLE="${{ inputs.release_title }}"
           JAR=$(ls mod/build/libs/riftworld-*.jar | grep -v -e sources -e javadoc | head -1)
-          cp "$JAR" "riftworld-${{ inputs.release_tag }}.jar"
-          gh release delete "${{ steps.tag.outputs.tag }}" --yes --cleanup-tag || true
-          gh release create "${{ steps.tag.outputs.tag }}" "riftworld-${{ steps.tag.outputs.tag }}.jar" \
-            --title "${{ inputs.release_title || steps.tag.outputs.tag }}" \
-            --notes-file ci-out/report.md
+          cp "$JAR" "ci-out/riftworld-$TAG.jar"
+          NOTES=ci-out/report.md
+          [ -f "$NOTES" ] || NOTES=ci-out/report_client.md
+          [ -f "$NOTES" ] || NOTES=ci-artifacts-shots/report_client.md
+          gh release delete "$TAG" --yes --cleanup-tag || true
+          gh release create "$TAG" "ci-out/riftworld-$TAG.jar" --title "${TITLE:-$TAG}" --notes-file "$NOTES"
 
       - name: Upload artifacts
         if: always()
@@ -99,6 +110,7 @@ jobs:
           git config user.email "riftworld-ci@users.noreply.github.com"
           cp -r ci-out /tmp/artifacts
           cp -r ci-shots /tmp/artifacts/shots 2>/dev/null || true
+          rm -f /tmp/artifacts/*.jar
           git checkout --orphan ci-artifacts
           git rm -rf -q --cached . >/dev/null 2>&1 || true
           rm -rf ./* ./.github 2>/dev/null || true
