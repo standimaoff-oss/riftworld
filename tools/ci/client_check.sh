@@ -254,7 +254,7 @@ SUM_LOCAL 7 2.2 0.2 '{NoAI:1b,Silent:1b,sf_variant:2}'
 SUM_LOCAL 8 -3.2 1.2 '{NoAI:1b,Silent:1b,sf_variant:3}'
 SUM_LOCAL 9 3.4 1.6 '{NoAI:1b,Silent:1b,sf_variant:4}'
 # хищники — в пещере, тоже перед камерой
-EL tp TestPlayer "$CX" "$((CLOW + 3))" "$CZ" 180 0 >/dev/null 2>&1
+EL tp TestPlayer "$CX" "$((CLOW + 3))" "$CZ" 0 0 >/dev/null 2>&1
 sleep 3
 SUM_LOCAL 2.6 0 0 '{NoAI:1b,Silent:1b,sf_variant:5}'
 SUM_LOCAL 3 1.1 0.2 '{NoAI:1b,Silent:1b,sf_variant:6}'
@@ -279,7 +279,7 @@ view "$((VX + 10))" "$((VF + 6))" "$VZ" 270 18 14 "03_reef_underwater"   # ри�
 view "$((LX + 15))" "$((LF + 11))" "$((LZ + 15))" 225 14 14 "04_kelp_forest" # ламинария
 view "$VX" 64 "$((VZ + 26))" 180 2 14 "05_open_sea"          # поверхность: открытое море
 view "$DX" 65 "$DZ" 30 55 14 "06_trench"                     # каньон сверху
-view "$((HX + 9))" "$((HF + 3))" "$HZ" 270 38 14 "07_blue_hole"    # синяя дыра: колодец сбоку сверху
+view "$HX" "$((HF + 7))" "$HZ" 0 62 14 "07_blue_hole"              # синяя дыра: взгляд в колодец сверху
 view "$CX" "$((CLOW + 3))" "$CZ" 0 0 16 "08_cave"            # подводная пещера
 view "$CX" "$((CLOW + 3))" "$CZ" 180 0 12 "09_cave_back"     # пещера, другой ракурс
 # витрина: камера над коралловым садом, рыбы в 3-4 блоках по курсу
@@ -300,7 +300,7 @@ SUM_LOCAL 4.4 -0.9 -0.5 '{NoAI:1b,Silent:1b,sf_variant:4}'
 sleep 6
 shot "12_fish_closeup"
 view "$KX" 22 "$KZ" 180 65 14 "13_reef_floor"                  # дно рифа вплотную: разбор блоков
-view "$CX" "$((CLOW + 3))" "$CZ" 180 0 12 "11_fish_cave"  # хищники пещеры
+view "$CX" "$((CLOW + 3))" "$CZ" 0 0 12 "11_fish_cave"    # хищники пещеры
 RCON effect clear TestPlayer >/dev/null 2>&1 || true
 key F1
 sleep 1
