@@ -176,7 +176,9 @@ at_block() { # at_block <x> <y> <z> <block> <label>
 echo "== пробы моря (под игроком) =="
 at_block "$KX" "$((KT - 6))" "$KZ" elisar_water "вода на глубине"
 at_block "$KX" "$KF" "$KZ" elisar_seabed "донный песок"
-at_block "$RX" "$((RF + 3))" "$RZ" elisar_water "вода над рифом"
+# на рифе растёт сад: проверяем цветок/коралл прямо на дне, а воду — на два блока выше
+at_block "$RX" "$((RF + 1))" "$RZ" sea_grass "морская трава/сад на рифе"
+at_block "$RX" "$((RF + 4))" "$RZ" elisar_water "вода над рифом"
 
 echo "== профиль колонки $KX,y,$KZ =="
 PROFILE="$OUT/column.txt"
@@ -193,6 +195,29 @@ echo >> "$PROFILE"
 WATER=$(tr -cd 'W' < "$PROFILE" | wc -c)
 log "  воды в колонке: $WATER блоков"
 [ "$WATER" -ge 20 ] || { log "  FAIL: море не сгенерировалось"; FAILS=$((FAILS + 1)); }
+
+# ---------------------------------------------------------------- рыбы
+echo "== рыбы: естественный спавн смотрителем =="
+EL tp TestPlayer "$RX" "$((RF + 6))" "$RZ" 90 20 >/dev/null 2>&1
+sleep 45
+FISH=$(EL execute at TestPlayer run execute if entity @e[type=riftworld:sea_fish,distance=..64] 2>&1)
+if [[ "$FISH" == *"Test passed"* ]]; then log "  OK   рыбы заспавнились сами (SeaLifeKeeper)"
+else log "  FAIL рыб нет рядом с игроком | ${FISH:0:100}"; FAILS=$((FAILS + 1)); fi
+
+echo "== рыбы: витрина всех видов (summon с NBT) =="
+SUM() { local out; out=$(EL summon riftworld:sea_fish "$1" "$2" "$3" "$4" 2>&1); log "  summon $4 -> ${out:0:90}"; }
+SUM "$VX" "$((VF + 4))" "$((VZ - 4))" '{sf_variant:0}'
+SUM "$((VX + 1))" "$((VF + 4))" "$((VZ - 5))" '{sf_variant:0}'
+SUM "$((VX + 2))" "$((VF + 3))" "$((VZ - 6))" '{sf_variant:1}'
+SUM "$((VX - 2))" "$((VF + 3))" "$((VZ - 5))" '{sf_variant:2}'
+SUM "$((VX - 1))" "$((VF + 6))" "$((VZ - 7))" '{sf_variant:3}'
+SUM "$((VX + 3))" "$((VF + 6))" "$((VZ - 8))" '{sf_variant:4}'
+SUM "$CX" "$((CLOW + 2))" "$((CZ - 4))" '{sf_variant:5}'
+SUM "$((CX + 2))" "$((CLOW + 2))" "$((CZ - 5))" '{sf_variant:6}'
+sleep 8
+CNT=$(EL execute at TestPlayer run execute if entity @e[type=riftworld:sea_fish,distance=..96] 2>&1)
+if [[ "$CNT" == *"Test passed"* ]]; then log "  OK   рыбы в мире есть и тикают"
+else log "  FAIL рыб в мире нет"; FAILS=$((FAILS + 1)); fi
 
 # ---------------------------------------------------------------- скриншоты
 echo "== скриншоты =="
@@ -211,8 +236,8 @@ view "$DX" "$((DF + 3))" "$DZ" 30 0 14 "06_trench"                  # ущель
 view "$HX" "$((HF + 5))" "$HZ" 90 60 14 "07_blue_hole"              # синяя дыра сверху
 view "$CX" "$((CLOW + 3))" "$CZ" 0 0 16 "08_cave"                   # подводная пещера
 view "$CX" "$((CLOW + 3))" "$CZ" 180 0 12 "09_cave_back"            # пещера, другой ракурс
-view "$VX" "$((VF + 5))" "$((VZ + 6))" 0 0 10 "10_fish_reef"        # витрина мирных рыб
-view "$CX" "$((CLOW + 3))" "$((CZ + 5))" 0 0 10 "11_fish_cave"      # хищники пещеры (удильщик/угорь)
+view "$VX" "$((VF + 4))" "$((VZ + 2))" 0 5 12 "10_fish_reef"        # витрина мирных рыб
+view "$CX" "$((CLOW + 3))" "$((CZ + 3))" 0 0 12 "11_fish_cave"      # хищники пещеры (удильщик/угорь)
 key F1
 sleep 1
 
