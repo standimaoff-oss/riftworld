@@ -205,6 +205,12 @@ public final class ElisarSea {
         }
     }
 
+    /** Нарост в сухой пещере: не waterlogged, иначе блок стал бы источником воды и затопил пещеру. */
+    private static BlockState dryCaveGlow() {
+        return ElisarBlocks.CAVE_GLOW.get().defaultBlockState()
+                .setValue(ru.aiforge.riftworld.block.SeaPlantBlock.WATERLOGGED, false);
+    }
+
     // ------------------------------------------------------------------ убранство пещер
     /** Светящиеся наросты на полу пещер, «сосульки» с потолка, ракушки в нишах. */
     private static void caveDressing(ChunkAccess chunk, BlockPos.MutableBlockPos mp, int x, int z, int floor) {
@@ -216,9 +222,9 @@ public final class ElisarSea {
             BlockState down = chunk.getBlockState(mp.set(x, y - 1, z));
             double h = hash3(x, y, z, 471);
             if (down.isSolidRender(chunk, mp.set(x, y - 1, z)) && h < 0.10) {
-                chunk.setBlockState(mp.set(x, y, z), st(ElisarBlocks.CAVE_GLOW), false);        // нарост на полу
+                chunk.setBlockState(mp.set(x, y, z), dryCaveGlow(), false);        // нарост на полу
             } else if (up.isSolidRender(chunk, mp.set(x, y + 1, z)) && h > 0.955) {
-                chunk.setBlockState(mp.set(x, y, z), st(ElisarBlocks.CAVE_GLOW), false);        // друза на потолке
+                chunk.setBlockState(mp.set(x, y, z), dryCaveGlow(), false);        // друза на потолке
             }
         }
     }

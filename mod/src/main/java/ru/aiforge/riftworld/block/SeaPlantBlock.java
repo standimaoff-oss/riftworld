@@ -1,6 +1,15 @@
 package ru.aiforge.riftworld.block;
 
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.SimpleWaterloggedBlock;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.BushBlock;
@@ -15,7 +24,9 @@ import ru.aiforge.riftworld.registry.ElisarBlocks;
  * Растёт только на морском дне — ил, донный песок, рифовый камень, камень и на собственной породе
  * (колонны ламинарии стоят друг на друге). Хитбокс — крестик, без коллизии, ломается мгновенно.
  */
-public class SeaPlantBlock extends BushBlock {
+public class SeaPlantBlock extends BushBlock implements SimpleWaterloggedBlock {
+    /** Растение всегда в толще воды: без этого вода вокруг него рисует грани — «стеклянные кубики». */
+    public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
     private static final VoxelShape SHAPE = Block.box(2, 0, 2, 14, 14, 14);
     private static final VoxelShape SHAPE_TALL = Block.box(2, 0, 2, 14, 16, 14);
     private final boolean tall;
@@ -27,6 +38,36 @@ public class SeaPlantBlock extends BushBlock {
     public SeaPlantBlock(BlockBehaviour.Properties p, boolean tall) {
         super(p);
         this.tall = tall;
+        registerDefaultState(stateDefinition.any().setValue(WATERLOGGED, true));
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> b) {
+        b.add(WATERLOGGED);
+    }
+
+    @Override
+    public FluidState getFluidState(BlockState s) {
+        return s.getValue(WATERLOGGED)
+                ? ru.aiforge.riftworld.registry.ModFluids.SOURCE.get().defaultFluidState()
+                : Fluids.EMPTY.defaultFluidState();
+    }
+
+    @Override
+    public BlockState updateShape(BlockState s, Direction dir, BlockState neighbor, LevelAccessor lvl, BlockPos pos, BlockPos npos) {
+        if (s.getValue(WATERLOGGED)) {
+            lvl.scheduleTick(pos, ru.aiforge.riftworld.registry.ModFluids.SOURCE.get(),
+                    ru.aiforge.riftworld.registry.ModFluids.SOURCE.get().getTickDelay(lvl));
+        }
+        return super.updateShape(s, dir, neighbor, lvl, pos, npos);
+    }
+
+    @Nullable
+    @Override
+    public BlockState getStateForPlacement(net.minecraft.world.item.context.BlockPlaceContext ctx) {
+        FluidState f = ctx.getLevel().getFluidState(ctx.getClickedPos());
+        return defaultBlockState().setValue(WATERLOGGED,
+                f.getType() == ru.aiforge.riftworld.registry.ModFluids.SOURCE.get() || f.getType() == Fluids.WATER);
     }
 
     @Override

@@ -1,6 +1,9 @@
 {
   "variants": {
-    "": {
+    "waterlogged=true": {
+      "model": "riftworld:block/cave_glow"
+    },
+    "waterlogged=false": {
       "model": "riftworld:block/cave_glow"
     }
   }

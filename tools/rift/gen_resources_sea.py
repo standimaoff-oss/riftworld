@@ -67,7 +67,8 @@ for n in CUBES:
 for n in CROSSES:
     w(f"{A}/models/block/{n}.json", {"parent": "minecraft:block/cross",
                                      "textures": {"cross": NS + n}, "render_type": "minecraft:cutout"})
-    w(f"{A}/blockstates/{n}.json", {"variants": {"": {"model": NS + n}}})
+    w(f"{A}/blockstates/{n}.json", {"variants": {"waterlogged=true": {"model": NS + n},
+                                                 "waterlogged=false": {"model": NS + n}}})
     gen_item(n, NS + n)
     loot_self(n)
 
@@ -81,7 +82,8 @@ w(f"{A}/models/block/sea_shells.json", {
     }],
     "render_type": "minecraft:cutout",
 })
-w(f"{A}/blockstates/sea_shells.json", {"variants": {"": {"model": NS + "sea_shells"}}})
+w(f"{A}/blockstates/sea_shells.json", {"variants": {"waterlogged=true": {"model": NS + "sea_shells"},
+                                                   "waterlogged=false": {"model": NS + "sea_shells"}}})
 gen_item("sea_shells", NS + "sea_shells")
 loot_self("sea_shells")
 

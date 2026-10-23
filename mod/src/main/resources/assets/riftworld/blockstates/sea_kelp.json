@@ -1,6 +1,9 @@
 {
   "variants": {
-    "": {
+    "waterlogged=true": {
+      "model": "riftworld:block/sea_kelp"
+    },
+    "waterlogged=false": {
       "model": "riftworld:block/sea_kelp"
     }
   }
