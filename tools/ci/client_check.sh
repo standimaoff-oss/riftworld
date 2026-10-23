@@ -256,8 +256,9 @@ SUM_LOCAL 9 3.4 1.6 '{NoAI:1b,Silent:1b,sf_variant:4}'
 # хищники — в пещере, тоже перед камерой
 EL tp TestPlayer "$CX" "$((CLOW + 3))" "$CZ" 180 0 >/dev/null 2>&1
 sleep 3
-SUM_LOCAL 3 0.7 0 '{NoAI:1b,Silent:1b,sf_variant:5}'
-SUM_LOCAL 4 -1.1 0.3 '{NoAI:1b,Silent:1b,sf_variant:6}'
+SUM_LOCAL 2.6 0 0 '{NoAI:1b,Silent:1b,sf_variant:5}'
+SUM_LOCAL 3 1.1 0.2 '{NoAI:1b,Silent:1b,sf_variant:6}'
+SUM_LOCAL 2.4 -1.2 0.1 '{NoAI:1b,Silent:1b,sf_variant:5}'
 sleep 8
 CNT=$(EL execute at TestPlayer run execute if entity @e[type=riftworld:sea_fish,distance=..96] 2>&1)
 if [[ "$CNT" == *"Test passed"* ]]; then log "  OK   рыбы в мире есть и тикают"
@@ -275,10 +276,10 @@ view() { # view <x> <y> <z> <yaw> <pitch> <pause> <name>
 }
 view "$VX" 66 "$VZ" 90 42 14 "02_reef_from_above"        # рифовый сад сверху сквозь воду
 view "$((VX + 10))" "$((VF + 6))" "$VZ" 270 18 14 "03_reef_underwater"   # риф вплотную под водой
-view "$((LX + 9))" "$((LF + 6))" "$((LZ + 9))" 225 18 14 "04_kelp_forest" # ламинария
+view "$((LX + 15))" "$((LF + 11))" "$((LZ + 15))" 225 14 14 "04_kelp_forest" # ламинария
 view "$VX" 64 "$((VZ + 26))" 180 2 14 "05_open_sea"          # поверхность: открытое море
 view "$DX" 65 "$DZ" 30 55 14 "06_trench"                     # каньон сверху
-view "$HX" "$((HF - 1))" "$HZ" 45 72 14 "07_blue_hole"         # синяя дыра: внутри колодца, взгляд вниз
+view "$((HX + 9))" "$((HF + 3))" "$HZ" 270 38 14 "07_blue_hole"    # синяя дыра: колодец сбоку сверху
 view "$CX" "$((CLOW + 3))" "$CZ" 0 0 16 "08_cave"            # подводная пещера
 view "$CX" "$((CLOW + 3))" "$CZ" 180 0 12 "09_cave_back"     # пещера, другой ракурс
 # витрина: камера над коралловым садом, рыбы в 3-4 блоках по курсу
