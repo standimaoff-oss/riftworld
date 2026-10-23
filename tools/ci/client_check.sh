@@ -81,22 +81,47 @@ fi
 EL() { RCON execute in riftworld:elisar run "$@" 2>&1; }
 ELP() { local x=$1 y=$2 z=$3; shift 3; RCON execute in riftworld:elisar positioned "$x" "$y" "$z" run "$@" 2>&1; }
 
-# ---------------------------------------------------------------- запуск клиента
-echo "== старт клиента через Gradle (runClient) =="
-(
-  cd mod
-  chmod +x gradlew
-  ./gradlew runClient --no-daemon --console=plain \
-    -PrunDir="$PWD/../$RUN" \
-    -PautoJoin=127.0.0.1:25565 2>&1
-) > "$OUT/client.log" 2>&1 &
-CPID=$!
-
-for i in $(seq 1 160); do
-  grep -qi "Connecting to 127.0.0.1" "$OUT/client.log" && break
-  grep -qiE "A fatal error|Exception in thread \"main\"" "$OUT/client.log" && break
-  sleep 3
+# ---------------------------------------------------------------- дисплей должен быть готов
+export DISPLAY=$DISP LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe MESA_GL_VERSION_OVERRIDE=3.3
+for i in $(seq 1 30); do
+  xdpyinfo -display "$DISP" >/dev/null 2>&1 && break
+  sleep 1
 done
+xdpyinfo -display "$DISP" >/dev/null 2>&1 || { echo "FATAL: Xvfb не поднялся"; exit 1; }
+echo "  дисплей $DISP готов"
+
+# ---------------------------------------------------------------- запуск клиента (с одним повтором)
+start_client() {
+  (
+    cd mod
+    chmod +x gradlew
+    ./gradlew runClient --no-daemon --console=plain \
+      -PrunDir="$PWD/../$RUN" \
+      -PautoJoin=127.0.0.1:25565 2>&1
+  ) > "$OUT/client.log" 2>&1 &
+  CPID=$!
+}
+
+wait_connect() {   # 0 — клиент подключился, 1 — умер/не дождались
+  for i in $(seq 1 160); do
+    grep -qi "Connecting to 127.0.0.1" "$OUT/client.log" && return 0
+    grep -qE "We died but didn't somehow|A fatal error|Exception in thread \"main\"" "$OUT/client.log" && return 1
+    kill -0 "$CPID" 2>/dev/null || return 1
+    sleep 3
+  done
+  return 1
+}
+
+echo "== старт клиента через Gradle (runClient) =="
+start_client
+if ! wait_connect; then
+  echo "  клиент не поднялся — повторный запуск (капризы early-display под Xvfb)"
+  pkill -f forgeclientuserdev 2>/dev/null || true
+  sleep 8
+  mv "$OUT/client.log" "$OUT/client_attempt1.log"
+  start_client
+  wait_connect || { echo "FATAL: клиент не поднялся со второй попытки"; tail -30 "$OUT/client.log"; exit 1; }
+fi
 sleep 25
 shot "01_boot"
 
