@@ -40,7 +40,7 @@ public class SeaFishRenderer extends EntityRenderer<SeaFishEntity> {
     @Override
     public void render(SeaFishEntity e, float yaw, float partial, PoseStack pose, MultiBufferSource buf, int light) {
         int n = seen++;
-        if (n < 6 || n % 500 == 0) {
+        if (n < 3 || n % 2000 == 0) {
             LOG.info("[sea_fish] render #{} variant={} pos={} light={} yaw={} dist={}", n, e.variant(),
                     e.blockPosition(), light, yaw, e.distanceToSqr(Minecraft.getInstance().player == null
                             ? e.position() : Minecraft.getInstance().player.position()));
