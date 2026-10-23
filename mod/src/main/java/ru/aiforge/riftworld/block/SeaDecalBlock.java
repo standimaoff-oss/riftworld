@@ -18,7 +18,7 @@ public class SeaDecalBlock extends Block {
     }
 
     @Override
-    protected boolean canSurvive(BlockState s, net.minecraft.world.level.LevelReader level, BlockPos pos) {
+    public boolean canSurvive(BlockState s, net.minecraft.world.level.LevelReader level, BlockPos pos) {
         BlockState below = level.getBlockState(pos.below());
         return below.is(ElisarBlocks.SILT.get()) || below.is(ElisarBlocks.SEABED.get()) || below.is(ElisarBlocks.REEF_STONE.get());
     }
