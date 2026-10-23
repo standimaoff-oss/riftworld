@@ -107,7 +107,6 @@ done
 
 RCON gamerule doDaylightCycle false >/dev/null 2>&1 || true
 RCON gamerule doWeatherCycle false >/dev/null 2>&1 || true
-RCON time set noon >/dev/null 2>&1 || true
 RCON weather clear >/dev/null 2>&1 || true
 RCON gamemode creative TestPlayer >/dev/null 2>&1 || true
 
@@ -122,6 +121,7 @@ read -r LX LZ LF < <(python3 -c "import json;d=json.load(open('$SPOTS'));print(d
 echo "  reef=$RX,$RZ floor=$RF | deep=$DX,$DZ floor=$DF | hole=$HX,$HZ floor=$HF | cave=$CX,$CZ $CLOW..$CHIGH | column=$KX,$KZ floor=$KF"
 
 echo "== телепорт в Элисар и прогрузка области =="
+EL time set noon >/dev/null 2>&1 || true        # в Элисаре всегда полдень (ElisarDaylight), но фиксируем сразу
 EL tp TestPlayer "$RX" "$((RF + 6))" "$RZ" 90 40 | tail -1
 EL forceload add "$((RX - 80))" "$((RZ - 80))" "$((RX + 80))" "$((RZ + 80))" | tail -1
 sleep 60
