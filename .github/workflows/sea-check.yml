@@ -87,7 +87,9 @@ jobs:
           TITLE="${{ inputs.release_title }}"
           JAR=$(ls mod/build/libs/riftworld-*.jar | grep -v -e sources -e javadoc | head -1 || true)
           NOTES=ci-out/report.md
+          [ -f "$NOTES" ] || NOTES=ci-shots/report_client.md
           [ -f "$NOTES" ] || NOTES=ci-out/report_client.md
+          [ -f "$NOTES" ] || { printf '%s\n' "Живое море Элисара: релиз $TAG" > ci-out/notes.md; NOTES=ci-out/notes.md; }
           {
             set -x
             [ -n "$JAR" ] || { echo "jar не найден"; exit 1; }
