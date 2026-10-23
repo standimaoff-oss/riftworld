@@ -66,7 +66,7 @@ def wave_frame(size, t, seed, deep):
                 r = int(mid[0] + (hi[0] - mid[0]) * f)
                 g = int(mid[1] + (hi[1] - mid[1]) * f)
                 b = int(mid[2] + (hi[2] - mid[2]) * f)
-            px[x, y] = (r, g, b, 196)
+            px[x, y] = (r, g, b, 255)
     return im
 
 

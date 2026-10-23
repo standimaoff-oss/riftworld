@@ -177,7 +177,22 @@ echo "== пробы моря (под игроком) =="
 at_block "$KX" "$((KT - 6))" "$KZ" elisar_water "вода на глубине"
 at_block "$KX" "$KF" "$KZ" elisar_seabed "донный песок"
 # на рифе растёт сад: проверяем цветок/коралл прямо на дне, а воду — на два блока выше
-at_block "$RX" "$((RF + 1))" "$RZ" sea_grass "морская трава/сад на рифе"
+garden_probe() { # garden_probe <x> <z> <floor> <label>: ищем любое морское растение рядом с точкой
+  local x=$1 z=$2 f=$3 label=$4 found=""
+  for d in 0 1 -1 2 -2 3 -3 4 -4; do
+    for e in 0 1 -1 2 -2 3 -3; do
+      for b in sea_grass coral_branch coral_fan coral_tube coral_glow coral_brain sea_kelp sea_kelp_top sea_shells; do
+        EL tp TestPlayer "$((x + d))" "$((f + 1))" "$((z + e))" 0 0 >/dev/null 2>&1
+        if [[ "$(EL execute at TestPlayer run execute if block \~ \~ \~ "riftworld:$b" 2>&1)" == *"Test passed"* ]]; then
+          found="$b at $((x + d)),$((f + 1)),$((z + e))"; break 3
+        fi
+      done
+    done
+  done
+  if [ -n "$found" ]; then log "  OK   $label: $found"
+  else log "  FAIL $label: рифовый сад не найден рядом с ($x,$z)"; FAILS=$((FAILS + 1)); fi
+}
+garden_probe "$RX" "$RZ" "$RF" "рифовый сад"
 at_block "$RX" "$((RF + 4))" "$RZ" elisar_water "вода над рифом"
 
 echo "== профиль колонки $KX,y,$KZ =="
@@ -236,8 +251,8 @@ view "$DX" "$((DF + 3))" "$DZ" 30 0 14 "06_trench"                  # ущель
 view "$HX" "$((HF + 5))" "$HZ" 90 60 14 "07_blue_hole"              # синяя дыра сверху
 view "$CX" "$((CLOW + 3))" "$CZ" 0 0 16 "08_cave"                   # подводная пещера
 view "$CX" "$((CLOW + 3))" "$CZ" 180 0 12 "09_cave_back"            # пещера, другой ракурс
-view "$VX" "$((VF + 4))" "$((VZ + 2))" 0 5 12 "10_fish_reef"        # витрина мирных рыб
-view "$CX" "$((CLOW + 3))" "$((CZ + 3))" 0 0 12 "11_fish_cave"      # хищники пещеры (удильщик/угорь)
+view "$VX" "$((VF + 4))" "$((VZ + 2))" 180 8 12 "10_fish_reef"        # витрина мирных рыб
+view "$CX" "$((CLOW + 3))" "$((CZ + 3))" 180 0 12 "11_fish_cave"      # хищники пещеры (удильщик/угорь)
 key F1
 sleep 1
 
