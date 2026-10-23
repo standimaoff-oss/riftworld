@@ -220,18 +220,27 @@ if [[ "$FISH" == *"Test passed"* ]]; then log "  OK   рыбы заспавни�
 else log "  FAIL рыб нет рядом с игроком | ${FISH:0:100}"; FAILS=$((FAILS + 1)); fi
 
 echo "== рыбы: витрина всех видов (summon с NBT) =="
-SUM() { local out; out=$(EL summon riftworld:sea_fish "$1" "$2" "$3" "$4" 2>&1); log "  summon $4 -> ${out:0:90}"; }
-# витрина: камера стоит в (VX, VF+22, VZ+8) и смотрит на север (yaw 180),
-# рыбы висят в 4..9 блоках перед ней, в хорошо освещённой толще воды
-FY=$((VF + 22))
-SUM "$((VX - 2))" "$FY" "$((VZ + 3))" '{NoAI:1b,Silent:1b,sf_variant:0}'
-SUM "$((VX - 1))" "$((FY + 1))" "$((VZ + 2))" '{NoAI:1b,Silent:1b,sf_variant:0}'
-SUM "$VX" "$((FY - 1))" "$((VZ + 2))" '{NoAI:1b,Silent:1b,sf_variant:1}'
-SUM "$((VX + 1))" "$FY" "$((VZ + 3))" '{NoAI:1b,Silent:1b,sf_variant:2}'
-SUM "$((VX + 2))" "$((FY + 1))" "$((VZ + 2))" '{NoAI:1b,Silent:1b,sf_variant:3}'
-SUM "$VX" "$((FY + 2))" "$((VZ + 4))" '{NoAI:1b,Silent:1b,sf_variant:4}'
-SUM "$CX" "$((CLOW + 3))" "$((CZ - 3))" '{NoAI:1b,Silent:1b,sf_variant:5}'
-SUM "$((CX + 1))" "$((CLOW + 3))" "$((CZ - 4))" '{NoAI:1b,Silent:1b,sf_variant:6}'
+# summon_local <вперёд> <вбок> <вверх> <NBT>: summoned строго перед игроком (локальные координаты)
+SUM_LOCAL() {
+  local out
+  out=$(EL execute at TestPlayer rotated as TestPlayer run summon riftworld:sea_fish ^"$2" ^"$3" ^"$1" "$4" 2>&1)
+  log "  summon ^$2 ^$3 ^$1 $4 -> ${out:0:80}"
+}
+
+# камера-витрина: игрок в толще воды над рифом, смотрит на север
+EL tp TestPlayer "$VX" "$((VF + 22))" "$((VZ + 12))" 180 6 >/dev/null 2>&1
+sleep 3
+SUM_LOCAL 4 -2 0 '{NoAI:1b,Silent:1b,sf_variant:0}'
+SUM_LOCAL 5 -0.6 0.6 '{NoAI:1b,Silent:1b,sf_variant:0}'
+SUM_LOCAL 6 0.8 -0.6 '{NoAI:1b,Silent:1b,sf_variant:1}'
+SUM_LOCAL 7 2.2 0.2 '{NoAI:1b,Silent:1b,sf_variant:2}'
+SUM_LOCAL 8 -3.2 1.2 '{NoAI:1b,Silent:1b,sf_variant:3}'
+SUM_LOCAL 9 3.4 1.6 '{NoAI:1b,Silent:1b,sf_variant:4}'
+# хищники — в пещере, тоже перед камерой
+EL tp TestPlayer "$CX" "$((CLOW + 3))" "$((CZ + 6))" 180 0 >/dev/null 2>&1
+sleep 3
+SUM_LOCAL 5 0.8 0 '{NoAI:1b,Silent:1b,sf_variant:5}'
+SUM_LOCAL 7 -1.6 0.4 '{NoAI:1b,Silent:1b,sf_variant:6}'
 sleep 8
 CNT=$(EL execute at TestPlayer run execute if entity @e[type=riftworld:sea_fish,distance=..96] 2>&1)
 if [[ "$CNT" == *"Test passed"* ]]; then log "  OK   рыбы в мире есть и тикают"
@@ -260,7 +269,11 @@ key F1
 sleep 1
 
 # ---------------------------------------------------------------- итог
-echo "== итог =="
+echo "== диагностика положения =="
+log "  игрок: $(EL data get entity TestPlayer Pos 2>&1 | head -1)"
+log "  рыбы:  $(EL data get entity @e[type=riftworld:sea_fish,limit=1] Pos 2>&1 | head -1)"
+
+echo "== итог ==="
 RCON list || true
 pkill -f "GradleWrapperMain runClient" 2>/dev/null || true
 pkill -f forgeclientuserdev 2>/dev/null || true

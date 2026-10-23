@@ -105,4 +105,4 @@ jobs:
           cp -r /tmp/artifacts/* .
           git add -A
           git commit -qm "CI artifacts for ${{ github.sha }} (${{ github.run_number }})" || true
-          git push -f origin HEAD:ci-artifacts
+          git push -f origin HEAD:ci-artifacts || echo 'WARN: ветка ci-artifacts занята параллельным прогоном'
