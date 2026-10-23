@@ -83,17 +83,23 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          set -euo pipefail
           TAG="${{ steps.tag.outputs.tag }}"
           TITLE="${{ inputs.release_title }}"
           JAR=$(ls mod/build/libs/riftworld-*.jar | grep -v -e sources -e javadoc | head -1 || true)
-          [ -n "$JAR" ] || { echo "jar не найден"; exit 1; }
-          cp "$JAR" "ci-out/riftworld-$TAG.jar"
           NOTES=ci-out/report.md
           [ -f "$NOTES" ] || NOTES=ci-out/report_client.md
-          [ -f "$NOTES" ] || NOTES=ci-artifacts-shots/report_client.md
-          gh release delete "$TAG" --yes --cleanup-tag || true
-          gh release create "$TAG" "ci-out/riftworld-$TAG.jar" --title "${TITLE:-$TAG}" --notes-file "$NOTES"
+          {
+            set -x
+            [ -n "$JAR" ] || { echo "jar не найден"; exit 1; }
+            cp "$JAR" "ci-out/riftworld-$TAG.jar"
+            echo "notes: $NOTES ($(wc -c < "$NOTES" 2>/dev/null || echo none) байт)"
+            gh release delete "$TAG" --yes --cleanup-tag || true
+            gh release create "$TAG" "ci-out/riftworld-$TAG.jar" --title "${TITLE:-$TAG}" --notes-file "$NOTES"
+          } > ci-out/release.log 2>&1 || {
+            echo "== публикация релиза не удалась =="
+            tail -40 ci-out/release.log
+            exit 1
+          }
 
       - name: Upload artifacts
         if: always()
