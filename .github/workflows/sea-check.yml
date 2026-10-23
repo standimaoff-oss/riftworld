@@ -119,7 +119,6 @@ jobs:
           git config user.email "riftworld-ci@users.noreply.github.com"
           cp -r ci-out /tmp/artifacts
           cp -r ci-shots /tmp/artifacts/shots 2>/dev/null || true
-          rm -f /tmp/artifacts/*.jar
           git checkout --orphan ci-artifacts
           git rm -rf -q --cached . >/dev/null 2>&1 || true
           rm -rf ./* ./.github 2>/dev/null || true
@@ -127,3 +126,4 @@ jobs:
           git add -A
           git commit -qm "CI artifacts for ${{ github.sha }} (${{ github.run_number }})" || true
           git push -f origin HEAD:ci-artifacts || echo 'WARN: ветка ci-artifacts занята параллельным прогоном'
+          echo "jar в ветке: $(ls -1 *.jar 2>/dev/null | head -1)"
