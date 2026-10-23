@@ -86,7 +86,8 @@ jobs:
           set -euo pipefail
           TAG="${{ steps.tag.outputs.tag }}"
           TITLE="${{ inputs.release_title }}"
-          JAR=$(ls mod/build/libs/riftworld-*.jar | grep -v -e sources -e javadoc | head -1)
+          JAR=$(ls mod/build/libs/riftworld-*.jar | grep -v -e sources -e javadoc | head -1 || true)
+          [ -n "$JAR" ] || { echo "jar не найден"; exit 1; }
           cp "$JAR" "ci-out/riftworld-$TAG.jar"
           NOTES=ci-out/report.md
           [ -f "$NOTES" ] || NOTES=ci-out/report_client.md
