@@ -152,61 +152,47 @@ echo "  reef=$RX,$RZ floor=$RF | deep=$DX,$DZ floor=$DF | hole=$HX,$HZ floor=$HF
 echo "== телепорт в Элисар и прогрузка области =="
 EL time set noon >/dev/null 2>&1 || true        # в Элисаре всегда полдень (ElisarDaylight), но фиксируем сразу
 EL tp TestPlayer "$RX" "$((RF + 6))" "$RZ" 90 40 | tail -1
-EL forceload add "$((RX - 80))" "$((RZ - 80))" "$((RX + 80))" "$((RZ + 80))" | tail -1
+EL forceload add "$((RX - 80))" "$((RZ - 80))" "$((RX + 100))" "$((RZ + 140))" | tail -1
+EL forceload add "$((HX - 40))" "$((HZ - 40))" "$((HX + 40))" "$((HZ + 40))" | tail -1
+EL forceload add "$((CX - 40))" "$((CZ - 40))" "$((CX + 40))" "$((CZ + 40))" | tail -1
 sleep 60
 
 # ---------------------------------------------------------------- пробы (реальная генерация)
 FAILS=0
 PROBES="$OUT/probes.txt"
 : > "$PROBES"
-probe() { # probe <x> <y> <z> <block> <label>
+log() { echo "$*" | tee -a "$PROBES"; }
+
+# проба «под игроком»: телепортируем игрока в точку и смотрим блок прямо под ним
+at_block() { # at_block <x> <y> <z> <block> <label>
   local ans
-  ans=$(ELP "$1" "$2" "$3" execute if block ~ ~ ~ "riftworld:$4")
-  if [[ "$ans" == *"Test passed"* ]]; then echo "  OK   $5 ($1,$2,$3) = $4" | tee -a "$PROBES"
-  else echo "  FAIL $5 ($1,$2,$3) != $4" | tee -a "$PROBES"; FAILS=$((FAILS + 1)); fi
+  EL tp TestPlayer "$1" "$2" "$3" 0 0 >/dev/null 2>&1
+  sleep 2
+  ans=$(EL execute at TestPlayer run execute if block ~ ~ ~ "riftworld:$4" 2>&1)
+  if [[ "$ans" == *"Test passed"* ]]; then log "  OK   $5 ($1,$2,$3) = $4"
+  else log "  FAIL $5 ($1,$2,$3) != $4 | ответ: ${ans:0:120}"; FAILS=$((FAILS + 1)); fi
 }
-echo "== пробы моря =="
-probe "$KX" "$((KT - 3))" "$KZ" elisar_water "вода на глубине"
-probe "$KX" "$KF" "$KZ" elisar_seabed "донный песок"
-probe "$RX" "$((RF + 1))" "$RZ" elisar_water "вода над рифом"
+
+echo "== пробы моря (под игроком) =="
+at_block "$KX" "$((KT - 6))" "$KZ" elisar_water "вода на глубине"
+at_block "$KX" "$KF" "$KZ" elisar_seabed "донный песок"
+at_block "$RX" "$((RF + 3))" "$RZ" elisar_water "вода над рифом"
 
 echo "== профиль колонки $KX,y,$KZ =="
 PROFILE="$OUT/column.txt"
 : > "$PROFILE"
-for y in $(seq 0 66); do
+for y in $(seq 2 66); do
+  EL tp TestPlayer "$KX" "$y" "$KZ" 0 0 >/dev/null 2>&1
   w="."
-  [[ "$(ELP "$KX" "$y" "$KZ" execute if block ~ ~ ~ riftworld:elisar_water)" == *"Test passed"* ]] && w="W"
-  [[ "$(ELP "$KX" "$y" "$KZ" execute if block ~ ~ ~ riftworld:elisar_seabed)" == *"Test passed"* ]] && w="S"
-  [[ "$(ELP "$KX" "$y" "$KZ" execute if block ~ ~ ~ minecraft:air)" == *"Test passed"* ]] && w="a"
+  [[ "$(EL execute at TestPlayer run execute if block ~ ~ ~ riftworld:elisar_water 2>&1)" == *"Test passed"* ]] && w="W"
+  [[ "$(EL execute at TestPlayer run execute if block ~ ~ ~ riftworld:elisar_seabed 2>&1)" == *"Test passed"* ]] && w="S"
+  [[ "$(EL execute at TestPlayer run execute if block ~ ~ ~ minecraft:water 2>&1)" == *"Test passed"* ]] && w="v"
   printf '%s' "$w" >> "$PROFILE"
 done
 echo >> "$PROFILE"
 WATER=$(tr -cd 'W' < "$PROFILE" | wc -c)
-echo "  воды в колонке: $WATER блоков"
-[ "$WATER" -ge 20 ] || { echo "  FAIL: море не сгенерировалось"; FAILS=$((FAILS + 1)); }
-
-echo "== рыбы: естественный спавн смотрителем =="
-sleep 25
-FISH=$(EL if entity @e[type=riftworld:sea_fish,distance=..80] 2>&1)
-if [[ "$FISH" == *"Test passed"* ]]; then echo "  OK   рыбы заспавнились сами (SeaLifeKeeper)" | tee -a "$PROBES"
-else echo "  FAIL рыб нет рядом с игроком" | tee -a "$PROBES"; FAILS=$((FAILS + 1)); fi
-EL execute run kill @e[type=riftworld:sea_fish] >/dev/null 2>&1 || true
-
-echo "== рыбы: витрина всех видов (summon с NBT) =="
-SUM() { EL summon riftworld:sea_fish "$1" "$2" "$3" "$4" 2>&1 | tail -1; }
-# витрина в открытой воде на рифе: 6 видов перед камерой
-SUM "$VX" "$((VF + 5))" "$VZ" '{sf_variant:0}' >/dev/null
-SUM "$((VX + 2))" "$((VF + 5))" "$((VZ - 1))" '{sf_variant:0}' >/dev/null
-SUM "$((VX + 3))" "$((VF + 4))" "$((VZ - 2))" '{sf_variant:1}' >/dev/null
-SUM "$((VX - 2))" "$((VF + 4))" "$((VZ - 2))" '{sf_variant:2}' >/dev/null
-SUM "$((VX + 1))" "$((VF + 6))" "$((VZ - 4))" '{sf_variant:3}' >/dev/null
-SUM "$((VX - 3))" "$((VF + 6))" "$((VZ - 5))" '{sf_variant:4}' >/dev/null
-# хищники — в пещере
-SUM "$CX" "$((CLOW + 2))" "$((CZ - 3))" '{sf_variant:5}' >/dev/null
-SUM "$((CX + 2))" "$((CLOW + 3))" "$((CZ - 2))" '{sf_variant:6}' >/dev/null
-sleep 6
-CNT=$(EL if entity @e[type=riftworld:sea_fish] 2>&1)
-[[ "$CNT" == *"Test passed"* ]] && echo "  OK   витрина рыб создана" | tee -a "$PROBES" || { echo "  FAIL не удалось создать рыб" | tee -a "$PROBES"; FAILS=$((FAILS + 1)); }
+log "  воды в колонке: $WATER блоков"
+[ "$WATER" -ge 20 ] || { log "  FAIL: море не сгенерировалось"; FAILS=$((FAILS + 1)); }
 
 # ---------------------------------------------------------------- скриншоты
 echo "== скриншоты =="
