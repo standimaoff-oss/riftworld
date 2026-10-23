@@ -258,11 +258,16 @@ public class SeaFishRenderer extends EntityRenderer<SeaFishEntity> {
 
     /* ================================================================ примитивы */
 
+    /** Треугольник с обеих сторон (debugQuads отсекает обратные грани — рыба должна быть видна с любого ракурса). */
     private static void tri(VertexConsumer vc, PoseStack pose, Vec3 a, Vec3 b, Vec3 c, int col) {
         vertex(vc, pose, a, col);
         vertex(vc, pose, b, col);
         vertex(vc, pose, c, col);
         vertex(vc, pose, c, col);
+        vertex(vc, pose, c, shade(col, 0.82));
+        vertex(vc, pose, b, shade(col, 0.82));
+        vertex(vc, pose, a, shade(col, 0.82));
+        vertex(vc, pose, a, shade(col, 0.82));
     }
 
     private static void quad(VertexConsumer vc, PoseStack pose, Vec3 a, Vec3 b, Vec3 c, Vec3 d, int col) {
@@ -270,6 +275,18 @@ public class SeaFishRenderer extends EntityRenderer<SeaFishEntity> {
         vertex(vc, pose, b, col);
         vertex(vc, pose, c, col);
         vertex(vc, pose, d, col);
+        vertex(vc, pose, d, shade(col, 0.82));
+        vertex(vc, pose, c, shade(col, 0.82));
+        vertex(vc, pose, b, shade(col, 0.82));
+        vertex(vc, pose, a, shade(col, 0.82));
+    }
+
+    /** Затемнить/подсветить цвет (изнанка). */
+    private static int shade(int col, double k) {
+        int r = (int) Math.min(255, ((col >> 16) & 0xFF) * k);
+        int g = (int) Math.min(255, ((col >> 8) & 0xFF) * k);
+        int b = (int) Math.min(255, (col & 0xFF) * k);
+        return (r << 16) | (g << 8) | b;
     }
 
     /** Маленький глазик — квадратик, повёрнутый к камере под небольшим углом. */
