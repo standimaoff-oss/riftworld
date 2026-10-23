@@ -168,7 +168,7 @@ at_block() { # at_block <x> <y> <z> <block> <label>
   local ans
   EL tp TestPlayer "$1" "$2" "$3" 0 0 >/dev/null 2>&1
   sleep 2
-  ans=$(EL execute at TestPlayer run execute if block ~ ~ ~ "riftworld:$4" 2>&1)
+  ans=$(EL execute at TestPlayer run execute if block \~ \~ \~ "riftworld:$4" 2>&1)
   if [[ "$ans" == *"Test passed"* ]]; then log "  OK   $5 ($1,$2,$3) = $4"
   else log "  FAIL $5 ($1,$2,$3) != $4 | ответ: ${ans:0:120}"; FAILS=$((FAILS + 1)); fi
 }
@@ -184,9 +184,9 @@ PROFILE="$OUT/column.txt"
 for y in $(seq 2 66); do
   EL tp TestPlayer "$KX" "$y" "$KZ" 0 0 >/dev/null 2>&1
   w="."
-  [[ "$(EL execute at TestPlayer run execute if block ~ ~ ~ riftworld:elisar_water 2>&1)" == *"Test passed"* ]] && w="W"
-  [[ "$(EL execute at TestPlayer run execute if block ~ ~ ~ riftworld:elisar_seabed 2>&1)" == *"Test passed"* ]] && w="S"
-  [[ "$(EL execute at TestPlayer run execute if block ~ ~ ~ minecraft:water 2>&1)" == *"Test passed"* ]] && w="v"
+  [[ "$(EL execute at TestPlayer run execute if block \~ \~ \~ riftworld:elisar_water 2>&1)" == *"Test passed"* ]] && w="W"
+  [[ "$(EL execute at TestPlayer run execute if block \~ \~ \~ riftworld:elisar_seabed 2>&1)" == *"Test passed"* ]] && w="S"
+  [[ "$(EL execute at TestPlayer run execute if block \~ \~ \~ minecraft:water 2>&1)" == *"Test passed"* ]] && w="v"
   printf '%s' "$w" >> "$PROFILE"
 done
 echo >> "$PROFILE"
