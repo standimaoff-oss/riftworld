@@ -7,7 +7,9 @@
 под Xvfb (llvmpipe, без GPU)** зашёл в измерение Элисар и снял 13 кадров.
 
 - Прогон CI: `40000896390` — **все шаги зелёные** (сборка, сервер, клиент, релиз, артефакты, отчёт).
-- Релиз: <https://github.com/standimaoff-oss/riftworld/releases/tag/v0.7.0> — `riftworld-v0.7.0.jar` (6.2 МБ).
+- Релиз: <https://github.com/standimaoff-oss/riftworld/releases/tag/v0.7.0> — `riftworld-v0.7.0.jar` (6.14 МБ).
+- Копия jar в репозитории: `release/riftworld-0.7.0.jar`, sha256 в `release/riftworld-0.7.0.jar.sha256`
+  (`b291272340b542495218fd861064ef559b6f5cfb8d30d3dc4c7d50db93b4079b`, 2077 файлов внутри, `version = "0.7.0"`).
 - Отчёт клиента: `report_client.md`, пробы: `probes.txt`.
 
 ## Результаты проб (настоящий клиент, не симуляция)
