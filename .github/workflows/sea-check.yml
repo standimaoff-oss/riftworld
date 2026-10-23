@@ -1,8 +1,11 @@
 name: Build + live Minecraft check
 
 # Собирает мод, поднимает настоящий Forge-сервер с ним, проверяет измерение Элисар по RCON
-# и коммитит отчёт в ветку ci-artifacts. Запускается вручную (workflow_dispatch).
+# и коммитит отчёт в ветку ci-artifacts.
+# NB: workflow_dispatch требует файла на default-ветке, поэтому основной триггер — push в arena/**.
 on:
+  push:
+    branches: ["arena/**"]
   workflow_dispatch:
     inputs:
       release_tag:
