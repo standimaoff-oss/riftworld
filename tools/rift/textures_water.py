@@ -46,6 +46,7 @@ def wave_frame(size, t, seed, deep):
     lo = (38, 96, 142) if deep else (40, 102, 148)       # глубина
     mid = (43, 108, 154)                                 # толща
     hi = (62, 134, 178)                                  # блик (очень мягкий)
+    ALPHA = 170                                          # полупрозрачность: видно дно, но без «стеклянных кубов»
     for y in range(size):
         for x in range(size):
             u = (x / size) * 2.0 + ph * 0.55
@@ -66,7 +67,7 @@ def wave_frame(size, t, seed, deep):
                 r = int(mid[0] + (hi[0] - mid[0]) * f)
                 g = int(mid[1] + (hi[1] - mid[1]) * f)
                 b = int(mid[2] + (hi[2] - mid[2]) * f)
-            px[x, y] = (r, g, b, 255)
+            px[x, y] = (r, g, b, ALPHA)
     return im
 
 
