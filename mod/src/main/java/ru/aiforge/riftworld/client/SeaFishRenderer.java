@@ -212,7 +212,7 @@ public class SeaFishRenderer extends EntityRenderer<SeaFishEntity> {
         Vec3 tip = bend.add(0.0, -0.06, 0.20);
         quad(vc, pose, stalk, stalk.add(0.02, 0, 0.02), bend.add(0.02, 0, 0.02), bend, ANGLER_T);
         quad(vc, pose, bend, bend.add(0.02, 0, 0.02), tip.add(0.02, 0, 0.02), tip, ANGLER_T);
-        float g = 0.06 + Math.sin(t * 0.12) * 0.02;
+        float g = (float) (0.06 + Math.sin(t * 0.12) * 0.02);
         Vec3 centre = tip;
         for (int k = 0; k < 6; k++) {
             double a0 = Math.PI * 2 * k / 6, a1 = Math.PI * 2 * (k + 1) / 6;

@@ -121,7 +121,7 @@ public class SeaFishEntity extends Mob {
 
         // хищник ищет игрока в воде рядом
         Player prey = hostile() ? level().getNearestPlayer(this, 16.0D) : null;
-        if (prey != null && (!prey.isCreative() || prey.isSpectator() == false) && prey.isInWater()) {
+        if (prey != null && !prey.isCreative() && !prey.isSpectator() && prey.isInWater()) {
             Vec3 to = prey.position().add(0, 0.6, 0).subtract(position());
             double d = to.length();
             if (d > 0.6 && d < 16) {

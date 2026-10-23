@@ -72,7 +72,7 @@ public final class SeaLifeKeeper {
             if (peaceful < PEACEFUL_TARGET) school(sl, sp, peaceful);
             if (jelly < JELLY_TARGET) single(sl, sp, SeaFishEntity.JELLY, false);
             if (ray < RAY_TARGET) single(sl, sp, SeaFishEntity.RAY, false);
-            if (hostile < HOSTILE_TARGET) single(sl, sp, rnd() < 0.55 ? SeaFishEntity.ANGLER : SeaFishEntity.EEL, true);
+            if (hostile < HOSTILE_TARGET) single(sl, sp, rnd().nextDouble() < 0.55 ? SeaFishEntity.ANGLER : SeaFishEntity.EEL, true);
         }
     }
 
