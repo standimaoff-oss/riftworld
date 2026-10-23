@@ -221,14 +221,17 @@ else log "  FAIL рыб нет рядом с игроком | ${FISH:0:100}"; FA
 
 echo "== рыбы: витрина всех видов (summon с NBT) =="
 SUM() { local out; out=$(EL summon riftworld:sea_fish "$1" "$2" "$3" "$4" 2>&1); log "  summon $4 -> ${out:0:90}"; }
-SUM "$VX" "$((VF + 4))" "$((VZ - 4))" '{sf_variant:0}'
-SUM "$((VX + 1))" "$((VF + 4))" "$((VZ - 5))" '{sf_variant:0}'
-SUM "$((VX + 2))" "$((VF + 3))" "$((VZ - 6))" '{sf_variant:1}'
-SUM "$((VX - 2))" "$((VF + 3))" "$((VZ - 5))" '{sf_variant:2}'
-SUM "$((VX - 1))" "$((VF + 6))" "$((VZ - 7))" '{sf_variant:3}'
-SUM "$((VX + 3))" "$((VF + 6))" "$((VZ - 8))" '{sf_variant:4}'
-SUM "$CX" "$((CLOW + 2))" "$((CZ - 4))" '{sf_variant:5}'
-SUM "$((CX + 2))" "$((CLOW + 2))" "$((CZ - 5))" '{sf_variant:6}'
+# витрина: камера стоит в (VX, VF+22, VZ+8) и смотрит на север (yaw 180),
+# рыбы висят в 4..9 блоках перед ней, в хорошо освещённой толще воды
+FY=$((VF + 22))
+SUM "$VX" "$FY" "$((VZ + 3))" '{sf_variant:0}'
+SUM "$((VX + 1))" "$((FY + 1))" "$((VZ + 2))" '{sf_variant:0}'
+SUM "$((VX + 2))" "$((FY - 1))" "$((VZ + 1))" '{sf_variant:1}'
+SUM "$((VX - 2))" "$FY" "$((VZ + 2))" '{sf_variant:2}'
+SUM "$((VX - 3))" "$((FY + 2))" "$((VZ + 3))" '{sf_variant:3}'
+SUM "$((VX + 3))" "$((FY + 2))" "$((VZ + 4))" '{sf_variant:4}'
+SUM "$CX" "$((CLOW + 3))" "$((CZ - 3))" '{sf_variant:5}'
+SUM "$((CX + 1))" "$((CLOW + 3))" "$((CZ - 4))" '{sf_variant:6}'
 sleep 8
 CNT=$(EL execute at TestPlayer run execute if entity @e[type=riftworld:sea_fish,distance=..96] 2>&1)
 if [[ "$CNT" == *"Test passed"* ]]; then log "  OK   рыбы в мире есть и тикают"
@@ -243,16 +246,16 @@ view() { # view <x> <y> <z> <yaw> <pitch> <pause> <name>
   sleep "$6"
   shot "$7"
 }
-view "$VX" "$((VF + 7))" "$VZ" 90 30 16 "02_reef_vista"           # рифовый сад: панорама с воды
-view "$VX" "$((VF + 3))" "$VZ" 200 12 14 "03_reef_closeup"          # риф вплотную
-view "$((LX + 6))" "$((LF + 6))" "$((LZ + 6))" 225 15 14 "04_kelp_forest"   # ламинария
-view "$VX" 59 "$VZ" 90 -28 14 "05_looking_up"                       # из-под воды на поверхность
-view "$DX" "$((DF + 3))" "$DZ" 30 0 14 "06_trench"                  # ущелье
-view "$HX" "$((HF + 5))" "$HZ" 90 60 14 "07_blue_hole"              # синяя дыра сверху
-view "$CX" "$((CLOW + 3))" "$CZ" 0 0 16 "08_cave"                   # подводная пещера
-view "$CX" "$((CLOW + 3))" "$CZ" 180 0 12 "09_cave_back"            # пещера, другой ракурс
-view "$VX" "$((VF + 4))" "$((VZ + 2))" 180 8 12 "10_fish_reef"        # витрина мирных рыб
-view "$CX" "$((CLOW + 3))" "$((CZ + 3))" 180 0 12 "11_fish_cave"      # хищники пещеры (удильщик/угорь)
+view "$VX" 66 "$VZ" 90 42 14 "02_reef_from_above"        # рифовый сад сверху сквозь воду
+view "$((VX + 10))" "$((VF + 6))" "$VZ" 270 18 14 "03_reef_underwater"   # риф вплотную под водой
+view "$((LX + 6))" "$((LF + 8))" "$((LZ + 6))" 225 12 14 "04_kelp_forest" # ламинария
+view "$VX" 64 "$((VZ + 26))" 180 2 14 "05_open_sea"          # поверхность: открытое море
+view "$DX" 65 "$DZ" 30 55 14 "06_trench"                     # каньон сверху
+view "$HX" 70 "$HZ" 90 65 14 "07_blue_hole"                  # синяя дыра сверху
+view "$CX" "$((CLOW + 3))" "$CZ" 0 0 16 "08_cave"            # подводная пещера
+view "$CX" "$((CLOW + 3))" "$CZ" 180 0 12 "09_cave_back"     # пещера, другой ракурс
+view "$VX" "$FY" "$((VZ + 8))" 180 4 12 "10_fish_reef"       # витрина мирных рыб
+view "$CX" "$((CLOW + 3))" "$((CZ + 4))" 180 0 12 "11_fish_cave"  # хищники пещеры
 key F1
 sleep 1
 
