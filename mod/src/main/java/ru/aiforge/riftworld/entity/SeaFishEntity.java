@@ -118,6 +118,10 @@ public class SeaFishEntity extends Mob {
         }
         if (home == null) home = position();
         if (attackCd > 0) --attackCd;
+        if (isNoAi()) {                                   // витрина/декор: держим позицию, только покачивание
+            setDeltaMovement(0, Math.sin(tickCount * 0.06) * 0.006, 0);
+            return;
+        }
 
         // хищник ищет игрока в воде рядом
         Player prey = hostile() ? level().getNearestPlayer(this, 16.0D) : null;

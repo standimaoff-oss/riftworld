@@ -43,9 +43,9 @@ def wave_frame(size, t, seed, deep):
     im = Image.new("RGBA", (size, size))
     px = im.load()
     ph = t / float(FRAMES)
-    lo = (35, 92, 138) if deep else (38, 100, 146)       # глубина
-    mid = (44, 112, 160)                                 # толща
-    hi = (86, 168, 204)                                  # блик (мягкий, без резкой сетки)
+    lo = (38, 96, 142) if deep else (40, 102, 148)       # глубина
+    mid = (43, 108, 154)                                 # толща
+    hi = (62, 134, 178)                                  # блик (очень мягкий)
     for y in range(size):
         for x in range(size):
             u = (x / size) * 2.0 + ph * 0.55
