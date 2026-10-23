@@ -254,10 +254,10 @@ SUM_LOCAL 7 2.2 0.2 '{NoAI:1b,Silent:1b,sf_variant:2}'
 SUM_LOCAL 8 -3.2 1.2 '{NoAI:1b,Silent:1b,sf_variant:3}'
 SUM_LOCAL 9 3.4 1.6 '{NoAI:1b,Silent:1b,sf_variant:4}'
 # хищники — в пещере, тоже перед камерой
-EL tp TestPlayer "$CX" "$((CLOW + 3))" "$((CZ + 6))" 180 0 >/dev/null 2>&1
+EL tp TestPlayer "$CX" "$((CLOW + 3))" "$CZ" 180 0 >/dev/null 2>&1
 sleep 3
-SUM_LOCAL 5 0.8 0 '{NoAI:1b,Silent:1b,sf_variant:5}'
-SUM_LOCAL 7 -1.6 0.4 '{NoAI:1b,Silent:1b,sf_variant:6}'
+SUM_LOCAL 3 0.7 0 '{NoAI:1b,Silent:1b,sf_variant:5}'
+SUM_LOCAL 4 -1.1 0.3 '{NoAI:1b,Silent:1b,sf_variant:6}'
 sleep 8
 CNT=$(EL execute at TestPlayer run execute if entity @e[type=riftworld:sea_fish,distance=..96] 2>&1)
 if [[ "$CNT" == *"Test passed"* ]]; then log "  OK   рыбы в мире есть и тикают"
@@ -275,18 +275,19 @@ view() { # view <x> <y> <z> <yaw> <pitch> <pause> <name>
 }
 view "$VX" 66 "$VZ" 90 42 14 "02_reef_from_above"        # рифовый сад сверху сквозь воду
 view "$((VX + 10))" "$((VF + 6))" "$VZ" 270 18 14 "03_reef_underwater"   # риф вплотную под водой
-view "$((LX + 6))" "$((LF + 8))" "$((LZ + 6))" 225 12 14 "04_kelp_forest" # ламинария
+view "$((LX + 9))" "$((LF + 6))" "$((LZ + 9))" 225 18 14 "04_kelp_forest" # ламинария
 view "$VX" 64 "$((VZ + 26))" 180 2 14 "05_open_sea"          # поверхность: открытое море
 view "$DX" 65 "$DZ" 30 55 14 "06_trench"                     # каньон сверху
-view "$HX" "$((HF - 2))" "$HZ" 0 55 14 "07_blue_hole"         # синяя дыра: внутри колодца, взгляд вниз
+view "$HX" "$((HF - 1))" "$HZ" 45 72 14 "07_blue_hole"         # синяя дыра: внутри колодца, взгляд вниз
 view "$CX" "$((CLOW + 3))" "$CZ" 0 0 16 "08_cave"            # подводная пещера
 view "$CX" "$((CLOW + 3))" "$CZ" 180 0 12 "09_cave_back"     # пещера, другой ракурс
-# витрина: камера в толще воды, рыбы в 3-4 блоках по курсу (проверено на кадре 12)
-EL tp TestPlayer "$KX" 44 "$KZ" 180 0 >/dev/null 2>&1
+# витрина: камера над коралловым садом, рыбы в 3-4 блоках по курсу
+EL tp TestPlayer "$((VX + 10))" "$((VF + 6))" "$VZ" 270 8 >/dev/null 2>&1
 sleep 2
 SUM_LOCAL 3 0 0 '{NoAI:1b,Silent:1b,sf_variant:0}'
-SUM_LOCAL 3.6 0.7 0.9 '{NoAI:1b,Silent:1b,sf_variant:1}'
-SUM_LOCAL 4.4 -0.9 -0.5 '{NoAI:1b,Silent:1b,sf_variant:4}'
+SUM_LOCAL 3.4 0.8 0.7 '{NoAI:1b,Silent:1b,sf_variant:1}'
+SUM_LOCAL 4.2 -0.9 -0.3 '{NoAI:1b,Silent:1b,sf_variant:2}'
+SUM_LOCAL 4.8 0.4 0.9 '{NoAI:1b,Silent:1b,sf_variant:3}'
 sleep 6
 shot "10_fish_reef"
 # крупный план: рыба в трёх блоках прямо по центру кадра — видно даже мелкие детали рендера
@@ -298,7 +299,7 @@ SUM_LOCAL 4.4 -0.9 -0.5 '{NoAI:1b,Silent:1b,sf_variant:4}'
 sleep 6
 shot "12_fish_closeup"
 view "$KX" 22 "$KZ" 180 65 14 "13_reef_floor"                  # дно рифа вплотную: разбор блоков
-view "$CX" "$((CLOW + 3))" "$((CZ + 5))" 180 0 12 "11_fish_cave"  # хищники пещеры
+view "$CX" "$((CLOW + 3))" "$CZ" 180 0 12 "11_fish_cave"  # хищники пещеры
 RCON effect clear TestPlayer >/dev/null 2>&1 || true
 key F1
 sleep 1

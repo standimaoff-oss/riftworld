@@ -1,7 +1,6 @@
 package ru.aiforge.riftworld.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.Minecraft;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -25,9 +24,6 @@ public class SeaFishRenderer extends EntityRenderer<SeaFishEntity> {
     private static final int ANGLER_B = 0x2C3947, ANGLER_T = 0x1A2430, LURE = 0xDFFFA8, LURE_CORE = 0xF6FFD6;
     private static final int EEL_B = 0xD6CFBF, EEL_T = 0xB2A996;
 
-    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger("riftworld/seafish");
-    private static int seen;
-
     public SeaFishRenderer(EntityRendererProvider.Context ctx) {
         super(ctx);
     }
@@ -39,12 +35,6 @@ public class SeaFishRenderer extends EntityRenderer<SeaFishEntity> {
 
     @Override
     public void render(SeaFishEntity e, float yaw, float partial, PoseStack pose, MultiBufferSource buf, int light) {
-        int n = seen++;
-        if (n < 3 || n % 2000 == 0) {
-            LOG.info("[sea_fish] render #{} variant={} pos={} light={} yaw={} dist={}", n, e.variant(),
-                    e.blockPosition(), light, yaw, e.distanceToSqr(Minecraft.getInstance().player == null
-                            ? e.position() : Minecraft.getInstance().player.position()));
-        }
         pose.pushPose();
         VertexConsumer vc = buf.getBuffer(RenderType.debugQuads());
         float yRot = Mth.rotLerp(partial, e.yBodyRotO, e.yBodyRot);
