@@ -211,5 +211,45 @@ def main():
     return 1 if fails else 0
 
 
+
+
+# ------------------------------------------------------------------ подбор точек для съёмки
+def pick_spots(size=192, origin=(600, 600)):
+    """Возвращает координаты «красивых» мест для скриншотов и RCON-проб."""
+    ox, oz = origin
+    best_reef, best_reef_v = None, -1
+    best_deep, best_deep_v = None, 999
+    holes = []
+    caves = []
+    for x in range(ox, ox + size):
+        for z in range(oz, oz + size):
+            f = ocean_floor(x, z)
+            r = reefness(x, z)
+            if r > best_reef_v:
+                best_reef_v, best_reef = r, (x, z, f)
+            if f < best_deep_v:
+                best_deep_v, best_deep = f, (x, z, f)
+            if len(holes) < 400:
+                for y in range(f - 1, max(1, f - 22), -1):
+                    if blue_hole(x, y, z, f):
+                        holes.append((x, z, f, y))
+                        break
+            if len(caves) < 400:
+                air = [y for y in range(3, f - 1) if cave(x, y, z, f)]
+                if len(air) >= 6 and f - air[-1] >= 6:      # есть полость с запасом породы сверху
+                    caves.append((x, z, f, air[0], air[-1]))
+    print(f"REEF={best_reef[0]} {best_reef[2] + 3} {best_reef[1]} REEFV={best_reef_v:.2f}")
+    print(f"DEEP={best_deep[0]} {best_deep[2] + 4} {best_deep[1]} FLOOR={best_deep[2]}")
+    if holes:
+        hx, hz, hf, hy = holes[len(holes) // 2]
+        print(f"HOLE={hx} {hy} {hz} FLOOR={hf}")
+    if caves:
+        cx, cz, cf, lo, hi = caves[len(caves) // 2]
+        print(f"CAVE={cx} {lo + 1} {cz} LOW={lo} HIGH={hi} FLOOR={cf}")
+
+
 if __name__ == "__main__":
-    sys.exit(main())
+    if "--spots" in sys.argv:
+        pick_spots()
+    else:
+        sys.exit(main())
