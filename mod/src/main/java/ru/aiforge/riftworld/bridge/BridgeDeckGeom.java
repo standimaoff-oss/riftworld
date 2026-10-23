@@ -211,24 +211,37 @@ public final class BridgeDeckGeom {
      *
      * @return {dx, dz} of the offset from a to a2
      */
+    /**
+     * Offset from the first post to its partner across the deck: as close to `width` blocks as whole blocks allow,
+     * and as square to the span as possible.
+     *
+     * <p>Rev 9.1: раньше побеждал чисто «самый ровный» сдвиг, и при ширине 1 и 2 выбирался один и тот же диагональный
+     * (1,-1): настил выходил 1.4 блока — «бревно» вместо моста. Теперь скос и ошибка ширины сравниваются вместе, причём
+     * недостаток ширины штрафуется квадратично, поэтому для широкого настила выбирается длинный перпендикуляр
+     * (например (1,-2) при пролёте под 30°), а не короткая диагональ. Перебор ограничен ±(w+1) клеток — этого
+     * достаточно, чтобы найти почти перпендикуляр при любом угле.
+     */
     public static int[] perpOffset(double dx, double dz, int width) {
         double l = Math.hypot(dx, dz);
         if (l < 1.0) l = 1.0;
         double ux = dx / l, uz = dz / l;
+        int w = Math.max(1, width);
         int px = 0, pz = 0;
         double best = Double.MAX_VALUE;
-        for (int ax = -width - 1; ax <= width + 1; ++ax)
-            for (int az = -width - 1; az <= width + 1; ++az) {
+        for (int ax = -w - 1; ax <= w + 1; ++ax)
+            for (int az = -w - 1; az <= w + 1; ++az) {
                 if (ax == 0 && az == 0) continue;
                 double alen = Math.hypot(ax, az);
-                double skew = Math.abs(ax * ux + az * uz) / alen;     // 0 = perfectly square
-                double score = skew * 3.0 + Math.abs(alen - width) * 0.5;
-                if (score < best) { best = score; px = ax; pz = az; }
+                if (alen < Math.max(1.0, w * 0.8)) continue;              // заведомо уже, чем нужно
+                double skew = Math.abs(ax * ux + az * uz) / alen;          // 0 = ровно поперёк пролёта
+                double err = alen - w;
+                double score = skew * 2.0 + err * err * 0.5 + Math.abs(err) * 0.05;
+                if (score < best - 1e-9) { best = score; px = ax; pz = az; }
             }
-        return new int[] {px, pz};
+        if (px == 0 && pz == 0) return new int[]{0, w};
+        return new int[]{px, pz};
     }
 
-    /** Style that fits a biome / region key (used by placement and by the world generator). */
     public static int styleFor(String biomePath) {
         if (biomePath == null) return BridgeStyle.PLAINS.id;
         return switch (biomePath) {
@@ -237,6 +250,9 @@ public final class BridgeDeckGeom {
             case "waterfall_gardens" -> BridgeStyle.GARDEN.id;
             case "ashen_lands" -> BridgeStyle.BURNT.id;
             case "mist_keep" -> BridgeStyle.MIST.id;
+            // vanilla Nether: charred planks and chains, the deck half burnt out (same as the Ashen Lands)
+            case "nether_wastes", "soul_sand_valley", "crimson_forest", "warped_forest", "basalt_deltas" ->
+                    BridgeStyle.BURNT.id;
             default -> BridgeStyle.PLAINS.id;
         };
     }

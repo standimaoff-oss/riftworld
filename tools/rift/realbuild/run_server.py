@@ -23,6 +23,7 @@ import time
 import zipfile
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parents[3]
 SERVER = Path(os.environ.get("MC_SERVER_DIR", "/tmp/mcserver"))
 JAVA = Path(os.environ.get("JAVA", "/usr/local/lib/python3.11/dist-packages/jdk4py/java-runtime/bin/java"))
 PROPS = {
@@ -75,6 +76,58 @@ def read_props():
     return props
 
 
+def patch_nashorn() -> str:
+    """Снимает с nashorn-core требование `jdk.dynalink`, которого нет в урезанном JRE из jdk4py.
+
+    Без этого Forget-овский JS-coremod падает на `FindException: Module jdk.dynalink not found`, и сервер
+    не стартует вообще. Патчим module-info.class (ASM), потому что простой подкладкой своего модуля не обойтись:
+    jlink-образ проверяет хеши модулей. Шаг идемпотентный — после первого раза пропускается.
+    """
+    marker = SERVER / ".nashorn-patched"
+    if marker.exists():
+        return "nashorn уже пропатчен"
+    nash = sorted(SERVER.glob("libraries/org/openjdk/nashorn/nashorn-core/*/nashorn-core-*.jar"))
+    if not nash:
+        return "nashorn-core не найден (не нужен?)"
+    nash = nash[-1]
+    asm = sorted(SERVER.glob("libraries/org/ow2/asm/asm/*/asm-*.jar"))
+    asmtree = sorted(SERVER.glob("libraries/org/ow2/asm/asm-tree/*/asm-tree-*.jar"))
+    if not asm or not asmtree:
+        raise SystemExit("нет ASM в libraries — патч nashorn невозможен")
+    ecj = sorted((ROOT / "tools/rift/jtests/.cache").glob("**/org.eclipse.jdt.core.compiler.batch_*.jar"))
+    if not ecj:
+        print("[nashorn] нет ECJ в кэше — качаю karellen-jdtls")
+        subprocess.run([sys.executable, "-m", "pip", "download", "--no-deps", "-d",
+                        str(ROOT / "tools/rift/jtests/.cache/wheel"), "karellen-jdtls"],
+                       stdout=subprocess.DEVNULL, check=True)
+        import zipfile as _z
+        whl = next((ROOT / "tools/rift/jtests/.cache/wheel").glob("*.whl"))
+        with _z.ZipFile(whl) as z:
+            for n in z.namelist():
+                b = os.path.basename(n)
+                if b.startswith("org.eclipse.jdt.core.compiler.batch") and b.endswith(".jar"):
+                    (ROOT / "tools/rift/jtests/.cache" / b).write_bytes(z.read(n))
+        ecj = sorted((ROOT / "tools/rift/jtests/.cache").glob("org.eclipse.jdt.core.compiler.batch_*.jar"))
+    work = SERVER / "patch"
+    work.mkdir(exist_ok=True)
+    cp = os.pathsep.join([str(asm[-1]), str(asmtree[-1])])
+    res = subprocess.run([str(JAVA), "-jar", str(ecj[-1]), "-17", "-nowarn", "-proc:none", "-cp", cp,
+                          "-d", str(work), str(ROOT / "tools/rift/realbuild/ModuleRequiresFix.java")],
+                         capture_output=True, text=True)
+    if res.returncode != 0:
+        raise SystemExit("не скомпилировался ModuleRequiresFix:\n" + (res.stdout + res.stderr)[-1500:])
+    tmp = work / (nash.name + ".new")
+    res = subprocess.run([str(JAVA), "-cp", os.pathsep.join([str(work), cp]), "ModuleRequiresFix",
+                          str(nash), str(tmp), "module-info.class", "jdk.dynalink"],
+                         capture_output=True, text=True)
+    if res.returncode != 0:
+        raise SystemExit("не пропатчился nashorn:\n" + (res.stdout + res.stderr)[-1500:])
+    shutil.copy2(nash, nash.with_suffix(".jar.orig")) if not nash.with_suffix(".jar.orig").exists() else None
+    shutil.move(str(tmp), str(nash))
+    marker.write_text("ok\n", encoding="utf-8")
+    return f"module-info nashorn без jdk.dynalink ({nash.name})"
+
+
 def prepare():
     if not JAVA.exists():
         raise SystemExit(f"нет java: {JAVA}\n  -> pip install --break-system-packages jdk4py==17.0.9.2")
@@ -86,7 +139,7 @@ def prepare():
     (SERVER / "server.properties").write_text(
         "\n".join(f"{k}={v}" for k, v in props.items()) + "\n", encoding="utf-8")
     (SERVER / "mods").mkdir(exist_ok=True)
-    return strip_js_coremods()
+    return strip_js_coremods() + "; " + patch_nashorn()
 
 
 def args_file():
@@ -123,7 +176,8 @@ def start(mod_jar=None, wait_done=180, new_world=False):
         print(f"[mods] {target}")
     log = SERVER / "run.log"
     handled = open(log, "w", encoding="utf-8")
-    proc = subprocess.Popen([str(JAVA), "-Xms512M", "-Xmx1400M", f"@{args_file()}", "nogui"],
+    xmx = os.environ.get("MC_XMX", "1400M")     # перегенерация целого региона требует больше памяти
+    proc = subprocess.Popen([str(JAVA), "-Xms512M", f"-Xmx{xmx}", f"@{args_file()}", "nogui"],
                             cwd=SERVER, stdout=handled, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL)
     print(f"[server] pid {proc.pid}, лог {log}")
     deadline = time.time() + wait_done

@@ -5,8 +5,10 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -18,6 +20,10 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
 import ru.aiforge.riftworld.RiftWorld;
+import ru.aiforge.riftworld.block.BridgePostBE;
+import ru.aiforge.riftworld.block.BridgePostBlock;
+import ru.aiforge.riftworld.bridge.BridgeDeckGeom;
+import ru.aiforge.riftworld.registry.BridgeBlocks;
 
 /**
  * /rifttreescan [radius] [yMin] [yMax] - counts the mod's own logs and leaves in the LOADED chunks around the caller
@@ -48,6 +54,21 @@ public final class TreeScanCommand {
                                                 com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "radius"),
                                                 com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "ymin"),
                                                 com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "ymax")))))));
+        // /riftbridgebuild <длина> [ширина] [стиль] - собрать мост ровно там, где стоит вызывающий.
+        // Нужен и админам, и проверке: стиль настила зависит от измерения, а в обычной игре мост
+        // собирается вручную из четырёх опор и верёвки - командой это делается за один шаг.
+        d.register(Commands.literal("riftbridgebuild").requires(s2 -> s2.hasPermission(2))
+                .then(Commands.argument("len", IntegerArgumentType.integer(4, BridgeDeckGeom.MAX_LEN))
+                        .executes(c -> buildBridge(c.getSource(), IntegerArgumentType.getInteger(c, "len"), 2,
+                                autoStyle(c.getSource())))
+                        .then(Commands.argument("width", IntegerArgumentType.integer(1, BridgeDeckGeom.MAX_WID))
+                                .executes(c -> buildBridge(c.getSource(), IntegerArgumentType.getInteger(c, "len"),
+                                        IntegerArgumentType.getInteger(c, "width"), autoStyle(c.getSource())))
+                                .then(Commands.argument("style", IntegerArgumentType.integer(0, 4))
+                                        .executes(c -> buildBridge(c.getSource(),
+                                                IntegerArgumentType.getInteger(c, "len"),
+                                                IntegerArgumentType.getInteger(c, "width"),
+                                                IntegerArgumentType.getInteger(c, "style")))))));
         // /riftblocks <radius> [ymin] [ymax] - все блоки мода в загруженных чанках (мосты, храм, арена, деревья)
         d.register(Commands.literal("riftblocks").requires(s2 -> s2.hasPermission(2))
                 .then(Commands.argument("radius", com.mojang.brigadier.arguments.IntegerArgumentType.integer(1, 512))
@@ -111,6 +132,17 @@ public final class TreeScanCommand {
             if (n++ < 4) sb.append("; style=").append(d.style()).append(" ").append(d.a().getX()).append(",")
                     .append(d.a().getZ()).append("->").append(d.b().getX()).append(",").append(d.b().getZ());
         }
+        double minW = Double.MAX_VALUE, maxLen = 0;
+        java.util.Set<String> mids = new java.util.HashSet<>();
+        int dup = 0;
+        for (ru.aiforge.riftworld.bridge.BridgeDeckGeom.Deck d : decks.values()) {
+            minW = Math.min(minW, d.width());
+            maxLen = Math.max(maxLen, d.len());
+            String key = Math.round((d.a().getX() + d.b().getX()) / 2.0) + "," + Math.round((d.a().getZ() + d.b().getZ()) / 2.0);
+            if (!mids.add(key)) dup++;
+        }
+        sb.append(" minwidth=").append(minW == Double.MAX_VALUE ? "-" : String.format(java.util.Locale.ROOT, "%.1f", minW))
+                .append(" maxlen=").append(String.format(java.util.Locale.ROOT, "%.0f", maxLen)).append(" dup=").append(dup);
         String line = sb.toString();
         src.sendSuccess(() -> Component.literal(line), false);
         return decks.size();
@@ -199,6 +231,34 @@ public final class TreeScanCommand {
     /** registry name of a block, or null when it is not ours (cached in the registry itself, no global state needed). */
     private static ResourceLocation id(Block b) {
         return ForgeRegistries.BLOCKS.getKey(b);
+    }
+
+    /** Style for the place the caller stands in: our own biomes and the vanilla Nether (burnt) are mapped in
+     *  {@link BridgeDeckGeom#styleFor(String)}, so «ад = сгоревшие» works for any dimension, not just ours. */
+    private static int autoStyle(CommandSourceStack src) {
+        String path = src.getLevel().getBiome(BlockPos.containing(src.getPosition()))
+                .unwrapKey().map(k -> k.location().getPath()).orElse("");
+        return BridgeDeckGeom.styleFor(path);
+    }
+
+    /** Builds a real four-post bridge along +X (span) and +Z (width), with deck cells and both BE links. */
+    private static int buildBridge(CommandSourceStack src, int len, int width, int style) {
+        ServerLevel level = src.getLevel();
+        BlockPos a = BlockPos.containing(src.getPosition());
+        BlockPos b = a.offset(len - 1, 0, 0);
+        BlockPos a2 = a.offset(0, 0, width - 1);
+        BlockPos b2 = b.offset(0, 0, width - 1);
+        BlockState post = BridgeBlocks.POST.get().defaultBlockState().setValue(BridgePostBlock.STYLE, style);
+        for (BlockPos p : new BlockPos[]{a, b, a2, b2}) level.setBlock(p, post, 3);
+        BridgeDeckGeom.Deck deck = new BridgeDeckGeom.Deck(a, b, a2, b2, style, 0F, 0F);
+        BridgePostBlock.placeCells(level, deck);
+        for (BlockPos cp : deck.corners())
+            if (level.getBlockEntity(cp) instanceof BridgePostBE be) be.stand(deck);
+        src.sendSuccess(() -> Component.literal("bridge built: style=" + style + " len=" + len + " width=" + width
+                + " sag=" + String.format(java.util.Locale.ROOT, "%.2f", deck.sag())
+                + " planks=" + deck.plankCount() + " cells=" + deck.collisionCells().size()
+                + " at " + a.getX() + " " + a.getY() + " " + a.getZ()), false);
+        return 1;
     }
 
     private static int scan(CommandSourceStack src, int radius, int yMin, int yMax) {

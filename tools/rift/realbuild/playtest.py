@@ -258,6 +258,12 @@ class Play:
                 self.ok(f"{biome} ({cx},{cz}): моста в регионе нет (редкий мост, допустимо)", True, plan[:120])
                 continue
             self.ok(f"генератор планирует мост в {biome} ({cx},{cz})", True, plan[:200])
+            # рев 9.1: настил не должен быть «бревном» шириной 1.4 и не должен строиться дважды в одном месте
+            mw = re.search(r"minwidth=([\d.]+)", plan)
+            dup = int((re.search(r"dup=(\d+)", plan) or [0, 0])[1])
+            width = float(mw.group(1)) if mw else 0.0
+            self.ok(f"настил в {biome} шире одного блока и без мостов-двойников", width >= 2.0 and dup == 0,
+                    f"minwidth={width} dup={dup}")
             dm = re.search(r"-->(\-?\d+),(\-?\d+)", plan) or re.search(r" (\-?\d+),(\-?\d+)->", plan)
             bx, bz = (int(dm.group(1)), int(dm.group(2))) if dm else (cx, cz)
             self.cmd(f"execute in {DIM} run forceload add {bx - 48} {bz - 48} {bx + 48} {bz + 48}")
@@ -269,6 +275,35 @@ class Play:
                     f"bridge_post={posts} bridge_walk={walks} | {scan[:150]}")
             found_any += 1 if (posts >= 4 and walks > 0) else 0
         self.ok("мосты генерируются хотя бы в двух проверенных местах", found_any >= 2, f"подтверждено {found_any}")
+
+    def bridge_style_nether(self):
+        """Стиль моста зависит от измерения: в аду настил сгоревший (style=3), в садах — садовый.
+
+        Собираем мост командой `/riftbridgebuild` прямо в аду и в садах и читаем NBT опоры: у неё лежит весь Deck,
+        поэтому видно и style, и провисание. Заодно проверяем, что настил (bridge_walk) реально появился в чанках.
+        """
+        cases = (("minecraft:the_nether", "the_nether", 3, "сгоревший"),
+                 (DIM, "elisar", 1, "садовый"))
+        for dim, tag, want, word in cases:
+            self.cmd(f"execute in {dim} run forceload add 96 96 160 160")
+            x, z = (112, 112) if dim == "minecraft:the_nether" else (1330, 250)
+            y = 70 if dim == "minecraft:the_nether" else 110
+            self.cmd(f"execute in {dim} run fill {x - 2} {y - 1} {z - 2} {x + 16} {y + 8} {z + 8} minecraft:air")
+            if dim == "minecraft:the_nether":
+                # сцена для фото: промоина с лавой под мостом, иначе сгоревший настил висит в каменном мешке
+                self.cmd(f"execute in {dim} run fill {x - 10} {y - 22} {z - 10} {x + 24} {y - 1} {z + 16} minecraft:air")
+                self.cmd(f"execute in {dim} run fill {x - 10} {y - 24} {z - 10} {x + 24} {y - 22} {z + 16} minecraft:lava")
+            out = self.cmd(f"execute in {dim} positioned {x} {y} {z} run riftbridgebuild 12 3")
+            m = re.search(r"style=(\d+)", out)
+            got = int(m.group(1)) if m else -1
+            self.ok(f"мост в {tag}: стиль по измерению — {word}", got == want, out[:180])
+            ceil = self.cmd(f"execute in {dim} run data get block {x} {y} {z} deck.style")
+            self.ok(f"у опоры в {tag} сохранён Deck со стилем {want}", str(want) in ceil, ceil[:90])
+            scan = self.cmd(f"execute in {dim} positioned {x} {y} {z} run riftblocks 24 40 200")
+            posts = int((re.search(r"bridge_post=(\d+)", scan) or [0, 0])[1])
+            walks = int((re.search(r"bridge_walk=(\d+)", scan) or [0, 0])[1])
+            self.ok(f"настил моста в {tag} стоит в чанках", posts >= 4 and walks > 0,
+                    f"bridge_post={posts} bridge_walk={walks}")
 
     def addon_loaded(self):
         """Аддон Dynamic Trees — отдельный data-only мод: он должен появиться в списке модов сервера.
@@ -320,6 +355,7 @@ def main():
     p.biomes()
     p.biome_trees()
     p.world_bridges()
+    p.bridge_style_nether()
     p.addon_loaded()
     p.entities()
     p.items()

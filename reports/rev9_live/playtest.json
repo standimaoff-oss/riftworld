@@ -7,7 +7,7 @@
   {
     "test": "измерение riftworld:elisar загружено",
     "ok": true,
-    "detail": "Dim minecraft, Dim riftworld, Dim minecraft, Dim minecraft, Dim riftworld"
+    "detail": "Dim minecraft, Dim riftworld, Dim riftworld, Dim minecraft, Dim minecraft"
   },
   {
     "test": "тестовая зона форс-лочится",
@@ -117,37 +117,77 @@
   {
     "test": "генератор планирует мост в riftworld:violet_hills (1248,224)",
     "ok": true,
-    "detail": "bridgeplan r=160 center=1248,224: decks=1; style=GARDEN 1380,242->1389,236"
+    "detail": "bridgeplan r=160 center=1248,224: decks=1; style=GARDEN 1380,242->1389,236 minwidth=2.2 maxlen=11 dup=0"
+  },
+  {
+    "test": "настил в riftworld:violet_hills шире одного блока и без мостов-двойников",
+    "ok": true,
+    "detail": "minwidth=2.2 dup=0"
   },
   {
     "test": "мост стоит в мире (riftworld:violet_hills 1248,224): 4 опоры и настил",
     "ok": true,
-    "detail": "bridge_post=4 bridge_walk=9 | blockscan r=48 y=40..200 chunks=49: elisar_water=289095 elisar_stone_mossy=38592 elisar_stone=346081 elisar_crust=12544 elisar_grass=9857 elisar_tall_"
+    "detail": "bridge_post=4 bridge_walk=12 | blockscan r=48 y=40..200 chunks=49: elisar_water=289095 elisar_stone_mossy=38592 elisar_stone=346081 elisar_crust=12544 elisar_grass=9857 elisar_tall_"
   },
   {
     "test": "riftworld:waterfall_gardens (2648,640): моста в регионе нет (редкий мост, допустимо)",
     "ok": true,
-    "detail": "bridgeplan r=160 center=2648,640: decks=0"
+    "detail": "bridgeplan r=160 center=2648,640: decks=0 minwidth=- maxlen=0 dup=0"
   },
   {
     "test": "riftworld:waterfall_gardens (-5880,1712): моста в регионе нет (редкий мост, допустимо)",
     "ok": true,
-    "detail": "bridgeplan r=160 center=-5880,1712: decks=0"
+    "detail": "bridgeplan r=160 center=-5880,1712: decks=0 minwidth=- maxlen=0 dup=0"
   },
   {
     "test": "генератор планирует мост в riftworld:waterfall_gardens (3624,-4160)",
     "ok": true,
-    "detail": "bridgeplan r=160 center=3624,-4160: decks=1; style=GARDEN 3492,-4166->3527,-4202"
+    "detail": "bridgeplan r=160 center=3624,-4160: decks=1; style=GARDEN 3492,-4166->3527,-4202 minwidth=2.8 maxlen=50 dup=0"
+  },
+  {
+    "test": "настил в riftworld:waterfall_gardens шире одного блока и без мостов-двойников",
+    "ok": true,
+    "detail": "minwidth=2.8 dup=0"
   },
   {
     "test": "мост стоит в мире (riftworld:waterfall_gardens 3624,-4160): 4 опоры и настил",
     "ok": true,
-    "detail": "bridge_post=4 bridge_walk=51 | blockscan r=48 y=40..200 chunks=49: elisar_water=292942 elisar_stone=250775 elisar_stone_mossy=29838 elisar_crust=10537 elisar_grass=5876 sizo_leaves="
+    "detail": "bridge_post=4 bridge_walk=77 | blockscan r=48 y=40..200 chunks=49: elisar_water=292937 elisar_stone=250775 elisar_stone_mossy=29838 elisar_crust=10537 elisar_grass=5876 sizo_leaves="
   },
   {
     "test": "мосты генерируются хотя бы в двух проверенных местах",
     "ok": true,
     "detail": "подтверждено 2"
+  },
+  {
+    "test": "мост в the_nether: стиль по измерению — сгоревший",
+    "ok": true,
+    "detail": "bridge built: style=3 len=12 width=3 sag=0.29 planks=22 cells=39 at 112 70 112"
+  },
+  {
+    "test": "у опоры в the_nether сохранён Deck со стилем 3",
+    "ok": true,
+    "detail": "112, 70, 112 has the following block data: 3"
+  },
+  {
+    "test": "настил моста в the_nether стоит в чанках",
+    "ok": true,
+    "detail": "bridge_post=4 bridge_walk=35"
+  },
+  {
+    "test": "мост в elisar: стиль по измерению — садовый",
+    "ok": true,
+    "detail": "bridge built: style=1 len=12 width=3 sag=0.24 planks=22 cells=39 at 1330 110 250"
+  },
+  {
+    "test": "у опоры в elisar сохранён Deck со стилем 1",
+    "ok": true,
+    "detail": "1330, 110, 250 has the following block data: 1"
+  },
+  {
+    "test": "настил моста в elisar стоит в чанках",
+    "ok": true,
+    "detail": "bridge_post=4 bridge_walk=35"
   },
   {
     "test": "аддон riftworld_dt загружен сервером",
@@ -212,6 +252,6 @@
   {
     "test": "TPS держится (20.0)",
     "ok": true,
-    "detail": "Overall: Mean tick time: 5.556 ms. Mean TPS: 20.000"
+    "detail": "Overall: Mean tick time: 4.928 ms. Mean TPS: 20.000"
   }
 ]

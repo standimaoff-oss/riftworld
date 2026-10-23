@@ -143,6 +143,42 @@ TEX_CACHE: dict[str, np.ndarray] = {}
 ALPHA_CACHE: dict[str, np.ndarray] = {}
 
 
+# Биомный тинт: текстуры травы и листвы в моде сделаны почти серыми (как и в ваниле), цвет им даёт клиент по
+# биому. Без этого CPU-кадры выглядят выцветшими. Палитры приглушённые — «не делать ярко».
+TINT = (
+    ("_leaves", (0.52, 0.60, 0.44)),
+    ("_blossom", (0.60, 0.52, 0.68)),
+    ("_fronds", (0.50, 0.62, 0.46)),
+    ("_grass", (0.48, 0.60, 0.38)),
+    ("_moss", (0.44, 0.56, 0.34)),
+    ("_wheat", (0.74, 0.70, 0.50)),
+)
+
+
+def biome_tint(name: str, tex: np.ndarray | None = None) -> np.ndarray | None:
+    """Цвет биома для «серых» текстур (трава, часть листвы). Уже окрашенные текстуры не трогаем.
+
+    В ванильном пайплайне клиент умножает почти белую текстуру травы на цвет биома, а у нас в моде часть листвы
+    (sizo, ambra) тоже сделана полу-серой. Определяем по насыщенности: если текстура серая и светлая — это как раз
+    такая «тинтуемая» текстура, иначе оставляем как есть (иначе зелёная листва позеленеет дважды).
+    """
+    path = name.split(":", 1)[-1]
+    if tex is not None:
+        m = tex.reshape(-1, 3).mean(axis=0)
+        if (m.max() - m.min()) / 255.0 > 0.12 or m.mean() < 120:      # уже цветная или тёмная — не тинтуем
+            return None
+    for suffix, rgb in TINT:
+        if path.endswith(suffix):
+            if path.startswith("sizo_") or path.startswith("mist_"):
+                return np.array([0.60, 0.66, 0.68], dtype=np.float64)   # сизые породы: холодный серо-зелёный
+            if path.startswith("lilac_"):
+                return np.array([0.62, 0.55, 0.70], dtype=np.float64)   # сирень: пыльно-лиловый
+            if path.startswith("fern_"):
+                return np.array([0.62, 0.78, 0.56], dtype=np.float64)
+            return np.array(rgb, dtype=np.float64)
+    return None
+
+
 def mod_texture(name: str) -> np.ndarray | None:
     """16x16 RGB-тексели блока (реальная текстура мода), либо None."""
     if name in TEX_CACHE:
@@ -194,7 +230,179 @@ VANILLA = {
     "minecraft:gravel": (135, 130, 128), "minecraft:oak_log": (110, 88, 55),
     "minecraft:oak_leaves": (70, 110, 50), "minecraft:bedrock": (60, 60, 60),
     "minecraft:snow_block": (240, 245, 250), "minecraft:air": (0, 0, 0),
+    # ад: без этих цветов netherrack в CPU-кадре выглядел серым пластиком
+    "minecraft:netherrack": (92, 48, 45), "minecraft:soul_sand": (78, 60, 52),
+    "minecraft:soul_soil": (69, 55, 47), "minecraft:basalt": (74, 72, 78),
+    "minecraft:blackstone": (46, 41, 45), "minecraft:magma_block": (140, 66, 30),
+    "minecraft:glowstone": (196, 160, 96), "minecraft:nether_bricks": (44, 22, 26),
+    "minecraft:crimson_nylium": (120, 44, 52), "minecraft:warped_nylium": (44, 108, 100),
+    "minecraft:lava": (214, 106, 30), "minecraft:quartz_block": (222, 214, 202),
+    "minecraft:nether_quartz_ore": (196, 188, 176), "minecraft:nether_gold_ore": (124, 76, 52),
+    "minecraft:warped_wart_block": (42, 88, 84), "minecraft:warped_stem": (58, 82, 74),
+    "minecraft:warped_nylium": (44, 108, 100), "minecraft:shroomlight": (222, 160, 92),
+    "minecraft:warped_roots": (46, 104, 96), "minecraft:nether_sprouts": (60, 124, 104),
 }
+
+
+# ----------------------------------------------------------------------------- мосты (порт BridgeDeckGeom)
+DECK_ANCHOR, CABLE_ANCHOR, PLANK_STEP, PLANK_TH = 0.22, 1.62, 0.5, 0.11
+
+# style id -> (текстура настила, текстура троса, доля дыр, множитель провиса)
+STYLES = {
+    0: ("planks_plains", "cable_rope", 0.03, 1.00),
+    1: ("planks_garden", "cable_rope", 0.06, 1.08),
+    2: ("planks_grove", "cable_rope", 0.09, 1.14),
+    3: ("planks_burnt", "cable_chain", 0.34, 1.28),
+    4: ("planks_mist", "cable_chain", 0.14, 1.18),
+}
+BRIDGE_TEX = ROOT / "mod/src/main/resources/assets/riftworld/textures/entity/bridge"
+
+
+def bridge_texture(name: str, rgba: bool = False):
+    """Текстура моста 16x16. rgba=True — вместе с альфой (тросы и сетка нарисованы тонкими линиями)."""
+    p = BRIDGE_TEX / f"{name}.png"
+    if p.exists():
+        a = np.asarray(Image.open(p).convert("RGBA"), dtype=np.float32)
+        if a.shape[0] != 16:
+            a = np.asarray(Image.fromarray(a.astype(np.uint8)).resize((16, 16)), dtype=np.float32)
+        return a if rgba else a[..., :3]
+    return np.full((16, 16, 4 if rgba else 3), 120.0, dtype=np.float32)
+
+
+class Deck:
+    """Один подвесной мост: 4 опоры + провисание, как в BridgeDeckGeom. Всё считается в локальном базисе моста."""
+
+    def __init__(self, a, b, a2, b2, style_id: int, break_from: float = 0.0, break_to: float = 0.0):
+        self.a, self.b, self.a2, self.b2 = (np.array(v, dtype=np.float64) + 0.5 for v in (a, b, a2, b2))
+        self.style_id = style_id
+        self.break_from, self.break_to = break_from, break_to
+        tex, cable_tex, holes, sag_mul = STYLES.get(style_id, STYLES[0])
+        self.holes, self.sag_mul = holes, sag_mul
+        self.plank_tex = bridge_texture(tex)
+        # трос — тонкая светлая нить на прозрачном фоне: усредняем только видимые тексели, иначе он чёрный
+        ca = bridge_texture(cable_tex, rgba=True).reshape(-1, 4)
+        vis = ca[:, 3] > 96
+        self.cable_col = (ca[vis, :3].mean(axis=0) if vis.any() else ca[:, :3].mean(axis=0))
+        self.cable_col = np.clip(self.cable_col, 60, 210)
+
+        # локальный базис: e1 — вдоль пролёта, e2 — по ширине, e3 — вверх
+        d = self.b - self.a
+        self.len = float(np.linalg.norm(d))
+        self.e1 = d / max(1e-9, self.len)
+        w = self.a2 - self.a
+        w[1] = 0.0
+        self.width = float(np.linalg.norm(w))
+        e2 = w / max(1e-9, self.width) if self.width > 1e-6 else np.array([1.0, 0.0, 0.0])
+        e3 = np.cross(e2, self.e1)
+        if e3[1] < 0:                       # «верх» всегда вверх, иначе мост перевернётся
+            e3 = -e3
+        e3 /= max(1e-9, np.linalg.norm(e3))
+        self.e3 = e3
+        self.e2 = np.cross(self.e1, self.e3)
+        # край a2 может оказаться и в +z, и в -z локальной системы — запоминаем диапазон ширины
+        zsign = 1.0 if float(np.dot(w, self.e2)) >= 0 else -1.0
+        self.z0, self.z1 = (0.0, self.width) if zsign > 0 else (-self.width, 0.0)
+
+    def key(self):
+        return tuple(int(v) for v in np.concatenate([self.a, self.b, self.a2, self.b2])) + (self.style_id,)
+
+    # --- форма
+    def sag(self) -> float:
+        s = self.len * 0.0205 * self.sag_mul
+        if self.break_to > self.break_from:
+            s *= 1.30
+        return float(min(1.25, max(0.16, s)))
+
+    def cable_sag(self) -> float:
+        return self.sag() * 0.78
+
+    def open_at(self, u: float) -> bool:
+        return self.break_to > self.break_from and self.break_from < u < self.break_to
+
+    def deck_y(self, u: float) -> float:
+        return -self.sag() * 4 * u * (1 - u)
+
+    def plank_at(self, u: float) -> bool:
+        if self.open_at(u):
+            return False
+        n = max(2, int(np.ceil(self.len / PLANK_STEP)))
+        h = int(np.floor(u * n))
+        r = _mix(h, int(self.a[0]) * 31 + int(self.a[2]) * 17, self.style_id)
+        return ((r & 0xFF) / 255.0) >= self.holes
+
+    def bbox_world(self):
+        pts = np.concatenate([self.a[None, :], self.b[None, :], self.a2[None, :], self.b2[None, :]])
+        lo = pts.min(axis=0) - 1.0
+        hi = pts.max(axis=0) + np.array([1.0, CABLE_ANCHOR + 0.6, 1.0])
+        return lo, hi
+
+    def to_local(self, o: np.ndarray, d: np.ndarray):
+        base = self.a + np.array([0.0, DECK_ANCHOR - 0.5, 0.0])
+        rel = o - base
+        ol = np.array([rel @ self.e1, rel @ self.e3, rel @ self.e2])
+        dl = np.stack([d @ self.e1, d @ self.e3, d @ self.e2], axis=-1)
+        return ol, dl
+
+
+def _mix(a: int, b: int, c: int) -> int:
+    h = (a * 374761393 + b * 668265263 + c * 2147483647) & 0xFFFFFFFF
+    h = ((h ^ (h >> 13)) * 1274126177) & 0xFFFFFFFF
+    return h ^ (h >> 16)
+
+
+def deck_boxes(deck: Deck):
+    """Коробки моста в ЛОКАЛЬНОМ базисе: (x0,x1,y0,y1,z0,z1, kind, u0, u1).
+
+    kind: 0 — доска настила, 1 — трос, 2 — подвеска, 3 — продольная балка.
+    """
+    boxes = []
+    L, Wd = deck.len, deck.width
+    za, zb = deck.z0, deck.z1
+    n = max(2, int(np.ceil(L / PLANK_STEP)))
+    for i in range(n):
+        u0, u1 = i / n, (i + 1) / n
+        if not deck.plank_at((u0 + u1) / 2):
+            continue
+        y0 = deck.deck_y((u0 + u1) / 2)
+        boxes.append((u0 * L, u1 * L + 0.01, y0 - PLANK_TH, y0, za, zb, 0, u0, u1))
+    # продольные балки под краями настила
+    m = 48
+    for k in range(m):
+        u0, u1 = k / m, (k + 1) / m
+        if deck.open_at((u0 + u1) / 2):
+            continue
+        for z in (za + 0.02, zb - 0.02):
+            y0 = deck.deck_y((u0 + u1) / 2) - PLANK_TH - 0.1
+            boxes.append((u0 * L, u1 * L + 0.02, y0, y0 + 0.1, z - 0.04, z + 0.04, 3, u0, u1))
+    # главный трос по каждой стороне + подвески
+    h = CABLE_ANCHOR - DECK_ANCHOR
+    for z in (za, zb):
+        for k in range(m):
+            u0, u1 = k / m, (k + 1) / m
+            if deck.open_at((u0 + u1) / 2):
+                continue
+            ya = h - deck.cable_sag() * 4 * u0 * (1 - u0)
+            yb = h - deck.cable_sag() * 4 * u1 * (1 - u1)
+            boxes.append((u0 * L, u1 * L + 0.02, min(ya, yb) - 0.06, max(ya, yb) + 0.06, z - 0.06, z + 0.06, 1, u0, u1))
+    nh = max(2, int(np.round(L / 1.25)))
+    for k in range(nh + 1):
+        u = k / nh
+        if deck.open_at(u):
+            continue
+        ytop = h - deck.cable_sag() * 4 * u * (1 - u)
+        ybot = deck.deck_y(u)
+        for z in (za, zb):
+            boxes.append((u * L - 0.035, u * L + 0.035, ybot, ytop, z - 0.035, z + 0.035, 2, u, u))
+    return boxes
+
+
+def _pos(v) -> tuple[float, float, float]:
+    """BlockPos в NBT: либо compound {X,Y,Z}, либо список/массив из трёх чисел."""
+    if isinstance(v, dict):
+        return (float(v["X"]), float(v["Y"]), float(v["Z"]))
+    if hasattr(v, "tolist"):
+        v = v.tolist()
+    return tuple(float(x) for x in v[:3])
 
 
 class World:
@@ -207,6 +415,7 @@ class World:
         self.names: list[str] = ["minecraft:air"]
         self.tex: list[np.ndarray | None] = [None]
         self.alp: list[np.ndarray | None] = [None]
+        self.decks: dict[tuple, Deck] = {}          # мосты из блок-энтити: у опоры лежит весь Deck
 
     def id_of(self, name: str) -> int:
         if name in self.ids:
@@ -214,8 +423,17 @@ class World:
         i = len(self.names)
         self.ids[name] = i
         self.names.append(name)
-        self.cols.append(mod_color(name) or VANILLA.get(name, (150, 150, 150)))
-        self.tex.append(mod_texture(name))
+        col = mod_color(name) or VANILLA.get(name, (150, 150, 150))
+        # «воздух» в мире бывает не только minecraft:air (cave_air, void_air) — иначе пещеры рисуются серым
+        # пластиком; настил моста (bridge_walk) вообще невидим: его геометрию рисует composite_decks
+        if name.endswith("air") or name == "riftworld:bridge_walk":
+            col = (0, 0, 0)
+        self.cols.append(col)
+        t = mod_texture(name)
+        tint = biome_tint(name, t)
+        if t is not None and tint is not None:
+            t = np.clip(t * tint[None, None, :], 0, 255)     # цвет травы/листвы, как его даёт клиент
+        self.tex.append(t)
         self.alp.append(mod_alpha(name))
         return i
 
@@ -253,7 +471,27 @@ class World:
                     self._chunk(grid, nbt, cx, cz, x0, z0, y0, y1)
         return grid
 
+    def _collect_decks(self, nbt):
+        """У каждой опоры моста (BridgePostBE) в NBT лежит весь Deck: a, b, a2, b2, style, breakFrom/To.
+
+        Поэтому рендер берёт мост из мира как есть — ничего не восстанавливаем по четырём столбам.
+        """
+        for be in nbt.get("block_entities") or []:
+            if not isinstance(be, dict) or be.get("id") != "riftworld:bridge_post":
+                continue
+            d = be.get("deck")
+            if not isinstance(d, dict):
+                continue
+            try:
+                deck = Deck(_pos(d["a"]), _pos(d["b"]), _pos(d["a2"]), _pos(d["b2"]),
+                            int(d.get("style", 0)), float(d.get("breakFrom", 0.0)),
+                            float(d.get("breakTo", 0.0)))
+            except (KeyError, TypeError, ValueError):
+                continue
+            self.decks.setdefault(deck.key(), deck)
+
     def _chunk(self, grid, nbt, cx, cz, x0, z0, y0, y1):
+        self._collect_decks(nbt)
         sections = nbt.get("sections", [])
         if isinstance(sections, dict):
             sections = [sections]
@@ -321,7 +559,8 @@ def find_blocks(region: Path, names: tuple[str, ...], cx: int, cz: int, radius: 
 # ----------------------------------------------------------------------------- CPU-трассировка
 def render(grid: np.ndarray, colors: np.ndarray, eye, target, size, fov=52.0, fog=(0.0, 0.0, 0.0),
            water: np.ndarray | None = None, textures: np.ndarray | None = None,
-           alphas: np.ndarray | None = None):
+           alphas: np.ndarray | None = None, decks=(), deck_offset=(0.0, 0.0, 0.0),
+           sky=((46, 68, 104), (128, 148, 168))):
     """numpy-DDA: каждый пиксель — луч, идём по сетке блоков, берём первую непрозрачную клетку.
 
     Вода (и прочие «полупрозрачные» id из water) не останавливает луч, а подмешивается к тому, что за ней — иначе
@@ -362,6 +601,7 @@ def render(grid: np.ndarray, colors: np.ndarray, eye, target, size, fov=52.0, fo
         frac = pos - np.floor(pos)
         tmax = np.where(dirs > 0, (1.0 - frac) * tdelta, frac * tdelta)
 
+    t_world = np.full(dirs.shape[0], np.inf)
     img = np.zeros((dirs.shape[0], 3), dtype=np.float64)   # накопленный «за» лучом цвет
     alpha = np.zeros(dirs.shape[0], dtype=np.float64)      # его непрозрачность
     done = np.zeros(dirs.shape[0], dtype=bool)
@@ -369,6 +609,7 @@ def render(grid: np.ndarray, colors: np.ndarray, eye, target, size, fov=52.0, fo
     # свет: имитация солнца сверху-слева, чтобы грани читались и был объём
     sun = np.array([-0.45, 0.82, 0.36])
     sun /= np.linalg.norm(sun)
+    tex_mean = textures.mean(axis=(1, 2)) if textures is not None else None
     active = np.arange(dirs.shape[0])
     maxsteps = int(max(sx, sy, sz) * 3)
     for _ in range(maxsteps):
@@ -415,6 +656,10 @@ def render(grid: np.ndarray, colors: np.ndarray, eye, target, size, fov=52.0, fo
             iu = np.clip(((u - np.floor(u)) * 16).astype(np.int64), 0, 15)
             iv = np.clip(((v - np.floor(v)) * 16).astype(np.int64), 0, 15)
             tex = textures[ids, iv, iu]
+            # «мип-уровень»: вдали 16x16 тексель на пиксель даёт белую рябь — подмешиваем средний цвет блока,
+            # как это делает сама игра (у нас нет мипмапов, поэтому считаем грубо, по расстоянию)
+            m = np.clip((t_hit - 4.0) / 26.0, 0.0, 0.85)[:, None]
+            tex = tex * (1 - m) + tex_mean[ids] * m
             return tex * face[:, None]
 
         def hit_uv(idx_active):
@@ -449,6 +694,7 @@ def render(grid: np.ndarray, colors: np.ndarray, eye, target, size, fov=52.0, fo
             img[oidx] = base * a[:, None] + img[oidx] * (1 - a[:, None])
             alpha[oidx] = 1.0
             done[oidx] = True
+            t_world[oidx] = t
 
         blocked = hit_o | hit_w
         active = active[~blocked]
@@ -463,11 +709,97 @@ def render(grid: np.ndarray, colors: np.ndarray, eye, target, size, fov=52.0, fo
     if rest.any():
         vv_flat = vv.reshape(-1)[:, None]
         mixv = (vv_flat * 0.5 + 0.5)
-        top, horizon = np.array([46, 68, 104])[None, :], np.array([128, 148, 168])[None, :]
+        top, horizon = np.array(sky[0], dtype=np.float64)[None, :], np.array(sky[1], dtype=np.float64)[None, :]
         skycol = horizon * (1 - mixv) + top * mixv
         a = (1 - alpha[rest])[:, None]
         img[rest] = skycol[rest] * a + img[rest] * (1 - a)
+    # мосты рисуем ПОСЛЕ неба: иначе alpha<1 в небе затрёт настил
+    if len(decks):
+        img = composite_decks(img, t_world, dirs,
+                              np.array([ex, ey, ez], dtype=np.float64) + np.array(deck_offset, dtype=np.float64),
+                              decks)
     return np.clip(img, 0, 255).astype(np.uint8).reshape(H, W, 3)
+
+
+def composite_decks(img: np.ndarray, t_world: np.ndarray, dirs: np.ndarray, origin: np.ndarray, decks) -> np.ndarray:
+    """Второй проход: аналитическая геометрия мостов (доски, балки, тросы, подвески) с проверкой глубины.
+
+    Всё считается в локальном базисе моста, поэтому доски и балки — обычные axis-aligned боксы, а тросы —
+    цепочка боксов вдоль катенары. Мир при этом остаётся воксельным: мост кладётся поверх только там,
+    где он ближе блоков.
+    """
+    out = img.copy()
+    n_pix = dirs.shape[0]
+    for deck in decks:
+        lo, hi = deck.bbox_world()
+        with np.errstate(divide="ignore", invalid="ignore"):
+            inv = 1.0 / np.where(dirs == 0, 1e-12, dirs)
+            t0 = (lo[None, :] - origin[None, :]) * inv
+            t1 = (hi[None, :] - origin[None, :]) * inv
+            tnear = np.minimum(t0, t1).max(axis=1)
+            tfar = np.maximum(t0, t1).min(axis=1)
+        cand = np.flatnonzero((tfar > np.maximum(tnear, 0.0)) & (tnear < t_world))
+        if cand.size == 0:
+            continue
+        d = dirs[cand]
+        ol, dl = deck.to_local(origin, d)   # ol — точка (3,), dl — направления (N,3)
+        with np.errstate(divide="ignore", invalid="ignore"):
+            invl = 1.0 / np.where(dl == 0, 1e-12, dl)
+
+        best_t = np.full(cand.size, np.inf)
+        best_box = np.full(cand.size, -1, dtype=np.int32)
+        best_axis = np.zeros(cand.size, dtype=np.int8)
+        boxes = deck_boxes(deck)
+        for bi, (x0, x1, y0, y1, z0, z1, kind, u0, u1) in enumerate(boxes):
+            with np.errstate(divide="ignore", invalid="ignore"):
+                ax0 = (x0 - ol[0]) * invl[:, 0]
+                ax1 = (x1 - ol[0]) * invl[:, 0]
+                ay0 = (y0 - ol[1]) * invl[:, 1]
+                ay1 = (y1 - ol[1]) * invl[:, 1]
+                az0 = (z0 - ol[2]) * invl[:, 2]
+                az1 = (z1 - ol[2]) * invl[:, 2]
+                nx = np.minimum(ax0, ax1)
+                ny = np.minimum(ay0, ay1)
+                nz = np.minimum(az0, az1)
+                fx = np.maximum(ax0, ax1)
+                fy = np.maximum(ay0, ay1)
+                fz = np.maximum(az0, az1)
+                near = np.maximum(np.maximum(nx, ny), nz)
+                far = np.minimum(np.minimum(fx, fy), fz)
+            hit = (far > np.maximum(near, 0.0)) & (near > 0) & (near < best_t)
+            if not hit.any():
+                continue
+            axes = np.argmax(np.stack([nx, ny, nz], axis=1), axis=1)
+            best_t = np.where(hit, near, best_t)
+            best_box = np.where(hit, bi, best_box)
+            best_axis = np.where(hit, axes, best_axis)
+
+        painted = best_box >= 0
+        if not painted.any():
+            continue
+        pidx = cand[painted]
+        bi = best_box[painted]
+        tt = best_t[painted]
+        ax = best_axis[painted]
+        loc = ol[None, :] + dl[painted] * tt[:, None]
+        u = np.clip(loc[:, 0] / max(1e-9, deck.len), 0, 1)
+        w = np.clip((loc[:, 2] - deck.z0) / max(1e-9, deck.width), 0, 1)
+        kind = np.array([boxes[b][6] for b in bi])
+        # свет: верх настила светлее, бока темнее; трос и подвески — тёмный металл/пенька
+        shade = np.where(ax == 1, 1.0, np.where(ax == 0, 0.82, 0.74))
+        # какая грань: если луч идёт вниз и попал по y — это верхняя поверхность
+        top_face = (ax == 1) & (dl[painted][:, 1] < 0)
+        shade = np.where(top_face, 1.05, shade)
+        col = np.zeros((pidx.size, 3))
+        plank = kind == 0
+        if plank.any():
+            n = max(2, int(np.ceil(deck.len / PLANK_STEP)))
+            iu = np.clip((w[plank] * 16).astype(int), 0, 15)
+            iv = np.clip((((u[plank] * n) % 1.0) * 16).astype(int), 0, 15)
+            col[plank] = deck.plank_tex[iv, iu]
+        col[~plank] = deck.cable_col[None, :]
+        out[pidx] = np.clip(col * shade[:, None], 0, 255)
+    return out
 
 
 def main() -> int:
@@ -488,6 +820,10 @@ def main() -> int:
     ap.add_argument("--ymax", type=int, default=176)
     ap.add_argument("--focus", default=None,
                     help="имена блоков через запятую: камера сама наведётся на них (например bridge_post,bridge_walk)")
+    ap.add_argument("--dimension", choices=("overworld", "nether"), default="overworld",
+                    help="небо и дымка под измерение (в аду сизо-бурое небо без солнца)")
+    ap.add_argument("--deck-cam", action="store_true",
+                    help="кадрировать мост: камера ставится сбоку от ближайшего настила, а не от центра карты")
     ap.add_argument("--check", action="store_true", help="самопроверка рендерера (CPU-only, детерминизм)")
     args = ap.parse_args()
 
@@ -530,9 +866,34 @@ def main() -> int:
     for i, n in enumerate(w.names):
         water[i] = n.endswith("_water") or n == "minecraft:water"
     ss = max(1, args.ss)
+    near = [d for d in w.decks.values()
+            if abs((d.a[0] + d.b[0]) / 2 - cx) < r + 32 and abs((d.a[2] + d.b[2]) / 2 - cz) < r + 32]
+    if args.deck_cam and near:
+        # камера «как фотограф»: сбоку от пролёта, чуть выше настила, мост занимает кадр целиком
+        d0 = min(near, key=lambda dd: float(np.linalg.norm((dd.a + dd.b) / 2 - np.array([cx, 0, cz]))))
+        c = (d0.a + d0.b + d0.a2 + d0.b2) / 4
+        side = np.cross(d0.e1, np.array([0.0, 1.0, 0.0]))
+        side /= max(1e-9, float(np.linalg.norm(side)))
+        if float(np.dot(side, np.array([ex - c[0], 0, ez - c[2]]))) < 0:   # остаёмся на той же стороне, что и раньше
+            side = -side
+        # длинный пролёт (50 блоков) снимаем не «с дистанции длины»: между камерой и мостом оказывается склон,
+        # поэтому держимся рядом и расширяем угол, а не отъезжаем
+        dist_deck = max(7.0, min(26.0, d0.len * 0.72))
+        e = (c + side * dist_deck + d0.e1 * (d0.len * 0.08)
+             + np.array([0.0, max(2.4, min(6.5, d0.len * 0.19)), 0.0]))
+        ex, ez, eye_y = float(e[0]), float(e[2]), float(e[1])
+        tx, ty, tz = float(c[0]), float(c[1] - 0.25), float(c[2])
+        args.fov = max(args.fov, 55.0)
+        print(f"[мост-камера] пролёт {d0.len:.1f}×{d0.width:.1f}, глаз {ex:.1f},{eye_y:.1f},{ez:.1f} -> "
+              f"центр настила {tx:.1f},{ty:.1f},{tz:.1f}")
+    if near:
+        print(f"[мосты] в кадре {len(near)}: " + ", ".join(
+            f"style {d.style_id} {int(d.len)}×{int(d.width)}" for d in near))
+    sky = ((46, 68, 104), (128, 148, 168)) if args.dimension == "overworld" else ((58, 26, 22), (150, 74, 42))
     img = render(grid, colors, (ex - (cx - r), eye_y - args.ymin, ez - (cz - r)),
                  (tx - (cx - r), ty - args.ymin, tz - (cz - r)), (W * ss, H * ss), fov=args.fov, water=water,
-                 textures=w.texture_table(), alphas=w.alpha_table())
+                 textures=w.texture_table(), alphas=w.alpha_table(), decks=near,
+                 deck_offset=(cx - r, args.ymin, cz - r), sky=sky)
     if ss > 1:
         from PIL import Image as _I
         img = np.asarray(_I.fromarray(img).resize((W, H), _I.LANCZOS))

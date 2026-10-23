@@ -26,22 +26,29 @@ ROOT = HERE.parents[1]
 OUT = ROOT / "reports/rev9_cpu"
 DEFAULT_REGION = Path("/tmp/mcserver/world/dimensions/riftworld/elisar/region")
 
-# id, центр (x,z), радиус обзора, дистанция камеры, добавка к высоте глаз, поворот, подпись
+NETHER = Path("/tmp/mcserver/world/DIM-1/region")
+
+# id, центр (x,z), радиус обзора, дистанция камеры, добавка к высоте глаз, поворот, подпись, доп. ключи
 SUBJECTS = [
     ("01_violet_hills", 1327, 225, 110, 95, 45, 205,
-     "Биом 04 «Фиолетовые холмы»: сиреневые деревья, церкви и река"),
-    ("02_violet_bridge", 1384, 240, 44, 26, 20, 315,
-     "Мост через реку в биоме 04: 4 опоры, настил (рендер-геометрия) и коллизия"),
+     "Биом 04 «Фиолетовые холмы»: сиреневые деревья, церкви и река", {}),
+    ("02_violet_bridge", 1384, 240, 30, 26, 20, 315,
+     "Мост в биоме 04: доски с провисанием, балки, тросы и подвески — рендер-геометрия из NBT опор",
+     {"deck": True}),
     ("03_sizo_grove", 836, -2316, 110, 100, 45, 200,
-     "Биом 05 «Роща Сизо»: сизые деревья на острове"),
+     "Биом 05 «Роща Сизо»: сизые деревья на острове", {}),
     ("04_gardens", -1200, -1210, 120, 110, 50, 195,
-     "Биом 07 «Висячие сады»: ступенчатые террасы и перьевые деревья"),
-    ("05_gardens_bridge", 3510, -4184, 62, 40, 26, 160,
-     "Мост через промоину в биоме 07"),
+     "Биом 07 «Висячие сады»: ступенчатые террасы и перьевые деревья", {}),
+    ("05_gardens_bridge", 3510, -4183, 46, 40, 26, 160,
+     "Длинный мост в биоме 07 (50 блоков, настил 3 блока) — вид вдоль пролёта",
+     {"deck": True, "eye": (3496, 104.5, -4169), "target_y": 99, "fov": 62}),
     ("06_mist_keep", 1837, 1120, 64, 46, 26, 200,
-     "Туманный дозор: сосны на каменных останцах"),
+     "Туманный дозор: сосны на каменных останцах", {}),
     ("07_temple", 8, 8, 96, 105, 40, 215,
-     "Великий храм перехода (центр карты)"),
+     "Великий храм перехода (центр карты)", {}),
+    ("08_burnt_bridge_nether", 118, 112, 34, 26, 6, 90,
+     "Ад: сгоревший мост (style 3) — обгоревшие доски с провалами и цепи вместо троса",
+     {"deck": True, "dim": NETHER, "dimension": "nether"}),
 ]
 
 
@@ -85,17 +92,30 @@ def main() -> int:
     W, H = (640, 360) if args.quick else (1024, 576)
     made = []
     t_all = time.time()
-    for name, cx, cz, radius, dist, eye_dy, yaw, caption in SUBJECTS:
+    for name, cx, cz, radius, dist, eye_dy, yaw, caption, extra in SUBJECTS:
         if args.only and args.only not in name:
             continue
-        lo, hi = surface_span(Path(args.region), cx, cz, radius)
+        dim = str(extra.get("dim", args.region))
+        lo, hi = surface_span(Path(dim), cx, cz, radius)
         target_y = hi - 2
         eye_y = hi + eye_dy
         out_png = out / f"{name}.png"
-        cmd = [sys.executable, str(HERE / "render_cpu.py"), "--dim", args.region,
+        cmd = [sys.executable, str(HERE / "render_cpu.py"), "--dim", dim,
                "--centre", str(cx), str(cz), "--radius", str(radius), "--size", f"{W}x{H}",
                "--yaw", str(yaw), "--dist", str(dist), "--eye-y", str(eye_y),
                "--target-y", str(target_y), "--out", str(out_png)]
+        if extra.get("deck"):
+            cmd.append("--deck-cam")
+        if extra.get("dimension"):
+            cmd += ["--dimension", str(extra["dimension"])]
+        if extra.get("eye"):
+            cmd = [c for c in cmd if c not in ("--eye-y", str(eye_y))]
+            cmd += ["--eye", *[str(v) for v in extra["eye"]]]
+        if extra.get("target_y") is not None:
+            cmd = [c for c in cmd if c not in ("--target-y", str(target_y))]
+            cmd += ["--target-y", str(extra["target_y"])]
+        if extra.get("fov"):
+            cmd += ["--fov", str(extra["fov"])]
         t0 = time.time()
         r = subprocess.run(cmd, capture_output=True, text=True)
         if r.returncode != 0:

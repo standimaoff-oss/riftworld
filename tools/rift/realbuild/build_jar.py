@@ -85,10 +85,14 @@ def compile_java(argfile):
     res = subprocess.run([str(JAVA), "-jar", str(ECJ), "-17", "-nowarn", "-proc:none",
                           "-d", str(classes), "-encoding", "UTF-8", "-cp", cp, f"@{argfile}"],
                          capture_output=True, text=True)
-    errors = [ln for ln in res.stdout.splitlines() if re.match(r"\d+\. ERROR", ln)]
-    if errors:
-        print("\n".join(res.stdout.splitlines()[:120]))
-        raise SystemExit(f"ECJ: {len(errors)} ошибок компиляции")
+    # ECJ печатает диагностику в STDERR: раньше ошибка компиляции проходила мимо проверки, и jar уезжал
+    # без скомпилированного класса (команды «исчезали» в игре). Теперь ловим и stderr, и код возврата.
+    diag = res.stdout + "\n" + res.stderr
+    errors = [ln for ln in diag.splitlines() if re.match(r"\d+\. ERROR", ln.strip())]
+    problems = re.findall(r"(\d+) problem", diag)
+    if errors or res.returncode != 0 or (problems and int(problems[-1]) > 0):
+        print("\n".join(diag.splitlines()[:120]))
+        raise SystemExit(f"ECJ: {len(errors) or (problems[-1] if problems else '?')} ошибок компиляции")
     count = sum(1 for _ in classes.rglob("*.class"))
     return classes, count
 

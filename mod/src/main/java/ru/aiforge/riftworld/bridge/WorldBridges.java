@@ -62,18 +62,26 @@ public final class WorldBridges {
                 BlockPos pb = bank(vr.meadow, (int) Math.floor(bx), (int) Math.floor(bz));
                 if (pa == null || pb == null) continue;
                 if (Math.abs(pa.getY() - pb.getY()) > 5) continue;
-                out.add(deckOf(pa, pb, 1, BridgeStyle.GARDEN.id, 0F, 0F));
+                out.add(deckOf(pa, pb, 2, BridgeStyle.GARDEN.id, 0F, 0F));   // 2 блока в ширину: настил, а не «бревно»
             }
 
         //----- biome 07: the rare gullies bridged on the terraces
-        for (int sx = -1; sx <= 1; ++sx)
-            for (int sz = -1; sz <= 1; ++sz) {
-                WaterfallGardens.Region gr = WaterfallGardens.region(
-                        Math.floorDiv(ox, WaterfallGardens.SUPER) + sx, Math.floorDiv(oz, WaterfallGardens.SUPER) + sz);
+        // Соседние регионы иногда дают ДВА почти одинаковых пролёта в одном месте (с разницей 1-2 блока по высоте),
+        // и мост строился дважды — один настил над другим. Поэтому кандидатов собираем с запасом (±2 региона) и из
+        // пары «одинаковых» оставляем только тот, у которого меньше канонический ключ региона: выбор не зависит от
+        // того, из какого чанка спросили генератор, и мир получается одинаковым при любой генерации.
+        record Cand(BridgeDeckGeom.Deck deck, long key, int ord) {
+        }
+        List<Cand> cands = new ArrayList<>(2);
+        for (int sx = -2; sx <= 2; ++sx)
+            for (int sz = -2; sz <= 2; ++sz) {
+                int rx = Math.floorDiv(ox, WaterfallGardens.SUPER) + sx;
+                int rz = Math.floorDiv(oz, WaterfallGardens.SUPER) + sz;
+                WaterfallGardens.Region gr = WaterfallGardens.region(rx, rz);
                 if (gr == null) continue;
                 for (CityPlan.Bridge b : gr.bridges) {
                     double mx = (b.ax() + b.bx()) / 2, mz = (b.az() + b.bz()) / 2;
-                    if (Math.abs(mx - ox) > 30 || Math.abs(mz - oz) > 30) continue;
+                    if (Math.abs(mx - ox) > 34 || Math.abs(mz - oz) > 34) continue;
                     double dx = b.bx() - b.ax(), dz = b.bz() - b.az();
                     double l = Math.hypot(dx, dz);
                     if (l < 3) continue;
@@ -81,9 +89,18 @@ public final class WorldBridges {
                     int half = (int) Math.ceil(l / 2) + 1;
                     BlockPos pa = new BlockPos((int) Math.round(mx - ux * half), b.ya(), (int) Math.round(mz - uz * half));
                     BlockPos pb = new BlockPos((int) Math.round(mx + ux * half), b.yb(), (int) Math.round(mz + uz * half));
-                    out.add(deckOf(pa, pb, 1, BridgeStyle.GARDEN.id, 0F, 0F));
+                    cands.add(new Cand(deckOf(pa, pb, 3, BridgeStyle.GARDEN.id, 0F, 0F),
+                            ((long) rx << 32) ^ (rz & 0xffffffffL), cands.size()));
                 }
             }
+        for (Cand c : cands) {
+            boolean shadowed = false;
+            for (Cand o : cands) {
+                if (o == c || o.key > c.key || (o.key == c.key && o.ord > c.ord)) continue;
+                if (sameFootprint(o.deck, c.deck)) { shadowed = true; break; }
+            }
+            if (!shadowed) out.add(c.deck);
+        }
 
         //----- Ashen Lands: burnt, collapsed bridges on two charred stone piers over the ash plain
         int ocean = plan.ocean;
@@ -98,9 +115,31 @@ public final class WorldBridges {
             out.add(deckOf(new BlockPos(cx - half, y, cz), new BlockPos(cx + half, y, cz),
                     2, BridgeStyle.BURNT.id, 0.44F, 0.63F));
         }
+        dedupe(out);
         // trim to those that really can reach this chunk
         out.removeIf(d -> !touches(d, x0, z0));
         return out;
+    }
+
+    /** Убирает мосты-двойники: соседние регионы иногда дают два пролёта почти в одном месте (с разницей 1-2 блока
+     *  по высоте), и в мире появлялись два настила друг над другом. Оставляем первый, второй отбрасываем. */
+    private static void dedupe(List<BridgeDeckGeom.Deck> decks) {
+        List<BridgeDeckGeom.Deck> keep = new ArrayList<>(decks.size());
+        for (BridgeDeckGeom.Deck d : decks) {
+            boolean dup = false;
+            for (BridgeDeckGeom.Deck k : keep)
+                if (sameFootprint(d, k)) { dup = true; break; }
+            if (!dup) keep.add(d);
+        }
+        decks.clear();
+        decks.addAll(keep);
+    }
+
+    /** Два пролёта считаются одним и тем же мостом, если совпали середина и длина. */
+    private static boolean sameFootprint(BridgeDeckGeom.Deck a, BridgeDeckGeom.Deck b) {
+        double ax = (a.a().getX() + a.b().getX()) / 2.0, az = (a.a().getZ() + a.b().getZ()) / 2.0;
+        double bx = (b.a().getX() + b.b().getX()) / 2.0, bz = (b.a().getZ() + b.b().getZ()) / 2.0;
+        return Math.hypot(ax - bx, az - bz) < 6.0 && Math.abs(a.len() - b.len()) < 8.0;
     }
 
     private static boolean touches(BridgeDeckGeom.Deck d, int x0, int z0) {
@@ -127,12 +166,19 @@ public final class WorldBridges {
             if (d.style() == BridgeStyle.BURNT) piers(level, d, ocean, x0, z0);
             for (BlockPos p : d.corners()) {
                 if (p.getX() < x0 || p.getX() > x0 + 15 || p.getZ() < z0 || p.getZ() > z0 + 15) continue;
+                // Rev 9.1: опора всегда стоит ровно там, где её поставил план моста. Раньше «висищая» опора
+                // опускалась на 2 блока и получала СВОЮ копию Deck со сдвигом — в сохранении оказывались два
+                // разных настила в одном месте (и клиент рисовал мост дважды). Теперь под опору просто кладётся
+                // каменная пята, а Deck у всех четырёх опор один и тот же.
                 BlockPos ground = p.below();
-                boolean supported = !level.getBlockState(ground).isAir();
-                BlockPos at = supported ? p : p.below(2);
-                level.setBlock(at, post.setValue(ru.aiforge.riftworld.block.BridgePostBlock.STYLE, d.styleId()), 2);
-                if (level.getBlockEntity(at) instanceof BridgePostBE be) {
-                    be.stand(shift(d, at.getY() - p.getY()));
+                if (level.getBlockState(ground).isAir()) {
+                    level.setBlock(ground, d.style() == BridgeStyle.BURNT
+                            ? ru.aiforge.riftworld.registry.CastleBlocks.SCORCHED_STONE.get().defaultBlockState()
+                            : ru.aiforge.riftworld.registry.CastleBlocks.ASHLAR.get().defaultBlockState(), 2);
+                }
+                level.setBlock(p, post.setValue(ru.aiforge.riftworld.block.BridgePostBlock.STYLE, d.styleId()), 2);
+                if (level.getBlockEntity(p) instanceof BridgePostBE be) {
+                    be.stand(d);
                     be.setChanged();
                 }
             }
