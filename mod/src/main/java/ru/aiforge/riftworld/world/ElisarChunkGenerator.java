@@ -588,6 +588,9 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                         if (c.pondRim || c.pond) yield st(ru.aiforge.riftworld.registry.CastleBlocks.ASHLAR);            // travertine
                                         yield vnoise(x * 0.14, z * 0.14, 67) > 0.60 ? moss : grass;
                                     }
+                                    if (c.isl.kind == 7) {
+                                        yield hash(x, z, 24) < 0.05 ? moss : grass;      // ровный луг, мох редкими пятнами
+                                    }
                                     boolean groveTan = c.isl.kind == SizoGrove.KIND || (c.isl.kind != 4 && SizoGrove.inside(x + 0.5, z + 0.5));
                                     yield groveTan
                                             ? (vnoise(x * 0.15, z * 0.15, 66) > 0.58 ? moss : grass)
