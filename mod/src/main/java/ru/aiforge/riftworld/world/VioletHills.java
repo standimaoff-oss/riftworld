@@ -113,6 +113,10 @@ public final class VioletHills {
             }
         }
 
+        private static String faceTo(double dx, double dz) {
+            return Math.abs(dx) >= Math.abs(dz) ? (dx > 0 ? "east" : "west") : (dz > 0 ? "south" : "north");
+        }
+
         /**
          * Рельеф биома (Rev 9): настоящие пологие холмы вместо плоского блина —
          * три октавы рельефа + центральный курган + гребни-волны, лощина под реку и
