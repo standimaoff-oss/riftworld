@@ -333,8 +333,8 @@ put "$((VHX + 55))" "$((VHZ + 40))"
 ROT 215 12
 sleep 10
 shot "16_violet_hills_fields"
-view "$TMX" "$((TMY + 62))" "$((TMZ - 175))" 0 22 24 "17_terraced_air"          # массив целиком
-view "$((TMX + 150))" "$((TMY - 10))" "$TMZ" 270 8 20 "18_terraced_side"        # ярусы в профиль
+view "$TMX" "$((TMY + 26))" "$((TMZ - 150))" 0 16 24 "17_terraced_air"          # массив целиком
+view "$((TMX + 120))" "$((TMY + 4))" "$((TMZ + 120))" 225 12 20 "18_terraced_side"  # ярусы в профиль
 put "$TMX" "$((TMZ + 40))"
 ROT 180 4
 sleep 12

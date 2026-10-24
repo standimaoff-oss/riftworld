@@ -581,7 +581,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                 case S_PLOT -> cobble;         // pebble apron around the houses (reference)
                                 default -> {
                                     if (c.mtn) {
-                                        yield vnoise(x * 0.12, z * 0.12, 68) > 0.56 ? moss : grass;   // зелёные полки
+                                        yield vnoise(x * 0.12, z * 0.12, 68) > 0.38 ? moss : grass;   // зелёные полки
                                     }
                                     if (c.garden) {
                                         if (c.springy) yield ElisarBlocks.LANTERN.get().defaultBlockState();   // hot spring: warm glow in the pool bed
@@ -661,12 +661,12 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                 }
                             } else if (c.mtn) {
                                 // rev 9: полки многоуровневых гор - трава, цветы, низкие кусты
-                                if (h < 0.34) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
-                                else if (h < 0.44 && vnoise(x * 0.1, z * 0.1, 158) > 0.50) {
+                                if (h < 0.11) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
+                                else if (h < 0.30 && vnoise(x * 0.1, z * 0.1, 158) > 0.50) {
                                     int f = (int) (hash(x, z, 159) * 100);
                                     chunk.setBlockState(mp.set(x, c.top + 1, z), st(f < 34 ? ElisarBlocks.FLOWERS : f < 62 ? ElisarBlocks.VIOLET_BLOOM
                                             : f < 84 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
-                                } else if (h < 0.50 && vnoise(x * 0.13, z * 0.13, 160) > 0.62
+                                } else if (h < 0.36 && vnoise(x * 0.13, z * 0.13, 160) > 0.62
                                         && chunk.getBlockState(mp.set(x, c.top + 1, z)).isAir()) {
                                     chunk.setBlockState(mp.set(x, c.top + 1, z), ElisarBlocks.SIZO_LEAVES.get().defaultBlockState()
                                             .setValue(LeavesBlock.PERSISTENT, true).setValue(LeavesBlock.DISTANCE, 1), false);   // куст на полке
