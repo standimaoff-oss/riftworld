@@ -335,10 +335,7 @@ sleep 10
 shot "16_violet_hills_fields"
 view "$TMX" "$((TMY + 26))" "$((TMZ - 150))" 0 16 24 "17_terraced_air"          # массив целиком
 view "$((TMX + 120))" "$((TMY + 4))" "$((TMZ + 120))" 225 12 20 "18_terraced_side"  # ярусы в профиль
-put "$((TMX - 55))" "$((TMZ + 95))"
-ROT 335 22
-sleep 12
-shot "19_terraced_shelf"
+view "$((TMX - 40))" "$((TMY + 34))" "$((TMZ - 150))" 0 30 18 "19_terraced_shelf"   # полки сверху: читается «пирог» ярусов
 RCON effect clear TestPlayer >/dev/null 2>&1 || true
 key F1
 sleep 1
