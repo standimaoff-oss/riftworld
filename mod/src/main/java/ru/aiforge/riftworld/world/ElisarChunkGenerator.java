@@ -78,6 +78,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         boolean rail, post, railX;
         boolean fence;            // rim fence of the city terraces
         boolean garden;           // biome 07 zone (terraced hub or its sea fringe)
+        boolean mtn;              // rev 9: многоуровневые горы (свои ярусы, пруды и водопады)
+        TerracedMountains.Region mtnRegion;
         boolean pond, pondRim, springy;   // biome 07 terrace pools and hot-spring cores
     }
 
@@ -271,6 +273,17 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                     }
                 }
             }
+            if (isl.kind == 7) {                                       // Фиолетовые холмы: настоящий рельеф (rev 9)
+                VioletHills.Region vh = VioletHills.regionAt(px, pz);
+                if (vh != null && vh.meadow == isl) top = vh.hills(px, pz);
+            } else if (isl.kind == TerracedMountains.KIND) {           // Многоуровневые горы: ярусы-полки (rev 9)
+                TerracedMountains.Region tm = TerracedMountains.regionAt(px, pz);
+                if (tm != null && tm.massif == isl) {
+                    top = TerracedMountains.top(tm, px, pz);
+                    c.mtn = true;
+                    c.mtnRegion = tm;
+                }
+            }
             if (isl.kind == 5) {                                       // castle plateau
                 double o = CastleSite.outside(px, pz);
                 top = o <= 0 ? CastleSite.Y : CastleSite.Y + (top - CastleSite.Y) * smooth(o / 9.0);
@@ -300,6 +313,27 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 top = terraceTop(top, plan.ocean);
             }
             c.top = (int) Math.floor(top);
+            // rev 9: пруды на полках и водопады с кромок ярусов
+            if (c.mtn && c.mtnRegion != null) {
+                if (TerracedMountains.pondAt(c.mtnRegion, px, pz, top) && c.top > plan.ocean + 6) {
+                    int ct = c.top;
+                    c.waterTop = ct;
+                    c.waterBottom = ct - 2;
+                    c.top = ct - 3;
+                    c.pond = true;
+                } else if (c.waterTop == Integer.MIN_VALUE) {
+                    double hi = 0;
+                    for (int dk = 0; dk < 4; ++dk) {
+                        double nx = px + (dk == 0 ? 1 : dk == 1 ? -1 : 0), nz = pz + (dk == 2 ? 1 : dk == 3 ? -1 : 0);
+                        double nt = TerracedMountains.top(c.mtnRegion, nx, nz);
+                        if (nt > hi) hi = nt;
+                    }
+                    if (hi > c.top + 4.5 && vnoise(px * 0.31, pz * 0.31, 709) > 0.46) {
+                        c.fallTop = (int) Math.floor(hi);
+                        c.fallBottom = c.top + 1;
+                    }
+                }
+            }
             // biome 07: terrace pools / hot springs carve back into the shelves
             WaterfallGardens.Region gr = WaterfallGardens.regionAt(px, pz);
             if (isl.kind == WaterfallGardens.KIND && gr != null && gr.hub == isl) {
@@ -496,6 +530,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         BlockState grass = st(ElisarBlocks.GRASS), cobble = st(ElisarBlocks.COBBLE), path = st(ElisarBlocks.PATH), plank = st(ElisarBlocks.SIZO_PLANKS);
         BlockState tall = st(ElisarBlocks.TALL_GRASS), flowers = st(ElisarBlocks.FLOWERS), log = st(ElisarBlocks.SIZO_LOG);
         BlockState moss = st(ElisarBlocks.MOSS), crust = st(ElisarBlocks.CRUST);
+        BlockState ashlar = st(ru.aiforge.riftworld.registry.CastleBlocks.ASHLAR);
         BlockState aurite = st(ElisarBlocks.AURITE_ORE);
         Col[][] cols = new Col[18][18];
         for (int dx = -1; dx <= 16; ++dx)
@@ -545,10 +580,16 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                 case S_PLANK -> plank;
                                 case S_PLOT -> cobble;         // pebble apron around the houses (reference)
                                 default -> {
+                                    if (c.mtn) {
+                                        yield vnoise(x * 0.12, z * 0.12, 68) > 0.66 ? moss : grass;   // зелёные полки, мох редкими пятнами
+                                    }
                                     if (c.garden) {
                                         if (c.springy) yield ElisarBlocks.LANTERN.get().defaultBlockState();   // hot spring: warm glow in the pool bed
                                         if (c.pondRim || c.pond) yield st(ru.aiforge.riftworld.registry.CastleBlocks.ASHLAR);            // travertine
                                         yield vnoise(x * 0.14, z * 0.14, 67) > 0.60 ? moss : grass;
+                                    }
+                                    if (c.isl.kind == 7) {
+                                        yield hash(x, z, 24) < 0.05 ? moss : grass;      // ровный луг, мох редкими пятнами
                                     }
                                     boolean groveTan = c.isl.kind == SizoGrove.KIND || (c.isl.kind != 4 && SizoGrove.inside(x + 0.5, z + 0.5));
                                     yield groveTan
@@ -556,15 +597,24 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                             : (c.isl.kind != 4 && vnoise(x * 0.11, z * 0.11, 21) > 0.74 || hash(x, z, 23) < 0.012) ? moss : grass;
                                 }
                             };
+                        } else if (c.mtn) {
+                            // слоистые ярусы: под травой — почва, ниже известняк с прослоями мха, в глубине — камень
+                            int band = Math.floorMod(y + (int) (hash(x, z, 712) * 3), 7);
+                            s = y >= c.top - 1 ? soil
+                                    : y > c.top - 14 ? (band == 0 ? mossy : (band <= 3 ? ashlar : stone))
+                                    : (hash(x, y, z) < 0.08 ? mossy : stone);
+                            if (y <= c.top - 2 && y >= c.top - 6
+                                    && vnoise(x * 0.33, z * 0.33, 313) > 0.80 && hash(x, y, z) < 0.88) s = aurite;
                         } else if (y == c.top - 1) {
-                            s = crust;
+                            // под травой — почва, а не белёсая корка: иначе склоны читаются как каменные ступени
+                            s = c.surface == S_GRASS || c.surface == S_PATH ? soil : crust;
                         } else if (y <= c.bottom + 1 && hash(x, z, y) < 0.5 || hash(x, y, z) < 0.07) {
                             s = mossy;
                         } else {
                             s = stone;
                             // улучшение биомов: ауритовая руда (монетоносная) змеится вдоль ярусов Висячих садов,
                             // прячась на глубине 2..6 под поверхностью полки - волно-лентовые прожилки с промывками
-                            if (c.garden && y <= c.top - 2 && y >= c.top - 6
+                            if ((c.garden || c.mtn) && y <= c.top - 2 && y >= c.top - 6
                                     && vnoise(x * 0.33, z * 0.33, 313) > 0.80 && hash(x, y, z) < 0.88) s = aurite;
                         }
                         chunk.setBlockState(mp.set(x, y, z), s, false);
@@ -614,6 +664,18 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                         chunk.setBlockState(mp.set(x, c.top + 1, z), st(f == 0 ? ElisarBlocks.VIOLET_BLOOM : f == 1 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
                                     }
                                 }
+                            } else if (c.mtn) {
+                                // rev 9: полки многоуровневых гор - трава, цветы, низкие кусты
+                                if (h < 0.11) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
+                                else if (h < 0.30 && vnoise(x * 0.1, z * 0.1, 158) > 0.50) {
+                                    int f = (int) (hash(x, z, 159) * 100);
+                                    chunk.setBlockState(mp.set(x, c.top + 1, z), st(f < 34 ? ElisarBlocks.FLOWERS : f < 62 ? ElisarBlocks.VIOLET_BLOOM
+                                            : f < 84 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
+                                } else if (h < 0.36 && vnoise(x * 0.13, z * 0.13, 160) > 0.62
+                                        && chunk.getBlockState(mp.set(x, c.top + 1, z)).isAir()) {
+                                    chunk.setBlockState(mp.set(x, c.top + 1, z), ElisarBlocks.SIZO_LEAVES.get().defaultBlockState()
+                                            .setValue(LeavesBlock.PERSISTENT, true).setValue(LeavesBlock.DISTANCE, 1), false);   // куст на полке
+                                }
                             } else if (c.garden) {
                                 // biome 07: nearly-jungle - thick grass, colour splashes, creeping shrubs (tiny trees handled at region)
                                 if (h < 0.40) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
@@ -637,7 +699,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                     }
                 }
                 // biome 07: hanging vine curtains draped from the cliff lip above this column (the reference look)
-                if (c.garden && c.surface == S_GRASS && c.waterTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE) {
+                if ((c.garden || c.mtn) && c.surface == S_GRASS && c.waterTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE) {
                     int maxN = Integer.MIN_VALUE;
                     for (Direction d : Direction.Plane.HORIZONTAL) {
                         Col n = cols[dx + 1 + d.getStepX()][dz + 1 + d.getStepZ()];

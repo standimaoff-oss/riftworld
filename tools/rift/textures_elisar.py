@@ -81,7 +81,7 @@ save(soil, "elisar_soil")
 side = soil.copy()
 r = np.random.RandomState(5)
 for x in range(16):
-    d = 3 + r.randint(0, 3)
+    d = 7 + r.randint(0, 4)
     for y in range(d):
         side[y, x, :3] = rgb(GRASS[r.randint(len(GRASS))]) + r.randint(-6, 6)
 save(side, "elisar_grass_side")
@@ -286,6 +286,8 @@ for y in range(16):
             ch[y, x, :3] *= 0.86
 save(ch, "elisar_chain")
 # plants
+# rev 9: трава и цветы — зелёные (раньше были белёсыми и в кадре читались как «белые палки»)
+GRASS_G = ['#7fa257', '#6d8f48', '#8fb269', '#5f8040']
 tg = np.zeros((16, 16, 4))
 r = np.random.RandomState(31)
 for k in range(9):
@@ -295,12 +297,12 @@ for k in range(9):
     for t in range(h):
         xx = int(x + lean * t)
         if 0 <= xx < 16:
-            tg[15 - t, xx] = list(rgb(GRASS[r.randint(len(GRASS))]) * (0.8 + 0.3 * t / h)) + [255]
+            tg[15 - t, xx] = list(rgb(GRASS_G[r.randint(len(GRASS_G))]) * (0.82 + 0.28 * t / h)) + [255]
 save(tg, "elisar_tall_grass")
 fl = np.zeros((16, 16, 4))
 for (x, top, col) in ((3, 6, '#e8e0f0'), (8, 3, '#f2ecd8'), (12, 7, '#dfe8ea')):
     for t in range(15, top, -1):
-        fl[t, x] = list(rgb('#9a9c80')) + [255]
+        fl[t, x] = list(rgb(['#6f9548', '#5f8340', '#7ea657'][t % 3])) + [255]
     for dx, dy in ((0, 0), (-1, 0), (1, 0), (0, -1), (0, 1)):
         fl[top + dy, x + dx] = list(rgb(col)) + [255]
     fl[top, x] = list(rgb('#fff6d0')) + [255]

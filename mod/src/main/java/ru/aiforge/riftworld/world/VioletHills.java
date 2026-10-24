@@ -74,29 +74,29 @@ public final class VioletHills {
             double base = 98 + rnd.nextDouble() * 14;
             this.meadow = new CityPlan.Island(cx, cz, R, base, R * 0.6 + 12, rnd.nextDouble() * 6.283, rnd.nextDouble() * 6.283,
                     rnd.nextDouble() * 6.283, 7, 0.9);
-            // the two churches face the meadow centre from opposite sides
+            // река: хорда через остров; считаем её ДО холмов и церквей, потому что рельеф вырезает под неё лощину
+            double phi = rnd.nextDouble() * Math.PI * 2;
+            double rl = R * 1.3;
+            double rcx = cx + (rnd.nextDouble() - 0.5) * R * 0.3, rcz = cz + (rnd.nextDouble() - 0.5) * R * 0.3;
+            this.rax = rcx - Math.cos(phi) * rl; this.raz = rcz - Math.sin(phi) * rl;
+            this.rbx = rcx + Math.cos(phi) * rl; this.rbz = rcz + Math.sin(phi) * rl;
+            this.riverLevel = (int) Math.floor(base) - 2;
+            // две церкви смотрят в центр луга с противоположных сторон; стоят на своих площадках (y из холмов)
             double th = rnd.nextDouble() * Math.PI * 2, jj = (rnd.nextDouble() - 0.5) * 0.7;
             double rr = R * 0.52;
             int ax = (int) Math.floor(cx + Math.cos(th) * rr), az = (int) Math.floor(cz + Math.sin(th) * rr);
             int bx = (int) Math.floor(cx + Math.cos(th + Math.PI + jj) * rr), bz = (int) Math.floor(cz + Math.sin(th + Math.PI + jj) * rr);
             boolean aRuined = rnd.nextBoolean();
-            this.churchA = new Church(ax, az, (int) Math.floor(meadow.raw(ax + 0.5, az + 0.5)), faceTo(ax - cx, az - cz), aRuined, meadow);
-            this.churchB = new Church(bx, bz, (int) Math.floor(meadow.raw(bx + 0.5, bz + 0.5)), faceTo(bx - cx, bz - cz), !aRuined, meadow);
-            // footpath with a soft bulge (never a ruler-straight line)
+            this.churchA = new Church(ax, az, (int) Math.floor(hills(ax + 0.5, az + 0.5)), faceTo(ax - cx, az - cz), aRuined, meadow);
+            this.churchB = new Church(bx, bz, (int) Math.floor(hills(bx + 0.5, bz + 0.5)), faceTo(bx - cx, bz - cz), !aRuined, meadow);
+            // тропа с мягким изгибом (никогда не по линейке)
             double mx = (churchA.doorX + churchB.doorX) / 2.0, mz = (churchA.doorZ + churchB.doorZ) / 2.0;
             double pxn = -(churchB.doorZ - churchA.doorZ), pzn = churchB.doorX - churchA.doorX;
             double pl = Math.hypot(pxn, pzn) + 1e-6;
             double bulge = (rnd.nextDouble() - 0.5) * R * 0.45;
             this.pax = churchA.doorX; this.paz = churchA.doorZ; this.pbx = churchB.doorX; this.pbz = churchB.doorZ;
             this.pmx = mx + pxn / pl * bulge; this.pmz = mz + pzn / pl * bulge;
-            // river: a chord across the island, roughly crosswise to the church line, spilling off both rims
-            double phi = Math.atan2(churchB.doorZ - churchA.doorZ, churchB.doorX - churchA.doorX) + Math.PI / 2 + (rnd.nextDouble() - 0.5) * 0.9;
-            double rl = R * 1.3;
-            double rcx = cx + (rnd.nextDouble() - 0.5) * R * 0.3, rcz = cz + (rnd.nextDouble() - 0.5) * R * 0.3;
-            this.rax = rcx - Math.cos(phi) * rl; this.raz = rcz - Math.sin(phi) * rl;
-            this.rbx = rcx + Math.cos(phi) * rl; this.rbz = rcz + Math.sin(phi) * rl;
-            this.riverLevel = (int) Math.floor(base) - 2;
-            // rare trees (Rev 4): 4..7, well away from churches, path and river
+            // редкие деревья (Rev 4): 4..7, подальше от церквей, тропы и реки
             for (int k = 0, tries = 0; k < 7 && tries < 160; ++tries) {
                 double a = rnd.nextDouble() * Math.PI * 2, d = (0.35 + rnd.nextDouble() * 0.55) * R;
                 int x = (int) Math.floor(cx + Math.cos(a) * d), z = (int) Math.floor(cz + Math.sin(a) * d);
@@ -115,6 +115,35 @@ public final class VioletHills {
 
         private static String faceTo(double dx, double dz) {
             return Math.abs(dx) >= Math.abs(dz) ? (dx > 0 ? "east" : "west") : (dz > 0 ? "south" : "north");
+        }
+
+        /**
+         * Рельеф биома (Rev 9): настоящие пологие холмы вместо плоского блина —
+         * три октавы рельефа + центральный курган + гребни-волны, лощина под реку и
+         * мягкие лавандовые террасы (ступени 2 блока) на склонах, где растут поля.
+         */
+        public double hills(double x, double z) {
+            double dx = x - cx, dz = z - cz;
+            double d = Math.hypot(dx, dz) / meadow.R;                       // 0 в центре .. 1 на кромке
+            double base = meadow.base;
+            // три октавы, но высокие частоты слабые: уклон ~0.25 блока на блок, без «рисовых террас»
+            double n = ElisarChunkGenerator.vnoise(x * 0.009, z * 0.009, 611) * 0.60
+                    + ElisarChunkGenerator.vnoise(x * 0.022, z * 0.022, 612) * 0.30
+                    + ElisarChunkGenerator.vnoise(x * 0.050, z * 0.050, 613) * 0.10;
+            double h = base + (n - 0.5) * 20.0;                             // крупные гряды ±10
+            h += 11.0 * Math.exp(-(d * d) / 0.30);                          // центральный курган
+            double ridge = 1.0 - Math.abs(ElisarChunkGenerator.vnoise(x * 0.017 + 11.3, z * 0.021, 614) * 2.0 - 1.0);
+            h += 7.0 * ridge * ridge;                                       // гребни-волны
+            double bowl = 1.0 - Math.abs(ElisarChunkGenerator.vnoise(x * 0.012, z * 0.012 + 7.7, 615) * 2.0 - 1.0);
+            h -= 6.0 * bowl * bowl;                                         // ложбины между грядами
+            // лощина под реку: берега опускаются плавно, чтобы ручей шёл в долине
+            double dr = CityPlan.segDist(x, z, rax, raz, rbx, rbz, null);
+            h -= 5.0 * (1.0 - ElisarChunkGenerator.smooth(Math.min(1.0, dr / 18.0)));
+            // поля — это рисунок на лугу (как в Terralith), а не каменные террасы:
+            // рельеф остаётся плавным, «ярусы» даёт только растительность
+            // кромка острова: держим спад, чтобы силуэт не был «столом»
+            if (d > 0.88) h -= (d - 0.88) * 30.0;
+            return h;
         }
 
         public double pathDist(double x, double z) {

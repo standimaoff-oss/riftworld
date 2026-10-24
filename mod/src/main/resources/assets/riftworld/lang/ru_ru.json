@@ -331,5 +331,11 @@
   "item.riftworld.jelly_fish_spawn_egg": "Яйцо медузы",
   "item.riftworld.ray_fish_spawn_egg": "Яйцо манты",
   "item.riftworld.angler_fish_spawn_egg": "Яйцо пещерного удильщика",
-  "entity.riftworld.sea_fish": "Морская рыба Элисара"
+  "entity.riftworld.sea_fish": "Морская рыба Элисара",
+  "biome.riftworld.violet_hills": "Фиолетовые холмы",
+  "biome.riftworld.sizo_grove": "Сизоствольная роща",
+  "biome.riftworld.waterfall_gardens": "Висячие сады",
+  "biome.riftworld.shallow_reef": "Коралловые отмели",
+  "biome.riftworld.abyss": "Тёмные глубины",
+  "biome.riftworld.terraced_mountains": "Многоуровневые горы"
 }
