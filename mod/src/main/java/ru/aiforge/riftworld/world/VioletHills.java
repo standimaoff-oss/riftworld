@@ -138,46 +138,13 @@ public final class VioletHills {
             // лощина под реку: берега опускаются плавно, чтобы ручей шёл в долине
             double dr = CityPlan.segDist(x, z, rax, raz, rbx, rbz, null);
             h -= 5.0 * (1.0 - ElisarChunkGenerator.smooth(Math.min(1.0, dr / 18.0)));
-            // лавандовые террасы: только там, где поля, и мягко - ступени не должны съедать холмы
+            // лавандовые террасы: только там, где поля, и мягко — ступени не съедают холмы
             double field = ElisarChunkGenerator.smooth((ElisarChunkGenerator.vnoise(x * 0.021, z * 0.021, 92) - 0.58) / 0.18);
             double stepH = 3.0;
             double terr = base + Math.floor((h - base) / stepH) * stepH + stepH * 0.5;
             h += (terr - h) * field * 0.45;
             // кромка острова: держим спад, чтобы силуэт не был «столом»
             if (d > 0.88) h -= (d - 0.88) * 30.0;
-            return h;
-        }
-
-        private static String faceTo(double dx, double dz) {
-            return Math.abs(dx) >= Math.abs(dz) ? (dx > 0 ? "east" : "west") : (dz > 0 ? "south" : "north");
-        }
-
-        /**
-         * Рельеф биома (Rev 9): настоящие пологие холмы вместо плоского блина —
-         * три октавы рельефа + центральный курган + гребни-волны, лощина под реку и
-         * мягкие лавандовые террасы (ступени 2 блока) на склонах, где растут поля.
-         */
-        public double hills(double x, double z) {
-            double dx = x - cx, dz = z - cz;
-            double d = Math.hypot(dx, dz) / meadow.R;                       // 0 в центре .. 1 на кромке
-            double base = meadow.base;
-            double n = ElisarChunkGenerator.vnoise(x * 0.013, z * 0.013, 611) * 0.52
-                    + ElisarChunkGenerator.vnoise(x * 0.031, z * 0.031, 612) * 0.31
-                    + ElisarChunkGenerator.vnoise(x * 0.073, z * 0.073, 613) * 0.17;
-            double h = base + (n - 0.5) * 17.0;                             // ±8.5 блока
-            h += 9.0 * Math.exp(-(d * d) / 0.30);                           // центральный курган
-            double ridge = 1.0 - Math.abs(ElisarChunkGenerator.vnoise(x * 0.019 + 11.3, z * 0.023, 614) * 2.0 - 1.0);
-            h += 6.0 * ridge * ridge;                                       // гребни-волны
-            // лощина под реку: берега опускаются плавно, чтобы ручей шёл в долине
-            double dr = CityPlan.segDist(x, z, rax, raz, rbx, rbz, null);
-            h -= 4.2 * (1.0 - ElisarChunkGenerator.smooth(Math.min(1.0, dr / 16.0)));
-            // лавандовые террасы: на склонах, занятых полями, рельеф срезан ступенями по 2 блока
-            double field = ElisarChunkGenerator.smooth((ElisarChunkGenerator.vnoise(x * 0.021, z * 0.021, 92) - 0.47) / 0.20);
-            double stepH = 2.0;
-            double terr = base + Math.floor((h - base) / stepH) * stepH + stepH * 0.5;
-            h += (terr - h) * field * 0.8;
-            // кромка острова: держим спад, чтобы силуэт не был «столом»
-            if (d > 0.86) h -= (d - 0.86) * 26.0;
             return h;
         }
 
