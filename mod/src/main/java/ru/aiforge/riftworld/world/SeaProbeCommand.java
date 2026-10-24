@@ -28,7 +28,8 @@ import ru.aiforge.riftworld.registry.ElisarBlocks;
  *   <li>{@code reef=} колонки с рифовым садом, {@code plants=} блоки кораллов/травы/ламинарии;</li>
  *   <li>{@code caveat=} координаты найденной затопленной пещеры — по ним CI телепортирует камеру.</li>
  * </ul>
- * Без аргументов — вокруг вызывающего (радиус 64), с аргументом радиуса — вокруг него же.
+ * Считает вокруг вызывающего в радиусе 96 блоков (аргументов нет намеренно: команда должна работать
+ * из RCON без разбора аргументов).
  */
 @Mod.EventBusSubscriber(modid = RiftWorld.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class SeaProbeCommand {
@@ -38,13 +39,11 @@ public final class SeaProbeCommand {
     @SubscribeEvent
     public static void register(RegisterCommandsEvent e) {
         e.getDispatcher().register(Commands.literal("riftsea").requires(s -> s.hasPermission(2))
-                .executes(c -> run(c.getSource(), 64))
-                .then(Commands.argument("radius", com.mojang.brigadier.arguments.IntegerArgumentType.integer(8, 256))
-                        .executes(c -> run(c.getSource(),
-                                com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "radius")))));
+                .executes(c -> run(c.getSource())));
     }
 
-    private static int run(CommandSourceStack src, int radius) {
+    private static int run(CommandSourceStack src) {
+        final int radius = 96;
         ServerLevel level = src.getLevel();
         if (level.dimension() != Flight.ELISAR_DIM) {
             src.sendFailure(Component.literal("riftsea: only in riftworld:elisar"));

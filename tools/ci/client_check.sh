@@ -158,11 +158,17 @@ EL forceload add "$((HX - 40))" "$((HZ - 40))" "$((HX + 40))" "$((HZ + 40))" | t
 EL forceload add "$((CX - 40))" "$((CZ - 40))" "$((CX + 40))" "$((CZ + 40))" | tail -1
 sleep 60
 
+# ---------------------------------------------------------------- журнал проб (нужен уже здесь)
+PROBES="$OUT/probes.txt"
+: > "$PROBES"
+log() { echo "$*" | tee -a "$PROBES"; }
+
 # ---------------------------------------------------------------- самопроверка моря из самой игры
 # riftsea_field <поле> <радиус>: гоняет /riftsea в позиции игрока и отдаёт одно поле ответа
 riftsea_field() {
   local raw
-  raw=$(RCON riftsea "${2:-96}" 2>&1 | tr -d '\r' | tr '\n' ' ')
+  raw=$(EL riftsea 2>&1 | tr -d '\r' | tr '\n' ' ')
+  log "  /riftsea raw: ${raw:0:400}"
   python3 - "$raw" "$1" <<'PYEOF'
 import re, sys
 s, k = sys.argv[1], sys.argv[2]
@@ -174,10 +180,10 @@ PYEOF
 # поэтому координаты камер больше не захардкожены — их отдаёт мод.
 EL tp TestPlayer "$RX" "$((RF + 6))" "$RZ" 90 20 >/dev/null 2>&1
 sleep 8
-RREEF=$(riftsea_field floor 24)          # настоящая кромка дна в rifовой точке (мир стал глубже)
+RREEF=$(riftsea_field floor)             # настоящая кромка дна в рифовой точке (мир стал глубже)
 [ "$RREEF" != "0" ] && RF=$RREEF
-SEA_RAW=$(RCON riftsea 128 2>&1 | tr -d '\r' | tr '\n' ' ')
-echo "  /riftsea -> $SEA_RAW"
+SEA_RAW=$(EL riftsea 2>&1 | tr -d '\r' | tr '\n' ' ')
+echo "  /riftsea -> ${SEA_RAW:0:400}"
 read -r SEA_FLOOR SEA_WATER SEA_MIN SEA_CAVES SEA_WET SEA_AIR SEA_PLANTS SEA_CORALS CAVE_X CAVE_Y CAVE_Z < <(python3 - "$SEA_RAW" <<'PYEOF'
 import re, sys
 s = sys.argv[1] if len(sys.argv) > 1 else ""
@@ -189,12 +195,12 @@ cx, cy, cz = c.groups() if c else ("0", "0", "0")
 print(g("floor"), g("water"), g("min"), g("caves"), g("wet"), g("air"), g("plants"), g("corals"), cx, cy, cz)
 PYEOF
 )
+log "  /riftsea raw: ${SEA_RAW:0:600}"
 echo "  дно=$SEA_FLOOR вода=$SEA_WATER min=$SEA_MIN | пещеры: колонок=$SEA_CAVES воды=$SEA_WET воздуха=$SEA_AIR | растения=$SEA_PLANTS кораллы=$SEA_CORALS | пещера=$CAVE_X,$CAVE_Y,$CAVE_Z"
 
 # ---------------------------------------------------------------- пробы (реальная генерация)
 FAILS=${FAILS:-0}
 WATER=${WATER:-0}
-PROBES="$OUT/probes.txt"
 write_report() {
   {
     echo "# CI, шаг 2: настоящий клиент Minecraft в Элисаре"
@@ -212,8 +218,6 @@ write_report() {
   } > "$OUT/report_client.md"
 }
 trap write_report EXIT
-: > "$PROBES"
-log() { echo "$*" | tee -a "$PROBES"; }
 
 # проба «под игроком»: телепортируем игрока в точку и смотрим блок прямо под ним
 at_block() { # at_block <x> <y> <z> <block> <label>
@@ -222,7 +226,7 @@ at_block() { # at_block <x> <y> <z> <block> <label>
   sleep 2
   ans=$(EL execute at TestPlayer run execute if block \~ \~ \~ "riftworld:$4" 2>&1)
   if [[ "$ans" == *"Test passed"* ]]; then log "  OK   $5 ($1,$2,$3) = $4"
-  else log "  FAIL $5 ($1,$2,$3) != $4 | ответ: ${ans:0:120}"; FAILS=$((FAILS + 1)); fi
+  else log "  FAIL $5 ($1,$2,$3) != $4 | ответ: ${ans:0:120} | игрок: $(EL data get entity TestPlayer Pos 2>&1 | head -1)"; FAILS=$((FAILS + 1)); fi
 }
 
 echo "== пробы моря (под игроком) =="
@@ -232,6 +236,8 @@ at_block "$KX" "$SEA_FLOOR" "$KZ" elisar_seabed "донный песок"
 echo "== пробы Рев 10: глубокое дно и затопленные пещеры =="
 probe_ok() { log "  OK   $1"; }
 probe_fail() { log "  FAIL $1"; FAILS=$((FAILS + 1)); }
+[ "$SEA_FLOOR" != "0" ] && probe_ok "кромка дна из /riftsea: y=$SEA_FLOOR" \
+  || probe_fail "команда /riftsea не ответила (сырой ответ в probes.txt) — проба глубины не выполнена"
 [ "$SEA_WATER" -ge 44 ] && probe_ok "толщина воды под рифом: $SEA_WATER блоков (нужно >=44)" \
   || probe_fail "море мелкое: $SEA_WATER блоков"
 [ "$SEA_CAVES" -ge 20 ] && probe_ok "колонок с пещерами в радиусе проб: $SEA_CAVES" \
@@ -309,7 +315,7 @@ SUM_LOCAL 7 2.2 0.2 '{NoAI:1b,Silent:1b,sf_variant:2}'
 SUM_LOCAL 8 -3.2 1.2 '{NoAI:1b,Silent:1b,sf_variant:3}'
 SUM_LOCAL 9 3.4 1.6 '{NoAI:1b,Silent:1b,sf_variant:4}'
 # хищники — в пещере, тоже перед камерой
-EL tp TestPlayer "$CAVE_X" "$CAVE_Y" "$CAVE_Z" 0 0 >/dev/null 2>&1
+[ "$CAVE_X" != "0" ] && EL tp TestPlayer "$CAVE_X" "$CAVE_Y" "$CAVE_Z" 0 0 >/dev/null 2>&1
 sleep 3
 SUM_LOCAL 2.6 0 0 '{NoAI:1b,Silent:1b,sf_variant:5}'
 SUM_LOCAL 3 1.1 0.2 '{NoAI:1b,Silent:1b,sf_variant:6}'
@@ -335,8 +341,12 @@ view "$((LX + 15))" "$((LF + 11))" "$((LZ + 15))" 225 14 14 "04_kelp_forest" # �
 view "$VX" 64 "$((VZ + 26))" 180 2 14 "05_open_sea"          # поверхность: открытое море
 view "$DX" 65 "$DZ" 30 55 14 "06_trench"                     # каньон сверху
 view "$HX" "$((HF + 14))" "$HZ" 0 58 14 "07_blue_hole"             # синяя дыра: взгляд в колодец сверху
-view "$CAVE_X" "$CAVE_Y" "$CAVE_Z" 0 0 16 "08_cave"           # затопленная пещера (координаты от /riftsea)
-view "$CAVE_X" "$CAVE_Y" "$CAVE_Z" 180 0 12 "09_cave_back"    # пещера, другой ракурс
+if [ "$CAVE_X" != "0" ]; then
+  view "$CAVE_X" "$CAVE_Y" "$CAVE_Z" 0 0 16 "08_cave"          # затопленная пещера (координаты от /riftsea)
+else
+  log "  ПРОПУСК кадров пещеры: /riftsea не нашёл затопленную полость"
+fi
+[ "$CAVE_X" != "0" ] && view "$CAVE_X" "$CAVE_Y" "$CAVE_Z" 180 0 12 "09_cave_back"   # пещера, другой ракурс
 # витрина: камера над коралловым садом, рыбы в 3-4 блоках по курсу
 EL tp TestPlayer "$((VX + 10))" "$((VF + 6))" "$VZ" 270 8 >/dev/null 2>&1
 sleep 2
@@ -355,7 +365,7 @@ SUM_LOCAL 4.4 -0.9 -0.5 '{NoAI:1b,Silent:1b,sf_variant:4}'
 sleep 6
 shot "12_fish_closeup"
 view "$KX" 22 "$KZ" 180 65 14 "13_reef_floor"                  # дно рифа вплотную: разбор блоков
-view "$CAVE_X" "$CAVE_Y" "$CAVE_Z" 0 0 12 "11_fish_cave"    # хищники пещеры
+[ "$CAVE_X" != "0" ] && view "$CAVE_X" "$CAVE_Y" "$CAVE_Z" 0 0 12 "11_fish_cave"     # хищники пещеры
 RCON effect clear TestPlayer >/dev/null 2>&1 || true
 key F1
 sleep 1
