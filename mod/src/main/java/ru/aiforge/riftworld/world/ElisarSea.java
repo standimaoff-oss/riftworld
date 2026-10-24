@@ -101,9 +101,33 @@ public final class ElisarSea {
         double n = vnoise(x * 0.016, z * 0.016, 77) * 0.52 + vnoise(x * 0.045, z * 0.045, 78) * 0.24
                 + vnoise(x * 0.095, z * 0.095, 79) * 0.14 + vnoise(x * 0.21, z * 0.21, 80) * 0.10;
         int f = sea - 45 - (int) Math.round(n * 13);
+        f += duneRipple(x, z);                     // песчаная рябь: волны по 8-14 блоков
+        f += boulder(x, z);                        // редкие валуны на дне
         f -= trenchDepth(x, z);
         f -= pitDepth(x, z);
         return Math.max(DEEPEST_FLOOR, f);
+    }
+
+    /**
+     * Песчаные дюны: вытянутые волны высотой ±1..2 блока. Без них ровные участки дна читаются
+     * как бетонные плиты (замечание по скриншотам Рев 10, партия 1).
+     */
+    static int duneRipple(int x, int z) {
+        double warp = vnoise(x * 0.018, z * 0.018, 483) * 7.0;
+        double phase = (x * 0.62 + z * 0.42) * 0.30 + warp;
+        double amp = 0.55 + 0.85 * vnoise(x * 0.010, z * 0.010, 484);       // где-то дюны выше
+        return (int) Math.round(Math.sin(phase) * amp);
+    }
+
+    /** Валун: редкий каменный бугор 1–3 блока на сетке 19×19 (щебень, замшелый камень). */
+    static int boulder(int x, int z) {
+        int gx = Math.floorDiv(x, 19), gz = Math.floorDiv(z, 19);
+        if (hash(gx, gz, 485) > 0.34) return 0;
+        double cx = gx * 19 + 3 + hash(gx, gz, 486) * 13, cz = gz * 19 + 3 + hash(gx, gz, 487) * 13;
+        double r = 1.6 + hash(gx, gz, 488) * 2.6;
+        double d = Math.hypot(x + 0.5 - cx, z + 0.5 - cz);
+        if (d >= r) return 0;
+        return (int) Math.round((1.0 - d / r) * (1.0 + hash(gx, gz, 489) * 2.2));
     }
 
     // ------------------------------------------------------------------ пещеры
@@ -165,6 +189,9 @@ public final class ElisarSea {
     /** Порода дна: сверху песок/ил/риф, ниже — камень с прослоями, у самого низа — тёмный камень. */
     private static BlockState rock(int x, int y, int z, int floor, double reef) {
         int d = floor - y;
+        if (d == 0 && boulder(x, z) > 0 && reef < 0.5) {
+            return hash(x, z, 490) < 0.55 ? st(ElisarBlocks.COBBLE) : st(ElisarBlocks.STONE_MOSSY);
+        }
         if (d == 0) {
             if (reef > 0.62) return hash(x, z, 451) < 0.14 ? st(ElisarBlocks.CORAL_BRAIN) : st(ElisarBlocks.REEF_STONE);
             if (reef > 0.30) return st(ElisarBlocks.REEF_STONE);

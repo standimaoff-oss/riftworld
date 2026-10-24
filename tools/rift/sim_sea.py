@@ -104,10 +104,32 @@ def pit(x, z):
     return round(t * t * 22.0)
 
 
+def dune_ripple(x, z):
+    warp = vnoise(x * 0.018, z * 0.018, 483) * 7.0
+    phase = (x * 0.62 + z * 0.42) * 0.30 + warp
+    amp = 0.55 + 0.85 * vnoise(x * 0.010, z * 0.010, 484)
+    return round(math.sin(phase) * amp)
+
+
+def boulder(x, z):
+    gx, gz = x // 19, z // 19
+    if hash2(gx, gz, 485) > 0.34:
+        return 0
+    cx = gx * 19 + 3 + hash2(gx, gz, 486) * 13
+    cz = gz * 19 + 3 + hash2(gx, gz, 487) * 13
+    r = 1.6 + hash2(gx, gz, 488) * 2.6
+    d = math.hypot(x + 0.5 - cx, z + 0.5 - cz)
+    if d >= r:
+        return 0
+    return round((1.0 - d / r) * (1.0 + hash2(gx, gz, 489) * 2.2))
+
+
 def floor_y(x, z, ocean=OCEAN):
     n = (vnoise(x * 0.016, z * 0.016, 77) * 0.52 + vnoise(x * 0.045, z * 0.045, 78) * 0.24
          + vnoise(x * 0.095, z * 0.095, 79) * 0.14 + vnoise(x * 0.21, z * 0.21, 80) * 0.10)
     f = ocean - 45 - round(n * 13)
+    f += dune_ripple(x, z)
+    f += boulder(x, z)
     f -= trench(x, z)
     f -= pit(x, z)
     return max(DEEPEST_FLOOR, f)
