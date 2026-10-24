@@ -231,22 +231,30 @@ at_block() { # at_block <x> <y> <z> <block> <label>
 
 echo "== пробы моря (под игроком) =="
 at_block "$KX" "$((KT - 6))" "$KZ" elisar_water "вода на глубине"
-seabed_probe() { # seabed_probe <x> <y> <z> <label>: ищем твёрдый донный блок рядом
-  # (ровно в точке может быть устье пещеры — тогда дно пробито водой; это нормально)
-  local x=$1 y=$2 z=$3 label=$4 b d
-  for d in "0 0" "1 0" "-1 0" "0 1" "0 -1" "2 2" "-2 -2" "3 -1" "-3 1"; do
-    set -- $d
-    EL tp TestPlayer "$((x + $1))" "$y" "$((z + $2))" 0 0 >/dev/null 2>&1
-    sleep 1                                  # телепорт применяется на тике: без паузы проверяли бы старый блок
-    for b in elisar_seabed elisar_silt reef_stone coral_brain coral_cap_pink coral_cap_teal coral_cap_violet cobble; do
-      if [[ "$(EL execute at TestPlayer run execute if block \~ \~ \~ "riftworld:$b" 2>&1)" == *"Test passed"* ]]; then
-        log "  OK   $label: $b на $((x + $1)),$y,$((z + $2))"; return 0
-      fi
+seabed_probe() { # seabed_probe <x> <y> <z> <label>: твёрдый донный блок с перебором по высоте
+  # ровно в точке может быть устье пещеры (дно пробито водой) или сад над дном — это нормально,
+  # поэтому смотрим несколько колонок и несколько высот вокруг замеренной кромки
+  local x=$1 y=$2 z=$3 label=$4 b dy dx dz
+  for dy in 0 1 -1 2 -2; do
+    for dx in 0 1 -1 2 -2; do
+      for dz in 0 1 -1; do
+        EL tp TestPlayer "$((x + dx))" "$((y + dy))" "$((z + dz))" 0 0 >/dev/null 2>&1
+        sleep 1                              # телепорт применяется на тике
+        for b in elisar_seabed elisar_silt reef_stone coral_brain coral_cap_pink coral_cap_teal coral_cap_violet cobble; do
+          if [[ "$(EL execute at TestPlayer run execute if block \~ \~ \~ "riftworld:$b" 2>&1)" == *"Test passed"* ]]; then
+            log "  OK   $label: $b на $((x + dx)),$((y + dy)),$((z + dz))"; return 0
+          fi
+        done
+      done
     done
   done
   log "  FAIL $label ($x,$y,$z): твёрдого донного блока нет рядом"; FAILS=$((FAILS + 1))
 }
-seabed_probe "$KX" "$SEA_FLOOR" "$KZ" "донный блок"
+EL tp TestPlayer "$KX" 60 "$KZ" 0 0 >/dev/null 2>&1
+sleep 3
+KFLOOR=$(riftsea_field floor)
+[ "$KFLOOR" = "0" ] && KFLOOR=$SEA_FLOOR
+seabed_probe "$KX" "$KFLOOR" "$KZ" "донный блок"
 
 echo "== пробы Рев 10: глубокое дно и затопленные пещеры =="
 probe_ok() { log "  OK   $1"; }
