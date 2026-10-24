@@ -331,5 +331,11 @@
   "item.riftworld.jelly_fish_spawn_egg": "Jellyfish Spawn Egg",
   "item.riftworld.ray_fish_spawn_egg": "Ray Spawn Egg",
   "item.riftworld.angler_fish_spawn_egg": "Cave Anglerfish Spawn Egg",
-  "entity.riftworld.sea_fish": "Elisar Sea Fish"
+  "entity.riftworld.sea_fish": "Elisar Sea Fish",
+  "biome.riftworld.violet_hills": "Violet Hills",
+  "biome.riftworld.sizo_grove": "Sizo Grove",
+  "biome.riftworld.waterfall_gardens": "Hanging Gardens",
+  "biome.riftworld.shallow_reef": "Shallow Reef",
+  "biome.riftworld.abyss": "Darker Depths",
+  "biome.riftworld.terraced_mountains": "Terraced Mountains"
 }

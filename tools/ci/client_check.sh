@@ -150,12 +150,32 @@ read -r LX LZ LF < <(python3 -c "import json;d=json.load(open('$SPOTS'));print(d
 FY=$((RF + 22))          # «витринный» горизонт над рифом: толща воды, хорошо освещена
 echo "  reef=$RX,$RZ floor=$RF | deep=$DX,$DZ floor=$DF | hole=$HX,$HZ floor=$HF | cave=$CX,$CZ $CLOW..$CHIGH | column=$KX,$KZ floor=$KF"
 
+# ---------------------------------------------------------------- пятна биомов (rev 9)
+# координаты берём у самого мода (/riftbiomes), а не хардкодим — камеры всегда попадают в биом
+BIOMES_RAW=$(RCON riftbiomes 2>&1 | tr -d '\r' | tr '\n' ' ')
+echo "  /riftbiomes -> $BIOMES_RAW"
+read -r VHX VHZ VHY TMX TMZ TMY OCEAN < <(python3 - "$BIOMES_RAW" <<'PYEOF'
+import re, sys
+s = sys.argv[1] if len(sys.argv) > 1 else ""
+def spot(tag):
+    m = re.search(tag + r"=(-?\d+),(-?\d+),(-?\d+)", s)
+    return m.groups() if m else ("0", "0", "0")
+v, t = spot("violet"), spot("terraced")
+o = re.search(r"ocean=(-?\d+)", s)
+print(v[0], v[1], v[2], t[0], t[1], t[2], o.group(1) if o else "45")
+PYEOF
+)
+echo "  violet=$VHX,$VHZ top=$VHY | terraced=$TMX,$TMZ top=$TMY | ocean=$OCEAN"
+printf '%s\n' "violet $VHX $VHY $VHZ" "terraced $TMX $TMY $TMZ" > "$OUT/biome_spots.txt"
+
 echo "== телепорт в Элисар и прогрузка области =="
 EL time set noon >/dev/null 2>&1 || true        # в Элисаре всегда полдень (ElisarDaylight), но фиксируем сразу
 EL tp TestPlayer "$RX" "$((RF + 6))" "$RZ" 90 40 | tail -1
 EL forceload add "$((RX - 80))" "$((RZ - 80))" "$((RX + 100))" "$((RZ + 140))" | tail -1
 EL forceload add "$((HX - 40))" "$((HZ - 40))" "$((HX + 40))" "$((HZ + 40))" | tail -1
 EL forceload add "$((CX - 40))" "$((CZ - 40))" "$((CX + 40))" "$((CZ + 40))" | tail -1
+EL forceload add "$((VHX - 200))" "$((VHZ - 200))" "$((VHX + 200))" "$((VHZ + 200))" | tail -1
+EL forceload add "$((TMX - 220))" "$((TMZ - 220))" "$((TMX + 220))" "$((TMZ + 220))" | tail -1
 sleep 60
 
 # ---------------------------------------------------------------- пробы (реальная генерация)
@@ -301,6 +321,24 @@ sleep 6
 shot "12_fish_closeup"
 view "$KX" 22 "$KZ" 180 65 14 "13_reef_floor"                  # дно рифа вплотную: разбор блоков
 view "$CX" "$((CLOW + 3))" "$CZ" 0 0 12 "11_fish_cave"    # хищники пещеры
+# --- rev 9: биом «Фиолетовые холмы» (новый рельеф) и «Многоуровневые горы»
+put() { EL spreadplayers "$1" "$2" 1 6 false TestPlayer >/dev/null 2>&1; }   # поставить на поверхность
+ROT() { RCON execute in riftworld:elisar at TestPlayer run tp TestPlayer ~ ~ ~ "$1" "$2" >/dev/null 2>&1; }   # только поворот
+view "$VHX" "$((VHY + 48))" "$((VHZ - 130))" 0 28 22 "14_violet_hills_air"      # холмы с воздуха, силуэт
+put "$VHX" "$VHZ"
+ROT 0 8
+sleep 10
+shot "15_violet_hills_ground"
+put "$((VHX + 55))" "$((VHZ + 40))"
+ROT 215 12
+sleep 10
+shot "16_violet_hills_fields"
+view "$TMX" "$((TMY + 62))" "$((TMZ - 175))" 0 22 24 "17_terraced_air"          # массив целиком
+view "$((TMX + 150))" "$((TMY - 10))" "$TMZ" 270 8 20 "18_terraced_side"        # ярусы в профиль
+put "$TMX" "$((TMZ + 40))"
+ROT 180 4
+sleep 12
+shot "19_terraced_shelf"
 RCON effect clear TestPlayer >/dev/null 2>&1 || true
 key F1
 sleep 1
