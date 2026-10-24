@@ -254,6 +254,33 @@ public final class ElisarSea {
         };
     }
 
+    /**
+     * Высота рифового купола в точке: 0 — между холмами. Пики живут на сетке 13×13 со случайным сдвигом,
+     * высота спадает по параболе от пика, поэтому сад читается округлыми буграми, а не ступенчатыми плато.
+     */
+    private static int moundHeight(int x, int z, double reef) {
+        int gx = Math.floorDiv(x, 13), gz = Math.floorDiv(z, 13);
+        double best = 0;
+        for (int ax = -1; ax <= 1; ++ax) {
+            for (int az = -1; az <= 1; ++az) {
+                int cx = gx + ax, cz = gz + az;
+                if (hash(cx, cz, 477) > 0.32 + reef * 0.55) continue;          // не в каждой ячейке есть холм
+                double px = cx * 13 + 2.5 + hash(cx, cz, 478) * 8.0;
+                double pz = cz * 13 + 2.5 + hash(cx, cz, 479) * 8.0;
+                double r = 3.2 + hash(cx, cz, 480) * 4.4;                       // радиус купола
+                double d = Math.hypot(x + 0.5 - px, z + 0.5 - pz);
+                if (d >= r) continue;
+                double hMax = 1.6 + hash(cx, cz, 481) * 3.6;                    // высота пика
+                double t = 1.0 - d / r;
+                double h = hMax * t * t * (1.0 + 0.35 * t);                     // крутая вершина, пологий склон
+                if (h > best) best = h;
+            }
+        }
+        // мелкая рябь по склону: не идеальный конус
+        if (best > 0) best += (vnoise(x * 0.4, z * 0.4, 482) - 0.5) * 0.8;
+        return best < 0.75 ? 0 : (int) Math.min(5, Math.round(best));
+    }
+
     private static void garden(ChunkAccess chunk, BlockPos.MutableBlockPos mp, int x, int z, int floor, double reef) {
         int y = floor + 1;
         if (y > 60) return;
@@ -267,17 +294,16 @@ public final class ElisarSea {
         // шапка — цельный тропический коралл своей палитры, на вершине — актиния/куст/веер.
         // Раньше верх дна был шахматкой кубов; теперь это силуэт сада, читаемый издалека.
         if (reef > 0.42) {
-            double mound = vnoise(x * 0.105, z * 0.105, 467) * 0.65 + vnoise(x * 0.26, z * 0.26, 468) * 0.35;
-            double need = 0.56 - 0.10 * reef;
-            if (mound > need) {
-                int h = 1 + (int) Math.min(3.4, (mound - need) / 0.09);
-                if (hash(x, z, 469) < 0.16) ++h;                     // редкие пики
-                boolean flat = true;                                 // холм не «столбом»: у подножия должен быть сосед
+            // Рев 10: КУПОЛА, а не плато. Холм растёт к своему центру-пику (сетка 13x13 со сдвигом),
+            // высота падает по параболе от пика, поэтому силуэт — округлый бугор со ступенями только на склоне.
+            int h = moundHeight(x, z, reef);
+            if (h > 0) {
+                boolean stacked = true;
                 for (int i = 0; i < h; ++i) {
                     if (chunk.getBlockState(mp.set(x, y + i, z)).is(ElisarBlocks.WATER.get())) chunk.setBlockState(mp.set(x, y + i, z), cap(pal), false);
-                    else { flat = false; break; }
+                    else { stacked = false; break; }
                 }
-                if (flat) {
+                if (stacked) {
                     BlockState topS = crown(pal, hash(x, z, 470));
                     if (chunk.getBlockState(mp.set(x, y + h, z)).is(ElisarBlocks.WATER.get())) chunk.setBlockState(mp.set(x, y + h, z), topS, false);
                 }
