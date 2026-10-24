@@ -328,7 +328,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                         double nt = TerracedMountains.top(c.mtnRegion, nx, nz);
                         if (nt > hi) hi = nt;
                     }
-                    if (hi > c.top + 4.5 && vnoise(px * 0.31, pz * 0.31, 709) > 0.58) {
+                    if (hi > c.top + 4.5 && vnoise(px * 0.31, pz * 0.31, 709) > 0.46) {
                         c.fallTop = (int) Math.floor(hi);
                         c.fallBottom = c.top + 1;
                     }
@@ -598,9 +598,10 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                 }
                             };
                         } else if (c.mtn) {
-                            // слоистые ярусы: у поверхности известняковые полосы с мхом, в глубине — камень
+                            // слоистые ярусы: под травой — почва, ниже известняк с прослоями мха, в глубине — камень
                             int band = Math.floorMod(y + (int) (hash(x, z, 712) * 3), 7);
-                            s = y > c.top - 12 ? (band == 0 ? mossy : (band <= 2 ? ashlar : stone))
+                            s = y >= c.top - 1 ? soil
+                                    : y > c.top - 14 ? (band == 0 ? mossy : (band <= 3 ? ashlar : stone))
                                     : (hash(x, y, z) < 0.08 ? mossy : stone);
                             if (y <= c.top - 2 && y >= c.top - 6
                                     && vnoise(x * 0.33, z * 0.33, 313) > 0.80 && hash(x, y, z) < 0.88) s = aurite;
