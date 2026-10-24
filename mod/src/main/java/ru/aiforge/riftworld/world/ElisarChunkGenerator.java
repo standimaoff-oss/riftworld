@@ -605,7 +605,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                             if (y <= c.top - 2 && y >= c.top - 6
                                     && vnoise(x * 0.33, z * 0.33, 313) > 0.80 && hash(x, y, z) < 0.88) s = aurite;
                         } else if (y == c.top - 1) {
-                            s = crust;
+                            // под травой — почва, а не белёсая корка: иначе склоны читаются как каменные ступени
+                            s = c.surface == S_GRASS || c.surface == S_PATH ? soil : crust;
                         } else if (y <= c.bottom + 1 && hash(x, z, y) < 0.5 || hash(x, y, z) < 0.07) {
                             s = mossy;
                         } else {

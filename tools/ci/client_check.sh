@@ -324,7 +324,10 @@ view "$CX" "$((CLOW + 3))" "$CZ" 0 0 12 "11_fish_cave"    # хищники пе�
 # --- rev 9: биом «Фиолетовые холмы» (новый рельеф) и «Многоуровневые горы»
 put() { EL spreadplayers "$1" "$2" 1 6 false TestPlayer >/dev/null 2>&1; }   # поставить на поверхность
 ROT() { RCON execute in riftworld:elisar at TestPlayer run tp TestPlayer ~ ~ ~ "$1" "$2" >/dev/null 2>&1; }   # только поворот
-view "$VHX" "$((VHY + 46))" "$((VHZ - 235))" 0 16 24 "14_violet_hills_air"      # холмы с воздуха, силуэт на фоне неба
+put "$((VHX - 60))" "$((VHZ - 60))"
+ROT 135 12
+sleep 12
+shot "14_violet_hills_air"          # холмы с земли: гряды, поля и церкви
 put "$VHX" "$VHZ"
 ROT 0 8
 sleep 10
