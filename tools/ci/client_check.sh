@@ -336,8 +336,8 @@ put "$((VHX + 55))" "$((VHZ + 40))"
 ROT 215 12
 sleep 10
 shot "16_violet_hills_fields"
-view "$((TMX + 40))" "$((TMY + 75))" "$((TMZ - 300))" 350 22 24 "17_terraced_air" # массив целиком
-view "$((TMX + 175))" "$((TMY - 6))" "$((TMZ + 175))" 45 12 20 "18_terraced_side"     # ярусы вблизи
+view "$((TMX + 20))" "$((TMY + 55))" "$((TMZ - 175))" 355 20 24 "17_terraced_air" # массив целиком
+view "$((TMX + 130))" "$((TMY - 2))" "$((TMZ + 130))" 45 14 20 "18_terraced_side"   # ярусы вблизи
 view "$((TMX - 170))" "$((TMY + 8))" "$((TMZ - 170))" 315 10 20 "19_terraced_shelf"    # массив в профиль: ярусы-полки
 RCON effect clear TestPlayer >/dev/null 2>&1 || true
 key F1

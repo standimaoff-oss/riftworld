@@ -581,7 +581,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                 case S_PLOT -> cobble;         // pebble apron around the houses (reference)
                                 default -> {
                                     if (c.mtn) {
-                                        yield vnoise(x * 0.12, z * 0.12, 68) > 0.38 ? moss : grass;   // зелёные полки
+                                        yield vnoise(x * 0.12, z * 0.12, 68) > 0.66 ? moss : grass;   // зелёные полки, мох редкими пятнами
                                     }
                                     if (c.garden) {
                                         if (c.springy) yield ElisarBlocks.LANTERN.get().defaultBlockState();   // hot spring: warm glow in the pool bed
