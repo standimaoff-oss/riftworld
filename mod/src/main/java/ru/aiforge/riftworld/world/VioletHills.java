@@ -126,15 +126,16 @@ public final class VioletHills {
             double dx = x - cx, dz = z - cz;
             double d = Math.hypot(dx, dz) / meadow.R;                       // 0 в центре .. 1 на кромке
             double base = meadow.base;
-            double n = ElisarChunkGenerator.vnoise(x * 0.009, z * 0.009, 611) * 0.52
-                    + ElisarChunkGenerator.vnoise(x * 0.026, z * 0.026, 612) * 0.31
-                    + ElisarChunkGenerator.vnoise(x * 0.068, z * 0.068, 613) * 0.17;
-            double h = base + (n - 0.5) * 26.0;                             // крупные гряды ±13
-            h += 13.0 * Math.exp(-(d * d) / 0.26);                          // центральный курган
+            // три октавы, но высокие частоты слабые: уклон ~0.25 блока на блок, без «рисовых террас»
+            double n = ElisarChunkGenerator.vnoise(x * 0.009, z * 0.009, 611) * 0.60
+                    + ElisarChunkGenerator.vnoise(x * 0.022, z * 0.022, 612) * 0.30
+                    + ElisarChunkGenerator.vnoise(x * 0.050, z * 0.050, 613) * 0.10;
+            double h = base + (n - 0.5) * 20.0;                             // крупные гряды ±10
+            h += 11.0 * Math.exp(-(d * d) / 0.30);                          // центральный курган
             double ridge = 1.0 - Math.abs(ElisarChunkGenerator.vnoise(x * 0.017 + 11.3, z * 0.021, 614) * 2.0 - 1.0);
-            h += 9.0 * ridge * ridge;                                       // гребни-волны
+            h += 7.0 * ridge * ridge;                                       // гребни-волны
             double bowl = 1.0 - Math.abs(ElisarChunkGenerator.vnoise(x * 0.012, z * 0.012 + 7.7, 615) * 2.0 - 1.0);
-            h -= 7.0 * bowl * bowl;                                         // ложбины между грядами
+            h -= 6.0 * bowl * bowl;                                         // ложбины между грядами
             // лощина под реку: берега опускаются плавно, чтобы ручей шёл в долине
             double dr = CityPlan.segDist(x, z, rax, raz, rbx, rbz, null);
             h -= 5.0 * (1.0 - ElisarChunkGenerator.smooth(Math.min(1.0, dr / 18.0)));

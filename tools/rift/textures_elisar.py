@@ -81,7 +81,7 @@ save(soil, "elisar_soil")
 side = soil.copy()
 r = np.random.RandomState(5)
 for x in range(16):
-    d = 3 + r.randint(0, 3)
+    d = 7 + r.randint(0, 4)
     for y in range(d):
         side[y, x, :3] = rgb(GRASS[r.randint(len(GRASS))]) + r.randint(-6, 6)
 save(side, "elisar_grass_side")
