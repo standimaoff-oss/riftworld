@@ -68,7 +68,7 @@ public final class SeaProbeCommand {
                 maxFloor = Math.max(maxFloor, f);
                 if (ElisarSea.reefness(x, z) > 0.5) ++reefCols;
                 int wet = 0, air = 0;
-                for (int y = ElisarSea.BOTTOM; y <= f - 3; ++y) {
+                for (int y = ElisarSea.BOTTOM; y <= f - 6; ++y) {
                     BlockState s = level.getBlockState(new BlockPos(x, y, z));
                     if (s.is(ElisarBlocks.WATER.get())) ++wet;
                     else if (s.isAir()) ++air;
@@ -81,7 +81,7 @@ public final class SeaProbeCommand {
                     bx = x;
                     bz = z;
                     by = -1;
-                    for (int y = f - 3; y >= ElisarSea.BOTTOM; --y) {
+                    for (int y = f - 6; y >= ElisarSea.BOTTOM; --y) {
                         if (level.getBlockState(new BlockPos(x, y, z)).is(ElisarBlocks.WATER.get())) { by = y; break; }
                     }
                 }

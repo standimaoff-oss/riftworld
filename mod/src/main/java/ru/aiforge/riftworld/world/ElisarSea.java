@@ -138,7 +138,8 @@ public final class ElisarSea {
 
     /** Пещера ли эта точка породы (ниже кромки дна). */
     static boolean cave(int x, int y, int z, int floor) {
-        if (y <= BOTTOM + 1 || y > floor - 3) return false;
+        // полости держим не ближе 6 блоков к кромке: иначе дно становится решетом
+        if (y <= BOTTOM + 1 || y > floor - 6) return false;
         return caveValue(x, y, z, floor) > 0;
     }
 
@@ -206,11 +207,11 @@ public final class ElisarSea {
         // поэтому решение не зависит от соседних колонок и на границах чанков не рвётся.
         BlockState water = st(ElisarBlocks.WATER);
         boolean holeColumn = false;
-        for (int y = BOTTOM; y <= floor - 3; ++y) {
+        for (int y = BOTTOM; y <= floor - 6; ++y) {
             boolean shaft = blueHole(x, y, z, floor);
             if (!shaft && !cave(x, y, z, floor)) continue;
             if (shaft) holeColumn = true;
-            boolean open = y + 1 > floor - 3 || (!cave(x, y + 1, z, floor) && !blueHole(x, y + 1, z, floor));
+            boolean open = y + 1 > floor - 6 || (!cave(x, y + 1, z, floor) && !blueHole(x, y + 1, z, floor));
             boolean pocket = !blueHole(x, y, z, floor) && (airPocket(x, y, z) || (open && ceilingPocket(x, y, z)));
             chunk.setBlockState(mp.set(x, y, z), pocket ? Blocks.AIR.defaultBlockState() : water, false);
         }
@@ -218,7 +219,7 @@ public final class ElisarSea {
         // свод над полостью: «синяя дыра» всегда пробивает дно, обычная пещера — примерно в половине мест
         if (floor > BOTTOM + 4) {
             boolean belowCarved = blueHole(x, floor - 1, z, floor) || cave(x, floor - 1, z, floor);
-            if (belowCarved && (holeColumn || hash(x, z, 454) < 0.55)) chunk.setBlockState(mp.set(x, floor, z), water, false);
+            if (belowCarved && (holeColumn || hash(x, z, 454) < 0.18)) chunk.setBlockState(mp.set(x, floor, z), water, false);
         }
 
         for (int y = floor + 1; y <= sea; ++y) chunk.setBlockState(mp.set(x, y, z), water, false);

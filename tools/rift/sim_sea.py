@@ -137,7 +137,7 @@ def ceiling_pocket(x, y, z):
 
 
 def cave(x, y, z, fl):
-    if y <= BOTTOM + 1 or y > fl - 3:
+    if y <= BOTTOM + 1 or y > fl - 6:
         return False
     return cave_value(x, y, z, fl) > 0
 
@@ -162,13 +162,13 @@ def column_kind(x, z, fl):
     """Возвращает (вода, воздух, порода) в колонке — ровно как ElisarSea.column()."""
     wet = air = 0
     hole_column = False
-    for y in range(BOTTOM, fl - 2):
+    for y in range(BOTTOM, fl - 5):
         shaft = blue_hole(x, y, z, fl)
         if not shaft and not cave(x, y, z, fl):
             continue
         if shaft:
             hole_column = True
-        open_above = y + 1 > fl - 3 or (not cave(x, y + 1, z, fl) and not blue_hole(x, y + 1, z, fl))
+        open_above = y + 1 > fl - 6 or (not cave(x, y + 1, z, fl) and not blue_hole(x, y + 1, z, fl))
         pocket = (not blue_hole(x, y, z, fl)) and (air_pocket(x, y, z) or (open_above and ceiling_pocket(x, y, z)))
         if pocket:
             air += 1
