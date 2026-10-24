@@ -324,7 +324,7 @@ view "$CX" "$((CLOW + 3))" "$CZ" 0 0 12 "11_fish_cave"    # хищники пе�
 # --- rev 9: биом «Фиолетовые холмы» (новый рельеф) и «Многоуровневые горы»
 put() { EL spreadplayers "$1" "$2" 1 6 false TestPlayer >/dev/null 2>&1; }   # поставить на поверхность
 ROT() { RCON execute in riftworld:elisar at TestPlayer run tp TestPlayer ~ ~ ~ "$1" "$2" >/dev/null 2>&1; }   # только поворот
-view "$VHX" "$((VHY + 48))" "$((VHZ - 130))" 0 28 22 "14_violet_hills_air"      # холмы с воздуха, силуэт
+view "$VHX" "$((VHY + 26))" "$((VHZ - 150))" 0 10 22 "14_violet_hills_air"      # холмы с воздуха, силуэт на фоне неба
 put "$VHX" "$VHZ"
 ROT 0 8
 sleep 10
@@ -335,8 +335,8 @@ sleep 10
 shot "16_violet_hills_fields"
 view "$TMX" "$((TMY + 26))" "$((TMZ - 150))" 0 16 24 "17_terraced_air"          # массив целиком
 view "$((TMX + 120))" "$((TMY + 4))" "$((TMZ + 120))" 225 12 20 "18_terraced_side"  # ярусы в профиль
-put "$TMX" "$((TMZ + 40))"
-ROT 180 4
+put "$((TMX - 30))" "$((TMZ + 70))"
+ROT 340 18
 sleep 12
 shot "19_terraced_shelf"
 RCON effect clear TestPlayer >/dev/null 2>&1 || true
