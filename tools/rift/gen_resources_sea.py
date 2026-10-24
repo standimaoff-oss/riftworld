@@ -132,16 +132,24 @@ EGGS = {
     "jelly_fish_spawn_egg": (0x9FE6FF, 0xD8F7FF),
     "ray_fish_spawn_egg": (0x68798C, 0xDCE6EC),
     "angler_fish_spawn_egg": (0x2C3947, 0xDFFFA8),
+    "surgeon_fish_spawn_egg": (0x2F6FD0, 0xF2D24C),
+    "turtle_spawn_egg": (0x4E7A4A, 0xE3DCC0),
+    "gloom_fish_spawn_egg": (0x2A1F36, 0xC46BFF),
+    "sting_fish_spawn_egg": (0xB05AD6, 0xFFE9FF),
 }
 EGG_RU = {
     "silver_fish_spawn_egg": "Яйцо серебристой рыбы", "gold_fish_spawn_egg": "Яйцо золотого диска",
     "jelly_fish_spawn_egg": "Яйцо медузы", "ray_fish_spawn_egg": "Яйцо манты",
     "angler_fish_spawn_egg": "Яйцо пещерного удильщика",
+    "surgeon_fish_spawn_egg": "Яйцо рыбы-хирурга", "turtle_spawn_egg": "Яйцо морской черепахи",
+    "gloom_fish_spawn_egg": "Яйцо глубинного глота", "sting_fish_spawn_egg": "Яйцо жгучей медузы",
 }
 EGG_EN = {
     "silver_fish_spawn_egg": "Silver Fish Spawn Egg", "gold_fish_spawn_egg": "Gold Disc Spawn Egg",
     "jelly_fish_spawn_egg": "Jellyfish Spawn Egg", "ray_fish_spawn_egg": "Ray Spawn Egg",
     "angler_fish_spawn_egg": "Cave Anglerfish Spawn Egg",
+    "surgeon_fish_spawn_egg": "Surgeonfish Spawn Egg", "turtle_spawn_egg": "Sea Turtle Spawn Egg",
+    "gloom_fish_spawn_egg": "Gloomfish Spawn Egg", "sting_fish_spawn_egg": "Stinging Jelly Spawn Egg",
 }
 for n in EGGS:
     gen_item(n, "riftworld:item/" + n)

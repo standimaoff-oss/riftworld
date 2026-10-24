@@ -23,6 +23,11 @@ public class SeaFishRenderer extends EntityRenderer<SeaFishEntity> {
     private static final int RAY_T = 0x68798C, RAY_B = 0xDCE6EC, RAY_S = 0x93A5B4;
     private static final int ANGLER_B = 0x2C3947, ANGLER_T = 0x1A2430, LURE = 0xDFFFA8, LURE_CORE = 0xF6FFD6;
     private static final int EEL_B = 0xD6CFBF, EEL_T = 0xB2A996;
+    // Рев 10: тропические мирные и «злые и редкие» пещерные
+    private static final int SURGEON_B = 0x2F6FD0, SURGEON_T = 0x1E4C96, SURGEON_L = 0xF2D24C, SURGEON_D = 0x152F5E;
+    private static final int TURTLE_B = 0x4E7A4A, TURTLE_T = 0x37582F, TURTLE_L = 0xB8C48A, TURTLE_S = 0xE3DCC0;
+    private static final int GLOOM_B = 0x2A1F36, GLOOM_T = 0x140D1E, GLOOM_F = 0x8A2F6E, GLOOM_L = 0xC46BFF;
+    private static final int STING_B = 0xB05AD6, STING_L = 0xE6B4FF, STING_C = 0xFFE9FF;
 
     public SeaFishRenderer(EntityRendererProvider.Context ctx) {
         super(ctx);
@@ -50,6 +55,10 @@ public class SeaFishRenderer extends EntityRenderer<SeaFishEntity> {
             case SeaFishEntity.RAY -> ray(vc, pose, t, tail);
             case SeaFishEntity.ANGLER -> angler(vc, pose, t, tail);
             case SeaFishEntity.EEL -> eel(vc, pose, t, tail);
+            case SeaFishEntity.SURGEON -> fish(vc, pose, t, tail, 0.15, 0.64, SURGEON_B, SURGEON_T, SURGEON_L, 2);
+            case SeaFishEntity.TURTLE -> turtle(vc, pose, t, tail);
+            case SeaFishEntity.GLOOM -> gloom(vc, pose, t, tail);
+            case SeaFishEntity.STING -> sting(vc, pose, t);
             case SeaFishEntity.GOLD -> fish(vc, pose, t, tail, 0.17, 0.72, GOLD_B, GOLD_T, GOLD_L, 0);
             case SeaFishEntity.STRIPED -> fish(vc, pose, t, tail, 0.12, 0.60, PALE, BAND_D, 0xFFF6E6, 1);
             default -> fish(vc, pose, t, tail, 0.13, 0.72, SILVER_B, SILVER_T, SILVER_L, 0);
@@ -96,6 +105,11 @@ public class SeaFishRenderer extends EntityRenderer<SeaFishEntity> {
                 int col = (i % 4 == 1) ? BAND_D : BAND_O;
                 ringStripe(vc, pose, c[i], r[i], col);
             }
+        } else if (stripes == 2) {                // синий хирург: чёрные и жёлтые полосы (как у рыбы-хирурга)
+            for (int i = 1; i < segs - 1; i += 2) {
+                ringStripe(vc, pose, c[i], r[i], i % 4 == 1 ? BAND_D : SURGEON_L);
+            }
+            tri(vc, pose, c[segs].add(-0.10, 0.02, 0), c[segs].add(0.10, 0.02, 0), c[segs].add(0, -0.02, -0.22), SURGEON_L);
         }
     }
 
@@ -254,6 +268,130 @@ public class SeaFishRenderer extends EntityRenderer<SeaFishEntity> {
         }
         quadEye(vc, pose, head.add(0.075, 0.06, 0.03), 0xC9C2B0);
         quadEye(vc, pose, head.add(-0.075, 0.06, 0.03), 0xC9C2B0);
+    }
+
+    /* ================================================================ черепаха */
+
+    /** Мирная черепаха: плоский панцирь с шестиугольными пластинами, ласты, голова на шее. */
+    private static void turtle(VertexConsumer vc, PoseStack pose, double t, double tail) {
+        double shell = 0.42, len = 0.62;
+        Vec3 c0 = new Vec3(0, 0, 0), c1 = new Vec3(0, 0.02, -len);
+        // панцирь: 8-гранная «карапакс»-призма
+        int n = 8;
+        Vec3[] lo = new Vec3[n], hi = new Vec3[n], lo2 = new Vec3[n], hi2 = new Vec3[n];
+        for (int k = 0; k < n; k++) {
+            double a = Math.PI * 2 * k / n;
+            double sx = Math.cos(a) * shell, sz = Math.sin(a) * shell * 0.9;
+            lo[k] = c0.add(sx * 0.92, -0.06, sz);
+            hi[k] = c0.add(sx * 0.86, 0.10, sz * 0.92);
+            lo2[k] = c1.add(sx * 0.80, -0.05, sz);
+            hi2[k] = c1.add(sx * 0.72, 0.08, sz * 0.92);
+        }
+        for (int k = 0; k < n; k++) {
+            int k2 = (k + 1) % n;
+            quad(vc, pose, hi[k], hi[k2], hi2[k2], hi2[k], TURTLE_T);            // верх панциря
+            quad(vc, pose, lo[k], lo[k2], hi[k2], hi[k], TURTLE_B);              // борт
+            quad(vc, pose, lo[k], lo[k2], lo2[k2], lo2[k], TURTLE_L);            // брюхо
+        }
+        // «пластины»: тёмные рёбра поверх панциря
+        for (int k = 0; k < n; k += 2) {
+            int k2 = (k + 1) % n;
+            quad(vc, pose, hi[k], hi[k2], hi2[k2], hi2[k], TURTLE_B);
+        }
+        // голова на шее
+        Vec3 head = c0.add(0, 0.02, 0.34);
+        quad(vc, pose, head.add(-0.11, 0.09, 0.10), head.add(0.11, 0.09, 0.10), head.add(0.09, -0.07, 0.10), head.add(-0.09, -0.07, 0.10), TURTLE_S);
+        quad(vc, pose, head.add(-0.09, 0.07, 0.10), head.add(0.09, 0.07, 0.10), head.add(0.07, -0.05, 0.10), head.add(-0.07, -0.05, 0.10), TURTLE_L);
+        quadEye(vc, pose, head.add(0.10, 0.05, 0.10), EYE);
+        quadEye(vc, pose, head.add(-0.10, 0.05, 0.10), EYE);
+        // ласты, гребут в противофазе
+        for (int s2 = -1; s2 <= 1; s2 += 2) {
+            double flap = Math.sin(tail * 0.30 + (s2 > 0 ? 0 : Math.PI)) * 0.16;
+            Vec3 f0 = c0.add(s2 * shell * 0.9, -0.03, 0.10);
+            Vec3 f1 = f0.add(s2 * 0.30, flap, 0.14);
+            quad(vc, pose, f0, f1, f1.add(0, -0.02, 0.26), f0.add(0, -0.01, 0.24), TURTLE_L);
+            Vec3 b0 = c1.add(s2 * shell * 0.8, -0.03, -0.02);
+            Vec3 b1 = b0.add(s2 * 0.20, -flap, -0.10);
+            quad(vc, pose, b0, b1, b1.add(0, -0.02, -0.16), b0.add(0, -0.01, -0.16), TURTLE_L);
+        }
+    }
+
+    /* ================================================================ глубинный глот */
+
+    /** «Злая и редкая» рыба глубин: раздутое тело, огромная пасть с зубами и призрачное свечение. */
+    private static void gloom(VertexConsumer vc, PoseStack pose, double t, double tail) {
+        int segs = 6;
+        double len = 0.9, r0 = 0.24;
+        Vec3[] c = new Vec3[segs + 1];
+        double[] r = new double[segs + 1];
+        for (int i = 0; i <= segs; i++) {
+            double f = i / (double) segs;
+            c[i] = new Vec3(Math.sin(tail * 0.30 - i * 0.5) * 0.05 * f, 0, i * (len / segs) * -1.0);
+            r[i] = r0 * (0.55 + 0.75 * Math.sin(Math.PI * (0.22 + f * 0.72)));
+        }
+        for (int i = 0; i < segs; i++) ring(vc, pose, c[i], c[i + 1], r[i], r[i + 1], GLOOM_B, GLOOM_T, GLOOM_F);
+        // пасть: разинута, зубы в два ряда
+        Vec3 jawTop = c[0].add(0, 0.16, 0.20), jawBot = c[0].add(0, -0.16, 0.16);
+        tri(vc, pose, c[0].add(-0.24, 0.06, 0.02), c[0].add(0.24, 0.06, 0.02), jawTop, GLOOM_T);
+        tri(vc, pose, c[0].add(-0.22, -0.06, 0.02), c[0].add(0.22, -0.06, 0.02), jawBot, GLOOM_F);
+        for (int k = -2; k <= 2; k++) {
+            Vec3 b0 = c[0].add(k * 0.085, 0.05, 0.06);
+            tri(vc, pose, b0, b0.add(0.05, 0, 0), b0.add(0.025, 0.13, 0.14), 0xF4F0E2);
+            Vec3 b1 = c[0].add(k * 0.08, -0.05, 0.06);
+            tri(vc, pose, b1, b1.add(0.045, 0, 0), b1.add(0.02, -0.11, 0.11), 0xEDE8D8);
+        }
+        // светящиеся призрачные полосы по бокам (биолюминесценция)
+        for (int k = 0; k < 4; k++) {
+            float pulse = (float) (0.6 + 0.4 * Math.sin(t * 0.08 + k));
+            int col = shade(GLOOM_L, pulse);
+            Vec3 p0 = c[1].add(0, r[1] * 0.2, -k * 0.18);
+            quad(vc, pose, p0.add(-r[1], 0, 0), p0.add(-r[1] * 0.2, 0, 0), p0.add(-r[1] * 0.2, 0, -0.10), p0.add(-r[1], 0, -0.10), col);
+            quad(vc, pose, p0.add(r[1], 0, 0), p0.add(r[1] * 0.2, 0, 0), p0.add(r[1] * 0.2, 0, -0.10), p0.add(r[1], 0, -0.10), col);
+        }
+        // удочка-приманка над головой
+        Vec3 stalk = c[0].add(0, 0.28, -0.04), tip = stalk.add(0, 0.20, 0.26);
+        quad(vc, pose, stalk, stalk.add(0.02, 0, 0.02), tip.add(0.02, 0, 0.02), tip, GLOOM_T);
+        float g = (float) (0.05 + Math.sin(t * 0.16) * 0.015);
+        for (int k = 0; k < 4; k++) {
+            double a0 = Math.PI * 2 * k / 4, a1 = Math.PI * 2 * (k + 1) / 4;
+            tri(vc, pose, tip.add(0, 0, g), tip.add(Math.cos(a0) * g, Math.sin(a0) * g, 0), tip.add(Math.cos(a1) * g, Math.sin(a1) * g, 0), GLOOM_L);
+        }
+        // хвост-веер
+        Vec3 tailA = c[segs];
+        tri(vc, pose, tailA.add(0, r[segs] * 0.8, 0), tailA.add(0, -r[segs] * 0.8, 0), tailA.add(0, 0, -0.30), GLOOM_F);
+    }
+
+    /* ================================================================ жгучая медуза */
+
+    /** «Злая и редкая» медуза: фиолетовый купол с бахромой, ядовитые щупальца вьются. */
+    private static void sting(VertexConsumer vc, PoseStack pose, double t) {
+        int n = 8;
+        double rad = 0.34, h = 0.26;
+        Vec3 apex = new Vec3(0, h, 0);
+        for (int k = 0; k < n; k++) {
+            double a0 = Math.PI * 2 * k / n, a1 = Math.PI * 2 * (k + 1) / n;
+            Vec3 p0 = new Vec3(Math.cos(a0) * rad, 0, Math.sin(a0) * rad);
+            Vec3 p1 = new Vec3(Math.cos(a1) * rad, 0, Math.sin(a1) * rad);
+            tri(vc, pose, apex, p0, p1, STING_B);
+            // бахрома по краю купола
+            Vec3 m = p0.add(p1).scale(0.5).add(0, -0.02, 0);
+            Vec3 inner = m.scale(0.7).add(0, -0.06, 0);
+            tri(vc, pose, p0, p1, inner, STING_L);
+            // светящееся кольцо
+            tri(vc, pose, p0.add(0, 0.03, 0), p1.add(0, 0.03, 0), m.add(0, 0.03, 0).scale(0.86), STING_C);
+        }
+        // щупальца
+        for (int k = 0; k < 7; k++) {
+            double a = Math.PI * 2 * k / 7;
+            double x0 = Math.cos(a) * rad * 0.8, z0 = Math.sin(a) * rad * 0.8;
+            Vec3 prev = new Vec3(x0, -0.02, z0);
+            for (int s = 1; s <= 5; s++) {
+                double sway = Math.sin(t * 0.12 + k + s * 0.6) * 0.05;
+                Vec3 next = new Vec3(x0 * (1 - s * 0.08) + sway, -0.02 - s * 0.15, z0 * (1 - s * 0.08) + sway * 0.6);
+                quad(vc, pose, prev, next, next.add(0.025, 0, 0), prev.add(0.025, 0, 0), s % 2 == 0 ? STING_L : STING_B);
+                prev = next;
+            }
+        }
     }
 
     /* ================================================================ примитивы */

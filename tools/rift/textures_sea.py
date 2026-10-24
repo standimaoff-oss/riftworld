@@ -490,6 +490,11 @@ EGGS = {
     "jelly_fish_spawn_egg": ("9FE6FF", "D8F7FF"),
     "ray_fish_spawn_egg": ("68798C", "DCE6EC"),
     "angler_fish_spawn_egg": ("2C3947", "DFFFA8"),
+    # Рев 10
+    "surgeon_fish_spawn_egg": ("2F6FD0", "F2D24C"),
+    "turtle_spawn_egg": ("4E7A4A", "E3DCC0"),
+    "gloom_fish_spawn_egg": ("2A1F36", "C46BFF"),
+    "sting_fish_spawn_egg": ("B05AD6", "FFE9FF"),
 }
 for _n, (_b, _s) in EGGS.items():
     _d = os.path.join(OUT, "..", "item")

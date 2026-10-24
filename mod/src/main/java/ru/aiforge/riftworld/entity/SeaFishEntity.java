@@ -37,8 +37,15 @@ import ru.aiforge.riftworld.registry.ModEntities;
  * Вся анимация (хвост, плавники, свечение) — на клиенте по скорости и времени, пакетов не тратит.
  */
 public class SeaFishEntity extends Mob {
-    public static final int SILVER = 0, GOLD = 1, STRIPED = 2, JELLY = 3, RAY = 4, ANGLER = 5, EEL = 6;
-    public static final String[] NAMES = {"silver_school", "gold_disc", "striped", "jelly", "ray", "angler", "eel"};
+    public static final int SILVER = 0, GOLD = 1, STRIPED = 2, JELLY = 3, RAY = 4, ANGLER = 5, EEL = 6,
+            SURGEON = 7, TURTLE = 8, GLOOM = 9, STING = 10;
+    public static final String[] NAMES = {"silver_school", "gold_disc", "striped", "jelly", "ray", "angler", "eel",
+            "surgeon", "turtle", "gloom", "sting"};
+
+    /** Мирные виды моря (стаями и в одиночку) — «добрые рыбы». */
+    public static final int[] PEACEFUL = {SILVER, GOLD, STRIPED, JELLY, RAY, SURGEON, TURTLE};
+    /** Хищники затопленных пещер — «злые и редкие»: спавнятся только под дном, в темноте. */
+    public static final int[] CAVE_HOSTILE = {ANGLER, EEL, GLOOM, STING};
 
     private static final EntityDataAccessor<Integer> DATA_VARIANT = SynchedEntityData.defineId(SeaFishEntity.class, EntityDataSerializers.INT);
 
@@ -81,7 +88,19 @@ public class SeaFishEntity extends Mob {
 
     public boolean hostile() {
         int v = variant();
-        return v == ANGLER || v == EEL;
+        return v == ANGLER || v == EEL || v == GLOOM || v == STING;
+    }
+
+    /** Особо редкие виды: глубинный глот, жгучая медуза и гигантская манта. */
+    public boolean rare() {
+        int v = variant();
+        return v == GLOOM || v == STING || v == RAY;
+    }
+
+    /** Размер тела (рендер и хитбокс): черепаха и манта крупнее мелочи. */
+    public float scale() {
+        int v = variant();
+        return v == TURTLE ? 1.7F : v == RAY ? 2.1F : v == GLOOM ? 1.5F : v == JELLY ? 1.15F : 1.0F;
     }
 
     public boolean isJelly() {
@@ -123,6 +142,17 @@ public class SeaFishEntity extends Mob {
             return;
         }
 
+        // мирные шарахаются от плывущего игрока: подплыл близко — косяк уходит в сторону
+        if (!hostile() && tickCount % 6 == 0) {
+            Player near = level().getNearestPlayer(this, 6.0D);
+            if (near != null && !near.isSpectator()) {
+                Vec3 away = position().subtract(near.position());
+                if (away.lengthSqr() < 1e-4) away = new Vec3(1, 0, 0);
+                way = position().add(away.normalize().scale(7)).add(0, (random.nextDouble() - 0.5) * 2, 0);
+                wayAge = 50;
+            }
+        }
+
         // хищник ищет игрока в воде рядом
         Player prey = hostile() ? level().getNearestPlayer(this, 16.0D) : null;
         if (prey != null && !prey.isCreative() && !prey.isSpectator() && prey.isInWater()) {
@@ -131,12 +161,23 @@ public class SeaFishEntity extends Mob {
             if (d > 0.6 && d < 16) {
                 chase(to.normalize(), 0.42);
                 if (d < 2.2 && attackCd <= 0) {
-                    prey.hurt(damageSources().mobAttack(this), variant() == ANGLER ? 5.0F : 3.5F);
-                    attackCd = variant() == ANGLER ? 34 : 26;
+                    float dmg = switch (variant()) {
+                        case ANGLER -> 5.0F;
+                        case GLOOM -> 7.0F;
+                        case STING -> 3.0F;
+                        default -> 3.5F;
+                    };
+                    prey.hurt(damageSources().mobAttack(this), dmg);
+                    attackCd = variant() == GLOOM ? 46 : variant() == ANGLER ? 34 : 26;
                     level().playSound(null, blockPosition(), SoundEvents.GUARDIAN_ATTACK, SoundSource.HOSTILE, 0.7F, 0.8F);
                     if (prey instanceof net.minecraft.server.level.ServerPlayer sp) {
                         sp.addEffect(new net.minecraft.world.effect.MobEffectInstance(
-                                net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN, 60, 0));
+                                net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN, variant() == STING ? 110 : 60,
+                                variant() == STING ? 1 : 0));
+                        if (variant() == STING) {
+                            sp.addEffect(new net.minecraft.world.effect.MobEffectInstance(
+                                    net.minecraft.world.effect.MobEffects.POISON, 80, 0));
+                        }
                     }
                 }
                 faceTravel();
@@ -194,7 +235,14 @@ public class SeaFishEntity extends Mob {
         f.setVariant(variant);
         f.setPos(at.x, at.y, at.z);
         f.home = at;
-        float hp = variant == RAY ? 20F : variant == ANGLER ? 16F : 10F;
+        float hp = switch (variant) {
+            case RAY -> 20F;
+            case TURTLE -> 26F;
+            case ANGLER -> 16F;
+            case GLOOM -> 22F;
+            case STING -> 8F;
+            default -> 10F;
+        };
         f.getAttribute(Attributes.MAX_HEALTH).setBaseValue(hp);
         f.setHealth(hp);
         sl.addFreshEntity(f);

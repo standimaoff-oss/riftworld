@@ -231,16 +231,20 @@ at_block() { # at_block <x> <y> <z> <block> <label>
 
 echo "== пробы моря (под игроком) =="
 at_block "$KX" "$((KT - 6))" "$KZ" elisar_water "вода на глубине"
-seabed_probe() { # seabed_probe <x> <y> <z> <label>: дно = любой из природных донных блоков
-  local x=$1 y=$2 z=$3 label=$4 b
-  EL tp TestPlayer "$x" "$y" "$z" 0 0 >/dev/null 2>&1
-  sleep 1
-  for b in elisar_seabed elisar_silt reef_stone coral_brain coral_cap_pink coral_cap_teal coral_cap_violet cobble; do
-    if [[ "$(EL execute at TestPlayer run execute if block \~ \~ \~ "riftworld:$b" 2>&1)" == *"Test passed"* ]]; then
-      log "  OK   $label ($x,$y,$z) = $b"; return 0
-    fi
+seabed_probe() { # seabed_probe <x> <y> <z> <label>: ищем твёрдый донный блок рядом
+  # (ровно в точке может быть устье пещеры — тогда дно пробито водой; это нормально)
+  local x=$1 y=$2 z=$3 label=$4 b dx dz
+  for dx in 0 1 -1 2 -2 3 -3 4 -4 6 -6; do
+    for dz in 0 1 -1 2 -2 3 -3 4 -4 6 -6; do
+      for b in elisar_seabed elisar_silt reef_stone coral_brain coral_cap_pink coral_cap_teal coral_cap_violet cobble; do
+        EL tp TestPlayer "$((x + dx))" "$y" "$((z + dz))" 0 0 >/dev/null 2>&1
+        if [[ "$(EL execute at TestPlayer run execute if block \~ \~ \~ "riftworld:$b" 2>&1)" == *"Test passed"* ]]; then
+          log "  OK   $label: $b на $((x + dx)),$y,$((z + dz))"; return 0
+        fi
+      done
+    done
   done
-  log "  FAIL $label ($x,$y,$z): не донный блок"; FAILS=$((FAILS + 1))
+  log "  FAIL $label ($x,$y,$z): твёрдого донного блока нет в радиусе 6"; FAILS=$((FAILS + 1))
 }
 seabed_probe "$KX" "$SEA_FLOOR" "$KZ" "донный блок"
 
@@ -348,12 +352,14 @@ view() { # view <x> <y> <z> <yaw> <pitch> <pause> <name>
 }
 view "$VX" 66 "$VZ" 90 42 14 "02_reef_from_above"        # рифовый сад сверху сквозь воду
 view "$((VX + 10))" "$((VF + 6))" "$VZ" 270 18 14 "03_reef_underwater"   # риф вплотную под водой
+view "$((VX + 4))" "$((VF + 9))" "$VZ" 210 22 14 "03b_reef_hills"         # рифовые холмы и палитры
+view "$((VX - 18))" "$((VF + 3))" "$VZ" 45 4 14 "03c_reef_level"          # риф на уровне глаз рыбы
 view "$((LX + 15))" "$((LF + 11))" "$((LZ + 15))" 225 14 14 "04_kelp_forest" # ламинария
 view "$VX" 64 "$((VZ + 26))" 180 2 14 "05_open_sea"          # поверхность: открытое море
 view "$DX" 65 "$DZ" 30 55 14 "06_trench"                     # каньон сверху
 view "$HX" "$((HF + 14))" "$HZ" 0 58 14 "07_blue_hole"             # синяя дыра: взгляд в колодец сверху
 if [ "$CAVE_X" != "0" ]; then
-  view "$CAVE_X" "$CAVE_Y" "$CAVE_Z" 0 0 16 "08_cave"          # затопленная пещера (координаты от /riftsea)
+  view "$CAVE_X" "$((CAVE_Y + 1))" "$CAVE_Z" 0 6 16 "08_cave"          # затопленная пещера (координаты от /riftsea)
 else
   log "  ПРОПУСК кадров пещеры: /riftsea не нашёл затопленную полость"
 fi
@@ -367,6 +373,23 @@ SUM_LOCAL 4.2 -0.9 -0.3 '{NoAI:1b,Silent:1b,sf_variant:2}'
 SUM_LOCAL 4.8 0.4 0.9 '{NoAI:1b,Silent:1b,sf_variant:3}'
 sleep 6
 shot "10_fish_reef"
+# Рев 10: новые виды — мирные на рифу, хищники в затопленной пещере
+EL tp TestPlayer "$((VX + 10))" "$((VF + 5))" "$VZ" 270 4 >/dev/null 2>&1
+sleep 2
+SUM_LOCAL 3 0 0 '{NoAI:1b,Silent:1b,sf_variant:7}'      # рыба-хирург
+SUM_LOCAL 3.6 1.0 0.9 '{NoAI:1b,Silent:1b,sf_variant:8}' # морская черепаха
+SUM_LOCAL 4.4 -0.9 -0.5 '{NoAI:1b,Silent:1b,sf_variant:0}'
+sleep 6
+shot "10b_fish_tropical"
+if [ "$CAVE_X" != "0" ]; then
+  EL tp TestPlayer "$CAVE_X" "$((CAVE_Y + 1))" "$CAVE_Z" 0 0 >/dev/null 2>&1
+  sleep 2
+  SUM_LOCAL 2.8 0 0 '{NoAI:1b,Silent:1b,sf_variant:9}'    # глубинный глот
+  SUM_LOCAL 3.4 1.1 0.6 '{NoAI:1b,Silent:1b,sf_variant:10}'  # жгучая медуза
+  SUM_LOCAL 4.0 -1.0 -0.4 '{NoAI:1b,Silent:1b,sf_variant:5}'
+  sleep 6
+  shot "11b_fish_cave_rare"
+fi
 # крупный план: рыба в трёх блоках прямо по центру кадра — видно даже мелкие детали рендера
 EL tp TestPlayer "$KX" 44 "$KZ" 180 0 >/dev/null 2>&1
 sleep 2

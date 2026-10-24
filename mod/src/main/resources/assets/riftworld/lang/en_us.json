@@ -340,5 +340,9 @@
   "block.riftworld.shell_bed": "Shell Bed",
   "block.riftworld.coral_cap_pink": "Pink Reef Cap",
   "block.riftworld.coral_cap_teal": "Teal Reef Cap",
-  "block.riftworld.coral_cap_violet": "Violet Reef Cap"
+  "block.riftworld.coral_cap_violet": "Violet Reef Cap",
+  "item.riftworld.surgeon_fish_spawn_egg": "Surgeonfish Spawn Egg",
+  "item.riftworld.turtle_spawn_egg": "Sea Turtle Spawn Egg",
+  "item.riftworld.gloom_fish_spawn_egg": "Gloomfish Spawn Egg",
+  "item.riftworld.sting_fish_spawn_egg": "Stinging Jelly Spawn Egg"
 }

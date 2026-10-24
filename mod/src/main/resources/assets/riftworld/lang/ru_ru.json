@@ -340,5 +340,9 @@
   "block.riftworld.shell_bed": "Ракушечная грядка",
   "block.riftworld.coral_cap_pink": "Розовая рифовая шапка",
   "block.riftworld.coral_cap_teal": "Бирюзовая рифовая шапка",
-  "block.riftworld.coral_cap_violet": "Фиолетовая рифовая шапка"
+  "block.riftworld.coral_cap_violet": "Фиолетовая рифовая шапка",
+  "item.riftworld.surgeon_fish_spawn_egg": "Яйцо рыбы-хирурга",
+  "item.riftworld.turtle_spawn_egg": "Яйцо морской черепахи",
+  "item.riftworld.gloom_fish_spawn_egg": "Яйцо глубинного глота",
+  "item.riftworld.sting_fish_spawn_egg": "Яйцо жгучей медузы"
 }
