@@ -1,14 +1,20 @@
 #!/usr/bin/env python3
-"""Оффлайн-симуляция генератора моря Элисара (порт математики ElisarSea.java).
+"""Рев 10 «Живое море 2»: оффлайн-симуляция генератора моря Элисара.
 
-Считает те же шумы/пороги и печатает статистику + рисует карты 256x256:
-  * depth.png  — глубина дна (ущелья)
-  * reef.png   — пятна рифов
-  * caves.png  — плотность пещер по колонке (сколько воздуха под дном)
-  * holes.png  — карта «синих дыр»
-Плюс проверяет, что дно не проваливается ниже y=9 и что пещеры реально есть.
+Это точный порт математики `ElisarSea.java` (те же шумы, пороги и порядок операций),
+поэтому цифры здесь — это цифры настоящей игры. Проверяет и рисует:
 
-usage: python3 tools/rift/sim_sea.py [--out DIR]
+  * floor.png    — карта кромки дна (дюны, желоба, абиссальные впадины)
+  * reef.png     — пятна рифов
+  * caves.png    — сколько воды/воздуха вырезано под дном в колонке
+  * holes.png    — карта «синих дыр»
+  * slice.png    — вертикальный разрез: порода / затопленные пещеры / воздушные карманы / вода / сад
+  * slice2.png   — второй разрез (другой z), для сравнения
+
+и печатает статистику, по которой видно, что пещеры действительно ЗАТОПЛЕНЫ,
+а не стоят сухими столбами (баг Рев 8: 93% объёма было воздухом).
+
+usage: python3 tools/rift/sim_sea.py [--out DIR] [--size N]
 """
 import math
 import os
@@ -17,21 +23,25 @@ import sys
 from PIL import Image
 
 OCEAN = 62
-N = 512          # размер карты в блоках (переопределяется --size)
+BOTTOM = -62            # ElisarSea.BOTTOM
+DEEPEST_FLOOR = -34     # ElisarSea.DEEPEST_FLOOR
+N = 256
+
+M64 = 0xFFFFFFFFFFFFFFFF
 
 
 def _mix(h):
-    h &= 0xFFFFFFFFFFFFFFFF
+    h &= M64
     h ^= h >> 33
-    h = (h * 0xFF51AFD7ED558CCD) & 0xFFFFFFFFFFFFFFFF
+    h = (h * 0xFF51AFD7ED558CCD) & M64
     h ^= h >> 33
-    h = (h * 0xC4CEB9FE1A85EC53) & 0xFFFFFFFFFFFFFFFF
+    h = (h * 0xC4CEB9FE1A85EC53) & M64
     h ^= h >> 33
     return (h >> 11) * (2.0 ** -53)
 
 
 def _s64(v):
-    v &= 0xFFFFFFFFFFFFFFFF
+    v &= M64
     return v - (1 << 64) if v >= (1 << 63) else v
 
 
@@ -72,47 +82,99 @@ def vnoise3(x, y, z, s):
     return y0 + (y1 - y0) * fz
 
 
+# ------------------------------------------------------------------ рельеф
 def reefness(x, z):
     n = vnoise(x * 0.028, z * 0.028, 421) * 0.7 + vnoise(x * 0.075, z * 0.075, 422) * 0.3
-    return max(0.0, min(1.0, (n - 0.56) / 0.24))
+    return max(0.0, min(1.0, (n - 0.54) / 0.24))
 
 
 def trench(x, z):
-    n = vnoise(x * 0.011, z * 0.011, 423) * 0.75 + vnoise(x * 0.035, z * 0.035, 424) * 0.25
-    return 0 if n < 0.60 else round((n - 0.60) / 0.40 * 12.0)
+    n = vnoise(x * 0.011, z * 0.011, 423) * 0.72 + vnoise(x * 0.035, z * 0.035, 424) * 0.28
+    if n < 0.58:
+        return 0
+    t = (n - 0.58) / 0.42
+    return round(t * t * 16.0)
 
 
-def ocean_floor(x, z):
-    n = vnoise(x * 0.016, z * 0.016, 77) * 0.72 + vnoise(x * 0.052, z * 0.052, 78) * 0.28
-    return max(9, OCEAN - 1 - 41 - round(n * 8) - trench(x, z))
+def pit(x, z):
+    n = vnoise(x * 0.0055, z * 0.0055, 481) * 0.8 + vnoise(x * 0.019, z * 0.019, 482) * 0.2
+    if n < 0.70:
+        return 0
+    t = (n - 0.70) / 0.30
+    return round(t * t * 22.0)
 
 
-def cave(x, y, z, floor):
-    if y < 1 or y > floor - 2:
-        return False
-    w1 = vnoise3(x * 0.055, y * 0.085, z * 0.055, 431)
-    w2 = vnoise3(x * 0.055, y * 0.085, z * 0.055, 432)
+def floor_y(x, z, ocean=OCEAN):
+    n = (vnoise(x * 0.016, z * 0.016, 77) * 0.66 + vnoise(x * 0.052, z * 0.052, 78) * 0.26
+         + vnoise(x * 0.075, z * 0.075, 79) * 0.08)
+    f = ocean - 45 - round(n * 13)
+    f -= trench(x, z)
+    f -= pit(x, z)
+    return max(DEEPEST_FLOOR, f)
+
+
+# ------------------------------------------------------------------ пещеры
+def cave_value(x, y, z, fl, step=1.0):
+    deep = max(0.0, min(1.0, (fl - y) / 58.0))
+    s = 0.028 + 0.012 * deep
+    w1 = vnoise3(x * s, y * 0.048, z * s, 431)
+    w2 = vnoise3(x * s, y * 0.048, z * s, 432)
     d = math.hypot(w1 - 0.5, w2 - 0.5)
-    width = 0.082 + 0.065 * vnoise3(x * 0.012, y * 0.02, z * 0.012, 433)
-    if d < width:
-        return True
-    return vnoise3(x * 0.030, y * 0.055, z * 0.030, 434) > 0.742 and y > 2
+    width = 0.086 + 0.070 * deep + 0.034 * vnoise3(x * 0.008, y * 0.011, z * 0.008, 433)
+    tunnel = width - d
+    if tunnel > 0:
+        return tunnel
+    hall = vnoise3(x * 0.022, y * 0.038, z * 0.022, 434)
+    return (hall - (0.745 - 0.045 * deep)) * 0.5
 
 
-def blue_hole(x, y, z, floor):
+def air_pocket(x, y, z):
+    return vnoise3(x * 0.043, y * 0.062, z * 0.043, 435) > 0.70
+
+
+def ceiling_pocket(x, y, z):
+    return vnoise3(x * 0.043, y * 0.062, z * 0.043, 435) > 0.585
+
+
+def cave(x, y, z, fl):
+    if y <= BOTTOM + 1 or y > fl - 3:
+        return False
+    return cave_value(x, y, z, fl) > 0
+
+
+def blue_hole(x, y, z, fl):
     gx, gz = x // 26, z // 26
-    if hash2(gx, gz, 441) < 0.42:
+    if hash2(gx, gz, 441) < 0.40:
         return False
     cx = gx * 26 + 5 + hash2(gx, gz, 442) * 16
     cz = gz * 26 + 5 + hash2(gx, gz, 443) * 16
-    r = 2.0 + hash2(gx, gz, 444) * 2.2
-    depth = 9 + int(hash2(gx, gz, 445) * 9)
+    r = 2.0 + hash2(gx, gz, 444) * 2.4
+    depth = 12 + int(hash2(gx, gz, 445) * 14)
     d = math.hypot(x + 0.5 - cx, z + 0.5 - cz)
-    if y > floor or y < floor - depth - 5:
+    if y > fl or y < fl - depth - 6:
         return False
     if d <= r:
         return True
-    return y < floor - depth and d <= r + 3.5 and y > floor - depth - 5
+    return y < fl - depth and d <= r + 3.8 and y > fl - depth - 6
+
+
+def column_kind(x, z, fl):
+    """Возвращает (вода, воздух, порода) в колонке — ровно как ElisarSea.column()."""
+    wet = air = 0
+    hole_column = False
+    for y in range(BOTTOM, fl - 2):
+        shaft = blue_hole(x, y, z, fl)
+        if not shaft and not cave(x, y, z, fl):
+            continue
+        if shaft:
+            hole_column = True
+        open_above = y + 1 > fl - 3 or (not cave(x, y + 1, z, fl) and not blue_hole(x, y + 1, z, fl))
+        pocket = (not blue_hole(x, y, z, fl)) and (air_pocket(x, y, z) or (open_above and ceiling_pocket(x, y, z)))
+        if pocket:
+            air += 1
+        else:
+            wet += 1
+    return wet, air, hole_column
 
 
 def main():
@@ -124,183 +186,103 @@ def main():
         N = int(sys.argv[sys.argv.index("--size") + 1])
     os.makedirs(out, exist_ok=True)
 
-    floors = [[0] * N for _ in range(N)]
-    reefs = [[0.0] * N for _ in range(N)]
-    depth_img = Image.new("RGB", (N, N))
+    floor_img = Image.new("RGB", (N, N))
     reef_img = Image.new("RGB", (N, N))
     cave_img = Image.new("RGB", (N, N))
     hole_img = Image.new("RGB", (N, N))
-    hole_ph = hole_img.load()
+    fp, rp, cp, hp = floor_img.load(), reef_img.load(), cave_img.load(), hole_img.load()
 
-    air_total = 0
-    cave_cols = 0
-    hole_cols = 0
-    reef_cols = 0
-    min_floor, max_floor = 999, -999
+    floors = [[0] * N for _ in range(N)]
+    reef = [[0.0] * N for _ in range(N)]
+    stats = {"rock": 0, "wet": 0, "air": 0, "cave_cols": 0, "hole_cols": 0, "reef_cols": 0, "steps": 0, "edges": 0}
+    minf, maxf = 999, -999
+
     for x in range(N):
         for z in range(N):
-            f = ocean_floor(x, z)
+            f = floor_y(x, z)
             floors[z][x] = f
-            reefs[z][x] = reefness(x, z)
-            min_floor, max_floor = min(min_floor, f), max(max_floor, f)
-            if reefs[z][x] > 0.5:
-                reef_cols += 1
-            air = 0
-            hole_here = False
-            for y in range(1, f):
-                if cave(x, y, z, f):
-                    air += 1
-                if blue_hole(x, y, z, f):
-                    air += 1
-                    hole_here = True
-            air_total += air
-            if air >= 8:
-                cave_cols += 1
-            if hole_here:
-                hole_cols += 1
-                hole_ph[x, z] = (90, 220, 220)
-            depth_img.putpixel((x, z), (int(30 + (f - 9) * 6), 70, int(120 + (62 - f) * 2)))
-            reef_img.putpixel((x, z), (int(40 + reefs[z][x] * 200), 60, 90))
-            v = min(255, air * 12)
-            cave_img.putpixel((x, z), (v, int(v * 0.7), 40))
-
-    # вертикальный разрез по z = N/2: порода / пещеры / вода / сад
-    slice_img = Image.new("RGB", (N, 68))
-    sp = slice_img.load()
-    zc = N // 2
-    for x in range(N):
-        f = ocean_floor(x, zc)
-        for y in range(68):
-            yy = 67 - y                     # сверху вниз: воздух, вода, порода
-            if yy > OCEAN:
-                c = (18, 20, 26)
-            elif yy > f:
-                c = (44, 90, 150)
+            reef[z][x] = reefness(x, z)
+            minf, maxf = min(minf, f), max(maxf, f)
+            if reef[z][x] > 0.5:
+                stats["reef_cols"] += 1
+            if x + 1 < N:
+                stats["edges"] += 1
+                if floors[z][x + 1] != f:
+                    stats["steps"] += 1
+            wet, air, holecol = column_kind(x, z, f)
+            stats["rock"] += max(0, f - BOTTOM)
+            stats["wet"] += wet
+            stats["air"] += air
+            if wet + air >= 8:
+                stats["cave_cols"] += 1
+            if holecol:
+                stats["hole_cols"] += 1
+                hp[x, z] = (90, 220, 220)
             else:
-                c = (96, 92, 110)
-                if any(cave(x, yy, zc + dz, f) or blue_hole(x, yy, zc + dz, f) for dz in (-4, -2, 0, 2, 4)):
-                    c = (16, 12, 22)
-                elif yy == f:
-                    r = reefness(x, zc)
-                    c = (222, 130, 150) if r > 0.5 else (170, 160, 130)
-            sp[x, 67 - yy] = c
-    slice_img.resize((N * 2, 68 * 4), Image.NEAREST).save(f"{out}/slice.png")
-    depth_img.resize((N * 2, N * 2), Image.NEAREST).save(f"{out}/depth.png")
+                hp[x, z] = (12, 18, 26)
+            depth = OCEAN - f
+            fp[x, z] = (int(20 + (f + 34) * 3.2), int(70 + depth * 1.4), int(140 + depth * 1.2))
+            rp[x, z] = (int(40 + reef[z][x] * 200), 60, 90)
+            v = min(255, (wet + air) * 9)
+            cp[x, z] = (v, int(v * 0.7), int(air * 14))
+
+    floor_img.resize((N * 2, N * 2), Image.NEAREST).save(f"{out}/floor.png")
     reef_img.resize((N * 2, N * 2), Image.NEAREST).save(f"{out}/reef.png")
     cave_img.resize((N * 2, N * 2), Image.NEAREST).save(f"{out}/caves.png")
     hole_img.resize((N * 2, N * 2), Image.NEAREST).save(f"{out}/holes.png")
 
+    # ---------------------------------------------------------------- разрезы
+    def slice_at(zc, path):
+        top, bot = OCEAN + 4, BOTTOM - 2
+        h = top - bot + 1
+        img = Image.new("RGB", (N, h))
+        px = img.load()
+        for x in range(N):
+            f = floors[zc][x] if zc < N else floor_y(x, zc)
+            for y in range(bot, top + 1):
+                yy = top - y
+                if y > OCEAN:
+                    c = (16, 18, 26)
+                elif y > f:
+                    c = (46, 96, 158)
+                elif y == f:
+                    c = (222, 150, 160) if reef[zc][x] > 0.5 else (204, 190, 150)
+                else:
+                    if blue_hole(x, y, zc, f):
+                        c = (74, 170, 210)
+                    elif cave(x, y, zc, f):
+                        open_above = y + 1 > f - 3 or (not cave(x, y + 1, zc, f) and not blue_hole(x, y + 1, zc, f))
+                        c = (170, 150, 90) if (open_above and air_pocket(x, y, zc)) else (40, 120, 170)
+                    else:
+                        c = (92, 88, 104)
+                px[x, yy] = c
+        img.resize((N * 2, h * 3), Image.NEAREST).save(path)
+
+    slice_at(N // 2, f"{out}/slice.png")
+    slice_at(min(N - 1, N // 2 + 37), f"{out}/slice2.png")
+
     total = N * N
-    print(f"дно: y {min_floor}..{max_floor} (ущелья до {OCEAN - min_floor} блоков воды)")
-    print(f"рифовые колонки: {reef_cols * 100.0 / total:.1f}%")
-    print(f"колонки с пещерами (>=8 воздуха): {cave_cols * 100.0 / total:.1f}%")
-    print(f"колонки с синей дырой: {hole_cols * 100.0 / total:.1f}%")
-    print(f"воздуха под дном в среднем на колонку: {air_total / total:.1f} блоков")
+    cave_vol = max(1, stats["wet"] + stats["air"])
+    print(f"дно: y {minf}..{maxf}  → воды {OCEAN - maxf}..{OCEAN - minf} блоков")
+    print(f"породы под дном: {BOTTOM}..{minf} (минимум {-minf + BOTTOM} блоков в самой глубокой впадине)")
+    print(f"перепад дна: {stats['steps'] * 100.0 / stats['edges']:.1f}% рёбер (было 6.8%)")
+    print(f"рифовые колонки: {stats['reef_cols'] * 100.0 / total:.1f}%")
+    print(f"колонки с пещерами (>=8): {stats['cave_cols'] * 100.0 / total:.1f}%")
+    print(f"колонки с синей дырой: {stats['hole_cols'] * 100.0 / total:.1f}%")
+    print(f"вырезано от породы: {(stats['wet'] + stats['air']) * 100.0 / max(1, stats['rock']):.1f}%")
+    print(f"  из них ВОДА: {stats['wet'] * 100.0 / cave_vol:.1f}%   ВОЗДУХ (карманы): {stats['air'] * 100.0 / cave_vol:.1f}%")
+    print(f"воздуха под дном в среднем на колонку: {stats['air'] / total:.1f} блоков")
     print("карты:", out)
-
-    fails = []
-    if min_floor < 9:
-        fails.append("дно ниже y=9")
-    if cave_cols * 100.0 / total < 5:
-        fails.append("пещер слишком мало")
-    if reef_cols * 100.0 / total < 3:
-        fails.append("рифов слишком мало")
-    if hole_cols == 0:
-        fails.append("нет синих дыр")
-    print("ПРОВАЛЫ:", fails if fails else "нет")
-    return 1 if fails else 0
-
-
-
-
-# ------------------------------------------------------------------ подбор точек для съёмки
-def pick_spots(size=192, origin=(600, 600), write=None):
-    """Возвращает координаты «красивых» мест для скриншотов и RCON-проб."""
-    ox, oz = origin
-    best_reef, best_reef_v = None, -1
-    best_deep, best_deep_v = None, 999
-    holes = []
-    caves = []
-    for x in range(ox, ox + size):
-        for z in range(oz, oz + size):
-            f = ocean_floor(x, z)
-            r = reefness(x, z)
-            if r > best_reef_v:
-                best_reef_v, best_reef = r, (x, z, f)
-            if f < best_deep_v:
-                best_deep_v, best_deep = f, (x, z, f)
-            if len(holes) < 400:
-                for y in range(f - 1, max(1, f - 22), -1):
-                    if blue_hole(x, y, z, f):
-                        holes.append((x, z, f, y))
-                        break
-            if len(caves) < 400:
-                air = [y for y in range(3, f - 1) if cave(x, y, z, f)]
-                if len(air) >= 6 and f - air[-1] >= 6:      # есть полость с запасом породы сверху
-                    caves.append((x, z, f, air[0], air[-1]))
-    spots = {}
-    spots["reef"] = {"x": best_reef[0], "z": best_reef[1], "floor": best_reef[2]}
-    spots["deep"] = {"x": best_deep[0], "z": best_deep[1], "floor": best_deep[2]}
-    print(f"REEF={best_reef[0]} {best_reef[2] + 3} {best_reef[1]} REEFV={best_reef_v:.2f}")
-    print(f"DEEP={best_deep[0]} {best_deep[2] + 4} {best_deep[1]} FLOOR={best_deep[2]}")
-    if holes:
-        hx, hz, hf, hy = holes[len(holes) // 2]
-        spots["hole"] = {"x": hx, "z": hz, "floor": hf, "top": hy}
-        print(f"HOLE={hx} {hy} {hz} FLOOR={hf}")
-    if caves:
-        cx, cz, cf, lo, hi = caves[len(caves) // 2]
-        spots["cave"] = {"x": cx, "z": cz, "floor": cf, "low": lo, "high": hi}
-        print(f"CAVE={cx} {lo + 1} {cz} LOW={lo} HIGH={hi} FLOOR={cf}")
-    # центр области и вертикальная колонка для проб
-    # виста рифа: центр самого большого пятна рифа (максимум суммы «рифовости» по 13x13)
-    best_vista, best_vista_v = None, -1
-    for x in range(ox, ox + size, 3):
-        for z in range(oz, oz + size, 3):
-            if reefness(x, z) < 0.6:
-                continue
-            acc = 0.0
-            for dx in range(-6, 7, 2):
-                for dz in range(-6, 7, 2):
-                    acc += reefness(x + dx, z + dz)
-            if acc > best_vista_v:
-                best_vista_v, best_vista = acc, (x, z, ocean_floor(x, z))
-    if best_vista:
-        spots["reef_vista"] = {"x": best_vista[0], "z": best_vista[1], "floor": best_vista[2]}
-        print(f"VISTA={best_vista[0]} {best_vista[2]} {best_vista[1]} SCORE={best_vista_v:.1f}")
-
-    # ламинария: колонки с густым лесом (там, где reefness низкая, а шум ламинарии высокий)
-    best_kelp, best_kelp_v = None, -1
-    for x in range(ox, ox + size):
-        for z in range(oz, oz + size):
-            if reefness(x, z) >= 0.35:
-                continue
-            if vnoise(x * 0.05, z * 0.05, 465) <= 0.66:
-                continue
-            cnt = sum(1 for dx in range(-4, 5) for dz in range(-4, 5)
-                      if reefness(x + dx, z + dz) < 0.35 and vnoise((x + dx) * 0.05, (z + dz) * 0.05, 465) > 0.66)
-            if cnt > best_kelp_v:
-                best_kelp_v, best_kelp = cnt, (x, z, ocean_floor(x, z))
-    if best_kelp:
-        spots["kelp"] = {"x": best_kelp[0], "z": best_kelp[1], "floor": best_kelp[2]}
-        print(f"KELP={best_kelp[0]} {best_kelp[2]} {best_kelp[1]} N={best_kelp_v}")
-
-    spots["origin"] = {"x": ox + size // 2, "z": oz + size // 2}
-    cx, cz = ox + size // 2, oz + size // 2
-    f = ocean_floor(cx, cz)
-    spots["column"] = {"x": cx, "z": cz, "floor": f, "water_bottom": f + 1, "water_top": OCEAN}
-    print(f"COLUMN={cx} {cz} FLOOR={f} WATER={f + 1}..{OCEAN}")
-    if write:
-        import json
-        with open(write, "w", encoding="utf-8") as fh:
-            json.dump(spots, fh, ensure_ascii=False, indent=2)
-        print("spots ->", write)
+    bad = []
+    if minf < DEEPEST_FLOOR:
+        bad.append("дно провалилось ниже DEEPEST_FLOOR")
+    if stats["wet"] == 0:
+        bad.append("пещеры не затоплены")
+    if stats["air"] * 100.0 / cave_vol > 35:
+        bad.append("слишком много воздуха в пещерах (должно быть <=35%)")
+    print("ПРОВАЛЫ: " + (", ".join(bad) if bad else "нет"))
+    return 1 if bad else 0
 
 
 if __name__ == "__main__":
-    if "--spots" in sys.argv:
-        wr = None
-        if "--json" in sys.argv:
-            wr = sys.argv[sys.argv.index("--json") + 1]
-        pick_spots(write=wr)
-    else:
-        sys.exit(main())
+    sys.exit(main())

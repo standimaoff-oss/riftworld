@@ -50,7 +50,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
     public static final Codec<ElisarChunkGenerator> CODEC = RecordCodecBuilder.create(i -> i.group(
             BiomeSource.CODEC.fieldOf("biome_source").forGetter(g -> g.biomeSource)).apply(i, i.stable(ElisarChunkGenerator::new)));
 
-    static final int MIN_Y = 0, HEIGHT = 256;
+    static final int MIN_Y = -64, HEIGHT = 384;
 
     public ElisarChunkGenerator(BiomeSource src) {
         super(src);
@@ -235,8 +235,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
     /** Seabed height: gentle dunes around ocean-45 so the water column is 40-50 blocks deep everywhere (Rev 4 item 6).
      *  Рев 8: плюс ущелья — дно местами прорезано на 6–12 блоков вглубь (каньоны и желоба). */
     static int oceanFloor(CityPlan plan, int x, int z) {
-        double n = vnoise(x * 0.016, z * 0.016, 77) * 0.72 + vnoise(x * 0.052, z * 0.052, 78) * 0.28;
-        return Math.max(9, plan.ocean - 1 - 41 - (int) Math.round(n * 8) - ElisarSea.trenchDepth(x, z));
+        // Рев 10: дюны, желоба и абиссальные впадины считает сам ElisarSea (мир стал глубже: min_y = -64)
+        return ElisarSea.floor(x, z, plan.ocean);
     }
 
     private static boolean land(CityPlan plan, double px, double pz) {
@@ -498,6 +498,9 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         BlockState moss = st(ElisarBlocks.MOSS), crust = st(ElisarBlocks.CRUST);
         BlockState aurite = st(ElisarBlocks.AURITE_ORE);
         Col[][] cols = new Col[18][18];
+        // Рев 10: кромки дна по колонкам — декор моря ставится вторым проходом, после воды
+        int[][] seaFloor = new int[16][16];
+        for (int[] row : seaFloor) java.util.Arrays.fill(row, Integer.MIN_VALUE);
         for (int dx = -1; dx <= 16; ++dx)
             for (int dz = -1; dz <= 16; ++dz)
                 cols[dx + 1][dz + 1] = column(plan, x0 + dx, z0 + dz);
@@ -514,7 +517,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                     // Рев 8 «Живое море»: сплошной массив дна от y=0, ущелья, двухуровневые пещеры,
                     // «синие дыры» и рифовые сады (было: 5-блочная скорлупа и лысое дно).
                     int floor = oceanFloor(plan, x, z);
-                    ElisarSea.fill(chunk, mp, x, z, floor, plan.ocean);
+                    ElisarSea.column(chunk, mp, x, z, floor, plan.ocean);
+                    seaFloor[dx][dz] = floor;
                     // мини-биом «Туманный данж»: серые каменные столбы из воды + центральный утёс под руину
                     MistKeep.Region mr = MistKeep.regionAt(x + 0.5, z + 0.5);
                     if (mr != null) {
@@ -686,6 +690,12 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 trees(plan, chunk, mp, x, z);
             }
         }
+        // Рев 10 «Живое море 2»: сад на дне и убранство затопленных пещер — вторым проходом,
+        // чтобы растения ставились на уже готовую воду и породу.
+        for (int dx = 0; dx < 16; ++dx)
+            for (int dz = 0; dz < 16; ++dz)
+                if (seaFloor[dx][dz] != Integer.MIN_VALUE)
+                    ElisarSea.decorate(chunk, mp, x0 + dx, z0 + dz, seaFloor[dx][dz], plan.ocean);
         Heightmap.primeHeightmaps(chunk, EnumSet.of(Heightmap.Types.OCEAN_FLOOR_WG, Heightmap.Types.WORLD_SURFACE_WG));
         return CompletableFuture.completedFuture(chunk);
     }
@@ -1186,13 +1196,13 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         BlockState[] arr = new BlockState[HEIGHT];
         java.util.Arrays.fill(arr, Blocks.AIR.defaultBlockState());
         int of = oceanFloor(plan, x, z);
-        arr[of] = ElisarBlocks.SEABED.get().defaultBlockState();
-        arr[of - 1] = ElisarBlocks.SEABED.get().defaultBlockState();
-        // Рев 8: дно — сплошной массив породы (а не 5 блоков), для расстановки структур/высот
-        for (int y = 0; y <= of - 2; ++y) arr[y] = ElisarBlocks.STONE.get().defaultBlockState();
-        for (int y = of + 1; y <= plan.ocean; ++y) arr[y] = ElisarBlocks.WATER.get().defaultBlockState();
+        // Рев 10: индексы массива отсчитываются от MIN_Y (мир стал глубже: min_y = -64, height = 384)
+        arr[of - MIN_Y] = ElisarBlocks.SEABED.get().defaultBlockState();
+        arr[of - 1 - MIN_Y] = ElisarBlocks.SEABED.get().defaultBlockState();
+        for (int y = ElisarSea.BOTTOM; y <= of - 2; ++y) arr[y - MIN_Y] = ElisarBlocks.STONE.get().defaultBlockState();
+        for (int y = of + 1; y <= plan.ocean; ++y) arr[y - MIN_Y] = ElisarBlocks.WATER.get().defaultBlockState();
         if (c.isl != null) {
-            for (int y = Math.max(0, c.bottom); y <= Math.min(HEIGHT - 1, c.top); ++y) arr[y] = ElisarBlocks.STONE.get().defaultBlockState();
+            for (int y = Math.max(MIN_Y, c.bottom); y <= Math.min(MIN_Y + HEIGHT - 1, c.top); ++y) arr[y - MIN_Y] = ElisarBlocks.STONE.get().defaultBlockState();
         }
         return new NoiseColumn(MIN_Y, arr);
     }

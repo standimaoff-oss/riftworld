@@ -9,19 +9,27 @@ import net.minecraftforge.registries.RegistryObject;
 import ru.aiforge.riftworld.registry.ElisarBlocks;
 
 /**
- * Рев 8 «Живое море» — дно, ущелья, подводные пещеры и рифовые сады открытого океана Элисара.
+ * Рев 10 «Живое море 2» — дно, впадины, затопленные пещеры и рифовые сады открытого океана Элисара.
  *
- * <p>Всё считается аналитически (как и остальной мир планеты), без сида и без фич-системы:
+ * <p>Что изменилось относительно Рев 8 (по разбору в {@code reports/PLAN_sea_rev10.md}):
  * <ul>
- *   <li>порода дна — сплошной массив от y=0 до кромки, а не 5-блочная скорлупа (было: пещерам негде было жить);</li>
- *   <li>ущелья и желоба режут дно на глубину 6–14 блоков (каньоны идут пятнами по шуму);</li>
- *   <li>пещеры — двухуровневые «черви» (изолинии двух 3D-шумов) + залы, плюс «синие дыры»: вертикальные
- *       колодцы с дна в полость, у каждого — собственный зал на дне;</li>
- *   <li>рифовые сады: пятна рифового камня, мозговые кораллы, ветвистые/веерные/трубчатые и светящиеся
- *       кораллы, ламинария колоннами, морская трава, ракушки на иле.</li>
+ *   <li><b>Мир стал глубоким:</b> низ Элисара опущен на {@code min_y = -64} (см. {@code dimension_type/elisar.json}),
+ *       поэтому под кромкой дна теперь 45–70 блоков породы, а не 10–18. Пещерам есть где жить.</li>
+ *   <li><b>Пещеры затоплены по-настоящему.</b> Раньше вода решалась «по колонке» (первая твёрдая клетка навсегда
+ *       выключала протечку) — 93% объёма пещер было сухим воздухом, а вода стояла вертикальными столбами.
+ *       Теперь вода заполняет всё вырезанное пространство, а <b>воздушные карманы</b> задаются отдельным шумом
+ *       у сводов (как ловушки воздуха в настоящих подводных гротах). Решение чисто аналитическое, поэтому
+ *       одинаково с обеих сторон границы чанка — никаких «водяных стен».</li>
+ *   <li><b>Рельеф дна</b> получил дюны, гребни, желоба-ущелья и редкие <b>абиссальные впадины</b> вместо
+ *       девяти плоских плит.</li>
  * </ul>
  */
 public final class ElisarSea {
+    /** Нижняя граница породы: два блока бедрока у самого низа мира (min_y = -64). */
+    public static final int BOTTOM = -62;
+    /** Глубже этого кромка дна не опускается (даже во впадинах). */
+    public static final int DEEPEST_FLOOR = -34;
+
     private ElisarSea() {
     }
 
@@ -61,46 +69,91 @@ public final class ElisarSea {
         return y0 + (y1 - y0) * fz;
     }
 
+    // ------------------------------------------------------------------ рельеф дна
     /** Насколько место «рифовое»: 0 — обычный ил/песок, 1 — плотный рифовый сад. */
     static double reefness(int x, int z) {
         double n = vnoise(x * 0.028, z * 0.028, 421) * 0.7 + vnoise(x * 0.075, z * 0.075, 422) * 0.3;
-        return Math.max(0, Math.min(1, (n - 0.56) / 0.24));
+        return Math.max(0, Math.min(1, (n - 0.54) / 0.24));
     }
 
-    /** Глубина ущелья под этой колонкой (0 — дно ровное). */
+    /** Глубина желоба-ущелья под этой колонкой (0 — дно ровное). Рев 10: до 16 блоков. */
     static int trenchDepth(int x, int z) {
-        double n = vnoise(x * 0.011, z * 0.011, 423) * 0.75 + vnoise(x * 0.035, z * 0.035, 424) * 0.25;
-        if (n < 0.60) return 0;
-        return (int) Math.round((n - 0.60) / 0.40 * 12.0);            // до 12 блоков вглубь
+        double n = vnoise(x * 0.011, z * 0.011, 423) * 0.72 + vnoise(x * 0.035, z * 0.035, 424) * 0.28;
+        if (n < 0.58) return 0;
+        double t = (n - 0.58) / 0.42;
+        return (int) Math.round(t * t * 16.0);
+    }
+
+    /** Абиссальная впадина: редкий широкий провал в дне до 22 блоков вглубь (синяя бездна, видно издалека). */
+    static int pitDepth(int x, int z) {
+        double n = vnoise(x * 0.0055, z * 0.0055, 481) * 0.8 + vnoise(x * 0.019, z * 0.019, 482) * 0.2;
+        if (n < 0.70) return 0;
+        double t = (n - 0.70) / 0.30;
+        return (int) Math.round(t * t * 22.0);
+    }
+
+    /**
+     * Кромка дна: 46–58 блоков воды в норме, желоба до −16 и впадины до −22 от неё.
+     *
+     * @param sea уровень моря ({@code plan.ocean})
+     */
+    public static int floor(int x, int z, int sea) {
+        double n = vnoise(x * 0.016, z * 0.016, 77) * 0.66 + vnoise(x * 0.052, z * 0.052, 78) * 0.26
+                + vnoise(x * 0.075, z * 0.075, 79) * 0.08;                     // дюны + средняя рябь + плавная зыбь
+        int f = sea - 45 - (int) Math.round(n * 13);
+        f -= trenchDepth(x, z);
+        f -= pitDepth(x, z);
+        return Math.max(DEEPEST_FLOOR, f);
     }
 
     // ------------------------------------------------------------------ пещеры
+    /**
+     * «Пещерность» точки: > 0 — внутри полости. Два уровня туннелей-червей (мелкий у дна и глубокий лабиринт)
+     * плюс залы-гроты. Чем глубже, тем шире ходы — так глубина читается силуэтом.
+     */
+    static double caveValue(int x, int y, int z, int floor) {
+        double deep = Math.max(0, Math.min(1, (floor - y) / 58.0));
+        // ходы: изолиния двух 3D-шумов (пересечение «трубы»), масштаб реже с глубиной
+        double s = 0.028 + 0.012 * deep;
+        double w1 = vnoise3(x * s, y * 0.048, z * s, 431);
+        double w2 = vnoise3(x * s, y * 0.048, z * s, 432);
+        double d = Math.hypot(w1 - 0.5, w2 - 0.5);
+        double width = 0.086 + 0.070 * deep + 0.034 * vnoise3(x * 0.008, y * 0.011, z * 0.008, 433);
+        double tunnel = width - d;
+        if (tunnel > 0) return tunnel;
+        // залы: отдельный шум, чем глубже — тем охотнее раскрывается
+        double hall = vnoise3(x * 0.022, y * 0.038, z * 0.022, 434);
+        return (hall - (0.745 - 0.045 * deep)) * 0.5;
+    }
+
+    /** Воздушный карман: у свода полости, задаётся отдельным шумом (там можно вдохнуть). */
+    static boolean airPocket(int x, int y, int z) {
+        return vnoise3(x * 0.043, y * 0.062, z * 0.043, 435) > 0.70;
+    }
+
+    /** Второй сорт кармана: у свода полости достаточно и более слабого шума (воздух всплывает к потолку). */
+    static boolean ceilingPocket(int x, int y, int z) {
+        return vnoise3(x * 0.043, y * 0.062, z * 0.043, 435) > 0.585;
+    }
+
     /** Пещера ли эта точка породы (ниже кромки дна). */
     static boolean cave(int x, int y, int z, int floor) {
-        if (y < 1 || y > floor - 2) return false;
-        // два уровня «червей»: верхний (y ~ floor-12) и нижний (y ~ 6..12)
-        double w1 = vnoise3(x * 0.055, y * 0.085, z * 0.055, 431);
-        double w2 = vnoise3(x * 0.055, y * 0.085, z * 0.055, 432);
-        double d = Math.hypot(w1 - 0.5, w2 - 0.5);
-        double width = 0.082 + 0.065 * vnoise3(x * 0.012, y * 0.02, z * 0.012, 433);
-        if (d < width) return true;
-        // залы-гроты
-        double hall = vnoise3(x * 0.030, y * 0.055, z * 0.030, 434);
-        return hall > 0.742 && y > 2;
+        if (y <= BOTTOM + 1 || y > floor - 3) return false;
+        return caveValue(x, y, z, floor) > 0;
     }
 
     /** «Синяя дыра»: колодец с морского дна вниз, с расширением-залом на дне. */
     static boolean blueHole(int x, int y, int z, int floor) {
         int gx = Math.floorDiv(x, 26), gz = Math.floorDiv(z, 26);
-        if (hash(gx, gz, 441) < 0.42) return false;                       // не в каждой ячейке 26x26
+        if (hash(gx, gz, 441) < 0.40) return false;                       // не в каждой ячейке 26x26
         double cx = gx * 26 + 5 + hash(gx, gz, 442) * 16, cz = gz * 26 + 5 + hash(gx, gz, 443) * 16;
-        double r = 2.0 + hash(gx, gz, 444) * 2.2;
-        int depth = 9 + (int) (hash(gx, gz, 445) * 9);
+        double r = 2.0 + hash(gx, gz, 444) * 2.4;
+        int depth = 12 + (int) (hash(gx, gz, 445) * 14);
         double d = Math.hypot(x + 0.5 - cx, z + 0.5 - cz);
-        if (y > floor || y < floor - depth - 5) return false;
+        if (y > floor || y < floor - depth - 6) return false;
         if (d <= r) return true;
         // зал у основания колодца
-        return y < floor - depth && d <= r + 3.5 && y > floor - depth - 5;
+        return y < floor - depth && d <= r + 3.8 && y > floor - depth - 6;
     }
 
     // ------------------------------------------------------------------ материалы
@@ -108,61 +161,79 @@ public final class ElisarSea {
         return b.get().defaultBlockState();
     }
 
-    /** Порода дна: сверху песок/ил/риф, ниже — камень с прослоями. */
+    /** Порода дна: сверху песок/ил/риф, ниже — камень с прослоями, у самого низа — тёмный камень. */
     private static BlockState rock(int x, int y, int z, int floor, double reef) {
         int d = floor - y;
         if (d == 0) {
-            if (reef > 0.62) return hash(x, z, 451) < 0.16 ? st(ElisarBlocks.CORAL_BRAIN) : st(ElisarBlocks.REEF_STONE);
-            return reef > 0.30 ? st(ElisarBlocks.SEABED) : (vnoise(x * 0.06, z * 0.06, 452) > 0.52 ? st(ElisarBlocks.SILT) : st(ElisarBlocks.SEABED));
+            if (reef > 0.62) return hash(x, z, 451) < 0.14 ? st(ElisarBlocks.CORAL_BRAIN) : st(ElisarBlocks.REEF_STONE);
+            if (reef > 0.30) return st(ElisarBlocks.REEF_STONE);
+            double sand = vnoise(x * 0.035, z * 0.035, 452);
+            if (sand > 0.56) return st(ElisarBlocks.SEABED);                       // тёплый песок
+            if (sand < 0.40) return st(ElisarBlocks.SILT);                          // тёмный ил
+            return st(ElisarBlocks.COBBLE);                                         // галечная гряда
         }
         if (d <= 2) {
             if (reef > 0.55) return st(ElisarBlocks.REEF_STONE);
-            return vnoise(x * 0.06, z * 0.06, 452) > 0.52 ? st(ElisarBlocks.SILT) : st(ElisarBlocks.SEABED);
+            return vnoise(x * 0.05, z * 0.05, 452) > 0.50 ? st(ElisarBlocks.SILT) : st(ElisarBlocks.SEABED);
         }
         if (d <= 5) return hash(x, y, z) < 0.35 ? st(ElisarBlocks.SEABED) : st(ElisarBlocks.STONE);
         double n = vnoise3(x * 0.05, y * 0.09, z * 0.05, 453);
-        if (n > 0.70) return st(ElisarBlocks.REEF_STONE);
-        if (n < 0.30) return st(ElisarBlocks.STONE_MOSSY);
-        return hash(x, y, z) < 0.10 ? st(ElisarBlocks.COBBLE) : st(ElisarBlocks.STONE);
+        if (d < 30) {
+            if (n > 0.70) return st(ElisarBlocks.REEF_STONE);
+            if (n < 0.30) return st(ElisarBlocks.STONE_MOSSY);
+            return hash(x, y, z) < 0.10 ? st(ElisarBlocks.COBBLE) : st(ElisarBlocks.STONE);
+        }
+        // глубокая порода: тёмные слои с прожилками и редкими карманами ила
+        if (n > 0.78) return st(ElisarBlocks.STONE_MOSSY);
+        return hash(x, y, z) < 0.08 ? st(ElisarBlocks.COBBLE) : st(ElisarBlocks.STONE);
     }
 
     // ------------------------------------------------------------------ заливка колонки
     /**
-     * Полная заливка открытого океана в точке (x,z): порода, пещеры, вода и сад на дне.
+     * Порода, пещеры и вода в точке (x,z). Декорации (сад на дне, убранство пещер) ставятся отдельным проходом
+     * {@link #decorate} — уже после того, как вся колонка залита.
      *
-     * @param floor кромка дна (обычно ocean-42..ocean-50), уже с учётом ущелья
+     * @param floor кромка дна (см. {@link #floor(int, int, int)})
      * @param sea   уровень моря
      */
-    public static void fill(ChunkAccess chunk, BlockPos.MutableBlockPos mp, int x, int z, int floor, int sea) {
+    public static void column(ChunkAccess chunk, BlockPos.MutableBlockPos mp, int x, int z, int floor, int sea) {
         double reef = reefness(x, z);
-        for (int y = 0; y <= floor; ++y) chunk.setBlockState(mp.set(x, y, z), rock(x, y, z, floor, reef), false);
+        for (int y = BOTTOM; y <= floor; ++y) chunk.setBlockState(mp.set(x, y, z), rock(x, y, z, floor, reef), false);
+        // бедрок: два блока у самого низа мира
+        for (int y = BOTTOM - 2; y < BOTTOM; ++y) chunk.setBlockState(mp.set(x, y, z), Blocks.BEDROCK.defaultBlockState(), false);
 
-        // Пещеры: вырезаем полости и затопляем то, что связано с морем. Сверху вниз по колонке:
-        //   open=true (море сверху) -> полость заливается водой; упёрлись в породу -> полость закрыта,
-        //   дальше вниз это уже воздушный карман (там дышат рыбы и игрок).
-        boolean open = true;
-        boolean[] carved = new boolean[Math.max(floor, 1)];
-        for (int y = 1; y < floor; ++y) carved[y] = cave(x, y, z, floor) || blueHole(x, y, z, floor);
-        for (int y = floor - 1; y >= 1; --y) {
-            if (!carved[y]) { open = false; continue; }
-            if (open) chunk.setBlockState(mp.set(x, y, z), st(ElisarBlocks.WATER), false);
-            else chunk.setBlockState(mp.set(x, y, z), Blocks.AIR.defaultBlockState(), false);
-        }
-        // кромка дна не проваливается сквозь пещеры чаще, чем в 35% мест (свод держит)
-        if (floor > 2 && carved[floor - 1]) {
-            boolean shaft = blueHole(x, floor - 1, z, floor);
-            if (shaft || hash(x, z, 454) < 0.35) chunk.setBlockState(mp.set(x, floor, z), st(ElisarBlocks.WATER), false);
+        // пещеры: вырезаем и затопляем. Воздушные карманы — только у сводов, отдельным шумом,
+        // поэтому решение не зависит от соседних колонок и на границах чанков не рвётся.
+        BlockState water = st(ElisarBlocks.WATER);
+        boolean holeColumn = false;
+        for (int y = BOTTOM; y <= floor - 3; ++y) {
+            boolean shaft = blueHole(x, y, z, floor);
+            if (!shaft && !cave(x, y, z, floor)) continue;
+            if (shaft) holeColumn = true;
+            boolean open = y + 1 > floor - 3 || (!cave(x, y + 1, z, floor) && !blueHole(x, y + 1, z, floor));
+            boolean pocket = !blueHole(x, y, z, floor) && (airPocket(x, y, z) || (open && ceilingPocket(x, y, z)));
+            chunk.setBlockState(mp.set(x, y, z), pocket ? Blocks.AIR.defaultBlockState() : water, false);
         }
 
-        for (int y = floor + 1; y <= sea; ++y) chunk.setBlockState(mp.set(x, y, z), st(ElisarBlocks.WATER), false);
+        // свод над полостью: «синяя дыра» всегда пробивает дно, обычная пещера — примерно в половине мест
+        if (floor > BOTTOM + 4) {
+            boolean belowCarved = blueHole(x, floor - 1, z, floor) || cave(x, floor - 1, z, floor);
+            if (belowCarved && (holeColumn || hash(x, z, 454) < 0.55)) chunk.setBlockState(mp.set(x, floor, z), water, false);
+        }
 
-        garden(chunk, mp, x, z, floor, reef);
-        caveDressing(chunk, mp, x, z, floor);
+        for (int y = floor + 1; y <= sea; ++y) chunk.setBlockState(mp.set(x, y, z), water, false);
     }
 
     // ------------------------------------------------------------------ рифовый сад на дне
+    /** Сад и убранство: ставится после воды, чтобы видеть итоговый блок под растением. */
+    public static void decorate(ChunkAccess chunk, BlockPos.MutableBlockPos mp, int x, int z, int floor, int sea) {
+        garden(chunk, mp, x, z, floor, reefness(x, z));
+        caveDressing(chunk, mp, x, z, floor);
+    }
+
     private static void garden(ChunkAccess chunk, BlockPos.MutableBlockPos mp, int x, int z, int floor, double reef) {
         int y = floor + 1;
+        if (y > 60) return;
         BlockState below = chunk.getBlockState(mp.set(x, floor, z));
         if (!below.is(ElisarBlocks.SEABED.get()) && !below.is(ElisarBlocks.SILT.get()) && !below.is(ElisarBlocks.REEF_STONE.get())
                 && !below.is(ElisarBlocks.CORAL_BRAIN.get())) return;
@@ -197,7 +268,7 @@ public final class ElisarSea {
         }
         // ламинария — колоннами, до самого света
         if (vnoise(x * 0.05, z * 0.05, 465) > 0.66 && reef < 0.35) {
-            int h = 3 + (int) (hash(x, z, 466) * 6);
+            int h = 4 + (int) (hash(x, z, 466) * 8);
             for (int i = 0; i < h; ++i) {
                 BlockState s = i == h - 1 ? st(ElisarBlocks.SEA_KELP_TOP) : st(ElisarBlocks.SEA_KELP);
                 chunk.setBlockState(mp.set(x, y + i, z), s, false);
@@ -205,26 +276,35 @@ public final class ElisarSea {
         }
     }
 
-    /** Нарост в сухой пещере: не waterlogged, иначе блок стал бы источником воды и затопил пещеру. */
+    /** Нарост в сухой пещере (воздушный карман): не waterlogged, иначе блок стал бы источником воды. */
     private static BlockState dryCaveGlow() {
         return ElisarBlocks.CAVE_GLOW.get().defaultBlockState()
                 .setValue(ru.aiforge.riftworld.block.SeaPlantBlock.WATERLOGGED, false);
     }
 
+    /** Нарост в затопленной пещере — вода вокруг него остаётся прозрачной. */
+    private static BlockState wetCaveGlow() {
+        return ElisarBlocks.CAVE_GLOW.get().defaultBlockState()
+                .setValue(ru.aiforge.riftworld.block.SeaPlantBlock.WATERLOGGED, true);
+    }
+
     // ------------------------------------------------------------------ убранство пещер
     /** Светящиеся наросты на полу пещер, «сосульки» с потолка, ракушки в нишах. */
     private static void caveDressing(ChunkAccess chunk, BlockPos.MutableBlockPos mp, int x, int z, int floor) {
-        for (int y = 2; y < floor - 1; ++y) {
+        for (int y = BOTTOM + 2; y < floor - 1; ++y) {
             BlockPos p = mp.set(x, y, z);
             BlockState here = chunk.getBlockState(p);
-            if (!here.isAir()) continue;
-            BlockState up = chunk.getBlockState(mp.set(x, y + 1, z));
-            BlockState down = chunk.getBlockState(mp.set(x, y - 1, z));
+            if (!here.isAir() && !here.is(ElisarBlocks.WATER.get())) continue;
+            boolean wet = here.is(ElisarBlocks.WATER.get());
+            BlockPos downPos = mp.set(x, y - 1, z);
+            BlockState down = chunk.getBlockState(downPos);
+            BlockPos upPos = mp.set(x, y + 1, z);
+            BlockState up = chunk.getBlockState(upPos);
             double h = hash3(x, y, z, 471);
-            if (down.isSolidRender(chunk, mp.set(x, y - 1, z)) && h < 0.10) {
-                chunk.setBlockState(mp.set(x, y, z), dryCaveGlow(), false);        // нарост на полу
-            } else if (up.isSolidRender(chunk, mp.set(x, y + 1, z)) && h > 0.955) {
-                chunk.setBlockState(mp.set(x, y, z), dryCaveGlow(), false);        // друза на потолке
+            if (down.isSolidRender(chunk, downPos) && h < 0.085) {
+                chunk.setBlockState(mp.set(x, y, z), wet ? wetCaveGlow() : dryCaveGlow(), false);       // нарост на полу
+            } else if (up.isSolidRender(chunk, upPos) && h > 0.958) {
+                chunk.setBlockState(mp.set(x, y, z), wet ? wetCaveGlow() : dryCaveGlow(), false);       // друза на потолке
             }
         }
     }
