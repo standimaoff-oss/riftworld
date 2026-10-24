@@ -138,12 +138,8 @@ public final class VioletHills {
             // лощина под реку: берега опускаются плавно, чтобы ручей шёл в долине
             double dr = CityPlan.segDist(x, z, rax, raz, rbx, rbz, null);
             h -= 5.0 * (1.0 - ElisarChunkGenerator.smooth(Math.min(1.0, dr / 18.0)));
-            // поля лежат на пологих склонах: подрезка совсем мягкая (полка 1.5 блока),
-            // иначе луг превращается в каменную лестницу-карьер
-            double field = ElisarChunkGenerator.smooth((ElisarChunkGenerator.vnoise(x * 0.021, z * 0.021, 92) - 0.62) / 0.16);
-            double stepH = 1.5;
-            double terr = base + Math.floor((h - base) / stepH) * stepH + stepH * 0.5;
-            h += (terr - h) * field * 0.6;
+            // поля — это рисунок на лугу (как в Terralith), а не каменные террасы:
+            // рельеф остаётся плавным, «ярусы» даёт только растительность
             // кромка острова: держим спад, чтобы силуэт не был «столом»
             if (d > 0.88) h -= (d - 0.88) * 30.0;
             return h;
