@@ -1,6 +1,8 @@
 # Мод «Разлом» — отчёт по доработкам (Рев 10)
 
 Обновляется каждое сообщение. Актуальный jar: **riftworld-0.8.0.jar** (Рев 10 «Живое море 2», см. часть 17).
+Релиз: **v0.8.0** (GitHub Releases), sha256 `f80e0412…efecd8c`, файл также лежит в `release/`.
+Отчёт с кадрами живой проверки: `reports/sea_rev10/README.md` + `reports/sea_rev10/contact_sheet.jpg`.
 Исходники: `riftworld-sources-txt.zip` + приватный GitHub `standimaoff-oss/riftworld` (пушится каждый раз).
 
 ## Сделано
