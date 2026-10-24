@@ -1,13 +1,13 @@
-  /riftsea raw: riftsea floor=10 water=51 sea=62 min=1 max=14 cols=9409 caves=8604 wet=182057 air=35740 reef=1981 plants=1913 corals=172 bottom=-62 caveat=635,4,570  
-  /riftsea raw: riftsea floor=10 water=51 sea=62 min=1 max=14 cols=9409 caves=8604 wet=182057 air=35740 reef=1981 plants=1913 corals=172 bottom=-62 caveat=635,4,570  
+  /riftsea raw: riftsea floor=10 water=51 sea=62 min=1 max=15 cols=9409 caves=8592 wet=182295 air=35712 reef=1981 plants=1903 corals=172 bottom=-62 caveat=635,5,574  
+  /riftsea raw: riftsea floor=10 water=51 sea=62 min=1 max=15 cols=9409 caves=8592 wet=182295 air=35712 reef=1981 plants=1903 corals=172 bottom=-62 caveat=635,5,574  
   OK   вода на глубине (696,56,696) = elisar_water
-  /riftsea raw: riftsea floor=4 water=57 sea=62 min=-7 max=13 cols=9409 caves=8599 wet=154731 air=27702 reef=2239 plants=1513 corals=211 bottom=-62 caveat=604,4,634  
+  /riftsea raw: riftsea floor=5 water=56 sea=62 min=-8 max=14 cols=9409 caves=8585 wet=154513 air=27825 reef=2239 plants=1510 corals=211 bottom=-62 caveat=604,4,634  
   OK   кромка дна из /riftsea: y=10
   OK   толщина воды под рифом: 51 блоков (нужно >=44)
-  OK   колонок с пещерами в радиусе проб: 8604
+  OK   колонок с пещерами в радиусе проб: 8592
   OK   пещеры ЗАТОПЛЕНЫ: воды 83% объёма полостей (остальное — воздушные карманы)
-  OK   вода внутри пещеры (635,4,570) = elisar_water
-  OK   пещера найдена на y=4 (в 58 блоках под уровнем моря)
+  OK   вода внутри пещеры (635,5,574) = elisar_water
+  OK   пещера найдена на y=5 (в 57 блоках под уровнем моря)
   воды в колонке: 57 блоков
   OK   рыбы заспавнились сами (SeaLifeKeeper)
   summon ^-2 ^0 ^4 {NoAI:1b,Silent:1b,sf_variant:0} -> Summoned new Elisar Sea Fish
@@ -33,5 +33,5 @@
   summon ^0 ^0 ^3 {NoAI:1b,Silent:1b,sf_variant:0} -> Summoned new Elisar Sea Fish
   summon ^0.7 ^0.9 ^3.6 {NoAI:1b,Silent:1b,sf_variant:1} -> Summoned new Elisar Sea Fish
   summon ^-0.9 ^-0.5 ^4.4 {NoAI:1b,Silent:1b,sf_variant:4} -> Summoned new Elisar Sea Fish
-  игрок: TestPlayer has the following entity data: [635.2847659072953d, -3.9612693037598095d, 571.723382876846d]
-  рыбы:  Elisar Sea Fish has the following entity data: [590.4676538350693d, 46.110598140791645d, 832.0233925047928d]
+  игрок: TestPlayer has the following entity data: [633.8759321113498d, -1.9920004169345111d, 574.832723272314d]
+  рыбы:  Elisar Sea Fish has the following entity data: [595.5999999940395d, 2.8166931705136538d, 675.6138894984223d]
