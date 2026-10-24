@@ -105,8 +105,8 @@ def pit(x, z):
 
 
 def floor_y(x, z, ocean=OCEAN):
-    n = (vnoise(x * 0.016, z * 0.016, 77) * 0.66 + vnoise(x * 0.052, z * 0.052, 78) * 0.26
-         + vnoise(x * 0.075, z * 0.075, 79) * 0.08)
+    n = (vnoise(x * 0.016, z * 0.016, 77) * 0.52 + vnoise(x * 0.045, z * 0.045, 78) * 0.24
+         + vnoise(x * 0.095, z * 0.095, 79) * 0.14 + vnoise(x * 0.21, z * 0.21, 80) * 0.10)
     f = ocean - 45 - round(n * 13)
     f -= trench(x, z)
     f -= pit(x, z)

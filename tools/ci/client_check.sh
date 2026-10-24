@@ -167,7 +167,7 @@ log() { echo "$*" | tee -a "$PROBES"; }
 # riftsea_field <поле> <радиус>: гоняет /riftsea в позиции игрока и отдаёт одно поле ответа
 riftsea_field() {
   local raw
-  raw=$(EL riftsea 2>&1 | tr -d '\r' | tr '\n' ' ')
+  raw=$(RCON execute in riftworld:elisar at TestPlayer run riftsea 2>&1 | tr -d '\r' | tr '\n' ' ')
   log "  /riftsea raw: ${raw:0:400}"
   python3 - "$raw" "$1" <<'PYEOF'
 import re, sys
@@ -182,7 +182,7 @@ EL tp TestPlayer "$RX" "$((RF + 6))" "$RZ" 90 20 >/dev/null 2>&1
 sleep 8
 RREEF=$(riftsea_field floor)             # настоящая кромка дна в рифовой точке (мир стал глубже)
 [ "$RREEF" != "0" ] && RF=$RREEF
-SEA_RAW=$(EL riftsea 2>&1 | tr -d '\r' | tr '\n' ' ')
+SEA_RAW=$(RCON execute in riftworld:elisar at TestPlayer run riftsea 2>&1 | tr -d '\r' | tr '\n' ' ')
 echo "  /riftsea -> ${SEA_RAW:0:400}"
 read -r SEA_FLOOR SEA_WATER SEA_MIN SEA_CAVES SEA_WET SEA_AIR SEA_PLANTS SEA_CORALS CAVE_X CAVE_Y CAVE_Z < <(python3 - "$SEA_RAW" <<'PYEOF'
 import re, sys
@@ -231,7 +231,18 @@ at_block() { # at_block <x> <y> <z> <block> <label>
 
 echo "== пробы моря (под игроком) =="
 at_block "$KX" "$((KT - 6))" "$KZ" elisar_water "вода на глубине"
-at_block "$KX" "$SEA_FLOOR" "$KZ" elisar_seabed "донный песок"
+seabed_probe() { # seabed_probe <x> <y> <z> <label>: дно = любой из природных донных блоков
+  local x=$1 y=$2 z=$3 label=$4 b
+  EL tp TestPlayer "$x" "$y" "$z" 0 0 >/dev/null 2>&1
+  sleep 1
+  for b in elisar_seabed elisar_silt reef_stone coral_brain coral_cap_pink coral_cap_teal coral_cap_violet cobble; do
+    if [[ "$(EL execute at TestPlayer run execute if block \~ \~ \~ "riftworld:$b" 2>&1)" == *"Test passed"* ]]; then
+      log "  OK   $label ($x,$y,$z) = $b"; return 0
+    fi
+  done
+  log "  FAIL $label ($x,$y,$z): не донный блок"; FAILS=$((FAILS + 1))
+}
+seabed_probe "$KX" "$SEA_FLOOR" "$KZ" "донный блок"
 
 echo "== пробы Рев 10: глубокое дно и затопленные пещеры =="
 probe_ok() { log "  OK   $1"; }

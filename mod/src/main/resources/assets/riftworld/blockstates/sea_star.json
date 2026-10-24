@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "waterlogged=true": {
+      "model": "riftworld:block/sea_star"
+    },
+    "waterlogged=false": {
+      "model": "riftworld:block/sea_star"
+    }
+  }
+}

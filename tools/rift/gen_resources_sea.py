@@ -13,21 +13,37 @@ A = R + "/assets/riftworld"
 D = R + "/data/riftworld"
 NS = "riftworld:block/"
 
-CUBES = ["elisar_silt", "reef_stone", "coral_brain"]
+CUBES = ["elisar_silt", "reef_stone", "coral_brain",
+         # Рев 10: рифовые шапки трёх палитр (ядро рифового холма)
+         "coral_cap_pink", "coral_cap_teal", "coral_cap_violet"]
 CROSSES = ["coral_branch", "coral_fan", "coral_tube", "coral_glow",
-           "sea_kelp", "sea_kelp_top", "sea_grass", "cave_glow"]
+           "sea_kelp", "sea_kelp_top", "sea_grass", "cave_glow",
+           # Рев 10: тропический риф — актиния, куст, трубчатые черви
+           "anemone", "coral_bush", "tube_worms"]
+# Рев 10: ещё три вида «крестиков» с собственным светом
+GLOWING = {"coral_glow", "cave_glow", "anemone"}
 
 RU = {
     "elisar_silt": "Морской ил", "reef_stone": "Рифовый камень", "coral_brain": "Мозговой коралл",
     "coral_branch": "Ветвистый коралл", "coral_fan": "Веерный коралл", "coral_tube": "Трубчатая губка",
     "coral_glow": "Светящийся коралл", "sea_kelp": "Ламинария", "sea_kelp_top": "Верхушка ламинарии",
     "sea_grass": "Морская трава", "cave_glow": "Пещерный нарост", "sea_shells": "Ракушки и морские звёзды",
+    # Рев 10
+    "anemone": "Актиния", "coral_bush": "Куст коралла", "tube_worms": "Трубчатые черви",
+    "sea_star": "Морская звезда", "sea_urchin": "Морской ёж", "shell_bed": "Ракушечная грядка",
+    "coral_cap_pink": "Розовая рифовая шапка", "coral_cap_teal": "Бирюзовая рифовая шапка",
+    "coral_cap_violet": "Фиолетовая рифовая шапка",
 }
 EN = {
     "elisar_silt": "Sea Silt", "reef_stone": "Reef Stone", "coral_brain": "Brain Coral",
     "coral_branch": "Branch Coral", "coral_fan": "Fan Coral", "coral_tube": "Tube Sponge",
     "coral_glow": "Glowing Coral", "sea_kelp": "Kelp", "sea_kelp_top": "Kelp Tip",
     "sea_grass": "Seagrass", "cave_glow": "Cave Growth", "sea_shells": "Shells & Starfish",
+    # Рев 10
+    "anemone": "Anemone", "coral_bush": "Coral Bush", "tube_worms": "Tube Worms",
+    "sea_star": "Sea Star", "sea_urchin": "Sea Urchin", "shell_bed": "Shell Bed",
+    "coral_cap_pink": "Pink Reef Cap", "coral_cap_teal": "Teal Reef Cap",
+    "coral_cap_violet": "Violet Reef Cap",
 }
 
 
@@ -72,6 +88,22 @@ for n in CROSSES:
     gen_item(n, NS + n)
     loot_self(n)
 
+# Рев 10: ещё три плоских декаля на дне
+for dec in ("sea_star", "sea_urchin", "shell_bed"):
+    w(f"{A}/models/block/{dec}.json", {
+        "ambientocclusion": False,
+        "textures": {"particle": NS + dec, "t": NS + dec},
+        "elements": [{
+            "from": [0, 0, 0], "to": [16, 0.6, 16],
+            "faces": {"up": {"uv": [0, 0, 16, 16], "texture": "#t"}},
+        }],
+        "render_type": "minecraft:cutout",
+    })
+    w(f"{A}/blockstates/{dec}.json", {"variants": {"waterlogged=true": {"model": NS + dec},
+                                                   "waterlogged=false": {"model": NS + dec}}})
+    gen_item(dec, NS + dec)
+    loot_self(dec)
+
 # ракушки: плоский декаль на дне (тонкая пластина, текстура сверху)
 w(f"{A}/models/block/sea_shells.json", {
     "ambientocclusion": False,
@@ -91,7 +123,7 @@ loot_self("sea_shells")
 for lang, names in (("en_us", EN), ("ru_ru", RU)):
     merge_json(f"{A}/lang/{lang}.json", {f"block.riftworld.{n}": v for n, v in names.items()})
 
-print("ресурсы моря: %d блоков" % (len(CUBES) + len(CROSSES) + 1))
+print("ресурсы моря: %d блоков" % (len(CUBES) + len(CROSSES) + 4))
 
 # ---------------------------------------------------------------- яйца призыва рыбы
 EGGS = {

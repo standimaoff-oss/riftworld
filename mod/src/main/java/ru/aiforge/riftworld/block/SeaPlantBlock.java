@@ -76,7 +76,12 @@ public class SeaPlantBlock extends BushBlock implements SimpleWaterloggedBlock {
                 || below.is(ElisarBlocks.STONE.get()) || below.is(ElisarBlocks.STONE_MOSSY.get()) || below.is(ElisarBlocks.CORAL_BRAIN.get())
                 || below.is(ElisarBlocks.SEA_GRASS.get()) || below.is(ElisarBlocks.SEA_KELP.get()) || below.is(ElisarBlocks.SEA_KELP_TOP.get())
                 || below.is(ElisarBlocks.CORAL_BRANCH.get()) || below.is(ElisarBlocks.CORAL_FAN.get())
-                || below.is(ElisarBlocks.CORAL_TUBE.get()) || below.is(ElisarBlocks.CORAL_GLOW.get());
+                || below.is(ElisarBlocks.CORAL_TUBE.get()) || below.is(ElisarBlocks.CORAL_GLOW.get())
+                // Рев 10: новая жизнь рифа растёт друг на друге и на рифовых шапках
+                || below.is(ElisarBlocks.CORAL_CAP_PINK.get()) || below.is(ElisarBlocks.CORAL_CAP_TEAL.get())
+                || below.is(ElisarBlocks.CORAL_CAP_VIOLET.get()) || below.is(ElisarBlocks.ANEMONE.get())
+                || below.is(ElisarBlocks.CORAL_BUSH.get()) || below.is(ElisarBlocks.TUBE_WORMS.get())
+                || below.is(ElisarBlocks.COBBLE.get());
     }
 
     @Override

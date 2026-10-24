@@ -98,8 +98,8 @@ public final class ElisarSea {
      * @param sea уровень моря ({@code plan.ocean})
      */
     public static int floor(int x, int z, int sea) {
-        double n = vnoise(x * 0.016, z * 0.016, 77) * 0.66 + vnoise(x * 0.052, z * 0.052, 78) * 0.26
-                + vnoise(x * 0.075, z * 0.075, 79) * 0.08;                     // дюны + средняя рябь + плавная зыбь
+        double n = vnoise(x * 0.016, z * 0.016, 77) * 0.52 + vnoise(x * 0.045, z * 0.045, 78) * 0.24
+                + vnoise(x * 0.095, z * 0.095, 79) * 0.14 + vnoise(x * 0.21, z * 0.21, 80) * 0.10;
         int f = sea - 45 - (int) Math.round(n * 13);
         f -= trenchDepth(x, z);
         f -= pitDepth(x, z);
@@ -168,9 +168,9 @@ public final class ElisarSea {
             if (reef > 0.62) return hash(x, z, 451) < 0.14 ? st(ElisarBlocks.CORAL_BRAIN) : st(ElisarBlocks.REEF_STONE);
             if (reef > 0.30) return st(ElisarBlocks.REEF_STONE);
             double sand = vnoise(x * 0.035, z * 0.035, 452);
-            if (sand > 0.56) return st(ElisarBlocks.SEABED);                       // тёплый песок
-            if (sand < 0.40) return st(ElisarBlocks.SILT);                          // тёмный ил
-            return st(ElisarBlocks.COBBLE);                                         // галечная гряда
+            if (hash(x, z, 455) < 0.035) return st(ElisarBlocks.COBBLE);           // одиночная галька
+            if (sand < 0.42) return st(ElisarBlocks.SILT);                          // тёмный ил
+            return st(ElisarBlocks.SEABED);                                        // тёплый песок
         }
         if (d <= 2) {
             if (reef > 0.55) return st(ElisarBlocks.REEF_STONE);
@@ -231,36 +231,75 @@ public final class ElisarSea {
         caveDressing(chunk, mp, x, z, floor);
     }
 
+    /** Палитра рифовой зоны: 0 — розовая, 1 — бирюзовая, 2 — фиолетовая (пятнами по 48 блоков). */
+    private static int palette(int x, int z) {
+        double h = hash(Math.floorDiv(x, 48), Math.floorDiv(z, 48), 476);
+        return h < 0.38 ? 0 : h < 0.72 ? 1 : 2;
+    }
+
+    private static BlockState cap(int p) {
+        return p == 0 ? st(ElisarBlocks.CORAL_CAP_PINK) : p == 1 ? st(ElisarBlocks.CORAL_CAP_TEAL) : st(ElisarBlocks.CORAL_CAP_VIOLET);
+    }
+
+    /** Растение на вершине рифового холма — разное в каждой палитре, чтобы сад читался цветными пятнами. */
+    private static BlockState crown(int p, double r) {
+        return switch (p) {
+            case 0 -> r < 0.34 ? st(ElisarBlocks.ANEMONE) : r < 0.58 ? st(ElisarBlocks.CORAL_BRANCH)
+                    : r < 0.78 ? st(ElisarBlocks.CORAL_FAN) : st(ElisarBlocks.CORAL_GLOW);
+            case 1 -> r < 0.32 ? st(ElisarBlocks.CORAL_BUSH) : r < 0.56 ? st(ElisarBlocks.TUBE_WORMS)
+                    : r < 0.78 ? st(ElisarBlocks.CORAL_TUBE) : st(ElisarBlocks.CORAL_GLOW);
+            default -> r < 0.30 ? st(ElisarBlocks.CORAL_FAN) : r < 0.54 ? st(ElisarBlocks.ANEMONE)
+                    : r < 0.76 ? st(ElisarBlocks.CORAL_BRANCH) : st(ElisarBlocks.CORAL_GLOW);
+        };
+    }
+
     private static void garden(ChunkAccess chunk, BlockPos.MutableBlockPos mp, int x, int z, int floor, double reef) {
         int y = floor + 1;
         if (y > 60) return;
         BlockState below = chunk.getBlockState(mp.set(x, floor, z));
         if (!below.is(ElisarBlocks.SEABED.get()) && !below.is(ElisarBlocks.SILT.get()) && !below.is(ElisarBlocks.REEF_STONE.get())
-                && !below.is(ElisarBlocks.CORAL_BRAIN.get())) return;
+                && !below.is(ElisarBlocks.CORAL_BRAIN.get()) && !below.is(ElisarBlocks.COBBLE.get())) return;
         double r = hash(x, z, 461);
-        // ракушки на иле — ковриком
-        if (below.is(ElisarBlocks.SILT.get()) && r < 0.10) {
-            chunk.setBlockState(mp.set(x, y, z), st(ElisarBlocks.SEA_SHELLS), false);
-            return;
-        }
-        if (reef > 0.5) {
-            // плотный риф: ветвистые, веерные, трубчатые, светящиеся + мозговые шапки
-            double p = reef * 0.55;
-            if (r < p) {
+        int pal = palette(x, z);
+
+        // ---- Рев 10: РИФОВЫЕ ХОЛМЫ. Пятна «холмовости» × рифовость дают бугры 1-4 блоков высотой,
+        // шапка — цельный тропический коралл своей палитры, на вершине — актиния/куст/веер.
+        // Раньше верх дна был шахматкой кубов; теперь это силуэт сада, читаемый издалека.
+        if (reef > 0.42) {
+            double mound = vnoise(x * 0.105, z * 0.105, 467) * 0.65 + vnoise(x * 0.26, z * 0.26, 468) * 0.35;
+            double need = 0.56 - 0.10 * reef;
+            if (mound > need) {
+                int h = 1 + (int) Math.min(3.4, (mound - need) / 0.09);
+                if (hash(x, z, 469) < 0.16) ++h;                     // редкие пики
+                boolean flat = true;                                 // холм не «столбом»: у подножия должен быть сосед
+                for (int i = 0; i < h; ++i) {
+                    if (chunk.getBlockState(mp.set(x, y + i, z)).is(ElisarBlocks.WATER.get())) chunk.setBlockState(mp.set(x, y + i, z), cap(pal), false);
+                    else { flat = false; break; }
+                }
+                if (flat) {
+                    BlockState topS = crown(pal, hash(x, z, 470));
+                    if (chunk.getBlockState(mp.set(x, y + h, z)).is(ElisarBlocks.WATER.get())) chunk.setBlockState(mp.set(x, y + h, z), topS, false);
+                }
+                return;
+            }
+            // между холмами — ковёр из кустов и вееров
+            if (r < reef * 0.45) {
                 double k = hash(x, z, 462);
-                BlockState s = k < 0.30 ? st(ElisarBlocks.CORAL_BRANCH)
-                        : k < 0.54 ? st(ElisarBlocks.CORAL_FAN)
-                        : k < 0.72 ? st(ElisarBlocks.CORAL_TUBE)
-                        : k < 0.86 ? st(ElisarBlocks.CORAL_GLOW)
-                        : st(ElisarBlocks.CORAL_BRAIN);
+                BlockState s = k < 0.34 ? crown(pal, hash(x, z, 470)) : k < 0.62 ? st(ElisarBlocks.CORAL_BRANCH)
+                        : k < 0.82 ? st(ElisarBlocks.CORAL_FAN) : st(ElisarBlocks.CORAL_TUBE);
                 chunk.setBlockState(mp.set(x, y, z), s, false);
-                // ярусы: шапки и «деревца» в 2-3 блока высотой — силуэт рифа виден издалека
-                double up = hash(x, z, 463);
-                if (up < 0.42) chunk.setBlockState(mp.set(x, y + 1, z), s, false);
-                if (up < 0.12) chunk.setBlockState(mp.set(x, y + 2, z), st(ElisarBlocks.CORAL_GLOW), false);
                 return;
             }
         }
+
+        // ---- декали на песке и иле: ракушки, морские звёзды, ежи
+        if ((below.is(ElisarBlocks.SILT.get()) || below.is(ElisarBlocks.SEABED.get())) && r < 0.14) {
+            double k = hash(x, z, 473);
+            chunk.setBlockState(mp.set(x, y, z), k < 0.42 ? st(ElisarBlocks.SHELL_BED)
+                    : k < 0.74 ? st(ElisarBlocks.SEA_STAR) : st(ElisarBlocks.SEA_URCHIN), false);
+            return;
+        }
+
         // морская трава — пятнами по всему дну
         if (vnoise(x * 0.07, z * 0.07, 464) > 0.48 && r < 0.40) {
             chunk.setBlockState(mp.set(x, y, z), st(ElisarBlocks.SEA_GRASS), false);

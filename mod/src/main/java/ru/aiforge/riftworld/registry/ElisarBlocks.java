@@ -135,6 +135,27 @@ public final class ElisarBlocks {
             ModBlocks.reg("sea_shells", () -> new ru.aiforge.riftworld.block.SeaDecalBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.SAND).strength(0.2F).sound(SoundType.CORAL_BLOCK).noCollission()
                     .pushReaction(PushReaction.DESTROY).noOcclusion()));
+    // ----- Рев 10 «Живое море 2»: тропический риф. Три палитры рифовых шапок + новая жизнь на дне.
+    public static final RegistryObject<Block> CORAL_CAP_PINK = cube("coral_cap_pink", MapColor.COLOR_PINK, 1.2F, SoundType.CORAL_BLOCK);
+    public static final RegistryObject<Block> CORAL_CAP_TEAL = cube("coral_cap_teal", MapColor.WARPED_WART_BLOCK, 1.2F, SoundType.CORAL_BLOCK);
+    public static final RegistryObject<Block> CORAL_CAP_VIOLET = cube("coral_cap_violet", MapColor.COLOR_PURPLE, 1.2F, SoundType.CORAL_BLOCK);
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> ANEMONE =
+            ModBlocks.reg("anemone", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant().lightLevel(s -> 9)));
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> CORAL_BUSH =
+            ModBlocks.reg("coral_bush", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant()));
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> TUBE_WORMS =
+            ModBlocks.reg("tube_worms", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant().lightLevel(s -> 4)));
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaDecalBlock> SEA_STAR =
+            ModBlocks.reg("sea_star", () -> new ru.aiforge.riftworld.block.SeaDecalBlock(decal()));
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaDecalBlock> SEA_URCHIN =
+            ModBlocks.reg("sea_urchin", () -> new ru.aiforge.riftworld.block.SeaDecalBlock(decal()));
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaDecalBlock> SHELL_BED =
+            ModBlocks.reg("shell_bed", () -> new ru.aiforge.riftworld.block.SeaDecalBlock(decal()));
+
+    private static BlockBehaviour.Properties decal() {
+        return BlockBehaviour.Properties.of().mapColor(MapColor.SAND).strength(0.2F).sound(SoundType.CORAL_BLOCK)
+                .noCollission().pushReaction(PushReaction.DESTROY).noOcclusion();
+    }
 
     private static BlockBehaviour.Properties seaPlant() {
         return BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_CYAN).replaceable().noCollission().instabreak()

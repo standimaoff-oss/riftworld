@@ -331,5 +331,14 @@
   "item.riftworld.jelly_fish_spawn_egg": "Яйцо медузы",
   "item.riftworld.ray_fish_spawn_egg": "Яйцо манты",
   "item.riftworld.angler_fish_spawn_egg": "Яйцо пещерного удильщика",
-  "entity.riftworld.sea_fish": "Морская рыба Элисара"
+  "entity.riftworld.sea_fish": "Морская рыба Элисара",
+  "block.riftworld.anemone": "Актиния",
+  "block.riftworld.coral_bush": "Куст коралла",
+  "block.riftworld.tube_worms": "Трубчатые черви",
+  "block.riftworld.sea_star": "Морская звезда",
+  "block.riftworld.sea_urchin": "Морской ёж",
+  "block.riftworld.shell_bed": "Ракушечная грядка",
+  "block.riftworld.coral_cap_pink": "Розовая рифовая шапка",
+  "block.riftworld.coral_cap_teal": "Бирюзовая рифовая шапка",
+  "block.riftworld.coral_cap_violet": "Фиолетовая рифовая шапка"
 }

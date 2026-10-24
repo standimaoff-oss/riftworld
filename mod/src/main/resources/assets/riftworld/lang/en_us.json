@@ -331,5 +331,14 @@
   "item.riftworld.jelly_fish_spawn_egg": "Jellyfish Spawn Egg",
   "item.riftworld.ray_fish_spawn_egg": "Ray Spawn Egg",
   "item.riftworld.angler_fish_spawn_egg": "Cave Anglerfish Spawn Egg",
-  "entity.riftworld.sea_fish": "Elisar Sea Fish"
+  "entity.riftworld.sea_fish": "Elisar Sea Fish",
+  "block.riftworld.anemone": "Anemone",
+  "block.riftworld.coral_bush": "Coral Bush",
+  "block.riftworld.tube_worms": "Tube Worms",
+  "block.riftworld.sea_star": "Sea Star",
+  "block.riftworld.sea_urchin": "Sea Urchin",
+  "block.riftworld.shell_bed": "Shell Bed",
+  "block.riftworld.coral_cap_pink": "Pink Reef Cap",
+  "block.riftworld.coral_cap_teal": "Teal Reef Cap",
+  "block.riftworld.coral_cap_violet": "Violet Reef Cap"
 }
