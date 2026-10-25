@@ -81,8 +81,9 @@ public final class SeaProbeCommand {
             if (b < 0 || b > 200) continue;
             // чанк подгружаем принудительно: команда должна работать из любой точки мира
             level.getChunk(t.x >> 4, t.z >> 4);
+            // выше макушки ствола должно быть свободно (сам ствол — не препятствие для камеры)
             boolean open = true;
-            for (int y = b; y <= b + 26 && open; ++y) {
+            for (int y = b + t.h + 1; y <= b + t.h + 24 && open; ++y) {
                 BlockPos sp = new BlockPos(t.x, y, t.z);
                 if (sp.getY() >= level.getMaxBuildHeight()) break;
                 if (level.getBlockState(sp).isSolidRender(level, sp)) open = false;
