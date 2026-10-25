@@ -148,8 +148,8 @@
           8
         ],
         "axis": "x",
-        "angle": 3,
-        "rescale": true
+        "angle": 0.0,
+        "rescale": false
       }
     },
     {

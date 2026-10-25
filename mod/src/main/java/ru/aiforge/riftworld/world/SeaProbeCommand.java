@@ -46,9 +46,10 @@ public final class SeaProbeCommand {
     }
 
     /**
-     * Рев 11: {@code /rifttree} — находит ближайшее дерево из плана мира и печатает его координаты,
-     * вид и число блоков-ветвей (брёвен ВНЕ ствола). Именно этим CI проверяет, что деревья растут
-     * с настоящими ветками, а не «сплошным квадратом».
+     * Рев 11: {@code /rifttree} — ищет настоящее дерево Элисара В МИРЕ (не в плане) вокруг вызывающего:
+     * сканирует колонки в радиусе 64, находит бревно sizo/ambra, поднимается к его вершине и считает,
+     * сколько у дерева ВЕТВЕЙ (брёвен вне ствола) и листвы. Именно так CI проверяет, что дерево
+     * не «сплошной квадрат», а растёт с ветками.
      */
     private static int tree(CommandSourceStack src) {
         ServerLevel level = src.getLevel();
@@ -56,43 +57,54 @@ public final class SeaProbeCommand {
             src.sendFailure(Component.literal("rifttree: only in riftworld:elisar"));
             return 0;
         }
-        CityPlan plan = CityPlan.get();
         BlockPos at = BlockPos.containing(src.getPosition());
-        CityPlan.Tree best = null;
+        final int radius = 64;
+        int foundX = 0, foundY = 0, foundZ = 0;
+        boolean found = false;
         double bestD = 1e9;
-        java.util.Set<CityPlan.Tree> seen = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
-        for (int gx = at.getX() - 128; gx <= at.getX() + 128; gx += 8) {
-            for (int gz = at.getZ() - 128; gz <= at.getZ() + 128; gz += 8) {
-                for (CityPlan.Tree t : plan.at(gx, gz).trees) {
-                    if (!seen.add(t)) continue;
-                    double d = Math.hypot(t.x - at.getX(), t.z - at.getZ());
-                    if (d < bestD) { bestD = d; best = t; }
+        for (int dx = -radius; dx <= radius && !found; dx += 2) {
+            for (int dz = -radius; dz <= radius; dz += 2) {
+                int x = at.getX() + dx, z = at.getZ() + dz;
+                if (!level.hasChunk(x >> 4, z >> 4)) continue;
+                for (int y = 70; y <= 150; ++y) {
+                    BlockState st = level.getBlockState(new BlockPos(x, y, z));
+                    if (st.is(ElisarBlocks.SIZO_LOG.get()) || st.is(ElisarBlocks.AMBRA_LOG.get())) {
+                        double d = Math.hypot(dx, dz);
+                        if (d < bestD) { bestD = d; foundX = x; foundY = y; foundZ = z; }
+                        break;
+                    }
                 }
             }
+            if (bestD < 40) break;                       // дерево рядом — дальше не ищем
         }
-        if (best == null) { src.sendFailure(Component.literal("rifttree: деревьев в плане нет")); return 0; }
-        int base = best.baseY;
-        if (base == Integer.MIN_VALUE) {
-            ElisarChunkGenerator.Col c = ElisarChunkGenerator.column(plan, best.x, best.z);
-            base = c.isl == null ? -999 : c.top + 1;
-            best.baseY = base;
+        found = bestD < 1e9;
+        if (!found) {
+            src.sendFailure(Component.literal("rifttree: деревьев в радиусе 64 нет — мир пустой?"));
+            return 0;
         }
+        // спускаемся к основанию ствола
+        int base = foundY;
+        while (base > 60 && level.getBlockState(new BlockPos(foundX, base - 1, foundZ)).is(
+                level.getBlockState(new BlockPos(foundX, foundY, foundZ)).getBlock())) --base;
         int logs = 0, branches = 0, leaves = 0;
-        int top = base + best.h + 6;
-        for (int dx = -8; dx <= 8; ++dx) {
-            for (int dz = -8; dz <= 8; ++dz) {
-                for (int y = Math.max(base, level.getMinBuildHeight()); y <= top; ++y) {
-                    BlockState st = level.getBlockState(new BlockPos(best.x + dx, y, best.z + dz));
+        for (int dx = -9; dx <= 9; ++dx) {
+            for (int dz = -9; dz <= 9; ++dz) {
+                for (int y = base; y <= base + 40; ++y) {
+                    BlockState st = level.getBlockState(new BlockPos(foundX + dx, y, foundZ + dz));
                     boolean log = st.is(ElisarBlocks.SIZO_LOG.get()) || st.is(ElisarBlocks.AMBRA_LOG.get());
-                    if (log) { ++logs; if (!(dx == 0 && dz == 0)) ++branches; }
-                    else if (st.is(ElisarBlocks.SIZO_LEAVES.get()) || st.is(ElisarBlocks.AMBRA_LEAVES.get())) ++leaves;
+                    if (log) {
+                        ++logs;
+                        // ветка = бревно, лежащее по X или Z (ствол всегда по Y)
+                        if (st.getValue(net.minecraft.world.level.block.RotatedPillarBlock.AXIS)
+                                != net.minecraft.core.Direction.Axis.Y) ++branches;
+                    } else if (st.is(ElisarBlocks.SIZO_LEAVES.get()) || st.is(ElisarBlocks.AMBRA_LEAVES.get())) {
+                        ++leaves;
+                    }
                 }
             }
         }
-        String kind = best.kind == 0 ? "sizo" : best.kind == 1 ? "ambra" : best.kind == SizoGrove.TREE_GIANT ? "giant" : "dead";
-        String line = "rifttree at=" + best.x + "," + base + "," + best.z + " kind=" + kind + " h=" + best.h
-                + " logs=" + logs + " branches=" + branches + " leaves=" + leaves
-                + " dist=" + Math.round(bestD);
+        String line = "rifttree at=" + foundX + "," + base + "," + foundZ + " logs=" + logs
+                + " branches=" + branches + " leaves=" + leaves + " dist=" + Math.round(bestD);
         src.sendSuccess(() -> Component.literal(line), false);
         return 1;
     }

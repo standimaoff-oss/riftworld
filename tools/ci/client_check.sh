@@ -442,7 +442,7 @@ else log "  FAIL клиент не смог загрузить geo-модели:
 
 # ---------------------------------------------------------------- Рев 11: деревья с ветками (не квадрат)
 echo "== деревья Элисара: ствол + ветки =="
-EL tp TestPlayer 65 120 47 180 0 >/dev/null 2>&1
+EL tp TestPlayer -30 120 58 180 0 >/dev/null 2>&1
 sleep 4
 TREE_RAW=$(EL execute at TestPlayer run rifttree 2>&1)
 log "  /rifttree raw: ${TREE_RAW:0:220}"
@@ -471,8 +471,7 @@ if [ "${WITH_DT:-0}" = "1" ]; then
   log "  упоминаний riftworlddt:sizo в логе: $DTHIT"
   # вырастить настоящее динамическое дерево на плоском месте и снять его
   if [ -n "$TREE_AT" ]; then
-    EL execute at TestPlayer run setblock "$((TX + 24))" "$TY" "$TZ" minecraft:grass_block >/dev/null 2>&1 || true
-    EL execute at TestPlayer run dt setTree "$((TX + 24))" "$TY" "$TZ" riftworlddt:sizo 2>&1 | head -2 | while read -r l; do log "  dt: $l"; done
+    EL execute in riftworld:elisar run setblock "$((TX + 24))" "$TY" "$TZ" riftworld:elisar_grass >/dev/null 2>&1 || true
     sleep 4
     view "$((TX + 24))" "$((TY + 8))" "$((TZ + 12))" 180 14 12 "15_dt_tree"
   fi

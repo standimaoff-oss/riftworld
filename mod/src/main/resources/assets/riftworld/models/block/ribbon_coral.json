@@ -148,8 +148,8 @@
           8
         ],
         "axis": "y",
-        "angle": 0,
-        "rescale": true
+        "angle": 0.0,
+        "rescale": false
       }
     },
     {
@@ -226,8 +226,8 @@
           8
         ],
         "axis": "y",
-        "angle": 51,
-        "rescale": true
+        "angle": 45.0,
+        "rescale": false
       }
     },
     {
@@ -304,8 +304,8 @@
           8
         ],
         "axis": "y",
-        "angle": 102,
-        "rescale": true
+        "angle": 45.0,
+        "rescale": false
       }
     },
     {
@@ -382,8 +382,8 @@
           8
         ],
         "axis": "y",
-        "angle": 153,
-        "rescale": true
+        "angle": 45.0,
+        "rescale": false
       }
     },
     {
@@ -460,8 +460,8 @@
           8
         ],
         "axis": "y",
-        "angle": 204,
-        "rescale": true
+        "angle": 45.0,
+        "rescale": false
       }
     },
     {
@@ -538,8 +538,8 @@
           8
         ],
         "axis": "y",
-        "angle": 255,
-        "rescale": true
+        "angle": 45.0,
+        "rescale": false
       }
     },
     {
@@ -616,8 +616,8 @@
           8
         ],
         "axis": "y",
-        "angle": 306,
-        "rescale": true
+        "angle": 45.0,
+        "rescale": false
       }
     },
     {

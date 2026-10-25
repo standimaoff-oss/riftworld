@@ -148,8 +148,8 @@
           5.4
         ],
         "axis": "x",
-        "angle": -5.6,
-        "rescale": true
+        "angle": -22.5,
+        "rescale": false
       }
     },
     {
@@ -294,8 +294,8 @@
           5.8
         ],
         "axis": "x",
-        "angle": -6.8,
-        "rescale": true
+        "angle": -22.5,
+        "rescale": false
       }
     },
     {
@@ -440,8 +440,8 @@
           9.6
         ],
         "axis": "x",
-        "angle": -2.1,
-        "rescale": true
+        "angle": 0.0,
+        "rescale": false
       }
     },
     {
@@ -586,8 +586,8 @@
           10.0
         ],
         "axis": "x",
-        "angle": 0.1,
-        "rescale": true
+        "angle": 0.0,
+        "rescale": false
       }
     },
     {
@@ -732,8 +732,8 @@
           10.4
         ],
         "axis": "x",
-        "angle": -1.1,
-        "rescale": true
+        "angle": 0.0,
+        "rescale": false
       }
     },
     {

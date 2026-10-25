@@ -114,11 +114,25 @@ public final class GeoModel {
             List<JsonObject> jsonBones = new ArrayList<>();
             for (var e : o.getAsJsonArray("bones")) jsonBones.add(e.getAsJsonObject());
 
+            // пивоты всех костей: в JSON они заданы в АБСОЛЮТНЫХ координатах модели
+            Map<String, float[]> pivots = new HashMap<>();
+            Map<String, String> parents = new HashMap<>();
+            for (JsonObject b : jsonBones) {
+                JsonArray pv = b.getAsJsonArray("pivot");
+                pivots.put(b.get("name").getAsString(),
+                        new float[]{pv.get(0).getAsFloat(), pv.get(1).getAsFloat(), pv.get(2).getAsFloat()});
+                parents.put(b.get("name").getAsString(),
+                        b.has("parent") ? b.get("parent").getAsString() : null);
+            }
+
             // первый проход: все кости как узлы скелета
             for (JsonObject b : jsonBones) {
                 String boneName = b.get("name").getAsString();
-                PartDefinition parent = b.has("parent") ? defs.get(b.get("parent").getAsString()) : rootDef;
+                String parentName = parents.get(boneName);
+                PartDefinition parent = parentName == null ? rootDef : defs.get(parentName);
                 if (parent == null) throw new IllegalStateException("кость " + boneName + ": неизвестный родитель");
+                float[] pivot = pivots.get(boneName);
+                float[] parentPivot = parentName == null ? new float[]{0, 0, 0} : pivots.get(parentName);
                 CubeListBuilder cubes = CubeListBuilder.create();
                 if (b.has("cubes")) {
                     for (var ce : b.getAsJsonArray("cubes")) {
@@ -128,11 +142,12 @@ public final class GeoModel {
                         JsonArray uv = c.getAsJsonArray("uv");
                         cubes.texOffs(uv.get(0).getAsInt(), uv.get(1).getAsInt());
                         if (c.has("mirror") && c.get("mirror").getAsBoolean()) cubes.mirror();
-                        cubes.addBox(org.get(0).getAsFloat(), org.get(1).getAsFloat(), org.get(2).getAsFloat(),
+                        // коробка задана в абсолютных координатах модели -> переводим в локальные координаты кости
+                        cubes.addBox(org.get(0).getAsFloat() - pivot[0], org.get(1).getAsFloat() - pivot[1],
+                                org.get(2).getAsFloat() - pivot[2],
                                 size.get(0).getAsInt(), size.get(1).getAsInt(), size.get(2).getAsInt());
                     }
                 }
-                JsonArray pivot = b.getAsJsonArray("pivot");
                 float rx = 0, ry = 0, rz = 0;
                 if (b.has("rotation")) {
                     JsonArray rot = b.getAsJsonArray("rotation");
@@ -140,21 +155,17 @@ public final class GeoModel {
                     ry = (float) Math.toRadians(rot.get(1).getAsFloat());
                     rz = (float) Math.toRadians(rot.get(2).getAsFloat());
                 }
+                // смещение кости — от родительского пивота (иначе скелет «схлопывается» в точку)
                 defs.put(boneName, parent.addOrReplaceChild(boneName, cubes,
-                        PartPose.offsetAndRotation(pivot.get(0).getAsFloat(), pivot.get(1).getAsFloat(),
-                                pivot.get(2).getAsFloat(), rx, ry, rz)));
+                        PartPose.offsetAndRotation(pivot[0] - parentPivot[0], pivot[1] - parentPivot[1],
+                                pivot[2] - parentPivot[2], rx, ry, rz)));
             }
 
             ModelPart baked = LayerDefinition.create(mesh, tw, th).bakeRoot();
             // модель вложенная: кость лежит у своего родителя, поэтому путь собираем по цепочке родителей
-            Map<String, String> parentOf = new HashMap<>();
-            for (JsonObject b : jsonBones) {
-                parentOf.put(b.get("name").getAsString(),
-                        b.has("parent") ? b.get("parent").getAsString() : null);
-            }
             List<Bone> bones = new ArrayList<>();
             for (JsonObject b : jsonBones) {
-                ModelPart part = resolve(baked, parentOf, b.get("name").getAsString());
+                ModelPart part = resolve(baked, parents, b.get("name").getAsString());
                 JsonObject anim = b.has("anim") ? b.getAsJsonObject("anim") : null;
                 char axis = anim != null && anim.has("axis") ? anim.get("axis").getAsString().charAt(0) : 'y';
                 float amp = anim != null && anim.has("amp") ? anim.get("amp").getAsFloat() : 0.0F;

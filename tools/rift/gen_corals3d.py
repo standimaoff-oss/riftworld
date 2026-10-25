@@ -74,6 +74,14 @@ def uv(height_frac, face_top=False):
     return [u, v, u + 8, v + 8]
 
 
+ALLOWED = (-45.0, -22.5, 0.0, 22.5, 45.0)
+
+
+def snap_angle(a):
+    """В блочных моделях Minecraft разрешены только -45/-22.5/0/22.5/45 градусов."""
+    return min(ALLOWED, key=lambda x: abs(x - a))
+
+
 def cube(frm, to, hfrac, rot=None, tex="#t", all_faces=True):
     """Один элемент модели. hfrac — доля высоты (для выбора оттенка квадранта)."""
     faces = {}
@@ -84,24 +92,31 @@ def cube(frm, to, hfrac, rot=None, tex="#t", all_faces=True):
     el = {"from": [round(v, 2) for v in frm], "to": [round(v, 2) for v in to], "faces": faces}
     if rot:
         el["rotation"] = {"origin": [round(v, 2) for v in rot[0]],
-                          "axis": rot[1], "angle": round(rot[2], 1), "rescale": True}
+                          "axis": rot[1], "angle": snap_angle(rot[2]), "rescale": False}
     return el
 
 
-def branch(elements, x, y, z, length, thick, tilt_deg, heading_deg, hfrac0=0.35):
-    """Ветка: коробка, повёрнутая вокруг основания по двум осям — настоящий рог, а не кубик."""
-    h = thick
-    frm = [x - thick / 2, y, z - thick / 2]
-    to = [x + thick / 2, y + length, z + thick / 2]
-    # наклон по heading: сначала вокруг X (наклон в плоскости ZY), потом вокруг Y (поворот)
-    elements.append(cube(frm, to, hfrac0, rot=([x, y, z], "x", tilt_deg)))
-    # кончик — короткая светлая коробка сверху ветки (визуально «полип»)
-    tx = x + math.sin(math.radians(heading_deg)) * math.sin(math.radians(tilt_deg)) * length * 0.5
-    tz = z - math.cos(math.radians(heading_deg)) * math.sin(math.radians(tilt_deg)) * length * 0.5
-    ty = y + math.cos(math.radians(tilt_deg)) * length
-    elements.append(cube([tx - thick * 0.62, ty - thick * 0.2, tz - thick * 0.62],
-                         [tx + thick * 0.62, ty + thick * 0.9, tz + thick * 0.62], 0.9,
-                         rot=([tx, ty, tz], "y", heading_deg)))
+def branch(elements, x, y, z, length, thick, tilt_deg, heading_deg, hfrac0=0.35, segments=4):
+    """Ветка из сегментов: каждый следующий сдвинут и наклонён (в пределах разрешённых углов),
+    поэтому рог изгибается по-настоящему, а не стоит кубиком. Толщина к концу убывает."""
+    rad = math.radians(heading_deg)
+    dir_x, dir_z = math.sin(rad), -math.cos(rad)
+    step = length / segments
+    cx, cy, cz = x, y, z
+    th = thick
+    for i in range(segments):
+        nx = cx + dir_x * step * math.sin(math.radians(tilt_deg)) * 0.9
+        nz = cz + dir_z * step * math.sin(math.radians(tilt_deg)) * 0.9
+        ny = cy + step * math.cos(math.radians(tilt_deg))
+        hf = hfrac0 + 0.5 * (i / max(1, segments - 1))
+        tilt = min(45.0, abs(tilt_deg) + i * 6) * (1 if tilt_deg >= 0 else -1)
+        elements.append(cube([cx - th / 2, cy, cz - th / 2], [cx + th / 2, ny + 0.4, cz + th / 2], hf,
+                             rot=([cx, cy, cz], "x", tilt)))
+        cx, cy, cz = nx, ny, nz
+        th = max(0.9, th * 0.82)
+    # кончик-полип: светлая «шапочка» на конце ветки
+    elements.append(cube([cx - th * 0.8, cy - 0.2, cz - th * 0.8],
+                         [cx + th * 0.8, cy + th * 1.4, cz + th * 0.8], 0.95))
 
 
 def model(name, elements):
@@ -129,7 +144,7 @@ def staghorn():
 def feather():
     el = [cube([4, 0, 4], [12, 1.4, 12], 0.05)]
     for k in range(6):
-        a = k * 30 - 75
+        a = snap_angle(k * 15 - 37.5)
         hgt = 8 + (k % 3) * 2.6
         frm = [7.2, 1.0, 7.2]
         to = [8.8, 1.0 + hgt, 8.8]
@@ -146,14 +161,14 @@ def whip():
     for k in range(5):                                              # изогнутый хлыст из сегментов
         y0 = 1.8 + k * 2.9
         el.append(cube([x - 1.1, y0, z - 1.1], [x + 1.1, y0 + 3.1, z + 1.1], 0.2 + k * 0.16,
-                       rot=([x, y0, z], "x", -6 + k * 5)))
+                       rot=([x, y0, z], "x", snap_angle(-6 + k * 5))))
         x += 0.5
         z += 0.3
     for k in range(4):                                              # кисточки-полипы по хлысту
         yy = 4.0 + k * 3.2
         a = 40 * k
         el.append(cube([x - 0.8, yy, z - 0.8], [x + 0.8, yy + 1.6, z + 0.8], 0.7,
-                       rot=([x, yy, z], "y", a)))
+                       rot=([x, yy, z], "y", snap_angle(a))))
     return el
 
 
@@ -178,7 +193,7 @@ def tubes():
         h = rnd.uniform(4.5, 11.0)
         r = 1.5 if i % 2 == 0 else 1.9
         el.append(cube([bx - r, 1.0, bz - r], [bx + r, 1.0 + h, bz + r], min(0.95, h / 12),
-                       rot=([bx, 1, bz], "x", rnd.uniform(-8, 8))))
+                       rot=([bx, 1, bz], "x", snap_angle(rnd.uniform(-20, 20)))))
         el.append(cube([bx - r * 0.75, 1.0 + h, bz - r * 0.75], [bx + r * 0.75, 1.0 + h + 0.45, bz + r * 0.75], 0.95))
     return el
 
@@ -189,7 +204,7 @@ def ribbon():
         a = k * 51
         y0 = 1.1 + k * 1.5
         el.append(cube([3.4, y0, 7.0], [12.6, y0 + 1.5, 9.0], 0.2 + k * 0.1,
-                       rot=([8, y0, 8], "y", a)))
+                       rot=([8, y0, 8], "y", snap_angle(a))))
     el.append(cube([7.0, 12.2, 7.0], [9.0, 13.6, 9.0], 0.95))       # верхушка
     return el
 
