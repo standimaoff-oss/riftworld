@@ -425,7 +425,6 @@ else log "  FAIL моделей/текстур не хватает: $MISSING"; F
 # чистая толща воды над дном: рыба в 2.4 блоках по курсу занимает половину кадра
 EL tp TestPlayer "$KX" 40 "$KZ" 180 2 >/dev/null 2>&1
 sleep 3
-key F1
 RCON effect give TestPlayer minecraft:night_vision 900 0 true >/dev/null 2>&1 || true
 for i in "${!MODEL_NAMES[@]}"; do
   EL execute at TestPlayer run kill @e[type=riftworld:sea_fish,distance=..48] >/dev/null 2>&1
@@ -441,12 +440,46 @@ GEOERR=$(grep -c "не удалось загрузить geo-модель" "$OUT
 if [ "${GEOERR:-0}" -eq 0 ]; then log "  OK   клиент не жаловался на geo-модели"
 else log "  FAIL клиент не смог загрузить geo-модели: $GEOERR"; FAILS=$((FAILS + 1)); fi
 
+# ---------------------------------------------------------------- Рев 11: деревья с ветками (не квадрат)
+echo "== деревья Элисара: ствол + ветки =="
+EL tp TestPlayer 65 120 47 180 0 >/dev/null 2>&1
+sleep 4
+TREE_RAW=$(EL execute at TestPlayer run rifttree 2>&1)
+log "  /rifttree raw: ${TREE_RAW:0:220}"
+TREE_AT=$(printf '%s' "$TREE_RAW" | sed -n 's/.*at=\([-0-9]*,[-0-9]*,[-0-9]*\).*/\1/p' | head -1)
+TREE_BR=$(printf '%s' "$TREE_RAW" | sed -n 's/.*branches=\([0-9]*\).*/\1/p' | head -1)
+if [ -n "$TREE_AT" ]; then
+  TX=$(printf '%s' "$TREE_AT" | cut -d, -f1); TY=$(printf '%s' "$TREE_AT" | cut -d, -f2); TZ=$(printf '%s' "$TREE_AT" | cut -d, -f3)
+  log "  OK   дерево найдено: $TREE_AT (ветвей: ${TREE_BR:-?})"
+  if [ "${TREE_BR:-0}" -ge 3 ]; then log "  OK   у дерева есть ветки: ${TREE_BR} блоков вне ствола"
+  else log "  FAIL ветвей слишком мало: ${TREE_BR:-0} — дерево выглядит квадратом"; FAILS=$((FAILS + 1)); fi
+  view "$((TX + 1))" "$((TY + 5))" "$((TZ + 9))" 180 6 14 "14_tree_branches"
+  view "$((TX + 9))" "$((TY + 12))" "$((TZ + 9))" 135 32 14 "14b_tree_top"
+else
+  log "  FAIL /rifttree не ответила"; FAILS=$((FAILS + 1))
+fi
+
+# ---------------------------------------------------------------- Рев 11: аддон к Dynamic Trees (если включён)
+if [ "${WITH_DT:-0}" = "1" ]; then
+  echo "== Dynamic Trees: аддон riftworlddt =="
+  EL execute at TestPlayer run gamemode creative >/dev/null 2>&1 || true
+  DTSEED=$(EL execute at TestPlayer run give TestPlayer riftworlddt:sizo_seed 1 2>&1)
+  log "  give riftworlddt:sizo_seed -> ${DTSEED:0:120}"
+  if [[ "$DTSEED" == *"Given"* || "$DTSEED" == *"given"* ]]; then log "  OK   DT видит семена аддона (riftworlddt:sizo_seed)"
+  else log "  FAIL аддон к Dynamic Trees не загрузился"; FAILS=$((FAILS + 1)); fi
+  DTHIT=$(grep -cE "riftworlddt:sizo" "$OUT/client.log" 2>/dev/null || echo 0)
+  log "  упоминаний riftworlddt:sizo в логе: $DTHIT"
+  # вырастить настоящее динамическое дерево на плоском месте и снять его
+  if [ -n "$TREE_AT" ]; then
+    EL execute at TestPlayer run setblock "$((TX + 24))" "$TY" "$TZ" minecraft:grass_block >/dev/null 2>&1 || true
+    EL execute at TestPlayer run dt setTree "$((TX + 24))" "$TY" "$TZ" riftworlddt:sizo 2>&1 | head -2 | while read -r l; do log "  dt: $l"; done
+    sleep 4
+    view "$((TX + 24))" "$((TY + 8))" "$((TZ + 12))" 180 14 12 "15_dt_tree"
+  fi
+fi
+
 RCON effect clear TestPlayer >/dev/null 2>&1 || true
-key F1
-sleep 1
 RCON effect clear TestPlayer >/dev/null 2>&1 || true
-key F1
-sleep 1
 
 # ---------------------------------------------------------------- итог
 echo "== диагностика положения =="

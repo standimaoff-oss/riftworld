@@ -1,0 +1,10 @@
+{
+  "common_leaves": "ambra",
+  "common_species": "ambra",
+  "primitive_log": "riftworld:ambra_log",
+  "max_branch_radius": 8,
+  "primary_thickness": 3,
+  "secondary_thickness": 2,
+  "branch_properties": { "sound": "wood", "map_color": "COLOR_ORANGE" },
+  "only_if_loaded": "riftworld"
+}

@@ -85,6 +85,19 @@ public final class GeoModel {
         return CACHE.computeIfAbsent(name, GeoModel::loadUncached);
     }
 
+    /** Достаёт вложенную кость по цепочке родителей: root -> body -> head. */
+    private static ModelPart resolve(ModelPart root, Map<String, String> parentOf, String bone) {
+        java.util.ArrayDeque<String> path = new java.util.ArrayDeque<>();
+        String cur = bone;
+        while (cur != null) {
+            path.addFirst(cur);
+            cur = parentOf.get(cur);
+        }
+        ModelPart part = root;
+        for (String seg : path) part = part.getChild(seg);
+        return part;
+    }
+
     private static GeoModel loadUncached(String name) {
         ResourceLocation loc = new ResourceLocation("riftworld", "geo/" + name + ".json");
         try (InputStreamReader r = new InputStreamReader(
@@ -133,9 +146,15 @@ public final class GeoModel {
             }
 
             ModelPart baked = LayerDefinition.create(mesh, tw, th).bakeRoot();
+            // модель вложенная: кость лежит у своего родителя, поэтому путь собираем по цепочке родителей
+            Map<String, String> parentOf = new HashMap<>();
+            for (JsonObject b : jsonBones) {
+                parentOf.put(b.get("name").getAsString(),
+                        b.has("parent") ? b.get("parent").getAsString() : null);
+            }
             List<Bone> bones = new ArrayList<>();
             for (JsonObject b : jsonBones) {
-                ModelPart part = baked.getChild(b.get("name").getAsString());
+                ModelPart part = resolve(baked, parentOf, b.get("name").getAsString());
                 JsonObject anim = b.has("anim") ? b.getAsJsonObject("anim") : null;
                 char axis = anim != null && anim.has("axis") ? anim.get("axis").getAsString().charAt(0) : 'y';
                 float amp = anim != null && anim.has("amp") ? anim.get("amp").getAsFloat() : 0.0F;

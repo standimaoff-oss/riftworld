@@ -16,6 +16,20 @@ base {
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
+
+// ------------------------------------------------------------------ Рев 11: аддон к Dynamic Trees
+// Отдельный мод (modid riftworlddt) со своей точкой входа и своим mods.toml, но собирается тем же
+// gradle: ./gradlew jar dtJar -> riftworld-*.jar + riftworld-dt-*.jar.
+sourceSets {
+    dtaddon {
+        java.srcDir 'src/dtaddon/java'
+        resources.srcDir 'src/dtaddon/resources'
+    }
+}
+configurations {
+    dtaddonImplementation.extendsFrom implementation      // наследуем Minecraft/Forge с classpath
+}
+
 minecraft {
     // The mappings can be changed at any time and must be in the following format.
     // Channel:   Version:
@@ -83,6 +97,14 @@ minecraft {
         }
 
         client {
+            // Рев 11: вместе с -PwithDT в dev-клиент грузится и аддон к Dynamic Trees
+            if (project.hasProperty('withDT')) {
+                mods {
+                    "riftworlddt" {
+                        source sourceSets.dtaddon
+                    }
+                }
+            }
             // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
             property 'forge.enabledGameTestNamespaces', mod_id
             jvmArgs '-Xmx1600M', '-XX:+UseSerialGC'
@@ -125,6 +147,10 @@ repositories {
     // Offline-friendly: anything we manually pre-seeded into ~/.m2 is honoured first (flaky-network repair path).
     mavenLocal()
     maven {
+        name = 'HarleyOConnor'      // публичный maven Dynamic Trees (com.ferreusveritas.dynamictrees)
+        url = 'https://harleyoconnor.com/maven'
+    }
+    maven {
         name = 'MinecraftForge'
         url = 'https://maven.minecraftforge.net'
     }
@@ -157,6 +183,12 @@ dependencies {
     // For more info:
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
+
+    // Рев 11: Dynamic Trees нужен только для живой проверки аддона (./gradlew runClient -PwithDT).
+    // В обычной сборке зависимость не тянется — мод остаётся самостоятельным.
+    if (project.hasProperty('withDT')) {
+        runtimeOnly fg.deobf("com.ferreusveritas.dynamictrees:DynamicTrees-${minecraft_version}:${dynamic_trees_version}")
+    }
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
@@ -194,6 +226,24 @@ tasks.named('jar', Jar).configure {
 
     // This is the preferred method to reobfuscate your jar file
     finalizedBy 'reobfJar'
+}
+
+// Рев 11: jar аддона к Dynamic Trees (свой modid, свой mods.toml, папка trees/)
+tasks.register('dtJar', Jar) {
+    dependsOn 'dtaddonClasses'
+    archiveBaseName = 'riftworld-dt'
+    destinationDirectory = layout.buildDirectory.dir('libs')
+    from sourceSets.dtaddon.output
+    manifest {
+        attributes([
+                'Specification-Title'     : 'riftworlddt',
+                'Specification-Vendor'    : mod_authors,
+                'Specification-Version'   : '1',
+                'Implementation-Title'    : 'riftworld-dt',
+                'Implementation-Version'  : project.version,
+                'Implementation-Vendor'   : mod_authors,
+        ])
+    }
 }
 
 // However if you are in a multi-project build, dev time needs unobfed jar files, so you can delay the obfuscation until publishing by doing:

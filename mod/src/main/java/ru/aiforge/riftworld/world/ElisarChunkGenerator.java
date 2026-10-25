@@ -801,36 +801,108 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             if (t.kind == 2) { deadTree(chunk, mp, t, base, x, z); continue; }
             if (t.kind == SizoGrove.TREE_GIANT) { giantSizo(chunk, mp, t, base, x, z); continue; }
             boolean sizo = t.kind == 0;
-            BlockState logS = (sizo ? ElisarBlocks.SIZO_LOG : ElisarBlocks.AMBRA_LOG).get().defaultBlockState().setValue(RotatedPillarBlock.AXIS, Direction.Axis.Y);
+            // Рев 11: дерево строится по «чертежу» — ствол, настоящие наклонные ВЕТКИ и крона-облако
+            // на их концах. Раньше сизо был набором колец, а амбра — шаром: издалека это читалось
+            // сплошным квадратом. Теперь у каждого дерева свой скелет из ветвей.
+            TileBlueprint bp = blueprintOf(t);
+            java.util.List<int[]> cells = bp.at(x - t.x, z - t.z);
+            if (cells == null) continue;
+            BlockState logS = (sizo ? ElisarBlocks.SIZO_LOG : ElisarBlocks.AMBRA_LOG).get().defaultBlockState()
+                    .setValue(RotatedPillarBlock.AXIS, Direction.Axis.Y);
             BlockState leaf = (sizo ? ElisarBlocks.SIZO_LEAVES : ElisarBlocks.AMBRA_LEAVES).get().defaultBlockState()
                     .setValue(LeavesBlock.PERSISTENT, true).setValue(LeavesBlock.DISTANCE, 1);
-            double dist = Math.sqrt(dx * dx + dz * dz);
-            if (dx == 0 && dz == 0) {
-                for (int y = base; y < base + t.h; ++y) chunk.setBlockState(mp.set(x, y, z), logS, false);
+            // сначала листва, потом брёвна — ветки прорезают крону, а не тонут в ней
+            for (int[] cell : cells) {
+                if (cell[0] != 0) continue;
+                BlockPos p = mp.set(x, base + cell[1], z);
+                if (chunk.getBlockState(p).isAir() || chunk.getBlockState(p).canBeReplaced()) chunk.setBlockState(p, leaf, false);
             }
-            if (sizo) {
-                for (int j = 3; j <= t.h + 1; ++j) {
-                    double r = (1 - (j - 3) / (double) (t.h - 1)) * 3.3 + 0.55;
-                    if ((j & 1) == 1) r *= 0.72;
-                    if (dist > r || dx == 0 && dz == 0 && j < t.h) continue;
-                    if (dist > r - 1 && hash(x * 3 + j, z, t.seed) < 0.3) continue;
-                    BlockPos p = mp.set(x, base + j, z);
-                    if (chunk.getBlockState(p).isAir() || chunk.getBlockState(p).canBeReplaced()) chunk.setBlockState(p, leaf, false);
-                }
-            } else {
-                double R = 2.7 + (t.seed % 3) * 0.3;
-                int cy = base + t.h - 1;
-                for (int y = cy - 3; y <= cy + 3; ++y) {
-                    double dy = (y - cy) * 1.25;
-                    double q = dx * dx + dz * dz + dy * dy;
-                    if (q > R * R || dx == 0 && dz == 0 && y < base + t.h) continue;
-                    if (q > (R - 1) * (R - 1) && hash(x, z * 5 + y, t.seed) < 0.28) continue;
-                    BlockPos p = mp.set(x, y, z);
-                    if (chunk.getBlockState(p).isAir() || chunk.getBlockState(p).canBeReplaced()) chunk.setBlockState(p, leaf, false);
-                }
-                // two short branches into the crown
-                if (dist > 0 && dist < 1.5 && Math.abs(dx) + Math.abs(dz) == 1 && hash(dx, dz, t.seed) < 0.5) {
-                    chunk.setBlockState(mp.set(x, base + t.h - 2, z), logS.setValue(RotatedPillarBlock.AXIS, dx != 0 ? Direction.Axis.X : Direction.Axis.Z), false);
+            for (int[] cell : cells) {
+                if (cell[0] == 0) continue;
+                BlockPos p = mp.set(x, base + cell[1], z);
+                Direction.Axis ax = cell[0] == 1 ? Direction.Axis.X : cell[0] == 2 ? Direction.Axis.Z : Direction.Axis.Y;
+                chunk.setBlockState(p, logS.setValue(RotatedPillarBlock.AXIS, ax), false);
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------ чертёж дерева (ствол + ветки + крона)
+    /** Ячейка чертежа: [тип (0 — листва, 1 — бревно по X, 2 — по Z, 3 — по Y), смещение по Y]. */
+    private record TileBlueprint(java.util.Map<Long, java.util.List<int[]>> columns) {
+        java.util.List<int[]> at(int dx, int dz) {
+            if (Math.abs(dx) > 12 || Math.abs(dz) > 12) return null;
+            return columns.get(((long) (dx + 16) << 8) | (dz + 16));
+        }
+    }
+
+    private static final java.util.Map<Long, TileBlueprint> BLUEPRINTS = new java.util.concurrent.ConcurrentHashMap<>();
+
+    private static TileBlueprint blueprintOf(CityPlan.Tree t) {
+        long key = ((long) t.x << 42) ^ ((long) t.z << 12) ^ (t.seed & 0xFFFL) ^ ((long) t.baseY << 1);
+        return BLUEPRINTS.computeIfAbsent(key, k -> buildBlueprint(t));
+    }
+
+    /**
+     * Скелет дерева: вертикальный ствол, 4–6 ветвей под углом вверх (как у настоящего дерева),
+     * крона-облако на каждой ветви и на макушке. Всё считается один раз и кешируется, а колонки
+     * чанка просто спрашивают «что тут стоит».
+     */
+    private static TileBlueprint buildBlueprint(CityPlan.Tree t) {
+        java.util.Map<Long, java.util.List<int[]>> cols = new java.util.HashMap<>();
+        java.util.Random r = new java.util.Random(t.seed * 0x9E3779B1L);
+        boolean sizo = t.kind == 0;
+        int h = Math.max(5, t.h);
+        java.util.function.BiConsumer<int[], Integer> put = (pos, kind) -> {
+            int dx = pos[0], dy = pos[1], dz = pos[2];
+            if (dy < 0) return;
+            long ck = ((long) (dx + 16) << 8) | (dz + 16);
+            java.util.List<int[]> list = cols.computeIfAbsent(ck, q -> new java.util.ArrayList<>());
+            for (int[] e : list) if (e[0] == kind && e[1] == dy) return;      // без дублей
+            list.add(new int[]{kind, dy});
+        };
+
+        // ствол
+        int trunkTop = h - 1;
+        for (int dy = 0; dy <= trunkTop; ++dy) put.accept(new int[]{0, dy, 0}, 3);
+
+        // ветви: расходятся вверх от ствола
+        int n = 4 + r.nextInt(3);
+        java.util.List<double[]> tips = new java.util.ArrayList<>();
+        for (int i = 0; i < n; ++i) {
+            double a = i * Math.PI * 2 / n + r.nextDouble() * 0.55;
+            double y0 = trunkTop * (0.42 + 0.34 * r.nextDouble());
+            double len = 2.6 + r.nextDouble() * 2.6 * (sizo ? 1.15 : 1.0);
+            double up = 0.5 + r.nextDouble() * 0.65;
+            double bx = Math.cos(a) * len, bz = Math.sin(a) * len, by = y0 + len * up;
+            int steps = (int) Math.ceil(len * up + len);
+            for (int k = 0; k <= steps; ++k) {
+                double f = k / (double) Math.max(1, steps);
+                int px = (int) Math.round(bx * f), pz = (int) Math.round(bz * f), py = (int) Math.round(y0 + (by - y0) * f);
+                double ddx = bx * (f + 0.5), ddz = bz * (f + 0.5);
+                int kind = Math.abs(ddx) > Math.abs(ddz) ? 1 : 2;
+                put.accept(new int[]{px, py, pz}, k == 0 || k == steps ? 3 : kind);
+            }
+            tips.add(new double[]{bx, by, bz});
+            // крона на конце ветви: облако листвы
+            crown(cols, put, bx, by, bz, 1.9 + r.nextDouble() * (sizo ? 0.9 : 0.5), r);
+        }
+        // макушка
+        crown(cols, put, 0, trunkTop + 1.4, 0, (sizo ? 2.2 : 2.7) + r.nextDouble() * 0.5, r);
+        return new TileBlueprint(cols);
+    }
+
+    /** Крона-облако: почти шар с рваным краем, чтобы листва не выглядела кубиком. */
+    private static void crown(java.util.Map<Long, java.util.List<int[]>> cols,
+                              java.util.function.BiConsumer<int[], Integer> put,
+                              double cx, double cy, double cz, double radius, java.util.Random r) {
+        int R = (int) Math.ceil(radius);
+        for (int dx = -R; dx <= R; ++dx) {
+            for (int dz = -R; dz <= R; ++dz) {
+                for (int dy = -R; dy <= R; ++dy) {
+                    double d = Math.sqrt(dx * dx + dy * dy * 1.35 + dz * dz);
+                    if (d > radius) continue;
+                    if (d > radius - 0.9 && r.nextDouble() < 0.35) continue;      // рваный контур
+                    put.accept(new int[]{(int) Math.round(cx) + dx, (int) Math.round(cy) + dy, (int) Math.round(cz) + dz}, 0);
                 }
             }
         }

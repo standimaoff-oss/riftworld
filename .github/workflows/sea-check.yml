@@ -47,7 +47,7 @@ jobs:
           mkdir -p ci-out
           cd mod
           chmod +x gradlew
-          ./gradlew jar --no-daemon --console=plain 2>&1 | tee ../ci-out/build.log
+          ./gradlew jar dtJar --no-daemon --console=plain 2>&1 | tee ../ci-out/build.log
         continue-on-error: false
 
       - name: Boot Forge server with the mod and probe it
@@ -66,6 +66,8 @@ jobs:
           mkdir -p ci-out
           JAR=$(ls mod/build/libs/riftworld-*.jar 2>/dev/null | grep -v -e sources -e javadoc | head -1 || true)
           if [ -n "$JAR" ]; then cp "$JAR" "ci-out/$(basename "$JAR")"; echo "staged $JAR"; fi
+          DTJAR=$(ls mod/build/libs/riftworld-dt-*.jar 2>/dev/null | grep -v -e sources -e javadoc | head -1 || true)
+          if [ -n "$DTJAR" ]; then cp "$DTJAR" "ci-out/$(basename "$DTJAR")"; echo "staged addon $DTJAR"; fi
 
       - name: Resolve release tag
         id: tag
@@ -94,9 +96,11 @@ jobs:
             set -x
             [ -n "$JAR" ] || { echo "jar не найден"; exit 1; }
             cp "$JAR" "ci-out/riftworld-$TAG.jar"
+            DTJAR=$(ls mod/build/libs/riftworld-dt-*.jar 2>/dev/null | head -1 || true)
+            [ -n "$DTJAR" ] && cp "$DTJAR" "ci-out/riftworld-dt-$TAG.jar" || true
             echo "notes: $NOTES ($(wc -c < "$NOTES" 2>/dev/null || echo none) байт)"
             gh release delete "$TAG" --yes --cleanup-tag || true
-            gh release create "$TAG" "ci-out/riftworld-$TAG.jar" --title "${TITLE:-$TAG}" --notes-file "$NOTES"
+            gh release create "$TAG" "ci-out/riftworld-$TAG.jar" "ci-out/riftworld-dt-$TAG.jar" --title "${TITLE:-$TAG}" --notes-file "$NOTES"
           } > ci-out/release.log 2>&1 || {
             echo "== публикация релиза не удалась =="
             tail -40 ci-out/release.log

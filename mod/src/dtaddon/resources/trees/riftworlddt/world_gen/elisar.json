@@ -1,0 +1,18 @@
+[
+  {
+    "select": { "name": "riftworld:sizo_grove" },
+    "apply": { "species": "sizo", "density": [ 1.0 ], "chance": 0.55 }
+  },
+  {
+    "select": { "name": "riftworld:elisar_city" },
+    "apply": { "species": "ambra", "density": [ 0.6 ], "chance": 0.25 }
+  },
+  {
+    "select": { "name": "riftworld:violet_hills" },
+    "apply": { "species": "ambra", "density": [ 0.7 ], "chance": 0.35 }
+  },
+  {
+    "select": { "name": "riftworld:waterfall_gardens" },
+    "apply": { "species": "sizo", "density": [ 0.5 ], "chance": 0.2 }
+  }
+]
