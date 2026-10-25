@@ -888,7 +888,43 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         }
         // макушка
         crown(cols, put, 0, trunkTop + 1.4, 0, (sizo ? 2.5 : 2.9) + r.nextDouble() * 0.5, r);
+        // Рев 11.19: рваный контур кроны оставлял одиночные блоки листвы, висящие в воздухе.
+        // Убираем листву, у которой меньше двух соседей (брёвна соседями считаются).
+        java.util.Set<Long> solid = new java.util.HashSet<>();
+        for (java.util.Map.Entry<Long, java.util.List<int[]>> en : cols.entrySet()) {
+            int cx = (int) (en.getKey() >> 8) - 16, cz = (int) (en.getKey() & 0xFFL) - 16;
+            for (int[] e2 : en.getValue()) solid.add(cellKey(cx, e2[1], cz));
+        }
+        java.util.Set<Long> lonely = new java.util.HashSet<>();
+        for (java.util.Map.Entry<Long, java.util.List<int[]>> en : cols.entrySet()) {
+            int cx = (int) (en.getKey() >> 8) - 16, cz = (int) (en.getKey() & 0xFFL) - 16;
+            for (int[] e2 : en.getValue()) {
+                if (e2[0] != 0) continue;
+                if (neighbours(solid, cx, e2[1], cz) < 2) lonely.add(cellKey(cx, e2[1], cz));
+            }
+        }
+        if (!lonely.isEmpty()) {
+            for (java.util.Map.Entry<Long, java.util.List<int[]>> en : cols.entrySet()) {
+                int cx = (int) (en.getKey() >> 8) - 16, cz = (int) (en.getKey() & 0xFFL) - 16;
+                en.getValue().removeIf(e2 -> e2[0] == 0 && lonely.contains(cellKey(cx, e2[1], cz)));
+            }
+        }
         return new TileBlueprint(cols);
+    }
+
+    private static long cellKey(int x, int y, int z) {
+        return ((long) (x + 32) << 40) | ((long) (z + 32) << 20) | y;
+    }
+
+    private static int neighbours(java.util.Set<Long> solid, int x, int y, int z) {
+        int n = 0;
+        if (solid.contains(cellKey(x + 1, y, z))) ++n;
+        if (solid.contains(cellKey(x - 1, y, z))) ++n;
+        if (solid.contains(cellKey(x, y + 1, z))) ++n;
+        if (solid.contains(cellKey(x, y - 1, z))) ++n;
+        if (solid.contains(cellKey(x, y, z + 1))) ++n;
+        if (solid.contains(cellKey(x, y, z - 1))) ++n;
+        return n;
     }
 
     /** Крона-облако: почти шар с рваным краем, чтобы листва не выглядела кубиком. */

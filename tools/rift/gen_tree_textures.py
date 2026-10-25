@@ -19,13 +19,13 @@ OUT = os.path.join(os.path.dirname(__file__), '..', '..',
 LEAVES = {
     'sizo_leaves': {           # «сизо» — сине-сиреневая листва
         'tones': [(0x3b, 0x46, 0x74), (0x4c, 0x5a, 0x92), (0x63, 0x74, 0xb0), (0x86, 0x96, 0xcd)],
-        'weights': [30, 34, 24, 12],
-        'holes': 0.10,
+        'weights': [28, 36, 26, 10],
+        'holes': 0.06,
     },
     'ambra_leaves': {          # «амбра» — тёплая янтарная листва
         'tones': [(0x6f, 0x4c, 0x1c), (0x8f, 0x66, 0x27), (0xb4, 0x86, 0x3a), (0xd8, 0xad, 0x5e)],
-        'weights': [30, 34, 24, 12],
-        'holes': 0.10,
+        'weights': [28, 36, 26, 10],
+        'holes': 0.06,
     },
 }
 
@@ -59,9 +59,9 @@ def gen_leaves(name, spec, seed):
             t = pick_leaf(rng, spec)
             # тень в нижней части кустика, блик — сверху
             k = -12 if near <= 2 else 0
-            r = max(0, min(255, t[0] + k + rng.randint(-8, 8)))
-            g = max(0, min(255, t[1] + k + rng.randint(-8, 8)))
-            b = max(0, min(255, t[2] + k + rng.randint(-8, 8)))
+            r = max(0, min(255, t[0] + k + rng.randint(-6, 6)))
+            g = max(0, min(255, t[1] + k + rng.randint(-6, 6)))
+            b = max(0, min(255, t[2] + k + rng.randint(-6, 6)))
             px[x, y] = (r, g, b, 255)
     img.save(os.path.join(OUT, name + '.png'))
 
