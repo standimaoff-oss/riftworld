@@ -336,41 +336,59 @@ def build(name, size=64):
 
     elif name == "turtle":
         body = b.bone("body", (0, 0, 0))
-        b.cube(body, (-5.5, -1.5, -6), (11, 3, 12), role="shell")            # панцирь
-        b.cube(body, (-4.5, -2.6, -5), (9, 1, 10), role="shell")             # купол сверху
-        b.cube(body, (-3.0, -3.4, -3.5), (6, 1, 7), role="shell")            # макушка купола
-        b.cube(body, (-4.5, -1.0, -5), (9, 1, 10), role="body")              # пластрон снизу
-        # голова ВЫНЕСЕНА вперёд: раньше она лежала внутри панциря и черепаха выглядела плитой
-        head = b.bone("head", (0, -0.5, -6), parent="body", anim={"axis": "y", "amp": 8, "speed": 0.5, "phase": 0.0})
-        b.cube(head, (-2.0, -1.2, -10), (4.0, 3.2, 4.4), role="head")
-        b.cube(head, (-1.2, -0.8, -11), (2.4, 2.0, 1.2), role="mouth")
-        # ласты — снизу панциря и в стороны
-        for nm, (fx, fz, w, d) in {"fl0": (-7.5, -5, 2.5, 4.5), "fl1": (5.0, -5, 2.5, 4.5),
-                                   "fl2": (-6.5, 3, 2.0, 3.0), "fl3": (4.5, 3, 2.0, 3.0)}.items():
-            fb = b.bone(nm, (fx, -1.6, fz), anim={"axis": "y", "amp": 15 if fx < 0 else -15, "speed": 0.9,
-                                                  "phase": 0.0}, parent="body")
-            b.cube(fb, (fx, -3.0, fz), (w, 1.4, d), role="fin")
-        b.cube(body, (-0.6, -1.8, 6), (1.2, 1.2, 2.6), role="fin")            # хвостик
+        # купол панциря: три ступени, каждая уже предыдущей — силуэт черепахи, а не кирпич
+        b.cube(body, (-5, -1.0, -5), (10, 1, 10), role="shell")
+        b.cube(body, (-4, -2.0, -4), (8, 1, 8), role="shell")
+        b.cube(body, (-2, -3.0, -2), (4, 1, 4), role="shell")
+        # пластрон и «юбка» панциря
+        b.cube(body, (-4, 0.2, -4), (8, 1, 8), role="body")
+        # голова вынесена вперёд на шее
+        neck = b.bone("neck", (0, -0.5, -5), parent="body")
+        b.cube(neck, (-1.2, -1.0, -7.5), (2.4, 2.0, 2.5), role="body")
+        head = b.bone("head", (0, -0.5, -7.5), parent="neck",
+                      anim={"axis": "y", "amp": 9, "speed": 0.5, "phase": 0.0})
+        b.cube(head, (-1.8, -1.6, -11), (3.6, 3.0, 3.6), role="head")
+        b.cube(head, (-1.0, -1.0, -11.8), (2.0, 1.6, 1.0), role="mouth")
+        # ласты: передние длинные, задние короткие, все ВЫСТУПАЮТ за панцирь
+        for nm, (fx, fz, w, d, amp) in {"fl0": (-6.5, -3.5, 3.0, 4.0, 18), "fl1": (3.5, -3.5, 3.0, 4.0, -18),
+                                        "fl2": (-5.5, 3.0, 2.0, 3.0, 16), "fl3": (3.5, 3.0, 2.0, 3.0, -16)}.items():
+            fb = b.bone(nm, (fx, -0.5, fz), anim={"axis": "y", "amp": amp, "speed": 0.9, "phase": 0.0},
+                        parent="body")
+            b.cube(fb, (fx, -1.6 if fz < 0 else -1.2, fz), (w, 1.0, d), role="fin")
+        b.cube(body, (-0.6, -1.2, 5), (1.2, 1.2, 2.0), role="fin")            # хвостик
 
     elif name == "gloom":
+        # глубоководный хищник: узкое тело, огромная голова с пастью ВПЕРЕДИ (раньше пасть была
+        # внутри головы, а зубы торчали из боков — получался фиолетовый ящик)
         body = b.bone("body", (0, 0, 2))
-        b.cube(body, (-4.5, -4.5, -2), (9, 9, 9), role="body")
-        head = b.bone("head", (0, 0, -2), parent="body")
-        b.cube(head, (-6, -6, -10), (12, 11, 9), role="head")
-        b.cube(head, (-5.4, -1.6, -11), (10.8, 5.5, 4), role="mouth")
-        for i in range(6):                                              # частокол зубов
-            b.cube(head, (-5.2 + i * 1.8, -1.4, -11.4), (1, 2.4, 1.2), role="mouth")
-            b.cube(head, (-5.2 + i * 1.8, 1.4, -11.4), (1, 1.8, 1.2), role="mouth")
-        lure = b.bone("lure", (0, -6, -8), anim={"axis": "x", "amp": 12, "speed": 1.0, "phase": 0.3}, parent="head")
-        b.cube(lure, (-0.35, -6.2, -4.5), (0.7, 0.7, 5), role="fin")
-        b.cube(lure, (-1.2, -7.3, -5.4), (2.4, 2.4, 2.4), role="glow")
+        b.cube(body, (-3.5, -3.5, 0), (7, 7, 5), role="body")
+        b.cube(body, (-2.5, -2.5, 5), (5, 5, 4), role="body")             # сужение к хвосту
+        head = b.bone("head", (0, 0, 0), parent="body")
+        b.cube(head, (-4.5, -4.5, -6), (9, 9, 6), role="head")
+        # верхняя челюсть и нижняя с зубами — обе впереди головы
+        b.cube(head, (-4.5, -1.0, -9), (9, 2.0, 3.4), role="mouth")
+        jaw = b.bone("jaw", (0, -1.0, -9), parent="head", anim={"axis": "x", "amp": 8, "speed": 0.8, "phase": 0.0})
+        b.cube(jaw, (-4.0, -1.0, -9), (8, 1.6, 3.0), role="mouth")
+        for i in range(4):                                                # клыки верхней челюсти
+            b.cube(head, (-3.6 + i * 2.2, 1.0, -9.4), (1, 1.6, 1), role="mouth")
+        for i in range(4):                                                # клыки нижней
+            b.cube(jaw, (-3.6 + i * 2.2, -1.6, -9.4), (1, 1.6, 1), role="mouth")
+        # приманка на стебле вперёд-вверх
+        lure = b.bone("lure", (0, -4.5, -5), anim={"axis": "x", "amp": 12, "speed": 1.0, "phase": 0.3},
+                      parent="head")
+        b.cube(lure, (-0.3, -5.2, -10.5), (0.6, 0.6, 5.5), role="fin")
+        b.cube(lure, (-1.1, -6.2, -11.6), (2.2, 2.2, 2.2), role="glow")
+        # боковые плавники-крылья и хвост
         for side, sx in (("finL", -1), ("finR", 1)):
-            fb = b.bone(side, (sx * 4.5, 0, 0), anim={"axis": "z", "amp": 12 * sx, "speed": 1.4, "phase": 0.0},
+            fb = b.bone(side, (sx * 3.5, 0, 1), anim={"axis": "z", "amp": 13 * sx, "speed": 1.4, "phase": 0.0},
                         parent="body")
-            b.cube(fb, (0 if sx > 0 else -5, -1.2, -2), (5, 1.2, 5), role="fin")
-        tail = b.bone("tail", (0, 0, 7), parent="body", anim={"axis": "y", "amp": 16, "speed": 1.2, "phase": 0.0})
-        b.cube(tail, (-2.6, -3.4, 0), (5.2, 6.8, 1), role="fin")
-        b.cube(tail, (-0.5, -2, 0.8), (1, 4, 3), role="fin")
+            b.cube(fb, (0 if sx > 0 else -5, -0.8, -1), (5, 1.0, 4), role="fin")
+        tail = b.bone("tail", (0, 0, 9), parent="body", anim={"axis": "y", "amp": 16, "speed": 1.2, "phase": 0.0})
+        b.cube(tail, (-2.2, -2.8, 9), (4.4, 5.6, 1), role="fin")
+        b.cube(tail, (-0.5, -1.8, 9.6), (1, 3.6, 2.6), role="fin")
+        # светящиеся точки на боках (биолюминесценция)
+        for i in range(3):
+            b.cube(body, (-3.7 if i % 2 == 0 else 2.9, -1.5 + i, 1.0 + i), (0.8, 0.8, 0.8), role="glow")
 
     elif name == "sting":
         bell = b.bone("bell", (0, 3, 0), anim={"axis": "x", "amp": 7, "speed": 1.0, "phase": 0.0})
