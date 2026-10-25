@@ -35,6 +35,12 @@ jobs:
           grep -iE "DTINFO|mods\.toml" dt-build.log | head -60
           echo "== jars =="
           ls -la mod/build/libs || true
+      - name: Show jar contents
+        if: always()
+        run: |
+          for j in mod/build/libs/*.jar; do echo "== $j"; unzip -l "$j" | head -20; done || true
+          DTJ=$(ls mod/build/libs/riftworld-dt-*.jar 2>/dev/null | head -1 || true)
+          if [ -n "$DTJ" ]; then echo "== mods.toml аддона"; unzip -p "$DTJ" META-INF/mods.toml | head -12; fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -42,3 +48,20 @@ jobs:
           path: |
             mod/build/libs/*.jar
             dt-build.log
+      # артефакты из этого песочника не скачиваются (EOF от blob storage) — лог читаем из ветки
+      - name: Commit log to dt-artifacts branch
+        if: always()
+        run: |
+          set -euo pipefail
+          git config user.name "riftworld-ci"
+          git config user.email "riftworld-ci@users.noreply.github.com"
+          mkdir -p /tmp/dtlog && cp dt-build.log /tmp/dtlog/ 2>/dev/null || true
+          ls -la mod/build/libs > /tmp/dtlog/libs.txt 2>/dev/null || true
+          for j in mod/build/libs/*.jar; do unzip -l "$j" > "/tmp/dtlog/$(basename "$j").list" 2>/dev/null || true; done
+          git checkout --orphan dt-artifacts
+          git rm -rf -q --cached . >/dev/null 2>&1 || true
+          rm -rf ./* ./.github 2>/dev/null || true
+          cp -r /tmp/dtlog/* .
+          git add -A
+          git commit -qm "dt build log for ${{ github.sha }}" || true
+          git push -f origin HEAD:dt-artifacts || echo 'WARN: ветка занята'

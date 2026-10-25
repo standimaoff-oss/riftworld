@@ -228,6 +228,14 @@ tasks.named('jar', Jar).configure {
     finalizedBy 'reobfJar'
 }
 
+// Рев 11.16: ForgeGradle подмешивает META-INF/mods.toml в каждый sourceSet,
+// из-за чего processDtaddonResources падал на duplicate entry. Свой mods.toml аддона
+// оставляем, чужие (из main) — выбрасываем.
+tasks.named('processDtaddonResources', ProcessResources).configure {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    exclude { det -> det.file.name == 'mods.toml' && !det.file.absolutePath.contains('dtaddon') }
+}
+
 // диагностика для CI: какие папки реально попадают в аддон
 tasks.register('dtInfo') {
     doLast {
