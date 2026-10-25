@@ -66,6 +66,9 @@ public final class SeaProbeCommand {
             for (int dz = -radius; dz <= radius; dz += 2) {
                 int x = at.getX() + dx, z = at.getZ() + dz;
                 if (!level.hasChunk(x >> 4, z >> 4)) continue;
+                // деревья ищем только вне городских построек: иначе находим бревно в стене дома
+                CityPlan.Bucket bk = CityPlan.get().at(x, z);
+                if (!bk.plots.isEmpty()) continue;
                 for (int y = 70; y <= 150; ++y) {
                     BlockState st = level.getBlockState(new BlockPos(x, y, z));
                     if (st.is(ElisarBlocks.SIZO_LOG.get()) || st.is(ElisarBlocks.AMBRA_LOG.get())) {
@@ -87,8 +90,8 @@ public final class SeaProbeCommand {
         while (base > 60 && level.getBlockState(new BlockPos(foundX, base - 1, foundZ)).is(
                 level.getBlockState(new BlockPos(foundX, foundY, foundZ)).getBlock())) --base;
         int logs = 0, branches = 0, leaves = 0;
-        for (int dx = -9; dx <= 9; ++dx) {
-            for (int dz = -9; dz <= 9; ++dz) {
+        for (int dx = -14; dx <= 14; ++dx) {
+            for (int dz = -14; dz <= 14; ++dz) {
                 for (int y = base; y <= base + 40; ++y) {
                     BlockState st = level.getBlockState(new BlockPos(foundX + dx, y, foundZ + dz));
                     boolean log = st.is(ElisarBlocks.SIZO_LOG.get()) || st.is(ElisarBlocks.AMBRA_LOG.get());

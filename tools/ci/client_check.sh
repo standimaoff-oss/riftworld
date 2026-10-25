@@ -437,8 +437,12 @@ EL execute at TestPlayer run kill @e[type=riftworld:sea_fish,distance=..48] >/de
 RCON effect clear TestPlayer >/dev/null 2>&1 || true
 # клиент ругается в лог, если JSON не распарсился — это отдельная проба
 GEOERR=$(grep -c "не удалось загрузить geo-модель" "$OUT/client.log" 2>/dev/null || echo 0)
-if [ "${GEOERR:-0}" -eq 0 ]; then log "  OK   клиент не жаловался на geo-модели"
-else log "  FAIL клиент не смог загрузить geo-модели: $GEOERR"; FAILS=$((FAILS + 1)); fi
+if [ "$(grep -c "не удалось загрузить geo-модель" "$OUT/client.log" 2>/dev/null || true)" -eq 0 ]; then
+  log "  OK   клиент не жаловался на geo-модели"
+else
+  log "  FAIL клиент не смог загрузить geo-модели: $(grep -c "не удалось загрузить geo-модель" "$OUT/client.log")"
+  FAILS=$((FAILS + 1))
+fi
 
 # ---------------------------------------------------------------- Рев 11: деревья с ветками (не квадрат)
 echo "== деревья Элисара: ствол + ветки =="
@@ -453,8 +457,8 @@ if [ -n "$TREE_AT" ]; then
   log "  OK   дерево найдено: $TREE_AT (ветвей: ${TREE_BR:-?})"
   if [ "${TREE_BR:-0}" -ge 3 ]; then log "  OK   у дерева есть ветки: ${TREE_BR} блоков вне ствола"
   else log "  FAIL ветвей слишком мало: ${TREE_BR:-0} — дерево выглядит квадратом"; FAILS=$((FAILS + 1)); fi
-  view "$((TX + 1))" "$((TY + 5))" "$((TZ + 9))" 180 6 14 "14_tree_branches"
-  view "$((TX + 9))" "$((TY + 12))" "$((TZ + 9))" 135 32 14 "14b_tree_top"
+  view "$((TX + 2))" "$((TY + 11))" "$((TZ + 11))" 200 12 14 "14_tree_branches"
+  view "$((TX))" "$((TY + 20))" "$((TZ + 6))" 180 45 14 "14b_tree_top"
 else
   log "  FAIL /rifttree не ответила"; FAILS=$((FAILS + 1))
 fi
