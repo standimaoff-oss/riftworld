@@ -77,6 +77,13 @@ public final class SeaProbeCommand {
                 t.baseY = b;
             }
             if (b < 0 || b > 200) continue;
+            // только деревья ВНЕ городских кварталов: у построек камера упирается в стену
+            if (!plan.at(t.x, t.z).plots.isEmpty()) continue;
+            boolean nearBuild = false;
+            for (int ox = -6; ox <= 6 && !nearBuild; ox += 6)
+                for (int oz = -6; oz <= 6 && !nearBuild; oz += 6)
+                    if (!plan.at(t.x + ox, t.z + oz).plots.isEmpty()) nearBuild = true;
+            if (nearBuild) continue;
             best = t;
             base = b;
             bestD = Math.hypot(t.x - at.getX(), t.z - at.getZ());

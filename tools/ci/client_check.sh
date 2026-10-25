@@ -470,8 +470,8 @@ if [ -n "$TREE_AT" ]; then
   else
     log "  FAIL дерево неполное: ветвей ${BR2:-0}, листвы ${LV2:-0}"; FAILS=$((FAILS + 1))
   fi
-  view "$((TX + 4))" "$((TY + 14))" "$((TZ + 14))" 200 18 16 "14_tree_branches"
-  view "$((TX + 1))" "$((TY + 24))" "$((TZ + 7))" 180 50 16 "14b_tree_top"
+  view "$((TX + 11))" "$((TY + 13))" "$((TZ + 11))" 225 22 16 "14_tree_branches"
+  view "$((TX + 2))" "$((TY + 26))" "$((TZ + 10))" 190 42 16 "14b_tree_top"
 else
   log "  FAIL /rifttree не ответила"; FAILS=$((FAILS + 1))
 fi
