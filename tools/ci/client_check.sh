@@ -458,8 +458,8 @@ if [ -n "$TREE_AT" ]; then
   if [ "${TREE_BR:-0}" -ge 3 ]; then log "  OK   у дерева есть ветки: ${TREE_BR} блоков вне ствола"
   else log "  FAIL ветвей слишком мало: ${TREE_BR:-0} — дерево выглядит квадратом"; FAILS=$((FAILS + 1)); fi
   # телепорт к дереву, чтобы чанк прогрузился, и повторный счёт уже по настоящим блокам
-  EL tp TestPlayer "$((TX + 12))" "$((TY + 12))" "$((TZ + 12))" 225 25 >/dev/null 2>&1
-  sleep 6
+  EL tp TestPlayer "$((TX + 10))" "$((TY + 10))" "$((TZ + 10))" 225 20 >/dev/null 2>&1
+  sleep 8
   TREE2=$(EL execute at TestPlayer run rifttree 2>&1)
   log "  /rifttree повтор: ${TREE2:0:200}"
   BR2=$(printf '%s' "$TREE2" | sed -n 's/.*branches=\([0-9]*\).*/\1/p' | head -1)
@@ -469,8 +469,8 @@ if [ -n "$TREE_AT" ]; then
   else
     log "  FAIL дерево неполное: ветвей ${BR2:-0}, листвы ${LV2:-0}"; FAILS=$((FAILS + 1))
   fi
-  view "$((TX + 3))" "$((TY + 13))" "$((TZ + 13))" 200 14 14 "14_tree_branches"
-  view "$((TX))" "$((TY + 22))" "$((TZ + 5))" 180 45 14 "14b_tree_top"
+  view "$((TX + 4))" "$((TY + 14))" "$((TZ + 14))" 200 18 16 "14_tree_branches"
+  view "$((TX + 1))" "$((TY + 24))" "$((TZ + 7))" 180 50 16 "14b_tree_top"
 else
   log "  FAIL /rifttree не ответила"; FAILS=$((FAILS + 1))
 fi

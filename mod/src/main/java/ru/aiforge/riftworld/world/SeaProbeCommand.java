@@ -60,22 +60,31 @@ public final class SeaProbeCommand {
         CityPlan plan = CityPlan.get();
         BlockPos at = BlockPos.containing(src.getPosition());
         // ближайшее живое дерево из плана мира (без мёртвых: у них ветки есть всегда)
+        // В плане есть деревья, которые лежат ВНЕ островов (там ничего не генерируется) — их пропускаем:
+        // берём ближайшее дерево, у которого реально есть грунт, и только его считаем.
         CityPlan.Tree best = null;
         double bestD = 1e9;
-        for (CityPlan.Tree t : plan.trees) {
+        int base = -999;
+        java.util.List<CityPlan.Tree> cand = new java.util.ArrayList<>(plan.trees);
+        cand.sort(java.util.Comparator.comparingDouble(t -> Math.hypot(t.x - at.getX(), t.z - at.getZ())));
+        for (CityPlan.Tree t : cand) {
             if (t.kind == 2) continue;
-            double d = Math.hypot(t.x - at.getX(), t.z - at.getZ());
-            if (d < bestD) { bestD = d; best = t; }
+            int b = t.baseY;
+            if (b == Integer.MIN_VALUE) {
+                ElisarChunkGenerator.Col c = ElisarChunkGenerator.column(plan, t.x, t.z);
+                if (c.isl == null) continue;                  // дерево «висит» вне острова — не считается
+                b = c.top + 1;
+                t.baseY = b;
+            }
+            if (b < 0 || b > 200) continue;
+            best = t;
+            base = b;
+            bestD = Math.hypot(t.x - at.getX(), t.z - at.getZ());
+            break;
         }
         if (best == null) {
-            src.sendFailure(Component.literal("rifttree: в плане мира нет деревьев"));
+            src.sendFailure(Component.literal("rifttree: не нашлось дерева на острове"));
             return 0;
-        }
-        int base = best.baseY;
-        if (base == Integer.MIN_VALUE) {
-            ElisarChunkGenerator.Col c = ElisarChunkGenerator.column(plan, best.x, best.z);
-            base = c.isl == null ? -999 : c.top + 1;
-            best.baseY = base;
         }
         int logs = 0, branches = 0, leaves = 0;
         for (int dx = -12; dx <= 12; ++dx) {
