@@ -228,6 +228,15 @@ tasks.named('jar', Jar).configure {
     finalizedBy 'reobfJar'
 }
 
+// диагностика для CI: какие папки реально попадают в аддон
+tasks.register('dtInfo') {
+    doLast {
+        println "DTINFO resources: " + sourceSets.dtaddon.resources.srcDirs
+        println "DTINFO output: " + sourceSets.dtaddon.output.files
+        println "DTINFO files: " + sourceSets.dtaddon.resources.files.collect { it.name }
+    }
+}
+
 // Рев 11: jar аддона к Dynamic Trees (свой modid, свой mods.toml, папка trees/)
 tasks.register('dtJar', Jar) {
     dependsOn 'dtaddonClasses'
