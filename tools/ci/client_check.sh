@@ -429,7 +429,8 @@ RCON effect give TestPlayer minecraft:night_vision 900 0 true >/dev/null 2>&1 ||
 for i in "${!MODEL_NAMES[@]}"; do
   EL execute at TestPlayer run kill @e[type=riftworld:sea_fish,distance=..48] >/dev/null 2>&1
   sleep 1
-  SUM_LOCAL 2.4 0 0 "{NoAI:1b,Silent:1b,NoGravity:1b,sf_variant:$i}"
+  # Rotation 90: рыба стоит к камере БОКОМ — видно профиль, плавники и хвост, а не «торец»
+  SUM_LOCAL 2.2 0 0 "{NoAI:1b,Silent:1b,NoGravity:1b,Rotation:[90f,0f],sf_variant:$i}"
   sleep 3
   shot "model_$(printf '%02d' "$i")_${MODEL_NAMES[$i]}"
 done

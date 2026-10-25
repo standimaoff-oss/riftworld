@@ -231,6 +231,7 @@ class Builder:
         for rect, w, h, d, role in self.boxes:
             paint_box(px, rect, w, h, d, sp["base"], sp["belly"], sp["back"], role, rnd, sp)
         img.save(f"{A}/textures/entity/{self.name}.png")
+        print(f"  geo/{self.name}.json: {len(self.bones)} костей, {len(self.boxes)} кубов, атлас {self.atlas.tw}x{self.atlas.th}")
         return len(self.bones), len(self.boxes)
 
 
@@ -241,24 +242,26 @@ def build(name, size=64):
     scale = sp["render_scale"]
 
     if name in ("silver", "gold", "striped", "surgeon"):
-        s = 1.0 if name != "striped" else 1.05
+        # Тело из ТРЁХ сегментов с сужением к хвосту (как у ванильной трески), а не один куб.
+        # Координаты — абсолютные, в «блоках-пикселях»: нос в -Z, хвост в +Z, спина -Y.
         body = b.bone("body", (0, 0, 0))
-        b.cube(body, (-3.5, -4.5, -7.5), (7, 9, 12), role="body")
-        head = b.bone("head", (0, -0.5, -7.5), parent="body")
-        b.cube(head, (-3.0, -3.5, -4.5), (6, 7, 4), role="head")
-        tail = b.bone("tail", (0, 0, 4.5), parent="body",
-                      anim={"axis": "y", "amp": 22, "speed": 1.7, "phase": 0.0})
-        b.cube(tail, (-0.6, -4.0, 0), (1.2, 8, 4), role="fin")
-        b.cube(tail, (-2.6, -3.0, 3.2), (5.2, 6.4, 0.8), role="fin")
-        dorsal = b.bone("dorsal", (0, -4.5, -1), parent="body",
+        b.cube(body, (-2.5, -3.0, -6.0), (5, 6, 5), role="body")        # грудь
+        b.cube(body, (-2.0, -2.5, -1.0), (4, 5, 4), role="body")        # середина
+        b.cube(body, (-1.2, -1.6, 3.0), (2, 3, 4), role="body")         # хвостовой стебель
+        head = b.bone("head", (0, 0, -6.0), parent="body")
+        b.cube(head, (-2.0, -2.5, -11.0), (4, 5, 5), role="head")       # голова
+        b.cube(head, (-1.2, -1.6, -13.0), (2.4, 3, 2), role="head")     # рыло
+        tail = b.bone("tail", (0, 0, 7.0), parent="body",
+                      anim={"axis": "y", "amp": 24, "speed": 1.7, "phase": 0.0})
+        b.cube(tail, (-0.4, -2.4, 7.0), (0.8, 4.8, 4.4), role="fin")    # хвостовой плавник
+        dorsal = b.bone("dorsal", (0, -3.0, -1), parent="body",
                         anim={"axis": "x", "amp": 7, "speed": 2.1, "phase": 0.6})
-        b.cube(dorsal, (-0.5, -6.4, -2.5), (1.0, 2.4, 7), role="fin")
-        for side, px_ in (("finL", -3.5), ("finR", 3.5)):
-            fb = b.bone(side, (px_, -0.5, -3.5), parent="body",
+        b.cube(dorsal, (-0.4, 2.6, -5.5), (0.8, 2.6, 8), role="fin")    # спинной
+        b.cube(dorsal, (-0.4, -5.4, -3.0), (0.8, 2.4, 5), role="fin")   # брюшной киль
+        for side, px_ in (("finL", -2.5), ("finR", 2.5)):
+            fb = b.bone(side, (px_, -0.5, -3.0), parent="body",
                         anim={"axis": "z", "amp": 16 if px_ > 0 else -16, "speed": 2.4, "phase": 0.0})
-            b.cube(fb, (px_, -1.0, -1.8), (3.2 if px_ > 0 else 3.2, 0.8, 3.6), role="fin")
-        if s != 1.0:
-            pass
+            b.cube(fb, ((px_ if px_ > 0 else px_ - 3.0), -1.0, -4.5), (3, 0.8, 3.6), role="fin")
 
     elif name == "jelly":
         bell = b.bone("bell", (0, 4, 0), anim={"axis": "x", "amp": 6, "speed": 1.1, "phase": 0.0})

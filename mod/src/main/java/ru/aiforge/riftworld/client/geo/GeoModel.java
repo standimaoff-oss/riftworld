@@ -179,6 +179,8 @@ public final class GeoModel {
                 float phase = anim != null && anim.has("phase") ? anim.get("phase").getAsFloat() : 0.0F;
                 bones.add(new Bone(part, part.xRot, part.yRot, part.zRot, axis, amp, speed, phase));
             }
+            System.out.println("[riftworld] geo " + name + ": костей " + bones.size() + ", деталей "
+                    + baked.getAllParts().count() + ", атлас " + tw + "x" + th);
             return new GeoModel(baked, tw, th, scale, translucent, bones);
         } catch (Exception ex) {
             System.err.println("[riftworld] не удалось загрузить geo-модель " + name + ": " + ex);
