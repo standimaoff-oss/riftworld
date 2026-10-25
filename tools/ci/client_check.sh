@@ -358,6 +358,11 @@ view() { # view <x> <y> <z> <yaw> <pitch> <pause> <name>
   sleep "$6"
   shot "$7"
 }
+lookat() { # lookat <cx> <cy> <cz> <tx> <ty> <tz> <pause> <name> — камера смотрит ровно на цель
+  local yp
+  yp=$(python3 tools/ci/lookat_angles.py "$1" "$2" "$3" "$4" "$5" "$6")
+  view "$1" "$2" "$3" "${yp% *}" "${yp#* }" "$7" "$8"
+}
 view "$VX" 66 "$VZ" 90 42 14 "02_reef_from_above"        # рифовый сад сверху сквозь воду
 view "$((VX + 10))" "$((VF + 6))" "$VZ" 270 18 14 "03_reef_underwater"   # риф вплотную под водой
 view "$((VX + 4))" "$((VF + 9))" "$VZ" 210 22 14 "03b_reef_hills"         # рифовые холмы и палитры
@@ -470,8 +475,10 @@ if [ -n "$TREE_AT" ]; then
   else
     log "  FAIL дерево неполное: ветвей ${BR2:-0}, листвы ${LV2:-0}"; FAILS=$((FAILS + 1))
   fi
-  view "$((TX + 11))" "$((TY + 13))" "$((TZ + 11))" 225 22 16 "14_tree_branches"
-  view "$((TX + 2))" "$((TY + 26))" "$((TZ + 10))" 190 42 16 "14b_tree_top"
+  # камера наводится на середину кроны: ствол + ветки + листва в одном кадре
+  lookat "$((TX + 14))" "$((TY + 8))" "$((TZ + 14))" "$TX" "$((TY + 3))" "$TZ" 16 "14_tree_branches"
+  lookat "$((TX + 22))" "$((TY + 11))" "$((TZ + 22))" "$TX" "$((TY + 4))" "$TZ" 14 "14c_tree_wide"
+  lookat "$((TX + 3))" "$((TY + 22))" "$((TZ + 12))" "$TX" "$((TY + 3))" "$TZ" 14 "14b_tree_top"
 else
   log "  FAIL /rifttree не ответила"; FAILS=$((FAILS + 1))
 fi
