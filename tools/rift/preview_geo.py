@@ -53,6 +53,9 @@ NORMALS = {'up': (0, -1, 0), 'down': (0, 1, 0), 'north': (0, 0, -1),
 
 def rot(p, yaw, pitch):
     x, y, z = p
+    # В клиенте +Y смотрит ВВЕРХ (проверено кадром 11.22: щупальца при y=+3 торчали над куполом),
+    # а в координатах коробок JSON «вниз» — это +Y. Поэтому для превью инвертируем Y.
+    y = -y
     cy, sy = math.cos(yaw), math.sin(yaw)
     x, z = x * cy - z * sy, x * sy + z * cy
     cp, sp = math.cos(pitch), math.sin(pitch)
@@ -60,15 +63,32 @@ def rot(p, yaw, pitch):
     return x, y, z
 
 
-def render(name, yaw_deg=25.0, pitch_deg=18.0, size=420, bg=(24, 40, 60)):
+def render(name, yaw_deg=25.0, pitch_deg=18.0, size=420, bg=(24, 40, 60), axis=False):
     model = json.load(open(os.path.join(A, 'geo', name + '.json'), encoding='utf-8'))
+    if axis:
+        # маркеры ориентации: красный куб на y=-16 (должен быть СВЕРХУ), зелёный на y=+16 (снизу)
+        model = json.loads(json.dumps(model))
+        model['bones'] += [
+            {'name': 'axisUp', 'pivot': [0, 0, 0],
+             'cubes': [{'origin': [-1, -17, -1], 'size': [2, 2, 2], 'uv': [0, 0]}]},
+            {'name': 'axisDown', 'pivot': [0, 0, 0],
+             'cubes': [{'origin': [-1, 17, -1], 'size': [2, 2, 2], 'uv': [0, 0]}]},
+        ]
     tex = Image.open(os.path.join(A, 'textures', 'entity', name + '.png')).convert('RGBA')
+    if axis:
+        tex = tex.copy()
+        tex.putpixel((1, 1), (255, 0, 0, 255))
     tpx = tex.load()
     tw, th = tex.size
     yaw, pitch = math.radians(yaw_deg), math.radians(pitch_deg)
 
     quads = []
     for bone in model['bones']:
+        marker = None
+        if bone['name'] == 'axisUp':
+            marker = (255, 60, 60)
+        elif bone['name'] == 'axisDown':
+            marker = (60, 255, 60)
         for c in bone.get('cubes', []):
             ox, oy, oz = c['origin']
             w, h, d = c['size']
@@ -82,6 +102,8 @@ def render(name, yaw_deg=25.0, pitch_deg=18.0, size=420, bg=(24, 40, 60)):
                 for i in range(cw):
                     for j in range(ch):
                         col = tpx[u0 + i, v0 + j]
+                        if marker is not None:
+                            col = (marker[0], marker[1], marker[2], 255)
                         if col[3] < 24:
                             continue
                         def bil(a, b):
@@ -120,13 +142,14 @@ def main():
     ap.add_argument('--yaw', type=float, default=25.0)
     ap.add_argument('--pitch', type=float, default=18.0)
     ap.add_argument('--out', default='/tmp/geo_preview')
+    ap.add_argument('--axis', action='store_true')
     ap.add_argument('names', nargs='*', default=None)
     a = ap.parse_args()
     names = a.names or NAMES
     os.makedirs(a.out, exist_ok=True)
     imgs = []
     for n in names:
-        im = render(n, a.yaw, a.pitch)
+        im = render(n, a.yaw, a.pitch, axis=a.axis)
         im.save(os.path.join(a.out, n + '.png'))
         imgs.append((n, im))
         print('preview', n)
