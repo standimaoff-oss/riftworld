@@ -81,6 +81,10 @@ public class SeaPlantBlock extends BushBlock implements SimpleWaterloggedBlock {
                 || below.is(ElisarBlocks.CORAL_CAP_PINK.get()) || below.is(ElisarBlocks.CORAL_CAP_TEAL.get())
                 || below.is(ElisarBlocks.CORAL_CAP_VIOLET.get()) || below.is(ElisarBlocks.ANEMONE.get())
                 || below.is(ElisarBlocks.CORAL_BUSH.get()) || below.is(ElisarBlocks.TUBE_WORMS.get())
+                // Рев 11: новые кораллы-растения растут друг на друге и на шапках
+                || below.is(ElisarBlocks.STAGHORN_CORAL.get()) || below.is(ElisarBlocks.FEATHER_CORAL.get())
+                || below.is(ElisarBlocks.SEA_WHIP.get()) || below.is(ElisarBlocks.TABLE_CORAL.get())
+                || below.is(ElisarBlocks.TUBE_SPONGE_CLUSTER.get()) || below.is(ElisarBlocks.RIBBON_CORAL.get())
                 || below.is(ElisarBlocks.COBBLE.get());
     }
 

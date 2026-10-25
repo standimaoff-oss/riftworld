@@ -93,6 +93,32 @@ public final class ElisarSea {
     }
 
     /**
+     * Рев 11 — ВОДА ПО НАПРАВЛЕНИЮ ХОДА, а не «случайная заливка».
+     *
+     * <p>Раньше воздух в пещерах ставился одним 3D-шумом: полости были заполнены как попало,
+     * и в нисходящем ходе мог висеть сухой пузырь, а в восходящем тупике — вода. Теперь решает геометрия:
+     * <ul>
+     *   <li><b>Ход уходит вниз</b> — вода заливает его целиком: воздуху неоткуда взяться, он всплывает;</li>
+     *   <li><b>Ход горизонтальный</b> — вода стоит, но у сводов остаются карманы: заливка неполная;</li>
+     *   <li><b>Ход уходит вверх и не связан с морем</b> — это ловушка: вода туда не поднимется, воздух остаётся;</li>
+     *   <li><b>Ход уходит вверх, но сверху открытая вода</b> (пробитое дно или «синяя дыра») — залит доверху.</li>
+     * </ul>
+     * Всё считается по аналитическому полю пещер, поэтому на границах чанков решение не рвётся.
+     */
+    static boolean dryPocket(int x, int y, int z, int floor) {
+        boolean up = cave(x, y + 3, z, floor);
+        boolean down = cave(x, y - 3, z, floor);
+        // сверху приходит вода: колодец рядом или дно этой колонки пробито (тот же хеш, что и у дыры в дне)
+        boolean fed = blueHole(x, y + 2, z, floor) || (y > floor - 22 && hash(x, z, 454) < 0.18);
+        double n = vnoise3(x * 0.043, y * 0.062, z * 0.043, 435);
+        if (fed) return false;                     // залив сверху — карману не удержаться
+        if (down && !up) return false;             // нисходящий ход: полностью в воде
+        if (up && !down) return n < 0.25;          // восходящий тупик: воздушная пробка
+        if (up) return n > 0.66;                   // наклонный сквозной ход: редкие пробки у свода
+        return n > 0.45;                           // горизонтальный ход: иногда неполный
+    }
+
+    /**
      * Кромка дна: 46–58 блоков воды в норме, желоба до −16 и впадины до −22 от неё.
      *
      * @param sea уровень моря ({@code plan.ocean})
@@ -238,8 +264,7 @@ public final class ElisarSea {
             boolean shaft = blueHole(x, y, z, floor);
             if (!shaft && !cave(x, y, z, floor)) continue;
             if (shaft) holeColumn = true;
-            boolean open = y + 1 > floor - 6 || (!cave(x, y + 1, z, floor) && !blueHole(x, y + 1, z, floor));
-            boolean pocket = !blueHole(x, y, z, floor) && (airPocket(x, y, z) || (open && ceilingPocket(x, y, z)));
+            boolean pocket = !shaft && dryPocket(x, y, z, floor);
             chunk.setBlockState(mp.set(x, y, z), pocket ? Blocks.AIR.defaultBlockState() : water, false);
         }
 
@@ -271,13 +296,17 @@ public final class ElisarSea {
 
     /** Растение на вершине рифового холма — разное в каждой палитре, чтобы сад читался цветными пятнами. */
     private static BlockState crown(int p, double r) {
+        // Рев 11: к старым крестикам добавлены шесть новых кораллов-растений с 3D-моделью
         return switch (p) {
-            case 0 -> r < 0.34 ? st(ElisarBlocks.ANEMONE) : r < 0.58 ? st(ElisarBlocks.CORAL_BRANCH)
-                    : r < 0.78 ? st(ElisarBlocks.CORAL_FAN) : st(ElisarBlocks.CORAL_GLOW);
-            case 1 -> r < 0.32 ? st(ElisarBlocks.CORAL_BUSH) : r < 0.56 ? st(ElisarBlocks.TUBE_WORMS)
-                    : r < 0.78 ? st(ElisarBlocks.CORAL_TUBE) : st(ElisarBlocks.CORAL_GLOW);
-            default -> r < 0.30 ? st(ElisarBlocks.CORAL_FAN) : r < 0.54 ? st(ElisarBlocks.ANEMONE)
-                    : r < 0.76 ? st(ElisarBlocks.CORAL_BRANCH) : st(ElisarBlocks.CORAL_GLOW);
+            case 0 -> r < 0.18 ? st(ElisarBlocks.STAGHORN_CORAL) : r < 0.34 ? st(ElisarBlocks.ANEMONE)
+                    : r < 0.50 ? st(ElisarBlocks.FEATHER_CORAL) : r < 0.66 ? st(ElisarBlocks.CORAL_BRANCH)
+                    : r < 0.82 ? st(ElisarBlocks.TABLE_CORAL) : st(ElisarBlocks.CORAL_FAN);
+            case 1 -> r < 0.18 ? st(ElisarBlocks.TUBE_SPONGE_CLUSTER) : r < 0.34 ? st(ElisarBlocks.CORAL_BUSH)
+                    : r < 0.50 ? st(ElisarBlocks.SEA_WHIP) : r < 0.66 ? st(ElisarBlocks.TUBE_WORMS)
+                    : r < 0.82 ? st(ElisarBlocks.STAGHORN_CORAL) : st(ElisarBlocks.RIBBON_CORAL);
+            default -> r < 0.18 ? st(ElisarBlocks.RIBBON_CORAL) : r < 0.34 ? st(ElisarBlocks.CORAL_FAN)
+                    : r < 0.50 ? st(ElisarBlocks.FEATHER_CORAL) : r < 0.66 ? st(ElisarBlocks.ANEMONE)
+                    : r < 0.82 ? st(ElisarBlocks.TABLE_CORAL) : st(ElisarBlocks.SEA_WHIP);
         };
     }
 
@@ -336,12 +365,21 @@ public final class ElisarSea {
                 }
                 return;
             }
-            // между холмами — ковёр из кустов и вееров
+            // между холмами — ковёр из кустов, вееров и новых кораллов-растений
             if (r < reef * 0.45) {
                 double k = hash(x, z, 462);
-                BlockState s = k < 0.34 ? crown(pal, hash(x, z, 470)) : k < 0.62 ? st(ElisarBlocks.CORAL_BRANCH)
-                        : k < 0.82 ? st(ElisarBlocks.CORAL_FAN) : st(ElisarBlocks.CORAL_TUBE);
+                BlockState s = k < 0.30 ? crown(pal, hash(x, z, 470))
+                        : k < 0.46 ? st(ElisarBlocks.STAGHORN_CORAL) : k < 0.58 ? st(ElisarBlocks.TABLE_CORAL)
+                        : k < 0.70 ? st(ElisarBlocks.FEATHER_CORAL) : k < 0.80 ? st(ElisarBlocks.SEA_WHIP)
+                        : k < 0.90 ? st(ElisarBlocks.CORAL_BRANCH) : st(ElisarBlocks.CORAL_FAN);
                 chunk.setBlockState(mp.set(x, y, z), s, false);
+                return;
+            }
+            // «роща» высоких кораллов: гнездо 3x3, где все колонки заняты оленьими рогами/хлыстами
+            int gx = Math.floorDiv(x, 9), gz = Math.floorDiv(z, 9);
+            if (hash(gx, gz, 474) > 0.55 && hash(x, z, 475) < 0.55) {
+                BlockState thick = hash(x, z, 476) < 0.5 ? st(ElisarBlocks.STAGHORN_CORAL) : st(ElisarBlocks.RIBBON_CORAL);
+                chunk.setBlockState(mp.set(x, y, z), thick, false);
                 return;
             }
         }

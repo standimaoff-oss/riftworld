@@ -119,7 +119,13 @@ public final class SeaProbeCommand {
     private static boolean isCoral(BlockState s) {
         return s.is(ElisarBlocks.CORAL_BRANCH.get()) || s.is(ElisarBlocks.CORAL_FAN.get())
                 || s.is(ElisarBlocks.CORAL_TUBE.get()) || s.is(ElisarBlocks.CORAL_GLOW.get())
-                || s.is(ElisarBlocks.CORAL_BRAIN.get());
+                || s.is(ElisarBlocks.CORAL_BRAIN.get())
+                || s.is(ElisarBlocks.ANEMONE.get()) || s.is(ElisarBlocks.CORAL_BUSH.get())
+                || s.is(ElisarBlocks.TUBE_WORMS.get())
+                // Рев 11: новые кораллы-растения с 3D-моделью
+                || s.is(ElisarBlocks.STAGHORN_CORAL.get()) || s.is(ElisarBlocks.FEATHER_CORAL.get())
+                || s.is(ElisarBlocks.SEA_WHIP.get()) || s.is(ElisarBlocks.TABLE_CORAL.get())
+                || s.is(ElisarBlocks.TUBE_SPONGE_CLUSTER.get()) || s.is(ElisarBlocks.RIBBON_CORAL.get());
     }
 
     private static boolean isPlant(BlockState s) {

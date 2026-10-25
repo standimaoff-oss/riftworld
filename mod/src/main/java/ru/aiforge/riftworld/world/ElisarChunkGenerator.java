@@ -534,6 +534,10 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                         }
                     }
                 }
+                // Рев 11: СПЛОШНОЙ ПОЛ МИРА. Раньше в адских угодьях под пепельной равниной и на стыках
+                // с морем оставалась пустота — можно было копнуть вниз и улететь в бездну. Теперь под любой
+                // колонкой лежит камень/бедрок до самого низа измерения.
+                bedrockFloor(plan, chunk, mp, x, z, ashen, c);
                 if (!ashen && c.isl == null && c.fallTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE) debris(plan, chunk, mp, x, z);                if (dx == 15 && dz == 15) mistKeepDressing(plan, chunk, mp, x0, z0);
 
                 tower(chunk, mp, x, z);
@@ -698,6 +702,27 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                     ElisarSea.decorate(chunk, mp, x0 + dx, z0 + dz, seaFloor[dx][dz], plan.ocean);
         Heightmap.primeHeightmaps(chunk, EnumSet.of(Heightmap.Types.OCEAN_FLOOR_WG, Heightmap.Types.WORLD_SURFACE_WG));
         return CompletableFuture.completedFuture(chunk);
+    }
+
+    /**
+     * Пол мира (Рев 11): две плиты бедрока у самого низа измерения плюс каменная подушка под пепельной
+     * равниной адских угодьев. Адские угодья заливали только y >= ocean-2, а всё, что ниже, оставалось
+     * воздухом — отсюда и «провал в пустоту» под замком. Теперь там монолит из обожжённого камня до бедрока.
+     */
+    private static void bedrockFloor(CityPlan plan, ChunkAccess chunk, BlockPos.MutableBlockPos mp, int x, int z,
+                                     boolean ashen, Col c) {
+        BlockState bedrock = Blocks.BEDROCK.defaultBlockState();
+        BlockState stone = st(ElisarBlocks.STONE);
+        BlockState sst = st(ru.aiforge.riftworld.registry.CastleBlocks.SCORCHED_STONE);
+        chunk.setBlockState(mp.set(x, MIN_Y, z), bedrock, false);
+        chunk.setBlockState(mp.set(x, MIN_Y + 1, z), bedrock, false);
+        if (ashen) {
+            // монолит под пепельной равниной (и под замком в ней): от бедрока до подошвы равнины
+            for (int y = MIN_Y + 2; y <= plan.ocean - 3; ++y) {
+                boolean deep = y > MIN_Y + 4;
+                chunk.setBlockState(mp.set(x, y, z), deep && hash(x, y, z) < 0.22 ? stone : sst, false);
+            }
+        }
     }
 
     /** Scorched castle island: ash / burnt soil top with ember-dark patches, scorched stone body, a few boulders. */
@@ -1197,6 +1222,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         java.util.Arrays.fill(arr, Blocks.AIR.defaultBlockState());
         int of = oceanFloor(plan, x, z);
         // Рев 10: индексы массива отсчитываются от MIN_Y (мир стал глубже: min_y = -64, height = 384)
+        arr[0] = Blocks.BEDROCK.defaultBlockState();          // Рев 11: пол мира и в базовой колонке
+        arr[1] = Blocks.BEDROCK.defaultBlockState();
         arr[of - MIN_Y] = ElisarBlocks.SEABED.get().defaultBlockState();
         arr[of - 1 - MIN_Y] = ElisarBlocks.SEABED.get().defaultBlockState();
         for (int y = ElisarSea.BOTTOM; y <= of - 2; ++y) arr[y - MIN_Y] = ElisarBlocks.STONE.get().defaultBlockState();

@@ -362,6 +362,7 @@ view "$VX" 66 "$VZ" 90 42 14 "02_reef_from_above"        # рифовый сад
 view "$((VX + 10))" "$((VF + 6))" "$VZ" 270 18 14 "03_reef_underwater"   # риф вплотную под водой
 view "$((VX + 4))" "$((VF + 9))" "$VZ" 210 22 14 "03b_reef_hills"         # рифовые холмы и палитры
 view "$((VX - 18))" "$((VF + 3))" "$VZ" 45 4 14 "03c_reef_level"          # риф на уровне глаз рыбы
+view "$((VX + 2))" "$((VF + 2))" "$VZ" 100 8 14 "03d_corals_3d"            # новые кораллы-растения (3D)
 view "$((LX + 15))" "$((LF + 11))" "$((LZ + 15))" 225 14 14 "04_kelp_forest" # ламинария
 view "$VX" 64 "$((VZ + 26))" 180 2 14 "05_open_sea"          # поверхность: открытое море
 view "$DX" 65 "$DZ" 30 55 14 "06_trench"                     # каньон сверху
@@ -409,6 +410,41 @@ shot "12_fish_closeup"
 view "$KX" 22 "$KZ" 180 65 14 "13_reef_floor"                  # дно рифа вплотную: разбор блоков
 [ "$CAVE_X" != "0" ] && view "$CAVE_X" "$CAVE_Y" "$CAVE_Z" 0 0 12 "11_fish_cave"     # хищники пещеры
 RCON effect clear TestPlayer >/dev/null 2>&1 || true
+
+# ---------------------------------------------------------------- Рев 11: каждая модель рыбы — отдельным кадром
+echo "== модели рыб: JSON + текстура, каждый вид отдельно =="
+MODEL_NAMES=(silver gold striped jelly ray angler eel surgeon turtle gloom sting)
+MISSING=0
+for n in "${MODEL_NAMES[@]}"; do
+  [ -f "mod/src/main/resources/assets/riftworld/geo/$n.json" ] || { log "  FAIL нет geo/$n.json"; MISSING=$((MISSING + 1)); }
+  [ -f "mod/src/main/resources/assets/riftworld/textures/entity/$n.png" ] || { log "  FAIL нет textures/entity/$n.png"; MISSING=$((MISSING + 1)); }
+done
+if [ "$MISSING" -eq 0 ]; then log "  OK   у всех ${#MODEL_NAMES[@]} видов есть JSON-модель и текстура"
+else log "  FAIL моделей/текстур не хватает: $MISSING"; FAILS=$((FAILS + 1)); fi
+
+# чистая толща воды над дном: рыба в 2.4 блоках по курсу занимает половину кадра
+EL tp TestPlayer "$KX" 40 "$KZ" 180 2 >/dev/null 2>&1
+sleep 3
+key F1
+RCON effect give TestPlayer minecraft:night_vision 900 0 true >/dev/null 2>&1 || true
+for i in "${!MODEL_NAMES[@]}"; do
+  EL execute at TestPlayer run kill @e[type=riftworld:sea_fish,distance=..48] >/dev/null 2>&1
+  sleep 1
+  SUM_LOCAL 2.4 0 0 "{NoAI:1b,Silent:1b,NoGravity:1b,sf_variant:$i}"
+  sleep 3
+  shot "model_$(printf '%02d' "$i")_${MODEL_NAMES[$i]}"
+done
+EL execute at TestPlayer run kill @e[type=riftworld:sea_fish,distance=..48] >/dev/null 2>&1
+RCON effect clear TestPlayer >/dev/null 2>&1 || true
+# клиент ругается в лог, если JSON не распарсился — это отдельная проба
+GEOERR=$(grep -c "не удалось загрузить geo-модель" "$OUT/client.log" 2>/dev/null || echo 0)
+if [ "${GEOERR:-0}" -eq 0 ]; then log "  OK   клиент не жаловался на geo-модели"
+else log "  FAIL клиент не смог загрузить geo-модели: $GEOERR"; FAILS=$((FAILS + 1)); fi
+
+RCON effect clear TestPlayer >/dev/null 2>&1 || true
+key F1
+sleep 1
+RCON effect clear TestPlayer >/dev/null 2>&1 || true
 key F1
 sleep 1
 
@@ -435,6 +471,7 @@ echo "строк Exception/ERROR в логе клиента (без звука/�
   echo "- клиент: ForgeGradle runClient под Xvfb (llvmpipe, без GPU)"
   echo "- воды в колонке ($KX,y,$KZ): **$WATER** блоков"
   echo "- провалов проб: **$FAILS**"
+  echo "- моделей рыб (JSON + текстура) в кадре: **${#MODEL_NAMES[@]}**"
   echo "- строк Exception/ERROR в логе клиента (без звука/наратора): **$ERRS**"
   echo
   echo "## пробы"; echo '```'; cat "$PROBES"; echo '```'

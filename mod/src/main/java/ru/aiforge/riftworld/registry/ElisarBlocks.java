@@ -152,6 +152,21 @@ public final class ElisarBlocks {
     public static final RegistryObject<ru.aiforge.riftworld.block.SeaDecalBlock> SHELL_BED =
             ModBlocks.reg("shell_bed", () -> new ru.aiforge.riftworld.block.SeaDecalBlock(decal()));
 
+    // ----- Рев 11 «Кораллы-растения»: шесть НОВЫХ кастомных кораллов с настоящей 3D-моделью
+    // (ветки под углами, пластины, трубки) — старые крестики остаются на месте, ничего не удаляем.
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> STAGHORN_CORAL =
+            ModBlocks.reg("staghorn_coral", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant()));
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> FEATHER_CORAL =
+            ModBlocks.reg("feather_coral", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant().lightLevel(s -> 3)));
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> SEA_WHIP =
+            ModBlocks.reg("sea_whip", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant().lightLevel(s -> 5)));
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> TABLE_CORAL =
+            ModBlocks.reg("table_coral", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant()));
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> TUBE_SPONGE_CLUSTER =
+            ModBlocks.reg("tube_sponge_cluster", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant()));
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> RIBBON_CORAL =
+            ModBlocks.reg("ribbon_coral", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant().lightLevel(s -> 7)));
+
     private static BlockBehaviour.Properties decal() {
         return BlockBehaviour.Properties.of().mapColor(MapColor.SAND).strength(0.2F).sound(SoundType.CORAL_BLOCK)
                 .noCollission().pushReaction(PushReaction.DESTROY).noOcclusion();

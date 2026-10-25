@@ -1,0 +1,40 @@
+{
+  "variants": {
+    "waterlogged=true": [
+      {
+        "model": "riftworld:block/table_coral",
+        "y": 0
+      },
+      {
+        "model": "riftworld:block/table_coral",
+        "y": 90
+      },
+      {
+        "model": "riftworld:block/table_coral",
+        "y": 180
+      },
+      {
+        "model": "riftworld:block/table_coral",
+        "y": 270
+      }
+    ],
+    "waterlogged=false": [
+      {
+        "model": "riftworld:block/table_coral",
+        "y": 0
+      },
+      {
+        "model": "riftworld:block/table_coral",
+        "y": 90
+      },
+      {
+        "model": "riftworld:block/table_coral",
+        "y": 180
+      },
+      {
+        "model": "riftworld:block/table_coral",
+        "y": 270
+      }
+    ]
+  }
+}

@@ -344,5 +344,11 @@
   "item.riftworld.surgeon_fish_spawn_egg": "Surgeonfish Spawn Egg",
   "item.riftworld.turtle_spawn_egg": "Sea Turtle Spawn Egg",
   "item.riftworld.gloom_fish_spawn_egg": "Gloomfish Spawn Egg",
-  "item.riftworld.sting_fish_spawn_egg": "Stinging Jelly Spawn Egg"
+  "item.riftworld.sting_fish_spawn_egg": "Stinging Jelly Spawn Egg",
+  "block.riftworld.staghorn_coral": "Staghorn Coral",
+  "block.riftworld.feather_coral": "Feather Coral",
+  "block.riftworld.sea_whip": "Sea Whip",
+  "block.riftworld.table_coral": "Table Coral",
+  "block.riftworld.tube_sponge_cluster": "Tube Sponge Cluster",
+  "block.riftworld.ribbon_coral": "Ribbon Coral"
 }

@@ -158,6 +158,23 @@ def ceiling_pocket(x, y, z):
     return vnoise3(x * 0.043, y * 0.062, z * 0.043, 435) > 0.585
 
 
+def dry_pocket(x, y, z, fl):
+    """Рев 11: воздух по направлению хода (вниз — полный залив, вверх-тупик — пробка, в бок — иногда)."""
+    up = cave(x, y + 3, z, fl)
+    down = cave(x, y - 3, z, fl)
+    fed = blue_hole(x, y + 2, z, fl) or (y > fl - 22 and hash2(x, z, 454) < 0.18)
+    n = vnoise3(x * 0.043, y * 0.062, z * 0.043, 435)
+    if fed:
+        return False
+    if down and not up:
+        return False
+    if up and not down:
+        return n < 0.25
+    if up:
+        return n > 0.66
+    return n > 0.45
+
+
 def cave(x, y, z, fl):
     if y <= BOTTOM + 1 or y > fl - 6:
         return False
@@ -190,8 +207,7 @@ def column_kind(x, z, fl):
             continue
         if shaft:
             hole_column = True
-        open_above = y + 1 > fl - 6 or (not cave(x, y + 1, z, fl) and not blue_hole(x, y + 1, z, fl))
-        pocket = (not blue_hole(x, y, z, fl)) and (air_pocket(x, y, z) or (open_above and ceiling_pocket(x, y, z)))
+        pocket = (not shaft) and dry_pocket(x, y, z, fl)
         if pocket:
             air += 1
         else:

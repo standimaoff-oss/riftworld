@@ -344,5 +344,11 @@
   "item.riftworld.surgeon_fish_spawn_egg": "Яйцо рыбы-хирурга",
   "item.riftworld.turtle_spawn_egg": "Яйцо морской черепахи",
   "item.riftworld.gloom_fish_spawn_egg": "Яйцо глубинного глота",
-  "item.riftworld.sting_fish_spawn_egg": "Яйцо жгучей медузы"
+  "item.riftworld.sting_fish_spawn_egg": "Яйцо жгучей медузы",
+  "block.riftworld.staghorn_coral": "Оленьи рога (коралл)",
+  "block.riftworld.feather_coral": "Перистый коралл",
+  "block.riftworld.sea_whip": "Морской хлыст",
+  "block.riftworld.table_coral": "Столовидный коралл",
+  "block.riftworld.tube_sponge_cluster": "Гроздь трубчатых губок",
+  "block.riftworld.ribbon_coral": "Ленточный коралл"
 }
