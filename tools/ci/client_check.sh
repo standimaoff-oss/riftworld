@@ -482,10 +482,13 @@ if [ -n "$TREE_AT" ]; then
   [ -n "$CAM" ] || CAM="$((TX + 16)),$((TY + 10)),$((TZ + 16))"
   [ -n "$CAMTOP" ] || CAMTOP="$((TX + 4)),$((TY + 22)),$((TZ + 4))"
   log "  камера дерева: cam=$CAM camtop=$CAMTOP"
+  # без spectator игрок падает с высоты камеры (проверено: tp на y=117 -> в кадре земля с y=107)
+  EL gamemode spectator TestPlayer >/dev/null 2>&1 || true
   lookat "${CAM%%,*}" "$(printf '%s' "$CAM" | cut -d, -f2)" "${CAM##*,}" \
          "$TX" "$((TY + 3))" "$TZ" 16 "14_tree_branches"
   lookat "${CAMTOP%%,*}" "$(printf '%s' "$CAMTOP" | cut -d, -f2)" "${CAMTOP##*,}" \
          "$TX" "$((TY + 2))" "$TZ" 16 "14b_tree_top"
+  EL gamemode creative TestPlayer >/dev/null 2>&1 || true
 else
   log "  FAIL /rifttree не ответила"; FAILS=$((FAILS + 1))
 fi
