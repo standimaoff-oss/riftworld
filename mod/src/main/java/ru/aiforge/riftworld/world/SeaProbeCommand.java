@@ -67,27 +67,25 @@ public final class SeaProbeCommand {
         int base = -999;
         java.util.List<CityPlan.Tree> cand = new java.util.ArrayList<>(plan.trees);
         cand.sort(java.util.Comparator.comparingDouble(t -> Math.hypot(t.x - at.getX(), t.z - at.getZ())));
+        int tries = 0;
         for (CityPlan.Tree t : cand) {
             if (t.kind == 2) continue;
+            if (++tries > 60) break;                            // не бегаем по всему миру
             int b = t.baseY;
             if (b == Integer.MIN_VALUE) {
                 ElisarChunkGenerator.Col c = ElisarChunkGenerator.column(plan, t.x, t.z);
-                if (c.isl == null) continue;                  // дерево «висит» вне острова — не считается
+                if (c.isl == null) continue;                    // дерево «висит» вне острова
                 b = c.top + 1;
                 t.baseY = b;
             }
             if (b < 0 || b > 200) continue;
-            // дерево должно быть РЕАЛЬНЫМ и стоять на открытом месте: над ним до +26 блоков нет сплошной
-            // породы или постройки, иначе камера упирается в стену/остров и кадр пустой
-            if (!level.hasChunk(t.x >> 4, t.z >> 4)) continue;
-            BlockState ground = level.getBlockState(new BlockPos(t.x, b, t.z));
-            boolean isTree = ground.is(ElisarBlocks.SIZO_LOG.get()) || ground.is(ElisarBlocks.AMBRA_LOG.get())
-                    || ground.isAir() || ground.is(ElisarBlocks.SIZO_LEAVES.get()) || ground.is(ElisarBlocks.AMBRA_LEAVES.get());
-            if (!isTree) continue;
+            // чанк подгружаем принудительно: команда должна работать из любой точки мира
+            level.getChunk(t.x >> 4, t.z >> 4);
             boolean open = true;
             for (int y = b; y <= b + 26 && open; ++y) {
-                BlockState sp = level.getBlockState(new BlockPos(t.x, y, t.z));
-                if (sp.isSolidRender(level, new BlockPos(t.x, y, t.z))) open = false;
+                BlockPos sp = new BlockPos(t.x, y, t.z);
+                if (sp.getY() >= level.getMaxBuildHeight()) break;
+                if (level.getBlockState(sp).isSolidRender(level, sp)) open = false;
             }
             if (!open) continue;
             best = t;
