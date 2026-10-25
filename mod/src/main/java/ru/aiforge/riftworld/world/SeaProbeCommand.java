@@ -77,13 +77,19 @@ public final class SeaProbeCommand {
                 t.baseY = b;
             }
             if (b < 0 || b > 200) continue;
-            // только деревья ВНЕ городских кварталов: у построек камера упирается в стену
-            if (!plan.at(t.x, t.z).plots.isEmpty()) continue;
-            boolean nearBuild = false;
-            for (int ox = -6; ox <= 6 && !nearBuild; ox += 6)
-                for (int oz = -6; oz <= 6 && !nearBuild; oz += 6)
-                    if (!plan.at(t.x + ox, t.z + oz).plots.isEmpty()) nearBuild = true;
-            if (nearBuild) continue;
+            // дерево должно быть РЕАЛЬНЫМ и стоять на открытом месте: над ним до +26 блоков нет сплошной
+            // породы или постройки, иначе камера упирается в стену/остров и кадр пустой
+            if (!level.hasChunk(t.x >> 4, t.z >> 4)) continue;
+            BlockState ground = level.getBlockState(new BlockPos(t.x, b, t.z));
+            boolean isTree = ground.is(ElisarBlocks.SIZO_LOG.get()) || ground.is(ElisarBlocks.AMBRA_LOG.get())
+                    || ground.isAir() || ground.is(ElisarBlocks.SIZO_LEAVES.get()) || ground.is(ElisarBlocks.AMBRA_LEAVES.get());
+            if (!isTree) continue;
+            boolean open = true;
+            for (int y = b; y <= b + 26 && open; ++y) {
+                BlockState sp = level.getBlockState(new BlockPos(t.x, y, t.z));
+                if (sp.isSolidRender(level, new BlockPos(t.x, y, t.z))) open = false;
+            }
+            if (!open) continue;
             best = t;
             base = b;
             bestD = Math.hypot(t.x - at.getX(), t.z - at.getZ());
