@@ -73,8 +73,14 @@ public final class GeoModel {
         }
     }
 
+    /**
+     * Рисуем ВСЁ дерево костей: {@code ModelPart.render} рисует только собственные кубы и не спускается
+     * к детям — из-за этого раньше выходил один серый ящик вместо рыбы.
+     */
     public void render(PoseStack pose, VertexConsumer vc, int light, int overlay) {
-        this.root.render(pose, vc, light, overlay, 1.0F, 1.0F, 1.0F, 1.0F);
+        for (ModelPart part : this.root.getAllParts().toList()) {
+            part.render(pose, vc, light, overlay, 1.0F, 1.0F, 1.0F, 1.0F);
+        }
     }
 
     // ------------------------------------------------------------------ загрузка с диска

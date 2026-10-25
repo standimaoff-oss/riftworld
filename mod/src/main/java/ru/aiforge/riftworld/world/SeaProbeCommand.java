@@ -57,47 +57,36 @@ public final class SeaProbeCommand {
             src.sendFailure(Component.literal("rifttree: only in riftworld:elisar"));
             return 0;
         }
+        CityPlan plan = CityPlan.get();
         BlockPos at = BlockPos.containing(src.getPosition());
-        final int radius = 64;
-        int foundX = 0, foundY = 0, foundZ = 0;
-        boolean found = false;
+        // ближайшее живое дерево из плана мира (без мёртвых: у них ветки есть всегда)
+        CityPlan.Tree best = null;
         double bestD = 1e9;
-        for (int dx = -radius; dx <= radius && !found; dx += 2) {
-            for (int dz = -radius; dz <= radius; dz += 2) {
-                int x = at.getX() + dx, z = at.getZ() + dz;
-                if (!level.hasChunk(x >> 4, z >> 4)) continue;
-                // деревья ищем только вне городских построек: иначе находим бревно в стене дома
-                CityPlan.Bucket bk = CityPlan.get().at(x, z);
-                if (!bk.plots.isEmpty()) continue;
-                for (int y = 70; y <= 150; ++y) {
-                    BlockState st = level.getBlockState(new BlockPos(x, y, z));
-                    if (st.is(ElisarBlocks.SIZO_LOG.get()) || st.is(ElisarBlocks.AMBRA_LOG.get())) {
-                        double d = Math.hypot(dx, dz);
-                        if (d < bestD) { bestD = d; foundX = x; foundY = y; foundZ = z; }
-                        break;
-                    }
-                }
-            }
-            if (bestD < 40) break;                       // дерево рядом — дальше не ищем
+        for (CityPlan.Tree t : plan.trees) {
+            if (t.kind == 2) continue;
+            double d = Math.hypot(t.x - at.getX(), t.z - at.getZ());
+            if (d < bestD) { bestD = d; best = t; }
         }
-        found = bestD < 1e9;
-        if (!found) {
-            src.sendFailure(Component.literal("rifttree: деревьев в радиусе 64 нет — мир пустой?"));
+        if (best == null) {
+            src.sendFailure(Component.literal("rifttree: в плане мира нет деревьев"));
             return 0;
         }
-        // спускаемся к основанию ствола
-        int base = foundY;
-        while (base > 60 && level.getBlockState(new BlockPos(foundX, base - 1, foundZ)).is(
-                level.getBlockState(new BlockPos(foundX, foundY, foundZ)).getBlock())) --base;
+        int base = best.baseY;
+        if (base == Integer.MIN_VALUE) {
+            ElisarChunkGenerator.Col c = ElisarChunkGenerator.column(plan, best.x, best.z);
+            base = c.isl == null ? -999 : c.top + 1;
+            best.baseY = base;
+        }
         int logs = 0, branches = 0, leaves = 0;
-        for (int dx = -14; dx <= 14; ++dx) {
-            for (int dz = -14; dz <= 14; ++dz) {
+        for (int dx = -12; dx <= 12; ++dx) {
+            for (int dz = -12; dz <= 12; ++dz) {
+                BlockPos col = new BlockPos(best.x + dx, 0, best.z + dz);
+                if (!level.hasChunk(col.getX() >> 4, col.getZ() >> 4)) continue;   // чанк не прогружен — пропускаем
                 for (int y = base; y <= base + 40; ++y) {
-                    BlockState st = level.getBlockState(new BlockPos(foundX + dx, y, foundZ + dz));
+                    BlockState st = level.getBlockState(new BlockPos(best.x + dx, y, best.z + dz));
                     boolean log = st.is(ElisarBlocks.SIZO_LOG.get()) || st.is(ElisarBlocks.AMBRA_LOG.get());
                     if (log) {
                         ++logs;
-                        // ветка = бревно, лежащее по X или Z (ствол всегда по Y)
                         if (st.getValue(net.minecraft.world.level.block.RotatedPillarBlock.AXIS)
                                 != net.minecraft.core.Direction.Axis.Y) ++branches;
                     } else if (st.is(ElisarBlocks.SIZO_LEAVES.get()) || st.is(ElisarBlocks.AMBRA_LEAVES.get())) {
@@ -106,8 +95,10 @@ public final class SeaProbeCommand {
                 }
             }
         }
-        String line = "rifttree at=" + foundX + "," + base + "," + foundZ + " logs=" + logs
-                + " branches=" + branches + " leaves=" + leaves + " dist=" + Math.round(bestD);
+        String kind = best.kind == 0 ? "sizo" : best.kind == SizoGrove.TREE_GIANT ? "giant" : "ambra";
+        String line = "rifttree at=" + best.x + "," + base + "," + best.z + " kind=" + kind + " h=" + best.h
+                + " logs=" + logs + " branches=" + branches + " leaves=" + leaves
+                + " dist=" + Math.round(bestD) + " loaded=" + level.hasChunk(best.x >> 4, best.z >> 4);
         src.sendSuccess(() -> Component.literal(line), false);
         return 1;
     }
