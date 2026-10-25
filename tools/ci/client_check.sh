@@ -454,8 +454,10 @@ fi
 echo "== деревья Элисара: ствол + ветки =="
 EL tp TestPlayer -30 120 58 180 0 >/dev/null 2>&1
 sleep 4
-TREE_RAW=$(EL execute at TestPlayer run rifttree 2>&1)
-log "  /rifttree raw: ${TREE_RAW:0:220}"
+# сизо ярче амбры: на кадре видно и крону, и ветки (амбра почти белая на светлом грунте)
+TREE_RAW=$(EL execute at TestPlayer run rifttree sizo 2>&1)
+printf '%s' "$TREE_RAW" | grep -q "at=" || TREE_RAW=$(EL execute at TestPlayer run rifttree 2>&1)
+log "  /rifttree raw: ${TREE_RAW:0:240}"
 TREE_AT=$(printf '%s' "$TREE_RAW" | sed -n 's/.*at=\([-0-9]*,[-0-9]*,[-0-9]*\).*/\1/p' | head -1)
 TREE_BR=$(printf '%s' "$TREE_RAW" | sed -n 's/.*branches=\([0-9]*\).*/\1/p' | head -1)
 if [ -n "$TREE_AT" ]; then
@@ -466,7 +468,8 @@ if [ -n "$TREE_AT" ]; then
   # телепорт к дереву, чтобы чанк прогрузился, и повторный счёт уже по настоящим блокам
   EL tp TestPlayer "$((TX + 10))" "$((TY + 10))" "$((TZ + 10))" 225 20 >/dev/null 2>&1
   sleep 8
-  TREE2=$(EL execute at TestPlayer run rifttree 2>&1)
+  TREE2=$(EL execute at TestPlayer run rifttree sizo 2>&1)
+  printf '%s' "$TREE2" | grep -q "at=" || TREE2=$(EL execute at TestPlayer run rifttree 2>&1)
   log "  /rifttree повтор: ${TREE2:0:200}"
   BR2=$(printf '%s' "$TREE2" | sed -n 's/.*branches=\([0-9]*\).*/\1/p' | head -1)
   LV2=$(printf '%s' "$TREE2" | sed -n 's/.*leaves=\([0-9]*\).*/\1/p' | head -1)

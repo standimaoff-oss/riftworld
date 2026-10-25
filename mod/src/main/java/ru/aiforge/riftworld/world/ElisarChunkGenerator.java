@@ -884,10 +884,10 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             }
             tips.add(new double[]{bx, by, bz});
             // крона на конце ветви: облако листвы
-            crown(cols, put, bx, by, bz, 1.9 + r.nextDouble() * (sizo ? 0.9 : 0.5), r);
+            crown(cols, put, bx, by, bz, 2.2 + r.nextDouble() * (sizo ? 0.9 : 0.6), r);
         }
         // макушка
-        crown(cols, put, 0, trunkTop + 1.4, 0, (sizo ? 2.2 : 2.7) + r.nextDouble() * 0.5, r);
+        crown(cols, put, 0, trunkTop + 1.4, 0, (sizo ? 2.5 : 2.9) + r.nextDouble() * 0.5, r);
         return new TileBlueprint(cols);
     }
 
@@ -901,7 +901,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 for (int dy = -R; dy <= R; ++dy) {
                     double d = Math.sqrt(dx * dx + dy * dy * 1.35 + dz * dz);
                     if (d > radius) continue;
-                    if (d > radius - 0.9 && r.nextDouble() < 0.35) continue;      // рваный контур
+                    if (d > radius - 0.7 && r.nextDouble() < 0.22) continue;      // рваный контур, но крона плотная
                     put.accept(new int[]{(int) Math.round(cx) + dx, (int) Math.round(cy) + dy, (int) Math.round(cz) + dz}, 0);
                 }
             }

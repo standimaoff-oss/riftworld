@@ -8,7 +8,7 @@ on:
       - '.github/workflows/dt-build.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   jars:

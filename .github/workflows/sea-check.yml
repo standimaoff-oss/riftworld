@@ -44,6 +44,7 @@ jobs:
 
       - name: Build mod jar
         run: |
+          set -o pipefail   # без этого падение gradle маскировалось tee, и джоб шёл дальше «успешным»
           mkdir -p ci-out
           cd mod
           chmod +x gradlew

@@ -42,7 +42,10 @@ public final class SeaProbeCommand {
                 .executes(c -> run(c.getSource())));
         // Рев 11: /rifttree — ближайшее дерево Элисара и сколько у него ВЕТВЕЙ (проверка «не квадрат»)
         e.getDispatcher().register(Commands.literal("rifttree").requires(s -> s.hasPermission(2))
-                .executes(c -> tree(c.getSource())));
+                .executes(c -> tree(c.getSource(), null))
+                .then(Commands.argument("kind", com.mojang.brigadier.arguments.StringArgumentType.word())
+                        .executes(c -> tree(c.getSource(),
+                                com.mojang.brigadier.arguments.StringArgumentType.getString(c, "kind")))));
     }
 
     /**
@@ -51,7 +54,7 @@ public final class SeaProbeCommand {
      * сколько у дерева ВЕТВЕЙ (брёвен вне ствола) и листвы. Именно так CI проверяет, что дерево
      * не «сплошной квадрат», а растёт с ветками.
      */
-    private static int tree(CommandSourceStack src) {
+    private static int tree(CommandSourceStack src, String kindFilter) {
         ServerLevel level = src.getLevel();
         if (level.dimension() != Flight.ELISAR_DIM) {
             src.sendFailure(Component.literal("rifttree: only in riftworld:elisar"));
@@ -70,6 +73,10 @@ public final class SeaProbeCommand {
         int tries = 0;
         for (CityPlan.Tree t : cand) {
             if (t.kind == 2) continue;
+            if (kindFilter != null) {
+                String k = t.kind == 0 ? "sizo" : "ambra";
+                if (!k.equalsIgnoreCase(kindFilter)) continue;
+            }
             if (++tries > 60) break;                            // не бегаем по всему миру
             int b = t.baseY;
             if (b == Integer.MIN_VALUE) {
@@ -138,7 +145,7 @@ public final class SeaProbeCommand {
     private static int[] cameraSpot(ServerLevel level, int tx, int base, int tz, int camY) {
         int maxY = level.getMaxBuildHeight() - 4;
         int y = Math.min(camY, maxY);
-        int[] radii = {14, 18, 22, 26};
+        int[] radii = {11, 14, 18, 22, 26};
         for (int r : radii) {
             for (int i = 0; i < 16; ++i) {
                 double a = i * Math.PI / 8.0;
