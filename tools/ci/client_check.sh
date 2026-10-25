@@ -475,10 +475,17 @@ if [ -n "$TREE_AT" ]; then
   else
     log "  FAIL дерево неполное: ветвей ${BR2:-0}, листвы ${LV2:-0}"; FAILS=$((FAILS + 1))
   fi
-  # камера наводится на середину кроны: ствол + ветки + листва в одном кадре
-  lookat "$((TX + 14))" "$((TY + 8))" "$((TZ + 14))" "$TX" "$((TY + 3))" "$TZ" 16 "14_tree_branches"
-  lookat "$((TX + 22))" "$((TY + 11))" "$((TZ + 22))" "$TX" "$((TY + 4))" "$TZ" 14 "14c_tree_wide"
-  lookat "$((TX + 3))" "$((TY + 22))" "$((TZ + 12))" "$TX" "$((TY + 3))" "$TZ" 14 "14b_tree_top"
+  # камера смотрит из точки, которую нашла сама команда (cam/camtop): дерево может
+  # стоять между домами, и «наугад +14 по диагонали» упирается в стену
+  CAM=$(printf '%s' "$TREE2" | sed -n 's/.*cam=\([-0-9]*,[-0-9]*,[-0-9]*\).*/\1/p' | head -1)
+  CAMTOP=$(printf '%s' "$TREE2" | sed -n 's/.*camtop=\([-0-9]*,[-0-9]*,[-0-9]*\).*/\1/p' | head -1)
+  [ -n "$CAM" ] || CAM="$((TX + 16)),$((TY + 10)),$((TZ + 16))"
+  [ -n "$CAMTOP" ] || CAMTOP="$((TX + 4)),$((TY + 22)),$((TZ + 4))"
+  log "  камера дерева: cam=$CAM camtop=$CAMTOP"
+  lookat "${CAM%%,*}" "$(printf '%s' "$CAM" | cut -d, -f2)" "${CAM##*,}" \
+         "$TX" "$((TY + 3))" "$TZ" 16 "14_tree_branches"
+  lookat "${CAMTOP%%,*}" "$(printf '%s' "$CAMTOP" | cut -d, -f2)" "${CAMTOP##*,}" \
+         "$TX" "$((TY + 2))" "$TZ" 16 "14b_tree_top"
 else
   log "  FAIL /rifttree не ответила"; FAILS=$((FAILS + 1))
 fi

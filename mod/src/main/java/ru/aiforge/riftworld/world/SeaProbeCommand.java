@@ -117,11 +117,51 @@ public final class SeaProbeCommand {
             }
         }
         String kind = best.kind == 0 ? "sizo" : best.kind == SizoGrove.TREE_GIANT ? "giant" : "ambra";
+        // свободная точка для камеры: дерево может стоять между домами, поэтому ищем
+        // направление, откуда крона видна и где сама камера не внутри блока
+        int[] cam = cameraSpot(level, best.x, base, best.z, base + best.h + 6);
+        int[] camTop = cameraSpot(level, best.x, base, best.z, base + best.h + 16);
         String line = "rifttree at=" + best.x + "," + base + "," + best.z + " kind=" + kind + " h=" + best.h
                 + " logs=" + logs + " branches=" + branches + " leaves=" + leaves
-                + " dist=" + Math.round(bestD) + " loaded=" + level.hasChunk(best.x >> 4, best.z >> 4);
+                + " dist=" + Math.round(bestD) + " loaded=" + level.hasChunk(best.x >> 4, best.z >> 4)
+                + " cam=" + cam[0] + "," + cam[1] + "," + cam[2]
+                + " camtop=" + camTop[0] + "," + camTop[1] + "," + camTop[2];
         src.sendSuccess(() -> Component.literal(line), false);
         return 1;
+    }
+
+    /**
+     * Рев 11.13: точка обзора для камеры CI. Перебираем радиусы 14/18/22 и 16 направлений,
+     * требуем, чтобы столбик 5 блоков в точке был не занят и чтобы взгляд на ствол не упирался
+     * в стену. Если ничего не нашли — поднимаемся прямо над кроной.
+     */
+    private static int[] cameraSpot(ServerLevel level, int tx, int base, int tz, int camY) {
+        int maxY = level.getMaxBuildHeight() - 4;
+        int y = Math.min(camY, maxY);
+        int[] radii = {14, 18, 22, 26};
+        for (int r : radii) {
+            for (int i = 0; i < 16; ++i) {
+                double a = i * Math.PI / 8.0;
+                int cx = tx + (int) Math.round(r * Math.cos(a));
+                int cz = tz + (int) Math.round(r * Math.sin(a));
+                level.getChunk(cx >> 4, cz >> 4);
+                boolean clear = true;
+                for (int dy = -2; dy <= 2 && clear; ++dy) {
+                    BlockPos p = new BlockPos(cx, y + dy, cz);
+                    if (p.getY() <= level.getMinBuildHeight() || p.getY() >= level.getMaxBuildHeight()) { clear = false; break; }
+                    if (level.getBlockState(p).isSolidRender(level, p)) clear = false;
+                }
+                // линия взгляда на уровне камеры не должна проходить сквозь блоки
+                for (int s = 2; s <= r - 2 && clear; ++s) {
+                    int sx = tx + (int) Math.round((r - s) * Math.cos(a));
+                    int sz = tz + (int) Math.round((r - s) * Math.sin(a));
+                    BlockPos p = new BlockPos(sx, y, sz);
+                    if (level.getBlockState(p).isSolidRender(level, p)) clear = false;
+                }
+                if (clear) return new int[]{cx, y, cz};
+            }
+        }
+        return new int[]{tx, Math.min(base + 30, maxY), tz};
     }
 
     private static int run(CommandSourceStack src) {
