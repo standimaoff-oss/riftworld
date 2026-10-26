@@ -91,10 +91,16 @@ public final class CoralGrove {
         return ElisarSea.capState(ElisarSea.palette(x, z));
     }
 
-    /** Ствол и ветви — узкая колонна 6×16×6, а не полный куб. */
+    /**
+     * Ствол и ветви — узкая колонна 6×16×6, а не полный куб. У этих блоков НЕТ свойства {@code waterlogged}
+     * (это обычный Block), поэтому состояние берём как есть: попытка выставить waterlogged здесь
+     * валила генерацию чанка (IllegalArgumentException «Cannot set property …»).
+     */
     public static BlockState stem(int x, int z) {
         int p = ElisarSea.palette(x, z);
-        return st(p == 0 ? ElisarBlocks.CORAL_STEM_PINK : p == 1 ? ElisarBlocks.CORAL_STEM_TEAL : ElisarBlocks.CORAL_STEM_VIOLET);
+        RegistryObject<? extends Block> b = p == 0 ? ElisarBlocks.CORAL_STEM_PINK
+                : p == 1 ? ElisarBlocks.CORAL_STEM_TEAL : ElisarBlocks.CORAL_STEM_VIOLET;
+        return b.get().defaultBlockState();
     }
 
     /**
