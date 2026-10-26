@@ -70,7 +70,9 @@ rcon.password=$RCON_PW
 rcon.port=25575
 server-port=25565
 server-ip=
-level-type=minecraft\:normal
+# Рев 12.2: superflat — убираем ванильные биомы (deep_dark), в которых DT создаёт
+# feature order cycle. Elisar — кастомная размерность, работает независимо от overworld.
+level-type=minecraft\:flat
 level-seed=21122
 view-distance=6
 simulation-distance=5
