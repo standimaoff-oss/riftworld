@@ -25,14 +25,27 @@ if [ "${WITH_DT:-0}" = "1" ]; then
   [ -n "$DTJAR" ] && { cp -f "$DTJAR" "$SRV/mods/"; echo "  аддон: $(basename "$DTJAR")"; } \
     || echo "  WARN: аддон не собран (dtJar) — проверка DT будет пропущена"
   DTVER=$(sed -n 's/^dynamic_trees_version=//p' mod/gradle.properties 2>/dev/null | head -1)
-  DTMAIN=$(ls ~/.gradle/caches/modules-2/files-2.1/com.ferreusveritas.dynamictrees/DynamicTrees-*/*/DynamicTrees-*.jar 2>/dev/null \
-             | grep -v -e sources | head -1)
+  # DT deobf-jar лежит в forge_gradle/deobf_dependencies, а не в modules-2
+  DTMAIN=$(find ~/.gradle/caches/forge_gradle/deobf_dependencies/com/ferreusveritas/dynamictrees \
+             -name 'DynamicTrees-*.jar' 2>/dev/null | grep -v -e sources | head -1)
+  # Fallback: modules-2 cache
   if [ -z "$DTMAIN" ]; then
+    DTMAIN=$(find ~/.gradle/caches/modules-2/files-2.1/com.ferreusveritas.dynamictrees \
+               -name 'DynamicTrees-*.jar' 2>/dev/null | grep -v -e sources | head -1)
+  fi
+  # Fallback: скачиваем из публичного maven
+  if [ -z "$DTMAIN" ]; then
+    echo "  DT jar не найден в gradle cache — скачиваем из maven (DT ${DTVER})..."
     curl -fsSL -o "$SRV/mods/dynamictrees.jar" \
       "https://harleyoconnor.com/maven/com/ferreusveritas/dynamictrees/DynamicTrees-1.20.1/DynamicTrees-1.20.1-${DTVER}.jar" \
       && DTMAIN="$SRV/mods/dynamictrees.jar" || echo "  WARN: Dynamic Trees jar не скачался"
   fi
-  [ -n "$DTMAIN" ] && [ -f "$DTMAIN" ] && echo "  Dynamic Trees: $(basename "$DTMAIN")"
+  if [ -n "$DTMAIN" ] && [ -f "$DTMAIN" ]; then
+    cp -f "$DTMAIN" "$SRV/mods/" 2>/dev/null || true
+    echo "  Dynamic Trees: $(basename "$DTMAIN")"
+  else
+    echo "  FATAL: Dynamic Trees jar недоступен — сервер не запустится с аддоном"
+  fi
 fi
 
 if [ ! -f "$SRV/libraries/net/minecraftforge/forge/$FORGE/unix_args.txt" ]; then
