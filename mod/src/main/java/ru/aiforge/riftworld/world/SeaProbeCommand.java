@@ -208,9 +208,10 @@ public final class SeaProbeCommand {
                         ++air;
                         // Рев 12: воздух, над которым СРАЗУ вода, — это «пузырь в толще воды»,
                         // именно он читался на скриншотах как странная дырка. Воздух у свода — норма.
-                        BlockState up = level.getBlockState(new BlockPos(x, y + 1, z));
+                        BlockPos upPos = new BlockPos(x, y + 1, z);
+                        BlockState up = level.getBlockState(upPos);
                         if (up.is(ElisarBlocks.WATER.get())) ++floatAir;
-                        if (y >= f - 9) ++ceilAir;
+                        else if (up.isSolidRender(level, upPos)) ++ceilAir;   // воздух под камнем — карман у свода
                     }
                 }
                 wetCells += wet;

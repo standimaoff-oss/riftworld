@@ -93,6 +93,64 @@ public final class ElisarSea {
     }
 
     /**
+     * Кромка дна: 46–58 блоков воды в норме, желоба до −16 и впадины до −22 от неё.
+     *
+     * @param sea уровень моря ({@code plan.ocean})
+     */
+    public static int floor(int x, int z, int sea) {
+        double n = vnoise(x * 0.016, z * 0.016, 77) * 0.52 + vnoise(x * 0.045, z * 0.045, 78) * 0.24
+                + vnoise(x * 0.095, z * 0.095, 79) * 0.14 + vnoise(x * 0.21, z * 0.21, 80) * 0.10;
+        int f = sea - 45 - (int) Math.round(n * 13);
+        f += duneRipple(x, z);                     // песчаная рябь: волны по 8-14 блоков
+        f += boulder(x, z);                        // редкие валуны на дне
+        f -= trenchDepth(x, z);
+        f -= pitDepth(x, z);
+        return Math.max(DEEPEST_FLOOR, f);
+    }
+
+    /**
+     * Песчаные дюны: вытянутые волны высотой ±1..2 блока. Без них ровные участки дна читаются
+     * как бетонные плиты (замечание по скриншотам Рев 10, партия 1).
+     */
+    static int duneRipple(int x, int z) {
+        double warp = vnoise(x * 0.018, z * 0.018, 483) * 7.0;
+        double phase = (x * 0.62 + z * 0.42) * 0.30 + warp;
+        double amp = 0.55 + 0.85 * vnoise(x * 0.010, z * 0.010, 484);       // где-то дюны выше
+        return (int) Math.round(Math.sin(phase) * amp);
+    }
+
+    /** Валун: редкий каменный бугор 1–3 блока на сетке 19×19 (щебень, замшелый камень). */
+    static int boulder(int x, int z) {
+        int gx = Math.floorDiv(x, 19), gz = Math.floorDiv(z, 19);
+        if (hash(gx, gz, 485) > 0.34) return 0;
+        double cx = gx * 19 + 3 + hash(gx, gz, 486) * 13, cz = gz * 19 + 3 + hash(gx, gz, 487) * 13;
+        double r = 1.6 + hash(gx, gz, 488) * 2.6;
+        double d = Math.hypot(x + 0.5 - cx, z + 0.5 - cz);
+        if (d >= r) return 0;
+        return (int) Math.round((1.0 - d / r) * (1.0 + hash(gx, gz, 489) * 2.2));
+    }
+
+    // ------------------------------------------------------------------ пещеры
+    /**
+     * «Пещерность» точки: > 0 — внутри полости. Два уровня туннелей-червей (мелкий у дна и глубокий лабиринт)
+     * плюс залы-гроты. Чем глубже, тем шире ходы — так глубина читается силуэтом.
+     */
+    static double caveValue(int x, int y, int z, int floor) {
+        double deep = Math.max(0, Math.min(1, (floor - y) / 58.0));
+        // ходы: изолиния двух 3D-шумов (пересечение «трубы»), масштаб реже с глубиной
+        double s = 0.028 + 0.012 * deep;
+        double w1 = vnoise3(x * s, y * 0.048, z * s, 431);
+        double w2 = vnoise3(x * s, y * 0.048, z * s, 432);
+        double d = Math.hypot(w1 - 0.5, w2 - 0.5);
+        double width = 0.086 + 0.070 * deep + 0.034 * vnoise3(x * 0.008, y * 0.011, z * 0.008, 433);
+        double tunnel = width - d;
+        if (tunnel > 0) return tunnel;
+        // залы: отдельный шум, чем глубже — тем охотнее раскрывается
+        double hall = vnoise3(x * 0.022, y * 0.038, z * 0.022, 434);
+        return (hall - (0.745 - 0.045 * deep)) * 0.5;
+    }
+
+    /**
      * Рев 11 — ВОДА ПО НАПРАВЛЕНИЮ ХОДА, а не «случайная заливка».
      *
      * <p>Раньше воздух в пещерах ставился одним 3D-шумом: полости были заполнены как попало,
@@ -118,11 +176,9 @@ public final class ElisarSea {
         // 3) КАРМАН У СВОДА. Воздух стоит только в верхних 3 блоках полости — там, где до потолка
         //    рукой подать. Раньше шум давал «пузыри» в середине затопленного хода, и это читалось
         //    как дырка в воде; теперь воздух всегда прижат к камню сверху.
-        int ceil = ceilingGap(x, y, z, floor);
-        if (ceil > 3) return false;
-        double n = vnoise3(x * 0.043, y * 0.062, z * 0.043, 435);
-        // наклонный сквозной ход почти весь в воде, горизонтальный — с редкими карманами
-        return up ? n > 0.30 : n > 0.52;
+        if (ceilingGap(x, y, z, floor) > 3) return false;
+        // восходящий тупик — почти всегда с воздушной пробкой; горизонтальный ход — редко
+        return up ? ceilingPocket(x, y, z) : airPocket(x, y, z);
     }
 
     /**
