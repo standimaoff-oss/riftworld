@@ -85,7 +85,10 @@ public class SeaPlantBlock extends BushBlock implements SimpleWaterloggedBlock {
                 || below.is(ElisarBlocks.STAGHORN_CORAL.get()) || below.is(ElisarBlocks.FEATHER_CORAL.get())
                 || below.is(ElisarBlocks.SEA_WHIP.get()) || below.is(ElisarBlocks.TABLE_CORAL.get())
                 || below.is(ElisarBlocks.TUBE_SPONGE_CLUSTER.get()) || below.is(ElisarBlocks.RIBBON_CORAL.get())
-                || below.is(ElisarBlocks.COBBLE.get());
+                || below.is(ElisarBlocks.COBBLE.get())
+                // Рев 12: коралловые деревья — крестики-украшения стоят на стволах, ветвях и шапках
+                || below.is(ElisarBlocks.CORAL_STEM_PINK.get()) || below.is(ElisarBlocks.CORAL_STEM_TEAL.get())
+                || below.is(ElisarBlocks.CORAL_STEM_VIOLET.get());
     }
 
     @Override

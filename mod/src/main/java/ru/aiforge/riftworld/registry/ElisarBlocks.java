@@ -168,6 +168,16 @@ public final class ElisarBlocks {
     public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> RIBBON_CORAL =
             ModBlocks.reg("ribbon_coral", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant().lightLevel(s -> 7)));
 
+    // ----- Рев 12: СТВОЛЫ коралловых деревьев. Раньше ствол и ветви складывались из полных кубов
+    // шапок — на скриншотах это читалось как «стопка блоков», а не как растение. Ствол — узкая
+    // колонна 6x16x6 (своя модель, не полный куб), поэтому силуэт ветви читается.
+    public static final RegistryObject<Block> CORAL_STEM_PINK = ModBlocks.reg("coral_stem_pink", () -> new Block(
+            BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_PINK).strength(1.0F).sound(SoundType.CORAL_BLOCK).noOcclusion()));
+    public static final RegistryObject<Block> CORAL_STEM_TEAL = ModBlocks.reg("coral_stem_teal", () -> new Block(
+            BlockBehaviour.Properties.of().mapColor(MapColor.WARPED_WART_BLOCK).strength(1.0F).sound(SoundType.CORAL_BLOCK).noOcclusion()));
+    public static final RegistryObject<Block> CORAL_STEM_VIOLET = ModBlocks.reg("coral_stem_violet", () -> new Block(
+            BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_PURPLE).strength(1.0F).sound(SoundType.CORAL_BLOCK).noOcclusion()));
+
     // ----- Рев 12: коралловая листва для аддона Dynamic Trees.
     // DT генерирует собственный блок листьев и берёт модель у «примитивного» блока, поэтому нужен
     // обычный LeavesBlock с готовой текстурой — иначе коралловое дерево рендерится пустым кубом.

@@ -171,13 +171,13 @@ public final class ElisarSea {
         //    восходящий тупик — наоборот, воздушная пробка.
         boolean down = cave(x, y - 4, z, floor);
         boolean up = cave(x, y + 4, z, floor);
-        if (down && !up) return false;
-        if (up && !down) return true;
+        if (down && !up) return false;                     // нисходящий ход — всегда в воде
         // 3) КАРМАН У СВОДА. Воздух стоит только в верхних 3 блоках полости — там, где до потолка
         //    рукой подать. Раньше шум давал «пузыри» в середине затопленного хода, и это читалось
         //    как дырка в воде; теперь воздух всегда прижат к камню сверху.
         if (ceilingGap(x, y, z, floor) > 3) return false;
-        // восходящий тупик — почти всегда с воздушной пробкой; горизонтальный ход — редко
+        if (up && !down) return true;                      // запечатанный восходящий тупик: пробка воздуха
+        // наклонный/горизонтальный ход — редкие карманы у самого свода
         return up ? ceilingPocket(x, y, z) : airPocket(x, y, z);
     }
 
@@ -388,7 +388,7 @@ public final class ElisarSea {
                 if (!chunk.getBlockState(mp.set(x, y + i - 1, z)).is(ElisarBlocks.WATER.get())) { body = false; break; }
             }
             if (body) {
-                BlockState bodyState = CoralGrove.body(x, z);
+                BlockState bodyState = span.stem() ? CoralGrove.stem(x, z) : CoralGrove.body(x, z);
                 for (int i = span.from(); i <= span.to(); ++i) chunk.setBlockState(mp.set(x, y + i - 1, z), bodyState, false);
                 BlockState tip = CoralGrove.tipAt(x, z, span.to());
                 if (tip != null && chunk.getBlockState(mp.set(x, y + span.to(), z)).is(ElisarBlocks.WATER.get())) {
@@ -454,12 +454,20 @@ public final class ElisarSea {
             chunk.setBlockState(mp.set(x, y, z), st(ElisarBlocks.SEA_GRASS), false);
             return;
         }
-        // ламинария — колоннами, до самого света
+        // ламинария — колоннами, до самого света. Рев 12: колонна растёт ТОЛЬКО в воде и только пока
+        // над ней вода: раньше она перезаписывала камень и висела в пещерах бирюзовыми штырями.
         if (vnoise(x * 0.05, z * 0.05, 465) > 0.66 && reef < 0.35) {
             int h = 4 + (int) (hash(x, z, 466) * 8);
+            int placed = 0;
             for (int i = 0; i < h; ++i) {
-                BlockState s = i == h - 1 ? st(ElisarBlocks.SEA_KELP_TOP) : st(ElisarBlocks.SEA_KELP);
-                chunk.setBlockState(mp.set(x, y + i, z), s, false);
+                if (!chunk.getBlockState(mp.set(x, y + i, z)).is(ElisarBlocks.WATER.get())) break;
+                ++placed;
+            }
+            if (placed >= 2) {
+                for (int i = 0; i < placed; ++i) {
+                    BlockState kelp = i == placed - 1 ? st(ElisarBlocks.SEA_KELP_TOP) : st(ElisarBlocks.SEA_KELP);
+                    chunk.setBlockState(mp.set(x, y + i, z), kelp, false);
+                }
             }
         }
     }

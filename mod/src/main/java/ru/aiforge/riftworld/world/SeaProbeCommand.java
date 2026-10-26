@@ -329,7 +329,10 @@ public final class SeaProbeCommand {
         return s.is(ElisarBlocks.CORAL_CAP_PINK.get()) || s.is(ElisarBlocks.CORAL_CAP_TEAL.get())
                 || s.is(ElisarBlocks.CORAL_CAP_VIOLET.get())
                 || s.is(ElisarBlocks.CORAL_FOLIAGE_PINK.get()) || s.is(ElisarBlocks.CORAL_FOLIAGE_TEAL.get())
-                || s.is(ElisarBlocks.CORAL_FOLIAGE_VIOLET.get());
+                || s.is(ElisarBlocks.CORAL_FOLIAGE_VIOLET.get())
+                // Рев 12: стволы/ветви коралловых деревьев (узкие колонны)
+                || s.is(ElisarBlocks.CORAL_STEM_PINK.get()) || s.is(ElisarBlocks.CORAL_STEM_TEAL.get())
+                || s.is(ElisarBlocks.CORAL_STEM_VIOLET.get());
     }
 
     private static boolean isCoral(BlockState s) {

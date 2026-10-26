@@ -353,5 +353,8 @@
   "block.riftworld.ribbon_coral": "Ленточный коралл",
   "block.riftworld.coral_foliage_pink": "Розовая коралловая листва",
   "block.riftworld.coral_foliage_teal": "Бирюзовая коралловая листва",
-  "block.riftworld.coral_foliage_violet": "Фиолетовая коралловая листва"
+  "block.riftworld.coral_foliage_violet": "Фиолетовая коралловая листва",
+  "block.riftworld.coral_stem_pink": "Розовый коралловый ствол",
+  "block.riftworld.coral_stem_teal": "Бирюзовый коралловый ствол",
+  "block.riftworld.coral_stem_violet": "Фиолетовый коралловый ствол"
 }
