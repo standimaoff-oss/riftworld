@@ -178,7 +178,7 @@ public final class SeaProbeCommand {
      * Рев 12: БЛИЗКАЯ точка съёмки — коралл должен занимать кадр, а не быть точкой вдали.
      * Перебираем радиусы 6–14 и 16 направлений, проверяем свободный столбик камеры и прямую видимость.
      */
-    private static int[] closeSpot(ServerLevel level, int tx, int y, int tz, int[] radii) {
+    private static int[] closeSpot(ServerLevel level, int tx, int y, int tz, int[] radii, int lookY) {
         for (int r : radii) {
             for (int i = 0; i < 16; ++i) {
                 double a = i * Math.PI / 8.0;
@@ -191,10 +191,13 @@ public final class SeaProbeCommand {
                     if (p.getY() <= level.getMinBuildHeight() || p.getY() >= level.getMaxBuildHeight()) { clear = false; break; }
                     if (blocked(level.getBlockState(p))) clear = false;
                 }
-                for (int s = 1; s <= r - 1 && clear; ++s) {
-                    int sx = tx + (int) Math.round(s * Math.cos(a));
-                    int sz = tz + (int) Math.round(s * Math.sin(a));
-                    if (blocked(level.getBlockState(new BlockPos(sx, y, sz)))) clear = false;
+                // линия взгляда в 3D: 10 точек от камеры до цели должны быть свободны
+                for (int s = 1; s <= 10 && clear; ++s) {
+                    double t = s / 11.0;
+                    int sx = (int) Math.round(cx + (tx - cx) * t);
+                    int sy = (int) Math.round(y + (lookY - y) * t);
+                    int sz = (int) Math.round(cz + (tz - cz) * t);
+                    if (blocked(level.getBlockState(new BlockPos(sx, sy, sz)))) clear = false;
                 }
                 if (clear) return new int[]{cx, y, cz};
             }
@@ -349,9 +352,10 @@ public final class SeaProbeCommand {
                 if (col) ++cols;
             }
         }
-        int midY = bf + Math.max(3, bestH / 2 + 1);
-        int[] cam = closeSpot(level, bx, midY, bz, new int[]{7, 9, 11, 14});
-        int[] camlow = closeSpot(level, bx, bf + 2, bz, new int[]{6, 8, 10, 13});
+        // 3/4 сверху: растение целиком видно на фоне воды; снизу — чтобы читались ствол и ветви
+        int topY = bf + bestH + 4;
+        int[] cam = closeSpot(level, bx, topY, bz, new int[]{9, 11, 14, 18}, bf + bestH / 2);
+        int[] camlow = closeSpot(level, bx, bf + 2, bz, new int[]{7, 9, 12, 15}, bf + bestH / 2);
         String line = "riftcoral at=" + bx + "," + (bf + 1) + "," + bz + " h=" + bestH
                 + " blocks=" + blocks + " cols=" + cols + " tips=" + tips
                 + " floor=" + bf + " sea=" + sea
