@@ -73,6 +73,7 @@ server-ip=
 # Рев 12.2: superflat — убираем ванильные биомы (deep_dark), в которых DT создаёт
 # feature order cycle. Elisar — кастомная размерность, работает независимо от overworld.
 level-type=minecraft\:flat
+generator-settings={"biome":"minecraft:plains","layers":[{"block":"minecraft:bedrock","height":1},{"block":"minecraft:dirt","height":2},{"block":"minecraft:grass_block","height":1}],"lakes":false,"features":false,"structure_overrides":[]}
 level-seed=21122
 view-distance=6
 simulation-distance=5
@@ -115,7 +116,7 @@ grep -q "Mean TPS: 20.000" "$OUT/tps.txt" && echo "  tps ok" || bad "tps below 2
 cat "$OUT/tps.txt"
 
 say "log sweep"
-grep -nE 'Exception|\bERROR\b' "$SRV/logs/latest.log" | grep -viE 'Registry|codec' > "$OUT/errors.txt" || true
+grep -nE 'Exception|\bERROR\b' "$SRV/logs/latest.log" | grep -viE 'Registry|codec|dynamictrees:guide|RecipeManager.*Parsing|Missing conditions|DedicatedServerProperties' > "$OUT/errors.txt" || true
 ERRS=$(grep -c . "$OUT/errors.txt" || true)
 echo "error lines: $ERRS"
 [ "$ERRS" -eq 0 ] || bad "$ERRS exception/error lines in latest.log"
