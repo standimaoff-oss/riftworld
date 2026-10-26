@@ -1,1 +1,7 @@
-{ "primitive_soil": "riftworld:elisar_grass", "substitute_soil": "minecraft:grass_block" }
+{
+  "primitive_soil": "riftworld:elisar_grass",
+  "acceptable_soils": [
+    "dirt_like"
+  ],
+  "only_if_loaded": "riftworld"
+}

@@ -1,5 +1,6 @@
 {
   "primitive_leaves": "riftworld:ambra_leaves",
-  "cell_kit": "deciduous",
-  "smother": 6
+  "cell_kit": "dynamictrees:deciduous",
+  "smother": 4,
+  "only_if_loaded": "riftworld"
 }

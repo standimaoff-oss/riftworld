@@ -1,0 +1,7 @@
+{
+  "parent": "dynamictrees:item/branch",
+  "textures": {
+    "bark": "riftworld:block/coral_cap_teal",
+    "rings": "riftworld:block/coral_cap_pink"
+  }
+}

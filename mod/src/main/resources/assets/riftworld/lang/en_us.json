@@ -350,5 +350,8 @@
   "block.riftworld.sea_whip": "Sea Whip",
   "block.riftworld.table_coral": "Table Coral",
   "block.riftworld.tube_sponge_cluster": "Tube Sponge Cluster",
-  "block.riftworld.ribbon_coral": "Ribbon Coral"
+  "block.riftworld.ribbon_coral": "Ribbon Coral",
+  "block.riftworld.coral_foliage_pink": "Pink Coral Foliage",
+  "block.riftworld.coral_foliage_teal": "Teal Coral Foliage",
+  "block.riftworld.coral_foliage_violet": "Violet Coral Foliage"
 }

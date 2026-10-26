@@ -350,5 +350,8 @@
   "block.riftworld.sea_whip": "Морской хлыст",
   "block.riftworld.table_coral": "Столовидный коралл",
   "block.riftworld.tube_sponge_cluster": "Гроздь трубчатых губок",
-  "block.riftworld.ribbon_coral": "Ленточный коралл"
+  "block.riftworld.ribbon_coral": "Ленточный коралл",
+  "block.riftworld.coral_foliage_pink": "Розовая коралловая листва",
+  "block.riftworld.coral_foliage_teal": "Бирюзовая коралловая листва",
+  "block.riftworld.coral_foliage_violet": "Фиолетовая коралловая листва"
 }

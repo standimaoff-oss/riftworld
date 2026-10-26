@@ -106,74 +106,51 @@ public final class ElisarSea {
      * Всё считается по аналитическому полю пещер, поэтому на границах чанков решение не рвётся.
      */
     static boolean dryPocket(int x, int y, int z, int floor) {
-        boolean up = cave(x, y + 3, z, floor);
-        boolean down = cave(x, y - 3, z, floor);
-        // сверху приходит вода: колодец рядом или дно этой колонки пробито (тот же хеш, что и у дыры в дне)
-        boolean fed = blueHole(x, y + 2, z, floor) || (y > floor - 22 && hash(x, z, 454) < 0.18);
+        // 1) СВЯЗЬ С МОРЕМ. Воздух держится только в полости, которую сверху закрывает порода:
+        //    если над клеткой идёт непрерывный ход до самого дна/колодца, вода туда опустится.
+        if (openAbove(x, y, z, floor)) return false;
+        // 2) НАПРАВЛЕНИЕ ХОДА. Нисходящий ход всегда полон воды (воздух всплывает),
+        //    восходящий тупик — наоборот, воздушная пробка.
+        boolean down = cave(x, y - 4, z, floor);
+        boolean up = cave(x, y + 4, z, floor);
+        if (down && !up) return false;
+        if (up && !down) return true;
+        // 3) КАРМАН У СВОДА. Воздух стоит только в верхних 3 блоках полости — там, где до потолка
+        //    рукой подать. Раньше шум давал «пузыри» в середине затопленного хода, и это читалось
+        //    как дырка в воде; теперь воздух всегда прижат к камню сверху.
+        int ceil = ceilingGap(x, y, z, floor);
+        if (ceil > 3) return false;
         double n = vnoise3(x * 0.043, y * 0.062, z * 0.043, 435);
-        if (fed) return false;                     // залив сверху — карману не удержаться
-        if (down && !up) return false;             // нисходящий ход: полностью в воде
-        if (up && !down) return n < 0.25;          // восходящий тупик: воздушная пробка
-        if (up) return n > 0.66;                   // наклонный сквозной ход: редкие пробки у свода
-        return n > 0.45;                           // горизонтальный ход: иногда неполный
+        // наклонный сквозной ход почти весь в воде, горизонтальный — с редкими карманами
+        return up ? n > 0.30 : n > 0.52;
     }
 
     /**
-     * Кромка дна: 46–58 блоков воды в норме, желоба до −16 и впадины до −22 от неё.
-     *
-     * @param sea уровень моря ({@code plan.ocean})
+     * Есть ли над клеткой сплошной проход до открытой воды (дно пробито, колодец «синей дыры»
+     * или ход выходит к кромке дна). Идём вверх до первого камня; если камень встретился раньше,
+     * чем ход дошёл до верха зоны пещер, — полость запечатана.
      */
-    public static int floor(int x, int z, int sea) {
-        double n = vnoise(x * 0.016, z * 0.016, 77) * 0.52 + vnoise(x * 0.045, z * 0.045, 78) * 0.24
-                + vnoise(x * 0.095, z * 0.095, 79) * 0.14 + vnoise(x * 0.21, z * 0.21, 80) * 0.10;
-        int f = sea - 45 - (int) Math.round(n * 13);
-        f += duneRipple(x, z);                     // песчаная рябь: волны по 8-14 блоков
-        f += boulder(x, z);                        // редкие валуны на дне
-        f -= trenchDepth(x, z);
-        f -= pitDepth(x, z);
-        return Math.max(DEEPEST_FLOOR, f);
+    static boolean openAbove(int x, int y, int z, int floor) {
+        int top = floor - 6;                       // выше этой линии полостей не бывает
+        for (int yy = y + 1; yy <= top; ++yy) {
+            if (blueHole(x, yy, z, floor)) return true;
+            if (!cave(x, yy, z, floor)) return false;   // камень над головой — полость запечатана
+        }
+        // ход непрерывен до самого верха зоны пещер: вода придёт, только если дно здесь пробито
+        return roofOpen(x, z, floor) || blueHole(x, top + 1, z, floor);
     }
 
-    /**
-     * Песчаные дюны: вытянутые волны высотой ±1..2 блока. Без них ровные участки дна читаются
-     * как бетонные плиты (замечание по скриншотам Рев 10, партия 1).
-     */
-    static int duneRipple(int x, int z) {
-        double warp = vnoise(x * 0.018, z * 0.018, 483) * 7.0;
-        double phase = (x * 0.62 + z * 0.42) * 0.30 + warp;
-        double amp = 0.55 + 0.85 * vnoise(x * 0.010, z * 0.010, 484);       // где-то дюны выше
-        return (int) Math.round(Math.sin(phase) * amp);
+    /** Пробито ли дно этой колонки (тот же хеш, что и у заливки свода в {@link #column}). */
+    static boolean roofOpen(int x, int z, int floor) {
+        return hash(x, z, 454) < 0.18;
     }
 
-    /** Валун: редкий каменный бугор 1–3 блока на сетке 19×19 (щебень, замшелый камень). */
-    static int boulder(int x, int z) {
-        int gx = Math.floorDiv(x, 19), gz = Math.floorDiv(z, 19);
-        if (hash(gx, gz, 485) > 0.34) return 0;
-        double cx = gx * 19 + 3 + hash(gx, gz, 486) * 13, cz = gz * 19 + 3 + hash(gx, gz, 487) * 13;
-        double r = 1.6 + hash(gx, gz, 488) * 2.6;
-        double d = Math.hypot(x + 0.5 - cx, z + 0.5 - cz);
-        if (d >= r) return 0;
-        return (int) Math.round((1.0 - d / r) * (1.0 + hash(gx, gz, 489) * 2.2));
-    }
-
-    // ------------------------------------------------------------------ пещеры
-    /**
-     * «Пещерность» точки: > 0 — внутри полости. Два уровня туннелей-червей (мелкий у дна и глубокий лабиринт)
-     * плюс залы-гроты. Чем глубже, тем шире ходы — так глубина читается силуэтом.
-     */
-    static double caveValue(int x, int y, int z, int floor) {
-        double deep = Math.max(0, Math.min(1, (floor - y) / 58.0));
-        // ходы: изолиния двух 3D-шумов (пересечение «трубы»), масштаб реже с глубиной
-        double s = 0.028 + 0.012 * deep;
-        double w1 = vnoise3(x * s, y * 0.048, z * s, 431);
-        double w2 = vnoise3(x * s, y * 0.048, z * s, 432);
-        double d = Math.hypot(w1 - 0.5, w2 - 0.5);
-        double width = 0.086 + 0.070 * deep + 0.034 * vnoise3(x * 0.008, y * 0.011, z * 0.008, 433);
-        double tunnel = width - d;
-        if (tunnel > 0) return tunnel;
-        // залы: отдельный шум, чем глубже — тем охотнее раскрывается
-        double hall = vnoise3(x * 0.022, y * 0.038, z * 0.022, 434);
-        return (hall - (0.745 - 0.045 * deep)) * 0.5;
+    /** Сколько блоков до каменного свода полости (0 — клетка сама у свода). */
+    static int ceilingGap(int x, int y, int z, int floor) {
+        for (int d = 1; d <= 3; ++d) {
+            if (!cave(x, y + d, z, floor)) return d - 1;
+        }
+        return 99;
     }
 
     /** Воздушный карман: у свода полости, задаётся отдельным шумом (там можно вдохнуть). */
@@ -280,17 +257,17 @@ public final class ElisarSea {
     // ------------------------------------------------------------------ рифовый сад на дне
     /** Сад и убранство: ставится после воды, чтобы видеть итоговый блок под растением. */
     public static void decorate(ChunkAccess chunk, BlockPos.MutableBlockPos mp, int x, int z, int floor, int sea) {
-        garden(chunk, mp, x, z, floor, reefness(x, z));
+        garden(chunk, mp, x, z, floor, sea, reefness(x, z));
         caveDressing(chunk, mp, x, z, floor);
     }
 
     /** Палитра рифовой зоны: 0 — розовая, 1 — бирюзовая, 2 — фиолетовая (пятнами по 48 блоков). */
-    private static int palette(int x, int z) {
+    static int palette(int x, int z) {
         double h = hash(Math.floorDiv(x, 48), Math.floorDiv(z, 48), 476);
         return h < 0.38 ? 0 : h < 0.72 ? 1 : 2;
     }
 
-    private static BlockState cap(int p) {
+    static BlockState capState(int p) {
         return p == 0 ? st(ElisarBlocks.CORAL_CAP_PINK) : p == 1 ? st(ElisarBlocks.CORAL_CAP_TEAL) : st(ElisarBlocks.CORAL_CAP_VIOLET);
     }
 
@@ -310,11 +287,16 @@ public final class ElisarSea {
         };
     }
 
+    /** Высота рифового холма в точке (0 — между холмами). Нужна посадкам коралловых деревьев. */
+    static int moundHeightAt(int x, int z) {
+        return moundHeight(x, z, reefness(x, z));
+    }
+
     /**
      * Высота рифового купола в точке: 0 — между холмами. Пики живут на сетке 13×13 со случайным сдвигом,
      * высота спадает по параболе от пика, поэтому сад читается округлыми буграми, а не ступенчатыми плато.
      */
-    private static int moundHeight(int x, int z, double reef) {
+    static int moundHeight(int x, int z, double reef) {
         int gx = Math.floorDiv(x, 13), gz = Math.floorDiv(z, 13);
         double best = 0;
         for (int ax = -1; ax <= 1; ++ax) {
@@ -337,9 +319,28 @@ public final class ElisarSea {
         return best < 0.75 ? 0 : (int) Math.min(5, Math.round(best));
     }
 
-    private static void garden(ChunkAccess chunk, BlockPos.MutableBlockPos mp, int x, int z, int floor, double reef) {
+    private static void garden(ChunkAccess chunk, BlockPos.MutableBlockPos mp, int x, int z, int floor, int sea, double reef) {
         int y = floor + 1;
         if (y > 60) return;
+        // Рев 12: КОРАЛЛОВЫЕ ДЕРЕВЬЯ. Растение занимает несколько колонок (см. CoralGrove) и ставится
+        // раньше всей прочей декорации: если в этой колонке есть ствол/ветвь/плита, она забирает место.
+        int room = sea - 3 - y;                             // сколько блоков до поверхности моря остаётся
+        CoralGrove.Span span = CoralGrove.spanAt(x, z, room);
+        if (span != null) {
+            boolean body = true;
+            for (int i = span.from(); i <= span.to(); ++i) {
+                if (!chunk.getBlockState(mp.set(x, y + i - 1, z)).is(ElisarBlocks.WATER.get())) { body = false; break; }
+            }
+            if (body) {
+                BlockState bodyState = CoralGrove.body(x, z);
+                for (int i = span.from(); i <= span.to(); ++i) chunk.setBlockState(mp.set(x, y + i - 1, z), bodyState, false);
+                BlockState tip = CoralGrove.tipAt(x, z, span.to());
+                if (tip != null && chunk.getBlockState(mp.set(x, y + span.to(), z)).is(ElisarBlocks.WATER.get())) {
+                    chunk.setBlockState(mp.set(x, y + span.to(), z), tip, false);
+                }
+                return;
+            }
+        }
         BlockState below = chunk.getBlockState(mp.set(x, floor, z));
         if (!below.is(ElisarBlocks.SEABED.get()) && !below.is(ElisarBlocks.SILT.get()) && !below.is(ElisarBlocks.REEF_STONE.get())
                 && !below.is(ElisarBlocks.CORAL_BRAIN.get()) && !below.is(ElisarBlocks.COBBLE.get())) return;
@@ -356,7 +357,7 @@ public final class ElisarSea {
             if (h > 0) {
                 boolean stacked = true;
                 for (int i = 0; i < h; ++i) {
-                    if (chunk.getBlockState(mp.set(x, y + i, z)).is(ElisarBlocks.WATER.get())) chunk.setBlockState(mp.set(x, y + i, z), cap(pal), false);
+                    if (chunk.getBlockState(mp.set(x, y + i, z)).is(ElisarBlocks.WATER.get())) chunk.setBlockState(mp.set(x, y + i, z), capState(pal), false);
                     else { stacked = false; break; }
                 }
                 if (stacked) {

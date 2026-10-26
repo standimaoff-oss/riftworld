@@ -184,7 +184,7 @@ RREEF=$(riftsea_field floor)             # настоящая кромка дн�
 [ "$RREEF" != "0" ] && RF=$RREEF
 SEA_RAW=$(RCON execute in riftworld:elisar at TestPlayer run riftsea 2>&1 | tr -d '\r' | tr '\n' ' ')
 echo "  /riftsea -> ${SEA_RAW:0:400}"
-read -r SEA_FLOOR SEA_WATER SEA_MIN SEA_CAVES SEA_WET SEA_AIR SEA_PLANTS SEA_CORALS CAVE_X CAVE_Y CAVE_Z < <(python3 - "$SEA_RAW" <<'PYEOF'
+read -r SEA_FLOOR SEA_WATER SEA_MIN SEA_CAVES SEA_WET SEA_AIR SEA_FLOAT SEA_CEIL SEA_PLANTS SEA_CORALS CAVE_X CAVE_Y CAVE_Z < <(python3 - "$SEA_RAW" <<'PYEOF'
 import re, sys
 s = sys.argv[1] if len(sys.argv) > 1 else ""
 def g(k, d="0"):
@@ -192,11 +192,11 @@ def g(k, d="0"):
     return m.group(1) if m else d
 c = re.search(r"caveat=(-?\d+),(-?\d+),(-?\d+)", s)
 cx, cy, cz = c.groups() if c else ("0", "0", "0")
-print(g("floor"), g("water"), g("min"), g("caves"), g("wet"), g("air"), g("plants"), g("corals"), cx, cy, cz)
+print(g("floor"), g("water"), g("min"), g("caves"), g("wet"), g("air"), g("float"), g("ceilair"), g("plants"), g("corals"), cx, cy, cz)
 PYEOF
 )
 log "  /riftsea raw: ${SEA_RAW:0:600}"
-echo "  дно=$SEA_FLOOR вода=$SEA_WATER min=$SEA_MIN | пещеры: колонок=$SEA_CAVES воды=$SEA_WET воздуха=$SEA_AIR | растения=$SEA_PLANTS кораллы=$SEA_CORALS | пещера=$CAVE_X,$CAVE_Y,$CAVE_Z"
+echo "  дно=$SEA_FLOOR вода=$SEA_WATER min=$SEA_MIN | пещеры: колонок=$SEA_CAVES воды=$SEA_WET воздуха=$SEA_AIR (у свода $SEA_CEIL, висячего $SEA_FLOAT) | растения=$SEA_PLANTS кораллы=$SEA_CORALS | пещера=$CAVE_X,$CAVE_Y,$CAVE_Z"
 
 # ---------------------------------------------------------------- пробы (реальная генерация)
 FAILS=${FAILS:-0}
@@ -208,7 +208,7 @@ write_report() {
     echo "- клиент: ForgeGradle runClient под Xvfb (llvmpipe, без GPU)"
     echo "- воды в колонке (${KX:-?},y,${KZ:-?}): **$WATER** блоков"
     echo "- море: дно y=$SEA_FLOOR, вода $SEA_WATER блоков, глубочайшее дно y=$SEA_MIN"
-    echo "- пещеры: $SEA_CAVES колонок, воды $SEA_WET / воздуха $SEA_AIR блоков"
+    echo "- пещеры: $SEA_CAVES колонок, воды $SEA_WET / воздуха $SEA_AIR блоков (у свода $SEA_CEIL, висячего $SEA_FLOAT)"
     echo "- провалов проб: **$FAILS**"
     echo "- строк Exception/ERROR в логе клиента (без звука/наратора): **$(grep -E "Exception|ERROR" "$OUT/client.log" 2>/dev/null | grep -viE "Narrator|flite|text2speech|OpenAL|SoundSystem|SoundEngine" | wc -l)**"
     echo
@@ -270,6 +270,14 @@ if [ "$SEA_WET" -gt 0 ]; then
   [ "$PCT" -ge 65 ] && probe_ok "пещеры ЗАТОПЛЕНЫ: воды ${PCT}% объёма полостей (остальное — воздушные карманы)" \
     || probe_fail "пещеры сухие: воды только ${PCT}% (баг Рев 8 вернулся)"
 fi
+# Рев 12: воздух в пещерах должен стоять У СВОДА, а не висеть пузырями в воде
+AIRN=$((SEA_AIR + 1))
+FPCT=$((SEA_FLOAT * 100 / AIRN))
+CPCT=$((SEA_CEIL * 100 / AIRN))
+[ "$FPCT" -le 12 ] && probe_ok "воздух в пещерах прижат к своду: висячих пузырей ${FPCT}% (нужно <=12%)" \
+  || probe_fail "в толще воды висят воздушные пузыри: ${FPCT}% воздуха (было видно как «странная дырка»)"
+[ "$CPCT" -ge 55 ] && probe_ok "воздух у сводов: ${CPCT}% всего воздуха пещер" \
+  || probe_fail "воздух размазан по пещере, у сводов только ${CPCT}%"
 if [ "$CAVE_X" != "0" ]; then
   at_block "$CAVE_X" "$CAVE_Y" "$CAVE_Z" elisar_water "вода внутри пещеры"
   DEPTH=$((KT - CAVE_Y))
@@ -295,6 +303,42 @@ garden_probe() { # garden_probe <x> <z> <floor> <label>: ищем любое м�
 }
 garden_probe "$RX" "$RZ" "$RF" "рифовый сад"
 at_block "$RX" "$((RF + 4))" "$RZ" elisar_water "вода над рифом"
+
+echo "== Рев 12: коралловые деревья (растения из многих блоков) =="
+EL tp TestPlayer "$RX" "$((RF + 8))" "$RZ" 90 10 >/dev/null 2>&1
+sleep 6
+CORAL_RAW=$(EL execute at TestPlayer run riftcoral 2>&1 | tr -d '\r' | tr '\n' ' ')
+log "  /riftcoral raw: ${CORAL_RAW:0:400}"
+read -r CORAL_AT CORAL_H CORAL_BLOCKS CORAL_COLS CORAL_TIPS CORAL_CAM CORAL_CAMLOW < <(python3 - "$CORAL_RAW" <<'PYEOF'
+import re, sys
+s = sys.argv[1] if len(sys.argv) > 1 else ""
+def g(k, d="0"):
+    m = re.search(k + r"=(-?\d+)", s)
+    return m.group(1) if m else d
+at = re.search(r"at=(-?\d+),(-?\d+),(-?\d+)", s)
+at = ",".join(at.groups()) if at else "0,0,0"
+cam = re.search(r"cam=(-?\d+),(-?\d+),(-?\d+)", s)
+cam = ",".join(cam.groups()) if cam else "0,0,0"
+low = re.search(r"camlow=(-?\d+),(-?\d+),(-?\d+)", s)
+low = ",".join(low.groups()) if low else "0,0,0"
+print(at, g("h"), g("blocks"), g("cols"), g("tips"), cam, low)
+PYEOF
+)
+log "  коралл: at=$CORAL_AT h=$CORAL_H блоков=$CORAL_BLOCKS колонок=$CORAL_COLS украшений=$CORAL_TIPS"
+if [ "$CORAL_AT" != "0,0,0" ]; then
+  [ "$CORAL_H" -ge 3 ] && probe_ok "коралл — ВЫСОКОЕ растение: $CORAL_H блоков в высоту" \
+    || probe_fail "коралл ниже 3 блоков (h=$CORAL_H) — всё ещё одиночный кустик"
+  [ "$CORAL_BLOCKS" -ge 12 ] && probe_ok "коралл из МНОГИХ блоков: $CORAL_BLOCKS блоков, $CORAL_COLS колонок" \
+    || probe_fail "коралл слишком маленький: $CORAL_BLOCKS блоков"
+  [ "$CORAL_COLS" -ge 3 ] && probe_ok "у растения есть ветви/плита: $CORAL_COLS колонок" \
+    || probe_fail "растение в одну колонку — нет силуэта"
+  [ "$CORAL_TIPS" -ge 1 ] && probe_ok "на ветвях есть кораллы-украшения: $CORAL_TIPS" \
+    || probe_fail "верхушки ветвей пустые"
+  CX=$(printf '%s' "$CORAL_AT" | cut -d, -f1); CY=$(printf '%s' "$CORAL_AT" | cut -d, -f2); CZ=$(printf '%s' "$CORAL_AT" | cut -d, -f3)
+  log "  камера коралла: cam=$CORAL_CAM camlow=$CORAL_CAMLOW"
+else
+  probe_fail "/riftcoral не нашла коралловое дерево"
+fi
 
 echo "== профиль колонки $KX,y,$KZ =="
 PROFILE="$OUT/column.txt"
@@ -368,6 +412,16 @@ view "$((VX + 10))" "$((VF + 6))" "$VZ" 270 18 14 "03_reef_underwater"   # ри�
 view "$((VX + 4))" "$((VF + 9))" "$VZ" 210 22 14 "03b_reef_hills"         # рифовые холмы и палитры
 view "$((VX - 18))" "$((VF + 3))" "$VZ" 45 4 14 "03c_reef_level"          # риф на уровне глаз рыбы
 view "$((VX + 2))" "$((VF + 2))" "$VZ" 100 8 14 "03d_corals_3d"            # новые кораллы-растения (3D)
+# Рев 12: КОРАЛЛОВЫЕ ДЕРЕВЬЯ — кадры сбоку, снизу и общий план рощи
+if [ -n "${CX:-}" ] && [ "${CORAL_AT:-0,0,0}" != "0,0,0" ]; then
+  EL gamemode spectator TestPlayer >/dev/null 2>&1 || true
+  lookat "${CORAL_CAM%%,*}" "$(printf '%s' "$CORAL_CAM" | cut -d, -f2)" "${CORAL_CAM##*,}" "$CX" "$((CY + 2))" "$CZ" 16 "16_coral_tree"
+  lookat "${CORAL_CAMLOW%%,*}" "$(printf '%s' "$CORAL_CAMLOW" | cut -d, -f2)" "${CORAL_CAMLOW##*,}" "$CX" "$((CY + 3))" "$CZ" 14 "16b_coral_tree_low"
+  view "$((CX + 14))" "$((CY + 10))" "$((CZ + 14))" 225 28 14 "16c_coral_grove"
+  EL gamemode creative TestPlayer >/dev/null 2>&1 || true
+else
+  log "  ПРОПУСК кадров коралловых деревьев: /riftcoral не нашла растение"
+fi
 view "$((LX + 15))" "$((LF + 11))" "$((LZ + 15))" 225 14 14 "04_kelp_forest" # ламинария
 view "$VX" 64 "$((VZ + 26))" 180 2 14 "05_open_sea"          # поверхность: открытое море
 view "$DX" 65 "$DZ" 30 55 14 "06_trench"                     # каньон сверху
@@ -504,6 +558,9 @@ if [ "${WITH_DT:-0}" = "1" ]; then
   log "  give riftworlddt:sizo_seed -> ${DTSEED:0:120}"
   if [[ "$DTSEED" == *"Given"* || "$DTSEED" == *"given"* ]]; then log "  OK   DT видит семена аддона (riftworlddt:sizo_seed)"
   else log "  FAIL аддон к Dynamic Trees не загрузился"; FAILS=$((FAILS + 1)); fi
+  DTCORAL=$(EL execute at TestPlayer run give TestPlayer riftworlddt:coral_staghorn_seed 1 2>&1)
+  if [[ "$DTCORAL" == *"Given"* || "$DTCORAL" == *"given"* ]]; then log "  OK   DT видит коралловые семена (riftworlddt:coral_staghorn_seed)"
+  else log "  FAIL коралловые виды DT не зарегистрированы"; FAILS=$((FAILS + 1)); fi
   DTHIT=$(grep -cE "riftworlddt:sizo" "$OUT/client.log" 2>/dev/null || echo 0)
   log "  упоминаний riftworlddt:sizo в логе: $DTHIT"
   # вырастить настоящее динамическое дерево на плоском месте и снять его

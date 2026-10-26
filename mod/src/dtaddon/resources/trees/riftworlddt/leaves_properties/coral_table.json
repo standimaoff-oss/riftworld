@@ -1,0 +1,7 @@
+{
+  "primitive_leaves": "riftworld:coral_foliage_teal",
+  "cell_kit": "dynamictrees:acacia",
+  "smother": 6,
+  "can_grow_on_ground": true,
+  "only_if_loaded": "riftworld"
+}

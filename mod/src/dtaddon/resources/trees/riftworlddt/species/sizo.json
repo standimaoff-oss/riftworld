@@ -1,9 +1,18 @@
 {
-  "family": "sizo",
+  "family": "riftworlddt:sizo",
   "tapering": 0.32,
   "signal_energy": 13.0,
   "growth_rate": 0.85,
-  "leaves_properties": "sizo",
-  "perfect_biomes": { "name": "riftworld:sizo_grove" },
-  "lang_overrides": { "seed": "Sizo Seed", "sapling": "Sizo Sapling" }
+  "leaves_properties": "riftworlddt:sizo",
+  "acceptable_soils": [
+    "dirt_like"
+  ],
+  "perfect_biomes": {
+    "name": "riftworld:sizo_grove"
+  },
+  "lang_overrides": {
+    "seed": "Sizo Seed",
+    "sapling": "Sizo Sapling"
+  },
+  "only_if_loaded": "riftworld"
 }

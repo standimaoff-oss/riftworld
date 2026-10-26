@@ -3,5 +3,16 @@
   "block.riftworlddt.ambra_branch": "Ambra Branch",
   "item.riftworlddt.sizo_seed": "Sizo Seed",
   "item.riftworlddt.ambra_seed": "Ambra Seed",
-  "item.riftworlddt.giant_sizo_seed": "Giant Sizo Seed"
+  "item.riftworlddt.giant_sizo_seed": "Giant Sizo Seed",
+  "block.riftworlddt.coral_branch": "Coral Branch",
+  "block.riftworlddt.sizo_leaves": "Sizo Leaves",
+  "block.riftworlddt.ambra_leaves": "Ambra Leaves",
+  "block.riftworlddt.coral_staghorn_leaves": "Staghorn Coral",
+  "block.riftworlddt.coral_table_leaves": "Table Coral",
+  "block.riftworlddt.coral_whip_leaves": "Sea Whip Coral",
+  "item.riftworlddt.coral_staghorn_seed": "Staghorn Coral Seed",
+  "item.riftworlddt.coral_table_seed": "Table Coral Seed",
+  "item.riftworlddt.coral_whip_seed": "Sea Whip Coral Seed",
+  "block.riftworlddt.rooty_elisar_grass": "Rooty Elisar Grass",
+  "block.riftworlddt.rooty_elisar_soil": "Rooty Elisar Soil"
 }

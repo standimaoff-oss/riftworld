@@ -46,6 +46,9 @@ public final class SeaProbeCommand {
                 .then(Commands.argument("kind", com.mojang.brigadier.arguments.StringArgumentType.word())
                         .executes(c -> tree(c.getSource(),
                                 com.mojang.brigadier.arguments.StringArgumentType.getString(c, "kind")))));
+        // Рев 12: /riftcoral — ближайшее КОРАЛЛОВОЕ ДЕРЕВО (растение из многих блоков), его высота и объём
+        e.getDispatcher().register(Commands.literal("riftcoral").requires(s -> s.hasPermission(2))
+                .executes(c -> coral(c.getSource())));
     }
 
     /**
@@ -186,6 +189,7 @@ public final class SeaProbeCommand {
 
         int minFloor = Integer.MAX_VALUE, maxFloor = Integer.MIN_VALUE;
         int caveCols = 0, wetCells = 0, airCells = 0, reefCols = 0, cols = 0;
+        int floatAir = 0, ceilAir = 0;
         int bx = 0, by = 0, bz = 0, bestWet = 0;
         for (int dx = -radius; dx <= radius; dx += 2) {
             for (int dz = -radius; dz <= radius; dz += 2) {
@@ -200,7 +204,14 @@ public final class SeaProbeCommand {
                 for (int y = ElisarSea.BOTTOM; y <= f - 6; ++y) {
                     BlockState s = level.getBlockState(new BlockPos(x, y, z));
                     if (s.is(ElisarBlocks.WATER.get())) ++wet;
-                    else if (s.isAir()) ++air;
+                    else if (s.isAir()) {
+                        ++air;
+                        // Рев 12: воздух, над которым СРАЗУ вода, — это «пузырь в толще воды»,
+                        // именно он читался на скриншотах как странная дырка. Воздух у свода — норма.
+                        BlockState up = level.getBlockState(new BlockPos(x, y + 1, z));
+                        if (up.is(ElisarBlocks.WATER.get())) ++floatAir;
+                        if (y >= f - 9) ++ceilAir;
+                    }
                 }
                 wetCells += wet;
                 airCells += air;
@@ -238,11 +249,86 @@ public final class SeaProbeCommand {
                 + " sea=" + sea + " min=" + minFloor + " max=" + maxFloor
                 + " cols=" + cols + " caves=" + caveCols + " wet=" + wetCells + " air=" + airCells
                 + " reef=" + reefCols + " plants=" + plants + " corals=" + corals
+                + " float=" + floatAir + " ceilair=" + ceilAir
                 + " bottom=" + ElisarSea.BOTTOM
                 + (by != -1 ? " caveat=" + bx + "," + by + "," + bz : " caveat=none");
         final String out = line;
         src.sendSuccess(() -> Component.literal(out), false);
         return 1;
+    }
+
+    /**
+     * Рев 12: {@code /riftcoral} — находит ближайшее КОРАЛЛОВОЕ ДЕРЕВО (растение из многих блоков) и печатает
+     * его высоту, объём и «украшения» на ветвях. Именно этой командой CI доказывает, что коралл перестал
+     * быть одиночным 3D-кустиком: {@code h>=3} и {@code blocks>=8} на одном растении.
+     */
+    private static int coral(CommandSourceStack src) {
+        ServerLevel level = src.getLevel();
+        if (level.dimension() != Flight.ELISAR_DIM) {
+            src.sendFailure(Component.literal("riftcoral: only in riftworld:elisar"));
+            return 0;
+        }
+        CityPlan plan = CityPlan.get();
+        int sea = plan.ocean;
+        BlockPos at = BlockPos.containing(src.getPosition());
+        int bestH = 0, bx = 0, bz = 0, bf = 0;
+        int radius = 72;
+        for (int x = at.getX() - radius; x <= at.getX() + radius; ++x) {
+            for (int z = at.getZ() - radius; z <= at.getZ() + radius; ++z) {
+                if (!level.hasChunk(x >> 4, z >> 4)) continue;
+                int f = ElisarChunkGenerator.oceanFloor(plan, x, z);
+                int h = 0;
+                for (int y = f + 1; y < sea && h < 24; ++y) {
+                    if (!isCoralBody(level.getBlockState(new BlockPos(x, y, z)))) break;
+                    ++h;
+                }
+                if (h > bestH) {
+                    bestH = h;
+                    bx = x;
+                    bz = z;
+                    bf = f;
+                }
+            }
+        }
+        if (bestH < 3) {
+            src.sendFailure(Component.literal("riftcoral: не нашлось кораллового дерева выше 3 блоков"));
+            return 0;
+        }
+        int blocks = 0, tips = 0, cols = 0;
+        for (int dx = -7; dx <= 7; ++dx) {
+            for (int dz = -7; dz <= 7; ++dz) {
+                int x = bx + dx, z = bz + dz;
+                if (!level.hasChunk(x >> 4, z >> 4)) continue;
+                boolean col = false;
+                for (int y = bf; y <= sea; ++y) {
+                    BlockState st = level.getBlockState(new BlockPos(x, y, z));
+                    if (isCoralBody(st)) {
+                        ++blocks;
+                        col = true;
+                    } else if (isCoral(st)) {
+                        ++tips;
+                    }
+                }
+                if (col) ++cols;
+            }
+        }
+        int[] cam = cameraSpot(level, bx, bf, bz, bf + bestH / 2 + 4);
+        int[] camlow = cameraSpot(level, bx, bf, bz, bf + 2);
+        String line = "riftcoral at=" + bx + "," + (bf + 1) + "," + bz + " h=" + bestH
+                + " blocks=" + blocks + " cols=" + cols + " tips=" + tips
+                + " floor=" + bf + " sea=" + sea
+                + " cam=" + cam[0] + "," + cam[1] + "," + cam[2]
+                + " camlow=" + camlow[0] + "," + camlow[1] + "," + camlow[2];
+        src.sendSuccess(() -> Component.literal(line), false);
+        return 1;
+    }
+
+    /** Блок «тела» кораллового дерева (шапка палитры) — то, из чего сложены ствол и ветви. */
+    private static boolean isCoralBody(BlockState s) {
+        return s.is(ElisarBlocks.CORAL_CAP_PINK.get()) || s.is(ElisarBlocks.CORAL_CAP_TEAL.get())
+                || s.is(ElisarBlocks.CORAL_CAP_VIOLET.get())
+                || s.is(ElisarBlocks.CORAL_FOLIAGE_PINK.get()) || s.is(ElisarBlocks.CORAL_FOLIAGE_TEAL.get())
+                || s.is(ElisarBlocks.CORAL_FOLIAGE_VIOLET.get());
     }
 
     private static boolean isCoral(BlockState s) {

@@ -1,9 +1,18 @@
 {
-  "family": "ambra",
+  "family": "riftworlddt:ambra",
   "tapering": 0.28,
   "signal_energy": 10.0,
   "growth_rate": 0.7,
-  "leaves_properties": "ambra",
-  "perfect_biomes": { "name": "riftworld:violet_hills" },
-  "lang_overrides": { "seed": "Ambra Seed", "sapling": "Ambra Sapling" }
+  "leaves_properties": "riftworlddt:ambra",
+  "acceptable_soils": [
+    "dirt_like"
+  ],
+  "perfect_biomes": {
+    "name": "riftworld:violet_hills"
+  },
+  "lang_overrides": {
+    "seed": "Ambra Seed",
+    "sapling": "Ambra Sapling"
+  },
+  "only_if_loaded": "riftworld"
 }

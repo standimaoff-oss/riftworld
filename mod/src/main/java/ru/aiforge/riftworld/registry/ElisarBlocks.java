@@ -50,16 +50,17 @@ public final class ElisarBlocks {
     public static final RegistryObject<Block> PLASTER = cube("elisar_plaster", MapColor.SAND, 1.2F, SoundType.STONE);
     public static final RegistryObject<Block> TIMBER_CROSS = cube("timber_frame_cross", MapColor.SAND, 1.5F, SoundType.WOOD);
     public static final RegistryObject<Block> TIMBER_POST = cube("timber_frame_post", MapColor.SAND, 1.5F, SoundType.WOOD);
-    public static final RegistryObject<Block> SIZO_PLANKS = cube("sizo_planks", MapColor.COLOR_LIGHT_BLUE, 2.0F, SoundType.WOOD);
-    public static final RegistryObject<Block> AMBRA_PLANKS = cube("ambra_planks", MapColor.COLOR_ORANGE, 2.0F, SoundType.WOOD);
+    public static final RegistryObject<Block> SIZO_PLANKS = cube("sizo_planks", MapColor.COLOR_LIGHT_GRAY, 2.0F, SoundType.WOOD);
+    public static final RegistryObject<Block> AMBRA_PLANKS = cube("ambra_planks", MapColor.SAND, 2.0F, SoundType.WOOD);
     public static final RegistryObject<Block> THATCH = cube("thatch", MapColor.COLOR_YELLOW, 0.5F, SoundType.GRASS);
     public static final RegistryObject<Block> ROOF_RED = cube("roof_red", MapColor.COLOR_RED, 1.5F, SoundType.STONE);
     public static final RegistryObject<Block> ROOF_BLUE = cube("roof_blue", MapColor.COLOR_BLUE, 1.5F, SoundType.STONE);
     // trees
-    public static final RegistryObject<RotatedPillarBlock> SIZO_LOG = ModBlocks.reg("sizo_log", () -> new RotatedPillarBlock(p(MapColor.COLOR_GRAY, 2.0F, SoundType.WOOD)));
-    public static final RegistryObject<RotatedPillarBlock> AMBRA_LOG = ModBlocks.reg("ambra_log", () -> new RotatedPillarBlock(p(MapColor.COLOR_BROWN, 2.0F, SoundType.WOOD)));
-    public static final RegistryObject<LeavesBlock> SIZO_LEAVES = ModBlocks.reg("sizo_leaves", () -> new LeavesBlock(leaves(MapColor.COLOR_CYAN)));
-    public static final RegistryObject<LeavesBlock> AMBRA_LEAVES = ModBlocks.reg("ambra_leaves", () -> new LeavesBlock(leaves(MapColor.COLOR_ORANGE)));
+    public static final RegistryObject<RotatedPillarBlock> SIZO_LOG = ModBlocks.reg("sizo_log", () -> new RotatedPillarBlock(p(MapColor.COLOR_LIGHT_GRAY, 2.0F, SoundType.WOOD)));
+    public static final RegistryObject<RotatedPillarBlock> AMBRA_LOG = ModBlocks.reg("ambra_log", () -> new RotatedPillarBlock(p(MapColor.COLOR_LIGHT_GRAY, 2.0F, SoundType.WOOD)));
+    // Рев 12: листва снова белая/холодная — на карте и в палитре мира цвет должен совпадать
+    public static final RegistryObject<LeavesBlock> SIZO_LEAVES = ModBlocks.reg("sizo_leaves", () -> new LeavesBlock(leaves(MapColor.SNOW)));
+    public static final RegistryObject<LeavesBlock> AMBRA_LEAVES = ModBlocks.reg("ambra_leaves", () -> new LeavesBlock(leaves(MapColor.QUARTZ)));
     // shapes
     public static final RegistryObject<StairBlock> ROOF_RED_STAIRS = stairs("roof_red_stairs", ROOF_RED);
     public static final RegistryObject<StairBlock> ROOF_BLUE_STAIRS = stairs("roof_blue_stairs", ROOF_BLUE);
@@ -166,6 +167,16 @@ public final class ElisarBlocks {
             ModBlocks.reg("tube_sponge_cluster", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant()));
     public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> RIBBON_CORAL =
             ModBlocks.reg("ribbon_coral", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant().lightLevel(s -> 7)));
+
+    // ----- Рев 12: коралловая листва для аддона Dynamic Trees.
+    // DT генерирует собственный блок листьев и берёт модель у «примитивного» блока, поэтому нужен
+    // обычный LeavesBlock с готовой текстурой — иначе коралловое дерево рендерится пустым кубом.
+    public static final RegistryObject<LeavesBlock> CORAL_FOLIAGE_PINK =
+            ModBlocks.reg("coral_foliage_pink", () -> new LeavesBlock(leaves(MapColor.COLOR_PINK)));
+    public static final RegistryObject<LeavesBlock> CORAL_FOLIAGE_TEAL =
+            ModBlocks.reg("coral_foliage_teal", () -> new LeavesBlock(leaves(MapColor.WARPED_WART_BLOCK)));
+    public static final RegistryObject<LeavesBlock> CORAL_FOLIAGE_VIOLET =
+            ModBlocks.reg("coral_foliage_violet", () -> new LeavesBlock(leaves(MapColor.COLOR_PURPLE)));
 
     private static BlockBehaviour.Properties decal() {
         return BlockBehaviour.Properties.of().mapColor(MapColor.SAND).strength(0.2F).sound(SoundType.CORAL_BLOCK)

@@ -54,6 +54,10 @@ public class SeaFishEntity extends Mob {
     private Vec3 way;
     private int wayAge;
     private int attackCd;
+    /** Пауза между перецеливаниями при испуге (иначе рыба «дёргается» каждые 6 тиков). */
+    private int fleeCd;
+    /** Максимальный поворот курса, °/тик: у мирных плавнее, у хищников резче, но тоже без рывков. */
+    private static final double TURN_PEACE = 3.2D, TURN_HUNT = 7.0D;
     public float tail, tail0;
     public float glowPhase;
 
@@ -142,14 +146,17 @@ public class SeaFishEntity extends Mob {
             return;
         }
 
-        // мирные шарахаются от плывущего игрока: подплыл близко — косяк уходит в сторону
-        if (!hostile() && tickCount % 6 == 0) {
-            Player near = level().getNearestPlayer(this, 6.0D);
+        if (fleeCd > 0) --fleeCd;
+        // мирные шарахаются от плывущего игрока: подплыл близко — косяк уходит в сторону.
+        // Рев 12: цель меняется не чаще раза в 2.5 секунды, иначе рыба вертелась на месте.
+        if (!hostile() && fleeCd <= 0 && tickCount % 10 == 0) {
+            Player near = level().getNearestPlayer(this, 5.0D);
             if (near != null && !near.isSpectator()) {
                 Vec3 away = position().subtract(near.position());
                 if (away.lengthSqr() < 1e-4) away = new Vec3(1, 0, 0);
-                way = position().add(away.normalize().scale(7)).add(0, (random.nextDouble() - 0.5) * 2, 0);
-                wayAge = 50;
+                way = position().add(away.normalize().scale(9)).add(0, (random.nextDouble() - 0.5) * 1.5, 0);
+                wayAge = 70;
+                fleeCd = 50;
             }
         }
 
@@ -186,17 +193,25 @@ public class SeaFishEntity extends Mob {
         }
 
         // мирное плавание вокруг дома
-        if (way == null || --wayAge <= 0) {
-            double radius = isRay() ? 16 : (hostile() ? 12 : 9);
+        // Рев 12: точка выбирается дальше и живёт дольше (4–11 секунд), а подходя к ней рыба
+        // плавно сбрасывает скорость — раньше она проскакивала точку и разворачивалась рывком.
+        if (wayAge > 0) --wayAge;
+        if (way == null) wayAge = 0;
+        if (wayAge <= 0) {
+            double radius = isRay() ? 18 : (hostile() ? 13 : 10);
             double a = random.nextDouble() * Math.PI * 2;
-            double r = radius * (0.35 + random.nextDouble() * 0.65);
-            double y = home.y + (random.nextDouble() - 0.5) * (isRay() ? 7 : 4);
+            double r = radius * (0.45 + random.nextDouble() * 0.55);
+            double y = home.y + (random.nextDouble() - 0.5) * (isRay() ? 6 : 3);
             way = new Vec3(home.x + Math.cos(a) * r, y, home.z + Math.sin(a) * r);
-            wayAge = 60 + random.nextInt(90);
+            wayAge = 80 + random.nextInt(140);
         }
         Vec3 dv = way.subtract(position());
-        if (dv.length() < 1.2) { way = null; wayAge = 8; }
-        else chase(dv.normalize(), isRay() ? 0.10 : (hostile() ? 0.17 : 0.20));
+        double dist = dv.length();
+        double cruise = isRay() ? 0.10 : (hostile() ? 0.17 : 0.20);
+        // мягкое торможение у цели: за 3 блока скорость падает, поворот не нужен вовсе
+        double speed = cruise * Mth.clamp(dist / 3.0, 0.25, 1.0);
+        if (dist < 1.1) { way = null; wayAge = 20; }
+        else chase(dv.normalize(), speed);
         faceTravel();
 
         // мягко держимся в воде: не выпрыгиваем и не утыкаемся в породу
@@ -205,27 +220,68 @@ public class SeaFishEntity extends Mob {
         }
     }
 
+    /**
+     * Рев 12: руление вместо «телепорта курса». Раньше скорость подмешивалась к текущей с весом 0.25,
+     * а на столкновении рыба получала импульс строго назад — отсюда резкие развороты в кадре.
+     * Теперь: (1) направление доворачивается не быстрее {@code TURN_*}°/тик, (2) модуль скорости
+     * подтягивается плавно, (3) у препятствия рыба выбирает обход, а не отскакивает.
+     */
     private void chase(Vec3 dir, double speed) {
-        Vec3 want = dir.scale(speed);
-        Vec3 vel = getDeltaMovement().add(want.subtract(getDeltaMovement()).scale(0.25));
-        if (vel.length() > speed * 1.4) vel = vel.normalize().scale(speed * 1.4);
-        setDeltaMovement(vel);
-        move(MoverType.SELF, vel);
-        // упёрлись в породу — ищем другой путь, а не долбимся в стену
+        Vec3 vel = getDeltaMovement();
+        double cur = vel.length();
+        Vec3 want = dir.normalize().scale(Math.max(0.01, speed));
+        // сглаженное направление-желание (не сам курс)
+        Vec3 mixed = cur > 1e-3 ? vel.scale(0.35).add(want.scale(0.65)) : want;
+        if (mixed.lengthSqr() < 1e-6) mixed = want;
+        double maxTurn = hostile() ? TURN_HUNT : TURN_PEACE;
+        Vec3 unit = cur > 0.02 ? limitTurn(vel.normalize(), mixed.normalize(), maxTurn) : mixed.normalize();
+        double len = cur + (want.length() - cur) * 0.06;
+        Vec3 v = unit.scale(Math.max(0.005, len));
+        setDeltaMovement(v);
+        move(MoverType.SELF, v);
+        // упёрлись в породу — обходим: берём новую точку сбоку, курс довернётся сам и плавно
         if (horizontalCollision || verticalCollision) {
-            way = null;
-            wayAge = 4;
-            setDeltaMovement(getDeltaMovement().scale(-0.25));
+            Vec3 side = new Vec3(-vel.z, 0, vel.x);
+            if (side.lengthSqr() < 1e-6) side = new Vec3(1, 0, 0);
+            if (random.nextBoolean()) side = side.scale(-1);
+            side = side.normalize();
+            way = position().add(side.scale(6)).add(0, (random.nextDouble() - 0.5) * 1.5, 0);
+            wayAge = 30 + random.nextInt(20);
+            setDeltaMovement(side.scale(cur * 0.55).add(0, v.y * 0.5, 0));
         }
     }
 
+    /** Поворот вектора {@code from} к {@code to} не более чем на {@code maxDeg} градусов (Родриг). */
+    private static Vec3 limitTurn(Vec3 from, Vec3 to, double maxDeg) {
+        double cos = Mth.clamp(from.dot(to), -1.0D, 1.0D);
+        double ang = Math.toDegrees(Math.acos(cos));
+        if (ang <= maxDeg || ang < 1.0E-3) return to;
+        Vec3 axis = from.cross(to);
+        if (axis.lengthSqr() < 1.0E-8) {
+            // ровно назад: поворот через вертикаль, чтобы не «щёлкать» на 180°
+            axis = from.cross(new Vec3(0, 1, 0));
+            if (axis.lengthSqr() < 1.0E-8) axis = new Vec3(1, 0, 0);
+        }
+        axis = axis.normalize();
+        double a = Math.toRadians(maxDeg);
+        return from.scale(Math.cos(a)).add(axis.cross(from).scale(Math.sin(a))).normalize();
+    }
+
+    /**
+     * Корпус доворачивается за скоростью с ограничением угловой скорости: раньше {@code rotLerp(0.18)}
+     * поворачивал модель на 18% остатка за тик — это 60° за полсекунды, и на видео это читалось как
+     * «дёрганье». Теперь не быстрее 1.8°/тик по рысканью и 0.9°/тик по тангажу.
+     */
     private void faceTravel() {
         Vec3 v = getDeltaMovement();
         if (v.lengthSqr() < 1e-5) return;
         float yaw = (float) (Math.atan2(-v.x, v.z) * Mth.RAD_TO_DEG);
-        setYRot(Mth.rotLerp(0.18F, getYRot(), yaw));
+        float dYaw = Mth.wrapDegrees(yaw - getYRot());
+        setYRot(getYRot() + Mth.clamp(dYaw, -1.8F, 1.8F));
         yBodyRot = getYRot();
-        setXRot(Mth.lerp(0.15F, getXRot(), (float) -(Math.atan2(v.y, Math.hypot(v.x, v.z)) * Mth.RAD_TO_DEG)));
+        yHeadRot = getYRot();
+        float pitch = (float) -(Math.atan2(v.y, Math.hypot(v.x, v.z)) * Mth.RAD_TO_DEG);
+        setXRot(getXRot() + Mth.clamp(pitch - getXRot(), -0.9F, 0.9F));
     }
 
     // ------------------------------------------------------------------ спавн/сохранение

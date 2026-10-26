@@ -1,10 +1,15 @@
 {
-  "common_leaves": "sizo",
-  "common_species": "sizo",
+  "common_leaves": "riftworlddt:sizo",
+  "common_species": "riftworlddt:sizo",
   "primitive_log": "riftworld:sizo_log",
+  "generate_stripped_branch": false,
+  "generate_surface_root": false,
   "max_branch_radius": 8,
   "primary_thickness": 3,
   "secondary_thickness": 2,
-  "branch_properties": { "sound": "wood", "map_color": "COLOR_CYAN" },
+  "branch_properties": {
+    "sound": "wood",
+    "map_color": "COLOR_LIGHT_GRAY"
+  },
   "only_if_loaded": "riftworld"
 }
