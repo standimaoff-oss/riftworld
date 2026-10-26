@@ -444,7 +444,7 @@ if [ -n "${CX:-}" ] && [ "${CORAL_AT:-0,0,0}" != "0,0,0" ]; then
   EL gamemode spectator TestPlayer >/dev/null 2>&1 || true
   lookat "${CORAL_CAM%%,*}" "$(printf '%s' "$CORAL_CAM" | cut -d, -f2)" "${CORAL_CAM##*,}" "$CX" "$((CY + 2))" "$CZ" 16 "16_coral_tree"
   lookat "${CORAL_CAMLOW%%,*}" "$(printf '%s' "$CORAL_CAMLOW" | cut -d, -f2)" "${CORAL_CAMLOW##*,}" "$CX" "$((CY + 3))" "$CZ" 14 "16b_coral_tree_low"
-  view "$((CX + 14))" "$((CY + 10))" "$((CZ + 14))" 225 28 14 "16c_coral_grove"
+  lookat "$((CX + 16))" "$((CY + 14))" "$((CZ + 5))" "$CX" "$((CY + 2))" "$CZ" 16 "16c_coral_grove"
   EL gamemode creative TestPlayer >/dev/null 2>&1 || true
 else
   log "  ПРОПУСК кадров коралловых деревьев: /riftcoral не нашла растение"

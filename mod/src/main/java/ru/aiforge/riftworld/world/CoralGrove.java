@@ -52,7 +52,7 @@ public final class CoralGrove {
         int cx = gx * CELL + CELL / 2, cz = gz * CELL + CELL / 2;
         double reef = ElisarSea.reefness(cx, cz);
         // густота зависит от «рифовости» места: в плотном саду растения почти в каждой второй ячейке
-        if (ElisarSea.hash(gx, gz, 601) > 0.10 + reef * 0.42) return null;
+        if (ElisarSea.hash(gx, gz, 601) > 0.06 + reef * 0.30) return null;
         // на высоких холмах растений нет: там уже стоят шапки куполов
         if (ElisarSea.moundHeightAt(cx, cz) > 1) return null;
         int sx = gx * CELL + 2 + (int) (ElisarSea.hash(gx, gz, 602) * (CELL - 4));
@@ -167,7 +167,7 @@ public final class CoralGrove {
         double rag = r + (ElisarSea.hash(s.x + dx, s.z + dz, 622) - 0.5) * 1.5;  // рваный край
         if (d > rag) return null;
         if (Math.abs(dx) <= 0 && Math.abs(dz) <= 0) return new Span(1, trunk, true);      // ножка
-        if (d <= rag - 0.8) return new Span(trunk, Math.min(trunk + 1, room), false);     // плотная середина
+        if (d <= rag - 0.8) return new Span(trunk, Math.min(trunk + 1, room), false);     // плита (1–2 блока)
         return new Span(trunk, trunk, false);                                             // тонкий край
     }
 
@@ -216,7 +216,7 @@ public final class CoralGrove {
             int ox = (int) Math.round((ElisarSea.hash(s.seed, i, 652) - 0.5) * 4.2);
             int oz = (int) Math.round((ElisarSea.hash(s.seed, i, 653) - 0.5) * 4.2);
             if (ox != dx || oz != dz) continue;
-            int h = Math.min(2 + (int) (ElisarSea.hash(s.seed, i, 654) * 5) + (int) (ElisarSea.hash(s.seed, 0, 655) * 2), room);
+            int h = Math.min(2 + (int) (ElisarSea.hash(s.seed, i, 654) * 4) + (int) (ElisarSea.hash(s.seed, 0, 655) * 2), room);
             return new Span(1, h, true);
         }
         return null;

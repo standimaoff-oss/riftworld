@@ -175,6 +175,34 @@ public final class SeaProbeCommand {
     }
 
     /**
+     * Рев 12: БЛИЗКАЯ точка съёмки — коралл должен занимать кадр, а не быть точкой вдали.
+     * Перебираем радиусы 6–14 и 16 направлений, проверяем свободный столбик камеры и прямую видимость.
+     */
+    private static int[] closeSpot(ServerLevel level, int tx, int y, int tz, int[] radii) {
+        for (int r : radii) {
+            for (int i = 0; i < 16; ++i) {
+                double a = i * Math.PI / 8.0;
+                int cx = tx + (int) Math.round(r * Math.cos(a));
+                int cz = tz + (int) Math.round(r * Math.sin(a));
+                level.getChunk(cx >> 4, cz >> 4);
+                boolean clear = true;
+                for (int dy = -2; dy <= 2 && clear; ++dy) {
+                    BlockPos p = new BlockPos(cx, y + dy, cz);
+                    if (p.getY() <= level.getMinBuildHeight() || p.getY() >= level.getMaxBuildHeight()) { clear = false; break; }
+                    if (blocked(level.getBlockState(p))) clear = false;
+                }
+                for (int s = 1; s <= r - 1 && clear; ++s) {
+                    int sx = tx + (int) Math.round(s * Math.cos(a));
+                    int sz = tz + (int) Math.round(s * Math.sin(a));
+                    if (blocked(level.getBlockState(new BlockPos(sx, y, sz)))) clear = false;
+                }
+                if (clear) return new int[]{cx, y, cz};
+            }
+        }
+        return new int[]{tx + 10, y, tz + 10};
+    }
+
+    /**
      * Рев 12: для камеры «занято» — это любой блок, кроме воздуха и воды. Раньше проверялось только
      * {@code isSolidRender}, и камера вставала внутрь ламинарии/коралла (кадр получался зелёной кашей).
      */
@@ -321,8 +349,9 @@ public final class SeaProbeCommand {
                 if (col) ++cols;
             }
         }
-        int[] cam = cameraSpot(level, bx, bf, bz, bf + bestH / 2 + 4);
-        int[] camlow = cameraSpot(level, bx, bf, bz, bf + 2);
+        int midY = bf + Math.max(3, bestH / 2 + 1);
+        int[] cam = closeSpot(level, bx, midY, bz, new int[]{7, 9, 11, 14});
+        int[] camlow = closeSpot(level, bx, bf + 2, bz, new int[]{6, 8, 10, 13});
         String line = "riftcoral at=" + bx + "," + (bf + 1) + "," + bz + " h=" + bestH
                 + " blocks=" + blocks + " cols=" + cols + " tips=" + tips
                 + " floor=" + bf + " sea=" + sea
