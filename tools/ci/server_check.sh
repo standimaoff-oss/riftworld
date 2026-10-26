@@ -25,21 +25,27 @@ if [ "${WITH_DT:-0}" = "1" ]; then
   [ -n "$DTJAR" ] && { cp -f "$DTJAR" "$SRV/mods/"; echo "  аддон: $(basename "$DTJAR")"; } \
     || echo "  WARN: аддон не собран (dtJar) — проверка DT будет пропущена"
   DTVER=$(sed -n 's/^dynamic_trees_version=//p' mod/gradle.properties 2>/dev/null | head -1)
-  # Ищем DT-jar ВСЮду в gradle cache (deobf-jar может лежать в любом подкаталоге)
-  DTMAIN=$(find ~/.gradle -name 'DynamicTrees-*.jar' 2>/dev/null | grep -v -e sources -e javadoc | head -1)
-  # Fallback: скачиваем из CurseForge (harleyoconnor.com часто падает на SSL)
+  # Приоритет 1: gradle copyDTJar — форсированная resolution, кладёт в build/dtlib/dynamictrees.jar
+  DTMAIN=$(ls mod/build/dtlib/dynamictrees.jar 2>/dev/null | head -1)
+  [ -n "$DTMAIN" ] && echo "  DT jar из build/dtlib (copyDTJar)"
+  # Приоритет 2: gradle cache — ищем ВСЮду (deobf-jar может лежать в любом подкаталоге)
   if [ -z "$DTMAIN" ]; then
-    echo "  DT jar не найден в gradle cache — скачиваем из CurseForge (DT ${DTVER})..."
+    DTMAIN=$(find ~/.gradle -name 'DynamicTrees-*.jar' 2>/dev/null | grep -v -e sources -e javadoc | head -1)
+    [ -n "$DTMAIN" ] && echo "  DT jar из gradle cache"
+  fi
+  # Приоритет 3: harleyoconnor.com maven (correct URL: /DynamicTrees-1.20.1/1.4.10/DynamicTrees-1.20.1-1.4.10.jar)
+  if [ -z "$DTMAIN" ]; then
+    echo "  DT jar не найден локально — скачиваем из harleyoconnor.com maven (DT ${DTVER})..."
+    curl -fsSL -L -o "$SRV/mods/dynamictrees.jar" \
+      "https://harleyoconnor.com/maven/com/ferreusveritas/dynamictrees/DynamicTrees-1.20.1/${DTVER}/DynamicTrees-1.20.1-${DTVER}.jar" \
+      && DTMAIN="$SRV/mods/dynamictrees.jar" || echo "  WARN: Dynamic Trees jar не скачался из maven"
+  fi
+  # Приоритет 4: CurseForge (последний — api.cfwidget.com часто отдаёт HTML вместо jar)
+  if [ -z "$DTMAIN" ]; then
+    echo "  maven не сработал — пробуем CurseForge..."
     curl -fsSL -L -o "$SRV/mods/dynamictrees.jar" \
       "https://api.cfwidget.com/mods/mc-mods/dynamic-trees/versions/${DTVER}/download" \
       && DTMAIN="$SRV/mods/dynamictrees.jar" || echo "  WARN: Dynamic Trees jar не скачался с CurseForge"
-  fi
-  # Fallback 2: harleyoconnor.com maven
-  if [ -z "$DTMAIN" ]; then
-    echo "  CurseForge не сработал — пробуем harleyoconnor.com maven..."
-    curl -fsSL -o "$SRV/mods/dynamictrees.jar" \
-      "https://harleyoconnor.com/maven/com/ferreusveritas/dynamictrees/DynamicTrees-1.20.1/DynamicTrees-1.20.1-${DTVER}.jar" \
-      && DTMAIN="$SRV/mods/dynamictrees.jar" || echo "  WARN: Dynamic Trees jar не скачался и из maven"
   fi
   if [ -n "$DTMAIN" ] && [ -f "$DTMAIN" ]; then
     cp -f "$DTMAIN" "$SRV/mods/" 2>/dev/null || true

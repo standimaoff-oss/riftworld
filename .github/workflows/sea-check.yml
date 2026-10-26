@@ -48,7 +48,7 @@ jobs:
           mkdir -p ci-out
           cd mod
           chmod +x gradlew
-          ./gradlew jar dtJar --no-daemon --console=plain -PwithDT 2>&1 | tee ../ci-out/build.log
+          ./gradlew jar dtJar copyDTJar --no-daemon --console=plain -PwithDT 2>&1 | tee ../ci-out/build.log
         continue-on-error: false
 
       - name: Boot Forge server with the mod and probe it
