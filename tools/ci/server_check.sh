@@ -17,6 +17,24 @@ if [ -z "$JAR" ]; then echo "FATAL: no mod jar built"; exit 1; fi
 echo "jar: $JAR"
 cp -f "$JAR" "$SRV/mods/"
 
+# Рев 12: WITH_DT=1 — сервер тоже должен видеть Dynamic Trees и аддон (client_check проверяет
+# рост деревьев через /dynamictrees). Без DT-jar аддон не загрузится, а без аддона нет смысла.
+if [ "${WITH_DT:-0}" = "1" ]; then
+  echo "== WITH_DT: Dynamic Trees + аддон в mods сервера =="
+  DTJAR=$(ls mod/build/libs/riftworld-dt-*.jar 2>/dev/null | grep -v -e sources -e javadoc | head -1)
+  [ -n "$DTJAR" ] && { cp -f "$DTJAR" "$SRV/mods/"; echo "  аддон: $(basename "$DTJAR")"; } \
+    || echo "  WARN: аддон не собран (dtJar) — проверка DT будет пропущена"
+  DTVER=$(sed -n 's/^dynamic_trees_version=//p' mod/gradle.properties 2>/dev/null | head -1)
+  DTMAIN=$(ls ~/.gradle/caches/modules-2/files-2.1/com.ferreusveritas.dynamictrees/DynamicTrees-*/*/DynamicTrees-*.jar 2>/dev/null \
+             | grep -v -e sources | head -1)
+  if [ -z "$DTMAIN" ]; then
+    curl -fsSL -o "$SRV/mods/dynamictrees.jar" \
+      "https://harleyoconnor.com/maven/com/ferreusveritas/dynamictrees/DynamicTrees-1.20.1/DynamicTrees-1.20.1-${DTVER}.jar" \
+      && DTMAIN="$SRV/mods/dynamictrees.jar" || echo "  WARN: Dynamic Trees jar не скачался"
+  fi
+  [ -n "$DTMAIN" ] && [ -f "$DTMAIN" ] && echo "  Dynamic Trees: $(basename "$DTMAIN")"
+fi
+
 if [ ! -f "$SRV/libraries/net/minecraftforge/forge/$FORGE/unix_args.txt" ]; then
   curl -fsSL -o "$SRV/installer.jar" \
     "https://maven.minecraftforge.net/net/minecraftforge/forge/$FORGE/forge-$FORGE-installer.jar" || { echo "FATAL: installer download"; exit 1; }

@@ -109,7 +109,8 @@ start_client() {
     chmod +x gradlew
     ./gradlew runClient --no-daemon --console=plain \
       -PrunDir="$PWD/../$RUN" \
-      -PautoJoin=127.0.0.1:25565 2>&1
+      -PautoJoin=127.0.0.1:25565 \
+      ${WITH_DT:+-PwithDT} 2>&1
   ) > "$OUT/client.log" 2>&1 &
   CPID=$!
 }
@@ -579,7 +580,7 @@ fi
 
 # ---------------------------------------------------------------- Рев 11: аддон к Dynamic Trees (если включён)
 if [ "${WITH_DT:-0}" = "1" ]; then
-  echo "== Dynamic Trees: аддон riftworlddt =="
+  echo "== Dynamic Trees: аддон riftworlddt (живой рост деревьев и кораллов) =="
   EL execute at TestPlayer run gamemode creative >/dev/null 2>&1 || true
   DTSEED=$(EL execute at TestPlayer run give TestPlayer riftworlddt:sizo_seed 1 2>&1)
   log "  give riftworlddt:sizo_seed -> ${DTSEED:0:120}"
@@ -590,12 +591,61 @@ if [ "${WITH_DT:-0}" = "1" ]; then
   else log "  FAIL коралловые виды DT не зарегистрированы"; FAILS=$((FAILS + 1)); fi
   DTHIT=$(grep -cE "riftworlddt:sizo" "$OUT/client.log" 2>/dev/null || echo 0)
   log "  упоминаний riftworlddt:sizo в логе: $DTHIT"
-  # вырастить настоящее динамическое дерево на плоском месте и снять его
+
+  # семьи в регистрах DT (JSON должны быть расчитаны и зарегистрированы)
+  DTFAM=$(EL execute in riftworld:elisar run dynamictrees registry families 2>&1 | tr '\r\n' '  ')
+  log "  /dynamictrees registry families -> ${DTFAM:0:220}"
+  for f in riftworlddt:sizo riftworlddt:ambra riftworlddt:coral; do
+    if [[ "$DTFAM" == *"$f"* ]]; then log "  OK   у DT есть семья $f"
+    else log "  FAIL у DT нет семьи $f"; FAILS=$((FAILS + 1)); fi
+  done
+
+  # ---------------------------------------------------------------- дерево через DT: /dynamictrees set
+  # Рев 12: раньше проверяли только «аддон загрузился» (give seed). Теперь выращиваем дерево
+  # напрямую через JoCode DT и считаем блоки через /rifttree (DT ставит те же логи/листву).
   if [ -n "$TREE_AT" ]; then
-    EL execute in riftworld:elisar run setblock "$((TX + 24))" "$TY" "$TZ" riftworld:elisar_grass >/dev/null 2>&1 || true
-    sleep 4
-    view "$((TX + 24))" "$((TY + 8))" "$((TZ + 12))" 180 14 12 "15_dt_tree"
+    DTX=$((TX + 30)); DTZ=$((TZ + 12))
+    DTS=$(EL execute in riftworld:elisar run dynamictrees set "$DTX" "$TY" "$DTZ" riftworlddt:sizo 2>&1 | tr '\r\n' '  ')
+    log "  dynamictrees set $DTX,$TY,$DTZ riftworlddt:sizo -> ${DTS:0:180}"
+    sleep 6
+    DTG=$(EL execute in riftworld:elisar run dynamictrees get "$DTX" "$((TY + 6))" "$DTZ" 2>&1 | tr '\r\n' '  ')
+    log "  /dynamictrees get -> ${DTG:0:160}"
+    EL tp TestPlayer "$((DTX + 14))" "$((TY + 12))" "$((DTZ + 14))" 225 18 >/dev/null 2>&1
+    sleep 6
+    DTR=$(EL execute at TestPlayer run rifttree sizo 2>&1)
+    printf '%s' "$DTR" | grep -q "at=" || DTR=$(EL execute at TestPlayer run rifttree 2>&1)
+    log "  /rifttree -> ${DTR:0:200}"
+    DTL=$(printf '%s' "$DTR" | sed -n 's/.*logs=\([0-9]*\).*/\1/p' | head -1)
+    DTB=$(printf '%s' "$DTR" | sed -n 's/.*branches=\([0-9]*\).*/\1/p' | head -1)
+    if [ -n "$DTL" ] && [ "$DTL" -ge 20 ]; then
+      log "  OK   DT вырастил дерево: logs=$DTL branches=$DTB"
+      if [ -n "$DTB" ] && [ "$DTB" -ge 20 ]; then log "  OK   DT-дерево с ветками ($DTB — не «квадрат»)"
+      else log "  FAIL DT-дерево без ветвей: branches=$DTB"; FAILS=$((FAILS + 1)); fi
+    else
+      log "  FAIL /rifttree не видит DT-дерево (logs=$DTL)"; FAILS=$((FAILS + 1))
+    fi
+    # кадр с DT-деревом: смотрим на крону из свободного направления
+    EL gamemode spectator TestPlayer >/dev/null 2>&1 || true
+    lookat "$((DTX + 14))" "$((TY + 12))" "$((DTZ + 14))" "$DTX" "$((TY + 6))" "$DTZ" 14 "15_dt_tree"
+    EL gamemode creative TestPlayer >/dev/null 2>&1 || true
+  else
+    log "  FAIL нет TREE_AT — DT-дерево не проверено"; FAILS=$((FAILS + 1))
   fi
+
+  # ---------------------------------------------------------------- коралл через DT: подводный JoCode
+  # Рев 12: кораллы тоже должны расти через механику DT — выращиваем коралловое дерево в воде.
+  DEX=$((RX + 6)); DEZ=$((RZ + 6)); DEY=$((RF + 2))
+  DTS2=$(EL execute in riftworld:elisar run dynamictrees set "$DEX" "$DEY" "$DEZ" riftworlddt:coral_staghorn 2>&1 | tr '\r\n' '  ')
+  log "  dynamictrees set $DEX,$DEY,$DEZ riftworlddt:coral_staghorn -> ${DTS2:0:180}"
+  sleep 6
+  DC=$(EL execute in riftworld:elisar run riftcoral 2>&1)
+  log "  /riftcoral -> ${DC:0:220}"
+  DCH=$(printf '%s' "$DC" | sed -n 's/.*h=\([0-9]*\).*/\1/p' | head -1)
+  DCB=$(printf '%s' "$DC" | sed -n 's/.*blocks=\([0-9]*\).*/\1/p' | head -1)
+  if [ -n "$DCH" ] && [ "$DCH" -ge 3 ]; then log "  OK   DT вырастил коралловое дерево: h=$DCH blocks=$DCB"
+  else log "  FAIL DT-коралл не вырос (h=$DCH blocks=$DCB)"; FAILS=$((FAILS + 1)); fi
+  # кадр рощи: смотрим на риф (наша роща уже в воде)
+  lookat "$((RX + 16))" "$((RF + 14))" "$((RZ + 5))" "$RX" "$((RF + 2))" "$RZ" 16 "16c_coral_grove"
 fi
 
 RCON effect clear TestPlayer >/dev/null 2>&1 || true

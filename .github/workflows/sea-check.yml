@@ -48,7 +48,7 @@ jobs:
           mkdir -p ci-out
           cd mod
           chmod +x gradlew
-          ./gradlew jar dtJar --no-daemon --console=plain 2>&1 | tee ../ci-out/build.log
+          ./gradlew jar dtJar --no-daemon --console=plain -PwithDT 2>&1 | tee ../ci-out/build.log
         continue-on-error: false
 
       - name: Boot Forge server with the mod and probe it
@@ -58,7 +58,9 @@ jobs:
 
       - name: Launch real Minecraft client, enter Elisar and take screenshots
         if: always()
-        timeout-minutes: 40
+        timeout-minutes: 50
+        env:
+          WITH_DT: "1"   # Рев 12: реальная проверка аддона Dynamic Trees — сервер и клиент с DT
         run: bash tools/ci/client_check.sh
 
       - name: Stage jar for artifacts
