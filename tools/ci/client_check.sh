@@ -79,6 +79,18 @@ if ! RCON list >/dev/null 2>&1; then
   exit 1
 fi
 EL() { RCON execute in riftworld:elisar run "$@" 2>&1; }
+# Рев 12: если выделенный сервер упал, его лог — единственный источник причины падения.
+# Раньше в артефактах был только снимок лога из шага 1, и «Connection Lost» приходилось гадать.
+keep_server_logs() {
+  local srv=${SRV:-ci/server}
+  [ -f "$srv/logs/latest.log" ] && cp "$srv/logs/latest.log" "$OUT/server_latest.log" 2>/dev/null || true
+  [ -f "$srv/console.log" ] && cp "$srv/console.log" "$OUT/server_console.log" 2>/dev/null || true
+  if [ -d "$srv/crash-reports" ]; then
+    mkdir -p "$OUT/crash"
+    cp "$srv"/crash-reports/*.txt "$OUT/crash/" 2>/dev/null || true
+  fi
+}
+
 ELP() { local x=$1 y=$2 z=$3; shift 3; RCON execute in riftworld:elisar positioned "$x" "$y" "$z" run "$@" 2>&1; }
 
 # ---------------------------------------------------------------- дисплей должен быть готов
@@ -151,12 +163,25 @@ FY=$((RF + 22))          # «витринный» горизонт над риф
 echo "  reef=$RX,$RZ floor=$RF | deep=$DX,$DZ floor=$DF | hole=$HX,$HZ floor=$HF | cave=$CX,$CZ $CLOW..$CHIGH | column=$KX,$KZ floor=$KF"
 
 echo "== телепорт в Элисар и прогрузка области =="
+if ! RCON list >/dev/null 2>&1; then
+  echo "FATAL: выделенный сервер не отвечает по RCON до начала проб"
+  keep_server_logs
+  tail -40 "$OUT/server_latest.log" 2>/dev/null || true
+  exit 1
+fi
 EL time set noon >/dev/null 2>&1 || true        # в Элисаре всегда полдень (ElisarDaylight), но фиксируем сразу
 EL tp TestPlayer "$RX" "$((RF + 6))" "$RZ" 90 40 | tail -1
 EL forceload add "$((RX - 80))" "$((RZ - 80))" "$((RX + 100))" "$((RZ + 140))" | tail -1
 EL forceload add "$((HX - 40))" "$((HZ - 40))" "$((HX + 40))" "$((HZ + 40))" | tail -1
 EL forceload add "$((CX - 40))" "$((CZ - 40))" "$((CX + 40))" "$((CZ + 40))" | tail -1
 sleep 60
+
+if ! RCON list >/dev/null 2>&1; then
+  echo "FAIL: сервер упал на прогрузке Элисара (RCON молчит). Причина — в server_latest.log / crash:"
+  keep_server_logs
+  grep -nE "Exception|Caused by|crash" "$OUT/server_latest.log" 2>/dev/null | tail -20 || true
+  FAILS=$((FAILS + 1))
+fi
 
 # ---------------------------------------------------------------- журнал проб (нужен уже здесь)
 PROBES="$OUT/probes.txt"
@@ -218,6 +243,8 @@ write_report() {
   } > "$OUT/report_client.md"
 }
 trap write_report EXIT
+
+trap 'keep_server_logs; write_report' EXIT
 
 # проба «под игроком»: телепортируем игрока в точку и смотрим блок прямо под ним
 at_block() { # at_block <x> <y> <z> <block> <label>
