@@ -58,7 +58,9 @@ public final class CoralGrove {
         int sx = gx * CELL + 2 + (int) (ElisarSea.hash(gx, gz, 602) * (CELL - 4));
         int sz = gz * CELL + 2 + (int) (ElisarSea.hash(gx, gz, 603) * (CELL - 4));
         int seed = (int) (ElisarSea.hash(gx, gz, 604) * 1_000_003);
-        int kind = (int) (ElisarSea.hash(gx, gz, 605) * 6) % 6;
+        // распределение силуэтов: колючие «рога» и веера — основа рощи, одиночные хлысты — редкость
+        double k = ElisarSea.hash(gx, gz, 605);
+        int kind = k < 0.34 ? STAGHORN : k < 0.55 ? FAN : k < 0.75 ? TABLE : k < 0.87 ? TUBES : k < 0.95 ? WHIP : SPIRAL;
         int h = 4 + (int) (ElisarSea.hash(gx, gz, 606) * 7);        // 4..10
         int len = 2 + (int) (ElisarSea.hash(gx, gz, 607) * 4);      // 2..5
         return new Site(sx, sz, kind, h, len, seed);
@@ -160,7 +162,7 @@ public final class CoralGrove {
     /** Стол: тонкая ножка и широкая плита сверху с рваным краем. */
     private static Span table(Site s, int dx, int dz, int room) {
         int trunk = Math.max(2, Math.min(3 + (s.seed % 3), room - 1));
-        int r = 2 + (int) (ElisarSea.hash(s.seed, 1, 621) * 3);                  // радиус плиты 2..4
+        int r = 3 + (int) (ElisarSea.hash(s.seed, 1, 621) * 3);                  // радиус плиты 3..5
         double d = Math.hypot(dx, dz);
         double rag = r + (ElisarSea.hash(s.x + dx, s.z + dz, 622) - 0.5) * 1.5;  // рваный край
         if (d > rag) return null;
@@ -174,7 +176,7 @@ public final class CoralGrove {
         int h = Math.min(s.h + 2, Math.min(room, 13));
         double phase = ElisarSea.hash(s.seed, 0, 631) * Math.PI * 2;
         double freq = 0.35 + ElisarSea.hash(s.seed, 1, 632) * 0.30;
-        double amp = spiral ? 1.3 : 0.8 + ElisarSea.hash(s.seed, 2, 633) * 1.0;
+        double amp = spiral ? 1.6 : 1.6 + ElisarSea.hash(s.seed, 2, 633) * 1.5;
         int best = -1;
         for (int t = 0; t < h; ++t) {
             double a = phase + t * freq * (spiral ? 1.5 : 1.0);
@@ -197,13 +199,12 @@ public final class CoralGrove {
         double ca = Math.cos(angle), sa = Math.sin(angle);
         double u = dx * ca + dz * sa;                                            // вдоль веера
         double v = -dx * sa + dz * ca;                                           // поперёк (толщина)
-        int w = Math.min(2 + s.len, 5);                                          // полуширина 4..5
-        int h = Math.min(s.h, Math.min(room, 8));
+        int w = Math.min(3 + s.len, 6);                                          // полуширина 5..6
+        int h = Math.min(s.h + 2, Math.min(room, 9));
         if (Math.abs(v) > 0.6 || Math.abs(u) > w) return null;
-        int rib = (int) Math.round(Math.abs(u) * 2);
-        if (rib % 2 == 1) return null;                                            // рёбра через клетку
-        if (ElisarSea.hash(s.x + dx, s.z + dz, 642) < 0.22) return null;          // дырки в пластине
-        int top = h - (int) Math.round(u * u / (1.4 * Math.max(2, w)));           // округлый край
+        // дырки: веер — живая решётка, но не парус и не три палки
+        if (ElisarSea.hash(s.x + dx, s.z + dz, 642) < 0.18) return null;
+        int top = h - (int) Math.round(Math.abs(u) * Math.abs(u) / (1.2 * Math.max(3, w)));  // округлый край
         if (top < 2) return null;
         return new Span(1, Math.min(top, room), true);
     }

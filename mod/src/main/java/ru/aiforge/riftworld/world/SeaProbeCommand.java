@@ -159,19 +159,27 @@ public final class SeaProbeCommand {
                 for (int dy = -2; dy <= 2 && clear; ++dy) {
                     BlockPos p = new BlockPos(cx, y + dy, cz);
                     if (p.getY() <= level.getMinBuildHeight() || p.getY() >= level.getMaxBuildHeight()) { clear = false; break; }
-                    if (level.getBlockState(p).isSolidRender(level, p)) clear = false;
+                    if (blocked(level.getBlockState(p))) clear = false;
                 }
                 // линия взгляда на уровне камеры не должна проходить сквозь блоки
                 for (int s = 2; s <= r - 2 && clear; ++s) {
                     int sx = tx + (int) Math.round((r - s) * Math.cos(a));
                     int sz = tz + (int) Math.round((r - s) * Math.sin(a));
                     BlockPos p = new BlockPos(sx, y, sz);
-                    if (level.getBlockState(p).isSolidRender(level, p)) clear = false;
+                    if (blocked(level.getBlockState(p))) clear = false;
                 }
                 if (clear) return new int[]{cx, y, cz};
             }
         }
         return new int[]{tx, Math.min(base + 30, maxY), tz};
+    }
+
+    /**
+     * Рев 12: для камеры «занято» — это любой блок, кроме воздуха и воды. Раньше проверялось только
+     * {@code isSolidRender}, и камера вставала внутрь ламинарии/коралла (кадр получался зелёной кашей).
+     */
+    private static boolean blocked(BlockState s) {
+        return !s.isAir() && !s.is(ElisarBlocks.WATER.get());
     }
 
     private static int run(CommandSourceStack src) {
