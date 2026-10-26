@@ -53,6 +53,8 @@ jobs:
 
       - name: Boot Forge server with the mod and probe it
         run: bash tools/ci/server_check.sh
+        env:
+          WITH_DT: "1"   # Рев 12: сервер тоже с Dynamic Trees + аддоном
 
       # без игрока в измерении сервер Элисар не генерирует — съёмка и настоящие пробы идут в шаге клиента
 

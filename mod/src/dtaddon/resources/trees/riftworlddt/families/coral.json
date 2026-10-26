@@ -8,7 +8,7 @@
   "primary_thickness": 3,
   "secondary_thickness": 2,
   "branch_properties": {
-    "sound": "coral",
+    "sound": "coral_block",
     "map_color": "WARPED_WART_BLOCK"
   },
   "loot_volume_multiplier": 1.0
