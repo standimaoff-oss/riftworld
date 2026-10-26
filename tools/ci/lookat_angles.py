@@ -4,6 +4,11 @@
 usage: lookat_angles.py <cx> <cy> <cz> <tx> <ty> <tz>
 yaw: 0 = +z (юг), 90 = -x (запад), 180 = -z (север), 270 = +x (восток)
 pitch: >0 — взгляд вниз.
+
+Рев 12: исправлен знак yaw. Было ``atan2(-dx, -dz)`` — это разворот на 180° при ненулевом dz,
+поэтому камеры «смотрели на цель» ровно в противоположную сторону (на кадрах кораллов был пустой
+песок). Правильно: yaw = atan2(-dx, dz). При dz≈0 обе формулы совпадают — из-за этого ошибка
+не была видна на кадрах деревьев.
 """
 import math
 import sys
@@ -16,7 +21,7 @@ def main(argv):
     cx, cy, cz, tx, ty, tz = (float(v) for v in argv[1:7])
     dx, dy, dz = tx - cx, ty - cy, tz - cz
     h = math.hypot(dx, dz)
-    yaw = math.degrees(math.atan2(-dx, -dz))
+    yaw = math.degrees(math.atan2(-dx, dz))
     pitch = math.degrees(math.atan2(-dy, h))
     print("%.1f %.1f" % (yaw, pitch))
     return 0
