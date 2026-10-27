@@ -473,11 +473,15 @@ view "$VX" 64 "$((VZ + 26))" 180 2 14 "05_open_sea"          # поверхно�
 view "$DX" 65 "$DZ" 30 55 14 "06_trench"                     # каньон сверху
 view "$HX" "$((HF + 14))" "$HZ" 0 58 14 "07_blue_hole"             # синяя дыра: взгляд в колодец сверху
 if [ "$CAVE_X" != "0" ]; then
+  # Рев 13.26: затопленная пещера без источника света выходила чёрным квадратом — по такому
+  # кадру «пещеры забиты странно» не проверить. Ночное зрение только на время кадров пещеры.
+  EL effect give TestPlayer minecraft:night_vision 600 0 true >/dev/null 2>&1 || true
   view "$CAVE_X" "$((CAVE_Y + 1))" "$CAVE_Z" 0 6 16 "08_cave"          # затопленная пещера (координаты от /riftsea)
 else
   log "  ПРОПУСК кадров пещеры: /riftsea не нашёл затопленную полость"
 fi
 [ "$CAVE_X" != "0" ] && view "$CAVE_X" "$CAVE_Y" "$CAVE_Z" 180 0 12 "09_cave_back"   # пещера, другой ракурс
+EL effect clear TestPlayer minecraft:night_vision >/dev/null 2>&1 || true
 # витрина: камера над коралловым садом, рыбы в 3-4 блоках по курсу
 EL tp TestPlayer "$((VX + 10))" "$((VF + 6))" "$VZ" 270 8 >/dev/null 2>&1
 sleep 2
@@ -534,9 +538,24 @@ RCON effect give TestPlayer minecraft:night_vision 900 0 true >/dev/null 2>&1 ||
 for i in "${!MODEL_NAMES[@]}"; do
   EL execute at TestPlayer run kill @e[type=riftworld:sea_fish,distance=..48] >/dev/null 2>&1
   sleep 1
-  # Rotation 90: рыба стоит к камере БОКОМ — видно профиль, плавники и хвост, а не «торец»
-  SUM_LOCAL 2.2 0 0 "{NoAI:1b,Silent:1b,NoGravity:1b,Rotation:[90f,0f],sf_variant:$i}"
-  sleep 3
+  # Rotation 90: рыба стоит к камере БОКОМ — видно профиль, плавники и хвост, а не «торец».
+  # Плоским видам (медуза, скат) профиль не нужен: сбоку они читаются линией — им три четверти.
+  ROT=90f
+  case "${MODEL_NAMES[$i]}" in jelly|ray) ROT=45f;; esac
+  SUM_LOCAL 2.6 0 0 "{NoAI:1b,Silent:1b,NoGravity:1b,Rotation:[${ROT},0f],sf_variant:$i}"
+  sleep 1
+  # Рев 13.26: рыба успевала уплыть за 3 секунды, и кадры model_* выходили пустой водой.
+  # Прибиваем её к точке съёмки и пишем в лог, где она на самом деле стоит.
+  EL execute at TestPlayer rotated as TestPlayer run tp @e[type=riftworld:sea_fish,sort=nearest,limit=1] ^0 ^0 ^2.6 >/dev/null 2>&1 || true
+  FISH_POS=$(EL execute at TestPlayer run data get entity @e[type=riftworld:sea_fish,distance=..5,sort=nearest,limit=1] Pos 2>&1)
+  log "  рыба ${MODEL_NAMES[$i]}: ${FISH_POS:0:120}"
+  # Гейт кадра: витрина имеет смысл, только если рыба реально в 5 блоках от камеры.
+  # Раньше пустые кадры model_* проходили молча — и «модель плохая» было не проверить.
+  if [[ "$FISH_POS" != *"entity data"* ]]; then
+    log "  FAIL витрина ${MODEL_NAMES[$i]}: рыбы нет в кадре"
+    FAILS=$((FAILS + 1))
+  fi
+  sleep 1
   shot "model_$(printf '%02d' "$i")_${MODEL_NAMES[$i]}"
 done
 EL execute at TestPlayer run kill @e[type=riftworld:sea_fish,distance=..48] >/dev/null 2>&1

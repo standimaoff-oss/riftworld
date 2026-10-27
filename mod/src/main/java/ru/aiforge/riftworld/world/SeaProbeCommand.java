@@ -374,6 +374,9 @@ public final class SeaProbeCommand {
         // висел серый куб; без этой строки не понять, это камень гена или блок мода.
         int topY = Integer.MIN_VALUE;
         String topId = "-";
+        // near= — что стоит ВОКРУГ дерева помимо аддона (камень рифа, грунт). На кадрах над кроной
+        // подводного коралла висел серый куб: без этого поля не отличить породу генерации от блока мода.
+        java.util.Map<String, Integer> near = new java.util.TreeMap<>();
         for (int dx = -4; dx <= 4; ++dx) {
             for (int dz = -4; dz <= 4; ++dz) {
                 for (int dyy = -2; dyy <= 12; ++dyy) {
@@ -389,10 +392,15 @@ public final class SeaProbeCommand {
                     if (key == null) continue;
                     if (key.getNamespace().equals("riftworlddt")) dt.merge(key.getPath(), 1, Integer::sum);
                     else if (key.getNamespace().equals("dynamictrees")) dy++;
+                    else near.merge(key.getPath(), 1, Integer::sum);
                 }
             }
         }
         int total = dt.values().stream().mapToInt(Integer::intValue).sum();
+        String nearNames = near.entrySet().stream()
+                .sorted((a2, b2) -> b2.getValue() - a2.getValue()).limit(6)
+                .map(e2 -> e2.getKey() + "=" + e2.getValue())
+                .reduce((a2, b2) -> a2 + " " + b2).orElse("-");
         String names = dt.entrySet().stream().limit(8)
                 .map(e2 -> e2.getKey() + "=" + e2.getValue())
                 .reduce((a2, b2) -> a2 + " " + b2).orElse("-");
@@ -400,7 +408,7 @@ public final class SeaProbeCommand {
         // Если у контрольного дуба lv>0, а у нашего дерева нет — виноваты наши leaves_properties.
         String line = "riftdtat at=" + x + "," + y + "," + z + " dt=" + total + " dy=" + dy
                 + " lv=" + leaves + " air=" + air + " water=" + water
-                + " top=" + topY + ":" + topId + " blocks=" + names;
+                + " top=" + topY + ":" + topId + " blocks=" + names + " near=" + nearNames;
         src.sendSuccess(() -> Component.literal(line), false);
         return total;
     }
