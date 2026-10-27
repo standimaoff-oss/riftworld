@@ -752,7 +752,8 @@ if [ "${WITH_DT:-0}" = "1" ]; then
     EL gamemode spectator TestPlayer >/dev/null 2>&1 || true
     # Рев 13.17: камера должна стоять ВНУТРИ расчищенной площадки (радиус 6), иначе она оказывается
     # в стене островного дома — именно так кадр 15_dt_tree превращался в кирпичную кладку.
-    lookat "$((DTX + 5))" "$((DTY + 8))" "$((DTZ + 5))" "$DTX" "$((DTY + 5))" "$DTZ" 14 "15_dt_tree"
+    lookat "$((DTX + 11))" "$((DTY + 7))" "$((DTZ + 11))" "$DTX" "$((DTY + 6))" "$DTZ" 14 "15_dt_tree"
+    lookat "$((DTX + 4))" "$((DTY + 10))" "$((DTZ + 13))" "$DTX" "$((DTY + 7))" "$DTZ" 14 "15c_dt_tree_side"
     lookat "$((DTX + 2))" "$((DTY + 21))" "$((DTZ + 2))" "$DTX" "$((DTY + 8))" "$DTZ" 12 "15b_dt_tree_top"
     EL gamemode creative TestPlayer >/dev/null 2>&1 || true
   else
@@ -823,7 +824,10 @@ if [ "${WITH_DT:-0}" = "1" ]; then
     DC=$(EL execute in riftworld:elisar run riftcoral 2>&1)
     log "  /riftcoral -> ${DC:0:200}"
     # кадры: сам подводный «ствол» DT и роща вокруг
-    lookat "$((DEX + 7))" "$((DEY + 6))" "$((DEZ + 7))" "$DEX" "$((DEY + 3))" "$DEZ" 14 "16d_dt_coral"
+    # Рев 13.23: камера стояла вплотную — крона занимала весь кадр, дерева не читалось.
+    # Снимаем с дистанции ~18 блоков и чуть снизу, чтобы был виден ствол + крона + дно.
+    lookat "$((DEX + 13))" "$((DEY + 5))" "$((DEZ + 13))" "$DEX" "$((DEY + 7))" "$DEZ" 16 "16d_dt_coral"
+    lookat "$((DEX + 4))" "$((DEY + 2))" "$((DEZ + 15))" "$DEX" "$((DEY + 6))" "$DEZ" 14 "16e_dt_coral_low"
     lookat "$((RX + 16))" "$((RF + 14))" "$((RZ + 5))" "$RX" "$((RF + 2))" "$RZ" 16 "16c_coral_grove"
   }
   log "  [DT] запускаю секцию коралла"
