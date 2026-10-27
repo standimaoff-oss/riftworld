@@ -409,9 +409,66 @@ public final class SeaProbeCommand {
                 + (imiss > 0 ? " item_missing=" + itemsMiss : "") + (iok > 0 ? " item_have=" + itemsHave : "")
                 + " fam=" + dtNames("com.ferreusveritas.dynamictrees.tree.family.Family")
                 + " sp=" + dtNames("com.ferreusveritas.dynamictrees.tree.species.Species")
-                + " lv=" + dtNames("com.ferreusveritas.dynamictrees.block.leaves.LeavesProperties") + herr;
+                + " lv=" + dtNames("com.ferreusveritas.dynamictrees.block.leaves.LeavesProperties")
+                + " diag=" + dtSpeciesDiag() + herr;
         src.sendSuccess(() -> Component.literal(line), false);
         return wrong == 0 ? 1 : 0;
+    }
+
+    /**
+     * Рев 13.14: одна строка на каждый наш вид DT — «а всё ли у него связано».
+     *
+     * <p>Для вида печатает: {@code sp} — вид валиден, {@code fam} — семья валидна,
+     * {@code br} — каким блоком семья ставит ветви, {@code brf} — знает ли этот блок свою семью
+     * (без этого DT не достраивает боковые ветви), {@code lv} — свойства листвы валидны,
+     * {@code dyn} — каким блоком ставятся листья ({@code minecraft:air} = листвы не будет никогда).
+     *
+     * <p>Это ровно те четыре звена, которые ломаются в аддонах DT; без них «дерево выросло на
+     * 6 блоков» приходится угадывать по скриншотам.
+     */
+    private static String dtSpeciesDiag() {
+        try {
+            Class<?> spCls = Class.forName("com.ferreusveritas.dynamictrees.tree.species.Species");
+            Object reg = spCls.getField("REGISTRY").get(null);
+            java.util.Set<?> names = (java.util.Set<?>) reg.getClass().getMethod("getRegistryNames").invoke(reg);
+            java.lang.reflect.Method get = reg.getClass().getMethod("get", net.minecraft.resources.ResourceLocation.class);
+            StringBuilder out = new StringBuilder();
+            for (Object o : names) {
+                var rl = net.minecraft.resources.ResourceLocation.tryParse(String.valueOf(o));
+                if (rl == null || !rl.getNamespace().equals("riftworlddt")) continue;
+                Object sp = get.invoke(reg, rl);
+                if (sp == null) continue;
+                boolean spOk = (Boolean) sp.getClass().getMethod("isValid").invoke(sp);
+                Object fam = sp.getClass().getMethod("getFamily").invoke(sp);
+                boolean famOk = (Boolean) fam.getClass().getMethod("isValid").invoke(fam);
+                String br = "?", brf = "?";
+                Object brOpt = fam.getClass().getMethod("getBranch").invoke(fam);
+                if (brOpt instanceof java.util.Optional<?> opt && opt.isPresent()) {
+                    Object branch = opt.get();
+                    br = blockId(branch instanceof net.minecraft.world.level.block.Block b ? b.defaultBlockState() : null);
+                    Object bfam = branch.getClass().getMethod("getFamily").invoke(branch);
+                    brf = String.valueOf(bfam == fam);
+                }
+                Object lp = sp.getClass().getMethod("getLeavesProperties").invoke(sp);
+                boolean lvOk = (Boolean) lp.getClass().getMethod("isValid").invoke(lp);
+                Object dynState = lp.getClass().getMethod("getDynamicLeavesState").invoke(lp);
+                String dyn = blockId(dynState instanceof BlockState bs ? bs : null);
+                if (out.length() > 0) out.append(' ');
+                out.append(rl.getPath()).append("[sp=").append(spOk ? 1 : 0)
+                        .append(" fam=").append(famOk ? 1 : 0)
+                        .append(" br=").append(br).append(" brf=").append(brf)
+                        .append(" lv=").append(lvOk ? 1 : 0).append(" dyn=").append(dyn).append(']');
+            }
+            return out.length() == 0 ? "none" : out.toString();
+        } catch (Throwable t) {
+            return "error:" + t.getClass().getSimpleName();
+        }
+    }
+
+    private static String blockId(BlockState st) {
+        if (st == null) return "null";
+        var key = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(st.getBlock());
+        return key == null ? "?" : key.toString();
     }
 
     /**
