@@ -617,10 +617,13 @@ if [ "${WITH_DT:-0}" = "1" ]; then
   # сажаем на блок выше грунта и проверяем, что DT поставил ветви НАШЕГО аддона.
   ELP_dt() { EL execute in riftworld:elisar run "$@" 2>&1 | tr '\r\n' '  '; }
   dt_grow() {  # dt_grow <x> <y> <z> <species> [jo_code] — пробует settree, потом старое имя set
-    local x=$1 y=$2 z=$3 sp=$4 code=${5:-} out
+    local x=$1 y=$2 z=$3 sp=$4 code=${5:-} out qcode=''
+    [ -n "$code" ] && qcode="\"$code\""   # JoCode должен прийти в кавычках (StringArgumentType.string())
     for cmd in settree set; do
       if [ -n "$code" ]; then
-        out=$(ELP_dt dynamictrees $cmd "$x" "$y" "$z" "$sp" "$code")
+        # JoCode у DT — StringArgumentType.string(): нужны КАВЫЧКИ, иначе Brigadier ругается
+        # «Expected whitespace to end one argument, but found trailing data».
+        out=$(ELP_dt dynamictrees $cmd "$x" "$y" "$z" "$sp" "$qcode")
       else
         out=$(ELP_dt dynamictrees $cmd "$x" "$y" "$z" "$sp")
       fi
