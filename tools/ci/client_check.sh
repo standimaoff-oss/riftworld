@@ -585,15 +585,17 @@ if [ "${WITH_DT:-0}" = "1" ]; then
   DTSEED=$(EL execute at TestPlayer run give TestPlayer riftworlddt:sizo_seed 1 2>&1)
   log "  give riftworlddt:sizo_seed -> ${DTSEED:0:120}"
   if [[ "$DTSEED" == *"Given"* || "$DTSEED" == *"given"* ]]; then log "  OK   DT видит семена аддона (riftworlddt:sizo_seed)"
-  else log "  FAIL аддон к Dynamic Trees не загрузился"; FAILS=$((FAILS + 1)); fi
+  else log "  FAIL аддон к Dynamic Trees не загрузился (ответ give: ${DTSEED:0:160})"; FAILS=$((FAILS + 1)); fi
   DTCORAL=$(EL execute at TestPlayer run give TestPlayer riftworlddt:coral_staghorn_seed 1 2>&1)
   if [[ "$DTCORAL" == *"Given"* || "$DTCORAL" == *"given"* ]]; then log "  OK   DT видит коралловые семена (riftworlddt:coral_staghorn_seed)"
-  else log "  FAIL коралловые виды DT не зарегистрированы"; FAILS=$((FAILS + 1)); fi
+  else log "  FAIL коралловые виды DT не зарегистрированы (ответ give: ${DTCORAL:0:160})"; FAILS=$((FAILS + 1)); fi
   DTHIT=$(grep -cE "riftworlddt:sizo" "$OUT/client.log" 2>/dev/null || echo 0)
   log "  упоминаний riftworlddt:sizo в логе: $DTHIT"
 
   # семьи в регистрах DT (JSON должны быть расчитаны и зарегистрированы)
-  DTFAM=$(EL execute in riftworld:elisar run dynamictrees registry families 2>&1 | tr '\r\n' '  ')
+  # NB: у DT подкоманда требует явный "list"; иначе она молчит, и проба ложно падала.
+  # "true" = RAW-режим, печатает registry name (riftworlddt:sizo), а не переведённое имя.
+  DTFAM=$(EL execute in riftworld:elisar run dynamictrees registry families list true 2>&1 | tr '\r\n' '  ')
   log "  /dynamictrees registry families -> ${DTFAM:0:220}"
   for f in riftworlddt:sizo riftworlddt:ambra riftworlddt:coral; do
     if [[ "$DTFAM" == *"$f"* ]]; then log "  OK   у DT есть семья $f"

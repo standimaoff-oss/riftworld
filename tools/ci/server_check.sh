@@ -125,7 +125,7 @@ if [ -n "${WITH_DT:-}" ]; then
   if echo "$LINE" | grep -q "handler=valid" && echo "$LINE" | grep -q "wrong_ns=0"; then
     echo "  аддон DT зарегистрировался в своём namespace"
   else
-    echo "::error title=аддон DT::$(echo "$LINE" | head -c 300)"
+    echo "::error title=аддон DT::$(echo "$LINE" | head -c 900)"
     bad "аддон DT: $LINE"
   fi
 fi
@@ -164,7 +164,7 @@ if [ "$FAILS" -gt 0 ]; then
 fi
 if [ "$ERRS" -gt 0 ]; then
   head -5 "$OUT/errors.txt" | while IFS= read -r line; do
-    echo "::error title=лог сервера::${line:0:300}"
+    echo "::error title=лог сервера::${line:0:600}"
   done
 fi
 [ "$FAILS" -eq 0 ] && [ "$ERRS" -eq 0 ]

@@ -329,14 +329,24 @@ public final class SeaProbeCommand {
                 wrongList.append(' ').append(b);
             } else missing++;
         }
-        int iok = 0;
+        int iok = 0, imiss = 0;
+        StringBuilder itemsHave = new StringBuilder(), itemsMiss = new StringBuilder();
         for (String i : items) {
-            if (net.minecraftforge.registries.ForgeRegistries.ITEMS.containsKey(new net.minecraft.resources.ResourceLocation("riftworlddt", i))) iok++;
+            if (net.minecraftforge.registries.ForgeRegistries.ITEMS.containsKey(new net.minecraft.resources.ResourceLocation("riftworlddt", i))) {
+                iok++;
+                if (itemsHave.length() < 120) itemsHave.append(itemsHave.length() > 0 ? "," : "").append(i);
+            } else {
+                imiss++;
+                if (itemsMiss.length() < 120) itemsMiss.append(itemsMiss.length() > 0 ? "," : "").append(i);
+            }
         }
         String handler = "absent";
         try {
             Class<?> cls = Class.forName("com.ferreusveritas.dynamictrees.api.registry.RegistryHandler");
-            Object h = cls.getMethod("get", String.class).invoke(null, "riftworlddt");
+            // NB: get(String) в DT делает ResourceLocation.tryParse → "riftworlddt" стал бы
+            // minecraft:riftworlddt. Передаём полное имя, иначе хендлер «не находится» ложно.
+            Object h = cls.getMethod("get", net.minecraft.resources.ResourceLocation.class)
+                    .invoke(null, new net.minecraft.resources.ResourceLocation("riftworlddt", "riftworlddt"));
             handler = h != null && (Boolean) h.getClass().getMethod("isValid").invoke(h) ? "valid" : "invalid";
         } catch (ClassNotFoundException e) {
             handler = "no-dt";
@@ -344,9 +354,37 @@ public final class SeaProbeCommand {
             handler = "error";
         }
         String line = "riftdt handler=" + handler + " ok=" + ok + " items=" + iok + " wrong_ns=" + wrong
-                + " missing=" + missing + (wrong > 0 ? " in=dynamictrees:" + wrongList : "");
+                + " missing=" + missing + (wrong > 0 ? " in=dynamictrees:" + wrongList : "")
+                + (imiss > 0 ? " item_missing=" + itemsMiss : "") + (iok > 0 ? " item_have=" + itemsHave : "")
+                + " fam=" + dtNames("com.ferreusveritas.dynamictrees.tree.family.Family")
+                + " sp=" + dtNames("com.ferreusveritas.dynamictrees.tree.species.Species")
+                + " lv=" + dtNames("com.ferreusveritas.dynamictrees.block.leaves.LeavesProperties");
         src.sendSuccess(() -> Component.literal(line), false);
         return wrong == 0 ? 1 : 0;
+    }
+
+    /**
+     * Имена записей реестра Dynamic Trees (семьи/виды/свойства листвы), начинающиеся на riftworlddt.
+     * Нужно, чтобы падение аддона было видно одной строкой, а не по 255 warning'ам в клиенте.
+     */
+    private static String dtNames(String className) {
+        try {
+            Class<?> cls = Class.forName(className);
+            Object registry = cls.getField("REGISTRY").get(null);
+            java.util.Set<?> names = (java.util.Set<?>) registry.getClass().getMethod("getRegistryNames").invoke(registry);
+            StringBuilder sb = new StringBuilder();
+            int n = 0;
+            for (Object o : names) {
+                String s2 = String.valueOf(o);
+                if (!s2.startsWith("riftworlddt:")) continue;
+                if (n++ >= 6) { sb.append(",.."); break; }
+                if (sb.length() > 0) sb.append(',');
+                sb.append(s2.substring("riftworlddt:".length()));
+            }
+            return n == 0 ? "-" : sb.toString();
+        } catch (ReflectiveOperationException | ClassCastException e) {
+            return "?";
+        }
     }
 
     private static int coral(CommandSourceStack src) {
