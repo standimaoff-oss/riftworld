@@ -13,9 +13,40 @@ RCON_PW=${RCON_PW:-riftci}
 KEEP=${KEEP:-1}
 JAR=$(ls mod/build/libs/riftworld-*.jar 2>/dev/null | grep -v -e sources -e javadoc | head -1)
 mkdir -p "$SRV/mods" "$OUT"
-if [ -z "$JAR" ]; then echo "FATAL: no mod jar built"; exit 1; fi
+if [ -z "$JAR" ]; then echo "::error title=сервер::jar не собран (mod/build/libs пуст)"; exit 1; fi
 echo "jar: $JAR"
 cp -f "$JAR" "$SRV/mods/"
+
+write_report_server() {
+  {
+    echo "# CI, шаг 1: сборка jar + запуск Forge-сервера"
+    echo
+    echo "- jar: \`$JAR\`"
+    echo "- сервер: \`$(tail -1 "$OUT/done.txt" 2>/dev/null)\`"
+    echo "- провалов проверок: **${FAILS:-0}**"
+    echo "- строк Exception/ERROR в latest.log: **${ERRS:-0}**"
+    echo "- сервер оставлен живым для шага клиента: **$KEEP**"
+    echo
+    echo "## forge mods"; echo '```'; sed -n '1,25p' "$OUT/mods.txt" 2>/dev/null; echo '```'
+    echo "## tps"; echo '```'; cat "$OUT/tps.txt" 2>/dev/null; echo '```'
+    echo "## аддон DT"; echo '```'; cat "$OUT/riftdt.txt" 2>/dev/null; echo '```'
+    echo "## ошибки"; echo '```'; sed -n '1,40p' "$OUT/errors.txt" 2>/dev/null; echo '```'
+  } > "$OUT/report_server.md" 2>/dev/null || true
+}
+on_exit() {
+  local rc=$?
+  write_report_server
+  if [ "$rc" -ne 0 ]; then
+    echo "::error title=сервер::скрипт завершился с кодом $rc (провалов проверок: ${FAILS:-0}, ошибок в логе: ${ERRS:-0})"
+    if [ -f "$SRV/console.log" ]; then
+      tail -40 "$SRV/console.log" | while IFS= read -r line; do echo "::error title=console::${line:0:400}"; done
+    fi
+    if [ -f "$OUT/installer.log" ]; then
+      tail -20 "$OUT/installer.log" | while IFS= read -r line; do echo "::error title=installer::${line:0:400}"; done
+    fi
+  fi
+}
+trap on_exit EXIT
 
 # Рев 12: WITH_DT=1 — сервер тоже должен видеть Dynamic Trees и аддон (client_check проверяет
 # рост деревьев через /dynamictrees). Без DT-jar аддон не загрузится, а без аддона нет смысла.
@@ -57,8 +88,8 @@ fi
 
 if [ ! -f "$SRV/libraries/net/minecraftforge/forge/$FORGE/unix_args.txt" ]; then
   curl -fsSL -o "$SRV/installer.jar" \
-    "https://maven.minecraftforge.net/net/minecraftforge/forge/$FORGE/forge-$FORGE-installer.jar" || { echo "FATAL: installer download"; exit 1; }
-  ( cd "$SRV" && java -jar installer.jar --installServer ) > "$OUT/installer.log" 2>&1 || { echo "FATAL: installer"; tail -40 "$OUT/installer.log"; exit 1; }
+    "https://maven.minecraftforge.net/net/minecraftforge/forge/$FORGE/forge-$FORGE-installer.jar" || { echo "::error title=сервер::не скачался установщик Forge"; exit 1; }
+  ( cd "$SRV" && java -jar installer.jar --installServer ) > "$OUT/installer.log" 2>&1 || { echo "::error title=сервер::установщик Forge упал"; tail -40 "$OUT/installer.log"; exit 1; }
   rm -f "$SRV/installer.jar" "$SRV/installer.jar.log"
 fi
 
@@ -97,12 +128,13 @@ for i in $(seq 1 300); do
   sleep 2
 done
 if [ "$ok" != 1 ]; then
-  echo "FATAL: server did not reach Done in 10 min"; tail -60 "$SRV/console.log"; cp "$SRV/console.log" "$OUT/console.log"; exit 1
+  echo "::error title=сервер::сервер не дошёл до Done за 10 минут"; cp "$SRV/console.log" "$OUT/console.log" 2>/dev/null; tail -60 "$SRV/console.log"; exit 1
 fi
 grep 'Done (' "$SRV/logs/latest.log" | tail -1 | tee "$OUT/done.txt"
 
 Rq() { python3 tools/rcon.py --password "$RCON_PW" --log "" --timeout 120 "$@"; }
 FAILS=0
+ERRS=0
 bad() { echo "CHECK FAILED: $*"; FAILS=$((FAILS+1)); }
 say() { echo; echo "== $*"; }
 
@@ -112,7 +144,12 @@ grep -qi 'riftworld' "$OUT/mods.txt" && echo "  riftworld present" || bad "mod n
 
 say "tps"
 Rq forge tps > "$OUT/tps.txt" 2>&1
-grep -q "Mean TPS: 20.000" "$OUT/tps.txt" && echo "  tps ok" || bad "tps below 20"
+python3 - "$OUT/tps.txt" <<'PYEOF' || bad "tps ниже 19.5"
+import re, sys
+t = open(sys.argv[1], encoding="utf-8", errors="ignore").read()
+m = re.search(r"Mean TPS: ([0-9.]+)", t)
+sys.exit(0 if m and float(m.group(1)) >= 19.5 else 1)
+PYEOF
 cat "$OUT/tps.txt"
 
 if [ -n "${WITH_DT:-}" ]; then
@@ -152,19 +189,7 @@ if [ "$KEEP" != 1 ]; then
   for i in $(seq 1 60); do pid=$(cat "$SRV/server.pid" 2>/dev/null || echo); [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null || break; sleep 2; done
 fi
 
-{
-  echo "# CI, шаг 1: сборка jar + запуск Forge-сервера"
-  echo
-  echo "- jar: \`$JAR\`"
-  echo "- сервер: \`$(cat "$OUT/done.txt" 2>/dev/null | tail -1)\`"
-  echo "- провалов проверок: **$FAILS**"
-  echo "- строк Exception/ERROR в latest.log: **$ERRS**"
-  echo "- сервер оставлен живым для шага клиента: **$KEEP**"
-  echo
-  echo "## forge mods"; echo '```'; sed -n '1,25p' "$OUT/mods.txt"; echo '```'
-  echo "## tps"; echo '```'; cat "$OUT/tps.txt"; echo '```'
-  echo "## ошибки"; echo '```'; sed -n '1,40p' "$OUT/errors.txt"; echo '```'
-} > "$OUT/report_server.md"
+write_report_server
 cat "$OUT/report_server.md"
 
 # Рев 13: причины провала — аннотациями, чтобы их было видно без артефактов

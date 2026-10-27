@@ -82,7 +82,9 @@ key() { # key <F1>
 
 RCON() { python3 tools/rcon.py --password "$RCON_PW" --log "" --timeout 120 "$@" 2>&1; }
 if ! RCON list >/dev/null 2>&1; then
+  echo "::error title=клиент::сервер не отвечает по RCON — проверка клиента невозможна"
   echo "FATAL: сервер не отвечает по RCON — клиенту некуда заходить (см. отчёт шага сервера)"
+  tail -20 "${SRV:-ci/server}/console.log" 2>/dev/null | while IFS= read -r l; do echo "::error title=console::${l:0:300}"; done
   exit 1
 fi
 EL() { RCON execute in riftworld:elisar run "$@" 2>&1; }

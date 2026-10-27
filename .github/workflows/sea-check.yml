@@ -52,6 +52,10 @@ jobs:
         continue-on-error: false
 
       - name: Boot Forge server with the mod and probe it
+        id: server
+        # Рев 13.21: серверный шаг не должен «съедать» весь прогон: даже если он упал,
+        # шаг клиента пытается отработать (у него if: always()) и его отчёт попадает в артефакты.
+        continue-on-error: true
         run: bash tools/ci/server_check.sh
         env:
           WITH_DT: "1"   # Рев 12: сервер тоже с Dynamic Trees + аддоном
@@ -64,6 +68,16 @@ jobs:
         env:
           WITH_DT: "1"   # Рев 12: реальная проверка аддона Dynamic Trees — сервер и клиент с DT
         run: bash tools/ci/client_check.sh
+
+      - name: Проверка серверного шага
+        if: always()
+        # Итог серверного шага выносим отдельной аннотацией: continue-on-error скрывает статус.
+        run: |
+          echo "server outcome: ${{ steps.server.outcome }}"
+          if [ "${{ steps.server.outcome }}" != "success" ]; then
+            echo "::error title=сервер::шаг сервера: ${{ steps.server.outcome }} — см. report_server.md в артефактах"
+            exit 1
+          fi
 
       - name: Stage jar for artifacts
         if: always()
