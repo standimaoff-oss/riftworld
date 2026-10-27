@@ -8,6 +8,13 @@
 # usage: tools/ci/client_check.sh     (из корня репозитория, JDK 17 в PATH)
 set -uo pipefail
 OUT=${OUT:-ci-shots}
+# Рев 13.17: число или безопасный 0. В bash `$((n + 1))` с мусором в n — синтаксическая ошибка,
+# которая обрывает выполняемый блок целиком и молча (проверено). Все координаты прогона идут через asm().
+asm() {
+  local v=${1:-}
+  case "$v" in ''|*[!0-9-]*) echo 0 ;; *) echo "$((10#$v))" ;; esac
+}
+
 RUN=${RUN:-ci/runs}
 DISP=${DISP:-:99}
 RCON_PW=${RCON_PW:-riftci}
@@ -154,12 +161,17 @@ RCON gamemode creative TestPlayer >/dev/null 2>&1 || true
 
 # ---------------------------------------------------------------- координаты сцен
 read -r RX RZ RF < <(python3 -c "import json;d=json.load(open('$SPOTS'));print(d['reef']['x'],d['reef']['z'],d['reef']['floor'])")
+RX=$(asm "$RX"); RZ=$(asm "$RZ"); RF=$(asm "$RF")   # Рев 13.17: координаты только числом
 read -r DX DZ DF < <(python3 -c "import json;d=json.load(open('$SPOTS'));print(d['deep']['x'],d['deep']['z'],d['deep']['floor'])")
 read -r HX HZ HF < <(python3 -c "import json;d=json.load(open('$SPOTS'));print(d['hole']['x'],d['hole']['z'],d['hole']['floor'])")
 read -r CX CZ CLOW CHIGH < <(python3 -c "import json;d=json.load(open('$SPOTS'));print(d['cave']['x'],d['cave']['z'],d['cave']['low'],d['cave']['high'])")
 read -r KX KZ KF KB KT < <(python3 -c "import json;d=json.load(open('$SPOTS'));c=d['column'];print(c['x'],c['z'],c['floor'],c['water_bottom'],c['water_top'])")
 read -r VX VZ VF < <(python3 -c "import json;d=json.load(open('$SPOTS'));print(d['reef_vista']['x'],d['reef_vista']['z'],d['reef_vista']['floor'])")
 read -r LX LZ LF < <(python3 -c "import json;d=json.load(open('$SPOTS'));print(d['kelp']['x'],d['kelp']['z'],d['kelp']['floor'])")
+# Рев 13.17: любая координата сцены — только числом (иначе $((...)) тихо обрывает целый блок)
+for v in DX DZ DF HX HZ HF CX CZ CLOW CHIGH KX KZ KF KB KT VX VZ VF LX LZ LF; do
+  eval "$v=\$(asm \"\${$v:-}\")"
+done
 FY=$((RF + 22))          # «витринный» горизонт над рифом: толща воды, хорошо освещена
 echo "  reef=$RX,$RZ floor=$RF | deep=$DX,$DZ floor=$DF | hole=$HX,$HZ floor=$HF | cave=$CX,$CZ $CLOW..$CHIGH | column=$KX,$KZ floor=$KF"
 
@@ -194,7 +206,11 @@ log() { echo "$*" | tee -a "$PROBES"; }
 riftsea_field() {
   local raw
   raw=$(RCON execute in riftworld:elisar at TestPlayer run riftsea 2>&1 | tr -d '\r' | tr '\n' ' ')
-  log "  /riftsea raw: ${raw:0:400}"
+  # Рев 13.17: log пишет в stdout, а функцию вызывают через $(...). Из-за этого RF получался
+  # многострочным («  /riftsea raw: ...» + число), и любое $((RF + 6)) ниже валилось с
+  # «syntax error: operand expected». bash в этом случае ТИХО обрывает весь составной блок
+  # (if WITH_DT ... fi) — поэтому секция коралла не выполнялась вообще, а отчёт выглядел целым.
+  echo "  /riftsea raw: ${raw:0:400}" >> "$PROBES"   # в журнал — да, в stdout (возврат) — нет
   python3 - "$raw" "$1" <<'PYEOF'
 import re, sys
 s, k = sys.argv[1], sys.argv[2]
@@ -206,8 +222,8 @@ PYEOF
 # поэтому координаты камер больше не захардкожены — их отдаёт мод.
 EL tp TestPlayer "$RX" "$((RF + 6))" "$RZ" 90 20 >/dev/null 2>&1
 sleep 8
-RREEF=$(riftsea_field floor)             # настоящая кромка дна в рифовой точке (мир стал глубже)
-[ "$RREEF" != "0" ] && RF=$RREEF
+RREEF=$(riftsea_field floor | tail -1)   # настоящая кромка дна в рифовой точке (мир стал глубже)
+RREEF=$(asm "$RREEF"); [ "$RREEF" != "0" ] && RF=$RREEF
 SEA_RAW=$(RCON execute in riftworld:elisar at TestPlayer run riftsea 2>&1 | tr -d '\r' | tr '\n' ' ')
 echo "  /riftsea -> ${SEA_RAW:0:400}"
 read -r SEA_FLOOR SEA_WATER SEA_MIN SEA_CAVES SEA_WET SEA_AIR SEA_FLOAT SEA_CEIL SEA_PLANTS SEA_CORALS CAVE_X CAVE_Y CAVE_Z < <(python3 - "$SEA_RAW" <<'PYEOF'
@@ -280,7 +296,7 @@ seabed_probe() { # seabed_probe <x> <y> <z> <label>: твёрдый донный
 }
 EL tp TestPlayer "$KX" 60 "$KZ" 0 0 >/dev/null 2>&1
 sleep 3
-KFLOOR=$(riftsea_field floor)
+KFLOOR=$(asm "$(riftsea_field floor)")
 [ "$KFLOOR" = "0" ] && KFLOOR=$SEA_FLOOR
 seabed_probe "$KX" "$KFLOOR" "$KZ" "донный блок"
 
@@ -362,7 +378,7 @@ if [ "$CORAL_AT" != "0,0,0" ]; then
     || probe_fail "растение в одну колонку — нет силуэта"
   [ "$CORAL_TIPS" -ge 1 ] && probe_ok "на ветвях есть кораллы-украшения: $CORAL_TIPS" \
     || probe_fail "верхушки ветвей пустые"
-  CX=$(printf '%s' "$CORAL_AT" | cut -d, -f1); CY=$(printf '%s' "$CORAL_AT" | cut -d, -f2); CZ=$(printf '%s' "$CORAL_AT" | cut -d, -f3)
+  CX=$(asm "$(printf '%s' "$CORAL_AT" | cut -d, -f1)"); CY=$(asm "$(printf '%s' "$CORAL_AT" | cut -d, -f2)"); CZ=$(asm "$(printf '%s' "$CORAL_AT" | cut -d, -f3)")
   log "  камера коралла: cam=$CORAL_CAM camlow=$CORAL_CAMLOW"
 else
   probe_fail "/riftcoral не нашла коралловое дерево"
@@ -543,7 +559,7 @@ log "  /rifttree raw: ${TREE_RAW:0:240}"
 TREE_AT=$(printf '%s' "$TREE_RAW" | sed -n 's/.*at=\([-0-9]*,[-0-9]*,[-0-9]*\).*/\1/p' | head -1)
 TREE_BR=$(printf '%s' "$TREE_RAW" | sed -n 's/.*branches=\([0-9]*\).*/\1/p' | head -1)
 if [ -n "$TREE_AT" ]; then
-  TX=$(printf '%s' "$TREE_AT" | cut -d, -f1); TY=$(printf '%s' "$TREE_AT" | cut -d, -f2); TZ=$(printf '%s' "$TREE_AT" | cut -d, -f3)
+  TX=$(asm "$(printf '%s' "$TREE_AT" | cut -d, -f1)"); TY=$(asm "$(printf '%s' "$TREE_AT" | cut -d, -f2)"); TZ=$(asm "$(printf '%s' "$TREE_AT" | cut -d, -f3)")
   log "  OK   дерево найдено: $TREE_AT (ветвей: ${TREE_BR:-?})"
   if [ "${TREE_BR:-0}" -ge 3 ]; then log "  OK   у дерева есть ветки: ${TREE_BR} блоков вне ствола"
   else log "  FAIL ветвей слишком мало: ${TREE_BR:-0} — дерево выглядит квадратом"; FAILS=$((FAILS + 1)); fi
@@ -732,53 +748,65 @@ if [ "${WITH_DT:-0}" = "1" ]; then
       FAILS=$((FAILS + 1))
     fi
     EL gamemode spectator TestPlayer >/dev/null 2>&1 || true
-    lookat "$((DTX + 12))" "$((DTY + 11))" "$((DTZ + 12))" "$DTX" "$((DTY + 6))" "$DTZ" 14 "15_dt_tree"
+    # Рев 13.17: камера должна стоять ВНУТРИ расчищенной площадки (радиус 6), иначе она оказывается
+    # в стене островного дома — именно так кадр 15_dt_tree превращался в кирпичную кладку.
+    lookat "$((DTX + 5))" "$((DTY + 8))" "$((DTZ + 5))" "$DTX" "$((DTY + 5))" "$DTZ" 14 "15_dt_tree"
+    lookat "$((DTX + 2))" "$((DTY + 21))" "$((DTZ + 2))" "$DTX" "$((DTY + 8))" "$DTZ" 12 "15b_dt_tree_top"
     EL gamemode creative TestPlayer >/dev/null 2>&1 || true
   else
     log "  FAIL нет TREE_AT — DT-дерево не проверено"; FAILS=$((FAILS + 1))
   fi
 
   # ---------------------------------------------------------------- коралл через DT: подводный JoCode
-  echo "  [DT] секция коралла" >> "$PROBES"
-  # Рев 13.6: подводный саженец ставим на наш грунт, который кладём сами на дно рифа —
-  # иначе DT отказывается расти (под точкой посадки может быть рифовая скала, а не грунт).
-  DEX=$((RX + 6)); DEZ=$((RZ + 6)); DEY=$RF
-  # Грунт — ровно в точку посадки rooty (DT заменит его своим rooty_elisar_soil),
-  # воздух — над ним, чтобы кораллу было куда расти.
-  ELP_dt setblock "$DEX" "$DEY" "$DEZ" riftworld:elisar_soil >/dev/null 2>&1 || true
-  ELP_dt fill "$DEX" "$((DEY + 1))" "$DEZ" "$DEX" "$((DEY + 10))" "$DEZ" minecraft:air >/dev/null 2>&1 || true
-  log "  координаты DT-коралла: $DEX,$DEY,$DEZ (риф $RX,$RF,$RZ)"
-  DTS2=$(dt_grow "$DEX" "$DEY" "$DEZ" riftworlddt:coral_staghorn "JJJ0Jxx769JxPX")
-  log "  dynamictrees settree $DEX,$DEY,$DEZ riftworlddt:coral_staghorn -> ${DTS2:0:160}"
-  sleep 6
-  dt_grow_pulses "$DEX" "$DEY" "$DEZ" 12 >/dev/null
-  DCAT=$(dt_at "$DEX" "$DEY" "$DEZ")
-  log "  /riftdtat у посадки коралла -> ${DCAT:0:300}"
-  DC_TOT=$(printf '%s' "$DCAT" | sed -n 's/.* dt=\([0-9]*\).*/\1/p' | head -1)
-  DC_BR=$(printf '%s' "$DCAT" | sed -n 's/.*_branch=\([0-9]*\).*/\1/p' | head -1)
-  DC_LV=$(printf '%s' "$DCAT" | sed -n 's/.* lv=\([0-9]*\).*/\1/p' | head -1)
-  # Рев 13.15: настоящий путь — подводный саженец аддона + костная мука (так это делает игрок).
-  ELP_dt setblock "$DEX" "$DEY" "$DEZ" riftworld:elisar_soil >/dev/null 2>&1 || true
-  ELP_dt setblock "$DEX" "$((DEY + 1))" "$DEZ" riftworlddt:coral_staghorn_sapling >/dev/null 2>&1 || true
-  DCSG=$(EL execute in riftworld:elisar run riftgrow "$DEX" "$((DEY + 1))" "$DEZ" 8 2>&1 | tr '\r\n' '  ')
-  log "  коралловый саженец + костная мука -> ${DCSG:0:200}"
-  sleep 4
-  DCSAT=$(dt_at "$DEX" "$DEY" "$DEZ")
-  log "  /riftdtat у кораллового саженца -> ${DCSAT:0:220}"
-  DCS_TOT=$(printf '%s' "$DCSAT" | sed -n 's/.* dt=\([0-9]*\).*/\1/p' | head -1)
-  DCS_LV=$(printf '%s' "$DCSAT" | sed -n 's/.* lv=\([0-9]*\).*/\1/p' | head -1)
-  if [ "${DC_TOT:-0}" -ge 8 ] && [ "${DC_LV:-0}" -ge 6 ]; then
-    log "  OK   DT вырастил ПОДВОДНЫЙ коралл: блоков $DC_TOT (ветвей $DC_BR, листвы $DC_LV)"
-  elif [ "${DCS_TOT:-0}" -ge 8 ] && [ "${DCS_LV:-0}" -ge 6 ]; then
-    log "  OK   подводный саженец вырос в коралл DT: блоков $DCS_TOT (листвы $DCS_LV)"
-  else
-    log "  FAIL DT не вырастил подводный коралл (settree: $DC_TOT/$DC_LV, саженец: ${DCS_TOT:-0}/${DCS_LV:-0}; ${DCSG:0:120}; ${DTS2:0:120})"
-    FAILS=$((FAILS + 1))
-  fi
-  DC=$(EL execute in riftworld:elisar run riftcoral 2>&1)
-  log "  /riftcoral -> ${DC:0:200}"
-  # кадр рощи: смотрим на риф (наша роща уже в воде)
-  lookat "$((RX + 16))" "$((RF + 14))" "$((RZ + 5))" "$RX" "$((RF + 2))" "$RZ" 16 "16c_coral_grove"
+  # Рев 13.17: секция коралла вынесена в функцию и вызывается ЯВНО в конце блока WITH_DT.
+  # В прошлых прогонах её строки не появлялись в probes.txt вообще (ни заголовка секции, ни
+  # координат), то есть код до неё просто не доходил — а без явного вызова это невозможно
+  # заметить: тест выглядел зелёным, хотя коралл не проверялся ни разу.
+  dt_coral_probe() {
+    echo "  [DT] секция коралла" >> "$PROBES"
+    # Грунт — ровно в точку посадки rooty (DT заменит его своим rooty_elisar_soil),
+    # воздух — над ним, чтобы кораллу было куда расти.
+    local DEX=$((RX + 6)) DEZ=$((RZ + 6)) DEY=$RF
+    ELP_dt setblock "$DEX" "$DEY" "$DEZ" riftworld:elisar_soil >/dev/null 2>&1 || true
+    ELP_dt fill "$DEX" "$((DEY + 1))" "$DEZ" "$DEX" "$((DEY + 10))" "$DEZ" minecraft:air >/dev/null 2>&1 || true
+    log "  координаты DT-коралла: $DEX,$DEY,$DEZ (риф $RX,$RF,$RZ)"
+    local DTS2 DCAT DC_TOT DC_BR DC_LV DCSG DCSAT DCS_TOT DCS_LV
+    DTS2=$(dt_grow "$DEX" "$DEY" "$DEZ" riftworlddt:coral_staghorn "JJJ0Jxx769JxPX")
+    log "  dynamictrees settree $DEX,$DEY,$DEZ riftworlddt:coral_staghorn -> ${DTS2:0:160}"
+    sleep 4
+    dt_grow_pulses "$DEX" "$DEY" "$DEZ" 12 >/dev/null
+    DCAT=$(dt_at "$DEX" "$DEY" "$DEZ")
+    log "  /riftdtat у посадки коралла -> ${DCAT:0:300}"
+    DC_TOT=$(printf '%s' "$DCAT" | sed -n 's/.* dt=\([0-9]*\).*/\1/p' | head -1)
+    DC_BR=$(printf '%s' "$DCAT" | sed -n 's/.*_branch=\([0-9]*\).*/\1/p' | head -1)
+    DC_LV=$(printf '%s' "$DCAT" | sed -n 's/.* lv=\([0-9]*\).*/\1/p' | head -1)
+    # Рев 13.15: настоящий путь — подводный саженец аддона + костная мука (так это делает игрок).
+    ELP_dt setblock "$DEX" "$DEY" "$DEZ" riftworld:elisar_soil >/dev/null 2>&1 || true
+    ELP_dt setblock "$DEX" "$((DEY + 1))" "$DEZ" riftworlddt:coral_staghorn_sapling >/dev/null 2>&1 || true
+    DCSG=$(EL execute in riftworld:elisar run riftgrow "$DEX" "$((DEY + 1))" "$DEZ" 8 2>&1 | tr '\r\n' '  ')
+    log "  коралловый саженец + костная мука -> ${DCSG:0:200}"
+    sleep 4
+    DCSAT=$(dt_at "$DEX" "$DEY" "$DEZ")
+    log "  /riftdtat у кораллового саженца -> ${DCSAT:0:220}"
+    DCS_TOT=$(printf '%s' "$DCSAT" | sed -n 's/.* dt=\([0-9]*\).*/\1/p' | head -1)
+    DCS_LV=$(printf '%s' "$DCSAT" | sed -n 's/.* lv=\([0-9]*\).*/\1/p' | head -1)
+    if [ "${DC_TOT:-0}" -ge 8 ] && [ "${DC_LV:-0}" -ge 6 ]; then
+      log "  OK   DT вырастил ПОДВОДНЫЙ коралл: блоков $DC_TOT (ветвей $DC_BR, листвы $DC_LV)"
+    elif [ "${DCS_TOT:-0}" -ge 8 ] && [ "${DCS_LV:-0}" -ge 6 ]; then
+      log "  OK   подводный саженец вырос в коралл DT: блоков $DCS_TOT (листвы $DCS_LV)"
+    else
+      log "  FAIL DT не вырастил подводный коралл (settree: ${DC_TOT:-0}/${DC_LV:-0}, саженец: ${DCS_TOT:-0}/${DCS_LV:-0}; ${DCSG:0:120}; ${DTS2:0:120})"
+      FAILS=$((FAILS + 1))
+    fi
+    local DC
+    DC=$(EL execute in riftworld:elisar run riftcoral 2>&1)
+    log "  /riftcoral -> ${DC:0:200}"
+    # кадры: сам подводный «ствол» DT и роща вокруг
+    lookat "$((DEX + 7))" "$((DEY + 6))" "$((DEZ + 7))" "$DEX" "$((DEY + 3))" "$DEZ" 14 "16d_dt_coral"
+    lookat "$((RX + 16))" "$((RF + 14))" "$((RZ + 5))" "$RX" "$((RF + 2))" "$RZ" 16 "16c_coral_grove"
+  }
+  log "  [DT] запускаю секцию коралла"
+  dt_coral_probe || log "  FAIL секция коралла упала с кодом $?"
 fi
 
 RCON effect clear TestPlayer >/dev/null 2>&1 || true
