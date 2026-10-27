@@ -64,7 +64,7 @@ def tip(tips: dict, dx: int, y: int, dz: int, block: int) -> None:
     tips.setdefault(col_key(dx, dz), []).append((y, block))
 
 
-def plate(cols: dict, cx: int, y: int, cz: int, radius: float, seed: int) -> None:
+def plate(cols: dict, tips: dict, cx: int, y: int, cz: int, radius: float, seed: int) -> None:
     r = int(math.ceil(radius))
     for dx in range(-r, r + 1):
         for dz in range(-r, r + 1):
@@ -77,6 +77,8 @@ def plate(cols: dict, cx: int, y: int, cz: int, radius: float, seed: int) -> Non
             put(cols, cx + dx, y, cz + dz, PLATE)
             if d < radius - 0.6:
                 put(cols, cx + dx, y + 1, cz + dz, PLATE)
+            elif rnd(seed + 13, dx + 64, dz + 64) < 0.45:
+                tip(tips, cx + dx, y + 1, cz + dz, 0)   # полипы по кромке, как в моде
 
 
 def limb(cols, x, y, z, ang, curve, ln, step, rise):
@@ -100,7 +102,7 @@ def crown(cols, tips, kind, x, y, z, seed):
                 put(cols, x + dx * t // 2, y + t, z + dz * t // 2, STEM)
             tip(tips, x + dx, y + 3, z + dz, 0)
     elif kind == TABLE:
-        plate(cols, x, y + 1, z, 1.6 + rnd(seed, 2, 713) * 0.6, seed)
+        plate(cols, tips, x, y + 1, z, 1.6 + rnd(seed, 2, 713) * 0.6, seed)
         tip(tips, x, y + 3, z, 1)
     elif kind == FAN:
         a = rnd(seed, 3, 714) * math.pi

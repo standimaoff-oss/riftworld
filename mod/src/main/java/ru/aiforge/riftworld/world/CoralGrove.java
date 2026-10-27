@@ -136,7 +136,8 @@ public final class CoralGrove {
      * это читалось не как стол, а как розовая глыба, за которой не видно ствола. Теперь плита —
      * один ряд блоков (радиус 1.6–2.2) плюс «ступенька» радиусом ~1.2 сверху: силуэт плоский и лёгкий.
      */
-    private static void plate(Map<Long, List<int[]>> cols, int cx, int y, int cz, double radius, int seed) {
+    private static void plate(Map<Long, List<int[]>> cols, Map<Long, List<Tip>> tips,
+                              int cx, int y, int cz, double radius, int seed) {
         int r = (int) Math.ceil(radius);
         for (int dx = -r; dx <= r; ++dx) {
             for (int dz = -r; dz <= r; ++dz) {
@@ -145,7 +146,14 @@ public final class CoralGrove {
                 if (d > edge) continue;
                 if (d > edge - 0.9 && rnd(seed + 7, dx + 32, dz + 32) < 0.30) continue;   // дырки по краю
                 put(cols, cx + dx, y, cz + dz, PLATE);
-                if (d < radius - 0.6) put(cols, cx + dx, y + 1, cz + dz, PLATE);    // ступенька сверху
+                if (d < radius - 0.6) {
+                    put(cols, cx + dx, y + 1, cz + dz, PLATE);                      // ступенька сверху
+                } else if (rnd(seed + 13, dx + 64, dz + 64) < 0.45) {
+                    // Рев 13.18: чистый край плиты читался на кадрах как розовый куб. По кромке
+                    // ставим полипы (рога/анемоны/лента) — силуэт стола становится «живым», а не
+                    // гранёным, и издалека видно, что это коралл, а не блок-заглушка.
+                    tip(tips, cx + dx, y + 1, cz + dz, 0);
+                }
             }
         }
     }
@@ -249,7 +257,7 @@ public final class CoralGrove {
             }
             case TABLE -> {
                 // стол: широкая плита над ветвью
-                plate(cols, x, y + 1, z, 1.6 + rnd(seed, 2, 713) * 0.6, seed);
+                plate(cols, tips, x, y + 1, z, 1.6 + rnd(seed, 2, 713) * 0.6, seed);
                 tip(tips, x, y + 3, z, 1);
             }
             case FAN -> {
