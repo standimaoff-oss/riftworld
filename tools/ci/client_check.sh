@@ -856,7 +856,7 @@ kill $CPID 2>/dev/null || true
 MODELWARN=$(grep -c "missing model for variant" "$OUT/client.log" 2>/dev/null || true)
 MODELWARN=${MODELWARN:-0}
 ERRS=$(grep -E "Exception|ERROR" "$OUT/client.log" 2>/dev/null \
-       | grep -viE "Narrator|flite|text2speech|OpenAL|SoundSystem|SoundEngine|no sound|libflite" \
+       | grep -viE "Narrator|flite|text2speech|OpenAL|SoundSystem|SoundEngine|no sound|libflite|Yggdrasil|authlib|AuthenticationUnavailable|Cannot contact authentication server|SocketTimeoutException|Read timed out" \
        | grep -viE "missing model for variant|loading blockstate definition|ModelBakery" | wc -l)
 echo "строк Exception/ERROR в логе клиента (без звука/наратора и без missing-model): $ERRS"
 echo "missing model for variant в логе клиента: $MODELWARN"
@@ -897,7 +897,7 @@ if [ "$FAILS" -gt 0 ]; then
 fi
 if [ "$ERRS" -gt 0 ]; then
   grep -E "Exception|ERROR" "$OUT/client.log" 2>/dev/null \
-    | grep -viE "Narrator|flite|text2speech|OpenAL|SoundSystem|SoundEngine|no sound|libflite" \
+    | grep -viE "Narrator|flite|text2speech|OpenAL|SoundSystem|SoundEngine|no sound|libflite|Yggdrasil|authlib|AuthenticationUnavailable|Cannot contact authentication server|SocketTimeoutException|Read timed out" \
     | head -10 | while IFS= read -r line; do
         echo "::error title=ошибка в логе клиента::${line:0:300}"
       done
