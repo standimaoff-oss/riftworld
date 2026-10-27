@@ -46,6 +46,16 @@ public final class SeaProbeCommand {
                 .then(Commands.argument("kind", com.mojang.brigadier.arguments.StringArgumentType.word())
                         .executes(c -> tree(c.getSource(),
                                 com.mojang.brigadier.arguments.StringArgumentType.getString(c, "kind")))));
+        // Рев 13.6: /riftdtat — что DT реально поставил в точке посадки. Один вызов RCON вместо
+        // сотен «execute if block»: считает все блоки аддона вокруг корня.
+        e.getDispatcher().register(Commands.literal("riftdtat").requires(s2 -> s2.hasPermission(2))
+                .then(Commands.argument("x", com.mojang.brigadier.arguments.IntegerArgumentType.integer())
+                        .then(Commands.argument("y", com.mojang.brigadier.arguments.IntegerArgumentType.integer())
+                                .then(Commands.argument("z", com.mojang.brigadier.arguments.IntegerArgumentType.integer())
+                                        .executes(c -> dtAt(c.getSource(),
+                                                com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "x"),
+                                                com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "y"),
+                                                com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "z")))))));
         // Рев 13: /riftdt — самопроверка аддона Dynamic Trees БЕЗ зависимости от DT в classpath:
         // смотрим, под каким namespace реально зарегистрировались наши блоки и предметы.
         e.getDispatcher().register(Commands.literal("riftdt").requires(s -> s.hasPermission(2))
@@ -306,6 +316,38 @@ public final class SeaProbeCommand {
      * его высоту, объём и «украшения» на ветвях. Именно этой командой CI доказывает, что коралл перестал
      * быть одиночным 3D-кустиком: {@code h>=3} и {@code blocks>=8} на одном растении.
      */
+    /**
+     * Рев 13.6: {@code /riftdtat x y z} — что DT поставил вокруг точки посадки.
+     *
+     * <p>Считает блоки namespace {@code riftworlddt} в кубе ±4 по горизонтали и от y−2 до y+12,
+     * а также воду/воздух в этом объёме. Печатает первую строку для CI и по одной строке на имя блока.
+     */
+    private static int dtAt(CommandSourceStack src, int x, int y, int z) {
+        var level = src.getLevel();
+        java.util.Map<String, Integer> counts = new java.util.TreeMap<>();
+        int water = 0, air = 0;
+        for (int dx = -4; dx <= 4; ++dx) {
+            for (int dz = -4; dz <= 4; ++dz) {
+                for (int dy = -2; dy <= 12; ++dy) {
+                    BlockState st = level.getBlockState(new BlockPos(x + dx, y + dy, z + dz));
+                    if (st.isAir()) { air++; continue; }
+                    if (st.is(ElisarBlocks.WATER.get())) { water++; continue; }
+                    var key = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(st.getBlock());
+                    if (key == null || !key.getNamespace().equals("riftworlddt")) continue;
+                    counts.merge(key.getPath(), 1, Integer::sum);
+                }
+            }
+        }
+        int total = counts.values().stream().mapToInt(Integer::intValue).sum();
+        String names = counts.entrySet().stream().limit(8)
+                .map(e2 -> e2.getKey() + "=" + e2.getValue())
+                .reduce((a2, b2) -> a2 + " " + b2).orElse("-");
+        String line = "riftdtat at=" + x + "," + y + "," + z + " dt=" + total + " air=" + air
+                + " water=" + water + " blocks=" + names;
+        src.sendSuccess(() -> Component.literal(line), false);
+        return total;
+    }
+
     /**
      * Рев 13: {@code /riftdt} — где на самом деле оказались блоки/предметы аддона Dynamic Trees.
      *

@@ -129,17 +129,23 @@ public final class CoralGrove {
         tips.computeIfAbsent(colKey(dx, dz), k -> new ArrayList<>()).add(new Tip(y, block));
     }
 
-    /** Плита столового коралла: рваный диск радиусом 2–3 на высоте {@code y}. */
+    /**
+     * Плита столового коралла: <b>тонкий</b> рваный диск с маленьким вторым ярусом сверху.
+     *
+     * <p>Рев 13.6: первые плиты были радиусом 2.6–4 блока и толщиной в 2–3 яруса — на кадрах живой игры
+     * это читалось не как стол, а как розовая глыба, за которой не видно ствола. Теперь плита —
+     * один ряд блоков (радиус 1.6–2.2) плюс «ступенька» радиусом ~1.2 сверху: силуэт плоский и лёгкий.
+     */
     private static void plate(Map<Long, List<int[]>> cols, int cx, int y, int cz, double radius, int seed) {
         int r = (int) Math.ceil(radius);
         for (int dx = -r; dx <= r; ++dx) {
             for (int dz = -r; dz <= r; ++dz) {
                 double d = Math.hypot(dx, dz);
-                double edge = radius + (rnd(seed, dx + 32, dz + 32) - 0.5) * 1.1;   // рваный край
+                double edge = radius + (rnd(seed, dx + 32, dz + 32) - 0.5) * 0.9;    // рваный край
                 if (d > edge) continue;
-                if (d > edge - 1.0 && rnd(seed + 7, dx + 32, dz + 32) < 0.28) continue;   // дырки по краю
+                if (d > edge - 0.9 && rnd(seed + 7, dx + 32, dz + 32) < 0.30) continue;   // дырки по краю
                 put(cols, cx + dx, y, cz + dz, PLATE);
-                if (d < radius - 1.1) put(cols, cx + dx, y + 1, cz + dz, PLATE);   // середина толще
+                if (d < radius - 0.6) put(cols, cx + dx, y + 1, cz + dz, PLATE);    // ступенька сверху
             }
         }
     }
@@ -243,7 +249,7 @@ public final class CoralGrove {
             }
             case TABLE -> {
                 // стол: широкая плита над ветвью
-                plate(cols, x, y + 1, z, 2.6 + rnd(seed, 2, 713) * 1.4, seed);
+                plate(cols, x, y + 1, z, 1.6 + rnd(seed, 2, 713) * 0.6, seed);
                 tip(tips, x, y + 3, z, 1);
             }
             case FAN -> {

@@ -69,13 +69,13 @@ def plate(cols: dict, cx: int, y: int, cz: int, radius: float, seed: int) -> Non
     for dx in range(-r, r + 1):
         for dz in range(-r, r + 1):
             d = math.hypot(dx, dz)
-            edge = radius + (rnd(seed, dx + 32, dz + 32) - 0.5) * 1.1
+            edge = radius + (rnd(seed, dx + 32, dz + 32) - 0.5) * 0.9
             if d > edge:
                 continue
-            if d > edge - 1.0 and rnd(seed + 7, dx + 32, dz + 32) < 0.28:
+            if d > edge - 0.9 and rnd(seed + 7, dx + 32, dz + 32) < 0.30:
                 continue
             put(cols, cx + dx, y, cz + dz, PLATE)
-            if d < radius - 1.1:
+            if d < radius - 0.6:
                 put(cols, cx + dx, y + 1, cz + dz, PLATE)
 
 
@@ -100,7 +100,7 @@ def crown(cols, tips, kind, x, y, z, seed):
                 put(cols, x + dx * t // 2, y + t, z + dz * t // 2, STEM)
             tip(tips, x + dx, y + 3, z + dz, 0)
     elif kind == TABLE:
-        plate(cols, x, y + 1, z, 2.6 + rnd(seed, 2, 713) * 1.4, seed)
+        plate(cols, x, y + 1, z, 1.6 + rnd(seed, 2, 713) * 0.6, seed)
         tip(tips, x, y + 3, z, 1)
     elif kind == FAN:
         a = rnd(seed, 3, 714) * math.pi
