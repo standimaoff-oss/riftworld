@@ -634,6 +634,19 @@ if [ "${WITH_DT:-0}" = "1" ]; then
   # Рев 13.6: количество блоков считает мод одной командой (/riftdtat) — раньше было
   # несколько сотен «execute if block» по RCON, и шаг клиента заметно растягивался.
   dt_at() { EL execute in riftworld:elisar run riftdtat "$1" "$2" "$3" 2>&1 | grep -m1 "riftdtat" || true; }
+  # Рев 13.7: settree ставит только «затравку» (JoCode JP = пенёк), DT растит её импульсами.
+  # Раньше из-за этого в мире было 3 блока, и проба честно падала.
+  dt_grow_pulses() {  # dt_grow_pulses <x> <y> <z> <min> — импульсы роста, пока блоков не станет >= min
+    local x=$1 y=$2 z=$3 want=$4 tot=0 n
+    for n in 4 8 16 32 64; do
+      EL execute in riftworld:elisar run dynamictrees growpulse "$x" "$y" "$z" "$n" >/dev/null 2>&1 || true
+      sleep 2
+      tot=$(dt_at "$x" "$y" "$z" | sed -n 's/.* dt=\([0-9]*\).*/\1/p' | head -1)
+      tot=${tot:-0}
+      [ "$tot" -ge "$want" ] && break
+    done
+    printf '%s' "$tot"
+  }
   echo "  [DT] секция дерева" >> "$PROBES"
   if [ -n "$TREE_AT" ]; then
     # площадка рядом с найденным деревом sizo: там точно суша и загруженные чанки
@@ -644,6 +657,7 @@ if [ "${WITH_DT:-0}" = "1" ]; then
     DTS=$(dt_grow "$DTX" "$((DTY + 1))" "$DTZ" riftworlddt:sizo)
     log "  dynamictrees settree $DTX,$((DTY + 1)),$DTZ riftworlddt:sizo -> ${DTS:0:160}"
     sleep 6
+    dt_grow_pulses "$DTX" "$((DTY + 1))" "$DTZ" 30 >/dev/null
     DTAT=$(dt_at "$DTX" "$((DTY + 1))" "$DTZ")
     log "  /riftdtat у посадки дерева -> ${DTAT:0:300}"
     DT_BR=$(printf '%s' "$DTAT" | sed -n 's/.*_branch=\([0-9]*\).*/\1/p' | head -1)
@@ -672,6 +686,7 @@ if [ "${WITH_DT:-0}" = "1" ]; then
   DTS2=$(dt_grow "$DEX" "$DEY" "$DEZ" riftworlddt:coral_staghorn)
   log "  dynamictrees settree $DEX,$DEY,$DEZ riftworlddt:coral_staghorn -> ${DTS2:0:160}"
   sleep 6
+  dt_grow_pulses "$DEX" "$DEY" "$DEZ" 12 >/dev/null
   DCAT=$(dt_at "$DEX" "$DEY" "$DEZ")
   log "  /riftdtat у посадки коралла -> ${DCAT:0:300}"
   DC_TOT=$(printf '%s' "$DCAT" | sed -n 's/.* dt=\([0-9]*\).*/\1/p' | head -1)
