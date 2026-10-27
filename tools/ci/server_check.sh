@@ -120,10 +120,10 @@ if [ -n "${WITH_DT:-}" ]; then
   # Рев 13: главный симптом сломанного аддона — блоки уехали в namespace dynamictrees
   # (тогда в клиенте 255 warning'ов missing model). Проверяем из самой игры, а не по логу.
   Rq riftdt > "$OUT/riftdt.txt" 2>&1 || true
-  # Рев 13.8: у DT должен быть хотя бы один JoCode на вид аддона (иначе settree ставит «пенёк» JP)
-  Rq dynamictrees registry jocode list true > "$OUT/riftjocode.txt" 2>&1 || true
-  JC=$(grep -c "riftworlddt" "$OUT/riftjocode.txt" 2>/dev/null || true)
-  echo "  JoCode'ов аддона в реестре DT: ${JC:-0}"
+  # Рев 13.8: у DT подкомандой registry доступны только family/species/leaves_properties;
+  # jo_codes проверяем по нашим ресурсам (файлы trees/riftworlddt/jo_codes/*.txt в jar).
+  JC=$(unzip -l "${DTJAR:-$JAR}" 2>/dev/null | grep -c "trees/riftworlddt/jo_codes/.*[.]txt" || true)
+  echo "  jo_codes аддона в jar: ${JC:-0}"
   cat "$OUT/riftdt.txt"
   LINE=$(tr -d '\r' < "$OUT/riftdt.txt" | grep -m1 "riftdt" || true)
   # Гейт — по фактическому состоянию реестров (это и есть симптом бага): блоки на месте,

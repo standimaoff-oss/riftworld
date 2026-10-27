@@ -664,15 +664,19 @@ if [ "${WITH_DT:-0}" = "1" ]; then
     EL tp TestPlayer "$((DTX + 6))" "$((DTY + 8))" "$((DTZ + 6))" 225 25 >/dev/null 2>&1
     sleep 3
     dt_pad "$DTX" "$DTY" "$DTZ" 6
-    # JoCode берём из jo_codes/sizo.txt (сизо = стройное дерево, коды от берёзы DT)
-    DTS=$(dt_grow "$DTX" "$((DTY + 1))" "$DTZ" riftworlddt:sizo "2:JJJ0JP1JJ+ZJOOPvnRJOOPvn")
-    log "  dynamictrees settree $DTX,$((DTY + 1)),$DTZ riftworlddt:sizo -> ${DTS:0:160}"
+    # Рев 13.13: ГЛАВНАЯ ошибка прошлых прогонов — координата. У /dynamictrees settree первый
+    # аргумент — это позиция ROOTY (грунта), а не ствола: DT ставит корневой блок В эту точку,
+    # а ствол на блок выше. Мы же сажали на y+1, то есть корень оказывался в воздухе, грунт под
+    # ним не находился, и DT обрывал постройку на первых инструкциях (6 блоков, 0 листвы).
+    # JoCode — чистый base64, БЕЗ префикса «2:» (префикс понимает только загрузчик jo_codes/).
+    DTS=$(dt_grow "$DTX" "$DTY" "$DTZ" riftworlddt:sizo "JJJ0JP1JJ+ZJOOPvnRJOOPvn")
+    log "  dynamictrees settree $DTX,$DTY,$DTZ riftworlddt:sizo -> ${DTS:0:160}"
     sleep 6
-    dt_grow_pulses "$DTX" "$((DTY + 1))" "$DTZ" 30 >/dev/null
-    DTAT=$(dt_at "$DTX" "$((DTY + 1))" "$DTZ")
+    dt_grow_pulses "$DTX" "$DTY" "$DTZ" 30 >/dev/null
+    DTAT=$(dt_at "$DTX" "$DTY" "$DTZ")
     log "  /riftdtat у посадки дерева -> ${DTAT:0:300}"
     # что DT сам думает о дереве (энергия/радиус/высота) — без этого «не выросло» не объяснить
-    DGET=$(EL execute in riftworld:elisar run dynamictrees gettree "$DTX" "$((DTY + 2))" "$DTZ" 2>&1 | tr '\r\n' '  ')
+    DGET=$(EL execute in riftworld:elisar run dynamictrees gettree "$DTX" "$((DTY + 1))" "$DTZ" 2>&1 | tr '\r\n' '  ')
     log "  /dynamictrees gettree -> ${DGET:0:260}"
     DT_BR=$(printf '%s' "$DTAT" | sed -n 's/.*_branch=\([0-9]*\).*/\1/p' | head -1)
     DT_TOT=$(printf '%s' "$DTAT" | sed -n 's/.* dt=\([0-9]*\).*/\1/p' | head -1)
@@ -682,10 +686,10 @@ if [ "${WITH_DT:-0}" = "1" ]; then
     # Если у дуба листва есть, а у нас нет — виноваты наши leaves_properties, и это видно сразу.
     OCX=$((DTX - 18)); OCZ=$((DTZ + 10))
     dt_pad "$OCX" "$DTY" "$OCZ" 5
-    OCR=$(dt_grow "$OCX" "$((DTY + 1))" "$OCZ" dynamictrees:oak "2:JJJ0JR7Jxx+nXv")
+    OCR=$(dt_grow "$OCX" "$DTY" "$OCZ" dynamictrees:oak "JJJ0JR7Jxx+nXv")
     log "  контрольный дуб: ${OCR:0:120}"
     sleep 3
-    OCAT=$(dt_at "$OCX" "$((DTY + 1))" "$OCZ")
+    OCAT=$(dt_at "$OCX" "$DTY" "$OCZ")
     OC_LV=$(printf '%s' "$OCAT" | sed -n 's/.* lv=\([0-9]*\).*/\1/p' | head -1)
     log "  /riftdtat у контрольного дуба -> ${OCAT:0:220}"
 
@@ -710,12 +714,13 @@ if [ "${WITH_DT:-0}" = "1" ]; then
   echo "  [DT] секция коралла" >> "$PROBES"
   # Рев 13.6: подводный саженец ставим на наш грунт, который кладём сами на дно рифа —
   # иначе DT отказывается расти (под точкой посадки может быть рифовая скала, а не грунт).
-  DEX=$((RX + 6)); DEZ=$((RZ + 6)); DEY=$((RF + 1))
-  ELP_dt setblock "$DEX" "$RF" "$DEZ" riftworld:elisar_soil >/dev/null 2>&1 || true
-  ELP_dt fill "$DEX" "$DEY" "$DEZ" "$DEX" "$((DEY + 10))" "$DEZ" minecraft:air >/dev/null 2>&1 || true
-  ELP_dt setblock "$DEX" "$((DEY - 1))" "$DEZ" riftworld:elisar_soil >/dev/null 2>&1 || true
+  DEX=$((RX + 6)); DEZ=$((RZ + 6)); DEY=$RF
+  # Грунт — ровно в точку посадки rooty (DT заменит его своим rooty_elisar_soil),
+  # воздух — над ним, чтобы кораллу было куда расти.
+  ELP_dt setblock "$DEX" "$DEY" "$DEZ" riftworld:elisar_soil >/dev/null 2>&1 || true
+  ELP_dt fill "$DEX" "$((DEY + 1))" "$DEZ" "$DEX" "$((DEY + 10))" "$DEZ" minecraft:air >/dev/null 2>&1 || true
   log "  координаты DT-коралла: $DEX,$DEY,$DEZ (риф $RX,$RF,$RZ)"
-  DTS2=$(dt_grow "$DEX" "$DEY" "$DEZ" riftworlddt:coral_staghorn "8:P")
+  DTS2=$(dt_grow "$DEX" "$DEY" "$DEZ" riftworlddt:coral_staghorn "JJJ0Jxx769JxPX")
   log "  dynamictrees settree $DEX,$DEY,$DEZ riftworlddt:coral_staghorn -> ${DTS2:0:160}"
   sleep 6
   dt_grow_pulses "$DEX" "$DEY" "$DEZ" 12 >/dev/null
@@ -723,10 +728,11 @@ if [ "${WITH_DT:-0}" = "1" ]; then
   log "  /riftdtat у посадки коралла -> ${DCAT:0:300}"
   DC_TOT=$(printf '%s' "$DCAT" | sed -n 's/.* dt=\([0-9]*\).*/\1/p' | head -1)
   DC_BR=$(printf '%s' "$DCAT" | sed -n 's/.*_branch=\([0-9]*\).*/\1/p' | head -1)
-  if [ "${DC_TOT:-0}" -ge 8 ] && [ -n "$DC_BR" ]; then
-    log "  OK   DT вырастил ПОДВОДНЫЙ коралл: блоков $DC_TOT (ветвей $DC_BR)"
+  DC_LV=$(printf '%s' "$DCAT" | sed -n 's/.* lv=\([0-9]*\).*/\1/p' | head -1)
+  if [ "${DC_TOT:-0}" -ge 8 ] && [ "${DC_LV:-0}" -ge 6 ]; then
+    log "  OK   DT вырастил ПОДВОДНЫЙ коралл: блоков $DC_TOT (ветвей $DC_BR, листвы $DC_LV)"
   else
-    log "  FAIL DT не вырастил подводный коралл (блоков $DC_TOT, ответ: ${DTS2:0:160})"; FAILS=$((FAILS + 1))
+    log "  FAIL DT не вырастил подводный коралл (блоков $DC_TOT, листвы $DC_LV; ответ: ${DTS2:0:140})"; FAILS=$((FAILS + 1))
   fi
   DC=$(EL execute in riftworld:elisar run riftcoral 2>&1)
   log "  /riftcoral -> ${DC:0:200}"
