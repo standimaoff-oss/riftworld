@@ -317,9 +317,13 @@ public final class SeaProbeCommand {
     private static int dt(CommandSourceStack src) {
         String[] blocks = {"sizo_leaves", "ambra_leaves", "coral_staghorn_leaves", "coral_table_leaves",
                 "coral_whip_leaves", "rooty_elisar_grass", "rooty_elisar_soil",
-                "sizo_branch", "ambra_branch", "coral_branch"};
+                "sizo_branch", "ambra_branch", "coral_branch",
+                // саженцы DT — только блоки, предметов у них нет по дизайну самого DT
+                "sizo_sapling", "ambra_sapling", "giant_sizo_sapling", "coral_staghorn_sapling",
+                "coral_table_sapling", "coral_whip_sapling"};
         String[] items = {"sizo_seed", "ambra_seed", "coral_staghorn_seed", "coral_table_seed",
-                "coral_whip_seed", "sizo_sapling", "ambra_sapling"};
+                "coral_whip_seed", "giant_sizo_seed",
+                "sizo_branch", "ambra_branch", "coral_branch"};
         int ok = 0, wrong = 0, missing = 0;
         StringBuilder wrongList = new StringBuilder();
         for (String b : blocks) {
@@ -343,10 +347,9 @@ public final class SeaProbeCommand {
         String handler = "absent";
         try {
             Class<?> cls = Class.forName("com.ferreusveritas.dynamictrees.api.registry.RegistryHandler");
-            // NB: get(String) в DT делает ResourceLocation.tryParse → "riftworlddt" стал бы
-            // minecraft:riftworlddt. Передаём полное имя, иначе хендлер «не находится» ложно.
-            Object h = cls.getMethod("get", net.minecraft.resources.ResourceLocation.class)
-                    .invoke(null, new net.minecraft.resources.ResourceLocation("riftworlddt", "riftworlddt"));
+            // NB: static get() у DT только со String, и внутри он делает ResourceLocation.tryParse —
+            // поэтому "riftworlddt" превратился бы в minecraft:riftworlddt. Передаём полное имя.
+            Object h = cls.getMethod("get", String.class).invoke(null, "riftworlddt:riftworlddt");
             handler = h != null && (Boolean) h.getClass().getMethod("isValid").invoke(h) ? "valid" : "invalid";
         } catch (ClassNotFoundException e) {
             handler = "no-dt";

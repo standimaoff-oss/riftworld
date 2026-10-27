@@ -584,22 +584,31 @@ if [ "${WITH_DT:-0}" = "1" ]; then
   EL execute at TestPlayer run gamemode creative >/dev/null 2>&1 || true
   DTSEED=$(EL execute at TestPlayer run give TestPlayer riftworlddt:sizo_seed 1 2>&1)
   log "  give riftworlddt:sizo_seed -> ${DTSEED:0:120}"
-  if [[ "$DTSEED" == *"Given"* || "$DTSEED" == *"given"* ]]; then log "  OK   DT видит семена аддона (riftworlddt:sizo_seed)"
+  # 1.20.1 отвечает "Gave 1 [Sizo Seed] to TestPlayer" (старое "Given" — это 1.16)
+  if [[ "$DTSEED" == *"Gave"* || "$DTSEED" == *"Given"* ]]; then log "  OK   DT видит семена аддона (riftworlddt:sizo_seed)"
   else log "  FAIL аддон к Dynamic Trees не загрузился (ответ give: ${DTSEED:0:160})"; FAILS=$((FAILS + 1)); fi
   DTCORAL=$(EL execute at TestPlayer run give TestPlayer riftworlddt:coral_staghorn_seed 1 2>&1)
-  if [[ "$DTCORAL" == *"Given"* || "$DTCORAL" == *"given"* ]]; then log "  OK   DT видит коралловые семена (riftworlddt:coral_staghorn_seed)"
+  if [[ "$DTCORAL" == *"Gave"* || "$DTCORAL" == *"Given"* ]]; then log "  OK   DT видит коралловые семена (riftworlddt:coral_staghorn_seed)"
   else log "  FAIL коралловые виды DT не зарегистрированы (ответ give: ${DTCORAL:0:160})"; FAILS=$((FAILS + 1)); fi
   DTHIT=$(grep -cE "riftworlddt:sizo" "$OUT/client.log" 2>/dev/null || echo 0)
   log "  упоминаний riftworlddt:sizo в логе: $DTHIT"
 
   # семьи в регистрах DT (JSON должны быть расчитаны и зарегистрированы)
   # NB: у DT подкоманда требует явный "list"; иначе она молчит, и проба ложно падала.
+  # Имя подкоманды = имя реестра в нижнем регистре: Family -> family (не families!).
   # "true" = RAW-режим, печатает registry name (riftworlddt:sizo), а не переведённое имя.
-  DTFAM=$(EL execute in riftworld:elisar run dynamictrees registry families list true 2>&1 | tr '\r\n' '  ')
-  log "  /dynamictrees registry families -> ${DTFAM:0:220}"
+  DTFAM=$(EL execute in riftworld:elisar run dynamictrees registry family list true 2>&1 | tr '\r\n' '  ')
+  log "  /dynamictrees registry family list -> ${DTFAM:0:220}"
+  DTSP=$(EL execute in riftworld:elisar run dynamictrees registry species list true 2>&1 | tr '\r\n' '  ')
+  log "  /dynamictrees registry species list -> ${DTSP:0:220}"
   for f in riftworlddt:sizo riftworlddt:ambra riftworlddt:coral; do
     if [[ "$DTFAM" == *"$f"* ]]; then log "  OK   у DT есть семья $f"
-    else log "  FAIL у DT нет семьи $f"; FAILS=$((FAILS + 1)); fi
+    else log "  FAIL у DT нет семьи $f (ответ DT: ${DTFAM:0:180})"; FAILS=$((FAILS + 1)); fi
+  done
+  for f in riftworlddt:sizo riftworlddt:ambra riftworlddt:giant_sizo riftworlddt:coral_staghorn \
+           riftworlddt:coral_table riftworlddt:coral_whip; do
+    if [[ "$DTSP" == *"$f"* ]]; then log "  OK   у DT есть вид $f"
+    else log "  FAIL у DT нет вида $f (ответ DT: ${DTSP:0:180})"; FAILS=$((FAILS + 1)); fi
   done
 
   # ---------------------------------------------------------------- дерево через DT: /dynamictrees set
