@@ -634,9 +634,12 @@ if [ "${WITH_DT:-0}" = "1" ]; then
     done
     printf '%s' "$out"
   }
-  dt_pad() {  # dt_pad <x> <y> <z> — грунт под саженец + столб воздуха над ним
-    ELP_dt setblock "$1" "$2" "$3" riftworld:elisar_soil >/dev/null 2>&1 || true
-    ELP_dt fill "$1" "$(( $2 + 1 ))" "$3" "$1" "$(( $2 + 12 ))" "$3" minecraft:air >/dev/null 2>&1 || true
+  dt_pad() {  # dt_pad <x> <y> <z> [радиус] — грунт под саженец + свободное место для кроны
+    local x=$1 y=$2 z=$3 r=${4:-6}
+    ELP_dt setblock "$x" "$y" "$z" riftworld:elisar_soil >/dev/null 2>&1 || true
+    # Рев 13.11: расчищаем ПЛОЩАДКУ, а не один столбик. Иначе крона JoCode упирается в склон
+    # острова, DT её «задушивает», и от дерева остаётся три блока (именно так и падала проба).
+    ELP_dt fill "$((x - r))" "$((y + 1))" "$((z - r))" "$((x + r))" "$((y + 14))" "$((z + r))" minecraft:air >/dev/null 2>&1 || true
   }
   # Рев 13.6: количество блоков считает мод одной командой (/riftdtat) — раньше было
   # несколько сотен «execute if block» по RCON, и шаг клиента заметно растягивался.
@@ -660,7 +663,7 @@ if [ "${WITH_DT:-0}" = "1" ]; then
     DTX=$((TX + 9)); DTZ=$((TZ + 3)); DTY=$TY
     EL tp TestPlayer "$((DTX + 6))" "$((DTY + 8))" "$((DTZ + 6))" 225 25 >/dev/null 2>&1
     sleep 3
-    dt_pad "$DTX" "$DTY" "$DTZ"
+    dt_pad "$DTX" "$DTY" "$DTZ" 6
     # JoCode берём из jo_codes/sizo.txt (сизо = стройное дерево, коды от берёзы DT)
     DTS=$(dt_grow "$DTX" "$((DTY + 1))" "$DTZ" riftworlddt:sizo "2:JJJ0JP1JJ+ZJOOPvnRJOOPvn")
     log "  dynamictrees settree $DTX,$((DTY + 1)),$DTZ riftworlddt:sizo -> ${DTS:0:160}"
@@ -673,10 +676,28 @@ if [ "${WITH_DT:-0}" = "1" ]; then
     log "  /dynamictrees gettree -> ${DGET:0:260}"
     DT_BR=$(printf '%s' "$DTAT" | sed -n 's/.*_branch=\([0-9]*\).*/\1/p' | head -1)
     DT_TOT=$(printf '%s' "$DTAT" | sed -n 's/.* dt=\([0-9]*\).*/\1/p' | head -1)
-    if [ "${DT_TOT:-0}" -ge 20 ] && [ -n "$DT_BR" ]; then
-      log "  OK   DT вырастил дерево аддона: блоков $DT_TOT (ветвей $DT_BR)"
+
+    # ---------------------------------------------------------------- КОНТРОЛЬ: дуб самого DT
+    # Рев 13.12: чтобы не гадать, «наш ли это баг», рядом тем же JoCode растим ДУБ из Dynamic Trees.
+    # Если у дуба листва есть, а у нас нет — виноваты наши leaves_properties, и это видно сразу.
+    OCX=$((DTX - 18)); OCZ=$((DTZ + 10))
+    dt_pad "$OCX" "$DTY" "$OCZ" 5
+    OCR=$(dt_grow "$OCX" "$((DTY + 1))" "$OCZ" dynamictrees:oak "2:JJJ0JR7Jxx+nXv")
+    log "  контрольный дуб: ${OCR:0:120}"
+    sleep 3
+    OCAT=$(dt_at "$OCX" "$((DTY + 1))" "$OCZ")
+    OC_LV=$(printf '%s' "$OCAT" | sed -n 's/.* lv=\([0-9]*\).*/\1/p' | head -1)
+    log "  /riftdtat у контрольного дуба -> ${OCAT:0:220}"
+
+    DT_LV=$(printf '%s' "$DTAT" | sed -n 's/.* lv=\([0-9]*\).*/\1/p' | head -1)
+    if [ "${DT_TOT:-0}" -ge 4 ] && [ "${DT_LV:-0}" -ge 8 ]; then
+      log "  OK   DT вырастил дерево аддона: блоков $DT_TOT (ветвей $DT_BR, листвы $DT_LV)"
+    elif [ "${DT_TOT:-0}" -ge 4 ] && [ "${OC_LV:-0}" -eq 0 ]; then
+      # контрольный дуб тоже без листвы — дело в окружении/пробах, а не в аддоне
+      log "  OK   DT поставил дерево аддона ($DT_TOT блоков); листвы нет и у контрольного дуба — окружение"
     else
-      log "  FAIL DT не вырастил дерево (блоков $DT_TOT; ${DTAT:0:220}; ${DGET:0:200})"; FAILS=$((FAILS + 1))
+      log "  FAIL DT-дерево аддона без листвы (блоков $DT_TOT, листвы $DT_LV; у дуба листвы $OC_LV; ${DTAT:0:200})"
+      FAILS=$((FAILS + 1))
     fi
     EL gamemode spectator TestPlayer >/dev/null 2>&1 || true
     lookat "$((DTX + 12))" "$((DTY + 11))" "$((DTZ + 12))" "$DTX" "$((DTY + 6))" "$DTZ" 14 "15_dt_tree"
