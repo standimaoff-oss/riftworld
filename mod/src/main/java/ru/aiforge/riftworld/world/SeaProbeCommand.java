@@ -370,12 +370,20 @@ public final class SeaProbeCommand {
         var level = src.getLevel();
         java.util.Map<String, Integer> dt = new java.util.TreeMap<>();
         int dy = 0, leaves = 0, water = 0, air = 0;
+        // Рев 13.25: top= — самый верхний блок объёма. На кадрах подводного коралла над кроной
+        // висел серый куб; без этой строки не понять, это камень гена или блок мода.
+        int topY = Integer.MIN_VALUE;
+        String topId = "-";
         for (int dx = -4; dx <= 4; ++dx) {
             for (int dz = -4; dz <= 4; ++dz) {
                 for (int dyy = -2; dyy <= 12; ++dyy) {
                     BlockState st = level.getBlockState(new BlockPos(x + dx, y + dyy, z + dz));
                     if (st.isAir()) { air++; continue; }
                     if (st.is(ElisarBlocks.WATER.get())) { water++; continue; }
+                    if (y + dyy > topY) {
+                        var topKey = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(st.getBlock());
+                        if (topKey != null) { topY = y + dyy; topId = topKey.toString(); }
+                    }
                     if (st.getBlock() instanceof net.minecraft.world.level.block.LeavesBlock) leaves++;
                     var key = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(st.getBlock());
                     if (key == null) continue;
@@ -391,7 +399,8 @@ public final class SeaProbeCommand {
         // dy= — блоки самого DT (контрольный опыт с дубом), lv= — ЛЮБАЯ листва в объёме.
         // Если у контрольного дуба lv>0, а у нашего дерева нет — виноваты наши leaves_properties.
         String line = "riftdtat at=" + x + "," + y + "," + z + " dt=" + total + " dy=" + dy
-                + " lv=" + leaves + " air=" + air + " water=" + water + " blocks=" + names;
+                + " lv=" + leaves + " air=" + air + " water=" + water
+                + " top=" + topY + ":" + topId + " blocks=" + names;
         src.sendSuccess(() -> Component.literal(line), false);
         return total;
     }

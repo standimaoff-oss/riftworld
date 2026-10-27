@@ -445,6 +445,47 @@ def coral_canopy_violet():
     return _coral_canopy("7a5cc0", "ab8fe6", "513a8c", 23)
 
 
+def _coral_stem(base, light, dark, seed):
+    """Ствол кораллового дерева: вертикальные рёбра скелета, а не крышка рифа.
+
+    Рев 13.25: в логе клиента были `Missing textures in model riftworlddt:coral_branch:
+    riftworld:block/coral_stem_teal` — модель ветви аддона ссылалась на текстуру, которой
+    не было, и в воде ствол рисовался клеткой missing-texture. Текстура непрозрачная
+    (ствол не должен просвечивать), рисунок периодичен по x, чтобы тайлиться.
+    """
+    im = img()
+    rnd = random.Random(seed)
+    b, l, d = rgb(base), rgb(light), rgb(dark)
+    px = im.load()
+    # период 4 px: тёмный шов, тело, светлое ребро — при повторе не видно стыка
+    ridge = {0: 0.55, 1: 1.06, 2: 1.0, 3: 1.18}
+    for y in range(16):
+        # редкие «узлы» роста: полоса тени через каждые 8 px
+        node = 0.86 if y % 8 == 3 else 1.0
+        for x in range(16):
+            k = ridge[x % 4] * node
+            n = rnd.randint(-6, 6)
+            col = tuple(max(0, min(255, int(c * k) + n)) for c in b)
+            px[x, y] = (*col, 255)
+    # редкие тёмные поры и светлые полипы на рёбрах
+    for _ in range(10):
+        x, y = rnd.randint(0, 15), rnd.randint(0, 15)
+        px[x, y] = (*(d if rnd.random() > 0.45 else l), 255)
+    return im
+
+
+def coral_stem_pink():
+    return _coral_stem("b8546f", "ef9db4", "7d3049", 31)
+
+
+def coral_stem_teal():
+    return _coral_stem("237d76", "63cdbf", "155650", 32)
+
+
+def coral_stem_violet():
+    return _coral_stem("634a9e", "a689e0", "3f2c6b", 33)
+
+
 def coral_cap_pink():
     return _coral_cap("d9678a", "f0a2ba", "a83f62", 11)
 
@@ -483,6 +524,10 @@ TEXTURES = {
     "coral_cap_pink": coral_cap_pink,
     "coral_cap_teal": coral_cap_teal,
     "coral_cap_violet": coral_cap_violet,
+    # Рев 13.25: ствол DT-коралла (bark) — раньше ссылка вела на несуществующую текстуру
+    "coral_stem_pink": coral_stem_pink,
+    "coral_stem_teal": coral_stem_teal,
+    "coral_stem_violet": coral_stem_violet,
 }
 
 

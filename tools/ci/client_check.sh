@@ -855,6 +855,11 @@ kill $CPID 2>/dev/null || true
 # Считаем отдельно, чтобы причина была видна в отчёте одной строкой, а не тонула в общем ERRS.
 MODELWARN=$(grep -c "missing model for variant" "$OUT/client.log" 2>/dev/null || true)
 MODELWARN=${MODELWARN:-0}
+# Рев 13.25: «Missing textures in model ...» — это WARN, который раньше проходил мимо гейта:
+# модель DT-ветви коралла ссылалась на riftworld:block/coral_stem_teal, которой не существовало,
+# и в воде ствол рисовался клеткой missing-texture. Пробы при этом были зелёными.
+TEXWARN=$(grep -c "Missing textures in model" "$OUT/client.log" 2>/dev/null || true)
+TEXWARN=${TEXWARN:-0}
 ERRS=$(grep -E "Exception|ERROR" "$OUT/client.log" 2>/dev/null \
        | grep -viE "Narrator|flite|text2speech|OpenAL|SoundSystem|SoundEngine|no sound|libflite|Yggdrasil|authlib|AuthenticationUnavailable|Cannot contact authentication server|SocketTimeoutException|Read timed out" \
        | grep -viE "missing model for variant|loading blockstate definition|ModelBakery" | wc -l)
@@ -864,6 +869,12 @@ if [ "$MODELWARN" -gt 0 ]; then
   echo "::error title=модели::missing model for variant: $MODELWARN строк — блоки регистрируются не в своём namespace"
   grep "missing model for variant" "$OUT/client.log" | head -3 \
     | while IFS= read -r line; do echo "::error title=модели::${line:0:300}"; done
+fi
+echo "Missing textures in model в логе клиента: $TEXWARN"
+if [ "$TEXWARN" -gt 0 ]; then
+  echo "::error title=текстуры::Missing textures in model: $TEXWARN — модель ссылается на несуществующую текстуру"
+  grep -A1 "Missing textures in model" "$OUT/client.log" | head -6 \
+    | while IFS= read -r line; do echo "::error title=текстуры::${line:0:300}"; done
 fi
 
 {
@@ -875,6 +886,7 @@ fi
   echo "- моделей рыб (JSON + текстура) в кадре: **${#MODEL_NAMES[@]}**"
   echo "- строк Exception/ERROR в логе клиента (без звука/наратора и без missing-model): **$ERRS**"
   echo "- missing model for variant в логе клиента: **$MODELWARN**"
+  echo "- Missing textures in model в логе клиента: **$TEXWARN**"
   echo
   echo "## пробы"; echo '```'; cat "$PROBES"; echo '```'
   echo "## колонка (y=0..66; W=вода, S=донный песок, a=воздух/пещера, .=прочее)"; echo '```'; cat "$PROFILE"; echo '```'
@@ -903,6 +915,9 @@ if [ "$ERRS" -gt 0 ]; then
       done
   echo "::error title=итог::строк Exception/ERROR в логе клиента: $ERRS"
 fi
-echo "== итог: провалов $FAILS, ошибок в логе $ERRS, снимков $(ls -1 "$OUT"/*.jpg 2>/dev/null | wc -l) =="
+if [ "$TEXWARN" -gt 0 ]; then
+  echo "::error title=итог::Missing textures in model: $TEXWARN (модель ссылается на несуществующую текстуру)"
+fi
+echo "== итог: провалов $FAILS, ошибок в логе $ERRS, битых текстур $TEXWARN, снимков $(ls -1 "$OUT"/*.jpg 2>/dev/null | wc -l) =="
 
-[ "$FAILS" -eq 0 ] && [ "$ERRS" -eq 0 ] && [ "$MODELWARN" -eq 0 ]
+[ "$FAILS" -eq 0 ] && [ "$ERRS" -eq 0 ] && [ "$MODELWARN" -eq 0 ] && [ "$TEXWARN" -eq 0 ]

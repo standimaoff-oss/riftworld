@@ -1,7 +1,7 @@
 {
   "textures": {
-    "particle": "riftworld:block/coral_cap_violet",
-    "side": "riftworld:block/coral_cap_violet"
+    "particle": "riftworld:block/coral_stem_violet",
+    "side": "riftworld:block/coral_stem_violet"
   },
   "elements": [
     {
