@@ -344,24 +344,26 @@ public final class SeaProbeCommand {
                 if (itemsMiss.length() < 120) itemsMiss.append(itemsMiss.length() > 0 ? "," : "").append(i);
             }
         }
-        String handler = "absent";
+        String handler = "absent", herr = "";
         try {
             Class<?> cls = Class.forName("com.ferreusveritas.dynamictrees.api.registry.RegistryHandler");
             // NB: static get() у DT только со String, и внутри он делает ResourceLocation.tryParse —
             // поэтому "riftworlddt" превратился бы в minecraft:riftworlddt. Передаём полное имя.
             Object h = cls.getMethod("get", String.class).invoke(null, "riftworlddt:riftworlddt");
-            handler = h != null && (Boolean) h.getClass().getMethod("isValid").invoke(h) ? "valid" : "invalid";
+            handler = (Boolean) h.getClass().getMethod("isValid").invoke(h) ? "valid" : "invalid";
         } catch (ClassNotFoundException e) {
             handler = "no-dt";
         } catch (ReflectiveOperationException e) {
             handler = "error";
+            Throwable c = e instanceof java.lang.reflect.InvocationTargetException ite && ite.getCause() != null ? ite.getCause() : e;
+            herr = " err=" + c.getClass().getSimpleName() + ":" + String.valueOf(c.getMessage()).replace(' ', '_');
         }
         String line = "riftdt handler=" + handler + " ok=" + ok + " items=" + iok + " wrong_ns=" + wrong
                 + " missing=" + missing + (wrong > 0 ? " in=dynamictrees:" + wrongList : "")
                 + (imiss > 0 ? " item_missing=" + itemsMiss : "") + (iok > 0 ? " item_have=" + itemsHave : "")
                 + " fam=" + dtNames("com.ferreusveritas.dynamictrees.tree.family.Family")
                 + " sp=" + dtNames("com.ferreusveritas.dynamictrees.tree.species.Species")
-                + " lv=" + dtNames("com.ferreusveritas.dynamictrees.block.leaves.LeavesProperties");
+                + " lv=" + dtNames("com.ferreusveritas.dynamictrees.block.leaves.LeavesProperties") + herr;
         src.sendSuccess(() -> Component.literal(line), false);
         return wrong == 0 ? 1 : 0;
     }

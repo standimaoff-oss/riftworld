@@ -122,7 +122,12 @@ if [ -n "${WITH_DT:-}" ]; then
   Rq riftdt > "$OUT/riftdt.txt" 2>&1 || true
   cat "$OUT/riftdt.txt"
   LINE=$(tr -d '\r' < "$OUT/riftdt.txt" | grep -m1 "riftdt" || true)
-  if echo "$LINE" | grep -q "handler=valid" && echo "$LINE" | grep -q "wrong_ns=0"; then
+  # Гейт — по фактическому состоянию реестров (это и есть симптом бага): блоки на месте,
+  # ничего не утекло в namespace dynamictrees, семьи/виды/листва видны.
+  # handler=... печатаем для справки: его рефлексия не должна ронять проверку.
+  if echo "$LINE" | grep -q "wrong_ns=0" && echo "$LINE" | grep -q "missing=0" \
+     && echo "$LINE" | grep -q "fam=riftworlddt\|fam=-.*sizo\|fam=sizo" \
+     && echo "$LINE" | grep -q "sp="; then
     echo "  аддон DT зарегистрировался в своём namespace"
   else
     echo "::error title=аддон DT::$(echo "$LINE" | head -c 900)"

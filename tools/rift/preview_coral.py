@@ -216,7 +216,7 @@ def render(cols, tips, out_png, size=(520, 560)):
     # масштаб подгоняем под габариты: иначе растение занимает 1/10 кадра и ничего не видно
     span_x = (max(xs) - min(xs) + max(zs) - min(zs) + 2) * S * 2
     span_y = (max(ys) - min(ys) + 2) * (S - 1) + (max(xs) - min(xs) + max(zs) - min(zs) + 2) * HH
-    scale = min(2.2, min(size[0] / max(1, span_x), size[1] / max(1, span_y)))
+    scale = min(3.4, min(size[0] / max(1, span_x), size[1] / max(1, span_y)))
     S2 = max(3, int(S * scale))
     H2 = max(2, S2 // 2)
     ox, oy = size[0] // 2, size[1] - 40
