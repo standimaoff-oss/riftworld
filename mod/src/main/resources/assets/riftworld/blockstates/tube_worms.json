@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "waterlogged=true": {
+      "model": "riftworld:block/tube_worms"
+    },
+    "waterlogged=false": {
+      "model": "riftworld:block/tube_worms"
+    }
+  }
+}

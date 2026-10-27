@@ -44,20 +44,25 @@ jobs:
 
       - name: Build mod jar
         run: |
+          set -o pipefail   # без этого падение gradle маскировалось tee, и джоб шёл дальше «успешным»
           mkdir -p ci-out
           cd mod
           chmod +x gradlew
-          ./gradlew jar --no-daemon --console=plain 2>&1 | tee ../ci-out/build.log
+          ./gradlew jar dtJar copyDTJar --no-daemon --console=plain -PwithDT 2>&1 | tee ../ci-out/build.log
         continue-on-error: false
 
       - name: Boot Forge server with the mod and probe it
         run: bash tools/ci/server_check.sh
+        env:
+          WITH_DT: "1"   # Рев 12: сервер тоже с Dynamic Trees + аддоном
 
       # без игрока в измерении сервер Элисар не генерирует — съёмка и настоящие пробы идут в шаге клиента
 
       - name: Launch real Minecraft client, enter Elisar and take screenshots
         if: always()
-        timeout-minutes: 40
+        timeout-minutes: 50
+        env:
+          WITH_DT: "1"   # Рев 12: реальная проверка аддона Dynamic Trees — сервер и клиент с DT
         run: bash tools/ci/client_check.sh
 
       - name: Stage jar for artifacts
@@ -66,6 +71,8 @@ jobs:
           mkdir -p ci-out
           JAR=$(ls mod/build/libs/riftworld-*.jar 2>/dev/null | grep -v -e sources -e javadoc | head -1 || true)
           if [ -n "$JAR" ]; then cp "$JAR" "ci-out/$(basename "$JAR")"; echo "staged $JAR"; fi
+          DTJAR=$(ls mod/build/libs/riftworld-dt-*.jar 2>/dev/null | grep -v -e sources -e javadoc | head -1 || true)
+          if [ -n "$DTJAR" ]; then cp "$DTJAR" "ci-out/$(basename "$DTJAR")"; echo "staged addon $DTJAR"; fi
 
       - name: Resolve release tag
         id: tag
@@ -94,9 +101,11 @@ jobs:
             set -x
             [ -n "$JAR" ] || { echo "jar не найден"; exit 1; }
             cp "$JAR" "ci-out/riftworld-$TAG.jar"
+            DTJAR=$(ls mod/build/libs/riftworld-dt-*.jar 2>/dev/null | head -1 || true)
+            [ -n "$DTJAR" ] && cp "$DTJAR" "ci-out/riftworld-dt-$TAG.jar" || true
             echo "notes: $NOTES ($(wc -c < "$NOTES" 2>/dev/null || echo none) байт)"
             gh release delete "$TAG" --yes --cleanup-tag || true
-            gh release create "$TAG" "ci-out/riftworld-$TAG.jar" --title "${TITLE:-$TAG}" --notes-file "$NOTES"
+            gh release create "$TAG" "ci-out/riftworld-$TAG.jar" "ci-out/riftworld-dt-$TAG.jar" --title "${TITLE:-$TAG}" --notes-file "$NOTES"
           } > ci-out/release.log 2>&1 || {
             echo "== публикация релиза не удалась =="
             tail -40 ci-out/release.log

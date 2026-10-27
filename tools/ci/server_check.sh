@@ -17,6 +17,44 @@ if [ -z "$JAR" ]; then echo "FATAL: no mod jar built"; exit 1; fi
 echo "jar: $JAR"
 cp -f "$JAR" "$SRV/mods/"
 
+# Рев 12: WITH_DT=1 — сервер тоже должен видеть Dynamic Trees и аддон (client_check проверяет
+# рост деревьев через /dynamictrees). Без DT-jar аддон не загрузится, а без аддона нет смысла.
+if [ "${WITH_DT:-0}" = "1" ]; then
+  echo "== WITH_DT: Dynamic Trees + аддон в mods сервера =="
+  DTJAR=$(ls mod/build/libs/riftworld-dt-*.jar 2>/dev/null | grep -v -e sources -e javadoc | head -1)
+  [ -n "$DTJAR" ] && { cp -f "$DTJAR" "$SRV/mods/"; echo "  аддон: $(basename "$DTJAR")"; } \
+    || echo "  WARN: аддон не собран (dtJar) — проверка DT будет пропущена"
+  DTVER=$(sed -n 's/^dynamic_trees_version=//p' mod/gradle.properties 2>/dev/null | head -1)
+  # Приоритет 1: gradle copyDTJar — форсированная resolution, кладёт в build/dtlib/dynamictrees.jar
+  DTMAIN=$(ls mod/build/dtlib/dynamictrees.jar 2>/dev/null | head -1)
+  [ -n "$DTMAIN" ] && echo "  DT jar из build/dtlib (copyDTJar)"
+  # Приоритет 2: gradle cache — ищем ВСЮду (deobf-jar может лежать в любом подкаталоге)
+  if [ -z "$DTMAIN" ]; then
+    DTMAIN=$(find ~/.gradle -name 'DynamicTrees-*.jar' 2>/dev/null | grep -v -e sources -e javadoc | head -1)
+    [ -n "$DTMAIN" ] && echo "  DT jar из gradle cache"
+  fi
+  # Приоритет 3: harleyoconnor.com maven (correct URL: /DynamicTrees-1.20.1/1.4.10/DynamicTrees-1.20.1-1.4.10.jar)
+  if [ -z "$DTMAIN" ]; then
+    echo "  DT jar не найден локально — скачиваем из harleyoconnor.com maven (DT ${DTVER})..."
+    curl -fsSL -L -o "$SRV/mods/dynamictrees.jar" \
+      "https://harleyoconnor.com/maven/com/ferreusveritas/dynamictrees/DynamicTrees-1.20.1/${DTVER}/DynamicTrees-1.20.1-${DTVER}.jar" \
+      && DTMAIN="$SRV/mods/dynamictrees.jar" || echo "  WARN: Dynamic Trees jar не скачался из maven"
+  fi
+  # Приоритет 4: CurseForge (последний — api.cfwidget.com часто отдаёт HTML вместо jar)
+  if [ -z "$DTMAIN" ]; then
+    echo "  maven не сработал — пробуем CurseForge..."
+    curl -fsSL -L -o "$SRV/mods/dynamictrees.jar" \
+      "https://api.cfwidget.com/mods/mc-mods/dynamic-trees/versions/${DTVER}/download" \
+      && DTMAIN="$SRV/mods/dynamictrees.jar" || echo "  WARN: Dynamic Trees jar не скачался с CurseForge"
+  fi
+  if [ -n "$DTMAIN" ] && [ -f "$DTMAIN" ]; then
+    cp -f "$DTMAIN" "$SRV/mods/" 2>/dev/null || true
+    echo "  Dynamic Trees: $(basename "$DTMAIN")"
+  else
+    echo "  FATAL: Dynamic Trees jar недоступен — сервер не запустится с аддоном"
+  fi
+fi
+
 if [ ! -f "$SRV/libraries/net/minecraftforge/forge/$FORGE/unix_args.txt" ]; then
   curl -fsSL -o "$SRV/installer.jar" \
     "https://maven.minecraftforge.net/net/minecraftforge/forge/$FORGE/forge-$FORGE-installer.jar" || { echo "FATAL: installer download"; exit 1; }
@@ -32,7 +70,10 @@ rcon.password=$RCON_PW
 rcon.port=25575
 server-port=25565
 server-ip=
-level-type=minecraft\:normal
+# Рев 12.2: superflat — убираем ванильные биомы (deep_dark), в которых DT создаёт
+# feature order cycle. Elisar — кастомная размерность, работает независимо от overworld.
+level-type=minecraft\:flat
+generator-settings={"biome":"minecraft:plains","layers":[{"block":"minecraft:bedrock","height":1},{"block":"minecraft:dirt","height":2},{"block":"minecraft:grass_block","height":1}],"lakes":false,"features":false,"structure_overrides":[]}
 level-seed=21122
 view-distance=6
 simulation-distance=5
@@ -75,7 +116,7 @@ grep -q "Mean TPS: 20.000" "$OUT/tps.txt" && echo "  tps ok" || bad "tps below 2
 cat "$OUT/tps.txt"
 
 say "log sweep"
-grep -nE 'Exception|\bERROR\b' "$SRV/logs/latest.log" | grep -viE 'Registry|codec' > "$OUT/errors.txt" || true
+grep -nE 'Exception|\bERROR\b' "$SRV/logs/latest.log" | grep -viE 'Registry|codec|dynamictrees:guide|RecipeManager.*Parsing|Missing conditions|DedicatedServerProperties' > "$OUT/errors.txt" || true
 ERRS=$(grep -c . "$OUT/errors.txt" || true)
 echo "error lines: $ERRS"
 [ "$ERRS" -eq 0 ] || bad "$ERRS exception/error lines in latest.log"

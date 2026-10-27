@@ -1,0 +1,8 @@
+{
+  "primitive_leaves": "riftworld:coral_foliage_pink",
+  "cell_kit": "dynamictrees:deciduous",
+  "smother": 6,
+  "can_grow_on_ground": true,
+  "only_if_loaded": "riftworld",
+  "block_registry_name": "riftworlddt:coral_staghorn_leaves"
+}

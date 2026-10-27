@@ -265,6 +265,155 @@ def sea_shells():
     return im
 
 
+# ---------------------------------------------------------------- Рев 10: тропический риф
+
+def anemone():
+    """Актиния: венчик щупалец на короткой ножке, розово-коралловая, кончики светятся."""
+    im = img()
+    px = im.load()
+    foot, c, l, tip = rgb("b8567a"), rgb("e585a8"), rgb("f7bcd0"), (255, 242, 246)
+    for y in range(15, 10, -1):
+        px[7, y] = (*foot, 255)
+        px[8, y] = (*foot, 255)
+    # щупальца: редкий веер из центра (7.5, 10.5) — между лучами видно фон, силуэт «цветка»
+    cx, cy = 7.5, 10.5
+    for a in range(15, 166, 15):
+        rad = math.radians(a)
+        for r in range(2, 6):
+            x = int(round(cx + math.cos(rad) * r * 1.15))
+            y = int(round(cy - math.sin(rad) * r * 0.95))
+            if 0 <= x < 16 and 0 <= y < 16:
+                px[x, y] = (*(tip if r >= 5 else (l if r >= 3 else c)), 255)
+    for x, y in ((7, 10), (8, 10), (7, 11), (8, 11)):
+        px[x, y] = (*c, 255)
+    return im
+
+
+def coral_bush():
+    """Куст коралла: плотный пучок коротких веточек бирюзово-зелёного тона."""
+    im = img()
+    px = im.load()
+    d, c, l = rgb("1f7f74"), rgb("35b3a2"), rgb("7fe3d4")
+    for x, top in ((4, 9), (6, 6), (8, 4), (10, 7), (12, 10)):
+        for y in range(15, top - 1, -1):
+            px[x, y] = (*(c if y > top + 2 else l), 255)
+            if x + 1 < 16 and y % 2 == 0:
+                px[x + 1, y] = (*d, 255)
+    for x, y in ((5, 8), (9, 5), (11, 9), (3, 10), (13, 11)):
+        if 0 <= x < 16 and 0 <= y < 16:
+            px[x, y] = (*l, 255)
+    return im
+
+
+def tube_worms():
+    """Трубчатые черви: пучок белых трубок с алыми венчиками."""
+    im = img()
+    px = im.load()
+    white, shade, red, hot = rgb("e8e2d4"), rgb("b9b2a2"), rgb("c9425c"), rgb("f2798f")
+    for x, top in ((4, 7), (7, 4), (10, 6), (12, 9)):
+        for y in range(15, top - 1, -1):
+            px[x, y] = (*white, 255)
+            if x + 1 < 16:
+                px[x + 1, y] = (*shade, 255)
+        for dx in (-1, 0, 1):
+            if 0 <= x + dx < 16 and top - 1 >= 0:
+                px[x + dx, top - 1] = (*(hot if dx == 0 else red), 255)
+    return im
+
+
+def sea_star():
+    """Морская звезда — плоский декаль на дне (оранжевая, пятилучевая)."""
+    im = img()
+    px = im.load()
+    c, d, l = rgb("e0813f"), rgb("b45f2b"), rgb("f4b273")
+    cx, cy = 8, 8
+    for a in range(0, 360, 72):
+        rad = math.radians(a - 90)
+        for r in range(0, 6):
+            x = int(round(cx + math.cos(rad) * r))
+            y = int(round(cy + math.sin(rad) * r))
+            if 0 <= x < 16 and 0 <= y < 16:
+                px[x, y] = (*(l if r >= 4 else (c if r >= 2 else d)), 255)
+                if r < 3:
+                    for dx, dy in ((1, 0), (0, 1)):
+                        if 0 <= x + dx < 16 and 0 <= y + dy < 16:
+                            px[x + dx, y + dy] = (*c, 255)
+    return im
+
+
+def sea_urchin():
+    """Морской ёж — плоский декаль: тёмный купол с фиолетовыми иглами."""
+    im = img()
+    px = im.load()
+    body, spike, tip = rgb("3a2b46"), rgb("6d4f86"), rgb("b79ad4")
+    cx, cy = 8, 8
+    for y in range(16):
+        for x in range(16):
+            dd = math.hypot(x + 0.5 - cx, y + 0.5 - cy)
+            if dd < 2.6:
+                px[x, y] = (*body, 255)
+            elif dd < 3.3:
+                px[x, y] = (*spike, 255)
+    for a in range(0, 360, 18):
+        rad = math.radians(a)
+        for r in range(3, 7):
+            x = int(round(cx + math.cos(rad) * r))
+            y = int(round(cy + math.sin(rad) * r))
+            if 0 <= x < 16 and 0 <= y < 16:
+                px[x, y] = (*(tip if r >= 6 else spike), 255)
+    return im
+
+
+def shell_bed():
+    """Ракушечная грядка — плоский декаль: плотная россыпь ракушек и камешков."""
+    im = img()
+    px = im.load()
+    a, b, c2 = rgb("f0e7d3"), rgb("d5c7ab"), rgb("c2b6a0")
+    rnd = random.Random(41)
+    for _ in range(26):
+        x, y = rnd.randint(1, 13), rnd.randint(1, 13)
+        w = rnd.choice((1, 2, 2, 3))
+        col = rnd.choice((a, b, c2))
+        for dx in range(w):
+            for dy in range(max(1, w - 1)):
+                if 0 <= x + dx < 16 and 0 <= y + dy < 16:
+                    px[x + dx, y + dy] = (*col, 255)
+    return im
+
+
+def _coral_cap(base, light, dark, seed):
+    """Рифовая шапка: бугристый цельный блок тропического коралла (ядро рифового холма)."""
+    im = img()
+    rnd = random.Random(seed)
+    b, l, d = rgb(base), rgb(light), rgb(dark)
+    px = im.load()
+    for y in range(16):
+        for x in range(16):
+            n = rnd.random()
+            col = l if n > 0.78 else (d if n < 0.22 else b)
+            px[x, y] = (*col, 255)
+    # мелкие «поры» — кружки другого тона
+    for _ in range(9):
+        cx, cy = rnd.randint(2, 13), rnd.randint(2, 13)
+        for dx, dy in ((0, 0), (1, 0), (0, 1), (1, 1), (-1, 0), (0, -1)):
+            x, y = cx + dx, cy + dy
+            if 0 <= x < 16 and 0 <= y < 16:
+                px[x, y] = (*(d if rnd.random() > 0.4 else l), 255)
+    return im
+
+
+def coral_cap_pink():
+    return _coral_cap("d9678a", "f0a2ba", "a83f62", 11)
+
+
+def coral_cap_teal():
+    return _coral_cap("2f9f95", "6fd6c9", "1c6f68", 12)
+
+
+def coral_cap_violet():
+    return _coral_cap("7a5cc0", "ab8fe6", "513a8c", 13)
+
+
 TEXTURES = {
     "elisar_silt": elisar_silt,
     "reef_stone": reef_stone,
@@ -278,6 +427,16 @@ TEXTURES = {
     "sea_grass": sea_grass,
     "cave_glow": cave_glow,
     "sea_shells": sea_shells,
+    # Рев 10: тропический риф
+    "anemone": anemone,
+    "coral_bush": coral_bush,
+    "tube_worms": tube_worms,
+    "sea_star": sea_star,
+    "sea_urchin": sea_urchin,
+    "shell_bed": shell_bed,
+    "coral_cap_pink": coral_cap_pink,
+    "coral_cap_teal": coral_cap_teal,
+    "coral_cap_violet": coral_cap_violet,
 }
 
 
@@ -331,6 +490,11 @@ EGGS = {
     "jelly_fish_spawn_egg": ("9FE6FF", "D8F7FF"),
     "ray_fish_spawn_egg": ("68798C", "DCE6EC"),
     "angler_fish_spawn_egg": ("2C3947", "DFFFA8"),
+    # Рев 10
+    "surgeon_fish_spawn_egg": ("2F6FD0", "F2D24C"),
+    "turtle_spawn_egg": ("4E7A4A", "E3DCC0"),
+    "gloom_fish_spawn_egg": ("2A1F36", "C46BFF"),
+    "sting_fish_spawn_egg": ("B05AD6", "FFE9FF"),
 }
 for _n, (_b, _s) in EGGS.items():
     _d = os.path.join(OUT, "..", "item")

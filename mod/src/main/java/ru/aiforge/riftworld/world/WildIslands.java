@@ -54,8 +54,6 @@ public final class WildIslands {
         if (sr != null && Math.abs(x - sr.hub.cx) < sr.hub.R * 1.2 + 2 && Math.abs(z - sr.hub.cz) < sr.hub.R * 1.2 + 2) out.add(sr.hub);
         WaterfallGardens.Region gr = WaterfallGardens.regionAt(x, z);
         if (gr != null && Math.abs(x - gr.hub.cx) < gr.hub.R * 1.2 + 2 && Math.abs(z - gr.hub.cz) < gr.hub.R * 1.2 + 2) out.add(gr.hub);
-        TerracedMountains.Region tr = TerracedMountains.regionAt(x, z);
-        if (tr != null && Math.abs(x - tr.massif.cx) < tr.massif.R * 1.2 + 2 && Math.abs(z - tr.massif.cz) < tr.massif.R * 1.2 + 2) out.add(tr.massif);
         for (int dx = -1; dx <= 1; ++dx)
             for (int dz = -1; dz <= 1; ++dz) {
                 for (CityPlan.Island i : cell(cx + dx, cz + dz).islands) {
@@ -78,7 +76,6 @@ public final class WildIslands {
         out.addAll(VioletHills.treesNear(x, z));
         out.addAll(SizoGrove.treesNear(x, z));
         out.addAll(WaterfallGardens.treesNear(x, z));
-        out.addAll(TerracedMountains.treesNear(x, z));
         for (int dx = -1; dx <= 1; ++dx)
             for (int dz = -1; dz <= 1; ++dz)
                 for (CityPlan.Tree t : cell(cx + dx, cz + dz).trees)

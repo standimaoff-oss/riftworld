@@ -76,7 +76,19 @@ public class SeaPlantBlock extends BushBlock implements SimpleWaterloggedBlock {
                 || below.is(ElisarBlocks.STONE.get()) || below.is(ElisarBlocks.STONE_MOSSY.get()) || below.is(ElisarBlocks.CORAL_BRAIN.get())
                 || below.is(ElisarBlocks.SEA_GRASS.get()) || below.is(ElisarBlocks.SEA_KELP.get()) || below.is(ElisarBlocks.SEA_KELP_TOP.get())
                 || below.is(ElisarBlocks.CORAL_BRANCH.get()) || below.is(ElisarBlocks.CORAL_FAN.get())
-                || below.is(ElisarBlocks.CORAL_TUBE.get()) || below.is(ElisarBlocks.CORAL_GLOW.get());
+                || below.is(ElisarBlocks.CORAL_TUBE.get()) || below.is(ElisarBlocks.CORAL_GLOW.get())
+                // Рев 10: новая жизнь рифа растёт друг на друге и на рифовых шапках
+                || below.is(ElisarBlocks.CORAL_CAP_PINK.get()) || below.is(ElisarBlocks.CORAL_CAP_TEAL.get())
+                || below.is(ElisarBlocks.CORAL_CAP_VIOLET.get()) || below.is(ElisarBlocks.ANEMONE.get())
+                || below.is(ElisarBlocks.CORAL_BUSH.get()) || below.is(ElisarBlocks.TUBE_WORMS.get())
+                // Рев 11: новые кораллы-растения растут друг на друге и на шапках
+                || below.is(ElisarBlocks.STAGHORN_CORAL.get()) || below.is(ElisarBlocks.FEATHER_CORAL.get())
+                || below.is(ElisarBlocks.SEA_WHIP.get()) || below.is(ElisarBlocks.TABLE_CORAL.get())
+                || below.is(ElisarBlocks.TUBE_SPONGE_CLUSTER.get()) || below.is(ElisarBlocks.RIBBON_CORAL.get())
+                || below.is(ElisarBlocks.COBBLE.get())
+                // Рев 12: коралловые деревья — крестики-украшения стоят на стволах, ветвях и шапках
+                || below.is(ElisarBlocks.CORAL_STEM_PINK.get()) || below.is(ElisarBlocks.CORAL_STEM_TEAL.get())
+                || below.is(ElisarBlocks.CORAL_STEM_VIOLET.get());
     }
 
     @Override

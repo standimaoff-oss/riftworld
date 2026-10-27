@@ -1,0 +1,43 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="MIT"
+issueTrackerURL="https://github.com/standimaoff-oss/riftworld/issues"
+
+[[mods]]
+modId="riftworlddt"
+version="0.9.0"
+displayName="Riftworld × Dynamic Trees"
+authors="AI Agent"
+description='''
+Аддон к Dynamic Trees для мода «Разлом»: деревья Элисара (сизо, амбра и сизо-великан) становятся
+настоящими динамическими — ветки растут по радиусу, ствол утолщается, крона набирается по объёму,
+дерево можно срубить по частям. Плюс их формы (jo_codes) и правила, в каких биомах они растут.
+'''
+
+[[dependencies.riftworlddt]]
+    modId="forge"
+    mandatory=true
+    versionRange="[47,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.riftworlddt]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.20.1,1.21)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.riftworlddt]]
+    modId="dynamictrees"
+    mandatory=true
+    versionRange="[1.4,2.0)"
+    ordering="AFTER"
+    side="BOTH"
+
+[[dependencies.riftworlddt]]
+    modId="riftworld"
+    mandatory=true
+    versionRange="[0.9,1.0)"
+    ordering="AFTER"
+    side="BOTH"

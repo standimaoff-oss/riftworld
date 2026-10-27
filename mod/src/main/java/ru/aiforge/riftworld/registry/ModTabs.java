@@ -28,6 +28,10 @@ public final class ModTabs {
                 out.accept(ModItems.EGG_JELLY.get());
                 out.accept(ModItems.EGG_RAY.get());
                 out.accept(ModItems.EGG_ANGLER.get());
+                out.accept(ModItems.EGG_SURGEON.get());
+                out.accept(ModItems.EGG_TURTLE.get());
+                out.accept(ModItems.EGG_GLOOM.get());
+                out.accept(ModItems.EGG_STING.get());
                 for (var b : ModBlocks.WITH_ITEM) {
                     var item = ForgeRegistries.ITEMS.getValue(b.getId());
                     if (item != null) out.accept(item);

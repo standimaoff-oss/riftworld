@@ -79,6 +79,18 @@ if ! RCON list >/dev/null 2>&1; then
   exit 1
 fi
 EL() { RCON execute in riftworld:elisar run "$@" 2>&1; }
+# Рев 12: если выделенный сервер упал, его лог — единственный источник причины падения.
+# Раньше в артефактах был только снимок лога из шага 1, и «Connection Lost» приходилось гадать.
+keep_server_logs() {
+  local srv=${SRV:-ci/server}
+  [ -f "$srv/logs/latest.log" ] && cp "$srv/logs/latest.log" "$OUT/server_latest.log" 2>/dev/null || true
+  [ -f "$srv/console.log" ] && cp "$srv/console.log" "$OUT/server_console.log" 2>/dev/null || true
+  if [ -d "$srv/crash-reports" ]; then
+    mkdir -p "$OUT/crash"
+    cp "$srv"/crash-reports/*.txt "$OUT/crash/" 2>/dev/null || true
+  fi
+}
+
 ELP() { local x=$1 y=$2 z=$3; shift 3; RCON execute in riftworld:elisar positioned "$x" "$y" "$z" run "$@" 2>&1; }
 
 # ---------------------------------------------------------------- дисплей должен быть готов
@@ -97,7 +109,8 @@ start_client() {
     chmod +x gradlew
     ./gradlew runClient --no-daemon --console=plain \
       -PrunDir="$PWD/../$RUN" \
-      -PautoJoin=127.0.0.1:25565 2>&1
+      -PautoJoin=127.0.0.1:25565 \
+      ${WITH_DT:+-PwithDT} 2>&1
   ) > "$OUT/client.log" 2>&1 &
   CPID=$!
 }
@@ -150,44 +163,78 @@ read -r LX LZ LF < <(python3 -c "import json;d=json.load(open('$SPOTS'));print(d
 FY=$((RF + 22))          # «витринный» горизонт над рифом: толща воды, хорошо освещена
 echo "  reef=$RX,$RZ floor=$RF | deep=$DX,$DZ floor=$DF | hole=$HX,$HZ floor=$HF | cave=$CX,$CZ $CLOW..$CHIGH | column=$KX,$KZ floor=$KF"
 
-# ---------------------------------------------------------------- пятна биомов (rev 9)
-# координаты берём у самого мода (/riftbiomes), а не хардкодим — камеры всегда попадают в биом
-BIOMES_RAW=$(RCON riftbiomes 2>&1 | tr -d '\r' | tr '\n' ' ')
-echo "  /riftbiomes -> $BIOMES_RAW"
-read -r VHX VHZ VHY TMX TMZ TMY OCEAN < <(python3 - "$BIOMES_RAW" <<'PYEOF'
-import re, sys
-s = sys.argv[1] if len(sys.argv) > 1 else ""
-def spot(tag):
-    m = re.search(tag + r"=(-?\d+),(-?\d+),(-?\d+)", s)
-    return m.groups() if m else ("0", "0", "0")
-v, t = spot("violet"), spot("terraced")
-o = re.search(r"ocean=(-?\d+)", s)
-print(v[0], v[1], v[2], t[0], t[1], t[2], o.group(1) if o else "45")
-PYEOF
-)
-echo "  violet=$VHX,$VHZ top=$VHY | terraced=$TMX,$TMZ top=$TMY | ocean=$OCEAN"
-printf '%s\n' "violet $VHX $VHY $VHZ" "terraced $TMX $TMY $TMZ" > "$OUT/biome_spots.txt"
-
 echo "== телепорт в Элисар и прогрузка области =="
+if ! RCON list >/dev/null 2>&1; then
+  echo "FATAL: выделенный сервер не отвечает по RCON до начала проб"
+  keep_server_logs
+  tail -40 "$OUT/server_latest.log" 2>/dev/null || true
+  exit 1
+fi
 EL time set noon >/dev/null 2>&1 || true        # в Элисаре всегда полдень (ElisarDaylight), но фиксируем сразу
 EL tp TestPlayer "$RX" "$((RF + 6))" "$RZ" 90 40 | tail -1
 EL forceload add "$((RX - 80))" "$((RZ - 80))" "$((RX + 100))" "$((RZ + 140))" | tail -1
 EL forceload add "$((HX - 40))" "$((HZ - 40))" "$((HX + 40))" "$((HZ + 40))" | tail -1
 EL forceload add "$((CX - 40))" "$((CZ - 40))" "$((CX + 40))" "$((CZ + 40))" | tail -1
-EL forceload add "$((VHX - 200))" "$((VHZ - 200))" "$((VHX + 200))" "$((VHZ + 200))" | tail -1
-EL forceload add "$((TMX - 220))" "$((TMZ - 220))" "$((TMX + 220))" "$((TMZ + 220))" | tail -1
 sleep 60
+
+if ! RCON list >/dev/null 2>&1; then
+  echo "FAIL: сервер упал на прогрузке Элисара (RCON молчит). Причина — в server_latest.log / crash:"
+  keep_server_logs
+  grep -nE "Exception|Caused by|crash" "$OUT/server_latest.log" 2>/dev/null | tail -20 || true
+  FAILS=$((FAILS + 1))
+fi
+
+# ---------------------------------------------------------------- журнал проб (нужен уже здесь)
+PROBES="$OUT/probes.txt"
+: > "$PROBES"
+log() { echo "$*" | tee -a "$PROBES"; }
+
+# ---------------------------------------------------------------- самопроверка моря из самой игры
+# riftsea_field <поле> <радиус>: гоняет /riftsea в позиции игрока и отдаёт одно поле ответа
+riftsea_field() {
+  local raw
+  raw=$(RCON execute in riftworld:elisar at TestPlayer run riftsea 2>&1 | tr -d '\r' | tr '\n' ' ')
+  log "  /riftsea raw: ${raw:0:400}"
+  python3 - "$raw" "$1" <<'PYEOF'
+import re, sys
+s, k = sys.argv[1], sys.argv[2]
+m = re.search(k + r"=(-?\d+)", s)
+print(m.group(1) if m else "0")
+PYEOF
+}
+# Рев 10: /riftsea считает по реальным блокам (глубина дна, вода и воздух в пещерах, кораллы),
+# поэтому координаты камер больше не захардкожены — их отдаёт мод.
+EL tp TestPlayer "$RX" "$((RF + 6))" "$RZ" 90 20 >/dev/null 2>&1
+sleep 8
+RREEF=$(riftsea_field floor)             # настоящая кромка дна в рифовой точке (мир стал глубже)
+[ "$RREEF" != "0" ] && RF=$RREEF
+SEA_RAW=$(RCON execute in riftworld:elisar at TestPlayer run riftsea 2>&1 | tr -d '\r' | tr '\n' ' ')
+echo "  /riftsea -> ${SEA_RAW:0:400}"
+read -r SEA_FLOOR SEA_WATER SEA_MIN SEA_CAVES SEA_WET SEA_AIR SEA_FLOAT SEA_CEIL SEA_PLANTS SEA_CORALS CAVE_X CAVE_Y CAVE_Z < <(python3 - "$SEA_RAW" <<'PYEOF'
+import re, sys
+s = sys.argv[1] if len(sys.argv) > 1 else ""
+def g(k, d="0"):
+    m = re.search(k + r"=(-?\d+)", s)
+    return m.group(1) if m else d
+c = re.search(r"caveat=(-?\d+),(-?\d+),(-?\d+)", s)
+cx, cy, cz = c.groups() if c else ("0", "0", "0")
+print(g("floor"), g("water"), g("min"), g("caves"), g("wet"), g("air"), g("float"), g("ceilair"), g("plants"), g("corals"), cx, cy, cz)
+PYEOF
+)
+log "  /riftsea raw: ${SEA_RAW:0:600}"
+echo "  дно=$SEA_FLOOR вода=$SEA_WATER min=$SEA_MIN | пещеры: колонок=$SEA_CAVES воды=$SEA_WET воздуха=$SEA_AIR (у свода $SEA_CEIL, висячего $SEA_FLOAT) | растения=$SEA_PLANTS кораллы=$SEA_CORALS | пещера=$CAVE_X,$CAVE_Y,$CAVE_Z"
 
 # ---------------------------------------------------------------- пробы (реальная генерация)
 FAILS=${FAILS:-0}
 WATER=${WATER:-0}
-PROBES="$OUT/probes.txt"
 write_report() {
   {
     echo "# CI, шаг 2: настоящий клиент Minecraft в Элисаре"
     echo
     echo "- клиент: ForgeGradle runClient под Xvfb (llvmpipe, без GPU)"
     echo "- воды в колонке (${KX:-?},y,${KZ:-?}): **$WATER** блоков"
+    echo "- море: дно y=$SEA_FLOOR, вода $SEA_WATER блоков, глубочайшее дно y=$SEA_MIN"
+    echo "- пещеры: $SEA_CAVES колонок, воды $SEA_WET / воздуха $SEA_AIR блоков (у свода $SEA_CEIL, висячего $SEA_FLOAT)"
     echo "- провалов проб: **$FAILS**"
     echo "- строк Exception/ERROR в логе клиента (без звука/наратора): **$(grep -E "Exception|ERROR" "$OUT/client.log" 2>/dev/null | grep -viE "Narrator|flite|text2speech|OpenAL|SoundSystem|SoundEngine" | wc -l)**"
     echo
@@ -197,8 +244,8 @@ write_report() {
   } > "$OUT/report_client.md"
 }
 trap write_report EXIT
-: > "$PROBES"
-log() { echo "$*" | tee -a "$PROBES"; }
+
+trap 'keep_server_logs; write_report' EXIT
 
 # проба «под игроком»: телепортируем игрока в точку и смотрим блок прямо под ним
 at_block() { # at_block <x> <y> <z> <block> <label>
@@ -207,12 +254,65 @@ at_block() { # at_block <x> <y> <z> <block> <label>
   sleep 2
   ans=$(EL execute at TestPlayer run execute if block \~ \~ \~ "riftworld:$4" 2>&1)
   if [[ "$ans" == *"Test passed"* ]]; then log "  OK   $5 ($1,$2,$3) = $4"
-  else log "  FAIL $5 ($1,$2,$3) != $4 | ответ: ${ans:0:120}"; FAILS=$((FAILS + 1)); fi
+  else log "  FAIL $5 ($1,$2,$3) != $4 | ответ: ${ans:0:120} | игрок: $(EL data get entity TestPlayer Pos 2>&1 | head -1)"; FAILS=$((FAILS + 1)); fi
 }
 
 echo "== пробы моря (под игроком) =="
 at_block "$KX" "$((KT - 6))" "$KZ" elisar_water "вода на глубине"
-at_block "$KX" "$KF" "$KZ" elisar_seabed "донный песок"
+seabed_probe() { # seabed_probe <x> <y> <z> <label>: твёрдый донный блок с перебором по высоте
+  # ровно в точке может быть устье пещеры (дно пробито водой) или сад над дном — это нормально,
+  # поэтому смотрим несколько колонок и несколько высот вокруг замеренной кромки
+  local x=$1 y=$2 z=$3 label=$4 b dy dx dz
+  for dy in 0 1 -1 2 -2; do
+    for dx in 0 1 -1 2 -2; do
+      for dz in 0 1 -1; do
+        EL tp TestPlayer "$((x + dx))" "$((y + dy))" "$((z + dz))" 0 0 >/dev/null 2>&1
+        sleep 1                              # телепорт применяется на тике
+        for b in elisar_seabed elisar_silt reef_stone coral_brain coral_cap_pink coral_cap_teal coral_cap_violet cobble; do
+          if [[ "$(EL execute at TestPlayer run execute if block \~ \~ \~ "riftworld:$b" 2>&1)" == *"Test passed"* ]]; then
+            log "  OK   $label: $b на $((x + dx)),$((y + dy)),$((z + dz))"; return 0
+          fi
+        done
+      done
+    done
+  done
+  log "  FAIL $label ($x,$y,$z): твёрдого донного блока нет рядом"; FAILS=$((FAILS + 1))
+}
+EL tp TestPlayer "$KX" 60 "$KZ" 0 0 >/dev/null 2>&1
+sleep 3
+KFLOOR=$(riftsea_field floor)
+[ "$KFLOOR" = "0" ] && KFLOOR=$SEA_FLOOR
+seabed_probe "$KX" "$KFLOOR" "$KZ" "донный блок"
+
+echo "== пробы Рев 10: глубокое дно и затопленные пещеры =="
+probe_ok() { log "  OK   $1"; }
+probe_fail() { log "  FAIL $1"; FAILS=$((FAILS + 1)); }
+[ "$SEA_FLOOR" != "0" ] && probe_ok "кромка дна из /riftsea: y=$SEA_FLOOR" \
+  || probe_fail "команда /riftsea не ответила (сырой ответ в probes.txt) — проба глубины не выполнена"
+[ "$SEA_WATER" -ge 44 ] && probe_ok "толщина воды под рифом: $SEA_WATER блоков (нужно >=44)" \
+  || probe_fail "море мелкое: $SEA_WATER блоков"
+[ "$SEA_CAVES" -ge 20 ] && probe_ok "колонок с пещерами в радиусе проб: $SEA_CAVES" \
+  || probe_fail "пещер слишком мало: $SEA_CAVES колонок"
+if [ "$SEA_WET" -gt 0 ]; then
+  PCT=$((SEA_WET * 100 / (SEA_WET + SEA_AIR + 1)))
+  [ "$PCT" -ge 65 ] && probe_ok "пещеры ЗАТОПЛЕНЫ: воды ${PCT}% объёма полостей (остальное — воздушные карманы)" \
+    || probe_fail "пещеры сухие: воды только ${PCT}% (баг Рев 8 вернулся)"
+fi
+# Рев 12: воздух в пещерах должен стоять У СВОДА, а не висеть пузырями в воде
+AIRN=$((SEA_AIR + 1))
+FPCT=$((SEA_FLOAT * 100 / AIRN))
+CPCT=$((SEA_CEIL * 100 / AIRN))
+[ "$FPCT" -le 12 ] && probe_ok "воздух в пещерах прижат к своду: висячих пузырей ${FPCT}% (нужно <=12%)" \
+  || probe_fail "в толще воды висят воздушные пузыри: ${FPCT}% воздуха (было видно как «странная дырка»)"
+[ "$CPCT" -ge 25 ] && probe_ok "воздух под сводами (под камнем): ${CPCT}% всего воздуха пещер" \
+  || probe_fail "воздух размазан по пещере, у сводов только ${CPCT}%"
+if [ "$CAVE_X" != "0" ]; then
+  at_block "$CAVE_X" "$CAVE_Y" "$CAVE_Z" elisar_water "вода внутри пещеры"
+  DEPTH=$((KT - CAVE_Y))
+  probe_ok "пещера найдена на y=$CAVE_Y (в $DEPTH блоках под уровнем моря)"
+else
+  probe_fail "затопленная пещера не найдена в радиусе проб"
+fi
 # на рифе растёт сад: проверяем цветок/коралл прямо на дне, а воду — на два блока выше
 garden_probe() { # garden_probe <x> <z> <floor> <label>: ищем любое морское растение рядом с точкой
   local x=$1 z=$2 f=$3 label=$4 found=""
@@ -232,10 +332,46 @@ garden_probe() { # garden_probe <x> <z> <floor> <label>: ищем любое м�
 garden_probe "$RX" "$RZ" "$RF" "рифовый сад"
 at_block "$RX" "$((RF + 4))" "$RZ" elisar_water "вода над рифом"
 
+echo "== Рев 12: коралловые деревья (растения из многих блоков) =="
+EL tp TestPlayer "$RX" "$((RF + 8))" "$RZ" 90 10 >/dev/null 2>&1
+sleep 6
+CORAL_RAW=$(EL execute at TestPlayer run riftcoral 2>&1 | tr -d '\r' | tr '\n' ' ')
+log "  /riftcoral raw: ${CORAL_RAW:0:400}"
+read -r CORAL_AT CORAL_H CORAL_BLOCKS CORAL_COLS CORAL_TIPS CORAL_CAM CORAL_CAMLOW < <(python3 - "$CORAL_RAW" <<'PYEOF'
+import re, sys
+s = sys.argv[1] if len(sys.argv) > 1 else ""
+def g(k, d="0"):
+    m = re.search(k + r"=(-?\d+)", s)
+    return m.group(1) if m else d
+at = re.search(r"at=(-?\d+),(-?\d+),(-?\d+)", s)
+at = ",".join(at.groups()) if at else "0,0,0"
+cam = re.search(r"cam=(-?\d+),(-?\d+),(-?\d+)", s)
+cam = ",".join(cam.groups()) if cam else "0,0,0"
+low = re.search(r"camlow=(-?\d+),(-?\d+),(-?\d+)", s)
+low = ",".join(low.groups()) if low else "0,0,0"
+print(at, g("h"), g("blocks"), g("cols"), g("tips"), cam, low)
+PYEOF
+)
+log "  коралл: at=$CORAL_AT h=$CORAL_H блоков=$CORAL_BLOCKS колонок=$CORAL_COLS украшений=$CORAL_TIPS"
+if [ "$CORAL_AT" != "0,0,0" ]; then
+  [ "$CORAL_H" -ge 3 ] && probe_ok "коралл — ВЫСОКОЕ растение: $CORAL_H блоков в высоту" \
+    || probe_fail "коралл ниже 3 блоков (h=$CORAL_H) — всё ещё одиночный кустик"
+  [ "$CORAL_BLOCKS" -ge 12 ] && probe_ok "коралл из МНОГИХ блоков: $CORAL_BLOCKS блоков, $CORAL_COLS колонок" \
+    || probe_fail "коралл слишком маленький: $CORAL_BLOCKS блоков"
+  [ "$CORAL_COLS" -ge 3 ] && probe_ok "у растения есть ветви/плита: $CORAL_COLS колонок" \
+    || probe_fail "растение в одну колонку — нет силуэта"
+  [ "$CORAL_TIPS" -ge 1 ] && probe_ok "на ветвях есть кораллы-украшения: $CORAL_TIPS" \
+    || probe_fail "верхушки ветвей пустые"
+  CX=$(printf '%s' "$CORAL_AT" | cut -d, -f1); CY=$(printf '%s' "$CORAL_AT" | cut -d, -f2); CZ=$(printf '%s' "$CORAL_AT" | cut -d, -f3)
+  log "  камера коралла: cam=$CORAL_CAM camlow=$CORAL_CAMLOW"
+else
+  probe_fail "/riftcoral не нашла коралловое дерево"
+fi
+
 echo "== профиль колонки $KX,y,$KZ =="
 PROFILE="$OUT/column.txt"
 : > "$PROFILE"
-for y in $(seq 2 66); do
+for y in $(seq $((SEA_FLOOR - 4)) 66); do
   EL tp TestPlayer "$KX" "$y" "$KZ" 0 0 >/dev/null 2>&1
   w="."
   [[ "$(EL execute at TestPlayer run execute if block \~ \~ \~ riftworld:elisar_water 2>&1)" == *"Test passed"* ]] && w="W"
@@ -274,7 +410,7 @@ SUM_LOCAL 7 2.2 0.2 '{NoAI:1b,Silent:1b,sf_variant:2}'
 SUM_LOCAL 8 -3.2 1.2 '{NoAI:1b,Silent:1b,sf_variant:3}'
 SUM_LOCAL 9 3.4 1.6 '{NoAI:1b,Silent:1b,sf_variant:4}'
 # хищники — в пещере, тоже перед камерой
-EL tp TestPlayer "$CX" "$((CLOW + 3))" "$CZ" 0 0 >/dev/null 2>&1
+[ "$CAVE_X" != "0" ] && EL tp TestPlayer "$CAVE_X" "$CAVE_Y" "$CAVE_Z" 0 0 >/dev/null 2>&1
 sleep 3
 SUM_LOCAL 2.6 0 0 '{NoAI:1b,Silent:1b,sf_variant:5}'
 SUM_LOCAL 3 1.1 0.2 '{NoAI:1b,Silent:1b,sf_variant:6}'
@@ -294,14 +430,36 @@ view() { # view <x> <y> <z> <yaw> <pitch> <pause> <name>
   sleep "$6"
   shot "$7"
 }
+lookat() { # lookat <cx> <cy> <cz> <tx> <ty> <tz> <pause> <name> — камера смотрит ровно на цель
+  local yp
+  yp=$(python3 tools/ci/lookat_angles.py "$1" "$2" "$3" "$4" "$5" "$6")
+  view "$1" "$2" "$3" "${yp% *}" "${yp#* }" "$7" "$8"
+}
 view "$VX" 66 "$VZ" 90 42 14 "02_reef_from_above"        # рифовый сад сверху сквозь воду
 view "$((VX + 10))" "$((VF + 6))" "$VZ" 270 18 14 "03_reef_underwater"   # риф вплотную под водой
+view "$((VX + 4))" "$((VF + 9))" "$VZ" 210 22 14 "03b_reef_hills"         # рифовые холмы и палитры
+view "$((VX - 18))" "$((VF + 3))" "$VZ" 45 4 14 "03c_reef_level"          # риф на уровне глаз рыбы
+view "$((VX + 2))" "$((VF + 2))" "$VZ" 100 8 14 "03d_corals_3d"            # новые кораллы-растения (3D)
+# Рев 12: КОРАЛЛОВЫЕ ДЕРЕВЬЯ — кадры сбоку, снизу и общий план рощи
+if [ -n "${CX:-}" ] && [ "${CORAL_AT:-0,0,0}" != "0,0,0" ]; then
+  EL gamemode spectator TestPlayer >/dev/null 2>&1 || true
+  lookat "${CORAL_CAM%%,*}" "$(printf '%s' "$CORAL_CAM" | cut -d, -f2)" "${CORAL_CAM##*,}" "$CX" "$((CY + CORAL_H / 2))" "$CZ" 16 "16_coral_tree"
+  lookat "${CORAL_CAMLOW%%,*}" "$(printf '%s' "$CORAL_CAMLOW" | cut -d, -f2)" "${CORAL_CAMLOW##*,}" "$CX" "$((CY + CORAL_H / 2))" "$CZ" 14 "16b_coral_tree_low"
+  lookat "$((CX + 16))" "$((CY + 14))" "$((CZ + 5))" "$CX" "$((CY + 2))" "$CZ" 16 "16c_coral_grove"
+  EL gamemode creative TestPlayer >/dev/null 2>&1 || true
+else
+  log "  ПРОПУСК кадров коралловых деревьев: /riftcoral не нашла растение"
+fi
 view "$((LX + 15))" "$((LF + 11))" "$((LZ + 15))" 225 14 14 "04_kelp_forest" # ламинария
 view "$VX" 64 "$((VZ + 26))" 180 2 14 "05_open_sea"          # поверхность: открытое море
 view "$DX" 65 "$DZ" 30 55 14 "06_trench"                     # каньон сверху
 view "$HX" "$((HF + 14))" "$HZ" 0 58 14 "07_blue_hole"             # синяя дыра: взгляд в колодец сверху
-view "$CX" "$((CLOW + 3))" "$CZ" 0 0 16 "08_cave"            # подводная пещера
-view "$CX" "$((CLOW + 3))" "$CZ" 180 0 12 "09_cave_back"     # пещера, другой ракурс
+if [ "$CAVE_X" != "0" ]; then
+  view "$CAVE_X" "$((CAVE_Y + 1))" "$CAVE_Z" 0 6 16 "08_cave"          # затопленная пещера (координаты от /riftsea)
+else
+  log "  ПРОПУСК кадров пещеры: /riftsea не нашёл затопленную полость"
+fi
+[ "$CAVE_X" != "0" ] && view "$CAVE_X" "$CAVE_Y" "$CAVE_Z" 180 0 12 "09_cave_back"   # пещера, другой ракурс
 # витрина: камера над коралловым садом, рыбы в 3-4 блоках по курсу
 EL tp TestPlayer "$((VX + 10))" "$((VF + 6))" "$VZ" 270 8 >/dev/null 2>&1
 sleep 2
@@ -311,6 +469,23 @@ SUM_LOCAL 4.2 -0.9 -0.3 '{NoAI:1b,Silent:1b,sf_variant:2}'
 SUM_LOCAL 4.8 0.4 0.9 '{NoAI:1b,Silent:1b,sf_variant:3}'
 sleep 6
 shot "10_fish_reef"
+# Рев 10: новые виды — мирные на рифу, хищники в затопленной пещере
+EL tp TestPlayer "$((VX + 10))" "$((VF + 5))" "$VZ" 270 4 >/dev/null 2>&1
+sleep 2
+SUM_LOCAL 3 0 0 '{NoAI:1b,Silent:1b,sf_variant:7}'      # рыба-хирург
+SUM_LOCAL 3.6 1.0 0.9 '{NoAI:1b,Silent:1b,sf_variant:8}' # морская черепаха
+SUM_LOCAL 4.4 -0.9 -0.5 '{NoAI:1b,Silent:1b,sf_variant:0}'
+sleep 6
+shot "10b_fish_tropical"
+if [ "$CAVE_X" != "0" ]; then
+  EL tp TestPlayer "$CAVE_X" "$((CAVE_Y + 1))" "$CAVE_Z" 0 0 >/dev/null 2>&1
+  sleep 2
+  SUM_LOCAL 2.8 0 0 '{NoAI:1b,Silent:1b,sf_variant:9}'    # глубинный глот
+  SUM_LOCAL 3.4 1.1 0.6 '{NoAI:1b,Silent:1b,sf_variant:10}'  # жгучая медуза
+  SUM_LOCAL 4.0 -1.0 -0.4 '{NoAI:1b,Silent:1b,sf_variant:5}'
+  sleep 6
+  shot "11b_fish_cave_rare"
+fi
 # крупный план: рыба в трёх блоках прямо по центру кадра — видно даже мелкие детали рендера
 EL tp TestPlayer "$KX" 44 "$KZ" 180 0 >/dev/null 2>&1
 sleep 2
@@ -320,28 +495,161 @@ SUM_LOCAL 4.4 -0.9 -0.5 '{NoAI:1b,Silent:1b,sf_variant:4}'
 sleep 6
 shot "12_fish_closeup"
 view "$KX" 22 "$KZ" 180 65 14 "13_reef_floor"                  # дно рифа вплотную: разбор блоков
-view "$CX" "$((CLOW + 3))" "$CZ" 0 0 12 "11_fish_cave"    # хищники пещеры
-# --- rev 9: биом «Фиолетовые холмы» (новый рельеф) и «Многоуровневые горы»
-put() { EL spreadplayers "$1" "$2" 1 6 false TestPlayer >/dev/null 2>&1; }   # поставить на поверхность
-ROT() { RCON execute in riftworld:elisar at TestPlayer run tp TestPlayer ~ ~ ~ "$1" "$2" >/dev/null 2>&1; }   # только поворот
-put "$((VHX - 60))" "$((VHZ - 60))"
-ROT 135 12
-sleep 12
-shot "14_violet_hills_air"          # холмы с земли: гряды, поля и церкви
-put "$VHX" "$VHZ"
-ROT 0 8
-sleep 10
-shot "15_violet_hills_ground"
-put "$((VHX + 55))" "$((VHZ + 40))"
-ROT 215 12
-sleep 10
-shot "16_violet_hills_fields"
-view "$((TMX + 20))" "$((TMY + 55))" "$((TMZ - 175))" 355 20 24 "17_terraced_air" # массив целиком
-view "$((TMX + 130))" "$((TMY - 2))" "$((TMZ + 130))" 45 14 20 "18_terraced_side"   # ярусы вблизи
-view "$((TMX - 170))" "$((TMY + 8))" "$((TMZ - 170))" 315 10 20 "19_terraced_shelf"    # массив в профиль: ярусы-полки
+[ "$CAVE_X" != "0" ] && view "$CAVE_X" "$CAVE_Y" "$CAVE_Z" 0 0 12 "11_fish_cave"     # хищники пещеры
 RCON effect clear TestPlayer >/dev/null 2>&1 || true
-key F1
-sleep 1
+
+# ---------------------------------------------------------------- Рев 11: каждая модель рыбы — отдельным кадром
+echo "== модели рыб: JSON + текстура, каждый вид отдельно =="
+MODEL_NAMES=(silver gold striped jelly ray angler eel surgeon turtle gloom sting)
+MISSING=0
+for n in "${MODEL_NAMES[@]}"; do
+  [ -f "mod/src/main/resources/assets/riftworld/geo/$n.json" ] || { log "  FAIL нет geo/$n.json"; MISSING=$((MISSING + 1)); }
+  [ -f "mod/src/main/resources/assets/riftworld/textures/entity/$n.png" ] || { log "  FAIL нет textures/entity/$n.png"; MISSING=$((MISSING + 1)); }
+done
+if [ "$MISSING" -eq 0 ]; then log "  OK   у всех ${#MODEL_NAMES[@]} видов есть JSON-модель и текстура"
+else log "  FAIL моделей/текстур не хватает: $MISSING"; FAILS=$((FAILS + 1)); fi
+
+# чистая толща воды над дном: рыба в 2.4 блоках по курсу занимает половину кадра
+EL tp TestPlayer "$KX" 40 "$KZ" 180 2 >/dev/null 2>&1
+sleep 3
+RCON effect give TestPlayer minecraft:night_vision 900 0 true >/dev/null 2>&1 || true
+for i in "${!MODEL_NAMES[@]}"; do
+  EL execute at TestPlayer run kill @e[type=riftworld:sea_fish,distance=..48] >/dev/null 2>&1
+  sleep 1
+  # Rotation 90: рыба стоит к камере БОКОМ — видно профиль, плавники и хвост, а не «торец»
+  SUM_LOCAL 2.2 0 0 "{NoAI:1b,Silent:1b,NoGravity:1b,Rotation:[90f,0f],sf_variant:$i}"
+  sleep 3
+  shot "model_$(printf '%02d' "$i")_${MODEL_NAMES[$i]}"
+done
+EL execute at TestPlayer run kill @e[type=riftworld:sea_fish,distance=..48] >/dev/null 2>&1
+RCON effect clear TestPlayer >/dev/null 2>&1 || true
+# клиент ругается в лог, если JSON не распарсился — это отдельная проба
+GEOERR=$(grep -c "не удалось загрузить geo-модель" "$OUT/client.log" 2>/dev/null || echo 0)
+if [ "$(grep -c "не удалось загрузить geo-модель" "$OUT/client.log" 2>/dev/null || true)" -eq 0 ]; then
+  log "  OK   клиент не жаловался на geo-модели"
+else
+  log "  FAIL клиент не смог загрузить geo-модели: $(grep -c "не удалось загрузить geo-модель" "$OUT/client.log")"
+  FAILS=$((FAILS + 1))
+fi
+
+# ---------------------------------------------------------------- Рев 11: деревья с ветками (не квадрат)
+echo "== деревья Элисара: ствол + ветки =="
+EL tp TestPlayer -30 120 58 180 0 >/dev/null 2>&1
+sleep 4
+# сизо ярче амбры: на кадре видно и крону, и ветки (амбра почти белая на светлом грунте)
+TREE_RAW=$(EL execute at TestPlayer run rifttree sizo 2>&1)
+printf '%s' "$TREE_RAW" | grep -q "at=" || TREE_RAW=$(EL execute at TestPlayer run rifttree 2>&1)
+log "  /rifttree raw: ${TREE_RAW:0:240}"
+TREE_AT=$(printf '%s' "$TREE_RAW" | sed -n 's/.*at=\([-0-9]*,[-0-9]*,[-0-9]*\).*/\1/p' | head -1)
+TREE_BR=$(printf '%s' "$TREE_RAW" | sed -n 's/.*branches=\([0-9]*\).*/\1/p' | head -1)
+if [ -n "$TREE_AT" ]; then
+  TX=$(printf '%s' "$TREE_AT" | cut -d, -f1); TY=$(printf '%s' "$TREE_AT" | cut -d, -f2); TZ=$(printf '%s' "$TREE_AT" | cut -d, -f3)
+  log "  OK   дерево найдено: $TREE_AT (ветвей: ${TREE_BR:-?})"
+  if [ "${TREE_BR:-0}" -ge 3 ]; then log "  OK   у дерева есть ветки: ${TREE_BR} блоков вне ствола"
+  else log "  FAIL ветвей слишком мало: ${TREE_BR:-0} — дерево выглядит квадратом"; FAILS=$((FAILS + 1)); fi
+  # телепорт к дереву, чтобы чанк прогрузился, и повторный счёт уже по настоящим блокам
+  EL tp TestPlayer "$((TX + 10))" "$((TY + 10))" "$((TZ + 10))" 225 20 >/dev/null 2>&1
+  sleep 8
+  TREE2=$(EL execute at TestPlayer run rifttree sizo 2>&1)
+  printf '%s' "$TREE2" | grep -q "at=" || TREE2=$(EL execute at TestPlayer run rifttree 2>&1)
+  log "  /rifttree повтор: ${TREE2:0:200}"
+  BR2=$(printf '%s' "$TREE2" | sed -n 's/.*branches=\([0-9]*\).*/\1/p' | head -1)
+  LV2=$(printf '%s' "$TREE2" | sed -n 's/.*leaves=\([0-9]*\).*/\1/p' | head -1)
+  if [ "${BR2:-0}" -ge 5 ] && [ "${LV2:-0}" -ge 20 ]; then
+    log "  OK   дерево с ветками и кроной: ветвей $BR2, листвы $LV2"
+  else
+    log "  FAIL дерево неполное: ветвей ${BR2:-0}, листвы ${LV2:-0}"; FAILS=$((FAILS + 1))
+  fi
+  # камера смотрит из точки, которую нашла сама команда (cam/camtop): дерево может
+  # стоять между домами, и «наугад +14 по диагонали» упирается в стену
+  CAM=$(printf '%s' "$TREE2" | sed -n 's/.*cam=\([-0-9]*,[-0-9]*,[-0-9]*\).*/\1/p' | head -1)
+  CAMTOP=$(printf '%s' "$TREE2" | sed -n 's/.*camtop=\([-0-9]*,[-0-9]*,[-0-9]*\).*/\1/p' | head -1)
+  [ -n "$CAM" ] || CAM="$((TX + 16)),$((TY + 10)),$((TZ + 16))"
+  [ -n "$CAMTOP" ] || CAMTOP="$((TX + 4)),$((TY + 22)),$((TZ + 4))"
+  log "  камера дерева: cam=$CAM camtop=$CAMTOP"
+  # без spectator игрок падает с высоты камеры (проверено: tp на y=117 -> в кадре земля с y=107)
+  EL gamemode spectator TestPlayer >/dev/null 2>&1 || true
+  lookat "${CAM%%,*}" "$(printf '%s' "$CAM" | cut -d, -f2)" "${CAM##*,}" \
+         "$TX" "$((TY + 3))" "$TZ" 16 "14_tree_branches"
+  lookat "${CAMTOP%%,*}" "$(printf '%s' "$CAMTOP" | cut -d, -f2)" "${CAMTOP##*,}" \
+         "$TX" "$((TY + 2))" "$TZ" 16 "14b_tree_top"
+  EL gamemode creative TestPlayer >/dev/null 2>&1 || true
+else
+  log "  FAIL /rifttree не ответила"; FAILS=$((FAILS + 1))
+fi
+
+# ---------------------------------------------------------------- Рев 11: аддон к Dynamic Trees (если включён)
+if [ "${WITH_DT:-0}" = "1" ]; then
+  echo "== Dynamic Trees: аддон riftworlddt (живой рост деревьев и кораллов) =="
+  EL execute at TestPlayer run gamemode creative >/dev/null 2>&1 || true
+  DTSEED=$(EL execute at TestPlayer run give TestPlayer riftworlddt:sizo_seed 1 2>&1)
+  log "  give riftworlddt:sizo_seed -> ${DTSEED:0:120}"
+  if [[ "$DTSEED" == *"Given"* || "$DTSEED" == *"given"* ]]; then log "  OK   DT видит семена аддона (riftworlddt:sizo_seed)"
+  else log "  FAIL аддон к Dynamic Trees не загрузился"; FAILS=$((FAILS + 1)); fi
+  DTCORAL=$(EL execute at TestPlayer run give TestPlayer riftworlddt:coral_staghorn_seed 1 2>&1)
+  if [[ "$DTCORAL" == *"Given"* || "$DTCORAL" == *"given"* ]]; then log "  OK   DT видит коралловые семена (riftworlddt:coral_staghorn_seed)"
+  else log "  FAIL коралловые виды DT не зарегистрированы"; FAILS=$((FAILS + 1)); fi
+  DTHIT=$(grep -cE "riftworlddt:sizo" "$OUT/client.log" 2>/dev/null || echo 0)
+  log "  упоминаний riftworlddt:sizo в логе: $DTHIT"
+
+  # семьи в регистрах DT (JSON должны быть расчитаны и зарегистрированы)
+  DTFAM=$(EL execute in riftworld:elisar run dynamictrees registry families 2>&1 | tr '\r\n' '  ')
+  log "  /dynamictrees registry families -> ${DTFAM:0:220}"
+  for f in riftworlddt:sizo riftworlddt:ambra riftworlddt:coral; do
+    if [[ "$DTFAM" == *"$f"* ]]; then log "  OK   у DT есть семья $f"
+    else log "  FAIL у DT нет семьи $f"; FAILS=$((FAILS + 1)); fi
+  done
+
+  # ---------------------------------------------------------------- дерево через DT: /dynamictrees set
+  # Рев 12: раньше проверяли только «аддон загрузился» (give seed). Теперь выращиваем дерево
+  # напрямую через JoCode DT и считаем блоки через /rifttree (DT ставит те же логи/листву).
+  if [ -n "$TREE_AT" ]; then
+    DTX=$((TX + 30)); DTZ=$((TZ + 12))
+    DTS=$(EL execute in riftworld:elisar run dynamictrees set "$DTX" "$TY" "$DTZ" riftworlddt:sizo 2>&1 | tr '\r\n' '  ')
+    log "  dynamictrees set $DTX,$TY,$DTZ riftworlddt:sizo -> ${DTS:0:180}"
+    sleep 6
+    DTG=$(EL execute in riftworld:elisar run dynamictrees get "$DTX" "$((TY + 6))" "$DTZ" 2>&1 | tr '\r\n' '  ')
+    log "  /dynamictrees get -> ${DTG:0:160}"
+    EL tp TestPlayer "$((DTX + 14))" "$((TY + 12))" "$((DTZ + 14))" 225 18 >/dev/null 2>&1
+    sleep 6
+    DTR=$(EL execute at TestPlayer run rifttree sizo 2>&1)
+    printf '%s' "$DTR" | grep -q "at=" || DTR=$(EL execute at TestPlayer run rifttree 2>&1)
+    log "  /rifttree -> ${DTR:0:200}"
+    DTL=$(printf '%s' "$DTR" | sed -n 's/.*logs=\([0-9]*\).*/\1/p' | head -1)
+    DTB=$(printf '%s' "$DTR" | sed -n 's/.*branches=\([0-9]*\).*/\1/p' | head -1)
+    if [ -n "$DTL" ] && [ "$DTL" -ge 20 ]; then
+      log "  OK   DT вырастил дерево: logs=$DTL branches=$DTB"
+      if [ -n "$DTB" ] && [ "$DTB" -ge 20 ]; then log "  OK   DT-дерево с ветками ($DTB — не «квадрат»)"
+      else log "  FAIL DT-дерево без ветвей: branches=$DTB"; FAILS=$((FAILS + 1)); fi
+    else
+      log "  FAIL /rifttree не видит DT-дерево (logs=$DTL)"; FAILS=$((FAILS + 1))
+    fi
+    # кадр с DT-деревом: смотрим на крону из свободного направления
+    EL gamemode spectator TestPlayer >/dev/null 2>&1 || true
+    lookat "$((DTX + 14))" "$((TY + 12))" "$((DTZ + 14))" "$DTX" "$((TY + 6))" "$DTZ" 14 "15_dt_tree"
+    EL gamemode creative TestPlayer >/dev/null 2>&1 || true
+  else
+    log "  FAIL нет TREE_AT — DT-дерево не проверено"; FAILS=$((FAILS + 1))
+  fi
+
+  # ---------------------------------------------------------------- коралл через DT: подводный JoCode
+  # Рев 12: кораллы тоже должны расти через механику DT — выращиваем коралловое дерево в воде.
+  DEX=$((RX + 6)); DEZ=$((RZ + 6)); DEY=$((RF + 2))
+  DTS2=$(EL execute in riftworld:elisar run dynamictrees set "$DEX" "$DEY" "$DEZ" riftworlddt:coral_staghorn 2>&1 | tr '\r\n' '  ')
+  log "  dynamictrees set $DEX,$DEY,$DEZ riftworlddt:coral_staghorn -> ${DTS2:0:180}"
+  sleep 6
+  DC=$(EL execute in riftworld:elisar run riftcoral 2>&1)
+  log "  /riftcoral -> ${DC:0:220}"
+  DCH=$(printf '%s' "$DC" | sed -n 's/.*h=\([0-9]*\).*/\1/p' | head -1)
+  DCB=$(printf '%s' "$DC" | sed -n 's/.*blocks=\([0-9]*\).*/\1/p' | head -1)
+  if [ -n "$DCH" ] && [ "$DCH" -ge 3 ]; then log "  OK   DT вырастил коралловое дерево: h=$DCH blocks=$DCB"
+  else log "  FAIL DT-коралл не вырос (h=$DCH blocks=$DCB)"; FAILS=$((FAILS + 1)); fi
+  # кадр рощи: смотрим на риф (наша роща уже в воде)
+  lookat "$((RX + 16))" "$((RF + 14))" "$((RZ + 5))" "$RX" "$((RF + 2))" "$RZ" 16 "16c_coral_grove"
+fi
+
+RCON effect clear TestPlayer >/dev/null 2>&1 || true
+RCON effect clear TestPlayer >/dev/null 2>&1 || true
 
 # ---------------------------------------------------------------- итог
 echo "== диагностика положения =="
@@ -366,6 +674,7 @@ echo "строк Exception/ERROR в логе клиента (без звука/�
   echo "- клиент: ForgeGradle runClient под Xvfb (llvmpipe, без GPU)"
   echo "- воды в колонке ($KX,y,$KZ): **$WATER** блоков"
   echo "- провалов проб: **$FAILS**"
+  echo "- моделей рыб (JSON + текстура) в кадре: **${#MODEL_NAMES[@]}**"
   echo "- строк Exception/ERROR в логе клиента (без звука/наратора): **$ERRS**"
   echo
   echo "## пробы"; echo '```'; cat "$PROBES"; echo '```'

@@ -1,0 +1,15 @@
+{
+  "common_leaves": "riftworlddt:coral_staghorn",
+  "common_species": "riftworlddt:coral_staghorn",
+  "primitive_log": "riftworld:coral_cap_teal",
+  "generate_stripped_branch": false,
+  "generate_surface_root": false,
+  "max_branch_radius": 5,
+  "primary_thickness": 3,
+  "secondary_thickness": 2,
+  "branch_properties": {
+    "sound": "coral_block",
+    "map_color": "WARPED_WART_BLOCK"
+  },
+  "loot_volume_multiplier": 1.0
+}

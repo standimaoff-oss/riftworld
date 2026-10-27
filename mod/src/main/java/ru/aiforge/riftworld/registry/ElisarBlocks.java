@@ -50,16 +50,17 @@ public final class ElisarBlocks {
     public static final RegistryObject<Block> PLASTER = cube("elisar_plaster", MapColor.SAND, 1.2F, SoundType.STONE);
     public static final RegistryObject<Block> TIMBER_CROSS = cube("timber_frame_cross", MapColor.SAND, 1.5F, SoundType.WOOD);
     public static final RegistryObject<Block> TIMBER_POST = cube("timber_frame_post", MapColor.SAND, 1.5F, SoundType.WOOD);
-    public static final RegistryObject<Block> SIZO_PLANKS = cube("sizo_planks", MapColor.COLOR_LIGHT_BLUE, 2.0F, SoundType.WOOD);
-    public static final RegistryObject<Block> AMBRA_PLANKS = cube("ambra_planks", MapColor.COLOR_ORANGE, 2.0F, SoundType.WOOD);
+    public static final RegistryObject<Block> SIZO_PLANKS = cube("sizo_planks", MapColor.COLOR_LIGHT_GRAY, 2.0F, SoundType.WOOD);
+    public static final RegistryObject<Block> AMBRA_PLANKS = cube("ambra_planks", MapColor.SAND, 2.0F, SoundType.WOOD);
     public static final RegistryObject<Block> THATCH = cube("thatch", MapColor.COLOR_YELLOW, 0.5F, SoundType.GRASS);
     public static final RegistryObject<Block> ROOF_RED = cube("roof_red", MapColor.COLOR_RED, 1.5F, SoundType.STONE);
     public static final RegistryObject<Block> ROOF_BLUE = cube("roof_blue", MapColor.COLOR_BLUE, 1.5F, SoundType.STONE);
     // trees
-    public static final RegistryObject<RotatedPillarBlock> SIZO_LOG = ModBlocks.reg("sizo_log", () -> new RotatedPillarBlock(p(MapColor.COLOR_GRAY, 2.0F, SoundType.WOOD)));
-    public static final RegistryObject<RotatedPillarBlock> AMBRA_LOG = ModBlocks.reg("ambra_log", () -> new RotatedPillarBlock(p(MapColor.COLOR_BROWN, 2.0F, SoundType.WOOD)));
-    public static final RegistryObject<LeavesBlock> SIZO_LEAVES = ModBlocks.reg("sizo_leaves", () -> new LeavesBlock(leaves(MapColor.COLOR_CYAN)));
-    public static final RegistryObject<LeavesBlock> AMBRA_LEAVES = ModBlocks.reg("ambra_leaves", () -> new LeavesBlock(leaves(MapColor.COLOR_ORANGE)));
+    public static final RegistryObject<RotatedPillarBlock> SIZO_LOG = ModBlocks.reg("sizo_log", () -> new RotatedPillarBlock(p(MapColor.COLOR_LIGHT_GRAY, 2.0F, SoundType.WOOD)));
+    public static final RegistryObject<RotatedPillarBlock> AMBRA_LOG = ModBlocks.reg("ambra_log", () -> new RotatedPillarBlock(p(MapColor.COLOR_LIGHT_GRAY, 2.0F, SoundType.WOOD)));
+    // Рев 12: листва снова белая/холодная — на карте и в палитре мира цвет должен совпадать
+    public static final RegistryObject<LeavesBlock> SIZO_LEAVES = ModBlocks.reg("sizo_leaves", () -> new LeavesBlock(leaves(MapColor.SNOW)));
+    public static final RegistryObject<LeavesBlock> AMBRA_LEAVES = ModBlocks.reg("ambra_leaves", () -> new LeavesBlock(leaves(MapColor.QUARTZ)));
     // shapes
     public static final RegistryObject<StairBlock> ROOF_RED_STAIRS = stairs("roof_red_stairs", ROOF_RED);
     public static final RegistryObject<StairBlock> ROOF_BLUE_STAIRS = stairs("roof_blue_stairs", ROOF_BLUE);
@@ -135,6 +136,62 @@ public final class ElisarBlocks {
             ModBlocks.reg("sea_shells", () -> new ru.aiforge.riftworld.block.SeaDecalBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.SAND).strength(0.2F).sound(SoundType.CORAL_BLOCK).noCollission()
                     .pushReaction(PushReaction.DESTROY).noOcclusion()));
+    // ----- Рев 10 «Живое море 2»: тропический риф. Три палитры рифовых шапок + новая жизнь на дне.
+    public static final RegistryObject<Block> CORAL_CAP_PINK = cube("coral_cap_pink", MapColor.COLOR_PINK, 1.2F, SoundType.CORAL_BLOCK);
+    public static final RegistryObject<Block> CORAL_CAP_TEAL = cube("coral_cap_teal", MapColor.WARPED_WART_BLOCK, 1.2F, SoundType.CORAL_BLOCK);
+    public static final RegistryObject<Block> CORAL_CAP_VIOLET = cube("coral_cap_violet", MapColor.COLOR_PURPLE, 1.2F, SoundType.CORAL_BLOCK);
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> ANEMONE =
+            ModBlocks.reg("anemone", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant().lightLevel(s -> 9)));
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> CORAL_BUSH =
+            ModBlocks.reg("coral_bush", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant()));
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> TUBE_WORMS =
+            ModBlocks.reg("tube_worms", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant().lightLevel(s -> 4)));
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaDecalBlock> SEA_STAR =
+            ModBlocks.reg("sea_star", () -> new ru.aiforge.riftworld.block.SeaDecalBlock(decal()));
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaDecalBlock> SEA_URCHIN =
+            ModBlocks.reg("sea_urchin", () -> new ru.aiforge.riftworld.block.SeaDecalBlock(decal()));
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaDecalBlock> SHELL_BED =
+            ModBlocks.reg("shell_bed", () -> new ru.aiforge.riftworld.block.SeaDecalBlock(decal()));
+
+    // ----- Рев 11 «Кораллы-растения»: шесть НОВЫХ кастомных кораллов с настоящей 3D-моделью
+    // (ветки под углами, пластины, трубки) — старые крестики остаются на месте, ничего не удаляем.
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> STAGHORN_CORAL =
+            ModBlocks.reg("staghorn_coral", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant()));
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> FEATHER_CORAL =
+            ModBlocks.reg("feather_coral", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant().lightLevel(s -> 3)));
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> SEA_WHIP =
+            ModBlocks.reg("sea_whip", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant().lightLevel(s -> 5)));
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> TABLE_CORAL =
+            ModBlocks.reg("table_coral", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant()));
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> TUBE_SPONGE_CLUSTER =
+            ModBlocks.reg("tube_sponge_cluster", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant()));
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> RIBBON_CORAL =
+            ModBlocks.reg("ribbon_coral", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant().lightLevel(s -> 7)));
+
+    // ----- Рев 12: СТВОЛЫ коралловых деревьев. Раньше ствол и ветви складывались из полных кубов
+    // шапок — на скриншотах это читалось как «стопка блоков», а не как растение. Ствол — узкая
+    // колонна 6x16x6 (своя модель, не полный куб), поэтому силуэт ветви читается.
+    public static final RegistryObject<Block> CORAL_STEM_PINK = ModBlocks.reg("coral_stem_pink", () -> new Block(
+            BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_PINK).strength(1.0F).sound(SoundType.CORAL_BLOCK).noOcclusion()));
+    public static final RegistryObject<Block> CORAL_STEM_TEAL = ModBlocks.reg("coral_stem_teal", () -> new Block(
+            BlockBehaviour.Properties.of().mapColor(MapColor.WARPED_WART_BLOCK).strength(1.0F).sound(SoundType.CORAL_BLOCK).noOcclusion()));
+    public static final RegistryObject<Block> CORAL_STEM_VIOLET = ModBlocks.reg("coral_stem_violet", () -> new Block(
+            BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_PURPLE).strength(1.0F).sound(SoundType.CORAL_BLOCK).noOcclusion()));
+
+    // ----- Рев 12: коралловая листва для аддона Dynamic Trees.
+    // DT генерирует собственный блок листьев и берёт модель у «примитивного» блока, поэтому нужен
+    // обычный LeavesBlock с готовой текстурой — иначе коралловое дерево рендерится пустым кубом.
+    public static final RegistryObject<LeavesBlock> CORAL_FOLIAGE_PINK =
+            ModBlocks.reg("coral_foliage_pink", () -> new LeavesBlock(leaves(MapColor.COLOR_PINK)));
+    public static final RegistryObject<LeavesBlock> CORAL_FOLIAGE_TEAL =
+            ModBlocks.reg("coral_foliage_teal", () -> new LeavesBlock(leaves(MapColor.WARPED_WART_BLOCK)));
+    public static final RegistryObject<LeavesBlock> CORAL_FOLIAGE_VIOLET =
+            ModBlocks.reg("coral_foliage_violet", () -> new LeavesBlock(leaves(MapColor.COLOR_PURPLE)));
+
+    private static BlockBehaviour.Properties decal() {
+        return BlockBehaviour.Properties.of().mapColor(MapColor.SAND).strength(0.2F).sound(SoundType.CORAL_BLOCK)
+                .noCollission().pushReaction(PushReaction.DESTROY).noOcclusion();
+    }
 
     private static BlockBehaviour.Properties seaPlant() {
         return BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_CYAN).replaceable().noCollission().instabreak()
