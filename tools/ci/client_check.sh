@@ -611,16 +611,40 @@ if [ "${WITH_DT:-0}" = "1" ]; then
     else log "  FAIL у DT нет вида $f (ответ DT: ${DTSP:0:180})"; FAILS=$((FAILS + 1)); fi
   done
 
-  # ---------------------------------------------------------------- дерево через DT: /dynamictrees set
-  # Рев 12: раньше проверяли только «аддон загрузился» (give seed). Теперь выращиваем дерево
-  # напрямую через JoCode DT и считаем блоки через /rifttree (DT ставит те же логи/листву).
+  # ---------------------------------------------------------------- дерево через DT: /dynamictrees settree
+  # Рев 13.5: подкоманды DT в 1.4.10 называются settree/gettree (было set/get — команда не находилась,
+  # а проба «проходила» на случайно найденном мировом дереве). Теперь: пробуем оба имени,
+  # и проверяем, что на нужных координатах реально появились ветви НАШЕГО аддона.
+  dt_grow() {  # dt_grow <x> <y> <z> <species> -> печатает ответ DT
+    local x=$1 y=$2 z=$3 sp=$4 out
+    for cmd in settree set; do
+      out=$(EL execute in riftworld:elisar run dynamictrees $cmd "$x" "$y" "$z" "$sp" 2>&1 | tr '\r\n' '  ')
+      case "$out" in
+        *"Incorrect argument"*|*"Unknown or incomplete"*|*"Unknown command"*) continue ;;
+      esac
+      printf '%s' "$out"; return 0
+    done
+    printf '%s' "$out"
+  }
+  dt_has_branch() {  # dt_has_branch <x> <y> <z> <block> — есть ли наш блок в столбике y..y+3
+    local x=$1 y=$2 z=$3 blk=$4 dy
+    for dy in 0 1 2 3; do
+      if EL execute in riftworld:elisar if block "$x" "$((y + dy))" "$z" "$blk" 2>&1 | grep -qi "Test passed"; then return 0; fi
+    done
+    return 1
+  }
+  echo "  [DT] секция дерева" >> "$PROBES"
   if [ -n "$TREE_AT" ]; then
     DTX=$((TX + 30)); DTZ=$((TZ + 12))
-    DTS=$(EL execute in riftworld:elisar run dynamictrees set "$DTX" "$TY" "$DTZ" riftworlddt:sizo 2>&1 | tr '\r\n' '  ')
-    log "  dynamictrees set $DTX,$TY,$DTZ riftworlddt:sizo -> ${DTS:0:180}"
+    DTS=$(dt_grow "$DTX" "$TY" "$DTZ" riftworlddt:sizo)
+    log "  dynamictrees settree $DTX,$TY,$DTZ riftworlddt:sizo -> ${DTS:0:180}"
     sleep 6
-    DTG=$(EL execute in riftworld:elisar run dynamictrees get "$DTX" "$((TY + 6))" "$DTZ" 2>&1 | tr '\r\n' '  ')
-    log "  /dynamictrees get -> ${DTG:0:160}"
+    if dt_has_branch "$DTX" "$TY" "$DTZ" riftworlddt:sizo_branch; then
+      log "  OK   DT поставил на $DTX,$TY,$DTZ ветви аддона (riftworlddt:sizo_branch)"
+      DT_TREE_OK=1
+    else
+      log "  FAIL на $DTX,$TY,$DTZ нет ветвей аддона — DT не вырастил дерево"; FAILS=$((FAILS + 1)); DT_TREE_OK=0
+    fi
     EL tp TestPlayer "$((DTX + 14))" "$((TY + 12))" "$((DTZ + 14))" 225 18 >/dev/null 2>&1
     sleep 6
     DTR=$(EL execute at TestPlayer run rifttree sizo 2>&1)
@@ -628,12 +652,9 @@ if [ "${WITH_DT:-0}" = "1" ]; then
     log "  /rifttree -> ${DTR:0:200}"
     DTL=$(printf '%s' "$DTR" | sed -n 's/.*logs=\([0-9]*\).*/\1/p' | head -1)
     DTB=$(printf '%s' "$DTR" | sed -n 's/.*branches=\([0-9]*\).*/\1/p' | head -1)
-    if [ -n "$DTL" ] && [ "$DTL" -ge 20 ]; then
-      log "  OK   DT вырастил дерево: logs=$DTL branches=$DTB"
-      if [ -n "$DTB" ] && [ "$DTB" -ge 20 ]; then log "  OK   DT-дерево с ветками ($DTB — не «квадрат»)"
+    if [ "$DT_TREE_OK" = "1" ]; then
+      if [ -n "$DTB" ] && [ "$DTB" -ge 20 ]; then log "  OK   DT-дерево с ветками ($DTB — не «квадрат», логов $DTL)"
       else log "  FAIL DT-дерево без ветвей: branches=$DTB"; FAILS=$((FAILS + 1)); fi
-    else
-      log "  FAIL /rifttree не видит DT-дерево (logs=$DTL)"; FAILS=$((FAILS + 1))
     fi
     # кадр с DT-деревом: смотрим на крону из свободного направления
     EL gamemode spectator TestPlayer >/dev/null 2>&1 || true
@@ -644,17 +665,28 @@ if [ "${WITH_DT:-0}" = "1" ]; then
   fi
 
   # ---------------------------------------------------------------- коралл через DT: подводный JoCode
+  echo "  [DT] секция коралла" >> "$PROBES"
   # Рев 12: кораллы тоже должны расти через механику DT — выращиваем коралловое дерево в воде.
-  DEX=$((RX + 6)); DEZ=$((RZ + 6)); DEY=$((RF + 2))
-  DTS2=$(EL execute in riftworld:elisar run dynamictrees set "$DEX" "$DEY" "$DEZ" riftworlddt:coral_staghorn 2>&1 | tr '\r\n' '  ')
-  log "  dynamictrees set $DEX,$DEY,$DEZ riftworlddt:coral_staghorn -> ${DTS2:0:180}"
+  DEX=$((RX + 6)); DEZ=$((RZ + 6)); DEY=$((RF + 1))
+  log "  координаты DT-коралла: $DEX,$DEY,$DEZ (риф $RX,$RF,$RZ)"
+  DTS2=$(dt_grow "$DEX" "$DEY" "$DEZ" riftworlddt:coral_staghorn)
+  log "  dynamictrees settree $DEX,$DEY,$DEZ riftworlddt:coral_staghorn -> ${DTS2:0:180}"
   sleep 6
+  if ! dt_has_branch "$DEX" "$DEY" "$DEZ" riftworlddt:coral_branch; then
+    # второй заход на блок выше: у DT генерация «осторожная», у самой кромки дна ей может не хватить места
+    log "  повтор посадки коралла на $DEX,$((DEY + 1)),$DEZ"
+    DTS2=$(dt_grow "$DEX" "$((DEY + 1))" "$DEZ" riftworlddt:coral_staghorn)
+    log "  dynamictrees settree (повтор) -> ${DTS2:0:180}"
+    sleep 6
+    DEY=$((DEY + 1))
+  fi
+  if dt_has_branch "$DEX" "$DEY" "$DEZ" riftworlddt:coral_branch; then
+    log "  OK   DT вырастил ПОДВОДНЫЙ коралл (riftworlddt:coral_branch на $DEX,$DEY,$DEZ)"
+  else
+    log "  FAIL DT не поставил коралловые ветви на $DEX,$DEY,$DEZ"; FAILS=$((FAILS + 1))
+  fi
   DC=$(EL execute in riftworld:elisar run riftcoral 2>&1)
   log "  /riftcoral -> ${DC:0:220}"
-  DCH=$(printf '%s' "$DC" | sed -n 's/.*h=\([0-9]*\).*/\1/p' | head -1)
-  DCB=$(printf '%s' "$DC" | sed -n 's/.*blocks=\([0-9]*\).*/\1/p' | head -1)
-  if [ -n "$DCH" ] && [ "$DCH" -ge 3 ]; then log "  OK   DT вырастил коралловое дерево: h=$DCH blocks=$DCB"
-  else log "  FAIL DT-коралл не вырос (h=$DCH blocks=$DCB)"; FAILS=$((FAILS + 1)); fi
   # кадр рощи: смотрим на риф (наша роща уже в воде)
   lookat "$((RX + 16))" "$((RF + 14))" "$((RZ + 5))" "$RX" "$((RF + 2))" "$RZ" 16 "16c_coral_grove"
 fi
