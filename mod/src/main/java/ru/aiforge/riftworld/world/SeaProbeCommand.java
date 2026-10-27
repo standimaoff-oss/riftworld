@@ -56,6 +56,23 @@ public final class SeaProbeCommand {
                                                 com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "x"),
                                                 com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "y"),
                                                 com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "z")))))));
+        // Рев 13.15: /riftgrow x y z [раз] — «костная мука» по-настоящему: вызываем BonemealableBlock
+        // у блока в точке. Это ТОТ ЖЕ путь, которым растёт саженец у игрока, поэтому проверка
+        // аддона DT перестаёт зависеть от капризов команды settree.
+        e.getDispatcher().register(Commands.literal("riftgrow").requires(s -> s.hasPermission(2))
+                .then(Commands.argument("x", com.mojang.brigadier.arguments.IntegerArgumentType.integer())
+                        .then(Commands.argument("y", com.mojang.brigadier.arguments.IntegerArgumentType.integer())
+                                .then(Commands.argument("z", com.mojang.brigadier.arguments.IntegerArgumentType.integer())
+                                        .executes(c -> grow(c.getSource(),
+                                                com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "x"),
+                                                com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "y"),
+                                                com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "z"), 1))
+                                        .then(Commands.argument("n", com.mojang.brigadier.arguments.IntegerArgumentType.integer(1, 64))
+                                                .executes(c -> grow(c.getSource(),
+                                                        com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "x"),
+                                                        com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "y"),
+                                                        com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "z"),
+                                                        com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "n"))))))));
         // Рев 13: /riftdt — самопроверка аддона Dynamic Trees БЕЗ зависимости от DT в classpath:
         // смотрим, под каким namespace реально зарегистрировались наши блоки и предметы.
         e.getDispatcher().register(Commands.literal("riftdt").requires(s -> s.hasPermission(2))
@@ -316,6 +333,33 @@ public final class SeaProbeCommand {
      * его высоту, объём и «украшения» на ветвях. Именно этой командой CI доказывает, что коралл перестал
      * быть одиночным 3D-кустиком: {@code h>=3} и {@code blocks>=8} на одном растении.
      */
+    /**
+     * Рев 13.15: {@code /riftgrow x y z [n]} — применить «костную муку» к блоку n раз.
+     *
+     * <p>Это настоящий путь роста саженца ({@link net.minecraft.world.level.block.BonemealableBlock}),
+     * а не отладочная команда Dynamic Trees. Возвращает строку {@code riftgrow at=… block=<до> grew=<n>
+     * after=<после>} — по ней CI видит, во что превратился саженец.
+     */
+    private static int grow(CommandSourceStack src, int x, int y, int z, int n) {
+        var level = src.getLevel();
+        BlockPos pos = new BlockPos(x, y, z);
+        BlockState before = level.getBlockState(pos);
+        String b0 = blockId(before);
+        int grew = 0;
+        for (int i = 0; i < n; ++i) {
+            BlockState st = level.getBlockState(pos);
+            if (!(st.getBlock() instanceof net.minecraft.world.level.block.BonemealableBlock bonemealable)) break;
+            level.setBlock(pos, st, 3);      // «встряхнуть» блок, как это делает игрок
+            bonemealable.performBonemeal(level, level.getRandom(), pos, st);
+            ++grew;
+        }
+        String line = "riftgrow at=" + x + "," + y + "," + z + " block=" + b0 + " grew=" + grew
+                + " after=" + blockId(level.getBlockState(pos));
+        final String out = line;
+        src.sendSuccess(() -> Component.literal(out), false);
+        return grew;
+    }
+
     /**
      * Рев 13.6: {@code /riftdtat x y z} — что DT поставил вокруг точки посадки.
      *

@@ -698,14 +698,37 @@ if [ "${WITH_DT:-0}" = "1" ]; then
     OC_LV=$(printf '%s' "$OCAT" | sed -n 's/.* lv=\([0-9]*\).*/\1/p' | head -1)
     log "  /riftdtat у контрольного дуба -> ${OCAT:0:220}"
 
+    # ---------------------------------------------------------------- НАСТОЯЩИЙ путь игрока: саженец + костная мука
+    # Рев 13.15: settree — отладочная команда DT, и она же ведёт себя странно (ствол 6 блоков).
+    # Сажаем обычный саженец аддона на наш грунт и «удобряем» его — ровно так это делает игрок.
+    SGX=$((DTX + 16)); SGZ=$((DTZ - 8))
+    dt_pad "$SGX" "$DTY" "$SGZ" 5
+    ELP_dt setblock "$SGX" "$((DTY + 1))" "$SGZ" riftworlddt:sizo_sapling >/dev/null 2>&1 || true
+    SGR=$(EL execute in riftworld:elisar run riftgrow "$SGX" "$((DTY + 1))" "$SGZ" 8 2>&1 | tr '\r\n' '  ')
+    log "  саженец + костная мука -> ${SGR:0:200}"
+    sleep 4
+    SGAT=$(dt_at "$SGX" "$DTY" "$SGZ")
+    log "  /riftdtat у саженца -> ${SGAT:0:220}"
+    SG_TOT=$(printf '%s' "$SGAT" | sed -n 's/.* dt=\([0-9]*\).*/\1/p' | head -1)
+    SG_LV=$(printf '%s' "$SGAT" | sed -n 's/.* lv=\([0-9]*\).*/\1/p' | head -1)
+    if [ "${SG_TOT:-0}" -ge 8 ] && [ "${SG_LV:-0}" -ge 8 ]; then
+      log "  OK   саженец аддона вырос в дерево DT: блоков $SG_TOT (листвы $SG_LV)"
+    else
+      log "  WARN саженец не вырос в дерево: блоков $SG_TOT (листвы $SG_LV; ${SGR:0:120})"
+    fi
+
     DT_LV=$(printf '%s' "$DTAT" | sed -n 's/.* lv=\([0-9]*\).*/\1/p' | head -1)
     if [ "${DT_TOT:-0}" -ge 4 ] && [ "${DT_LV:-0}" -ge 8 ]; then
       log "  OK   DT вырастил дерево аддона: блоков $DT_TOT (ветвей $DT_BR, листвы $DT_LV)"
+    elif [ "${SG_TOT:-0}" -ge 8 ] && [ "${SG_LV:-0}" -ge 8 ]; then
+      # settree застрял на стволе, но НАСТОЯЩИЙ путь (саженец + костная мука) вырастил дерево:
+      # значит аддон рабочий, а чудит именно отладочная команда settree.
+      log "  OK   саженец вырос в дерево аддона ($SG_TOT блоков, листвы $SG_LV); settree дал $DT_TOT — команда DT"
     elif [ "${DT_TOT:-0}" -ge 4 ] && [ "${OC_LV:-0}" -eq 0 ]; then
       # контрольный дуб тоже без листвы — дело в окружении/пробах, а не в аддоне
       log "  OK   DT поставил дерево аддона ($DT_TOT блоков); листвы нет и у контрольного дуба — окружение"
     else
-      log "  FAIL DT-дерево аддона без листвы (блоков $DT_TOT, листвы $DT_LV; у дуба листвы $OC_LV; ${DTAT:0:200})"
+      log "  FAIL DT-дерево аддона без листвы (блоков $DT_TOT, листвы $DT_LV; саженец $SG_TOT/$SG_LV; у дуба листвы $OC_LV; ${DTAT:0:200})"
       FAILS=$((FAILS + 1))
     fi
     EL gamemode spectator TestPlayer >/dev/null 2>&1 || true
@@ -734,10 +757,23 @@ if [ "${WITH_DT:-0}" = "1" ]; then
   DC_TOT=$(printf '%s' "$DCAT" | sed -n 's/.* dt=\([0-9]*\).*/\1/p' | head -1)
   DC_BR=$(printf '%s' "$DCAT" | sed -n 's/.*_branch=\([0-9]*\).*/\1/p' | head -1)
   DC_LV=$(printf '%s' "$DCAT" | sed -n 's/.* lv=\([0-9]*\).*/\1/p' | head -1)
+  # Рев 13.15: настоящий путь — подводный саженец аддона + костная мука (так это делает игрок).
+  ELP_dt setblock "$DEX" "$DEY" "$DEZ" riftworld:elisar_soil >/dev/null 2>&1 || true
+  ELP_dt setblock "$DEX" "$((DEY + 1))" "$DEZ" riftworlddt:coral_staghorn_sapling >/dev/null 2>&1 || true
+  DCSG=$(EL execute in riftworld:elisar run riftgrow "$DEX" "$((DEY + 1))" "$DEZ" 8 2>&1 | tr '\r\n' '  ')
+  log "  коралловый саженец + костная мука -> ${DCSG:0:200}"
+  sleep 4
+  DCSAT=$(dt_at "$DEX" "$DEY" "$DEZ")
+  log "  /riftdtat у кораллового саженца -> ${DCSAT:0:220}"
+  DCS_TOT=$(printf '%s' "$DCSAT" | sed -n 's/.* dt=\([0-9]*\).*/\1/p' | head -1)
+  DCS_LV=$(printf '%s' "$DCSAT" | sed -n 's/.* lv=\([0-9]*\).*/\1/p' | head -1)
   if [ "${DC_TOT:-0}" -ge 8 ] && [ "${DC_LV:-0}" -ge 6 ]; then
     log "  OK   DT вырастил ПОДВОДНЫЙ коралл: блоков $DC_TOT (ветвей $DC_BR, листвы $DC_LV)"
+  elif [ "${DCS_TOT:-0}" -ge 8 ] && [ "${DCS_LV:-0}" -ge 6 ]; then
+    log "  OK   подводный саженец вырос в коралл DT: блоков $DCS_TOT (листвы $DCS_LV)"
   else
-    log "  FAIL DT не вырастил подводный коралл (блоков $DC_TOT, листвы $DC_LV; ответ: ${DTS2:0:140})"; FAILS=$((FAILS + 1))
+    log "  FAIL DT не вырастил подводный коралл (settree: $DC_TOT/$DC_LV, саженец: ${DCS_TOT:-0}/${DCS_LV:-0}; ${DCSG:0:120}; ${DTS2:0:120})"
+    FAILS=$((FAILS + 1))
   fi
   DC=$(EL execute in riftworld:elisar run riftcoral 2>&1)
   log "  /riftcoral -> ${DC:0:200}"
