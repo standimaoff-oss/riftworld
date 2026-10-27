@@ -46,6 +46,10 @@ public final class SeaProbeCommand {
                 .then(Commands.argument("kind", com.mojang.brigadier.arguments.StringArgumentType.word())
                         .executes(c -> tree(c.getSource(),
                                 com.mojang.brigadier.arguments.StringArgumentType.getString(c, "kind")))));
+        // Рев 13: /riftdt — самопроверка аддона Dynamic Trees БЕЗ зависимости от DT в classpath:
+        // смотрим, под каким namespace реально зарегистрировались наши блоки и предметы.
+        e.getDispatcher().register(Commands.literal("riftdt").requires(s -> s.hasPermission(2))
+                .executes(c -> dt(c.getSource())));
         // Рев 12: /riftcoral — ближайшее КОРАЛЛОВОЕ ДЕРЕВО (растение из многих блоков), его высота и объём
         e.getDispatcher().register(Commands.literal("riftcoral").requires(s -> s.hasPermission(2))
                 .executes(c -> coral(c.getSource())));
@@ -302,6 +306,49 @@ public final class SeaProbeCommand {
      * его высоту, объём и «украшения» на ветвях. Именно этой командой CI доказывает, что коралл перестал
      * быть одиночным 3D-кустиком: {@code h>=3} и {@code blocks>=8} на одном растении.
      */
+    /**
+     * Рев 13: {@code /riftdt} — где на самом деле оказались блоки/предметы аддона Dynamic Trees.
+     *
+     * <p>Если {@code RegistryHandler.setup("riftworlddt")} не сработал, DT переименовывает namespace
+     * в {@code dynamictrees}, и в игре появляются 255 warning'ов {@code missing model} (ассеты
+     * лежат в {@code assets/riftworlddt}). Команда возвращает одной строкой то, что нужно CI:
+     * {@code ok=}, {@code wrong_ns=}, {@code missing=} и валиден ли сам хендлер DT.
+     */
+    private static int dt(CommandSourceStack src) {
+        String[] blocks = {"sizo_leaves", "ambra_leaves", "coral_staghorn_leaves", "coral_table_leaves",
+                "coral_whip_leaves", "rooty_elisar_grass", "rooty_elisar_soil",
+                "sizo_branch", "ambra_branch", "coral_branch"};
+        String[] items = {"sizo_seed", "ambra_seed", "coral_staghorn_seed", "coral_table_seed",
+                "coral_whip_seed", "sizo_sapling", "ambra_sapling"};
+        int ok = 0, wrong = 0, missing = 0;
+        StringBuilder wrongList = new StringBuilder();
+        for (String b : blocks) {
+            if (net.minecraftforge.registries.ForgeRegistries.BLOCKS.containsKey(new net.minecraft.resources.ResourceLocation("riftworlddt", b))) ok++;
+            else if (net.minecraftforge.registries.ForgeRegistries.BLOCKS.containsKey(new net.minecraft.resources.ResourceLocation("dynamictrees", b))) {
+                wrong++;
+                wrongList.append(' ').append(b);
+            } else missing++;
+        }
+        int iok = 0;
+        for (String i : items) {
+            if (net.minecraftforge.registries.ForgeRegistries.ITEMS.containsKey(new net.minecraft.resources.ResourceLocation("riftworlddt", i))) iok++;
+        }
+        String handler = "absent";
+        try {
+            Class<?> cls = Class.forName("com.ferreusveritas.dynamictrees.api.registry.RegistryHandler");
+            Object h = cls.getMethod("get", String.class).invoke(null, "riftworlddt");
+            handler = h != null && (Boolean) h.getClass().getMethod("isValid").invoke(h) ? "valid" : "invalid";
+        } catch (ClassNotFoundException e) {
+            handler = "no-dt";
+        } catch (ReflectiveOperationException e) {
+            handler = "error";
+        }
+        String line = "riftdt handler=" + handler + " ok=" + ok + " items=" + iok + " wrong_ns=" + wrong
+                + " missing=" + missing + (wrong > 0 ? " in=dynamictrees:" + wrongList : "");
+        src.sendSuccess(() -> Component.literal(line), false);
+        return wrong == 0 ? 1 : 0;
+    }
+
     private static int coral(CommandSourceStack src) {
         ServerLevel level = src.getLevel();
         if (level.dimension() != Flight.ELISAR_DIM) {

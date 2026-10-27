@@ -664,9 +664,21 @@ sleep 5
 kill $CPID 2>/dev/null || true
 
 # шум окружения (нет звуковой карты / нет flite для наратора) в ошибки не считаем
+# Рев 13: «Exception loading blockstate definition ... missing model for variant» — это WARN,
+# а не ошибка клиента, но именно им заканчивалась история с namespace аддона DT.
+# Считаем отдельно, чтобы причина была видна в отчёте одной строкой, а не тонула в общем ERRS.
+MODELWARN=$(grep -c "missing model for variant" "$OUT/client.log" 2>/dev/null || true)
+MODELWARN=${MODELWARN:-0}
 ERRS=$(grep -E "Exception|ERROR" "$OUT/client.log" 2>/dev/null \
-       | grep -viE "Narrator|flite|text2speech|OpenAL|SoundSystem|SoundEngine|no sound|libflite" | wc -l)
-echo "строк Exception/ERROR в логе клиента (без звука/наратора): $ERRS"
+       | grep -viE "Narrator|flite|text2speech|OpenAL|SoundSystem|SoundEngine|no sound|libflite" \
+       | grep -viE "missing model for variant|loading blockstate definition|ModelBakery" | wc -l)
+echo "строк Exception/ERROR в логе клиента (без звука/наратора и без missing-model): $ERRS"
+echo "missing model for variant в логе клиента: $MODELWARN"
+if [ "$MODELWARN" -gt 0 ]; then
+  echo "::error title=модели::missing model for variant: $MODELWARN строк — блоки регистрируются не в своём namespace"
+  grep "missing model for variant" "$OUT/client.log" | head -3 \
+    | while IFS= read -r line; do echo "::error title=модели::${line:0:300}"; done
+fi
 
 {
   echo "# CI, шаг 2: настоящий клиент Minecraft в Элисаре"
@@ -675,7 +687,8 @@ echo "строк Exception/ERROR в логе клиента (без звука/�
   echo "- воды в колонке ($KX,y,$KZ): **$WATER** блоков"
   echo "- провалов проб: **$FAILS**"
   echo "- моделей рыб (JSON + текстура) в кадре: **${#MODEL_NAMES[@]}**"
-  echo "- строк Exception/ERROR в логе клиента (без звука/наратора): **$ERRS**"
+  echo "- строк Exception/ERROR в логе клиента (без звука/наратора и без missing-model): **$ERRS**"
+  echo "- missing model for variant в логе клиента: **$MODELWARN**"
   echo
   echo "## пробы"; echo '```'; cat "$PROBES"; echo '```'
   echo "## колонка (y=0..66; W=вода, S=донный песок, a=воздух/пещера, .=прочее)"; echo '```'; cat "$PROFILE"; echo '```'
@@ -684,4 +697,26 @@ echo "строк Exception/ERROR в логе клиента (без звука/�
 cat "$OUT/report_client.md"
 
 python3 tools/rcon.py --password "$RCON_PW" --log "" stop >/dev/null 2>&1 || true
-[ "$FAILS" -eq 0 ] && [ "$ERRS" -eq 0 ]
+
+# Рев 13: шаг падал «молча» — в логе прогона не было видно ни одной причины, а артефакты
+# скачать нельзя. Теперь каждая провалившаяся проба и каждая строка Exception/ERROR
+# выводится АННОТАЦИЕЙ GitHub (::error::), она видна через API прогона без артефактов.
+if [ "$FAILS" -gt 0 ]; then
+  n=0
+  while IFS= read -r line; do
+    n=$((n + 1)); [ "$n" -gt 12 ] && break
+    echo "::error title=проба клиента::${line#  }"
+  done < <(grep -E "^  FAIL" "$PROBES" 2>/dev/null | head -12)
+  echo "::error title=итог::провалов проб: $FAILS (см. probes.txt)"
+fi
+if [ "$ERRS" -gt 0 ]; then
+  grep -E "Exception|ERROR" "$OUT/client.log" 2>/dev/null \
+    | grep -viE "Narrator|flite|text2speech|OpenAL|SoundSystem|SoundEngine|no sound|libflite" \
+    | head -10 | while IFS= read -r line; do
+        echo "::error title=ошибка в логе клиента::${line:0:300}"
+      done
+  echo "::error title=итог::строк Exception/ERROR в логе клиента: $ERRS"
+fi
+echo "== итог: провалов $FAILS, ошибок в логе $ERRS, снимков $(ls -1 "$OUT"/*.jpg 2>/dev/null | wc -l) =="
+
+[ "$FAILS" -eq 0 ] && [ "$ERRS" -eq 0 ] && [ "$MODELWARN" -eq 0 ]

@@ -115,6 +115,21 @@ Rq forge tps > "$OUT/tps.txt" 2>&1
 grep -q "Mean TPS: 20.000" "$OUT/tps.txt" && echo "  tps ok" || bad "tps below 20"
 cat "$OUT/tps.txt"
 
+if [ -n "${WITH_DT:-}" ]; then
+  say "Dynamic Trees: namespace аддона"
+  # Рев 13: главный симптом сломанного аддона — блоки уехали в namespace dynamictrees
+  # (тогда в клиенте 255 warning'ов missing model). Проверяем из самой игры, а не по логу.
+  Rq riftdt > "$OUT/riftdt.txt" 2>&1 || true
+  cat "$OUT/riftdt.txt"
+  LINE=$(tr -d '\r' < "$OUT/riftdt.txt" | grep -m1 "riftdt" || true)
+  if echo "$LINE" | grep -q "handler=valid" && echo "$LINE" | grep -q "wrong_ns=0"; then
+    echo "  аддон DT зарегистрировался в своём namespace"
+  else
+    echo "::error title=аддон DT::$(echo "$LINE" | head -c 300)"
+    bad "аддон DT: $LINE"
+  fi
+fi
+
 say "log sweep"
 grep -nE 'Exception|\bERROR\b' "$SRV/logs/latest.log" | grep -viE 'Registry|codec|dynamictrees:guide|RecipeManager.*Parsing|Missing conditions|DedicatedServerProperties' > "$OUT/errors.txt" || true
 ERRS=$(grep -c . "$OUT/errors.txt" || true)
@@ -142,4 +157,14 @@ fi
   echo "## ошибки"; echo '```'; sed -n '1,40p' "$OUT/errors.txt"; echo '```'
 } > "$OUT/report_server.md"
 cat "$OUT/report_server.md"
+
+# Рев 13: причины провала — аннотациями, чтобы их было видно без артефактов
+if [ "$FAILS" -gt 0 ]; then
+  echo "::error title=сервер::провалов проверок: $FAILS"
+fi
+if [ "$ERRS" -gt 0 ]; then
+  head -5 "$OUT/errors.txt" | while IFS= read -r line; do
+    echo "::error title=лог сервера::${line:0:300}"
+  done
+fi
 [ "$FAILS" -eq 0 ] && [ "$ERRS" -eq 0 ]
