@@ -1,7 +1,7 @@
 {
   "parent": "minecraft:block/cube_all",
   "textures": {
-    "all": "riftworld:block/coral_cap_pink"
+    "all": "riftworld:block/coral_canopy_pink"
   },
   "render_type": "minecraft:cutout_mipped"
 }

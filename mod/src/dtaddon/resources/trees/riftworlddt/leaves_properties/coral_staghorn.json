@@ -5,5 +5,6 @@
   "smother": 6,
   "block_registry_name": "riftworlddt:coral_staghorn_leaves",
   "only_if_loaded": "riftworld",
-  "light_requirement": 0
+  "light_requirement": 0,
+  "light": 9
 }

@@ -402,6 +402,49 @@ def _coral_cap(base, light, dark, seed):
     return im
 
 
+def _coral_canopy(base, light, dark, seed):
+    """Крона кораллового дерева (Dynamic Trees): листва с просветами, а не цельный блок.
+
+    Рев 13.22: на кадрах подводного DT-коралла листва выглядела чёрным кубом — это была
+    непрозрачная крышка рифа (coral_cap_*), стоящая в тёмной воде. Настоящая листва должна
+    пропускать свет и небо: текстура с alpha-просветами + render_type cutout_mipped.
+    """
+    im = img()
+    rnd = random.Random(seed)
+    b, l, d = rgb(base), rgb(light), rgb(dark)
+    px = im.load()
+    for y in range(16):
+        for x in range(16):
+            # «веточки»: решётка из жилок, между ними воздух
+            vein = (x * 3 + y * 5 + seed) % 7
+            if vein in (0, 1) or (x + y) % 9 == 0:
+                px[x, y] = (0, 0, 0, 0)
+                continue
+            n = rnd.random()
+            col = l if n > 0.72 else (d if n < 0.28 else b)
+            px[x, y] = (*col, 255)
+    # крупные полипы на поверхности
+    for _ in range(6):
+        cx, cy = rnd.randint(1, 14), rnd.randint(1, 14)
+        for dx, dy in ((0, 0), (1, 0), (0, 1), (1, 1)):
+            x, y = cx + dx, cy + dy
+            if 0 <= x < 16 and 0 <= y < 16:
+                px[x, y] = (*(l if rnd.random() > 0.5 else b), 255)
+    return im
+
+
+def coral_canopy_pink():
+    return _coral_canopy("d9678a", "f0a2ba", "a83f62", 21)
+
+
+def coral_canopy_teal():
+    return _coral_canopy("2f9f95", "6fd6c9", "1c6f68", 22)
+
+
+def coral_canopy_violet():
+    return _coral_canopy("7a5cc0", "ab8fe6", "513a8c", 23)
+
+
 def coral_cap_pink():
     return _coral_cap("d9678a", "f0a2ba", "a83f62", 11)
 
@@ -434,6 +477,9 @@ TEXTURES = {
     "sea_star": sea_star,
     "sea_urchin": sea_urchin,
     "shell_bed": shell_bed,
+    "coral_canopy_pink": coral_canopy_pink,
+    "coral_canopy_teal": coral_canopy_teal,
+    "coral_canopy_violet": coral_canopy_violet,
     "coral_cap_pink": coral_cap_pink,
     "coral_cap_teal": coral_cap_teal,
     "coral_cap_violet": coral_cap_violet,
