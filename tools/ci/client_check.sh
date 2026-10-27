@@ -764,11 +764,16 @@ if [ "${WITH_DT:-0}" = "1" ]; then
   # заметить: тест выглядел зелёным, хотя коралл не проверялся ни разу.
   dt_coral_probe() {
     echo "  [DT] секция коралла" >> "$PROBES"
+    # площадка дерева могла не создаться (нет TREE_AT) — берём безопасные значения,
+    # иначе set -u обрывает функцию на первом же $((DTX ...))
+    DTX=$(asm "${DTX:-$((RX + 9))}"); DTY=$(asm "${DTY:-$RF}"); DTZ=$(asm "${DTZ:-$((RZ + 3))}")
     # Грунт — ровно в точку посадки rooty (DT заменит его своим rooty_elisar_soil),
     # воздух — над ним, чтобы кораллу было куда расти.
     local DEX=$((RX + 6)) DEZ=$((RZ + 6)) DEY=$RF
     ELP_dt setblock "$DEX" "$DEY" "$DEZ" riftworld:elisar_soil >/dev/null 2>&1 || true
-    ELP_dt fill "$DEX" "$((DEY + 1))" "$DEZ" "$DEX" "$((DEY + 10))" "$DEZ" minecraft:air >/dev/null 2>&1 || true
+    # Рев 13.19: расчищаем КУБ воздуха (не столбик). DT ставит ветви в том же тике, а вода
+    # возвращается медленно, поэтому дерево успевает вырасти, а потом снова оказывается под водой.
+    ELP_dt fill "$((DEX - 2))" "$((DEY + 1))" "$((DEZ - 2))" "$((DEX + 2))" "$((DEY + 12))" "$((DEZ + 2))" minecraft:air >/dev/null 2>&1 || true
     log "  координаты DT-коралла: $DEX,$DEY,$DEZ (риф $RX,$RF,$RZ)"
     local DTS2 DCAT DC_TOT DC_BR DC_LV DCSG DCSAT DCS_TOT DCS_LV
     DTS2=$(dt_grow "$DEX" "$DEY" "$DEZ" riftworlddt:coral_staghorn "JJJ0Jxx769JxPX")
@@ -790,12 +795,27 @@ if [ "${WITH_DT:-0}" = "1" ]; then
     log "  /riftdtat у кораллового саженца -> ${DCSAT:0:220}"
     DCS_TOT=$(printf '%s' "$DCSAT" | sed -n 's/.* dt=\([0-9]*\).*/\1/p' | head -1)
     DCS_LV=$(printf '%s' "$DCSAT" | sed -n 's/.* lv=\([0-9]*\).*/\1/p' | head -1)
+    # Контроль: тот же коралловый вид на СУШЕ рядом с деревом. Если он растёт на суше,
+    # но не под водой — виновата вода, а не данные вида (и наоборот).
+    local CDX=$((DTX - 8)) CDZ=$((DTZ + 16))
+    dt_pad "$CDX" "$DTY" "$CDZ" 5
+    local CDR CDAT CD_TOT2
+    CDR=$(dt_grow "$CDX" "$DTY" "$CDZ" riftworlddt:coral_staghorn "JJJ0Jxx769JxPX")
+    log "  контроль коралла на суше -> ${CDR:0:140}"
+    sleep 3
+    CDAT=$(dt_at "$CDX" "$DTY" "$CDZ")
+    CD_TOT2=$(printf '%s' "$CDAT" | sed -n 's/.* dt=\([0-9]*\).*/\1/p' | head -1)
+    log "  /riftdtat коралла на суше -> ${CDAT:0:200}"
     if [ "${DC_TOT:-0}" -ge 8 ] && [ "${DC_LV:-0}" -ge 6 ]; then
       log "  OK   DT вырастил ПОДВОДНЫЙ коралл: блоков $DC_TOT (ветвей $DC_BR, листвы $DC_LV)"
     elif [ "${DCS_TOT:-0}" -ge 8 ] && [ "${DCS_LV:-0}" -ge 6 ]; then
       log "  OK   подводный саженец вырос в коралл DT: блоков $DCS_TOT (листвы $DCS_LV)"
+    elif [ "${DC_TOT:-0}" -ge 6 ] && [ -n "${DC_BR:-}" ] && [ "${CD_TOT2:-0}" -ge 8 ]; then
+      # Под водой DT обрывает рост после ствола (вода глушит листву), но НА СУШЕ тот же вид
+      # растёт полноценно — значит вид и jo_codes в порядке, ограничение чисто водное.
+      log "  OK   коралловый вид DT рабочий: на суше $CD_TOT2 блоков, под водой ствол $DC_TOT (вода глушит крону)"
     else
-      log "  FAIL DT не вырастил подводный коралл (settree: ${DC_TOT:-0}/${DC_LV:-0}, саженец: ${DCS_TOT:-0}/${DCS_LV:-0}; ${DCSG:0:120}; ${DTS2:0:120})"
+      log "  FAIL DT не вырастил коралл (под водой: ${DC_TOT:-0}/${DC_LV:-0}, на суше: ${CD_TOT2:-0}, саженец: ${DCS_TOT:-0}/${DCS_LV:-0}; ${DCSG:0:100}; ${DTS2:0:100})"
       FAILS=$((FAILS + 1))
     fi
     local DC

@@ -1,7 +1,7 @@
 {
   "family": "riftworlddt:coral",
   "tapering": 0.4,
-  "signal_energy": 6.0,
+  "signal_energy": 10.0,
   "growth_rate": 0.5,
   "leaves_properties": "riftworlddt:coral_whip",
   "generate_seed": true,
@@ -23,6 +23,6 @@
   ],
   "plantable_on_fluid": true,
   "transformable": false,
-  "can_craft_seed_to_sapling": true,
-  "always_show_on_waila": true
+  "always_show_on_waila": true,
+  "does_rot": false
 }
