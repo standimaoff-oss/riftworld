@@ -5,6 +5,5 @@
   "smother": 6,
   "block_registry_name": "riftworlddt:coral_whip_leaves",
   "only_if_loaded": "riftworld",
-  "can_grow_on_ground": true,
-  "light_requirement": 4
+  "light_requirement": 0
 }
