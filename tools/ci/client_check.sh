@@ -668,12 +668,15 @@ if [ "${WITH_DT:-0}" = "1" ]; then
     dt_grow_pulses "$DTX" "$((DTY + 1))" "$DTZ" 30 >/dev/null
     DTAT=$(dt_at "$DTX" "$((DTY + 1))" "$DTZ")
     log "  /riftdtat у посадки дерева -> ${DTAT:0:300}"
+    # что DT сам думает о дереве (энергия/радиус/высота) — без этого «не выросло» не объяснить
+    DGET=$(EL execute in riftworld:elisar run dynamictrees gettree "$DTX" "$((DTY + 2))" "$DTZ" 2>&1 | tr '\r\n' '  ')
+    log "  /dynamictrees gettree -> ${DGET:0:260}"
     DT_BR=$(printf '%s' "$DTAT" | sed -n 's/.*_branch=\([0-9]*\).*/\1/p' | head -1)
     DT_TOT=$(printf '%s' "$DTAT" | sed -n 's/.* dt=\([0-9]*\).*/\1/p' | head -1)
     if [ "${DT_TOT:-0}" -ge 20 ] && [ -n "$DT_BR" ]; then
       log "  OK   DT вырастил дерево аддона: блоков $DT_TOT (ветвей $DT_BR)"
     else
-      log "  FAIL DT не вырастил дерево (блоков $DT_TOT, ответ: ${DTS:0:160})"; FAILS=$((FAILS + 1))
+      log "  FAIL DT не вырастил дерево (блоков $DT_TOT; ${DTAT:0:220}; ${DGET:0:200})"; FAILS=$((FAILS + 1))
     fi
     EL gamemode spectator TestPlayer >/dev/null 2>&1 || true
     lookat "$((DTX + 12))" "$((DTY + 11))" "$((DTZ + 12))" "$DTX" "$((DTY + 6))" "$DTZ" 14 "15_dt_tree"
