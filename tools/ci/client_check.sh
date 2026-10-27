@@ -616,10 +616,14 @@ if [ "${WITH_DT:-0}" = "1" ]; then
   # без объяснений. Теперь готовим площадку: ставим наш грунт (elisar_soil), расчищаем воздух,
   # сажаем на блок выше грунта и проверяем, что DT поставил ветви НАШЕГО аддона.
   ELP_dt() { EL execute in riftworld:elisar run "$@" 2>&1 | tr '\r\n' '  '; }
-  dt_grow() {  # dt_grow <x> <y> <z> <species> — пробует settree, потом старое имя set
-    local x=$1 y=$2 z=$3 sp=$4 out
+  dt_grow() {  # dt_grow <x> <y> <z> <species> [jo_code] — пробует settree, потом старое имя set
+    local x=$1 y=$2 z=$3 sp=$4 code=${5:-} out
     for cmd in settree set; do
-      out=$(ELP_dt dynamictrees $cmd "$x" "$y" "$z" "$sp")
+      if [ -n "$code" ]; then
+        out=$(ELP_dt dynamictrees $cmd "$x" "$y" "$z" "$sp" "$code")
+      else
+        out=$(ELP_dt dynamictrees $cmd "$x" "$y" "$z" "$sp")
+      fi
       case "$out" in
         *"Incorrect argument"*|*"Unknown or incomplete"*|*"Unknown command"*|*"Unknown or incomplete command"*) continue ;;
       esac
@@ -654,7 +658,8 @@ if [ "${WITH_DT:-0}" = "1" ]; then
     EL tp TestPlayer "$((DTX + 6))" "$((DTY + 8))" "$((DTZ + 6))" 225 25 >/dev/null 2>&1
     sleep 3
     dt_pad "$DTX" "$DTY" "$DTZ"
-    DTS=$(dt_grow "$DTX" "$((DTY + 1))" "$DTZ" riftworlddt:sizo)
+    # JoCode берём из jo_codes/sizo.txt (сизо = стройное дерево, коды от берёзы DT)
+    DTS=$(dt_grow "$DTX" "$((DTY + 1))" "$DTZ" riftworlddt:sizo "2:JJJ0JP1JJ+ZJOOPvnRJOOPvn")
     log "  dynamictrees settree $DTX,$((DTY + 1)),$DTZ riftworlddt:sizo -> ${DTS:0:160}"
     sleep 6
     dt_grow_pulses "$DTX" "$((DTY + 1))" "$DTZ" 30 >/dev/null
@@ -683,7 +688,7 @@ if [ "${WITH_DT:-0}" = "1" ]; then
   ELP_dt fill "$DEX" "$DEY" "$DEZ" "$DEX" "$((DEY + 10))" "$DEZ" minecraft:air >/dev/null 2>&1 || true
   ELP_dt setblock "$DEX" "$((DEY - 1))" "$DEZ" riftworld:elisar_soil >/dev/null 2>&1 || true
   log "  координаты DT-коралла: $DEX,$DEY,$DEZ (риф $RX,$RF,$RZ)"
-  DTS2=$(dt_grow "$DEX" "$DEY" "$DEZ" riftworlddt:coral_staghorn)
+  DTS2=$(dt_grow "$DEX" "$DEY" "$DEZ" riftworlddt:coral_staghorn "8:P")
   log "  dynamictrees settree $DEX,$DEY,$DEZ riftworlddt:coral_staghorn -> ${DTS2:0:160}"
   sleep 6
   dt_grow_pulses "$DEX" "$DEY" "$DEZ" 12 >/dev/null
