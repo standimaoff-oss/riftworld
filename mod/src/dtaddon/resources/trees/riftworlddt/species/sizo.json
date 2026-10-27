@@ -14,5 +14,6 @@
     "seed": "Sizo Seed",
     "sapling": "Sizo Sapling"
   },
-  "only_if_loaded": "riftworld"
+  "only_if_loaded": "riftworld",
+  "sapling_shape": "slim_sapling"
 }

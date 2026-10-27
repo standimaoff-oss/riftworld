@@ -13,14 +13,14 @@
   },
   {
     "select": {
-      "name": "riftworld:elisar_city"
+      "name": "riftworld:sizo_grove"
     },
     "apply": {
-      "species": "riftworlddt:ambra",
+      "species": "riftworlddt:giant_sizo",
       "density": [
-        0.5
+        0.4
       ],
-      "chance": 0.12
+      "chance": 0.1
     }
   },
   {
@@ -33,6 +33,18 @@
         0.5
       ],
       "chance": 0.18
+    }
+  },
+  {
+    "select": {
+      "name": "riftworld:elisar_city"
+    },
+    "apply": {
+      "species": "riftworlddt:ambra",
+      "density": [
+        0.5
+      ],
+      "chance": 0.12
     }
   },
   {

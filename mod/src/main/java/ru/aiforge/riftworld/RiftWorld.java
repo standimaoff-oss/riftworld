@@ -17,7 +17,10 @@ public final class RiftWorld {
 
     public RiftWorld() {
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
-        ModBlocks.BLOCKS.register(bus);
+        // Рев 13: блоки — раньше всех. Аддон Dynamic Trees читает trees/*.json в RegisterEvent(BLOCKS)
+        // на обычном приоритете и должен видеть riftworld:*-блоки, иначе получает air, «теряет»
+        // LeavesProperties и падает NPE в SoilProperties#getBlock (см. EarlyRegistrations).
+        ru.aiforge.riftworld.registry.EarlyRegistrations.registerFirst(bus, ModBlocks.BLOCKS);
         ru.aiforge.riftworld.registry.ModEntities.TYPES.register(bus);
         ModItems.ITEMS.register(bus);
         ModFluids.TYPES.register(bus);

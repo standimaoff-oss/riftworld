@@ -1,7 +1,8 @@
 {
   "primitive_leaves": "riftworld:ambra_leaves",
+  "color": "0xF4EFE7",
   "cell_kit": "dynamictrees:deciduous",
   "smother": 4,
-  "only_if_loaded": "riftworld",
-  "block_registry_name": "riftworlddt:ambra_leaves"
+  "block_registry_name": "riftworlddt:ambra_leaves",
+  "only_if_loaded": "riftworld"
 }

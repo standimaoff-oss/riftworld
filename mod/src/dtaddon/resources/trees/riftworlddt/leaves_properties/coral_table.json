@@ -1,8 +1,10 @@
 {
   "primitive_leaves": "riftworld:coral_foliage_teal",
+  "color": "0xE3FFF6",
   "cell_kit": "dynamictrees:acacia",
   "smother": 6,
-  "can_grow_on_ground": true,
+  "block_registry_name": "riftworlddt:coral_table_leaves",
   "only_if_loaded": "riftworld",
-  "block_registry_name": "riftworlddt:coral_table_leaves"
+  "can_grow_on_ground": true,
+  "light_requirement": 4
 }

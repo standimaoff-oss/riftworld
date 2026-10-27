@@ -123,15 +123,17 @@ public final class ElisarBlocks {
     public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> CORAL_TUBE =
             ModBlocks.reg("coral_tube", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant()));
     public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> CORAL_GLOW =
-            ModBlocks.reg("coral_glow", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant().lightLevel(s -> 12)));
+            ModBlocks.reg("coral_glow", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant().lightLevel(s -> 14)));
     public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> SEA_GRASS =
             ModBlocks.reg("sea_grass", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant()));
     public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> SEA_KELP =
             ModBlocks.reg("sea_kelp", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant(), true));
     public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> SEA_KELP_TOP =
             ModBlocks.reg("sea_kelp_top", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant(), true));
+    // Рев 13: свет 11 не пробивал толщу воды — пещеры выглядели чёрным экраном.
+    // 15 — как у морского фонаря: нарост освещает всю полость.
     public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> CAVE_GLOW =
-            ModBlocks.reg("cave_glow", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant().lightLevel(s -> 11)));
+            ModBlocks.reg("cave_glow", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant().lightLevel(s -> 15)));
     public static final RegistryObject<ru.aiforge.riftworld.block.SeaDecalBlock> SEA_SHELLS =
             ModBlocks.reg("sea_shells", () -> new ru.aiforge.riftworld.block.SeaDecalBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.SAND).strength(0.2F).sound(SoundType.CORAL_BLOCK).noCollission()

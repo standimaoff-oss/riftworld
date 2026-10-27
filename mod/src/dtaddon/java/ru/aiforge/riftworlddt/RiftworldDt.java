@@ -1,28 +1,47 @@
 package ru.aiforge.riftworlddt;
 
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 
 /**
- * Рев 11 — АДДОН К DYNAMIC TREES для мода «Разлом».
+ * Рев 13 — АДДОН К DYNAMIC TREES для мода «Разлом».
  *
- * <p>Сам аддон почти целиком состоит из данных: в jar лежит папка {@code trees/riftworlddt/},
- * которую Dynamic Trees сканирует у всех модов (см. {@code Resources.addModResourcePack}).
- * Оттуда берутся:
- * <ul>
- *   <li>{@code families/*.json} — семейства (ветка + листва + примитивное бревно);</li>
- *   <li>{@code species/*.json} — виды деревьев Элисара: сизо, амбра и сизо-великан;</li>
- *   <li>{@code leaves_properties/*.json} и {@code soil_properties/*.json} — наши листья и грунт; </li>
- *   <li>{@code jo_codes/*.txt} — формы крон (тот же формат, что у ванильных дубов);</li>
- *   <li>{@code world_gen/elisar.json} — какие виды растут в биомах Элисара.</li>
- * </ul>
- * Java здесь нужна только как точка входа мода: класс ничего не регистрирует вручную,
- * поэтому аддон не ломается при обновлении Dynamic Trees.
+ * <p>Почти весь аддон — данные: в jar лежит папка {@code trees/riftworlddt/}, которую Dynamic Trees
+ * сканирует у всех модов. Оттуда берутся семейства, виды, свойства листьев/грунта, формы крон
+ * и правила, где деревья растут.
+ *
+ * <p><b>Что было сломано в 0.9.0 и что теперь сделано.</b>
+ * <ol>
+ *   <li><b>Краш NPE в {@code SoilProperties#getBlock()}.</b> DT читает JSON в момент регистрации
+ *       блоков и требует, чтобы «примитивные» блоки мода (<code>riftworld:sizo_log</code>,
+ *       <code>riftworld:elisar_grass</code>) уже были в реестре. Мы регистрируем их на приоритете
+ *       HIGHEST (см. {@code ru.aiforge.riftworld.registry.EarlyRegistrations}).</li>
+ *   <li><b>«Не найдены LeavesProperties для riftworlddt:sizo / riftworlddt:ambra».</b> Причина та же:
+ *       {@code primitive_leaves} указывали на ещё не зарегистрированные блоки, DT подставлял
+ *       {@code minecraft:air}, свойства листьев считались недействительными, и виды оставались без листвы.</li>
+ *   <li><b>Блоки DT регистрировались в namespace {@code dynamictrees}.</b> Без вызова
+ *       {@code RegistryHandler.setup(modid)} DT принудительно переименовывает namespace любого
+ *       своего блока в {@code dynamictrees}. Из-за этого не находились наши blockstate-файлы
+ *       (они лежат в {@code assets/riftworlddt}) и не работал {@code give riftworlddt:sizo_seed}.
+ *       Теперь setup вызывается рефлексией, чтобы аддон собирался и без DT в classpath.</li>
+ * </ol>
  */
 @Mod(RiftworldDt.MOD_ID)
 public class RiftworldDt {
     public static final String MOD_ID = "riftworlddt";
 
     public RiftworldDt() {
-        // всё содержимое — в ресурсах; DT подхватит их сам при загрузке мира
+        if (!ModList.get().isLoaded("dynamictrees")) {
+            return;                     // аддон без DT просто ничего не делает
+        }
+        try {
+            // Точка входа DT для аддонов: свой RegistryHandler → наши блоки/предметы
+            // регистрируются под namespace riftworlddt (а не dynamictrees).
+            Class<?> handler = Class.forName("com.ferreusveritas.dynamictrees.api.registry.RegistryHandler");
+            handler.getMethod("setup", String.class).invoke(null, MOD_ID);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("Dynamic Trees найден, но API RegistryHandler недоступен "
+                    + "(версия DT несовместима с аддоном " + MOD_ID + ")", e);
+        }
     }
 }

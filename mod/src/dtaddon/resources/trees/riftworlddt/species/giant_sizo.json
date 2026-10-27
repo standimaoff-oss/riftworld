@@ -11,8 +11,9 @@
     "name": "riftworld:sizo_grove"
   },
   "lang_overrides": {
-    "seed": "Giant Sizo Seed",
-    "sapling": "Giant Sizo Sapling"
+    "seed": "Giant_Sizo Seed",
+    "sapling": "Giant_Sizo Sapling"
   },
-  "only_if_loaded": "riftworld"
+  "only_if_loaded": "riftworld",
+  "sapling_shape": "slim_sapling"
 }

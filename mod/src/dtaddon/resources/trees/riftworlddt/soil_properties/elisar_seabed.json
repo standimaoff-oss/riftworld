@@ -1,0 +1,8 @@
+{
+  "primitive_soil": "riftworld:elisar_seabed",
+  "acceptable_soils": [
+    "sand_like"
+  ],
+  "block_registry_name": "riftworlddt:rooty_elisar_seabed",
+  "only_if_loaded": "riftworld"
+}

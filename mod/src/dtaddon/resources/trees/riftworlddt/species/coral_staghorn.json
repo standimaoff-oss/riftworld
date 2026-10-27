@@ -7,18 +7,20 @@
   "acceptable_soils": [
     "water_like"
   ],
-  "world_gen_acceptable_soils": [
-    "water_like"
-  ],
   "perfect_biomes": {
     "name": "riftworld:shallow_reef"
   },
+  "lang_overrides": {
+    "seed": "Coral_Staghorn Seed",
+    "sapling": "Coral_Staghorn Sapling"
+  },
+  "only_if_loaded": "riftworld",
+  "sapling_shape": "slim_sapling",
+  "world_gen_acceptable_soils": [
+    "water_like"
+  ],
+  "plantable_on_fluid": true,
   "transformable": false,
   "can_craft_seed_to_sapling": true,
-  "sapling_shape": "slim_sapling",
-  "lang_overrides": {
-    "seed": "Staghorn Coral Tree Seed",
-    "sapling": "Staghorn Coral Tree Sapling"
-  },
-  "only_if_loaded": "riftworld"
+  "always_show_on_waila": true
 }

@@ -3,5 +3,6 @@
   "acceptable_soils": [
     "dirt_like"
   ],
+  "block_registry_name": "riftworlddt:rooty_elisar_soil",
   "only_if_loaded": "riftworld"
 }

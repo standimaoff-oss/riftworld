@@ -56,8 +56,17 @@ public class SeaFishEntity extends Mob {
     private int attackCd;
     /** Пауза между перецеливаниями при испуге (иначе рыба «дёргается» каждые 6 тиков). */
     private int fleeCd;
+    /**
+     * Рев 13 — курс рыбы как отдельное состояние. Раньше направление каждый тик заново
+     * смешивалось из скорости и «желания» (0.35/0.65), из-за чего на смене точки маршрута
+     * рыба щёлкала носом на 60–120°. Теперь есть {@link #heading}: он доворачивается
+     * к цели с ограниченной угловой скоростью и никогда не разворачивается мгновенно.
+     */
+    private Vec3 heading;
+    /** Текущая скорость (блоков/тик) — тоже подтягивается плавно, без ступенек. */
+    private double speed;
     /** Максимальный поворот курса, °/тик: у мирных плавнее, у хищников резче, но тоже без рывков. */
-    private static final double TURN_PEACE = 3.2D, TURN_HUNT = 7.0D;
+    private static final double TURN_PEACE = 2.4D, TURN_HUNT = 4.2D;
     public float tail, tail0;
     public float glowPhase;
 
@@ -214,10 +223,25 @@ public class SeaFishEntity extends Mob {
         else chase(dv.normalize(), speed);
         faceTravel();
 
-        // мягко держимся в воде: не выпрыгиваем и не утыкаемся в породу
+        // мягко держимся в воде: не выпрыгиваем и не утыкаемся в породу.
+        // Рев 13: вне воды — плавное погружение, без «клевка» вниз (раньше рыба дёргалась у поверхности).
         if (!inWater()) {
-            setDeltaMovement(getDeltaMovement().scale(0.85).add(0, -0.03, 0));
+            setDeltaMovement(getDeltaMovement().scale(0.94).add(0, -0.012, 0));
         }
+    }
+
+    /**
+     * Рев 13: собственный {@link #travel}. Ванильный {@code Mob.travel} применяет «сухую» физику
+     * (трение о землю, шаг вверх, гравитацию), из-за чего рыба в воде то рывком тормозила,
+     * то прыгала. Нам нужно только одно: двигаться ровно туда, куда ведёт курс.
+     */
+    @Override
+    public void travel(Vec3 input) {
+        Vec3 v = getDeltaMovement();
+        move(MoverType.SELF, v);
+        if (horizontalCollision) setDeltaMovement(getDeltaMovement().multiply(0.35D, 1.0D, 0.35D));
+        if (verticalCollision) setDeltaMovement(getDeltaMovement().multiply(1.0D, 0.35D, 1.0D));
+        setDeltaMovement(getDeltaMovement().scale(0.96D));
     }
 
     /**
@@ -226,29 +250,16 @@ public class SeaFishEntity extends Mob {
      * Теперь: (1) направление доворачивается не быстрее {@code TURN_*}°/тик, (2) модуль скорости
      * подтягивается плавно, (3) у препятствия рыба выбирает обход, а не отскакивает.
      */
-    private void chase(Vec3 dir, double speed) {
-        Vec3 vel = getDeltaMovement();
-        double cur = vel.length();
-        Vec3 want = dir.normalize().scale(Math.max(0.01, speed));
-        // сглаженное направление-желание (не сам курс)
-        Vec3 mixed = cur > 1e-3 ? vel.scale(0.35).add(want.scale(0.65)) : want;
-        if (mixed.lengthSqr() < 1e-6) mixed = want;
+    private void chase(Vec3 dir, double targetSpeed) {
+        Vec3 want = dir.lengthSqr() < 1e-8 ? (heading != null ? heading : new Vec3(0, 0, 1)) : dir.normalize();
         double maxTurn = hostile() ? TURN_HUNT : TURN_PEACE;
-        Vec3 unit = cur > 0.02 ? limitTurn(vel.normalize(), mixed.normalize(), maxTurn) : mixed.normalize();
-        double len = cur + (want.length() - cur) * 0.06;
-        Vec3 v = unit.scale(Math.max(0.005, len));
-        setDeltaMovement(v);
-        move(MoverType.SELF, v);
-        // упёрлись в породу — обходим: берём новую точку сбоку, курс довернётся сам и плавно
-        if (horizontalCollision || verticalCollision) {
-            Vec3 side = new Vec3(-vel.z, 0, vel.x);
-            if (side.lengthSqr() < 1e-6) side = new Vec3(1, 0, 0);
-            if (random.nextBoolean()) side = side.scale(-1);
-            side = side.normalize();
-            way = position().add(side.scale(6)).add(0, (random.nextDouble() - 0.5) * 1.5, 0);
-            wayAge = 30 + random.nextInt(20);
-            setDeltaMovement(side.scale(cur * 0.55).add(0, v.y * 0.5, 0));
-        }
+        // было ли столкновение в прошлом тике — тогда доворачиваем чуть смелее, но всё равно плавно
+        if (horizontalCollision || verticalCollision) maxTurn *= 1.8D;
+        if (heading == null) heading = want;
+        heading = limitTurn(heading, want, maxTurn);
+        // скорость подтягиваем к целевой, а не ставим скачком
+        speed += (targetSpeed - speed) * 0.08D;
+        setDeltaMovement(heading.scale(Math.max(0.004D, speed)));
     }
 
     /** Поворот вектора {@code from} к {@code to} не более чем на {@code maxDeg} градусов (Родриг). */
@@ -273,15 +284,16 @@ public class SeaFishEntity extends Mob {
      * «дёрганье». Теперь не быстрее 1.8°/тик по рысканью и 0.9°/тик по тангажу.
      */
     private void faceTravel() {
-        Vec3 v = getDeltaMovement();
+        Vec3 v = heading != null && heading.lengthSqr() > 1e-6 ? heading : getDeltaMovement();
         if (v.lengthSqr() < 1e-5) return;
         float yaw = (float) (Math.atan2(-v.x, v.z) * Mth.RAD_TO_DEG);
         float dYaw = Mth.wrapDegrees(yaw - getYRot());
-        setYRot(getYRot() + Mth.clamp(dYaw, -1.8F, 1.8F));
+        // 1.1°/тик — это ~16°/с: корпус больше не «щёлкает» на смене маршрута
+        setYRot(getYRot() + Mth.clamp(dYaw, -1.1F, 1.1F));
         yBodyRot = getYRot();
         yHeadRot = getYRot();
         float pitch = (float) -(Math.atan2(v.y, Math.hypot(v.x, v.z)) * Mth.RAD_TO_DEG);
-        setXRot(getXRot() + Mth.clamp(pitch - getXRot(), -0.9F, 0.9F));
+        setXRot(getXRot() + Mth.clamp(pitch - getXRot(), -0.45F, 0.45F));
     }
 
     // ------------------------------------------------------------------ спавн/сохранение

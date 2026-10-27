@@ -234,6 +234,19 @@ tasks.named('jar', Jar).configure {
 tasks.named('processDtaddonResources', ProcessResources).configure {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     exclude { det -> det.file.name == 'mods.toml' && !det.file.absolutePath.contains('dtaddon') }
+    // Рев 13: в mods.toml аддона версия подставляется из gradle.properties (раньше она жёстко
+    // оставалась 0.9.0, и Forge показывал аддон «старее» основного мода).
+    var replaceProperties = [
+            minecraft_version: minecraft_version, minecraft_version_range: minecraft_version_range,
+            forge_version: forge_version, forge_version_range: forge_version_range,
+            loader_version_range: loader_version_range,
+            mod_id: mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
+            mod_authors: mod_authors, mod_description: mod_description,
+    ]
+    inputs.properties replaceProperties
+    filesMatching(['META-INF/mods.toml']) {
+        expand replaceProperties + [project: project]
+    }
 }
 
 // диагностика для CI: какие папки реально попадают в аддон

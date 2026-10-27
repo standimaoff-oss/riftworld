@@ -1,4 +1,7 @@
 {
-  "parent": "riftworld:block/coral_foliage_pink",
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "riftworld:block/coral_cap_pink"
+  },
   "render_type": "minecraft:cutout_mipped"
 }

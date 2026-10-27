@@ -14,5 +14,6 @@
     "seed": "Ambra Seed",
     "sapling": "Ambra Sapling"
   },
-  "only_if_loaded": "riftworld"
+  "only_if_loaded": "riftworld",
+  "sapling_shape": "slim_sapling"
 }

@@ -381,18 +381,29 @@ public final class ElisarSea {
         // Рев 12: КОРАЛЛОВЫЕ ДЕРЕВЬЯ. Растение занимает несколько колонок (см. CoralGrove) и ставится
         // раньше всей прочей декорации: если в этой колонке есть ствол/ветвь/плита, она забирает место.
         int room = sea - 3 - y;                             // сколько блоков до поверхности моря остаётся
-        CoralGrove.Span span = CoralGrove.spanAt(x, z, room);
-        if (span != null) {
-            boolean body = true;
-            for (int i = span.from(); i <= span.to(); ++i) {
-                if (!chunk.getBlockState(mp.set(x, y + i - 1, z)).is(ElisarBlocks.WATER.get())) { body = false; break; }
-            }
-            if (body) {
+        // Рев 13: колонка может содержать НЕСКОЛЬКО отрезков (ветвь проходит над ветвью),
+        // а на концах ветвей стоят полипы — раньше был один непрерывный столбик с шапкой.
+        // Высоты в CoralGrove АБСОЛЮТНЫЕ и отсчитаны от дна колонки-хозяина, поэтому дерево
+        // не «съезжает» на неровном склоне.
+        java.util.List<CoralGrove.Span> spans = CoralGrove.spansAt(x, z, sea);
+        if (!spans.isEmpty()) {
+            boolean placed = false;
+            for (CoralGrove.Span span : spans) {
+                boolean free = true;
+                for (int y2 = span.from(); y2 <= span.to(); ++y2) {
+                    if (!chunk.getBlockState(mp.set(x, y2, z)).is(ElisarBlocks.WATER.get())) { free = false; break; }
+                }
+                if (!free) continue;
                 BlockState bodyState = span.stem() ? CoralGrove.stem(x, z) : CoralGrove.body(x, z);
-                for (int i = span.from(); i <= span.to(); ++i) chunk.setBlockState(mp.set(x, y + i - 1, z), bodyState, false);
-                BlockState tip = CoralGrove.tipAt(x, z, span.to());
-                if (tip != null && chunk.getBlockState(mp.set(x, y + span.to(), z)).is(ElisarBlocks.WATER.get())) {
-                    chunk.setBlockState(mp.set(x, y + span.to(), z), tip, false);
+                for (int y2 = span.from(); y2 <= span.to(); ++y2) chunk.setBlockState(mp.set(x, y2, z), bodyState, false);
+                placed = true;
+            }
+            if (placed) {
+                for (CoralGrove.Tip t : CoralGrove.tipsAt(x, z, sea)) {
+                    BlockPos tp = mp.set(x, t.y(), z);
+                    if (chunk.getBlockState(tp).is(ElisarBlocks.WATER.get())) {
+                        chunk.setBlockState(tp, CoralGrove.tipBlock(t.block()), false);
+                    }
                 }
                 return;
             }
@@ -487,20 +498,35 @@ public final class ElisarSea {
     // ------------------------------------------------------------------ убранство пещер
     /** Светящиеся наросты на полу пещер, «сосульки» с потолка, ракушки в нишах. */
     private static void caveDressing(ChunkAccess chunk, BlockPos.MutableBlockPos mp, int x, int z, int floor) {
+        // собственный «курсор»: раньше down/up делили один MutableBlockPos, поэтому у состояния «под»
+        // в isSolidRender уходила позиция «над» — проверка пола/свода врала.
+        BlockPos.MutableBlockPos q = new BlockPos.MutableBlockPos();
         for (int y = BOTTOM + 2; y < floor - 1; ++y) {
-            BlockPos p = mp.set(x, y, z);
-            BlockState here = chunk.getBlockState(p);
+            BlockState here = chunk.getBlockState(mp.set(x, y, z));
             if (!here.isAir() && !here.is(ElisarBlocks.WATER.get())) continue;
             boolean wet = here.is(ElisarBlocks.WATER.get());
-            BlockPos downPos = mp.set(x, y - 1, z);
-            BlockState down = chunk.getBlockState(downPos);
-            BlockPos upPos = mp.set(x, y + 1, z);
-            BlockState up = chunk.getBlockState(upPos);
+            BlockState down = chunk.getBlockState(q.set(x, y - 1, z));
+            boolean floorSolid = down.isSolidRender(chunk, q);
+            BlockState up = chunk.getBlockState(q.set(x, y + 1, z));
+            boolean roofSolid = up.isSolidRender(chunk, q);
             double h = hash3(x, y, z, 471);
-            if (down.isSolidRender(chunk, downPos) && h < 0.085) {
-                chunk.setBlockState(mp.set(x, y, z), wet ? wetCaveGlow() : dryCaveGlow(), false);       // нарост на полу
-            } else if (up.isSolidRender(chunk, upPos) && h > 0.958) {
-                chunk.setBlockState(mp.set(x, y, z), wet ? wetCaveGlow() : dryCaveGlow(), false);       // друза на потолке
+            // Рев 13: пещеры были практически чёрными — наростов стало больше (13% пола, 7% свода,
+            // 1.5% стен), а сам нарост светит на 15. Полость читается целиком, а не «пятном лампы».
+            if (floorSolid && h < 0.13) {
+                chunk.setBlockState(mp.set(x, y, z), wet ? wetCaveGlow() : dryCaveGlow(), false);
+                continue;
+            }
+            if (roofSolid && h > 0.93) {
+                chunk.setBlockState(mp.set(x, y, z), wet ? wetCaveGlow() : dryCaveGlow(), false);
+                continue;
+            }
+            if (h > 0.60 && h < 0.615) {
+                // нарост на стене: полость подсвечена по бокам, а не только снизу
+                boolean wall = chunk.getBlockState(q.set(x + 1, y, z)).isSolidRender(chunk, q)
+                        || chunk.getBlockState(q.set(x - 1, y, z)).isSolidRender(chunk, q)
+                        || chunk.getBlockState(q.set(x, y, z + 1)).isSolidRender(chunk, q)
+                        || chunk.getBlockState(q.set(x, y, z - 1)).isSolidRender(chunk, q);
+                if (wall) chunk.setBlockState(mp.set(x, y, z), wet ? wetCaveGlow() : dryCaveGlow(), false);
             }
         }
     }

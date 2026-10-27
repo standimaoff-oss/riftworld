@@ -2,7 +2,7 @@
   "multipart": [
     {
       "apply": {
-        "model": "minecraft:block/grass_block"
+        "model": "riftworld:block/elisar_grass"
       }
     },
     {

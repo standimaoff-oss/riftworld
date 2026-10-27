@@ -1,8 +1,10 @@
 {
   "primitive_leaves": "riftworld:coral_foliage_violet",
+  "color": "0xF3E6FF",
   "cell_kit": "dynamictrees:palm",
   "smother": 6,
-  "can_grow_on_ground": true,
+  "block_registry_name": "riftworlddt:coral_whip_leaves",
   "only_if_loaded": "riftworld",
-  "block_registry_name": "riftworlddt:coral_whip_leaves"
+  "can_grow_on_ground": true,
+  "light_requirement": 4
 }
