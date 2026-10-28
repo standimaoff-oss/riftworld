@@ -249,6 +249,7 @@ public final class SizoGrove {
     /** Тележки, которые могут попасть в чанк [x0,x0+15]x[z0,z0+15]. */
     public static List<Cart> cartsIn(Region rg, int x0, int z0) {
         List<Cart> out = new ArrayList<>(1);
+        if (rg == null) return out;                       // чанк вне рощи — структур нет
         for (Cart c : rg.carts) if (c.x >= x0 - 3 && c.x <= x0 + 18 && c.z >= z0 - 3 && c.z <= z0 + 18) out.add(c);
         return out;
     }
@@ -256,6 +257,7 @@ public final class SizoGrove {
     /** Памятники, которые могут попасть в чанк. */
     public static List<Shrine> shrinesIn(Region rg, int x0, int z0) {
         List<Shrine> out = new ArrayList<>(1);
+        if (rg == null) return out;
         for (Shrine s : rg.shrines) if (s.x >= x0 - 4 && s.x <= x0 + 19 && s.z >= z0 - 4 && s.z <= z0 + 19) out.add(s);
         return out;
     }
