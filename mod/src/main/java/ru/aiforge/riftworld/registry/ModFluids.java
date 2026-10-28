@@ -57,6 +57,21 @@ public final class ModFluids {
                     return 0xFFFFFFFF;
                 }
 
+                /** Рев 14.21: вода Висячих садов — яркая бирюза, как на референсе (остальное море прежнее). */
+                @Override
+                public int getTintColor(net.minecraft.world.level.material.FluidState state,
+                                        net.minecraft.world.level.BlockAndTintGetter getter,
+                                        net.minecraft.core.BlockPos pos) {
+                    if (pos == null) return 0xFFFFFFFF;
+                    try {
+                        if (ru.aiforge.riftworld.world.WaterfallGardens.inside(pos.getX() + 0.5, pos.getZ() + 0.5)) {
+                            return 0xFF7FD9F2;      // бирюзовый оттенок поверх текстуры
+                        }
+                    } catch (Throwable ignored) {
+                    }
+                    return 0xFFFFFFFF;
+                }
+
                 /** 0 floating on the crest, 1 kneeling on the dunes 42+ blocks down. */
                 private static float depth(Camera cam) {
                     int sea = ru.aiforge.riftworld.world.CityPlan.get().ocean;
