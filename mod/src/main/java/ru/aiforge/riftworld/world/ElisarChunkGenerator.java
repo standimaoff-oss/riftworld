@@ -473,9 +473,10 @@ public class ElisarChunkGenerator extends ChunkGenerator {
 
     /** Biome 07 pond-mask test stateless over garden region: shelf cells the pond noise claims. */
     private static boolean pondAt(CityPlan plan, WaterfallGardens.Region rg, double px, double pz, int maxTop) {
-        // Рев 14: на референсе вода стоит почти на каждой полке, а не редкими лужами —
-        // порог 0.685 → 0.55, и лужи вырастают шире.
-        if (vnoise(px * 0.09, pz * 0.09, 131) <= 0.55) return false;
+        // Рев 14.6: на референсе вода стоит почти на каждой полке, но НЕ заливает её целиком.
+        // Порог 0.55 после появления настоящих полок залил гору водяной лестницей (кадр 42 прогона
+        // 40696891803: 23849 блоков воды в кубе ±36). 0.72 — пруды на полках, как на фото.
+        if (vnoise(px * 0.09, pz * 0.09, 131) <= 0.72) return false;
         if (Math.hypot(px - rg.cx, pz - rg.cz) > rg.hub.R * 0.97) return false;
         return maxTop > plan.ocean + 3 && maxTop < plan.ocean + 46;
     }
