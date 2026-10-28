@@ -66,7 +66,10 @@ public class SeaFishEntity extends Mob {
     /** Текущая скорость (блоков/тик) — тоже подтягивается плавно, без ступенек. */
     private double speed;
     /** Максимальный поворот курса, °/тик: у мирных плавнее, у хищников резче, но тоже без рывков. */
-    private static final double TURN_PEACE = 2.4D, TURN_HUNT = 4.2D;
+    // Рев 13.28: рыба «щёлкала» на смене направления — 2.4°/тик у мирной (48°/с) на дистанции
+    // 3 блока читается как рывок. Снижено до 1.5°/тик (30°/с) и 2.6 у хищника: разворот на 90°
+    // занимает 3 с вместо 2, силуэт перестаёт дёргаться.
+    private static final double TURN_PEACE = 1.5D, TURN_HUNT = 2.6D;
     public float tail, tail0;
     public float glowPhase;
 
@@ -254,7 +257,8 @@ public class SeaFishEntity extends Mob {
         Vec3 want = dir.lengthSqr() < 1e-8 ? (heading != null ? heading : new Vec3(0, 0, 1)) : dir.normalize();
         double maxTurn = hostile() ? TURN_HUNT : TURN_PEACE;
         // было ли столкновение в прошлом тике — тогда доворачиваем чуть смелее, но всё равно плавно
-        if (horizontalCollision || verticalCollision) maxTurn *= 1.8D;
+        // у препятствия доворачиваем чуть смелее, но не втрое: прежние 1.8× давали рывок 77°/с
+        if (horizontalCollision || verticalCollision) maxTurn *= 1.25D;
         if (heading == null) heading = want;
         heading = limitTurn(heading, want, maxTurn);
         // скорость подтягиваем к целевой, а не ставим скачком
@@ -288,8 +292,8 @@ public class SeaFishEntity extends Mob {
         if (v.lengthSqr() < 1e-5) return;
         float yaw = (float) (Math.atan2(-v.x, v.z) * Mth.RAD_TO_DEG);
         float dYaw = Mth.wrapDegrees(yaw - getYRot());
-        // 1.1°/тик — это ~16°/с: корпус больше не «щёлкает» на смене маршрута
-        setYRot(getYRot() + Mth.clamp(dYaw, -1.1F, 1.1F));
+        // 0.8°/тик (~13°/с): корпус больше не «щёлкает» на смене маршрута
+        setYRot(getYRot() + Mth.clamp(dYaw, -0.8F, 0.8F));
         yBodyRot = getYRot();
         yHeadRot = getYRot();
         float pitch = (float) -(Math.atan2(v.y, Math.hypot(v.x, v.z)) * Mth.RAD_TO_DEG);

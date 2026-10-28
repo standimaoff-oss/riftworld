@@ -403,33 +403,35 @@ def _coral_cap(base, light, dark, seed):
 
 
 def _coral_canopy(base, light, dark, seed):
-    """Крона кораллового дерева (Dynamic Trees): листва с просветами, а не цельный блок.
+    """Крона кораллового дерева (Dynamic Trees): ажурная листва, а не плита.
 
     Рев 13.22: на кадрах подводного DT-коралла листва выглядела чёрным кубом — это была
-    непрозрачная крышка рифа (coral_cap_*), стоящая в тёмной воде. Настоящая листва должна
-    пропускать свет и небо: текстура с alpha-просветами + render_type cutout_mipped.
+    непрозрачная крышка рифа (coral_cap_*). Текстура с просветами + cutout_mipped это вылечила.
+    Рев 13.28: просветов было мало (тонкие жилки), и на дистанции, где мип-уровень сглаживает
+    дырки, крона снова читалась монолитной плитой. Теперь рваные просветы на ~45% площади —
+    как у ванильной листвы, но с коралловыми полипами по краям «веточек».
     """
     im = img()
     rnd = random.Random(seed)
     b, l, d = rgb(base), rgb(light), rgb(dark)
     px = im.load()
+    # 4 «кустика», как у ванильной листвы: плотно только у центров, дальше — рвань.
+    clusters = [(rnd.randint(1, 14), rnd.randint(1, 14)) for _ in range(4)]
     for y in range(16):
         for x in range(16):
-            # «веточки»: решётка из жилок, между ними воздух
-            vein = (x * 3 + y * 5 + seed) % 7
-            if vein in (0, 1) or (x + y) % 9 == 0:
-                px[x, y] = (0, 0, 0, 0)
-                continue
+            near = min(abs(x - cx) + abs(y - cy) for cx, cy in clusters)
+            hole_p = 0.62 if near > 4 else (0.22 if near > 2 else 0.06)
+            if rnd.random() < hole_p:
+                continue                      # просвет — сквозь крону видно воду
             n = rnd.random()
-            col = l if n > 0.72 else (d if n < 0.28 else b)
+            col = l if n > 0.80 else (d if n < 0.24 else b)
             px[x, y] = (*col, 255)
-    # крупные полипы на поверхности
-    for _ in range(6):
-        cx, cy = rnd.randint(1, 14), rnd.randint(1, 14)
-        for dx, dy in ((0, 0), (1, 0), (0, 1), (1, 1)):
-            x, y = cx + dx, cy + dy
-            if 0 <= x < 16 and 0 <= y < 16:
-                px[x, y] = (*(l if rnd.random() > 0.5 else b), 255)
+    # полипы: светлые точки на плотных участках (читаются как «цветочки» коралла)
+    for cx, cy in clusters:
+        for _ in range(4):
+            x, y = cx + rnd.randint(-1, 1), cy + rnd.randint(-1, 1)
+            if 0 <= x < 16 and 0 <= y < 16 and px[x, y][3]:
+                px[x, y] = (*(l if rnd.random() > 0.35 else b), 255)
     return im
 
 
