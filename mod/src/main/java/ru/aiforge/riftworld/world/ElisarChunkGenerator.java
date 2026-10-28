@@ -547,6 +547,11 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         int x0 = chunk.getPos().getMinBlockX(), z0 = chunk.getPos().getMinBlockZ();
         BlockState water = st(ElisarBlocks.WATER);
         BlockState falling = water.setValue(LiquidBlock.LEVEL, 8);
+        // Рев 14.23: вода Висячих садов — ВАНИЛЬНАЯ. Её цвет берётся из biome water_color,
+        // и на референсе вода ярко-бирюзовая; у нашего флюида своя тёмно-синяя текстура, которую
+        // тинтом не осветлить. Море Элисара остаётся на своём флюиде.
+        BlockState gWater = Blocks.WATER.defaultBlockState();
+        BlockState gFalling = gWater.setValue(LiquidBlock.LEVEL, 8);
         BlockState seabed = st(ElisarBlocks.SEABED), stone = st(ElisarBlocks.STONE), mossy = st(ElisarBlocks.STONE_MOSSY), soil = st(ElisarBlocks.SOIL);
         BlockState grass = st(ElisarBlocks.GRASS), cobble = st(ElisarBlocks.COBBLE), path = st(ElisarBlocks.PATH), plank = st(ElisarBlocks.SIZO_PLANKS);
         BlockState tall = st(ElisarBlocks.TALL_GRASS), flowers = st(ElisarBlocks.FLOWERS), log = st(ElisarBlocks.SIZO_LOG);
@@ -638,9 +643,10 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                             // Рев 14: под травой полки — не кремовая корка, а слой земли/камня,
                             // как на референсе: трава не «наклеена» на известняк.
                             s = c.garden ? soil : crust;
-                        } else if (c.garden && y >= c.top - 7) {
-                            // стены полок — светлый известняк пластами, у подножия — мшистый
-                            s = (y <= c.top - 5 && hash(x, y, z) < 0.55) ? limeMossy : lime;
+                        } else if (c.garden && y >= c.top - 14) {
+                            // стены полок — светлый известняк пластами (на фото обрыв цельно светлый),
+                            // у подножия — мшистый
+                            s = (y <= c.top - 10 && hash(x, y, z) < 0.45) ? limeMossy : lime;
                         } else if (y <= c.bottom + 1 && hash(x, z, y) < 0.5 || hash(x, y, z) < 0.07) {
                             s = mossy;
                         } else {
@@ -745,7 +751,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                         if (vnoise(x * 0.085, z * 0.085, 171) > 0.80) {            // ~1 струя на ярус, шириной 5-8
                             for (int y = foot + 1; y <= n.top; ++y) {
                                 BlockPos wp = mp.set(x, y, z);
-                                if (chunk.getBlockState(wp).canBeReplaced()) chunk.setBlockState(wp, falling, false);
+                                if (chunk.getBlockState(wp).canBeReplaced()) chunk.setBlockState(wp, gFalling, false);
                             }
                         } else if (vnoise(x * 0.21, z * 0.21, 151) > 0.32) {       // плети свисают с кромки вниз
                             int len = Math.min(rise - 1, 6 + (int) (hash(x, z, 152) * 9.0));
@@ -767,7 +773,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                     }
                 }
                 if (c.waterTop != Integer.MIN_VALUE) {
-                    for (int y = c.waterBottom; y <= c.waterTop; ++y) chunk.setBlockState(mp.set(x, y, z), water, false);
+                    BlockState wb = c.garden ? gWater : water;
+                    for (int y = c.waterBottom; y <= c.waterTop; ++y) chunk.setBlockState(mp.set(x, y, z), wb, false);
                 }
                 if (c.fallTop != Integer.MIN_VALUE) {
                     // Рев 14.5: вода льётся ТОЛЬКО по воздуху. Раньше струя прописывалась на всю высоту
