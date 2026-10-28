@@ -873,6 +873,82 @@ if [ "${WITH_DT:-0}" = "1" ]; then
   dt_coral_probe || log "  FAIL секция коралла упала с кодом $?"
 fi
 
+# ---------------------------------------------------------------- Рев 14, итерация 1: биомы по референсам
+# Референсы лежат в репозитории: reports/refs_rev4/07_waterfall_gardens.png и 05_biome_sizo_grove.png.
+# Сверять «как на фото» можно только по кадрам из живого клиента, поэтому здесь отдельная секция:
+# находим регион биома через /riftbiome, ставим камеры и снимаем те же ракурсы, что на референсе.
+biome_section() {
+  echo "  [БИОМ] секция садов и рощи" >> "$PROBES"
+  EL gamemode spectator TestPlayer >/dev/null 2>&1 || true
+
+  # ---------- 07 «Висячие сады» ----------
+  local GR GX GZ GR_R GTOP LIN
+  LIN=$(EL execute in riftworld:elisar run riftbiome gardens 2>&1 | tr '\r\n' '  ')
+  log "  /riftbiome gardens -> ${LIN:0:420}"
+  GX=$(printf '%s' "$LIN" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\1/p' | head -1)
+  GZ=$(printf '%s' "$LIN" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\2/p' | head -1)
+  GR_R=$(printf '%s' "$LIN" | sed -n 's/.* r=\([0-9]*\).*/\1/p' | head -1)
+  GTOP=$(printf '%s' "$LIN" | sed -n 's/.* top=\(-\?[0-9]*\).*/\1/p' | head -1)
+  local GW GG GL GIV GPL GLA
+  GW=$(printf '%s' "$LIN" | sed -n 's/.* water=\([0-9]*\).*/\1/p' | head -1)
+  GG=$(printf '%s' "$LIN" | sed -n 's/.* garden_grass=\([0-9]*\).*/\1/p' | head -1)
+  GL=$(printf '%s' "$LIN" | sed -n 's/.* garden_leaves=\([0-9]*\).*/\1/p' | head -1)
+  GIV=$(printf '%s' "$LIN" | sed -n 's/.* ivy=\([0-9]*\).*/\1/p' | head -1)
+  GPL=$(printf '%s' "$LIN" | sed -n 's/.* planks=\([0-9]*\).*/\1/p' | head -1)
+  GLA=$(printf '%s' "$LIN" | sed -n 's/.* lantern=\([0-9]*\).*/\1/p' | head -1)
+  if [ -z "${GX:-}" ]; then
+    log "  FAIL /riftbiome gardens не нашёл регион садов"; FAILS=$((FAILS + 1))
+  else
+    # проба 1: зелёная трава садов на полках (на референсе полки заросли)
+    if [ "${GG:-0}" -ge 400 ]; then log "  OK   сады: зелёной травы $GG блоков"
+    else log "  FAIL сады: зелёной травы всего ${GG:-0} (нужно >=400)"; FAILS=$((FAILS + 1)); fi
+    # проба 2: вода на полках/в водопадах
+    if [ "${GW:-0}" -ge 300 ]; then log "  OK   сады: воды $GW блоков"
+    else log "  FAIL сады: воды ${GW:-0} (нужно >=300)"; FAILS=$((FAILS + 1)); fi
+    # проба 3: плющ по обрывам (на референсе стены увиты)
+    if [ "${GIV:-0}" -ge 120 ]; then log "  OK   сады: плюща на стенах $GIV блоков"
+    else log "  FAIL сады: плюща ${GIV:-0} (нужно >=120 — стены должны быть увиты)"; FAILS=$((FAILS + 1)); fi
+    # проба 4: НИЧЕГО рукотворного — прямое требование владельца («нет лестниц, мостов, канала»)
+    if [ "${GPL:-0}" -eq 0 ] && [ "${GLA:-0}" -eq 0 ]; then
+      log "  OK   сады: рукотворного нет (досок ${GPL:-0}, фонарей ${GLA:-0})"
+    else
+      log "  FAIL сады: найдено рукотворное — досок ${GPL:-0}, фонарей ${GLA:-0} (на референсе их нет)"
+      FAILS=$((FAILS + 1))
+    fi
+    # проба 5: деревья садов — свои дубы (стволы + листва)
+    if [ "${GL:-0}" -ge 200 ]; then log "  OK   сады: листвы садовых дубов $GL блоков"
+    else log "  FAIL сады: листвы ${GL:-0} (нужно >=200)"; FAILS=$((FAILS + 1)); fi
+
+    # кадры под референс: сверху (общий план террас), сбоку (стены и водопады), у пруда, у дерева
+    local GCY=$(( ${GTOP:-110} + 26 ))
+    lookat "$((GX + 46))" "$GCY" "$((GZ + 46))" "$GX" "$(( ${GTOP:-110} - 6 ))" "$GZ" 18 "40_garden_overview"
+    lookat "$((GX + 34))" "$(( ${GTOP:-110} - 12 ))" "$((GZ + 12))" "$GX" "$(( ${GTOP:-110} - 4 ))" "$GZ" 16 "41_garden_terraces"
+    lookat "$((GX + 22))" "$(( ${GTOP:-110} - 2 ))" "$((GZ + 22))" "$GX" "$(( ${GTOP:-110} - 12 ))" "$GZ" 16 "42_garden_walls"
+    lookat "$((GX - 18))" "$(( ${GTOP:-110} - 8 ))" "$((GZ + 26))" "$GX" "$(( ${GTOP:-110} - 14 ))" "$GZ" 16 "43_garden_ponds"
+  fi
+
+  # ---------- 05 «Роща Сизо» ----------
+  local SL SX SZ SLOG SLEAF
+  SL=$(EL execute in riftworld:elisar run riftbiome sizo 2>&1 | tr '\r\n' '  ')
+  log "  /riftbiome sizo -> ${SL:0:420}"
+  SX=$(printf '%s' "$SL" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\1/p' | head -1)
+  SZ=$(printf '%s' "$SL" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\2/p' | head -1)
+  SLEAF=$(printf '%s' "$SL" | sed -n 's/.* garden_leaves=\([0-9]*\).*/\1/p' | head -1)
+  if [ -z "${SX:-}" ]; then
+    log "  FAIL /riftbiome sizo не нашёл регион рощи"; FAILS=$((FAILS + 1))
+  else
+    # стволы гигантских сизо считаем по ванильному rifttree: у рощи должны быть высокие деревья
+    local STREE
+    STREE=$(EL execute in riftworld:elisar run rifttree sizo 2>&1 | tr '\r\n' '  ')
+    log "  /rifttree у рощи -> ${STREE:0:200}"
+    lookat "$((SX + 40))" "$(( 118 ))" "$((SZ + 40))" "$SX" "110" "$SZ" 18 "45_sizo_grove"
+    lookat "$((SX + 16))" "$(( 106 ))" "$((SZ + 16))" "$SX" "106" "$SZ" 16 "46_sizo_trunks"
+    lookat "$((SX + 10))" "$(( 124 ))" "$((SZ + 30))" "$SX" "108" "$SZ" 16 "47_sizo_canopy"
+  fi
+  EL gamemode creative TestPlayer >/dev/null 2>&1 || true
+}
+biome_section || log "  FAIL секция биомов упала с кодом $?"
+
 RCON effect clear TestPlayer >/dev/null 2>&1 || true
 RCON effect clear TestPlayer >/dev/null 2>&1 || true
 

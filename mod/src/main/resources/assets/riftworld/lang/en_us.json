@@ -356,5 +356,10 @@
   "block.riftworld.coral_foliage_violet": "Violet Coral Foliage",
   "block.riftworld.coral_stem_pink": "Pink Coral Stem",
   "block.riftworld.coral_stem_teal": "Teal Coral Stem",
-  "block.riftworld.coral_stem_violet": "Violet Coral Stem"
+  "block.riftworld.coral_stem_violet": "Violet Coral Stem",
+  "block.riftworld.garden_grass": "Garden Grass",
+  "block.riftworld.garden_log": "Garden Oak Log",
+  "block.riftworld.garden_leaves": "Garden Oak Leaves",
+  "block.riftworld.garden_limestone": "Garden Limestone",
+  "block.riftworld.garden_limestone_mossy": "Mossy Garden Limestone"
 }

@@ -7,12 +7,17 @@ import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Biome 07 «Висячие сады» (Rev 4 item 8): a SMALL paradise stack - one limestone-stepped mound whose lowest shelf hugs
- * the ocean and whose top reaches the wild-island cruising height. Shelf edges break into waterfalls (terraced pools +
- * springs + hot springs with travertine rims and warm lantern cores), nearly-jungle vegetation, TINY trees only, and
- * the single man-made thing: one rare sagging plank bridge across the gorge (TZ: «из не-природы только редкие мосты»).
+ * Biome 07 «Висячие сады» (референс {@code reports/refs_rev4/07_waterfall_gardens.png}).
  *
- * Own grid 960 (mid-shifted against the others), ~42 % of fitting cells; deterministic from one seed.
+ * <p>Ступенчатая известняковая гора: широкие плоские полки через каждые 5 блоков, почти вертикальные
+ * стены между ними, на каждой полке — пруд, льющаяся через край вода, сплошная зелень и длинные
+ * плети плюща по обрывам. Деревья — обычные дубы с зелёной кроной: на референсе только они.
+ *
+ * <p>Рев 14 (итерация 1): убрано ВСЁ рукотворное. Раньше здесь стояли висячие дощатые мосты
+ * с цепями, фонари в горячих источниках и настилы — на референсе их нет, и владелец попросил
+ * «ничего созданного человеком: ни лестниц, ни мостов, ни каналов».
+ *
+ * <p>Своя сетка 960, ~42 % подходящих ячеек, всё детерминировано от одного сида.
  */
 public final class WaterfallGardens {
     public static final int SUPER = 960;
@@ -20,13 +25,24 @@ public final class WaterfallGardens {
     /** Terrace step height (blocks). */
     public static final double STEP = 5.0;
     public static final int KIND = 9;
+    /** Kind of the garden's own tree (green oak, the reference silhouette). */
+    public static final int TREE_OAK = 4;
+
+    /** Заранее выбранный водопад: точка на полке, откуда вода льётся через край. */
+    public static final class Fall {
+        public final int x, z;
+        public final double w;      // ширина струи в блоках
+        public final long seed;
+
+        Fall(int x, int z, double w, long seed) { this.x = x; this.z = z; this.w = w; this.seed = seed; }
+    }
 
     public static final class Region {
         public final int cx, cz;
         public final double Rr;
         public final CityPlan.Island hub;
         public final List<CityPlan.Tree> trees = new ArrayList<>();
-        public final List<CityPlan.Bridge> bridges = new ArrayList<>();
+        public final List<Fall> falls = new ArrayList<>();
 
         Region(int cx, int cz, Random rnd) {
             this.cx = cx; this.cz = cz;
@@ -35,34 +51,29 @@ public final class WaterfallGardens {
             double base = 96 + rnd.nextDouble() * 16;                     // верх - на высоте островов
             this.hub = new CityPlan.Island(cx, cz, R, base, R * 1.15 + 10, rnd.nextDouble() * 6.283, rnd.nextDouble() * 6.283,
                     rnd.nextDouble() * 6.283, KIND, 1.6);
-            // rare bridges: one sagging span over a mid-terrace dip (tries to keep both feet on solid shelves)
-            if (rnd.nextDouble() < 0.6) {
-                for (int t = 0; t < 8; ++t) {
-                    double a = rnd.nextDouble() * Math.PI * 2;
-                    double mx = cx + (rnd.nextDouble() - 0.5) * R * 0.5, mz = cz + (rnd.nextDouble() - 0.5) * R * 0.5;
-                    double hl = (0.28 + rnd.nextDouble() * 0.2) * R;
-                    double ax = mx - Math.cos(a) * hl, az = mz - Math.sin(a) * hl;
-                    double bx = mx + Math.cos(a) * hl, bz = mz + Math.sin(a) * hl;
-                    if (hub.t(ax + 0.5, az + 0.5) < 0.3 || hub.t(bx + 0.5, bz + 0.5) < 0.3) continue;
-                    int ya = ElisarChunkGenerator.gardenTerraceTop(hub, ax + 0.5, az + 0.5, CityPlan.get().ocean) + 1;
-                    int yb = ElisarChunkGenerator.gardenTerraceTop(hub, bx + 0.5, bz + 0.5, CityPlan.get().ocean) + 1;
-                    if (Math.abs(ya - yb) > 3) continue;
-                    bridges.add(new CityPlan.Bridge(ax, az, bx, bz, ya, yb, 1.5 + rnd.nextDouble() * 0.8, 0.9));
-                    break;
-                }
-            }
-            // tiny trees only (TZ): mostly round ambra puffballs, sparse slim sizo - elbow room 5
-            for (int k = 0, want = 18 + rnd.nextInt(9), tries = 0; k < want && tries < want * 20; ++tries) {
-                double a = rnd.nextDouble() * Math.PI * 2, d = (0.15 + rnd.nextDouble() * 0.7) * R;
+            // Рев 14: на референсе полки заросли обычными ДУБАМИ с зелёной кроной, а не «крошечными
+            // деревцами» — ставим 14..20 дубов, но только там, где полка широкая (t < 0.72), иначе
+            // ствол повисает на самом обрыве.
+            for (int k = 0, want = 14 + rnd.nextInt(7), tries = 0; k < want && tries < want * 24; ++tries) {
+                double a = rnd.nextDouble() * Math.PI * 2, d = (0.10 + rnd.nextDouble() * 0.60) * R;
                 int x = (int) Math.floor(cx + Math.cos(a) * d), z = (int) Math.floor(cz + Math.sin(a) * d);
-                if (hub.t(x + 0.5, z + 0.5) < 0.34) continue;
+                if (hub.t(x + 0.5, z + 0.5) < 0.30) continue;
                 boolean ok = true;
-                for (CityPlan.Tree t : trees) if (Math.abs(t.x - x) < 5 && Math.abs(t.z - z) < 5) { ok = false; break; }
-                for (CityPlan.Bridge b : bridges)
-                    if (CityPlan.segDist(x + 0.5, z + 0.5, b.ax(), b.az(), b.bx(), b.bz(), null) < 3.0) { ok = false; break; }
+                for (CityPlan.Tree t : trees) if (Math.abs(t.x - x) < 6 && Math.abs(t.z - z) < 6) { ok = false; break; }
                 if (!ok) continue;
-                int kind = rnd.nextDouble() < 0.6 ? 1 : 0;
-                trees.add(new CityPlan.Tree(x, z, kind, 4 + rnd.nextInt(3), rnd.nextInt(1 << 30)));
+                trees.add(new CityPlan.Tree(x, z, TREE_OAK, 5 + rnd.nextInt(4), rnd.nextInt(1 << 30)));
+                ++k;
+            }
+            // водопады: полка с прудом, чей край выше соседа — заранее помечаем как «льющуюся»
+            for (int k = 0, want = 5 + rnd.nextInt(4), tries = 0; k < want && tries < want * 30; ++tries) {
+                double a = rnd.nextDouble() * Math.PI * 2, d = (0.25 + rnd.nextDouble() * 0.6) * R;
+                double x = cx + Math.cos(a) * d, z = cz + Math.sin(a) * d;
+                if (hub.t(x, z) < 0.10) continue;
+                boolean ok = true;
+                for (CityPlan.Fall f : falls) if (Math.hypot(f.x - x, f.z - z) < 9) { ok = false; break; }
+                if (!ok) continue;
+                double w = 2.0 + rnd.nextDouble() * 2.5;                 // ширина струи, как на референсе
+                falls.add(new Fall((int) Math.floor(x), (int) Math.floor(z), w, rnd.nextLong()));
                 ++k;
             }
         }
@@ -110,6 +121,21 @@ public final class WaterfallGardens {
         if (rg == null) return false;
         double d = Math.hypot(x - rg.cx, z - rg.cz) + (ElisarChunkGenerator.vnoise(x * 0.03, z * 0.03, 255) - 0.5) * 40;
         return d < rg.Rr;
+    }
+
+    /**
+     * Рев 14: водопад, струя которого может попасть в колонку (x, z).
+     *
+     * <p>Струя идёт не вниз по склону, а наружу: вода находит край полки и льётся с него. Поэтому
+     * для каждой колонки проверяем сам водопад и 4 его соседа в радиусе {@link Fall#w} — так
+     * получается широкая (2..4 блока) струя, как на референсе, а не нитка шириной в блок.
+     */
+    public static Fall fallNear(Region rg, double x, double z) {
+        for (Fall f : rg.falls) {
+            double d = Math.hypot(x - f.x, z - f.z);
+            if (d <= f.w) return f;
+        }
+        return null;
     }
 
     public static List<CityPlan.Tree> treesNear(int x, int z) {

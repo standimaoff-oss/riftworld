@@ -356,5 +356,10 @@
   "block.riftworld.coral_foliage_violet": "Фиолетовая коралловая листва",
   "block.riftworld.coral_stem_pink": "Розовый коралловый ствол",
   "block.riftworld.coral_stem_teal": "Бирюзовый коралловый ствол",
-  "block.riftworld.coral_stem_violet": "Фиолетовый коралловый ствол"
+  "block.riftworld.coral_stem_violet": "Фиолетовый коралловый ствол",
+  "block.riftworld.garden_grass": "Трава садов",
+  "block.riftworld.garden_log": "Дуб садов",
+  "block.riftworld.garden_leaves": "Листва садового дуба",
+  "block.riftworld.garden_limestone": "Известняк садов",
+  "block.riftworld.garden_limestone_mossy": "Мшистый известняк садов"
 }

@@ -46,6 +46,12 @@ public final class SeaProbeCommand {
                 .then(Commands.argument("kind", com.mojang.brigadier.arguments.StringArgumentType.word())
                         .executes(c -> tree(c.getSource(),
                                 com.mojang.brigadier.arguments.StringArgumentType.getString(c, "kind")))));
+        // Рев 14: /riftbiome — где ближайший биом 07 «Висячие сады» и 05 «Роща Сизо». Без этого
+        // CI не может ни снять кадры для сверки с референсом, ни посчитать воду/плющ в биоме.
+        e.getDispatcher().register(Commands.literal("riftbiome").requires(s2 -> s2.hasPermission(2))
+                .then(Commands.argument("name", com.mojang.brigadier.arguments.StringArgumentType.word())
+                        .executes(c -> biome(c.getSource(),
+                                com.mojang.brigadier.arguments.StringArgumentType.getString(c, "name")))));
         // Рев 13.6: /riftdtat — что DT реально поставил в точке посадки. Один вызов RCON вместо
         // сотен «execute if block»: считает все блоки аддона вокруг корня.
         e.getDispatcher().register(Commands.literal("riftdtat").requires(s2 -> s2.hasPermission(2))
@@ -358,6 +364,85 @@ public final class SeaProbeCommand {
         final String out = line;
         src.sendSuccess(() -> Component.literal(out), false);
         return grew;
+    }
+
+    /**
+     * Рев 14: {@code /riftbiome gardens|sizo} — ближайший регион биома и цифры для CI.
+     *
+     * <p>Ищет по сетке супер-ячеек вокруг вызывающего (радиус 6 ячеек), берёт ближайший регион и
+     * считает по кубу вокруг центра: колонки с водой, с прудом, водопадные струи, плющ, траву
+     * садов, стволы. Плюс {@code planks=}/{@code lantern=} — рукотворные блоки: на референсе
+     * Висячих садов их быть НЕ ДОЛЖНО, и CI падает, если они появятся снова.
+     */
+    private static int biome(CommandSourceStack src, String name) {
+        var level = src.getLevel();
+        BlockPos at = src.getPlayer() != null ? src.getPlayer().blockPosition() : new BlockPos(0, 0, 0);
+        boolean gardens = !name.toLowerCase(java.util.Locale.ROOT).startsWith("sizo");
+        int found = 0, want = gardens ? WaterfallGardens.SUPER : SizoGrove.SUPER;
+        int bestX = 0, bestZ = 0, bestR = 0;
+        double bestD = Double.MAX_VALUE;
+        for (int dx = -6; dx <= 6; ++dx) {
+            for (int dz = -6; dz <= 6; ++dz) {
+                int sx = Math.floorDiv(at.getX(), want) + dx, sz = Math.floorDiv(at.getZ(), want) + dz;
+                if (gardens) {
+                    WaterfallGardens.Region rg = WaterfallGardens.region(sx, sz);
+                    if (rg == null) continue;
+                    double d = Math.hypot(rg.cx - at.getX(), rg.cz - at.getZ());
+                    if (d < bestD) { bestD = d; bestX = rg.cx; bestZ = rg.cz; bestR = (int) rg.hub.R; }
+                } else {
+                    SizoGrove.Region rg = SizoGrove.region(sx, sz);
+                    if (rg == null) continue;
+                    double d = Math.hypot(rg.cx - at.getX(), rg.cz - at.getZ());
+                    if (d < bestD) { bestD = d; bestX = rg.cx; bestZ = rg.cz; bestR = (int) rg.hub.R; }
+                }
+            }
+        }
+        if (bestD == Double.MAX_VALUE) {
+            src.sendFailure(Component.literal("riftbiome: рядом нет региона " + name));
+            return 0;
+        }
+        // считаем по кубу ±R/2 вокруг центра: вода, плющ, трава садов, стволы, рукотворное
+        // Радиус считаем скромным: куб ±36 по горизонтали и полоса высот 60..150 — иначе RCON-вызов
+        // перебирает миллионы блоков и отваливается по таймауту.
+        int R = Math.max(20, Math.min(36, bestR / 2));
+        int water = 0, ivy = 0, gardenGrass = 0, logs = 0, leaves = 0, planks = 0, lanterns = 0, top = Integer.MIN_VALUE;
+        java.util.Map<String, Integer> solids = new java.util.TreeMap<>();
+        var grassTop = ru.aiforge.riftworld.registry.ElisarBlocks.GARDEN_GRASS.get();
+        var leafBlk = ru.aiforge.riftworld.registry.ElisarBlocks.GARDEN_LEAVES.get();
+        var logBlk = ru.aiforge.riftworld.registry.ElisarBlocks.GARDEN_LOG.get();
+        for (int x = bestX - R; x <= bestX + R; x += 1) {
+            for (int z = bestZ - R; z <= bestZ + R; z += 1) {
+                if (!level.isLoaded(new BlockPos(x, at.getY(), z))) continue;
+                for (int y = 60; y <= 150; ++y) {
+                    BlockState st = level.getBlockState(new BlockPos(x, y, z));
+                    if (st.isAir()) continue;
+                    top = Math.max(top, y);
+                    var key = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(st.getBlock());
+                    if (key == null) continue;
+                    String path = key.getPath();
+                    if (st.is(ru.aiforge.riftworld.registry.ElisarBlocks.WATER.get())) { water++; continue; }
+                    if (st.getBlock() == grassTop) { gardenGrass++; continue; }
+                    if (st.getBlock() == leafBlk) { leaves++; continue; }
+                    if (st.getBlock() == logBlk) { logs++; continue; }
+                    if (st.getBlock() instanceof net.minecraft.world.level.block.VineBlock) { ivy++; continue; }
+                    if (path.endsWith("planks") || path.contains("plank") || st.getBlock() instanceof net.minecraft.world.level.block.SlabBlock
+                            || st.getBlock() instanceof net.minecraft.world.level.block.StairBlock) planks++;
+                    if (path.contains("lantern")) lanterns++;
+                    solids.merge(path, 1, Integer::sum);
+                }
+            }
+        }
+        String top6 = solids.entrySet().stream()
+                .sorted((a2, b2) -> b2.getValue() - a2.getValue()).limit(6)
+                .map(e2 -> e2.getKey() + "=" + e2.getValue())
+                .reduce((a2, b2) -> a2 + " " + b2).orElse("-");
+        String line = "riftbiome name=" + (gardens ? "gardens" : "sizo") + " at=" + bestX + "," + bestZ
+                + " r=" + bestR + " top=" + top + " water=" + water + " garden_grass=" + gardenGrass
+                + " garden_leaves=" + leaves + " garden_logs=" + logs + " ivy=" + ivy
+                + " planks=" + planks + " lantern=" + lanterns + " blocks=" + top6;
+        src.sendSuccess(() -> Component.literal(line), false);
+        found = water;
+        return found;
     }
 
     /**

@@ -109,6 +109,18 @@ public final class ElisarBlocks {
     public static final RegistryObject<PlantBlock> LILAC_BLOOM = ModBlocks.reg("lilac_bloom", () -> new PlantBlock(plant()));
     public static final RegistryObject<PlantBlock> PALE_BLOOM = ModBlocks.reg("pale_bloom", () -> new PlantBlock(plant()));
     public static final RegistryObject<VineBlock> IVY = ModBlocks.reg("elisar_ivy", () -> new VineBlock(plant().randomTicks()));
+    // ----- Рев 14 «Висячие сады по референсу»: у биома 07 своя зелёная палитра.
+    // На референсе полки — ярко-зелёная трава, обрывы увиты плющом, деревья — обычные дубы
+    // с зелёной кроной и бурой корой. В Элисаре трава кремовая, а деревья белые, поэтому
+    // садам нужны собственные блоки, иначе биом не совпадает с фотографией.
+    public static final RegistryObject<Block> GARDEN_GRASS = cube("garden_grass", MapColor.GRASS, 0.6F, SoundType.GRASS);
+    public static final RegistryObject<RotatedPillarBlock> GARDEN_LOG =
+            ModBlocks.reg("garden_log", () -> new RotatedPillarBlock(p(MapColor.WOOD, 2.0F, SoundType.WOOD)));
+    public static final RegistryObject<LeavesBlock> GARDEN_LEAVES =
+            ModBlocks.reg("garden_leaves", () -> new LeavesBlock(leaves(MapColor.PLANT)));
+    // обрывы: светлый известняк горизонтальными пластами (мох — у самого низа стены)
+    public static final RegistryObject<Block> GARDEN_LIMESTONE = cube("garden_limestone", MapColor.QUARTZ, 1.5F, SoundType.STONE);
+    public static final RegistryObject<Block> GARDEN_LIMESTONE_MOSSY = cube("garden_limestone_mossy", MapColor.QUARTZ, 1.5F, SoundType.STONE);
     // ===== Рев 8 «Живое море»: дно, рифы и подводная флора =====
     // породы дна
     public static final RegistryObject<Block> SILT = cube("elisar_silt", MapColor.COLOR_BLACK, 0.7F, SoundType.SOUL_SAND);

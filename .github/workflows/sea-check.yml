@@ -18,6 +18,11 @@ on:
         type: string
         required: false
         default: ''
+      iteration:
+        description: 'Номер итерации для reports/iteration-N (пусто = следующий по счёту)'
+        type: string
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -28,6 +33,9 @@ concurrency:
 
 jobs:
   verify:
+    # Коммит кадров в reports/ тоже пушит в эту ветку — без [skip ci] и этой проверки
+    # прогон запускал бы сам себя бесконечно.
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
@@ -125,6 +133,72 @@ jobs:
             tail -40 ci-out/release.log
             exit 1
           }
+
+      # Рев 14: владелец попросил складывать кадры прямо в репозиторий, в reports/iteration-N —
+      # чтобы на каждый кадр можно было дать прямую ссылку с GitHub, а не искать артефакт прогона.
+      - name: Publish screenshots to reports/iteration-N
+        if: always()
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          SHOTS=(ci-shots/*.jpg)
+          if [ ${#SHOTS[@]} -eq 0 ]; then
+            echo "нет кадров — публиковать нечего"
+            exit 0
+          fi
+          # номер итерации: из входа workflow_dispatch или следующий по счёту в reports/
+          IT="${{ inputs.iteration }}"
+          if [ -z "$IT" ]; then
+            LAST=$(ls -d reports/iteration-* 2>/dev/null | sed 's#.*iteration-##' | sort -n | tail -1)
+            IT=$(( ${LAST:-0} + 1 ))
+          fi
+          DEST="reports/iteration-$IT"
+          echo "публикую ${#SHOTS[@]} кадров в $DEST"
+          mkdir -p "$DEST/shots"
+          # сжимаем до 854 px по ширине, чтобы кадры не раздували репозиторий
+          for f in "${SHOTS[@]}"; do
+            convert "$f" -resize 854x -quality 78 "$DEST/shots/$(basename "$f")" 2>/dev/null \
+              || cp "$f" "$DEST/shots/$(basename "$f")"
+          done
+          cp ci-shots/probes.txt "$DEST/" 2>/dev/null || true
+          # jar этой итерации кладём рядом с кадрами: на него тоже нужна прямая ссылка в сообщении
+          JAR=$(ls mod/build/libs/riftworld-*.jar 2>/dev/null | grep -v -e sources -e javadoc | head -1 || true)
+          [ -n "$JAR" ] && cp "$JAR" "$DEST/$(basename "$JAR")" || echo "jar не найден — пропускаю"
+          DTJAR=$(ls mod/build/libs/riftworld-dt-*.jar 2>/dev/null | head -1 || true)
+          [ -n "$DTJAR" ] && cp "$DTJAR" "$DEST/$(basename "$DTJAR")" || true
+          cp ci-shots/report_client.md "$DEST/" 2>/dev/null || true
+          cp ci-out/report.md "$DEST/" 2>/dev/null || true
+          # индекс с прямыми ссылками на каждый кадр
+          {
+            echo "# Итерация $IT — кадры живого прогона"
+            echo
+            echo "Прогон: [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+            echo "Коммит: \`${{ github.sha }}\`"
+            echo
+            if ls "$DEST"/*.jar >/dev/null 2>&1; then
+              echo
+              echo "## Jar этой итерации"
+              for j in "$DEST"/*.jar; do
+                echo "- [$(basename "$j")](../$DEST/$(basename "$j"))"
+              done
+            fi
+            echo
+            echo "## Кадры"
+            for f in "$DEST"/shots/*.jpg; do
+              n=$(basename "$f")
+              echo "- [$n](../$DEST/shots/$n)"
+            done
+          } > "$DEST/README.md"
+          git config user.name "riftworld-ci"
+          git config user.email "riftworld-ci@users.noreply.github.com"
+          git add -A "$DEST"
+          if git diff --cached --quiet; then
+            echo "кадры не изменились"
+            exit 0
+          fi
+          git commit -qm "кадры итерации $IT (прогон #${{ github.run_number }}) [skip ci]"
+          git push origin "HEAD:${{ github.ref_name }}" || echo "::warning title=reports::push кадров не прошёл"
+          echo "готово: $DEST"
 
       - name: Upload artifacts
         if: always()
