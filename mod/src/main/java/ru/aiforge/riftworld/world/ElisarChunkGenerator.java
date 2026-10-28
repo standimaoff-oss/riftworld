@@ -550,7 +550,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         // Рев 14.23: вода Висячих садов — ВАНИЛЬНАЯ. Её цвет берётся из biome water_color,
         // и на референсе вода ярко-бирюзовая; у нашего флюида своя тёмно-синяя текстура, которую
         // тинтом не осветлить. Море Элисара остаётся на своём флюиде.
-        BlockState gWater = Blocks.WATER.defaultBlockState();
+        BlockState gWater = st(ElisarBlocks.GARDEN_WATER);
         BlockState gFalling = gWater.setValue(LiquidBlock.LEVEL, 8);
         BlockState seabed = st(ElisarBlocks.SEABED), stone = st(ElisarBlocks.STONE), mossy = st(ElisarBlocks.STONE_MOSSY), soil = st(ElisarBlocks.SOIL);
         BlockState grass = st(ElisarBlocks.GRASS), cobble = st(ElisarBlocks.COBBLE), path = st(ElisarBlocks.PATH), plank = st(ElisarBlocks.SIZO_PLANKS);

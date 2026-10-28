@@ -212,6 +212,11 @@ public final class ElisarBlocks {
                 .sound(SoundType.GRASS).offsetType(BlockBehaviour.OffsetType.XZ).pushReaction(PushReaction.DESTROY).noOcclusion();
     }
 
+    /** Рев 14.24: бирюзовая вода Висячих садов (своя текстура). */
+    public static final RegistryObject<LiquidBlock> GARDEN_WATER = ModBlocks.BLOCKS.register("garden_water", () -> new LiquidBlock(ModFluids.GARDEN_SOURCE,
+            BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_CYAN).replaceable().noCollission().strength(100.0F).pushReaction(PushReaction.DESTROY)
+                    .noLootTable().liquid()));
+
     // water (no item: the bucket is the item)
     public static final RegistryObject<LiquidBlock> WATER = ModBlocks.BLOCKS.register("elisar_water", () -> new LiquidBlock(ModFluids.SOURCE,
             BlockBehaviour.Properties.of().mapColor(MapColor.WATER).replaceable().noCollission().strength(100.0F).pushReaction(PushReaction.DESTROY)

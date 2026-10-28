@@ -423,7 +423,8 @@ public final class SeaProbeCommand {
                     if (key == null) continue;
                     String path = key.getPath();
                     // Рев 14.23: вода садов теперь ванильная (её цвет берётся из биома) — считаем обе
-                    if (st.is(ru.aiforge.riftworld.registry.ElisarBlocks.WATER.get()) || st.is(net.minecraft.world.level.block.Blocks.WATER)) { water++; continue; }
+                    if (st.is(ru.aiforge.riftworld.registry.ElisarBlocks.WATER.get()) || st.is(net.minecraft.world.level.block.Blocks.WATER)
+                            || st.is(ru.aiforge.riftworld.registry.ElisarBlocks.GARDEN_WATER.get())) { water++; continue; }
                     if (st.getBlock() == grassTop) { gardenGrass++; continue; }
                     if (st.getBlock() == leafBlk) { leaves++; continue; }
                     if (st.getBlock() == logBlk) { logs++; continue; }
