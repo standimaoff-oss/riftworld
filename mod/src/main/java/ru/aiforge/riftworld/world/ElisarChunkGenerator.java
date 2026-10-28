@@ -707,7 +707,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                         int rise = n.top - c.top;
                         if (rise < 3) continue;                                   // стены нет — ни воды, ни плюща
                         int foot = c.waterTop != Integer.MIN_VALUE ? c.waterTop : c.top;   // вода встаёт на пруд
-                        if (vnoise(x * 0.085, z * 0.085, 171) > 0.74) {            // ~1 струя на ярус, шириной 5-8
+                        if (vnoise(x * 0.085, z * 0.085, 171) > 0.78) {            // ~1 струя на ярус, шириной 5-8
                             for (int y = foot + 1; y <= n.top; ++y) {
                                 BlockPos wp = mp.set(x, y, z);
                                 if (chunk.getBlockState(wp).canBeReplaced()) chunk.setBlockState(wp, falling, false);
@@ -729,7 +729,13 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                     for (int y = c.waterBottom; y <= c.waterTop; ++y) chunk.setBlockState(mp.set(x, y, z), water, false);
                 }
                 if (c.fallTop != Integer.MIN_VALUE) {
-                    for (int y = c.fallBottom; y <= c.fallTop; ++y) chunk.setBlockState(mp.set(x, y, z), falling, false);
+                    // Рев 14.5: вода льётся ТОЛЬКО по воздуху. Раньше струя прописывалась на всю высоту
+                    // до океана без проверки — она прорезала полки насквозь, и биом оказывался залит
+                    // вертикальными водяными стенами (прогон 40693993378, кадр 42).
+                    for (int y = c.fallBottom; y <= c.fallTop; ++y) {
+                        BlockPos wp = mp.set(x, y, z);
+                        if (chunk.getBlockState(wp).canBeReplaced()) chunk.setBlockState(wp, falling, false);
+                    }
                 }
                 if (c.deckY != Integer.MIN_VALUE) {
                     if (!c.rail) {

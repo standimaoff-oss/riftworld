@@ -959,7 +959,7 @@ biome_section() {
   SZ=$(printf '%s' "$SL" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\2/p' | tail -1)
   SLEAF=$(printf '%s' "$SL" | sed -n 's/.* garden_leaves=\([0-9]*\).*/\1/p' | tail -1)
   STOP=$(printf '%s' "$SL" | sed -n 's/.* top=\(-\?[0-9]*\).*/\1/p' | tail -1)
-  SSTRUCT=$(printf '%s' "$SL" | sed -n 's/.* struct=\([^ ]*\).*/\1/p' | tail -1)
+  SSTRUCT=$(printf '%s' "$SL" | sed -n 's/.* struct=\([^ ]*\( [a-z_]*=[0-9]*\)*\).*/\1/p' | tail -1)
   log "  /riftbiome sizo: структуры -> ${SSTRUCT:--} (по ТЗ: тележка ~1/3, памятник и храм ~1/7, 1-2 пары столбов)"
   if [ -z "${SX:-}" ]; then
     log "  FAIL /riftbiome sizo не нашёл регион рощи"; FAILS=$((FAILS + 1))
