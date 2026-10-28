@@ -644,13 +644,21 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                     }
                                 }
                             } else if (c.garden) {
-                                // Рев 14, по референсу: полки заросли почти сплошной травой, между ней —
-                                // островки цветов (красные, синие, жёлтые) и низкие зелёные кусты.
-                                if (h < 0.52) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
-                                else if (h < 0.63 && vnoise(x * 0.1, z * 0.1, 154) > 0.46) {
+                                // Рев 14.3, по референсу: газон садов — ЯРКО-ЗЕЛЁНЫЙ (это трава полки),
+                                // а не белое поле. Раньше 52 % колонок забивалось elisar_tall_grass,
+                                // у которой текстура почти белая (200,195,183) — кадры выглядели снежными.
+                                // Теперь: редкие светлые былинки, островки мелких цветов (красный/жёлтый/
+                                // синий — как на фото) и низкие стелющиеся кусты.
+                                if (h < 0.10) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
+                                else if (h < 0.26 && vnoise(x * 0.1, z * 0.1, 154) > 0.42) {
                                     int f = (int) (hash(x, z, 155) * 100);
-                                    chunk.setBlockState(mp.set(x, c.top + 1, z), st(f < 58 ? ElisarBlocks.FLOWERS : f < 76 ? ElisarBlocks.PALE_BLOOM : f < 90 ? ElisarBlocks.VIOLET_BLOOM : ElisarBlocks.LILAC_BLOOM), false);
-                                } else if (h < 0.70 && chunk.getBlockState(mp.set(x, c.top + 1, z)).isAir()) {
+                                    BlockState bloom = f < 42 ? Blocks.POPPY.defaultBlockState()
+                                            : f < 72 ? Blocks.DANDELION.defaultBlockState()
+                                            : f < 88 ? Blocks.CORNFLOWER.defaultBlockState()
+                                            : f < 95 ? Blocks.OXEYE_DAISY.defaultBlockState()
+                                            : st(ElisarBlocks.PALE_BLOOM);
+                                    chunk.setBlockState(mp.set(x, c.top + 1, z), bloom, false);
+                                } else if (h < 0.30 && chunk.getBlockState(mp.set(x, c.top + 1, z)).isAir()) {
                                     chunk.setBlockState(mp.set(x, c.top + 1, z), gardenLeaf, false);   // низкий стелющийся куст
                                 }
                             } else if (c.isl.kind == SizoGrove.KIND || (c.isl.kind != 4 && SizoGrove.inside(x + 0.5, z + 0.5))) {
@@ -670,21 +678,30 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 // на границе чанка сосед ещё не сгенерирован, все стороны оставались false, и лоза
                 // не ставилась вовсе (в /riftbiome ivy=0). Теперь сторону выбираем по сетке колонок
                 // (она уже посчитана), а не по содержимому соседнего чанка.
-                if (c.garden && c.surface == S_GRASS && c.waterTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE) {
+                // Рев 14.3, по референсу: у кромки каждой полки — ВОДОПАДНЫЕ ШТОРЫ (широкие струи,
+                // льющиеся через край) и длинные плети плюща по отвесной стене. И то и другое ставим
+                // в СВОЮ колонку у подножия стены: писать в соседний чанк при генерации нельзя.
+                if (c.garden && c.surface == S_GRASS && c.deckY == Integer.MIN_VALUE) {
                     for (Direction d : Direction.Plane.HORIZONTAL) {
                         Col n = cols[dx + 1 + d.getStepX()][dz + 1 + d.getStepZ()];
                         if (n.isl == null) continue;
                         int rise = n.top - c.top;
-                        if (rise < 3) continue;                                  // не у стены — не вьёмся
-                        if (vnoise(x * 0.21, z * 0.21, 151) < 0.30) continue;    // но не в каждой колонке
-                        // плети свисают С ВЕРХНЕЙ КРОМКИ полки вниз, как на референсе
-                        int len = Math.min(rise - 1, 3 + (int) (hash(x, z, 152) * 5.0));
-                        int from = Math.max(c.top + 1, n.top - 1 - len);
-                        BlockState face = ivyFace(d, ivy);
-                        for (int y = from; y <= n.top - 1; ++y) {
-                            BlockPos vp = mp.set(x, y, z);
-                            BlockState cur = chunk.getBlockState(vp);
-                            if (cur.isAir() || cur.canBeReplaced()) chunk.setBlockState(vp, face, false);
+                        if (rise < 3) continue;                                   // стены нет — ни воды, ни плюща
+                        int foot = c.waterTop != Integer.MIN_VALUE ? c.waterTop : c.top;   // вода встаёт на пруд
+                        if (vnoise(x * 0.085, z * 0.085, 171) > 0.74) {            // ~1 струя на ярус, шириной 5-8
+                            for (int y = foot + 1; y <= n.top; ++y) {
+                                BlockPos wp = mp.set(x, y, z);
+                                if (chunk.getBlockState(wp).canBeReplaced()) chunk.setBlockState(wp, falling, false);
+                            }
+                        } else if (vnoise(x * 0.21, z * 0.21, 151) > 0.42) {       // плети свисают с кромки вниз
+                            int len = Math.min(rise - 1, 4 + (int) (hash(x, z, 152) * 8.0));
+                            int from = Math.max(foot + 1, n.top - 1 - len);
+                            BlockState face = ivyFace(d, ivy);
+                            for (int y = from; y <= n.top - 1; ++y) {
+                                BlockPos vp = mp.set(x, y, z);
+                                BlockState cur = chunk.getBlockState(vp);
+                                if (cur.isAir() || cur.canBeReplaced()) chunk.setBlockState(vp, face, false);
+                            }
                         }
                         break;
                     }

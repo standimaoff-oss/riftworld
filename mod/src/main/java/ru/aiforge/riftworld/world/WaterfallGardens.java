@@ -22,8 +22,12 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class WaterfallGardens {
     public static final int SUPER = 960;
     private static final long FIXED = 0x7A7EFA11L;
-    /** Terrace step height (blocks). */
-    public static final double STEP = 5.0;
+    /**
+     * Terrace step height (blocks). Рев 14.3: 5 → 8. На референсе между полками отвесные
+     * известняковые стены в 6–10 блоков, а не низкие бортики; на пяти блоках биом читался
+     * как пологий холм (см. кадры итерации 3).
+     */
+    public static final double STEP = 8.0;
     public static final int KIND = 9;
     /** Kind of the garden's own tree (green oak, the reference silhouette). */
     public static final int TREE_OAK = 4;
