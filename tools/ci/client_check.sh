@@ -968,7 +968,7 @@ biome_section() {
     fi
     # кадр «как на референсе»: с полки вплотную к обрыву (стена с плющом и водопадом)
     local WALL
-    WALL=$(printf '%s' "$LIN" | grep -o 'wall=\([-0-9]*,[-0-9]*,[-0-9]*\):\([-0-9]*,[-0-9]*,[-0-9]*\)' | tail -1)
+    WALL=$(printf '%s' "$LIN" | grep -o 'wall=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^wall=//')
     if [ -n "${WALL:-}" ]; then
       local WCAM WLOOK
       WCAM=$(printf '%s' "$WALL" | cut -d: -f1 | tr ',' ' ')
