@@ -70,7 +70,7 @@ public final class WaterfallGardens {
                 double x = cx + Math.cos(a) * d, z = cz + Math.sin(a) * d;
                 if (hub.t(x, z) < 0.10) continue;
                 boolean ok = true;
-                for (CityPlan.Fall f : falls) if (Math.hypot(f.x - x, f.z - z) < 9) { ok = false; break; }
+                for (Fall f : falls) if (Math.hypot(f.x - x, f.z - z) < 9) { ok = false; break; }
                 if (!ok) continue;
                 double w = 2.0 + rnd.nextDouble() * 2.5;                 // ширина струи, как на референсе
                 falls.add(new Fall((int) Math.floor(x), (int) Math.floor(z), w, rnd.nextLong()));
