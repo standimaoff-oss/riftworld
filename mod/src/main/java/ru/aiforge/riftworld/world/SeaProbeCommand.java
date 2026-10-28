@@ -408,7 +408,8 @@ public final class SeaProbeCommand {
         // Если у контрольного дуба lv>0, а у нашего дерева нет — виноваты наши leaves_properties.
         String line = "riftdtat at=" + x + "," + y + "," + z + " dt=" + total + " dy=" + dy
                 + " lv=" + leaves + " air=" + air + " water=" + water
-                + " top=" + topY + ":" + topId + " blocks=" + names + " near=" + nearNames;
+                + " top=" + topY + ":" + topId + " col=" + column(level, x, y, z)
+                + " blocks=" + names + " near=" + nearNames;
         src.sendSuccess(() -> Component.literal(line), false);
         return total;
     }
@@ -524,6 +525,30 @@ public final class SeaProbeCommand {
         } catch (Throwable t) {
             return "error:" + t.getClass().getSimpleName();
         }
+    }
+
+    /**
+     * Рев 13.29: вертикальная колонка 1×1 над точкой посадки (y..y+15) одной строкой.
+     *
+     * <p>На кадрах подводного коралла над кроной висел серый куб, и по {@code near=} нельзя было
+     * понять, на каком он y и над самой ли точкой. Сжатая запись {@code 10:soil,12:br,...}
+     * показывает порядок блоков; одинаковые подряд схлопываются в {@code id×N}.
+     */
+    private static String column(net.minecraft.world.level.Level level, int x, int y, int z) {
+        StringBuilder sb = new StringBuilder();
+        String prev = null;
+        int run = 0;
+        for (int dyy = 0; dyy <= 15; ++dyy) {
+            BlockState st = level.getBlockState(new BlockPos(x, y + dyy, z));
+            var key = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(st.getBlock());
+            String id = key == null ? "?" : key.getPath();
+            if (id.equals(prev)) { run++; continue; }
+            if (prev != null) sb.append(prev).append(run > 1 ? "x" + run : "").append(',');
+            prev = id;
+            run = 1;
+        }
+        if (prev != null) sb.append(prev).append(run > 1 ? "x" + run : "");
+        return sb.toString();
     }
 
     private static String blockId(BlockState st) {
