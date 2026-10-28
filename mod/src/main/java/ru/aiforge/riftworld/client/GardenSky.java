@@ -72,7 +72,10 @@ public final class GardenSky {
             RenderSystem.defaultBlendFunc();
             RenderSystem.disableCull();
             RenderSystem.depthMask(false);
-            final float s = 340F;                      // дальность купола: дальше тумана, ближе горизонта мира
+            // Рев 14.16: купол обязан целиком влезать в дальнюю плоскость отсечения, иначе он
+            // обрезается и в небе остаются жёлтые клинья (кадр 42 итерации 16). Берём 85 % от
+            // дальности прорисовки — этого хватает, чтобы закрыть весь горизонт.
+            final float s = Math.max(96F, mc.options.getEffectiveRenderDistance() * 16F * 0.85F);
             BufferBuilder b = Tesselator.getInstance().getBuilder();
             b.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
             // четыре стены: у горизонта светлее, к зениту — насыщенный голубой
