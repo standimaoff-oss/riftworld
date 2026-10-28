@@ -7,16 +7,14 @@ import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.joml.Matrix4f;
 import ru.aiforge.riftworld.RiftWorld;
+import ru.aiforge.riftworld.world.WaterfallGardens;
 
 /**
  * Рев 14.14: небо над Висячими садами.
@@ -31,12 +29,29 @@ import ru.aiforge.riftworld.RiftWorld;
  * как есть. Работает только внутри биома {@code riftworld:waterfall_gardens}.
  */
 public final class GardenSky {
-    private static final ResourceLocation GARDEN_BIOME = new ResourceLocation(RiftWorld.MODID, "waterfall_gardens");
     /** Верх зенита и цвет у горизонта — по референсу. */
     private static final float ZENITH_R = 0.31F, ZENITH_G = 0.55F, ZENITH_B = 0.86F;
     private static final float HORIZ_R = 0.80F, HORIZ_G = 0.90F, HORIZ_B = 0.97F;
 
     private GardenSky() {
+    }
+
+    /** Результат проверки кешируем: расчёт региона нетривиален, а кадров в секунду много. */
+    private static long cacheKey = Long.MIN_VALUE;
+    private static boolean cacheHit;
+
+    private static boolean inGardens(Vec3 cam) {
+        long key = ((long) (int) Math.floor(cam.x / 16) << 20) ^ (long) (int) Math.floor(cam.z / 16);
+        if (key == cacheKey) return cacheHit;
+        boolean hit = false;
+        try {
+            hit = WaterfallGardens.inside(cam.x, cam.z);
+        } catch (Throwable ignored) {
+            // клиент не должен падать из-за неба: при любой ошибке просто не рисуем купол
+        }
+        cacheKey = key;
+        cacheHit = hit;
+        return hit;
     }
 
     @Mod.EventBusSubscriber(modid = RiftWorld.MODID, value = Dist.CLIENT)
@@ -47,12 +62,9 @@ public final class GardenSky {
             Minecraft mc = Minecraft.getInstance();
             if (mc.level == null || !mc.level.dimension().location().equals(ElisarSky.ID)) return;
             Vec3 cam = e.getCamera().getPosition();
-            var biome = mc.level.getBiome(BlockPos.containing(cam));
-            boolean garden = biome.unwrapKey()
-                    .map(k -> k.location().equals(GARDEN_BIOME))
-                    .orElseGet(() -> ForgeRegistries.BIOMES.getKey(biome.value()) != null
-                            && GARDEN_BIOME.equals(ForgeRegistries.BIOMES.getKey(biome.value())));
-            if (!garden) return;
+            // Проверяем не биом (камера висит высоко над островом, там биом уже другой), а сам
+            // регион садов: он считается чистой математикой из сида, без данных сервера.
+            if (!inGardens(cam)) return;
 
             Matrix4f m = e.getPoseStack().last().pose();
             RenderSystem.setShader(GameRenderer::getPositionColorShader);
