@@ -927,16 +927,48 @@ biome_section() {
   if [ -z "${GX:-}" ]; then
     log "  FAIL /riftbiome gardens не нашёл регион садов"; FAILS=$((FAILS + 1))
   else
+    # проба 0 — ПРЯМО ПО ЖАЛОБЕ ВЛАДЕЛЬЦА: /locate biome riftworld:waterfall_gardens обязан
+    # приводить в сады, а не в море/камни. Раньше биом накрывал круг в 2× больше острова и висел
+    # над водой. Теперь биом = острова, поэтому проверяем: в найденной колонке на уровне моря
+    # (y=62) НЕ вода.
+    local LOC LOCP LX LY LZ
+    LOC=$(EL execute at TestPlayer run locate biome riftworld:waterfall_gardens 2>&1 | tr '\r\n' '  ')
+    log "  /locate biome waterfall_gardens -> ${LOC:0:200}"
+    LOCP=$(printf '%s' "$LOC" | grep -oE '\[-?[0-9]+, *-?[0-9]+, *-?[0-9]+\]' | tail -1 | tr -d '[] ')
+    LX=$(printf '%s' "$LOCP" | cut -d, -f1)
+    LY=$(printf '%s' "$LOCP" | cut -d, -f2)
+    LZ=$(printf '%s' "$LOCP" | cut -d, -f3)
+    if [ -n "${LX:-}" ] && [ -n "${LZ:-}" ]; then
+      RCON execute in riftworld:elisar run forceload add "$LX" "$LZ" >/dev/null 2>&1 || true
+      sleep 3
+      local LSEA
+      LSEA=$(RCON execute in riftworld:elisar run execute positioned "$LX" 62 "$LZ" run execute if block ~ ~ ~ minecraft:water 2>&1)
+      [ "${LSEA#*Test passed}" != "$LSEA" ] && LSEA="вода"
+      local LSEA2
+      LSEA2=$(RCON execute in riftworld:elisar run execute positioned "$LX" 62 "$LZ" run execute if block ~ ~ ~ riftworld:elisar_water 2>&1)
+      [ "${LSEA2#*Test passed}" != "$LSEA2" ] && LSEA="вода"
+      if [ "${LSEA:-}" = "вода" ]; then
+        log "  FAIL /locate biome waterfall_gardens привёл в МОРЕ ($LX,$LY,$LZ)"
+        FAILS=$((FAILS + 1))
+      else
+        log "  OK   /locate biome waterfall_gardens привёл в сады, не в воду ($LX,$LY,$LZ)"
+      fi
+    else
+      log "  FAIL /locate biome waterfall_gardens не вернул координаты"
+      FAILS=$((FAILS + 1))
+    fi
     # проба 1: зелёная трава садов на полках (на референсе полки заросли)
-    if [ "${GG:-0}" -ge 400 ]; then log "  OK   сады: зелёной травы $GG блоков"
-    else log "  FAIL сады: зелёной травы всего ${GG:-0} (нужно >=400)"; FAILS=$((FAILS + 1)); fi
+    if [ "${GG:-0}" -ge 300 ]; then log "  OK   сады: зелёной травы $GG блоков"
+    else log "  FAIL сады: зелёной травы всего ${GG:-0} (нужно >=300)"; FAILS=$((FAILS + 1)); fi
     # проба 2: вода на полках/в водопадах. Верхняя граница — чтобы биом не залило снова:
     # в прогонах 155/156 вода стояла на каждой полке и полки превратились в водяную лестницу.
     if [ "${GW:-0}" -ge 300 ] && [ "${GW:-0}" -le 18000 ]; then log "  OK   сады: воды $GW блоков (пруды и водопады, без затопления)"
     else log "  FAIL сады: воды ${GW:-0} (нужно 300..18000 — пруды и водопады, но не водяная лестница)"; FAILS=$((FAILS + 1)); fi
     # проба 3: плющ по обрывам (на референсе стены увиты)
-    if [ "${GIV:-0}" -ge 120 ]; then log "  OK   сады: плюща на стенах $GIV блоков"
-    else log "  FAIL сады: плюща ${GIV:-0} (нужно >=120 — стены должны быть увиты)"; FAILS=$((FAILS + 1)); fi
+    # Рев 14.26: острова архипелага меньше прежнего «хаба» (R 12..34 против 46..66), поэтому
+    # абсолютный порог плюща снижен: важно, что стены увиты, а не сколько их было на большом острове.
+    if [ "${GIV:-0}" -ge 80 ]; then log "  OK   сады: плюща на стенах $GIV блоков"
+    else log "  FAIL сады: плюща ${GIV:-0} (нужно >=80 — стены должны быть увиты)"; FAILS=$((FAILS + 1)); fi
     # проба 4: НИЧЕГО рукотворного — прямое требование владельца («нет лестниц, мостов, канала»)
     if [ "${GPL:-0}" -eq 0 ] && [ "${GLA:-0}" -eq 0 ]; then
       log "  OK   сады: рукотворного нет (досок ${GPL:-0}, фонарей ${GLA:-0})"
@@ -950,11 +982,15 @@ biome_section() {
 
     # кадры под референс: сверху (общий план террас), сбоку (стены и водопады), у пруда, у дерева
     local GTOP2=${GTOP:-110}
+    # Рев 14.26: сады — архипелаг из 3–6 островов, и остров теперь заметно меньше прежнего
+    # (R 12..34 вместо 46..66). Камеры масштабируем по радиусу крупнейшего острова, иначе
+    # объектив уезжает в открытое море и в кадре только вода.
+    local GR2=${GR_R:-30}
     # камеры держим ВЫШЕ рельефа: иначе объектив оказывается внутри листвы или полки
-    lookat "$((GX + 42))" "$((GTOP2 + 24))" "$((GZ + 42))" "$GX" "$((GTOP2 - 6))" "$GZ" 18 "40_garden_overview"
-    lookat "$((GX + 46))" "$((GTOP2 + 12))" "$((GZ + 12))" "$GX" "$((GTOP2 - 8))" "$GZ" 16 "41_garden_terraces"
-    lookat "$((GX + 30))" "$((GTOP2 + 8))" "$((GZ + 14))" "$((GX + 8))" "$((GTOP2 - 10))" "$((GZ + 2))" 14 "42_garden_walls"
-    lookat "$((GX - 40))" "$((GTOP2 + 18))" "$((GZ + 30))" "$((GX - 6))" "$((GTOP2 - 8))" "$((GZ + 4))" 20 "43_garden_ponds"
+    lookat "$((GX + GR2 * 4 / 3))" "$((GTOP2 + 24))" "$((GZ + GR2 * 4 / 3))" "$GX" "$((GTOP2 - 6))" "$GZ" 18 "40_garden_overview"
+    lookat "$((GX + GR2 * 3 / 2))" "$((GTOP2 + 12))" "$((GZ + GR2 / 3))" "$GX" "$((GTOP2 - 8))" "$GZ" 16 "41_garden_terraces"
+    lookat "$((GX + GR2))" "$((GTOP2 + 8))" "$((GZ + GR2 / 2))" "$((GX + GR2 / 4))" "$((GTOP2 - 10))" "$GZ" 14 "42_garden_walls"
+    lookat "$((GX - GR2 * 5 / 4))" "$((GTOP2 + 18))" "$((GZ + GR2))" "$((GX - GR2 / 5))" "$((GTOP2 - 8))" "$((GZ + GR2 / 8))" 20 "43_garden_ponds"
     # кадр конкретно по предвыбранному водопаду: он у кромки полки, поэтому смотрим с воды
     local FWX FWZ FALLAT
     FALLAT=$(printf '%s' "$LIN" | grep -o 'fall=[-0-9]*,[-0-9]*' | tail -1 | cut -d= -f2)
@@ -962,7 +998,7 @@ biome_section() {
     FWZ=${FALLAT##*,}
     [ "$FALLAT" = "$FWX" ] && FWX=""      # «fall=-» — водопада нет
     if [ -n "${FWX:-}" ] && [ -n "${FWZ:-}" ]; then
-      lookat "$((FWX + 26))" "$((GTOP2 - 2))" "$((FWZ + 20))" "$FWX" "$((GTOP2 - 14))" "$FWZ" 16 "44_garden_waterfall"
+      lookat "$((FWX + GR2))" "$((GTOP2 - 2))" "$((FWZ + GR2 * 3 / 4))" "$FWX" "$((GTOP2 - 14))" "$FWZ" 16 "44_garden_waterfall"
     else
       log "  ПРОПУСК кадра водопада: /riftbiome не вернул координаты fall="
     fi
@@ -1032,6 +1068,17 @@ MODELWARN=${MODELWARN:-0}
 # и в воде ствол рисовался клеткой missing-texture. Пробы при этом были зелёными.
 TEXWARN=$(grep -c "Missing textures in model" "$OUT/client.log" 2>/dev/null || true)
 TEXWARN=${TEXWARN:-0}
+# Рев 14.26: владелец прислал вылет «Feature order cycle found … minecraft:deep_dark» — это краш
+# генерации чанков ОБЫЧНОГО мира (deep_dark есть только в оверворлде), где Dynamic Trees добавляет
+# свои фичи во ВСЕ биомы. Проверяем оба лога явно, чтобы такой вылет не прошёл зелёным прогоном.
+FEATCYCLE=$(cat "$OUT/client.log" "$OUT/server_latest.log" 2>/dev/null | grep -c "Feature order cycle" || true)
+FEATCYCLE=${FEATCYCLE:-0}
+echo "Feature order cycle в логах клиента и сервера: $FEATCYCLE"
+if [ "$FEATCYCLE" -gt 0 ]; then
+  echo "::error title=worldgen::Feature order cycle found — конфликт порядка фич (Dynamic Trees + другой worldgen-мод)"
+  cat "$OUT/client.log" "$OUT/server_latest.log" 2>/dev/null | grep "Feature order cycle" | head -2 \
+    | while IFS= read -r line; do echo "::error title=worldgen::${line:0:300}"; done
+fi
 ERRS=$(grep -E "Exception|ERROR" "$OUT/client.log" 2>/dev/null \
        | grep -viE "Narrator|flite|text2speech|OpenAL|SoundSystem|SoundEngine|no sound|libflite|Yggdrasil|authlib|AuthenticationUnavailable|Cannot contact authentication server|SocketTimeoutException|Read timed out" \
        | grep -viE "missing model for variant|loading blockstate definition|ModelBakery" | wc -l)
@@ -1059,6 +1106,7 @@ fi
   echo "- строк Exception/ERROR в логе клиента (без звука/наратора и без missing-model): **$ERRS**"
   echo "- missing model for variant в логе клиента: **$MODELWARN**"
   echo "- Missing textures in model в логе клиента: **$TEXWARN**"
+  echo "- Feature order cycle в логах: **$FEATCYCLE** (0 — генерация чанков без конфликта порядка фич)"
   echo
   echo "## пробы"; echo '```'; cat "$PROBES"; echo '```'
   echo "## колонка (y=0..66; W=вода, S=донный песок, a=воздух/пещера, .=прочее)"; echo '```'; cat "$PROFILE"; echo '```'
@@ -1092,4 +1140,4 @@ if [ "$TEXWARN" -gt 0 ]; then
 fi
 echo "== итог: провалов $FAILS, ошибок в логе $ERRS, битых текстур $TEXWARN, снимков $(ls -1 "$OUT"/*.jpg 2>/dev/null | wc -l) =="
 
-[ "$FAILS" -eq 0 ] && [ "$ERRS" -eq 0 ] && [ "$MODELWARN" -eq 0 ] && [ "$TEXWARN" -eq 0 ]
+[ "$FAILS" -eq 0 ] && [ "$ERRS" -eq 0 ] && [ "$MODELWARN" -eq 0 ] && [ "$TEXWARN" -eq 0 ] && [ "$FEATCYCLE" -eq 0 ]

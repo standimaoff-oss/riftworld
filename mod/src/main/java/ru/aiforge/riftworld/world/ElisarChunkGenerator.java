@@ -313,12 +313,13 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             if (grf0 != null) {
                 WaterfallGardens.Fall fall = WaterfallGardens.fallNear(grf0, px, pz);
                 if (fall != null) {
+                    // Рев 14.26: у садов архипелаг — высоты соседей считаем по СВОЕМУ острову.
                     int low = Integer.MAX_VALUE;
                     for (int ddx = -2; ddx <= 2; ++ddx)
                         for (int ddz = -2; ddz <= 2; ++ddz) {
-                            if (grf0.hub.t(px + ddx, pz + ddz) <= 0.05) continue;
+                            if (isl.t(px + ddx, pz + ddz) <= 0.05) continue;
                             low = Math.min(low, (int) Math.floor(terraceTop(
-                                    gardenProfile(grf0.hub, px + ddx, pz + ddz, plan.ocean), plan.ocean)));
+                                    gardenProfile(isl, px + ddx, pz + ddz, plan.ocean), plan.ocean)));
                         }
                     if (low < c.top - 1) {                    // край полки: рядом полка заметно ниже
                         c.fallTop = c.top + 1;                // струя начинается на уровне полки
@@ -330,11 +331,11 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             }
             // biome 07: terrace pools / hot springs carve back into the shelves
             WaterfallGardens.Region gr = WaterfallGardens.regionAt(px, pz);
-            if (isl.kind == WaterfallGardens.KIND && gr != null && gr.hub == isl) {
+            if (isl.kind == WaterfallGardens.KIND && gr != null && gr.owns(isl)) {
                 c.garden = true;
                 int ct = c.top;
                 double pn = vnoise(px * 0.09, pz * 0.09, 131);
-                if (pondAt(plan, gr, px, pz, ct)) {
+                if (pondAt(plan, gr, isl, px, pz, ct)) {
                     int pd = pn > 0.75 ? 3 : 2;
                     c.waterTop = ct;
                     c.waterBottom = ct - pd + 1;
@@ -342,8 +343,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                     c.pond = true;
                     c.springy = hash(x, z, 132) < 0.30;       // geothermal core: warm glow under the water
                 } else {
-                    c.pondRim = pondAt(plan, gr, px + 1, pz, ct) || pondAt(plan, gr, px - 1, pz, ct)
-                            || pondAt(plan, gr, px, pz + 1, ct) || pondAt(plan, gr, px, pz - 1, ct);
+                    c.pondRim = pondAt(plan, gr, isl, px + 1, pz, ct) || pondAt(plan, gr, isl, px - 1, pz, ct)
+                            || pondAt(plan, gr, isl, px, pz + 1, ct) || pondAt(plan, gr, isl, px, pz - 1, ct);
                 }
             } else if (isl.kind != 4 && WaterfallGardens.inside(px, pz)) {
                 c.garden = true;                                            // islet fringe inside the biome blob
@@ -353,6 +354,13 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             double stal = Math.max(0, vnoise(px * 0.21, pz * 0.21, 12) - 0.6) * 48 * Math.pow(Math.max(t, 0), 0.3);
             c.bottom = Math.max(plan.ocean + 6, (int) Math.floor(c.top - depth - stal));
             c.bottom = Math.min(c.bottom, c.top - 2);
+            if (isl.kind == WaterfallGardens.KIND) {
+                // Рев 14.26: ниже нижней полки (она на уровне моря) — ТОЛЬКО основание острова.
+                // Оно уходит под воду, поэтому между островами архипелага читается река в каменных
+                // берегах, а не «висящий» над водой край.
+                c.bottom = Math.min(c.bottom, plan.ocean - 3);
+                c.bottom = Math.max(c.bottom, plan.ocean - 34);
+            }
             // roads & plazas
             double rd = 1e9;
             int rk = -1;
@@ -481,7 +489,10 @@ public class ElisarChunkGenerator extends ChunkGenerator {
      */
     public static double gardenProfile(CityPlan.Island isl, double px, double pz, int ocean) {
         double t = Math.max(0.0, Math.min(1.0, isl.t(px, pz)));
-        double rim = ocean + 6;                                   // у кромки полка почти уходит в воду
+        // Рев 14.26: «последний уровень на высоте моря, ниже — только основание острова».
+        // Кромка острова приходится ровно на уровень моря (terraceTop вернёт ocean при h <= 0),
+        // поэтому нижняя полка — вровень с водой, а не висит над ней.
+        double rim = ocean + 1.2;      // кромка ровно на высоте моря (полка y=ocean+1)
         // Рев 14.11: гора выше и круче: на фото от воды до верхней полки 4–5 ярусов по 8–12 блоков.
         double dome = rim + (isl.base + 8 - rim) * Math.pow(t, 0.85);
         // Рев 14.12: только КРУПНЫЙ шум. Мелкий (шаг 0.09) рвал кромки полок на зубцы — на фото
@@ -497,12 +508,12 @@ public class ElisarChunkGenerator extends ChunkGenerator {
     }
 
     /** Biome 07 pond-mask test stateless over garden region: shelf cells the pond noise claims. */
-    private static boolean pondAt(CityPlan plan, WaterfallGardens.Region rg, double px, double pz, int maxTop) {
+    private static boolean pondAt(CityPlan plan, WaterfallGardens.Region rg, CityPlan.Island isl, double px, double pz, int maxTop) {
         // Рев 14.6: на референсе вода стоит почти на каждой полке, но НЕ заливает её целиком.
         // Порог 0.55 после появления настоящих полок залил гору водяной лестницей (кадр 42 прогона
         // 40696891803: 23849 блоков воды в кубе ±36). 0.72 — пруды на полках, как на фото.
         if (vnoise(px * 0.09, pz * 0.09, 131) <= 0.72) return false;
-        if (Math.hypot(px - rg.cx, pz - rg.cz) > rg.hub.R * 0.97) return false;
+        if (Math.hypot(px - isl.cx, pz - isl.cz) > isl.R * 0.97) return false;     // пруды — только на своём острове
         return maxTop > plan.ocean + 3 && maxTop < plan.ocean + 46;
     }
 
@@ -559,7 +570,6 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         BlockState aurite = st(ElisarBlocks.AURITE_ORE);
         // Рев 14: у биома 07 своя зелёная палитра (референс — яркая трава и дубы, а не кремовый Элисар)
         BlockState gardenGrass = st(ElisarBlocks.GARDEN_GRASS);
-        BlockState gardenLeaf = st(ElisarBlocks.GARDEN_LEAVES).setValue(LeavesBlock.PERSISTENT, true).setValue(LeavesBlock.DISTANCE, 1);
         // Рев 14.25: на обрывах садов — свой сочно-зелёный плющ, как на референсе
         BlockState gIvy = ElisarBlocks.GARDEN_IVY.get().defaultBlockState();
         BlockState lime = st(ElisarBlocks.GARDEN_LIMESTONE), limeMossy = st(ElisarBlocks.GARDEN_LIMESTONE_MOSSY);
@@ -719,9 +729,10 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                             : f < 95 ? Blocks.OXEYE_DAISY.defaultBlockState()
                                             : st(ElisarBlocks.PALE_BLOOM);
                                     chunk.setBlockState(mp.set(x, c.top + 1, z), bloom, false);
-                                } else if (h < 0.30 && chunk.getBlockState(mp.set(x, c.top + 1, z)).isAir()) {
-                                    chunk.setBlockState(mp.set(x, c.top + 1, z), gardenLeaf, false);   // низкий стелющийся куст
                                 }
+                                // Рев 14.26: листва на газоне УБРАНА. Владелец: «разбросана листва садового
+                                // дуба, убери её» — отдельные блоки листвы лежали среди травы и читались как
+                                // мусор. Листва теперь только в кронах деревьев.
                             } else if (c.isl.kind == SizoGrove.KIND || (c.isl.kind != 4 && SizoGrove.inside(x + 0.5, z + 0.5))) {
                                 // biome 05: mint floor with violet bloom drifts among the giants (no paths - TZ)
                                 if (h < 0.20) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
@@ -763,12 +774,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                 BlockState cur = chunk.getBlockState(vp);
                                 if (cur.isAir() || cur.canBeReplaced()) chunk.setBlockState(vp, face, false);
                             }
-                            // Рев 14.14: куст, перевалившийся через кромку — на референсе край полки
-                            // всегда «оброс» зеленью и свисает вниз зелёной бахромой.
-                            if (hash(x, z, 153) < 0.34) {
-                                BlockPos lp = mp.set(x, n.top - 1, z);
-                                if (chunk.getBlockState(lp).canBeReplaced()) chunk.setBlockState(lp, gardenLeaf, false);
-                            }
+                            // Рев 14.26: «бахрома» из отдельных блоков листвы на кромке убрана — владелец
+                            // просил убрать разбросанную листву. Край полки теперь оброс плющом, а не листвой.
                         }
                         break;
                     }

@@ -11,7 +11,9 @@ import java.util.Random;
  */
 public final class CastleSite {
     public static final int TW = 76, TD = 76;                   // template footprint
-    public static final int CX = 40, CZ = 470;                  // island centre
+    // Рев 14.26: замок больше не прибит к точке (40, 470) у города — адские угодья стали обычным
+    // биомом со случайным спавном, и замок с боссом стоят в центре их «столицы» (ячейка 1,1).
+    public static final int CX = AshenLands.CX, CZ = AshenLands.CZ;   // island centre
     public static final int Y = 104;                            // island top = template floor layer
     public static final int X0 = CX - 38, Z0 = CZ - 34;         // template origin (min corner)
     public static final double R = 74;

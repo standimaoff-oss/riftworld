@@ -390,7 +390,14 @@ public final class SeaProbeCommand {
                     WaterfallGardens.Region rg = WaterfallGardens.region(sx, sz);
                     if (rg == null) continue;
                     double d = Math.hypot(rg.cx - at.getX(), rg.cz - at.getZ());
-                    if (d < bestD) { bestD = d; bestX = rg.cx; bestZ = rg.cz; bestR = (int) rg.hub.R; bestGarden = rg; }
+                    // Рев 14.26: сады — архипелаг. Считаем и снимаем камеры по САМОМУ КРУПНОМУ
+                    // острову: центр региона теперь вода между островами (там нечего мерить).
+                    if (d < bestD) {
+                        bestD = d; bestGarden = rg;
+                        ru.aiforge.riftworld.world.CityPlan.Island bi = rg.isles.get(0);
+                        for (ru.aiforge.riftworld.world.CityPlan.Island i2 : rg.isles) if (i2.R > bi.R) bi = i2;
+                        bestX = (int) bi.cx; bestZ = (int) bi.cz; bestR = (int) bi.R;
+                    }
                 } else {
                     SizoGrove.Region rg = SizoGrove.region(sx, sz);
                     if (rg == null) continue;
@@ -406,7 +413,8 @@ public final class SeaProbeCommand {
         // считаем по кубу ±R/2 вокруг центра: вода, плющ, трава садов, стволы, рукотворное
         // Радиус считаем скромным: куб ±36 по горизонтали и полоса высот 60..150 — иначе RCON-вызов
         // перебирает миллионы блоков и отваливается по таймауту.
-        int R = Math.max(20, Math.min(36, bestR / 2));
+        // Рев 14.26: куб — по кромке крупнейшего острова (раньше остров был в 2× больше региона).
+        int R = Math.max(22, Math.min(40, bestR));
         int water = 0, ivy = 0, gardenGrass = 0, logs = 0, leaves = 0, planks = 0, lanterns = 0, top = Integer.MIN_VALUE;
         java.util.Map<String, Integer> solids = new java.util.TreeMap<>();
         var grassTop = ru.aiforge.riftworld.registry.ElisarBlocks.GARDEN_GRASS.get();
@@ -456,7 +464,7 @@ public final class SeaProbeCommand {
         // Рев 14.18: точка обзора обрыва — кадр с полки, как на референсе
         String wall = "-";
         if (gardens) {
-            int[] wv = ElisarChunkGenerator.gardenWallView(bestX, bestZ, Math.max(20, bestR));
+            int[] wv = ElisarChunkGenerator.gardenWallView(bestX, bestZ, Math.max(24, bestR));
             if (wv != null) wall = wv[0] + "," + wv[1] + "," + wv[2] + ":" + wv[3] + "," + wv[4] + "," + wv[5];
         }
         String line = "riftbiome name=" + (gardens ? "gardens" : "sizo") + " at=" + bestX + "," + bestZ

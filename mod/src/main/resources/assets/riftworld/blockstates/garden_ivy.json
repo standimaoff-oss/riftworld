@@ -16,6 +16,7 @@
       },
       "apply": {
         "model": "riftworld:block/garden_ivy",
+        "y": 180,
         "uvlock": true
       }
     },
@@ -25,8 +26,8 @@
       },
       "apply": {
         "model": "riftworld:block/garden_ivy",
-        "uvlock": true,
-        "y": 90
+        "y": 270,
+        "uvlock": true
       }
     },
     {
@@ -35,8 +36,8 @@
       },
       "apply": {
         "model": "riftworld:block/garden_ivy",
-        "uvlock": true,
-        "y": 180
+        "y": 0,
+        "uvlock": true
       }
     },
     {
@@ -45,8 +46,8 @@
       },
       "apply": {
         "model": "riftworld:block/garden_ivy",
-        "uvlock": true,
-        "y": 270
+        "y": 90,
+        "uvlock": true
       }
     }
   ]

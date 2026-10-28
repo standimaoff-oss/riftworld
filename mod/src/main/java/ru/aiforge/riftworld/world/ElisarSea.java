@@ -327,20 +327,15 @@ public final class ElisarSea {
         return p == 0 ? st(ElisarBlocks.CORAL_CAP_PINK) : p == 1 ? st(ElisarBlocks.CORAL_CAP_TEAL) : st(ElisarBlocks.CORAL_CAP_VIOLET);
     }
 
-    /** Растение на вершине рифового холма — разное в каждой палитре, чтобы сад читался цветными пятнами. */
+    /**
+     * Нарост на вершине рифового холма. Рев 14.26: владелец потребовал убрать трёхмерные модели
+     * кораллов размером в один блок — вершина собирается ТОЛЬКО из полноценных кубов: мозговой
+     * коралл и шапки трёх палитр. Цветные пятна остаются, «крестиков» больше нет.
+     */
     private static BlockState crown(int p, double r) {
-        // Рев 11: к старым крестикам добавлены шесть новых кораллов-растений с 3D-моделью
-        return switch (p) {
-            case 0 -> r < 0.18 ? st(ElisarBlocks.STAGHORN_CORAL) : r < 0.34 ? st(ElisarBlocks.ANEMONE)
-                    : r < 0.50 ? st(ElisarBlocks.FEATHER_CORAL) : r < 0.66 ? st(ElisarBlocks.CORAL_BRANCH)
-                    : r < 0.82 ? st(ElisarBlocks.TABLE_CORAL) : st(ElisarBlocks.CORAL_FAN);
-            case 1 -> r < 0.18 ? st(ElisarBlocks.TUBE_SPONGE_CLUSTER) : r < 0.34 ? st(ElisarBlocks.CORAL_BUSH)
-                    : r < 0.50 ? st(ElisarBlocks.SEA_WHIP) : r < 0.66 ? st(ElisarBlocks.TUBE_WORMS)
-                    : r < 0.82 ? st(ElisarBlocks.STAGHORN_CORAL) : st(ElisarBlocks.RIBBON_CORAL);
-            default -> r < 0.18 ? st(ElisarBlocks.RIBBON_CORAL) : r < 0.34 ? st(ElisarBlocks.CORAL_FAN)
-                    : r < 0.50 ? st(ElisarBlocks.FEATHER_CORAL) : r < 0.66 ? st(ElisarBlocks.ANEMONE)
-                    : r < 0.82 ? st(ElisarBlocks.TABLE_CORAL) : st(ElisarBlocks.SEA_WHIP);
-        };
+        if (r < 0.22) return st(ElisarBlocks.CORAL_BRAIN);
+        int q = r < 0.48 ? p : r < 0.66 ? (p + 1) % 3 : r < 0.86 ? (p + 2) % 3 : p;
+        return capState(q);
     }
 
     /** Высота рифового холма в точке (0 — между холмами). Нужна посадкам коралловых деревьев. */
@@ -432,20 +427,19 @@ public final class ElisarSea {
                 }
                 return;
             }
-            // между холмами — ковёр из кустов, вееров и новых кораллов-растений
+            // между холмами — ковёр из НАСТОЯЩИХ блоков коралла (рев 14.26: без 1-блочных 3D-моделей)
             if (r < reef * 0.45) {
                 double k = hash(x, z, 462);
                 BlockState s = k < 0.30 ? crown(pal, hash(x, z, 470))
-                        : k < 0.46 ? st(ElisarBlocks.STAGHORN_CORAL) : k < 0.58 ? st(ElisarBlocks.TABLE_CORAL)
-                        : k < 0.70 ? st(ElisarBlocks.FEATHER_CORAL) : k < 0.80 ? st(ElisarBlocks.SEA_WHIP)
-                        : k < 0.90 ? st(ElisarBlocks.CORAL_BRANCH) : st(ElisarBlocks.CORAL_FAN);
+                        : k < 0.55 ? st(ElisarBlocks.CORAL_BRAIN) : capState((pal + 1) % 3);
                 chunk.setBlockState(mp.set(x, y, z), s, false);
                 return;
             }
             // «роща» высоких кораллов: гнездо 3x3, где все колонки заняты оленьими рогами/хлыстами
             int gx = Math.floorDiv(x, 9), gz = Math.floorDiv(z, 9);
             if (hash(gx, gz, 474) > 0.55 && hash(x, z, 475) < 0.55) {
-                BlockState thick = hash(x, z, 476) < 0.5 ? st(ElisarBlocks.STAGHORN_CORAL) : st(ElisarBlocks.RIBBON_CORAL);
+                // рев 14.26: «роща» теперь из полных кубов, а не из крестиков-растений
+                BlockState thick = hash(x, z, 476) < 0.5 ? st(ElisarBlocks.CORAL_BRAIN) : capState(pal);
                 chunk.setBlockState(mp.set(x, y, z), thick, false);
                 return;
             }

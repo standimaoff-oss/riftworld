@@ -9,13 +9,23 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Biome 07 «Висячие сады» (референс {@code reports/refs_rev4/07_waterfall_gardens.png}).
  *
- * <p>Ступенчатая известняковая гора: широкие плоские полки через каждые 5 блоков, почти вертикальные
- * стены между ними, на каждой полке — пруд, льющаяся через край вода, сплошная зелень и длинные
- * плети плюща по обрывам. Деревья — обычные дубы с зелёной кроной: на референсе только они.
+ * <p>Ступенчатые известняковые острова: широкие плоские полки через каждые 9 блоков, почти
+ * вертикальные стены между ними, на каждой полке — пруд, льющаяся через край вода, сплошная зелень
+ * и длинные плети плюща по обрывам. Деревья — обычные дубы с зелёной кроной: на референсе только они.
  *
- * <p>Рев 14 (итерация 1): убрано ВСЁ рукотворное. Раньше здесь стояли висячие дощатые мосты
- * с цепями, фонари в горячих источниках и настилы — на референсе их нет, и владелец попросил
- * «ничего созданного человеком: ни лестниц, ни мостов, ни каналов».
+ * <p>Рев 14 (итерация 1): убрано ВСЁ рукотворное — ни лестниц, ни мостов, ни настилов.
+ *
+ * <p>Рев 14.26 (по замечаниям владельца):
+ * <ul>
+ *   <li><b>Не один остров, а архипелаг 3–6 островов.</b> Иногда это пять-шесть КРУПНЫХ островов
+ *       (большой биом), иногда три-четыре маленьких.</li>
+ *   <li><b>Биом = суша.</b> {@link #inside} возвращает true только там, где реально стоит остров
+ *       садов: раньше биом накрывал область в 2× больше острова и висел над открытым морем,
+ *       поэтому {@code /locate biome riftworld:waterfall_gardens} приводил в воду и камни.</li>
+ *   <li><b>Острова расставлены кольцом с протокой 7–14 блоков</b> — между ними течёт река.</li>
+ *   <li><b>Нижний ярус — на уровне моря</b> (см. {@code ElisarChunkGenerator.gardenProfile}),
+ *       ниже него только каменное основание острова.</li>
+ * </ul>
  *
  * <p>Своя сетка 960, ~42 % подходящих ячеек, всё детерминировано от одного сида.
  */
@@ -43,43 +53,90 @@ public final class WaterfallGardens {
 
     public static final class Region {
         public final int cx, cz;
+        /** Габарит региона: дальше него ни один остров архипелага не выходит. */
         public final double Rr;
+        /** Большой биом (5–6 крупных островов) или маленький (3–4 мелких). */
+        public final boolean big;
+        /** Острова архипелага; {@link #hub} — первый из них (совместимость и камеры). */
+        public final List<CityPlan.Island> isles = new ArrayList<>(6);
         public final CityPlan.Island hub;
         public final List<CityPlan.Tree> trees = new ArrayList<>();
         public final List<Fall> falls = new ArrayList<>();
 
         Region(int cx, int cz, Random rnd) {
-            this.cx = cx; this.cz = cz;
-            double R = 46 + rnd.nextDouble() * 20;                        // «биом небольшой»
-            this.Rr = R * 2.1;
-            double base = 96 + rnd.nextDouble() * 16;                     // верх - на высоте островов
-            this.hub = new CityPlan.Island(cx, cz, R, base, R * 1.15 + 10, rnd.nextDouble() * 6.283, rnd.nextDouble() * 6.283,
-                    rnd.nextDouble() * 6.283, KIND, 1.6);
-            // Рев 14: на референсе полки заросли обычными ДУБАМИ с зелёной кроной, а не «крошечными
-            // деревцами» — ставим 14..20 дубов, но только там, где полка широкая (t < 0.72), иначе
-            // ствол повисает на самом обрыве.
-            for (int k = 0, want = 14 + rnd.nextInt(7), tries = 0; k < want && tries < want * 24; ++tries) {
-                double a = rnd.nextDouble() * Math.PI * 2, d = (0.10 + rnd.nextDouble() * 0.60) * R;
-                int x = (int) Math.floor(cx + Math.cos(a) * d), z = (int) Math.floor(cz + Math.sin(a) * d);
-                if (hub.t(x + 0.5, z + 0.5) < 0.30) continue;
-                boolean ok = true;
-                for (CityPlan.Tree t : trees) if (Math.abs(t.x - x) < 6 && Math.abs(t.z - z) < 6) { ok = false; break; }
-                if (!ok) continue;
-                trees.add(new CityPlan.Tree(x, z, TREE_OAK, 7 + rnd.nextInt(5), rnd.nextInt(1 << 30)));
-                ++k;
+            this.cx = cx;
+            this.cz = cz;
+            int ocean = CityPlan.get().ocean;
+            this.big = rnd.nextDouble() < 0.5;
+            // Рев 14.26: «3–6 островов, рандомно — иногда 5 крупных, иногда 3 маленьких».
+            int n = big ? 4 + rnd.nextInt(3) : 3 + rnd.nextInt(2);
+            double rMin = big ? 24 : 12, rMax = big ? 34 : 19;
+            double[] rs = new double[n];
+            double sum = 0;
+            for (int i = 0; i < n; ++i) {
+                rs[i] = rMin + rnd.nextDouble() * (rMax - rMin);
+                sum += rs[i];
             }
-            // водопады: полка с прудом, чей край выше соседа — заранее помечаем как «льющуюся»
-            for (int k = 0, want = 5 + rnd.nextInt(4), tries = 0; k < want && tries < want * 30; ++tries) {
-                double a = rnd.nextDouble() * Math.PI * 2, d = (0.25 + rnd.nextDouble() * 0.6) * R;
+            // Кольцо островов: радиус подбираем так, чтобы хорда между соседями была ровно
+            // «два радиуса + протока». Тогда между кромками остаётся 7–14 блоков воды — это и есть
+            // река между островами архипелага (владелец: «острова расставлены так, что между ними
+            // образуется река»).
+            double gap = 7 + rnd.nextDouble() * 6;
+            double rbar = sum / n;
+            double spread = (2 * rbar + gap) / (2 * Math.sin(Math.PI / n));
+            double a0 = rnd.nextDouble() * Math.PI * 2;
+            double extent = 0;
+            for (int i = 0; i < n; ++i) {
+                double a = a0 + i * Math.PI * 2 / n + (rnd.nextDouble() - 0.5) * 0.9 / n * Math.PI * 2;
+                double d = spread * (0.92 + rnd.nextDouble() * 0.16);
                 double x = cx + Math.cos(a) * d, z = cz + Math.sin(a) * d;
-                if (hub.t(x, z) < 0.10) continue;
-                boolean ok = true;
-                for (Fall f : falls) if (Math.hypot(f.x - x, f.z - z) < 9) { ok = false; break; }
-                if (!ok) continue;
-                double w = 2.0 + rnd.nextDouble() * 2.5;                 // ширина струи, как на референсе
-                falls.add(new Fall((int) Math.floor(x), (int) Math.floor(z), w, rnd.nextLong()));
-                ++k;
+                double R = rs[i];
+                // вершина: 3–5 ярусов у крупных островов, 2–4 у мелких
+                int peak = ocean + (int) Math.round((big ? 3.4 : 2.4) * STEP + rnd.nextDouble() * STEP);
+                CityPlan.Island isl = new CityPlan.Island(x, z, R, peak - 8, R * 1.15 + 10,
+                        rnd.nextDouble() * 6.283, rnd.nextDouble() * 6.283, rnd.nextDouble() * 6.283, KIND, 1.6);
+                isles.add(isl);
+                extent = Math.max(extent, Math.hypot(x - cx, z - cz) + R * 1.2 + 4);
+                // на референсе полки заросли обычными ДУБАМИ с зелёной кроной — по 5–16 на остров,
+                // и только там, где полка широкая (t > 0.30), иначе ствол повисает на обрыве.
+                int want = big ? 9 + rnd.nextInt(8) : 6 + rnd.nextInt(5);
+                for (int k = 0, tries = 0; k < want && tries < want * 22; ++tries) {
+                    double ta = rnd.nextDouble() * Math.PI * 2, td = (0.10 + rnd.nextDouble() * 0.58) * R;
+                    int tx = (int) Math.floor(x + Math.cos(ta) * td), tz = (int) Math.floor(z + Math.sin(ta) * td);
+                    if (isl.t(tx + 0.5, tz + 0.5) < 0.30) continue;
+                    boolean ok = true;
+                    for (CityPlan.Tree t : trees) if (Math.abs(t.x - tx) < 7 && Math.abs(t.z - tz) < 7) { ok = false; break; }
+                    if (!ok) continue;
+                    trees.add(new CityPlan.Tree(tx, tz, TREE_OAK, 7 + rnd.nextInt(5), rnd.nextInt(1 << 30)));
+                    ++k;
+                }
+                // водопады: по 1–2 струи на остров
+                int fallWant = 1 + rnd.nextInt(2);
+                for (int k = 0, tries = 0; k < fallWant && tries < fallWant * 30; ++tries) {
+                    double fa = rnd.nextDouble() * Math.PI * 2, fd = (0.25 + rnd.nextDouble() * 0.6) * R;
+                    double fx = x + Math.cos(fa) * fd, fz = z + Math.sin(fa) * fd;
+                    if (isl.t(fx, fz) < 0.12) continue;
+                    boolean ok = true;
+                    for (Fall f : falls) if (Math.hypot(f.x - fx, f.z - fz) < 9) { ok = false; break; }
+                    if (!ok) continue;
+                    falls.add(new Fall((int) Math.floor(fx), (int) Math.floor(fz), 2.0 + rnd.nextDouble() * 2.5, rnd.nextLong()));
+                    ++k;
+                }
             }
+            this.hub = isles.get(0);
+            this.Rr = extent + 8;
+        }
+
+        /** Принадлежит ли остров этому архипелагу (замена старого сравнения {@code gr.hub == isl}). */
+        public boolean owns(CityPlan.Island isl) {
+            for (CityPlan.Island a : isles) if (a == isl) return true;
+            return false;
+        }
+
+        /** Остров архипелага под точкой (или null, если точка над водой). */
+        public CityPlan.Island islandAt(double x, double z) {
+            for (CityPlan.Island a : isles) if (a.t(x, z) > 0) return a;
+            return null;
         }
     }
 
@@ -96,16 +153,16 @@ public final class WaterfallGardens {
         Random r = new Random(FIXED ^ (sx * 53982894593057L + sz * 317074912223L) * 0x9E3779B97F4A7C15L);
         if (r.nextDouble() > 0.42) return null;
         int cx = sx * SUPER + 480 + 120 + r.nextInt(SUPER - 720), cz = sz * SUPER + 480 + 120 + r.nextInt(SUPER - 720);
-        if (Math.hypot(cx, cz) < 560) return null;
-        if (Math.hypot(cx - AshenLands.CX, cz - AshenLands.CZ) < AshenLands.R + 260) return null;
+        if (Math.hypot(cx, cz) < 640) return null;
+        if (Math.hypot(cx - AshenLands.CX, cz - AshenLands.CZ) < AshenLands.R + 320) return null;
         EmberRuins.Site es = EmberRuins.nearest(cx, cz);
-        if (es != null && Math.hypot(cx - es.cx, cz - es.cz) < 420) return null;
+        if (es != null && Math.hypot(cx - es.cx, cz - es.cz) < 460) return null;
         for (int dx = -1; dx <= 1; ++dx)
             for (int dz = -1; dz <= 1; ++dz) {
                 SizoGrove.Region sr = SizoGrove.region(Math.floorDiv(cx, SizoGrove.SUPER) + dx, Math.floorDiv(cz, SizoGrove.SUPER) + dz);
-                if (sr != null && Math.hypot(cx - sr.cx, cz - sr.cz) < sr.Rr + 200) return null;
+                if (sr != null && Math.hypot(cx - sr.cx, cz - sr.cz) < sr.Rr + 240) return null;
                 VioletHills.Region vr = VioletHills.region(Math.floorDiv(cx, VioletHills.SUPER) + dx, Math.floorDiv(cz, VioletHills.SUPER) + dz);
-                if (vr != null && Math.hypot(cx - vr.cx, cz - vr.cz) < vr.Rr + 200) return null;
+                if (vr != null && Math.hypot(cx - vr.cx, cz - vr.cz) < vr.Rr + 240) return null;
             }
         return new Region(cx, cz, r);
     }
@@ -115,16 +172,20 @@ public final class WaterfallGardens {
         for (int dx = -1; dx <= 1; ++dx)
             for (int dz = -1; dz <= 1; ++dz) {
                 Region rg = region(sx + dx, sz + dz);
-                if (rg != null && Math.abs(x - rg.cx) < rg.Rr + 70 && Math.abs(z - rg.cz) < rg.Rr + 70) return rg;
+                if (rg != null && Math.abs(x - rg.cx) < rg.Rr && Math.abs(z - rg.cz) < rg.Rr) return rg;
             }
         return null;
     }
 
+    /**
+     * Рев 14.26: биом садов — это СУША. Раньше здесь был только большой круг вокруг центра
+     * региона (в 2× больше самого острова), поэтому биом висел над открытым морем, а
+     * {@code /locate biome riftworld:waterfall_gardens} приводил в воду и камни. Теперь проверка
+     * идёт по форме островов архипелага: биом там, где реально стоят сады.
+     */
     public static boolean inside(double x, double z) {
         Region rg = regionAt(x, z);
-        if (rg == null) return false;
-        double d = Math.hypot(x - rg.cx, z - rg.cz) + (ElisarChunkGenerator.vnoise(x * 0.03, z * 0.03, 255) - 0.5) * 40;
-        return d < rg.Rr;
+        return rg != null && rg.islandAt(x, z) != null;
     }
 
     /**
@@ -140,6 +201,13 @@ public final class WaterfallGardens {
             if (d <= f.w) return f;
         }
         return null;
+    }
+
+    /** Не подходит ли точка (x, z) слишком близко к какому-нибудь острову архипелага (для соседних биомов). */
+    public static boolean near(Region rg, double x, double z, double r, double pad) {
+        for (CityPlan.Island gi : rg.isles)
+            if (Math.hypot(x - gi.cx, z - gi.cz) < r + gi.R * 1.15 + pad) return true;
+        return false;
     }
 
     public static List<CityPlan.Tree> treesNear(int x, int z) {

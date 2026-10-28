@@ -22,7 +22,6 @@ import ru.aiforge.riftworld.RiftWorld;
  */
 @Mod.EventBusSubscriber(modid = RiftWorld.MODID)
 public final class CastleCompass {
-    private static final String KEY = "riftworld_castle_compass";
     private static final String TAG = "RiftCastleCompass", RUINS = "RiftRuinsMode";
 
     private CastleCompass() {
@@ -74,14 +73,7 @@ public final class CastleCompass {
             e.getToolTip().add(Component.translatable("item.riftworld.castle_compass.tip").withStyle(ChatFormatting.DARK_GRAY));
     }
 
-    @SubscribeEvent
-    public static void onDim(PlayerEvent.PlayerChangedDimensionEvent e) {
-        Player p = e.getEntity();
-        if (p.level().isClientSide || !e.getTo().location().getPath().equals("elisar")) return;
-        CompoundTag data = p.getPersistentData();
-        if (data.getBoolean(KEY)) return;
-        data.putBoolean(KEY, true);
-        if (!p.getInventory().add(make())) p.drop(make(), false);
-        p.sendSystemMessage(Component.translatable("riftworld.castle_compass.got").withStyle(ChatFormatting.GOLD));
-    }
+    // Рев 14.26: компас больше НЕ выдаётся при входе в мир (владелец: «убрать компас при попадании
+    // в мир»). Предмет остаётся работающим для тех, кто уже держит его в инвентаре, но новый игрок
+    // приходит в Элисар без компаса.
 }

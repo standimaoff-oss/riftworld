@@ -52,8 +52,12 @@ public final class WildIslands {
         if (vr != null && Math.abs(x - vr.meadow.cx) < vr.meadow.R * 1.2 + 2 && Math.abs(z - vr.meadow.cz) < vr.meadow.R * 1.2 + 2) out.add(vr.meadow);
         SizoGrove.Region sr = SizoGrove.regionAt(x, z);
         if (sr != null && Math.abs(x - sr.hub.cx) < sr.hub.R * 1.2 + 2 && Math.abs(z - sr.hub.cz) < sr.hub.R * 1.2 + 2) out.add(sr.hub);
+        // Рев 14.26: у садов теперь архипелаг из 3–6 островов — в выборку попадает каждый,
+        // чья форма может дотянуться до точки (раньше добавлялся только один hub).
         WaterfallGardens.Region gr = WaterfallGardens.regionAt(x, z);
-        if (gr != null && Math.abs(x - gr.hub.cx) < gr.hub.R * 1.2 + 2 && Math.abs(z - gr.hub.cz) < gr.hub.R * 1.2 + 2) out.add(gr.hub);
+        if (gr != null)
+            for (CityPlan.Island gi : gr.isles)
+                if (Math.abs(x - gi.cx) < gi.R * 1.2 + 2 && Math.abs(z - gi.cz) < gi.R * 1.2 + 2) out.add(gi);
         for (int dx = -1; dx <= 1; ++dx)
             for (int dz = -1; dz <= 1; ++dz) {
                 for (CityPlan.Island i : cell(cx + dx, cz + dz).islands) {
@@ -111,8 +115,8 @@ public final class WildIslands {
                 if (vr != null && Math.hypot(x - vr.meadow.cx, z - vr.meadow.cz) < R * 1.15 + vr.meadow.R * 1.15 + 12) continue;
                 SizoGrove.Region sr = SizoGrove.regionAt(x, z);                                                     // sizo grove hub
                 if (sr != null && Math.hypot(x - sr.hub.cx, z - sr.hub.cz) < R * 1.15 + sr.hub.R * 1.15 + 12) continue;
-                WaterfallGardens.Region gr = WaterfallGardens.regionAt(x, z);                                       // waterfall gardens hub
-                if (gr != null && Math.hypot(x - gr.hub.cx, z - gr.hub.cz) < R * 1.15 + gr.hub.R * 1.15 + 12) continue;
+                WaterfallGardens.Region gr = WaterfallGardens.regionAt(x, z);                                       // waterfall gardens archipelago
+                if (gr != null && WaterfallGardens.near(gr, x, z, R * 1.15, 12)) continue;
                 MistKeep.Region mk = MistKeep.regionAt(x, z);                                                          // туманный данж: вода между столбами остаётся морем
                 if (mk != null && Math.hypot(x - mk.cx, z - mk.cz) < R * 1.15 + mk.Rr + 40) continue;
                 boolean ok = true;

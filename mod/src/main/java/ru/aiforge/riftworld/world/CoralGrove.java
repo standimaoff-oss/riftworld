@@ -124,6 +124,24 @@ public final class CoralGrove {
         list.add(new int[]{y, y, type});
     }
 
+    /**
+     * Рев 14.26 по замечанию владельца: «коралловые стволы толще и соединены в единое целое, как забор».
+     * Каждый отрезок растения раздувается в куб 2×2 по горизонтали — одиночных колонн в один блок в
+     * дереве больше нет, ветви срастаются с плитами и стволом в сплошную массу.
+     */
+    private static Map<Long, List<int[]>> thicken(Map<Long, List<int[]>> cols) {
+        Map<Long, List<int[]>> out = new HashMap<>();
+        for (Map.Entry<Long, List<int[]>> en : cols.entrySet()) {
+            int dx = (int) (en.getKey() >> 8) - 16, dz = (int) (en.getKey() & 0xFFL) - 16;
+            for (int[] e : en.getValue()) {
+                for (int ax = 0; ax <= 1; ++ax)
+                    for (int az = 0; az <= 1; ++az)
+                        for (int y = e[0]; y <= e[1]; ++y) put(out, dx + ax, y, dz + az, e[2]);
+            }
+        }
+        return out;
+    }
+
     private static void tip(Map<Long, List<Tip>> tips, int dx, int y, int dz, int block) {
         if (y <= 0) return;
         tips.computeIfAbsent(colKey(dx, dz), k -> new ArrayList<>()).add(new Tip(y, block));
@@ -218,7 +236,10 @@ public final class CoralGrove {
         // макушка ствола
         int[] top = trunk[h];
         if (top != null) crown(cols, tips, s, top[0], base + h - 1, top[1], seed + 991);
-        return new Blueprint(s, cols, tips);
+        // Рев 14.26: только ПОЛНОЦЕННЫЕ блоки — ни одной 3D-модели размером в один блок и ни одного
+        // тонкого ствола (владелец). Полипы на кончиках (tips) больше не ставятся, а всё тело
+        // растения утолщается до 2×2 и слипается в единый «забор».
+        return new Blueprint(s, thicken(cols), Map.of());
     }
 
     /**
@@ -335,25 +356,12 @@ public final class CoralGrove {
         return out == null ? List.of() : out;
     }
 
-    /** Украшения на верхушках в этой колонке. */
+    /**
+     * Украшения на верхушках в этой колонке. Рев 14.26: их больше нет — владелец просил убрать
+     * трёхмерные модели кораллов размером в один блок; крупные кораллы теперь только из полных блоков.
+     */
     public static List<Tip> tipsAt(int x, int z, int sea) {
-        int maxY = sea - HEADROOM;
-        int gx = Math.floorDiv(x, CELL), gz = Math.floorDiv(z, CELL);
-        List<Tip> out = null;
-        for (int ax = -1; ax <= 1; ++ax) {
-            for (int az = -1; az <= 1; ++az) {
-                Blueprint bp = blueprint(gx + ax, gz + az);
-                if (bp.site() == null) continue;
-                List<Tip> list = bp.tips().get(colKey(x - bp.site().x, z - bp.site().z));
-                if (list == null) continue;
-                for (Tip t : list) {
-                    if (t.y() > maxY) continue;
-                    if (out == null) out = new ArrayList<>(2);
-                    out.add(t);
-                }
-            }
-        }
-        return out == null ? List.of() : out;
+        return List.of();
     }
 
     /** Широкая часть растения (плита/шапка) — блок палитры. */
@@ -367,10 +375,9 @@ public final class CoralGrove {
      * waterlogged здесь валила генерацию чанка (IllegalArgumentException «Cannot set property …»).
      */
     public static BlockState stem(int x, int z) {
-        int p = ElisarSea.palette(x, z);
-        RegistryObject<? extends Block> b = p == 0 ? ElisarBlocks.CORAL_STEM_PINK
-                : p == 1 ? ElisarBlocks.CORAL_STEM_TEAL : ElisarBlocks.CORAL_STEM_VIOLET;
-        return b.get().defaultBlockState();
+        // Рев 14.26: отдельных «коралловых стволов» в генерации больше нет — ствол и ветви собираются
+        // из полноценного блока (мозговой коралл), а толщину даёт thicken().
+        return ElisarBlocks.CORAL_BRAIN.get().defaultBlockState();
     }
 
     /** Блок-полип по индексу из {@link Tip}. */

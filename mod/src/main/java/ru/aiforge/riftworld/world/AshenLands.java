@@ -15,22 +15,83 @@ import ru.aiforge.riftworld.registry.CastleBlocks;
 import ru.aiforge.riftworld.registry.ElisarBlocks;
 
 /**
- * «Адские угодья» (Ashen Lands, lightweight first version): a scorched region of ~235 blocks around the castle island.
- * Below the islands the ocean is replaced by an ash plain cut by glowing lava meanders; three huge islands lie fallen on
- * the plain (one carries a ruined house, one a broken bridge); floating islands inside the region are burnt, with bare
- * dead trees; the air is ash-brown (ElisarSky fog + biome particles).
+ * «Адские угодья» (Ashen Lands): a scorched biome — the ocean below the islands is replaced by an ash plain cut by
+ * glowing lava meanders, with scorched mounds, burnt dead trees and an ash-brown sky (ElisarSky fog + particles).
+ *
+ * <p>Рев 14.26 по замечанию владельца: «адский остров в море с замком и боссом сделать биомом, спавнящимся
+ * рандомно по миру как любой другой биом». Раньше это был ОДИН жёстко прибитый к координатам (40, 470)
+ * регион у города — теперь у адских угодий своя сетка {@link #SUPER}: как и у прочих биомов Элисара,
+ * регион появляется в случайных ячейках мира. В одном из них (ячейка 1,1 — «столица») стоит замок
+ * «Чертог Тлеющего Рога» с боссом, в остальных — только выжженная равнина с лавовыми меандрами.
  */
 public final class AshenLands {
-    public static final double CX = CastleSite.CX, CZ = CastleSite.CZ, R = 235;
+    /** Сетка регионов адских угодий (как у садов и рощи — биом спавнится случайно по миру). */
+    public static final int SUPER = 1600;
+    private static final long FIXED = 0x0A5E71A9L;
+
+    /** Один регион адских угодий. {@link #capital} — в нём стоит замок с боссом. */
+    public static final class Region {
+        public final int cx, cz;
+        public final double R;
+        public final boolean capital;
+
+        Region(int cx, int cz, double R, boolean capital) {
+            this.cx = cx;
+            this.cz = cz;
+            this.R = R;
+            this.capital = capital;
+        }
+    }
+
+    private static final java.util.concurrent.ConcurrentHashMap<Long, java.util.Optional<Region>> CACHE =
+            new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** 0 вне региона .. 1 в центре; край «рваный» — как у остальных биомов. */
+    public static double weight(double x, double z) {
+        int sx = Math.floorDiv((int) Math.floor(x), SUPER), sz = Math.floorDiv((int) Math.floor(z), SUPER);
+        double best = EmberRuins.weight(x, z);
+        for (int dx = -1; dx <= 1; ++dx)
+            for (int dz = -1; dz <= 1; ++dz) {
+                Region rg = region(sx + dx, sz + dz);
+                if (rg == null) continue;
+                double ox = x - rg.cx, oz = z - rg.cz;
+                if (Math.abs(ox) > rg.R + 60 || Math.abs(oz) > rg.R + 60) continue;
+                double d = Math.hypot(ox, oz) + (ElisarChunkGenerator.vnoise(x * 0.015, z * 0.015, 81) - 0.5) * 40;
+                double w = Math.max(0, Math.min(1, (rg.R - d) / 30.0));
+                if (w > best) best = w;
+            }
+        return best;
+    }
+
+    /** Регион адских угодий в ячейке сетки (или null, если ячейка пустая). */
+    public static Region region(int sx, int sz) {
+        return CACHE.computeIfAbsent(WildIslands.key(sx, sz), k -> java.util.Optional.ofNullable(gen(sx, sz))).orElse(null);
+    }
+
+    private static Region gen(int sx, int sz) {
+        java.util.Random r = new java.util.Random(FIXED ^ (sx * 53982894593057L + sz * 317074912223L) * 0x9E3779B97F4A7C15L);
+        boolean capital = sx == 1 && sz == 1;                        // столица — всегда (замок и босс)
+        if (!capital && r.nextDouble() > 0.30) return null;
+        int cx = sx * SUPER + 320 + r.nextInt(SUPER - 640);
+        int cz = sz * SUPER + 320 + r.nextInt(SUPER - 640);
+        double R = 205 + r.nextInt(55);
+        return new Region(cx, cz, R, capital);
+    }
+
+    /** Столица (в ней замок и босс) и её координаты — их использует {@link CastleSite}. */
+    public static final Region CAPITAL = region(1, 1);
+    public static final int CX = CAPITAL.cx, CZ = CAPITAL.cz;
+    public static final double R = CAPITAL.R;
 
     /** A huge island that fell onto the plain. */
     public record Mound(double x, double z, double r, double h, double tx, double tz, int seed) {
     }
 
+    // смещения — от центра столицы (замок стоит в её середине)
     public static final List<Mound> MOUNDS = List.of(
-            new Mound(-120, 585, 46, 30, 0.45, -0.25, 1),       // ruined house on top
-            new Mound(185, 590, 40, 26, -0.35, 0.4, 2),         // broken bridge
-            new Mound(-70, 318, 34, 22, 0.2, 0.5, 3));
+            new Mound(CX - 160, CZ + 115, 46, 30, 0.45, -0.25, 1),       // ruined house on top
+            new Mound(CX + 145, CZ + 120, 40, 26, -0.35, 0.4, 2),        // broken bridge
+            new Mound(CX - 110, CZ - 152, 34, 22, 0.2, 0.5, 3));
     public static final List<CityPlan.Tree> TREES = new ArrayList<>();
 
     static {
@@ -61,13 +122,6 @@ public final class AshenLands {
         return CityPlan.get().ocean;
     }
 
-    /** 0 outside .. 1 inside, with a wobbly edge. */
-    public static double weight(double x, double z) {
-        double dx = x - CX, dz = z - CZ;
-        if (Math.abs(dx) > R + 60 || Math.abs(dz) > R + 60) return EmberRuins.weight(x, z);
-        double d = Math.hypot(dx, dz) + (ElisarChunkGenerator.vnoise(x * 0.015, z * 0.015, 81) - 0.5) * 40;
-        return Math.max(0, Math.min(1, (R - d) / 30.0));
-    }
 
     public static boolean inside(double x, double z) {
         return weight(x, z) > 0.5;
