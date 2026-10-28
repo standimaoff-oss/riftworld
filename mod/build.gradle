@@ -146,6 +146,10 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 repositories {
     // Offline-friendly: anything we manually pre-seeded into ~/.m2 is honoured first (flaky-network repair path).
     mavenLocal()
+    // Рев 14.2: maven.minecraftforge.net периодически отдаёт библиотеки Minecraft обрезанными
+    // (icu4j/jna: Premature end of Content-Length / Read timed out). Эти же артефакты лежат
+    // в Maven Central — пробуем её раньше Forge-зеркала.
+    mavenCentral()
     maven {
         name = 'HarleyOConnor'      // публичный maven Dynamic Trees (com.ferreusveritas.dynamictrees)
         url = 'https://harleyoconnor.com/maven'
