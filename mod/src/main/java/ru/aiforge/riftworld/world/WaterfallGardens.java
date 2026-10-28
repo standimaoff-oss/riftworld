@@ -23,11 +23,11 @@ public final class WaterfallGardens {
     public static final int SUPER = 960;
     private static final long FIXED = 0x7A7EFA11L;
     /**
-     * Terrace step height (blocks). Рев 14.3: 5 → 8. На референсе между полками отвесные
-     * известняковые стены в 6–10 блоков, а не низкие бортики; на пяти блоках биом читался
-     * как пологий холм (см. кадры итерации 3).
+     * Высота яруса (блоков). По референсу между полками отвесные известняковые стены в 8–12
+     * блоков: 5 давало пологий холм, 6 — ещё низкие бортики (кадры итерации 12). 9 — стены
+     * читаются как скалы, а полок остаётся 4–5, как на фото.
      */
-    public static final double STEP = 6.0;
+    public static final double STEP = 9.0;
     public static final int KIND = 9;
     /** Kind of the garden's own tree (green oak, the reference silhouette). */
     public static final int TREE_OAK = 4;

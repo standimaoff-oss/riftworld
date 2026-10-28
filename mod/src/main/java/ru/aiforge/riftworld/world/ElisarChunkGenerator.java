@@ -444,10 +444,11 @@ public class ElisarChunkGenerator extends ChunkGenerator {
      */
     public static double gardenProfile(CityPlan.Island isl, double px, double pz, int ocean) {
         double t = Math.max(0.0, Math.min(1.0, isl.t(px, pz)));
-        double rim = ocean + 7;                                   // у кромки полка почти уходит в воду
-        double dome = rim + (isl.base - rim) * Math.pow(t, 0.75);
-        dome += 3.2 * (vnoise(px * 0.035, pz * 0.035, 61) - 0.5);  // крупные языки полок
-        dome += 1.4 * (vnoise(px * 0.09, pz * 0.09, 62) - 0.5);    // мелкая неровность кромки
+        double rim = ocean + 6;                                   // у кромки полка почти уходит в воду
+        // Рев 14.11: гора выше и круче: на фото от воды до верхней полки 4–5 ярусов по 8–12 блоков.
+        double dome = rim + (isl.base + 8 - rim) * Math.pow(t, 0.85);
+        dome += 3.6 * (vnoise(px * 0.035, pz * 0.035, 61) - 0.5);  // крупные языки полок
+        dome += 1.6 * (vnoise(px * 0.09, pz * 0.09, 62) - 0.5);    // мелкая неровность кромки
         return dome;
     }
 
@@ -698,8 +699,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                 BlockPos wp = mp.set(x, y, z);
                                 if (chunk.getBlockState(wp).canBeReplaced()) chunk.setBlockState(wp, falling, false);
                             }
-                        } else if (vnoise(x * 0.21, z * 0.21, 151) > 0.42) {       // плети свисают с кромки вниз
-                            int len = Math.min(rise - 1, 4 + (int) (hash(x, z, 152) * 8.0));
+                        } else if (vnoise(x * 0.21, z * 0.21, 151) > 0.32) {       // плети свисают с кромки вниз
+                            int len = Math.min(rise - 1, 6 + (int) (hash(x, z, 152) * 9.0));
                             int from = Math.max(foot + 1, n.top - 1 - len);
                             BlockState face = ivyFace(d, ivy);
                             for (int y = from; y <= n.top - 1; ++y) {
