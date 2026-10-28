@@ -447,8 +447,10 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         double rim = ocean + 6;                                   // у кромки полка почти уходит в воду
         // Рев 14.11: гора выше и круче: на фото от воды до верхней полки 4–5 ярусов по 8–12 блоков.
         double dome = rim + (isl.base + 8 - rim) * Math.pow(t, 0.85);
-        dome += 3.6 * (vnoise(px * 0.035, pz * 0.035, 61) - 0.5);  // крупные языки полок
-        dome += 1.6 * (vnoise(px * 0.09, pz * 0.09, 62) - 0.5);    // мелкая неровность кромки
+        // Рев 14.12: только КРУПНЫЙ шум. Мелкий (шаг 0.09) рвал кромки полок на зубцы — на фото
+        // полки это широкие ровные платформы с почти прямыми краями.
+        dome += 4.6 * (vnoise(px * 0.028, pz * 0.028, 61) - 0.5);  // языки полок
+        dome += 1.1 * (vnoise(px * 0.055, pz * 0.055, 62) - 0.5);  // лёгкая волна кромки
         return dome;
     }
 
@@ -578,6 +580,15 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                         // Рев 14: фонарь в источнике был рукотворным предметом — на референсе
                                         // только природная вода и камень. Убран.
                                         if (c.pondRim || c.pond) yield st(ru.aiforge.riftworld.registry.CastleBlocks.ASHLAR);            // travertine
+                                        // Рев 14.12: кромка полки — светлый известняк (как на фото), трава
+                                        // начинается отступя от обрыва.
+                                        boolean rimEdge = false;
+                                        for (Direction dd : Direction.Plane.HORIZONTAL) {
+                                            Col nb = cols[dx + 1 + dd.getStepX()][dz + 1 + dd.getStepZ()];
+                                            if (nb.isl != null && nb.top <= c.top - 3) { rimEdge = true; break; }
+                                        }
+                                        if (rimEdge && (c.waterTop != Integer.MIN_VALUE || hash(x, z, 63) < 0.82))
+                                            yield hash(x, z, 64) < 0.38 ? limeMossy : lime;
                                         yield vnoise(x * 0.14, z * 0.14, 67) > 0.72 ? moss : gardenGrass;
                                     }
                                     boolean groveTan = c.isl.kind == SizoGrove.KIND || (c.isl.kind != 4 && SizoGrove.inside(x + 0.5, z + 0.5));
