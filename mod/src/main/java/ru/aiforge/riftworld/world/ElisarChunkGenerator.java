@@ -719,6 +719,12 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                 BlockState cur = chunk.getBlockState(vp);
                                 if (cur.isAir() || cur.canBeReplaced()) chunk.setBlockState(vp, face, false);
                             }
+                            // Рев 14.14: куст, перевалившийся через кромку — на референсе край полки
+                            // всегда «оброс» зеленью и свисает вниз зелёной бахромой.
+                            if (hash(x, z, 153) < 0.34) {
+                                BlockPos lp = mp.set(x, n.top - 1, z);
+                                if (chunk.getBlockState(lp).canBeReplaced()) chunk.setBlockState(lp, gardenLeaf, false);
+                            }
                         }
                         break;
                     }
