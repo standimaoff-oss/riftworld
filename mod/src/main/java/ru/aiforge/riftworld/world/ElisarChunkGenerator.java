@@ -445,7 +445,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
      */
     public static int[] gardenWallView(int cx, int cz, int radius) {
         CityPlan plan = CityPlan.get();
-        for (int rr = 7; rr <= radius; rr += 2) {
+        for (int rr = 6; rr <= radius; rr += 2) {
             for (int a = 0; a < 360; a += 7) {
                 double th = Math.toRadians(a);
                 int x = (int) Math.round(cx + Math.cos(th) * rr);
@@ -456,12 +456,13 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 for (Direction d : Direction.Plane.HORIZONTAL) {
                     Col n = column(plan, x + d.getStepX(), z + d.getStepZ());
                     int rise = n.top - c.top;
-                    if (rise < 5) continue;                       // стена нужной высоты
-                    int vx = x - d.getStepX() * 8, vz = z - d.getStepZ() * 8;
+                    if (rise < 5) continue;                        // перед нами стена нужной высоты
+                    // отходим назад по ТОЙ ЖЕ полке: высота площадки должна совпасть с подошвой
+                    int vx = x - d.getStepX() * 11, vz = z - d.getStepZ() * 11;
                     Col vc = column(plan, vx, vz);
-                    if (vc.isl == null) continue;
-                    int vy = Math.max(vc.top, vc.waterTop) + 3;
-                    return new int[]{vx, vy, vz, x, c.top + rise / 2, z};
+                    if (vc.isl == null || Math.abs(vc.top - c.top) > 1) continue;
+                    if (vc.waterTop != Integer.MIN_VALUE) continue; // не встаём в пруд
+                    return new int[]{vx, c.top + 2, vz, x, c.top + Math.max(2, rise / 2), z};
                 }
             }
         }

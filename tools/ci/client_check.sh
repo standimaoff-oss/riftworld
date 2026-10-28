@@ -887,7 +887,11 @@ fi
 # находим регион биома через /riftbiome, ставим камеры и снимаем те же ракурсы, что на референсе.
 biome_section() {
   echo "  [БИОМ] секция садов и рощи" >> "$PROBES"
-  EL gamemode spectator TestPlayer >/dev/null 2>&1 || true
+  # Рев 14.19: раньше режим ставился «молча», и если команда не проходила, игрок падал с высоты
+  # камеры на рельеф — кадры снимались не из той точки. Теперь результат виден в probes.txt.
+  local GM
+  GM=$(EL gamemode spectator TestPlayer 2>&1 | tr '\r\n' '  ')
+  log "  режим игрока -> ${GM:0:120}"
 
   # Рев 14.1: /riftbiome считает блоки только в загруженных чанках, а регион ищется на
   # тысячи блоков от игрока — первый вызов возвращает лишь координаты. Поэтому: найти регион,
@@ -969,7 +973,9 @@ biome_section() {
       local WCAM WLOOK
       WCAM=$(printf '%s' "$WALL" | cut -d: -f1 | tr ',' ' ')
       WLOOK=$(printf '%s' "$WALL" | cut -d: -f2 | tr ',' ' ')
-      lookat $WCAM $WLOOK 16 "48_garden_cliff"
+      log "  кадр обрыва: камера $WCAM -> взгляд $WLOOK"
+    lookat $WCAM $WLOOK 18 "48_garden_cliff"
+    log "  игрок после кадра обрыва -> $(EL data get entity TestPlayer Pos 2>&1 | tr '\r\n' '  ' | cut -c1-140)"
     else
       log "  ПРОПУСК кадра обрыва: /riftbiome не вернул wall="
     fi
