@@ -457,6 +457,10 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                     Col n = column(plan, x + d.getStepX(), z + d.getStepZ());
                     int rise = n.top - c.top;
                     if (rise < 5) continue;                        // перед нами стена нужной высоты
+                    // Рев 14.22: для кадра ищем стену, по которой реально льётся струя
+                    // (тот же шум, что и в генерации штор), иначе кадр «сухой».
+                    boolean falling = vnoise(x * 0.085, z * 0.085, 171) > 0.70;
+                    if (!falling && rr < radius / 2) continue;
                     // отходим назад по ТОЙ ЖЕ полке: высота площадки должна совпасть с подошвой
                     int vx = x - d.getStepX() * 11, vz = z - d.getStepZ() * 11;
                     Col vc = column(plan, vx, vz);
