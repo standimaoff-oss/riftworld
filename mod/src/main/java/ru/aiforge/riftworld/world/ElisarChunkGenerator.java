@@ -705,7 +705,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                         int rise = n.top - c.top;
                         if (rise < 3) continue;                                   // стены нет — ни воды, ни плюща
                         int foot = c.waterTop != Integer.MIN_VALUE ? c.waterTop : c.top;   // вода встаёт на пруд
-                        if (vnoise(x * 0.085, z * 0.085, 171) > 0.78) {            // ~1 струя на ярус, шириной 5-8
+                        if (vnoise(x * 0.085, z * 0.085, 171) > 0.80) {            // ~1 струя на ярус, шириной 5-8
                             for (int y = foot + 1; y <= n.top; ++y) {
                                 BlockPos wp = mp.set(x, y, z);
                                 if (chunk.getBlockState(wp).canBeReplaced()) chunk.setBlockState(wp, falling, false);
@@ -888,7 +888,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         if (!wild.isEmpty()) all.addAll(wild);
         for (CityPlan.Tree t : all) {
             int dx = x - t.x, dz = z - t.z;
-            int reach = t.kind == SizoGrove.TREE_GIANT ? 7 : 4;
+            // Рев 14.13: у садовых дубов широкая крона — иначе она обрезалась бы по квадрату в 4 блока
+            int reach = t.kind == SizoGrove.TREE_GIANT ? 7 : t.kind == WaterfallGardens.TREE_OAK ? 10 : 4;
             if (Math.abs(dx) > reach || Math.abs(dz) > reach) continue;
             int base = t.baseY;
             if (base == Integer.MIN_VALUE) {
@@ -955,6 +956,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         java.util.Map<Long, java.util.List<int[]>> cols = new java.util.HashMap<>();
         java.util.Random r = new java.util.Random(t.seed * 0x9E3779B1L);
         boolean sizo = t.kind == 0;
+        // Рев 14.13: дубы Висячих садов — крупные, с широкой кроной, как на референсе
+        boolean garden = t.kind == WaterfallGardens.TREE_OAK;
         int h = Math.max(5, t.h);
         java.util.function.BiConsumer<int[], Integer> put = (pos, kind) -> {
             int dx = pos[0], dy = pos[1], dz = pos[2];
@@ -975,7 +978,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         for (int i = 0; i < n; ++i) {
             double a = i * Math.PI * 2 / n + r.nextDouble() * 0.55;
             double y0 = trunkTop * (0.42 + 0.34 * r.nextDouble());
-            double len = 2.6 + r.nextDouble() * 2.6 * (sizo ? 1.15 : 1.0);
+            double len = 2.6 + r.nextDouble() * 2.6 * (sizo ? 1.15 : garden ? 1.25 : 1.0);
             double up = 0.5 + r.nextDouble() * 0.65;
             double bx = Math.cos(a) * len, bz = Math.sin(a) * len, by = y0 + len * up;
             int steps = (int) Math.ceil(len * up + len);
@@ -988,10 +991,10 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             }
             tips.add(new double[]{bx, by, bz});
             // крона на конце ветви: облако листвы
-            crown(cols, put, bx, by, bz, 2.2 + r.nextDouble() * (sizo ? 0.9 : 0.6), r);
+            crown(cols, put, bx, by, bz, 2.2 + r.nextDouble() * (sizo ? 0.9 : garden ? 0.9 : 0.6), r);
         }
         // макушка
-        crown(cols, put, 0, trunkTop + 1.4, 0, (sizo ? 2.5 : 2.9) + r.nextDouble() * 0.5, r);
+        crown(cols, put, 0, trunkTop + 1.4, 0, (sizo ? 2.5 : garden ? 3.3 : 2.9) + r.nextDouble() * 0.5, r);
         // Рев 11.19: рваный контур кроны оставлял одиночные блоки листвы, висящие в воздухе.
         // Убираем листву, у которой меньше двух соседей (брёвна соседями считаются).
         java.util.Set<Long> solid = new java.util.HashSet<>();

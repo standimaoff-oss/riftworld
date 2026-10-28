@@ -65,7 +65,7 @@ public final class WaterfallGardens {
                 boolean ok = true;
                 for (CityPlan.Tree t : trees) if (Math.abs(t.x - x) < 6 && Math.abs(t.z - z) < 6) { ok = false; break; }
                 if (!ok) continue;
-                trees.add(new CityPlan.Tree(x, z, TREE_OAK, 5 + rnd.nextInt(4), rnd.nextInt(1 << 30)));
+                trees.add(new CityPlan.Tree(x, z, TREE_OAK, 7 + rnd.nextInt(5), rnd.nextInt(1 << 30)));
                 ++k;
             }
             // водопады: полка с прудом, чей край выше соседа — заранее помечаем как «льющуюся»
