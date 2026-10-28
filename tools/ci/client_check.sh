@@ -851,16 +851,22 @@ if [ "${WITH_DT:-0}" = "1" ]; then
     DC=$(EL execute in riftworld:elisar run riftcoral 2>&1)
     log "  /riftcoral -> ${DC:0:200}"
     # кадры: сам подводный «ствол» DT и роща вокруг
-    # Рев 13.31: перед съёмкой вырезаем по 3×3×3 воздуха в точках камеры — гарантия, что даже
-    # разросшаяся крона не окажется у объектива (дерево к этому моменту уже выросло).
-    CAM_HI_X=$((DEX + 5)); CAM_HI_Y=$((DEY + 14)); CAM_HI_Z=$((DEZ + 5))
-    CAM_LO_X=$((DEX + 5)); CAM_LO_Y=$((DEY + 4));  CAM_LO_Z=$((DEZ + 5))
-    for cam in "$CAM_HI_X $CAM_HI_Y $CAM_HI_Z" "$CAM_LO_X $CAM_LO_Y $CAM_LO_Z"; do
-      set -- $cam
-      ELP_dt fill "$(($1 - 1))" "$(($2 - 1))" "$(($3 - 1))" "$(($1 + 1))" "$(($2 + 1))" "$(($3 + 1))" minecraft:air >/dev/null 2>&1 || true
-    done
-    lookat "$CAM_HI_X" "$CAM_HI_Y" "$CAM_HI_Z" "$DEX" "$((DEY + 7))" "$DEZ" 16 "16d_dt_coral"
-    lookat "$CAM_LO_X" "$CAM_LO_Y" "$CAM_LO_Z" "$DEX" "$((DEY + 7))" "$DEZ" 14 "16e_dt_coral_low"
+    # Рев 13.33: крона DT — плотный комок на 189 блоков (радиус ~7), поэтому камера ВНУТРИ площадки
+    # всегда оказывается в листве: кадр 16e был стеной листвы изнутри. Снимаем с 17–18 блоков и
+    # прорубаем к дереву коридор воздуха 3×3×3 по 5 точкам отрезка — иначе обзор перекрывает
+    # невырубленный риф (серый куб на прошлых кадрах).
+    coral_cam() {  # coral_cam <dx> <dy> <dz> <name> <pause>
+      local cx=$((DEX + $1)) cy=$((DEY + $2)) cz=$((DEZ + $3)) t
+      for t in 0 25 50 75 100; do
+        ELP_dt fill "$((cx + (DEX - cx) * t / 100 - 1))" "$((cy + (DEY + 7 - cy) * t / 100 - 1))" \
+                    "$((cz + (DEZ - cz) * t / 100 - 1))" "$((cx + (DEX - cx) * t / 100 + 1))" \
+                    "$((cy + (DEY + 7 - cy) * t / 100 + 1))" "$((cz + (DEZ - cz) * t / 100 + 1))" \
+                    minecraft:air >/dev/null 2>&1 || true
+      done
+      lookat "$cx" "$cy" "$cz" "$DEX" "$((DEY + 7))" "$DEZ" "$5" "$4"
+    }
+    coral_cam 13 11 13 "16d_dt_coral" 16       # три четверти сверху: ствол + крона + дно
+    coral_cam 14 2 12 "16e_dt_coral_low" 14    # снизу-сбоку: силуэт дерева на фоне воды
     lookat "$((RX + 16))" "$((RF + 14))" "$((RZ + 5))" "$RX" "$((RF + 2))" "$RZ" 16 "16c_coral_grove"
   }
   log "  [DT] запускаю секцию коралла"
