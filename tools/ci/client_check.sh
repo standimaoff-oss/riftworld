@@ -952,9 +952,11 @@ biome_section() {
     lookat "$((GX + 30))" "$((GTOP2 + 8))" "$((GZ + 14))" "$((GX + 8))" "$((GTOP2 - 10))" "$((GZ + 2))" 14 "42_garden_walls"
     lookat "$((GX - 40))" "$((GTOP2 + 18))" "$((GZ + 30))" "$((GX - 6))" "$((GTOP2 - 8))" "$((GZ + 4))" 20 "43_garden_ponds"
     # кадр конкретно по предвыбранному водопаду: он у кромки полки, поэтому смотрим с воды
-    local FWX FWZ
-    FWX=$(printf '%s' "$LIN" | sed -n 's/.* fall=\(-\?[0-9]*\),\(-?[0-9]*\).*/\1/p' | tail -1)
-    FWZ=$(printf '%s' "$LIN" | sed -n 's/.* fall=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\2/p' | tail -1)
+    local FWX FWZ FALLAT
+    FALLAT=$(printf '%s' "$LIN" | grep -o 'fall=[-0-9]*,[-0-9]*' | tail -1 | cut -d= -f2)
+    FWX=${FALLAT%%,*}
+    FWZ=${FALLAT##*,}
+    [ "$FALLAT" = "$FWX" ] && FWX=""      # «fall=-» — водопада нет
     if [ -n "${FWX:-}" ] && [ -n "${FWZ:-}" ]; then
       lookat "$((FWX + 26))" "$((GTOP2 - 2))" "$((FWZ + 20))" "$FWX" "$((GTOP2 - 14))" "$FWZ" 16 "44_garden_waterfall"
     else
