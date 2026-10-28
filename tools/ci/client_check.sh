@@ -792,10 +792,16 @@ if [ "${WITH_DT:-0}" = "1" ]; then
     # Грунт — ровно в точку посадки rooty (DT заменит его своим rooty_elisar_soil),
     # воздух — над ним, чтобы кораллу было куда расти.
     local DEX=$((RX + 6)) DEZ=$((RZ + 6)) DEY=$RF
+    # Рев 13.27: расчищаем ДО грунта. Раньше куб был ±2 по горизонтали, и коралл сажался прямо
+    # в склон рифового холма: ствол проходил сквозь reef_stone, а над кроной висел серый куб
+    # (near=reef_stone=124 в /riftdtat). Теперь площадка ±4 и выше, холм вокруг снят.
+    ELP_dt fill "$((DEX - 4))" "$((DEY + 1))" "$((DEZ - 4))" "$((DEX + 4))" "$((DEY + 16))" "$((DEZ + 4))" minecraft:air >/dev/null 2>&1 || true
     ELP_dt setblock "$DEX" "$DEY" "$DEZ" riftworld:elisar_soil >/dev/null 2>&1 || true
-    # Рев 13.19: расчищаем КУБ воздуха (не столбик). DT ставит ветви в том же тике, а вода
-    # возвращается медленно, поэтому дерево успевает вырасти, а потом снова оказывается под водой.
-    ELP_dt fill "$((DEX - 2))" "$((DEY + 1))" "$((DEZ - 2))" "$((DEX + 2))" "$((DEY + 12))" "$((DEZ + 2))" minecraft:air >/dev/null 2>&1 || true
+    # проба площадки: над грунтом должно быть чисто, иначе дерево снова упрётся в породу
+    local CLEAR
+    CLEAR=$(ELP_dt execute if block "$DEX" "$((DEY + 3))" "$DEZ" minecraft:air run data get entity TestPlayer Pos 2>&1)
+    if [[ "$CLEAR" == *"entity data"* ]]; then log "  OK   площадка коралла расчищена (над грунтом воздух)"
+    else log "  WARN площадка коралла не расчищена: ${CLEAR:0:80}"; fi
     log "  координаты DT-коралла: $DEX,$DEY,$DEZ (риф $RX,$RF,$RZ)"
     local DTS2 DCAT DC_TOT DC_BR DC_LV
     DTS2=$(dt_grow "$DEX" "$DEY" "$DEZ" riftworlddt:coral_staghorn "JJJ0Jxx769JxPX")
