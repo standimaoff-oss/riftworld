@@ -437,6 +437,38 @@ public class ElisarChunkGenerator extends ChunkGenerator {
     }
 
     /**
+     * Рев 14.18: точка обзора для кадра «как на референсе» — стоим на полке вплотную к обрыву,
+     * смотрим на его стену с плющом и водопадом. Возвращает {camX, camY, camZ, lookX, lookY, lookZ}.
+     *
+     * <p>Все высоты считаются тем же кодом, что и генерация ({@link #column}), поэтому камера
+     * гарантированно оказывается на полке, а не внутри камня или листвы.
+     */
+    public static int[] gardenWallView(int cx, int cz, int radius) {
+        CityPlan plan = CityPlan.get();
+        for (int rr = 7; rr <= radius; rr += 2) {
+            for (int a = 0; a < 360; a += 7) {
+                double th = Math.toRadians(a);
+                int x = (int) Math.round(cx + Math.cos(th) * rr);
+                int z = (int) Math.round(cz + Math.sin(th) * rr);
+                Col c = column(plan, x, z);
+                if (c.isl == null || !c.garden || c.surface != S_GRASS
+                        || c.waterTop != Integer.MIN_VALUE || c.deckY != Integer.MIN_VALUE) continue;
+                for (Direction d : Direction.Plane.HORIZONTAL) {
+                    Col n = column(plan, x + d.getStepX(), z + d.getStepZ());
+                    int rise = n.top - c.top;
+                    if (rise < 5) continue;                       // стена нужной высоты
+                    int vx = x - d.getStepX() * 8, vz = z - d.getStepZ() * 8;
+                    Col vc = column(plan, vx, vz);
+                    if (vc.isl == null) continue;
+                    int vy = Math.max(vc.top, vc.waterTop) + 3;
+                    return new int[]{vx, vy, vz, x, c.top + rise / 2, z};
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
      * Рев 14.5: рельеф Висячих садов. Острова-плато в Elisar почти плоские (у hub разброс высоты
      * ~5 блоков), поэтому ступени не образовывались: терраса квантует высоту, а квантовать было
      * нечего. Здесь сады получают настоящую гору — купол от кромки у самой воды к центру плюс

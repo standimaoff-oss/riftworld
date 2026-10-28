@@ -451,11 +451,17 @@ public final class SeaProbeCommand {
             WaterfallGardens.Fall f0 = bestGarden.falls.get(0);
             fallAt = f0.x + "," + f0.z;
         }
+        // Рев 14.18: точка обзора обрыва — кадр с полки, как на референсе
+        String wall = "-";
+        if (gardens) {
+            int[] wv = ElisarChunkGenerator.gardenWallView(bestX, bestZ, Math.max(20, bestR));
+            if (wv != null) wall = wv[0] + "," + wv[1] + "," + wv[2] + ":" + wv[3] + "," + wv[4] + "," + wv[5];
+        }
         String line = "riftbiome name=" + (gardens ? "gardens" : "sizo") + " at=" + bestX + "," + bestZ
                 + " r=" + bestR + " top=" + top + " water=" + water + " garden_grass=" + gardenGrass
                 + " garden_leaves=" + leaves + " garden_logs=" + logs + " ivy=" + ivy
                 + " planks=" + planks + " lantern=" + lanterns + " struct=" + struct
-                + " fall=" + fallAt + " blocks=" + top6;
+                + " fall=" + fallAt + " wall=" + wall + " blocks=" + top6;
         src.sendSuccess(() -> Component.literal(line), false);
         found = water;
         return found;

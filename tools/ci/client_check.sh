@@ -962,6 +962,17 @@ biome_section() {
     else
       log "  ПРОПУСК кадра водопада: /riftbiome не вернул координаты fall="
     fi
+    # кадр «как на референсе»: с полки вплотную к обрыву (стена с плющом и водопадом)
+    local WALL
+    WALL=$(printf '%s' "$LIN" | grep -o 'wall=\([-0-9]*,[-0-9]*,[-0-9]*\):\([-0-9]*,[-0-9]*,[-0-9]*\)' | tail -1)
+    if [ -n "${WALL:-}" ]; then
+      local WCAM WLOOK
+      WCAM=$(printf '%s' "$WALL" | cut -d: -f1 | tr ',' ' ')
+      WLOOK=$(printf '%s' "$WALL" | cut -d: -f2 | tr ',' ' ')
+      lookat $WCAM $WLOOK 16 "48_garden_cliff"
+    else
+      log "  ПРОПУСК кадра обрыва: /riftbiome не вернул wall="
+    fi
   fi
 
   # ---------- 05 «Роща Сизо» ----------

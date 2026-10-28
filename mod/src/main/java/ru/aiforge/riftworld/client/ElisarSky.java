@@ -45,6 +45,23 @@ public final class ElisarSky extends DimensionSpecialEffects {
 
     @Mod.EventBusSubscriber(modid = RiftWorld.MODID, value = Dist.CLIENT)
     public static final class Fog {
+        private static long gardenKey = Long.MIN_VALUE;
+        private static boolean gardenHit;
+
+        /** Кешированная проверка «мы над Висячими садами» (регион считается из сида). */
+        private static boolean gardenAt(Vec3 p) {
+            long key = ((long) (int) Math.floor(p.x / 16) << 20) ^ (long) (int) Math.floor(p.z / 16);
+            if (key == gardenKey) return gardenHit;
+            boolean hit = false;
+            try {
+                hit = ru.aiforge.riftworld.world.WaterfallGardens.inside(p.x, p.z);
+            } catch (Throwable ignored) {
+            }
+            gardenKey = key;
+            gardenHit = hit;
+            return hit;
+        }
+
         private static boolean inElisar() {
             var mc = net.minecraft.client.Minecraft.getInstance();
             return mc.level != null && mc.level.dimension().location().equals(ID);
@@ -85,9 +102,20 @@ public final class ElisarSky extends DimensionSpecialEffects {
         private static final Vec3 ASH = new Vec3(0.34, 0.235, 0.20);
         private static final Vec3 SEA_MIST = new Vec3(0.965, 0.945, 0.885);   // warm milk of the sea haze (TZ_atmosphere_fx palette)
 
+        private static final Vec3 GARDEN_HAZE = new Vec3(0.80, 0.89, 0.96);   // светло-голубая дымка садов (референс)
+
         @SubscribeEvent
         public static void fogColor(ViewportEvent.ComputeFogColor e) {
             if (!inElisar()) return;
+            var pos = e.getCamera().getPosition();
+            // Рев 14.18: над садами кремовая дымка Элисара гасит голубое небо — кадры выходили
+            // жёлто-зелёными. В регионе садов туман светлый и голубой, как на референсе.
+            if (gardenAt(pos)) {
+                e.setRed((float) Mth.lerp(0.92F, e.getRed(), GARDEN_HAZE.x));
+                e.setGreen((float) Mth.lerp(0.92F, e.getGreen(), GARDEN_HAZE.y));
+                e.setBlue((float) Mth.lerp(0.92F, e.getBlue(), GARDEN_HAZE.z));
+                return;
+            }
             float g = gloom(e.getCamera().getPosition());
             float m = mist(e.getCamera().getPosition()) * 0.62F;
             if (m > 0) {
