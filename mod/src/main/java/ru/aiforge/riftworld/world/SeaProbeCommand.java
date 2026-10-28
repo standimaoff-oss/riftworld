@@ -382,6 +382,7 @@ public final class SeaProbeCommand {
         int bestX = 0, bestZ = 0, bestR = 0;
         double bestD = Double.MAX_VALUE;
         SizoGrove.Region bestSizo = null;   // Рев 14.3: для счётчика структур рощи
+        WaterfallGardens.Region bestGarden = null;   // Рев 14.8: координаты водопада для кадра
         for (int dx = -6; dx <= 6; ++dx) {
             for (int dz = -6; dz <= 6; ++dz) {
                 int sx = Math.floorDiv(at.getX(), want) + dx, sz = Math.floorDiv(at.getZ(), want) + dz;
@@ -389,7 +390,7 @@ public final class SeaProbeCommand {
                     WaterfallGardens.Region rg = WaterfallGardens.region(sx, sz);
                     if (rg == null) continue;
                     double d = Math.hypot(rg.cx - at.getX(), rg.cz - at.getZ());
-                    if (d < bestD) { bestD = d; bestX = rg.cx; bestZ = rg.cz; bestR = (int) rg.hub.R; }
+                    if (d < bestD) { bestD = d; bestX = rg.cx; bestZ = rg.cz; bestR = (int) rg.hub.R; bestGarden = rg; }
                 } else {
                     SizoGrove.Region rg = SizoGrove.region(sx, sz);
                     if (rg == null) continue;
@@ -444,10 +445,17 @@ public final class SeaProbeCommand {
                     + " temples=" + (bestSizo.temple ? 1 : 0)
                     + " pillar_pairs=" + bestSizo.pillarPairs.size();
         }
+        // Рев 14.8: ближайший предвыбранный водопад — по нему CI наводит камеру
+        String fallAt = "-";
+        if (bestGarden != null && !bestGarden.falls.isEmpty()) {
+            WaterfallGardens.Fall f0 = bestGarden.falls.get(0);
+            fallAt = f0.x + "," + f0.z;
+        }
         String line = "riftbiome name=" + (gardens ? "gardens" : "sizo") + " at=" + bestX + "," + bestZ
                 + " r=" + bestR + " top=" + top + " water=" + water + " garden_grass=" + gardenGrass
                 + " garden_leaves=" + leaves + " garden_logs=" + logs + " ivy=" + ivy
-                + " planks=" + planks + " lantern=" + lanterns + " struct=" + struct + " blocks=" + top6;
+                + " planks=" + planks + " lantern=" + lanterns + " struct=" + struct
+                + " fall=" + fallAt + " blocks=" + top6;
         src.sendSuccess(() -> Component.literal(line), false);
         found = water;
         return found;
