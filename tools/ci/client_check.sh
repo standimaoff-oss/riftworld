@@ -471,7 +471,9 @@ if [ -n "${CX:-}" ] && [ "${CORAL_AT:-0,0,0}" != "0,0,0" ]; then
   EL gamemode spectator TestPlayer >/dev/null 2>&1 || true
   lookat "${CORAL_CAM%%,*}" "$(printf '%s' "$CORAL_CAM" | cut -d, -f2)" "${CORAL_CAM##*,}" "$CX" "$((CY + CORAL_H / 2))" "$CZ" 16 "16_coral_tree"
   lookat "${CORAL_CAMLOW%%,*}" "$(printf '%s' "$CORAL_CAMLOW" | cut -d, -f2)" "${CORAL_CAMLOW##*,}" "$CX" "$((CY + CORAL_H / 2))" "$CZ" 14 "16b_coral_tree_low"
-  lookat "$((CX + 16))" "$((CY + 14))" "$((CZ + 5))" "$CX" "$((CY + 2))" "$CZ" 16 "16c_coral_grove"
+  # Рев 14.27: после утолщения кораллов 2x2 камера +16/+14/+5 оказывалась внутри живой массы —
+  # кадр 16c итерации 26 был красной стенкой. Отодвигаем объектив.
+  lookat "$((CX + 24))" "$((CY + 18))" "$((CZ + 8))" "$CX" "$((CY + 2))" "$CZ" 16 "16c_coral_grove"
   EL gamemode creative TestPlayer >/dev/null 2>&1 || true
 else
   log "  ПРОПУСК кадров коралловых деревьев: /riftcoral не нашла растение"
@@ -873,8 +875,8 @@ if [ "${WITH_DT:-0}" = "1" ]; then
       done
       lookat "$cx" "$cy" "$cz" "$DEX" "$((DEY + 7))" "$DEZ" "$5" "$4"
     }
-    coral_cam 13 11 13 "16d_dt_coral" 16       # три четверти сверху: ствол + крона + дно
-    coral_cam 14 2 12 "16e_dt_coral_low" 14    # снизу-сбоку: силуэт дерева на фоне воды
+    coral_cam 23 17 23 "16d_dt_coral" 16       # три четверти сверху: толстый ствол + крона + дно
+    coral_cam 24 3 19 "16e_dt_coral_low" 14    # снизу-сбоку: силуэт дерева на фоне воды
     lookat "$((RX + 16))" "$((RF + 14))" "$((RZ + 5))" "$RX" "$((RF + 2))" "$RZ" 16 "16c_coral_grove"
   }
   log "  [DT] запускаю секцию коралла"
@@ -977,8 +979,9 @@ biome_section() {
       FAILS=$((FAILS + 1))
     fi
     # проба 5: деревья садов — свои дубы (стволы + листва)
-    if [ "${GL:-0}" -ge 200 ]; then log "  OK   сады: листвы садовых дубов $GL блоков"
-    else log "  FAIL сады: листвы ${GL:-0} (нужно >=200)"; FAILS=$((FAILS + 1)); fi
+    # Рев 14.27: дубов на острове 3–7 (открытые лужайки, как на референсе) — порог листвы ниже.
+    if [ "${GL:-0}" -ge 120 ]; then log "  OK   сады: листвы садовых дубов $GL блоков"
+    else log "  FAIL сады: листвы ${GL:-0} (нужно >=120)"; FAILS=$((FAILS + 1)); fi
 
     # кадры под референс: сверху (общий план террас), сбоку (стены и водопады), у пруда, у дерева
     local GTOP2=${GTOP:-110}
@@ -987,10 +990,11 @@ biome_section() {
     # объектив уезжает в открытое море и в кадре только вода.
     local GR2=${GR_R:-30}
     # камеры держим ВЫШЕ рельефа: иначе объектив оказывается внутри листвы или полки
-    lookat "$((GX + GR2 * 4 / 3))" "$((GTOP2 + 24))" "$((GZ + GR2 * 4 / 3))" "$GX" "$((GTOP2 - 6))" "$GZ" 18 "40_garden_overview"
-    lookat "$((GX + GR2 * 3 / 2))" "$((GTOP2 + 12))" "$((GZ + GR2 / 3))" "$GX" "$((GTOP2 - 8))" "$GZ" 16 "41_garden_terraces"
-    lookat "$((GX + GR2))" "$((GTOP2 + 8))" "$((GZ + GR2 / 2))" "$((GX + GR2 / 4))" "$((GTOP2 - 10))" "$GZ" 14 "42_garden_walls"
-    lookat "$((GX - GR2 * 5 / 4))" "$((GTOP2 + 18))" "$((GZ + GR2))" "$((GX - GR2 / 5))" "$((GTOP2 - 8))" "$((GZ + GR2 / 8))" 20 "43_garden_ponds"
+    # Рев 14.27: острова стали открытыми лужайками — камеру можно ставить ближе, объект крупнее в кадре.
+    lookat "$((GX + GR2))" "$((GTOP2 + 18))" "$((GZ + GR2))" "$GX" "$((GTOP2 - 6))" "$GZ" 18 "40_garden_overview"
+    lookat "$((GX + GR2 * 6 / 5))" "$((GTOP2 + 10))" "$((GZ + GR2 / 3))" "$GX" "$((GTOP2 - 8))" "$GZ" 16 "41_garden_terraces"
+    lookat "$((GX + GR2 * 9 / 10))" "$((GTOP2 + 6))" "$((GZ + GR2 / 2))" "$((GX + GR2 / 4))" "$((GTOP2 - 10))" "$GZ" 14 "42_garden_walls"
+    lookat "$((GX - GR2 * 11 / 10))" "$((GTOP2 + 14))" "$((GZ + GR2 * 9 / 10))" "$((GX - GR2 / 5))" "$((GTOP2 - 8))" "$((GZ + GR2 / 8))" 20 "43_garden_ponds"
     # кадр конкретно по предвыбранному водопаду: он у кромки полки, поэтому смотрим с воды
     local FWX FWZ FALLAT
     FALLAT=$(printf '%s' "$LIN" | grep -o 'fall=[-0-9]*,[-0-9]*' | tail -1 | cut -d= -f2)

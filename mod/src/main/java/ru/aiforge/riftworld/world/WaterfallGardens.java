@@ -99,15 +99,20 @@ public final class WaterfallGardens {
                 extent = Math.max(extent, Math.hypot(x - cx, z - cz) + R * 1.2 + 4);
                 // на референсе полки заросли обычными ДУБАМИ с зелёной кроной — по 5–16 на остров,
                 // и только там, где полка широкая (t > 0.30), иначе ствол повисает на обрыве.
-                int want = big ? 9 + rnd.nextInt(8) : 6 + rnd.nextInt(5);
-                for (int k = 0, tries = 0; k < want && tries < want * 22; ++tries) {
-                    double ta = rnd.nextDouble() * Math.PI * 2, td = (0.10 + rnd.nextDouble() * 0.58) * R;
-                    int tx = (int) Math.floor(x + Math.cos(ta) * td), tz = (int) Math.floor(z + Math.sin(ta) * td);
-                    if (isl.t(tx + 0.5, tz + 0.5) < 0.30) continue;
+                // Рев 14.27: на референсе полки — ОТКРЫТЫЕ лужайки, а дубы стоят небольшой рощей
+                // в одном месте. В итерации 26 деревьев было 9–16 на остров: они закрывали и полки,
+                // и водопады (кадры 40–42 — сплошная крона). Теперь 3–7 дубов, собранных в рощу.
+                int want = big ? 4 + rnd.nextInt(4) : 3 + rnd.nextInt(3);
+                double ga = rnd.nextDouble() * Math.PI * 2, gd = (0.15 + rnd.nextDouble() * 0.35) * R;
+                double gx = x + Math.cos(ga) * gd, gz = z + Math.sin(ga) * gd;
+                for (int k = 0, tries = 0; k < want && tries < want * 30; ++tries) {
+                    double ta = rnd.nextDouble() * Math.PI * 2, td = Math.sqrt(rnd.nextDouble()) * (big ? 13 : 8);
+                    int tx = (int) Math.floor(gx + Math.cos(ta) * td), tz = (int) Math.floor(gz + Math.sin(ta) * td);
+                    if (isl.t(tx + 0.5, tz + 0.5) < 0.32) continue;
                     boolean ok = true;
-                    for (CityPlan.Tree t : trees) if (Math.abs(t.x - tx) < 7 && Math.abs(t.z - tz) < 7) { ok = false; break; }
+                    for (CityPlan.Tree t : trees) if (Math.abs(t.x - tx) < 6 && Math.abs(t.z - tz) < 6) { ok = false; break; }
                     if (!ok) continue;
-                    trees.add(new CityPlan.Tree(tx, tz, TREE_OAK, 7 + rnd.nextInt(5), rnd.nextInt(1 << 30)));
+                    trees.add(new CityPlan.Tree(tx, tz, TREE_OAK, 6 + rnd.nextInt(4), rnd.nextInt(1 << 30)));
                     ++k;
                 }
                 // водопады: по 1–2 струи на остров
