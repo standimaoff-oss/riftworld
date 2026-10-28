@@ -936,11 +936,12 @@ biome_section() {
     else log "  FAIL сады: листвы ${GL:-0} (нужно >=200)"; FAILS=$((FAILS + 1)); fi
 
     # кадры под референс: сверху (общий план террас), сбоку (стены и водопады), у пруда, у дерева
-    local GCY=$(( ${GTOP:-110} + 26 ))
-    lookat "$((GX + 46))" "$GCY" "$((GZ + 46))" "$GX" "$(( ${GTOP:-110} - 6 ))" "$GZ" 18 "40_garden_overview"
-    lookat "$((GX + 34))" "$(( ${GTOP:-110} - 12 ))" "$((GZ + 12))" "$GX" "$(( ${GTOP:-110} - 4 ))" "$GZ" 16 "41_garden_terraces"
-    lookat "$((GX + 22))" "$(( ${GTOP:-110} - 2 ))" "$((GZ + 22))" "$GX" "$(( ${GTOP:-110} - 12 ))" "$GZ" 16 "42_garden_walls"
-    lookat "$((GX - 18))" "$(( ${GTOP:-110} - 8 ))" "$((GZ + 26))" "$GX" "$(( ${GTOP:-110} - 14 ))" "$GZ" 16 "43_garden_ponds"
+    local GTOP2=${GTOP:-110}
+    # камеры держим ВЫШЕ рельефа: иначе объектив оказывается внутри листвы или полки
+    lookat "$((GX + 58))" "$((GTOP2 + 40))" "$((GZ + 58))" "$GX" "$((GTOP2 - 6))" "$GZ" 18 "40_garden_overview"
+    lookat "$((GX + 70))" "$((GTOP2 + 16))" "$GZ" "$GX" "$((GTOP2 - 4))" "$GZ" 16 "41_garden_terraces"
+    lookat "$GX" "$((GTOP2 + 22))" "$((GZ + 64))" "$GX" "$((GTOP2 - 6))" "$GZ" 20 "42_garden_walls"
+    lookat "$((GX - 52))" "$((GTOP2 + 26))" "$((GZ + 26))" "$((GX - 10))" "$((GTOP2 - 8))" "$((GZ + 6))" 20 "43_garden_ponds"
   fi
 
   # ---------- 05 «Роща Сизо» ----------

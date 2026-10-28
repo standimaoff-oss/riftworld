@@ -439,7 +439,11 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         double h = top - (ocean + 1);
         if (h <= 0) return top;
         double L = Math.floor(h / WaterfallGardens.STEP), band = h - L * WaterfallGardens.STEP;
-        double rise = band <= 1.2 ? smooth(band / 1.2) : 1.0;
+        // Рев 14.2: полки с НАСТОЯЩИМИ обрывами. Раньше подъём на STEP размазывался по 1.2 блока
+        // высоты, а при пологом рельефе это давало пандус шириной в десятки блоков — вертикальных
+        // стен не было вовсе (на кадрах ровный зелёный холм, плющ физически некуда вешать).
+        // Теперь переход жёсткий: ровное плато + отвесная известняковая стена как на референсе.
+        double rise = band < 0.55 ? 0.0 : 1.0;
         return ocean + 1 + (L + rise) * WaterfallGardens.STEP;
     }
 
