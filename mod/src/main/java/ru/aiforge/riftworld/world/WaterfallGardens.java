@@ -27,7 +27,7 @@ public final class WaterfallGardens {
      * известняковые стены в 6–10 блоков, а не низкие бортики; на пяти блоках биом читался
      * как пологий холм (см. кадры итерации 3).
      */
-    public static final double STEP = 8.0;
+    public static final double STEP = 6.0;
     public static final int KIND = 9;
     /** Kind of the garden's own tree (green oak, the reference silhouette). */
     public static final int TREE_OAK = 4;

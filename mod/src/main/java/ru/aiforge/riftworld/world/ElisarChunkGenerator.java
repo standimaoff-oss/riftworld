@@ -298,7 +298,11 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 }
             }
             else if (isl.kind == WaterfallGardens.KIND) {              // biome 07: limestone terraces stepping to the sea
-                top = terraceTop(top, plan.ocean);
+                // Рев 14.5: остров-плато давал почти ровную высоту (разброс ~5 блоков), квантовать
+                // было нечего — полок-обрывов не получалось вовсе (проверено расчётом: STEP 5 давал
+                // 299 стен, STEP 8 — пять). Теперь у садов свой горный профиль: купол от кромки у воды
+                // к центру, и уже он квантуется в полки.
+                top = terraceTop(gardenProfile(isl, px, pz, plan.ocean), plan.ocean);
             }
             c.top = (int) Math.floor(top);
             // Рев 14: ВОДОПАДЫ. На референсе с каждой полки через край льётся широкая струя и уходит
@@ -447,9 +451,24 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         return ocean + 1 + (L + rise) * WaterfallGardens.STEP;
     }
 
+    /**
+     * Рев 14.5: рельеф Висячих садов. Острова-плато в Elisar почти плоские (у hub разброс высоты
+     * ~5 блоков), поэтому ступени не образовывались: терраса квантует высоту, а квантовать было
+     * нечего. Здесь сады получают настоящую гору — купол от кромки у самой воды к центру плюс
+     * пологий шум, чтобы полки шли неровными языками, как на референсе.
+     */
+    public static double gardenProfile(CityPlan.Island isl, double px, double pz, int ocean) {
+        double t = Math.max(0.0, Math.min(1.0, isl.t(px, pz)));
+        double rim = ocean + 7;                                   // у кромки полка почти уходит в воду
+        double dome = rim + (isl.base - rim) * Math.pow(t, 0.75);
+        dome += 3.2 * (vnoise(px * 0.035, pz * 0.035, 61) - 0.5);  // крупные языки полок
+        dome += 1.4 * (vnoise(px * 0.09, pz * 0.09, 62) - 0.5);    // мелкая неровность кромки
+        return dome;
+    }
+
     /** Terraced top estimate of a garden column (bridge anchor heights in WaterfallGardens). */
     public static int gardenTerraceTop(CityPlan.Island isl, double px, double pz, int ocean) {
-        return (int) Math.floor(terraceTop(isl.raw(px, pz), ocean));
+        return (int) Math.floor(terraceTop(gardenProfile(isl, px, pz, ocean), ocean));
     }
 
     /** Biome 07 pond-mask test stateless over garden region: shelf cells the pond noise claims. */
