@@ -67,6 +67,14 @@ geom() {  # найти окно игры и его геометрию (x y w h)
 
 shot() {  # shot <имя>
   if geom; then
+    # Рев 14.3: окно игры иногда оказывается вытянутой полосой (напр. 906x217) — кадры
+    # биомов приходили нечитаемыми. Приводим окно к 1280x720 (Xvfb 1280x800) перед снимком.
+    if [ "${WIDTH:-0}" -lt 1200 ] || [ "${HEIGHT:-0}" -lt 640 ]; then
+      xdotool windowsize "$WID" 1280 720 2>/dev/null || true
+      xdotool windowmove "$WID" 0 0 2>/dev/null || true
+      sleep 2
+      geom || true
+    fi
     import -window root /tmp/full.png 2>/dev/null || return 1
     convert /tmp/full.png -crop "${WIDTH}x${HEIGHT}+${X}+${Y}" +repage -quality 90 "$OUT/$1.jpg" 2>/dev/null \
       || cp /tmp/full.png "$OUT/$1.png"
@@ -939,9 +947,9 @@ biome_section() {
     local GTOP2=${GTOP:-110}
     # камеры держим ВЫШЕ рельефа: иначе объектив оказывается внутри листвы или полки
     lookat "$((GX + 58))" "$((GTOP2 + 40))" "$((GZ + 58))" "$GX" "$((GTOP2 - 6))" "$GZ" 18 "40_garden_overview"
-    lookat "$((GX + 70))" "$((GTOP2 + 16))" "$GZ" "$GX" "$((GTOP2 - 4))" "$GZ" 16 "41_garden_terraces"
-    lookat "$GX" "$((GTOP2 + 22))" "$((GZ + 64))" "$GX" "$((GTOP2 - 6))" "$GZ" 20 "42_garden_walls"
-    lookat "$((GX - 52))" "$((GTOP2 + 26))" "$((GZ + 26))" "$((GX - 10))" "$((GTOP2 - 8))" "$((GZ + 6))" 20 "43_garden_ponds"
+    lookat "$((GX + 46))" "$((GTOP2 + 12))" "$((GZ + 12))" "$GX" "$((GTOP2 - 8))" "$GZ" 16 "41_garden_terraces"
+    lookat "$((GX + 30))" "$((GTOP2 + 8))" "$((GZ + 14))" "$((GX + 8))" "$((GTOP2 - 10))" "$((GZ + 2))" 14 "42_garden_walls"
+    lookat "$((GX - 40))" "$((GTOP2 + 18))" "$((GZ + 30))" "$((GX - 6))" "$((GTOP2 - 8))" "$((GZ + 4))" 20 "43_garden_ponds"
   fi
 
   # ---------- 05 «Роща Сизо» ----------
@@ -950,6 +958,9 @@ biome_section() {
   SX=$(printf '%s' "$SL" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\1/p' | tail -1)
   SZ=$(printf '%s' "$SL" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\2/p' | tail -1)
   SLEAF=$(printf '%s' "$SL" | sed -n 's/.* garden_leaves=\([0-9]*\).*/\1/p' | tail -1)
+  STOP=$(printf '%s' "$SL" | sed -n 's/.* top=\(-\?[0-9]*\).*/\1/p' | tail -1)
+  SSTRUCT=$(printf '%s' "$SL" | sed -n 's/.* struct=\([^ ]*\).*/\1/p' | tail -1)
+  log "  /riftbiome sizo: структуры -> ${SSTRUCT:--} (по ТЗ: тележка ~1/3, памятник и храм ~1/7, 1-2 пары столбов)"
   if [ -z "${SX:-}" ]; then
     log "  FAIL /riftbiome sizo не нашёл регион рощи"; FAILS=$((FAILS + 1))
   else
@@ -957,9 +968,10 @@ biome_section() {
     local STREE
     STREE=$(EL execute in riftworld:elisar run rifttree sizo 2>&1 | tr '\r\n' '  ')
     log "  /rifttree у рощи -> ${STREE:0:200}"
-    lookat "$((SX + 40))" "$(( 118 ))" "$((SZ + 40))" "$SX" "110" "$SZ" 18 "45_sizo_grove"
-    lookat "$((SX + 16))" "$(( 106 ))" "$((SZ + 16))" "$SX" "106" "$SZ" 16 "46_sizo_trunks"
-    lookat "$((SX + 10))" "$(( 124 ))" "$((SZ + 30))" "$SX" "108" "$SZ" 16 "47_sizo_canopy"
+    local STOP2=${STOP:-118}
+    lookat "$((SX + 40))" "$((STOP2 + 6))" "$((SZ + 40))" "$SX" "$((STOP2 - 10))" "$SZ" 18 "45_sizo_grove"
+    lookat "$((SX + 16))" "$((STOP2 - 4))" "$((SZ + 16))" "$SX" "$((STOP2 - 14))" "$SZ" 16 "46_sizo_trunks"
+    lookat "$((SX + 10))" "$((STOP2 + 14))" "$((SZ + 30))" "$SX" "$((STOP2 - 6))" "$SZ" 16 "47_sizo_canopy"
   fi
   EL gamemode creative TestPlayer >/dev/null 2>&1 || true
 }

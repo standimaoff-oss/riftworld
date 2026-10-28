@@ -381,6 +381,7 @@ public final class SeaProbeCommand {
         int found = 0, want = gardens ? WaterfallGardens.SUPER : SizoGrove.SUPER;
         int bestX = 0, bestZ = 0, bestR = 0;
         double bestD = Double.MAX_VALUE;
+        SizoGrove.Region bestSizo = null;   // Рев 14.3: для счётчика структур рощи
         for (int dx = -6; dx <= 6; ++dx) {
             for (int dz = -6; dz <= 6; ++dz) {
                 int sx = Math.floorDiv(at.getX(), want) + dx, sz = Math.floorDiv(at.getZ(), want) + dz;
@@ -393,7 +394,7 @@ public final class SeaProbeCommand {
                     SizoGrove.Region rg = SizoGrove.region(sx, sz);
                     if (rg == null) continue;
                     double d = Math.hypot(rg.cx - at.getX(), rg.cz - at.getZ());
-                    if (d < bestD) { bestD = d; bestX = rg.cx; bestZ = rg.cz; bestR = (int) rg.hub.R; }
+                    if (d < bestD) { bestD = d; bestX = rg.cx; bestZ = rg.cz; bestR = (int) rg.hub.R; bestSizo = rg; }
                 }
             }
         }
@@ -436,10 +437,17 @@ public final class SeaProbeCommand {
                 .sorted((a2, b2) -> b2.getValue() - a2.getValue()).limit(6)
                 .map(e2 -> e2.getKey() + "=" + e2.getValue())
                 .reduce((a2, b2) -> a2 + " " + b2).orElse("-");
+        // Рев 14.3: редкости рощи по ТЗ — тележка ≈1/3 биомов, памятник и храм ≈1/7, 1–2 пары столбов.
+        String struct = "-";
+        if (bestSizo != null) {
+            struct = "carts=" + bestSizo.carts.size() + " shrines=" + bestSizo.shrines.size()
+                    + " temples=" + (bestSizo.temple ? 1 : 0)
+                    + " pillar_pairs=" + bestSizo.pillarPairs.size();
+        }
         String line = "riftbiome name=" + (gardens ? "gardens" : "sizo") + " at=" + bestX + "," + bestZ
                 + " r=" + bestR + " top=" + top + " water=" + water + " garden_grass=" + gardenGrass
                 + " garden_leaves=" + leaves + " garden_logs=" + logs + " ivy=" + ivy
-                + " planks=" + planks + " lantern=" + lanterns + " blocks=" + top6;
+                + " planks=" + planks + " lantern=" + lanterns + " struct=" + struct + " blocks=" + top6;
         src.sendSuccess(() -> Component.literal(line), false);
         found = water;
         return found;
