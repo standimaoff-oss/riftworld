@@ -881,10 +881,26 @@ biome_section() {
   echo "  [БИОМ] секция садов и рощи" >> "$PROBES"
   EL gamemode spectator TestPlayer >/dev/null 2>&1 || true
 
+  # Рев 14.1: /riftbiome считает блоки только в загруженных чанках, а регион ищется на
+  # тысячи блоков от игрока — первый вызов возвращает лишь координаты. Поэтому: найти регион,
+  # телепортировать игрока в его центр, дать чанкам прогрузиться и посчитать ещё раз.
+  probe_biome() {   # probe_biome <gardens|sizo> — печатает строку riftbiome с цифрами
+    local name=$1 first cx cz out
+    first=$(EL execute in riftworld:elisar run riftbiome "$name" 2>&1 | tr '\r\n' '  ')
+    log "  /riftbiome $name (поиск) -> ${first:0:200}"
+    cx=$(printf '%s' "$first" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\1/p' | head -1)
+    cz=$(printf '%s' "$first" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\2/p' | head -1)
+    [ -z "$cx" ] && { echo ""; return 0; }
+    EL tp TestPlayer "$cx" 130 "$cz" >/dev/null 2>&1 || true
+    sleep 12
+    out=$(EL execute in riftworld:elisar run riftbiome "$name" 2>&1 | tr '\r\n' '  ')
+    log "  /riftbiome $name (счёт) -> ${out:0:420}"
+    echo "$out"
+  }
+
   # ---------- 07 «Висячие сады» ----------
   local GR GX GZ GR_R GTOP LIN
-  LIN=$(EL execute in riftworld:elisar run riftbiome gardens 2>&1 | tr '\r\n' '  ')
-  log "  /riftbiome gardens -> ${LIN:0:420}"
+  LIN=$(probe_biome gardens)
   GX=$(printf '%s' "$LIN" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\1/p' | head -1)
   GZ=$(printf '%s' "$LIN" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\2/p' | head -1)
   GR_R=$(printf '%s' "$LIN" | sed -n 's/.* r=\([0-9]*\).*/\1/p' | head -1)
@@ -929,8 +945,7 @@ biome_section() {
 
   # ---------- 05 «Роща Сизо» ----------
   local SL SX SZ SLOG SLEAF
-  SL=$(EL execute in riftworld:elisar run riftbiome sizo 2>&1 | tr '\r\n' '  ')
-  log "  /riftbiome sizo -> ${SL:0:420}"
+  SL=$(probe_biome sizo)
   SX=$(printf '%s' "$SL" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\1/p' | head -1)
   SZ=$(printf '%s' "$SL" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\2/p' | head -1)
   SLEAF=$(printf '%s' "$SL" | sed -n 's/.* garden_leaves=\([0-9]*\).*/\1/p' | head -1)
