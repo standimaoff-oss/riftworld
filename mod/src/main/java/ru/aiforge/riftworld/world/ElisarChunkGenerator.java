@@ -661,22 +661,28 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                         }
                     }
                 }
-                // biome 07: hanging vine curtains draped from the cliff lip above this column (the reference look)
+                // biome 07: ПЛЮЩ ПО ОБРЫВАМ (референс). Раньше «шторы» собирались из белой листвы
+                // сизо, а ванильный VineBlock проверяет соседний блок через chunk.getBlockState —
+                // на границе чанка сосед ещё не сгенерирован, все стороны оставались false, и лоза
+                // не ставилась вовсе (в /riftbiome ivy=0). Теперь сторону выбираем по сетке колонок
+                // (она уже посчитана), а не по содержимому соседнего чанка.
                 if (c.garden && c.surface == S_GRASS && c.waterTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE) {
-                    int maxN = Integer.MIN_VALUE;
                     for (Direction d : Direction.Plane.HORIZONTAL) {
                         Col n = cols[dx + 1 + d.getStepX()][dz + 1 + d.getStepZ()];
-                        if (n.isl != null) maxN = Math.max(maxN, n.top);
-                    }
-                    // Рев 14: раньше шторы были из БЕЛОЙ листвы сизо — на референсе плети зелёные.
-                    // Теперь это зелёная листва садов + настоящий плющ (elisar_ivy) у самой стены.
-                    if (maxN > c.top + 2.5 && vnoise(x * 0.21, z * 0.21, 151) > 0.28) {
-                        int len = 3 + (int) (hash(x, z, 152) * 5.0);
-                        for (int y = Math.max(c.top + 1, maxN - len); y < maxN; ++y) {
+                        if (n.isl == null) continue;
+                        int rise = n.top - c.top;
+                        if (rise < 3) continue;                                  // не у стены — не вьёмся
+                        if (vnoise(x * 0.21, z * 0.21, 151) < 0.30) continue;    // но не в каждой колонке
+                        // плети свисают С ВЕРХНЕЙ КРОМКИ полки вниз, как на референсе
+                        int len = Math.min(rise - 1, 3 + (int) (hash(x, z, 152) * 5.0));
+                        int from = Math.max(c.top + 1, n.top - 1 - len);
+                        BlockState face = ivyFace(d, ivy);
+                        for (int y = from; y <= n.top - 1; ++y) {
                             BlockPos vp = mp.set(x, y, z);
-                            if (chunk.getBlockState(vp).isAir() || chunk.getBlockState(vp).canBeReplaced())
-                                chunk.setBlockState(vp, y == maxN - 1 ? gardenLeaf : ivyFor(chunk, x, y, z, ivy), false);
+                            BlockState cur = chunk.getBlockState(vp);
+                            if (cur.isAir() || cur.canBeReplaced()) chunk.setBlockState(vp, face, false);
                         }
+                        break;
                     }
                 }
                 if (c.waterTop != Integer.MIN_VALUE) {
@@ -789,6 +795,17 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 }
             }
         }
+    }
+
+    /** Плющ, прижатый к стене в направлении {@code d} (стена стоит с этой стороны). */
+    private static BlockState ivyFace(Direction d, BlockState ivy) {
+        // в ваниле «north=true» значит «опора с севера», поэтому сторона совпадает с направлением стены
+        return switch (d) {
+            case NORTH -> ivy.setValue(VineBlock.NORTH, true);
+            case SOUTH -> ivy.setValue(VineBlock.SOUTH, true);
+            case EAST -> ivy.setValue(VineBlock.EAST, true);
+            default -> ivy.setValue(VineBlock.WEST, true);
+        };
     }
 
     /**

@@ -888,8 +888,8 @@ biome_section() {
     local name=$1 first cx cz out
     first=$(EL execute in riftworld:elisar run riftbiome "$name" 2>&1 | tr '\r\n' '  ')
     log "  /riftbiome $name (поиск) -> ${first:0:200}"
-    cx=$(printf '%s' "$first" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\1/p' | head -1)
-    cz=$(printf '%s' "$first" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\2/p' | head -1)
+    cx=$(printf '%s' "$first" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\1/p' | tail -1)
+    cz=$(printf '%s' "$first" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\2/p' | tail -1)
     [ -z "$cx" ] && { echo ""; return 0; }
     EL tp TestPlayer "$cx" 130 "$cz" >/dev/null 2>&1 || true
     sleep 12
@@ -901,17 +901,17 @@ biome_section() {
   # ---------- 07 «Висячие сады» ----------
   local GR GX GZ GR_R GTOP LIN
   LIN=$(probe_biome gardens)
-  GX=$(printf '%s' "$LIN" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\1/p' | head -1)
-  GZ=$(printf '%s' "$LIN" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\2/p' | head -1)
-  GR_R=$(printf '%s' "$LIN" | sed -n 's/.* r=\([0-9]*\).*/\1/p' | head -1)
-  GTOP=$(printf '%s' "$LIN" | sed -n 's/.* top=\(-\?[0-9]*\).*/\1/p' | head -1)
+  GX=$(printf '%s' "$LIN" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\1/p' | tail -1)
+  GZ=$(printf '%s' "$LIN" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\2/p' | tail -1)
+  GR_R=$(printf '%s' "$LIN" | sed -n 's/.* r=\([0-9]*\).*/\1/p' | tail -1)
+  GTOP=$(printf '%s' "$LIN" | sed -n 's/.* top=\(-\?[0-9]*\).*/\1/p' | tail -1)
   local GW GG GL GIV GPL GLA
-  GW=$(printf '%s' "$LIN" | sed -n 's/.* water=\([0-9]*\).*/\1/p' | head -1)
-  GG=$(printf '%s' "$LIN" | sed -n 's/.* garden_grass=\([0-9]*\).*/\1/p' | head -1)
-  GL=$(printf '%s' "$LIN" | sed -n 's/.* garden_leaves=\([0-9]*\).*/\1/p' | head -1)
-  GIV=$(printf '%s' "$LIN" | sed -n 's/.* ivy=\([0-9]*\).*/\1/p' | head -1)
-  GPL=$(printf '%s' "$LIN" | sed -n 's/.* planks=\([0-9]*\).*/\1/p' | head -1)
-  GLA=$(printf '%s' "$LIN" | sed -n 's/.* lantern=\([0-9]*\).*/\1/p' | head -1)
+  GW=$(printf '%s' "$LIN" | sed -n 's/.* water=\([0-9]*\).*/\1/p' | tail -1)
+  GG=$(printf '%s' "$LIN" | sed -n 's/.* garden_grass=\([0-9]*\).*/\1/p' | tail -1)
+  GL=$(printf '%s' "$LIN" | sed -n 's/.* garden_leaves=\([0-9]*\).*/\1/p' | tail -1)
+  GIV=$(printf '%s' "$LIN" | sed -n 's/.* ivy=\([0-9]*\).*/\1/p' | tail -1)
+  GPL=$(printf '%s' "$LIN" | sed -n 's/.* planks=\([0-9]*\).*/\1/p' | tail -1)
+  GLA=$(printf '%s' "$LIN" | sed -n 's/.* lantern=\([0-9]*\).*/\1/p' | tail -1)
   if [ -z "${GX:-}" ]; then
     log "  FAIL /riftbiome gardens не нашёл регион садов"; FAILS=$((FAILS + 1))
   else
@@ -946,9 +946,9 @@ biome_section() {
   # ---------- 05 «Роща Сизо» ----------
   local SL SX SZ SLOG SLEAF
   SL=$(probe_biome sizo)
-  SX=$(printf '%s' "$SL" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\1/p' | head -1)
-  SZ=$(printf '%s' "$SL" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\2/p' | head -1)
-  SLEAF=$(printf '%s' "$SL" | sed -n 's/.* garden_leaves=\([0-9]*\).*/\1/p' | head -1)
+  SX=$(printf '%s' "$SL" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\1/p' | tail -1)
+  SZ=$(printf '%s' "$SL" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\2/p' | tail -1)
+  SLEAF=$(printf '%s' "$SL" | sed -n 's/.* garden_leaves=\([0-9]*\).*/\1/p' | tail -1)
   if [ -z "${SX:-}" ]; then
     log "  FAIL /riftbiome sizo не нашёл регион рощи"; FAILS=$((FAILS + 1))
   else
