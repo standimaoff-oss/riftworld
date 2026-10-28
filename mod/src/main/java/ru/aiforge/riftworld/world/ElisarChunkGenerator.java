@@ -313,13 +313,14 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             if (grf0 != null) {
                 WaterfallGardens.Fall fall = WaterfallGardens.fallNear(grf0, px, pz);
                 if (fall != null) {
-                    double lower = Double.MAX_VALUE;
+                    int low = Integer.MAX_VALUE;
                     for (int ddx = -2; ddx <= 2; ++ddx)
-                        for (int ddz = -2; ddz <= 2; ++ddz)
-                            if (grf0.hub.t(px + ddx, pz + ddz) > 0.05)
-                                lower = Math.min(lower, terraceTop(grf0.hub.raw(px + ddx, pz + ddz), plan.ocean));
-                    double here = terraceTop(c.top + 0.5, plan.ocean);
-                    if (lower < here - 1.5) {                 // край полки: под нами обрыв
+                        for (int ddz = -2; ddz <= 2; ++ddz) {
+                            if (grf0.hub.t(px + ddx, pz + ddz) <= 0.05) continue;
+                            low = Math.min(low, (int) Math.floor(terraceTop(
+                                    gardenProfile(grf0.hub, px + ddx, pz + ddz, plan.ocean), plan.ocean)));
+                        }
+                    if (low < c.top - 1) {                    // край полки: рядом полка заметно ниже
                         c.fallTop = c.top + 1;                // струя начинается на уровне полки
                         c.fallBottom = plan.ocean + 1;
                         c.waterTop = Integer.MIN_VALUE;
@@ -413,28 +414,12 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         VioletHills.Region vr = VioletHills.regionAt(px, pz);
         if (vr != null)
             applyChannel(c, plan, px, pz, vr.rax, vr.raz, vr.rbx, vr.rbz, VioletHills.Region.RIVER_HW, vr.riverLevel, 2, tt);
-        // biome 07: waterfalls - this column is low while a garden shelf with a pool/spring looms beside it
-        if (c.fallTop == Integer.MIN_VALUE && c.waterTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE) {
-            WaterfallGardens.Region grf = WaterfallGardens.regionAt(px, pz);
-            if (grf != null) {
-                boolean rim = grf.hub.t(px, pz) < 0.1;
-                for (int gdk = 0; gdk < 4; ++gdk) {
-                    double gx = px + (gdk == 0 ? 1 : gdk == 1 ? -1 : 0), gz = pz + (gdk == 2 ? 1 : gdk == 3 ? -1 : 0);
-                    if (grf.hub.t(gx, gz) < 0.12) continue;
-                    double gnt = terraceTop(grf.hub.raw(gx, gz), plan.ocean);
-                    if (gnt <= c.top + (rim ? 2.0 : 3.5)) continue;
-                    // rim takes wide pond spills and broad springs; interior only real pond lips and sharp springs
-                    // Рев 14: широкие струи через каждую стену, как на референсе (раньше — редкие тонкие)
-                    boolean feed = vnoise(gx * 0.09, gz * 0.09, 131) > (rim ? 0.50 : 0.56)
-                            || vnoise(gx * 0.13, gz * 0.13, 141) > (rim ? 0.58 : 0.63)
-                            || vnoise(gx * 0.31, gz * 0.31, 147) > (rim ? 0.72 : 0.76);
-                    if (!feed) continue;
-                    c.fallTop = (int) Math.floor(gnt);
-                    c.fallBottom = c.isl != null ? c.top + 1 : plan.ocean + 1;
-                    break;
-                }
-            }
-        }
+        // Рев 14.8: старый «feed»-механизм водопадов УДАЛЁН. Он искал более высокую полку в
+        // радиусе 1 и ставил струю почти на каждой колонке (шумовые пороги 0.50/0.58/0.72 в
+        // объединении давали ~65 %); пока рельеф был плоским, это давало одну клетку воды, но с
+        // настоящими полками биом залило водяной лестницей (29503 блоков воды в кубе ±36).
+        // Водопады теперь дают: предвыбранные WaterfallGardens.Fall (ниже) и шторы у подножия
+        // стен (см. блок про плющ/шторы в fillFromNoise).
         return c;
     }
 
