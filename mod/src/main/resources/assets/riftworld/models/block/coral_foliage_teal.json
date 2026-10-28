@@ -1,7 +1,7 @@
 {
   "parent": "minecraft:block/leaves",
   "textures": {
-    "all": "riftworld:block/coral_cap_teal"
+    "all": "riftworld:block/coral_canopy_teal"
   },
   "render_type": "minecraft:cutout_mipped"
 }
