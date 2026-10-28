@@ -109,6 +109,8 @@ public final class ElisarBlocks {
     public static final RegistryObject<PlantBlock> LILAC_BLOOM = ModBlocks.reg("lilac_bloom", () -> new PlantBlock(plant()));
     public static final RegistryObject<PlantBlock> PALE_BLOOM = ModBlocks.reg("pale_bloom", () -> new PlantBlock(plant()));
     public static final RegistryObject<VineBlock> IVY = ModBlocks.reg("elisar_ivy", () -> new VineBlock(plant().randomTicks()));
+    /** Рев 14.25: плющ Висячих садов — сочно-зелёный (на референсе стены увиты зеленью, а не сухими плетями). */
+    public static final RegistryObject<VineBlock> GARDEN_IVY = ModBlocks.reg("garden_ivy", () -> new VineBlock(plant().randomTicks()));
     // ----- Рев 14 «Висячие сады по референсу»: у биома 07 своя зелёная палитра.
     // На референсе полки — ярко-зелёная трава, обрывы увиты плющом, деревья — обычные дубы
     // с зелёной кроной и бурой корой. В Элисаре трава кремовая, а деревья белые, поэтому

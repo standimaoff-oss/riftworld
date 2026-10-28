@@ -560,7 +560,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         // Рев 14: у биома 07 своя зелёная палитра (референс — яркая трава и дубы, а не кремовый Элисар)
         BlockState gardenGrass = st(ElisarBlocks.GARDEN_GRASS);
         BlockState gardenLeaf = st(ElisarBlocks.GARDEN_LEAVES).setValue(LeavesBlock.PERSISTENT, true).setValue(LeavesBlock.DISTANCE, 1);
-        BlockState ivy = ElisarBlocks.IVY.get().defaultBlockState();
+        // Рев 14.25: на обрывах садов — свой сочно-зелёный плющ, как на референсе
+        BlockState gIvy = ElisarBlocks.GARDEN_IVY.get().defaultBlockState();
         BlockState lime = st(ElisarBlocks.GARDEN_LIMESTONE), limeMossy = st(ElisarBlocks.GARDEN_LIMESTONE_MOSSY);
         Col[][] cols = new Col[18][18];
         // Рев 10: кромки дна по колонкам — декор моря ставится вторым проходом, после воды
@@ -756,7 +757,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                         } else if (vnoise(x * 0.21, z * 0.21, 151) > 0.32) {       // плети свисают с кромки вниз
                             int len = Math.min(rise - 1, 6 + (int) (hash(x, z, 152) * 9.0));
                             int from = Math.max(foot + 1, n.top - 1 - len);
-                            BlockState face = ivyFace(d, ivy);
+                            BlockState face = ivyFace(d, gIvy);
                             for (int y = from; y <= n.top - 1; ++y) {
                                 BlockPos vp = mp.set(x, y, z);
                                 BlockState cur = chunk.getBlockState(vp);
