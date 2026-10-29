@@ -298,8 +298,12 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 // хода), ступени 3 блока — и террасы крошились на изолированные «пятачки» с
                 // каменными бортами. На фото терраса — ДЛИННАЯ ЛЕНТА по склону. Волна ниже и
                 // длиннее, шаг террасы крупнее (см. violetTerrace).
-                dome += 4.0 * (vnoise(px * 0.0055, pz * 0.0055, 71) - 0.5) * tm;
-                dome += 1.6 * (vnoise(px * 0.019, pz * 0.019, 72) - 0.5) * tm;
+                // Рев 14.56, по кадру 50 итерации 52: даже после укрупнения ступени контур террасы
+                // «дрожал» на масштабе ~50 блоков, и стенки шли короткими обрубками. Убираем вторую
+                // гармонику почти полностью и удлиняем первую: контур становится плавной длинной
+                // линией, а подпорная стенка читается сплошной лентой, как на референсе 04.
+                dome += 3.4 * (vnoise(px * 0.0042, pz * 0.0042, 71) - 0.5) * tm;
+                dome += 0.9 * (vnoise(px * 0.011, pz * 0.011, 72) - 0.5) * tm;
                 top = violetTerrace(dome);
                 VioletHills.Region vr = VioletHills.regionAt(px, pz);
                 if (vr != null && vr.meadow == isl) {
@@ -1156,7 +1160,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         }
         // макушка
         crown(cols, put, 0, trunkTop + 1.4, 0,
-                ((sizo ? 2.5 : garden ? 3.3 : 2.9) + r.nextDouble() * 0.5) * (violetCanopy ? 1.34 : 1.0), r);
+                ((sizo ? 2.5 : garden ? 3.3 : 2.9) + r.nextDouble() * 0.5) * (violetCanopy ? 1.50 : 1.0), r);
         // Рев 11.19: рваный контур кроны оставлял одиночные блоки листвы, висящие в воздухе.
         // Убираем листву, у которой меньше двух соседей (брёвна соседями считаются).
         java.util.Set<Long> solid = new java.util.HashSet<>();
@@ -1519,7 +1523,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         String species;
         double chance;
         if (VioletHills.inside(cx, cz)) {                 // холмы: сиреневое дерево на луговой полосе
-            species = "riftworlddt:violet"; chance = 0.55;
+            species = "riftworlddt:violet"; chance = 0.70;
         } else if (SizoGrove.inside(cx, cz)) {            // роща: сизо (редко великан)
             species = (hash(x0, z0, 771) < 0.20) ? "riftworlddt:giant_sizo" : "riftworlddt:sizo";
             chance = 0.75;
