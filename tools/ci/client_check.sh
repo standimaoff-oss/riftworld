@@ -1171,6 +1171,11 @@ biome_section() {
     lookat "$((VX + VRR * 3 / 4))" "$((VTOP2 + 20))" "$((VZ + VRR * 3 / 4))" "$VX" "$((VTOP2 - 6))" "$VZ" 20 "49_violet_hills"
     lookat "$((VX + VRR / 2))" "$((VTOP2 + 9))" "$((VZ + VRR / 2))" "$VX" "$((VTOP2 - 4))" "$VZ" 16 "50_violet_fields"
     lookat "$((VX + VRR / 3))" "$((VTOP2 + 5))" "$((VZ + VRR / 6))" "$VX" "$((VTOP2 + 1))" "$VZ" 14 "51_violet_path"
+    # Рев 14.57: кадр «как на референсе 04» — камера ВНУТРИ полей, почти на уровне глаз,
+    # смотрит вдоль гряд на церковь. Именно так видно, что это поля-террасы, а не газон с пятнами.
+    EL gamemode spectator TestPlayer >/dev/null 2>&1 || true
+    lookat "$((VX + VRR * 2 / 5))" "$((VTOP2 + 4))" "$((VZ - VRR / 5))" "$VX" "$((VTOP2 - 1))" "$VZ" 14 "52_violet_rows"
+    EL gamemode creative TestPlayer >/dev/null 2>&1 || true
   fi
   local SBIO
   SBIO=$(printf '%s' "$SL" | sed -n 's/.* bio=\([^ ]*\).*/\1/p' | tail -1)

@@ -764,8 +764,11 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                         chunk.setBlockState(mp.set(x, c.top + 1, z), st(ElisarBlocks.LAVENDER_BED), false);
                                         double band = vnoise(x * 0.012, z * 0.012, 94);
                                         if (h < 0.34) {                                                  // пушистая макушка
-                                            chunk.setBlockState(mp.set(x, c.top + 2, z), st(band < 0.42 ? ElisarBlocks.VIOLET_BLOOM
-                                                    : band < 0.78 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
+                                            // Рев 14.57, по кадрам 50–51: pale_bloom почти белый, и поле
+                                            // читалось «снежной крупой». На референсе гряда ровная по
+                                            // тону: два сиреневых оттенка, бледный — редкость (7 %).
+                                            chunk.setBlockState(mp.set(x, c.top + 2, z), st(band < 0.55 ? ElisarBlocks.VIOLET_BLOOM
+                                                    : band < 0.93 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
                                         }
                                     } else {
                                         chunk.setBlockState(mp.set(x, c.top, z), crust, false);          // борозда — светлая земля
@@ -774,7 +777,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                 } else if (field > 0.11) {               // кромка полей: одиночная лаванда на траве
                                     if (h < 0.42) {
                                         int f = (int) (hash(x, z, 91) * 100);
-                                        chunk.setBlockState(mp.set(x, c.top + 1, z), st(f < 54 ? ElisarBlocks.VIOLET_BLOOM : f < 84 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
+                                        chunk.setBlockState(mp.set(x, c.top + 1, z), st(f < 62 ? ElisarBlocks.VIOLET_BLOOM : f < 94 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
                                     } else if (h < 0.55) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
                                 } else {
                                     if (h < 0.14) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
@@ -824,12 +827,15 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                     // Рев 14.55: стенка ставится вдоль КОНТУРА террасы — там, где хотя бы два соседа
                     // ниже на целую ступень. Одиночные перепады (их даёт шум кромки) больше не
                     // превращаются в серые тумбы посреди поля, как на кадре 51 итерации 49.
-                    int drops = 0;
+                    // Рев 14.57, по кадру 50 итерации 53: стенки шли короткими обрубками, и склон
+                    // читался «пятачками». На фото подпорная стенка идёт по ВСЕМУ уступу. Считаем
+                    // уступом любой перепад от 3 блоков и ставим кладку у каждого такого столбца —
+                    // вдоль контура террасы получается непрерывная лента.
+                    boolean step = false;
                     for (Direction d : Direction.Plane.HORIZONTAL) {
                         Col n = cols[dx + 1 + d.getStepX()][dz + 1 + d.getStepZ()];
-                        if (n.isl != null && n.top <= c.top - (VIOLET_STEP - 1)) ++drops;
+                        if (n.isl != null && n.top <= c.top - 3) { step = true; break; }
                     }
-                    boolean step = drops >= 2;
                     if (step) {
                         // Рев 14.40, по референсу 04: подпорные стенки террас на фото — светлый
                         // известняк, а не городская кладка. Было ashlar + мшистый кирпич: на кадре 50
