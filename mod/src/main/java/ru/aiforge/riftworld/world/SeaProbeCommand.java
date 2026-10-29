@@ -627,6 +627,108 @@ public final class SeaProbeCommand {
     private static int around(CommandSourceStack src, int r) {
         var level = src.getLevel();
         BlockPos at = BlockPos.containing(src.getPosition());
+        int lime = 0, grass = 0, stone = 0, lavender = 0, holes = 0, gaps = 0, cols = 0, land = 0;
+        int y0 = Math.max(level.getMinBuildHeight(), at.getY() - 40);
+        int y1 = Math.min(level.getMaxBuildHeight() - 1, at.getY() + 40);
+        int floorY = level.getMinBuildHeight() + 3;          // над двумя слоями бедрока
+        for (int x = at.getX() - r; x <= at.getX() + r; ++x) {
+            for (int z = at.getZ() - r; z <= at.getZ() + r; ++z) {
+                if (!level.hasChunk(x >> 4, z >> 4)) continue;
+                ++cols;
+                // верх колонки и её материал
+                int top = Integer.MIN_VALUE;
+                String topId = "?";
+                for (int y = level.getMaxBuildHeight() - 1; y >= level.getMinBuildHeight(); --y) {
+                    BlockState st0 = level.getBlockState(new BlockPos(x, y, z));
+                    if (st0.isAir()) continue;
+                    var k0 = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(st0.getBlock());
+                    if (k0 != null && (k0.getPath().contains("water") || k0.getPath().contains("lavender")
+                            || k0.getPath().contains("bloom") || k0.getPath().contains("tall_grass")
+                            || k0.getPath().contains("leaves") || k0.getPath().contains("vine"))) continue;
+                    if (!st0.getFluidState().isEmpty()) continue;
+                    top = y; topId = k0 == null ? "?" : k0.getPath();
+                    break;
+                }
+                if (top == Integer.MIN_VALUE) continue;
+                boolean island = topId.contains("garden_limestone") || topId.contains("garden_grass")
+                        || topId.contains("elisar_soil") || topId.contains("elisar_moss")
+                        || topId.contains("elisar_grass") || topId.contains("garden_") || topId.contains("elisar_stone");
+                if (!island) continue;                       // море и дно — не наши острова
+                ++land;
+                // дыра ДО БЕДРОКА: над самым низом острова воздух, хотя там должен быть камень
+                if (level.getBlockState(new BlockPos(x, floorY, z)).isAir()
+                        && level.getBlockState(new BlockPos(x, floorY + 1, z)).isAir()) ++holes;
+                // полость внутри тела острова
+                for (int y = floorY + 2; y <= top - 3; ++y) {
+                    if (level.getBlockState(new BlockPos(x, y, z)).isAir()) { ++gaps; break; }
+                }
+                for (int y = y0; y <= y1; ++y) {
+                    BlockState st = level.getBlockState(new BlockPos(x, y, z));
+                    if (st.isAir()) continue;
+                    var key = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(st.getBlock());
+                    if (key == null) continue;
+                    String path = key.getPath();
+                    if (path.contains("garden_limestone")) ++lime;
+                    else if (path.contains("garden_grass")) ++grass;
+                    else if (path.contains("lavender")) ++lavender;
+                    else if ("elisar_stone".equals(path)) ++stone;
+                }
+            }
+        }
+        final String line = "riftaround at=" + at.getX() + "," + at.getY() + "," + at.getZ() + " r=" + r
+                + " cols=" + cols + " land=" + land + " garden_limestone=" + lime + " garden_grass=" + grass
+                + " lavender=" + lavender + " elisar_stone=" + stone + " holes=" + holes + " gaps=" + gaps;
+        src.sendSuccess(() -> Component.literal(line), false);
+        return lime + grass;
+    }
+
+    /**
+     * Рев 14.42: {@code /riftdtwhy} — почему в этом биоме нет деревьев Dynamic Trees.
+     *
+     * <p>Печатает три факта, каждый из которых может быть причиной «аддон ничего не меняет»:
+     * {@code biome_top=} (биом на высоте мира, по нему DT выбирает плотность и вид),
+     * {@code dt_features=}/{@code has_dt=} (есть ли вообще в generationSettings этого биома
+     * фича {@code dynamictrees:dynamic_tree} — её добавляет Forge-модификатор DT),
+     * {@code ground=} (что находит НАШ GroundFinder под игроком).
+     */
+    private static int dtWhy(CommandSourceStack src) {
+        var level = src.getLevel();
+        BlockPos at = BlockPos.containing(src.getPosition());
+        var topBiome = level.getUncachedNoiseBiome(at.getX() >> 2, level.getMaxBuildHeight() >> 2, at.getZ() >> 2);
+        var surfBiome = level.getBiome(at);
+        int feats = 0;
+        boolean hasDt = false;
+        var gens = surfBiome.value().getGenerationSettings();
+        for (int step = 0; step < gens.features().size(); ++step) {
+            var set = gens.features().get(step);
+            for (var h : set) {
+                ++feats;
+                String id = h.unwrapKey().map(k -> k.location().toString()).orElse("?");
+                if (id.startsWith("dynamictrees:")) hasDt = true;
+            }
+        }
+        String topName = topBiome.unwrapKey().map(k -> k.location().toString()).orElse("?");
+        String surfName = surfBiome.unwrapKey().map(k -> k.location().toString()).orElse("?");
+        BlockPos ground = ru.aiforge.riftworld.world.DtGround.groundFor(level, at);
+        final String line = "riftdtwhy at=" + at.getX() + "," + at.getY() + "," + at.getZ()
+                + " biome_surface=" + surfName + " biome_top=" + topName
+                + " dt_features=" + feats + " has_dt=" + hasDt
+                + " ground=" + (ground == null ? "-" : ground.getY() + ":" + level.getBlockState(ground).getBlock());
+        src.sendSuccess(() -> Component.literal(line), false);
+        return hasDt ? 1 : 0;
+    }
+
+    /**
+     * Рев 14.40: {@code /riftaround r} — честная проба земли вокруг вызывающего.
+     *
+     * <p>Печатает {@code garden_limestone=… garden_grass=… lavender=… holes=…}. Первые три числа
+     * доказывают, что /locate biome привёл на настоящий садовый остров (а не на чужую структуру
+     * в море), а {@code holes=} — число колонок, у которых под поверхностью есть пустота
+     * до бедрока (владелец: «под этими островами дыры до бедрока»).
+     */
+    private static int around(CommandSourceStack src, int r) {
+        var level = src.getLevel();
+        BlockPos at = BlockPos.containing(src.getPosition());
         int lime = 0, grass = 0, stone = 0, lavender = 0, holes = 0, cols = 0;
         int y0 = Math.max(level.getMinBuildHeight(), at.getY() - 40);
         int y1 = Math.min(level.getMaxBuildHeight() - 1, at.getY() + 40);
