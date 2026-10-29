@@ -831,10 +831,16 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                     // читался «пятачками». На фото подпорная стенка идёт по ВСЕМУ уступу. Считаем
                     // уступом любой перепад от 3 блоков и ставим кладку у каждого такого столбца —
                     // вдоль контура террасы получается непрерывная лента.
+                    // Рев 14.58, по кадру 52 итерации 54: кладка обходила маленькие террасы
+                    // по кругу и площадки читались «каменными вазами». На референсе стенка стоит
+                    // только на ВНЕШНЕЙ стороне склона — то есть там, где сосед ниже и при этом
+                    // дальше от центра луга. Так получаются длинные подпорные ленты по склону.
                     boolean step = false;
                     for (Direction d : Direction.Plane.HORIZONTAL) {
                         Col n = cols[dx + 1 + d.getStepX()][dz + 1 + d.getStepZ()];
-                        if (n.isl != null && n.top <= c.top - 3) { step = true; break; }
+                        if (n.isl == null || n.top > c.top - 3) continue;
+                        double outward = d.getStepX() * (px - c.isl.cx) + d.getStepZ() * (pz - c.isl.cz);
+                        if (outward > 0) { step = true; break; }
                     }
                     if (step) {
                         // Рев 14.40, по референсу 04: подпорные стенки террас на фото — светлый
