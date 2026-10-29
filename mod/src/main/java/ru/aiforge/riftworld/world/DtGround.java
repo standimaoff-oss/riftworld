@@ -98,21 +98,48 @@ public final class DtGround {
                 if (path.contains("leaves") || path.contains("bloom") || path.contains("lavender")
                         || path.endsWith("_bed") || path.contains("tall_grass") || path.contains("flowers")) continue;
             }
-            // Рев 14.45: хватит ОДНОЙ свободной клетки над грунтом. Требование двух подряд
-            // отбрасывало грядки лаванды (блок-куст + цветок сверху) и луговую траву: DT уходил
-            // вниз по колонке и «находил грунт» в скале под рекой — почва не подходила, дерево
-            // не ставилось (ровно то, на что жалуется владелец).
+            // Рев 14.49 — ПОЧЕМУ ДЕРЕВЬЯ НЕ ПОЯВЛЯЛИСЬ В ХОЛМАХ, хотя вид находился.
+            // Над каждой грядкой лаванды стоит блок-куст (он в теге replaceable_by_trees, поэтому
+            // «место свободно»), DT начинал растить ствол в занятую клетку и молча возвращал
+            // FAIL_GENERATION. Дереву нужна НАСТОЯЩАЯ пустая клетка над почвой, а не «заменяемая».
+            // Плюс почва должна быть объявлена в DT (иначе FAIL_SOIL, как было у известняка):
+            // проверяем это через SoilHelper, чтобы не полагаться на догадки.
             p.move(0, 1, 0);
-            if (fits(level, p, sea)) return p.below().immutable();
+            boolean free = openAbove(level, p, sea) && isDtSoil(level, p.below());
             p.move(0, -1, 0);
+            if (free) return p.immutable();
         }
         return null;
     }
 
-    /** Годится ли клетка под ствол: воздух, растения из тега replaceable_by_trees, а под водой — ещё и вода. */
-    private static boolean fits(LevelAccessor level, BlockPos p, boolean sea) {
+    /** Свободна ли клетка НАД почвой: настоящий воздух (под водой — вода), а не куст из тега replaceable. */
+    private static boolean openAbove(LevelAccessor level, BlockPos p, boolean sea) {
         BlockState s = level.getBlockState(p);
         if (sea) return s.isAir() || !s.getFluidState().isEmpty();
-        return s.isAir() || s.is(net.minecraft.tags.BlockTags.REPLACEABLE_BY_TREES);
+        return s.isAir();
+    }
+
+    /** Объявлен ли блок почвой в Dynamic Trees (реестр SoilHelper), т.е. дерево вообще имеет право тут встать. */
+    private static boolean isDtSoil(LevelAccessor level, BlockPos p) {
+        if (SOIL_CHECK == null) return true;                 // DT недоступен — не мешаем
+        try {
+            return (Boolean) SOIL_CHECK.invoke(null, level.getBlockState(p), DIRT_FLAGS);
+        } catch (Throwable t) {
+            return true;
+        }
+    }
+
+    private static java.lang.reflect.Method SOIL_CHECK;
+    private static Object DIRT_FLAGS;
+
+    static {
+        try {
+            Class<?> helper = Class.forName("com.ferreusveritas.dynamictrees.block.rooty.SoilHelper");
+            DIRT_FLAGS = helper.getMethod("getSoilFlags", String[].class).invoke(null, (Object) new String[]{"dirt_like"});
+            SOIL_CHECK = helper.getMethod("isSoilAcceptable",
+                    net.minecraft.world.level.block.state.BlockState.class, int.class);
+        } catch (Throwable ignored) {
+            SOIL_CHECK = null;                                // аддон собирается и без DT
+        }
     }
 }
