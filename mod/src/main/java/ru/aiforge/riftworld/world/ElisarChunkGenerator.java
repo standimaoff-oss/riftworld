@@ -817,11 +817,15 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                     // Рев 14.42: стенка ставится только там, где сосед НИЖЕ на целую террасу (5 блоков),
                     // и только на два блока в высоту. Прежде порог был «на 2 блока ниже» и высота 3:
                     // на каждом перепаде вырастали каменные башни-кучи (кадр 51 итерации 38).
-                    boolean step = false;
+                    // Рев 14.55: стенка ставится вдоль КОНТУРА террасы — там, где хотя бы два соседа
+                    // ниже на целую ступень. Одиночные перепады (их даёт шум кромки) больше не
+                    // превращаются в серые тумбы посреди поля, как на кадре 51 итерации 49.
+                    int drops = 0;
                     for (Direction d : Direction.Plane.HORIZONTAL) {
                         Col n = cols[dx + 1 + d.getStepX()][dz + 1 + d.getStepZ()];
-                        if (n.isl != null && n.top <= c.top - (VIOLET_STEP - 1)) { step = true; break; }
+                        if (n.isl != null && n.top <= c.top - (VIOLET_STEP - 1)) ++drops;
                     }
+                    boolean step = drops >= 2;
                     if (step) {
                         // Рев 14.40, по референсу 04: подпорные стенки террас на фото — светлый
                         // известняк, а не городская кладка. Было ashlar + мшистый кирпич: на кадре 50
@@ -1534,7 +1538,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         // на референсе 04 деревья стоят прямо в полях — расчищаем грядку под ствол, иначе DT
         // отказывается сажать в занятую клетку и молча ничего не делает
         DtGround.clearAbove(level, ground, 3);
-        int radius = 4 + (int) (hash(x, z, 774) * 4);      // 4..7
+        // Рев 14.55: на референсе 04 кроны крупные и пышные — берём верхние радиусы DT
+        int radius = 6 + (int) (hash(x, z, 774) * 3);      // 6..8
         DtTrees.plant(level, species, ground, radius, (int) (hash(x, z, 775) * 4));
     }
 
