@@ -70,7 +70,7 @@ jobs:
           # так что от maven-артефакта сборка больше не зависит.
           ok=0
           for attempt in 1 2 3; do
-            if ./gradlew jar dtJar --no-daemon --console=plain 2>&1 | tee ../ci-out/build.log; then
+            if ./gradlew jar dtJar --no-daemon --console=plain -PdtMaven="$GITHUB_WORKSPACE/ci/maven" 2>&1 | tee ../ci-out/build.log; then
               ok=1; break
             fi
             echo "== gradle попытка $attempt упала (сеть/Maven), повтор через 20 c"
@@ -98,7 +98,27 @@ jobs:
             fi
             rm -f "$OUT.tmp"
           done
-          [ -f "$OUT" ] || echo "::warning title=DT::Dynamic Trees не скачался — аддон проверить не выйдет"
+          if [ ! -f "$OUT" ]; then
+            echo "::warning title=DT::Dynamic Trees не скачался — аддон проверить не выйдет"
+            exit 0
+          fi
+          # Рев 15.3: раскладываем jar в ЛОКАЛЬНЫЙ maven с корректным pom — иначе ForgeGradle
+          # тянет битый pom с harleyoconnor.com и валит всю сборку, а простой файл не деобфусцируется.
+          M=ci/maven/com/ferreusveritas/dynamictrees/DynamicTrees-1.20.1/${DTVER}
+          mkdir -p "$M"
+          cp "$OUT" "$M/DynamicTrees-1.20.1-${DTVER}.jar"
+          if [ ! -f "$M/DynamicTrees-1.20.1-${DTVER}.pom" ]; then
+            printf '%s\n' '<?xml version="1.0" encoding="UTF-8"?>' \
+              '<project xmlns="http://maven.apache.org/POM/4.0.0">' \
+              '  <modelVersion>4.0.0</modelVersion>' \
+              '  <groupId>com.ferreusveritas.dynamictrees</groupId>' \
+              "  <artifactId>DynamicTrees-1.20.1</artifactId>" \
+              "  <version>${DTVER}</version>" \
+              '  <packaging>jar</packaging>' \
+              '</project>' > "$M/DynamicTrees-1.20.1-${DTVER}.pom"
+          fi
+          echo "локальный maven: $M"
+          ls -l "$M"
 
       - name: Boot Forge server with the mod and probe it
         id: server
@@ -121,6 +141,7 @@ jobs:
           # Мод-листы клиента и сервера обязаны совпадать, иначе Forge выкинет «Incompatible mod set».
           WITH_DT: "1"
           DT_JAR: ${{ github.workspace }}/ci/dt/dynamictrees.jar
+          DT_MAVEN: ${{ github.workspace }}/ci/maven
         run: |
           bash tools/ci/client_check.sh
           rc=$?

@@ -610,6 +610,16 @@ public final class SeaProbeCommand {
         String topName = topBiome.unwrapKey().map(k -> k.location().toString()).orElse("?");
         String surfName = surfBiome.unwrapKey().map(k -> k.location().toString()).orElse("?");
         BlockPos ground = ru.aiforge.riftworld.world.DtGround.groundFor(level, at);
+        String soilOk;
+        try {
+            Class<?> helper = Class.forName("com.ferreusveritas.dynamictrees.block.rooty.SoilHelper");
+            Object flags = helper.getMethod("getSoilFlags", String[].class).invoke(null, (Object) new String[]{"dirt_like"});
+            boolean ok = ground != null && (Boolean) helper.getMethod("isSoilAcceptable",
+                    BlockState.class, int.class).invoke(null, level.getBlockState(ground), flags);
+            soilOk = String.valueOf(ok);
+        } catch (Throwable t) {
+            soilOk = "?";
+        }
         // Рев 14.48: спрашиваем у САМОЙ базы DT, какой вид она выдаёт для этого биома. Иначе
         // «dt=0» снова гадание: вид может быть null (UNHANDLED_BIOME) или почва не подходит.
         String dtSp;
@@ -631,7 +641,8 @@ public final class SeaProbeCommand {
         final String line = "riftdtwhy at=" + at.getX() + "," + at.getY() + "," + at.getZ()
                 + " biome_surface=" + surfName + " biome_top=" + topName + " biome_y0=" + atY0
                 + " dt_features=" + feats + " has_dt=" + hasDt + " dt_species=" + dtSp
-                + " ground=" + (ground == null ? "-" : ground.getY() + ":" + level.getBlockState(ground).getBlock());
+                + " ground=" + (ground == null ? "-" : ground.getY() + ":" + level.getBlockState(ground).getBlock())
+                + " soil_ok=" + soilOk;
         src.sendSuccess(() -> Component.literal(line), false);
         return hasDt ? 1 : 0;
     }

@@ -144,6 +144,12 @@ minecraft {
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
+    // Рев 15.3: ЛОКАЛЬНЫЙ maven с Dynamic Trees. CI скачивает jar обычным curl-ом и кладёт сюда
+    // вместе с корректным pom.xml. Почему так: удалённый maven DT периодически отдаёт БИТЫЙ pom
+    // ("Already seen doctype") — он оседает в кеше Gradle и валит сборку целиком; а подключить
+    // DT просто файлом нельзя: dev-клиенту нужен ДЕОБФУСЦИРОВАННЫЙ jar, и делает это только
+    // ForgeGradle при обычной maven-зависимости (fg.deobf по файлу даёт обф jar → NoSuchMethodError).
+    maven { url = uri(project.findProperty('dtMaven') ?: "${rootDir}/../ci/maven") }
     // Offline-friendly: anything we manually pre-seeded into ~/.m2 is honoured first (flaky-network repair path).
     mavenLocal()
     // Рев 14.2: maven.minecraftforge.net периодически отдаёт библиотеки Minecraft обрезанными
@@ -190,20 +196,15 @@ dependencies {
 
     // Рев 11: Dynamic Trees нужен только для живой проверки аддона (./gradlew runClient -PwithDT).
     // В обычной сборке зависимость не тянется — мод остаётся самостоятельным.
-    // Рев 15: Dynamic Trees НЕ резолвится из maven. Там лежит битый pom ("Already seen doctype"),
-    // он оседает в кеше Gradle и валит уже сам Forge userdev ("Invalid patcher dependency") —
-    // сборка падала на этапе конфигурации, даже без нашего кода.
-    // Теперь для живой проверки аддона передаётся ПУТЬ к уже скачанному jar:
-    //   ./gradlew runClient -PwithDT -PdtJarPath=/abs/path/DynamicTrees.jar
-    // (ForgeGradle сам делает deobf локального файла).
+    // Рев 15.3: DT берётся из ЛОКАЛЬНОГО maven (ci/maven, его наполняет CI) — -PdtMaven.
+    // Удалённый maven DT периодически отдаёт битый pom ("Already seen doctype"), он оседает
+    // в кеше Gradle и валит сборку целиком. Подключение просто файлом не годится: dev-клиенту
+    // нужен ДЕОБФУСЦИРОВАННЫЙ jar, а деобф делает ForgeGradle только для maven-координаты
+    // (fg.deobf по файлу оставлял обф jar → NoSuchMethodError ResourceLocation.getNamespace).
+    //   ./gradlew runClient -PwithDT -PdtMaven=/abs/path/ci/maven
     if (project.hasProperty('withDT')) {
-        def dtPath = project.findProperty('dtJarPath') ?: System.getenv('DT_JAR')
-        if (dtPath != null && file(dtPath).exists()) {
-            runtimeOnly fg.deobf(files(dtPath))
-            println "DT: локальный jar -> ${dtPath}"
-        } else {
-            println "DT: withDT задан, но dtJarPath/DT_JAR не указывает на существующий jar — DT не подключён"
-        }
+        runtimeOnly fg.deobf("com.ferreusveritas.dynamictrees:DynamicTrees-${minecraft_version}:${dynamic_trees_version}")
+        println "DT: com.ferreusveritas.dynamictrees:DynamicTrees-${minecraft_version}:${dynamic_trees_version} (деобф через ForgeGradle)"
     }
 }
 

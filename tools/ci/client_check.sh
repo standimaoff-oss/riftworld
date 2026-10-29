@@ -129,7 +129,7 @@ start_client() {
     ./gradlew runClient --no-daemon --console=plain \
       -PrunDir="$PWD/../$RUN" \
       -PautoJoin=127.0.0.1:25565 \
-      ${WITH_DT:+-PwithDT} ${DT_JAR:+-PdtJarPath=$DT_JAR} 2>&1
+      ${WITH_DT:+-PwithDT} ${DT_MAVEN:+-PdtMaven=$DT_MAVEN} 2>&1
   ) > "$OUT/client.log" 2>&1 &
   CPID=$!
 }
