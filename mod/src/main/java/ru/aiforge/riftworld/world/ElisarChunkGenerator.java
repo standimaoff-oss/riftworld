@@ -1482,11 +1482,50 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         // только фичи модов (DT и т.п.).
         try {
             super.applyBiomeDecoration(level, chunk, sm);
+        } catch (Throwable err2) {
+        }
+        // Рев 14.50: и СВОЙ проход посадки деревьев DT — через API аддона (см. DtTrees).
+        try {
+            dtTrees(level, x0, z0);
         } catch (Throwable err) {
             if (FEATURE_FAILS.getAndIncrement() == 0)
                 org.apache.logging.log4j.LogManager.getLogger("riftworld").warn(
                         "biome decoration features failed once (run continues): " + err);
         }
+    }
+
+    /**
+     * Рев 14.50: посадка деревьев Dynamic Trees в НАШЕМ проходе декорации.
+     *
+     * <p>Своя фича DT в этом измерении не срабатывает (см. {@link DtTrees}), поэтому деревья
+     * ставим сами — но именно DT, с его стволами, ветвями, корнями и посадочной ямкой. Точки
+     * детерминированы от сида чанка, грунт берём у {@link DtGround} (он проверяет, что над землёй
+     * есть настоящий воздух) — так дерево не встаёт посреди грядки лаванды или в реку.
+     *
+     * <p>Всё внутри своего чанка (2..13 по обеим осям), поэтому крона не вылезает за границу.
+     */
+    private static void dtTrees(WorldGenLevel level, int x0, int z0) {
+        CityPlan plan = CityPlan.get();
+        double cx = x0 + 8.5, cz = z0 + 8.5;
+        String species;
+        double chance;
+        if (VioletHills.inside(cx, cz)) {                 // холмы: сиреневое дерево на луговой полосе
+            species = "riftworlddt:violet"; chance = 0.55;
+        } else if (SizoGrove.inside(cx, cz)) {            // роща: сизо (редко великан)
+            species = (hash(x0, z0, 771) < 0.20) ? "riftworlddt:giant_sizo" : "riftworlddt:sizo";
+            chance = 0.75;
+        } else {
+            return;
+        }
+        if (hash(x0, z0, 770) > chance) return;
+        int x = x0 + 2 + (int) (hash(x0, z0, 772) * 12);
+        int z = z0 + 2 + (int) (hash(x0, z0, 773) * 12);
+        BlockPos start = new BlockPos(x, level.getMaxBuildHeight() - 2, z);
+        BlockPos ground = DtGround.groundFor(level, start);
+        if (ground == null || ground.getY() < plan.ocean + 1) return;   // только суша
+        if (species.contains("violet") && !VioletHills.inside(x + 0.5, z + 0.5)) return;
+        int radius = 4 + (int) (hash(x, z, 774) * 4);      // 4..7
+        DtTrees.plant(level, species, ground, radius, (int) (hash(x, z, 775) * 4));
     }
 
     /** Счётчик сбоев чужих фич: логируем только первый, чтобы не залить лог. */
