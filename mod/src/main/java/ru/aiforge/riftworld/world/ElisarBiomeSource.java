@@ -67,10 +67,12 @@ public class ElisarBiomeSource extends BiomeSource {
         // ни деревьев в холмах/роще, ни диких кораллов на рифе.
         // Теперь на ГАРАНТИРОВАННОЙ суше острова (landAt — та же функция, что строит рельеф)
         // биом острова отдаётся на любой высоте: и DT получает нужный вид, и /locate остаётся на суше.
-        if (at != null && WaterfallGardens.landAt(x, z) != null) {
-            if (at.kind == WaterfallGardens.KIND) return gardens;
-            if (at.kind == SizoGrove.KIND) return sizo;
-            if (at.kind == 7) return violet;
+        if (at != null) {
+            // у садов остров продолжается под водой голыми ярусами — там нужен landAt с отступом;
+            // у рощи и холмов своя проверка "суша с запасом от кромки" (inside)
+            if (at.kind == WaterfallGardens.KIND && WaterfallGardens.landAt(x, z) != null) return gardens;
+            if (at.kind == SizoGrove.KIND && SizoGrove.inside(x, z)) return sizo;
+            if (at.kind == 7 && VioletHills.inside(x, z)) return violet;
         }
         // Биомы суши живут ТОЛЬКО выше уровня моря: у садов и рощи остров продолжается под водой
         // голыми каменными ярусами, и без этой проверки /locate biome отдавал точку в море —
