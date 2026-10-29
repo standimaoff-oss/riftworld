@@ -64,7 +64,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
 
     // ================================================================== column model
     /** Surface kinds. */
-    static final int S_GRASS = 0, S_COBBLE = 1, S_PATH = 2, S_PLANK = 3, S_PLOT = 4;
+    static final int S_GRASS = 0, S_COBBLE = 1, S_PATH = 2, S_PLANK = 3, S_PLOT = 4, S_BARE = 5;
 
     static final class Col {
         CityPlan.Island isl;
@@ -282,6 +282,9 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                     top = o <= 0 ? es.y : es.y + (top - es.y) * smooth(o / 6.0);
                 }
             } else if (isl.kind == 7) {                                // violet meadow: plateaus under the two churches
+                // Рев 14.29, по референсу 04: поля лаванды лежат ТЕРРАСАМИ по 3 блока — на фото
+                // склоны разбиты на грядки-ступени с земляными подпорными стенками.
+                top = violetTerrace(top);
                 VioletHills.Region vr = VioletHills.regionAt(px, pz);
                 if (vr != null && vr.meadow == isl) {
                     double oA = vr.churchA.outside(px, pz), oB = vr.churchB.outside(px, pz);
@@ -355,11 +358,11 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             c.bottom = Math.max(plan.ocean + 6, (int) Math.floor(c.top - depth - stal));
             c.bottom = Math.min(c.bottom, c.top - 2);
             if (isl.kind == WaterfallGardens.KIND) {
-                // Рев 14.26: ниже нижней полки (она на уровне моря) — ТОЛЬКО основание острова.
-                // Оно уходит под воду, поэтому между островами архипелага читается река в каменных
-                // берегах, а не «висящий» над водой край.
-                c.bottom = Math.min(c.bottom, plan.ocean - 3);
-                c.bottom = Math.max(c.bottom, plan.ocean - 34);
+                // Рев 14.28: под водой — только камень. Подводные ярусы помечаем S_BARE: ни травы,
+                // ни плюща, ни прудов; и под островом больше нет пустоты до бедрока — ствол
+                // острова продолжается камнем вниз (см. заливку в блоке постройки тела острова).
+                if (c.top <= plan.ocean) c.surface = S_BARE;
+                c.bottom = Math.min(c.bottom, Math.min(plan.ocean - 2, c.top - 4));
             }
             // roads & plazas
             double rd = 1e9;
@@ -489,10 +492,12 @@ public class ElisarChunkGenerator extends ChunkGenerator {
      */
     public static double gardenProfile(CityPlan.Island isl, double px, double pz, int ocean) {
         double t = Math.max(0.0, Math.min(1.0, isl.t(px, pz)));
-        // Рев 14.26: «последний уровень на высоте моря, ниже — только основание острова».
-        // Кромка острова приходится ровно на уровень моря (terraceTop вернёт ocean при h <= 0),
-        // поэтому нижняя полка — вровень с водой, а не висит над ней.
-        double rim = ocean + 1.2;      // кромка ровно на высоте моря (полка y=ocean+1)
+        // Рев 14.28: «ниже уровня моря должны быть ещё 1–2 пустых каменных яруса». Внешние два яруса
+        // острова уходят ПОД воду: это голые известняковые полки (без травы, плюща и прудов),
+        // поэтому остров читается глубоким, «растущим» из моря, а не подвешенным на воде.
+        if (t < 0.13) return ocean - 2 * STEP;
+        if (t < 0.26) return ocean - STEP;
+        double rim = ocean + 1.2;      // первая надводная полка — ровно на высоте моря
         // Рев 14.11: гора выше и круче: на фото от воды до верхней полки 4–5 ярусов по 8–12 блоков.
         double dome = rim + (isl.base + 8 - rim) * Math.pow(t, 0.85);
         // Рев 14.12: только КРУПНЫЙ шум. Мелкий (шаг 0.09) рвал кромки полок на зубцы — на фото
@@ -500,6 +505,11 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         dome += 4.6 * (vnoise(px * 0.028, pz * 0.028, 61) - 0.5);  // языки полок
         dome += 1.1 * (vnoise(px * 0.055, pz * 0.055, 62) - 0.5);  // лёгкая волна кромки
         return dome;
+    }
+
+    /** Фиолетовые холмы: поля-террасы по 3 блока с земляными стенками (референс 04). */
+    private static double violetTerrace(double top) {
+        return Math.floor(top / 3.0) * 3.0 + 2.0;
     }
 
     /** Terraced top estimate of a garden column (bridge anchor heights in WaterfallGardens). */
@@ -630,6 +640,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                 case S_PLOT -> cobble;         // pebble apron around the houses (reference)
                                 default -> {
                                     if (c.garden) {
+                                        // Рев 14.28: подводная полка острова — голый камень (S_BARE)
+                                        if (c.surface == S_BARE) yield hash(x, z, 65) < 0.3 ? limeMossy : lime;
                                         // Рев 14: фонарь в источнике был рукотворным предметом — на референсе
                                         // только природная вода и камень. Убран.
                                         if (c.pondRim || c.pond) yield st(ru.aiforge.riftworld.registry.CastleBlocks.ASHLAR);            // travertine
@@ -650,10 +662,11 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                             : (c.isl.kind != 4 && vnoise(x * 0.11, z * 0.11, 21) > 0.74 || hash(x, z, 23) < 0.012) ? moss : grass;
                                 }
                             };
-                        } else if (y == c.top - 1) {
+                        } else if (y == c.top - 1 || (c.isl.kind == 7 && y >= c.top - 2)) {
                             // Рев 14: под травой полки — не кремовая корка, а слой земли/камня,
                             // как на референсе: трава не «наклеена» на известняк.
-                            s = c.garden ? soil : crust;
+                            // Рев 14.29: у Фиолетовых холмов подпорные стенки террас — земля.
+                            s = c.garden || c.isl.kind == 7 ? soil : crust;
                         } else if (c.garden && y >= c.top - 14) {
                             // стены полок — светлый известняк пластами (на фото обрыв цельно светлый),
                             // у подножия — мшистый
@@ -668,6 +681,15 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                     && vnoise(x * 0.33, z * 0.33, 313) > 0.80 && hash(x, y, z) < 0.88) s = aurite;
                         }
                         chunk.setBlockState(mp.set(x, y, z), s, false);
+                    }
+                    if (c.isl.kind == WaterfallGardens.KIND) {
+                        // Рев 14.28: под островом садов НЕТ пустоты до бедрока — ствол острова
+                        // продолжается камнем вниз. Нижняя полка и «пустые ярусы» остаются
+                        // наружным силуэтом, а не дырой под землёй.
+                        for (int y = MIN_Y + 2; y < c.bottom; ++y) {
+                            BlockState base = hash(x, y, z) < 0.18 ? limeMossy : stone;
+                            chunk.setBlockState(mp.set(x, y, z), base, false);
+                        }
                     }
                     // half-step slabs where a street climbs one block (smooth walking, no hard ledges)
                     if (c.surface == S_COBBLE && c.waterTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE && c.fallTop == Integer.MIN_VALUE) {
@@ -691,25 +713,32 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                             chunk.setBlockState(mp.set(x, c.top + 1, z), fs, false);
                         } else {
                             boolean violet = c.isl.kind == 7 || (c.isl.kind != 4 && VioletHills.inside(x + 0.5, z + 0.5));
-                            if (violet) {                                  // biome 04: drift FIELDS of lavender rows (the reference carpet)
+                            if (violet) {
+                                // Рев 14.29, по референсу 04: ПОЛЯ ЛАВАНДЫ РЯДАМИ. На фото это
+                                // сплошные грядки через 2 блока, одна полоса — один оттенок, а
+                                // между массивами остаются зелёные луговины. Раньше цветы стояли
+                                // пятнами по шуму, и с воздуха читались «веснушками», а не полем.
                                 double field = vnoise(x * 0.021, z * 0.021, 92);
                                 double edge = vnoise(x * 0.09, z * 0.09, 90);
-                                if (field > 0.62) {                        // planted drift: wavy stripes, ~90% cover on rows
-                                    double ph = x * 0.866 + z * 0.5 + vnoise(x * 0.03, z * 0.03, 93) * 4.2;
-                                    int per = (int) Math.floor(ph) & 7;
-                                    boolean planted = per <= 2 || per == 5;
-                                    if (planted && h < 0.93) {
+                                if (field > 0.52) {
+                                    double ph = x * 0.866 + z * 0.5 + vnoise(x * 0.02, z * 0.02, 93) * 6.0;
+                                    int row = (int) Math.floor(ph) & 3;      // 2 грядки, 2 борозды
+                                    if (row <= 1) {
+                                        double band = vnoise(x * 0.012, z * 0.012, 94);
+                                        BlockState bloom = st(band < 0.42 ? ElisarBlocks.VIOLET_BLOOM
+                                                : band < 0.78 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM);
+                                        chunk.setBlockState(mp.set(x, c.top + 1, z), bloom, false);
+                                    } else if (h < 0.10) {
+                                        chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);   // борозда: редкая трава
+                                    }
+                                } else if (field > 0.46) {
+                                    if (h < 0.34 && edge > 0.50) {
                                         int f = (int) (hash(x, z, 91) * 100);
-                                        chunk.setBlockState(mp.set(x, c.top + 1, z), st(f < 58 ? ElisarBlocks.VIOLET_BLOOM : f < 86 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
-                                    } else if (h < 0.09) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
-                                } else if (field > 0.55) {                 // field fringe: mixed drifts
-                                    if (h < 0.30 && edge > 0.52) {
-                                        int f = (int) (hash(x, z, 91) * 100);
-                                        chunk.setBlockState(mp.set(x, c.top + 1, z), st(f < 50 ? ElisarBlocks.VIOLET_BLOOM : f < 80 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
+                                        chunk.setBlockState(mp.set(x, c.top + 1, z), st(f < 54 ? ElisarBlocks.VIOLET_BLOOM : f < 84 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
                                     } else if (h < 0.16) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
-                                } else {                                   // wild lilac meadows between fields
+                                } else {
                                     if (h < 0.14) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
-                                    else if (h < 0.17 && edge > 0.58) {
+                                    else if (h < 0.18 && edge > 0.56) {
                                         int f = (int) (hash(x, z, 91) * 3);
                                         chunk.setBlockState(mp.set(x, c.top + 1, z), st(f == 0 ? ElisarBlocks.VIOLET_BLOOM : f == 1 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
                                     }
@@ -947,7 +976,9 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         for (CityPlan.Tree t : all) {
             int dx = x - t.x, dz = z - t.z;
             // Рев 14.13: у садовых дубов широкая крона — иначе она обрезалась бы по квадрату в 4 блока
-            int reach = t.kind == SizoGrove.TREE_GIANT ? 7 : t.kind == WaterfallGardens.TREE_OAK ? 10 : 4;
+            int reach = t.kind == SizoGrove.TREE_GIANT ? 7
+                    : t.kind == WaterfallGardens.TREE_OAK ? 10
+                    : t.kind == VioletHills.TREE_VIOLET ? 8 : 4;
             if (Math.abs(dx) > reach || Math.abs(dz) > reach) continue;
             int base = t.baseY;
             if (base == Integer.MIN_VALUE) {
@@ -968,10 +999,12 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             // Рев 14: у садов свой вид дерева (kind 4) — дуб с бурой корой и зелёной кроной,
             // как на референсе; белые сизо/амбра здесь больше не растут.
             boolean gardenTree = t.kind == WaterfallGardens.TREE_OAK;
+            boolean violetTree = t.kind == VioletHills.TREE_VIOLET;
             BlockState logS = (gardenTree ? ElisarBlocks.GARDEN_LOG
-                    : sizo ? ElisarBlocks.SIZO_LOG : ElisarBlocks.AMBRA_LOG).get().defaultBlockState()
+                    : sizo || violetTree ? ElisarBlocks.SIZO_LOG : ElisarBlocks.AMBRA_LOG).get().defaultBlockState()
                     .setValue(RotatedPillarBlock.AXIS, Direction.Axis.Y);
             BlockState leaf = (gardenTree ? ElisarBlocks.GARDEN_LEAVES
+                    : violetTree ? ElisarBlocks.VIOLET_LEAVES
                     : sizo ? ElisarBlocks.SIZO_LEAVES : ElisarBlocks.AMBRA_LEAVES).get().defaultBlockState()
                     .setValue(LeavesBlock.PERSISTENT, true).setValue(LeavesBlock.DISTANCE, 1);
             // сначала листва, потом брёвна — ветки прорезают крону, а не тонут в ней
@@ -1015,7 +1048,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         java.util.Random r = new java.util.Random(t.seed * 0x9E3779B1L);
         boolean sizo = t.kind == 0;
         // Рев 14.13: дубы Висячих садов — крупные, с широкой кроной, как на референсе
-        boolean garden = t.kind == WaterfallGardens.TREE_OAK;
+        boolean garden = t.kind == WaterfallGardens.TREE_OAK || t.kind == VioletHills.TREE_VIOLET;
         int h = Math.max(5, t.h);
         java.util.function.BiConsumer<int[], Integer> put = (pos, kind) -> {
             int dx = pos[0], dy = pos[1], dz = pos[2];

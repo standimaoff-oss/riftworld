@@ -92,8 +92,10 @@ public final class CoralGrove {
     private static Site siteIn(int gx, int gz) {
         int cx = gx * CELL + CELL / 2, cz = gz * CELL + CELL / 2;
         double reef = ElisarSea.reefness(cx, cz);
-        // густота зависит от «рифовости» места: в плотном саду растение почти в каждой второй ячейке
-        if (ElisarSea.hash(gx, gz, 601) > 0.10 + reef * 0.30) return null;
+        // Рев 14.28: владелец попросил «уменьшить число и плотность больших кораллов в океане».
+        // Было 0.10 + reef*0.30 — крупные коралловые деревья стояли почти в каждой второй ячейке
+        // и забивали риф. Теперь их примерно вдвое меньше и они пятнами, а не ковром.
+        if (ElisarSea.hash(gx, gz, 601) > 0.045 + reef * 0.14) return null;
         // на высоких холмах растений нет: там уже стоят шапки куполов
         if (ElisarSea.moundHeightAt(cx, cz) > 1) return null;
         int sx = gx * CELL + 2 + (int) (ElisarSea.hash(gx, gz, 602) * (CELL - 4));

@@ -353,13 +353,14 @@ public final class ElisarSea {
         for (int ax = -1; ax <= 1; ++ax) {
             for (int az = -1; az <= 1; ++az) {
                 int cx = gx + ax, cz = gz + az;
-                if (hash(cx, cz, 477) > 0.32 + reef * 0.55) continue;          // не в каждой ячейке есть холм
+                // Рев 14.28: купола-рифы пореже (владелец: меньше больших кораллов в океане)
+                if (hash(cx, cz, 477) > 0.20 + reef * 0.35) continue;          // не в каждой ячейке есть холм
                 double px = cx * 13 + 2.5 + hash(cx, cz, 478) * 8.0;
                 double pz = cz * 13 + 2.5 + hash(cx, cz, 479) * 8.0;
                 double r = 3.2 + hash(cx, cz, 480) * 4.4;                       // радиус купола
                 double d = Math.hypot(x + 0.5 - px, z + 0.5 - pz);
                 if (d >= r) continue;
-                double hMax = 1.6 + hash(cx, cz, 481) * 3.6;                    // высота пика
+                double hMax = 1.4 + hash(cx, cz, 481) * 2.4;                    // высота пика (рев 14.28: ниже)
                 double t = 1.0 - d / r;
                 double h = hMax * t * t * (1.0 + 0.35 * t);                     // крутая вершина, пологий склон
                 if (h > best) best = h;
@@ -437,7 +438,7 @@ public final class ElisarSea {
             }
             // «роща» высоких кораллов: гнездо 3x3, где все колонки заняты оленьими рогами/хлыстами
             int gx = Math.floorDiv(x, 9), gz = Math.floorDiv(z, 9);
-            if (hash(gx, gz, 474) > 0.55 && hash(x, z, 475) < 0.55) {
+            if (hash(gx, gz, 474) > 0.72 && hash(x, z, 475) < 0.40) {     // рев 14.28: рощи реже
                 // рев 14.26: «роща» теперь из полных кубов, а не из крестиков-растений
                 BlockState thick = hash(x, z, 476) < 0.5 ? st(ElisarBlocks.CORAL_BRAIN) : capState(pal);
                 chunk.setBlockState(mp.set(x, y, z), thick, false);

@@ -47,15 +47,24 @@ public class ElisarBiomeSource extends BiomeSource {
     @Override
     public Holder<Biome> getNoiseBiome(int qx, int qy, int qz, Climate.Sampler sampler) {
         double x = qx * 4 + 2, z = qz * 4 + 2;
-        if (AshenLands.inside(qx * 4 + 2, qz * 4 + 2)) return ashen;
-        if (WaterfallGardens.inside(x, z)) return gardens;
-        if (SizoGrove.inside(x, z)) return sizo;
-        if (VioletHills.inside(x, z)) return violet;
+        // Рев 14.28 — ПРЯМО ПО ЖАЛОБЕ ВЛАДЕЛЬЦА: «/locate biome waterfall_gardens находит не биом,
+        // а структуру вообще другую». Причина была в том, что биом ставился по «региону» (круг/блоб),
+        // а рельеф — по островам из CityPlan, и это два разных источника правды: биом повисал над
+        // водой и над чужими островами, и /locate приводил в море. Теперь биом выводится ИЗ ТОГО ЖЕ
+        // острова, что строит рельеф (plan.islandAt): нет острова — нет биома, есть остров — его биом.
+        CityPlan plan = CityPlan.get();
+        CityPlan.Island at = plan.islandAt(x, z);
+        if (at != null) {
+            if (at.kind == WaterfallGardens.KIND) return gardens;
+            if (at.kind == SizoGrove.KIND) return sizo;
+            if (at.kind == 7) return violet;                       // луг Фиолетовых холмов
+        }
+        if (AshenLands.inside(x, z)) return ashen;
+        if (at != null) return def;                                // острова города, замка, руин и мелкие островки
         if (MistKeep.inside(x, z)) return mist;                    // мини-биом «Туманный данж»: дымка над столбами-останцами
         // Рев 8 «Живое море»: открытый океан получает собственные биомы по глубине и «рифовости» дна.
         // Считаем только там, где есть смысл (у воды и ниже): небо над морем остаётся обычным.
-        CityPlan plan = CityPlan.get();
-        if (qy * 4 <= plan.ocean + 8 && plan.islandAt(x, z) == null) {
+        if (qy * 4 <= plan.ocean + 8) {
             int floor = ElisarChunkGenerator.oceanFloor(plan, (int) Math.floor(x), (int) Math.floor(z));
             if (ElisarSea.reefness((int) Math.floor(x), (int) Math.floor(z)) > 0.45) return reef;   // коралловые отмели
             if (plan.ocean - floor > 46) return abyss;                                              // тёмные глубины

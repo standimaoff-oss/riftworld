@@ -67,10 +67,13 @@ public final class WaterfallGardens {
             this.cx = cx;
             this.cz = cz;
             int ocean = CityPlan.get().ocean;
-            this.big = rnd.nextDouble() < 0.5;
-            // Рев 14.26: «3–6 островов, рандомно — иногда 5 крупных, иногда 3 маленьких».
-            int n = big ? 4 + rnd.nextInt(3) : 3 + rnd.nextInt(2);
-            double rMin = big ? 24 : 12, rMax = big ? 34 : 19;
+            // Рев 14.28, уточнение владельца: «от 3 больших островов до 6 больших! они буквально
+            // почти по размерам не отличаются, но по форме отличаются, чтобы были реки между ними —
+            // ТОЛЬКО БОЛЬШИЕ ОСТРОВА». Мелких островов в садах больше нет: всегда 3–6 островов
+            // сопоставимого размера (R 30..42), а «разность» даёт форма (p1..p3 у каждого острова).
+            this.big = true;
+            int n = 3 + rnd.nextInt(4);                       // 3..6
+            double rMin = 30, rMax = 42;
             double[] rs = new double[n];
             double sum = 0;
             for (int i = 0; i < n; ++i) {
@@ -91,8 +94,8 @@ public final class WaterfallGardens {
                 double d = spread * (0.92 + rnd.nextDouble() * 0.16);
                 double x = cx + Math.cos(a) * d, z = cz + Math.sin(a) * d;
                 double R = rs[i];
-                // вершина: 3–5 ярусов у крупных островов, 2–4 у мелких
-                int peak = ocean + (int) Math.round((big ? 3.4 : 2.4) * STEP + rnd.nextDouble() * STEP);
+                // вершина: 3–5 ярусов над морем у каждого острова
+                int peak = ocean + (int) Math.round(3.2 * STEP + rnd.nextDouble() * STEP);
                 CityPlan.Island isl = new CityPlan.Island(x, z, R, peak - 8, R * 1.15 + 10,
                         rnd.nextDouble() * 6.283, rnd.nextDouble() * 6.283, rnd.nextDouble() * 6.283, KIND, 1.6);
                 isles.add(isl);
@@ -102,11 +105,11 @@ public final class WaterfallGardens {
                 // Рев 14.27: на референсе полки — ОТКРЫТЫЕ лужайки, а дубы стоят небольшой рощей
                 // в одном месте. В итерации 26 деревьев было 9–16 на остров: они закрывали и полки,
                 // и водопады (кадры 40–42 — сплошная крона). Теперь 3–7 дубов, собранных в рощу.
-                int want = big ? 4 + rnd.nextInt(4) : 3 + rnd.nextInt(3);
+                int want = 4 + rnd.nextInt(4);
                 double ga = rnd.nextDouble() * Math.PI * 2, gd = (0.15 + rnd.nextDouble() * 0.35) * R;
                 double gx = x + Math.cos(ga) * gd, gz = z + Math.sin(ga) * gd;
                 for (int k = 0, tries = 0; k < want && tries < want * 30; ++tries) {
-                    double ta = rnd.nextDouble() * Math.PI * 2, td = Math.sqrt(rnd.nextDouble()) * (big ? 13 : 8);
+                    double ta = rnd.nextDouble() * Math.PI * 2, td = Math.sqrt(rnd.nextDouble()) * 13;
                     int tx = (int) Math.floor(gx + Math.cos(ta) * td), tz = (int) Math.floor(gz + Math.sin(ta) * td);
                     if (isl.t(tx + 0.5, tz + 0.5) < 0.32) continue;
                     boolean ok = true;

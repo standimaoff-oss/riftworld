@@ -62,6 +62,23 @@ public final class ElisarSky extends DimensionSpecialEffects {
             return hit;
         }
 
+        private static long violetKey = Long.MIN_VALUE;
+        private static boolean violetHit;
+
+        /** Кешированная проверка «мы над Фиолетовыми холмами» (рев 14.29: тёплая розовая дымка). */
+        private static boolean violetAt(Vec3 p) {
+            long key = ((long) (int) Math.floor(p.x / 16) << 20) ^ (long) (int) Math.floor(p.z / 16);
+            if (key == violetKey) return violetHit;
+            boolean hit = false;
+            try {
+                hit = ru.aiforge.riftworld.world.VioletHills.inside(p.x, p.z);
+            } catch (Throwable ignored) {
+            }
+            violetKey = key;
+            violetHit = hit;
+            return hit;
+        }
+
         private static boolean inElisar() {
             var mc = net.minecraft.client.Minecraft.getInstance();
             return mc.level != null && mc.level.dimension().location().equals(ID);
@@ -114,6 +131,14 @@ public final class ElisarSky extends DimensionSpecialEffects {
                 e.setRed((float) Mth.lerp(0.92F, e.getRed(), GARDEN_HAZE.x));
                 e.setGreen((float) Mth.lerp(0.92F, e.getGreen(), GARDEN_HAZE.y));
                 e.setBlue((float) Mth.lerp(0.92F, e.getBlue(), GARDEN_HAZE.z));
+                return;
+            }
+            // Рев 14.29: у Фиолетовых холмов на референсе тёплый закатный воздух (розово-персиковый):
+            // кремовая дымка Элисара гасила лаванду в серое. Красим туман под биом.
+            if (violetAt(pos)) {
+                e.setRed((float) Mth.lerp(0.85F, e.getRed(), 0.98F));
+                e.setGreen((float) Mth.lerp(0.85F, e.getGreen(), 0.80F));
+                e.setBlue((float) Mth.lerp(0.85F, e.getBlue(), 0.84F));
                 return;
             }
             float g = gloom(e.getCamera().getPosition());

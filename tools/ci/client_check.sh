@@ -1042,6 +1042,32 @@ biome_section() {
     lookat "$((SX + 16))" "$((STOP2 - 4))" "$((SZ + 16))" "$SX" "$((STOP2 - 14))" "$SZ" 16 "46_sizo_trunks"
     lookat "$((SX + 10))" "$((STOP2 + 14))" "$((SZ + 30))" "$SX" "$((STOP2 - 6))" "$SZ" 16 "47_sizo_canopy"
   fi
+
+  # ---------- 04 «Фиолетовые холмы» (рев 14.29, по референсу reports/refs_rev4/04_violet_hills.png) ----------
+  local VL VX VZ VR VTOP VBLOOM VLEAF VFEN VLAM
+  VL=$(probe_biome violet)
+  VX=$(printf '%s' "$VL" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\1/p' | tail -1)
+  VZ=$(printf '%s' "$VL" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\2/p' | tail -1)
+  VR=$(printf '%s' "$VL" | sed -n 's/.* r=\([0-9]*\).*/\1/p' | tail -1)
+  VTOP=$(printf '%s' "$VL" | sed -n 's/.* top=\(-\?[0-9]*\).*/\1/p' | tail -1)
+  VBLOOM=$(printf '%s' "$VL" | sed -n 's/.* violet_blooms=\([0-9]*\).*/\1/p' | tail -1)
+  VLEAF=$(printf '%s' "$VL" | sed -n 's/.* violet_leaves=\([0-9]*\).*/\1/p' | tail -1)
+  VFEN=$(printf '%s' "$VL" | sed -n 's/.* fences=\([0-9]*\).*/\1/p' | tail -1)
+  VLAM=$(printf '%s' "$VL" | sed -n 's/.* lamps=\([0-9]*\).*/\1/p' | tail -1)
+  if [ -z "${VX:-}" ]; then
+    log "  FAIL /riftbiome violet не нашёл регион Фиолетовых холмов"; FAILS=$((FAILS + 1))
+  else
+    # поля лаванды: на референсе это сплошные грядки, а не редкие кустики
+    if [ "${VBLOOM:-0}" -ge 2500 ]; then log "  OK   холмы: лаванды $VBLOOM блоков"
+    else log "  FAIL холмы: лаванды ${VBLOOM:-0} (нужно >=2500 — поля грядками, как на фото)"; FAILS=$((FAILS + 1)); fi
+    # деревья с сиреневой кроной (на фото все деревья лиловые)
+    if [ "${VLEAF:-0}" -ge 150 ]; then log "  OK   холмы: сиреневой листвы $VLEAF блоков"
+    else log "  FAIL холмы: сиреневой листвы ${VLEAF:-0} (нужно >=150)"; FAILS=$((FAILS + 1)); fi
+    local VTOP2=${VTOP:-110} VRR=${VR:-80}
+    lookat "$((VX + VRR))" "$((VTOP2 + 26))" "$((VZ + VRR))" "$VX" "$((VTOP2 - 8))" "$VZ" 20 "49_violet_hills"
+    lookat "$((VX + VRR / 2))" "$((VTOP2 + 16))" "$((VZ + VRR / 2))" "$VX" "$((VTOP2 - 2))" "$VZ" 16 "50_violet_fields"
+    lookat "$((VX + VRR * 3 / 4))" "$((VTOP2 + 6))" "$((VZ + VRR / 4))" "$VX" "$((VTOP2 + 2))" "$VZ" 14 "51_violet_path"
+  fi
   EL gamemode creative TestPlayer >/dev/null 2>&1 || true
 }
 biome_section || log "  FAIL секция биомов упала с кодом $?"

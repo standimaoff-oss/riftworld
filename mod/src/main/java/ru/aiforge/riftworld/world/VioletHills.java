@@ -23,6 +23,11 @@ public final class VioletHills {
 
     /** Church template: 13 x 19, door centred in the +z (south) face, floor at local y 0 (data/riftworld/structures/ruins/church_violet*.nbt). */
     public static final int TW = 13, TD = 19;
+    /**
+     * Рев 14.29: вид дерева биома 04 — с СИРЕНЕВОЙ кроной, как на референсе 04_violet_hills.png.
+     * Раньше здесь росли белые амбра/сизо, и фиолетовыми были только поля.
+     */
+    public static final int TREE_VIOLET = 10;
 
     public static final class Church {
         public final int cx, cz, y, x0, z0, wx, wz;
@@ -107,8 +112,8 @@ public final class VioletHills {
                 boolean ok = true;
                 for (CityPlan.Tree t : trees) if (Math.abs(t.x - x) < 6 && Math.abs(t.z - z) < 6) { ok = false; break; }
                 if (!ok) continue;
-                int kind = rnd.nextDouble() < 0.55 ? 0 : 1;
-                trees.add(new CityPlan.Tree(x, z, kind, kind == 0 ? 8 + rnd.nextInt(5) : 5 + rnd.nextInt(3), rnd.nextInt(1 << 30)));
+                // на референсе все деревья поля — с лиловой кроной, разного размера
+                trees.add(new CityPlan.Tree(x, z, TREE_VIOLET, 7 + rnd.nextInt(5), rnd.nextInt(1 << 30)));
                 ++k;
             }
         }

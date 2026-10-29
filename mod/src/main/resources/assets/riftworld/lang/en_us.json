@@ -364,5 +364,6 @@
   "block.riftworld.garden_limestone_mossy": "Mossy Garden Limestone",
   "block.riftworld.garden_ivy": "Garden Ivy",
   "block.riftworld.garden_water": "Garden Spring Water",
-  "fluid_type.riftworld.garden_water": "Garden Spring Water"
+  "fluid_type.riftworld.garden_water": "Garden Spring Water",
+  "block.riftworld.violet_leaves": "Violet Leaves"
 }

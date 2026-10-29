@@ -120,6 +120,11 @@ public final class ElisarBlocks {
             ModBlocks.reg("garden_log", () -> new RotatedPillarBlock(p(MapColor.WOOD, 2.0F, SoundType.WOOD)));
     public static final RegistryObject<LeavesBlock> GARDEN_LEAVES =
             ModBlocks.reg("garden_leaves", () -> new LeavesBlock(leaves(MapColor.PLANT)));
+    // ----- Рев 14.29 «Фиолетовые холмы по референсу»: на фото деревья с СИРЕНЕВОЙ кроной
+    // (лиловые шапки над полями лаванды). У Элисара деревья белые, поэтому биому 04 нужна
+    // собственная листва — иначе поля фиолетовые, а деревья чужие.
+    public static final RegistryObject<LeavesBlock> VIOLET_LEAVES =
+            ModBlocks.reg("violet_leaves", () -> new LeavesBlock(leaves(MapColor.COLOR_PURPLE)));
     // обрывы: светлый известняк горизонтальными пластами (мох — у самого низа стены)
     public static final RegistryObject<Block> GARDEN_LIMESTONE = cube("garden_limestone", MapColor.QUARTZ, 1.5F, SoundType.STONE);
     public static final RegistryObject<Block> GARDEN_LIMESTONE_MOSSY = cube("garden_limestone_mossy", MapColor.QUARTZ, 1.5F, SoundType.STONE);

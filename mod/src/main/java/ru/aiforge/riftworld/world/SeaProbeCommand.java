@@ -377,16 +377,25 @@ public final class SeaProbeCommand {
     private static int biome(CommandSourceStack src, String name) {
         var level = src.getLevel();
         BlockPos at = src.getPlayer() != null ? src.getPlayer().blockPosition() : new BlockPos(0, 0, 0);
-        boolean gardens = !name.toLowerCase(java.util.Locale.ROOT).startsWith("sizo");
-        int found = 0, want = gardens ? WaterfallGardens.SUPER : SizoGrove.SUPER;
+        String lname = name.toLowerCase(java.util.Locale.ROOT);
+        // Рев 14.29: /riftbiome violet — Фиолетовые холмы (третий биом в порядке владельца).
+        boolean violet = lname.startsWith("violet");
+        boolean gardens = !violet && !lname.startsWith("sizo");
+        int found = 0, want = violet ? VioletHills.SUPER : gardens ? WaterfallGardens.SUPER : SizoGrove.SUPER;
         int bestX = 0, bestZ = 0, bestR = 0;
         double bestD = Double.MAX_VALUE;
         SizoGrove.Region bestSizo = null;   // Рев 14.3: для счётчика структур рощи
         WaterfallGardens.Region bestGarden = null;   // Рев 14.8: координаты водопада для кадра
+        VioletHills.Region bestViolet = null;
         for (int dx = -6; dx <= 6; ++dx) {
             for (int dz = -6; dz <= 6; ++dz) {
                 int sx = Math.floorDiv(at.getX(), want) + dx, sz = Math.floorDiv(at.getZ(), want) + dz;
-                if (gardens) {
+                if (violet) {
+                    VioletHills.Region rg = VioletHills.region(sx, sz);
+                    if (rg == null) continue;
+                    double d = Math.hypot(rg.meadow.cx - at.getX(), rg.meadow.cz - at.getZ());
+                    if (d < bestD) { bestD = d; bestViolet = rg; bestX = (int) rg.meadow.cx; bestZ = (int) rg.meadow.cz; bestR = (int) rg.meadow.R; }
+                } else if (gardens) {
                     WaterfallGardens.Region rg = WaterfallGardens.region(sx, sz);
                     if (rg == null) continue;
                     double d = Math.hypot(rg.cx - at.getX(), rg.cz - at.getZ());
@@ -444,6 +453,30 @@ public final class SeaProbeCommand {
                 }
             }
         }
+        // Рев 14.29: отдельные счётчики лаванды, сиреневой листвы, заборов и фонарей —
+        // по ним CI отличает «поля рядами» от «веснушек» и видит рукотворное у дорожек.
+        int violetBlooms = 0, violetLeaves = 0, fences = 0, lamps = 0;
+        if (violet) {
+            var bloom = new java.util.HashSet<net.minecraft.world.level.block.Block>();
+            bloom.add(ru.aiforge.riftworld.registry.ElisarBlocks.VIOLET_BLOOM.get());
+            bloom.add(ru.aiforge.riftworld.registry.ElisarBlocks.LILAC_BLOOM.get());
+            bloom.add(ru.aiforge.riftworld.registry.ElisarBlocks.PALE_BLOOM.get());
+            var vl = ru.aiforge.riftworld.registry.ElisarBlocks.VIOLET_LEAVES.get();
+            var fenceBlk = ru.aiforge.riftworld.registry.ElisarBlocks.FENCE.get();
+            for (int x = bestX - R; x <= bestX + R; x += 1) {
+                for (int z = bestZ - R; z <= bestZ + R; z += 1) {
+                    if (!level.isLoaded(new BlockPos(x, at.getY(), z))) continue;
+                    for (int y = 60; y <= 150; ++y) {
+                        BlockState bs = level.getBlockState(new BlockPos(x, y, z));
+                        if (bs.isAir()) continue;
+                        if (bloom.contains(bs.getBlock())) { violetBlooms++; continue; }
+                        if (bs.getBlock() == vl) { violetLeaves++; continue; }
+                        if (bs.getBlock() == fenceBlk) { fences++; continue; }
+                        if (bs.getBlock() instanceof net.minecraft.world.level.block.LanternBlock) lamps++;
+                    }
+                }
+            }
+        }
         String top6 = solids.entrySet().stream()
                 .sorted((a2, b2) -> b2.getValue() - a2.getValue()).limit(6)
                 .map(e2 -> e2.getKey() + "=" + e2.getValue())
@@ -467,11 +500,14 @@ public final class SeaProbeCommand {
             int[] wv = ElisarChunkGenerator.gardenWallView(bestX, bestZ, Math.max(24, bestR));
             if (wv != null) wall = wv[0] + "," + wv[1] + "," + wv[2] + ":" + wv[3] + "," + wv[4] + "," + wv[5];
         }
-        String line = "riftbiome name=" + (gardens ? "gardens" : "sizo") + " at=" + bestX + "," + bestZ
+        String vio = violet
+                ? " violet_blooms=" + violetBlooms + " violet_leaves=" + violetLeaves + " fences=" + fences + " lamps=" + lamps
+                : "";
+        String line = "riftbiome name=" + (violet ? "violet" : gardens ? "gardens" : "sizo") + " at=" + bestX + "," + bestZ
                 + " r=" + bestR + " top=" + top + " water=" + water + " garden_grass=" + gardenGrass
                 + " garden_leaves=" + leaves + " garden_logs=" + logs + " ivy=" + ivy
                 + " planks=" + planks + " lantern=" + lanterns + " struct=" + struct
-                + " fall=" + fallAt + " wall=" + wall + " blocks=" + top6;
+                + " fall=" + fallAt + " wall=" + wall + vio + " blocks=" + top6;
         src.sendSuccess(() -> Component.literal(line), false);
         found = water;
         return found;
