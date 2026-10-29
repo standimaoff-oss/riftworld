@@ -1252,6 +1252,11 @@ public class ElisarChunkGenerator extends ChunkGenerator {
     // ================================================================== decoration: buildings + props
     @Override
     public void applyBiomeDecoration(WorldGenLevel level, ChunkAccess chunk, StructureManager sm) {
+        // Рев 14.52: один раз печатаем, что этот проход вообще вызывается. Без такой отметки
+        // «dt=0» не отличить «фичи не запускаются» от «наш код не дошёл до посадки».
+        if (DECOR_FIRST.compareAndSet(false, true))
+            org.apache.logging.log4j.LogManager.getLogger("riftworld").info(
+                    "[riftworld] applyBiomeDecoration вызван впервые: чанк {}", chunk.getPos());
         CityPlan plan = CityPlan.get();
         int x0 = chunk.getPos().getMinBlockX(), z0 = chunk.getPos().getMinBlockZ();
         BoundingBox box = new BoundingBox(x0, MIN_Y, z0, x0 + 15, MIN_Y + HEIGHT - 1, z0 + 15);
@@ -1518,11 +1523,13 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             return;
         }
         if (hash(x0, z0, 770) > chance) return;
+        DT_TRY.incrementAndGet();
         int x = x0 + 2 + (int) (hash(x0, z0, 772) * 12);
         int z = z0 + 2 + (int) (hash(x0, z0, 773) * 12);
         BlockPos start = new BlockPos(x, level.getMaxBuildHeight() - 2, z);
         BlockPos ground = DtGround.groundForPlanting(level, start);
-        if (ground == null || ground.getY() < plan.ocean + 1) return;   // только суша
+        if (ground == null) { DT_NOGROUND.incrementAndGet(); return; }
+        if (ground.getY() < plan.ocean + 1) { DT_WET.incrementAndGet(); return; }
         if (species.contains("violet") && !VioletHills.inside(x + 0.5, z + 0.5)) return;
         // на референсе 04 деревья стоят прямо в полях — расчищаем грядку под ствол, иначе DT
         // отказывается сажать в занятую клетку и молча ничего не делает
@@ -1530,6 +1537,13 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         int radius = 4 + (int) (hash(x, z, 774) * 4);      // 4..7
         DtTrees.plant(level, species, ground, radius, (int) (hash(x, z, 775) * 4));
     }
+
+    static final java.util.concurrent.atomic.AtomicInteger DT_TRY = new java.util.concurrent.atomic.AtomicInteger();
+    static final java.util.concurrent.atomic.AtomicInteger DT_NOGROUND = new java.util.concurrent.atomic.AtomicInteger();
+    static final java.util.concurrent.atomic.AtomicInteger DT_WET = new java.util.concurrent.atomic.AtomicInteger();
+
+    /** Отметка «декорация началась» — один лог на весь мир. */
+    private static final java.util.concurrent.atomic.AtomicBoolean DECOR_FIRST = new java.util.concurrent.atomic.AtomicBoolean();
 
     /** Счётчик сбоев чужих фич: логируем только первый, чтобы не залить лог. */
     private static final java.util.concurrent.atomic.AtomicInteger FEATURE_FAILS = new java.util.concurrent.atomic.AtomicInteger();

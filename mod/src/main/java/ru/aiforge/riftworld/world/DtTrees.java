@@ -31,6 +31,9 @@ import org.slf4j.LoggerFactory;
  */
 public final class DtTrees {
     private static final Logger LOG = LoggerFactory.getLogger("riftworld");
+    /** Счётчики для /riftdtwhy: сколько посадок прошло и сколько DT отверг. */
+    public static final java.util.concurrent.atomic.AtomicInteger OK = new java.util.concurrent.atomic.AtomicInteger();
+    public static final java.util.concurrent.atomic.AtomicInteger FAIL = new java.util.concurrent.atomic.AtomicInteger();
     private static final AtomicBoolean INIT = new AtomicBoolean();
     private static final AtomicBoolean LOG_ONCE = new AtomicBoolean();
     private static boolean broken;
@@ -97,6 +100,7 @@ public final class DtTrees {
             }
             BlockState dirt = level.getBlockState(ground);
             if (!(Boolean) SP_CLS.getMethod("isAcceptableSoilForWorldgen", BlockState.class).invoke(species, dirt)) {
+                FAIL.incrementAndGet();
                 return false;                                  // почва не из списка вида — DT всё равно откажется
             }
             Object lc = LC_CREATE.invoke(null, level);
@@ -105,7 +109,9 @@ public final class DtTrees {
             net.minecraft.core.Direction dir = dirs[facing & 3];
             Object ctx = GC_CTOR.newInstance(lc, species, ground, ground.mutable(), level.getBiome(ground),
                     dir, radius, ANY_WG);
-            return (Boolean) GENERATE.invoke(species, ctx);
+            boolean done = (Boolean) GENERATE.invoke(species, ctx);
+            if (done) OK.incrementAndGet(); else FAIL.incrementAndGet();
+            return done;
         } catch (Throwable t) {
             if (broken) return false;
             broken = true;

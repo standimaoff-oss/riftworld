@@ -642,7 +642,11 @@ public final class SeaProbeCommand {
                 + " biome_surface=" + surfName + " biome_top=" + topName + " biome_y0=" + atY0
                 + " dt_features=" + feats + " has_dt=" + hasDt + " dt_species=" + dtSp
                 + " ground=" + (ground == null ? "-" : ground.getY() + ":" + level.getBlockState(ground).getBlock())
-                + " soil_ok=" + soilOk;
+                + " soil_ok=" + soilOk
+                + " dt_try=" + ElisarChunkGenerator.DT_TRY.get()
+                + " dt_noground=" + ElisarChunkGenerator.DT_NOGROUND.get()
+                + " dt_wet=" + ElisarChunkGenerator.DT_WET.get()
+                + " dt_planted=" + DtTrees.OK.get() + " dt_rejected=" + DtTrees.FAIL.get();
         src.sendSuccess(() -> Component.literal(line), false);
         return hasDt ? 1 : 0;
     }
