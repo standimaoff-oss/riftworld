@@ -79,6 +79,27 @@ jobs:
           [ "$ok" = "1" ]
         continue-on-error: false
 
+      # Рев 15.2: Dynamic Trees скачиваем ОДИН раз обычным curl-ом (не через Gradle!): из maven
+      # приходит битый pom, а локальный jar подключается и к серверу, и к dev-клиенту.
+      - name: Fetch Dynamic Trees jar
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          mkdir -p ci/dt
+          DTVER=$(sed -n 's/^dynamic_trees_version=//p' mod/gradle.properties | head -1)
+          OUT=ci/dt/dynamictrees.jar
+          for url in \
+            "https://harleyoconnor.com/maven/com/ferreusveritas/dynamictrees/DynamicTrees-1.20.1/${DTVER}/DynamicTrees-1.20.1-${DTVER}.jar" \
+            "https://api.cfwidget.com/mods/mc-mods/dynamic-trees/versions/${DTVER}/download"; do
+            echo "== $url"
+            if curl -fsSL --retry 2 -o "$OUT.tmp" "$url"; then
+              if unzip -l "$OUT.tmp" >/dev/null 2>&1; then mv "$OUT.tmp" "$OUT"; echo "DT jar: $(ls -l "$OUT" | awk '{print $5}') байт"; break; fi
+              echo "  это не zip — пропускаю"
+            fi
+            rm -f "$OUT.tmp"
+          done
+          [ -f "$OUT" ] || echo "::warning title=DT::Dynamic Trees не скачался — аддон проверить не выйдет"
+
       - name: Boot Forge server with the mod and probe it
         id: server
         # Рев 13.21: серверный шаг не должен «съедать» весь прогон: даже если он упал,
@@ -87,6 +108,7 @@ jobs:
         run: bash tools/ci/server_check.sh
         env:
           WITH_DT: "1"   # Рев 12: сервер тоже с Dynamic Trees + аддоном
+          DT_JAR: ${{ github.workspace }}/ci/dt/dynamictrees.jar
 
       # без игрока в измерении сервер Элисар не генерирует — съёмка и настоящие пробы идут в шаге клиента
 
@@ -94,11 +116,23 @@ jobs:
         if: always()
         timeout-minutes: 50
         env:
-          # Рев 15: клиент поднимаем БЕЗ DT (dev-классpath не тянет Dynamic Trees из maven —
-          # оттуда приходит битый pom и валит сборку). Сам аддон проверяется на сервере:
-          # DT-деревья генерируются серверной стороной, а /riftdtwild считает их блоки.
-          WITH_DT: ""
-        run: bash tools/ci/client_check.sh
+          # Рев 15.2: клиент поднимается С Dynamic Trees, но подключённым ЛОКАЛЬНЫМ jar-ом
+          # (-PdtJarPath), а не из maven — оттуда приходит битый pom и валит сборку.
+          # Мод-листы клиента и сервера обязаны совпадать, иначе Forge выкинет «Incompatible mod set».
+          WITH_DT: "1"
+          DT_JAR: ${{ github.workspace }}/ci/dt/dynamictrees.jar
+        run: |
+          bash tools/ci/client_check.sh
+          rc=$?
+          if [ "$rc" -ne 0 ]; then
+            echo "::error title=клиент::шаг клиента упал (код $rc), хвост лога ниже"
+            for f in ci-shots/client.log ci-shots/report_client.md ci-shots/probes.txt; do
+              [ -f "$f" ] || continue
+              echo "===== $f ====="
+              tail -60 "$f" | while IFS= read -r line; do echo "::error title=${f##*/}::${line:0:350}"; done
+            done
+          fi
+          exit $rc
 
       - name: Проверка серверного шага
         if: always()
@@ -126,6 +160,12 @@ jobs:
           TAG="${{ inputs.release_tag }}"
           if [ -z "$TAG" ]; then
             TAG=$(git log -1 --pretty=%B | sed -n 's/.*\[release \([^]]*\)\].*/\1/p')
+          fi
+          # Рев 15.2: страховка — если тега нет в сообщении коммита, публикуем версию из
+          # gradle.properties. Владельцу нужен jar на КАЖДОМ прогоне («ссылку на jar всегда»).
+          if [ -z "$TAG" ]; then
+            TAG="v$(sed -n 's/^mod_version=//p' mod/gradle.properties | head -1)"
+            echo "тег не задан в коммите — беру версию из gradle.properties: $TAG"
           fi
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "release tag: [$TAG]"
@@ -193,6 +233,16 @@ jobs:
           [ -n "$DTJAR" ] && cp "$DTJAR" "$DEST/$(basename "$DTJAR")" || true
           cp ci-shots/report_client.md "$DEST/" 2>/dev/null || true
           cp ci-out/report.md "$DEST/" 2>/dev/null || true
+          # Рев 15.2: лог клиента тоже кладём в репозиторий (хвост). Артефакты прогона
+          # недоступны для скачивания, и без этого «шаг клиента упал» никак не объяснить.
+          if [ -f ci-shots/client.log ]; then
+            tail -c 200000 ci-shots/client.log > "$DEST/client.log" || true
+          fi
+          if [ -f ci-shots/client_attempt1.log ]; then
+            tail -c 100000 ci-shots/client_attempt1.log > "$DEST/client_attempt1.log" || true
+          fi
+          grep -nE 'Exception|\\bERROR\\b|FATAL|Unable to load model|Missing textures' ci-shots/client.log 2>/dev/null \
+            | tail -80 > "$DEST/client_errors.txt" || true
           # индекс с прямыми ссылками на каждый кадр
           {
             echo "# Итерация $IT — кадры живого прогона"

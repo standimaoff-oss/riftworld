@@ -833,9 +833,23 @@ public final class SeaProbeCommand {
         String handler = "absent", herr = "";
         try {
             Class<?> cls = Class.forName("com.ferreusveritas.dynamictrees.api.registry.RegistryHandler");
-            // NB: static get() у DT только со String, и внутри он делает ResourceLocation.tryParse —
-            // поэтому "riftworlddt" превратился бы в minecraft:riftworlddt. Передаём полное имя.
-            Object h = cls.getMethod("get", String.class).invoke(null, "riftworlddt:riftworlddt");
+            // Рев 15.2: DT-шный get(String) сам добавляет namespace — передаём ТОЛЬКО modid.
+            // (Раньше сюда шло "riftworlddt:riftworlddt", DT клеил ещё namespace, и проба падала
+            //  с ResourceLocationException "riftworlddt:riftworlddt:riftworlddt", из-за чего в отчётах
+            //  стояло handler=error и казалось, что хендлер не встал. Блоки при этом регистрировались.)
+            Object h = null;
+            try {
+                h = cls.getMethod("get", String.class).invoke(null, "riftworlddt");
+            } catch (java.lang.reflect.InvocationTargetException ite) {
+                if (!(ite.getCause() instanceof net.minecraft.ResourceLocationException)) throw ite;
+            }
+            if (h == null) {
+                // запасной путь: ищем хендлер среди зарегистрированных по имени riftworlddt
+                Object reg = cls.getField("REGISTRY").get(null);
+                h = reg.getClass().getMethod("get", net.minecraft.resources.ResourceLocation.class)
+                        .invoke(reg, new net.minecraft.resources.ResourceLocation("dynamictrees", "riftworlddt"));
+            }
+            if (h == null) throw new NoSuchMethodException("RegistryHandler для riftworlddt не найден");
             handler = (Boolean) h.getClass().getMethod("isValid").invoke(h) ? "valid" : "invalid";
         } catch (ClassNotFoundException e) {
             handler = "no-dt";

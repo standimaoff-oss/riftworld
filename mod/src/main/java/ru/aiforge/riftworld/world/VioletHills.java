@@ -82,6 +82,10 @@ public final class VioletHills {
             double base = CityPlan.get().ocean + 26 + rnd.nextInt(9);
             this.meadow = new CityPlan.Island(cx, cz, R, base, R * 0.6 + 12, rnd.nextDouble() * 6.283, rnd.nextDouble() * 6.283,
                     rnd.nextDouble() * 6.283, 7, 0.9);
+            // Рев 15: луг ВЫТЯНУТЫЙ (см. Island.elong) — террасы идут длинными лентами через склон,
+            // как поля на референсе 04, а не кольцами вокруг вершины.
+            this.meadow.elong = 0.22 + rnd.nextDouble() * 0.22;
+            this.meadow.elongAng = rnd.nextDouble() * Math.PI;
             // the two churches face the meadow centre from opposite sides
             double th = rnd.nextDouble() * Math.PI * 2, jj = (rnd.nextDouble() - 0.5) * 0.7;
             double rr = R * 0.52;

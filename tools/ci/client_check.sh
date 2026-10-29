@@ -124,10 +124,12 @@ start_client() {
   (
     cd mod
     chmod +x gradlew
+    # Рев 15.2: Dynamic Trees подключается ЛОКАЛЬНЫМ jar-ом (-PdtJarPath), а не из maven:
+    # оттуда приходит битый pom и валит сборку ещё на этапе конфигурации.
     ./gradlew runClient --no-daemon --console=plain \
       -PrunDir="$PWD/../$RUN" \
       -PautoJoin=127.0.0.1:25565 \
-      ${WITH_DT:+-PwithDT} 2>&1
+      ${WITH_DT:+-PwithDT} ${DT_JAR:+-PdtJarPath=$DT_JAR} 2>&1
   ) > "$OUT/client.log" 2>&1 &
   CPID=$!
 }
@@ -1168,9 +1170,13 @@ biome_section() {
     if [ "${VLEAF:-0}" -ge 150 ]; then log "  OK   холмы: сиреневой листвы $VLEAF блоков"
     else log "  FAIL холмы: сиреневой листвы ${VLEAF:-0} (нужно >=150)"; FAILS=$((FAILS + 1)); fi
     local VTOP2=${VTOP:-110} VRR=${VR:-80}
-    lookat "$((VX + VRR * 3 / 4))" "$((VTOP2 + 20))" "$((VZ + VRR * 3 / 4))" "$VX" "$((VTOP2 - 6))" "$VZ" 20 "49_violet_hills"
-    lookat "$((VX + VRR / 2))" "$((VTOP2 + 9))" "$((VZ + VRR / 2))" "$VX" "$((VTOP2 - 4))" "$VZ" 16 "50_violet_fields"
-    lookat "$((VX + VRR / 3))" "$((VTOP2 + 5))" "$((VZ + VRR / 6))" "$VX" "$((VTOP2 + 1))" "$VZ" 14 "51_violet_path"
+    # Рев 15: кадры биома сняты С ЗЕМЛИ, а не с птичьего полёта. На кадрах 49–51 итерации 44
+    # (высота +20 над вершиной) поля читались сверху, и вся «красота» сводилась к цвету.
+    # Теперь: (49) склон с грядами лаванды от уровня глаз, (50) вблизи среди колодцев лаванды,
+    # (51) вид с гребня вниз по террасам — ровно те три ракурса, что на референсе.
+    lookat "$((VX + VRR * 3 / 4))" "$((VTOP2 + 3))" "$((VZ + VRR * 3 / 4))" "$VX" "$((VTOP2 + 1))" "$VZ" 18 "49_violet_hills"
+    lookat "$((VX + VRR / 2))" "$((VTOP2 + 2))" "$((VZ + VRR / 2))" "$VX" "$((VTOP2 + 4))" "$VZ" 16 "50_violet_fields"
+    lookat "$((VX + VRR / 3))" "$((VTOP2 + 6))" "$((VZ + VRR / 6))" "$VX" "$((VTOP2 - 6))" "$VZ" 16 "51_violet_path"
   fi
   local SBIO
   SBIO=$(printf '%s' "$SL" | sed -n 's/.* bio=\([^ ]*\).*/\1/p' | tail -1)

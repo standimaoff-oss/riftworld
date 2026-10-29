@@ -64,6 +64,7 @@ class Island:
     def __init__(self, cx, cz, R, base, depth, p1, p2, p3, kind=7, hill=0.9):
         self.cx, self.cz, self.R, self.base, self.depth = cx, cz, R, base, depth
         self.p1, self.p2, self.p3, self.kind, self.hill = p1, p2, p3, kind, hill
+        self.elong, self.elongAng = 0.0, 0.0
 
     def shapeR(self, th):
         return self.R * (1 + 0.07 * np.sin(3 * th + self.p1) + 0.045 * np.sin(5 * th + self.p2)
@@ -71,40 +72,46 @@ class Island:
 
     def t(self, x, z):
         dx, dz = x - self.cx, z - self.cz
-        return 1 - np.hypot(dx, dz) / self.shapeR(np.arctan2(dz, dx))
+        if self.elong == 0.0:
+            return 1 - np.hypot(dx, dz) / self.shapeR(np.arctan2(dz, dx))
+        ca, sa = np.cos(self.elongAng), np.sin(self.elongAng)
+        u = (dx * ca + dz * sa) / (1 + self.elong)
+        v = (-dx * sa + dz * ca) * (1 + self.elong)
+        return 1 - np.hypot(u, v) / self.shapeR(np.arctan2(v, u))
 
 
 OCEAN = 62
 
 # ---------------------------------------------------------------- ПАРАМЕТРЫ ДИЗАЙНА (крутить здесь)
 P = {
-    "R": 104.0,            # радиус луга
-    "rise": 30.0,          # высота холма над морем
-    "dome_pow": 1.15,      # насколько плоская вершина
-    "wave1": 5.0,          # крупные волны рельефа
-    "wave1_f": 0.0062,
-    "wave2": 1.8,
-    "wave2_f": 0.021,
-    "step": 2,             # высота яруса террасы
-    "row_h": 1.35,          # шаг грядки лаванды В ВЫСОТЕ (гряды идут по контуру)
-    "row_cover": 0.74,     # доля грядки с лавандой (остальное — трава между грядами)
-    "field_f": 0.0075,     # масштаб пятен полей
-    "field_thr": 0.42,     # порог «здесь поле», иначе пастбище
-    "field_cover": 0.72,   # внутри поля доля «лаванда», остальное — борозды/трава
-    "edge_grass": 2,       # блоков травы от кромки яруса до первой гряды
+    "R": 100.0,            # радиус луга (Java: 92..112)
+    "rise": 30.0,          # высота холма над морем (Java: base = ocean+26..34)
+    "dome_pow": 1.02,
+    "wave1": 6.2,          # крупные волны рельефа
+    "wave1_f": 0.0060,
+    "wave2": 2.4,
+    "wave2_f": 0.0165,
+    "wave3": 0.8,
+    "wave3_f": 0.047,
+    "step": 2,             # высота яруса террасы (VIOLET_STEP)
+    "row_h": 1.15,         # одна гряда на 1.15 блока подъёма (полосы по контуру)
+    "row_cover": 0.70,
+    "field_f": 0.0068,     # масштаб пятен полей
+    "field_thr": 0.34,
+    "edge_grass": 2,       # ширина травяной кромки яруса
 }
 
 
 def terrain(x, z, isl, p=P):
-    """Возвращает (top, soft, kind) — top квантованный (ярус), soft — гладкая высота."""
+    """Возвращает (top, soft, t) — ровно как ElisarChunkGenerator.violetProfile + violetTerrace."""
     t = np.clip(isl.t(x, z), 0.0, 1.0)
-    rim = OCEAN + 2.0
+    rim = OCEAN + 2.5
     dome = rim + (isl.base - rim) * np.power(t, p["dome_pow"])
     dome += p["wave1"] * (vnoise(x * p["wave1_f"], z * p["wave1_f"], 71) - 0.5) * np.sqrt(t)
     dome += p["wave2"] * (vnoise(x * p["wave2_f"], z * p["wave2_f"], 72) - 0.5) * t
-    soft = dome
+    dome += p["wave3"] * (vnoise(x * p["wave3_f"], z * p["wave3_f"], 73) - 0.5) * t
     top = np.floor(dome / p["step"]) * p["step"] + 2.0
-    return top, soft, t
+    return top, dome, t
 
 
 # ---------------------------------------------------------------- карта блока для колонки
@@ -134,41 +141,40 @@ def rim_mask(top, step, width=3):
 
 
 def surface_color(x, z, top, soft, t, isl, p=P):
-    """Цвет верха колонки + высота доп. блоков (лаванда 2 блока)."""
-    h = np.zeros(x.shape, dtype=np.float64)      # 0 — только верх, 1..2 — сколько блоков сверху
+    """Цвет верха колонки + высота доп. блоков (лаванда 2 блока) — как в Java."""
+    h = np.zeros(x.shape, dtype=np.float64)
     col = np.zeros(x.shape + (3,), dtype=np.float64)
 
-    rim = rim_mask(top, p["step"], p["edge_grass"])
-    field = vnoise(x * p["field_f"], z * p["field_f"], 92) > p["field_thr"]
+    lip = rim_mask(top, p["step"], p["edge_grass"])
+    meadow = vnoise(x * p["field_f"], z * p["field_f"], 92) < p["field_thr"]
 
-    # гряды идут ПО КОНТУРУ яруса: индекс гряды — гладкая высота / row_h
-    rowpos = soft / p["row_h"]
-    frac = rowpos - np.floor(rowpos)
-    in_row = frac < p["row_cover"]
+    rp = soft / p["row_h"]
+    frac = rp - np.floor(rp)
+    row = frac < p["row_cover"]
 
-    # каменный бортик яруса (на фото серая кладка по кромке, не везде)
-    stone = rim & (vnoise(x * 0.11, z * 0.11, 88) > 0.42)
-    lav = field & in_row & (~rim)
-    grass = ~lav & ~stone
+    lav = (~lip) & (~meadow) & row
+    furrow = (~lip) & (~meadow) & (~row)
+    grass = ~lav & ~furrow
 
     col[grass] = np.array(COL["grass"])
+    col[furrow] = np.array(COL["soil"])
     col[lav] = np.array(COL["lav"])
-    col[stone] = np.array(COL["rock"])
     v2 = vnoise(x * 0.35, z * 0.35, 97)
     col[grass & (v2 > 0.55)] = np.array(COL["grass2"])
     col[lav & (v2 > 0.62)] = np.array(COL["lav2"])
-    col[lav & (v2 > 0.88)] = np.array(COL["lav_hi"])
-    # у самой кромки яруса всегда зелёная полоса травы (как на фото)
-    col[rim & ~stone] = np.array(COL["grass2"])
-
-    h[grass & (vnoise(x * 1.7, z * 1.7, 99) > 0.93)] = 1.0    # редкие цветы
-    h[lav] = 2.0                                              # лаванда — два блока в высоту
-    h[stone] = 1.0
+    col[lav & (v2 > 0.90)] = np.array(COL["lav_hi"])
+    # редкие пятна лаванды на пастбище
+    m_lav = grass & (vnoise(x * 0.9, z * 0.9, 96) > 0.86)
+    col[m_lav] = np.array(COL["lav2"])
+    h[m_lav] = 1.0
+    h[grass & (vnoise(x * 1.7, z * 1.7, 99) > 0.93)] = 0.6
+    h[lav] = 0.85          # в симуляторе лаванда — низкий ковёр (в игре это крестики-растения)
     return col, h, lav
 
 
 def build(cx, cz, size=340, p=P):
     isl = Island(cx, cz, p["R"], OCEAN + p["rise"], 20, 1.3, 4.1, 4.3, 7, 0.9)
+    isl.elong, isl.elongAng = 0.34, 0.6
     xs = np.arange(cx - size, cx + size, dtype=np.float64) + 0.5
     zs = np.arange(cz - size, cz + size, dtype=np.float64) + 0.5
     X, Z = np.meshgrid(xs, zs)
@@ -184,7 +190,7 @@ def build(cx, cz, size=340, p=P):
 
 
 def render_perspective(sc, path, cam=(0, 0, 0), yaw=0.0, pitch=-0.06, fov=1.05, W=1280, H=640,
-                       fog=0.0075, fogcol=(246, 206, 198)):
+                       fog=0.0022, fogcol=(238, 198, 196)):
     """Классический Voxel Space: идём по колонке от ближнего к дальнему и рисуем вертикальные
     отрезки, пока верх экрана не заполнен. Даёт правильное перекрытие холмов."""
     top = sc["top"] + sc["h"]
@@ -238,9 +244,23 @@ def render_top(sc, path, scale=2):
     return path
 
 
+def surface_at(sc, x, z):
+    ix = int(x - sc["X"][0, 0])
+    iz = int(z - sc["Z"][0, 0])
+    return float(sc["top"][iz, ix])
+
+
+def shot(sc, name, x, z, yaw_deg, eye=9.0, pitch=-0.12, W=1280, H=640):
+    y = surface_at(sc, x, z) + eye
+    return render_perspective(sc, os.path.join(OUT, name), cam=(x, y, z), yaw=math.radians(yaw_deg),
+                              pitch=pitch, W=W, H=H)
+
+
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
-    sc = build(0, 0)
+    sc = build(0, 0, size=300)
     render_top(sc, os.path.join(OUT, "top.png"))
-    render_perspective(sc, os.path.join(OUT, "persp.png"), cam=(-60, 96, 150), yaw=math.radians(255), pitch=-0.06)
+    shot(sc, "persp_slope.png", 70, 95, 250, eye=12)      # с пологого склона вверх, по грядам
+    shot(sc, "persp_close.png", 20, 55, 265, eye=6)       # вблизи, среди лаванды
+    shot(sc, "persp_ridge.png", -85, -40, 40, eye=14)     # с гребня вниз через поля
     print("OK")

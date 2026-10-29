@@ -592,6 +592,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         if (d > hw + 1.6) return;
         int shelf = c.top;
         int L = shelf - 1;                                   // вода на блок ниже полки
+        if (L <= plan.ocean + 1) return;                     // на самой нижней полке ручья нет — иначе вода ниже моря
         if (d > hw) {                                        // берег: не даём воде «висеть»
             if (c.top < L + 1) { c.top = L + 1; c.bottom = Math.min(c.bottom, c.top - 3); }
             return;

@@ -52,6 +52,13 @@ public final class CityPlan {
         /** 0 = city island, 1 large, 2 medium, 3 small, 4 bowl islet (wild islands of the main biome). */
         public int kind;
         public double hill = 1.0;
+        /**
+         * Рев 15: вытянутость острова (эллипс). У Фиолетовых холмов луг должен быть ДЛИННЫМ,
+         * как на референсе 04: тогда террасы-изолинии идут длинными лентами через склон, а не
+         * концентрическими кольцами «свадебного торта». 0 — круглый остров, 0.5 — эллипс 3:2.
+         */
+        public double elong = 0.0;
+        public double elongAng = 0.0;
 
         public Island(double cx, double cz, double R, double base, double depth, double p1, double p2, double p3, int kind, double hill) {
             this.cx = cx; this.cz = cz; this.R = R; this.base = base; this.depth = depth;
@@ -69,9 +76,19 @@ public final class CityPlan {
             return R * (1 + 0.07 * Math.sin(3 * th + p1) + 0.045 * Math.sin(5 * th + p2) + 0.025 * Math.sin(11 * th + p3));
         }
 
+        /**
+         * «Глубина» точки внутри острова: 1 в центре, 0 на кромке, &lt;0 снаружи.
+         *
+         * <p>Рев 15: при {@code elong > 0} остров — ЭЛЛИПС (площадь сохраняется): растяжение
+         * считается в нормированных координатах, поэтому поля идут лентами вдоль длинной оси.
+         */
         public double t(double x, double z) {
             double dx = x - cx, dz = z - cz;
-            return 1 - Math.hypot(dx, dz) / shapeR(Math.atan2(dz, dx));
+            if (elong == 0.0) return 1 - Math.hypot(dx, dz) / shapeR(Math.atan2(dz, dx));
+            double ca = Math.cos(elongAng), sa = Math.sin(elongAng);
+            double u = (dx * ca + dz * sa) / (1 + elong);
+            double v = (-dx * sa + dz * ca) * (1 + elong);
+            return 1 - Math.hypot(u, v) / shapeR(Math.atan2(v, u));
         }
 
         public double raw(double x, double z) {

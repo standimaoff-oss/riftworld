@@ -56,8 +56,13 @@ if [ "${WITH_DT:-0}" = "1" ]; then
   [ -n "$DTJAR" ] && { cp -f "$DTJAR" "$SRV/mods/"; echo "  аддон: $(basename "$DTJAR")"; } \
     || echo "  WARN: аддон не собран (dtJar) — проверка DT будет пропущена"
   DTVER=$(sed -n 's/^dynamic_trees_version=//p' mod/gradle.properties 2>/dev/null | head -1)
-  # Приоритет 1: gradle copyDTJar — форсированная resolution, кладёт в build/dtlib/dynamictrees.jar
-  DTMAIN=$(ls mod/build/dtlib/dynamictrees.jar 2>/dev/null | head -1)
+  # Рев 15.2: приоритет 0 — jar, скачанный шагом CI (DT_JAR), тот же файл идёт в dev-клиент
+  DTMAIN=""
+  if [ -n "${DT_JAR:-}" ] && [ -f "${DT_JAR:-/nonexistent}" ]; then
+    cp -f "$DT_JAR" "$SRV/mods/dynamictrees.jar" && DTMAIN="$SRV/mods/dynamictrees.jar" && echo "  DT jar из CI-скачивания: $DT_JAR"
+  fi
+  # Приоритет 1: gradle copyDTJar — кладёт в build/dtlib/dynamictrees.jar
+  DTMAIN=${DTMAIN:-$(ls mod/build/dtlib/dynamictrees.jar 2>/dev/null | head -1)}
   [ -n "$DTMAIN" ] && echo "  DT jar из build/dtlib (copyDTJar)"
   # Приоритет 2: gradle cache — ищем ВСЮду (deobf-jar может лежать в любом подкаталоге)
   if [ -z "$DTMAIN" ]; then
