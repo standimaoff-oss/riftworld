@@ -10,13 +10,19 @@ import net.minecraft.world.level.biome.Climate;
 
 /** Elisar biomes: the Ashen Lands around the castle, Violet Hills meadows, Sizo groves, the bright island sky everywhere else. */
 public class ElisarBiomeSource extends BiomeSource {
+    // Рев 14.35 — НАСТОЯЩАЯ ПРИЧИНА «/locate приводит в воду». Поля кодека связываются с
+    // аргументами конструктора ПО ПОЗИЦИИ, а не по имени. Здесь «mist» стоял пятым, а в конструкторе
+    // пятым идёт gardens: JSON отдавал mist_keep в поле gardens и waterfall_gardens в поле mist.
+    // Итог: биом садов физически стоял над островами Туманного данжа (это и есть море!), а на самих
+    // садах числился mist_keep. /locate biome waterfall_gardens честно находил ближайший «садовый»
+    // биом — а это был островок данжа в открытом океане. Порядок теперь 1:1 с конструктором.
     public static final Codec<ElisarBiomeSource> CODEC = RecordCodecBuilder.create(i -> i.group(
             Biome.CODEC.fieldOf("default").forGetter(s -> s.def),
             Biome.CODEC.fieldOf("ashen").forGetter(s -> s.ashen),
             Biome.CODEC.fieldOf("violet").forGetter(s -> s.violet),
             Biome.CODEC.fieldOf("sizo").forGetter(s -> s.sizo),
-            Biome.CODEC.fieldOf("mist").forGetter(s -> s.mist),
             Biome.CODEC.fieldOf("gardens").forGetter(s -> s.gardens),
+            Biome.CODEC.fieldOf("mist").forGetter(s -> s.mist),
             Biome.CODEC.fieldOf("reef").forGetter(s -> s.reef),
             Biome.CODEC.fieldOf("abyss").forGetter(s -> s.abyss)).apply(i, ElisarBiomeSource::new));
 

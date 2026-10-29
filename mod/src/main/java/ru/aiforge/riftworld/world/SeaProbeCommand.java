@@ -378,19 +378,23 @@ public final class SeaProbeCommand {
     /** Рев 14.30: одна строка про колонку — биом, самый верхний непустой блок и его координата. */
     private static int where(CommandSourceStack src, int x, int z) {
         var level = src.getLevel();                     // вызывать: execute in riftworld:elisar run riftwhere x z
-        int topY = 0;
-        String top = "?";
+        int topY = 0, groundY = Integer.MIN_VALUE;
+        String top = "?", ground = "?";
+        // Рев 14.35: кроме верхнего блока печатаем ЗЕМЛЮ — первый непустой НЕ-жидкостный блок сверху.
+        // Пруд на полке садов — это законно (на референсе вода стоит на полках), а море — нет;
+        // по «top» их было не отличить.
         for (int y = 200; y >= 0; --y) {
             BlockState bs = level.getBlockState(new BlockPos(x, y, z));
             if (bs.isAir()) continue;
             var key = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(bs.getBlock());
-            topY = y;
-            top = key == null ? "?" : key.toString();
-            break;
+            String id = key == null ? "?" : key.toString();
+            if ("?".equals(top)) { topY = y; top = id; }
+            if (bs.getFluidState().isEmpty()) { groundY = y; ground = id; break; }
         }
         String biome = level.getBiome(new BlockPos(x, Math.max(topY, 64), z)).unwrapKey()
                 .map(k -> k.location().toString()).orElse("?");
         String line = "riftwhere at=" + x + "," + z + " biome=" + biome + " top=" + topY + ":" + top
+                + " ground=" + groundY + ":" + ground
                 + " sea=" + CityPlan.get().ocean
                 + " garden=" + WaterfallGardens.inside(x + 0.5, z + 0.5);
         src.sendSuccess(() -> Component.literal(line), false);
@@ -534,7 +538,12 @@ public final class SeaProbeCommand {
         String vio = violet
                 ? " violet_blooms=" + violetBlooms + " violet_leaves=" + violetLeaves + " fences=" + fences + " lamps=" + lamps
                 : "";
+        // Рев 14.35: каким биомом НА САМОМ ДЕЛЕ числится земля региона. Это ловит перепутанные
+        // поля биом-сурса (именно так «сады» оказались на островках данжа в море).
+        String hubBio = level.getBiome(new BlockPos(bestX, CityPlan.get().ocean + 6, bestZ)).unwrapKey()
+                .map(k -> k.location().toString()).orElse("?");
         String line = "riftbiome name=" + (violet ? "violet" : gardens ? "gardens" : "sizo") + " at=" + bestX + "," + bestZ
+                + " bio=" + hubBio
                 + " r=" + bestR + " top=" + top + " water=" + water + " garden_grass=" + gardenGrass
                 + " garden_leaves=" + leaves + " garden_logs=" + logs + " ivy=" + ivy
                 + " planks=" + planks + " lantern=" + lanterns + " struct=" + struct

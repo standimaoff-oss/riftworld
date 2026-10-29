@@ -919,6 +919,14 @@ biome_section() {
   GZ=$(printf '%s' "$LIN" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\2/p' | tail -1)
   GR_R=$(printf '%s' "$LIN" | sed -n 's/.* r=\([0-9]*\).*/\1/p' | tail -1)
   GTOP=$(printf '%s' "$LIN" | sed -n 's/.* top=\(-\?[0-9]*\).*/\1/p' | tail -1)
+  local GBIO
+  GBIO=$(printf '%s' "$LIN" | sed -n 's/.* bio=\([^ ]*\).*/\1/p' | tail -1)
+  if [ "${GBIO:-}" = "riftworld:waterfall_gardens" ]; then
+    log "  OK   сады: биом острова ${GBIO} (биом-сурс совпадает с рельефом)"
+  else
+    log "  FAIL сады: биом острова ${GBIO:-?} вместо riftworld:waterfall_gardens — перепутаны поля биом-сурса"
+    FAILS=$((FAILS + 1))
+  fi
   local GW GG GL GIV GPL GLA
   GW=$(printf '%s' "$LIN" | sed -n 's/.* water=\([0-9]*\).*/\1/p' | tail -1)
   GG=$(printf '%s' "$LIN" | sed -n 's/.* garden_grass=\([0-9]*\).*/\1/p' | tail -1)
@@ -948,16 +956,20 @@ biome_section() {
       local LWH
       LWH=$(EL execute in riftworld:elisar run riftwhere "$LX" "$LZ" 2>&1 | tr '\r\n' '  ')
       log "  /riftwhere у найденного биома -> ${LWH:0:240}"
-      local LBIO LTOP
+      local LBIO LTOP LGND LGY
       LBIO=$(printf '%s' "$LWH" | sed -n 's/.* biome=\([^ ]*\).*/\1/p' | tail -1)
       LTOP=$(printf '%s' "$LWH" | sed -n 's/.*top=[-0-9]*:\([^ ]*\).*/\1/p' | tail -1)
+      # Рев 14.35: смотрим ЗЕМЛЮ под водой, а не верхний блок: пруд на полке — это по референсу,
+      # а вот земля на уровне моря или ниже — уже море.
+      LGND=$(printf '%s' "$LWH" | sed -n 's/.* ground=[-0-9]*:\([^ ]*\).*/\1/p' | tail -1)
+      LGY=$(printf '%s' "$LWH" | sed -n 's/.* ground=\([-0-9]*\):.*/\1/p' | tail -1)
       if [ "${LBIO:-}" != "riftworld:waterfall_gardens" ]; then
         log "  FAIL /locate biome waterfall_gardens: в точке биом ${LBIO:-?} (должен быть riftworld:waterfall_gardens)"
         FAILS=$((FAILS + 1))
-      elif printf '%s' "${LTOP:-}" | grep -qE 'garden_grass|garden_leaves|garden_log|garden_limestone|garden_ivy|elisar_soil|elisar_grass|elisar_moss|ashlar'; then
-        log "  OK   /locate biome waterfall_gardens привёл на садовую землю ($LX,$LY,$LZ, верх: ${LTOP:-?})"
+      elif printf '%s' "${LGND:-}" | grep -qE 'garden_grass|garden_leaves|garden_log|garden_limestone|garden_ivy|elisar_soil|elisar_grass|elisar_moss|ashlar'; then
+        log "  OK   /locate biome waterfall_gardens привёл на садовую землю ($LX,$LY,$LZ, верх: ${LTOP:-?}, земля ${LGY:-?}:${LGND:-?})"
       else
-        log "  FAIL /locate biome waterfall_gardens: биом верный, но верхний блок ${LTOP:-?} — это не сад"
+        log "  FAIL /locate biome waterfall_gardens: биом верный, но под колонкой ${LGND:-?} — это не сад"
         FAILS=$((FAILS + 1))
       fi
     else
@@ -1042,13 +1054,17 @@ biome_section() {
     wh=$(EL execute in riftworld:elisar run riftwhere "$lx" "$lz" 2>&1 | tr '\r\n' '  ')
     log "  /riftwhere у $label -> ${wh:0:220}"
     bio=$(printf '%s' "$wh" | sed -n 's/.* biome=\([^ ]*\).*/\1/p' | tail -1)
-    top=$(printf '%s' "$wh" | sed -n 's/.*top=[-0-9]*:\([^ ]*\).*/\1/p' | tail -1)
+    local gnd gy
+    gnd=$(printf '%s' "$wh" | sed -n 's/.* ground=[-0-9]*:\([^ ]*\).*/\1/p' | tail -1)
+    gy=$(printf '%s' "$wh" | sed -n 's/.* ground=\([-0-9]*\):.*/\1/p' | tail -1)
     if [ "${bio:-}" != "$id" ]; then
       log "  FAIL /locate biome $label: в точке биом ${bio:-?}"; FAILS=$((FAILS + 1))
-    elif printf '%s' "${top:-}" | grep -qE 'water'; then
-      log "  FAIL /locate biome $label привёл в воду (верх: ${top:-?})"; FAILS=$((FAILS + 1))
+    elif printf '%s' "${gnd:-}" | grep -qE 'water|^\?$|^$'; then
+      log "  FAIL /locate biome $label привёл в воду (земли нет: ${gnd:-?})"; FAILS=$((FAILS + 1))
+    elif [ "${gy:-0}" -le 62 ]; then
+      log "  FAIL /locate biome $label: земля на ${gy:-?} — это дно моря, а не биом"; FAILS=$((FAILS + 1))
     else
-      log "  OK   /locate biome $label привёл на землю биома (верх: ${top:-?})"
+      log "  OK   /locate biome $label привёл на землю биома (${gy:-?}:${gnd:-?})"
     fi
   }
   locate_check riftworld:waterfall_gardens waterfall_gardens
@@ -1100,7 +1116,15 @@ biome_section() {
     lookat "$((VX + VRR / 2))" "$((VTOP2 + 9))" "$((VZ + VRR / 2))" "$VX" "$((VTOP2 - 4))" "$VZ" 16 "50_violet_fields"
     lookat "$((VX + VRR / 3))" "$((VTOP2 + 5))" "$((VZ + VRR / 6))" "$VX" "$((VTOP2 + 1))" "$VZ" 14 "51_violet_path"
   fi
+  local SBIO
+  SBIO=$(printf '%s' "$SL" | sed -n 's/.* bio=\([^ ]*\).*/\1/p' | tail -1)
+  if [ "${SBIO:-}" = "riftworld:sizo_grove" ]; then log "  OK   роща: биом острова ${SBIO}"
+  else log "  FAIL роща: биом острова ${SBIO:-?} вместо riftworld:sizo_grove"; FAILS=$((FAILS + 1)); fi
   locate_check riftworld:sizo_grove sizo_grove
+  local VBIO
+  VBIO=$(printf '%s' "$VL" | sed -n 's/.* bio=\([^ ]*\).*/\1/p' | tail -1)
+  if [ "${VBIO:-}" = "riftworld:violet_hills" ]; then log "  OK   Фиолетовые холмы: биом луга ${VBIO}"
+  else log "  FAIL Фиолетовые холмы: биом луга ${VBIO:-?} вместо riftworld:violet_hills"; FAILS=$((FAILS + 1)); fi
   locate_check riftworld:violet_hills violet_hills
   EL gamemode creative TestPlayer >/dev/null 2>&1 || true
 }
