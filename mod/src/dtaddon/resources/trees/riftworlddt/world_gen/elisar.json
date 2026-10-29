@@ -1,0 +1,98 @@
+[
+  {
+    "select": {
+      "name": "riftworld:sizo_grove"
+    },
+    "apply": {
+      "species": "riftworlddt:sizo",
+      "density": [
+        1.0
+      ],
+      "chance": 0.35
+    }
+  },
+  {
+    "select": {
+      "name": "riftworld:sizo_grove"
+    },
+    "apply": {
+      "species": "riftworlddt:giant_sizo",
+      "density": [
+        0.4
+      ],
+      "chance": 0.1
+    }
+  },
+  {
+    "select": {
+      "name": "riftworld:violet_hills"
+    },
+    "apply": {
+      "species": "riftworlddt:ambra",
+      "density": [
+        0.5
+      ],
+      "chance": 0.18
+    }
+  },
+  {
+    "select": {
+      "name": "riftworld:elisar_city"
+    },
+    "apply": {
+      "species": "riftworlddt:ambra",
+      "density": [
+        0.5
+      ],
+      "chance": 0.12
+    }
+  },
+  {
+    "select": {
+      "name": "riftworld:waterfall_gardens"
+    },
+    "apply": {
+      "species": "riftworlddt:sizo",
+      "density": [
+        0.4
+      ],
+      "chance": 0.1
+    }
+  },
+  {
+    "select": {
+      "name": "riftworld:shallow_reef"
+    },
+    "apply": {
+      "species": "riftworlddt:coral_staghorn",
+      "density": [
+        0.6
+      ],
+      "chance": 0.1
+    }
+  },
+  {
+    "select": {
+      "name": "riftworld:shallow_reef"
+    },
+    "apply": {
+      "species": "riftworlddt:coral_table",
+      "density": [
+        0.4
+      ],
+      "chance": 0.07
+    }
+  },
+  {
+    "select": {
+      "name": "riftworld:shallow_reef"
+    },
+    "apply": {
+      "species": "riftworlddt:coral_whip",
+      "density": [
+        0.4
+      ],
+      "chance": 0.08
+    }
+  }
+]

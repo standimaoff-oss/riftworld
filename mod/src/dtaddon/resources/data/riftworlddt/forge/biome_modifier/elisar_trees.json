@@ -1,0 +1,10 @@
+{
+  "type": "dynamictrees:add_dynamic_trees",
+  "biomes": [
+    "riftworld:sizo_grove",
+    "riftworld:violet_hills",
+    "riftworld:waterfall_gardens",
+    "riftworld:elisar_city",
+    "riftworld:shallow_reef"
+  ]
+}
