@@ -106,6 +106,10 @@ public final class SeaProbeCommand {
         // Рев 14.40: /riftaround r — что вокруг игрока НА САМОМ ДЕЛЕ. CI проверяет этим, что
         // /locate biome waterfall_gardens привёл на садовый остров (известняк + трава садов),
         // а не «в структуру вообще другую», и что под островами нет дыр до бедрока.
+        // Рев 15.10: /riftdtdbg — где именно обрывается мировой генератор DT:
+        // диски Пуассона → грунт → вид → JoCode → сама генерация.
+        e.getDispatcher().register(Commands.literal("riftdtdbg").requires(s2 -> s2.hasPermission(2))
+                .executes(c -> dtDbg(c.getSource())));
         e.getDispatcher().register(Commands.literal("riftdtwhy").requires(s2 -> s2.hasPermission(2))
                 .executes(c -> dtWhy(c.getSource())));
         e.getDispatcher().register(Commands.literal("riftaround").requires(s2 -> s2.hasPermission(2))
@@ -618,6 +622,98 @@ public final class SeaProbeCommand {
         java.lang.reflect.Method m = find(type, name, types);
         m.setAccessible(true);
         return m.invoke(null, args);
+    }
+
+    /**
+     * Рев 15.10 — ПОШАГОВАЯ ДИАГНОСТИКА мирового генератора Dynamic Trees.
+     *
+     * <p>Порядок в DT 1.4.10: {@code DynamicTreeFeature.place()} → диски Пуассона
+     * ({@code DISC_PROVIDER}) → {@code GroundFinder.findGround()} → селектор вида биома →
+     * {@code JoCodeRegistry.getRandomCode(species, radius)} → {@code Species.generate()}.
+     * Команда печатает состояние каждого шага одной строкой, чтобы не гадать по «dt=0».
+     */
+    private static int dtDbg(CommandSourceStack src) {
+        var level = src.getLevel();
+        BlockPos at = BlockPos.containing(src.getPosition());
+        StringBuilder sb = new StringBuilder("riftdtdbg at=" + at.getX() + "," + at.getY() + "," + at.getZ());
+        try {
+            Class<?> lcC = Class.forName("com.ferreusveritas.dynamictrees.util.LevelContext");
+            Object lc = call(null, lcC, "create", new Class<?>[]{net.minecraft.world.level.LevelAccessor.class}, level);
+
+            // 1) диски Пуассона текущего чанка
+            Class<?> featC = Class.forName("com.ferreusveritas.dynamictrees.worldgen.DynamicTreeFeature");
+            Object prov = featC.getField("DISC_PROVIDER").get(null);
+            Object discs = call(prov, "getPoissonDiscs", new Class<?>[]{lcC, net.minecraft.world.level.ChunkPos.class},
+                    lc, new net.minecraft.world.level.ChunkPos(at));
+            int dn = discs instanceof java.util.List<?> l ? l.size() : -1;
+            sb.append(" discs=").append(dn);
+            int rad = -1;
+            if (discs instanceof java.util.List<?> l && !l.isEmpty()) {
+                Object d0 = l.get(0);
+                rad = d0.getClass().getField("radius").getInt(d0);
+                sb.append(" disc0_r=").append(rad);
+                sb.append(" real=").append(d0.getClass().getField("real").getBoolean(d0));
+            }
+
+            // 2) грунт по нашему GroundFinder
+            Class<?> gfC = Class.forName("com.ferreusveritas.dynamictrees.api.worldgen.GroundFinder");
+            Object gf = call(null, gfC, "getGroundFinder", new Class<?>[]{net.minecraft.world.level.Level.class}, level);
+            Object list = call(gf, "findGround", new Class<?>[]{net.minecraft.world.level.LevelAccessor.class,
+                    BlockPos.class, net.minecraft.world.level.levelgen.Heightmap.Types.class},
+                    level, at, net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE_WG);
+            int gn = list instanceof java.util.List<?> l ? l.size() : -1;
+            BlockPos ground = (list instanceof java.util.List<?> l && !l.isEmpty()) ? (BlockPos) l.get(0) : null;
+            sb.append(" ground=").append(ground == null ? "-" : ground.getY() + ":" + level.getBlockState(ground).getBlock());
+
+            // 3) вид из базы DT + JoCode под радиус диска
+            Class<?> bdsC = Class.forName("com.ferreusveritas.dynamictrees.worldgen.BiomeDatabases");
+            Object db = call(null, bdsC, "getDimensionalOrDefault",
+                    new Class<?>[]{net.minecraft.resources.ResourceLocation.class}, level.dimension().location());
+            var biome = level.getBiome(ground == null ? at : ground);
+            Object entry = call(db, "getEntry", new Class<?>[]{net.minecraft.core.Holder.class}, biome);
+            Object sel = call(entry, "getSpeciesSelector", new Class<?>[]{});
+            Object selection = call(sel, "getSpecies", new Class<?>[]{BlockPos.class, BlockState.class,
+                    net.minecraft.util.RandomSource.class}, ground == null ? at : ground,
+                    level.getBlockState(ground == null ? at : ground), net.minecraft.util.RandomSource.create());
+            boolean handled = (Boolean) call(selection, "isHandled", new Class<?>[]{});
+            Object species = call(selection, "getSpecies", new Class<?>[]{});
+            sb.append(" handled=").append(handled).append(" sp=").append(species);
+
+            Class<?> jcrC = Class.forName("com.ferreusveritas.dynamictrees.worldgen.JoCodeRegistry");
+            Object codes = call(null, jcrC, "getCodes", new Class<?>[]{net.minecraft.resources.ResourceLocation.class},
+                    call(species, "getRegistryName", new Class<?>[]{}));
+            sb.append(" codes=");
+            if (codes instanceof java.util.Map<?, ?> m) {
+                sb.append(m.size()).append("[");
+                for (var e2 : m.entrySet()) sb.append(e2.getKey()).append(":").append(((java.util.List<?>) e2.getValue()).size()).append(" ");
+                sb.append("]");
+            }
+            // что именно выберет DT под радиус диска
+            Object code = call(null, jcrC, "getRandomCode", new Class<?>[]{net.minecraft.resources.ResourceLocation.class,
+                            int.class, net.minecraft.util.RandomSource.class},
+                    call(species, "getRegistryName", new Class<?>[]{}),
+                    Math.max(2, rad), net.minecraft.util.RandomSource.create());
+            sb.append(" code_for_r").append(Math.max(2, rad)).append("=").append(code == null ? "null" : "ok");
+
+            // 4) сама генерация (только смотрим, ставится ли дерево)
+            if (handled && ground != null) {
+                Class<?> gcC = Class.forName("com.ferreusveritas.dynamictrees.worldgen.GenerationContext");
+                Class<?> bndC = Class.forName("com.ferreusveritas.dynamictrees.util.SafeChunkBounds");
+                Object bounds = bndC.getField("ANY_WG").get(null);
+                Object genCtx = gcC.getConstructor(lcC, Class.forName("com.ferreusveritas.dynamictrees.tree.species.Species"),
+                                BlockPos.class, BlockPos.MutableBlockPos.class, net.minecraft.core.Holder.class,
+                                net.minecraft.core.Direction.class, int.class, bndC)
+                        .newInstance(lc, species, at, ground.mutable(), biome, net.minecraft.core.Direction.NORTH,
+                                Math.max(2, rad == -1 ? 5 : rad), bounds);
+                Object ok = call(species, "generate", new Class<?>[]{gcC}, genCtx);
+                sb.append(" gen=").append(ok);
+            }
+        } catch (Throwable t) {
+            sb.append(" err=").append(t.getClass().getSimpleName()).append(":").append(t.getMessage());
+        }
+        final String line = sb.toString();
+        src.sendSuccess(() -> Component.literal(line), false);
+        return 1;
     }
 
     private static int dtWhy(CommandSourceStack src) {

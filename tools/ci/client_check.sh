@@ -1213,6 +1213,9 @@ biome_section() {
   esac
   DTW=$(EL execute at TestPlayer in riftworld:elisar run riftdtwild 32 2>&1 | tr '\r\n' '  ')
   log "  /riftdtwild (холмы) -> ${DTW:0:220}"
+  # Рев 15.10: пошаговая диагностика мирового генератора DT (диски → грунт → вид → JoCode → генерация).
+  DTDBG=$(EL execute at TestPlayer in riftworld:elisar run riftdtdbg 2>&1 | tr '\r\n' '  ')
+  log "  /riftdtdbg (холмы) -> ${DTDBG:0:400}"
   local DTN
   DTN=$(printf '%s' "$DTW" | sed -n 's/.* dt=\([0-9]*\).*/\1/p' | tail -1)
   if [ "${DTN:-0}" -ge 150 ]; then
