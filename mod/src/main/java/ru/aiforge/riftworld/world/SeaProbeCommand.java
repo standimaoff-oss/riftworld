@@ -605,11 +605,13 @@ public final class SeaProbeCommand {
                 if (id.startsWith("dynamictrees:")) hasDt = true;
             }
         }
+        var topName0 = level.getUncachedNoiseBiome(at.getX() >> 2, 0, at.getZ() >> 2);
+        String atY0 = topName0.unwrapKey().map(k -> k.location().toString()).orElse("?");
         String topName = topBiome.unwrapKey().map(k -> k.location().toString()).orElse("?");
         String surfName = surfBiome.unwrapKey().map(k -> k.location().toString()).orElse("?");
         BlockPos ground = ru.aiforge.riftworld.world.DtGround.groundFor(level, at);
         final String line = "riftdtwhy at=" + at.getX() + "," + at.getY() + "," + at.getZ()
-                + " biome_surface=" + surfName + " biome_top=" + topName
+                + " biome_surface=" + surfName + " biome_top=" + topName + " biome_y0=" + atY0
                 + " dt_features=" + feats + " has_dt=" + hasDt
                 + " ground=" + (ground == null ? "-" : ground.getY() + ":" + level.getBlockState(ground).getBlock());
         src.sendSuccess(() -> Component.literal(line), false);

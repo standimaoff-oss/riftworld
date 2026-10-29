@@ -60,6 +60,18 @@ public class ElisarBiomeSource extends BiomeSource {
         // острова, что строит рельеф (plan.islandAt): нет острова — нет биома, есть остров — его биом.
         CityPlan plan = CityPlan.get();
         CityPlan.Island at = plan.islandAt(x, z);
+        // Рев 14.46 — ПОЧЕМУ DYNAMIC TREES НЕ САЖАЛ ДЕРЕВЬЯ, даже когда вид зарегистрирован.
+        // DynamicTreeFeature берёт биом для выбора вида на `new BlockPos(disc.x, 0, disc.z)` — то есть
+        // на y=0, а не на поверхности! У нас ниже уровня моря море, поэтому DT видел «морской» биом,
+        // для которого в базе нет ни вида, ни плотности, и молча возвращал UNHANDLED_BIOME:
+        // ни деревьев в холмах/роще, ни диких кораллов на рифе.
+        // Теперь на ГАРАНТИРОВАННОЙ суше острова (landAt — та же функция, что строит рельеф)
+        // биом острова отдаётся на любой высоте: и DT получает нужный вид, и /locate остаётся на суше.
+        if (at != null && WaterfallGardens.landAt(x, z) != null) {
+            if (at.kind == WaterfallGardens.KIND) return gardens;
+            if (at.kind == SizoGrove.KIND) return sizo;
+            if (at.kind == 7) return violet;
+        }
         // Биомы суши живут ТОЛЬКО выше уровня моря: у садов и рощи остров продолжается под водой
         // голыми каменными ярусами, и без этой проверки /locate biome отдавал точку в море —
         // владелец видел «находит не биом, а воду». Теперь ниже моря — морские биомы.
