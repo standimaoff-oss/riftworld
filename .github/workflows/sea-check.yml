@@ -27,9 +27,13 @@ on:
 permissions:
   contents: write
 
+# Рев 14.33: прогон #182 был ОТМЕНЁН на 70-й минуте. Причина — вот эта группа: любой пуш в ту же
+# ветку (в том числе собственный коммит кадров с [skip ci]) создаёт новый прогон и гасит текущий.
+# Теперь группа включает SHA коммита, а отмена выключена: прогон длиной 1.5 часа не может быть
+# убит своим же коммитом кадров.
 concurrency:
-  group: sea-check-${{ github.ref }}
-  cancel-in-progress: true
+  group: sea-check-${{ github.ref }}-${{ github.sha }}
+  cancel-in-progress: false
 
 jobs:
   verify:
