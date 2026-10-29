@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 public final class DtTrees {
     private static final Logger LOG = LoggerFactory.getLogger("riftworld");
     private static final AtomicBoolean INIT = new AtomicBoolean();
+    private static final AtomicBoolean LOG_ONCE = new AtomicBoolean();
     private static boolean broken;
 
     private static Class<?> LC_CLS, SB_CLS, GC_CLS, SP_CLS, MUT_CLS;
@@ -83,6 +84,7 @@ public final class DtTrees {
      */
     public static boolean plant(LevelAccessor level, String speciesId, BlockPos ground, int radius, int facing) {
         if (!ready()) return false;
+        if (LOG_ONCE.compareAndSet(false, true)) LOG.info("[riftworld] DT Trees: первая посадка через API ({})", speciesId);
         try {
             Object reg = SP_CLS.getField("REGISTRY").get(null);
             Object species = SP_GET.invoke(reg, new ResourceLocation(speciesId));

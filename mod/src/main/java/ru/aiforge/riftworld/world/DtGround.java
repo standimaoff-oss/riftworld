@@ -112,6 +112,46 @@ public final class DtGround {
         return null;
     }
 
+    /**
+     * Рев 14.51: грунт ДЛЯ СВОЕЙ посадки — допускает, что над землёй стоит заменяемая растительность
+     * (грядка лаванды, луговая трава, цветок). На референсе 04 деревья стоят прямо среди полей,
+     * а DT сам отказывается сажать в занятую клетку — поэтому мы эту растительность убираем
+     * в {@link #clearAbove} и зовём посадку уже на чистое место.
+     */
+    public static BlockPos groundForPlanting(LevelAccessor level, BlockPos start) {
+        if (start == null) return null;
+        BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos(start.getX(), 0, start.getZ());
+        for (int y = level.getMaxBuildHeight() - 1; y > level.getMinBuildHeight(); --y) {
+            p.setY(y);
+            BlockState s = level.getBlockState(p);
+            if (s.isAir() || !s.getFluidState().isEmpty()) continue;
+            if (!s.isCollisionShapeFullBlock(level, p)) continue;
+            if (!isDtSoil(level, p)) continue;
+            p.move(0, 1, 0);
+            boolean ok = canClear(level, p);
+            p.move(0, -1, 0);
+            if (ok) return p.immutable();
+        }
+        return null;
+    }
+
+    /** Можно ли освободить клетку над почвой (воздух, вода или заменяемая растительность). */
+    private static boolean canClear(LevelAccessor level, BlockPos p) {
+        BlockState s = level.getBlockState(p);
+        return s.isAir() || s.is(net.minecraft.tags.BlockTags.REPLACEABLE_BY_TREES);
+    }
+
+    /** Убирает заменяемую растительность над точкой посадки, чтобы DT растил ствол в чистой клетке. */
+    public static void clearAbove(LevelAccessor level, BlockPos ground, int height) {
+        for (int dy = 1; dy <= height; ++dy) {
+            BlockPos p = ground.above(dy);
+            BlockState s = level.getBlockState(p);
+            if (s.isAir()) continue;
+            if (!s.is(net.minecraft.tags.BlockTags.REPLACEABLE_BY_TREES)) break;
+            level.setBlock(p, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 2);
+        }
+    }
+
     /** Свободна ли клетка НАД почвой: настоящий воздух (под водой — вода), а не куст из тега replaceable. */
     private static boolean openAbove(LevelAccessor level, BlockPos p, boolean sea) {
         BlockState s = level.getBlockState(p);

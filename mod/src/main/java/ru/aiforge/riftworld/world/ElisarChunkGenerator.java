@@ -1521,9 +1521,12 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         int x = x0 + 2 + (int) (hash(x0, z0, 772) * 12);
         int z = z0 + 2 + (int) (hash(x0, z0, 773) * 12);
         BlockPos start = new BlockPos(x, level.getMaxBuildHeight() - 2, z);
-        BlockPos ground = DtGround.groundFor(level, start);
+        BlockPos ground = DtGround.groundForPlanting(level, start);
         if (ground == null || ground.getY() < plan.ocean + 1) return;   // только суша
         if (species.contains("violet") && !VioletHills.inside(x + 0.5, z + 0.5)) return;
+        // на референсе 04 деревья стоят прямо в полях — расчищаем грядку под ствол, иначе DT
+        // отказывается сажать в занятую клетку и молча ничего не делает
+        DtGround.clearAbove(level, ground, 3);
         int radius = 4 + (int) (hash(x, z, 774) * 4);      // 4..7
         DtTrees.plant(level, species, ground, radius, (int) (hash(x, z, 775) * 4));
     }
