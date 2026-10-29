@@ -667,6 +667,13 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         // биома (grass_color 0xB6C77A) и потому сочно-зелёная. Наша elisar_tall_grass почти белая,
         // и на кадрах 49–51 весь луг был усыпан белой «крупой».
         BlockState vGrass = Blocks.GRASS.defaultBlockState();
+        // Рев 15.5: ПОЧВА луга. Раньше поверхность холмов была нашим `elisar_soil` (#A69F93 —
+        // кремово-серый), из-за чего луг читался серым полем с белой крупой. Теперь дерн —
+        // ванильный `grass_block` (его верх и бока тинтуются grass_color биома → шалфейная
+        // зелень), а борозды между грядами — тёмная земля (`coarse_dirt`), как вспаханная
+        // полоса на референсе 04.
+        BlockState vTurf = Blocks.GRASS_BLOCK.defaultBlockState();
+        BlockState vEarth = Blocks.COARSE_DIRT.defaultBlockState();
         // Рев 14.25: на обрывах садов — свой сочно-зелёный плющ, как на референсе
         BlockState gIvy = ElisarBlocks.GARDEN_IVY.get().defaultBlockState();
         BlockState lime = st(ElisarBlocks.GARDEN_LIMESTONE), limeMossy = st(ElisarBlocks.GARDEN_LIMESTONE_MOSSY);
@@ -836,6 +843,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                 }
                                 if (lip) {
                                     // кромка яруса — трава (на фото каждая терраса подстрижена по краю)
+                                    chunk.setBlockState(mp.set(x, c.top, z), vTurf, false);
                                     if (h < 0.50) chunk.setBlockState(mp.set(x, c.top + 1, z), vGrass, false);
                                     else if (h < 0.56) {
                                         int f = (int) (hash(x, z, 91) * 3);
@@ -843,9 +851,9 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                                 : f == 1 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
                                     }
                                 } else if (!meadow && row) {
-                                    // ГРЯДА ЛАВАНДЫ: почва → куст → цветущая макушка (2 блока в высоту,
+                                    // ГРЯДА ЛАВАНДЫ: дерн → куст → цветущая макушка (2 блока в высоту,
                                     // как на фото, где лаванда стоит по пояс и выше).
-                                    chunk.setBlockState(mp.set(x, c.top, z), soil, false);
+                                    chunk.setBlockState(mp.set(x, c.top, z), vTurf, false);
                                     chunk.setBlockState(mp.set(x, c.top + 1, z), st(ElisarBlocks.LAVENDER_BED), false);
                                     // Рев 15.4: макушки гряд — ПРЕИМУЩЕСТВЕННО насыщенно-сиреневые.
                                     // Раньше 22 % клеток получали pale_bloom, и издалека гряды
@@ -855,10 +863,12 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                     chunk.setBlockState(mp.set(x, c.top + 2, z), st(band < 0.58 ? ElisarBlocks.VIOLET_BLOOM
                                             : band < 0.93 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
                                 } else if (!meadow) {
-                                    // борозда между грядами: тёмная земля (на фото — земляная дорожка)
-                                    chunk.setBlockState(mp.set(x, c.top, z), soil, false);
+                                    // борозда между грядами: тёмная вспаханная земля (на референсе 04
+                                    // между рядами лаванды именно тёмные полосы, а не серая пыль)
+                                    chunk.setBlockState(mp.set(x, c.top, z), vEarth, false);
                                 } else {
                                     // пастбище: сочная трава, островки цветов, редкие кустики лаванды
+                                    chunk.setBlockState(mp.set(x, c.top, z), vTurf, false);
                                     if (h < 0.22) chunk.setBlockState(mp.set(x, c.top + 1, z), vGrass, false);
                                     else if (h < 0.28 && edgeN > 0.50) {
                                         int f = (int) (hash(x, z, 91) * 3);
@@ -1284,8 +1294,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         // Рев 15.4: крона — ШИРОКИЙ ПЛОСКИЙ ЗОНТ из 5 наложенных эллиптических ярусов
         // (на референсе 04 крона дерева шире ствола втрое и заметно приплюснута).
         // Раньше это были почти шары радиусом 3.9 — издалека они читались кубами на палке.
-        double baseR = 4.4 + r.nextDouble() * 1.2;
-        double squash = 0.72 + r.nextDouble() * 0.10;      // эллипс: крона шире, чем глубже
+        double baseR = 5.6 + r.nextDouble() * 1.4;
+        double squash = 0.70 + r.nextDouble() * 0.12;      // эллипс: крона шире, чем глубже
         int y0 = trunkTop - 3;
         double[] prof = {0.52, 0.82, 1.0, 0.94, 0.70, 0.40};
         int layers = prof.length;

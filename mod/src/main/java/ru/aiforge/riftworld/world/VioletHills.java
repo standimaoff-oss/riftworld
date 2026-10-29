@@ -128,7 +128,7 @@ public final class VioletHills {
                 for (CityPlan.Tree t : trees) if (Math.abs(t.x - x) < 14 && Math.abs(t.z - z) < 14) { ok = false; break; }
                 if (!ok) continue;
                 // на референсе все деревья поля — с лиловой кроной, разного размера
-                trees.add(new CityPlan.Tree(x, z, TREE_VIOLET, 8 + rnd.nextInt(5), rnd.nextInt(1 << 30)));
+                trees.add(new CityPlan.Tree(x, z, TREE_VIOLET, 11 + rnd.nextInt(5), rnd.nextInt(1 << 30)));
                 ++k;
             }
         }
