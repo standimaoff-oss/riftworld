@@ -1,33 +1,45 @@
 [
   {
+    "_comment": "Рев 15.6: СХЕМА ИСПРАВЛЕНА. Раньше `apply` был МАССИВОМ, а DT 1.4.10 читает его только как ОБЪЕКТ (`mapIfContains(APPLY, JsonObject.class)` в BiomePopulatorsResourceLoader), поэтому правило молча игнорировалось: база DT оставалась пустой, селектор вида отдавал `dynamictrees:null`, и ни одно дерево в Элисаре не вырастало. Теперь `apply` — объект, `density` — список коэффициентов (n*a+b, где n — шум 0..1, радиант диска = (1-density)*9).",
     "select": { "name": "riftworld:sizo_grove" },
-    "apply": [
-      { "species": { "random": { "riftworlddt:sizo": 9, "riftworlddt:giant_sizo": 2 } }, "density": 0.32, "chance": 1.0 }
-    ]
+    "apply": {
+      "species": { "random": { "riftworlddt:sizo": 9, "riftworlddt:giant_sizo": 2 } },
+      "density": [0.25, 0.45],
+      "chance": 1.0
+    }
   },
   {
     "select": { "name": "riftworld:violet_hills" },
-    "apply": [
-      { "species": "riftworlddt:violet", "density": 0.38, "chance": 1.0 }
-    ]
+    "apply": {
+      "species": "riftworlddt:violet",
+      "density": [0.25, 0.20],
+      "chance": 1.0
+    }
   },
   {
     "select": { "name": "riftworld:waterfall_gardens" },
-    "apply": [
-      { "species": "riftworlddt:sizo", "density": 0.28, "chance": 1.0 }
-    ]
+    "apply": {
+      "species": "riftworlddt:sizo",
+      "density": [0.20, 0.15],
+      "chance": 1.0
+    }
   },
   {
     "select": { "name": "riftworld:elisar_city" },
-    "apply": [
-      { "species": "riftworlddt:ambra", "density": 0.5, "chance": 0.35 }
-    ]
+    "apply": {
+      "species": "riftworlddt:ambra",
+      "density": [0.20, 0.15],
+      "chance": 0.35
+    }
   },
   {
+    "_comment": "Коралловые деревья растут СО ДНА: heightmap OCEAN_FLOOR_WG, тогда наш GroundFinder считает воду над грунтом законным местом, а не помехой.",
     "select": { "name": "riftworld:shallow_reef" },
-    "apply": [
-      { "species": { "random": { "riftworlddt:coral_staghorn": 5, "riftworlddt:coral_table": 3, "riftworlddt:coral_whip": 2 } },
-        "density": 0.45, "chance": 0.55 }
-    ]
+    "apply": {
+      "species": { "random": { "riftworlddt:coral_staghorn": 5, "riftworlddt:coral_table": 3, "riftworlddt:coral_whip": 2 } },
+      "density": [0.30, 0.30],
+      "chance": 0.55,
+      "heightmap": "OCEAN_FLOOR_WG"
+    }
   }
 ]
