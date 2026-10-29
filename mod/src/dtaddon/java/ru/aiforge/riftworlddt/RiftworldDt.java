@@ -57,5 +57,74 @@ public class RiftworldDt {
             throw new IllegalStateException("Dynamic Trees найден, но API RegistryHandler недоступен "
                     + "(версия DT несовместима с аддоном " + MOD_ID + ")", e);
         }
+        installGroundFinder();
+    }
+
+    /**
+     * Рев 14.40 — ПОЧЕМУ ДЕРЕВЬЯ DT НЕ ПОЯВЛЯЛИСЬ В МИРЕ, хотя вид регистрировался.
+     *
+     * <p>DT ищет место под дерево через {@code GroundFinder}: по умолчанию берётся
+     * {@code WorldSurface}-heightmap мира. У нас <b>свой</b> генератор: рельеф пишется в чанк
+     * напрямую, WG-heightmap на момент фич остаётся пустым, поэтому DT «находил грунт» в воздухе
+     * и молча возвращал {@code FAIL_SOIL}/{@code NO_GROUND}. Отсюда и «аддон ничего не меняет»:
+     * ни деревьев, ни кораллов в мире, только через ручную команду settree.
+     *
+     * <p>Лечим честно: регистрируем для измерения {@code riftworld:elisar} свой {@code GroundFinder},
+     * который не верит heightmap, а сканирует колонку сверху вниз и отдаёт первый твёрдый блок
+     * с двумя блоками воздуха над ним. Интерфейс берём прокси, чтобы аддон по-прежнему собирался
+     * без Dynamic Trees в classpath (см. шапку класса).
+     */
+    private static void installGroundFinder() {
+        try {
+            Class<?> gf = Class.forName("com.ferreusveritas.dynamictrees.api.worldgen.GroundFinder");
+            Object finder = java.lang.reflect.Proxy.newProxyInstance(gf.getClassLoader(), new Class<?>[]{gf},
+                    (proxy, method, args) -> {
+                        String name = method.getName();
+                        if ("findGround".equals(name)) {
+                            net.minecraft.world.level.LevelAccessor level = (net.minecraft.world.level.LevelAccessor) args[0];
+                            net.minecraft.core.BlockPos start = (net.minecraft.core.BlockPos) args[1];
+                            net.minecraft.core.BlockPos ground = surfaceUnder(level, start);
+                            return ground == null ? java.util.List.of() : java.util.List.of(ground);
+                        }
+                        if ("toString".equals(name)) return "riftworld:surface-scan";
+                        if ("hashCode".equals(name)) return System.identityHashCode(proxy);
+                        if ("equals".equals(name)) return proxy == args[0];
+                        return null;
+                    });
+            net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> dim =
+                    net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION,
+                            new net.minecraft.resources.ResourceLocation("riftworld", "elisar"));
+            gf.getMethod("registerGroundFinder", net.minecraft.resources.ResourceKey.class, gf).invoke(null, dim, finder);
+            LOG.info("[riftworlddt] GroundFinder для riftworld:elisar установлен: грунт ищется сканом колонки");
+        } catch (Throwable t) {
+            LOG.warn("[riftworlddt] GroundFinder не установлен ({}); DT будет искать грунт по heightmap", t.toString());
+        }
+    }
+
+    /**
+     * Верхний твёрдый блок колонки, над которым два блока воздуха. Листва, цветы и лаванда
+     * грунтом не считаются: дерево должно стоять на земле, а не на кусте.
+     */
+    private static net.minecraft.core.BlockPos surfaceUnder(net.minecraft.world.level.LevelAccessor level,
+                                                            net.minecraft.core.BlockPos start) {
+        if (start == null) return null;
+        net.minecraft.core.BlockPos.MutableBlockPos p =
+                new net.minecraft.core.BlockPos.MutableBlockPos(start.getX(), 0, start.getZ());
+        for (int y = level.getMaxBuildHeight() - 1; y > level.getMinBuildHeight(); --y) {
+            p.setY(y);
+            net.minecraft.world.level.block.state.BlockState s = level.getBlockState(p);
+            if (s.isAir() || !s.getFluidState().isEmpty()) continue;
+            if (!s.isCollisionShapeFullBlock(level, p)) continue;
+            net.minecraft.resources.ResourceLocation id = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(s.getBlock());
+            if (id != null && (id.getPath().contains("leaves") || id.getPath().contains("bloom")
+                    || id.getPath().contains("lavender") || id.getPath().endsWith("_bed"))) continue;
+            p.move(0, 1, 0);
+            boolean open = level.getBlockState(p).isAir();
+            p.move(0, 1, 0);
+            open = open && level.getBlockState(p).isAir();
+            p.move(0, -2, 0);
+            if (open) return p.immutable();
+        }
+        return null;
     }
 }

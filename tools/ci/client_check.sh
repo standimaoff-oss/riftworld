@@ -998,6 +998,28 @@ biome_section() {
         # Земля выше моря — этого достаточно: цветок (мак/лаванда) поверх садовой травы на фото нормален.
         log "  OK   /locate biome waterfall_gardens привёл на землю садов ($LX,$LY,$LZ, верх: ${LTOP:-?}, земля ${LGY:-?}:${LGND:-?})"
       fi
+      # Рев 14.40 — ПРОВЕРКА ПО ТРЕБОВАНИЮ ВЛАДЕЛЬЦА: «/locate находит не биом, а структуру
+      # вообще другую». Имя биома ещё ничего не доказывает, поэтому телепортируем игрока в точку
+      # /locate и считаем вокруг НАСТОЯЩУЮ садовую землю (/riftaround): известняк полок, садовая
+      # трава и пустоты под островом (holes — дыры до бедрока).
+      RCON execute in riftworld:elisar run tp TestPlayer "$LX" "$((LY + 2))" "$LZ" >/dev/null 2>&1 || true
+      sleep 3
+      local LAROUND LALIME LAGRS LAHOLES
+      LAROUND=$(RCON execute in riftworld:elisar run riftaround 24 2>&1 | tr '\r\n' '  ')
+      log "  /riftaround у точки /locate -> ${LAROUND:0:260}"
+      LALIME=$(printf '%s' "$LAROUND" | sed -n 's/.* garden_limestone=\([0-9]*\).*/\1/p' | tail -1)
+      LAGRS=$(printf '%s' "$LAROUND" | sed -n 's/.* garden_grass=\([0-9]*\).*/\1/p' | tail -1)
+      LAHOLES=$(printf '%s' "$LAROUND" | sed -n 's/.* holes=\([0-9]*\).*/\1/p' | tail -1)
+      if [ "${LALIME:-0}" -ge 1200 ]; then
+        log "  OK   /locate привёл на настоящий садовый остров: известняка полок ${LALIME} блоков в r=24"
+      else
+        log "  FAIL /locate привёл НЕ на садовый остров: известняка ${LALIME:-0} в r=24 (нужно >=1200)"; FAILS=$((FAILS + 1))
+      fi
+      if [ "${LAHOLES:-1}" -le 0 ]; then
+        log "  OK   под островом садов нет дыр до бедрока (holes=0, трава садов ${LAGRS:-0})"
+      else
+        log "  FAIL под островом садов ${LAHOLES:-?} колонок с пустотой до бедрока"; FAILS=$((FAILS + 1))
+      fi
     else
       log "  FAIL /locate biome waterfall_gardens не вернул координаты"
       FAILS=$((FAILS + 1))

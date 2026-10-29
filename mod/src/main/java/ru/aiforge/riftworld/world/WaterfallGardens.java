@@ -73,7 +73,7 @@ public final class WaterfallGardens {
             // сопоставимого размера (R 30..42), а «разность» даёт форма (p1..p3 у каждого острова).
             this.big = true;
             int n = 3 + rnd.nextInt(4);                       // 3..6
-            double rMin = 30, rMax = 42;
+            double rMin = 33, rMax = 39;   // Рев 14.40: «почти не отличаются по размеру» — разброс радиуса 6 блоков
             double[] rs = new double[n];
             double sum = 0;
             for (int i = 0; i < n; ++i) {

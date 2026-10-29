@@ -103,6 +103,13 @@ public final class SeaProbeCommand {
                                 .executes(c -> where(c.getSource(),
                                         com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "x"),
                                         com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "z"))))));
+        // Рев 14.40: /riftaround r — что вокруг игрока НА САМОМ ДЕЛЕ. CI проверяет этим, что
+        // /locate biome waterfall_gardens привёл на садовый остров (известняк + трава садов),
+        // а не «в структуру вообще другую», и что под островами нет дыр до бедрока.
+        e.getDispatcher().register(Commands.literal("riftaround").requires(s2 -> s2.hasPermission(2))
+                .then(Commands.argument("r", com.mojang.brigadier.arguments.IntegerArgumentType.integer(4, 48))
+                        .executes(c -> around(c.getSource(),
+                                com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "r")))));
     }
 
     /**
@@ -571,6 +578,52 @@ public final class SeaProbeCommand {
      * {@code riftdtwild dt=… rooty=… branch=… leaves=…} — по этой строке CI отличает «DT реально
      * генерирует в мире» от «аддон лежит в jar, но не работает».
      */
+    /**
+     * Рев 14.40: {@code /riftaround r} — честная проба земли вокруг вызывающего.
+     *
+     * <p>Печатает {@code garden_limestone=… garden_grass=… lavender=… holes=…}. Первые три числа
+     * доказывают, что /locate biome привёл на настоящий садовый остров (а не на чужую структуру
+     * в море), а {@code holes=} — число колонок, у которых под поверхностью есть пустота
+     * до бедрока (владелец: «под этими островами дыры до бедрока»).
+     */
+    private static int around(CommandSourceStack src, int r) {
+        var level = src.getLevel();
+        BlockPos at = BlockPos.containing(src.getPosition());
+        int lime = 0, grass = 0, stone = 0, lavender = 0, holes = 0, cols = 0;
+        int y0 = Math.max(level.getMinBuildHeight(), at.getY() - 40);
+        int y1 = Math.min(level.getMaxBuildHeight() - 1, at.getY() + 40);
+        for (int x = at.getX() - r; x <= at.getX() + r; ++x) {
+            for (int z = at.getZ() - r; z <= at.getZ() + r; ++z) {
+                if (!level.hasChunk(x >> 4, z >> 4)) continue;
+                ++cols;
+                int top = Integer.MIN_VALUE;
+                for (int y = level.getMaxBuildHeight() - 1; y >= level.getMinBuildHeight(); --y) {
+                    if (!level.getBlockState(new BlockPos(x, y, z)).isAir()) { top = y; break; }
+                }
+                if (top == Integer.MIN_VALUE) continue;
+                for (int y = level.getMinBuildHeight() + 2; y <= top - 4; ++y) {
+                    if (level.getBlockState(new BlockPos(x, y, z)).isAir()) { ++holes; break; }
+                }
+                for (int y = y0; y <= y1; ++y) {
+                    BlockState st = level.getBlockState(new BlockPos(x, y, z));
+                    if (st.isAir()) continue;
+                    var key = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(st.getBlock());
+                    if (key == null) continue;
+                    String path = key.getPath();
+                    if (path.contains("garden_limestone")) ++lime;
+                    else if (path.contains("garden_grass")) ++grass;
+                    else if (path.contains("lavender")) ++lavender;
+                    else if ("elisar_stone".equals(path)) ++stone;
+                }
+            }
+        }
+        final String line = "riftaround at=" + at.getX() + "," + at.getY() + "," + at.getZ() + " r=" + r
+                + " cols=" + cols + " garden_limestone=" + lime + " garden_grass=" + grass
+                + " lavender=" + lavender + " elisar_stone=" + stone + " holes=" + holes;
+        src.sendSuccess(() -> Component.literal(line), false);
+        return lime + grass;
+    }
+
     private static int dtWild(CommandSourceStack src, int r) {
         var level = src.getLevel();
         BlockPos at = BlockPos.containing(src.getPosition());

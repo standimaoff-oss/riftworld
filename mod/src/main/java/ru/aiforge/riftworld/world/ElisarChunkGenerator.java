@@ -285,9 +285,18 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                     top = o <= 0 ? es.y : es.y + (top - es.y) * smooth(o / 6.0);
                 }
             } else if (isl.kind == 7) {                                // violet meadow: plateaus under the two churches
-                // Рев 14.29, по референсу 04: поля лаванды лежат ТЕРРАСАМИ по 3 блока — на фото
-                // склоны разбиты на грядки-ступени с земляными подпорными стенками.
-                top = violetTerrace(top);
+                // Рев 14.40, по референсу 04. На фото холмы — это ШИРОКИЕ ВОЛНЫ, разбитые на
+                // длинные террасы-полосы, а сами террасы идут по склону правильными лентами.
+                // Было: `raw` острова (мелкий шум ±1.5) квантовался в ступени, и на лугу получались
+                // крошечные площадки-«блины» с каменными бортами — на кадре 50 они читались как
+                // разбросанные серые кучи. Теперь высоту луга задаёт СВОЁ гладкое поле: крупная
+                // волна холмов + наплыв от кромки острова, и уже оно режется на террасы по 3 блока.
+                double tm = Math.max(0.0, Math.min(1.0, isl.t(px, pz)));
+                double rimY = plan.ocean + 2.0;
+                double dome = rimY + (isl.base - rimY) * Math.pow(tm, 0.75);
+                dome += 7.0 * (vnoise(px * 0.009, pz * 0.009, 71) - 0.5) * tm;   // длинные волны холмов
+                dome += 2.4 * (vnoise(px * 0.024, pz * 0.024, 72) - 0.5) * tm;   // лёгкая неровность кромки
+                top = violetTerrace(dome);
                 VioletHills.Region vr = VioletHills.regionAt(px, pz);
                 if (vr != null && vr.meadow == isl) {
                     double oA = vr.churchA.outside(px, pz), oB = vr.churchB.outside(px, pz);
@@ -735,7 +744,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                 double edge = vnoise(x * 0.09, z * 0.09, 90);
                                 double ph = x * 0.866 + z * 0.5 + vnoise(x * 0.02, z * 0.02, 93) * 6.0;
                                 int row = (int) Math.floor(ph) & 3;      // 3 гряды, 1 борозда
-                                if (field > 0.18) {                      // ~82 % луга — поля, как на фото
+                                if (field > 0.12) {                      // ~90 % луга — поля, как на фото
                                     if (row <= 2) {
                                         chunk.setBlockState(mp.set(x, c.top, z), soil, false);          // земля под грядой
                                         chunk.setBlockState(mp.set(x, c.top + 1, z), st(ElisarBlocks.LAVENDER_BED), false);
@@ -801,8 +810,11 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                         if (n.isl != null && n.top <= c.top - 2) { step = true; break; }
                     }
                     if (step) {
-                        BlockState wall = st(ru.aiforge.riftworld.registry.CastleBlocks.ASHLAR);
-                        BlockState wallMossy = st(ElisarBlocks.BRICKS_MOSSY);
+                        // Рев 14.40, по референсу 04: подпорные стенки террас на фото — светлый
+                        // известняк, а не городская кладка. Было ashlar + мшистый кирпич: на кадре 50
+                        // серые кучи читались «бетонными», теперь это те же блоки, что и у полок садов.
+                        BlockState wall = lime;
+                        BlockState wallMossy = limeMossy;
                         for (int y = c.top - 2; y <= c.top; ++y)
                             chunk.setBlockState(mp.set(x, y, z), hash(x, y, z) < 0.14 ? wallMossy : wall, false);
                         for (int y = c.top + 1; y <= c.top + 2; ++y) {
