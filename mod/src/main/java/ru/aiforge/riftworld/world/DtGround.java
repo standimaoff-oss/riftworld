@@ -78,6 +78,11 @@ public final class DtGround {
      * <p>{@code sea} — правило подводной посадки ({@code OCEAN_FLOOR_WG}): у кораллов DT над грунтом
      * законно стоит вода, поэтому «воздух сверху» там не требуется.
      */
+    /** Публичная обёртка для проб: что наш поиск грунта считает землёй под этой точкой. */
+    public static BlockPos groundFor(LevelAccessor level, BlockPos start) {
+        return surfaceUnder(level, start, false);
+    }
+
     private static BlockPos surfaceUnder(LevelAccessor level, BlockPos start, boolean sea) {
         if (start == null) return null;
         BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos(start.getX(), 0, start.getZ());

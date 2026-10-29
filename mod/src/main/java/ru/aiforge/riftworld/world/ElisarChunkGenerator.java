@@ -294,8 +294,12 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 double tm = Math.max(0.0, Math.min(1.0, isl.t(px, pz)));
                 double rimY = plan.ocean + 2.0;
                 double dome = rimY + (isl.base - rimY) * Math.pow(tm, 0.75);
-                dome += 7.0 * (vnoise(px * 0.009, pz * 0.009, 71) - 0.5) * tm;   // длинные волны холмов
-                dome += 2.4 * (vnoise(px * 0.024, pz * 0.024, 72) - 0.5) * tm;   // лёгкая неровность кромки
+                // Рев 14.42, по кадру 51 итерации 38: волны были крутоваты (7 блоков на ~110 блоков
+                // хода), ступени 3 блока — и террасы крошились на изолированные «пятачки» с
+                // каменными бортами. На фото терраса — ДЛИННАЯ ЛЕНТА по склону. Волна ниже и
+                // длиннее, шаг террасы крупнее (см. violetTerrace).
+                dome += 4.0 * (vnoise(px * 0.0055, pz * 0.0055, 71) - 0.5) * tm;
+                dome += 1.6 * (vnoise(px * 0.019, pz * 0.019, 72) - 0.5) * tm;
                 top = violetTerrace(dome);
                 VioletHills.Region vr = VioletHills.regionAt(px, pz);
                 if (vr != null && vr.meadow == isl) {
@@ -519,9 +523,15 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         return dome;
     }
 
-    /** Фиолетовые холмы: поля-террасы по 3 блока с земляными стенками (референс 04). */
+    /**
+     * Фиолетовые холмы: поля-террасы с подпорными стенками (референс 04).
+     * Рев 14.42: шаг 3 блока давал на склоне 10–12 ступеней-пятачков; на фото ступени крупные,
+     * их 4–6 на холм. Шаг 5 блока — ровно столько.
+     */
+    public static final int VIOLET_STEP = 5;
+
     private static double violetTerrace(double top) {
-        return Math.floor(top / 3.0) * 3.0 + 2.0;
+        return Math.floor(top / (double) VIOLET_STEP) * VIOLET_STEP + 2.0;
     }
 
     /** Terraced top estimate of a garden column (bridge anchor heights in WaterfallGardens). */
@@ -804,10 +814,13 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 // (на фото каждая ступень террасы подпёрта кладкой). Ставим в своей колонке у кромки:
                 // верхние 3 блока — камень, сверху вместо лаванды/травы — каменная полка.
                 if (c.isl != null && c.isl.kind == 7 && c.waterTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE) {
+                    // Рев 14.42: стенка ставится только там, где сосед НИЖЕ на целую террасу (5 блоков),
+                    // и только на два блока в высоту. Прежде порог был «на 2 блока ниже» и высота 3:
+                    // на каждом перепаде вырастали каменные башни-кучи (кадр 51 итерации 38).
                     boolean step = false;
                     for (Direction d : Direction.Plane.HORIZONTAL) {
                         Col n = cols[dx + 1 + d.getStepX()][dz + 1 + d.getStepZ()];
-                        if (n.isl != null && n.top <= c.top - 2) { step = true; break; }
+                        if (n.isl != null && n.top <= c.top - (VIOLET_STEP - 1)) { step = true; break; }
                     }
                     if (step) {
                         // Рев 14.40, по референсу 04: подпорные стенки террас на фото — светлый
@@ -815,9 +828,9 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                         // серые кучи читались «бетонными», теперь это те же блоки, что и у полок садов.
                         BlockState wall = lime;
                         BlockState wallMossy = limeMossy;
-                        for (int y = c.top - 2; y <= c.top; ++y)
+                        for (int y = c.top - 1; y <= c.top; ++y)
                             chunk.setBlockState(mp.set(x, y, z), hash(x, y, z) < 0.14 ? wallMossy : wall, false);
-                        for (int y = c.top + 1; y <= c.top + 2; ++y) {
+                        for (int y = c.top + 1; y <= c.top + 1; ++y) {
                             BlockState above = chunk.getBlockState(mp.set(x, y, z));
                             if (!above.isAir()) chunk.setBlockState(mp.set(x, y, z), Blocks.AIR.defaultBlockState(), false);
                         }
@@ -1139,7 +1152,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         }
         // макушка
         crown(cols, put, 0, trunkTop + 1.4, 0,
-                ((sizo ? 2.5 : garden ? 3.3 : 2.9) + r.nextDouble() * 0.5) * (violetCanopy ? 1.20 : 1.0), r);
+                ((sizo ? 2.5 : garden ? 3.3 : 2.9) + r.nextDouble() * 0.5) * (violetCanopy ? 1.34 : 1.0), r);
         // Рев 11.19: рваный контур кроны оставлял одиночные блоки листвы, висящие в воздухе.
         // Убираем листву, у которой меньше двух соседей (брёвна соседями считаются).
         java.util.Set<Long> solid = new java.util.HashSet<>();
@@ -1190,7 +1203,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                     // Рев 14.37: крона — ВЫТЯНУТЫЙ ВВЕРХ шар (на референсе 04 кроны пышные и высокие,
                     // а не блины). Плюс больше рваного контура по внешней оболочке, иначе издалека
                     // листва читается сплошным кубом.
-                    double d = Math.sqrt(dx * dx + dy * dy * 0.72 + dz * dz);
+                    double d = Math.sqrt(dx * dx + dy * dy * 0.86 + dz * dz);
                     if (d > radius) continue;
                     if (d > radius - 0.9 && r.nextDouble() < 0.34) continue;      // рваный контур
                     put.accept(new int[]{(int) Math.round(cx) + dx, (int) Math.round(cy) + dy, (int) Math.round(cz) + dz}, 0);

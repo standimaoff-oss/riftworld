@@ -106,6 +106,8 @@ public final class SeaProbeCommand {
         // Рев 14.40: /riftaround r — что вокруг игрока НА САМОМ ДЕЛЕ. CI проверяет этим, что
         // /locate biome waterfall_gardens привёл на садовый остров (известняк + трава садов),
         // а не «в структуру вообще другую», и что под островами нет дыр до бедрока.
+        e.getDispatcher().register(Commands.literal("riftdtwhy").requires(s2 -> s2.hasPermission(2))
+                .executes(c -> dtWhy(c.getSource())));
         e.getDispatcher().register(Commands.literal("riftaround").requires(s2 -> s2.hasPermission(2))
                 .then(Commands.argument("r", com.mojang.brigadier.arguments.IntegerArgumentType.integer(4, 48))
                         .executes(c -> around(c.getSource(),
@@ -578,6 +580,42 @@ public final class SeaProbeCommand {
      * {@code riftdtwild dt=… rooty=… branch=… leaves=…} — по этой строке CI отличает «DT реально
      * генерирует в мире» от «аддон лежит в jar, но не работает».
      */
+    /**
+     * Рев 14.42: {@code /riftdtwhy} — почему в этом биоме нет деревьев Dynamic Trees.
+     *
+     * <p>Печатает три факта, каждый из которых может быть причиной «аддон ничего не меняет»:
+     * {@code biome_top=} (биом на высоте мира, по нему DT выбирает плотность и вид),
+     * {@code dt_features=}/{@code has_dt=} (есть ли вообще в generationSettings этого биома
+     * фича {@code dynamictrees:dynamic_tree} — её добавляет Forge-модификатор DT),
+     * {@code ground=} (что находит НАШ GroundFinder под игроком).
+     */
+    private static int dtWhy(CommandSourceStack src) {
+        var level = src.getLevel();
+        BlockPos at = BlockPos.containing(src.getPosition());
+        var topBiome = level.getUncachedNoiseBiome(at.getX() >> 2, level.getMaxBuildHeight() >> 2, at.getZ() >> 2);
+        var surfBiome = level.getBiome(at);
+        int feats = 0;
+        boolean hasDt = false;
+        var gens = surfBiome.value().getGenerationSettings();
+        for (int step = 0; step < gens.features().size(); ++step) {
+            var set = gens.features().get(step);
+            for (var h : set) {
+                ++feats;
+                String id = h.unwrapKey().map(k -> k.location().toString()).orElse("?");
+                if (id.startsWith("dynamictrees:")) hasDt = true;
+            }
+        }
+        String topName = topBiome.unwrapKey().map(k -> k.location().toString()).orElse("?");
+        String surfName = surfBiome.unwrapKey().map(k -> k.location().toString()).orElse("?");
+        BlockPos ground = ru.aiforge.riftworld.world.DtGround.groundFor(level, at);
+        final String line = "riftdtwhy at=" + at.getX() + "," + at.getY() + "," + at.getZ()
+                + " biome_surface=" + surfName + " biome_top=" + topName
+                + " dt_features=" + feats + " has_dt=" + hasDt
+                + " ground=" + (ground == null ? "-" : ground.getY() + ":" + level.getBlockState(ground).getBlock());
+        src.sendSuccess(() -> Component.literal(line), false);
+        return hasDt ? 1 : 0;
+    }
+
     /**
      * Рев 14.40: {@code /riftaround r} — честная проба земли вокруг вызывающего.
      *
