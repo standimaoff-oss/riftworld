@@ -1005,7 +1005,7 @@ biome_section() {
       RCON execute in riftworld:elisar run tp TestPlayer "$LX" "$((LY + 2))" "$LZ" >/dev/null 2>&1 || true
       sleep 3
       local LAROUND LALIME LAGRS LAHOLES
-      LAROUND=$(RCON execute in riftworld:elisar run riftaround 24 2>&1 | tr '\r\n' '  ')
+      LAROUND=$(EL execute at TestPlayer in riftworld:elisar run riftaround 24 2>&1 | tr '\r\n' '  ')
       log "  /riftaround у точки /locate -> ${LAROUND:0:260}"
       LALIME=$(printf '%s' "$LAROUND" | sed -n 's/.* garden_limestone=\([0-9]*\).*/\1/p' | tail -1)
       LAGRS=$(printf '%s' "$LAROUND" | sed -n 's/.* garden_grass=\([0-9]*\).*/\1/p' | tail -1)
