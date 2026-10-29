@@ -1,3 +1,4 @@
 {
-  "parent": "riftworld:block/lavender_bed"
+  "parent": "minecraft:item/generated",
+  "textures": { "layer0": "riftworld:block/lavender_bed" }
 }

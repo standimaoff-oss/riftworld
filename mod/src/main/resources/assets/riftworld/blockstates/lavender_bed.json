@@ -1,7 +1,5 @@
 {
   "variants": {
-    "": {
-      "model": "riftworld:block/lavender_bed"
-    }
+    "": { "model": "riftworld:block/lavender_bed" }
   }
 }

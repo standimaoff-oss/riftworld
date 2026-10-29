@@ -74,9 +74,12 @@ public final class VioletHills {
 
         Region(int cx, int cz, Random rnd) {
             this.cx = cx; this.cz = cz;
-            this.Rr = 130 + rnd.nextDouble() * 40;
-            double R = 76 + rnd.nextDouble() * 18;
-            double base = 98 + rnd.nextDouble() * 14;
+            this.Rr = 150 + rnd.nextDouble() * 40;
+            // Рев 15: луг крупнее, а холм НИЖЕ и шире — на референсе 04 склон длинный и пологий,
+            // поля уходят вдаль лентами. Было base 98..112 (34–50 блоков над морем), из-за этого
+            // получался крутой «пирог» с крошечными террасами-пятачками.
+            double R = 92 + rnd.nextDouble() * 20;
+            double base = CityPlan.get().ocean + 26 + rnd.nextInt(9);
             this.meadow = new CityPlan.Island(cx, cz, R, base, R * 0.6 + 12, rnd.nextDouble() * 6.283, rnd.nextDouble() * 6.283,
                     rnd.nextDouble() * 6.283, 7, 0.9);
             // the two churches face the meadow centre from opposite sides
@@ -85,8 +88,14 @@ public final class VioletHills {
             int ax = (int) Math.floor(cx + Math.cos(th) * rr), az = (int) Math.floor(cz + Math.sin(th) * rr);
             int bx = (int) Math.floor(cx + Math.cos(th + Math.PI + jj) * rr), bz = (int) Math.floor(cz + Math.sin(th + Math.PI + jj) * rr);
             boolean aRuined = rnd.nextBoolean();
-            this.churchA = new Church(ax, az, (int) Math.floor(meadow.raw(ax + 0.5, az + 0.5)), faceTo(ax - cx, az - cz), aRuined, meadow);
-            this.churchB = new Church(bx, bz, (int) Math.floor(meadow.raw(bx + 0.5, bz + 0.5)), faceTo(bx - cx, bz - cz), !aRuined, meadow);
+            // Рев 15: пол церквей — по ТОЙ ЖЕ формуле, что строит рельеф луга (раньше брался
+            // Island.raw(), который к лугу отношения не имеет: площадки под храмами вырезали
+            // в холме ступени-мезы высотой 10+ блоков).
+            int ocean = CityPlan.get().ocean;
+            this.churchA = new Church(ax, az, ElisarChunkGenerator.violetTop(meadow, ax + 0.5, az + 0.5, ocean) + 1,
+                    faceTo(ax - cx, az - cz), aRuined, meadow);
+            this.churchB = new Church(bx, bz, ElisarChunkGenerator.violetTop(meadow, bx + 0.5, bz + 0.5, ocean) + 1,
+                    faceTo(bx - cx, bz - cz), !aRuined, meadow);
             // footpath with a soft bulge (never a ruler-straight line)
             double mx = (churchA.doorX + churchB.doorX) / 2.0, mz = (churchA.doorZ + churchB.doorZ) / 2.0;
             double pxn = -(churchB.doorZ - churchA.doorZ), pzn = churchB.doorX - churchA.doorX;
@@ -104,7 +113,7 @@ public final class VioletHills {
             // rare trees (Rev 4): 4..7, well away from churches, path and river
             // Рев 14.31: на референсе деревья стоят по всему лугу (лиловые шапки среди полей) —
             // было 4..7 на весь регион, в кадре оказывалось одно.
-            for (int k = 0, tries = 0; k < 16 && tries < 400; ++tries) {
+            for (int k = 0, tries = 0; k < 9 + rnd.nextInt(6) && tries < 500; ++tries) {
                 double a = rnd.nextDouble() * Math.PI * 2, d = (0.35 + rnd.nextDouble() * 0.55) * R;
                 int x = (int) Math.floor(cx + Math.cos(a) * d), z = (int) Math.floor(cz + Math.sin(a) * d);
                 if (meadow.t(x + 0.5, z + 0.5) < 0.3) continue;
@@ -115,7 +124,7 @@ public final class VioletHills {
                 for (CityPlan.Tree t : trees) if (Math.abs(t.x - x) < 11 && Math.abs(t.z - z) < 11) { ok = false; break; }
                 if (!ok) continue;
                 // на референсе все деревья поля — с лиловой кроной, разного размера
-                trees.add(new CityPlan.Tree(x, z, TREE_VIOLET, 7 + rnd.nextInt(5), rnd.nextInt(1 << 30)));
+                trees.add(new CityPlan.Tree(x, z, TREE_VIOLET, 9 + rnd.nextInt(5), rnd.nextInt(1 << 30)));
                 ++k;
             }
         }

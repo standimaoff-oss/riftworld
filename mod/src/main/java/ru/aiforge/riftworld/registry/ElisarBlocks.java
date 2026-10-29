@@ -128,7 +128,12 @@ public final class ElisarBlocks {
     // ----- Рев 14.36 «Фиолетовые холмы по референсу 04»: на фото террасы — это НЕ редкие цветы
     // на траве, а плотные гряды лаванды: сплошная фиолетовая масса рядами через борозду.
     // Отдельный блок-«куст» (полный куб) даёт эту массу; одиночные цветы остаются сверху для пуха.
-    public static final RegistryObject<Block> LAVENDER_BED = cube("lavender_bed", MapColor.COLOR_PURPLE, 0.4F, SoundType.GRASS);
+    /**
+     * Рев 15: лаванда — РАСТЕНИЕ (крестик), а не куб. Раньше это был лиловый куб: поля Фиолетовых
+     * холмов из-за него читались «пластиковыми плитами» (кадры 49–51 итерации 44). Теперь это
+     * куст с цветущими колосьями, сквозь который можно пройти.
+     */
+    public static final RegistryObject<PlantBlock> LAVENDER_BED = ModBlocks.reg("lavender_bed", () -> new PlantBlock(plant()));
     // обрывы: светлый известняк горизонтальными пластами (мох — у самого низа стены)
     public static final RegistryObject<Block> GARDEN_LIMESTONE = cube("garden_limestone", MapColor.QUARTZ, 1.5F, SoundType.STONE);
     public static final RegistryObject<Block> GARDEN_LIMESTONE_MOSSY = cube("garden_limestone_mossy", MapColor.QUARTZ, 1.5F, SoundType.STONE);
@@ -265,7 +270,9 @@ public final class ElisarBlocks {
 
         @Override
         protected boolean mayPlaceOn(BlockState s, BlockGetter level, BlockPos pos) {
-            return s.is(GRASS.get()) || s.is(SOIL.get()) || s.is(PATH.get()) || s.is(MOSS.get());
+            return s.is(GRASS.get()) || s.is(SOIL.get()) || s.is(PATH.get()) || s.is(MOSS.get())
+                    || s.is(GARDEN_GRASS.get()) || s.is(GARDEN_LIMESTONE.get()) || s.is(GARDEN_LIMESTONE_MOSSY.get())
+                    || s.is(CRUST.get());
         }
 
         @Override

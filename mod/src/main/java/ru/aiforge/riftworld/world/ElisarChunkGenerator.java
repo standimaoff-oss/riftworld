@@ -80,6 +80,13 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         boolean fence;            // rim fence of the city terraces
         boolean garden;           // biome 07 zone (terraced hub or its sea fringe)
         boolean pond, pondRim, springy;   // biome 07 terrace pools and hot-spring cores
+        /**
+         * Рев 15: ГЛАДКАЯ (до квантования в ярусы) высота поверхности. Нужна Фиолетовым холмам:
+         * гряды лаванды идут ПО КОНТУРУ яруса, а сам контур — это изолиния этой высоты, поэтому
+         * полосы считаются прямо по ней (а не по шуму «в клетку», из-за которого поля читались
+         * фиолетовой крупой).
+         */
+        double soft = Double.NaN;
     }
 
     static double hash(int x, int z, int s) {
@@ -284,29 +291,27 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                     double o = es.outside(px, pz);
                     top = o <= 0 ? es.y : es.y + (top - es.y) * smooth(o / 6.0);
                 }
-            } else if (isl.kind == 7) {                                // violet meadow: plateaus under the two churches
-                // Рев 14.40, по референсу 04. На фото холмы — это ШИРОКИЕ ВОЛНЫ, разбитые на
-                // длинные террасы-полосы, а сами террасы идут по склону правильными лентами.
-                // Было: `raw` острова (мелкий шум ±1.5) квантовался в ступени, и на лугу получались
-                // крошечные площадки-«блины» с каменными бортами — на кадре 50 они читались как
-                // разбросанные серые кучи. Теперь высоту луга задаёт СВОЁ гладкое поле: крупная
-                // волна холмов + наплыв от кромки острова, и уже оно режется на террасы по 3 блока.
-                double tm = Math.max(0.0, Math.min(1.0, isl.t(px, pz)));
-                double rimY = plan.ocean + 2.0;
-                double dome = rimY + (isl.base - rimY) * Math.pow(tm, 0.75);
-                // Рев 14.42, по кадру 51 итерации 38: волны были крутоваты (7 блоков на ~110 блоков
-                // хода), ступени 3 блока — и террасы крошились на изолированные «пятачки» с
-                // каменными бортами. На фото терраса — ДЛИННАЯ ЛЕНТА по склону. Волна ниже и
-                // длиннее, шаг террасы крупнее (см. violetTerrace).
-                dome += 4.0 * (vnoise(px * 0.0055, pz * 0.0055, 71) - 0.5) * tm;
-                dome += 1.6 * (vnoise(px * 0.019, pz * 0.019, 72) - 0.5) * tm;
+            } else if (isl.kind == 7) {                                // Фиолетовые холмы (референс 04)
+                // Рев 15 — биом переделан с нуля по просьбе владельца («сейчас сделано ужасно»).
+                // Что было не так на кадрах 49–51 итерации 44: серые «кучи» подпорных стенок на
+                // каждом перепаде, лаванда разложена шумом в клетку (читалась фиолетовой крупой),
+                // трава — белёсая элисарская (на фото луг сочный зелёный), ступени по 5 блоков.
+                //
+                // Что теперь:
+                //   * рельеф — ШИРОКИЕ ВОЛНЫ (две крупные, одна средняя, одна мелкая рябь), а не
+                //     конус: на склоне появляются настоящие холмы и ложбины, как на фото;
+                //   * квантование в ярусы по 2 блока → длинные узкие террасы-ленты по изолиниям;
+                //   * гладкая высота кладётся в {@code c.soft}: по ней потом режутся гряды лаванды
+                //     ПО КОНТУРУ, и подпорные стенки больше не нужны (обрыв яруса и есть стенка).
+                double dome = violetProfile(isl, px, pz, plan.ocean);
+                c.soft = dome;
                 top = violetTerrace(dome);
                 VioletHills.Region vr = VioletHills.regionAt(px, pz);
                 if (vr != null && vr.meadow == isl) {
                     double oA = vr.churchA.outside(px, pz), oB = vr.churchB.outside(px, pz);
                     double o = Math.min(oA, oB);
                     int fy = oA <= oB ? vr.churchA.y : vr.churchB.y;
-                    if (o < 7) top = o <= 0 ? fy : fy + (top - fy) * smooth(o / 7.0);
+                    if (o < 9) top = o <= 0 ? fy : fy + (top - fy) * smooth(o / 9.0);
                 }
             }
             else if (isl.kind == SizoGrove.KIND) {                     // sizo grove: terrace under the rare ruined temple
@@ -440,7 +445,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         // biome 04: the violet meadow river - a chord across the island that spills off both rims
         VioletHills.Region vr = VioletHills.regionAt(px, pz);
         if (vr != null)
-            applyChannel(c, plan, px, pz, vr.rax, vr.raz, vr.rbx, vr.rbz, VioletHills.Region.RIVER_HW, vr.riverLevel, 2, tt);
+            applyVioletStream(c, plan, px, pz, vr, tt);
         // Рев 14.8: старый «feed»-механизм водопадов УДАЛЁН. Он искал более высокую полку в
         // радиусе 1 и ставил струю почти на каждой колонке (шумовые пороги 0.50/0.58/0.72 в
         // объединении давали ~65 %); пока рельеф был плоским, это давало одну клетку воды, но с
@@ -528,7 +533,27 @@ public class ElisarChunkGenerator extends ChunkGenerator {
      * Рев 14.42: шаг 3 блока давал на склоне 10–12 ступеней-пятачков; на фото ступени крупные,
      * их 4–6 на холм. Шаг 5 блока — ровно столько.
      */
-    public static final int VIOLET_STEP = 5;
+    /**
+     * Рев 15: гладкий профиль луга Фиолетовых холмов (ДО квантования в ярусы) — одна формула на
+     * рельеф, гряды лаванды, посадку церквей и камеры CI. Широкие волны холмов + наплыв от кромки
+     * острова, как на референсе 04.
+     */
+    public static double violetProfile(CityPlan.Island isl, double px, double pz, int ocean) {
+        double tm = Math.max(0.0, Math.min(1.0, isl.t(px, pz)));
+        double rimY = ocean + 2.5;
+        double dome = rimY + (isl.base - rimY) * Math.pow(tm, 1.02);
+        dome += 6.2 * (vnoise(px * 0.0060, pz * 0.0060, 71) - 0.5) * Math.sqrt(tm);   // крупные волны холмов
+        dome += 2.4 * (vnoise(px * 0.0165, pz * 0.0165, 72) - 0.5) * tm;              // средние
+        dome += 0.8 * (vnoise(px * 0.047, pz * 0.047, 73) - 0.5) * tm;                // мелкая рябь кромки
+        return dome;
+    }
+
+    /** Верх луга в точке (та же формула, что в {@link #column}), для посадки церквей и камер. */
+    public static int violetTop(CityPlan.Island isl, double px, double pz, int ocean) {
+        return (int) Math.floor(violetTerrace(violetProfile(isl, px, pz, ocean)));
+    }
+
+    public static final int VIOLET_STEP = 2;
 
     private static double violetTerrace(double top) {
         return Math.floor(top / (double) VIOLET_STEP) * VIOLET_STEP + 2.0;
@@ -547,6 +572,37 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         if (vnoise(px * 0.09, pz * 0.09, 131) <= 0.72) return false;
         if (Math.hypot(px - isl.cx, pz - isl.cz) > isl.R * 0.97) return false;     // пруды — только на своём острове
         return maxTop > plan.ocean + 3 && maxTop < plan.ocean + 46;
+    }
+
+    /**
+     * Рев 15: ручей Фиолетовых холмов идёт ПО ТЕРРАСАМ, а не одним уровнем.
+     *
+     * <p>Раньше ручей вырезался на единой высоте ({@code riverLevel = base-2}): на кадрах 49–51 это
+     * была прямая бирюзовая канава с вертикальными стенками в 10+ блоков, перерезающая все ярусы
+     * насквозь. Теперь уровень воды берётся от ПОЛКИ, на которой стоит колонка: ручей спускается
+     * каскадом по террасам, оставаясь в одной-двух клетках от поверхности — как горный поток на
+     * референсе.
+     */
+    private static void applyVioletStream(Col c, CityPlan plan, double px, double pz,
+                                          VioletHills.Region vr, double[] tt) {
+        CityPlan.Island isl = c.isl;
+        if (isl == null || isl.kind != 7) return;
+        double d = CityPlan.segDist(px, pz, vr.rax, vr.raz, vr.rbx, vr.rbz, tt);
+        double hw = VioletHills.Region.RIVER_HW;
+        if (d > hw + 1.6) return;
+        int shelf = c.top;
+        int L = shelf - 1;                                   // вода на блок ниже полки
+        if (d > hw) {                                        // берег: не даём воде «висеть»
+            if (c.top < L + 1) { c.top = L + 1; c.bottom = Math.min(c.bottom, c.top - 3); }
+            return;
+        }
+        c.waterTop = L;
+        c.waterBottom = L - 1;
+        c.top = Math.min(c.top, L - 2);                      // ложе под водой
+        c.soft = Double.NaN;                                 // в ручье полей нет
+        if (c.surface == S_COBBLE || c.surface == S_PATH || c.surface == S_PLANK) c.deckY = Math.max(c.deckY, L + 1);
+        c.surface = S_GRASS;
+        c.bottom = Math.min(c.bottom, c.top - 2);
     }
 
     /** Carves one straight water channel into the column (shared by city rivers and the violet meadow river). */
@@ -661,6 +717,10 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                 case S_PLANK -> plank;
                                 case S_PLOT -> cobble;         // pebble apron around the houses (reference)
                                 default -> {
+                                    // Рев 15: луг Фиолетовых холмов — ЗЕЛЁНАЯ трава (на референсе сочный
+                                    // зелёный газон), а не белёсая элисарская корка. Именно из-за неё
+                                    // биом на кадрах читался «снежным» с фиолетовыми точками.
+                                    if (c.isl.kind == 7) yield hash(x, z, 62) < 0.10 ? soil : gardenGrass;
                                     if (c.garden) {
                                         // Рев 14.28: подводная полка острова — голый камень (S_BARE)
                                         if (c.surface == S_BARE) yield hash(x, z, 65) < 0.3 ? limeMossy : lime;
@@ -684,11 +744,17 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                             : (c.isl.kind != 4 && vnoise(x * 0.11, z * 0.11, 21) > 0.74 || hash(x, z, 23) < 0.012) ? moss : grass;
                                 }
                             };
-                        } else if (y == c.top - 1 || (c.isl.kind == 7 && y >= c.top - 2)) {
+                        } else if (y == c.top - 1) {
                             // Рев 14: под травой полки — не кремовая корка, а слой земли/камня,
                             // как на референсе: трава не «наклеена» на известняк.
-                            // Рев 14.29: у Фиолетовых холмов подпорные стенки террас — земля.
                             s = c.garden || c.isl.kind == 7 ? soil : crust;
+                        } else if (c.isl.kind == 7) {
+                            // Рев 15: обрыв яруса Фиолетовых холмов — каменная стенка террасы
+                            // (на фото каждая ступень подпёрта кладкой). Верхний блок — земля,
+                            // ниже 3–4 блока светлого камня, у подножия — мшистый.
+                            s = y >= c.top - 5
+                                    ? (hash(x, y, z) < 0.30 ? limeMossy : lime)
+                                    : (hash(x, y, z) < 0.10 ? mossy : stone);
                         } else if (c.garden && y >= c.top - 14) {
                             // стены полок — светлый известняк пластами (на фото обрыв цельно светлый),
                             // у подножия — мшистый
@@ -736,47 +802,58 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                         } else {
                             boolean violet = c.isl.kind == 7 || (c.isl.kind != 4 && VioletHills.inside(x + 0.5, z + 0.5));
                             if (violet) {
-                                // Рев 14.29, по референсу 04: ПОЛЯ ЛАВАНДЫ РЯДАМИ. На фото это
-                                // сплошные грядки через 2 блока, одна полоса — один оттенок, а
-                                // между массивами остаются зелёные луговины. Раньше цветы стояли
-                                // пятнами по шуму, и с воздуха читались «веснушками», а не полем.
-                                // Рев 14.31: масштаб «полей» был 0.021 — это ячейка ~48 блоков, то есть
-                                // на весь луг приходилось 2–3 значения шума, и лаванда появлялась
-                                // островками (CI: 154 цветка вместо тысяч). 0.05 даёт поля-полосы
-                                // в 20 блоков, а порог 0.36 — покрытие ~70 % луга, как на фото.
-                                // Рев 14.36, по референсу 04: поля — это ПЛОТНЫЕ ГРЯДЫ ЛАВАНДЫ на террасах,
-                                // а не редкие цветы на траве. На кадрах 49–51 луг читался «снежной
-                                // крупой»: одиночные крестики-цветы на зелени, между ними проплешины.
-                                // Теперь гряда = блок-куст (lavender_bed) на почве, три гряды через
-                                // борозду-дорожку, сверху — пушистые цветы для силуэта. Каменные
-                                // подпорные стенки террас ставятся отдельным проходом ниже.
-                                double field = vnoise(x * 0.05, z * 0.05, 92);
-                                double edge = vnoise(x * 0.09, z * 0.09, 90);
-                                double ph = x * 0.866 + z * 0.5 + vnoise(x * 0.02, z * 0.02, 93) * 6.0;
-                                int row = (int) Math.floor(ph) & 3;      // 3 гряды, 1 борозда
-                                if (field > 0.12) {                      // ~90 % луга — поля, как на фото
-                                    if (row <= 2) {
-                                        chunk.setBlockState(mp.set(x, c.top, z), soil, false);          // земля под грядой
-                                        chunk.setBlockState(mp.set(x, c.top + 1, z), st(ElisarBlocks.LAVENDER_BED), false);
-                                        double band = vnoise(x * 0.012, z * 0.012, 94);
-                                        if (h < 0.34) {                                                  // пушистая макушка
-                                            chunk.setBlockState(mp.set(x, c.top + 2, z), st(band < 0.42 ? ElisarBlocks.VIOLET_BLOOM
-                                                    : band < 0.78 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
-                                        }
-                                    } else {
-                                        chunk.setBlockState(mp.set(x, c.top, z), crust, false);          // борозда — светлая земля
-                                        if (h < 0.07) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
-                                    }
-                                } else if (field > 0.11) {               // кромка полей: одиночная лаванда на траве
-                                    if (h < 0.42) {
-                                        int f = (int) (hash(x, z, 91) * 100);
-                                        chunk.setBlockState(mp.set(x, c.top + 1, z), st(f < 54 ? ElisarBlocks.VIOLET_BLOOM : f < 84 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
-                                    } else if (h < 0.55) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
-                                } else {
-                                    if (h < 0.14) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
-                                    else if (h < 0.18 && edge > 0.56) {
+                                // ==================================================================
+                                // Рев 15 — ПОЛЯ ЛАВАНДЫ ЗАНОВО (референс 04_violet_hills.png).
+                                // На фото поля — это ГРЯДЫ, идущие ПО КОНТУРУ холма: каждая гряда
+                                // повторяет изолинию высоты, между грядами узкая травяная борозда, а
+                                // у самой кромки яруса всегда остаётся зелёная полоса травы.
+                                // Раньше полосы резались по прямой в мире (`x*0.866+z*0.5`) — на
+                                // склоне это давало «шахматку» из кубиков и читалось крупой.
+                                // Теперь индекс гряды — гладкая высота поверхности {@code c.soft}
+                                // (см. рельеф выше): гряды сами ложатся по рельефу, как на фото.
+                                // ==================================================================
+                                double soft = Double.isNaN(c.soft) ? c.top : c.soft;
+                                double rp = soft / 1.15;                       // одна гряда на 1.15 блока подъёма
+                                double frac = rp - Math.floor(rp);
+                                boolean row = frac < 0.70;                     // 70 % — гряда, 30 % — борозда
+                                double field = vnoise(x * 0.0068, z * 0.0068, 92);   // где вообще поля, а где пастбище
+                                boolean meadow = field < 0.34;
+                                double edgeN = vnoise(x * 0.09, z * 0.09, 90);
+                                // полоса травы вдоль кромки яруса: сосед уровнем ниже на целую ступень
+                                boolean lip = false;
+                                for (Direction d : Direction.Plane.HORIZONTAL) {
+                                    Col n = cols[dx + 1 + d.getStepX()][dz + 1 + d.getStepZ()];
+                                    if (n.isl != null && n.top <= c.top - (VIOLET_STEP - 1)) { lip = true; break; }
+                                }
+                                if (lip) {
+                                    // кромка яруса — трава (на фото каждая терраса подстрижена по краю)
+                                    if (h < 0.30) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
+                                    else if (h < 0.34) {
                                         int f = (int) (hash(x, z, 91) * 3);
-                                        chunk.setBlockState(mp.set(x, c.top + 1, z), st(f == 0 ? ElisarBlocks.VIOLET_BLOOM : f == 1 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
+                                        chunk.setBlockState(mp.set(x, c.top + 1, z), st(f == 0 ? ElisarBlocks.VIOLET_BLOOM
+                                                : f == 1 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
+                                    }
+                                } else if (!meadow && row) {
+                                    // ГРЯДА ЛАВАНДЫ: почва → куст → цветущая макушка (2 блока в высоту,
+                                    // как на фото, где лаванда стоит по пояс и выше).
+                                    chunk.setBlockState(mp.set(x, c.top, z), soil, false);
+                                    chunk.setBlockState(mp.set(x, c.top + 1, z), st(ElisarBlocks.LAVENDER_BED), false);
+                                    double band = vnoise(x * 0.011, z * 0.011, 94);
+                                    chunk.setBlockState(mp.set(x, c.top + 2, z), st(band < 0.40 ? ElisarBlocks.VIOLET_BLOOM
+                                            : band < 0.78 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
+                                } else if (!meadow) {
+                                    // борозда между грядами: тёмная земля + редкая трава
+                                    chunk.setBlockState(mp.set(x, c.top, z), soil, false);
+                                    if (h < 0.16) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
+                                } else {
+                                    // пастбище: сочная трава, островки цветов, редкие кустики лаванды
+                                    if (h < 0.16) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
+                                    else if (h < 0.23 && edgeN > 0.50) {
+                                        int f = (int) (hash(x, z, 91) * 3);
+                                        chunk.setBlockState(mp.set(x, c.top + 1, z), st(f == 0 ? ElisarBlocks.VIOLET_BLOOM
+                                                : f == 1 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
+                                    } else if (h < 0.26) {
+                                        chunk.setBlockState(mp.set(x, c.top + 1, z), st(ElisarBlocks.LAVENDER_BED), false);
                                     }
                                 }
                             } else if (c.garden) {
@@ -810,32 +887,11 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                         }
                     }
                 }
-                // Рев 14.36, по референсу 04: между ярусами полей — СВЕТЛЫЕ КАМЕННЫЕ ПОДПОРНЫЕ СТЕНКИ
-                // (на фото каждая ступень террасы подпёрта кладкой). Ставим в своей колонке у кромки:
-                // верхние 3 блока — камень, сверху вместо лаванды/травы — каменная полка.
-                if (c.isl != null && c.isl.kind == 7 && c.waterTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE) {
-                    // Рев 14.42: стенка ставится только там, где сосед НИЖЕ на целую террасу (5 блоков),
-                    // и только на два блока в высоту. Прежде порог был «на 2 блока ниже» и высота 3:
-                    // на каждом перепаде вырастали каменные башни-кучи (кадр 51 итерации 38).
-                    boolean step = false;
-                    for (Direction d : Direction.Plane.HORIZONTAL) {
-                        Col n = cols[dx + 1 + d.getStepX()][dz + 1 + d.getStepZ()];
-                        if (n.isl != null && n.top <= c.top - (VIOLET_STEP - 1)) { step = true; break; }
-                    }
-                    if (step) {
-                        // Рев 14.40, по референсу 04: подпорные стенки террас на фото — светлый
-                        // известняк, а не городская кладка. Было ashlar + мшистый кирпич: на кадре 50
-                        // серые кучи читались «бетонными», теперь это те же блоки, что и у полок садов.
-                        BlockState wall = lime;
-                        BlockState wallMossy = limeMossy;
-                        for (int y = c.top - 1; y <= c.top; ++y)
-                            chunk.setBlockState(mp.set(x, y, z), hash(x, y, z) < 0.14 ? wallMossy : wall, false);
-                        for (int y = c.top + 1; y <= c.top + 1; ++y) {
-                            BlockState above = chunk.getBlockState(mp.set(x, y, z));
-                            if (!above.isAir()) chunk.setBlockState(mp.set(x, y, z), Blocks.AIR.defaultBlockState(), false);
-                        }
-                    }
-                }
+                // Рев 15: СТАРЫЕ «ПОДПОРНЫЕ СТЕНКИ» УДАЛЕНЫ. Владелец видел на кадрах 49–51 серые
+                // кучи на каждом перепаде: проход ставил по 2 блока кладки в НАДземную часть у любой
+                // колонки, у которой сосед ниже на террасу, — то есть прямо на поле. Теперь стенку
+                // делает сам обрыв яруса (2 блока камня под почвой, см. цикл заполнения), а сверху
+                // остаётся ровная травяная кромка. Надземных камней в полях больше нет.
                 // biome 07: ПЛЮЩ ПО ОБРЫВАМ (референс). Раньше «шторы» собирались из белой листвы
                 // сизо, а ванильный VineBlock проверяет соседний блок через chunk.getBlockState —
                 // на границе чанка сосед ещё не сгенерирован, все стороны оставались false, и лоза
@@ -1151,8 +1207,14 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                     (2.2 + r.nextDouble() * (sizo ? 0.9 : garden ? 0.9 : 0.6)) * (violetCanopy ? 1.22 : 1.0), r);
         }
         // макушка
-        crown(cols, put, 0, trunkTop + 1.4, 0,
-                ((sizo ? 2.5 : garden ? 3.3 : 2.9) + r.nextDouble() * 0.5) * (violetCanopy ? 1.34 : 1.0), r);
+        if (violetCanopy) {
+            // Рев 15, по референсу 04: крона Фиолетовых холмов — плотный ШИРОКИЙ зонт из наложенных
+            // ярусов листвы (как сиреневое дерево), а не «шарик на палке» из отдельных облачков.
+            violetUmbrella(cols, put, trunkTop, r);
+        } else {
+            crown(cols, put, 0, trunkTop + 1.4, 0,
+                    (sizo ? 2.5 : garden ? 3.3 : 2.9) + r.nextDouble() * 0.5, r);
+        }
         // Рев 11.19: рваный контур кроны оставлял одиночные блоки листвы, висящие в воздухе.
         // Убираем листву, у которой меньше двух соседей (брёвна соседями считаются).
         java.util.Set<Long> solid = new java.util.HashSet<>();
@@ -1190,6 +1252,36 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         if (solid.contains(cellKey(x, y, z + 1))) ++n;
         if (solid.contains(cellKey(x, y, z - 1))) ++n;
         return n;
+    }
+
+    /**
+     * Рев 15: крона-зонт для дерева Фиолетовых холмов (референс 04).
+     *
+     * <p>Складывается из четырёх-пяти горизонтальных ярусов листвы: самый широкий — в середине,
+     * кверху и книзу ярусы уже. Получается пышная вытянутая крона, как у сирени, при этом нижняя
+     * граница ровная и «читается» с земли (раньше это был один шар, и издалека крона выглядела
+     * кубиком на палке).
+     */
+    private static void violetUmbrella(java.util.Map<Long, java.util.List<int[]>> cols,
+                                       java.util.function.BiConsumer<int[], Integer> put,
+                                       int trunkTop, java.util.Random r) {
+        double baseR = 3.5 + r.nextDouble() * 1.0;
+        int y0 = trunkTop - 2;
+        for (int layer = 0; layer <= 5; ++layer) {
+            double f = 1.0 - Math.abs(layer - 1.9) / 4.2;
+            if (f <= 0.18) continue;
+            double rad = baseR * f + 0.5;
+            int y = y0 + layer;
+            int R = (int) Math.ceil(rad);
+            for (int dx = -R; dx <= R; ++dx) {
+                for (int dz = -R; dz <= R; ++dz) {
+                    double d = Math.hypot(dx, dz);
+                    if (d > rad + (r.nextDouble() - 0.5) * 0.7) continue;
+                    if (d > rad - 0.7 && r.nextDouble() < 0.30) continue;     // рваный край
+                    put.accept(new int[]{dx, y, dz}, 0);
+                }
+            }
+        }
     }
 
     /** Крона-облако: почти шар с рваным краем, чтобы листва не выглядела кубиком. */
