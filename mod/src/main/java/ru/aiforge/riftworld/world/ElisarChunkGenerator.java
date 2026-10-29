@@ -1291,23 +1291,25 @@ public class ElisarChunkGenerator extends ChunkGenerator {
     private static void violetUmbrella(java.util.Map<Long, java.util.List<int[]>> cols,
                                        java.util.function.BiConsumer<int[], Integer> put,
                                        int trunkTop, java.util.Random r) {
-        // Рев 15.4: крона — ШИРОКИЙ ПЛОСКИЙ ЗОНТ из 5 наложенных эллиптических ярусов
-        // (на референсе 04 крона дерева шире ствола втрое и заметно приплюснута).
-        // Раньше это были почти шары радиусом 3.9 — издалека они читались кубами на палке.
-        double baseR = 5.6 + r.nextDouble() * 1.4;
-        double squash = 0.70 + r.nextDouble() * 0.12;      // эллипс: крона шире, чем глубже
-        int y0 = trunkTop - 3;
-        double[] prof = {0.52, 0.82, 1.0, 0.94, 0.70, 0.40};
-        int layers = prof.length;
-        for (int layer = 0; layer < layers; ++layer) {
-            double rad = baseR * prof[layer];
-            int y = y0 + layer;
+        // Рев 15.6: крона — ПРИПЛЮСНУТЫЙ ЭЛЛИПСОИД (не стопка дисков). Радиус яруса считается по
+        // формуле сферы rad = R*√(1-(dy/H)²), поэтому силуэт получается плавным куполом, как у
+        // сирени на референсе 04, а не «капустой» из ровных слоёв (так было в итерациях 47–48).
+        double baseR = 5.2 + r.nextDouble() * 1.3;
+        double squash = 0.78 + r.nextDouble() * 0.10;       // крона шире, чем глубже
+        double H = 2.6 + r.nextDouble() * 0.8;             // полувысота купола
+        double cy = trunkTop + 0.4;                        // центр купола чуть выше ствола
+        int y0 = (int) Math.floor(cy - H), y1 = (int) Math.ceil(cy + H);
+        for (int y = y0; y <= y1; ++y) {
+            double dy = (y - cy) / H;
+            if (Math.abs(dy) > 1.0) continue;
+            double rad = baseR * Math.sqrt(1.0 - dy * dy);
+            if (rad < 0.7) continue;
             int R = (int) Math.ceil(rad) + 1;
             for (int dx = -R; dx <= R; ++dx) {
                 for (int dz = -R; dz <= R; ++dz) {
                     double d = Math.hypot(dx, dz / squash);
-                    if (d > rad + (r.nextDouble() - 0.5) * 0.55) continue;
-                    if (d > rad - 0.8 && r.nextDouble() < 0.26) continue;      // рваный контур
+                    if (d > rad + (r.nextDouble() - 0.5) * 0.7) continue;
+                    if (d > rad - 0.9 && r.nextDouble() < 0.22) continue;      // рваный контур
                     put.accept(new int[]{dx, y, dz}, 0);
                 }
             }
