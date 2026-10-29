@@ -190,8 +190,20 @@ dependencies {
 
     // Рев 11: Dynamic Trees нужен только для живой проверки аддона (./gradlew runClient -PwithDT).
     // В обычной сборке зависимость не тянется — мод остаётся самостоятельным.
+    // Рев 15: Dynamic Trees НЕ резолвится из maven. Там лежит битый pom ("Already seen doctype"),
+    // он оседает в кеше Gradle и валит уже сам Forge userdev ("Invalid patcher dependency") —
+    // сборка падала на этапе конфигурации, даже без нашего кода.
+    // Теперь для живой проверки аддона передаётся ПУТЬ к уже скачанному jar:
+    //   ./gradlew runClient -PwithDT -PdtJarPath=/abs/path/DynamicTrees.jar
+    // (ForgeGradle сам делает deobf локального файла).
     if (project.hasProperty('withDT')) {
-        runtimeOnly fg.deobf("com.ferreusveritas.dynamictrees:DynamicTrees-${minecraft_version}:${dynamic_trees_version}")
+        def dtPath = project.findProperty('dtJarPath') ?: System.getenv('DT_JAR')
+        if (dtPath != null && file(dtPath).exists()) {
+            runtimeOnly fg.deobf(files(dtPath))
+            println "DT: локальный jar -> ${dtPath}"
+        } else {
+            println "DT: withDT задан, но dtJarPath/DT_JAR не указывает на существующий jar — DT не подключён"
+        }
     }
 }
 
@@ -280,30 +292,18 @@ tasks.register('dtJar', Jar) {
     }
 }
 
-// Рев 12: форсим resolution DT-зависимости и копируем jar в build/dtlib для CI.
-// runtimeOnly-зависимость не резольвится при ./gradlew jar — нужен отдельный задача.
+// Рев 15: задача осталась для CI, но больше не резолвит maven-конфигурацию (см. выше про битый pom).
+// Источник — локальный jar из -PdtJarPath / DT_JAR.
 tasks.register('copyDTJar', Copy) {
-    if (project.hasProperty('withDT')) {
-        dependsOn 'jar'
-        doLast {
-            def dtFiles = configurations.runtimeClasspath.filter { f ->
-                def n = f.name.toLowerCase()
-                return n.contains('dynamictrees') || n.contains('dynamic_trees')
-            }
-            if (!dtFiles.isEmpty()) {
-                mkdir layout.buildDirectory.dir('dtlib')
-                dtFiles.each { f ->
-                    copy {
-                        from f
-                        into layout.buildDirectory.dir('dtlib')
-                        rename { 'dynamictrees.jar' }
-                    }
-                }
-                println "DTJAR: ${dtFiles.files.collect { it.name }} -> build/dtlib/dynamictrees.jar"
-            } else {
-                println "DTJAR: WARN DynamicTrees not found in runtimeClasspath"
-                println "DTJAR: runtimeClasspath files: ${configurations.runtimeClasspath.files.collect { it.name }}"
-            }
+    dependsOn 'jar'
+    doLast {
+        def dtPath = project.findProperty('dtJarPath') ?: System.getenv('DT_JAR')
+        if (dtPath != null && file(dtPath).exists()) {
+            mkdir layout.buildDirectory.dir('dtlib')
+            copy { from dtPath; into layout.buildDirectory.dir('dtlib'); rename { 'dynamictrees.jar' } }
+            println "DTJAR: ${dtPath} -> build/dtlib/dynamictrees.jar"
+        } else {
+            println "DTJAR: пропущено (dtJarPath/DT_JAR не задан)"
         }
     }
 }

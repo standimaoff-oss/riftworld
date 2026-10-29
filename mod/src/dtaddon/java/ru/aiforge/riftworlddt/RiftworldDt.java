@@ -6,29 +6,29 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Рев 13 — АДДОН К DYNAMIC TREES для мода «Разлом».
+ * Рев 15 — АДДОН К DYNAMIC TREES для мода «Разлом».
  *
  * <p>Почти весь аддон — данные: в jar лежит папка {@code trees/riftworlddt/}, которую Dynamic Trees
- * сканирует у всех модов. Оттуда берутся семейства, виды, свойства листьев/грунта, формы крон
- * и правила, где деревья растут.
+ * сканирует у всех модов (семейства, виды, листва, грунты, jo_codes и правила генерации
+ * {@code world_gen/default.json}).
  *
- * <p><b>Что было сломано и что теперь сделано.</b>
+ * <p><b>Что было не так (жалоба владельца: «аддон не меняет ничего» и «вылет»):</b>
  * <ol>
- *   <li><b>Краш NPE в {@code SoilProperties#getBlock()}.</b> DT читает JSON в момент регистрации
- *       блоков и требует, чтобы «примитивные» блоки мода (<code>riftworld:sizo_log</code>,
- *       <code>riftworld:elisar_grass</code>) уже были в реестре. Мы регистрируем их на приоритете
- *       HIGHEST (см. {@code ru.aiforge.riftworld.registry.EarlyRegistrations}).</li>
- *   <li><b>«Не найдены LeavesProperties для riftworlddt:sizo / riftworlddt:ambra».</b> Причина та же:
- *       {@code primitive_leaves} указывали на ещё не зарегистрированные блоки, DT подставлял
- *       {@code minecraft:air}, свойства листьев считались недействительными, и виды оставались без листвы.</li>
- *   <li><b>Блоки DT регистрировались в namespace {@code dynamictrees}.</b> Без вызова
- *       {@code RegistryHandler.setup(modid)} DT принудительно переименовывает namespace любого
- *       своего блока в {@code dynamictrees} ({@code correctRegistryName}). Из-за этого не находились
- *       наши blockstate-файлы (они лежат в {@code assets/riftworlddt}) и не работал
- *       {@code give riftworlddt:sizo_seed}. Теперь setup вызывается рефлексией (чтобы аддон
- *       собирался и без DT в classpath) и <b>проверяется</b>: если хендлер не зарегистрировался,
- *       аддон падает с понятным сообщением, а не заливает лог 255 «missing model».</li>
+ *   <li><b>Вылет.</b> В {@code mods.toml} Dynamic Trees и «Разлом» были объявлены
+ *       {@code mandatory=true}: если DT не установлен (или стоит другой версии), Forge
+ *       останавливал запуск с экраном «Missing dependencies». Теперь оба — {@code mandatory=false},
+ *       аддон просто тихо спит.</li>
+ *   <li><b>Вылет №2.</b> Любая проблема с API DT приводила к {@link IllegalStateException}
+ *       в конструкторе мода — то есть к крашу на загрузке. Теперь всё внутри try/catch:
+ *       не получилось — пишем предупреждение и живём дальше (деревья просто не появятся).</li>
+ *   <li><b>«Ничего не меняет».</b> Правила генерации были написаны полями, которых в DT нет
+ *       ({@code "force"}, а {@code density} — массивом). DT такие файлы не применяет. Теперь
+ *       формат строго по вики: {@code select} → {@code apply: {species, density (число), chance}}.</li>
  * </ol>
+ *
+ * <p>Регистрация блоков аддона (ветки/листва/саженцы) идёт через {@code RegistryHandler.setup(id)}:
+ * без него DT переименовывает namespace всех своих блоков в {@code dynamictrees}, и наши
+ * blockstate-файлы не находятся.
  */
 @Mod(RiftworldDt.MOD_ID)
 public class RiftworldDt {
@@ -45,17 +45,19 @@ public class RiftworldDt {
             // регистрируются под namespace riftworlddt (а не dynamictrees).
             Class<?> handlerCls = Class.forName("com.ferreusveritas.dynamictrees.api.registry.RegistryHandler");
             handlerCls.getMethod("setup", String.class).invoke(null, MOD_ID);
-            // Проверяем, что хендлер реально встал в реестр DT: иначе correctRegistryName()
-            // переименует ВСЕ наши блоки в dynamictrees:* и ассеты не найдутся.
             Object handler = handlerCls.getMethod("get", String.class).invoke(null, MOD_ID);
             boolean valid = handler != null && (Boolean) handler.getClass().getMethod("isValid").invoke(handler);
-            if (!valid) {
-                throw new IllegalStateException("RegistryHandler для '" + MOD_ID + "' не зарегистрировался");
+            if (valid) {
+                LOG.info("[riftworlddt] RegistryHandler setup OK: блоки/предметы аддона идут в namespace '{}'", MOD_ID);
+            } else {
+                // Рев 15: это НЕ повод падать. Блоки уйдут в namespace dynamictrees — будет некрасиво,
+                // но мир загрузится; в логе останется понятная причина.
+                LOG.warn("[riftworlddt] RegistryHandler не зарегистрировался — блоки DT будут в namespace "
+                        + "'dynamictrees' (наши blockstate не найдутся). Аддон работает в щадящем режиме.");
             }
-            LOG.info("[riftworlddt] RegistryHandler setup OK: блоки/предметы аддона идут в namespace '{}'", MOD_ID);
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("Dynamic Trees найден, но API RegistryHandler недоступен "
-                    + "(версия DT несовместима с аддоном " + MOD_ID + ")", e);
+        } catch (Throwable t) {
+            LOG.warn("[riftworlddt] API Dynamic Trees недоступен ({}): аддон работает в щадящем режиме, "
+                    + "деревья DT в Элисаре могут не появиться", t.toString());
         }
     }
 

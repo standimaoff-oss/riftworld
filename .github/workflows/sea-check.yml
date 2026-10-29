@@ -62,9 +62,15 @@ jobs:
           chmod +x gradlew
           # Рев 14.2: сборочная сеть на раннере флапает (icu4j/jna с forge-maven отваливаются),
           # поэтому до трёх попыток — уже скачанные артефакты остаются в кэше gradle.
+          # Рев 15: БЕЗ -PwithDT. Аддон (dtJar) компилируется без Dynamic Trees — он общается с DT
+          # только рефлексией. А `-PwithDT` тянул jar DT из maven, где лежит БИТЫЙ pom
+          # ("Already seen doctype") — и этот мусор в кеше Gradle валил ВСЮ сборку
+          # ("Invalid patcher dependency: forge:…:userdev"), причём ещё на этапе конфигурации.
+          # Dynamic Trees теперь ставится на сервер обычным curl-ом (tools/ci/server_check.sh),
+          # так что от maven-артефакта сборка больше не зависит.
           ok=0
           for attempt in 1 2 3; do
-            if ./gradlew jar dtJar copyDTJar --no-daemon --console=plain -PwithDT 2>&1 | tee ../ci-out/build.log; then
+            if ./gradlew jar dtJar --no-daemon --console=plain 2>&1 | tee ../ci-out/build.log; then
               ok=1; break
             fi
             echo "== gradle попытка $attempt упала (сеть/Maven), повтор через 20 c"
@@ -88,7 +94,10 @@ jobs:
         if: always()
         timeout-minutes: 50
         env:
-          WITH_DT: "1"   # Рев 12: реальная проверка аддона Dynamic Trees — сервер и клиент с DT
+          # Рев 15: клиент поднимаем БЕЗ DT (dev-классpath не тянет Dynamic Trees из maven —
+          # оттуда приходит битый pom и валит сборку). Сам аддон проверяется на сервере:
+          # DT-деревья генерируются серверной стороной, а /riftdtwild считает их блоки.
+          WITH_DT: ""
         run: bash tools/ci/client_check.sh
 
       - name: Проверка серверного шага

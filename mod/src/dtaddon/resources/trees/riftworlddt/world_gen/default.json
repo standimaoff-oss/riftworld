@@ -1,109 +1,33 @@
 [
   {
-    "select": {
-      "name": "riftworld:sizo_grove"
-    },
-    "apply": {
-      "species": "riftworlddt:sizo",
-      "density": [
-        0.22
-      ],
-      "chance": 1.0,
-      "force": true
-    }
+    "select": { "name": "riftworld:sizo_grove" },
+    "apply": [
+      { "species": { "random": { "riftworlddt:sizo": 9, "riftworlddt:giant_sizo": 2 } }, "density": 0.32, "chance": 1.0 }
+    ]
   },
   {
-    "select": {
-      "name": "riftworld:sizo_grove"
-    },
-    "apply": {
-      "species": "riftworlddt:giant_sizo",
-      "density": [
-        0.35
-      ],
-      "chance": 0.35,
-      "force": true
-    }
+    "select": { "name": "riftworld:violet_hills" },
+    "apply": [
+      { "species": "riftworlddt:violet", "density": 0.38, "chance": 1.0 }
+    ]
   },
   {
-    "select": {
-      "name": "riftworld:violet_hills"
-    },
-    "apply": {
-      "species": "riftworlddt:violet",
-      "density": [
-        0.24
-      ],
-      "chance": 1.0,
-      "force": true
-    }
+    "select": { "name": "riftworld:waterfall_gardens" },
+    "apply": [
+      { "species": "riftworlddt:sizo", "density": 0.28, "chance": 1.0 }
+    ]
   },
   {
-    "select": {
-      "name": "riftworld:elisar_city"
-    },
-    "apply": {
-      "species": "riftworlddt:ambra",
-      "density": [
-        0.55
-      ],
-      "chance": 0.5,
-      "force": true
-    }
+    "select": { "name": "riftworld:elisar_city" },
+    "apply": [
+      { "species": "riftworlddt:ambra", "density": 0.5, "chance": 0.35 }
+    ]
   },
   {
-    "select": {
-      "name": "riftworld:waterfall_gardens"
-    },
-    "apply": {
-      "species": "riftworlddt:sizo",
-      "density": [
-        0.22
-      ],
-      "chance": 1.0,
-      "force": true
-    }
-  },
-  {
-    "select": {
-      "name": "riftworld:shallow_reef"
-    },
-    "apply": {
-      "species": "riftworlddt:coral_staghorn",
-      "density": [
-        0.35
-      ],
-      "chance": 0.8,
-      "heightmap": "OCEAN_FLOOR_WG",
-      "force": true
-    }
-  },
-  {
-    "select": {
-      "name": "riftworld:shallow_reef"
-    },
-    "apply": {
-      "species": "riftworlddt:coral_table",
-      "density": [
-        0.35
-      ],
-      "chance": 0.8,
-      "heightmap": "OCEAN_FLOOR_WG",
-      "force": true
-    }
-  },
-  {
-    "select": {
-      "name": "riftworld:shallow_reef"
-    },
-    "apply": {
-      "species": "riftworlddt:coral_whip",
-      "density": [
-        0.35
-      ],
-      "chance": 0.8,
-      "heightmap": "OCEAN_FLOOR_WG",
-      "force": true
-    }
+    "select": { "name": "riftworld:shallow_reef" },
+    "apply": [
+      { "species": { "random": { "riftworlddt:coral_staghorn": 5, "riftworlddt:coral_table": 3, "riftworlddt:coral_whip": 2 } },
+        "density": 0.45, "chance": 0.55 }
+    ]
   }
 ]
