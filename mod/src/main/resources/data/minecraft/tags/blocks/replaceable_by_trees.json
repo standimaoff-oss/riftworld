@@ -1,7 +1,11 @@
 {
   "replace": false,
   "values": [
+    "riftworld:lavender_bed",
+    "riftworld:violet_bloom",
+    "riftworld:lilac_bloom",
+    "riftworld:pale_bloom",
     "riftworld:elisar_tall_grass",
-    "riftworld:elisar_flowers"
+    "riftworld:flowers"
   ]
 }

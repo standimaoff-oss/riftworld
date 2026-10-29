@@ -652,7 +652,7 @@ if [ "${WITH_DT:-0}" = "1" ]; then
     if [[ "$DTFAM" == *"$f"* ]]; then log "  OK   у DT есть семья $f"
     else log "  FAIL у DT нет семьи $f (ответ DT: ${DTFAM:0:180})"; FAILS=$((FAILS + 1)); fi
   done
-  for f in riftworlddt:sizo riftworlddt:ambra riftworlddt:giant_sizo riftworlddt:coral_staghorn \
+  for f in riftworlddt:sizo riftworlddt:ambra riftworlddt:violet riftworlddt:giant_sizo riftworlddt:coral_staghorn \
            riftworlddt:coral_table riftworlddt:coral_whip; do
     if [[ "$DTSP" == *"$f"* ]]; then log "  OK   у DT есть вид $f"
     else log "  FAIL у DT нет вида $f (ответ DT: ${DTSP:0:180})"; FAILS=$((FAILS + 1)); fi
