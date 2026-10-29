@@ -98,12 +98,13 @@ public final class DtGround {
                 if (path.contains("leaves") || path.contains("bloom") || path.contains("lavender")
                         || path.endsWith("_bed") || path.contains("tall_grass") || path.contains("flowers")) continue;
             }
+            // Рев 14.45: хватит ОДНОЙ свободной клетки над грунтом. Требование двух подряд
+            // отбрасывало грядки лаванды (блок-куст + цветок сверху) и луговую траву: DT уходил
+            // вниз по колонке и «находил грунт» в скале под рекой — почва не подходила, дерево
+            // не ставилось (ровно то, на что жалуется владелец).
             p.move(0, 1, 0);
-            boolean open = fits(level, p, sea);
-            p.move(0, 1, 0);
-            open = open && fits(level, p, sea);
-            p.move(0, -2, 0);
-            if (open) return p.immutable();
+            if (fits(level, p, sea)) return p.below().immutable();
+            p.move(0, -1, 0);
         }
         return null;
     }
