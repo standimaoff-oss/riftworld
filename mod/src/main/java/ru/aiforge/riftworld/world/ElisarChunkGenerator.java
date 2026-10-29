@@ -498,8 +498,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         // Рев 14.28: «ниже уровня моря должны быть ещё 1–2 пустых каменных яруса». Внешние два яруса
         // острова уходят ПОД воду: это голые известняковые полки (без травы, плюща и прудов),
         // поэтому остров читается глубоким, «растущим» из моря, а не подвешенным на воде.
-        if (t < 0.13) return ocean - 2 * WaterfallGardens.STEP;
-        if (t < 0.26) return ocean - WaterfallGardens.STEP;
+        if (t < 0.10) return ocean - 2 * WaterfallGardens.STEP;
+        if (t < 0.23) return ocean - WaterfallGardens.STEP;
         double rim = ocean + 1.2;      // первая надводная полка — ровно на высоте моря
         // Рев 14.11: гора выше и круче: на фото от воды до верхней полки 4–5 ярусов по 8–12 блоков.
         double dome = rim + (isl.base + 8 - rim) * Math.pow(t, 0.85);

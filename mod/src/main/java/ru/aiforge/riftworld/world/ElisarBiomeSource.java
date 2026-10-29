@@ -59,10 +59,13 @@ public class ElisarBiomeSource extends BiomeSource {
         // владелец видел «находит не биом, а воду». Теперь ниже моря — морские биомы.
         boolean dry = at != null && qy * 4 > plan.ocean;
         if (dry) {
-            // У садов внешние ярусы острова уходят ПОД воду: там суши нет, и хотя остров
-            // «числится» под точкой, /locate biome не должен туда приводить. Кромка острова
-            // садов (t ≈ 0.28) — это уже первая надводная полка.
-            if (at.kind == WaterfallGardens.KIND) return at.t(x, z) > 0.28 ? gardens : def;
+            // У садов внешние ярусы острова уходят ПОД воду (это те самые «1–2 пустых каменных
+            // яруса»). Биом ставим только там, где рельеф ГАРАНТИРОВАННО выше моря — по той же
+            // функции, которой генератор строит остров, с запасом 3 блока: /locate возвращает
+            // блок на пару блоков в стороне от точки выборки биома, и без запаса он попадал
+            // на кромку, где уже вода (владелец: «находит не биом, а воду»).
+            if (at.kind == WaterfallGardens.KIND)
+                return ElisarChunkGenerator.gardenProfile(at, x, z, plan.ocean) >= plan.ocean + 3 ? gardens : def;
             if (at.kind == SizoGrove.KIND) return sizo;
             if (at.kind == 7) return violet;                       // луг Фиолетовых холмов
         }

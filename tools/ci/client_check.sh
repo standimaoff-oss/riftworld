@@ -954,7 +954,7 @@ biome_section() {
       if [ "${LBIO:-}" != "riftworld:waterfall_gardens" ]; then
         log "  FAIL /locate biome waterfall_gardens: в точке биом ${LBIO:-?} (должен быть riftworld:waterfall_gardens)"
         FAILS=$((FAILS + 1))
-      elif printf '%s' "${LTOP:-}" | grep -qE 'garden_grass|garden_leaves|garden_log|garden_limestone|garden_ivy|elisar_soil'; then
+      elif printf '%s' "${LTOP:-}" | grep -qE 'garden_grass|garden_leaves|garden_log|garden_limestone|garden_ivy|elisar_soil|elisar_grass|elisar_moss|ashlar'; then
         log "  OK   /locate biome waterfall_gardens привёл на садовую землю ($LX,$LY,$LZ, верх: ${LTOP:-?})"
       else
         log "  FAIL /locate biome waterfall_gardens: биом верный, но верхний блок ${LTOP:-?} — это не сад"
