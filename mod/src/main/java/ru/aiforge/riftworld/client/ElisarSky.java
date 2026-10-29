@@ -97,8 +97,11 @@ public final class ElisarSky extends DimensionSpecialEffects {
             // Рев 14.31: над Фиолетовыми холмами воздух должен быть ПРОЗРАЧНЫМ (на референсе
             // видно поля до горизонта), иначе кремовая дымка выбеливает лаванду в серое.
             if (violetAt(pos)) {
-                e.setNearPlaneDistance(far * 0.72F);
-                e.setFarPlaneDistance(far * 1.55F);
+                // Рев 14.36: на референсе 04 воздух ПРОЗРАЧНЫЙ — дальние холмы и церкви видны,
+                // только слегка в тёплой дымке. Прошлые 0.72/1.55 давали «молочный экран»:
+                // на кадрах 49–51 не было видно ни полей, ни деревьев. Теперь дымка мягкая.
+                e.setNearPlaneDistance(far * 0.90F);
+                e.setFarPlaneDistance(far * 1.22F);
                 e.setCanceled(true);
                 return;
             }
@@ -145,10 +148,11 @@ public final class ElisarSky extends DimensionSpecialEffects {
             // кремовая дымка Элисара гасила лаванду в серое. Красим туман под биом.
             if (violetAt(pos)) {
                 // тёплый закатный воздух референса: персиково-розовый, но не белёсый
-                e.setRed((float) Mth.lerp(0.82F, e.getRed(), 0.99F));
-                e.setGreen((float) Mth.lerp(0.82F, e.getGreen(), 0.77F));
-                e.setGreen((float) Math.min(e.getGreen(), 0.86F));
-                e.setBlue((float) Mth.lerp(0.82F, e.getBlue(), 0.82F));
+                // тёплый закатный воздух: персиковый оттенок, но не заливка — цвет неба остаётся,
+                // иначе кадры выглядят розовым экраном (так было в итерациях 29–33).
+                e.setRed((float) Mth.lerp(0.45F, e.getRed(), 0.99F));
+                e.setGreen((float) Mth.lerp(0.45F, e.getGreen(), 0.84F));
+                e.setBlue((float) Mth.lerp(0.35F, e.getBlue(), 0.88F));
                 return;
             }
             float g = gloom(e.getCamera().getPosition());

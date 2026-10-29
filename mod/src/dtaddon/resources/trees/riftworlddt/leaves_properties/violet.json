@@ -1,0 +1,8 @@
+{
+  "primitive_leaves": "riftworld:violet_leaves",
+  "color": "0xC3A9E6",
+  "cell_kit": "dynamictrees:deciduous",
+  "smother": 4,
+  "block_registry_name": "riftworlddt:violet_leaves",
+  "only_if_loaded": "riftworld"
+}

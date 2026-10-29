@@ -24,5 +24,8 @@
   "item.riftworlddt.coral_whip_seed": "Семя кораллового хлыста",
   "item.riftworlddt.sizo_branch": "Ветка сизо",
   "item.riftworlddt.ambra_branch": "Ветка амбры",
-  "item.riftworlddt.coral_branch": "Коралловая ветка"
+  "item.riftworlddt.coral_branch": "Коралловая ветка",
+  "item.riftworlddt.violet_seed": "Семя сирени",
+  "block.riftworlddt.violet_sapling": "Саженец сирени",
+  "species.riftworlddt.violet": "Сиреневое дерево"
 }

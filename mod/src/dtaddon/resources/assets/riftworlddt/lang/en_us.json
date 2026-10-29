@@ -24,5 +24,8 @@
   "item.riftworlddt.coral_whip_seed": "Sea Whip Coral Seed",
   "item.riftworlddt.sizo_branch": "Sizo Branch",
   "item.riftworlddt.ambra_branch": "Ambra Branch",
-  "item.riftworlddt.coral_branch": "Coral Branch"
+  "item.riftworlddt.coral_branch": "Coral Branch",
+  "item.riftworlddt.violet_seed": "Lilac Seed",
+  "block.riftworlddt.violet_sapling": "Lilac Sapling",
+  "species.riftworlddt.violet": "Lilac Tree"
 }

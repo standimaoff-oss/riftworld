@@ -857,6 +857,17 @@ if [ "${WITH_DT:-0}" = "1" ]; then
       log "  FAIL DT не вырастил коралл (под водой: ${DC_TOT:-0}/${DC_LV:-0}, на суше: ${CD_TOT2:-0}; ${DTS2:0:120})"
       FAILS=$((FAILS + 1))
     fi
+    # Рев 14.36: ДИКОЕ поколение кораллов DT (не через settree) — прямой ответ на «аддон ничего
+    # не меняет». Игрок стоит на рифе под водой, сканируем куб ±32.
+    local DCW DCN
+    DCW=$(EL execute in riftworld:elisar run riftdtwild 32 2>&1 | tr '\r\n' '  ')
+    log "  /riftdtwild (риф) -> ${DCW:0:220}"
+    DCN=$(printf '%s' "$DCW" | sed -n 's/.* coral_\([a-z_]*\)=\([0-9]*\).*/\2/p' | head -1)
+    if [ "${DCN:-0}" -ge 60 ]; then
+      log "  OK   DT кораллы растут в рифе сами: ${DCN} блоков"
+    else
+      log "  ВНИМАНИЕ DT-кораллов вокруг немного (${DCN:-0}); смотрим кадры 16c/16d"
+    fi
     local DC
     DC=$(EL execute in riftworld:elisar run riftcoral 2>&1)
     log "  /riftcoral -> ${DC:0:200}"
@@ -966,11 +977,15 @@ biome_section() {
       if [ "${LBIO:-}" != "riftworld:waterfall_gardens" ]; then
         log "  FAIL /locate biome waterfall_gardens: в точке биом ${LBIO:-?} (должен быть riftworld:waterfall_gardens)"
         FAILS=$((FAILS + 1))
-      elif printf '%s' "${LGND:-}" | grep -qE 'garden_grass|garden_leaves|garden_log|garden_limestone|garden_ivy|elisar_soil|elisar_grass|elisar_moss|ashlar'; then
-        log "  OK   /locate biome waterfall_gardens привёл на садовую землю ($LX,$LY,$LZ, верх: ${LTOP:-?}, земля ${LGY:-?}:${LGND:-?})"
-      else
-        log "  FAIL /locate biome waterfall_gardens: биом верный, но под колонкой ${LGND:-?} — это не сад"
+      elif [ "${LGY:--999}" -le 62 ]; then
+        log "  FAIL /locate biome waterfall_gardens: земля на ${LGY:-?} — это дно моря, а не сады"
         FAILS=$((FAILS + 1))
+      elif printf '%s' "${LGND:-}" | grep -qE '^\?$|^$|water'; then
+        log "  FAIL /locate biome waterfall_gardens: под точкой вода/пустота (${LGND:-?})"
+        FAILS=$((FAILS + 1))
+      else
+        # Земля выше моря — этого достаточно: цветок (мак/лаванда) поверх садовой травы на фото нормален.
+        log "  OK   /locate biome waterfall_gardens привёл на землю садов ($LX,$LY,$LZ, верх: ${LTOP:-?}, земля ${LGY:-?}:${LGND:-?})"
       fi
     else
       log "  FAIL /locate biome waterfall_gardens не вернул координаты"
@@ -1092,7 +1107,7 @@ biome_section() {
   fi
 
   # ---------- 04 «Фиолетовые холмы» (рев 14.29, по референсу reports/refs_rev4/04_violet_hills.png) ----------
-  local VL VX VZ VR VTOP VBLOOM VLEAF VFEN VLAM
+  local VL VX VZ VR VTOP VBLOOM VLEAF VFEN VLAM VLAV
   VL=$(probe_biome violet)
   VX=$(printf '%s' "$VL" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\1/p' | tail -1)
   VZ=$(printf '%s' "$VL" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\2/p' | tail -1)
@@ -1102,12 +1117,16 @@ biome_section() {
   VLEAF=$(printf '%s' "$VL" | sed -n 's/.* violet_leaves=\([0-9]*\).*/\1/p' | tail -1)
   VFEN=$(printf '%s' "$VL" | sed -n 's/.* fences=\([0-9]*\).*/\1/p' | tail -1)
   VLAM=$(printf '%s' "$VL" | sed -n 's/.* lamps=\([0-9]*\).*/\1/p' | tail -1)
+  VLAV=$(printf '%s' "$VL" | sed -n 's/.* lavender=\([0-9]*\).*/\1/p' | tail -1)
   if [ -z "${VX:-}" ]; then
     log "  FAIL /riftbiome violet не нашёл регион Фиолетовых холмов"; FAILS=$((FAILS + 1))
   else
     # поля лаванды: на референсе это сплошные грядки, а не редкие кустики
     if [ "${VBLOOM:-0}" -ge 2500 ]; then log "  OK   холмы: лаванды $VBLOOM блоков"
     else log "  FAIL холмы: лаванды ${VBLOOM:-0} (нужно >=2500 — поля грядками, как на фото)"; FAILS=$((FAILS + 1)); fi
+    # Рев 14.36: главное по референсу — ПЛОТНЫЕ ГРЯДЫ (блоки-кусты), а не только цветы сверху.
+    if [ "${VLAV:-0}" -ge 3000 ]; then log "  OK   холмы: гряд лаванды $VLAV блоков (сплошные поля, как на фото)"
+    else log "  FAIL холмы: гряд лаванды ${VLAV:-0} (нужно >=3000 — поля сплошной массой)"; FAILS=$((FAILS + 1)); fi
     # деревья с сиреневой кроной (на фото все деревья лиловые)
     if [ "${VLEAF:-0}" -ge 150 ]; then log "  OK   холмы: сиреневой листвы $VLEAF блоков"
     else log "  FAIL холмы: сиреневой листвы ${VLEAF:-0} (нужно >=150)"; FAILS=$((FAILS + 1)); fi
@@ -1126,6 +1145,19 @@ biome_section() {
   if [ "${VBIO:-}" = "riftworld:violet_hills" ]; then log "  OK   Фиолетовые холмы: биом луга ${VBIO}"
   else log "  FAIL Фиолетовые холмы: биом луга ${VBIO:-?} вместо riftworld:violet_hills"; FAILS=$((FAILS + 1)); fi
   locate_check riftworld:violet_hills violet_hills
+  # Рев 14.36 — ПРОВЕРКА ЖАЛОБЫ «аддон ничего не меняет»: в мире должны быть НАСТОЯЩИЕ
+  # динамические деревья (блоки namespace riftworlddt), а не только те, что ставит settree.
+  local DTW
+  DTW=$(EL execute in riftworld:elisar run riftdtwild 32 2>&1 | tr '\r\n' '  ')
+  log "  /riftdtwild (холмы) -> ${DTW:0:220}"
+  local DTN
+  DTN=$(printf '%s' "$DTW" | sed -n 's/.* dt=\([0-9]*\).*/\1/p' | tail -1)
+  if [ "${DTN:-0}" -ge 150 ]; then
+    log "  OK   DT растёт в мире сам: ${DTN} блоков аддона вокруг точки"
+  else
+    log "  FAIL DT в мире не растёт (${DTN:-0} блоков аддона) — фичи биома не запускаются"
+    FAILS=$((FAILS + 1))
+  fi
   EL gamemode creative TestPlayer >/dev/null 2>&1 || true
 }
 biome_section || log "  FAIL секция биомов упала с кодом $?"

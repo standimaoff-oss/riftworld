@@ -725,24 +725,34 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                 // на весь луг приходилось 2–3 значения шума, и лаванда появлялась
                                 // островками (CI: 154 цветка вместо тысяч). 0.05 даёт поля-полосы
                                 // в 20 блоков, а порог 0.36 — покрытие ~70 % луга, как на фото.
+                                // Рев 14.36, по референсу 04: поля — это ПЛОТНЫЕ ГРЯДЫ ЛАВАНДЫ на террасах,
+                                // а не редкие цветы на траве. На кадрах 49–51 луг читался «снежной
+                                // крупой»: одиночные крестики-цветы на зелени, между ними проплешины.
+                                // Теперь гряда = блок-куст (lavender_bed) на почве, три гряды через
+                                // борозду-дорожку, сверху — пушистые цветы для силуэта. Каменные
+                                // подпорные стенки террас ставятся отдельным проходом ниже.
                                 double field = vnoise(x * 0.05, z * 0.05, 92);
                                 double edge = vnoise(x * 0.09, z * 0.09, 90);
-                                if (field > 0.36) {
-                                    double ph = x * 0.866 + z * 0.5 + vnoise(x * 0.02, z * 0.02, 93) * 6.0;
-                                    int row = (int) Math.floor(ph) & 3;      // 3 грядки, 1 борозда
+                                double ph = x * 0.866 + z * 0.5 + vnoise(x * 0.02, z * 0.02, 93) * 6.0;
+                                int row = (int) Math.floor(ph) & 3;      // 3 гряды, 1 борозда
+                                if (field > 0.18) {                      // ~82 % луга — поля, как на фото
                                     if (row <= 2) {
+                                        chunk.setBlockState(mp.set(x, c.top, z), soil, false);          // земля под грядой
+                                        chunk.setBlockState(mp.set(x, c.top + 1, z), st(ElisarBlocks.LAVENDER_BED), false);
                                         double band = vnoise(x * 0.012, z * 0.012, 94);
-                                        BlockState bloom = st(band < 0.42 ? ElisarBlocks.VIOLET_BLOOM
-                                                : band < 0.78 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM);
-                                        chunk.setBlockState(mp.set(x, c.top + 1, z), bloom, false);
-                                    } else if (h < 0.10) {
-                                        chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);   // борозда: редкая трава
+                                        if (h < 0.34) {                                                  // пушистая макушка
+                                            chunk.setBlockState(mp.set(x, c.top + 2, z), st(band < 0.42 ? ElisarBlocks.VIOLET_BLOOM
+                                                    : band < 0.78 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
+                                        }
+                                    } else {
+                                        chunk.setBlockState(mp.set(x, c.top, z), crust, false);          // борозда — светлая земля
+                                        if (h < 0.07) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
                                     }
-                                } else if (field > 0.30) {
-                                    if (h < 0.34 && edge > 0.50) {
+                                } else if (field > 0.11) {               // кромка полей: одиночная лаванда на траве
+                                    if (h < 0.42) {
                                         int f = (int) (hash(x, z, 91) * 100);
                                         chunk.setBlockState(mp.set(x, c.top + 1, z), st(f < 54 ? ElisarBlocks.VIOLET_BLOOM : f < 84 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
-                                    } else if (h < 0.16) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
+                                    } else if (h < 0.55) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
                                 } else {
                                     if (h < 0.14) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
                                     else if (h < 0.18 && edge > 0.56) {
@@ -778,6 +788,26 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                 }
                             } else if (h < 0.09) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
                             else if (h < 0.105) chunk.setBlockState(mp.set(x, c.top + 1, z), flowers, false);
+                        }
+                    }
+                }
+                // Рев 14.36, по референсу 04: между ярусами полей — СВЕТЛЫЕ КАМЕННЫЕ ПОДПОРНЫЕ СТЕНКИ
+                // (на фото каждая ступень террасы подпёрта кладкой). Ставим в своей колонке у кромки:
+                // верхние 3 блока — камень, сверху вместо лаванды/травы — каменная полка.
+                if (c.isl != null && c.isl.kind == 7 && c.waterTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE) {
+                    boolean step = false;
+                    for (Direction d : Direction.Plane.HORIZONTAL) {
+                        Col n = cols[dx + 1 + d.getStepX()][dz + 1 + d.getStepZ()];
+                        if (n.isl != null && n.top <= c.top - 2) { step = true; break; }
+                    }
+                    if (step) {
+                        BlockState wall = st(ru.aiforge.riftworld.registry.CastleBlocks.ASHLAR);
+                        BlockState wallMossy = st(ElisarBlocks.BRICKS_MOSSY);
+                        for (int y = c.top - 2; y <= c.top; ++y)
+                            chunk.setBlockState(mp.set(x, y, z), hash(x, y, z) < 0.14 ? wallMossy : wall, false);
+                        for (int y = c.top + 1; y <= c.top + 2; ++y) {
+                            BlockState above = chunk.getBlockState(mp.set(x, y, z));
+                            if (!above.isAir()) chunk.setBlockState(mp.set(x, y, z), Blocks.AIR.defaultBlockState(), false);
                         }
                     }
                 }
@@ -1056,6 +1086,9 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         boolean sizo = t.kind == 0;
         // Рев 14.13: дубы Висячих садов — крупные, с широкой кроной, как на референсе
         boolean garden = t.kind == WaterfallGardens.TREE_OAK || t.kind == VioletHills.TREE_VIOLET;
+        // Рев 14.36: на референсе 04 кроны фиолетовых деревьев — широкие и пышные (в 2 раза шире
+        // ствола), а не «шарик на палке». Даём им отдельный масштаб кроны.
+        boolean violetCanopy = t.kind == VioletHills.TREE_VIOLET;
         int h = Math.max(5, t.h);
         java.util.function.BiConsumer<int[], Integer> put = (pos, kind) -> {
             int dx = pos[0], dy = pos[1], dz = pos[2];
@@ -1076,7 +1109,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         for (int i = 0; i < n; ++i) {
             double a = i * Math.PI * 2 / n + r.nextDouble() * 0.55;
             double y0 = trunkTop * (0.42 + 0.34 * r.nextDouble());
-            double len = 2.6 + r.nextDouble() * 2.6 * (sizo ? 1.15 : garden ? 1.25 : 1.0);
+            double len = 2.6 + r.nextDouble() * 2.6 * (violetCanopy ? 1.45 : sizo ? 1.15 : garden ? 1.25 : 1.0);
             double up = 0.5 + r.nextDouble() * 0.65;
             double bx = Math.cos(a) * len, bz = Math.sin(a) * len, by = y0 + len * up;
             int steps = (int) Math.ceil(len * up + len);
@@ -1089,10 +1122,12 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             }
             tips.add(new double[]{bx, by, bz});
             // крона на конце ветви: облако листвы
-            crown(cols, put, bx, by, bz, 2.2 + r.nextDouble() * (sizo ? 0.9 : garden ? 0.9 : 0.6), r);
+            crown(cols, put, bx, by, bz,
+                    (2.2 + r.nextDouble() * (sizo ? 0.9 : garden ? 0.9 : 0.6)) * (violetCanopy ? 1.45 : 1.0), r);
         }
         // макушка
-        crown(cols, put, 0, trunkTop + 1.4, 0, (sizo ? 2.5 : garden ? 3.3 : 2.9) + r.nextDouble() * 0.5, r);
+        crown(cols, put, 0, trunkTop + 1.4, 0,
+                ((sizo ? 2.5 : garden ? 3.3 : 2.9) + r.nextDouble() * 0.5) * (violetCanopy ? 1.35 : 1.0), r);
         // Рев 11.19: рваный контур кроны оставлял одиночные блоки листвы, висящие в воздухе.
         // Убираем листву, у которой меньше двух соседей (брёвна соседями считаются).
         java.util.Set<Long> solid = new java.util.HashSet<>();
@@ -1410,7 +1445,24 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             ModelKind k = kind(p.kind());
             if (k != null) placeModel(level, box, k, new BlockPos(p.x(), y, p.z()), f, p.lit());
         }
+        // Рев 14.36 — ПОЧЕМУ АДДОН DYNAMIC TREES «НИЧЕГО НЕ МЕНЯЛ»: у нас СВОЙ applyBiomeDecoration,
+        // и он никогда не запускал ванильный конвейер фич биома. DT добавляет свою фичу в биомы
+        // модификатором (Phase.ADD), но она физически не выполнялась — динамические деревья и
+        // кораллы не появлялись в мире вовсе (в CI они росли только через /dynamictrees settree).
+        // Теперь после собственной расстановки мы честно прогоняем фичи биома. Своих фич у наших
+        // биомов нет (features: [] во всех JSON), поэтому лишнего декора не появится — придут
+        // только фичи модов (DT и т.п.).
+        try {
+            super.applyBiomeDecoration(level, chunk, sm);
+        } catch (Throwable err) {
+            if (FEATURE_FAILS.getAndIncrement() == 0)
+                org.apache.logging.log4j.LogManager.getLogger("riftworld").warn(
+                        "biome decoration features failed once (run continues): " + err);
+        }
     }
+
+    /** Счётчик сбоев чужих фич: логируем только первый, чтобы не залить лог. */
+    private static final java.util.concurrent.atomic.AtomicInteger FEATURE_FAILS = new java.util.concurrent.atomic.AtomicInteger();
 
     private static ModelKind kind(String name) {
         try {

@@ -62,6 +62,14 @@ public final class SeaProbeCommand {
                                                 com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "x"),
                                                 com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "y"),
                                                 com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "z")))))));
+        // Рев 14.36: /riftdtwild [r] — СКОЛЬКО Dynamic Trees реально выросло вокруг игрока.
+        // Нужна, потому что аддон «не менял ничего»: фичи биома не запускались вовсе, и в мире
+        // не было ни одного динамического дерева/коралла. Теперь CI видит это числом.
+        e.getDispatcher().register(Commands.literal("riftdtwild").requires(s2 -> s2.hasPermission(2))
+                .executes(c -> dtWild(c.getSource(), 32))
+                .then(Commands.argument("r", com.mojang.brigadier.arguments.IntegerArgumentType.integer(4, 48))
+                        .executes(c -> dtWild(c.getSource(),
+                                com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "r")))));
         // Рев 13.15: /riftgrow x y z [раз] — «костная мука» по-настоящему: вызываем BonemealableBlock
         // у блока в точке. Это ТОТ ЖЕ путь, которым растёт саженец у игрока, поэтому проверка
         // аддона DT перестаёт зависеть от капризов команды settree.
@@ -490,7 +498,7 @@ public final class SeaProbeCommand {
         }
         // Рев 14.29: отдельные счётчики лаванды, сиреневой листвы, заборов и фонарей —
         // по ним CI отличает «поля рядами» от «веснушек» и видит рукотворное у дорожек.
-        int violetBlooms = 0, violetLeaves = 0, fences = 0, lamps = 0;
+        int violetBlooms = 0, violetLeaves = 0, fences = 0, lamps = 0, lavender = 0;
         if (violet) {
             var bloom = new java.util.HashSet<net.minecraft.world.level.block.Block>();
             bloom.add(ru.aiforge.riftworld.registry.ElisarBlocks.VIOLET_BLOOM.get());
@@ -498,6 +506,7 @@ public final class SeaProbeCommand {
             bloom.add(ru.aiforge.riftworld.registry.ElisarBlocks.PALE_BLOOM.get());
             var vl = ru.aiforge.riftworld.registry.ElisarBlocks.VIOLET_LEAVES.get();
             var fenceBlk = ru.aiforge.riftworld.registry.ElisarBlocks.FENCE.get();
+            var lavenderBlk = ru.aiforge.riftworld.registry.ElisarBlocks.LAVENDER_BED.get();
             for (int x = bestX - R; x <= bestX + R; x += 1) {
                 for (int z = bestZ - R; z <= bestZ + R; z += 1) {
                     if (!level.isLoaded(new BlockPos(x, at.getY(), z))) continue;
@@ -506,6 +515,7 @@ public final class SeaProbeCommand {
                         if (bs.isAir()) continue;
                         if (bloom.contains(bs.getBlock())) { violetBlooms++; continue; }
                         if (bs.getBlock() == vl) { violetLeaves++; continue; }
+                        if (bs.getBlock() == lavenderBlk) { lavender++; continue; }
                         if (bs.getBlock() == fenceBlk) { fences++; continue; }
                         if (bs.getBlock() instanceof net.minecraft.world.level.block.LanternBlock) lamps++;
                     }
@@ -536,7 +546,8 @@ public final class SeaProbeCommand {
             if (wv != null) wall = wv[0] + "," + wv[1] + "," + wv[2] + ":" + wv[3] + "," + wv[4] + "," + wv[5];
         }
         String vio = violet
-                ? " violet_blooms=" + violetBlooms + " violet_leaves=" + violetLeaves + " fences=" + fences + " lamps=" + lamps
+                ? " violet_blooms=" + violetBlooms + " violet_leaves=" + violetLeaves + " lavender=" + lavender
+                  + " fences=" + fences + " lamps=" + lamps
                 : "";
         // Рев 14.35: каким биомом НА САМОМ ДЕЛЕ числится земля региона. Это ловит перепутанные
         // поля биом-сурса (именно так «сады» оказались на островках данжа в море).
@@ -551,6 +562,46 @@ public final class SeaProbeCommand {
         src.sendSuccess(() -> Component.literal(line), false);
         found = water;
         return found;
+    }
+
+    /**
+     * Рев 14.36: {@code /riftdtwild [r]} — сколько блоков аддона DT вокруг игрока.
+     *
+     * <p>Сканирует куб ±r по горизонтали и ±40 по высоте вокруг вызывающего и печатает
+     * {@code riftdtwild dt=… rooty=… branch=… leaves=…} — по этой строке CI отличает «DT реально
+     * генерирует в мире» от «аддон лежит в jar, но не работает».
+     */
+    private static int dtWild(CommandSourceStack src, int r) {
+        var level = src.getLevel();
+        BlockPos at = BlockPos.containing(src.getPosition());
+        int dt = 0, rooty = 0, branch = 0, leaves = 0;
+        java.util.Map<String, Integer> named = new java.util.TreeMap<>();
+        int y0 = Math.max(level.getMinBuildHeight(), at.getY() - 40);
+        int y1 = Math.min(level.getMaxBuildHeight() - 1, at.getY() + 40);
+        for (int x = at.getX() - r; x <= at.getX() + r; ++x) {
+            for (int z = at.getZ() - r; z <= at.getZ() + r; ++z) {
+                if (!level.hasChunk(x >> 4, z >> 4)) continue;
+                for (int y = y0; y <= y1; ++y) {
+                    BlockState st = level.getBlockState(new BlockPos(x, y, z));
+                    if (st.isAir()) continue;
+                    var key = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(st.getBlock());
+                    if (key == null || !"riftworlddt".equals(key.getNamespace())) continue;
+                    ++dt;
+                    String path = key.getPath();
+                    if (path.startsWith("rooty_")) ++rooty;
+                    else if (path.contains("branch")) ++branch;
+                    else if (path.contains("leaves")) ++leaves;
+                    named.merge(path, 1, Integer::sum);
+                }
+            }
+        }
+        StringBuilder sb = new StringBuilder("riftdtwild at=" + at.getX() + "," + at.getZ()
+                + " r=" + r + " dt=" + dt + " rooty=" + rooty + " branch=" + branch + " leaves=" + leaves + " blocks=");
+        named.entrySet().stream().sorted((a, b) -> b.getValue() - a.getValue()).limit(6)
+                .forEach(en -> sb.append(en.getKey()).append('=').append(en.getValue()).append(' '));
+        final String line = sb.toString().trim();
+        src.sendSuccess(() -> Component.literal(line), false);
+        return dt;
     }
 
     /**

@@ -125,6 +125,10 @@ public final class ElisarBlocks {
     // собственная листва — иначе поля фиолетовые, а деревья чужие.
     public static final RegistryObject<LeavesBlock> VIOLET_LEAVES =
             ModBlocks.reg("violet_leaves", () -> new LeavesBlock(leaves(MapColor.COLOR_PURPLE)));
+    // ----- Рев 14.36 «Фиолетовые холмы по референсу 04»: на фото террасы — это НЕ редкие цветы
+    // на траве, а плотные гряды лаванды: сплошная фиолетовая масса рядами через борозду.
+    // Отдельный блок-«куст» (полный куб) даёт эту массу; одиночные цветы остаются сверху для пуха.
+    public static final RegistryObject<Block> LAVENDER_BED = cube("lavender_bed", MapColor.COLOR_PURPLE, 0.4F, SoundType.GRASS);
     // обрывы: светлый известняк горизонтальными пластами (мох — у самого низа стены)
     public static final RegistryObject<Block> GARDEN_LIMESTONE = cube("garden_limestone", MapColor.QUARTZ, 1.5F, SoundType.STONE);
     public static final RegistryObject<Block> GARDEN_LIMESTONE_MOSSY = cube("garden_limestone_mossy", MapColor.QUARTZ, 1.5F, SoundType.STONE);
