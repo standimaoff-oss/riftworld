@@ -589,6 +589,11 @@ public final class SeaProbeCommand {
      * фича {@code dynamictrees:dynamic_tree} — её добавляет Forge-модификатор DT),
      * {@code ground=} (что находит НАШ GroundFinder под игроком).
      */
+    private static String statOf(String id) {
+        int[] v = DtTrees.PER_SPECIES.get(id);
+        return v == null ? "0/0" : v[0] + "/" + v[1];
+    }
+
     private static int dtWhy(CommandSourceStack src) {
         var level = src.getLevel();
         BlockPos at = BlockPos.containing(src.getPosition());
@@ -646,7 +651,9 @@ public final class SeaProbeCommand {
                 + " dt_try=" + ElisarChunkGenerator.DT_TRY.get()
                 + " dt_noground=" + ElisarChunkGenerator.DT_NOGROUND.get()
                 + " dt_wet=" + ElisarChunkGenerator.DT_WET.get()
-                + " dt_planted=" + DtTrees.OK.get() + " dt_rejected=" + DtTrees.FAIL.get();
+                + " dt_planted=" + DtTrees.OK.get() + " dt_rejected=" + DtTrees.FAIL.get()
+                + " dt_violet=" + statOf("riftworlddt:violet") + " dt_sizo=" + statOf("riftworlddt:sizo")
+                + " why=" + DtTrees.LAST_REASON;
         src.sendSuccess(() -> Component.literal(line), false);
         return hasDt ? 1 : 0;
     }

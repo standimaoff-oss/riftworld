@@ -1188,8 +1188,8 @@ biome_section() {
   # Рев 14.42: если деревьев нет — печатаем ПОЧЕМУ (биом, есть ли фича DT в generationSettings,
   # что находит наш GroundFinder). Иначе «dt=0» не даёт зацепки и мы гадаем прогонами.
   DTWHY=$(EL execute at TestPlayer in riftworld:elisar run riftdtwhy 2>&1 | tr '\r\n' '  ')
-  log "  /riftdtwhy (холмы) -> ${DTWHY:0:280}"
-  DTW=$(EL execute at TestPlayer in riftworld:elisar run riftdtwild 32 2>&1 | tr '\r\n' '  ')
+  log "  /riftdtwhy (холмы) -> ${DTWHY:0:460}"
+  DTW=$(EL execute at TestPlayer in riftworld:elisar run riftdtwild 48 2>&1 | tr '\r\n' '  ')
   log "  /riftdtwild (холмы) -> ${DTW:0:220}"
   local DTN
   DTN=$(printf '%s' "$DTW" | sed -n 's/.* dt=\([0-9]*\).*/\1/p' | tail -1)

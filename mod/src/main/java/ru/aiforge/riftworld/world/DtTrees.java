@@ -34,6 +34,14 @@ public final class DtTrees {
     /** Счётчики для /riftdtwhy: сколько посадок прошло и сколько DT отверг. */
     public static final java.util.concurrent.atomic.AtomicInteger OK = new java.util.concurrent.atomic.AtomicInteger();
     public static final java.util.concurrent.atomic.AtomicInteger FAIL = new java.util.concurrent.atomic.AtomicInteger();
+    /** Сколько раз каждый вид отработал: ключ — id вида, значение — [попыток, успехов]. */
+    public static final java.util.Map<String, int[]> PER_SPECIES = new java.util.concurrent.ConcurrentHashMap<>();
+    /** Последняя причина отказа DT (для /riftdtwhy) — иначе причина снова угадывается прогонами. */
+    public static volatile String LAST_REASON = "-";
+
+    private static int[] stat(String id) {
+        return PER_SPECIES.computeIfAbsent(id, k -> new int[2]);
+    }
     private static final AtomicBoolean INIT = new AtomicBoolean();
     private static final AtomicBoolean LOG_ONCE = new AtomicBoolean();
     private static boolean broken;
@@ -87,6 +95,7 @@ public final class DtTrees {
      */
     public static boolean plant(LevelAccessor level, String speciesId, BlockPos ground, int radius, int facing) {
         if (!ready()) return false;
+        stat(speciesId)[0]++;
         if (LOG_ONCE.compareAndSet(false, true)) LOG.info("[riftworld] DT Trees: первая посадка через API ({})", speciesId);
         try {
             Object reg = SP_CLS.getField("REGISTRY").get(null);
@@ -101,6 +110,7 @@ public final class DtTrees {
             BlockState dirt = level.getBlockState(ground);
             if (!(Boolean) SP_CLS.getMethod("isAcceptableSoilForWorldgen", BlockState.class).invoke(species, dirt)) {
                 FAIL.incrementAndGet();
+                LAST_REASON = speciesId + ":soil=" + dirt.getBlock();
                 return false;                                  // почва не из списка вида — DT всё равно откажется
             }
             Object lc = LC_CREATE.invoke(null, level);
@@ -110,11 +120,13 @@ public final class DtTrees {
             Object ctx = GC_CTOR.newInstance(lc, species, ground, ground.mutable(), level.getBiome(ground),
                     dir, radius, ANY_WG);
             boolean done = (Boolean) GENERATE.invoke(species, ctx);
-            if (done) OK.incrementAndGet(); else FAIL.incrementAndGet();
+            if (done) { OK.incrementAndGet(); stat(speciesId)[1]++; }
+            else { FAIL.incrementAndGet(); LAST_REASON = speciesId + ":generate=false"; }
             return done;
         } catch (Throwable t) {
             if (broken) return false;
             broken = true;
+            LAST_REASON = "exc:" + t;
             LOG.warn("[riftworld] посадка DT-дерева не удалась ({}): больше не пробуем", t.toString());
             return false;
         }
