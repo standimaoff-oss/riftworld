@@ -610,9 +610,27 @@ public final class SeaProbeCommand {
         String topName = topBiome.unwrapKey().map(k -> k.location().toString()).orElse("?");
         String surfName = surfBiome.unwrapKey().map(k -> k.location().toString()).orElse("?");
         BlockPos ground = ru.aiforge.riftworld.world.DtGround.groundFor(level, at);
+        // Рев 14.48: спрашиваем у САМОЙ базы DT, какой вид она выдаёт для этого биома. Иначе
+        // «dt=0» снова гадание: вид может быть null (UNHANDLED_BIOME) или почва не подходит.
+        String dtSp;
+        try {
+            Class<?> bds = Class.forName("com.ferreusveritas.dynamictrees.worldgen.BiomeDatabases");
+            Object db = bds.getMethod("getDimensionalOrDefault", net.minecraft.resources.ResourceLocation.class)
+                    .invoke(null, level.dimension().location());
+            Object entry = db.getClass().getMethod("getEntry", net.minecraft.core.Holder.class).invoke(db, surfBiome);
+            boolean black = (Boolean) entry.getClass().getMethod("isBlacklisted").invoke(entry);
+            Object sel = entry.getClass().getMethod("getSpeciesSelector").invoke(entry);
+            Object selection = sel.getClass().getMethod("getSpecies", BlockPos.class, BlockState.class,
+                    net.minecraft.util.RandomSource.class).invoke(sel, at, level.getBlockState(at.below()),
+                    net.minecraft.util.RandomSource.create());
+            boolean handled = (Boolean) selection.getClass().getMethod("isHandled").invoke(selection);
+            dtSp = (handled ? "handled" : "none") + (black ? "/black" : "");
+        } catch (Throwable t) {
+            dtSp = "err:" + t.getClass().getSimpleName();
+        }
         final String line = "riftdtwhy at=" + at.getX() + "," + at.getY() + "," + at.getZ()
                 + " biome_surface=" + surfName + " biome_top=" + topName + " biome_y0=" + atY0
-                + " dt_features=" + feats + " has_dt=" + hasDt
+                + " dt_features=" + feats + " has_dt=" + hasDt + " dt_species=" + dtSp
                 + " ground=" + (ground == null ? "-" : ground.getY() + ":" + level.getBlockState(ground).getBlock());
         src.sendSuccess(() -> Component.literal(line), false);
         return hasDt ? 1 : 0;
