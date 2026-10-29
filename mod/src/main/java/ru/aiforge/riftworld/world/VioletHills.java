@@ -141,7 +141,7 @@ public final class VioletHills {
         if (r.nextDouble() > 0.45) return null;
         int cx = sx * SUPER + 150 + r.nextInt(SUPER - 300), cz = sz * SUPER + 150 + r.nextInt(SUPER - 300);
         if (Math.hypot(cx, cz) < 560) return null;                                                        // city ring
-        if (Math.hypot(cx - AshenLands.CX, cz - AshenLands.CZ) < AshenLands.R + 260) return null;         // real Ashen Lands
+        if (AshenLands.blocks(cx, cz, 260)) return null;                                                  // адские угодья (любой регион)
         EmberRuins.Site es = EmberRuins.nearest(cx, cz);
         if (es != null && Math.hypot(cx - es.cx, cz - es.cz) < 400) return null;                          // keep ruins regions apart
         return new Region(cx, cz, r);

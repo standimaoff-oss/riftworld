@@ -190,7 +190,7 @@ public final class SizoGrove {
         if (r.nextDouble() > 0.5) return null;
         int cx = sx * SUPER + 520 + 160 + r.nextInt(SUPER - 840), cz = sz * SUPER + 520 + 160 + r.nextInt(SUPER - 840);
         if (Math.hypot(cx, cz) < 600) return null;                                                        // city ring
-        if (Math.hypot(cx - AshenLands.CX, cz - AshenLands.CZ) < AshenLands.R + 300) return null;         // real Ashen Lands
+        if (AshenLands.blocks(cx, cz, 300)) return null;                                                  // адские угодья (любой регион)
         EmberRuins.Site es = EmberRuins.nearest(cx, cz);
         if (es != null && Math.hypot(cx - es.cx, cz - es.cz) < 460) return null;                          // keep ruins regions apart
         // never on top of a violet meadow region (their cell = 880)

@@ -86,6 +86,15 @@ public final class SeaProbeCommand {
         // Рев 12: /riftcoral — ближайшее КОРАЛЛОВОЕ ДЕРЕВО (растение из многих блоков), его высота и объём
         e.getDispatcher().register(Commands.literal("riftcoral").requires(s -> s.hasPermission(2))
                 .executes(c -> coral(c.getSource())));
+        // Рев 14.30: /riftwhere x z — что в этой КОЛОНКЕ: биом, верхний блок и его высота.
+        // Нужна, чтобы CI проверял не «не вода», а что /locate biome действительно привёл
+        // на садовую землю (garden_grass / garden_limestone / листва дуба / плющ).
+        e.getDispatcher().register(Commands.literal("riftwhere").requires(s2 -> s2.hasPermission(2))
+                .then(Commands.argument("x", com.mojang.brigadier.arguments.IntegerArgumentType.integer())
+                        .then(Commands.argument("z", com.mojang.brigadier.arguments.IntegerArgumentType.integer())
+                                .executes(c -> where(c.getSource(),
+                                        com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "x"),
+                                        com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "z"))))));
     }
 
     /**
@@ -364,6 +373,28 @@ public final class SeaProbeCommand {
         final String out = line;
         src.sendSuccess(() -> Component.literal(out), false);
         return grew;
+    }
+
+    /** Рев 14.30: одна строка про колонку — биом, самый верхний непустой блок и его координата. */
+    private static int where(CommandSourceStack src, int x, int z) {
+        var level = src.getLevel();                     // вызывать: execute in riftworld:elisar run riftwhere x z
+        int topY = 0;
+        String top = "?";
+        for (int y = 200; y >= 0; --y) {
+            BlockState bs = level.getBlockState(new BlockPos(x, y, z));
+            if (bs.isAir()) continue;
+            var key = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(bs.getBlock());
+            topY = y;
+            top = key == null ? "?" : key.toString();
+            break;
+        }
+        String biome = level.getBiome(new BlockPos(x, Math.max(topY, 64), z)).unwrapKey()
+                .map(k -> k.location().toString()).orElse("?");
+        String line = "riftwhere at=" + x + "," + z + " biome=" + biome + " top=" + topY + ":" + top
+                + " sea=" + CityPlan.get().ocean
+                + " garden=" + WaterfallGardens.inside(x + 0.5, z + 0.5);
+        src.sendSuccess(() -> Component.literal(line), false);
+        return 1;
     }
 
     /**

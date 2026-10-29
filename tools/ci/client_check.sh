@@ -943,17 +943,22 @@ biome_section() {
     if [ -n "${LX:-}" ] && [ -n "${LZ:-}" ]; then
       RCON execute in riftworld:elisar run forceload add "$LX" "$LZ" >/dev/null 2>&1 || true
       sleep 3
-      local LSEA
-      LSEA=$(RCON execute in riftworld:elisar run execute positioned "$LX" 62 "$LZ" run execute if block ~ ~ ~ minecraft:water 2>&1)
-      [ "${LSEA#*Test passed}" != "$LSEA" ] && LSEA="вода"
-      local LSEA2
-      LSEA2=$(RCON execute in riftworld:elisar run execute positioned "$LX" 62 "$LZ" run execute if block ~ ~ ~ riftworld:elisar_water 2>&1)
-      [ "${LSEA2#*Test passed}" != "$LSEA2" ] && LSEA="вода"
-      if [ "${LSEA:-}" = "вода" ]; then
-        log "  FAIL /locate biome waterfall_gardens привёл в МОРЕ ($LX,$LY,$LZ)"
+      # Рев 14.30: проверяем не «не вода», а что в найденной точке РЕАЛЬНО сад:
+      # /riftwhere печатает биом колонки и её верхний блок одной строкой.
+      local LWH
+      LWH=$(EL execute in riftworld:elisar run riftwhere "$LX" "$LZ" 2>&1 | tr '\r\n' '  ')
+      log "  /riftwhere у найденного биома -> ${LWH:0:240}"
+      local LBIO LTOP
+      LBIO=$(printf '%s' "$LWH" | sed -n 's/.* biome=\([^ ]*\).*/\1/p' | tail -1)
+      LTOP=$(printf '%s' "$LWH" | grep -o 'top=[-0-9]*:[a-z_:0-9]*' | tail -1 | cut -d: -f2)
+      if [ "${LBIO:-}" != "riftworld:waterfall_gardens" ]; then
+        log "  FAIL /locate biome waterfall_gardens: в точке биом ${LBIO:-?} (должен быть riftworld:waterfall_gardens)"
         FAILS=$((FAILS + 1))
+      elif printf '%s' "${LTOP:-}" | grep -qE 'garden_grass|garden_leaves|garden_log|garden_limestone|garden_ivy|elisar_soil'; then
+        log "  OK   /locate biome waterfall_gardens привёл на садовую землю ($LX,$LY,$LZ, верх: ${LTOP:-?})"
       else
-        log "  OK   /locate biome waterfall_gardens привёл в сады, не в воду ($LX,$LY,$LZ)"
+        log "  FAIL /locate biome waterfall_gardens: биом верный, но верхний блок ${LTOP:-?} — это не сад"
+        FAILS=$((FAILS + 1))
       fi
     else
       log "  FAIL /locate biome waterfall_gardens не вернул координаты"

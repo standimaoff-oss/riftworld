@@ -38,7 +38,7 @@ public final class MistKeep {
         int cx = sx * SUPER + 180 + r.nextInt(SUPER - 360), cz = sz * SUPER + 180 + r.nextInt(SUPER - 360);
         int Rr = 42 + r.nextInt(21);
         if (Math.hypot(cx, cz) < 700) return null;          // городское море - просто море
-        if (Math.hypot(cx - AshenLands.CX, cz - AshenLands.CZ) < AshenLands.R + 300) return null;
+        if (AshenLands.blocks(cx, cz, 300)) return null;
         if (Math.hypot(cx - CastleSite.CX, cz - CastleSite.CZ) < CastleSite.R + 300) return null;
         EmberRuins.Site es = EmberRuins.nearest(cx, cz);
         if (es != null && Math.hypot(cx - es.cx, cz - es.cz) < es.island.R + 380) return null;

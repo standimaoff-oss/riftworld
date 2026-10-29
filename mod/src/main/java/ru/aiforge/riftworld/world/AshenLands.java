@@ -78,6 +78,22 @@ public final class AshenLands {
         return new Region(cx, cz, R, capital);
     }
 
+    /**
+     * Рев 14.30: точка занята адскими угодьями (любым регионом, не только столицей)?
+     * Раньше соседние биомы обходили только {@link #CX}/{@link #CZ} — столицу, — и могли селиться
+     * внутри других пепельных регионов: там рельеф заливался пеплом, и, например, луг Фиолетовых
+     * холмов оказывался под выжженной равниной (CI: «лаванды 0»). Теперь спрашиваем все регионы.
+     */
+    public static boolean blocks(double x, double z, double margin) {
+        int sx = Math.floorDiv((int) Math.floor(x), SUPER), sz = Math.floorDiv((int) Math.floor(z), SUPER);
+        for (int dx = -1; dx <= 1; ++dx)
+            for (int dz = -1; dz <= 1; ++dz) {
+                Region rg = region(sx + dx, sz + dz);
+                if (rg != null && Math.hypot(x - rg.cx, z - rg.cz) < rg.R + margin) return true;
+            }
+        return false;
+    }
+
     /** Столица (в ней замок и босс) и её координаты — их использует {@link CastleSite}. */
     public static final Region CAPITAL = region(1, 1);
     public static final int CX = CAPITAL.cx, CZ = CAPITAL.cz;

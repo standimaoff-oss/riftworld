@@ -54,13 +54,17 @@ public class ElisarBiomeSource extends BiomeSource {
         // острова, что строит рельеф (plan.islandAt): нет острова — нет биома, есть остров — его биом.
         CityPlan plan = CityPlan.get();
         CityPlan.Island at = plan.islandAt(x, z);
-        if (at != null) {
+        // Биомы суши живут ТОЛЬКО выше уровня моря: у садов и рощи остров продолжается под водой
+        // голыми каменными ярусами, и без этой проверки /locate biome отдавал точку в море —
+        // владелец видел «находит не биом, а воду». Теперь ниже моря — морские биомы.
+        boolean dry = at != null && qy * 4 > plan.ocean;
+        if (dry) {
             if (at.kind == WaterfallGardens.KIND) return gardens;
             if (at.kind == SizoGrove.KIND) return sizo;
             if (at.kind == 7) return violet;                       // луг Фиолетовых холмов
         }
-        if (AshenLands.inside(x, z)) return ashen;
-        if (at != null) return def;                                // острова города, замка, руин и мелкие островки
+        if (qy * 4 > plan.ocean - 24 && AshenLands.inside(x, z)) return ashen;
+        if (dry) return def;                                       // острова города, замка, руин и мелкие островки
         if (MistKeep.inside(x, z)) return mist;                    // мини-биом «Туманный данж»: дымка над столбами-останцами
         // Рев 8 «Живое море»: открытый океан получает собственные биомы по глубине и «рифовости» дна.
         // Считаем только там, где есть смысл (у воды и ниже): небо над морем остаётся обычным.

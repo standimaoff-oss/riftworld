@@ -162,7 +162,7 @@ public final class WaterfallGardens {
         if (r.nextDouble() > 0.42) return null;
         int cx = sx * SUPER + 480 + 120 + r.nextInt(SUPER - 720), cz = sz * SUPER + 480 + 120 + r.nextInt(SUPER - 720);
         if (Math.hypot(cx, cz) < 640) return null;
-        if (Math.hypot(cx - AshenLands.CX, cz - AshenLands.CZ) < AshenLands.R + 320) return null;
+        if (AshenLands.blocks(cx, cz, 320)) return null;
         EmberRuins.Site es = EmberRuins.nearest(cx, cz);
         if (es != null && Math.hypot(cx - es.cx, cz - es.cz) < 460) return null;
         for (int dx = -1; dx <= 1; ++dx)

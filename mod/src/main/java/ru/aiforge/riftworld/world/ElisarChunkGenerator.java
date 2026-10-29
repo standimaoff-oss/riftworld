@@ -116,6 +116,9 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         } else {
             CityPlan.Island n = plan.nearest(cx, cz);
             if (n == null) return;
+            // Рев 14.30: вокруг островов Висячих садов летающий мусор не нужен — на референсе чистое
+            // небо над водой, а в кадрах обломки читались как грязь.
+            if (n.kind == WaterfallGardens.KIND) return;
             double t = n.t(cx, cz);
             if (t > -0.015 || t < -0.5) return;
             double p = 0.16 * (1 + t * 2.2);                 // denser right at the rim, thinning outwards
@@ -123,8 +126,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             y0 = (int) Math.floor(n.base - 22 + hash(gx, gz, 92) * 34);
         }
         double k = hash(gx, gz, 93);
-        BlockState s = k < 0.3 ? st(ElisarBlocks.CRUST) : k < 0.55 ? st(ElisarBlocks.STONE) : k < 0.7 ? st(ElisarBlocks.COBBLE)
-                : k < 0.82 ? st(ElisarBlocks.GRASS) : k < 0.92 ? st(ElisarBlocks.STONE_MOSSY) : st(ElisarBlocks.TOWER_BRICKS);
+        BlockState s = k < 0.34 ? st(ElisarBlocks.CRUST) : k < 0.62 ? st(ElisarBlocks.STONE) : k < 0.78 ? st(ElisarBlocks.COBBLE)
+                : k < 0.92 ? st(ElisarBlocks.GRASS) : st(ElisarBlocks.STONE_MOSSY);
         int h = big ? 2 : 1;
         for (int y = y0; y < y0 + h; ++y) chunk.setBlockState(mp.set(x, y, z), s, false);
     }
@@ -1249,6 +1252,26 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 BlockPos pos = new BlockPos(ch.x0 - bb.minX(), ch.y, ch.z0 - bb.minZ());
                 t.get().placeInWorld(level, pos, pos, sp, rnd, 2);
             }
+        }
+        // Рев 14.30, по референсу 04: вдоль дорожки между церквями — столбики-факелы и низкие
+        // каменные стенки, как на фото (дорожка освещена и обложена камнем).
+        if (vreg != null) {
+            BlockPos.MutableBlockPos vp = new BlockPos.MutableBlockPos();
+            for (int px = x0; px <= x0 + 15; ++px)
+                for (int pz = z0; pz <= z0 + 15; ++pz) {
+                    double pd = vreg.pathDist(px + 0.5, pz + 0.5);
+                    if (pd < 0.9 || pd > 3.2) continue;                     // сама дорожка и её обочина
+                    boolean post = Math.floorMod(px + pz, 13) == 0;
+                    Col pc = column(plan, px, pz);
+                    if (pc.isl == null || pc.top <= plan.ocean) continue;
+                    if (post) {
+                        int y = pc.top + 1;
+                        setIn(level, box, vp.set(px, y, pz), st(ElisarBlocks.STONE_WALL));
+                        setIn(level, box, vp.set(px, y + 1, pz), Blocks.TORCH.defaultBlockState());
+                    } else if (pd < 1.35) {
+                        setIn(level, box, vp.set(px, pc.top + 1, pz), st(ElisarBlocks.STONE_WALL));   // низкая стенка у края
+                    }
+                }
         }
         // biome 05: grove dressing - mossy boulders & amber-band way pillars (also on islets inside the grove sea-ring)
         BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
