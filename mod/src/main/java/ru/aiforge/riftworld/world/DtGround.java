@@ -114,14 +114,14 @@ public final class DtGround {
             boolean free;
             int cleared = 0;
             if (sea) {
-                BlockState s = level.getBlockState(p);
-                free = s.isAir() || !s.getFluidState().isEmpty();
+                BlockState above = level.getBlockState(p);
+                free = above.isAir() || !above.getFluidState().isEmpty();
             } else {
                 free = false;
                 for (int i = 0; i < 4; ++i) {
-                    BlockState s = level.getBlockState(p);
-                    if (s.isAir()) { free = true; break; }
-                    if (s.getCollisionShape(level, p).isEmpty() && s.canBeReplaced()) {
+                    BlockState above = level.getBlockState(p);
+                    if (above.isAir()) { free = true; break; }
+                    if (above.getCollisionShape(level, p).isEmpty() && above.canBeReplaced()) {
                         level.setBlock(p, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 2);
                         p.move(0, 1, 0);
                         ++cleared;
@@ -136,6 +136,105 @@ public final class DtGround {
         return null;
     }
 
+
+    // ------------------------------------------------------------------------------------------------
+    // Рев 15.11 — САЖАЕМ ДЕРЕВЬЯ DT САМИ.
+    //
+    // Фича DT (`dynamictrees:dynamic_tree`) приходит в биом через биом-модификатор и физически
+    // выполняется (мы вызываем `super.applyBiomeDecoration`), но её конвейер (диски Пуассона →
+    // heightmap → GroundFinder → селектор) на нашем генераторе не даёт деревьев: см. `/riftdtdbg`.
+    // Поэтому после ванильного прохода мы сажаем деревья аддона САМИ — тем же публичным API DT:
+    // `LevelContext.create` → `TreeRegistry.findSpecies` → `GenerationContext` → `Species.generate`.
+    // Дерево получается настоящим динамическим (растёт, даёт семена, листва — наши блоки).
+    // ------------------------------------------------------------------------------------------------
+
+    /** Кэш «вид по имени»: имена маленькие, а вызываем часто (по чанку на биом). */
+    private static final java.util.Map<String, Object> SPECIES = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** Вид DT по строке {@code namespace:path} или {@code null}, если DT/вид недоступны. */
+    private static Object species(String id) {
+        if (!ModList.get().isLoaded("dynamictrees")) return null;
+        Object cached = SPECIES.get(id);
+        if (cached != null) return cached;
+        try {
+            Class<?> treeRegistry = Class.forName("com.ferreusveritas.dynamictrees.api.TreeRegistry");
+            Object sp = treeRegistry.getMethod("findSpecies", net.minecraft.resources.ResourceLocation.class)
+                    .invoke(null, new net.minecraft.resources.ResourceLocation(id));
+            if (sp == null) return null;
+            SPECIES.put(id, sp);
+            return sp;
+        } catch (Throwable t) {
+            SPECIES.put(id, NULL_SPECIES);
+            return null;
+        }
+    }
+
+    private static final Object NULL_SPECIES = new Object();
+
+    /**
+     * Посадить ОДНО динамическое дерево на готовом грунте. Возвращает {@code true}, если DT поставил
+     * дерево (корни, ствол, листва — блоки аддона {@code riftworlddt}).
+     *
+     * @param radius радиус диска DT (2..8): под него подбирается JoCode-форма
+     */
+    public static boolean plant(LevelAccessor level, BlockPos ground, String speciesId, int radius) {
+        Object sp = species(speciesId);
+        if (sp == null || sp == NULL_SPECIES) return false;
+        try {
+            Class<?> lcC = Class.forName("com.ferreusveritas.dynamictrees.util.LevelContext");
+            Object lc = lcC.getMethod("create", LevelAccessor.class).invoke(null, level);
+            Class<?> spC = Class.forName("com.ferreusveritas.dynamictrees.tree.species.Species");
+            Class<?> gcC = Class.forName("com.ferreusveritas.dynamictrees.worldgen.GenerationContext");
+            Class<?> bndC = Class.forName("com.ferreusveritas.dynamictrees.util.SafeChunkBounds");
+            Object bounds = bndC.getField("ANY_WG").get(null);
+            Object ctx = gcC.getConstructor(lcC, spC, BlockPos.class, BlockPos.MutableBlockPos.class,
+                            net.minecraft.core.Holder.class, net.minecraft.core.Direction.class, int.class, bndC)
+                    .newInstance(lc, sp, ground, ground.mutable(), level.getBiome(ground),
+                            net.minecraft.core.Direction.NORTH,
+                            Math.max(2, Math.min(8, radius)), bounds);
+            return Boolean.TRUE.equals(spC.getMethod("generate", gcC).invoke(sp, ctx));
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    /** Вид для биома по его ключу; {@code null} — в этом биоме аддон ничего не сажает. */
+    private static String speciesFor(String biome, java.util.Random r) {
+        if (biome.endsWith(":violet_hills")) return "riftworlddt:violet";
+        if (biome.endsWith(":sizo_grove")) return r.nextInt(5) == 0 ? "riftworlddt:giant_sizo" : "riftworlddt:sizo";
+        if (biome.endsWith(":waterfall_gardens")) return "riftworlddt:sizo";
+        if (biome.endsWith(":shallow_reef")) {
+            int k = r.nextInt(10);
+            return k < 5 ? "riftworlddt:coral_staghorn" : k < 8 ? "riftworlddt:coral_table" : "riftworlddt:coral_whip";
+        }
+        return null;
+    }
+
+    /**
+     * Детерминированная посадка в чанке: до трёх попыток, вид и вероятность — по биому.
+     * Вызывается из {@code ElisarChunkGenerator.applyBiomeDecoration} после ванильных фич.
+     */
+    public static int plantChunk(LevelAccessor level, net.minecraft.world.level.ChunkPos pos) {
+        if (!ModList.get().isLoaded("dynamictrees")) return 0;
+        java.util.Random r = new java.util.Random(pos.toLong() * 0x9E3779B97F4A7C15L ^ 0x5DEECE66DL);
+        int planted = 0;
+        for (int i = 0; i < 3; ++i) {
+            // только внутренние 8x8 чанка: крона радиусом до 8 блоков не вылезет за соседний чанк,
+            // иначе WorldGenRegion может бросить «setBlock in a far chunk»
+            int x = pos.getMinBlockX() + 4 + r.nextInt(8), z = pos.getMinBlockZ() + 4 + r.nextInt(8);
+            BlockPos start = new BlockPos(x, 0, z);
+            var biome = level.getBiome(start);
+            String id = biome.unwrapKey().map(k -> k.location().toString()).orElse("");
+            String sp = speciesFor(id, r);
+            if (sp == null) continue;
+            boolean sea = sp.startsWith("riftworlddt:coral");
+            if (r.nextFloat() > (sea ? 0.30f : 0.55f)) continue;
+            BlockPos ground = surfaceUnder(level, start, sea);
+            if (ground == null) continue;
+            if (plant(level, ground, sp, 3 + r.nextInt(4) * 2)) ++planted;
+        }
+        return planted;
+    }
     /** Объявлен ли блок почвой в Dynamic Trees (реестр SoilHelper), т.е. дерево вообще имеет право тут встать. */
     private static boolean isDtSoil(LevelAccessor level, BlockPos p) {
         if (SOIL_CHECK == null) return true;                 // DT недоступен — не мешаем

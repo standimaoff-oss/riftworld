@@ -1611,10 +1611,24 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 org.apache.logging.log4j.LogManager.getLogger("riftworld").warn(
                         "biome decoration features failed once (run continues): " + err);
         }
+        // Рев 15.11: фича DT в нашем мире деревьев не даёт (её конвейер «диски → heightmap →
+        // GroundFinder» на кастомном генераторе пуст, см. /riftdtdbg), поэтому аддон сажает
+        // деревья и кораллы сам — тем же API DT (Species.generate). В биомах, которых нет в
+        // списке видов аддона, ничего не происходит.
+        try {
+            DtGround.plantChunk(level, chunk.getPos());
+        } catch (Throwable err) {
+            if (DT_FAILS.getAndIncrement() == 0)
+                org.apache.logging.log4j.LogManager.getLogger("riftworld").warn(
+                        "DT planting failed once (run continues): " + err);
+        }
     }
 
     /** Счётчик сбоев чужих фич: логируем только первый, чтобы не залить лог. */
     private static final java.util.concurrent.atomic.AtomicInteger FEATURE_FAILS = new java.util.concurrent.atomic.AtomicInteger();
+
+    /** Счётчик сбоев собственной посадки DT: логируем только первый. */
+    private static final java.util.concurrent.atomic.AtomicInteger DT_FAILS = new java.util.concurrent.atomic.AtomicInteger();
 
     private static ModelKind kind(String name) {
         try {
