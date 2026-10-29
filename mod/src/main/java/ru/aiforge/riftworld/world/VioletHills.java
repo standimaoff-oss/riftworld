@@ -102,7 +102,9 @@ public final class VioletHills {
             this.rbx = rcx + Math.cos(phi) * rl; this.rbz = rcz + Math.sin(phi) * rl;
             this.riverLevel = (int) Math.floor(base) - 2;
             // rare trees (Rev 4): 4..7, well away from churches, path and river
-            for (int k = 0, tries = 0; k < 7 && tries < 160; ++tries) {
+            // Рев 14.31: на референсе деревья стоят по всему лугу (лиловые шапки среди полей) —
+            // было 4..7 на весь регион, в кадре оказывалось одно.
+            for (int k = 0, tries = 0; k < 16 && tries < 400; ++tries) {
                 double a = rnd.nextDouble() * Math.PI * 2, d = (0.35 + rnd.nextDouble() * 0.55) * R;
                 int x = (int) Math.floor(cx + Math.cos(a) * d), z = (int) Math.floor(cz + Math.sin(a) * d);
                 if (meadow.t(x + 0.5, z + 0.5) < 0.3) continue;
@@ -110,7 +112,7 @@ public final class VioletHills {
                 if (pathDist(x + 0.5, z + 0.5) < 3.0) continue;
                 if (CityPlan.segDist(x + 0.5, z + 0.5, rax, raz, rbx, rbz, null) < 4.0) continue;
                 boolean ok = true;
-                for (CityPlan.Tree t : trees) if (Math.abs(t.x - x) < 6 && Math.abs(t.z - z) < 6) { ok = false; break; }
+                for (CityPlan.Tree t : trees) if (Math.abs(t.x - x) < 11 && Math.abs(t.z - z) < 11) { ok = false; break; }
                 if (!ok) continue;
                 // на референсе все деревья поля — с лиловой кроной, разного размера
                 trees.add(new CityPlan.Tree(x, z, TREE_VIOLET, 7 + rnd.nextInt(5), rnd.nextInt(1 << 30)));

@@ -94,6 +94,14 @@ public final class ElisarSky extends DimensionSpecialEffects {
             float m = mist(pos);
             float nearF = far * Mth.lerp(g, 0.45F, 0.55F);
             float farF = far * Mth.lerp(g, 1.05F, 1.0F);
+            // Рев 14.31: над Фиолетовыми холмами воздух должен быть ПРОЗРАЧНЫМ (на референсе
+            // видно поля до горизонта), иначе кремовая дымка выбеливает лаванду в серое.
+            if (violetAt(pos)) {
+                e.setNearPlaneDistance(far * 0.72F);
+                e.setFarPlaneDistance(far * 1.55F);
+                e.setCanceled(true);
+                return;
+            }
             // the sea breathes: close over the water the horizon dissolves in a milky band (Rev 4: light optimised sea mist)
             e.setNearPlaneDistance(nearF * Mth.lerp(m, 1.0F, 0.42F));
             e.setFarPlaneDistance(farF * Mth.lerp(m, 1.0F, 0.62F));
@@ -136,9 +144,11 @@ public final class ElisarSky extends DimensionSpecialEffects {
             // Рев 14.29: у Фиолетовых холмов на референсе тёплый закатный воздух (розово-персиковый):
             // кремовая дымка Элисара гасила лаванду в серое. Красим туман под биом.
             if (violetAt(pos)) {
-                e.setRed((float) Mth.lerp(0.85F, e.getRed(), 0.98F));
-                e.setGreen((float) Mth.lerp(0.85F, e.getGreen(), 0.80F));
-                e.setBlue((float) Mth.lerp(0.85F, e.getBlue(), 0.84F));
+                // тёплый закатный воздух референса: персиково-розовый, но не белёсый
+                e.setRed((float) Mth.lerp(0.82F, e.getRed(), 0.99F));
+                e.setGreen((float) Mth.lerp(0.82F, e.getGreen(), 0.77F));
+                e.setGreen((float) Math.min(e.getGreen(), 0.86F));
+                e.setBlue((float) Mth.lerp(0.82F, e.getBlue(), 0.82F));
                 return;
             }
             float g = gloom(e.getCamera().getPosition());

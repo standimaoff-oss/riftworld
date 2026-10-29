@@ -950,7 +950,7 @@ biome_section() {
       log "  /riftwhere у найденного биома -> ${LWH:0:240}"
       local LBIO LTOP
       LBIO=$(printf '%s' "$LWH" | sed -n 's/.* biome=\([^ ]*\).*/\1/p' | tail -1)
-      LTOP=$(printf '%s' "$LWH" | grep -o 'top=[-0-9]*:[a-z_:0-9]*' | tail -1 | cut -d: -f2)
+      LTOP=$(printf '%s' "$LWH" | sed -n 's/.*top=[-0-9]*:\([^ ]*\).*/\1/p' | tail -1)
       if [ "${LBIO:-}" != "riftworld:waterfall_gardens" ]; then
         log "  FAIL /locate biome waterfall_gardens: в точке биом ${LBIO:-?} (должен быть riftworld:waterfall_gardens)"
         FAILS=$((FAILS + 1))
@@ -1069,9 +1069,9 @@ biome_section() {
     if [ "${VLEAF:-0}" -ge 150 ]; then log "  OK   холмы: сиреневой листвы $VLEAF блоков"
     else log "  FAIL холмы: сиреневой листвы ${VLEAF:-0} (нужно >=150)"; FAILS=$((FAILS + 1)); fi
     local VTOP2=${VTOP:-110} VRR=${VR:-80}
-    lookat "$((VX + VRR))" "$((VTOP2 + 26))" "$((VZ + VRR))" "$VX" "$((VTOP2 - 8))" "$VZ" 20 "49_violet_hills"
-    lookat "$((VX + VRR / 2))" "$((VTOP2 + 16))" "$((VZ + VRR / 2))" "$VX" "$((VTOP2 - 2))" "$VZ" 16 "50_violet_fields"
-    lookat "$((VX + VRR * 3 / 4))" "$((VTOP2 + 6))" "$((VZ + VRR / 4))" "$VX" "$((VTOP2 + 2))" "$VZ" 14 "51_violet_path"
+    lookat "$((VX + VRR * 3 / 4))" "$((VTOP2 + 20))" "$((VZ + VRR * 3 / 4))" "$VX" "$((VTOP2 - 6))" "$VZ" 20 "49_violet_hills"
+    lookat "$((VX + VRR / 2))" "$((VTOP2 + 9))" "$((VZ + VRR / 2))" "$VX" "$((VTOP2 - 4))" "$VZ" 16 "50_violet_fields"
+    lookat "$((VX + VRR / 3))" "$((VTOP2 + 5))" "$((VZ + VRR / 6))" "$VX" "$((VTOP2 + 1))" "$VZ" 14 "51_violet_path"
   fi
   EL gamemode creative TestPlayer >/dev/null 2>&1 || true
 }

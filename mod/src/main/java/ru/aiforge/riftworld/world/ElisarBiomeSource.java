@@ -59,7 +59,10 @@ public class ElisarBiomeSource extends BiomeSource {
         // владелец видел «находит не биом, а воду». Теперь ниже моря — морские биомы.
         boolean dry = at != null && qy * 4 > plan.ocean;
         if (dry) {
-            if (at.kind == WaterfallGardens.KIND) return gardens;
+            // У садов внешние ярусы острова уходят ПОД воду: там суши нет, и хотя остров
+            // «числится» под точкой, /locate biome не должен туда приводить. Кромка острова
+            // садов (t ≈ 0.28) — это уже первая надводная полка.
+            if (at.kind == WaterfallGardens.KIND) return at.t(x, z) > 0.28 ? gardens : def;
             if (at.kind == SizoGrove.KIND) return sizo;
             if (at.kind == 7) return violet;                       // луг Фиолетовых холмов
         }

@@ -721,12 +721,16 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                 // сплошные грядки через 2 блока, одна полоса — один оттенок, а
                                 // между массивами остаются зелёные луговины. Раньше цветы стояли
                                 // пятнами по шуму, и с воздуха читались «веснушками», а не полем.
-                                double field = vnoise(x * 0.021, z * 0.021, 92);
+                                // Рев 14.31: масштаб «полей» был 0.021 — это ячейка ~48 блоков, то есть
+                                // на весь луг приходилось 2–3 значения шума, и лаванда появлялась
+                                // островками (CI: 154 цветка вместо тысяч). 0.05 даёт поля-полосы
+                                // в 20 блоков, а порог 0.36 — покрытие ~70 % луга, как на фото.
+                                double field = vnoise(x * 0.05, z * 0.05, 92);
                                 double edge = vnoise(x * 0.09, z * 0.09, 90);
-                                if (field > 0.52) {
+                                if (field > 0.36) {
                                     double ph = x * 0.866 + z * 0.5 + vnoise(x * 0.02, z * 0.02, 93) * 6.0;
-                                    int row = (int) Math.floor(ph) & 3;      // 2 грядки, 2 борозды
-                                    if (row <= 1) {
+                                    int row = (int) Math.floor(ph) & 3;      // 3 грядки, 1 борозда
+                                    if (row <= 2) {
                                         double band = vnoise(x * 0.012, z * 0.012, 94);
                                         BlockState bloom = st(band < 0.42 ? ElisarBlocks.VIOLET_BLOOM
                                                 : band < 0.78 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM);
@@ -734,7 +738,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                     } else if (h < 0.10) {
                                         chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);   // борозда: редкая трава
                                     }
-                                } else if (field > 0.46) {
+                                } else if (field > 0.30) {
                                     if (h < 0.34 && edge > 0.50) {
                                         int f = (int) (hash(x, z, 91) * 100);
                                         chunk.setBlockState(mp.set(x, c.top + 1, z), st(f < 54 ? ElisarBlocks.VIOLET_BLOOM : f < 84 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
