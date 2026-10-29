@@ -1026,6 +1026,33 @@ biome_section() {
     fi
   fi
 
+  # Рев 14.34: та же проверка для рощи и Фиолетовых холмов — /locate обязан приводить на землю биома.
+  locate_check() {   # locate_check <biome-id> <label>
+    local id=$1 label=$2 out pos lx lz wh bio top
+    out=$(EL execute at TestPlayer run locate biome "$id" 2>&1 | tr '\r\n' '  ')
+    log "  /locate biome $label -> ${out:0:180}"
+    pos=$(printf '%s' "$out" | grep -oE '\[-?[0-9]+, *-?[0-9]+, *-?[0-9]+\]' | tail -1 | tr -d '[] ')
+    lx=$(printf '%s' "$pos" | cut -d, -f1)
+    lz=$(printf '%s' "$pos" | cut -d, -f3)
+    if [ -z "${lx:-}" ] || [ -z "${lz:-}" ]; then
+      log "  FAIL /locate biome $label не вернул координаты"; FAILS=$((FAILS + 1)); return 0
+    fi
+    RCON execute in riftworld:elisar run forceload add "$lx" "$lz" >/dev/null 2>&1 || true
+    sleep 2
+    wh=$(EL execute in riftworld:elisar run riftwhere "$lx" "$lz" 2>&1 | tr '\r\n' '  ')
+    log "  /riftwhere у $label -> ${wh:0:220}"
+    bio=$(printf '%s' "$wh" | sed -n 's/.* biome=\([^ ]*\).*/\1/p' | tail -1)
+    top=$(printf '%s' "$wh" | sed -n 's/.*top=[-0-9]*:\([^ ]*\).*/\1/p' | tail -1)
+    if [ "${bio:-}" != "$id" ]; then
+      log "  FAIL /locate biome $label: в точке биом ${bio:-?}"; FAILS=$((FAILS + 1))
+    elif printf '%s' "${top:-}" | grep -qE 'water'; then
+      log "  FAIL /locate biome $label привёл в воду (верх: ${top:-?})"; FAILS=$((FAILS + 1))
+    else
+      log "  OK   /locate biome $label привёл на землю биома (верх: ${top:-?})"
+    fi
+  }
+  locate_check riftworld:waterfall_gardens waterfall_gardens
+
   # ---------- 05 «Роща Сизо» ----------
   local SL SX SZ SLOG SLEAF
   SL=$(probe_biome sizo)
@@ -1073,6 +1100,8 @@ biome_section() {
     lookat "$((VX + VRR / 2))" "$((VTOP2 + 9))" "$((VZ + VRR / 2))" "$VX" "$((VTOP2 - 4))" "$VZ" 16 "50_violet_fields"
     lookat "$((VX + VRR / 3))" "$((VTOP2 + 5))" "$((VZ + VRR / 6))" "$VX" "$((VTOP2 + 1))" "$VZ" 14 "51_violet_path"
   fi
+  locate_check riftworld:sizo_grove sizo_grove
+  locate_check riftworld:violet_hills violet_hills
   EL gamemode creative TestPlayer >/dev/null 2>&1 || true
 }
 biome_section || log "  FAIL секция биомов упала с кодом $?"

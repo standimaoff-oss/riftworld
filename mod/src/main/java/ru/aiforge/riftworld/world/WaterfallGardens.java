@@ -186,14 +186,26 @@ public final class WaterfallGardens {
     }
 
     /**
-     * Рев 14.26: биом садов — это СУША. Раньше здесь был только большой круг вокруг центра
-     * региона (в 2× больше самого острова), поэтому биом висел над открытым морем, а
-     * {@code /locate biome riftworld:waterfall_gardens} приводил в воду и камни. Теперь проверка
-     * идёт по форме островов архипелага: биом там, где реально стоят сады.
+     * Рев 14.34: остров садов, который в этой точке ГАРАНТИРОВАННО суша.
+     *
+     * <p>Биом и генератор должны совпадать, поэтому берём тот же остров, что строит рельеф, но
+     * отступаем 10 блоков от кромки: внешние ярусы острова уходят под воду (это «1–2 пустых
+     * каменных яруса»), а {@code /locate biome} печатает позицию с округлением к сетке 4 блока —
+     * без запаса он попадал на кромку, где уже море (владелец: «находит не биом, а воду»).
      */
-    public static boolean inside(double x, double z) {
+    public static CityPlan.Island landAt(double x, double z) {
         Region rg = regionAt(x, z);
-        return rg != null && rg.islandAt(x, z) != null;
+        if (rg == null) return null;
+        for (CityPlan.Island a : rg.isles) {
+            double t = a.t(x, z);
+            if (t > 0.23 + 10.0 / a.R) return a;      // 10 блоков внутри кромки, где уже суша
+        }
+        return null;
+    }
+
+    /** Биом садов = суша архипелага (а не «регион» вокруг него). */
+    public static boolean inside(double x, double z) {
+        return landAt(x, z) != null;
     }
 
     /**

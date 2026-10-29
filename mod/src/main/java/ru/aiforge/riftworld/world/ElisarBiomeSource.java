@@ -65,7 +65,7 @@ public class ElisarBiomeSource extends BiomeSource {
             // блок на пару блоков в стороне от точки выборки биома, и без запаса он попадал
             // на кромку, где уже вода (владелец: «находит не биом, а воду»).
             if (at.kind == WaterfallGardens.KIND)
-                return ElisarChunkGenerator.gardenProfile(at, x, z, plan.ocean) >= plan.ocean + 3 ? gardens : def;
+                return WaterfallGardens.landAt(x, z) != null ? gardens : def;
             if (at.kind == SizoGrove.KIND) return sizo;
             if (at.kind == 7) return violet;                       // луг Фиолетовых холмов
         }

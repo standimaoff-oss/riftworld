@@ -156,12 +156,16 @@ public final class VioletHills {
         return Math.abs(x - rg.cx) < rg.Rr + 70 && Math.abs(z - rg.cz) < rg.Rr + 70 ? rg : null;
     }
 
-    /** Biome blob test (wobbly edge): covers the meadow island AND the surrounding islets + a stretch of sea. */
+    /**
+     * Рев 14.34: биом 04 — это САМ ЛУГ, а не «блоб» вокруг него. Раньше проверка накрывала и море
+     * вокруг острова, и {@code /locate biome riftworld:violet_hills} мог привести в воду.
+     * Теперь берём луг с запасом 8 блоков от кромки — ровно там, где стоят поля.
+     */
     public static boolean inside(double x, double z) {
         Region rg = regionAt(x, z);
         if (rg == null) return false;
-        double d = Math.hypot(x - rg.cx, z - rg.cz) + (ElisarChunkGenerator.vnoise(x * 0.028, z * 0.028, 55) - 0.5) * 44;
-        return d < rg.Rr;
+        CityPlan.Island m = rg.meadow;
+        return m.t(x, z) > 0.10 + 8.0 / m.R;
     }
 
     public static List<CityPlan.Tree> treesNear(int x, int z) {

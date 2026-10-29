@@ -213,12 +213,15 @@ public final class SizoGrove {
         return null;
     }
 
-    /** Biome blob test (wobbly edge): hub island + surrounding islets and a stretch of sea. */
+    /**
+     * Рев 14.34: биом 05 — это САМ ОСТРОВ рощи, а не «блоб» вокруг него вместе с морем:
+     * иначе {@code /locate biome riftworld:sizo_grove} приводил в воду. Запас 8 блоков от кромки
+     * закрывает округление позиции, которое печатает /locate.
+     */
     public static boolean inside(double x, double z) {
         Region rg = regionAt(x, z);
         if (rg == null) return false;
-        double d = Math.hypot(x - rg.cx, z - rg.cz) + (ElisarChunkGenerator.vnoise(x * 0.026, z * 0.026, 155) - 0.5) * 48;
-        return d < rg.Rr;
+        return rg.hub.t(x, z) > 0.10 + 8.0 / rg.hub.R;
     }
 
     public static List<CityPlan.Tree> treesNear(int x, int z) {
