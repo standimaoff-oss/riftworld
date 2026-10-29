@@ -1170,13 +1170,14 @@ biome_section() {
     if [ "${VLEAF:-0}" -ge 150 ]; then log "  OK   холмы: сиреневой листвы $VLEAF блоков"
     else log "  FAIL холмы: сиреневой листвы ${VLEAF:-0} (нужно >=150)"; FAILS=$((FAILS + 1)); fi
     local VTOP2=${VTOP:-110} VRR=${VR:-80}
-    # Рев 15: кадры биома сняты С ЗЕМЛИ, а не с птичьего полёта. На кадрах 49–51 итерации 44
-    # (высота +20 над вершиной) поля читались сверху, и вся «красота» сводилась к цвету.
-    # Теперь: (49) склон с грядами лаванды от уровня глаз, (50) вблизи среди колодцев лаванды,
-    # (51) вид с гребня вниз по террасам — ровно те три ракурса, что на референсе.
-    lookat "$((VX + VRR * 3 / 4))" "$((VTOP2 + 3))" "$((VZ + VRR * 3 / 4))" "$VX" "$((VTOP2 + 1))" "$VZ" 18 "49_violet_hills"
-    lookat "$((VX + VRR / 2))" "$((VTOP2 + 2))" "$((VZ + VRR / 2))" "$VX" "$((VTOP2 + 4))" "$VZ" 16 "50_violet_fields"
-    lookat "$((VX + VRR / 3))" "$((VTOP2 + 6))" "$((VZ + VRR / 6))" "$VX" "$((VTOP2 - 6))" "$VZ" 16 "51_violet_path"
+    # Рев 15.4: кадры биома. В итерации 46 камера стояла вплотную (16–18 блоков), и в объектив
+    # попадал один клочок поля, залитый дымкой. Теперь — три ракурса «как на референсе 04»:
+    # (49) общий вид с края луга: террасы, гряды лаванды, деревья и церкви на гребне;
+    # (50) средний план в 40 блоках — читаются зонты крон и рисунок гряд;
+    # (51) от уровня глаз в траве — лаванда по пояс, как в жизни.
+    lookat "$((VX + VRR * 4 / 5))" "$((VTOP2 + 10))" "$((VZ + VRR * 4 / 5))" "$VX" "$((VTOP2 + 3))" "$VZ" 12 "49_violet_hills"
+    lookat "$((VX + VRR / 2))" "$((VTOP2 + 5))" "$((VZ + VRR / 2))" "$VX" "$((VTOP2 + 4))" "$VZ" 14 "50_violet_fields"
+    lookat "$((VX + VRR / 3))" "$((VTOP2 + 2))" "$((VZ + VRR / 6))" "$VX" "$((VTOP2 + 1))" "$VZ" 15 "51_violet_path"
   fi
   local SBIO
   SBIO=$(printf '%s' "$SL" | sed -n 's/.* bio=\([^ ]*\).*/\1/p' | tail -1)
@@ -1195,6 +1196,21 @@ biome_section() {
   # что находит наш GroundFinder). Иначе «dt=0» не даёт зацепки и мы гадаем прогонами.
   DTWHY=$(EL execute at TestPlayer in riftworld:elisar run riftdtwhy 2>&1 | tr '\r\n' '  ')
   log "  /riftdtwhy (холмы) -> ${DTWHY:0:280}"
+  # Рев 15.4: три конкретные причины «DT молчит в холмах», которые раньше приходилось искать глазами:
+  # (1) грунт не найден (`ground=-`), (2) почва не подходит DT (`soil_ok=false`),
+  # (3) рефлексия диагностики упала (`dt_species=err:...`).
+  case "$DTWHY" in
+    *" ground=-"*) log "  FAIL DT/холмы: ground=- (DtGround не нашёл колонку под посадку)"; FAILS=$((FAILS + 1));;
+    *) log "  OK   DT/холмы: грунт найден";;
+  esac
+  case "$DTWHY" in
+    *soil_ok=true*) log "  OK   DT/холмы: почва приемлема для DT";;
+    *) log "  FAIL DT/холмы: soil_ok=false — почва луга не в списке DT"; FAILS=$((FAILS + 1));;
+  esac
+  case "$DTWHY" in
+    *"dt_species=err"*) log "  FAIL DT/холмы: диагностика вида упала ($(printf '%s' "$DTWHY" | sed -n 's/.*dt_species=\([^ ]*\).*/\1/p'))"; FAILS=$((FAILS + 1));;
+    *) log "  OK   DT/холмы: база DT ответила по виду";;
+  esac
   DTW=$(EL execute at TestPlayer in riftworld:elisar run riftdtwild 32 2>&1 | tr '\r\n' '  ')
   log "  /riftdtwild (холмы) -> ${DTW:0:220}"
   local DTN

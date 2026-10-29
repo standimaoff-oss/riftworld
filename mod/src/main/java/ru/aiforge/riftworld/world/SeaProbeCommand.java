@@ -589,6 +589,37 @@ public final class SeaProbeCommand {
      * фича {@code dynamictrees:dynamic_tree} — её добавляет Forge-модификатор DT),
      * {@code ground=} (что находит НАШ GroundFinder под игроком).
      */
+    /**
+     * Рев 15.4: вызов метода у объекта из чужого мода. Классы Dynamic Trees пакетно-приватные,
+     * поэтому обычный {@code getClass().getMethod(...).invoke(...)} бросает IllegalAccessException
+     * (именно это печаталось как {@code dt_species=err:IllegalAccessException}). Здесь метод ищется
+     * по всей иерархии классов и получает {@code setAccessible(true)}.
+     */
+    private static java.lang.reflect.Method find(Object target, String name, Class<?>[] types) throws Exception {
+        Class<?> c = target instanceof Class<?> k ? k : target.getClass();
+        for (; c != null; c = c.getSuperclass()) {
+            try {
+                java.lang.reflect.Method m = c.getDeclaredMethod(name, types);
+                m.setAccessible(true);
+                return m;
+            } catch (NoSuchMethodException ignored) {
+                // идём к родителю
+            }
+        }
+        throw new NoSuchMethodException((target instanceof Class<?> k ? k.getName() : target.getClass().getName()) + "#" + name);
+    }
+
+    private static Object call(Object target, String name, Class<?>[] types, Object... args) throws Exception {
+        Object self = target instanceof Class<?> ? null : target;
+        return find(target, name, types).invoke(self, args);
+    }
+
+    private static Object call(Object target, Class<?> type, String name, Class<?>[] types, Object... args) throws Exception {
+        java.lang.reflect.Method m = find(type, name, types);
+        m.setAccessible(true);
+        return m.invoke(null, args);
+    }
+
     private static int dtWhy(CommandSourceStack src) {
         var level = src.getLevel();
         BlockPos at = BlockPos.containing(src.getPosition());
@@ -622,21 +653,35 @@ public final class SeaProbeCommand {
         }
         // Рев 14.48: спрашиваем у САМОЙ базы DT, какой вид она выдаёт для этого биома. Иначе
         // «dt=0» снова гадание: вид может быть null (UNHANDLED_BIOME) или почва не подходит.
+        // Рев 15.4: раньше здесь был `db.getClass().getMethod(...)`. Классы DT пакетно-приватные,
+        // поэтому Method.invoke валился с IllegalAccessException и строка всегда печатала
+        // `dt_species=err:IllegalAccessException`. Теперь ищем метод по всей иерархии и снимаем
+        // модификатор доступа (моды лежат на classpath, модульной изоляции нет).
         String dtSp;
         try {
             Class<?> bds = Class.forName("com.ferreusveritas.dynamictrees.worldgen.BiomeDatabases");
-            Object db = bds.getMethod("getDimensionalOrDefault", net.minecraft.resources.ResourceLocation.class)
-                    .invoke(null, level.dimension().location());
-            Object entry = db.getClass().getMethod("getEntry", net.minecraft.core.Holder.class).invoke(db, surfBiome);
-            boolean black = (Boolean) entry.getClass().getMethod("isBlacklisted").invoke(entry);
-            Object sel = entry.getClass().getMethod("getSpeciesSelector").invoke(entry);
-            Object selection = sel.getClass().getMethod("getSpecies", BlockPos.class, BlockState.class,
-                    net.minecraft.util.RandomSource.class).invoke(sel, at, level.getBlockState(at.below()),
+            Object db = call(null, bds, "getDimensionalOrDefault", new Class<?>[]{net.minecraft.resources.ResourceLocation.class},
+                    level.dimension().location());
+            Object entry = call(db, "getEntry", new Class<?>[]{net.minecraft.core.Holder.class}, surfBiome);
+            boolean black = (Boolean) call(entry, "isBlacklisted", new Class<?>[]{});
+            Object sel = call(entry, "getSpeciesSelector", new Class<?>[]{});
+            Object selection = call(sel, "getSpecies", new Class<?>[]{BlockPos.class, BlockState.class,
+                    net.minecraft.util.RandomSource.class}, at, level.getBlockState(at.below()),
                     net.minecraft.util.RandomSource.create());
-            boolean handled = (Boolean) selection.getClass().getMethod("isHandled").invoke(selection);
-            dtSp = (handled ? "handled" : "none") + (black ? "/black" : "");
+            boolean handled = (Boolean) call(selection, "isHandled", new Class<?>[]{});
+            // какой ИМЕННО вид база выбрала для биома — самое полезное для диагностики
+            String spName = "";
+            for (String acc : new String[]{"getSpecies", "species"}) {
+                try {
+                    Object sp = call(selection, acc, new Class<?>[]{});
+                    if (sp != null) { spName = ":" + sp; break; }
+                } catch (Throwable ignored) {
+                    // аксессора нет — не беда
+                }
+            }
+            dtSp = (handled ? "handled" : "none") + (black ? "/black" : "") + spName;
         } catch (Throwable t) {
-            dtSp = "err:" + t.getClass().getSimpleName();
+            dtSp = "err:" + t.getClass().getSimpleName() + ":" + t.getMessage();
         }
         final String line = "riftdtwhy at=" + at.getX() + "," + at.getY() + "," + at.getZ()
                 + " biome_surface=" + surfName + " biome_top=" + topName + " biome_y0=" + atY0

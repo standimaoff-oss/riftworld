@@ -7,8 +7,8 @@
     "fog_color": 15322072,
     "water_color": 5882575,
     "water_fog_color": 3046022,
-    "grass_color": 11978618,
-    "foliage_color": 12756700,
+    "grass_color": 10335087,
+    "foliage_color": 10335087,
     "particle": {
       "type": "minecraft:cherry_leaves",
       "probability": 0.0016

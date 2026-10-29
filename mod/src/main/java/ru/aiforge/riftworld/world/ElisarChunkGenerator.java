@@ -126,6 +126,10 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             // Рев 14.30: вокруг островов Висячих садов летающий мусор не нужен — на референсе чистое
             // небо над водой, а в кадрах обломки читались как грязь.
             if (n.kind == WaterfallGardens.KIND) return;
+            // Рев 15.4: над Фиолетовыми холмами и Сизо-рощей тоже чистое небо. На кадрах 49–51
+            // итерации 46 вокруг луга висели серые кубы «обломков» — они читались как мусор
+            // (на референсе 04 над полями ничего нет).
+            if (n.kind == 7 || n.kind == SizoGrove.KIND) return;
             double t = n.t(cx, cz);
             if (t > -0.015 || t < -0.5) return;
             double p = 0.16 * (1 + t * 2.2);                 // denser right at the rim, thinning outwards
@@ -659,6 +663,10 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         BlockState aurite = st(ElisarBlocks.AURITE_ORE);
         // Рев 14: у биома 07 своя зелёная палитра (референс — яркая трава и дубы, а не кремовый Элисар)
         BlockState gardenGrass = st(ElisarBlocks.GARDEN_GRASS);
+        // Рев 15.4: газон Фиолетовых холмов — ВАНИЛЬНАЯ короткая трава: она тинтуется цветом
+        // биома (grass_color 0xB6C77A) и потому сочно-зелёная. Наша elisar_tall_grass почти белая,
+        // и на кадрах 49–51 весь луг был усыпан белой «крупой».
+        BlockState vGrass = Blocks.GRASS.defaultBlockState();
         // Рев 14.25: на обрывах садов — свой сочно-зелёный плющ, как на референсе
         BlockState gIvy = ElisarBlocks.GARDEN_IVY.get().defaultBlockState();
         BlockState lime = st(ElisarBlocks.GARDEN_LIMESTONE), limeMossy = st(ElisarBlocks.GARDEN_LIMESTONE_MOSSY);
@@ -816,7 +824,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                 double soft = Double.isNaN(c.soft) ? c.top : c.soft;
                                 double rp = soft / 1.15;                       // одна гряда на 1.15 блока подъёма
                                 double frac = rp - Math.floor(rp);
-                                boolean row = frac < 0.70;                     // 70 % — гряда, 30 % — борозда
+                                boolean row = frac < 0.82;                     // 82 % — гряда, 18 % — борозда
                                 double field = vnoise(x * 0.0068, z * 0.0068, 92);   // где вообще поля, а где пастбище
                                 boolean meadow = field < 0.34;
                                 double edgeN = vnoise(x * 0.09, z * 0.09, 90);
@@ -828,8 +836,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                 }
                                 if (lip) {
                                     // кромка яруса — трава (на фото каждая терраса подстрижена по краю)
-                                    if (h < 0.30) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
-                                    else if (h < 0.34) {
+                                    if (h < 0.50) chunk.setBlockState(mp.set(x, c.top + 1, z), vGrass, false);
+                                    else if (h < 0.56) {
                                         int f = (int) (hash(x, z, 91) * 3);
                                         chunk.setBlockState(mp.set(x, c.top + 1, z), st(f == 0 ? ElisarBlocks.VIOLET_BLOOM
                                                 : f == 1 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
@@ -839,17 +847,20 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                     // как на фото, где лаванда стоит по пояс и выше).
                                     chunk.setBlockState(mp.set(x, c.top, z), soil, false);
                                     chunk.setBlockState(mp.set(x, c.top + 1, z), st(ElisarBlocks.LAVENDER_BED), false);
+                                    // Рев 15.4: макушки гряд — ПРЕИМУЩЕСТВЕННО насыщенно-сиреневые.
+                                    // Раньше 22 % клеток получали pale_bloom, и издалека гряды
+                                    // читались белёсыми (кадры 49–51). Бледный тон — только редкими
+                                    // островками (7 %), чтобы поле не стало однотонным.
                                     double band = vnoise(x * 0.011, z * 0.011, 94);
-                                    chunk.setBlockState(mp.set(x, c.top + 2, z), st(band < 0.40 ? ElisarBlocks.VIOLET_BLOOM
-                                            : band < 0.78 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
+                                    chunk.setBlockState(mp.set(x, c.top + 2, z), st(band < 0.58 ? ElisarBlocks.VIOLET_BLOOM
+                                            : band < 0.93 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
                                 } else if (!meadow) {
-                                    // борозда между грядами: тёмная земля + редкая трава
+                                    // борозда между грядами: тёмная земля (на фото — земляная дорожка)
                                     chunk.setBlockState(mp.set(x, c.top, z), soil, false);
-                                    if (h < 0.16) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
                                 } else {
                                     // пастбище: сочная трава, островки цветов, редкие кустики лаванды
-                                    if (h < 0.16) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
-                                    else if (h < 0.23 && edgeN > 0.50) {
+                                    if (h < 0.22) chunk.setBlockState(mp.set(x, c.top + 1, z), vGrass, false);
+                                    else if (h < 0.28 && edgeN > 0.50) {
                                         int f = (int) (hash(x, z, 91) * 3);
                                         chunk.setBlockState(mp.set(x, c.top + 1, z), st(f == 0 ? ElisarBlocks.VIOLET_BLOOM
                                                 : f == 1 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
@@ -1203,9 +1214,13 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 put.accept(new int[]{px, py, pz}, k == 0 || k == steps ? 3 : kind);
             }
             tips.add(new double[]{bx, by, bz});
-            // крона на конце ветви: облако листвы
-            crown(cols, put, bx, by, bz,
-                    (2.2 + r.nextDouble() * (sizo ? 0.9 : garden ? 0.9 : 0.6)) * (violetCanopy ? 1.22 : 1.0), r);
+            // крона на конце ветви: облако листвы.
+            // Рев 15.4: у фиолетовых деревьев крону целиком рисует {@link #violetUmbrella()};
+            // облака на концах ветвей давали рядом с зонтом «шишки» и рваные клочья.
+            if (!violetCanopy) {
+                crown(cols, put, bx, by, bz,
+                        (2.2 + r.nextDouble() * (sizo ? 0.9 : garden ? 0.9 : 0.6)), r);
+            }
         }
         // макушка
         if (violetCanopy) {
@@ -1266,19 +1281,23 @@ public class ElisarChunkGenerator extends ChunkGenerator {
     private static void violetUmbrella(java.util.Map<Long, java.util.List<int[]>> cols,
                                        java.util.function.BiConsumer<int[], Integer> put,
                                        int trunkTop, java.util.Random r) {
-        double baseR = 3.5 + r.nextDouble() * 1.0;
-        int y0 = trunkTop - 2;
-        for (int layer = 0; layer <= 5; ++layer) {
-            double f = 1.0 - Math.abs(layer - 1.9) / 4.2;
-            if (f <= 0.18) continue;
-            double rad = baseR * f + 0.5;
+        // Рев 15.4: крона — ШИРОКИЙ ПЛОСКИЙ ЗОНТ из 5 наложенных эллиптических ярусов
+        // (на референсе 04 крона дерева шире ствола втрое и заметно приплюснута).
+        // Раньше это были почти шары радиусом 3.9 — издалека они читались кубами на палке.
+        double baseR = 4.4 + r.nextDouble() * 1.2;
+        double squash = 0.72 + r.nextDouble() * 0.10;      // эллипс: крона шире, чем глубже
+        int y0 = trunkTop - 3;
+        double[] prof = {0.52, 0.82, 1.0, 0.94, 0.70, 0.40};
+        int layers = prof.length;
+        for (int layer = 0; layer < layers; ++layer) {
+            double rad = baseR * prof[layer];
             int y = y0 + layer;
-            int R = (int) Math.ceil(rad);
+            int R = (int) Math.ceil(rad) + 1;
             for (int dx = -R; dx <= R; ++dx) {
                 for (int dz = -R; dz <= R; ++dz) {
-                    double d = Math.hypot(dx, dz);
-                    if (d > rad + (r.nextDouble() - 0.5) * 0.7) continue;
-                    if (d > rad - 0.7 && r.nextDouble() < 0.30) continue;     // рваный край
+                    double d = Math.hypot(dx, dz / squash);
+                    if (d > rad + (r.nextDouble() - 0.5) * 0.55) continue;
+                    if (d > rad - 0.8 && r.nextDouble() < 0.26) continue;      // рваный контур
                     put.accept(new int[]{dx, y, dz}, 0);
                 }
             }

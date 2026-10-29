@@ -105,18 +105,30 @@ public final class DtGround {
             // Плюс почва должна быть объявлена в DT (иначе FAIL_SOIL, как было у известняка):
             // проверяем это через SoilHelper, чтобы не полагаться на догадки.
             p.move(0, 1, 0);
-            boolean free = openAbove(level, p, sea) && isDtSoil(level, p.below());
+            // Рев 15.4: в Фиолетовых холмах над КАЖДОЙ грядкой лаванды стоит куст (блок-растение
+            // без коллизии). Строгое «только воздух» (рев 14.49) из-за этого отбрасывало все
+            // колонки луга — DT не сажал там ни одного дерева (/riftdtwhy: ground=-). Теперь
+            // растение над почвой просто УБИРАЕТСЯ: клетка становится свободной, дерево ставится.
+            boolean free = clearAbove(level, p, sea) && isDtSoil(level, p.below());
             p.move(0, -1, 0);
             if (free) return p.immutable();
         }
         return null;
     }
 
-    /** Свободна ли клетка НАД почвой: настоящий воздух (под водой — вода), а не куст из тега replaceable. */
-    private static boolean openAbove(LevelAccessor level, BlockPos p, boolean sea) {
+    /**
+     * Свободна ли клетка НАД почвой. Воздух (под водой — вода) — да. Растение без коллизии
+     * (трава, лаванда, цветы, побег) — тоже да, но клетка при этом очищается: DT не умеет начинать
+     * ствол в занятой клетке и молча возвращает FAIL_GENERATION.
+     */
+    private static boolean clearAbove(LevelAccessor level, BlockPos p, boolean sea) {
         BlockState s = level.getBlockState(p);
         if (sea) return s.isAir() || !s.getFluidState().isEmpty();
-        return s.isAir();
+        if (s.isAir()) return true;
+        boolean plant = s.getCollisionShape(level, p).isEmpty() && s.canBeReplaced();
+        if (!plant) return false;
+        level.setBlock(p, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 2);
+        return true;
     }
 
     /** Объявлен ли блок почвой в Dynamic Trees (реестр SoilHelper), т.е. дерево вообще имеет право тут встать. */
