@@ -26,7 +26,9 @@ public final class ElisarSky extends DimensionSpecialEffects {
     @Override
     public Vec3 getBrightnessDependentFogColor(Vec3 fog, float brightness) {
         float k = brightness * 0.94F + 0.06F;
-        return new Vec3(Mth.lerp(0.45, fog.x, CREAM.x) * k, Mth.lerp(0.45, fog.y, CREAM.y) * k, Mth.lerp(0.45, fog.z, CREAM.z) * k);
+        // Рев 14.37: меньше «молока» в небе — дальние холмы и церкви должны читаться,
+        // как на референсе 04, а не растворяться в белой пелене.
+        return new Vec3(Mth.lerp(0.30, fog.x, CREAM.x) * k, Mth.lerp(0.30, fog.y, CREAM.y) * k, Mth.lerp(0.30, fog.z, CREAM.z) * k);
     }
 
     @Override
@@ -100,8 +102,8 @@ public final class ElisarSky extends DimensionSpecialEffects {
                 // Рев 14.36: на референсе 04 воздух ПРОЗРАЧНЫЙ — дальние холмы и церкви видны,
                 // только слегка в тёплой дымке. Прошлые 0.72/1.55 давали «молочный экран»:
                 // на кадрах 49–51 не было видно ни полей, ни деревьев. Теперь дымка мягкая.
-                e.setNearPlaneDistance(far * 0.90F);
-                e.setFarPlaneDistance(far * 1.22F);
+                e.setNearPlaneDistance(far * 0.95F);
+                e.setFarPlaneDistance(far * 1.10F);
                 e.setCanceled(true);
                 return;
             }
@@ -150,9 +152,9 @@ public final class ElisarSky extends DimensionSpecialEffects {
                 // тёплый закатный воздух референса: персиково-розовый, но не белёсый
                 // тёплый закатный воздух: персиковый оттенок, но не заливка — цвет неба остаётся,
                 // иначе кадры выглядят розовым экраном (так было в итерациях 29–33).
-                e.setRed((float) Mth.lerp(0.45F, e.getRed(), 0.99F));
-                e.setGreen((float) Mth.lerp(0.45F, e.getGreen(), 0.84F));
-                e.setBlue((float) Mth.lerp(0.35F, e.getBlue(), 0.88F));
+                e.setRed((float) Mth.lerp(0.28F, e.getRed(), 0.99F));
+                e.setGreen((float) Mth.lerp(0.24F, e.getGreen(), 0.86F));
+                e.setBlue((float) Mth.lerp(0.20F, e.getBlue(), 0.90F));
                 return;
             }
             float g = gloom(e.getCamera().getPosition());

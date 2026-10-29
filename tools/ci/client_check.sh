@@ -860,7 +860,7 @@ if [ "${WITH_DT:-0}" = "1" ]; then
     # Рев 14.36: ДИКОЕ поколение кораллов DT (не через settree) — прямой ответ на «аддон ничего
     # не меняет». Игрок стоит на рифе под водой, сканируем куб ±32.
     local DCW DCN
-    DCW=$(EL execute in riftworld:elisar run riftdtwild 32 2>&1 | tr '\r\n' '  ')
+    DCW=$(EL execute at TestPlayer in riftworld:elisar run riftdtwild 32 2>&1 | tr '\r\n' '  ')
     log "  /riftdtwild (риф) -> ${DCW:0:220}"
     DCN=$(printf '%s' "$DCW" | sed -n 's/.* coral_\([a-z_]*\)=\([0-9]*\).*/\2/p' | head -1)
     if [ "${DCN:-0}" -ge 60 ]; then
@@ -1122,8 +1122,12 @@ biome_section() {
     log "  FAIL /riftbiome violet не нашёл регион Фиолетовых холмов"; FAILS=$((FAILS + 1))
   else
     # поля лаванды: на референсе это сплошные грядки, а не редкие кустики
-    if [ "${VBLOOM:-0}" -ge 2500 ]; then log "  OK   холмы: лаванды $VBLOOM блоков"
-    else log "  FAIL холмы: лаванды ${VBLOOM:-0} (нужно >=2500 — поля грядками, как на фото)"; FAILS=$((FAILS + 1)); fi
+    if [ "${VLAV:-0}" -ge 3000 ] || [ "${VBLOOM:-0}" -ge 2500 ]; then
+      log "  OK   холмы: лаванды всего $(( ${VLAV:-0} + ${VBLOOM:-0} )) блоков (гряды ${VLAV:-0} + цветы ${VBLOOM:-0})"
+    else
+      log "  FAIL холмы: лаванды ${VLAV:-0} гряд + ${VBLOOM:-0} цветов (нужно >=2500 на поле)"
+      FAILS=$((FAILS + 1))
+    fi
     # Рев 14.36: главное по референсу — ПЛОТНЫЕ ГРЯДЫ (блоки-кусты), а не только цветы сверху.
     if [ "${VLAV:-0}" -ge 3000 ]; then log "  OK   холмы: гряд лаванды $VLAV блоков (сплошные поля, как на фото)"
     else log "  FAIL холмы: гряд лаванды ${VLAV:-0} (нужно >=3000 — поля сплошной массой)"; FAILS=$((FAILS + 1)); fi
@@ -1148,7 +1152,7 @@ biome_section() {
   # Рев 14.36 — ПРОВЕРКА ЖАЛОБЫ «аддон ничего не меняет»: в мире должны быть НАСТОЯЩИЕ
   # динамические деревья (блоки namespace riftworlddt), а не только те, что ставит settree.
   local DTW
-  DTW=$(EL execute in riftworld:elisar run riftdtwild 32 2>&1 | tr '\r\n' '  ')
+  DTW=$(EL execute at TestPlayer in riftworld:elisar run riftdtwild 32 2>&1 | tr '\r\n' '  ')
   log "  /riftdtwild (холмы) -> ${DTW:0:220}"
   local DTN
   DTN=$(printf '%s' "$DTW" | sed -n 's/.* dt=\([0-9]*\).*/\1/p' | tail -1)

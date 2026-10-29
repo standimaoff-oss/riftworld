@@ -1123,11 +1123,11 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             tips.add(new double[]{bx, by, bz});
             // крона на конце ветви: облако листвы
             crown(cols, put, bx, by, bz,
-                    (2.2 + r.nextDouble() * (sizo ? 0.9 : garden ? 0.9 : 0.6)) * (violetCanopy ? 1.45 : 1.0), r);
+                    (2.2 + r.nextDouble() * (sizo ? 0.9 : garden ? 0.9 : 0.6)) * (violetCanopy ? 1.22 : 1.0), r);
         }
         // макушка
         crown(cols, put, 0, trunkTop + 1.4, 0,
-                ((sizo ? 2.5 : garden ? 3.3 : 2.9) + r.nextDouble() * 0.5) * (violetCanopy ? 1.35 : 1.0), r);
+                ((sizo ? 2.5 : garden ? 3.3 : 2.9) + r.nextDouble() * 0.5) * (violetCanopy ? 1.20 : 1.0), r);
         // Рев 11.19: рваный контур кроны оставлял одиночные блоки листвы, висящие в воздухе.
         // Убираем листву, у которой меньше двух соседей (брёвна соседями считаются).
         java.util.Set<Long> solid = new java.util.HashSet<>();
@@ -1175,9 +1175,12 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         for (int dx = -R; dx <= R; ++dx) {
             for (int dz = -R; dz <= R; ++dz) {
                 for (int dy = -R; dy <= R; ++dy) {
-                    double d = Math.sqrt(dx * dx + dy * dy * 1.35 + dz * dz);
+                    // Рев 14.37: крона — ВЫТЯНУТЫЙ ВВЕРХ шар (на референсе 04 кроны пышные и высокие,
+                    // а не блины). Плюс больше рваного контура по внешней оболочке, иначе издалека
+                    // листва читается сплошным кубом.
+                    double d = Math.sqrt(dx * dx + dy * dy * 0.72 + dz * dz);
                     if (d > radius) continue;
-                    if (d > radius - 0.7 && r.nextDouble() < 0.22) continue;      // рваный контур, но крона плотная
+                    if (d > radius - 0.9 && r.nextDouble() < 0.34) continue;      // рваный контур
                     put.accept(new int[]{(int) Math.round(cx) + dx, (int) Math.round(cy) + dy, (int) Math.round(cz) + dz}, 0);
                 }
             }
