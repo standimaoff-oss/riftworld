@@ -1,0 +1,163 @@
+  /riftsea raw: riftsea floor=10 water=51 sea=62 min=1 max=15 cols=9409 caves=8491 wet=202346 air=11597 reef=1981 plants=1786 corals=82 float=915 ceilair=6140 bottom=-62 caveat=625,5,570  
+  /riftsea raw: riftsea floor=10 water=51 sea=62 min=1 max=15 cols=9409 caves=8491 wet=202346 air=11597 reef=1981 plants=1786 corals=82 float=915 ceilair=6140 bottom=-62 caveat=625,5,570  
+  OK   вода на глубине (696,56,696) = elisar_water
+  /riftsea raw: riftsea floor=5 water=56 sea=62 min=-8 max=14 cols=9409 caves=8497 wet=164874 air=13311 reef=2239 plants=1395 corals=114 float=1040 ceilair=7498 bottom=-62 caveat=650,3,600  
+  OK   донный блок: elisar_seabed на 696,5,696
+  OK   кромка дна из /riftsea: y=10
+  OK   толщина воды под рифом: 51 блоков (нужно >=44)
+  OK   колонок с пещерами в радиусе проб: 8491
+  OK   пещеры ЗАТОПЛЕНЫ: воды 94% объёма полостей (остальное — воздушные карманы)
+  OK   воздух в пещерах прижат к своду: висячих пузырей 7% (нужно <=12%)
+  OK   воздух под сводами (под камнем): 52% всего воздуха пещер
+  OK   вода внутри пещеры (625,5,570) = elisar_water
+  OK   пещера найдена на y=5 (в 57 блоках под уровнем моря)
+  OK   рифовый сад: coral_brain at 600,11,665
+  OK   вода над рифом (600,14,666) = elisar_water
+  /riftcoral raw: riftcoral at=602,10,668 h=5 blocks=135 cols=84 tips=60 floor=9 sea=62 cam=619,18,675 camlow=612,11,678  
+  коралл: at=602,10,668 h=5 блоков=135 колонок=84 украшений=60
+  OK   коралл — ВЫСОКОЕ растение: 5 блоков в высоту
+  OK   коралл из МНОГИХ блоков: 135 блоков, 84 колонок
+  OK   у растения есть ветви/плита: 84 колонок
+  OK   на ветвях есть кораллы-украшения: 60
+  камера коралла: cam=619,18,675 camlow=612,11,678
+  воды в колонке: 57 блоков
+  OK   рыбы заспавнились сами (SeaLifeKeeper)
+  summon ^-2 ^0 ^4 {NoAI:1b,Silent:1b,sf_variant:0} -> Summoned new Elisar Sea Fish
+  summon ^-0.6 ^0.6 ^5 {NoAI:1b,Silent:1b,sf_variant:0} -> Summoned new Elisar Sea Fish
+  summon ^0.8 ^-0.6 ^6 {NoAI:1b,Silent:1b,sf_variant:1} -> Summoned new Elisar Sea Fish
+  summon ^2.2 ^0.2 ^7 {NoAI:1b,Silent:1b,sf_variant:2} -> Summoned new Elisar Sea Fish
+  summon ^-3.2 ^1.2 ^8 {NoAI:1b,Silent:1b,sf_variant:3} -> Summoned new Elisar Sea Fish
+  summon ^3.4 ^1.6 ^9 {NoAI:1b,Silent:1b,sf_variant:4} -> Summoned new Elisar Sea Fish
+  summon ^0 ^0 ^2.6 {NoAI:1b,Silent:1b,sf_variant:5} -> Summoned new Elisar Sea Fish
+  summon ^1.1 ^0.2 ^3 {NoAI:1b,Silent:1b,sf_variant:6} -> Summoned new Elisar Sea Fish
+  summon ^-1.2 ^0.1 ^2.4 {NoAI:1b,Silent:1b,sf_variant:5} -> Summoned new Elisar Sea Fish
+  OK   рыбы в мире есть и тикают
+  summon ^0 ^0 ^3 {NoAI:1b,Silent:1b,sf_variant:0} -> Summoned new Elisar Sea Fish
+  summon ^0.8 ^0.7 ^3.4 {NoAI:1b,Silent:1b,sf_variant:1} -> Summoned new Elisar Sea Fish
+  summon ^-0.9 ^-0.3 ^4.2 {NoAI:1b,Silent:1b,sf_variant:2} -> Summoned new Elisar Sea Fish
+  summon ^0.4 ^0.9 ^4.8 {NoAI:1b,Silent:1b,sf_variant:3} -> Summoned new Elisar Sea Fish
+  summon ^0 ^0 ^3 {NoAI:1b,Silent:1b,sf_variant:7} -> Summoned new Elisar Sea Fish
+  summon ^1.0 ^0.9 ^3.6 {NoAI:1b,Silent:1b,sf_variant:8} -> Summoned new Elisar Sea Fish
+  summon ^-0.9 ^-0.5 ^4.4 {NoAI:1b,Silent:1b,sf_variant:0} -> Summoned new Elisar Sea Fish
+  summon ^0 ^0 ^2.8 {NoAI:1b,Silent:1b,sf_variant:9} -> Summoned new Elisar Sea Fish
+  summon ^1.1 ^0.6 ^3.4 {NoAI:1b,Silent:1b,sf_variant:10} -> Summoned new Elisar Sea Fish
+  summon ^-1.0 ^-0.4 ^4.0 {NoAI:1b,Silent:1b,sf_variant:5} -> Summoned new Elisar Sea Fish
+  summon ^0 ^0 ^3 {NoAI:1b,Silent:1b,sf_variant:0} -> Summoned new Elisar Sea Fish
+  summon ^0.7 ^0.9 ^3.6 {NoAI:1b,Silent:1b,sf_variant:1} -> Summoned new Elisar Sea Fish
+  summon ^-0.9 ^-0.5 ^4.4 {NoAI:1b,Silent:1b,sf_variant:4} -> Summoned new Elisar Sea Fish
+  OK   у всех 11 видов есть JSON-модель и текстура
+  summon ^0 ^0 ^2.6 {NoAI:1b,Silent:1b,NoGravity:1b,Rotation:[90f,0f],sf_variant:0} -> Summoned new Elisar Sea Fish
+  рыба silver: Elisar Sea Fish has the following entity data: [696.4903145620211d, 39.90928345322609d, 693.9113092637284d]
+  summon ^0 ^0 ^2.6 {NoAI:1b,Silent:1b,NoGravity:1b,Rotation:[90f,0f],sf_variant:1} -> Summoned new Elisar Sea Fish
+  рыба gold: Elisar Sea Fish has the following entity data: [696.4903145620211d, 39.90928345322609d, 693.9113092637284d]
+  summon ^0 ^0 ^2.6 {NoAI:1b,Silent:1b,NoGravity:1b,Rotation:[90f,0f],sf_variant:2} -> Summoned new Elisar Sea Fish
+  рыба striped: Elisar Sea Fish has the following entity data: [696.4903145620211d, 39.90928345322609d, 693.9113092637284d]
+  summon ^0 ^0 ^2.6 {NoAI:1b,Silent:1b,NoGravity:1b,Rotation:[45f,0f],sf_variant:3} -> Summoned new Elisar Sea Fish
+  рыба jelly: Elisar Sea Fish has the following entity data: [696.4903145620211d, 39.90928345322609d, 693.9113092637284d]
+  summon ^0 ^0 ^2.6 {NoAI:1b,Silent:1b,NoGravity:1b,Rotation:[45f,0f],sf_variant:4} -> Summoned new Elisar Sea Fish
+  рыба ray: Elisar Sea Fish has the following entity data: [696.4903145620211d, 39.90928345322609d, 693.9113092637284d]
+  summon ^0 ^0 ^2.6 {NoAI:1b,Silent:1b,NoGravity:1b,Rotation:[90f,0f],sf_variant:5} -> Summoned new Elisar Sea Fish
+  рыба angler: Elisar Sea Fish has the following entity data: [696.4903145620211d, 39.90928345322609d, 693.9113092637284d]
+  summon ^0 ^0 ^2.6 {NoAI:1b,Silent:1b,NoGravity:1b,Rotation:[90f,0f],sf_variant:6} -> Summoned new Elisar Sea Fish
+  рыба eel: Elisar Sea Fish has the following entity data: [696.4903145620211d, 39.90928345322609d, 693.9113092637284d]
+  summon ^0 ^0 ^2.6 {NoAI:1b,Silent:1b,NoGravity:1b,Rotation:[90f,0f],sf_variant:7} -> Summoned new Elisar Sea Fish
+  рыба surgeon: Elisar Sea Fish has the following entity data: [696.4903145620211d, 39.90928345322609d, 693.9113092637284d]
+  summon ^0 ^0 ^2.6 {NoAI:1b,Silent:1b,NoGravity:1b,Rotation:[90f,0f],sf_variant:8} -> Summoned new Elisar Sea Fish
+  рыба turtle: Elisar Sea Fish has the following entity data: [696.4903145620211d, 39.90928345322609d, 693.9113092637284d]
+  summon ^0 ^0 ^2.6 {NoAI:1b,Silent:1b,NoGravity:1b,Rotation:[90f,0f],sf_variant:9} -> Summoned new Elisar Sea Fish
+  рыба gloom: Elisar Sea Fish has the following entity data: [696.4903145620211d, 39.90928345322609d, 693.9113092637284d]
+  summon ^0 ^0 ^2.6 {NoAI:1b,Silent:1b,NoGravity:1b,Rotation:[90f,0f],sf_variant:10} -> Summoned new Elisar Sea Fish
+  рыба sting: Elisar Sea Fish has the following entity data: [696.4903145620211d, 39.90928345322609d, 693.9113092637284d]
+  OK   клиент не жаловался на geo-модели
+  /rifttree raw: rifttree at=-25,105,148 kind=sizo h=13 logs=98 branches=55 leaves=395 dist=90 loaded=true cam=-14,124,148 camtop=-14,134,148
+  OK   дерево найдено: -25,105,148 (ветвей: 55)
+  OK   у дерева есть ветки: 55 блоков вне ствола
+  /rifttree повтор: rifttree at=27,107,129 kind=sizo h=10 logs=58 branches=38 leaves=365 dist=34 loaded=true cam=38,123,129 camtop=38,133,129
+  OK   дерево с ветками и кроной: ветвей 38, листвы 365
+  камера дерева: cam=38,123,129 camtop=38,133,129
+  give riftworlddt:sizo_seed -> Gave 1 [Sizo Seed] to TestPlayer
+  OK   DT видит семена аддона (riftworlddt:sizo_seed)
+  OK   DT видит коралловые семена (riftworlddt:coral_staghorn_seed)
+  упоминаний riftworlddt:sizo в логе: 0
+0
+  /dynamictrees registry family list -> dynamictrees:null dynamictrees:warped dynamictrees:spruce dynamictrees:oak dynamictrees:mangrove dynamictrees:jungle dynamictrees:dark_oak dynamictrees:crimson dynamictrees:cherry dynamictrees:birch dynamictrees:acacia r
+  /dynamictrees registry species list -> dynamictrees:null dynamictrees:red_mushroom dynamictrees:brown_mushroom dynamictrees:warped dynamictrees:tall_birch dynamictrees:swamp_oak dynamictrees:spruce dynamictrees:oak_undergrowth dynamictrees:oak dynamictrees:me
+  OK   у DT есть семья riftworlddt:sizo
+  OK   у DT есть семья riftworlddt:ambra
+  OK   у DT есть семья riftworlddt:coral
+  OK   у DT есть вид riftworlddt:sizo
+  OK   у DT есть вид riftworlddt:ambra
+  OK   у DT есть вид riftworlddt:violet
+  OK   у DT есть вид riftworlddt:giant_sizo
+  OK   у DT есть вид riftworlddt:coral_staghorn
+  OK   у DT есть вид riftworlddt:coral_table
+  OK   у DT есть вид riftworlddt:coral_whip
+  [DT] секция дерева
+  /riftdt diag -> coral_whip[sp=1 fam=1 br=riftworlddt:coral_branch brf=true lv=1 dyn=riftworlddt:coral_whip_leaves] violet[sp=1 fam=1 br=riftworlddt:ambra_branch brf=true lv=1 dyn=riftworlddt:violet_leaves] coral_staghorn[sp=1 fam=1 br=riftworlddt:coral_branch brf=true lv=1 dyn=riftworlddt:coral_staghorn_leaves] coral_table[sp=1 fam=1 br=riftworlddt:coral_branch brf=true lv=1 dyn=riftworlddt:coral_table_leaves] sizo[sp=1 fam=1 br=rif
+  dynamictrees settree 9,105,151 riftworlddt:sizo -> Successfully set tree at position 9, 105, 151 to species species.riftworlddt.sizo with JoCode JJJ0JP1JJ+ZJOOPvnRJOOPvn.  
+  /riftdtat у посадки дерева -> riftdtat at=9,105,151 dt=120 dy=0 lv=86 air=853 water=0 top=117:riftworlddt:sizo_leaves col=rooty_elisar_soil,sizo_branchx6,airx4,sizo_leavesx4,air blocks=rooty_elisar_soil=1 sizo_branch=33 sizo_leaves=86 near=elisar_stone=147 elisar_crust=80 elisar_stone_mossy=15
+  /dynamictrees gettree -> Species: species.riftworlddt.sizo JoCode: JJJzJJxx98+RJOOPvn1JJ8JP  
+  контрольный дуб: Successfully set tree at position -9, 105, 161 to species Oak with JoCode JJJ0JR7Jxx+nXv.  
+  /riftdtat у контрольного дуба -> riftdtat at=-9,105,161 dt=1 dy=155 lv=136 air=817 water=0 top=117:dynamictrees:oak_leaves col=rooty_elisar_soil,oak_branchx6,air,oak_leaves,oak_branch,oak_leavesx3,airx3 blocks=rooty_elisar_soil=1 near=elisar_crust=81 el
+  саженец + костная мука -> riftgrow at=25,106,143 block=riftworlddt:sizo_sapling grew=8 after=riftworlddt:sizo_branch  
+  /riftdtat у саженца -> riftdtat at=25,105,143 dt=125 dy=0 lv=117 air=848 water=0 top=111:riftworlddt:sizo_leaves col=rooty_elisar_soil,sizo_branchx4,sizo_leavesx2,airx9 blocks=rooty_elisar_soil=1 sizo_branch=7 sizo_leaves=117 near=elisar_stone
+  OK   саженец аддона вырос в дерево DT: блоков 125 (листвы 117)
+  OK   DT вырастил дерево аддона: блоков 120 (ветвей 33, листвы 86)
+  [DT] запускаю секцию коралла
+  [DT] секция коралла
+  OK   площадка коралла расчищена (над грунтом воздух)
+  координаты DT-коралла: 606,10,672 (риф 600,10,666)
+  dynamictrees settree 606,10,672 riftworlddt:coral_staghorn -> Successfully set tree at position 606, 10, 672 to species species.riftworlddt.coral_staghorn with JoCode JJJ0Jxx769JxPX.  
+  /riftdtat у посадки коралла -> riftdtat at=606,10,672 dt=209 dy=0 lv=189 air=278 water=549 top=22:riftworlddt:coral_staghorn_leaves col=rooty_elisar_soil,coral_branchx6,coral_staghorn_leavesx6,air,elisar_waterx2 blocks=coral_branch=19 coral_staghorn_leaves=189 rooty_elisar_soil=1 near=reef_stone=122 coral_brain=21 coral_cap_pink=
+  контроль коралла на суше -> Successfully set tree at position 1, 105, 167 to species species.riftworlddt.coral_staghorn with JoCode JJJ0Jxx769JxPX.  
+  /riftdtat коралла на суше -> riftdtat at=1,105,167 dt=213 dy=0 lv=193 air=760 water=2 top=117:riftworlddt:coral_staghorn_leaves col=rooty_elisar_soil,coral_branchx6,coral_staghorn_leavesx6,airx3 blocks=coral_branch=19 coral_stagh
+  коралловый саженец на суше -> riftgrow at=5,106,167 block=riftworlddt:coral_staghorn_sapling grew=1 after=minecraft:air  
+  OK   DT вырастил ПОДВОДНЫЙ коралл с кроной: блоков 209 (ветвей 19, листвы 189)
+  /riftdtwild (риф) -> riftdtwild at=11,153 r=32 dt=507 rooty=4 branch=59 leaves=444 blocks=sizo_leaves=251 coral_staghorn_leaves=193 sizo_branch=40 coral_branch=19 rooty_elisar_soil=4  
+  ВНИМАНИЕ DT-кораллов вокруг немного (19); смотрим кадры 16c/16d
+  /riftcoral -> riftcoral at=30,9,61 h=5 blocks=159 cols=74 tips=261 floor=8 sea=62 cam=13,17,54 camlow=40,10,71
+  /riftdtwild (риф без тестовых посадок) -> riftdtwild at=616,671 r=32 dt=6 rooty=1 branch=5 leaves=0 blocks=coral_branch=5 rooty_elisar_soil=1  
+  ВНИМАНИЕ диких DT-кораллов рядом мало (6); смотрим кадры 16c/16d
+  [БИОМ] секция садов и рощи
+  режим игрока -> Set TestPlayer's game mode to Spectator Mode  
+  /riftbiome gardens (поиск) -> riftbiome name=gardens at=-1211,-1292 bio=riftworld:waterfall_gardens r=37 top=-2147483648 water=0 garden_grass=0 garden_leaves=0 garden_logs=0 ivy=0 planks=0 lantern=0 struct=- fall=-1089,-1211 wall=
+  /riftbiome gardens (счёт) -> riftbiome name=gardens at=-1211,-1292 bio=riftworld:waterfall_gardens r=37 top=111 water=4560 garden_grass=1498 garden_leaves=2081 garden_logs=223 ivy=866 planks=0 lantern=0 struct=- fall=-1089,-1211 wall=-1233,92,-1287:-1222,94,-1287 blocks=garden_limestone=28742 elisar_stone=28152 garden_limestone_mossy=6033 elisar_stone_mossy=4794 elisar_soil=2656 elisar_moss=544  
+  OK   сады: биом острова riftworld:waterfall_gardens (биом-сурс совпадает с рельефом)
+  /locate biome waterfall_gardens -> The nearest riftworld:waterfall_gardens is at [-1211, 130, -1292] (0 blocks away)  
+  /riftwhere у найденного биома -> riftwhere at=-1211,-1292 biome=riftworld:waterfall_gardens top=99:riftworld:garden_grass ground=99:riftworld:garden_grass sea=62 garden=true  
+  OK   /locate biome waterfall_gardens привёл на землю садов (-1211,130,-1292, верх: riftworld:garden_grass, земля 99:riftworld:garden_grass)
+  /riftaround у точки /locate -> riftaround at=-1211,132,-1292 r=24 cols=2401 land=1976 garden_limestone=1828 garden_grass=195 lavender=0 elisar_stone=0 holes=0 gaps=131  
+  OK   /locate привёл на настоящий садовый остров: известняка полок 1828 блоков в r=24
+  OK   под островом садов нет дыр до бедрока (holes=0, трава садов 195)
+  OK   сады: зелёной травы 1498 блоков
+  OK   сады: воды 4560 блоков (пруды и водопады, без затопления)
+  OK   сады: плюща на стенах 866 блоков
+  OK   сады: рукотворного нет (досок 0, фонарей 0)
+  OK   сады: листвы садовых дубов 2081 блоков
+  кадр обрыва: камера -1233 92 -1287 -> взгляд -1222 94 -1287
+  игрок после кадра обрыва -> TestPlayer has the following entity data: [-1232.5d, 92.0d, -1286.5d]  
+  /locate biome waterfall_gardens -> The nearest riftworld:waterfall_gardens is at [-1201, 92, -1287] (32 blocks away)  
+  /riftwhere у waterfall_gardens -> riftwhere at=-1201,-1287 biome=riftworld:waterfall_gardens top=90:riftworld:elisar_moss ground=90:riftworld:elisar_moss sea=62 garden=true  
+  OK   /locate biome waterfall_gardens привёл на землю биома (90:riftworld:elisar_moss)
+  /riftbiome sizo (поиск) -> riftbiome name=sizo at=-240,841 bio=riftworld:sizo_grove r=80 top=-2147483648 water=0 garden_grass=0 garden_leaves=0 garden_logs=0 ivy=0 planks=0 lantern=0 struct=carts=0 shrines=0 temples=0 pillar_pa
+  /riftbiome sizo (счёт) -> riftbiome name=sizo at=-240,841 bio=riftworld:sizo_grove r=80 top=134 water=19683 garden_grass=0 garden_leaves=0 garden_logs=0 ivy=0 planks=2 lantern=0 struct=carts=0 shrines=0 temples=0 pillar_pairs=1 fall=- wall=- blocks=elisar_stone=230801 elisar_stone_mossy=23931 elisar_crust=6436 elisar_grass=4097 sizo_leaves=3726 elisar_moss=2471  
+  /riftbiome sizo: структуры -> carts=0 shrines=0 temples=0 pillar_pairs=1 fall= (по ТЗ: тележка ~1/3, памятник и храм ~1/7, 1-2 пары столбов)
+  /rifttree у рощи -> rifttree at=105,112,-69 kind=sizo h=11 logs=62 branches=40 leaves=301 dist=126 loaded=true cam=116,129,-69 camtop=116,139,-69  
+  /riftbiome violet (поиск) -> riftbiome name=violet at=1374,240 bio=riftworld:violet_hills r=91 top=-2147483648 water=0 garden_grass=0 garden_leaves=0 garden_logs=0 ivy=0 planks=0 lantern=0 struct=- fall=- wall=- violet_blooms=0 v
+  /riftbiome violet (счёт) -> riftbiome name=violet at=1374,240 bio=riftworld:violet_hills r=91 top=122 water=20097 garden_grass=0 garden_leaves=0 garden_logs=0 ivy=0 planks=304 lantern=0 struct=- fall=- wall=- violet_blooms=1389 violet_leaves=3206 lavender=3971 fences=0 lamps=0 blocks=elisar_stone=133700 elisar_soil=16666 elisar_stone_mossy=16594 violet_leaves=4448 lavender_bed=3971 elisar_crust=1359  
+  OK   холмы: лаванды всего 5360 блоков (гряды 3971 + цветы 1389)
+  OK   холмы: гряд лаванды 3971 блоков (сплошные поля, как на фото)
+  OK   холмы: сиреневой листвы 4448 блоков
+  OK   роща: биом острова riftworld:sizo_grove
+  /locate biome sizo_grove -> The nearest riftworld:sizo_grove is at [-196, 127, 895] (1723 blocks away)  
+  /riftwhere у sizo_grove -> riftwhere at=-196,895 biome=riftworld:sizo_grove top=108:riftworld:elisar_grass ground=108:riftworld:elisar_grass sea=62 garden=false  
+  OK   /locate biome sizo_grove привёл на землю биома (108:riftworld:elisar_grass)
+  OK   Фиолетовые холмы: биом луга riftworld:violet_hills
+  /locate biome violet_hills -> The nearest riftworld:violet_hills is at [1404, 127, 255] (0 blocks away)  
+  /riftwhere у violet_hills -> riftwhere at=1404,255 biome=riftworld:violet_hills top=92:riftworld:garden_limestone ground=92:riftworld:garden_limestone sea=62 garden=false  
+  OK   /locate biome violet_hills привёл на землю биома (92:riftworld:garden_limestone)
+  /riftdtwhy (холмы) -> riftdtwhy at=1404,127,255 biome_surface=riftworld:violet_hills biome_top=riftworld:violet_hills biome_y0=riftworld:violet_hills dt_features=4 has_dt=true dt_species=handled ground=92:Block{riftworld:garden_limestone} soil_ok=true dt_try=72 dt_noground=11 dt_wet=0 dt_planted=60 dt_rejected=0 dt_violet=23/23 dt_sizo=31/31 why=-  
+  /riftdtwild (холмы) -> riftdtwild at=1404,255 r=48 dt=1193 rooty=5 branch=124 leaves=1064 blocks=violet_leaves=1064 ambra_branch=124 rooty_elisar_soil=5  
+  OK   DT растёт в мире сам: 1193 блоков аддона вокруг точки
+  игрок: TestPlayer has the following entity data: [1404.5d, 127.0d, 255.5d]
+  рыбы:  Elisar Sea Fish has the following entity data: [602.4229551028418d, 49.322473087204166d, 833.373886620563d]
