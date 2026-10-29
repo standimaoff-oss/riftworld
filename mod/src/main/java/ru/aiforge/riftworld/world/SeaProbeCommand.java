@@ -679,7 +679,29 @@ public final class SeaProbeCommand {
                     // аксессора нет — не беда
                 }
             }
-            dtSp = (handled ? "handled" : "none") + (black ? "/black" : "") + spName;
+            // Рев 15.8: кроме вида — состояние самой базы DT. Пустая база (`entries=0`) означает, что
+            // наши правила world_gen не прочитаны; заполненная, но с null-видом у биома — что правило
+            // есть, но вид в нём не разрешился.
+            String dbInfo = "";
+            try {
+                Object all = call(db, "getAllEntries", new Class<?>[]{});
+                int n = all instanceof java.util.Collection<?> col ? col.size() : -1;
+                boolean populated = (Boolean) call(db, "isPopulated", new Class<?>[]{});
+                String plains = "?";
+                try {
+                    Object pe = call(db, "getEntry", new Class<?>[]{net.minecraft.resources.ResourceLocation.class},
+                            new net.minecraft.resources.ResourceLocation("minecraft", "plains"));
+                    Object psel = call(pe, "getSpeciesSelector", new Class<?>[]{});
+                    plains = "sel=" + psel.getClass().getSimpleName();
+                } catch (Throwable ignored) {
+                    // нет такого биома в базе
+                }
+                dbInfo = " db_entries=" + n + " db_populated=" + populated + " plains_" + plains
+                        + " sel=" + sel.getClass().getSimpleName();
+            } catch (Throwable t) {
+                dbInfo = " db_err=" + t.getClass().getSimpleName();
+            }
+            dtSp = (handled ? "handled" : "none") + (black ? "/black" : "") + spName + dbInfo;
         } catch (Throwable t) {
             dtSp = "err:" + t.getClass().getSimpleName() + ":" + t.getMessage();
         }
