@@ -6,9 +6,9 @@
     "apply": {
       "species": "riftworlddt:sizo",
       "density": [
-        1.0
+        0.22
       ],
-      "chance": 0.45
+      "chance": 1.0
     }
   },
   {
@@ -18,9 +18,9 @@
     "apply": {
       "species": "riftworlddt:giant_sizo",
       "density": [
-        0.5
+        0.35
       ],
-      "chance": 0.12
+      "chance": 0.35
     }
   },
   {
@@ -30,9 +30,9 @@
     "apply": {
       "species": "riftworlddt:violet",
       "density": [
-        1.0
+        0.24
       ],
-      "chance": 0.6
+      "chance": 1.0
     }
   },
   {
@@ -42,9 +42,9 @@
     "apply": {
       "species": "riftworlddt:ambra",
       "density": [
-        0.5
+        0.55
       ],
-      "chance": 0.1
+      "chance": 0.5
     }
   },
   {
@@ -54,9 +54,9 @@
     "apply": {
       "species": "riftworlddt:sizo",
       "density": [
-        0.4
+        0.22
       ],
-      "chance": 0.06
+      "chance": 1.0
     }
   },
   {
@@ -66,9 +66,9 @@
     "apply": {
       "species": "riftworlddt:coral_staghorn",
       "density": [
-        0.8
+        0.35
       ],
-      "chance": 0.22,
+      "chance": 0.8,
       "heightmap": "OCEAN_FLOOR_WG"
     }
   },
@@ -79,9 +79,9 @@
     "apply": {
       "species": "riftworlddt:coral_table",
       "density": [
-        0.5
+        0.35
       ],
-      "chance": 0.12,
+      "chance": 0.8,
       "heightmap": "OCEAN_FLOOR_WG"
     }
   },
@@ -92,9 +92,9 @@
     "apply": {
       "species": "riftworlddt:coral_whip",
       "density": [
-        0.5
+        0.35
       ],
-      "chance": 0.14,
+      "chance": 0.8,
       "heightmap": "OCEAN_FLOOR_WG"
     }
   }
