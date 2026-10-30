@@ -1264,7 +1264,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         int topY = base + t.h + 2;                       // first disc altitude (trunk tops out here)
         if (inTrunk) {
             // ствол идёт до САМОГО ВЕРХНЕГО яруса, иначе верхний диск висит в воздухе
-            for (int y = base; y <= topY + 4; ++y) chunk.setBlockState(mp.set(x, y, z), logS, false);
+            for (int y = base; y <= topY + 10; ++y) chunk.setBlockState(mp.set(x, y, z), logS, false);
             return;
         }
         // branch cross under the discs (trunk centre sits between the 4 trunk cells)
@@ -1282,21 +1282,20 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         // плотный шар из белых кубиков (кадр 45 итерации 56) вместо этажерки.
         // tiers: {radius, dy} — dy отсчитывается от верха ствола
         double dc = Math.hypot(dx - 0.5, dz - 0.5);
-        // Рев 14.74: на фото ярусов ПЯТЬ-ШЕСТЬ, и они плоские и тонкие, а не три толстых блина.
-        // Разносим диски на 4 блока, самый широкий — в середине кроны, верхний и нижний — уже.
-        double[][] tiers = new double[][] {{2.4, 4}, {3.8, 1}, {5.2, -3}, {5.6, -7}, {3.8, -11}};
+        // Рев 14.75, по референсу 05: крона — ЧЕТЫРЕ ЧИСТЫЕ ПЛОСКИЕ ПЛАСТИНЫ через 5 блоков воздуха.
+        // В 14.74 их было пять через 4 блока, и при взгляде снизу они смыкались в сплошную массу
+        // (кадр 47 итерации 70). На фото между ярусами видно небо и ствол, края ровные.
+        double[][] tiers = new double[][] {{2.6, -5}, {3.8, 0}, {5.4, 5}, {4.6, 10}};
         long seed = t.seed;
         for (double[] ti : tiers) {
             double r = ti[0]; int yy = topY + (int) ti[1];
             if (dc > r) continue;
-            boolean rim = dc > r - 0.85;
-            if (rim && hash(x * 7 + yy, z * 7, (int) (seed & 0x3FFFFFFF)) < 0.18) continue;          // ragged edge
+            // Рев 14.75: край почти ровный (пропуск 7 % вместо 18 %) и БЕЗ свисающей бахромы —
+            // на фото пластины обрываются ровной линией, а бахрома превращала их в мохнатый шар.
+            if (dc > r - 0.7 && hash(x * 7 + yy, z * 7, (int) (seed & 0x3FFFFFFF)) < 0.07) continue;
             BlockPos pp = mp.set(x, yy, z);
-            if (chunk.getBlockState(pp).isAir() || chunk.getBlockState(pp).canBeReplaced()) chunk.setBlockState(pp, leaf, false);
-            if (rim && hash(x * 13 - yy, z * 11, (int) ((seed >>> 20) & 0x3FFFFFFF)) < 0.4) {         // drooping skirt
-                BlockPos lo = mp.set(x, yy - 1, z);
-                if (chunk.getBlockState(lo).isAir()) chunk.setBlockState(lo, leaf, false);
-            }
+            BlockState there = chunk.getBlockState(pp);
+            if (there.isAir() || there.canBeReplaced()) chunk.setBlockState(pp, leaf, false);
         }
     }
 
