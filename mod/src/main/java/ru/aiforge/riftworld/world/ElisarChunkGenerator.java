@@ -674,7 +674,10 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         // зелень), а борозды между грядами — тёмная земля (`coarse_dirt`), как вспаханная
         // полоса на референсе 04.
         BlockState vTurf = Blocks.GRASS_BLOCK.defaultBlockState();
-        BlockState vEarth = Blocks.COARSE_DIRT.defaultBlockState();
+        // Рев 16.10: борозда — ОБЫЧНАЯ земля, а не coarse_dirt. У курса нет soil-свойств в Dynamic
+        // Trees (dirt_like), поэтому дерево на борозде не садилось: /riftdtwhy показывал
+        // ground=- и soil_ok=false (прогон #269). Внешне разница минимальна, а посадка работает.
+        BlockState vEarth = Blocks.DIRT.defaultBlockState();
         // Рев 14.25: на обрывах садов — свой сочно-зелёный плющ, как на референсе
         BlockState gIvy = ElisarBlocks.GARDEN_IVY.get().defaultBlockState();
         BlockState lime = st(ElisarBlocks.GARDEN_LIMESTONE), limeMossy = st(ElisarBlocks.GARDEN_LIMESTONE_MOSSY);
