@@ -839,7 +839,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                     for (Direction d : Direction.Plane.HORIZONTAL) {
                         Col n = cols[dx + 1 + d.getStepX()][dz + 1 + d.getStepZ()];
                         if (n.isl == null || n.top > c.top - 3) continue;
-                        double outward = d.getStepX() * (px - c.isl.cx) + d.getStepZ() * (pz - c.isl.cz);
+                        double outward = d.getStepX() * (x + 0.5 - c.isl.cx) + d.getStepZ() * (z + 0.5 - c.isl.cz);
                         if (outward > 0) { step = true; break; }
                     }
                     if (step) {
