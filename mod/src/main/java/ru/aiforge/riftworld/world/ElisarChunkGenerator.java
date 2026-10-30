@@ -826,7 +826,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                 // Рев 14.63, по референсу 05: былинок стало меньше (20 % -> 13 %), а сами они
                                 // теперь холодные серо-зелёные, а не почти белые — пол читается мхом, а не песком.
                                 if (h < 0.13) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
-                                else if (h < 0.52 && vnoise(x * 0.075, z * 0.075, 95) > 0.46) {
+                                else if (h < 0.44 && vnoise(x * 0.075, z * 0.075, 95) > 0.50) {
                                     int f = (int) (hash(x, z, 96) * 100);
                                     chunk.setBlockState(mp.set(x, c.top + 1, z), st(f < 40 ? ElisarBlocks.VIOLET_BLOOM : f < 72 ? ElisarBlocks.LILAC_BLOOM : f < 88 ? ElisarBlocks.PALE_BLOOM : ElisarBlocks.FLOWERS), false);
                                 }
