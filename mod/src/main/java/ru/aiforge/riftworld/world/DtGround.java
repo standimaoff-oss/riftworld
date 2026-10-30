@@ -263,7 +263,7 @@ public final class DtGround {
             // Рев 16.6: после удаления дублирующего biome_modifier деревья наконец пошли массово,
             // и холмы превратились в сплошной «капустный лес» (кадр 49 итерации 59). По референсу
             // 04 это ЛУГ с редкими деревьями: лиловый хлыст сажаем в ~13 раз реже остальных видов.
-            float chance = sp.equals("riftworlddt:lilac") ? 0.0015f
+            float chance = sp.equals("riftworlddt:lilac") ? 0.0008f
                     : sp.equals("riftworlddt:ambra") ? 0.15f
                     : sp.equals("riftworlddt:garden_oak") ? 0.16f : 0.35f;
             if (r.nextFloat() > chance) continue;
