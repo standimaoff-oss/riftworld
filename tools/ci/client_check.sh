@@ -481,6 +481,15 @@ lookat() { # lookat <cx> <cy> <cz> <tx> <ty> <tz> <pause> <name> — камер�
   yp=$(python3 tools/ci/lookat_angles.py "$1" "$2" "$3" "$4" "$5" "$6")
   view "$1" "$2" "$3" "${yp% *}" "${yp#* }" "$7" "$8"
 }
+
+# Рев 14.69: земля колонки БЕЗ кроны (из /riftcam). Камеры биомов ставим от земли, а не от
+# «самого верхнего блока» — верх обычно оказывается кроной дерева, и объектив улетал в небо.
+cam_ground() { # cam_ground <x> <z> [запасное значение]
+  local out gy
+  out=$(EL execute in riftworld:elisar run riftcam "$1" "$2" 2>&1 | tr '\r\n' '  ')
+  gy=$(printf '%s' "$out" | sed -n 's/.* ground=\(-\?[0-9]*\):.*/\1/p' | tail -1)
+  printf '%s' "${gy:-${3:-110}}"
+}
 view "$VX" 66 "$VZ" 90 42 14 "02_reef_from_above"        # рифовый сад сверху сквозь воду
 view "$((VX + 10))" "$((VF + 6))" "$VZ" 270 18 14 "03_reef_underwater"   # риф вплотную под водой
 view "$((VX + 4))" "$((VF + 9))" "$VZ" 210 22 14 "03b_reef_hills"         # рифовые холмы и палитры
@@ -1157,12 +1166,6 @@ biome_section() {
     # Рев 14.64: кадры рощи — С УРОВНЯ ГЛАЗ, как на референсе 05 (коридор стволов, ярусы сверху).
     # STOP2 из /riftbiome — это ВЕРХ КРОНЫ, а не земля: камеры висели над лесом и смотрели в небо
     # (кадры 45–47 итерации 60 — почти чистый горизонт). Берём землю из /riftcam.
-    cam_ground() { # cam_ground <x> <z> -> высота земли (без кроны) в этой колонке
-      local out gy
-      out=$(EL execute in riftworld:elisar run riftcam "$1" "$2" 2>&1 | tr '\r\n' '  ')
-      gy=$(printf '%s' "$out" | sed -n 's/.* ground=\(-\?[0-9]*\):.*/\1/p' | tail -1)
-      printf '%s' "${gy:-$STOP2}"
-    }
     local SG1 SG2 SG3 SF
     SG1=$(cam_ground "$((SX + 22))" "$((SZ + 22))")
     SG2=$(cam_ground "$((SX + 28))" "$((SZ + 10))")
@@ -1205,8 +1208,14 @@ biome_section() {
     if [ "${VLEAF:-0}" -ge 150 ]; then log "  OK   холмы: сиреневой листвы $VLEAF блоков"
     else log "  FAIL холмы: сиреневой листвы ${VLEAF:-0} (нужно >=150)"; FAILS=$((FAILS + 1)); fi
     local VTOP2=${VTOP:-110} VRR=${VR:-80}
-    lookat "$((VX + VRR * 3 / 4))" "$((VTOP2 + 20))" "$((VZ + VRR * 3 / 4))" "$VX" "$((VTOP2 - 6))" "$VZ" 20 "49_violet_hills"
-    lookat "$((VX + VRR / 2))" "$((VTOP2 + 9))" "$((VZ + VRR / 2))" "$VX" "$((VTOP2 - 4))" "$VZ" 16 "50_violet_fields"
+    # Рев 14.69, по референсу 04: кадры холмов — почти с уровня глаз. Прошлые камеры висели на
+    # +20/+9 над макушками и половину кадра занимало небо; на фото поля уходят к горизонту,
+    # а церкви стоят на гребнях.
+    local VG1 VG2
+    VG1=$(cam_ground "$((VX + VRR * 3 / 4))" "$((VZ + VRR * 3 / 4))" "$VTOP2")
+    VG2=$(cam_ground "$((VX + VRR / 2))" "$((VZ + VRR / 2))" "$VTOP2")
+    lookat "$((VX + VRR * 3 / 4))" "$((VG1 + 14))" "$((VZ + VRR * 3 / 4))" "$VX" "$((VTOP2 - 4))" "$VZ" 20 "49_violet_hills"
+    lookat "$((VX + VRR / 2))" "$((VG2 + 7))" "$((VZ + VRR / 2))" "$VX" "$((VTOP2 - 2))" "$VZ" 16 "50_violet_fields"
     lookat "$((VX + VRR / 3))" "$((VTOP2 + 5))" "$((VZ + VRR / 6))" "$VX" "$((VTOP2 + 1))" "$VZ" 14 "51_violet_path"
     # Рев 14.57: кадр «как на референсе 04» — камера ВНУТРИ полей, почти на уровне глаз,
     # смотрит вдоль гряд на церковь. Именно так видно, что это поля-террасы, а не газон с пятнами.
