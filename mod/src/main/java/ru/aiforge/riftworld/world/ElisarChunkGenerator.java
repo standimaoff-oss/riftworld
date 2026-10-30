@@ -1441,26 +1441,6 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         }
         // Рев 16: церквей в Фиолетовых холмах больше нет (просьба владельца «убери церкви пока»).
         // Вместе с храмами ушли их площадки и дорожка — луг стал чистым полем, как на референсе 04.
-        // Рев 14.30, по референсу 04: вдоль дорожки между церквями — столбики-факелы и низкие
-        // каменные стенки, как на фото (дорожка освещена и обложена камнем).
-        if (vreg != null) {
-            BlockPos.MutableBlockPos vp = new BlockPos.MutableBlockPos();
-            for (int px = x0; px <= x0 + 15; ++px)
-                for (int pz = z0; pz <= z0 + 15; ++pz) {
-                    double pd = vreg.pathDist(px + 0.5, pz + 0.5);
-                    if (pd < 0.9 || pd > 3.2) continue;                     // сама дорожка и её обочина
-                    boolean post = Math.floorMod(px + pz, 13) == 0;
-                    Col pc = column(plan, px, pz);
-                    if (pc.isl == null || pc.top <= plan.ocean) continue;
-                    if (post) {
-                        int y = pc.top + 1;
-                        setIn(level, box, vp.set(px, y, pz), st(ElisarBlocks.STONE_WALL));
-                        setIn(level, box, vp.set(px, y + 1, pz), Blocks.TORCH.defaultBlockState());
-                    } else if (pd < 1.35) {
-                        setIn(level, box, vp.set(px, pc.top + 1, pz), st(ElisarBlocks.STONE_WALL));   // низкая стенка у края
-                    }
-                }
-        }
         // biome 05: grove dressing - mossy boulders & amber-band way pillars (also on islets inside the grove sea-ring)
         BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
         SizoGrove.Region greg = SizoGrove.regionAt(x0 + 8, z0 + 8);

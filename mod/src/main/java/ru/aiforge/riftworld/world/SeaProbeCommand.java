@@ -565,13 +565,13 @@ public final class SeaProbeCommand {
                 for (int z = bestZ - R; z <= bestZ + R; ++z) {
                     if (!level.isLoaded(new BlockPos(x, ocean + 2, z))) continue;
                     int colWater = 0;
-                    boolean src = false;
+                    boolean hasSource = false;
                     for (int y = ocean - 4; y <= 150; ++y) {
                         BlockState bs = level.getBlockState(new BlockPos(x, y, z));
                         if (bs.isAir()) continue;
                         if (bs.getBlock() == gsrc) {
                             ++colWater;
-                            if (bs.getFluidState().isSource()) src = true;
+                            if (bs.getFluidState().isSource()) hasSource = true;
                             continue;
                         }
                         var key2 = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(bs.getBlock());
@@ -582,7 +582,7 @@ public final class SeaProbeCommand {
                     }
                     // Рев 16: столб воды выше моря — это струя водопада. У настоящей струи есть
                     // исток (source) на кромке полки; у «статичной» воды источника не было.
-                    if (colWater > 3) { fallWater += colWater; if (src) ++fallSrc; }
+                    if (colWater > 3) { fallWater += colWater; if (hasSource) ++fallSrc; }
                     ElisarChunkGenerator.Col topC = ElisarChunkGenerator.column(CityPlan.get(), x, z);
                     if (topC.garden && topC.isl != null && topC.top <= ocean) ++dryCols;
                 }
