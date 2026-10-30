@@ -1,73 +1,36 @@
 package ru.aiforge.riftworld.world;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Biome 04 «Фиолетовые холмы» (Rev 4 item 8): big meadows and smooth hills, rare trees, rare rivers with bridges, and
- * exactly TWO churches per biome region - one intact, one ruined - linked by a worn footpath. Colorful: 3 violet flower
- * types (placed by the chunk generator), lilac grass/foliage (biome json).
+ * Biome 04 «Фиолетовые холмы» (референс 04_violet_hills.png).
  *
- * Layout: the wild archipelago is divided into 880-block super-cells; ~45 % of suitable ones (beyond the city ring, away
- * from the Ashen Lands and the Ember Ruins) hold one region: a biome blob (R 130..170) around a single big smooth meadow
- * island (kind 7) that carries the two churches (+ their plateaus), the footpath between their doors, and one river that
- * cuts across the island and falls into the ocean at the rim; the footpath fords it on a plank bridge.
- * Deterministic from fixed seeds - no saved data.
+ * <p>Рев 16: луг — ЧИСТОЕ ПОЛЕ. Церкви и дорожка церковь→церковь убраны по просьбе владельца,
+ * собственные «фиолетовые кусты»-деревья тоже: единственное дерево биома — динамическое
+ * ({@code riftworlddt:lilac}, «лиловый хлыст») из аддона Dynamic Trees. Рельеф — ровное плато с
+ * холмами, которые ставит шум, а не купол к центру. Остались река (хорда через остров) и поля.
+ *
+ * <p>Раскладка: дикий архипелаг делится на супер-ячейки 880 блоков; ~45 % подходящих (вне города,
+ * адских земель и руин) держат один регион — остров-луг (kind 7) с вытянутым эллипсом и рекой.
+ * Всё детерминировано сидом, без сохранённых данных.
  */
 public final class VioletHills {
     public static final int SUPER = 880;
     private static final long SEED = 0x9B1C7L;
 
-    /** Church template: 13 x 19, door centred in the +z (south) face, floor at local y 0 (data/riftworld/structures/ruins/church_violet*.nbt). */
-    public static final int TW = 13, TD = 19;
     /**
-     * Рев 14.29: вид дерева биома 04 — с СИРЕНЕВОЙ кроной, как на референсе 04_violet_hills.png.
-     * Раньше здесь росли белые амбра/сизо, и фиолетовыми были только поля.
+     * Рев 16: ЦЕРКВИ УБРАНЫ по просьбе владельца («убери церкви пока в фиолетовых холмах»).
+     * Вместе с ними ушли и дорожка церковь→церковь, и ступени-площадки под храмами: луг стал
+     * чистым полем, как на референсе 04.
      */
-    public static final int TREE_VIOLET = 10;
-
-    public static final class Church {
-        public final int cx, cz, y, x0, z0, wx, wz;
-        public final String facing;      // door side in world (same convention as city plots)
-        public final boolean ruined;
-        public final int doorX, doorZ;   // outside step cell in front of the door (path endpoint)
-
-        Church(int cx, int cz, int y, String facing, boolean ruined, CityPlan.Island meadow) {
-            this.cx = cx; this.cz = cz; this.y = y; this.facing = facing; this.ruined = ruined;
-            boolean ew = facing.equals("east") || facing.equals("west");
-            this.wx = ew ? TD : TW;
-            this.wz = ew ? TW : TD;
-            this.x0 = cx - wx / 2;
-            this.z0 = cz - wz / 2;
-            int off = TD / 2 + 1;
-            switch (facing) {
-                case "north" -> { this.doorX = cx; this.doorZ = cz - off; }
-                case "east" -> { this.doorX = cx + off; this.doorZ = cz; }
-                case "west" -> { this.doorX = cx - off; this.doorZ = cz; }
-                default -> { this.doorX = cx; this.doorZ = cz + off; }
-            }
-        }
-
-        /** Distance outside the rotated footprint (0 inside). */
-        public double outside(double x, double z) {
-            double dx = Math.max(Math.max(x0 - x, 0), x - (x0 + wx - 1));
-            double dz = Math.max(Math.max(z0 - z, 0), z - (z0 + wz - 1));
-            return Math.hypot(dx, dz);
-        }
-    }
-
     public static final class Region {
         public final int cx, cz;
         public final double Rr;
         public final CityPlan.Island meadow;
-        public final Church churchA, churchB;                    // exactly two per biome (Rev 4): one intact, one ruined
-        public final List<CityPlan.Tree> trees = new ArrayList<>();
-        // footpath: churchA.door -> bulge -> churchB.door
-        public final double pax, paz, pbx, pbz, pmx, pmz;
-        // river: straight chord across the island
+        // river: a chord across the island that spills off both rims
         public final double rax, raz, rbx, rbz;
         public final int riverLevel;
         public static final double RIVER_HW = 1.6;
@@ -75,70 +38,24 @@ public final class VioletHills {
         Region(int cx, int cz, Random rnd) {
             this.cx = cx; this.cz = cz;
             this.Rr = 150 + rnd.nextDouble() * 40;
-            // Рев 15: луг крупнее, а холм НИЖЕ и шире — на референсе 04 склон длинный и пологий,
-            // поля уходят вдаль лентами. Было base 98..112 (34–50 блоков над морем), из-за этого
-            // получался крутой «пирог» с крошечными террасами-пятачками.
             double R = 92 + rnd.nextDouble() * 20;
-            double base = CityPlan.get().ocean + 26 + rnd.nextInt(9);
+            // Рев 16: луг НЕ КУПОЛ. Раньше высота росла к центру (`rimY + (base-rimY)*t`), из-за
+            // чего любой кадр смотрел в «горку». Теперь база — ровное плато чуть выше моря, а
+            // «холмистость» даёт шум рельефа (см. violetProfile): холмы стоят ГДЕ ХОЧЕТ ШУМ, а не
+            // в центре острова.
+            double base = CityPlan.get().ocean + 17 + rnd.nextInt(6);
             this.meadow = new CityPlan.Island(cx, cz, R, base, R * 0.6 + 12, rnd.nextDouble() * 6.283, rnd.nextDouble() * 6.283,
                     rnd.nextDouble() * 6.283, 7, 0.9);
-            // Рев 15: луг ВЫТЯНУТЫЙ (см. Island.elong) — террасы идут длинными лентами через склон,
-            // как поля на референсе 04, а не кольцами вокруг вершины.
+            // луг ВЫТЯНУТЫЙ — гряды лаванды идут длинными лентами через склон, как на референсе 04
             this.meadow.elong = 0.22 + rnd.nextDouble() * 0.22;
             this.meadow.elongAng = rnd.nextDouble() * Math.PI;
-            // the two churches face the meadow centre from opposite sides
-            double th = rnd.nextDouble() * Math.PI * 2, jj = (rnd.nextDouble() - 0.5) * 0.7;
-            double rr = R * 0.52;
-            int ax = (int) Math.floor(cx + Math.cos(th) * rr), az = (int) Math.floor(cz + Math.sin(th) * rr);
-            int bx = (int) Math.floor(cx + Math.cos(th + Math.PI + jj) * rr), bz = (int) Math.floor(cz + Math.sin(th + Math.PI + jj) * rr);
-            boolean aRuined = rnd.nextBoolean();
-            // Рев 15: пол церквей — по ТОЙ ЖЕ формуле, что строит рельеф луга (раньше брался
-            // Island.raw(), который к лугу отношения не имеет: площадки под храмами вырезали
-            // в холме ступени-мезы высотой 10+ блоков).
-            int ocean = CityPlan.get().ocean;
-            this.churchA = new Church(ax, az, ElisarChunkGenerator.violetTop(meadow, ax + 0.5, az + 0.5, ocean) + 1,
-                    faceTo(ax - cx, az - cz), aRuined, meadow);
-            this.churchB = new Church(bx, bz, ElisarChunkGenerator.violetTop(meadow, bx + 0.5, bz + 0.5, ocean) + 1,
-                    faceTo(bx - cx, bz - cz), !aRuined, meadow);
-            // footpath with a soft bulge (never a ruler-straight line)
-            double mx = (churchA.doorX + churchB.doorX) / 2.0, mz = (churchA.doorZ + churchB.doorZ) / 2.0;
-            double pxn = -(churchB.doorZ - churchA.doorZ), pzn = churchB.doorX - churchA.doorX;
-            double pl = Math.hypot(pxn, pzn) + 1e-6;
-            double bulge = (rnd.nextDouble() - 0.5) * R * 0.45;
-            this.pax = churchA.doorX; this.paz = churchA.doorZ; this.pbx = churchB.doorX; this.pbz = churchB.doorZ;
-            this.pmx = mx + pxn / pl * bulge; this.pmz = mz + pzn / pl * bulge;
-            // river: a chord across the island, roughly crosswise to the church line, spilling off both rims
-            double phi = Math.atan2(churchB.doorZ - churchA.doorZ, churchB.doorX - churchA.doorX) + Math.PI / 2 + (rnd.nextDouble() - 0.5) * 0.9;
+            // river: a chord across the island, spilling off both rims
+            double phi = rnd.nextDouble() * Math.PI;
             double rl = R * 1.3;
             double rcx = cx + (rnd.nextDouble() - 0.5) * R * 0.3, rcz = cz + (rnd.nextDouble() - 0.5) * R * 0.3;
             this.rax = rcx - Math.cos(phi) * rl; this.raz = rcz - Math.sin(phi) * rl;
             this.rbx = rcx + Math.cos(phi) * rl; this.rbz = rcz + Math.sin(phi) * rl;
-            this.riverLevel = (int) Math.floor(base) - 2;
-            // rare trees (Rev 4): 4..7, well away from churches, path and river
-            // Рев 14.31: на референсе деревья стоят по всему лугу (лиловые шапки среди полей) —
-            // было 4..7 на весь регион, в кадре оказывалось одно.
-            for (int k = 0, tries = 0; k < 14 + rnd.nextInt(9) && tries < 900; ++tries) {
-                double a = rnd.nextDouble() * Math.PI * 2, d = (0.35 + rnd.nextDouble() * 0.55) * R;
-                int x = (int) Math.floor(cx + Math.cos(a) * d), z = (int) Math.floor(cz + Math.sin(a) * d);
-                if (meadow.t(x + 0.5, z + 0.5) < 0.3) continue;
-                if (churchA.outside(x + 0.5, z + 0.5) < 10 || churchB.outside(x + 0.5, z + 0.5) < 10) continue;
-                if (pathDist(x + 0.5, z + 0.5) < 3.0) continue;
-                if (CityPlan.segDist(x + 0.5, z + 0.5, rax, raz, rbx, rbz, null) < 4.0) continue;
-                boolean ok = true;
-                for (CityPlan.Tree t : trees) if (Math.abs(t.x - x) < 14 && Math.abs(t.z - z) < 14) { ok = false; break; }
-                if (!ok) continue;
-                // на референсе все деревья поля — с лиловой кроной, разного размера
-                trees.add(new CityPlan.Tree(x, z, TREE_VIOLET, 11 + rnd.nextInt(5), rnd.nextInt(1 << 30)));
-                ++k;
-            }
-        }
-
-        private static String faceTo(double dx, double dz) {
-            return Math.abs(dx) >= Math.abs(dz) ? (dx > 0 ? "east" : "west") : (dz > 0 ? "south" : "north");
-        }
-
-        public double pathDist(double x, double z) {
-            return Math.min(CityPlan.segDist(x, z, pax, paz, pmx, pmz, null), CityPlan.segDist(x, z, pmx, pmz, pbx, pbz, null));
+            this.riverLevel = (int) Math.floor(base) - 3;
         }
     }
 
@@ -181,11 +98,13 @@ public final class VioletHills {
         return m.t(x, z) > 0.10 + 8.0 / m.R;
     }
 
+    /**
+     * Рев 16: собственных деревьев у биома больше НЕТ — обычное «дерево фиолетовых кустов»
+     * удалено по просьбе владельца. Единственное дерево холмов — динамическое (аддон DT,
+     * вид {@code riftworlddt:lilac}, «лиловый хлыст»).
+     */
     public static List<CityPlan.Tree> treesNear(int x, int z) {
-        Region rg = regionAt(x + 0.5, z + 0.5);
-        if (rg == null) return List.of();
-        List<CityPlan.Tree> out = new ArrayList<>(2);
-        for (CityPlan.Tree t : rg.trees) if (Math.abs(x - t.x) <= 4 && Math.abs(z - t.z) <= 4) out.add(t);
-        return out;
+        return List.of();
     }
 }
+

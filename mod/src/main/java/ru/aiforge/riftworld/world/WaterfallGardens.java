@@ -11,7 +11,10 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * <p>Ступенчатые известняковые острова: широкие плоские полки через каждые 9 блоков, почти
  * вертикальные стены между ними, на каждой полке — пруд, льющаяся через край вода, сплошная зелень
- * и длинные плети плюща по обрывам. Деревья — обычные дубы с зелёной кроной: на референсе только они.
+ * и длинные плети плюща по обрывам.
+ *
+ * <p>Рев 16: обычных (stock) дубов здесь больше нет — все деревья архипелага ставит аддон Dynamic
+ * Trees ({@code riftworlddt:garden_oak}), поэтому {@link Region#trees} всегда пуст.</p>
  *
  * <p>Рев 14 (итерация 1): убрано ВСЁ рукотворное — ни лестниц, ни мостов, ни настилов.
  *
@@ -73,7 +76,9 @@ public final class WaterfallGardens {
             // сопоставимого размера (R 30..42), а «разность» даёт форма (p1..p3 у каждого острова).
             this.big = true;
             int n = 3 + rnd.nextInt(4);                       // 3..6
-            double rMin = 33, rMax = 39;   // Рев 14.40: «почти не отличаются по размеру» — разброс радиуса 6 блоков
+            // Рев 16, просьба владельца: острова КРУПНЕЕ — радиус 40..55 (было 22, потом 33..39).
+            // Разброс внутри архипелага — 5 блоков: «почти не отличаются по размеру, но по форме разные».
+            double rMin = 40, rMax = 55;
             double[] rs = new double[n];
             double sum = 0;
             for (int i = 0; i < n; ++i) {
@@ -98,26 +103,16 @@ public final class WaterfallGardens {
                 int peak = ocean + (int) Math.round(3.2 * STEP + rnd.nextDouble() * STEP);
                 CityPlan.Island isl = new CityPlan.Island(x, z, R, peak - 8, R * 1.15 + 10,
                         rnd.nextDouble() * 6.283, rnd.nextDouble() * 6.283, rnd.nextDouble() * 6.283, KIND, 1.6);
+                // Рев 16: «острова разной формы». Фазы синусов дают зубчатую кромку, но силуэт
+                // всё равно читается кругом; вытянутость (эллипс до 3:2 в случайную сторону) делает
+                // каждый остров архипелага узнаваемо своим — одни длинные, другие почти круглые.
+                isl.elong = rnd.nextDouble() * 0.42;
+                isl.elongAng = rnd.nextDouble() * Math.PI;
                 isles.add(isl);
                 extent = Math.max(extent, Math.hypot(x - cx, z - cz) + R * 1.2 + 4);
-                // на референсе полки заросли обычными ДУБАМИ с зелёной кроной — по 5–16 на остров,
-                // и только там, где полка широкая (t > 0.30), иначе ствол повисает на обрыве.
-                // Рев 14.27: на референсе полки — ОТКРЫТЫЕ лужайки, а дубы стоят небольшой рощей
-                // в одном месте. В итерации 26 деревьев было 9–16 на остров: они закрывали и полки,
-                // и водопады (кадры 40–42 — сплошная крона). Теперь 3–7 дубов, собранных в рощу.
-                int want = 4 + rnd.nextInt(4);
-                double ga = rnd.nextDouble() * Math.PI * 2, gd = (0.15 + rnd.nextDouble() * 0.35) * R;
-                double gx = x + Math.cos(ga) * gd, gz = z + Math.sin(ga) * gd;
-                for (int k = 0, tries = 0; k < want && tries < want * 30; ++tries) {
-                    double ta = rnd.nextDouble() * Math.PI * 2, td = Math.sqrt(rnd.nextDouble()) * 13;
-                    int tx = (int) Math.floor(gx + Math.cos(ta) * td), tz = (int) Math.floor(gz + Math.sin(ta) * td);
-                    if (isl.t(tx + 0.5, tz + 0.5) < 0.32) continue;
-                    boolean ok = true;
-                    for (CityPlan.Tree t : trees) if (Math.abs(t.x - tx) < 6 && Math.abs(t.z - tz) < 6) { ok = false; break; }
-                    if (!ok) continue;
-                    trees.add(new CityPlan.Tree(tx, tz, TREE_OAK, 6 + rnd.nextInt(4), rnd.nextInt(1 << 30)));
-                    ++k;
-                }
+                // Рев 16: ОБЫЧНЫХ ДУБОВ БОЛЬШЕ НЕТ. Владелец: «садовый дуб должен меняться аддоном DT».
+                // Все деревья архипелага ставит аддон (вид riftworlddt:garden_oak, см. world_gen),
+                // а список trees остаётся пустым — генератор его больше не читает.
                 // водопады: по 1–2 струи на остров
                 int fallWant = 1 + rnd.nextInt(2);
                 for (int k = 0, tries = 0; k < fallWant && tries < fallWant * 30; ++tries) {
@@ -127,7 +122,7 @@ public final class WaterfallGardens {
                     boolean ok = true;
                     for (Fall f : falls) if (Math.hypot(f.x - fx, f.z - fz) < 9) { ok = false; break; }
                     if (!ok) continue;
-                    falls.add(new Fall((int) Math.floor(fx), (int) Math.floor(fz), 2.0 + rnd.nextDouble() * 2.5, rnd.nextLong()));
+                    falls.add(new Fall((int) Math.floor(fx), (int) Math.floor(fz), 3.0 + rnd.nextDouble() * 3.0, rnd.nextLong()));
                     ++k;
                 }
             }

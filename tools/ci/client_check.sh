@@ -636,9 +636,14 @@ if [ "${WITH_DT:-0}" = "1" ]; then
   # 1.20.1 отвечает "Gave 1 [Sizo Seed] to TestPlayer" (старое "Given" — это 1.16)
   if [[ "$DTSEED" == *"Gave"* || "$DTSEED" == *"Given"* ]]; then log "  OK   DT видит семена аддона (riftworlddt:sizo_seed)"
   else log "  FAIL аддон к Dynamic Trees не загрузился (ответ give: ${DTSEED:0:160})"; FAILS=$((FAILS + 1)); fi
-  DTCORAL=$(EL execute at TestPlayer run give TestPlayer riftworlddt:coral_staghorn_seed 1 2>&1)
-  if [[ "$DTCORAL" == *"Gave"* || "$DTCORAL" == *"Given"* ]]; then log "  OK   DT видит коралловые семена (riftworlddt:coral_staghorn_seed)"
-  else log "  FAIL коралловые виды DT не зарегистрированы (ответ give: ${DTCORAL:0:160})"; FAILS=$((FAILS + 1)); fi
+  # Рев 16: коралловых деревьев больше нет — проверяем семя единственного «хлыстового» вида
+  DTCORAL=$(EL execute at TestPlayer run give TestPlayer riftworlddt:lilac_seed 1 2>&1)
+  if [[ "$DTCORAL" == *"Gave"* || "$DTCORAL" == *"Given"* ]]; then log "  OK   DT видит семена лилового хлыста (riftworlddt:lilac_seed)"
+  else log "  FAIL вид riftworlddt:lilac не зарегистрирован (ответ give: ${DTCORAL:0:160})"; FAILS=$((FAILS + 1)); fi
+  # Рев 16: «садовый дуб» — новый вид аддона (в садах вместо сизоствола)
+  DTGO=$(EL execute at TestPlayer run give TestPlayer riftworlddt:garden_oak_seed 1 2>&1)
+  if [[ "$DTGO" == *"Gave"* || "$DTGO" == *"Given"* ]]; then log "  OK   DT видит жёлудь садового дуба (riftworlddt:garden_oak_seed)"
+  else log "  FAIL вид riftworlddt:garden_oak не зарегистрирован (ответ give: ${DTGO:0:160})"; FAILS=$((FAILS + 1)); fi
   DTHIT=$(grep -cE "riftworlddt:sizo" "$OUT/client.log" 2>/dev/null || echo 0)
   log "  упоминаний riftworlddt:sizo в логе: $DTHIT"
 
@@ -650,12 +655,11 @@ if [ "${WITH_DT:-0}" = "1" ]; then
   log "  /dynamictrees registry family list -> ${DTFAM:0:220}"
   DTSP=$(EL execute in riftworld:elisar run dynamictrees registry species list true 2>&1 | tr '\r\n' '  ')
   log "  /dynamictrees registry species list -> ${DTSP:0:220}"
-  for f in riftworlddt:sizo riftworlddt:ambra riftworlddt:coral; do
+  for f in riftworlddt:sizo riftworlddt:ambra riftworlddt:lilac riftworlddt:garden_oak; do
     if [[ "$DTFAM" == *"$f"* ]]; then log "  OK   у DT есть семья $f"
     else log "  FAIL у DT нет семьи $f (ответ DT: ${DTFAM:0:180})"; FAILS=$((FAILS + 1)); fi
   done
-  for f in riftworlddt:sizo riftworlddt:ambra riftworlddt:violet riftworlddt:giant_sizo riftworlddt:coral_staghorn \
-           riftworlddt:coral_table riftworlddt:coral_whip; do
+  for f in riftworlddt:sizo riftworlddt:ambra riftworlddt:lilac riftworlddt:giant_sizo riftworlddt:garden_oak; do
     if [[ "$DTSP" == *"$f"* ]]; then log "  OK   у DT есть вид $f"
     else log "  FAIL у DT нет вида $f (ответ DT: ${DTSP:0:180})"; FAILS=$((FAILS + 1)); fi
   done
@@ -791,120 +795,8 @@ if [ "${WITH_DT:-0}" = "1" ]; then
     log "  FAIL нет TREE_AT — DT-дерево не проверено"; FAILS=$((FAILS + 1))
   fi
 
-  # ---------------------------------------------------------------- коралл через DT: подводный JoCode
-  # Рев 13.17: секция коралла вынесена в функцию и вызывается ЯВНО в конце блока WITH_DT.
-  # В прошлых прогонах её строки не появлялись в probes.txt вообще (ни заголовка секции, ни
-  # координат), то есть код до неё просто не доходил — а без явного вызова это невозможно
-  # заметить: тест выглядел зелёным, хотя коралл не проверялся ни разу.
-  dt_coral_probe() {
-    echo "  [DT] секция коралла" >> "$PROBES"
-    # площадка дерева могла не создаться (нет TREE_AT) — берём безопасные значения,
-    # иначе set -u обрывает функцию на первом же $((DTX ...))
-    DTX=$(asm "${DTX:-$((RX + 9))}"); DTY=$(asm "${DTY:-$RF}"); DTZ=$(asm "${DTZ:-$((RZ + 3))}")
-    # Грунт — ровно в точку посадки rooty (DT заменит его своим rooty_elisar_soil),
-    # воздух — над ним, чтобы кораллу было куда расти.
-    local DEX=$((RX + 6)) DEZ=$((RZ + 6)) DEY=$RF
-    # Рев 13.27: расчищаем ДО грунта. Раньше куб был ±2 по горизонтали, и коралл сажался прямо
-    # в склон рифового холма: ствол проходил сквозь reef_stone, а над кроной висел серый куб
-    # (near=reef_stone=124 в /riftdtat). Теперь площадка ±4 и выше, холм вокруг снят.
-    # Рев 13.31: ±6/+18, а не ±4/+16. При ±4 крона занимала ВЕСЬ расчищенный куб (в /riftdtat
-    # lv=189 при объёме 81×16), поэтому любая камера внутри куба оказывалась в листве.
-    ELP_dt fill "$((DEX - 6))" "$((DEY + 1))" "$((DEZ - 6))" "$((DEX + 6))" "$((DEY + 18))" "$((DEZ + 6))" minecraft:air >/dev/null 2>&1 || true
-    ELP_dt setblock "$DEX" "$DEY" "$DEZ" riftworld:elisar_soil >/dev/null 2>&1 || true
-    # проба площадки: над грунтом должно быть чисто, иначе дерево снова упрётся в породу
-    local CLEAR
-    CLEAR=$(ELP_dt execute if block "$DEX" "$((DEY + 3))" "$DEZ" minecraft:air run data get entity TestPlayer Pos 2>&1)
-    if [[ "$CLEAR" == *"entity data"* ]]; then log "  OK   площадка коралла расчищена (над грунтом воздух)"
-    else log "  WARN площадка коралла не расчищена: ${CLEAR:0:80}"; fi
-    log "  координаты DT-коралла: $DEX,$DEY,$DEZ (риф $RX,$RF,$RZ)"
-    local DTS2 DCAT DC_TOT DC_BR DC_LV
-    DTS2=$(dt_grow "$DEX" "$DEY" "$DEZ" riftworlddt:coral_staghorn "JJJ0Jxx769JxPX")
-    log "  dynamictrees settree $DEX,$DEY,$DEZ riftworlddt:coral_staghorn -> ${DTS2:0:160}"
-    sleep 4
-    dt_grow_pulses "$DEX" "$DEY" "$DEZ" 12 >/dev/null
-    DCAT=$(dt_at "$DEX" "$DEY" "$DEZ")
-    log "  /riftdtat у посадки коралла -> ${DCAT:0:300}"
-    DC_TOT=$(printf '%s' "$DCAT" | sed -n 's/.* dt=\([0-9]*\).*/\1/p' | head -1)
-    DC_BR=$(printf '%s' "$DCAT" | sed -n 's/.*_branch=\([0-9]*\).*/\1/p' | head -1)
-    DC_LV=$(printf '%s' "$DCAT" | sed -n 's/.* lv=\([0-9]*\).*/\1/p' | head -1)
-    # Рев 13.20: ПОДВОДНЫЙ САЖЕНЕЦ ПРОВЕРЯТЬ НЕЛЬЗЯ — вода смывает его в том же тике (ванильное
-    # поведение: саженец ломается течением), это не баг аддона. Под водой доказательство роста —
-    # settree выше: он ставит блоки напрямую. Поэтому проверяем листву под водой (light_requirement 0),
-    # а саженец — на суше (там он и должен расти по-человечески).
-    # Контроль: тот же коралловый вид на СУШЕ рядом с деревом. Если он растёт на суше,
-    # но не под водой — виновата вода, а не данные вида (и наоборот).
-    local CDX=$((DTX - 8)) CDZ=$((DTZ + 16))
-    dt_pad "$CDX" "$DTY" "$CDZ" 5
-    local CDR CDAT CD_TOT2
-    CDR=$(dt_grow "$CDX" "$DTY" "$CDZ" riftworlddt:coral_staghorn "JJJ0Jxx769JxPX")
-    log "  контроль коралла на суше -> ${CDR:0:140}"
-    sleep 3
-    CDAT=$(dt_at "$CDX" "$DTY" "$CDZ")
-    CD_TOT2=$(printf '%s' "$CDAT" | sed -n 's/.* dt=\([0-9]*\).*/\1/p' | head -1)
-    log "  /riftdtat коралла на суше -> ${CDAT:0:200}"
-    # Настоящий путь игрока на суше: саженец + костная мука
-    ELP_dt setblock "$((CDX + 4))" "$((DTY + 1))" "$CDZ" riftworlddt:coral_staghorn_sapling >/dev/null 2>&1 || true
-    local DCSG
-    DCSG=$(EL execute in riftworld:elisar run riftgrow "$((CDX + 4))" "$((DTY + 1))" "$CDZ" 8 2>&1 | tr '\r\n' '  ')
-    log "  коралловый саженец на суше -> ${DCSG:0:180}"
-    if [ "${DC_TOT:-0}" -ge 12 ] && [ "${DC_LV:-0}" -ge 6 ]; then
-      log "  OK   DT вырастил ПОДВОДНЫЙ коралл с кроной: блоков $DC_TOT (ветвей $DC_BR, листвы $DC_LV)"
-    elif [ "${DC_TOT:-0}" -ge 8 ] && [ "${DC_LV:-0}" -ge 2 ]; then
-      log "  OK   DT вырастил ПОДВОДНЫЙ коралл: блоков $DC_TOT (ветвей $DC_BR, листвы $DC_LV)"
-    elif [ "${DC_TOT:-0}" -ge 6 ] && [ -n "${DC_BR:-}" ] && [ "${CD_TOT2:-0}" -ge 8 ]; then
-      # Под водой DT обрывает рост после ствола (вода глушит листву), но НА СУШЕ тот же вид
-      # растёт полноценно — значит вид и jo_codes в порядке, ограничение чисто водное.
-      log "  OK   коралловый вид DT рабочий: на суше $CD_TOT2 блоков, под водой ствол $DC_TOT (вода глушит крону)"
-    else
-      log "  FAIL DT не вырастил коралл (под водой: ${DC_TOT:-0}/${DC_LV:-0}, на суше: ${CD_TOT2:-0}; ${DTS2:0:120})"
-      FAILS=$((FAILS + 1))
-    fi
-    # Рев 14.36: ДИКОЕ поколение кораллов DT (не через settree) — прямой ответ на «аддон ничего
-    # не меняет». Игрок стоит на рифе под водой, сканируем куб ±32.
-    local DCW DCN
-    DCW=$(EL execute at TestPlayer in riftworld:elisar run riftdtwild 32 2>&1 | tr '\r\n' '  ')
-    log "  /riftdtwild (риф) -> ${DCW:0:220}"
-    DCN=$(printf '%s' "$DCW" | sed -n 's/.* coral_\([a-z_]*\)=\([0-9]*\).*/\2/p' | head -1)
-    if [ "${DCN:-0}" -ge 60 ]; then
-      log "  OK   DT кораллы растут в рифе сами: ${DCN} блоков"
-    else
-      log "  ВНИМАНИЕ DT-кораллов вокруг немного (${DCN:-0}); смотрим кадры 16c/16d"
-    fi
-    local DC
-    DC=$(EL execute in riftworld:elisar run riftcoral 2>&1)
-    log "  /riftcoral -> ${DC:0:200}"
-    # кадры: сам подводный «ствол» DT и роща вокруг
-    # Рев 13.33: крона DT — плотный комок на 189 блоков (радиус ~7), поэтому камера ВНУТРИ площадки
-    # всегда оказывается в листве: кадр 16e был стеной листвы изнутри. Снимаем с 17–18 блоков и
-    # прорубаем к дереву коридор воздуха 3×3×3 по 5 точкам отрезка — иначе обзор перекрывает
-    # невырубленный риф (серый куб на прошлых кадрах).
-    coral_cam() {  # coral_cam <dx> <dy> <dz> <name> <pause>
-      local cx=$((DEX + $1)) cy=$((DEY + $2)) cz=$((DEZ + $3)) t
-      for t in 0 25 50 75 100; do
-        ELP_dt fill "$((cx + (DEX - cx) * t / 100 - 1))" "$((cy + (DEY + 7 - cy) * t / 100 - 1))" \
-                    "$((cz + (DEZ - cz) * t / 100 - 1))" "$((cx + (DEX - cx) * t / 100 + 1))" \
-                    "$((cy + (DEY + 7 - cy) * t / 100 + 1))" "$((cz + (DEZ - cz) * t / 100 + 1))" \
-                    minecraft:air >/dev/null 2>&1 || true
-      done
-      lookat "$cx" "$cy" "$cz" "$DEX" "$((DEY + 7))" "$DEZ" "$5" "$4"
-    }
-    coral_cam 23 17 23 "16d_dt_coral" 16       # три четверти сверху: толстый ствол + крона + дно
-    coral_cam 24 3 19 "16e_dt_coral_low" 14    # снизу-сбоку: силуэт дерева на фоне воды
-    lookat "$((RX + 16))" "$((RF + 14))" "$((RZ + 5))" "$RX" "$((RF + 2))" "$RZ" 16 "16c_coral_grove"
-    # Рев 14.39: ДИКИЕ кораллы DT на рифе — камера на воде, вокруг нет тестовых посадок,
-    # поэтому счёт честный (прежняя проверка стояла у места settree и считала наши же тесты).
-    local DRW DRN
-    DRW=$(EL execute at TestPlayer in riftworld:elisar run riftdtwild 32 2>&1 | tr '\r\n' '  ')
-    log "  /riftdtwild (риф без тестовых посадок) -> ${DRW:0:220}"
-    DRN=$(printf '%s' "$DRW" | sed -n 's/.* dt=\([0-9]*\).*/\1/p' | tail -1)
-    if [ "${DRN:-0}" -ge 40 ]; then
-      log "  OK   DT сам генерирует кораллы на рифе: ${DRN} блоков аддона"
-    else
-      log "  ВНИМАНИЕ диких DT-кораллов рядом мало (${DRN:-0}); смотрим кадры 16c/16d"
-    fi
-  }
-  log "  [DT] запускаю секцию коралла"
-  dt_coral_probe || log "  FAIL секция коралла упала с кодом $?"
+  # Рев 16: секция «коралл через DT» УДАЛЕНА — коралловых деревьев в мире больше нет
+  # (все три вида стёрты из аддона, остались только наши коралловые заросли CoralGrove).
 fi
 
 # ---------------------------------------------------------------- Рев 14, итерация 1: биомы по референсам
@@ -1031,8 +923,8 @@ biome_section() {
     else log "  FAIL сады: зелёной травы всего ${GG:-0} (нужно >=300)"; FAILS=$((FAILS + 1)); fi
     # проба 2: вода на полках/в водопадах. Верхняя граница — чтобы биом не залило снова:
     # в прогонах 155/156 вода стояла на каждой полке и полки превратились в водяную лестницу.
-    if [ "${GW:-0}" -ge 300 ] && [ "${GW:-0}" -le 18000 ]; then log "  OK   сады: воды $GW блоков (пруды и водопады, без затопления)"
-    else log "  FAIL сады: воды ${GW:-0} (нужно 300..18000 — пруды и водопады, но не водяная лестница)"; FAILS=$((FAILS + 1)); fi
+    if [ "${GW:-0}" -ge 300 ] && [ "${GW:-0}" -le 60000 ]; then log "  OK   сады: воды $GW блоков (пруды и водопады, без затопления)"
+    else log "  FAIL сады: воды ${GW:-0} (нужно 300..60000 — пруды и водопады, но не водяная лестница)"; FAILS=$((FAILS + 1)); fi
     # проба 3: плющ по обрывам (на референсе стены увиты)
     # Рев 14.26: острова архипелага меньше прежнего «хаба» (R 12..34 против 46..66), поэтому
     # абсолютный порог плюща снижен: важно, что стены увиты, а не сколько их было на большом острове.
@@ -1045,10 +937,47 @@ biome_section() {
       log "  FAIL сады: найдено рукотворное — досок ${GPL:-0}, фонарей ${GLA:-0} (на референсе их нет)"
       FAILS=$((FAILS + 1))
     fi
-    # проба 5: деревья садов — свои дубы (стволы + листва)
-    # Рев 14.27: дубов на острове 3–7 (открытые лужайки, как на референсе) — порог листвы ниже.
-    if [ "${GL:-0}" -ge 120 ]; then log "  OK   сады: листвы садовых дубов $GL блоков"
-    else log "  FAIL сады: листвы ${GL:-0} (нужно >=120)"; FAILS=$((FAILS + 1)); fi
+    # ---- Рев 16: новые требования владельца к садам -------------------------------------
+    local GISL GIR GOAK GSIZO GFW GFS GBELOW
+    GISL=$(printf '%s' "$LIN" | sed -n 's/.* isles=\([0-9]*\).*/\1/p' | tail -1)
+    GIR=$(printf '%s' "$LIN" | sed -n 's/.* isl_r=\([0-9.]*\.\.[0-9.]*\).*/\1/p' | tail -1)
+    GOAK=$(printf '%s' "$LIN" | sed -n 's/.* garden_oak=\([0-9]*\).*/\1/p' | tail -1)
+    GSIZO=$(printf '%s' "$LIN" | sed -n 's/.* sizo_blocks=\([0-9]*\).*/\1/p' | tail -1)
+    GFW=$(printf '%s' "$LIN" | sed -n 's/.* falls_water=\([0-9]*\).*/\1/p' | tail -1)
+    GFS=$(printf '%s' "$LIN" | sed -n 's/.* falls_src=\([0-9]*\).*/\1/p' | tail -1)
+    GBELOW=$(printf '%s' "$LIN" | sed -n 's/.* below_sea_cols=\([0-9]*\).*/\1/p' | tail -1)
+    # 3–6 КРУПНЫХ островов радиусом 40–55 (просьба владельца)
+    if [ "${GISL:-0}" -ge 3 ] && [ "${GISL:-0}" -le 6 ]; then
+      log "  OK   сады: островов $GISL (3–6 больших)"
+    else
+      log "  FAIL сады: островов ${GISL:-0} (нужно 3–6)"; FAILS=$((FAILS + 1))
+    fi
+    local GIRMIN GIRMAX
+    GIRMIN=$(printf '%s' "${GIR:-0..0}" | cut -d. -f1)
+    GIRMAX=$(printf '%s' "${GIR:-0..0}" | sed 's/.*\.\.//' | cut -d. -f1)
+    if [ "${GIRMIN:-0}" -ge 38 ] && [ "${GIRMAX:-0}" -le 57 ] && [ "${GIRMAX:-0}" -ge 44 ]; then
+      log "  OK   сады: радиусы островов ${GIR:-?} (нужно 40–55 — крупные острова)"
+    else
+      log "  FAIL сады: радиусы островов ${GIR:-?} (нужно 40–55)"; FAILS=$((FAILS + 1))
+    fi
+    # деревья садов — ТОЛЬКО садовый дуб аддона DT; сизоствола в садах быть не должно
+    if [ "${GOAK:-0}" -ge 60 ]; then log "  OK   сады: садового дуба аддона DT $GOAK блоков"
+    else log "  FAIL сады: садового дуба ${GOAK:-0} (нужно >=60 — деревья ставит аддон DT)"; FAILS=$((FAILS + 1)); fi
+    if [ "${GSIZO:-1}" -eq 0 ]; then log "  OK   сады: сизоствола нет (sizo_blocks=0)"
+    else log "  FAIL сады: сизоствола ${GSIZO:-?} блоков — в Висячих садах его быть не должно"; FAILS=$((FAILS + 1)); fi
+    # водопады должны ТЕЧЬ: струя + исток на кромке полки
+    if [ "${GFW:-0}" -ge 200 ] && [ "${GFS:-0}" -ge 1 ]; then
+      log "  OK   сады: водопады текут — ${GFW} блоков струй, у ${GFS} есть исток на кромке"
+    else
+      log "  FAIL сады: водопады ${GFW:-0} блоков струй, струй с истоком ${GFS:-0} (нужно >=1 — вода должна стекать)"
+      FAILS=$((FAILS + 1))
+    fi
+    # «убрать подводные уровни»: колонок садов ниже уровня моря быть почти не должно
+    if [ "${GBELOW:-999}" -le 12 ]; then log "  OK   сады: подводных ярусов почти нет (колонок ниже моря ${GBELOW:-0})"
+    else log "  FAIL сады: ${GBELOW:-?} колонок ниже уровня моря — остались подводные ярусы"; FAILS=$((FAILS + 1)); fi
+    # листва прежних (stock) дубов должна исчезнуть: деревья теперь динамические
+    if [ "${GL:-0}" -eq 0 ]; then log "  OK   сады: обычных (stock) дубов нет (garden_leaves=0)"
+    else log "  WARN сады: обычных дубов ещё ${GL:-0} блоков листвы — деревья не полностью динамические"; fi
 
     # кадры под референс: сверху (общий план террас), сбоку (стены и водопады), у пруда, у дерева
     local GTOP2=${GTOP:-110}
@@ -1166,9 +1095,14 @@ biome_section() {
     # Рев 14.36: главное по референсу — ПЛОТНЫЕ ГРЯДЫ (блоки-кусты), а не только цветы сверху.
     if [ "${VLAV:-0}" -ge 3000 ]; then log "  OK   холмы: гряд лаванды $VLAV блоков (сплошные поля, как на фото)"
     else log "  FAIL холмы: гряд лаванды ${VLAV:-0} (нужно >=3000 — поля сплошной массой)"; FAILS=$((FAILS + 1)); fi
-    # деревья с сиреневой кроной (на фото все деревья лиловые)
-    if [ "${VLEAF:-0}" -ge 150 ]; then log "  OK   холмы: сиреневой листвы $VLEAF блоков"
-    else log "  FAIL холмы: сиреневой листвы ${VLEAF:-0} (нужно >=150)"; FAILS=$((FAILS + 1)); fi
+    # Рев 16: обычных «фиолетовых кустов» больше нет — деревья в холмах ставит ТОЛЬКО аддон DT
+    # (вид riftworlddt:lilac, «лиловый хлыст»). Проверяем блоки аддона вокруг игрока.
+    local VLW VLN
+    VLW=$(EL execute at TestPlayer in riftworld:elisar run riftdtwild 40 2>&1 | tr '\r\n' '  ')
+    log "  /riftdtwild (холмы, лиловый хлыст) -> ${VLW:0:220}"
+    VLN=$(printf '%s' "$VLW" | sed -n 's/.* dt=\([0-9]*\).*/\1/p' | tail -1)
+    if [ "${VLN:-0}" -ge 150 ]; then log "  OK   холмы: динамических деревьев аддона $VLN блоков (лиловый хлыст)"
+    else log "  FAIL холмы: деревьев аддона ${VLN:-0} (нужно >=150 — в биоме должен расти лиловый хлыст)"; FAILS=$((FAILS + 1)); fi
     local VTOP2=${VTOP:-110} VRR=${VR:-80}
     # Рев 15.4: кадры биома. В итерации 46 камера стояла вплотную (16–18 блоков), и в объектив
     # попадал один клочок поля, залитый дымкой. Теперь — три ракурса «как на референсе 04»:

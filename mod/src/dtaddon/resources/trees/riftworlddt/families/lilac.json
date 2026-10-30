@@ -1,0 +1,16 @@
+{
+  "common_leaves": "riftworlddt:lilac",
+  "common_species": "riftworlddt:lilac",
+  "primitive_log": "riftworld:coral_stem_violet",
+  "generate_stripped_branch": false,
+  "generate_surface_root": false,
+  "max_branch_radius": 5,
+  "primary_thickness": 1,
+  "secondary_thickness": 2,
+  "branch_properties": {
+    "sound": "wood",
+    "map_color": "PURPLE"
+  },
+  "loot_volume_multiplier": 1.0,
+  "only_if_loaded": "riftworld"
+}

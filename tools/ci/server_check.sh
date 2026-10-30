@@ -194,6 +194,48 @@ if [ "$KEEP" != 1 ]; then
   for i in $(seq 1 60); do pid=$(cat "$SRV/server.pid" 2>/dev/null || echo); [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null || break; sleep 2; done
 fi
 
+# ------------------------------------------------------------------------------------------------
+# Рев 16: ПРОВЕРКА ОБЫЧНОГО (НЕ ПЛОСКОГО) МИРА.
+# Владелец прислал вылет при создании обычного мира: `Feature order cycle found`. Наша CI всегда
+# поднимала superflat (level-type=minecraft:flat), поэтому этот краш не воспроизводился и не ловился.
+# Теперь после основной проверки сервер поднимается ВТОРОЙ раз с level-type=minecraft:normal:
+# печатаем, падает ли генерация и какие фичи участвуют в цикле (сообщение исключения их перечисляет).
+# Диагностика не валит прогон — она нужна, чтобы починить причину, а не угадывать.
+if [ "${NORMAL_PROBE:-1}" = "1" ]; then
+  say "normal world probe"
+  cp "$SRV/server.properties" "$SRV/server.properties.flat"
+  sed -i 's|^level-type=.*|level-type=minecraft:normal|' "$SRV/server.properties"
+  sed -i 's/^generator-settings=.*/generator-settings=/' "$SRV/server.properties"
+  sed -i 's/^level-name=.*/level-name=world_normal/' "$SRV/server.properties" || true
+  printf 'level-name=world_normal\n' >> "$SRV/server.properties"
+  rm -rf "$SRV/world_normal"
+  ( cd "$SRV" && nohup java -Xmx2G -Dfml.earlyprogresswindow=false @libraries/net/minecraftforge/forge/$FORGE/unix_args.txt nogui > normal.log 2>&1 & echo $! > normal.pid )
+  nok=0
+  for i in $(seq 1 150); do
+    if grep -q "Done (" "$SRV/normal.log" 2>/dev/null; then nok=1; break; fi
+    if ! kill -0 "$(cat "$SRV/normal.pid")" 2>/dev/null; then break; fi
+    sleep 2
+  done
+  NORMALTXT=$(tr -d '\r' < "$SRV/normal.log" 2>/dev/null | grep -m3 -i "feature order cycle\|Reported exception\|Failed to start\|net.minecraft.ReportedException" || true)
+  cp "$SRV/normal.log" "$OUT/normal.log" 2>/dev/null || true
+  if [ "$nok" = "1" ]; then
+    echo "  обычный мир: сервер поднялся, feature order cycle НЕ воспроизвёлся"
+  else
+    echo "  обычный мир: сервер НЕ поднялся"
+    if [ -n "$NORMALTXT" ]; then
+      echo "$NORMALTXT" | head -3 | while IFS= read -r line; do
+        echo "::error title=обычный мир::${line:0:400}"
+      done
+    fi
+    CYCLE=$(grep -m1 -i "feature order cycle" "$SRV/normal.log" 2>/dev/null | tr -d '\r' || true)
+    if [ -n "$CYCLE" ]; then echo "::error title=worldgen::${CYCLE:0:600}"; fi
+    echo "$NORMALTXT" >> "$OUT/errors.txt" 2>/dev/null || true
+  fi
+  kill "$(cat "$SRV/normal.pid")" 2>/dev/null || true
+  sleep 3
+  mv "$SRV/server.properties.flat" "$SRV/server.properties" 2>/dev/null || true
+fi
+
 write_report_server
 cat "$OUT/report_server.md"
 

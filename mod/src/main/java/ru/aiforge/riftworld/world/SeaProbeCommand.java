@@ -479,7 +479,7 @@ public final class SeaProbeCommand {
         // Радиус считаем скромным: куб ±36 по горизонтали и полоса высот 60..150 — иначе RCON-вызов
         // перебирает миллионы блоков и отваливается по таймауту.
         // Рев 14.26: куб — по кромке крупнейшего острова (раньше остров был в 2× больше региона).
-        int R = Math.max(22, Math.min(40, bestR));
+        int R = Math.max(22, Math.min(56, (int) Math.ceil(bestR)));   // Рев 16: острова до R=55
         int water = 0, ivy = 0, gardenGrass = 0, logs = 0, leaves = 0, planks = 0, lanterns = 0, top = Integer.MIN_VALUE;
         java.util.Map<String, Integer> solids = new java.util.TreeMap<>();
         var grassTop = ru.aiforge.riftworld.registry.ElisarBlocks.GARDEN_GRASS.get();
@@ -548,9 +548,48 @@ public final class SeaProbeCommand {
         }
         // Рев 14.8: ближайший предвыбранный водопад — по нему CI наводит камеру
         String fallAt = "-";
-        if (bestGarden != null && !bestGarden.falls.isEmpty()) {
-            WaterfallGardens.Fall f0 = bestGarden.falls.get(0);
-            fallAt = f0.x + "," + f0.z;
+        // Рев 16: цифры архипелага и ВОДОПАДОВ. Владелец: «водопады должны стекать», «острова
+        // радиусом 40–55, разной формы», «сизо в садах не растёт». Всё это видно только пробами.
+        String gardenStat = "";
+        if (bestGarden != null) {
+            double rMin = 1e9, rMax = 0;
+            for (CityPlan.Island g2 : bestGarden.isles) { rMin = Math.min(rMin, g2.R); rMax = Math.max(rMax, g2.R); }
+            gardenStat = " isles=" + bestGarden.isles.size()
+                    + " isl_r=" + String.format(java.util.Locale.ROOT, "%.0f..%.0f", rMin, rMax);
+        }
+        int fallWater = 0, fallSrc = 0, sizoInGardens = 0, gardenOak = 0, dryCols = 0;
+        if (gardens) {
+            int ocean = CityPlan.get().ocean;
+            var gsrc = ru.aiforge.riftworld.registry.ElisarBlocks.GARDEN_WATER.get();
+            for (int x = bestX - R; x <= bestX + R; ++x)
+                for (int z = bestZ - R; z <= bestZ + R; ++z) {
+                    if (!level.isLoaded(new BlockPos(x, ocean + 2, z))) continue;
+                    int colWater = 0;
+                    boolean src = false;
+                    for (int y = ocean - 4; y <= 150; ++y) {
+                        BlockState bs = level.getBlockState(new BlockPos(x, y, z));
+                        if (bs.isAir()) continue;
+                        if (bs.getBlock() == gsrc) {
+                            ++colWater;
+                            if (bs.getFluidState().isSource()) src = true;
+                            continue;
+                        }
+                        var key2 = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(bs.getBlock());
+                        if (key2 == null) continue;
+                        String pth = key2.getPath();
+                        if (pth.contains("sizo")) ++sizoInGardens;
+                        else if (pth.contains("garden_oak")) ++gardenOak;
+                    }
+                    // Рев 16: столб воды выше моря — это струя водопада. У настоящей струи есть
+                    // исток (source) на кромке полки; у «статичной» воды источника не было.
+                    if (colWater > 3) { fallWater += colWater; if (src) ++fallSrc; }
+                    ElisarChunkGenerator.Col topC = ElisarChunkGenerator.column(CityPlan.get(), x, z);
+                    if (topC.garden && topC.isl != null && topC.top <= ocean) ++dryCols;
+                }
+            if (!bestGarden.falls.isEmpty()) {
+                WaterfallGardens.Fall f0 = bestGarden.falls.get(0);
+                fallAt = f0.x + "," + f0.z;
+            }
         }
         // Рев 14.18: точка обзора обрыва — кадр с полки, как на референсе
         String wall = "-";
@@ -571,7 +610,10 @@ public final class SeaProbeCommand {
                 + " r=" + bestR + " top=" + top + " water=" + water + " garden_grass=" + gardenGrass
                 + " garden_leaves=" + leaves + " garden_logs=" + logs + " ivy=" + ivy
                 + " planks=" + planks + " lantern=" + lanterns + " struct=" + struct
-                + " fall=" + fallAt + " wall=" + wall + vio + " blocks=" + top6;
+                + " fall=" + fallAt + " wall=" + wall + vio + gardenStat
+                + " falls_water=" + fallWater + " falls_src=" + fallSrc
+                + " garden_oak=" + gardenOak + " sizo_blocks=" + sizoInGardens + " below_sea_cols=" + dryCols
+                + " blocks=" + top6;
         src.sendSuccess(() -> Component.literal(line), false);
         found = water;
         return found;
@@ -975,15 +1017,13 @@ public final class SeaProbeCommand {
      * {@code ok=}, {@code wrong_ns=}, {@code missing=} и валиден ли сам хендлер DT.
      */
     private static int dt(CommandSourceStack src) {
-        String[] blocks = {"sizo_leaves", "ambra_leaves", "coral_staghorn_leaves", "coral_table_leaves",
-                "coral_whip_leaves", "rooty_elisar_grass", "rooty_elisar_soil",
-                "sizo_branch", "ambra_branch", "coral_branch",
+        String[] blocks = {"sizo_leaves", "ambra_leaves", "lilac_leaves",
+                "rooty_elisar_grass", "rooty_elisar_soil",
+                "sizo_branch", "ambra_branch", "lilac_branch",
                 // саженцы DT — только блоки, предметов у них нет по дизайну самого DT
-                "sizo_sapling", "ambra_sapling", "giant_sizo_sapling", "coral_staghorn_sapling",
-                "coral_table_sapling", "coral_whip_sapling"};
-        String[] items = {"sizo_seed", "ambra_seed", "coral_staghorn_seed", "coral_table_seed",
-                "coral_whip_seed", "giant_sizo_seed",
-                "sizo_branch", "ambra_branch", "coral_branch"};
+                "sizo_sapling", "ambra_sapling", "giant_sizo_sapling", "lilac_sapling"};
+        String[] items = {"sizo_seed", "ambra_seed", "lilac_seed", "giant_sizo_seed",
+                "sizo_branch", "ambra_branch", "lilac_branch"};
         int ok = 0, wrong = 0, missing = 0;
         StringBuilder wrongList = new StringBuilder();
         for (String b : blocks) {

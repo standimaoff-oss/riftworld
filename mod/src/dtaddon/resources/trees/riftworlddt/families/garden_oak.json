@@ -1,0 +1,15 @@
+{
+  "common_leaves": "riftworlddt:garden_oak",
+  "common_species": "riftworlddt:garden_oak",
+  "primitive_log": "riftworld:garden_log",
+  "generate_stripped_branch": false,
+  "generate_surface_root": false,
+  "max_branch_radius": 8,
+  "primary_thickness": 1,
+  "secondary_thickness": 2,
+  "branch_properties": {
+    "sound": "wood",
+    "map_color": "COLOR_BROWN"
+  },
+  "only_if_loaded": "riftworld"
+}

@@ -38,6 +38,11 @@ public final class DtGround {
     private DtGround() {
     }
 
+    /** Загружен ли Dynamic Trees. Пока его нет — в мире работают обычные (stock) деревья генератора. */
+    public static boolean dtPresent() {
+        return ModList.get().isLoaded("dynamictrees");
+    }
+
     /** Вызывается из {@code RiftWorld}: ставит поиск грунта для нашего измерения, если DT загружен. */
     public static void install() {
         if (!ModList.get().isLoaded("dynamictrees")) return;
@@ -121,7 +126,16 @@ public final class DtGround {
                 for (int i = 0; i < 4; ++i) {
                     BlockState above = level.getBlockState(p);
                     if (above.isAir()) { free = true; break; }
-                    if (above.getCollisionShape(level, p).isEmpty() && above.canBeReplaced()) {
+                    // Рев 16 — БАГ «УДАЛЯЕТ ВОДУ ВЫШЕ». Здесь стояло условие
+                    // `getCollisionShape().isEmpty() && canBeReplaced()`, а вода в Minecraft
+                    // именно так и выглядит (нет коллизии, replaceable). Поиск грунта честно
+                    // вырезал воздухом ВСЁ над найденной землёй: пруды на полках Висячих садов
+                    // и столбы водопадов исчезали, стоило DT поискать место под дерево.
+                    // Теперь чистим ТОЛЬКО растения из ванильного тега replaceable_by_trees
+                    // (трава, цветы, лаванда) — вода, лоза и листва не трогаются вовсе.
+                    if (!above.getFluidState().isEmpty()) break;                 // вода: не наше дело
+                    if (above.is(net.minecraft.tags.BlockTags.REPLACEABLE_BY_TREES)
+                            && above.getCollisionShape(level, p).isEmpty()) {
                         level.setBlock(p, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 2);
                         p.move(0, 1, 0);
                         ++cleared;
@@ -200,13 +214,16 @@ public final class DtGround {
 
     /** Вид для биома по его ключу; {@code null} — в этом биоме аддон ничего не сажает. */
     private static String speciesFor(String biome, java.util.Random r) {
-        if (biome.endsWith(":violet_hills")) return "riftworlddt:violet";
+        // Рев 16: в холмах растёт ТОЛЬКО «лиловый хлыст» (бывшая форма кораллового хлыста,
+        // переименованная под биом). Коралловых деревьев в мире больше нет нигде.
+        if (biome.endsWith(":violet_hills")) return "riftworlddt:lilac";
         if (biome.endsWith(":sizo_grove")) return r.nextInt(5) == 0 ? "riftworlddt:giant_sizo" : "riftworlddt:sizo";
-        if (biome.endsWith(":waterfall_gardens")) return "riftworlddt:sizo";
-        if (biome.endsWith(":shallow_reef")) {
-            int k = r.nextInt(10);
-            return k < 5 ? "riftworlddt:coral_staghorn" : k < 8 ? "riftworlddt:coral_table" : "riftworlddt:coral_whip";
-        }
+        // Рев 16: СИЗО В САДАХ БОЛЬШЕ НЕТ. Владелец: «сизоствол не должен расти в Висячих садах»,
+        // а «садовый дуб» должен быть динамическим. Поэтому в садах растёт свой вид — garden_oak
+        // (ствол riftworld:garden_log, листва riftworld:garden_leaves).
+        if (biome.endsWith(":waterfall_gardens")) return "riftworlddt:garden_oak";
+        // Острова города/замка/руин и дикие островки — биом elisar_city: единственное дерево амбра.
+        if (biome.endsWith(":elisar_city")) return "riftworlddt:ambra";
         return null;
     }
 
@@ -218,7 +235,7 @@ public final class DtGround {
         if (!ModList.get().isLoaded("dynamictrees")) return 0;
         java.util.Random r = new java.util.Random(pos.toLong() * 0x9E3779B97F4A7C15L ^ 0x5DEECE66DL);
         int planted = 0;
-        for (int i = 0; i < 2; ++i) {
+        for (int i = 0; i < 3; ++i) {   // Рев 16: три попытки — в садах и роще нужны рощи, а не одиночки
             // только внутренние 8x8 чанка: крона радиусом до 8 блоков не вылезет за соседний чанк,
             // иначе WorldGenRegion может бросить «setBlock in a far chunk»
             int x = pos.getMinBlockX() + 4 + r.nextInt(8), z = pos.getMinBlockZ() + 4 + r.nextInt(8);
@@ -227,10 +244,12 @@ public final class DtGround {
             String id = biome.unwrapKey().map(k -> k.location().toString()).orElse("");
             String sp = speciesFor(id, r);
             if (sp == null) continue;
-            boolean sea = sp.startsWith("riftworlddt:coral");
-            // Рев 15.12: в Фиолетовых холмах аддон — ТОЛЬКО редкая добавка: на референсе это луг
-            // с редкими деревьями, а не лес (как получилось в итерации 51: 2000 блоков на r=32).
-            float chance = sea ? 0.12f : sp.equals("riftworlddt:violet") ? 0.06f : 0.30f;
+            boolean sea = false;                       // подводных деревьев аддона больше нет
+            // Рев 16: в Фиолетовых холмах деревья РЕДКИЕ (это луг, а не лес), в роще — как было,
+            // в городе амбра стоит вдоль улиц, в садах дуб растёт рощей на полках.
+            float chance = sp.equals("riftworlddt:lilac") ? 0.22f
+                    : sp.equals("riftworlddt:ambra") ? 0.30f
+                    : sp.equals("riftworlddt:garden_oak") ? 0.40f : 0.45f;
             if (r.nextFloat() > chance) continue;
             BlockPos ground = surfaceUnder(level, start, sea);
             if (ground == null) continue;

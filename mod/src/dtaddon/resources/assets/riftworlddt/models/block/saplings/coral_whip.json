@@ -1,8 +1,0 @@
-{
-  "parent": "dynamictrees:block/smartmodel/sapling",
-  "render_type": "minecraft:cutout_mipped",
-  "textures": {
-    "leaves": "riftworld:block/coral_cap_violet",
-    "log": "riftworld:block/coral_stem_violet"
-  }
-}
