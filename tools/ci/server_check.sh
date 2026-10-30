@@ -267,3 +267,6 @@ if [ "$ERRS" -gt 0 ]; then
   done
 fi
 [ "$FAILS" -eq 0 ] && [ "$ERRS" -eq 0 ]
+
+# Рев 16.8: пуш-триггер повторного прогона (в #262 сборка упала на инфраструктуре Forge:
+# «Invalid patcher dependency», это флейк maven, а не код).
