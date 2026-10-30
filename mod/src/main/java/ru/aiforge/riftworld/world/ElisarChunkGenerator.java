@@ -696,10 +696,11 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                         yield vnoise(x * 0.14, z * 0.14, 67) > 0.72 ? moss : gardenGrass;
                                     }
                                     boolean groveTan = c.isl.kind == SizoGrove.KIND || (c.isl.kind != 4 && SizoGrove.inside(x + 0.5, z + 0.5));
-                                    // Рев 14.61, по референсу 05: пол рощи — МШИСТО-ЗЕЛЁНЫЙ с пятнами мха,
-                                    // а не бежевая земля. Мох теперь занимает около половины площади.
+                                    // Рев 14.62, по референсу 05: пол рощи — тёмный оливковый МОХ (159,159,110),
+                                    // а elisar_grass почти белая (218,213,200) и давала тот самый
+                                    // бежевый «песчаный» пол. Теперь мох — основа, трава — редкие пятна.
                                     yield groveTan
-                                            ? (vnoise(x * 0.15, z * 0.15, 66) > 0.44 ? moss : grass)
+                                            ? (vnoise(x * 0.15, z * 0.15, 66) > 0.26 ? moss : grass)
                                             : (c.isl.kind != 4 && vnoise(x * 0.11, z * 0.11, 21) > 0.74 || hash(x, z, 23) < 0.012) ? moss : grass;
                                 }
                             };
@@ -823,7 +824,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                             } else if (c.isl.kind == SizoGrove.KIND || (c.isl.kind != 4 && SizoGrove.inside(x + 0.5, z + 0.5))) {
                                 // biome 05: mint floor with violet bloom drifts among the giants (no paths - TZ)
                                 if (h < 0.20) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
-                                else if (h < 0.42 && vnoise(x * 0.075, z * 0.075, 95) > 0.60) {
+                                else if (h < 0.55 && vnoise(x * 0.075, z * 0.075, 95) > 0.48) {
                                     int f = (int) (hash(x, z, 96) * 100);
                                     chunk.setBlockState(mp.set(x, c.top + 1, z), st(f < 40 ? ElisarBlocks.VIOLET_BLOOM : f < 72 ? ElisarBlocks.LILAC_BLOOM : f < 88 ? ElisarBlocks.PALE_BLOOM : ElisarBlocks.FLOWERS), false);
                                 }
