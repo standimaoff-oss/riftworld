@@ -131,11 +131,15 @@ public final class DtGround {
                     // именно так и выглядит (нет коллизии, replaceable). Поиск грунта честно
                     // вырезал воздухом ВСЁ над найденной землёй: пруды на полках Висячих садов
                     // и столбы водопадов исчезали, стоило DT поискать место под дерево.
-                    // Теперь чистим ТОЛЬКО растения из ванильного тега replaceable_by_trees
-                    // (трава, цветы, лаванда) — вода, лоза и листва не трогаются вовсе.
+                    // Теперь чистим ТОЛЬКО растения (заменяемые блоки без коллизии: трава,
+                    // цветы, лаванда), а вода/лоза/листва не трогаются вовсе.
                     if (!above.getFluidState().isEmpty()) break;                 // вода: не наше дело
-                    if (above.is(net.minecraft.tags.BlockTags.REPLACEABLE_BY_TREES)
-                            && above.getCollisionShape(level, p).isEmpty()) {
+                    // Рев 16.10: «растение» = заменяемое без коллизии, но НЕ листва. В этом виде
+                    // условие ловит и нашу лаванду (она не входит в ванильный тег
+                    // replaceable_by_trees, из-за чего после первой правки грунт под грядкой
+                    // вообще не находился: /riftdtwhy печатал ground=-).
+                    if (above.canBeReplaced() && above.getCollisionShape(level, p).isEmpty()
+                            && !(above.getBlock() instanceof net.minecraft.world.level.block.LeavesBlock)) {
                         level.setBlock(p, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 2);
                         p.move(0, 1, 0);
                         ++cleared;
