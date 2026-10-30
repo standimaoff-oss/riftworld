@@ -218,7 +218,7 @@ public final class DtGround {
         if (!ModList.get().isLoaded("dynamictrees")) return 0;
         java.util.Random r = new java.util.Random(pos.toLong() * 0x9E3779B97F4A7C15L ^ 0x5DEECE66DL);
         int planted = 0;
-        for (int i = 0; i < 3; ++i) {
+        for (int i = 0; i < 2; ++i) {
             // только внутренние 8x8 чанка: крона радиусом до 8 блоков не вылезет за соседний чанк,
             // иначе WorldGenRegion может бросить «setBlock in a far chunk»
             int x = pos.getMinBlockX() + 4 + r.nextInt(8), z = pos.getMinBlockZ() + 4 + r.nextInt(8);
@@ -228,7 +228,10 @@ public final class DtGround {
             String sp = speciesFor(id, r);
             if (sp == null) continue;
             boolean sea = sp.startsWith("riftworlddt:coral");
-            if (r.nextFloat() > (sea ? 0.30f : 0.55f)) continue;
+            // Рев 15.12: в Фиолетовых холмах аддон — ТОЛЬКО редкая добавка: на референсе это луг
+            // с редкими деревьями, а не лес (как получилось в итерации 51: 2000 блоков на r=32).
+            float chance = sea ? 0.12f : sp.equals("riftworlddt:violet") ? 0.06f : 0.30f;
+            if (r.nextFloat() > chance) continue;
             BlockPos ground = surfaceUnder(level, start, sea);
             if (ground == null) continue;
             if (plant(level, ground, sp, 3 + r.nextInt(4) * 2)) ++planted;

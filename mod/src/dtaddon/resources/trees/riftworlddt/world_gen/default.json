@@ -12,7 +12,7 @@
     "select": { "name": "riftworld:violet_hills" },
     "apply": {
       "species": "riftworlddt:violet",
-      "density": [0.25, 0.20],
+      "density": [0.05, 0.06],
       "chance": 1.0
     }
   },
@@ -37,7 +37,7 @@
     "select": { "name": "riftworld:shallow_reef" },
     "apply": {
       "species": { "random": { "riftworlddt:coral_staghorn": 5, "riftworlddt:coral_table": 3, "riftworlddt:coral_whip": 2 } },
-      "density": [0.30, 0.30],
+      "density": [0.20, 0.20],
       "chance": 0.55,
       "heightmap": "OCEAN_FLOOR_WG"
     }
