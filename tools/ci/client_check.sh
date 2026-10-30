@@ -1132,6 +1132,16 @@ biome_section() {
   if [ "${VBIO:-}" = "riftworld:violet_hills" ]; then log "  OK   Фиолетовые холмы: биом луга ${VBIO}"
   else log "  FAIL Фиолетовые холмы: биом луга ${VBIO:-?} вместо riftworld:violet_hills"; FAILS=$((FAILS + 1)); fi
   locate_check riftworld:violet_hills violet_hills
+  # Рев 16.12 — ПОЧЕМУ ПРОБЫ DT ПАДАЛИ С ground=-. После locate_check игрок остаётся в точке,
+  # которую вернул /locate: это КРАЙ луга (а иногда и соседний биом — в прогоне #272 там был
+  # elisar_city над морем). Проба «найдёт ли DT грунт» честно отвечала «нет» — искала в воде.
+  # Теперь перед пробами DT игрока ставим в ЦЕНТР луга (VX,VZ из /riftbiome) на его верх.
+  if [ -n "${VX:-}" ] && [ -n "${VZ:-}" ]; then
+    RCON execute in riftworld:elisar run forceload add "$VX" "$VZ" >/dev/null 2>&1 || true
+    RCON execute in riftworld:elisar run tp TestPlayer "$VX" "$(( ${VTOP:-110} + 3 ))" "$VZ" >/dev/null 2>&1 || true
+    sleep 4
+    log "  игрок поставлен в центр луга: $VX,$(( ${VTOP:-110} + 3 )),$VZ"
+  fi
   # Рев 14.36 — ПРОВЕРКА ЖАЛОБЫ «аддон ничего не меняет»: в мире должны быть НАСТОЯЩИЕ
   # динамические деревья (блоки namespace riftworlddt), а не только те, что ставит settree.
   local DTW
