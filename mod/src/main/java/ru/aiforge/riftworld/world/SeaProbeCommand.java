@@ -106,6 +106,16 @@ public final class SeaProbeCommand {
         // Рев 14.40: /riftaround r — что вокруг игрока НА САМОМ ДЕЛЕ. CI проверяет этим, что
         // /locate biome waterfall_gardens привёл на садовый остров (известняк + трава садов),
         // а не «в структуру вообще другую», и что под островами нет дыр до бедрока.
+        // Рев 14.64: /riftcam x z — ЗЕМЛЯ под кроной (пропускает листву, брёвна и ветви) плюс
+        // признак того, что колонка свободна. Нужно камерам CI: раньше высоту для кадров рощи
+        // брали из /riftbiome top=, а там ВЕРХ КРОНЫ, поэтому объектив висел над лесом и
+        // смотрел в небо (кадры 45–47 итерации 60).
+        e.getDispatcher().register(Commands.literal("riftcam").requires(s2 -> s2.hasPermission(2))
+                .then(Commands.argument("x", com.mojang.brigadier.arguments.IntegerArgumentType.integer())
+                        .then(Commands.argument("z", com.mojang.brigadier.arguments.IntegerArgumentType.integer())
+                                .executes(c -> cam(c.getSource(),
+                                        com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "x"),
+                                        com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "z"))))));
         e.getDispatcher().register(Commands.literal("riftdtwhy").requires(s2 -> s2.hasPermission(2))
                 .executes(c -> dtWhy(c.getSource())));
         e.getDispatcher().register(Commands.literal("riftaround").requires(s2 -> s2.hasPermission(2))
@@ -393,6 +403,32 @@ public final class SeaProbeCommand {
     }
 
     /** Рев 14.30: одна строка про колонку — биом, самый верхний непустой блок и его координата. */
+    /** Рев 14.64: земля колонки без кроны + признак свободного воздуха над ней. */
+    private static int cam(CommandSourceStack src, int x, int z) {
+        var level = src.getLevel();
+        int groundY = Integer.MIN_VALUE;
+        String ground = "?";
+        for (int y = 200; y >= 0; --y) {
+            BlockState bs = level.getBlockState(new BlockPos(x, y, z));
+            if (bs.isAir()) continue;
+            var key = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(bs.getBlock());
+            String path = key == null ? "?" : key.getPath();
+            // крону и ствол пропускаем: нам нужна земля, на которую встаёт камера
+            if (path.endsWith("leaves") || path.endsWith("log") || path.contains("branch")) continue;
+            if (bs.getFluidState().isEmpty()) { groundY = y; ground = key == null ? "?" : key.toString(); break; }
+        }
+        int blocked = 0;
+        if (groundY != Integer.MIN_VALUE) {
+            for (int y = groundY + 1; y <= groundY + 7; ++y)
+                if (!level.getBlockState(new BlockPos(x, y, z)).isAir()) blocked++;
+        }
+        final int gy = groundY;
+        final String g = ground;
+        src.sendSuccess(() -> Component.literal("riftcam at=" + x + "," + z + " ground=" + gy + ":" + g
+                + " blocked=" + blocked), false);
+        return 1;
+    }
+
     private static int where(CommandSourceStack src, int x, int z) {
         var level = src.getLevel();                     // вызывать: execute in riftworld:elisar run riftwhere x z
         int topY = 0, groundY = Integer.MIN_VALUE;
