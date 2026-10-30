@@ -1,7 +1,9 @@
 {
-  "parent": "minecraft:block/leaves",
+  "parent": "minecraft:block/cube_bottom_top",
   "textures": {
-    "all": "riftworld:block/sizo_leaves"
+    "top": "riftworld:block/sizo_leaves",
+    "bottom": "riftworld:block/sizo_leaves_under",
+    "side": "riftworld:block/sizo_leaves_side"
   },
   "render_type": "minecraft:cutout_mipped"
 }
