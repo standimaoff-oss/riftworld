@@ -1106,7 +1106,11 @@ biome_section() {
     FWZ=${FALLAT##*,}
     [ "$FALLAT" = "$FWX" ] && FWX=""      # «fall=-» — водопада нет
     if [ -n "${FWX:-}" ] && [ -n "${FWZ:-}" ]; then
-      lookat "$((FWX + GR2))" "$((GTOP2 - 2))" "$((FWZ + GR2 * 3 / 4))" "$FWX" "$((GTOP2 - 14))" "$FWZ" 16 "44_garden_waterfall"
+      # Рев 14.82: камера СНАРУЖИ потока, по нормали от центра острова — раньше она стояла сбоку и
+      # смотрела снизу вверх, в кадре был только тёмный низ острова, а самого водопада не видно.
+      local FDX=$((FWX - GX)) FDZ=$((FWZ - GZ)) FK
+      FK=$(python3 -c "import math;d=math.hypot($FDX,$FDZ);print(max(1,int(round(18.0/max(d,0.001)))))")
+      lookat "$((FWX + FDX * FK))" "$((GTOP2 - 4))" "$((FWZ + FDZ * FK))" "$FWX" "$((GTOP2 - 11))" "$FWZ" 16 "44_garden_waterfall"
     else
       log "  ПРОПУСК кадра водопада: /riftbiome не вернул координаты fall="
     fi

@@ -124,6 +124,15 @@ public final class ElisarSky extends DimensionSpecialEffects {
                 e.setCanceled(true);
                 return;
             }
+            // Рев 14.82, по референсу 07: над Висячими садами воздух ПРОЗРАЧНЫЙ — на фото видно
+            // голубое небо и дальние острова, а наша кремовая дымка сгущалась до near=0.19*far и
+            // выбеливала кадры 40–44 в молоко.
+            if (gardenAt(pos)) {
+                e.setNearPlaneDistance(far * 0.88F);
+                e.setFarPlaneDistance(far * 1.12F);
+                e.setCanceled(true);
+                return;
+            }
             // Рев 14.61, по референсу 05: в роще воздух прозрачнее морской дымки — на фото видно
             // несколько рядов стволов и цвет пола. Раньше роща тонула в молоке: кадр 45 был почти
             // белым, и сизо читались как «снежные кубики».
@@ -167,9 +176,11 @@ public final class ElisarSky extends DimensionSpecialEffects {
             // Рев 14.18: над садами кремовая дымка Элисара гасит голубое небо — кадры выходили
             // жёлто-зелёными. В регионе садов туман светлый и голубой, как на референсе.
             if (gardenAt(pos)) {
-                e.setRed((float) Mth.lerp(0.92F, e.getRed(), GARDEN_HAZE.x));
-                e.setGreen((float) Mth.lerp(0.92F, e.getGreen(), GARDEN_HAZE.y));
-                e.setBlue((float) Mth.lerp(0.92F, e.getBlue(), GARDEN_HAZE.z));
+                // Рев 14.82: 0.92 подменял почти весь цвет на бледно-голубой — на кадрах сады
+                // выходили «в тумане». На референсе 07 небо насыщенно-голубое, дымка лёгкая.
+                e.setRed((float) Mth.lerp(0.55F, e.getRed(), GARDEN_HAZE.x));
+                e.setGreen((float) Mth.lerp(0.55F, e.getGreen(), GARDEN_HAZE.y));
+                e.setBlue((float) Mth.lerp(0.55F, e.getBlue(), GARDEN_HAZE.z));
                 return;
             }
             // Рев 14.29: у Фиолетовых холмов на референсе тёплый закатный воздух (розово-персиковый):
