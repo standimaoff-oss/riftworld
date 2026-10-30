@@ -81,6 +81,23 @@ public final class ElisarSky extends DimensionSpecialEffects {
             return hit;
         }
 
+        private static long groveKey = Long.MIN_VALUE;
+        private static boolean groveHit;
+
+        /** Кешированная проверка «мы в Роще Сизо» — рев 14.61: там воздух прозрачнее морской дымки. */
+        private static boolean groveAt(Vec3 p) {
+            long key = ((long) (int) Math.floor(p.x / 16) << 20) ^ (long) (int) Math.floor(p.z / 16);
+            if (key == groveKey) return groveHit;
+            boolean hit = false;
+            try {
+                hit = ru.aiforge.riftworld.world.SizoGrove.inside(p.x, p.z);
+            } catch (Throwable ignored) {
+            }
+            groveKey = key;
+            groveHit = hit;
+            return hit;
+        }
+
         private static boolean inElisar() {
             var mc = net.minecraft.client.Minecraft.getInstance();
             return mc.level != null && mc.level.dimension().location().equals(ID);
@@ -104,6 +121,15 @@ public final class ElisarSky extends DimensionSpecialEffects {
                 // на кадрах 49–51 не было видно ни полей, ни деревьев. Теперь дымка мягкая.
                 e.setNearPlaneDistance(far * 0.95F);
                 e.setFarPlaneDistance(far * 1.10F);
+                e.setCanceled(true);
+                return;
+            }
+            // Рев 14.61, по референсу 05: в роще воздух прозрачнее морской дымки — на фото видно
+            // несколько рядов стволов и цвет пола. Раньше роща тонула в молоке: кадр 45 был почти
+            // белым, и сизо читались как «снежные кубики».
+            if (groveAt(pos)) {
+                e.setNearPlaneDistance(far * 0.80F);
+                e.setFarPlaneDistance(far * 1.06F);
                 e.setCanceled(true);
                 return;
             }

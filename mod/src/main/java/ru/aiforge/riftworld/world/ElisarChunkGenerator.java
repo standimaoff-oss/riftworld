@@ -696,8 +696,10 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                         yield vnoise(x * 0.14, z * 0.14, 67) > 0.72 ? moss : gardenGrass;
                                     }
                                     boolean groveTan = c.isl.kind == SizoGrove.KIND || (c.isl.kind != 4 && SizoGrove.inside(x + 0.5, z + 0.5));
+                                    // Рев 14.61, по референсу 05: пол рощи — МШИСТО-ЗЕЛЁНЫЙ с пятнами мха,
+                                    // а не бежевая земля. Мох теперь занимает около половины площади.
                                     yield groveTan
-                                            ? (vnoise(x * 0.15, z * 0.15, 66) > 0.58 ? moss : grass)
+                                            ? (vnoise(x * 0.15, z * 0.15, 66) > 0.44 ? moss : grass)
                                             : (c.isl.kind != 4 && vnoise(x * 0.11, z * 0.11, 21) > 0.74 || hash(x, z, 23) < 0.012) ? moss : grass;
                                 }
                             };
@@ -1259,10 +1261,12 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             return;
         }
         // branch cross under the discs (trunk centre sits between the 4 trunk cells)
-        if ((dz == 0 || dz == 1) && ((dx >= 2 && dx <= 6) || (dx <= -1 && dx >= -5))
+        // Рев 14.61: ветви-крест укорочены до 4 блоков и спрятаны ПОД второй ярус — на референсе 05
+        // ветвей не видно, крона это широкие плоские диски на высоком стволе.
+        if ((dz == 0 || dz == 1) && ((dx >= 2 && dx <= 4) || (dx <= -1 && dx >= -3))
                  && !(dx == 0 || dx == 1)) {
             chunk.setBlockState(mp.set(x, base + t.h + 3, z), logS.setValue(RotatedPillarBlock.AXIS, Direction.Axis.X), false);
-        } else if ((dx == 0 || dx == 1) && ((dz >= 2 && dz <= 6) || (dz <= -1 && dz >= -5))) {
+        } else if ((dx == 0 || dx == 1) && ((dz >= 2 && dz <= 4) || (dz <= -1 && dz >= -3))) {
             chunk.setBlockState(mp.set(x, base + t.h + 3, z), logS.setValue(RotatedPillarBlock.AXIS, Direction.Axis.Z), false);
         }
         // Рев 14.60, по референсу 05: крона сизо-великана — ШИРОКИЕ ПЛОСКИЕ ЯРУСЫ, а не облако.
