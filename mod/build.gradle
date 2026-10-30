@@ -107,10 +107,10 @@ minecraft {
             }
             // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
             property 'forge.enabledGameTestNamespaces', mod_id
-            jvmArgs '-Xmx1600M', '-XX:+UseSerialGC'
+            jvmArgs '-Xmx2400M', '-XX:+UseG1GC'
             property 'fml.earlyprogresswindow', 'false'
             property 'fml.earlyWindowControl', 'false'
-            args '--username', 'TestPlayer'
+            args '--username', 'TestPlayer', '--width', '1920', '--height', '1080'
             if (project.hasProperty('autoJoin')) {
                 args '--quickPlayMultiplayer', project.property('autoJoin')
             }

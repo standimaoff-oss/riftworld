@@ -633,10 +633,23 @@ public final class SeaProbeCommand {
             int[] wv = ElisarChunkGenerator.gardenWallView(bestX, bestZ, Math.max(24, bestR));
             if (wv != null) wall = wv[0] + "," + wv[1] + "," + wv[2] + ":" + wv[3] + "," + wv[4] + "," + wv[5];
         }
-        String vio = violet
-                ? " violet_blooms=" + violetBlooms + " violet_leaves=" + violetLeaves + " lavender=" + lavender
-                  + " fences=" + fences + " lamps=" + lamps
-                : "";
+        String vio = "";
+        if (violet) {
+            String vroad = "-";
+            int vgY = CityPlan.get().ocean + 16;
+            if (bestViolet != null) {
+                int oc = CityPlan.get().ocean;
+                vgY = ElisarChunkGenerator.violetTop(bestViolet.meadow, bestX, bestZ, oc);
+                double[] pCam = bestViolet.roadPoint(0.28);
+                double[] pTgt = bestViolet.roadPoint(0.62);
+                int vcy = ElisarChunkGenerator.violetTop(bestViolet.meadow, pCam[0], pCam[1], oc) + 7;
+                int vty = ElisarChunkGenerator.violetTop(bestViolet.meadow, pTgt[0], pTgt[1], oc) + 2;
+                vroad = Math.round(pCam[0]) + "," + vcy + "," + Math.round(pCam[1]) + ":"
+                        + Math.round(pTgt[0]) + "," + vty + "," + Math.round(pTgt[1]);
+            }
+            vio = " violet_blooms=" + violetBlooms + " violet_leaves=" + violetLeaves + " lavender=" + lavender
+                    + " fences=" + fences + " lamps=" + lamps + " vground=" + vgY + " road=" + vroad;
+        }
         // Рев 14.35: каким биомом НА САМОМ ДЕЛЕ числится земля региона. Это ловит перепутанные
         // поля биом-сурса (именно так «сады» оказались на островках данжа в море).
         String hubBio = level.getBiome(new BlockPos(bestX, CityPlan.get().ocean + 6, bestZ)).unwrapKey()
@@ -816,6 +829,14 @@ public final class SeaProbeCommand {
         String topName = topBiome.unwrapKey().map(k -> k.location().toString()).orElse("?");
         String surfName = surfBiome.unwrapKey().map(k -> k.location().toString()).orElse("?");
         BlockPos ground = ru.aiforge.riftworld.world.DtGround.groundFor(level, at);
+        if (ground == null) {
+            outer:
+            for (int dx = -3; dx <= 3; ++dx)
+                for (int dz = -3; dz <= 3; ++dz) {
+                    ground = ru.aiforge.riftworld.world.DtGround.groundFor(level, at.offset(dx, 0, dz));
+                    if (ground != null) break outer;
+                }
+        }
         String soilOk;
         try {
             Class<?> helper = Class.forName("com.ferreusveritas.dynamictrees.block.rooty.SoilHelper");

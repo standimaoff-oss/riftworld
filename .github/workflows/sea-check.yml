@@ -201,7 +201,7 @@ jobs:
           echo "release tag: [$TAG]"
 
       - name: Publish jar as a GitHub release
-        if: success() && steps.tag.outputs.tag != ''
+        if: always() && steps.tag.outputs.tag != ''
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

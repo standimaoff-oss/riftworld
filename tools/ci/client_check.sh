@@ -34,12 +34,14 @@ import os
 run = os.environ.get("RUN", "ci/runs")
 opts = {
     "tutorialStep": "none", "onboardAccessibility": "false", "skipMultiplayerWarning": "true",
-    "joinedFirstServer": "true", "renderDistance": "8", "simulationDistance": "6", "maxFps": "30",
+    "joinedFirstServer": "true", "renderDistance": "12", "simulationDistance": "8", "maxFps": "30",
     "guiScale": "2", "fov": "0.0", "graphicsMode": "1", "renderClouds": "false",
     "pauseOnLostFocus": "false", "narrator": "0", "soundCategory_master": "0.0",
     "fullscreen": "false", "showSubtitles": "false", "autoJump": "false",
     "darkMojangStudiosBackground": "true", "skipRealms32bitWarning": "true",
     "gamma": "1.0", "hideGui": "false", "bobView": "false",
+    "overrideWidth": "1920", "overrideHeight": "1080", "mipmapLevels": "0",
+    "entityDistanceScaling": "1.5", "biomeBlendRadius": "3",
 }
 os.makedirs(run + "/client", exist_ok=True)
 with open(run + "/client/options.txt", "w", encoding="utf-8") as f:
@@ -48,9 +50,9 @@ with open(run + "/client/options.txt", "w", encoding="utf-8") as f:
 print("client options ->", run + "/client/options.txt")
 PY
 
-# ---------------------------------------------------------------- дисплей
+# ---------------------------------------------------------------- дисплей (Full HD 1920x1080)
 if ! pgrep -f "Xvfb $DISP" >/dev/null; then
-  Xvfb "$DISP" -screen 0 1280x800x24 -nolisten tcp >/tmp/xvfb.log 2>&1 &
+  Xvfb "$DISP" -screen 0 1920x1080x24 -nolisten tcp >/tmp/xvfb.log 2>&1 &
   sleep 3
 fi
 export DISPLAY=$DISP LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe MESA_GL_VERSION_OVERRIDE=3.3
@@ -67,21 +69,19 @@ geom() {  # найти окно игры и его геометрию (x y w h)
 
 shot() {  # shot <имя>
   if geom; then
-    # Рев 14.3: окно игры иногда оказывается вытянутой полосой (напр. 906x217) — кадры
-    # биомов приходили нечитаемыми. Приводим окно к 1280x720 (Xvfb 1280x800) перед снимком.
-    if [ "${WIDTH:-0}" -lt 1200 ] || [ "${HEIGHT:-0}" -lt 640 ]; then
-      xdotool windowsize "$WID" 1280 720 2>/dev/null || true
+    if [ "${WIDTH:-0}" -lt 1800 ] || [ "${HEIGHT:-0}" -lt 1000 ]; then
+      xdotool windowsize "$WID" 1920 1080 2>/dev/null || true
       xdotool windowmove "$WID" 0 0 2>/dev/null || true
       sleep 2
       geom || true
     fi
     import -window root /tmp/full.png 2>/dev/null || return 1
-    convert /tmp/full.png -crop "${WIDTH}x${HEIGHT}+${X}+${Y}" +repage -quality 90 "$OUT/$1.jpg" 2>/dev/null \
+    convert /tmp/full.png -crop "${WIDTH}x${HEIGHT}+${X}+${Y}" +repage -sampling-factor 4:4:4 -quality 95 "$OUT/$1.jpg" 2>/dev/null \
       || cp /tmp/full.png "$OUT/$1.png"
   else
-    import -window root -quality 90 "$OUT/$1.jpg" 2>/dev/null || return 1
+    import -window root -sampling-factor 4:4:4 -quality 95 "$OUT/$1.jpg" 2>/dev/null || return 1
   fi
-  echo "  shot: $OUT/$1.jpg"
+  echo "  shot: $OUT/$1.jpg (${WIDTH:-1920}x${HEIGHT:-1080})"
 }
 
 key() { # key <F1>
@@ -1082,6 +1082,7 @@ biome_section() {
     EL tp TestPlayer "$ACX" 128 "$ACZ" >/dev/null 2>&1 || true
     sleep 14
     lookat "$((ACX + 42))" 132 "$((ACZ - 64))" "$ACX" 112 "$ACZ" 18 "60_ashen_castle_biome"
+    lookat "$((ACX + 14))" 114 "$((ACZ - 42))" "$ACX" 111 "$((ACZ - 18))" 14 "61_ashen_castle_closeup"
     log "  OK   /locate biome ashen_lands нашёл случайный биом адского острова с замком ($ACX, $ACZ)"
   else
     log "  FAIL /locate biome ashen_lands не вернул координаты"; FAILS=$((FAILS + 1))
@@ -1142,15 +1143,24 @@ biome_section() {
     VLN=$(printf '%s' "$VLW" | sed -n 's/.* dt=\([0-9]*\).*/\1/p' | tail -1)
     if [ "${VLN:-0}" -ge 150 ]; then log "  OK   холмы: динамических деревьев аддона $VLN блоков (лиловый хлыст)"
     else log "  FAIL холмы: деревьев аддона ${VLN:-0} (нужно >=150 — в биоме должен расти лиловый хлыст)"; FAILS=$((FAILS + 1)); fi
-    local VTOP2=${VTOP:-110} VRR=${VR:-80}
-    # Рев 15.4: кадры биома. В итерации 46 камера стояла вплотную (16–18 блоков), и в объектив
-    # попадал один клочок поля, залитый дымкой. Теперь — три ракурса «как на референсе 04»:
-    # (49) общий вид с края луга: террасы, гряды лаванды, деревья и церкви на гребне;
-    # (50) средний план в 40 блоках — читаются зонты крон и рисунок гряд;
-    # (51) от уровня глаз в траве — лаванда по пояс, как в жизни.
-    lookat "$((VX + VRR * 2 / 5))" "$((VTOP2 + 8))" "$((VZ + VRR * 2 / 5))" "$VX" "$((VTOP2 + 3))" "$VZ" 12 "49_violet_hills"
-    lookat "$((VX + VRR / 2))" "$((VTOP2 + 5))" "$((VZ + VRR / 2))" "$VX" "$((VTOP2 + 4))" "$VZ" 14 "50_violet_fields"
-    lookat "$((VX + VRR / 3))" "$((VTOP2 + 2))" "$((VZ + VRR / 6))" "$VX" "$((VTOP2 + 1))" "$VZ" 15 "51_violet_path"
+    local VTOP2=${VTOP:-90} VRR=${VR:-80} VGY
+    VGY=$(printf '%s' "$VL" | sed -n 's/.* vground=\(-\?[0-9]*\).*/\1/p' | tail -1)
+    VGY=${VGY:-80}
+    local VROAD
+    VROAD=$(printf '%s' "$VL" | grep -o 'road=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^road=//')
+    if [ -n "${VROAD:-}" ]; then
+      local VRCAM VRLOOK
+      VRCAM=$(printf '%s' "$VROAD" | cut -d: -f1 | tr ',' ' ')
+      VRLOOK=$(printf '%s' "$VROAD" | cut -d: -f2 | tr ',' ' ')
+      lookat $VRCAM $VRLOOK 18 "49_violet_hills"
+    else
+      lookat "$((VX + VRR * 2 / 5))" "$((VGY + 8))" "$((VZ + VRR * 2 / 5))" "$VX" "$((VGY + 2))" "$VZ" 16 "49_violet_hills"
+    fi
+    lookat "$((VX + VRR * 2 / 5))" "$((VGY + 9))" "$((VZ + VRR / 3))" "$VX" "$((VGY + 2))" "$VZ" 16 "50_violet_fields"
+    lookat "$((VX + VRR / 4))" "$((VGY + 3))" "$((VZ + VRR / 6))" "$VX" "$((VGY + 2))" "$VZ" 15 "51_violet_path"
+    lookat "$((VX + 14))" "$((VGY + 4))" "$((VZ + 14))" "$VX" "$((VGY + 5))" "$VZ" 15 "52_violet_trees_closeup"
+    EL tp TestPlayer "$VX" "$((VGY + 4))" "$VZ" >/dev/null 2>&1 || true
+    sleep 3
   fi
   local SBIO
   SBIO=$(printf '%s' "$SL" | sed -n 's/.* bio=\([^ ]*\).*/\1/p' | tail -1)

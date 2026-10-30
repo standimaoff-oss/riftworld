@@ -112,8 +112,8 @@ server-ip=
 level-type=minecraft\:flat
 generator-settings={"biome":"minecraft:plains","layers":[{"block":"minecraft:bedrock","height":1},{"block":"minecraft:dirt","height":2},{"block":"minecraft:grass_block","height":1}],"lakes":false,"features":false,"structure_overrides":[]}
 level-seed=21122
-view-distance=6
-simulation-distance=5
+view-distance=12
+simulation-distance=8
 max-players=5
 spawn-protection=0
 spawn-monsters=false
@@ -124,7 +124,7 @@ sync-chunk-writes=false
 motd=riftworld CI
 P
 
-( cd "$SRV" && nohup java -Xmx2G -Dfml.earlyprogresswindow=false @libraries/net/minecraftforge/forge/$FORGE/unix_args.txt nogui > console.log 2>&1 & echo $! > server.pid )
+( cd "$SRV" && nohup java -Xmx2200M -Dfml.earlyprogresswindow=false @libraries/net/minecraftforge/forge/$FORGE/unix_args.txt nogui > console.log 2>&1 & echo $! > server.pid )
 
 echo "waiting for server boot..."
 ok=0

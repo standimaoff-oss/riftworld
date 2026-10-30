@@ -30,32 +30,55 @@ public final class VioletHills {
         public final int cx, cz;
         public final double Rr;
         public final CityPlan.Island meadow;
-        // river: a chord across the island that spills off both rims
-        public final double rax, raz, rbx, rbz;
+        // winding country road: a gently S-curving chord across the valley between rolling hills
+        public final double rax, raz, rbx, rbz, curvePhase;
         public final int riverLevel;
-        public static final double RIVER_HW = 1.6;
+        public static final double RIVER_HW = 1.65;
 
         Region(int cx, int cz, Random rnd) {
             this.cx = cx; this.cz = cz;
             this.Rr = 150 + rnd.nextDouble() * 40;
-            double R = 92 + rnd.nextDouble() * 20;
-            // Рев 16: луг НЕ КУПОЛ. Раньше высота росла к центру (`rimY + (base-rimY)*t`), из-за
-            // чего любой кадр смотрел в «горку». Теперь база — ровное плато чуть выше моря, а
-            // «холмистость» даёт шум рельефа (см. violetProfile): холмы стоят ГДЕ ХОЧЕТ ШУМ, а не
-            // в центре острова.
-            double base = CityPlan.get().ocean + 17 + rnd.nextInt(6);
+            double R = 96 + rnd.nextDouble() * 20;
+            double base = CityPlan.get().ocean + 16 + rnd.nextInt(5);
             this.meadow = new CityPlan.Island(cx, cz, R, base, R * 0.6 + 12, rnd.nextDouble() * 6.283, rnd.nextDouble() * 6.283,
                     rnd.nextDouble() * 6.283, 7, 0.9);
-            // луг ВЫТЯНУТЫЙ — гряды лаванды идут длинными лентами через склон, как на референсе 04
-            this.meadow.elong = 0.22 + rnd.nextDouble() * 0.22;
+            this.meadow.elong = 0.22 + rnd.nextDouble() * 0.20;
             this.meadow.elongAng = rnd.nextDouble() * Math.PI;
-            // river: a chord across the island, spilling off both rims
-            double phi = rnd.nextDouble() * Math.PI;
-            double rl = R * 1.3;
-            double rcx = cx + (rnd.nextDouble() - 0.5) * R * 0.3, rcz = cz + (rnd.nextDouble() - 0.5) * R * 0.3;
+            double phi = this.meadow.elongAng + (rnd.nextDouble() - 0.5) * 0.45;
+            double rl = R * 1.15;
+            double rcx = cx + (rnd.nextDouble() - 0.5) * R * 0.16, rcz = cz + (rnd.nextDouble() - 0.5) * R * 0.16;
             this.rax = rcx - Math.cos(phi) * rl; this.raz = rcz - Math.sin(phi) * rl;
             this.rbx = rcx + Math.cos(phi) * rl; this.rbz = rcz + Math.sin(phi) * rl;
-            this.riverLevel = (int) Math.floor(base) - 3;
+            this.curvePhase = rnd.nextDouble() * Math.PI * 2.0;
+            this.riverLevel = (int) Math.floor(base) - 2;
+        }
+
+        /** Signed/unsigned distance to the gently winding country lane across the meadow. */
+        public double roadDist(double px, double pz) {
+            double dx = rbx - rax, dz = rbz - raz;
+            double len = Math.max(1.0, Math.hypot(dx, dz));
+            double ux = dx / len, uz = dz / len;
+            double nx = -uz, nz = ux;
+            double relX = px - rax, relZ = pz - raz;
+            double along = Math.max(0.0, Math.min(len, relX * ux + relZ * uz));
+            double sway = 13.0 * Math.sin(along * 0.045 + curvePhase)
+                    + 5.0 * (ElisarChunkGenerator.vnoise(px * 0.016, pz * 0.016, 173) - 0.5);
+            double cx0 = rax + ux * along + nx * sway;
+            double cz0 = raz + uz * along + nz * sway;
+            return Math.hypot(px - cx0, pz - cz0);
+        }
+
+        /** Point (x, z) directly on the winding lane at normalized parameter u in [0..1]. */
+        public double[] roadPoint(double u) {
+            double dx = rbx - rax, dz = rbz - raz;
+            double len = Math.max(1.0, Math.hypot(dx, dz));
+            double ux = dx / len, uz = dz / len;
+            double nx = -uz, nz = ux;
+            double along = Math.max(0.0, Math.min(1.0, u)) * len;
+            double bx = rax + ux * along, bz = raz + uz * along;
+            double sway = 13.0 * Math.sin(along * 0.045 + curvePhase)
+                    + 5.0 * (ElisarChunkGenerator.vnoise(bx * 0.016, bz * 0.016, 173) - 0.5);
+            return new double[]{bx + nx * sway, bz + nz * sway};
         }
     }
 

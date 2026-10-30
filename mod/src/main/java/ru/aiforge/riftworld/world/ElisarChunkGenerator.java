@@ -538,16 +538,18 @@ public class ElisarChunkGenerator extends ChunkGenerator {
     public static double violetProfile(CityPlan.Island isl, double px, double pz, int ocean) {
         double tm = Math.max(0.0, Math.min(1.0, isl.t(px, pz)));
         double rimY = ocean + 2.2;
-        // Рев 16 — «холм не к центру». Раньше высота считалась как `rimY + (base-rimY)*t^1.02`:
-        // это КУПОЛ с вершиной ровно в центре острова, и любой кадр смотрел в одну и ту же горку.
-        // Теперь база — ровное плато (плато = уровень луга), а «холмистость» целиком из шума
-        // рельефа: широкие волны ставят холмы и ложбины где угодно, а не в середине.
+        // Плавные перекатывающиеся гряды и ложбины по референсу 04 (НЕ горка к центру острова):
+        // мягкая ложбина вдоль извилистой светлой дорожки и плавные боковые волны с обеих сторон.
         double plateau = ocean + 15.0;
-        double rolling = 7.4 * (vnoise(px * 0.0031, pz * 0.0031, 71) - 0.5)     // крупные холмы
-                       + 3.4 * (vnoise(px * 0.0083, pz * 0.0083, 72) - 0.5)     // средние
-                       + 1.1 * (vnoise(px * 0.027, pz * 0.027, 73) - 0.5);      // мелкая рябь
-        // к морю спускаемся только в наружной полосе (22 % радиуса) — внутри луг остаётся луговым
-        double inland = smooth(tm / 0.22);
+        double rolling = 10.6 * (vnoise(px * 0.0041, pz * 0.0041, 71) - 0.5)    // плавные крупные волны холмов
+                       + 4.4 * (vnoise(px * 0.0098, pz * 0.0098, 72) - 0.5)     // средние складки склонов
+                       + 1.2 * (vnoise(px * 0.024, pz * 0.024, 73) - 0.5);      // мягкая рябь
+        VioletHills.Region vr = VioletHills.regionAt(px, pz);
+        if (vr != null) {
+            double rd = vr.roadDist(px, pz);
+            rolling -= 3.6 * Math.exp(-(rd * rd) / (26.0 * 26.0));               // пологая долина вдоль дорожки
+        }
+        double inland = smooth(tm / 0.18);
         return rimY + (plateau + rolling - rimY) * inland;
     }
 
@@ -556,10 +558,10 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         return (int) Math.floor(violetTerrace(violetProfile(isl, px, pz, ocean)));
     }
 
-    public static final int VIOLET_STEP = 2;
+    public static final int VIOLET_STEP = 1;
 
     private static double violetTerrace(double top) {
-        return Math.floor(top / (double) VIOLET_STEP) * VIOLET_STEP + 2.0;
+        return Math.floor(top / (double) VIOLET_STEP) * VIOLET_STEP + 1.0;
     }
 
     /** Terraced top estimate of a garden column (bridge anchor heights in WaterfallGardens). */
@@ -587,23 +589,15 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                           VioletHills.Region vr, double[] tt) {
         CityPlan.Island isl = c.isl;
         if (isl == null || isl.kind != 7) return;
-        double d = CityPlan.segDist(px, pz, vr.rax, vr.raz, vr.rbx, vr.rbz, tt);
+        if (isl.t(px, pz) < 0.14) return;
+        double d = vr.roadDist(px, pz);
         double hw = VioletHills.Region.RIVER_HW;
-        if (d > hw + 1.6) return;
-        int shelf = c.top;
-        int L = shelf - 1;                                   // вода на блок ниже полки
-        if (L <= plan.ocean + 1) return;                     // на самой нижней полке ручья нет — иначе вода ниже моря
-        if (d > hw) {                                        // берег: не даём воде «висеть»
-            if (c.top < L + 1) { c.top = L + 1; c.bottom = Math.min(c.bottom, c.top - 3); }
-            return;
+        if (d > hw + 0.95) return;
+        // Извилистая светлая каменная дорожка в ложбине между лавандовыми холмами (как на референсе 04)
+        c.soft = Double.NaN;
+        if (d <= hw) {
+            c.surface = S_COBBLE;
         }
-        c.waterTop = L;
-        c.waterBottom = L - 1;
-        c.top = Math.min(c.top, L - 2);                      // ложе под водой
-        c.soft = Double.NaN;                                 // в ручье полей нет
-        if (c.surface == S_COBBLE || c.surface == S_PATH || c.surface == S_PLANK) c.deckY = Math.max(c.deckY, L + 1);
-        c.surface = S_GRASS;
-        c.bottom = Math.min(c.bottom, c.top - 2);
     }
 
     /** Carves one straight water channel into the column (shared by city rivers and the violet meadow river). */
@@ -817,62 +811,38 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                         } else {
                             boolean violet = c.isl.kind == 7 || (c.isl.kind != 4 && VioletHills.inside(x + 0.5, z + 0.5));
                             if (violet) {
-                                // ==================================================================
-                                // Рев 15 — ПОЛЯ ЛАВАНДЫ ЗАНОВО (референс 04_violet_hills.png).
-                                // На фото поля — это ГРЯДЫ, идущие ПО КОНТУРУ холма: каждая гряда
-                                // повторяет изолинию высоты, между грядами узкая травяная борозда, а
-                                // у самой кромки яруса всегда остаётся зелёная полоса травы.
-                                // Раньше полосы резались по прямой в мире (`x*0.866+z*0.5`) — на
-                                // склоне это давало «шахматку» из кубиков и читалось крупой.
-                                // Теперь индекс гряды — гладкая высота поверхности {@code c.soft}
-                                // (см. рельеф выше): гряды сами ложатся по рельефу, как на фото.
-                                // ==================================================================
-                                double soft = Double.isNaN(c.soft) ? c.top : c.soft;
-                                double rp = soft / 1.15;                       // одна гряда на 1.15 блока подъёма
-                                double frac = rp - Math.floor(rp);
-                                boolean row = frac < 0.88;                     // 88 % — гряда, 12 % — борозда
-                                // Рев 16: ПОЛЕЙ СТАЛО НАМНОГО БОЛЬШЕ. Владелец: «больше цветов,
-                                // НАМНОГО БОЛЬШЕ и похоже на фото». На референсе 04 лаванда покрывает
-                                // почти весь остров — куртинки голой травы маленькие и редкие.
-                                double field = vnoise(x * 0.0075, z * 0.0075, 92);
-                                boolean meadow = field < 0.13;                 // было 34 % — стало 13 %
-                                double edgeN = vnoise(x * 0.09, z * 0.09, 90);
-                                // три тона цветов по медленному шуму: участки поля переливаются
-                                double band = vnoise(x * 0.011, z * 0.011, 94);
-                                BlockState bloom = st(band < 0.46 ? ElisarBlocks.VIOLET_BLOOM
-                                        : band < 0.86 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM);
-                                // полоса травы вдоль кромки яруса: сосед уровнем ниже на целую ступень
-                                boolean lip = false;
-                                for (Direction d : Direction.Plane.HORIZONTAL) {
-                                    Col n = cols[dx + 1 + d.getStepX()][dz + 1 + d.getStepZ()];
-                                    if (n.isl != null && n.top <= c.top - (VIOLET_STEP - 1)) { lip = true; break; }
-                                }
-                                if (lip) {
-                                    // кромка яруса — подстриженная трава (на фото у каждой террасы
-                                    // зелёная кромка), но уже, чем раньше: 38 % вместо 50 %
+                                // Сплошные волнообразные лавандовые гряды и море цветов по референсу 04:
+                                // НИКАКИХ бурых пятен голой земли (coarse_dirt) — вся поверхность устлана
+                                // шалфейно-зелёным дёрном и плотными ярусами лаванды/фиолетовых соцветий.
+                                if (Double.isNaN(c.soft)) {
+                                    // узкая зелёная обочина вдоль светлой каменной дорожки с цветами
                                     chunk.setBlockState(mp.set(x, c.top, z), vTurf, false);
-                                    if (h < 0.38) chunk.setBlockState(mp.set(x, c.top + 1, z), vGrass, false);
-                                    else chunk.setBlockState(mp.set(x, c.top + 1, z), bloom, false);
-                                } else if (!meadow && row) {
-                                    // ГРЯДА ЛАВАНДЫ: дерн → куст → цветущая макушка (2 блока в высоту,
-                                    // как на фото, где лаванда стоит по пояс и выше).
-                                    chunk.setBlockState(mp.set(x, c.top, z), vTurf, false);
-                                    chunk.setBlockState(mp.set(x, c.top + 1, z), st(ElisarBlocks.LAVENDER_BED), false);
-                                    chunk.setBlockState(mp.set(x, c.top + 2, z), bloom, false);
-                                } else if (!meadow) {
-                                    // борозда между грядами: тёмная вспаханная земля + цветы по краю
-                                    chunk.setBlockState(mp.set(x, c.top, z), vEarth, false);
-                                    if (h < 0.30) chunk.setBlockState(mp.set(x, c.top + 1, z), st(ElisarBlocks.LAVENDER_BED), false);
-                                } else {
-                                    // ЛУГОВИНКА среди полей: сочная трава и ОЧЕНЬ много цветов
-                                    chunk.setBlockState(mp.set(x, c.top, z), vTurf, false);
-                                    if (h < 0.10) {
+                                    if (h < 0.72) {
+                                        BlockState rimBloom = st(h < 0.30 ? ElisarBlocks.VIOLET_BLOOM
+                                                : h < 0.56 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM);
+                                        chunk.setBlockState(mp.set(x, c.top + 1, z), rimBloom, false);
+                                    } else {
                                         chunk.setBlockState(mp.set(x, c.top + 1, z), vGrass, false);
-                                    } else if (h < 0.24 && edgeN > 0.42) {
+                                    }
+                                } else {
+                                    double soft = c.soft;
+                                    // Гряды идут плавными лентами вдоль контуров склонов (ширина гряды ~3 блока + узкая цветочная ложбинка)
+                                    double rp = soft * 0.55 + (x * 0.21 + z * 0.15) + 2.8 * vnoise(x * 0.015, z * 0.015, 91);
+                                    double frac = rp - Math.floor(rp);
+                                    boolean row = frac < 0.80;
+                                    double band = vnoise(x * 0.013, z * 0.013, 94) + (hash(x, z, 98) - 0.5) * 0.18;
+                                    BlockState bloom = st(band < 0.44 ? ElisarBlocks.VIOLET_BLOOM
+                                            : band < 0.84 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM);
+                                    chunk.setBlockState(mp.set(x, c.top, z), vTurf, false);
+                                    if (row) {
+                                        // Высокая двухблочная гряда лаванды (куст + пышная цветущая макушка)
                                         chunk.setBlockState(mp.set(x, c.top + 1, z), st(ElisarBlocks.LAVENDER_BED), false);
                                         chunk.setBlockState(mp.set(x, c.top + 2, z), bloom, false);
+                                    } else if (h < 0.88) {
+                                        // Междурядье тоже густо усыпано фиолетовыми и сиреневыми цветами (1 блок — читается рельеф гряд!)
+                                        chunk.setBlockState(mp.set(x, c.top + 1, z), h < 0.32 ? st(ElisarBlocks.LAVENDER_BED) : bloom, false);
                                     } else {
-                                        chunk.setBlockState(mp.set(x, c.top + 1, z), bloom, false);
+                                        chunk.setBlockState(mp.set(x, c.top + 1, z), vGrass, false);
                                     }
                                 }
                             } else if (c.garden) {
