@@ -80,7 +80,7 @@ jobs:
             # Рев 15.5: раньше причина падения сборки оставалась только в артефакте, а артефакты
             # blob-хранилища отсюда не скачиваются — приходилось гадать. Теперь ошибки javac/gradle
             # уходят аннотациями (::error::), и их видно прямо через API прогона.
-            grep -E "error:|error;|FAILURE:|What went wrong|Caused by" ../ci-out/build.log | head -40 \
+            grep -E "error:|error;|FAILURE:|What went wrong|Caused by|Execution failed|Could not|Invalid patcher|> Task .*FAILED|^e: " ../ci-out/build.log | head -40 \
               | while IFS= read -r line; do echo "::error::${line}"; done
             echo "::error::сборка упала — см. строки ошибок выше"
             exit 1
