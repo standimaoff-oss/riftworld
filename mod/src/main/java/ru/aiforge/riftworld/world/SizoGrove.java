@@ -7,26 +7,19 @@ import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Biome 05 «Роща Сизо» (Rev 4 item 8): sacred groves of GIANT layered-canopy sizo trees on one big hub island,
- * mossy boulders, rare amber-ringed way pillars, violet bloom drifts on silvery mint grass, and (in ~3 out of 5
- * regions) a lone RUINED pale-stone temple - the only structure, the grove keeps its silence otherwise (no paths,
- * no villages, no farms: TZ «без тропинок»).
- *
- * Layout mirrors VioletHills: 1040-block super-cells (offset half a cell against the violet grid), ~half of the
- * suitable ones hold one region (blob R 140..180) wrapped around a single big smooth hub island (kind 8). Both the
- * hub and the decorations are deterministic from one seed - no saved data.
+ * Biome 05 «Роща Сизо» (референс 05_biome_sizo_grove.png):
+ * высокие прямые стволы гигантских сизостволов с плоскими многоярусными шапками шалфейной листвы,
+ * замшелые скальные выступы, васильково-фиолетовые лесные цветы в серебристо-мятной траве и
+ * старинная мощёная булыжником и охристой землёй лесная тропа, проходящая между парными каменными
+ * столбами с янтарными фонарями мимо деревянной тележки и лесной часовенки к замшелой руине башни.
  */
 public final class SizoGrove {
     public static final int SUPER = 1040;
-    private static final long FIXED = 0x51E0F00DL;       // region generator seed (kept stable across builds)
+    private static final long FIXED = 0x51E0F00DL;
 
-    // ---- the published constants (compile-time) -----------------------------------------------------------
-    /** Giant sizo tree kind used by ElisarChunkGenerator.trees(). */
     public static final int TREE_GIANT = 3;
-    /** Island kind of the grove hub. */
     public static final int KIND = 8;
 
-    /** Гружёная тележка из референса (дерево, два колеса, оглобля). */
     public static final class Cart {
         public final int x, z, rot;
         public final long seed;
@@ -34,7 +27,6 @@ public final class SizoGrove {
         Cart(int x, int z, int rot, long seed) { this.x = x; this.z = z; this.rot = rot; this.seed = seed; }
     }
 
-    /** Каменный памятник с деревянным навершием и висящей цепью из референса. */
     public static final class Shrine {
         public final int x, z, rot;
         public final long seed;
@@ -42,7 +34,6 @@ public final class SizoGrove {
         Shrine(int x, int z, int rot, long seed) { this.x = x; this.z = z; this.rot = rot; this.seed = seed; }
     }
 
-    /** Пара янтарных столбов-указателей: стоят друг напротив друга. */
     public static final class PillarPair {
         public final int ax, az, bx, bz;
 
@@ -51,7 +42,7 @@ public final class SizoGrove {
 
     public static final class Boulder {
         public final int x, z;
-        public final double r;        // horizontal radius (y squashed to 0.72*r)
+        public final double r;
         public final long seed;
 
         Boulder(int x, int z, double r, long seed) { this.x = x; this.z = z; this.r = r; this.seed = seed; }
@@ -61,117 +52,179 @@ public final class SizoGrove {
         public final int cx, cz;
         public final double Rr;
         public final CityPlan.Island hub;
+        // извилистая лесная тропа (булыжник + замшелый камень + тёплая охра, как на 05_biome_sizo_grove.png)
+        public final double tax, taz, tbx, tbz, trailPhase;
+        public static final double TRAIL_HW = 2.05;
+
         public final List<CityPlan.Tree> trees = new ArrayList<>();
         public final List<Boulder> boulders = new ArrayList<>();
-        public final List<int[]> pillars = new ArrayList<>();        // {x, z} amber-band way pillars
-        // Рев 14: структуры по референсу, с частотами, которые задал владелец:
-        // тележка ~1/3 биомов, памятник ~1/7, пары столбов — 1..2 в каждом биоме.
+        public final List<int[]> pillars = new ArrayList<>();
         public final List<Cart> carts = new ArrayList<>();
         public final List<Shrine> shrines = new ArrayList<>();
         public final List<PillarPair> pillarPairs = new ArrayList<>();
-        // the rare ruined temple: cx/cz, flattened plateau y, rotation 0..3 (0 = +z front)
         public final boolean temple;
         public final int tx, tz, ty, trot;
 
         Region(int cx, int cz, Random rnd) {
             this.cx = cx; this.cz = cz;
-            this.Rr = 140 + rnd.nextDouble() * 40;
-            double R = 74 + rnd.nextDouble() * 28;
-            double base = 100 + rnd.nextDouble() * 10;
+            this.Rr = 148 + rnd.nextDouble() * 38;
+            double R = 84 + rnd.nextDouble() * 24;
+            double base = 98 + rnd.nextDouble() * 8;
             this.hub = new CityPlan.Island(cx, cz, R, base, R * 0.6 + 14, rnd.nextDouble() * 6.283, rnd.nextDouble() * 6.283,
                     rnd.nextDouble() * 6.283, KIND, 0.7);
-            // giant sizos: 12..15, well spaced (canopies want ~9 blocks of elbow room)
-            for (int k = 0, want = 12 + rnd.nextInt(4), tries = 0; k < want && tries < want * 22; ++tries) {
-                double a = rnd.nextDouble() * Math.PI * 2, d = (0.18 + rnd.nextDouble() * 0.62) * R;
-                int x = (int) Math.floor(cx + Math.cos(a) * d), z = (int) Math.floor(cz + Math.sin(a) * d);
-                if (hub.t(x + 0.5, z + 0.5) < 0.32) continue;
-                boolean ok = true;
-                for (CityPlan.Tree t : trees) if (Math.abs(t.x - x) < 9 && Math.abs(t.z - z) < 9) { ok = false; break; }
-                if (!ok) continue;
-                trees.add(new CityPlan.Tree(x, z, TREE_GIANT, 13 + rnd.nextInt(5), rnd.nextInt(1 << 30)));
-                ++k;
-            }
-            // mossy boulders between the trunks
-            for (int k = 0, want = 8 + rnd.nextInt(5), tries = 0; k < want && tries < want * 14; ++tries) {
-                double a = rnd.nextDouble() * Math.PI * 2, d = (0.15 + rnd.nextDouble() * 0.7) * R;
-                int x = (int) Math.floor(cx + Math.cos(a) * d), z = (int) Math.floor(cz + Math.sin(a) * d);
-                if (hub.t(x + 0.5, z + 0.5) < 0.34) continue;
-                boolean ok = true;
-                for (CityPlan.Tree t : trees) if (Math.abs(t.x - x) < 6 && Math.abs(t.z - z) < 6) { ok = false; break; }
-                for (Boulder b : boulders) if (Math.hypot(b.x - x, b.z - z) < b.r + 7) { ok = false; break; }
-                if (!ok) continue;
-                boulders.add(new Boulder(x, z, 2.1 + rnd.nextDouble() * 1.5, rnd.nextLong()));
-                ++k;
-            }
-            // янтарные столбы: 1..2 ПАРЫ почти в каждом биоме (владелец: 1/0.6 ≈ 1.7 пары).
-            // Пара = два столба на расстоянии 6..11 блоков, как «ворота» над тропой на референсе.
-            for (int k = 0, want = 1 + rnd.nextInt(2), tries = 0; k < want && tries < 60; ++tries) {
-                double a = rnd.nextDouble() * Math.PI * 2, d = (0.22 + rnd.nextDouble() * 0.45) * R;
-                double px2 = cx + Math.cos(a) * d, pz2 = cz + Math.sin(a) * d;
-                if (hub.t(px2, pz2) < 0.30) continue;
-                double gap = 6 + rnd.nextDouble() * 5;                    // проход между столбами
-                double pa = a + Math.PI / 2;
-                double ax2 = px2 - Math.cos(pa) * gap / 2, az2 = pz2 - Math.sin(pa) * gap / 2;
-                double bx2 = px2 + Math.cos(pa) * gap / 2, bz2 = pz2 + Math.sin(pa) * gap / 2;
-                if (hub.t(ax2, az2) < 0.26 || hub.t(bx2, bz2) < 0.26) continue;
-                int ax = (int) Math.floor(ax2), az = (int) Math.floor(az2);
-                int bx = (int) Math.floor(bx2), bz = (int) Math.floor(bz2);
-                boolean ok = true;
-                for (PillarPair pp : pillarPairs)
-                    if (Math.hypot(pp.ax - ax, pp.az - az) < 14 || Math.hypot(pp.bx - bx, pp.bz - bz) < 14) { ok = false; break; }
-                if (!ok) continue;
-                pillarPairs.add(new PillarPair(ax, az, bx, bz));
-                pillars.add(new int[] {ax, az});
-                pillars.add(new int[] {bx, bz});
-                ++k;
-            }
-            // ---- тележка (владелец: 1/3 биомов — «очень редкая»)
-            if (rnd.nextDouble() < 1.0 / 3.0) {
-                for (int t = 0; t < 30; ++t) {
-                    double a = rnd.nextDouble() * Math.PI * 2, d = (0.20 + rnd.nextDouble() * 0.45) * R;
-                    int x = (int) Math.floor(cx + Math.cos(a) * d), z = (int) Math.floor(cz + Math.sin(a) * d);
-                    if (hub.t(x + 0.5, z + 0.5) < 0.35) continue;
-                    boolean ok = true;
-                    for (CityPlan.Tree tr : trees) if (Math.abs(tr.x - x) < 7 && Math.abs(tr.z - z) < 7) { ok = false; break; }
-                    for (Boulder b : boulders) if (Math.hypot(b.x - x, b.z - z) < b.r + 6) { ok = false; break; }
-                    for (int[] pp : pillars) if (Math.hypot(pp[0] - x, pp[1] - z) < 5) { ok = false; break; }
-                    if (!ok) continue;
-                    carts.add(new Cart(x, z, rnd.nextInt(4), rnd.nextLong()));
-                    break;
-                }
-            }
-            // ---- памятник (владелец: 1/7 биомов — ещё реже тележки)
-            if (rnd.nextDouble() < 1.0 / 7.0) {
-                for (int t = 0; t < 30; ++t) {
-                    double a = rnd.nextDouble() * Math.PI * 2, d = (0.22 + rnd.nextDouble() * 0.4) * R;
-                    int x = (int) Math.floor(cx + Math.cos(a) * d), z = (int) Math.floor(cz + Math.sin(a) * d);
-                    if (hub.t(x + 0.5, z + 0.5) < 0.35) continue;
-                    boolean ok = true;
-                    for (CityPlan.Tree tr : trees) if (Math.abs(tr.x - x) < 8 && Math.abs(tr.z - z) < 8) { ok = false; break; }
-                    for (Cart c : carts) if (Math.hypot(c.x - x, c.z - z) < 10) { ok = false; break; }
-                    for (Boulder b : boulders) if (Math.hypot(b.x - x, b.z - z) < b.r + 7) { ok = false; break; }
-                    if (!ok) continue;
-                    shrines.add(new Shrine(x, z, rnd.nextInt(4), rnd.nextLong()));
-                    break;
-                }
-            }
-            // Разрушенный храм — самая редкая постройка биома (стоял на 0.62, теперь 1/7 биомов):
-            // тихая терраса не по центру, поворот по вкусу.
-            // the ruined temple: a quiet terrace off-centre, rotated at will
-            if (rnd.nextDouble() < 1.0 / 7.0) {
+            this.hub.elong = 0.16 + rnd.nextDouble() * 0.16;
+            this.hub.elongAng = rnd.nextDouble() * Math.PI;
+
+            double phi = this.hub.elongAng + (rnd.nextDouble() - 0.5) * 0.30;
+            double tl = R * 0.72;
+            this.tax = cx - Math.cos(phi) * tl;
+            this.taz = cz - Math.sin(phi) * tl;
+            this.tbx = cx + Math.cos(phi) * tl;
+            this.tbz = cz + Math.sin(phi) * tl;
+            this.trailPhase = rnd.nextDouble() * Math.PI * 2.0;
+            int rotAlong = (Math.abs(Math.cos(phi)) > Math.abs(Math.sin(phi)))
+                    ? (Math.cos(phi) >= 0 ? 0 : 2)
+                    : (Math.sin(phi) >= 0 ? 1 : 3);
+
+            // Разрушенная каменная башня во мху в конце тропы (как в глубине кадра 05_biome_sizo_grove.png)
+            if (rnd.nextDouble() < 0.42) {
                 this.temple = true;
-                double a = rnd.nextDouble() * Math.PI * 2, d = (0.3 + rnd.nextDouble() * 0.25) * R;
-                int x = (int) Math.floor(cx + Math.cos(a) * d), z = (int) Math.floor(cz + Math.sin(a) * d);
-                this.tx = x; this.tz = z;
-                this.ty = (int) Math.floor(hub.raw(x + 0.5, z + 0.5));
-                this.trot = rnd.nextInt(4);
-                // keep giants and boulders away from the terrace
-                trees.removeIf(t -> Math.abs(t.x - tx) < 13 && Math.abs(t.z - tz) < 13);
-                boulders.removeIf(b -> Math.abs(b.x - tx) < 14 && Math.abs(b.z - tz) < 14);
+                double[] tp = trailPoint(0.78);
+                this.tx = (int) Math.round(tp[0]);
+                this.tz = (int) Math.round(tp[1]);
+                this.ty = (int) Math.floor(hub.raw(this.tx + 0.5, this.tz + 0.5));
+                this.trot = rotAlong;
             } else {
                 this.temple = false;
                 this.tx = this.tz = this.ty = this.trot = 0;
             }
+
+            // 1..2 пары резных каменных столбов с янтарными вставками по обе стороны лесной тропы
+            double[] p1L = trailSidePoint(0.42, -3.4);
+            double[] p1R = trailSidePoint(0.42, 3.4);
+            addPillarPair((int) Math.round(p1L[0]), (int) Math.round(p1L[1]),
+                          (int) Math.round(p1R[0]), (int) Math.round(p1R[1]));
+            if (rnd.nextDouble() < 0.65) {
+                double[] p2L = trailSidePoint(0.62, -3.5);
+                double[] p2R = trailSidePoint(0.62, 3.5);
+                if (!temple || Math.hypot(p2L[0] - tx, p2L[1] - tz) > 12) {
+                    addPillarPair((int) Math.round(p2L[0]), (int) Math.round(p2L[1]),
+                                  (int) Math.round(p2R[0]), (int) Math.round(p2R[1]));
+                }
+            }
+
+            // Деревянная тележка у правой обочины тропы (референс 05_biome_sizo_grove.png)
+            if (rnd.nextDouble() < 0.48) {
+                double[] cp = trailSidePoint(0.31, 3.5);
+                int cx0 = (int) Math.round(cp[0]), cz0 = (int) Math.round(cp[1]);
+                if (hub.t(cx0 + 0.5, cz0 + 0.5) > 0.30) {
+                    carts.add(new Cart(cx0, cz0, rotAlong, rnd.nextLong()));
+                }
+            }
+
+            // Деревянная часовенка-памятник с цепью у обочины тропы за столбами (референс 05)
+            if (rnd.nextDouble() < 0.36) {
+                double[] sp = trailSidePoint(0.49, 4.7);
+                int sx0 = (int) Math.round(sp[0]), sz0 = (int) Math.round(sp[1]);
+                if (hub.t(sx0 + 0.5, sz0 + 0.5) > 0.30 && (!temple || Math.hypot(sx0 - tx, sz0 - tz) > 12)) {
+                    shrines.add(new Shrine(sx0, sz0, (rotAlong + 3) & 3, rnd.nextLong()));
+                }
+            }
+
+            // Замшелые скальные выступы вдоль обочин тропы (слева и справа, как на референсе 05) + в чаще рощи
+            double[][] flankSpots = {{0.22, -6.4}, {0.25, 6.8}, {0.37, -7.2}, {0.53, 8.0}, {0.58, -6.8}};
+            for (double[] fs : flankSpots) {
+                if (rnd.nextDouble() > 0.82) continue;
+                double[] bp = trailSidePoint(fs[0], fs[1] + (rnd.nextDouble() - 0.5) * 1.4);
+                int bx = (int) Math.round(bp[0]), bz = (int) Math.round(bp[1]);
+                if (hub.t(bx + 0.5, bz + 0.5) < 0.30) continue;
+                if (nearLandmark(bx, bz, 4.5)) continue;
+                boulders.add(new Boulder(bx, bz, 2.5 + rnd.nextDouble() * 1.4, rnd.nextLong()));
+            }
+            for (int k = 0, want = 8 + rnd.nextInt(5), tries = 0; k < want && tries < want * 18; ++tries) {
+                double a = rnd.nextDouble() * Math.PI * 2, d = (0.16 + rnd.nextDouble() * 0.68) * R;
+                int x = (int) Math.floor(cx + Math.cos(a) * d), z = (int) Math.floor(cz + Math.sin(a) * d);
+                if (hub.t(x + 0.5, z + 0.5) < 0.34) continue;
+                if (trailDist(x + 0.5, z + 0.5) < TRAIL_HW + 3.8) continue;
+                if (nearLandmark(x, z, 6.0)) continue;
+                boolean ok = true;
+                for (Boulder b : boulders) if (Math.hypot(b.x - x, b.z - z) < b.r + 6.5) { ok = false; break; }
+                if (!ok) continue;
+                boulders.add(new Boulder(x, z, 2.3 + rnd.nextDouble() * 1.6, rnd.nextLong()));
+                ++k;
+            }
+
+            // Стволы гигантских сизо (для fallback без DT и ориентиров вдоль аллеи)
+            for (int k = 0, want = 14 + rnd.nextInt(5), tries = 0; k < want && tries < want * 24; ++tries) {
+                double a = rnd.nextDouble() * Math.PI * 2, d = (0.16 + rnd.nextDouble() * 0.66) * R;
+                int x = (int) Math.floor(cx + Math.cos(a) * d), z = (int) Math.floor(cz + Math.sin(a) * d);
+                if (hub.t(x + 0.5, z + 0.5) < 0.32) continue;
+                if (trailDist(x + 0.5, z + 0.5) < TRAIL_HW + 3.2) continue;
+                if (nearLandmark(x, z, 6.5)) continue;
+                boolean ok = true;
+                for (CityPlan.Tree t : trees) if (Math.abs(t.x - x) < 9 && Math.abs(t.z - z) < 9) { ok = false; break; }
+                for (Boulder b : boulders) if (Math.hypot(b.x - x, b.z - z) < b.r + 3.5) { ok = false; break; }
+                if (!ok) continue;
+                trees.add(new CityPlan.Tree(x, z, TREE_GIANT, 16 + rnd.nextInt(5), rnd.nextInt(1 << 30)));
+                ++k;
+            }
+        }
+
+        private void addPillarPair(int ax, int az, int bx, int bz) {
+            if (hub.t(ax + 0.5, az + 0.5) < 0.26 || hub.t(bx + 0.5, bz + 0.5) < 0.26) return;
+            pillarPairs.add(new PillarPair(ax, az, bx, bz));
+            pillars.add(new int[]{ax, az});
+            pillars.add(new int[]{bx, bz});
+        }
+
+        public boolean nearLandmark(double x, double z, double pad) {
+            if (temple && Math.hypot(x - tx, z - tz) < pad + 7.5) return true;
+            for (int[] p : pillars) if (Math.hypot(x - p[0], z - p[1]) < pad) return true;
+            for (Cart c : carts) if (Math.hypot(x - c.x, z - c.z) < pad + 1.5) return true;
+            for (Shrine s : shrines) if (Math.hypot(x - s.x, z - s.z) < pad + 2.0) return true;
+            return false;
+        }
+
+        public double trailLen() {
+            return Math.max(1.0, Math.hypot(tbx - tax, tbz - taz));
+        }
+
+        private double trailSway(double along) {
+            return 8.5 * Math.sin(along * 0.046 + trailPhase);
+        }
+
+        public double trailDist(double px, double pz) {
+            double dx = tbx - tax, dz = tbz - taz;
+            double len = Math.max(1.0, Math.hypot(dx, dz));
+            double ux = dx / len, uz = dz / len;
+            double nx = -uz, nz = ux;
+            double along = Math.max(0.0, Math.min(len, (px - tax) * ux + (pz - taz) * uz));
+            double sway = trailSway(along);
+            double cx0 = tax + ux * along + nx * sway;
+            double cz0 = taz + uz * along + nz * sway;
+            return Math.hypot(px - cx0, pz - cz0);
+        }
+
+        public double[] trailPoint(double u) {
+            double dx = tbx - tax, dz = tbz - taz;
+            double len = Math.max(1.0, Math.hypot(dx, dz));
+            double ux = dx / len, uz = dz / len;
+            double nx = -uz, nz = ux;
+            double along = Math.max(0.0, Math.min(1.0, u)) * len;
+            double sway = trailSway(along);
+            return new double[]{tax + ux * along + nx * sway, taz + uz * along + nz * sway};
+        }
+
+        public double[] trailSidePoint(double u, double sideOffset) {
+            double u0 = Math.max(0.0, Math.min(1.0, u - 0.02));
+            double u1 = Math.max(0.0, Math.min(1.0, u + 0.02));
+            double[] p = trailPoint(u);
+            double[] a = trailPoint(u0);
+            double[] b = trailPoint(u1);
+            double tx0 = b[0] - a[0], tz0 = b[1] - a[1];
+            double tl = Math.max(1e-4, Math.hypot(tx0, tz0));
+            double nx = -tz0 / tl, nz = tx0 / tl;
+            return new double[]{p[0] + nx * sideOffset, p[1] + nz * sideOffset};
         }
     }
 
@@ -184,16 +237,14 @@ public final class SizoGrove {
         return CACHE.computeIfAbsent(WildIslands.key(sx, sz), k -> Optional.ofNullable(gen(sx, sz))).orElse(null);
     }
 
-    /** The region of one super-cell, or null. The grid is shifted half a cell so it never aligns with VioletHills. */
     private static Region gen(int sx, int sz) {
         Random r = new Random(FIXED ^ (sx * 53982894593057L + sz * 317074912223L) * 0x9E3779B97F4A7C15L);
         if (r.nextDouble() > 0.5) return null;
         int cx = sx * SUPER + 520 + 160 + r.nextInt(SUPER - 840), cz = sz * SUPER + 520 + 160 + r.nextInt(SUPER - 840);
-        if (Math.hypot(cx, cz) < 600) return null;                                                        // city ring
-        if (AshenLands.blocks(cx, cz, 300)) return null;                                                  // адские угодья (любой регион)
+        if (Math.hypot(cx, cz) < 600) return null;
+        if (AshenLands.blocks(cx, cz, 300)) return null;
         EmberRuins.Site es = EmberRuins.nearest(cx, cz);
-        if (es != null && Math.hypot(cx - es.cx, cz - es.cz) < 460) return null;                          // keep ruins regions apart
-        // never on top of a violet meadow region (their cell = 880)
+        if (es != null && Math.hypot(cx - es.cx, cz - es.cz) < 460) return null;
         for (int dx = -1; dx <= 1; ++dx)
             for (int dz = -1; dz <= 1; ++dz) {
                 VioletHills.Region vr = VioletHills.region(Math.floorDiv(cx, VioletHills.SUPER) + dx, Math.floorDiv(cz, VioletHills.SUPER) + dz);
@@ -202,7 +253,6 @@ public final class SizoGrove {
         return new Region(cx, cz, r);
     }
 
-    /** The region whose influence can reach (x, z), or null. */
     public static Region regionAt(double x, double z) {
         int sx = Math.floorDiv((int) Math.floor(x), SUPER), sz = Math.floorDiv((int) Math.floor(z), SUPER);
         for (int dx = -1; dx <= 1; ++dx)
@@ -213,11 +263,6 @@ public final class SizoGrove {
         return null;
     }
 
-    /**
-     * Рев 14.34: биом 05 — это САМ ОСТРОВ рощи, а не «блоб» вокруг него вместе с морем:
-     * иначе {@code /locate biome riftworld:sizo_grove} приводил в воду. Запас 8 блоков от кромки
-     * закрывает округление позиции, которое печатает /locate.
-     */
     public static boolean inside(double x, double z) {
         Region rg = regionAt(x, z);
         if (rg == null) return false;
@@ -232,7 +277,6 @@ public final class SizoGrove {
         return out;
     }
 
-    /** Boulders whose 3D reach can touch cell (x, z) (chunk callers pad by their own margin). */
     public static List<Boulder> bouldersNear(int x, int z) {
         Region rg = regionAt(x + 0.5, z + 0.5);
         if (rg == null) return List.of();
@@ -241,7 +285,6 @@ public final class SizoGrove {
         return out;
     }
 
-    /** Way pillars that could stand in/around chunk square [x0, x0+15] x [z0, z0+15]. */
     public static List<int[]> pillarsIn(Region rg, int x0, int z0) {
         List<int[]> out = new ArrayList<>(2);
         for (int[] p : rg.pillars)
@@ -249,25 +292,23 @@ public final class SizoGrove {
         return out;
     }
 
-    /** Тележки, которые могут попасть в чанк [x0,x0+15]x[z0,z0+15]. */
     public static List<Cart> cartsIn(Region rg, int x0, int z0) {
         List<Cart> out = new ArrayList<>(1);
-        if (rg == null) return out;                       // чанк вне рощи — структур нет
-        for (Cart c : rg.carts) if (c.x >= x0 - 3 && c.x <= x0 + 18 && c.z >= z0 - 3 && c.z <= z0 + 18) out.add(c);
+        if (rg == null) return out;
+        for (Cart c : rg.carts) if (c.x >= x0 - 4 && c.x <= x0 + 19 && c.z >= z0 - 4 && c.z <= z0 + 19) out.add(c);
         return out;
     }
 
-    /** Памятники, которые могут попасть в чанк. */
     public static List<Shrine> shrinesIn(Region rg, int x0, int z0) {
         List<Shrine> out = new ArrayList<>(1);
         if (rg == null) return out;
-        for (Shrine s : rg.shrines) if (s.x >= x0 - 4 && s.x <= x0 + 19 && s.z >= z0 - 4 && s.z <= z0 + 19) out.add(s);
+        for (Shrine s : rg.shrines) if (s.x >= x0 - 5 && s.x <= x0 + 20 && s.z >= z0 - 5 && s.z <= z0 + 20) out.add(s);
         return out;
     }
 
     public static Region templeIn(int x0, int z0) {
         Region rg = regionAt(x0 + 8.5, z0 + 8.5);
         if (rg == null || !rg.temple) return null;
-        return Math.abs(rg.tx - x0) <= 40 && Math.abs(rg.tz - z0) <= 40 ? rg : null;
+        return Math.abs(rg.tx - x0) <= 32 && Math.abs(rg.tz - z0) <= 32 ? rg : null;
     }
 }

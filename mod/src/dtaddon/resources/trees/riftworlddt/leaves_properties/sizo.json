@@ -1,8 +1,9 @@
 {
   "primitive_leaves": "riftworld:sizo_leaves",
-  "color": "0xEAF1F6",
+  "color": "0xFFFFFF",
   "cell_kit": "dynamictrees:deciduous",
-  "smother": 4,
+  "smother": 7,
+  "light_requirement": 0,
   "block_registry_name": "riftworlddt:sizo_leaves",
   "only_if_loaded": "riftworld"
 }

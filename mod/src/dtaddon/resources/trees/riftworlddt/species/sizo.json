@@ -1,7 +1,9 @@
 {
   "family": "riftworlddt:sizo",
-  "tapering": 0.32,
-  "signal_energy": 13.0,
+  "tapering": 0.22,
+  "signal_energy": 18.0,
+  "up_probability": 4,
+  "lowest_branch_height": 6,
   "growth_rate": 0.85,
   "leaves_properties": "riftworlddt:sizo",
   "generate_seed": true,

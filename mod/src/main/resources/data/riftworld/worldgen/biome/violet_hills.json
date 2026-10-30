@@ -3,15 +3,15 @@
   "temperature": 0.75,
   "downfall": 0.55,
   "effects": {
-    "sky_color": 14269657,
-    "fog_color": 15322072,
+    "sky_color": 14536426,
+    "fog_color": 16114402,
     "water_color": 5882575,
     "water_fog_color": 3046022,
-    "grass_color": 10335087,
-    "foliage_color": 10335087,
+    "grass_color": 9086812,
+    "foliage_color": 16777215,
     "particle": {
-      "type": "minecraft:cherry_leaves",
-      "probability": 0.0016
+      "type": "riftworld:violet_leaf",
+      "probability": 0.015
     }
   },
   "spawners": {},

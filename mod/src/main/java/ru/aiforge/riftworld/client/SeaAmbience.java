@@ -48,6 +48,51 @@ public final class SeaAmbience {
         var cam = mc.gameRenderer.getMainCamera();
         boolean under = cam.getFluidInCamera() == FogType.WATER;
         BlockPos at = cam.getBlockPosition();
+        var camPos = cam.getPosition();
+
+        if ("true".equalsIgnoreCase(System.getProperty("riftworld.fhd")) && tick <= 60 && tick % 20 == 0) {
+            try {
+                long win = mc.getWindow().getWindow();
+                if (win != 0L && mc.getWindow().getWidth() < 1800) {
+                    org.lwjgl.glfw.GLFW.glfwSetWindowPos(win, 0, 0);
+                    org.lwjgl.glfw.GLFW.glfwSetWindowSize(win, 1920, 1080);
+                }
+            } catch (Throwable ignored) {
+            }
+        }
+
+        // ---- надземные кастомные частицы листьев в воздухе (Фиолетовые холмы + Роща Сизо)
+        if (!under) {
+            if (ru.aiforge.riftworld.world.VioletHills.regionAt(camPos.x, camPos.z) != null) {
+                var look = cam.getLookVector();
+                for (int i = 0; i < 8; ++i) {
+                    double fwd = 6.0 + RND.nextDouble() * 28.0;
+                    double side = (RND.nextDouble() - 0.5) * 38.0;
+                    double px = camPos.x + look.x() * fwd - look.z() * side + (RND.nextDouble() - 0.5) * 8.0;
+                    double pz = camPos.z + look.z() * fwd + look.x() * side + (RND.nextDouble() - 0.5) * 8.0;
+                    double py = camPos.y - 1.0 + RND.nextDouble() * 17.0;
+                    level.addAlwaysVisibleParticle(ru.aiforge.riftworld.registry.ModParticles.VIOLET_LEAF.get(),
+                            true, px, py, pz,
+                            0.018 + RND.nextDouble() * 0.014,
+                            -0.005 - RND.nextDouble() * 0.008,
+                            0.008 + (RND.nextDouble() - 0.4) * 0.014);
+                }
+            } else if (ru.aiforge.riftworld.world.SizoGrove.regionAt(camPos.x, camPos.z) != null) {
+                var look = cam.getLookVector();
+                for (int i = 0; i < 4; ++i) {
+                    double fwd = 5.0 + RND.nextDouble() * 24.0;
+                    double side = (RND.nextDouble() - 0.5) * 28.0;
+                    double px = camPos.x + look.x() * fwd - look.z() * side;
+                    double pz = camPos.z + look.z() * fwd + look.x() * side;
+                    double py = camPos.y - 1.0 + RND.nextDouble() * 14.0;
+                    level.addAlwaysVisibleParticle(ru.aiforge.riftworld.registry.ModParticles.SIZO_LEAF.get(),
+                            true, px, py, pz,
+                            0.010 + RND.nextDouble() * 0.008,
+                            -0.004 - RND.nextDouble() * 0.006,
+                            (RND.nextDouble() - 0.5) * 0.008);
+                }
+            }
+        }
 
         // ---- планктон и пузыри в толще воды
         if (under) {

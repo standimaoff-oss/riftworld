@@ -850,7 +850,7 @@ biome_section() {
     EL tp TestPlayer "$cx" 130 "$cz" >/dev/null 2>&1 || true
     sleep 12
     out=$(EL execute in riftworld:elisar run riftbiome "$name" 2>&1 | tr '\r\n' '  ')
-    log "  /riftbiome $name (счёт) -> ${out:0:420}"
+    log "  /riftbiome $name (счёт) -> ${out:0:560}"
     echo "$out"
   }
 
@@ -1111,29 +1111,60 @@ biome_section() {
   fi
 
   # ---------- 05 «Роща Сизо» ----------
-  local SL SX SZ SLOG SLEAF
+  local SL SX SZ SLOG SLEAF STRAIL SFLOW SPILL
   SL=$(probe_biome sizo)
   SX=$(printf '%s' "$SL" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\1/p' | tail -1)
   SZ=$(printf '%s' "$SL" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\2/p' | tail -1)
   SLEAF=$(printf '%s' "$SL" | sed -n 's/.* garden_leaves=\([0-9]*\).*/\1/p' | tail -1)
   STOP=$(printf '%s' "$SL" | sed -n 's/.* top=\(-\?[0-9]*\).*/\1/p' | tail -1)
+  STRAIL=$(printf '%s' "$SL" | sed -n 's/.* sizo_trail=\([0-9]*\).*/\1/p' | tail -1)
+  SFLOW=$(printf '%s' "$SL" | sed -n 's/.* sizo_flowers=\([0-9]*\).*/\1/p' | tail -1)
+  SPILL=$(printf '%s' "$SL" | sed -n 's/.* sizo_pillars=\([0-9]*\).*/\1/p' | tail -1)
   SSTRUCT=$(printf '%s' "$SL" | sed -n 's/.* struct=\([^ ]*\( [a-z_]*=[0-9]*\)*\).*/\1/p' | tail -1)
-  log "  /riftbiome sizo: структуры -> ${SSTRUCT:--} (по ТЗ: тележка ~1/3, памятник и храм ~1/7, 1-2 пары столбов)"
+  log "  /riftbiome sizo: структуры -> ${SSTRUCT:--} trail=${STRAIL:-0} flowers=${SFLOW:-0} pillars=${SPILL:-0}"
   if [ -z "${SX:-}" ]; then
     log "  FAIL /riftbiome sizo не нашёл регион рощи"; FAILS=$((FAILS + 1))
   else
-    # стволы гигантских сизо считаем по ванильному rifttree: у рощи должны быть высокие деревья
-    local STREE
-    STREE=$(EL execute in riftworld:elisar run rifttree sizo 2>&1 | tr '\r\n' '  ')
-    log "  /rifttree у рощи -> ${STREE:0:200}"
-    local STOP2=${STOP:-118}
-    lookat "$((SX + 40))" "$((STOP2 + 6))" "$((SZ + 40))" "$SX" "$((STOP2 - 10))" "$SZ" 18 "45_sizo_grove"
-    lookat "$((SX + 16))" "$((STOP2 - 4))" "$((SZ + 16))" "$SX" "$((STOP2 - 14))" "$SZ" 16 "46_sizo_trunks"
-    lookat "$((SX + 10))" "$((STOP2 + 14))" "$((SZ + 30))" "$SX" "$((STOP2 - 6))" "$SZ" 16 "47_sizo_canopy"
+    if [ "${STRAIL:-0}" -ge 100 ] && [ "${SPILL:-0}" -ge 4 ] && [ "${SFLOW:-0}" -ge 80 ]; then
+      log "  OK   роща сизо: мощёная тропа (${STRAIL}), парные столбы с янтарём (${SPILL}) и васильковые цветы (${SFLOW})"
+    else
+      log "  FAIL роща сизо: тропа=${STRAIL:-0} столбы=${SPILL:-0} цветы=${SFLOW:-0} (нужно >=100, >=4, >=80)"
+      FAILS=$((FAILS + 1))
+    fi
+    EL tp TestPlayer "$SX" 92 "$SZ" >/dev/null 2>&1 || true
+    sleep 4
+    local SDTW SDTN
+    SDTW=$(EL execute at TestPlayer in riftworld:elisar run riftdtwild 44 2>&1 | tr '\r\n' '  ')
+    log "  /riftdtwild (роща сизо) -> ${SDTW:0:220}"
+    SDTN=$(printf '%s' "$SDTW" | sed -n 's/.* dt=\([0-9]*\).*/\1/p' | tail -1)
+    if [ "${SDTN:-0}" -ge 200 ]; then
+      log "  OK   роща сизо: гигантские динамические деревья сизо выросли (${SDTN} блоков DT)"
+    else
+      log "  FAIL роща сизо: деревьев аддона DT всего ${SDTN:-0} (нужно >=200)"; FAILS=$((FAILS + 1))
+    fi
+    local SV1 SV2 SV3 STOP2=${STOP:-104}
+    SV1=$(printf '%s' "$SL" | grep -o 'sview1=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^sview1=//')
+    SV2=$(printf '%s' "$SL" | grep -o 'sview2=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^sview2=//')
+    SV3=$(printf '%s' "$SL" | grep -o 'sview3=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^sview3=//')
+    if [ -n "${SV1:-}" ]; then
+      lookat $(printf '%s' "$SV1" | cut -d: -f1 | tr ',' ' ') $(printf '%s' "$SV1" | cut -d: -f2 | tr ',' ' ') 18 "45_sizo_grove"
+    else
+      lookat "$((SX + 40))" "$((STOP2 - 8))" "$((SZ + 40))" "$SX" "$((STOP2 - 14))" "$SZ" 18 "45_sizo_grove"
+    fi
+    if [ -n "${SV2:-}" ]; then
+      lookat $(printf '%s' "$SV2" | cut -d: -f1 | tr ',' ' ') $(printf '%s' "$SV2" | cut -d: -f2 | tr ',' ' ') 16 "46_sizo_trunks"
+    else
+      lookat "$((SX + 16))" "$((STOP2 - 12))" "$((SZ + 16))" "$SX" "$((STOP2 - 14))" "$SZ" 16 "46_sizo_trunks"
+    fi
+    if [ -n "${SV3:-}" ]; then
+      lookat $(printf '%s' "$SV3" | cut -d: -f1 | tr ',' ' ') $(printf '%s' "$SV3" | cut -d: -f2 | tr ',' ' ') 16 "47_sizo_canopy"
+    else
+      lookat "$((SX + 10))" "$((STOP2 - 6))" "$((SZ + 30))" "$SX" "$((STOP2 - 8))" "$SZ" 16 "47_sizo_canopy"
+    fi
   fi
 
   # ---------- 04 «Фиолетовые холмы» (рев 14.29, по референсу reports/refs_rev4/04_violet_hills.png) ----------
-  local VL VX VZ VR VTOP VBLOOM VLEAF VFEN VLAM VLAV
+  local VL VX VZ VR VTOP VBLOOM VLEAF VFEN VLAM VLAV VWALL VACC
   VL=$(probe_biome violet)
   VX=$(printf '%s' "$VL" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\1/p' | tail -1)
   VZ=$(printf '%s' "$VL" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\2/p' | tail -1)
@@ -1142,8 +1173,10 @@ biome_section() {
   VBLOOM=$(printf '%s' "$VL" | sed -n 's/.* violet_blooms=\([0-9]*\).*/\1/p' | tail -1)
   VLEAF=$(printf '%s' "$VL" | sed -n 's/.* violet_leaves=\([0-9]*\).*/\1/p' | tail -1)
   VFEN=$(printf '%s' "$VL" | sed -n 's/.* fences=\([0-9]*\).*/\1/p' | tail -1)
+  VWALL=$(printf '%s' "$VL" | sed -n 's/.* walls=\([0-9]*\).*/\1/p' | tail -1)
   VLAM=$(printf '%s' "$VL" | sed -n 's/.* lamps=\([0-9]*\).*/\1/p' | tail -1)
   VLAV=$(printf '%s' "$VL" | sed -n 's/.* lavender=\([0-9]*\).*/\1/p' | tail -1)
+  VACC=$(printf '%s' "$VL" | sed -n 's/.* accent_flowers=\([0-9]*\).*/\1/p' | tail -1)
   if [ -z "${VX:-}" ]; then
     log "  FAIL /riftbiome violet не нашёл регион Фиолетовых холмов"; FAILS=$((FAILS + 1))
   else
@@ -1154,42 +1187,57 @@ biome_section() {
       log "  FAIL холмы: лаванды ${VLAV:-0} гряд + ${VBLOOM:-0} цветов (нужно >=2500 на поле)"
       FAILS=$((FAILS + 1))
     fi
-    # Рев 14.36: главное по референсу — ПЛОТНЫЕ ГРЯДЫ (блоки-кусты), а не только цветы сверху.
     if [ "${VLAV:-0}" -ge 3000 ]; then log "  OK   холмы: гряд лаванды $VLAV блоков (сплошные поля, как на фото)"
     else log "  FAIL холмы: гряд лаванды ${VLAV:-0} (нужно >=3000 — поля сплошной массой)"; FAILS=$((FAILS + 1)); fi
+    if [ "${VWALL:-0}" -ge 15 ] && [ "${VFEN:-0}" -ge 15 ] && [ "${VLAM:-0}" -ge 4 ]; then
+      log "  OK   холмы: вдоль дороги каменные стенки (${VWALL}), деревянные заборы (${VFEN}) и столбы с факелами (${VLAM})"
+    else
+      log "  FAIL холмы: придорожная ограда неполная — walls=${VWALL:-0} fences=${VFEN:-0} lamps=${VLAM:-0}"
+      FAILS=$((FAILS + 1))
+    fi
+    if [ "${VACC:-0}" -ge 25 ] && [ "${VACC:-0}" -le 2200 ]; then
+      log "  OK   холмы: других цветов в малом количестве (${VACC} на фоне $(( ${VLAV:-0} + ${VBLOOM:-0} )) фиолетовых)"
+    else
+      log "  FAIL холмы: акцентных цветов ${VACC:-0} (нужно немного: 25..2200)"; FAILS=$((FAILS + 1))
+    fi
     # Рев 16: обычных «фиолетовых кустов» больше нет — деревья в холмах ставит ТОЛЬКО аддон DT
-    # (вид riftworlddt:lilac, «лиловый хлыст»). Проверяем блоки аддона вокруг игрока.
+    # (вид riftworlddt:lilac, «лиловый ветвецвет»). Проверяем блоки аддона вокруг игрока.
+    EL tp TestPlayer "$VX" 92 "$VZ" >/dev/null 2>&1 || true
+    sleep 4
     local VLW VLN
     VLW=$(EL execute at TestPlayer in riftworld:elisar run riftdtwild 40 2>&1 | tr '\r\n' '  ')
-    log "  /riftdtwild (холмы, лиловый хлыст) -> ${VLW:0:220}"
+    log "  /riftdtwild (холмы, лиловый ветвецвет) -> ${VLW:0:220}"
     VLN=$(printf '%s' "$VLW" | sed -n 's/.* dt=\([0-9]*\).*/\1/p' | tail -1)
-    if [ "${VLN:-0}" -ge 150 ]; then log "  OK   холмы: динамических деревьев аддона $VLN блоков (лиловый хлыст)"
-    else log "  FAIL холмы: деревьев аддона ${VLN:-0} (нужно >=150 — в биоме должен расти лиловый хлыст)"; FAILS=$((FAILS + 1)); fi
+    if [ "${VLN:-0}" -ge 150 ]; then log "  OK   холмы: динамических деревьев аддона $VLN блоков (лиловый ветвецвет)"
+    else log "  FAIL холмы: деревьев аддона ${VLN:-0} (нужно >=150 — в биоме должен расти лиловый ветвецвет)"; FAILS=$((FAILS + 1)); fi
     local VTOP2=${VTOP:-90} VRR=${VR:-80} VGY
     VGY=$(printf '%s' "$VL" | sed -n 's/.* vground=\(-\?[0-9]*\).*/\1/p' | tail -1)
     VGY=${VGY:-80}
-    local VROAD
+    local VROAD VFIELDS VPATH VTREES
     VROAD=$(printf '%s' "$VL" | grep -o 'road=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^road=//')
+    VFIELDS=$(printf '%s' "$VL" | grep -o 'vfields=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^vfields=//')
+    VPATH=$(printf '%s' "$VL" | grep -o 'vpath=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^vpath=//')
+    VTREES=$(printf '%s' "$VL" | grep -o 'vtrees=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^vtrees=//')
     if [ -n "${VROAD:-}" ]; then
-      local VRCAM VRLOOK
-      VRCAM=$(printf '%s' "$VROAD" | cut -d: -f1 | tr ',' ' ')
-      VRLOOK=$(printf '%s' "$VROAD" | cut -d: -f2 | tr ',' ' ')
-      lookat $VRCAM $VRLOOK 18 "49_violet_hills"
+      lookat $(printf '%s' "$VROAD" | cut -d: -f1 | tr ',' ' ') $(printf '%s' "$VROAD" | cut -d: -f2 | tr ',' ' ') 18 "49_violet_hills"
     else
       lookat "$((VX + VRR * 2 / 5))" "$((VGY + 8))" "$((VZ + VRR * 2 / 5))" "$VX" "$((VGY + 2))" "$VZ" 16 "49_violet_hills"
     fi
-    lookat "$((VX + VRR * 2 / 5))" "$((VGY + 9))" "$((VZ + VRR / 3))" "$VX" "$((VGY + 2))" "$VZ" 16 "50_violet_fields"
-    local VPATH
-    VPATH=$(printf '%s' "$VL" | grep -o 'vpath=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^vpath=//')
+    if [ -n "${VFIELDS:-}" ]; then
+      lookat $(printf '%s' "$VFIELDS" | cut -d: -f1 | tr ',' ' ') $(printf '%s' "$VFIELDS" | cut -d: -f2 | tr ',' ' ') 16 "50_violet_fields"
+    else
+      lookat "$((VX + VRR * 2 / 5))" "$((VGY + 9))" "$((VZ + VRR / 3))" "$VX" "$((VGY + 2))" "$VZ" 16 "50_violet_fields"
+    fi
     if [ -n "${VPATH:-}" ]; then
-      local VPCAM VPLOOK
-      VPCAM=$(printf '%s' "$VPATH" | cut -d: -f1 | tr ',' ' ')
-      VPLOOK=$(printf '%s' "$VPATH" | cut -d: -f2 | tr ',' ' ')
-      lookat $VPCAM $VPLOOK 15 "51_violet_path"
+      lookat $(printf '%s' "$VPATH" | cut -d: -f1 | tr ',' ' ') $(printf '%s' "$VPATH" | cut -d: -f2 | tr ',' ' ') 16 "51_violet_path"
     else
       lookat "$((VX + VRR / 4))" "$((VGY + 5))" "$((VZ + VRR / 6))" "$VX" "$((VGY + 2))" "$VZ" 15 "51_violet_path"
     fi
-    lookat "$((VX + 14))" "$((VGY + 6))" "$((VZ + 14))" "$VX" "$((VGY + 6))" "$VZ" 15 "52_violet_trees_closeup"
+    if [ -n "${VTREES:-}" ]; then
+      lookat $(printf '%s' "$VTREES" | cut -d: -f1 | tr ',' ' ') $(printf '%s' "$VTREES" | cut -d: -f2 | tr ',' ' ') 16 "52_violet_trees_closeup"
+    else
+      lookat "$((VX + 14))" "$((VGY + 6))" "$((VZ + 14))" "$VX" "$((VGY + 6))" "$VZ" 15 "52_violet_trees_closeup"
+    fi
     EL tp TestPlayer "$VX" "$((VGY + 4))" "$VZ" >/dev/null 2>&1 || true
     sleep 3
   fi

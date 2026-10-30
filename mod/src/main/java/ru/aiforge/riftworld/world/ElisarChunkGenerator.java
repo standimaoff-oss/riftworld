@@ -311,11 +311,25 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 c.soft = dome;
                 top = violetTerrace(dome);
             }
-            else if (isl.kind == SizoGrove.KIND) {                     // sizo grove: terrace under the rare ruined temple
+            else if (isl.kind == SizoGrove.KIND) {                     // sizo grove: gentle forest floor, trail & ruined tower terrace
                 SizoGrove.Region sr = SizoGrove.regionAt(px, pz);
-                if (sr != null && sr.temple && sr.hub == isl) {
-                    double o = Math.max(Math.abs(px - sr.tx), Math.abs(pz - sr.tz)) - 8.0;
-                    if (o < 7) top = o <= 0 ? sr.ty : sr.ty + (top - sr.ty) * smooth(o / 7.0);
+                if (sr != null && sr.hub == isl) {
+                    // Мягко сглаживаем центральную лесную долину вдоль тропы, чтобы мощёная дорожка шла плавно
+                    double td = sr.trailDist(px, pz);
+                    double flatY = sr.hub.base + 2.2 + 1.8 * (vnoise(px * 0.012, pz * 0.012, 189) - 0.5);
+                    if (td < 9.0) {
+                        double k = smooth(Math.max(0.0, (td - 2.4) / 6.6));
+                        top = flatY + (top - flatY) * k;
+                    }
+                    if (sr.temple) {
+                        double o = Math.max(Math.abs(px - sr.tx), Math.abs(pz - sr.tz)) - 6.5;
+                        if (o < 8.0) top = o <= 0 ? sr.ty : sr.ty + (top - sr.ty) * smooth(o / 8.0);
+                    }
+                    double edgeJitter = 0.42 * (vnoise(px * 0.28, pz * 0.28, 191) - 0.5);
+                    if (isl.t(px, pz) > 0.20 && td <= SizoGrove.Region.TRAIL_HW + edgeJitter
+                            && (!sr.temple || Math.hypot(px - sr.tx, pz - sr.tz) > 4.2)) {
+                        c.surface = S_PATH;
+                    }
                 }
             }
             else if (isl.kind == WaterfallGardens.KIND) {              // biome 07: limestone terraces stepping to the sea
@@ -538,19 +552,24 @@ public class ElisarChunkGenerator extends ChunkGenerator {
     public static double violetProfile(CityPlan.Island isl, double px, double pz, int ocean) {
         double tm = Math.max(0.0, Math.min(1.0, isl.t(px, pz)));
         double rimY = ocean + 2.2;
-        // Плавные перекатывающиеся гряды и ложбины по референсу 04 (НЕ горка к центру острова):
-        // мягкая ложбина вдоль извилистой светлой дорожки и плавные боковые волны с обеих сторон.
-        double plateau = ocean + 15.0;
-        double rolling = 10.6 * (vnoise(px * 0.0041, pz * 0.0041, 71) - 0.5)    // плавные крупные волны холмов
-                       + 4.4 * (vnoise(px * 0.0098, pz * 0.0098, 72) - 0.5)     // средние складки склонов
-                       + 1.2 * (vnoise(px * 0.024, pz * 0.024, 73) - 0.5);      // мягкая рябь
+        // Референс 04_violet_hills.png: дорога вьётся по пологой долине, а ПО ОБЕ СТОРОНЫ ВОКРУГ ДОРОГИ
+        // поднимаются выразительные ярусные лавандовые холмы (не один пик по центру острова и не блин).
         VioletHills.Region vr = VioletHills.regionAt(px, pz);
-        if (vr != null) {
-            double rd = vr.roadDist(px, pz);
-            rolling -= 3.6 * Math.exp(-(rd * rd) / (26.0 * 26.0));               // пологая долина вдоль дорожки
-        }
-        double inland = smooth(tm / 0.18);
-        return rimY + (plateau + rolling - rimY) * inland;
+        double rd = vr != null ? vr.mainRoadDist(px, pz) : 28.0;
+        double brd = vr != null ? vr.branchRoadDist(px, pz) : 40.0;
+        double valleyFloor = ocean + 11.8
+                + 2.8 * (vnoise(px * 0.0046, pz * 0.0046, 70) - 0.5)
+                + 1.0 * (vnoise(px * 0.014, pz * 0.014, 74) - 0.5);
+        // Несколько отдельных мягких холмов слева и справа от дороги (+9..+17 блоков над дорожкой)
+        double hillWave = 0.42
+                + 0.78 * vnoise(px * 0.0086, pz * 0.0086, 71)
+                + 0.34 * (vnoise(px * 0.019, pz * 0.019, 72) - 0.35);
+        double flankMask = smooth(Math.max(0.0, Math.min(1.0, (rd - 3.8) / 22.0)));
+        double branchCut = 1.0 - 0.42 * Math.exp(-(brd * brd) / (9.0 * 9.0));
+        double hills = Math.max(0.0, 13.4 * hillWave) * flankMask * branchCut
+                + 0.85 * (vnoise(px * 0.026, pz * 0.026, 73) - 0.5) * flankMask;
+        double inland = smooth(tm / 0.17);
+        return rimY + (valleyFloor + hills - rimY) * inland;
     }
 
     /** Верх луга в точке (та же формула, что в {@link #column}), для посадки церквей и камер. */
@@ -589,14 +608,17 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                           VioletHills.Region vr, double[] tt) {
         CityPlan.Island isl = c.isl;
         if (isl == null || isl.kind != 7) return;
-        if (isl.t(px, pz) < 0.14) return;
-        double d = vr.roadDist(px, pz);
+        if (isl.t(px, pz) < 0.13) return;
+        double dm = vr.mainRoadDist(px, pz);
+        double db = vr.branchRoadDist(px, pz);
         double hw = VioletHills.Region.RIVER_HW;
-        if (d > hw + 0.95) return;
-        // Извилистая светлая каменная дорожка в ложбине между лавандовыми холмами (как на референсе 04)
-        c.soft = Double.NaN;
-        if (d <= hw) {
+        double bhw = VioletHills.Region.BRANCH_HW;
+        if (dm <= hw || (isl.t(px, pz) > 0.20 && db <= bhw)) {
+            c.soft = Double.NaN;
             c.surface = S_COBBLE;
+        } else if (dm <= hw + 1.95 || db <= bhw + 1.15) {
+            // Аккуратная зелёная обочина под каменные стенки, деревянные заборы и столбы с факелами
+            c.soft = Double.NaN;
         }
     }
 
@@ -718,8 +740,27 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                         BlockState s;
                         if (y == c.top) {
                             s = switch (c.surface) {
-                                case S_COBBLE -> cobble;
-                                case S_PATH -> path;
+                                case S_COBBLE -> {
+                                    if (c.isl.kind == 7) {
+                                        double rh = hash(x, z, 181);
+                                        yield rh < 0.62 ? lime
+                                                : rh < 0.88 ? Blocks.DIORITE.defaultBlockState()
+                                                : Blocks.CALCITE.defaultBlockState();
+                                    }
+                                    yield cobble;
+                                }
+                                case S_PATH -> {
+                                    if (c.isl.kind == SizoGrove.KIND) {
+                                        double patch = vnoise(x * 0.36, z * 0.36, 193) + 0.24 * (hash(x, z, 194) - 0.5);
+                                        yield patch < 0.34 ? Blocks.COBBLESTONE.defaultBlockState()
+                                                : patch < 0.52 ? (hash(x, z, 195) < 0.55
+                                                    ? Blocks.MOSSY_COBBLESTONE.defaultBlockState()
+                                                    : Blocks.ANDESITE.defaultBlockState())
+                                                : patch < 0.80 ? Blocks.DIRT_PATH.defaultBlockState()
+                                                : Blocks.COARSE_DIRT.defaultBlockState();
+                                    }
+                                    yield path;
+                                }
                                 case S_PLANK -> plank;
                                 case S_PLOT -> cobble;         // pebble apron around the houses (reference)
                                 default -> {
@@ -746,7 +787,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                     }
                                     boolean groveTan = c.isl.kind == SizoGrove.KIND || (c.isl.kind != 4 && SizoGrove.inside(x + 0.5, z + 0.5));
                                     yield groveTan
-                                            ? (vnoise(x * 0.15, z * 0.15, 66) > 0.58 ? moss : grass)
+                                            ? (vnoise(x * 0.16, z * 0.16, 66) > 0.82 ? moss : grass)
                                             : (c.isl.kind != 4 && vnoise(x * 0.11, z * 0.11, 21) > 0.74 || hash(x, z, 23) < 0.012) ? moss : grass;
                                 }
                             };
@@ -788,13 +829,17 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                             }
                         }
                     }
-                    // half-step slabs where a street climbs one block (smooth walking, no hard ledges)
-                    if (c.surface == S_COBBLE && c.waterTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE && c.fallTop == Integer.MIN_VALUE) {
+                    // half-step slabs where a street or country lane climbs one block (smooth walking, no hard ledges)
+                    if ((c.surface == S_COBBLE || (c.isl.kind == SizoGrove.KIND && c.surface == S_PATH))
+                            && c.waterTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE && c.fallTop == Integer.MIN_VALUE) {
                         for (Direction d : Direction.Plane.HORIZONTAL) {
                             Col n = cols[dx + 1 + d.getStepX()][dz + 1 + d.getStepZ()];
                             if (n.isl != null && n.top == c.top + 1 && n.deckY == Integer.MIN_VALUE
                                     && (n.surface == S_COBBLE || n.surface == S_PATH)) {
-                                chunk.setBlockState(mp.set(x, c.top + 1, z), st(ElisarBlocks.COBBLE_SLAB), false);
+                                BlockState roadSlab = c.isl.kind == 7 ? Blocks.SMOOTH_STONE_SLAB.defaultBlockState()
+                                        : c.isl.kind == SizoGrove.KIND ? Blocks.COBBLESTONE_SLAB.defaultBlockState()
+                                        : st(ElisarBlocks.COBBLE_SLAB);
+                                chunk.setBlockState(mp.set(x, c.top + 1, z), roadSlab, false);
                                 break;
                             }
                         }
@@ -811,46 +856,59 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                         } else {
                             boolean violet = c.isl.kind == 7 || (c.isl.kind != 4 && VioletHills.inside(x + 0.5, z + 0.5));
                             if (violet) {
-                                // Сплошные волнообразные лавандовые гряды и море цветов по референсу 04:
-                                // НИКАКИХ бурых пятен голой земли (coarse_dirt) — вся поверхность устлана
-                                // шалфейно-зелёным дёрном и плотными ярусами лаванды/фиолетовых соцветий.
+                                // Небольшая редкая примесь (~4 %) других цветов по референсу 04_violet_hills.png
+                                double acc = hash(x, z, 99);
+                                BlockState accentBloom = acc < 0.015 ? Blocks.PINK_TULIP.defaultBlockState()
+                                        : acc < 0.026 ? Blocks.ALLIUM.defaultBlockState()
+                                        : acc < 0.034 ? Blocks.ORANGE_TULIP.defaultBlockState()
+                                        : acc < 0.041 ? Blocks.OXEYE_DAISY.defaultBlockState()
+                                        : acc < 0.046 ? Blocks.CORNFLOWER.defaultBlockState()
+                                        : acc < 0.050 ? Blocks.DANDELION.defaultBlockState()
+                                        : null;
                                 if (Double.isNaN(c.soft)) {
-                                    // узкая зелёная обочина вдоль светлой каменной дорожки с цветами
+                                    // Чистая травяная обочина под придорожные каменные стенки, заборы и столбы с факелами
                                     chunk.setBlockState(mp.set(x, c.top, z), vTurf, false);
-                                    if (h < 0.72) {
-                                        BlockState rimBloom = st(h < 0.30 ? ElisarBlocks.VIOLET_BLOOM
-                                                : h < 0.56 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM);
-                                        chunk.setBlockState(mp.set(x, c.top + 1, z), rimBloom, false);
-                                    } else {
-                                        chunk.setBlockState(mp.set(x, c.top + 1, z), vGrass, false);
+                                    VioletHills.Region vr0 = VioletHills.regionAt(x + 0.5, z + 0.5);
+                                    double md = vr0 != null ? vr0.mainRoadDist(x + 0.5, z + 0.5) : 99.0;
+                                    if (md > VioletHills.Region.RIVER_HW + 1.35) {
+                                        if (accentBloom != null) {
+                                            chunk.setBlockState(mp.set(x, c.top + 1, z), accentBloom, false);
+                                        } else if (h < 0.55) {
+                                            BlockState rimBloom = st(h < 0.24 ? ElisarBlocks.VIOLET_BLOOM
+                                                    : h < 0.44 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM);
+                                            chunk.setBlockState(mp.set(x, c.top + 1, z), rimBloom, false);
+                                        } else if (h < 0.72) {
+                                            chunk.setBlockState(mp.set(x, c.top + 1, z), vGrass, false);
+                                        }
                                     }
                                 } else {
                                     double soft = c.soft;
-                                    // Гряды идут плавными лентами вдоль контуров склонов (ширина гряды ~3 блока + узкая цветочная ложбинка)
+                                    boolean stepLip = false;
+                                    for (Direction dd : Direction.Plane.HORIZONTAL) {
+                                        Col nb = cols[dx + 1 + dd.getStepX()][dz + 1 + dd.getStepZ()];
+                                        if (nb.isl != null && nb.top < c.top) { stepLip = true; break; }
+                                    }
                                     double rp = soft * 0.55 + (x * 0.21 + z * 0.15) + 2.8 * vnoise(x * 0.015, z * 0.015, 91);
                                     double frac = rp - Math.floor(rp);
-                                    boolean row = frac < 0.80;
+                                    boolean row = frac < 0.76 && !stepLip;
                                     double band = vnoise(x * 0.013, z * 0.013, 94) + (hash(x, z, 98) - 0.5) * 0.18;
                                     BlockState bloom = st(band < 0.44 ? ElisarBlocks.VIOLET_BLOOM
                                             : band < 0.84 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM);
                                     chunk.setBlockState(mp.set(x, c.top, z), vTurf, false);
-                                    if (row) {
-                                        // Высокая двухблочная гряда лаванды (куст + пышная цветущая макушка)
+                                    if (accentBloom != null) {
+                                        chunk.setBlockState(mp.set(x, c.top + 1, z), accentBloom, false);
+                                    } else if (row) {
                                         chunk.setBlockState(mp.set(x, c.top + 1, z), st(ElisarBlocks.LAVENDER_BED), false);
                                         chunk.setBlockState(mp.set(x, c.top + 2, z), bloom, false);
+                                    } else if (stepLip && h < 0.42) {
+                                        chunk.setBlockState(mp.set(x, c.top + 1, z), h < 0.18 ? Blocks.FERN.defaultBlockState() : vGrass, false);
                                     } else if (h < 0.88) {
-                                        // Междурядье тоже густо усыпано фиолетовыми и сиреневыми цветами (1 блок — читается рельеф гряд!)
-                                        chunk.setBlockState(mp.set(x, c.top + 1, z), h < 0.32 ? st(ElisarBlocks.LAVENDER_BED) : bloom, false);
+                                        chunk.setBlockState(mp.set(x, c.top + 1, z), h < 0.34 ? st(ElisarBlocks.LAVENDER_BED) : bloom, false);
                                     } else {
                                         chunk.setBlockState(mp.set(x, c.top + 1, z), vGrass, false);
                                     }
                                 }
                             } else if (c.garden) {
-                                // Рев 14.3, по референсу: газон садов — ЯРКО-ЗЕЛЁНЫЙ (это трава полки),
-                                // а не белое поле. Раньше 52 % колонок забивалось elisar_tall_grass,
-                                // у которой текстура почти белая (200,195,183) — кадры выглядели снежными.
-                                // Теперь: редкие светлые былинки, островки мелких цветов (красный/жёлтый/
-                                // синий — как на фото) и низкие стелющиеся кусты.
                                 if (h < 0.10) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
                                 else if (h < 0.26 && vnoise(x * 0.1, z * 0.1, 154) > 0.42) {
                                     int f = (int) (hash(x, z, 155) * 100);
@@ -861,15 +919,14 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                             : st(ElisarBlocks.PALE_BLOOM);
                                     chunk.setBlockState(mp.set(x, c.top + 1, z), bloom, false);
                                 }
-                                // Рев 14.26: листва на газоне УБРАНА. Владелец: «разбросана листва садового
-                                // дуба, убери её» — отдельные блоки листвы лежали среди травы и читались как
-                                // мусор. Листва теперь только в кронах деревьев.
                             } else if (c.isl.kind == SizoGrove.KIND || (c.isl.kind != 4 && SizoGrove.inside(x + 0.5, z + 0.5))) {
-                                // biome 05: mint floor with violet bloom drifts among the giants (no paths - TZ)
-                                if (h < 0.20) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
-                                else if (h < 0.42 && vnoise(x * 0.075, z * 0.075, 95) > 0.60) {
+                                // biome 05 (05_biome_sizo_grove.png): густые пучки серебристо-мятной травы и васильково-фиолетовые лесные цветы
+                                if (h < 0.36) {
+                                    chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
+                                } else if (h < 0.56 && vnoise(x * 0.085, z * 0.085, 95) > 0.44) {
                                     int f = (int) (hash(x, z, 96) * 100);
-                                    chunk.setBlockState(mp.set(x, c.top + 1, z), st(f < 40 ? ElisarBlocks.VIOLET_BLOOM : f < 72 ? ElisarBlocks.LILAC_BLOOM : f < 88 ? ElisarBlocks.PALE_BLOOM : ElisarBlocks.FLOWERS), false);
+                                    chunk.setBlockState(mp.set(x, c.top + 1, z),
+                                            st(f < 58 ? ElisarBlocks.FLOWERS : f < 86 ? ElisarBlocks.VIOLET_BLOOM : ElisarBlocks.LILAC_BLOOM), false);
                                 }
                             } else if (h < 0.09) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
                             else if (h < 0.105) chunk.setBlockState(mp.set(x, c.top + 1, z), flowers, false);
@@ -1415,60 +1472,81 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 placeModel(level, box, k, at, f, Boolean.parseBoolean(dec[5]));
             }
         }
-        // Рев 16: церквей в Фиолетовых холмах больше нет (просьба владельца «убери церкви пока»).
-        // Вместе с храмами ушли их площадки и дорожка — луг стал чистым полем, как на референсе 04.
-        // biome 05: grove dressing - mossy boulders & amber-band way pillars (also on islets inside the grove sea-ring)
+        // Референс 04_violet_hills.png: вдоль извилистой светлой дороги стоят каменные столбы с факелами,
+        // низкие каменные стенки и деревянные заборы с проходами к лавандовым склонам (церквей нет).
         BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
+        VioletHills.Region vreg = VioletHills.regionAt(x0 + 8, z0 + 8);
+        if (vreg != null) {
+            buildVioletRoadside(chunk, mp, plan, vreg, x0, z0);
+        }
+        // biome 05 (05_biome_sizo_grove.png): ступенчатые замшелые серые валуны и парные путевые столбы с янтарным огнём
         SizoGrove.Region greg = SizoGrove.regionAt(x0 + 8, z0 + 8);
         if (greg != null) {
+            BlockState rockAndesite = Blocks.ANDESITE.defaultBlockState();
+            BlockState rockCobble = Blocks.COBBLESTONE.defaultBlockState();
+            BlockState rockMossy = Blocks.MOSSY_COBBLESTONE.defaultBlockState();
+            BlockState rockPale = st(ElisarBlocks.STONE);
+            BlockState mossCap = st(ElisarBlocks.MOSS);
             for (SizoGrove.Boulder b : greg.boulders) {
                 if (b.x + b.r < x0 - 1 || b.x - b.r > x0 + 16 || b.z + b.r < z0 - 1 || b.z - b.r > z0 + 16) continue;
                 Col bc = column(plan, b.x, b.z);
                 if (bc.isl == null || bc.top <= plan.ocean + 1) continue;
-                double rx = b.r, ry = b.r * 0.72;
-                int cy = bc.top + (int) Math.round(ry * 0.28);
+                double rx = b.r + 0.55, ry = b.r * 1.12 + 0.6;
+                int cy = bc.top + (int) Math.round(ry * 0.22);
                 int cx0 = Math.max(x0, (int) Math.floor(b.x - rx)), cx1 = Math.min(x0 + 15, (int) Math.ceil(b.x + rx));
                 int cz0 = Math.max(z0, (int) Math.floor(b.z - rx)), cz1 = Math.min(z0 + 15, (int) Math.ceil(b.z + rx));
+                int bseed = (int) (b.seed & 0x3FFFFFFF);
                 for (int bx = cx0; bx <= cx1; ++bx)
                     for (int bz = cz0; bz <= cz1; ++bz) {
                         double dx2 = bx - b.x, dz2 = bz - b.z;
-                        double hq = (dx2 * dx2 + dz2 * dz2) / (rx * rx);
-                        if (hq >= 1) continue;
-                        int maxDy = (int) Math.floor(ry * Math.sqrt(1 - hq) + 0.4);
-                        for (int dy = -maxDy; dy <= maxDy; ++dy) {
+                        double warp = 0.82 + 0.34 * vnoise(bx * 0.32 + (bseed & 63), bz * 0.32, 211);
+                        double hq = (dx2 * dx2 + dz2 * dz2) / (rx * rx * warp * warp);
+                        if (hq >= 1.0) continue;
+                        // Ступенчатый скальный уступ с толстой мшистой шапкой сверху (как на 05_biome_sizo_grove.png)
+                        int maxDy = (int) Math.floor(ry * Math.pow(1.0 - hq, 0.62) + 0.45);
+                        for (int dy = -maxDy - 1; dy <= maxDy; ++dy) {
                             int yy = cy + dy;
                             if (yy <= plan.ocean) continue;
-                            // moss cap wherever sky faces the boulder, yellowed stone core beneath (the reference look)
-                            boolean cap = dy >= maxDy - 1 && hash(bx, bz, (int) (b.seed & 0x3FFFFFFF)) < (dy == maxDy ? 0.85 : 0.3);
-                            chunk.setBlockState(mp.set(bx, yy, bz), st(cap ? ElisarBlocks.MOSS : ElisarBlocks.STONE), false);
+                            boolean skyCap = dy == maxDy && hash(bx, bz, bseed) < 0.90;
+                            boolean mossyRim = dy >= maxDy - 1 && hash(bx, yy, bz) < 0.55;
+                            double rk = hash(bx, yy, bz ^ 0x55AA);
+                            BlockState bs = skyCap ? mossCap
+                                    : mossyRim ? rockMossy
+                                    : rk < 0.44 ? rockAndesite
+                                    : rk < 0.76 ? rockCobble : rockPale;
+                            chunk.setBlockState(mp.set(bx, yy, bz), bs, false);
                         }
                     }
             }
+            BlockState pillarBase = Blocks.CHISELED_STONE_BRICKS.defaultBlockState();
+            BlockState pillarShaft = ru.aiforge.riftworld.registry.TempleBlocks.PILLAR.get().defaultBlockState()
+                    .setValue(RotatedPillarBlock.AXIS, Direction.Axis.Y);
+            BlockState pillarAmber = ru.aiforge.riftworld.registry.TempleBlocks.GOLD_RUNE.get().defaultBlockState()
+                    .setValue(ru.aiforge.riftworld.block.GoldRuneBlock.LIT, true);
+            BlockState pillarCap = Blocks.STONE_BRICK_SLAB.defaultBlockState();
             for (int[] pp : SizoGrove.pillarsIn(greg, x0, z0)) {
                 if (pp[0] < x0 || pp[0] > x0 + 15 || pp[1] < z0 || pp[1] > z0 + 15) continue;
                 Col pc = column(plan, pp[0], pp[1]);
                 if (pc.isl == null || pc.top <= plan.ocean + 1) continue;
-                BlockState pl = ru.aiforge.riftworld.registry.TempleBlocks.PILLAR.get().defaultBlockState().setValue(RotatedPillarBlock.AXIS, Direction.Axis.Y);
-                for (int dy = 1; dy <= 3; ++dy) chunk.setBlockState(mp.set(pp[0], pc.top + dy, pp[1]), pl, false);
-                chunk.setBlockState(mp.set(pp[0], pc.top + 4, pp[1]), st(ru.aiforge.riftworld.registry.TempleBlocks.GOLD), false);
-                chunk.setBlockState(mp.set(pp[0], pc.top + 5, pp[1]), pl, false);
-                chunk.setBlockState(mp.set(pp[0], pc.top + 6, pp[1]), st(ru.aiforge.riftworld.registry.TempleBlocks.SLAB), false);
+                chunk.setBlockState(mp.set(pp[0], pc.top + 1, pp[1]), pillarBase, false);
+                chunk.setBlockState(mp.set(pp[0], pc.top + 2, pp[1]), pillarShaft, false);
+                chunk.setBlockState(mp.set(pp[0], pc.top + 3, pp[1]), pillarAmber, false);
+                chunk.setBlockState(mp.set(pp[0], pc.top + 4, pp[1]), pillarBase, false);
+                chunk.setBlockState(mp.set(pp[0], pc.top + 5, pp[1]), pillarCap, false);
             }
         }
-        // biome 05, референс: ТЕЛЕЖКА (1/3 биомов) и ПАМЯТНИК (1/7 биомов).
-        // Обе постройки собираются по блокам, как на фото: доски, брёвна-колёса, каменный
-        // постамент, деревянная надстройка с цепью и янтарной вставкой.
+        // biome 05 (05_biome_sizo_grove.png): деревянная тележка и резное придорожное святилище у тропы
         for (SizoGrove.Cart cart : SizoGrove.cartsIn(greg, x0, z0)) {
             Col cc = column(plan, cart.x, cart.z);
             if (cc.isl == null || cc.top <= plan.ocean + 1) continue;
-            buildCart(chunk, mp, cart, cc.top + 1);
+            buildCart(chunk, mp, cart, cc.top + 1, x0, z0);
         }
         for (SizoGrove.Shrine sh : SizoGrove.shrinesIn(greg, x0, z0)) {
             Col sc = column(plan, sh.x, sh.z);
             if (sc.isl == null || sc.top <= plan.ocean + 1) continue;
-            buildShrine(chunk, mp, sh, sc.top + 1);
+            buildShrine(chunk, mp, sh, sc.top + 1, x0, z0);
         }
-        // biome 05: the rare RUINED pale temple, alone on its terrace        // biome 05: the rare RUINED pale temple, alone on its terrace
+        // biome 05 (05_biome_sizo_grove.png): высокая замшелая полуразрушенная каменная башня в дымке в конце тропы
         SizoGrove.Region treg = SizoGrove.templeIn(x0, z0);
         if (treg != null) {
             Optional<StructureTemplate> t = stm.get(new ResourceLocation("riftworld", "ruins/temple_sizo_ruins"));
@@ -1483,9 +1561,10 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 BoundingBox bb = t.get().getBoundingBox(sp, BlockPos.ZERO);
                 int cwx = (int) Math.floor(treg.tx - (bb.minX() + bb.maxX()) / 2.0);
                 int cwz = (int) Math.floor(treg.tz - (bb.minZ() + bb.maxZ()) / 2.0);
-                BlockPos pos = new BlockPos(cwx, treg.ty, cwz);      // floor layer replaces the flattened terrace top
+                BlockPos pos = new BlockPos(cwx, treg.ty, cwz);
                 t.get().placeInWorld(level, pos, pos, sp, rnd, 2);
             }
+            buildSizoWatchtower(chunk, mp, treg, x0, z0);
         }
         EmberRuins.Site es = EmberRuins.siteAt(x0 + 8, z0 + 8);
         if (es != null && x0 + 15 >= es.x0 && x0 <= es.x0 + EmberRuins.TW - 1 && z0 + 15 >= es.z0 && z0 <= es.z0 + EmberRuins.TD - 1) {
@@ -1621,69 +1700,284 @@ public class ElisarChunkGenerator extends ChunkGenerator {
 
 
     /** Мини-биом «Туманный данж» (обходом за чанк): почти сломанная ротонда на центральном утёсе + обрушенная винтовая лестница. */
+    private static void putChunk(ChunkAccess chunk, BlockPos.MutableBlockPos mp, int x0, int z0,
+                                 int bx, int by, int bz, BlockState state) {
+        if (bx >= x0 && bx <= x0 + 15 && bz >= z0 && bz <= z0 + 15) {
+            chunk.setBlockState(mp.set(bx, by, bz), state, false);
+        }
+    }
+
+    private static long packXZ(int x, int z) {
+        return (((long) x) << 32) ^ (z & 0xFFFFFFFFL);
+    }
+
     /**
-     * Рев 14: тележка из референса рощи. Корпус 3×2 из досок с бортами, два бревна-колеса,
-     * оглобля вперёд и горка груза внутри. Поворот {@code rot} 0..3.
+     * Референс 04_violet_hills.png: вдоль главной извилистой дороги идут чередующиеся пролёты
+     * низких каменных стенок и тёплых деревянных заборов, каменные столбы-тумбы с факелами/фонарями
+     * на концах пролётов и открытые проходы к лавандовым полям.
      */
-    private static void buildCart(ChunkAccess chunk, BlockPos.MutableBlockPos mp, SizoGrove.Cart cart, int base) {
-        // на референсе тележка из тёмного дерева, а сизо-доски почти белые — берём тёмные
-        BlockState plank = st(ru.aiforge.riftworld.registry.CastleBlocks.DARK_PLANKS);
-        BlockState logX = st(ElisarBlocks.SIZO_LOG).setValue(RotatedPillarBlock.AXIS, Direction.Axis.X);
-        BlockState logZ = st(ElisarBlocks.SIZO_LOG).setValue(RotatedPillarBlock.AXIS, Direction.Axis.Z);
-        // локальные оси: u — вдоль корпуса (3 блока), v — поперёк (2 блока)
+    private static void buildVioletRoadside(ChunkAccess chunk, BlockPos.MutableBlockPos mp, CityPlan plan,
+                                            VioletHills.Region vr, int x0, int z0) {
+        // Проверяем, проходит ли дорога рядом с текущим чанком
+        if (vr.mainRoadDist(x0 + 8, z0 + 8) > 22.0) return;
+        double totalLen = vr.mainRoadLen();
+        if (totalLen < 8.0) return;
+
+        // kind: 1 = каменная стенка, 2 = деревянный забор, 3 = каменный столб с факелом/фонарём
+        java.util.HashMap<Long, Integer> curb = new java.util.HashMap<>();
+        double sideOff = VioletHills.Region.RIVER_HW + 1.05;
+        for (int side = -1; side <= 1; side += 2) {
+            int prevX = Integer.MIN_VALUE, prevZ = Integer.MIN_VALUE, prevKind = 0;
+            int lastPierX = -999999, lastPierZ = -999999;
+            for (double s = 2.0; s <= totalLen - 2.0; s += 0.35) {
+                double[] pt = vr.roadSidePoint(s, side * sideOff);
+                int bx = (int) Math.floor(pt[0]);
+                int bz = (int) Math.floor(pt[1]);
+                if (bx < x0 - 3 || bx > x0 + 18 || bz < z0 - 3 || bz > z0 + 18) {
+                    prevX = Integer.MIN_VALUE;
+                    continue;
+                }
+                if (vr.meadow.t(bx + 0.5, bz + 0.5) < 0.18) {
+                    prevX = Integer.MIN_VALUE;
+                    continue;
+                }
+                // Оставляем аккуратный открытый перекрёсток там, где отходит боковая тропинка
+                if (vr.branchRoadDist(bx + 0.5, bz + 0.5) <= VioletHills.Region.BRANCH_HW + 1.15) {
+                    prevX = Integer.MIN_VALUE;
+                    continue;
+                }
+                int seg = (int) Math.floor(s / 7.0);
+                int mod = Math.floorMod(seg + (side > 0 ? 2 : 0), 5);
+                if (mod == 0) {
+                    prevX = Integer.MIN_VALUE;
+                    continue; // открытый проход в лавандовое поле
+                }
+                boolean nearBoundary = Math.abs(s - Math.round(s / 7.0) * 7.0) < 0.55;
+                int kind = (mod == 1 || mod == 3) ? 1 : 2;
+                if (nearBoundary && Math.hypot(bx - lastPierX, bz - lastPierZ) >= 4.2) {
+                    kind = 3;
+                    lastPierX = bx;
+                    lastPierZ = bz;
+                }
+                if (prevX != Integer.MIN_VALUE && bx != prevX && bz != prevZ && prevKind != 0) {
+                    // Замыкаем диагональный шаг 4-связным углом, чтобы забор и стенка не рвались
+                    long elbowKey = packXZ(bx, prevZ);
+                    curb.putIfAbsent(elbowKey, prevKind == 3 ? 1 : prevKind);
+                }
+                long key = packXZ(bx, bz);
+                int old = curb.getOrDefault(key, 0);
+                if (kind > old) curb.put(key, kind);
+                prevX = bx;
+                prevZ = bz;
+                prevKind = kind;
+            }
+        }
+
+        BlockState pierStone = st(ru.aiforge.riftworld.registry.CastleBlocks.ASHLAR);
+        BlockState pierChiseled = Blocks.CHISELED_STONE_BRICKS.defaultBlockState();
+        BlockState torch = Blocks.TORCH.defaultBlockState();
+        BlockState lantern = st(ElisarBlocks.LANTERN);
+
+        for (var entry : curb.entrySet()) {
+            long key = entry.getKey();
+            int bx = (int) (key >> 32);
+            int bz = (int) key;
+            if (bx < x0 || bx > x0 + 15 || bz < z0 || bz > z0 + 15) continue;
+            Col c = column(plan, bx, bz);
+            if (c.isl == null || c.isl.kind != 7 || c.surface == S_COBBLE || c.top <= plan.ocean + 1) continue;
+            int kind = entry.getValue();
+            // Очищаем цветы в точке установки придорожной ограды
+            chunk.setBlockState(mp.set(bx, c.top + 2, bz), Blocks.AIR.defaultBlockState(), false);
+            boolean cn = curb.containsKey(packXZ(bx, bz - 1));
+            boolean cs = curb.containsKey(packXZ(bx, bz + 1));
+            boolean cw = curb.containsKey(packXZ(bx - 1, bz));
+            boolean ce = curb.containsKey(packXZ(bx + 1, bz));
+            if (kind == 3) {
+                boolean ornate = hash(bx, bz, 305) < 0.36;
+                chunk.setBlockState(mp.set(bx, c.top + 1, bz), ornate ? pierChiseled : pierStone, false);
+                chunk.setBlockState(mp.set(bx, c.top + 2, bz), hash(bx, bz, 306) < 0.25 ? lantern : torch, false);
+            } else if (kind == 1) {
+                var low = net.minecraft.world.level.block.state.properties.WallSide.LOW;
+                var none = net.minecraft.world.level.block.state.properties.WallSide.NONE;
+                boolean straightNS = cn && cs && !cw && !ce;
+                boolean straightEW = cw && ce && !cn && !cs;
+                BlockState ws = Blocks.STONE_BRICK_WALL.defaultBlockState()
+                        .setValue(net.minecraft.world.level.block.WallBlock.NORTH_WALL, cn ? low : none)
+                        .setValue(net.minecraft.world.level.block.WallBlock.SOUTH_WALL, cs ? low : none)
+                        .setValue(net.minecraft.world.level.block.WallBlock.WEST_WALL, cw ? low : none)
+                        .setValue(net.minecraft.world.level.block.WallBlock.EAST_WALL, ce ? low : none)
+                        .setValue(net.minecraft.world.level.block.WallBlock.UP, !(straightNS || straightEW));
+                chunk.setBlockState(mp.set(bx, c.top + 1, bz), ws, false);
+            } else {
+                BlockState fs = st(ElisarBlocks.FENCE)
+                        .setValue(FenceBlock.NORTH, cn)
+                        .setValue(FenceBlock.SOUTH, cs)
+                        .setValue(FenceBlock.WEST, cw)
+                        .setValue(FenceBlock.EAST, ce);
+                chunk.setBlockState(mp.set(bx, c.top + 1, bz), fs, false);
+            }
+        }
+    }
+
+    /**
+     * Референс 05_biome_sizo_grove.png: тёплая деревянная тележка у лесной тропы —
+     * дощатое днище, реечные откидные борта из еловых люков, колёса и парные оглобли вперёд.
+     */
+    private static void buildCart(ChunkAccess chunk, BlockPos.MutableBlockPos mp, SizoGrove.Cart cart, int base, int x0, int z0) {
+        BlockState plank = Blocks.SPRUCE_PLANKS.defaultBlockState();
+        BlockState slab = Blocks.SPRUCE_SLAB.defaultBlockState();
+        BlockState wheelX = Blocks.SPRUCE_LOG.defaultBlockState().setValue(RotatedPillarBlock.AXIS, Direction.Axis.X);
+        BlockState wheelZ = Blocks.SPRUCE_LOG.defaultBlockState().setValue(RotatedPillarBlock.AXIS, Direction.Axis.Z);
+        BlockState cargo = Blocks.BARREL.defaultBlockState();
+        BlockState shaft = Blocks.SPRUCE_FENCE.defaultBlockState();
         int[] du = switch (cart.rot % 4) { case 0 -> new int[]{1, 0}; case 1 -> new int[]{0, 1}; case 2 -> new int[]{-1, 0}; default -> new int[]{0, -1}; };
         int[] dv = new int[]{-du[1], du[0]};
         for (int a = -1; a <= 1; ++a) {
             for (int b = -1; b <= 0; ++b) {
-                int x = cart.x + du[0] * a + dv[0] * b, z = cart.z + du[1] * a + dv[1] * b;
-                chunk.setBlockState(mp.set(x, base, z), plank, false);                    // днище
-                chunk.setBlockState(mp.set(x, base + 1, z), plank, false);                // борт
-                if (a == 0 && b == 0) chunk.setBlockState(mp.set(x, base + 2, z), logX, false);  // горка груза
+                int bx = cart.x + du[0] * a + dv[0] * b, bz = cart.z + du[1] * a + dv[1] * b;
+                putChunk(chunk, mp, x0, z0, bx, base, bz, plank);
+                if (a == -1 && b == 0) {
+                    putChunk(chunk, mp, x0, z0, bx, base + 1, bz, cargo);
+                } else if (a == 0 && b == -1) {
+                    putChunk(chunk, mp, x0, z0, bx, base + 1, bz, slab);
+                } else {
+                    putChunk(chunk, mp, x0, z0, bx, base + 1, bz, Blocks.AIR.defaultBlockState());
+                }
             }
         }
-        // колёса: бревно вдоль оси, по одному с каждой стороны у переднего края
-        for (int sgn = -1; sgn <= 1; sgn += 2) {
-            int wx = cart.x + dv[0] * sgn, wz = cart.z + dv[1] * sgn;
-            chunk.setBlockState(mp.set(wx, base, wz), du[0] == 0 ? logX : logZ, false);
+        // Реечные деревянные борта из вертикально открытых еловых люков
+        Direction sideNeg = dv[0] < 0 ? Direction.WEST : dv[0] > 0 ? Direction.EAST : dv[1] < 0 ? Direction.NORTH : Direction.SOUTH;
+        Direction sidePos = sideNeg.getOpposite();
+        BlockState tdNeg = Blocks.SPRUCE_TRAPDOOR.defaultBlockState()
+                .setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING, sidePos)
+                .setValue(net.minecraft.world.level.block.TrapDoorBlock.OPEN, true);
+        BlockState tdPos = Blocks.SPRUCE_TRAPDOOR.defaultBlockState()
+                .setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING, sideNeg)
+                .setValue(net.minecraft.world.level.block.TrapDoorBlock.OPEN, true);
+        for (int a = -1; a <= 1; ++a) {
+            putChunk(chunk, mp, x0, z0, cart.x + du[0] * a - dv[0] * 2, base + 1, cart.z + du[1] * a - dv[1] * 2, tdNeg);
+            putChunk(chunk, mp, x0, z0, cart.x + du[0] * a + dv[0], base + 1, cart.z + du[1] * a + dv[1], tdPos);
         }
-        // оглобля: бревно вперёд от корпуса
-        int hx = cart.x + du[0] * 2, hz = cart.z + du[1] * 2;
-        chunk.setBlockState(mp.set(hx, base, hz), du[0] == 0 ? logZ : logX, false);
+        // Колёса по бокам и две оглобли вперёд
+        putChunk(chunk, mp, x0, z0, cart.x - dv[0] * 2, base, cart.z - dv[1] * 2, du[0] == 0 ? wheelX : wheelZ);
+        putChunk(chunk, mp, x0, z0, cart.x + dv[0], base, cart.z + dv[1], du[0] == 0 ? wheelX : wheelZ);
+        for (int b = -1; b <= 0; ++b) {
+            BlockState sf = shaft
+                    .setValue(FenceBlock.NORTH, du[1] != 0)
+                    .setValue(FenceBlock.SOUTH, du[1] != 0)
+                    .setValue(FenceBlock.EAST, du[0] != 0)
+                    .setValue(FenceBlock.WEST, du[0] != 0);
+            putChunk(chunk, mp, x0, z0, cart.x + du[0] * 2 + dv[0] * b, base, cart.z + du[1] * 2 + dv[1] * b, sf);
+        }
     }
 
     /**
-     * Рев 14: памятник из референса рощи — каменный постамент 3×3, на нём деревянная
-     * «пагода» с уступами, под навесом висит цепь, в постамент вставлен янтарь.
+     * Референс 05_biome_sizo_grove.png: резное придорожное святилище на замшелом каменном цоколе
+     * с деревянными стойками, двускатной ступенчатой крышей, цепью и тёплым янтарным камнем внутри.
      */
-    private static void buildShrine(ChunkAccess chunk, BlockPos.MutableBlockPos mp, SizoGrove.Shrine sh, int base) {
-        BlockState stone = st(ru.aiforge.riftworld.registry.CastleBlocks.ASHLAR);
-        BlockState stoneMossy = st(ElisarBlocks.STONE_MOSSY);
-        BlockState plank = st(ru.aiforge.riftworld.registry.CastleBlocks.DARK_PLANKS);
-        BlockState logY = st(ru.aiforge.riftworld.registry.CastleBlocks.DARK_BEAM);
-        BlockState gold = st(ru.aiforge.riftworld.registry.TempleBlocks.GOLD);
+    private static void buildShrine(ChunkAccess chunk, BlockPos.MutableBlockPos mp, SizoGrove.Shrine sh, int base, int x0, int z0) {
+        BlockState brick = Blocks.STONE_BRICKS.defaultBlockState();
+        BlockState brickMossy = Blocks.MOSSY_STONE_BRICKS.defaultBlockState();
+        BlockState chiseled = Blocks.CHISELED_STONE_BRICKS.defaultBlockState();
+        BlockState plank = Blocks.SPRUCE_PLANKS.defaultBlockState();
+        BlockState post = Blocks.SPRUCE_FENCE.defaultBlockState();
+        BlockState slab = Blocks.SPRUCE_SLAB.defaultBlockState();
+        BlockState gold = ru.aiforge.riftworld.registry.TempleBlocks.GOLD_RUNE.get().defaultBlockState()
+                .setValue(ru.aiforge.riftworld.block.GoldRuneBlock.LIT, true);
         BlockState chain = st(ElisarBlocks.CHAIN).setValue(net.minecraft.world.level.block.ChainBlock.AXIS, Direction.Axis.Y);
-        // постамент: 3×3, верхний слой — замшелый камень (как на фото)
         for (int dx = -1; dx <= 1; ++dx)
             for (int dz = -1; dz <= 1; ++dz) {
-                chunk.setBlockState(mp.set(sh.x + dx, base, sh.z + dz), (dx + dz) % 2 == 0 ? stone : stoneMossy, false);
-                chunk.setBlockState(mp.set(sh.x + dx, base + 1, sh.z + dz), stone, false);
+                putChunk(chunk, mp, x0, z0, sh.x + dx, base, sh.z + dz, ((dx + dz) & 1) == 0 ? brickMossy : brick);
+                putChunk(chunk, mp, x0, z0, sh.x + dx, base + 1, sh.z + dz, dx == 0 && dz == 0 ? gold : chiseled);
+                putChunk(chunk, mp, x0, z0, sh.x + dx, base + 2, sh.z + dz, plank);
+                if (Math.abs(dx) == 1 && Math.abs(dz) == 1) {
+                    putChunk(chunk, mp, x0, z0, sh.x + dx, base + 3, sh.z + dz, post);
+                } else {
+                    putChunk(chunk, mp, x0, z0, sh.x + dx, base + 3, sh.z + dz, Blocks.AIR.defaultBlockState());
+                }
+                putChunk(chunk, mp, x0, z0, sh.x + dx, base + 4, sh.z + dz, slab);
             }
-        // янтарная вставка в передней грани постамента
+        putChunk(chunk, mp, x0, z0, sh.x, base + 3, sh.z, chain);
+        for (int dx = -1; dx <= 1; ++dx) {
+            putChunk(chunk, mp, x0, z0, sh.x + dx, base + 4, sh.z, plank);
+        }
+        putChunk(chunk, mp, x0, z0, sh.x, base + 5, sh.z, slab);
         int[] f = switch (sh.rot % 4) { case 0 -> new int[]{0, 1}; case 1 -> new int[]{1, 0}; case 2 -> new int[]{0, -1}; default -> new int[]{-1, 0}; };
-        chunk.setBlockState(mp.set(sh.x + f[0] * 2, base + 1, sh.z + f[1] * 2), gold, false);
-        // деревянная надстройка с уступами
-        for (int dx = -1; dx <= 1; ++dx)
-            for (int dz = -1; dz <= 1; ++dz) {
-                chunk.setBlockState(mp.set(sh.x + dx, base + 2, sh.z + dz), plank, false);            // пол капища
-                boolean edge = Math.abs(dx) == 1 || Math.abs(dz) == 1;
-                if (edge) chunk.setBlockState(mp.set(sh.x + dx, base + 3, sh.z + dz), logY, false);   // столбики
+        putChunk(chunk, mp, x0, z0, sh.x + f[0] * 2, base, sh.z + f[1] * 2, brickMossy);
+    }
+
+    /**
+     * Референс 05_biome_sizo_grove.png: высокая замшелая полуразрушенная башня из светлого камня
+     * в конце лесной тропы (7×7 в плане, высота 14 блоков, зубчатый обломанный верх, мшистые уступы и бойницы).
+     */
+    private static void buildSizoWatchtower(ChunkAccess chunk, BlockPos.MutableBlockPos mp,
+                                            SizoGrove.Region sr, int x0, int z0) {
+        if (sr.tx + 7 < x0 || sr.tx - 7 > x0 + 15 || sr.tz + 7 < z0 || sr.tz - 7 > z0 + 15) return;
+        BlockState ashlar = st(ru.aiforge.riftworld.registry.CastleBlocks.ASHLAR);
+        BlockState brick = Blocks.STONE_BRICKS.defaultBlockState();
+        BlockState mossy = Blocks.MOSSY_STONE_BRICKS.defaultBlockState();
+        BlockState cracked = Blocks.CRACKED_STONE_BRICKS.defaultBlockState();
+        BlockState mossBlock = st(ElisarBlocks.MOSS);
+        BlockState slab = Blocks.STONE_BRICK_SLAB.defaultBlockState();
+        BlockState air = Blocks.AIR.defaultBlockState();
+
+        // Ступенчатый замшелый цоколь вокруг башни (радиус 5)
+        for (int dx = -5; dx <= 5; ++dx)
+            for (int dz = -5; dz <= 5; ++dz) {
+                double d = Math.hypot(dx, dz);
+                if (d > 5.3 || (Math.abs(dx) <= 3 && Math.abs(dz) <= 3)) continue;
+                int hSkirt = d < 4.3 ? 2 : 1;
+                for (int dy = 0; dy <= hSkirt; ++dy) {
+                    boolean topCap = dy == hSkirt && hash(sr.tx + dx, sr.tz + dz, 401) < 0.72;
+                    putChunk(chunk, mp, x0, z0, sr.tx + dx, sr.ty + dy, sr.tz + dz,
+                            topCap ? mossBlock : (hash(sr.tx + dx, dy, sr.tz + dz) < 0.55 ? mossy : brick));
+                }
             }
-        chunk.setBlockState(mp.set(sh.x, base + 3, sh.z), chain, false);                              // висящая цепь
-        for (int dx = -1; dx <= 1; ++dx)
-            for (int dz = -1; dz <= 1; ++dz) chunk.setBlockState(mp.set(sh.x + dx, base + 4, sh.z + dz), plank, false);   // крыша-уступ
-        chunk.setBlockState(mp.set(sh.x, base + 5, sh.z), plank, false);                              // гребень
-        // каменная ступенька перед постаментом
-        chunk.setBlockState(mp.set(sh.x + f[0] * 2, base, sh.z + f[1] * 2), stoneMossy, false);
+
+        // Направление входа — к началу лесной тропы
+        double[] start = sr.trailPoint(Math.max(0.0, sr.trailLen() - 12.0));
+        double vx = start[0] - sr.tx, vz = start[1] - sr.tz;
+        int doorX = Math.abs(vx) >= Math.abs(vz) ? (vx >= 0 ? 3 : -3) : 0;
+        int doorZ = Math.abs(vx) < Math.abs(vz) ? (vz >= 0 ? 3 : -3) : 0;
+
+        // Стены башни 7×7 с неровным обрушенным верхом (высота 9..14 блоков)
+        for (int dx = -3; dx <= 3; ++dx)
+            for (int dz = -3; dz <= 3; ++dz) {
+                int bx = sr.tx + dx, bz = sr.tz + dz;
+                boolean wall = Math.abs(dx) == 3 || Math.abs(dz) == 3;
+                boolean corner = Math.abs(dx) == 3 && Math.abs(dz) == 3;
+                putChunk(chunk, mp, x0, z0, bx, sr.ty, bz, ((dx + dz) & 1) == 0 ? mossy : brick);
+                if (!wall) {
+                    for (int dy = 1; dy <= 14; ++dy) putChunk(chunk, mp, x0, z0, bx, sr.ty + dy, bz, air);
+                    continue;
+                }
+                // Живописный зубчатый силуэт руины: один угол выше (до +14), противоположный ниже (+9..+11)
+                double ruinProfile = 10.5 + 3.2 * vnoise(bx * 0.27, bz * 0.27, 409) + (corner ? 1.2 : 0.0);
+                int maxH = Math.max(8, Math.min(14, (int) Math.round(ruinProfile)));
+                for (int dy = 1; dy <= 14; ++dy) {
+                    if (dy > maxH) {
+                        putChunk(chunk, mp, x0, z0, bx, sr.ty + dy, bz, air);
+                        continue;
+                    }
+                    // Арочный вход со стороны тропы и узкие бойницы на среднем ярусе
+                    boolean doorway = (doorX != 0 && dx == doorX && Math.abs(dz) <= 1 && dy <= 4)
+                            || (doorZ != 0 && dz == doorZ && Math.abs(dx) <= 1 && dy <= 4);
+                    boolean slit = (dy >= 7 && dy <= 9) && ((Math.abs(dx) == 3 && dz == 0) || (Math.abs(dz) == 3 && dx == 0));
+                    if (doorway || slit) {
+                        putChunk(chunk, mp, x0, z0, bx, sr.ty + dy, bz, air);
+                        continue;
+                    }
+                    double rk = hash(bx, sr.ty + dy, bz);
+                    BlockState ws = (dy == maxH && rk < 0.48) ? mossBlock
+                            : (dy <= 3 || rk < 0.34) ? mossy
+                            : rk < 0.62 ? ashlar
+                            : rk < 0.84 ? brick : cracked;
+                    putChunk(chunk, mp, x0, z0, bx, sr.ty + dy, bz, ws);
+                }
+                if (maxH < 14 && hash(bx, bz, 412) < 0.42) {
+                    putChunk(chunk, mp, x0, z0, bx, sr.ty + maxH + 1, bz, slab);
+                }
+            }
     }
 
     private static void mistKeepDressing(CityPlan plan, ChunkAccess chunk, BlockPos.MutableBlockPos mp, int x0, int z0) {

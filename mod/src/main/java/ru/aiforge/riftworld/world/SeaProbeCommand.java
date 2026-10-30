@@ -480,7 +480,10 @@ public final class SeaProbeCommand {
                     SizoGrove.Region rg = SizoGrove.region(sx, sz);
                     if (rg == null) continue;
                     double d = Math.hypot(rg.cx - at.getX(), rg.cz - at.getZ());
-                    if (d < bestD) { bestD = d; bestX = rg.cx; bestZ = rg.cz; bestR = (int) rg.hub.R; bestSizo = rg; }
+                    // Предпочитаем ближайшую рощу с руиной башни и малыми формами у тропы, чтобы проверить все элементы референса 05
+                    double score = d - (rg.temple ? 2400.0 : 0.0) - (!rg.carts.isEmpty() ? 1100.0 : 0.0)
+                            - (!rg.shrines.isEmpty() ? 1100.0 : 0.0);
+                    if (score < bestD) { bestD = score; bestX = rg.cx; bestZ = rg.cz; bestR = (int) rg.hub.R; bestSizo = rg; }
                 }
             }
         }
@@ -524,14 +527,23 @@ public final class SeaProbeCommand {
         }
         // Рев 14.29: отдельные счётчики лаванды, сиреневой листвы, заборов и фонарей —
         // по ним CI отличает «поля рядами» от «веснушек» и видит рукотворное у дорожек.
-        int violetBlooms = 0, violetLeaves = 0, fences = 0, lamps = 0, lavender = 0;
+        int violetBlooms = 0, violetLeaves = 0, fences = 0, lamps = 0, lavender = 0, walls = 0, accentFlowers = 0;
         if (violet) {
             var bloom = new java.util.HashSet<net.minecraft.world.level.block.Block>();
             bloom.add(ru.aiforge.riftworld.registry.ElisarBlocks.VIOLET_BLOOM.get());
             bloom.add(ru.aiforge.riftworld.registry.ElisarBlocks.LILAC_BLOOM.get());
             bloom.add(ru.aiforge.riftworld.registry.ElisarBlocks.PALE_BLOOM.get());
+            var accents = new java.util.HashSet<net.minecraft.world.level.block.Block>();
+            accents.add(net.minecraft.world.level.block.Blocks.PINK_TULIP);
+            accents.add(net.minecraft.world.level.block.Blocks.ALLIUM);
+            accents.add(net.minecraft.world.level.block.Blocks.ORANGE_TULIP);
+            accents.add(net.minecraft.world.level.block.Blocks.OXEYE_DAISY);
+            accents.add(net.minecraft.world.level.block.Blocks.CORNFLOWER);
+            accents.add(net.minecraft.world.level.block.Blocks.DANDELION);
             var vl = ru.aiforge.riftworld.registry.ElisarBlocks.VIOLET_LEAVES.get();
             var fenceBlk = ru.aiforge.riftworld.registry.ElisarBlocks.FENCE.get();
+            var wallBlk = net.minecraft.world.level.block.Blocks.STONE_BRICK_WALL;
+            var torchBlk = net.minecraft.world.level.block.Blocks.TORCH;
             var lavenderBlk = ru.aiforge.riftworld.registry.ElisarBlocks.LAVENDER_BED.get();
             for (int x = bestX - R; x <= bestX + R; x += 1) {
                 for (int z = bestZ - R; z <= bestZ + R; z += 1) {
@@ -540,10 +552,13 @@ public final class SeaProbeCommand {
                         BlockState bs = level.getBlockState(new BlockPos(x, y, z));
                         if (bs.isAir()) continue;
                         if (bloom.contains(bs.getBlock())) { violetBlooms++; continue; }
+                        if (accents.contains(bs.getBlock())) { accentFlowers++; continue; }
                         if (bs.getBlock() == vl) { violetLeaves++; continue; }
                         if (bs.getBlock() == lavenderBlk) { lavender++; continue; }
                         if (bs.getBlock() == fenceBlk) { fences++; continue; }
-                        if (bs.getBlock() instanceof net.minecraft.world.level.block.LanternBlock) lamps++;
+                        if (bs.getBlock() == wallBlk) { walls++; continue; }
+                        if (bs.getBlock() instanceof net.minecraft.world.level.block.LanternBlock
+                                || bs.getBlock() == torchBlk) lamps++;
                     }
                 }
             }
@@ -633,28 +648,110 @@ public final class SeaProbeCommand {
             int[] wv = ElisarChunkGenerator.gardenWallView(bestX, bestZ, Math.max(24, bestR));
             if (wv != null) wall = wv[0] + "," + wv[1] + "," + wv[2] + ":" + wv[3] + "," + wv[4] + "," + wv[5];
         }
+        String sizoExtra = "";
+        if (bestSizo != null) {
+            int sizoTrail = 0, sizoFlowers = 0, sizoPillars = 0;
+            var flw = ru.aiforge.riftworld.registry.ElisarBlocks.FLOWERS.get();
+            var vb = ru.aiforge.riftworld.registry.ElisarBlocks.VIOLET_BLOOM.get();
+            var lb = ru.aiforge.riftworld.registry.ElisarBlocks.LILAC_BLOOM.get();
+            var tp = ru.aiforge.riftworld.registry.TempleBlocks.PILLAR.get();
+            var tg = ru.aiforge.riftworld.registry.TempleBlocks.GOLD_RUNE.get();
+            for (int x = bestX - R; x <= bestX + R; ++x)
+                for (int z = bestZ - R; z <= bestZ + R; ++z) {
+                    if (!level.isLoaded(new BlockPos(x, at.getY(), z))) continue;
+                    for (int y = 60; y <= 150; ++y) {
+                        BlockState bs = level.getBlockState(new BlockPos(x, y, z));
+                        if (bs.isAir()) continue;
+                        var b = bs.getBlock();
+                        if (b == net.minecraft.world.level.block.Blocks.COBBLESTONE
+                                || b == net.minecraft.world.level.block.Blocks.MOSSY_COBBLESTONE
+                                || b == net.minecraft.world.level.block.Blocks.DIRT_PATH) ++sizoTrail;
+                        else if (b == flw || b == vb || b == lb) ++sizoFlowers;
+                        else if (b == tp || b == tg) ++sizoPillars;
+                    }
+                }
+            CityPlan plan = CityPlan.get();
+            double[] c1 = bestSizo.trailPoint(0.10), t1 = bestSizo.trailPoint(0.64);
+            int y1c = ElisarChunkGenerator.column(plan, (int) Math.round(c1[0]), (int) Math.round(c1[1])).top + 3;
+            int y1t = ElisarChunkGenerator.column(plan, (int) Math.round(t1[0]), (int) Math.round(t1[1])).top + 4;
+            String sv1 = Math.round(c1[0]) + "," + y1c + "," + Math.round(c1[1]) + ":"
+                    + Math.round(t1[0]) + "," + y1t + "," + Math.round(t1[1]);
+
+            double[] c2 = bestSizo.trailPoint(0.24), t2 = bestSizo.trailPoint(0.76);
+            int y2c = ElisarChunkGenerator.column(plan, (int) Math.round(c2[0]), (int) Math.round(c2[1])).top + 2;
+            int y2t = ElisarChunkGenerator.column(plan, (int) Math.round(t2[0]), (int) Math.round(t2[1])).top + 5;
+            String sv2 = Math.round(c2[0]) + "," + y2c + "," + Math.round(c2[1]) + ":"
+                    + Math.round(t2[0]) + "," + y2t + "," + Math.round(t2[1]);
+
+            double[] c3 = bestSizo.trailSidePoint(0.42 * bestSizo.trailLen(), -3.5);
+            double[] t3 = bestSizo.temple ? new double[]{bestSizo.tx, bestSizo.tz} : bestSizo.trailPoint(0.90);
+            int y3c = ElisarChunkGenerator.column(plan, (int) Math.round(c3[0]), (int) Math.round(c3[1])).top + 4;
+            int y3t = ElisarChunkGenerator.column(plan, (int) Math.round(t3[0]), (int) Math.round(t3[1])).top + 8;
+            String sv3 = Math.round(c3[0]) + "," + y3c + "," + Math.round(c3[1]) + ":"
+                    + Math.round(t3[0]) + "," + y3t + "," + Math.round(t3[1]);
+
+            sizoExtra = " sizo_trail=" + sizoTrail + " sizo_flowers=" + sizoFlowers + " sizo_pillars=" + sizoPillars
+                    + " sview1=" + sv1 + " sview2=" + sv2 + " sview3=" + sv3;
+        }
         String vio = "";
         if (violet) {
-            String vroad = "-", vpath = "-";
+            String vroad = "-", vpath = "-", vfields = "-", vtrees = "-";
             int vgY = CityPlan.get().ocean + 16;
             if (bestViolet != null) {
                 int oc = CityPlan.get().ocean;
                 vgY = ElisarChunkGenerator.violetTop(bestViolet.meadow, bestX, bestZ, oc);
-                double[] pCam = bestViolet.roadPoint(0.28);
+                double[] pCam = bestViolet.roadPoint(0.24);
                 double[] pTgt = bestViolet.roadPoint(0.62);
-                int vcy = ElisarChunkGenerator.violetTop(bestViolet.meadow, pCam[0], pCam[1], oc) + 7;
-                int vty = ElisarChunkGenerator.violetTop(bestViolet.meadow, pTgt[0], pTgt[1], oc) + 2;
+                int vcy = ElisarChunkGenerator.violetTop(bestViolet.meadow, pCam[0], pCam[1], oc) + 6;
+                int vty = ElisarChunkGenerator.violetTop(bestViolet.meadow, pTgt[0], pTgt[1], oc) + 3;
                 vroad = Math.round(pCam[0]) + "," + vcy + "," + Math.round(pCam[1]) + ":"
                         + Math.round(pTgt[0]) + "," + vty + "," + Math.round(pTgt[1]);
-                double[] ppCam = bestViolet.roadPoint(0.42);
+
+                double[] pfCam = bestViolet.roadSidePoint(0.32 * bestViolet.mainRoadLen(), -19.0);
+                double[] pfTgt = bestViolet.roadPoint(0.56);
+                int vfcy = ElisarChunkGenerator.violetTop(bestViolet.meadow, pfCam[0], pfCam[1], oc) + 6;
+                int vfty = ElisarChunkGenerator.violetTop(bestViolet.meadow, pfTgt[0], pfTgt[1], oc) + 2;
+                vfields = Math.round(pfCam[0]) + "," + vfcy + "," + Math.round(pfCam[1]) + ":"
+                        + Math.round(pfTgt[0]) + "," + vfty + "," + Math.round(pfTgt[1]);
+
+                double[] ppCam = bestViolet.roadPoint(0.40);
                 double[] ppTgt = bestViolet.roadPoint(0.68);
                 int vpcy = ElisarChunkGenerator.violetTop(bestViolet.meadow, ppCam[0], ppCam[1], oc) + 2;
                 int vpty = ElisarChunkGenerator.violetTop(bestViolet.meadow, ppTgt[0], ppTgt[1], oc) + 2;
                 vpath = Math.round(ppCam[0]) + "," + vpcy + "," + Math.round(ppCam[1]) + ":"
                         + Math.round(ppTgt[0]) + "," + vpty + "," + Math.round(ppTgt[1]);
+
+                // Ищем ближайшее реальное дерево riftworlddt:lilac на склоне для крупного плана 52_violet_trees_closeup
+                int txTree = Integer.MIN_VALUE, tyTree = 0, tzTree = 0;
+                double bestTd = 1e9;
+                for (int x = bestX - 36; x <= bestX + 36; ++x)
+                    for (int z = bestZ - 36; z <= bestZ + 36; ++z) {
+                        if (!level.isLoaded(new BlockPos(x, at.getY(), z))) continue;
+                        int gy = ElisarChunkGenerator.violetTop(bestViolet.meadow, x, z, oc);
+                        for (int y = gy + 1; y <= gy + 6; ++y) {
+                            BlockState bs = level.getBlockState(new BlockPos(x, y, z));
+                            var k = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(bs.getBlock());
+                            if (k != null && "riftworlddt".equals(k.getNamespace()) && k.getPath().contains("branch")) {
+                                double d2 = Math.hypot(x - bestX, z - bestZ);
+                                if (d2 < bestTd && d2 > 6.0) {
+                                    bestTd = d2; txTree = x; tyTree = gy; tzTree = z;
+                                }
+                                break;
+                            }
+                        }
+                    }
+                if (txTree != Integer.MIN_VALUE) {
+                    double dxT = bestX - txTree, dzT = bestZ - tzTree, lenT = Math.max(1.0, Math.hypot(dxT, dzT));
+                    int camX = (int) Math.round(txTree + dxT / lenT * 11.0);
+                    int camZ = (int) Math.round(tzTree + dzT / lenT * 11.0);
+                    int camY = ElisarChunkGenerator.violetTop(bestViolet.meadow, camX, camZ, oc) + 4;
+                    vtrees = camX + "," + camY + "," + camZ + ":" + txTree + "," + (tyTree + 4) + "," + tzTree;
+                }
             }
             vio = " violet_blooms=" + violetBlooms + " violet_leaves=" + violetLeaves + " lavender=" + lavender
-                    + " fences=" + fences + " lamps=" + lamps + " vground=" + vgY + " road=" + vroad + " vpath=" + vpath;
+                    + " accent_flowers=" + accentFlowers + " walls=" + walls
+                    + " fences=" + fences + " lamps=" + lamps + " vground=" + vgY
+                    + " road=" + vroad + " vfields=" + vfields + " vpath=" + vpath + " vtrees=" + vtrees;
         }
         // Рев 14.35: каким биомом НА САМОМ ДЕЛЕ числится земля региона. Это ловит перепутанные
         // поля биом-сурса (именно так «сады» оказались на островках данжа в море).
@@ -665,7 +762,7 @@ public final class SeaProbeCommand {
                 + " r=" + bestR + " top=" + top + " water=" + water + " garden_grass=" + gardenGrass
                 + " garden_leaves=" + leaves + " garden_logs=" + logs + " ivy=" + ivy
                 + " planks=" + planks + " lantern=" + lanterns + " struct=" + struct
-                + " fall=" + fallAt + " wall=" + wall + " river=" + river + vio + gardenStat
+                + " fall=" + fallAt + " wall=" + wall + " river=" + river + vio + sizoExtra + gardenStat
                 + " falls_water=" + fallWater + " falls_src=" + fallSrc
                 + " garden_oak=" + gardenOak + " sizo_blocks=" + sizoInGardens
                 + " below_sea_cols=" + dryCols + " submerged_air=" + submergedAir

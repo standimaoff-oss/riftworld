@@ -222,10 +222,20 @@ public final class DtGround {
             return "riftworlddt:garden_oak";
         }
         if ((isl != null && isl.kind == 7) || VioletHills.inside(px, pz) || biome.endsWith(":violet_hills")) {
+            VioletHills.Region vr = VioletHills.regionAt(px, pz);
+            if (vr != null && vr.roadDist(px, pz) < VioletHills.Region.RIVER_HW + 3.2) return null;
             return "riftworlddt:lilac";
         }
         if ((isl != null && isl.kind == SizoGrove.KIND) || SizoGrove.inside(px, pz) || biome.endsWith(":sizo_grove")) {
-            return r.nextInt(5) == 0 ? "riftworlddt:giant_sizo" : "riftworlddt:sizo";
+            SizoGrove.Region sr = SizoGrove.regionAt(px, pz);
+            if (sr != null) {
+                if (sr.trailDist(px, pz) < SizoGrove.Region.TRAIL_HW + 3.2) return null;
+                if (sr.nearLandmark(px, pz, 4.8)) return null;
+                for (SizoGrove.Boulder b : sr.boulders) {
+                    if (Math.hypot(px - b.x, pz - b.z) < b.r + 2.6) return null;
+                }
+            }
+            return r.nextInt(5) == 0 ? "riftworlddt:sizo" : "riftworlddt:giant_sizo";
         }
         if (isl != null || biome.endsWith(":elisar_city")) {
             return r.nextInt(3) == 0 ? "riftworlddt:sizo" : "riftworlddt:ambra";
@@ -250,12 +260,16 @@ public final class DtGround {
             String id = biome.unwrapKey().map(k -> k.location().toString()).orElse("");
             String sp = speciesFor(ground, id, r);
             if (sp == null) continue;
-            float chance = sp.equals("riftworlddt:lilac") ? 0.035f
+            float chance = sp.equals("riftworlddt:lilac") ? 0.036f
+                    : sp.equals("riftworlddt:giant_sizo") ? 0.24f
                     : sp.equals("riftworlddt:ambra") ? 0.22f
-                    : sp.equals("riftworlddt:garden_oak") ? 0.30f : 0.32f;
+                    : sp.equals("riftworlddt:garden_oak") ? 0.30f : 0.22f;
             if (r.nextFloat() > chance) continue;
-            int radius = sp.equals("riftworlddt:lilac") ? 5 + r.nextInt(3) : 3 + r.nextInt(4) * 2;
+            int radius = sp.equals("riftworlddt:lilac") ? 5 + r.nextInt(3)
+                    : sp.equals("riftworlddt:giant_sizo") ? 6 + r.nextInt(3)
+                    : 4 + r.nextInt(3);
             if (plant(level, ground, sp, radius)) ++planted;
+            if (sp.equals("riftworlddt:giant_sizo") && planted >= 1) break;
         }
         return planted;
     }

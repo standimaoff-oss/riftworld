@@ -7,15 +7,15 @@
     "apply": {
       "species": {
         "random": {
-          "riftworlddt:sizo": 9,
-          "riftworlddt:giant_sizo": 2
+          "riftworlddt:giant_sizo": 8,
+          "riftworlddt:sizo": 2
         }
       },
       "density": [
-        0.25,
-        0.45
+        0.12,
+        0.18
       ],
-      "chance": 1.0
+      "chance": 0.45
     }
   },
   {

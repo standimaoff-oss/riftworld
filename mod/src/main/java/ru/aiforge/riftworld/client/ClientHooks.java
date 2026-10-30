@@ -51,7 +51,23 @@ public final class ClientHooks {
             net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(ru.aiforge.riftworld.registry.ModFluids.FLOWING.get(), net.minecraft.client.renderer.RenderType.translucent());
             net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(ru.aiforge.riftworld.registry.ModFluids.GARDEN_SOURCE.get(), net.minecraft.client.renderer.RenderType.translucent());
             net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(ru.aiforge.riftworld.registry.ModFluids.GARDEN_FLOWING.get(), net.minecraft.client.renderer.RenderType.translucent());
+            if ("true".equalsIgnoreCase(System.getProperty("riftworld.fhd"))) {
+                try {
+                    long win = Minecraft.getInstance().getWindow().getWindow();
+                    if (win != 0L) {
+                        org.lwjgl.glfw.GLFW.glfwSetWindowPos(win, 0, 0);
+                        org.lwjgl.glfw.GLFW.glfwSetWindowSize(win, 1920, 1080);
+                    }
+                } catch (Throwable ignored) {
+                }
+            }
         });
+    }
+
+    @SubscribeEvent
+    public static void particles(net.minecraftforge.client.event.RegisterParticleProvidersEvent e) {
+        e.registerSpriteSet(ru.aiforge.riftworld.registry.ModParticles.VIOLET_LEAF.get(), FloatingLeafParticle.VioletProvider::new);
+        e.registerSpriteSet(ru.aiforge.riftworld.registry.ModParticles.SIZO_LEAF.get(), FloatingLeafParticle.SizoProvider::new);
     }
 
     /** Biome-aware greys → per-biome grass tint (violet meadows, mint grove). */
@@ -60,10 +76,9 @@ public final class ClientHooks {
         e.register((state, level, pos, idx) -> level != null && pos != null
                         ? net.minecraft.client.renderer.BiomeColors.getAverageGrassColor(level, pos)
                         : net.minecraft.world.level.GrassColor.get(0.5, 1.0),
-                // листва НЕ тонируется травой: у сизо своя сине-сиреневая текстура, у амбры — янтарная
+                // листва и лесные васильково-фиолетовые цветы НЕ тонируются травой
                 ru.aiforge.riftworld.registry.ElisarBlocks.GRASS.get(),
-                ru.aiforge.riftworld.registry.ElisarBlocks.TALL_GRASS.get(),
-                ru.aiforge.riftworld.registry.ElisarBlocks.FLOWERS.get());
+                ru.aiforge.riftworld.registry.ElisarBlocks.TALL_GRASS.get());
     }
 
     @SubscribeEvent

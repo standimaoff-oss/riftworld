@@ -81,6 +81,23 @@ public final class ElisarSky extends DimensionSpecialEffects {
             return hit;
         }
 
+        private static long sizoKey = Long.MIN_VALUE;
+        private static boolean sizoHit;
+
+        /** Кешированная проверка «мы в Роще Сизо» (мягкая серебристо-кремовая лесная дымка референса 05). */
+        private static boolean sizoAt(Vec3 p) {
+            long key = ((long) (int) Math.floor(p.x / 16) << 20) ^ (long) (int) Math.floor(p.z / 16);
+            if (key == sizoKey) return sizoHit;
+            boolean hit = false;
+            try {
+                hit = ru.aiforge.riftworld.world.SizoGrove.inside(p.x, p.z);
+            } catch (Throwable ignored) {
+            }
+            sizoKey = key;
+            sizoHit = hit;
+            return hit;
+        }
+
         private static boolean inElisar() {
             var mc = net.minecraft.client.Minecraft.getInstance();
             return mc.level != null && mc.level.dimension().location().equals(ID);
@@ -96,14 +113,17 @@ public final class ElisarSky extends DimensionSpecialEffects {
             float m = mist(pos);
             float nearF = far * Mth.lerp(g, 0.45F, 0.55F);
             float farF = far * Mth.lerp(g, 1.05F, 1.0F);
-            // Рев 14.31: над Фиолетовыми холмами воздух должен быть ПРОЗРАЧНЫМ (на референсе
-            // видно поля до горизонта), иначе кремовая дымка выбеливает лаванду в серое.
             if (violetAt(pos)) {
-                // Рев 14.36: на референсе 04 воздух ПРОЗРАЧНЫЙ — дальние холмы и церкви видны,
-                // только слегка в тёплой дымке. Прошлые 0.72/1.55 давали «молочный экран»:
-                // на кадрах 49–51 не было видно ни полей, ни деревьев. Теперь дымка мягкая.
-                e.setNearPlaneDistance(far * 0.95F);
-                e.setFarPlaneDistance(far * 1.10F);
+                // Референс 04_violet_hills.png: прозрачный закатный воздух вблизи и мягкая тёплая дымка у дальних холмов
+                e.setNearPlaneDistance(far * 0.72F);
+                e.setFarPlaneDistance(far * 1.12F);
+                e.setCanceled(true);
+                return;
+            }
+            if (sizoAt(pos)) {
+                // Референс 05_biome_sizo_grove.png: чёткий передний план тропы и стволов + мягкая светлая дымка у дальней башни
+                e.setNearPlaneDistance(Math.min(far * 0.38F, 46.0F));
+                e.setFarPlaneDistance(Math.min(far * 0.96F, 136.0F));
                 e.setCanceled(true);
                 return;
             }
