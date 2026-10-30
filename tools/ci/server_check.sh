@@ -238,6 +238,9 @@ if [ "${NORMAL_PROBE:-1}" = "1" ]; then
   if [ "$NOK" = "1" ]; then
     echo "::warning title=обычный мир::сервер с level-type=normal поднялся, feature order cycle НЕ воспроизвёлся"
   else
+    # Рев 16.5: вылет обычного мира — это БЛОКИРУЮЩИЙ баг для владельца («вылет недопустим»),
+    # поэтому провал пробы теперь валит проверку, а не только печатается предупреждением.
+    bad "обычный мир (level-type=normal) не поднялся: feature order cycle / падение генерации"
     echo "::error title=обычный мир::сервер с level-type=normal НЕ поднялся (rc=$NRC), см. normal.txt в отчёте"
     if [ -n "$CYCLE" ]; then echo "::error title=worldgen::${CYCLE:0:600}"; fi
     if [ -n "$NORMALTXT" ]; then
