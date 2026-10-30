@@ -250,7 +250,7 @@ public final class DtGround {
             // Рев 16.6: после удаления дублирующего biome_modifier деревья наконец пошли массово,
             // и холмы превратились в сплошной «капустный лес» (кадр 49 итерации 59). По референсу
             // 04 это ЛУГ с редкими деревьями: лиловый хлыст сажаем в ~13 раз реже остальных видов.
-            float chance = sp.equals("riftworlddt:lilac") ? 0.012f
+            float chance = sp.equals("riftworlddt:lilac") ? 0.006f
                     : sp.equals("riftworlddt:ambra") ? 0.15f
                     : sp.equals("riftworlddt:garden_oak") ? 0.16f : 0.35f;
             if (r.nextFloat() > chance) continue;
@@ -259,7 +259,7 @@ public final class DtGround {
             // Рев 16.1: у луговых деревьев на кадрах 49–51 итерации 53 была узкая крона на голом
             // стволе («гриб на палке»). Радиус диска задаёт форму из jo_code: 6..8 — широкая
             // округлая крона, как у деревьев на референсе 04.
-            int radius = sp.equals("riftworlddt:lilac") ? 5 + r.nextInt(3) : 3 + r.nextInt(4) * 2;
+            int radius = sp.equals("riftworlddt:lilac") ? 6 + r.nextInt(3) : 3 + r.nextInt(4) * 2;
             if (plant(level, ground, sp, radius)) ++planted;
         }
         return planted;

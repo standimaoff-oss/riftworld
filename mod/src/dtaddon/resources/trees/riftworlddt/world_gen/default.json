@@ -26,8 +26,8 @@
     "apply": {
       "species": "riftworlddt:lilac",
       "density": [
-        0.04,
-        0.06
+        0.02,
+        0.03
       ],
       "chance": 1.0
     }
@@ -40,8 +40,8 @@
     "apply": {
       "species": "riftworlddt:garden_oak",
       "density": [
-        0.06,
-        0.08
+        0.04,
+        0.05
       ],
       "chance": 1.0
     }
