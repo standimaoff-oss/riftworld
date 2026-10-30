@@ -65,7 +65,27 @@ geom() {  # найти окно игры и его геометрию (x y w h)
   return 0
 }
 
+# Рев 14.68: Forge иногда показывает ПОВЕРХ игры модальное окно «Failed to initialize graphics
+# window with current settings» (каприз early-display под Xvfb). Окно попадало в кадры 45–47
+# итерации 63 и закрывало середину снимка. Давим его Esc-ом перед каждым кадром: игра после
+# такой ошибки продолжает работать, и кадры снова чистые.
+dismiss_stray_dialogs() {
+  local w name geom2 ww hh
+  for w in $(xdotool search --onlyvisible --class 'java' 2>/dev/null || true); do
+    name=$(xdotool getwindowname "$w" 2>/dev/null || true)
+    case "$name" in *Minecraft*) continue ;; esac      # окно самой игры не трогаем
+    geom2=$(xdotool getwindowgeometry --shell "$w" 2>/dev/null || true)
+    ww=$(printf '%s' "$geom2" | sed -n 's/^WIDTH=//p')
+    hh=$(printf '%s' "$geom2" | sed -n 's/^HEIGHT=//p')
+    if [ "${ww:-0}" -lt 1200 ] && [ "${hh:-0}" -lt 700 ]; then
+      xdotool key --window "$w" Escape 2>/dev/null || true
+      sleep 1
+    fi
+  done
+}
+
 shot() {  # shot <имя>
+  dismiss_stray_dialogs || true
   if geom; then
     # Рев 14.3: окно игры иногда оказывается вытянутой полосой (напр. 906x217) — кадры
     # биомов приходили нечитаемыми. Приводим окно к 1280x720 (Xvfb 1280x800) перед снимком.
