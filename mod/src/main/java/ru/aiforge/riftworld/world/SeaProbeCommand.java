@@ -786,7 +786,27 @@ public final class SeaProbeCommand {
         String atY0 = topName0.unwrapKey().map(k -> k.location().toString()).orElse("?");
         String topName = topBiome.unwrapKey().map(k -> k.location().toString()).orElse("?");
         String surfName = surfBiome.unwrapKey().map(k -> k.location().toString()).orElse("?");
+        // Рев 16.13: проба честно ищет грунт ТАМ ЖЕ, где его ищет DT — в диске вокруг игрока.
+        // Раньше она смотрела одну колонку под ногами: если игрок стоит на грядке лаванды или
+        // на кромке луга, ответ «ground=-» был формально верным, но ничего не говорил о биоме.
         BlockPos ground = ru.aiforge.riftworld.world.DtGround.groundFor(level, at);
+        String groundSpot = "at_player";
+        if (ground == null) {
+            outer:
+            for (int r = 1; r <= 12; ++r) {
+                for (int dx = -r; dx <= r; ++dx)
+                    for (int dz = -r; dz <= r; ++dz) {
+                        if (Math.max(Math.abs(dx), Math.abs(dz)) != r) continue;
+                        BlockPos cand = ru.aiforge.riftworld.world.DtGround.groundFor(level,
+                                new BlockPos(at.getX() + dx, at.getY(), at.getZ() + dz));
+                        if (cand != null) {
+                            ground = cand;
+                            groundSpot = "d" + dx + "," + dz;
+                            break outer;
+                        }
+                    }
+            }
+        }
         String soilOk;
         try {
             Class<?> helper = Class.forName("com.ferreusveritas.dynamictrees.block.rooty.SoilHelper");
@@ -855,6 +875,7 @@ public final class SeaProbeCommand {
                 + " biome_surface=" + surfName + " biome_top=" + topName + " biome_y0=" + atY0
                 + " dt_features=" + feats + " has_dt=" + hasDt + " dt_species=" + dtSp
                 + " ground=" + (ground == null ? "-" : ground.getY() + ":" + level.getBlockState(ground).getBlock())
+                + " ground_spot=" + groundSpot
                 + " soil_ok=" + soilOk;
         src.sendSuccess(() -> Component.literal(line), false);
         return hasDt ? 1 : 0;
