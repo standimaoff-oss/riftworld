@@ -1607,7 +1607,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         }
         // Планируем тики жидкости у водопадов Висячих садов, чтобы струи активно стекали вниз и растекались у подножия
         if (WaterfallGardens.regionAt(x0 + 8, z0 + 8) != null) {
-            Block gBlock = ElisarBlocks.GARDEN_WATER.get();
+            var gBlock = ElisarBlocks.GARDEN_WATER.get();
             for (int dx = 0; dx < 16; ++dx)
                 for (int dz = 0; dz < 16; ++dz) {
                     int wx = x0 + dx, wz = z0 + dz;

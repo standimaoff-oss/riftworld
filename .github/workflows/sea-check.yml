@@ -73,6 +73,7 @@ jobs:
             if ./gradlew jar dtJar --no-daemon --console=plain -PdtMaven="$GITHUB_WORKSPACE/ci/maven" 2>&1 | tee ../ci-out/build.log; then
               ok=1; break
             fi
+            grep -q "Task :compileJava FAILED" ../ci-out/build.log && break
             echo "== gradle попытка $attempt упала (сеть/Maven), повтор через 20 c"
             sleep 20
           done
@@ -141,7 +142,7 @@ jobs:
       # без игрока в измерении сервер Элисар не генерирует — съёмка и настоящие пробы идут в шаге клиента
 
       - name: Launch real Minecraft client, enter Elisar and take screenshots
-        if: always()
+        if: steps.server.outcome == 'success' || steps.server.outcome == 'failure'
         timeout-minutes: 50
         env:
           # Рев 15.2: клиент поднимается С Dynamic Trees, но подключённым ЛОКАЛЬНЫМ jar-ом
