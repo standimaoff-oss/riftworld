@@ -244,11 +244,18 @@ public final class DtGround {
             // иначе WorldGenRegion может бросить «setBlock in a far chunk»
             int x = pos.getMinBlockX() + 4 + r.nextInt(8), z = pos.getMinBlockZ() + 4 + r.nextInt(8);
             BlockPos start = new BlockPos(x, 0, z);
-            var biome = level.getBiome(start);
+            // Рев 16.16 — ПОЧЕМУ В САДАХ РОСЛА АМБРА (серые деревья на кадрах итерации 67).
+            // Биом брался на y=0, а там у нас ВСЕГДА море/дно: наш биом-сурс отдаёт биом острова
+            // только на суше, поэтому на y=0 для любого острова возвращается `elisar_city` — и DT
+            // сажал «городское» дерево амбру даже в Висячих садах. Теперь вид выбирается по биому
+            // ПОВЕРХНОСТИ (над найденным грунтом) — тому же, что видит игрок.
+            boolean sea = false;                       // подводных деревьев аддона больше нет
+            BlockPos ground = surfaceUnder(level, start, sea);
+            if (ground == null) continue;
+            var biome = level.getBiome(ground.above());
             String id = biome.unwrapKey().map(k -> k.location().toString()).orElse("");
             String sp = speciesFor(id, r);
             if (sp == null) continue;
-            boolean sea = false;                       // подводных деревьев аддона больше нет
             // Рев 16: в Фиолетовых холмах деревья РЕДКИЕ (это луг, а не лес), в роще — как было,
             // в городе амбра стоит вдоль улиц, в садах дуб растёт рощей на полках.
             // Рев 16.6: после удаления дублирующего biome_modifier деревья наконец пошли массово,
@@ -258,8 +265,6 @@ public final class DtGround {
                     : sp.equals("riftworlddt:ambra") ? 0.15f
                     : sp.equals("riftworlddt:garden_oak") ? 0.16f : 0.35f;
             if (r.nextFloat() > chance) continue;
-            BlockPos ground = surfaceUnder(level, start, sea);
-            if (ground == null) continue;
             // Рев 16.1: у луговых деревьев на кадрах 49–51 итерации 53 была узкая крона на голом
             // стволе («гриб на палке»). Радиус диска задаёт форму из jo_code: 6..8 — широкая
             // округлая крона, как у деревьев на референсе 04.
