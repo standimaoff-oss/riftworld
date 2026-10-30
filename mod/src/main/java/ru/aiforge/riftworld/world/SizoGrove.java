@@ -81,14 +81,17 @@ public final class SizoGrove {
             this.hub = new CityPlan.Island(cx, cz, R, base, R * 0.6 + 14, rnd.nextDouble() * 6.283, rnd.nextDouble() * 6.283,
                     rnd.nextDouble() * 6.283, KIND, 0.7);
             // giant sizos: 12..15, well spaced (canopies want ~9 blocks of elbow room)
+            // Рев 14.60: на референсе 05 стволы ВЫСОКИЕ — крона начинается далеко наверху, а под
+            // ней свободно видно всю рощу. Поднимаем высоту ствола до 17..23 блоков и разносим
+            // деревья на 11 блоков, иначе широкие ярусы смыкаются в сплошное белое полотно.
             for (int k = 0, want = 12 + rnd.nextInt(4), tries = 0; k < want && tries < want * 22; ++tries) {
                 double a = rnd.nextDouble() * Math.PI * 2, d = (0.18 + rnd.nextDouble() * 0.62) * R;
                 int x = (int) Math.floor(cx + Math.cos(a) * d), z = (int) Math.floor(cz + Math.sin(a) * d);
                 if (hub.t(x + 0.5, z + 0.5) < 0.32) continue;
                 boolean ok = true;
-                for (CityPlan.Tree t : trees) if (Math.abs(t.x - x) < 9 && Math.abs(t.z - z) < 9) { ok = false; break; }
+                for (CityPlan.Tree t : trees) if (Math.abs(t.x - x) < 11 && Math.abs(t.z - z) < 11) { ok = false; break; }
                 if (!ok) continue;
-                trees.add(new CityPlan.Tree(x, z, TREE_GIANT, 13 + rnd.nextInt(5), rnd.nextInt(1 << 30)));
+                trees.add(new CityPlan.Tree(x, z, TREE_GIANT, 17 + rnd.nextInt(6), rnd.nextInt(1 << 30)));
                 ++k;
             }
             // mossy boulders between the trunks

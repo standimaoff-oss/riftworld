@@ -1254,19 +1254,24 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         boolean inTrunk = dx >= 0 && dx <= 1 && dz >= 0 && dz <= 1;
         int topY = base + t.h + 2;                       // first disc altitude (trunk tops out here)
         if (inTrunk) {
-            for (int y = base; y <= topY; ++y) chunk.setBlockState(mp.set(x, y, z), logS, false);
+            // ствол идёт до САМОГО ВЕРХНЕГО яруса, иначе верхний диск висит в воздухе
+            for (int y = base; y <= topY + 3; ++y) chunk.setBlockState(mp.set(x, y, z), logS, false);
             return;
         }
         // branch cross under the discs (trunk centre sits between the 4 trunk cells)
-        if ((dz == 0 || dz == 1) && ((dx >= 2 && dx <= 4) || (dx <= -1 && dx >= -3))
+        if ((dz == 0 || dz == 1) && ((dx >= 2 && dx <= 6) || (dx <= -1 && dx >= -5))
                  && !(dx == 0 || dx == 1)) {
-            chunk.setBlockState(mp.set(x, base + t.h + 1, z), logS.setValue(RotatedPillarBlock.AXIS, Direction.Axis.X), false);
-        } else if ((dx == 0 || dx == 1) && ((dz >= 2 && dz <= 4) || (dz <= -1 && dz >= -3))) {
-            chunk.setBlockState(mp.set(x, base + t.h + 1, z), logS.setValue(RotatedPillarBlock.AXIS, Direction.Axis.Z), false);
+            chunk.setBlockState(mp.set(x, base + t.h + 3, z), logS.setValue(RotatedPillarBlock.AXIS, Direction.Axis.X), false);
+        } else if ((dx == 0 || dx == 1) && ((dz >= 2 && dz <= 6) || (dz <= -1 && dz >= -5))) {
+            chunk.setBlockState(mp.set(x, base + t.h + 3, z), logS.setValue(RotatedPillarBlock.AXIS, Direction.Axis.Z), false);
         }
-        // stacked discs: centre (0.5, 0.5); tiers {radius, dy}
+        // Рев 14.60, по референсу 05: крона сизо-великана — ШИРОКИЕ ПЛОСКИЕ ЯРУСЫ, а не облако.
+        // На фото это «этажи»: три-четыре плоских диска, между ними по 3–4 блока воздуха, и
+        // каждый диск заметно шире ствола. Прежние радиусы 1.7–3.6 при высоте ствола 13–17 давали
+        // плотный шар из белых кубиков (кадр 45 итерации 56) вместо этажерки.
+        // tiers: {radius, dy} — dy отсчитывается от верха ствола
         double dc = Math.hypot(dx - 0.5, dz - 0.5);
-        double[][] tiers = new double[][] {{1.7, 1}, {2.6, 0}, {3.6, -2}, {2.8, -4}};
+        double[][] tiers = new double[][] {{2.6, 3}, {4.4, 0}, {5.6, -4}, {4.2, -8}};
         long seed = t.seed;
         for (double[] ti : tiers) {
             double r = ti[0]; int yy = topY + (int) ti[1];
