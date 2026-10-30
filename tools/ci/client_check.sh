@@ -1133,14 +1133,15 @@ biome_section() {
     fi
     EL tp TestPlayer "$SX" 92 "$SZ" >/dev/null 2>&1 || true
     sleep 4
-    local SDTW SDTN
+    local SDTW SDTN SDTL
     SDTW=$(EL execute at TestPlayer in riftworld:elisar run riftdtwild 44 2>&1 | tr '\r\n' '  ')
     log "  /riftdtwild (роща сизо) -> ${SDTW:0:220}"
     SDTN=$(printf '%s' "$SDTW" | sed -n 's/.* dt=\([0-9]*\).*/\1/p' | tail -1)
-    if [ "${SDTN:-0}" -ge 200 ]; then
-      log "  OK   роща сизо: гигантские динамические деревья сизо выросли (${SDTN} блоков DT)"
+    SDTL=$(printf '%s' "$SDTW" | sed -n 's/.* leaves=\([0-9]*\).*/\1/p' | tail -1)
+    if [ "${SDTN:-0}" -ge 400 ] && [ "${SDTL:-0}" -ge 300 ]; then
+      log "  OK   роща сизо: гигантские динамические деревья сизо выросли (${SDTN} блоков DT, кроны ${SDTL})"
     else
-      log "  FAIL роща сизо: деревьев аддона DT всего ${SDTN:-0} (нужно >=200)"; FAILS=$((FAILS + 1))
+      log "  FAIL роща сизо: DT-блоков ${SDTN:-0}, листвы крон ${SDTL:-0} (нужно >=400 и >=300)"; FAILS=$((FAILS + 1))
     fi
     local SV1 SV2 SV3 STOP2=${STOP:-104}
     SV1=$(printf '%s' "$SL" | grep -o 'sview1=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^sview1=//')

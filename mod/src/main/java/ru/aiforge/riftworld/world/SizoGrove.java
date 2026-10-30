@@ -123,7 +123,7 @@ public final class SizoGrove {
             }
 
             // Деревянная часовенка-памятник с цепью у обочины тропы за столбами (референс 05)
-            if (rnd.nextDouble() < 0.36) {
+            if (rnd.nextDouble() < 0.62) {
                 double[] sp = trailSidePoint(0.49, 4.7);
                 int sx0 = (int) Math.round(sp[0]), sz0 = (int) Math.round(sp[1]);
                 if (hub.t(sx0 + 0.5, sz0 + 0.5) > 0.30 && (!temple || Math.hypot(sx0 - tx, sz0 - tz) > 12)) {

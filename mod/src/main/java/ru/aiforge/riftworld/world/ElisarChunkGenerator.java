@@ -920,13 +920,13 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                     chunk.setBlockState(mp.set(x, c.top + 1, z), bloom, false);
                                 }
                             } else if (c.isl.kind == SizoGrove.KIND || (c.isl.kind != 4 && SizoGrove.inside(x + 0.5, z + 0.5))) {
-                                // biome 05 (05_biome_sizo_grove.png): густые пучки серебристо-мятной травы и васильково-фиолетовые лесные цветы
-                                if (h < 0.36) {
+                                // biome 05 (05_biome_sizo_grove.png): серебристо-мятная трава и нежные васильково-фиолетовые соцветия
+                                if (h < 0.25) {
                                     chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
-                                } else if (h < 0.56 && vnoise(x * 0.085, z * 0.085, 95) > 0.44) {
+                                } else if (h < 0.38 && vnoise(x * 0.085, z * 0.085, 95) > 0.48) {
                                     int f = (int) (hash(x, z, 96) * 100);
                                     chunk.setBlockState(mp.set(x, c.top + 1, z),
-                                            st(f < 58 ? ElisarBlocks.FLOWERS : f < 86 ? ElisarBlocks.VIOLET_BLOOM : ElisarBlocks.LILAC_BLOOM), false);
+                                            st(f < 78 ? ElisarBlocks.FLOWERS : ElisarBlocks.PALE_BLOOM), false);
                                 }
                             } else if (h < 0.09) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
                             else if (h < 0.105) chunk.setBlockState(mp.set(x, c.top + 1, z), flowers, false);
@@ -1549,21 +1549,6 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         // biome 05 (05_biome_sizo_grove.png): высокая замшелая полуразрушенная каменная башня в дымке в конце тропы
         SizoGrove.Region treg = SizoGrove.templeIn(x0, z0);
         if (treg != null) {
-            Optional<StructureTemplate> t = stm.get(new ResourceLocation("riftworld", "ruins/temple_sizo_ruins"));
-            if (!t.isEmpty()) {
-                Rotation rot = switch (treg.trot) {
-                    case 1 -> Rotation.CLOCKWISE_90;
-                    case 2 -> Rotation.CLOCKWISE_180;
-                    case 3 -> Rotation.COUNTERCLOCKWISE_90;
-                    default -> Rotation.NONE;
-                };
-                StructurePlaceSettings sp = new StructurePlaceSettings().setRotation(rot).setBoundingBox(box).setIgnoreEntities(true);
-                BoundingBox bb = t.get().getBoundingBox(sp, BlockPos.ZERO);
-                int cwx = (int) Math.floor(treg.tx - (bb.minX() + bb.maxX()) / 2.0);
-                int cwz = (int) Math.floor(treg.tz - (bb.minZ() + bb.maxZ()) / 2.0);
-                BlockPos pos = new BlockPos(cwx, treg.ty, cwz);
-                t.get().placeInWorld(level, pos, pos, sp, rnd, 2);
-            }
             buildSizoWatchtower(chunk, mp, treg, x0, z0);
         }
         EmberRuins.Site es = EmberRuins.siteAt(x0 + 8, z0 + 8);
@@ -1914,14 +1899,14 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                             SizoGrove.Region sr, int x0, int z0) {
         if (sr.tx + 7 < x0 || sr.tx - 7 > x0 + 15 || sr.tz + 7 < z0 || sr.tz - 7 > z0 + 15) return;
         BlockState ashlar = st(ru.aiforge.riftworld.registry.CastleBlocks.ASHLAR);
-        BlockState brick = Blocks.STONE_BRICKS.defaultBlockState();
-        BlockState mossy = Blocks.MOSSY_STONE_BRICKS.defaultBlockState();
-        BlockState cracked = Blocks.CRACKED_STONE_BRICKS.defaultBlockState();
+        BlockState brick = st(ElisarBlocks.GARDEN_LIMESTONE);
+        BlockState mossy = st(ElisarBlocks.GARDEN_LIMESTONE_MOSSY);
+        BlockState cracked = st(ElisarBlocks.STONE_MOSSY);
         BlockState mossBlock = st(ElisarBlocks.MOSS);
-        BlockState slab = Blocks.STONE_BRICK_SLAB.defaultBlockState();
+        BlockState slab = st(ru.aiforge.riftworld.registry.TempleBlocks.SLAB);
         BlockState air = Blocks.AIR.defaultBlockState();
 
-        // Ступенчатый замшелый цоколь вокруг башни (радиус 5)
+        // Ступенчатый замшелый цоколь из светлого известняка вокруг башни (радиус 5)
         for (int dx = -5; dx <= 5; ++dx)
             for (int dz = -5; dz <= 5; ++dz) {
                 double d = Math.hypot(dx, dz);
@@ -1935,7 +1920,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             }
 
         // Направление входа — к началу лесной тропы
-        double[] start = sr.trailPoint(Math.max(0.0, sr.trailLen() - 12.0));
+        double[] start = sr.trailPoint(0.25);
         double vx = start[0] - sr.tx, vz = start[1] - sr.tz;
         int doorX = Math.abs(vx) >= Math.abs(vz) ? (vx >= 0 ? 3 : -3) : 0;
         int doorZ = Math.abs(vx) < Math.abs(vz) ? (vz >= 0 ? 3 : -3) : 0;

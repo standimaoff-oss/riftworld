@@ -653,7 +653,7 @@ public final class SeaProbeCommand {
             int sizoTrail = 0, sizoFlowers = 0, sizoPillars = 0;
             var flw = ru.aiforge.riftworld.registry.ElisarBlocks.FLOWERS.get();
             var vb = ru.aiforge.riftworld.registry.ElisarBlocks.VIOLET_BLOOM.get();
-            var lb = ru.aiforge.riftworld.registry.ElisarBlocks.LILAC_BLOOM.get();
+            var lb = ru.aiforge.riftworld.registry.ElisarBlocks.PALE_BLOOM.get();
             var tp = ru.aiforge.riftworld.registry.TempleBlocks.PILLAR.get();
             var tg = ru.aiforge.riftworld.registry.TempleBlocks.GOLD_RUNE.get();
             for (int x = bestX - R; x <= bestX + R; ++x)
@@ -671,7 +671,7 @@ public final class SeaProbeCommand {
                     }
                 }
             CityPlan plan = CityPlan.get();
-            double[] c1 = bestSizo.trailPoint(0.10), t1 = bestSizo.trailPoint(0.64);
+            double[] c1 = bestSizo.trailPoint(0.12), t1 = bestSizo.trailPoint(0.66);
             int y1c = ElisarChunkGenerator.column(plan, (int) Math.round(c1[0]), (int) Math.round(c1[1])).top + 3;
             int y1t = ElisarChunkGenerator.column(plan, (int) Math.round(t1[0]), (int) Math.round(t1[1])).top + 4;
             String sv1 = Math.round(c1[0]) + "," + y1c + "," + Math.round(c1[1]) + ":"
@@ -683,8 +683,8 @@ public final class SeaProbeCommand {
             String sv2 = Math.round(c2[0]) + "," + y2c + "," + Math.round(c2[1]) + ":"
                     + Math.round(t2[0]) + "," + y2t + "," + Math.round(t2[1]);
 
-            double[] c3 = bestSizo.trailSidePoint(0.42 * bestSizo.trailLen(), -3.5);
-            double[] t3 = bestSizo.temple ? new double[]{bestSizo.tx, bestSizo.tz} : bestSizo.trailPoint(0.90);
+            double[] c3 = bestSizo.trailSidePoint(0.42, -4.0);
+            double[] t3 = bestSizo.temple ? new double[]{bestSizo.tx, bestSizo.tz} : bestSizo.trailPoint(0.84);
             int y3c = ElisarChunkGenerator.column(plan, (int) Math.round(c3[0]), (int) Math.round(c3[1])).top + 4;
             int y3t = ElisarChunkGenerator.column(plan, (int) Math.round(t3[0]), (int) Math.round(t3[1])).top + 8;
             String sv3 = Math.round(c3[0]) + "," + y3c + "," + Math.round(c3[1]) + ":"
