@@ -73,7 +73,15 @@ jobs:
             if ./gradlew jar dtJar --no-daemon --console=plain -PdtMaven="$GITHUB_WORKSPACE/ci/maven" 2>&1 | tee ../ci-out/build.log; then
               ok=1; break
             fi
-            echo "== gradle попытка $attempt упала (сеть/Maven), повтор через 20 c"
+            # Рев 16.17 — ПОЧЕМУ ПОВТОРЫ НЕ ПОМОГАЛИ. Прогоны #262 и #277 падали на
+            # «Invalid patcher dependency: net.minecraftforge:forge:…:userdev»: в кэше Gradle
+            # остаётся БИТЫЙ артефакт Forge, и все три попытки падают одинаково (retry без чистки
+            # бесполезен). Теперь перед повтором выкидываем только кэш Forge/ForgeGradle — это
+            # дешевле полной пересборки и лечит именно эту флейку.
+            echo "== gradle попытка $attempt упала (сеть/Maven), чищу кэш Forge и повторяю через 20 c"
+            rm -rf "$HOME/.gradle/caches/forge_gradle" || true
+            rm -rf "$HOME/.gradle/caches/modules-2/files-2.1/net.minecraftforge" || true
+            rm -rf "$HOME/.gradle/caches/modules-2/metadata-"*"/descriptors/net.minecraftforge" || true
             sleep 20
           done
           if [ "$ok" != "1" ]; then

@@ -239,7 +239,9 @@ public final class DtGround {
         if (!ModList.get().isLoaded("dynamictrees")) return 0;
         java.util.Random r = new java.util.Random(pos.toLong() * 0x9E3779B97F4A7C15L ^ 0x5DEECE66DL);
         int planted = 0;
-        for (int i = 0; i < 3; ++i) {   // Рев 16: три попытки — в садах и роще нужны рощи, а не одиночки
+        // Рев 16.18: в холмах луг, а не лес — лиловый хлыст получает 2 попытки из 3.
+        int tries = 3;
+        for (int i = 0; i < tries; ++i) {
             // только внутренние 8x8 чанка: крона радиусом до 8 блоков не вылезет за соседний чанк,
             // иначе WorldGenRegion может бросить «setBlock in a far chunk»
             int x = pos.getMinBlockX() + 4 + r.nextInt(8), z = pos.getMinBlockZ() + 4 + r.nextInt(8);
@@ -261,7 +263,7 @@ public final class DtGround {
             // Рев 16.6: после удаления дублирующего biome_modifier деревья наконец пошли массово,
             // и холмы превратились в сплошной «капустный лес» (кадр 49 итерации 59). По референсу
             // 04 это ЛУГ с редкими деревьями: лиловый хлыст сажаем в ~13 раз реже остальных видов.
-            float chance = sp.equals("riftworlddt:lilac") ? 0.004f
+            float chance = sp.equals("riftworlddt:lilac") ? 0.0015f
                     : sp.equals("riftworlddt:ambra") ? 0.15f
                     : sp.equals("riftworlddt:garden_oak") ? 0.16f : 0.35f;
             if (r.nextFloat() > chance) continue;
