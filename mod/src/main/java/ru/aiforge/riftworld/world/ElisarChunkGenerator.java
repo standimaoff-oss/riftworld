@@ -1190,13 +1190,13 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             tips.add(new double[]{bx, by, bz});
             // крона на конце ветви: облако листвы
             crown(cols, put, bx, by, bz,
-                    (2.2 + r.nextDouble() * (sizo ? 0.9 : garden ? 0.9 : 0.6)) * (violetCanopy ? 1.22 : 1.0),
-                    r, violetCanopy ? 2.30 : 0.86);
+                    (2.2 + r.nextDouble() * (sizo ? 0.9 : garden ? 0.9 : 0.6)) * (violetCanopy ? 1.30 : 1.0),
+                    r, violetCanopy ? 2.90 : 0.86);
         }
         // макушка
         crown(cols, put, 0, trunkTop + 1.4, 0,
-                ((sizo ? 2.5 : garden ? 3.3 : 2.9) + r.nextDouble() * 0.5) * (violetCanopy ? 1.62 : 1.0),
-                r, violetCanopy ? 2.30 : 0.86);
+                ((sizo ? 2.5 : garden ? 3.3 : 2.9) + r.nextDouble() * 0.5) * (violetCanopy ? 1.75 : 1.0),
+                r, violetCanopy ? 2.90 : 0.86);
         // Рев 11.19: рваный контур кроны оставлял одиночные блоки листвы, висящие в воздухе.
         // Убираем листву, у которой меньше двух соседей (брёвна соседями считаются).
         java.util.Set<Long> solid = new java.util.HashSet<>();
