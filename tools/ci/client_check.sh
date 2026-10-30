@@ -487,6 +487,11 @@ lookat() { # lookat <cx> <cy> <cz> <tx> <ty> <tz> <pause> <name> — камер�
 cam_ground() { # cam_ground <x> <z> [запасное значение]
   local out gy fb
   fb=${3:-110}
+  # Рев 14.71: колонку сначала грузим. Без этого /riftcam в незагруженном чанке возвращает
+  # пустоту (-2147483648), брался запасной VTOP=110, и камера оказывалась ВНУТРИ холма —
+  # кадр 49 итераций 65 и 66 был чёрным.
+  RCON execute in riftworld:elisar run forceload add "$(( $1 >> 4 ))" "$(( $2 >> 4 ))" >/dev/null 2>&1 || true
+  sleep 2
   out=$(EL execute in riftworld:elisar run riftcam "$1" "$2" 2>&1 | tr '\r\n' '  ')
   gy=$(printf '%s' "$out" | sed -n 's/.* ground=\(-\?[0-9]*\):.*/\1/p' | tail -1)
   # /riftcam печатает -2147483648, если столб пуст: такое значение (и любой мусор) отбрасываем,
