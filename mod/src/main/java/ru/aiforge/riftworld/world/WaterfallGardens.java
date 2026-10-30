@@ -113,11 +113,30 @@ public final class WaterfallGardens {
                 // Рев 16: ОБЫЧНЫХ ДУБОВ БОЛЬШЕ НЕТ. Владелец: «садовый дуб должен меняться аддоном DT».
                 // Все деревья архипелага ставит аддон (вид riftworlddt:garden_oak, см. world_gen),
                 // а список trees остаётся пустым — генератор его больше не читает.
-                // водопады: по 1–2 струи на остров
+                // водопады: по 1–2 струи на остров.
+                //
+                // Рев 16.4 — ПОЧЕМУ ВОДОПАДЫ НЕ ЧИТАЛИСЬ НА КАДРАХ. Точка струи выбиралась случайно
+                // ПО ПЛОЩАДИ острова (fd до 0.85R), то есть обычно посередине полки. Там нет обрыва:
+                // вода «вставала» блином на лугу (кадры 40–44 итерации 56). Теперь струя ставится
+                // ТОЛЬКО НА КРАЙ ПОЛКИ: идём от центра по случайному лучу и берём первое место, где
+                // терраса падает на 3+ блока — это и есть кромка, через которую льётся вода.
                 int fallWant = 1 + rnd.nextInt(2);
-                for (int k = 0, tries = 0; k < fallWant && tries < fallWant * 30; ++tries) {
-                    double fa = rnd.nextDouble() * Math.PI * 2, fd = (0.25 + rnd.nextDouble() * 0.6) * R;
-                    double fx = x + Math.cos(fa) * fd, fz = z + Math.sin(fa) * fd;
+                for (int k = 0, tries = 0; k < fallWant && tries < fallWant * 40; ++tries) {
+                    double fa = rnd.nextDouble() * Math.PI * 2;
+                    double fx = 0, fz = 0;
+                    boolean edge = false;
+                    int prevTop = Integer.MIN_VALUE;
+                    for (double rd = 0.30 * R; rd < 0.98 * R; rd += 1.0) {
+                        double tx = x + Math.cos(fa) * rd, tz = z + Math.sin(fa) * rd;
+                        if (isl.t(tx, tz) < 0.06) break;
+                        int topNow = ElisarChunkGenerator.gardenTerraceTop(isl, tx, tz, ocean);
+                        if (prevTop != Integer.MIN_VALUE && prevTop - topNow >= 3) {
+                            fx = tx; fz = tz; edge = true;   // нашли кромку полки
+                            break;
+                        }
+                        prevTop = topNow;
+                    }
+                    if (!edge) continue;
                     if (isl.t(fx, fz) < 0.12) continue;
                     boolean ok = true;
                     for (Fall f : falls) if (Math.hypot(f.x - fx, f.z - fz) < 9) { ok = false; break; }
