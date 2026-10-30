@@ -30,6 +30,7 @@ write_report_server() {
     echo "## forge mods"; echo '```'; sed -n '1,25p' "$OUT/mods.txt" 2>/dev/null; echo '```'
     echo "## tps"; echo '```'; cat "$OUT/tps.txt" 2>/dev/null; echo '```'
     echo "## аддон DT"; echo '```'; cat "$OUT/riftdt.txt" 2>/dev/null; echo '```'
+    echo "## обычный мир (level-type=minecraft:normal)"; echo '```'; cat "$OUT/normal.txt" 2>/dev/null || echo "проба не запускалась"; echo '```'
     echo "## ошибки"; echo '```'; sed -n '1,40p' "$OUT/errors.txt" 2>/dev/null; echo '```'
   } > "$OUT/report_server.md" 2>/dev/null || true
 }
@@ -203,34 +204,42 @@ fi
 # Диагностика не валит прогон — она нужна, чтобы починить причину, а не угадывать.
 if [ "${NORMAL_PROBE:-1}" = "1" ]; then
   say "normal world probe"
+  # ВАЖНО (Рев 16.2): главный сервер в серверном шаге остаётся ЖИВЫМ для шага клиента (KEEP=1),
+  # поэтому второй сервер поднимаем на ДРУГИХ портах — иначе он падал на «Failed to bind».
+  # Именно из-за этого в прогоне #243 проба не отработала и вердикт не попал в отчёт.
   cp "$SRV/server.properties" "$SRV/server.properties.flat"
   sed -i 's|^level-type=.*|level-type=minecraft:normal|' "$SRV/server.properties"
   sed -i 's/^generator-settings=.*/generator-settings=/' "$SRV/server.properties"
   sed -i 's/^level-name=.*/level-name=world_normal/' "$SRV/server.properties" || true
+  sed -i 's/^server-port=.*/server-port=25566/' "$SRV/server.properties"
+  sed -i 's/^enable-rcon=.*/enable-rcon=false/' "$SRV/server.properties"
   printf 'level-name=world_normal\n' >> "$SRV/server.properties"
   rm -rf "$SRV/world_normal"
   ( cd "$SRV" && nohup java -Xmx2G -Dfml.earlyprogresswindow=false @libraries/net/minecraftforge/forge/$FORGE/unix_args.txt nogui > normal.log 2>&1 & echo $! > normal.pid )
   nok=0
-  for i in $(seq 1 150); do
+  for i in $(seq 1 180); do
     if grep -q "Done (" "$SRV/normal.log" 2>/dev/null; then nok=1; break; fi
     if ! kill -0 "$(cat "$SRV/normal.pid")" 2>/dev/null; then break; fi
     sleep 2
   done
-  NORMALTXT=$(tr -d '\r' < "$SRV/normal.log" 2>/dev/null | grep -m3 -i "feature order cycle\|Reported exception\|Failed to start\|net.minecraft.ReportedException" || true)
+  CYCLE=$(grep -m1 -i "feature order cycle" "$SRV/normal.log" 2>/dev/null | tr -d '\r' || true)
+  NORMALTXT=$(tr -d '\r' < "$SRV/normal.log" 2>/dev/null | grep -m3 -i "feature order cycle\|Reported exception\|Failed to start\|net.minecraft.ReportedException\|Failed to bind" || true)
   cp "$SRV/normal.log" "$OUT/normal.log" 2>/dev/null || true
   if [ "$nok" = "1" ]; then
-    echo "  обычный мир: сервер поднялся, feature order cycle НЕ воспроизвёлся"
+    echo "normal world: server booted, no feature order cycle" | tee "$OUT/normal.txt"
+    echo "::notice title=обычный мир::сервер с level-type=normal поднялся, feature order cycle НЕ воспроизвёлся"
   else
-    echo "  обычный мир: сервер НЕ поднялся"
+    echo "normal world: server FAILED to boot" | tee "$OUT/normal.txt"
+    [ -n "$NORMALTXT" ] && echo "$NORMALTXT" >> "$OUT/normal.txt"
     if [ -n "$NORMALTXT" ]; then
       echo "$NORMALTXT" | head -3 | while IFS= read -r line; do
         echo "::error title=обычный мир::${line:0:400}"
       done
     fi
-    CYCLE=$(grep -m1 -i "feature order cycle" "$SRV/normal.log" 2>/dev/null | tr -d '\r' || true)
     if [ -n "$CYCLE" ]; then echo "::error title=worldgen::${CYCLE:0:600}"; fi
     echo "$NORMALTXT" >> "$OUT/errors.txt" 2>/dev/null || true
   fi
+  cat "$OUT/normal.txt" 2>/dev/null || true
   kill "$(cat "$SRV/normal.pid")" 2>/dev/null || true
   sleep 3
   mv "$SRV/server.properties.flat" "$SRV/server.properties" 2>/dev/null || true

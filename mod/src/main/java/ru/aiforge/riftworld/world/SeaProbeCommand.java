@@ -585,9 +585,13 @@ public final class SeaProbeCommand {
                     if (colWater > 3) { fallWater += colWater; if (hasSource) ++fallSrc; }
                     // Рев 16: «подводный ярус» — это ПОЛКА ниже моря. Пруд на нижней полке тоже
                     // уходит дном под воду, но это пруд, а не ярус: его не считаем.
+                    // Рев 16.2: считаем ТОЛЬКО острова садов (kind = WaterfallGardens.KIND).
+                    // В прошлой пробе в счёт попадали дикие островки другого вида, оказавшиеся
+                    // внутри биома (это нормальные острова архипелага, а не «подводные ярусы»),
+                    // и гейт падал на 68 колонках, хотя ярусов-утопленников уже нет.
                     ElisarChunkGenerator.Col topC = ElisarChunkGenerator.column(CityPlan.get(), x, z);
-                    if (topC.garden && topC.isl != null && topC.top <= ocean
-                            && !topC.pond && topC.waterTop == Integer.MIN_VALUE) ++dryCols;
+                    if (topC.garden && topC.isl != null && topC.isl.kind == WaterfallGardens.KIND
+                            && topC.top <= ocean && !topC.pond && topC.waterTop == Integer.MIN_VALUE) ++dryCols;
                 }
             if (!bestGarden.falls.isEmpty()) {
                 WaterfallGardens.Fall f0 = bestGarden.falls.get(0);
