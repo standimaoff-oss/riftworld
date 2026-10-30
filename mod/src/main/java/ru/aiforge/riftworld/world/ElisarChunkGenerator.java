@@ -1190,11 +1190,13 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             tips.add(new double[]{bx, by, bz});
             // крона на конце ветви: облако листвы
             crown(cols, put, bx, by, bz,
-                    (2.2 + r.nextDouble() * (sizo ? 0.9 : garden ? 0.9 : 0.6)) * (violetCanopy ? 1.22 : 1.0), r);
+                    (2.2 + r.nextDouble() * (sizo ? 0.9 : garden ? 0.9 : 0.6)) * (violetCanopy ? 1.22 : 1.0),
+                    r, violetCanopy ? 2.30 : 0.86);
         }
         // макушка
         crown(cols, put, 0, trunkTop + 1.4, 0,
-                ((sizo ? 2.5 : garden ? 3.3 : 2.9) + r.nextDouble() * 0.5) * (violetCanopy ? 1.50 : 1.0), r);
+                ((sizo ? 2.5 : garden ? 3.3 : 2.9) + r.nextDouble() * 0.5) * (violetCanopy ? 1.62 : 1.0),
+                r, violetCanopy ? 2.30 : 0.86);
         // Рев 11.19: рваный контур кроны оставлял одиночные блоки листвы, висящие в воздухе.
         // Убираем листву, у которой меньше двух соседей (брёвна соседями считаются).
         java.util.Set<Long> solid = new java.util.HashSet<>();
@@ -1238,6 +1240,17 @@ public class ElisarChunkGenerator extends ChunkGenerator {
     private static void crown(java.util.Map<Long, java.util.List<int[]>> cols,
                               java.util.function.BiConsumer<int[], Integer> put,
                               double cx, double cy, double cz, double radius, java.util.Random r) {
+        crown(cols, put, cx, cy, cz, radius, r, 0.86);
+    }
+
+    /**
+     * Рев 14.76: {@code yw} — вес вертикали. У фиолетовых деревьев на референсе 04 крона
+     * ШИРОКАЯ И ПЛОСКАЯ (зонт), а не вытянутый вверх шар: при весе 0.86 получались «колобки»
+     * (кадры 50/52 итерации 71). Больший вес сжимает крону по высоте, не меняя радиус.
+     */
+    private static void crown(java.util.Map<Long, java.util.List<int[]>> cols,
+                              java.util.function.BiConsumer<int[], Integer> put,
+                              double cx, double cy, double cz, double radius, java.util.Random r, double yw) {
         int R = (int) Math.ceil(radius);
         for (int dx = -R; dx <= R; ++dx) {
             for (int dz = -R; dz <= R; ++dz) {
@@ -1245,7 +1258,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                     // Рев 14.37: крона — ВЫТЯНУТЫЙ ВВЕРХ шар (на референсе 04 кроны пышные и высокие,
                     // а не блины). Плюс больше рваного контура по внешней оболочке, иначе издалека
                     // листва читается сплошным кубом.
-                    double d = Math.sqrt(dx * dx + dy * dy * 0.86 + dz * dz);
+                    double d = Math.sqrt(dx * dx + dy * dy * yw + dz * dz);
                     if (d > radius) continue;
                     if (d > radius - 0.9 && r.nextDouble() < 0.34) continue;      // рваный контур
                     put.accept(new int[]{(int) Math.round(cx) + dx, (int) Math.round(cy) + dy, (int) Math.round(cz) + dz}, 0);
