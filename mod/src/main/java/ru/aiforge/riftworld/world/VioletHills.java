@@ -69,6 +69,13 @@ public final class VioletHills {
         public final double pax, paz, pbx, pbz, pmx, pmz;
         // river: straight chord across the island
         public final double rax, raz, rbx, rbz;
+        /**
+         * Рев 14.59: ОСЬ ХРЕБТА луга. На референсе 04 террасы — это длинные параллельные
+         * ленты, уходящие к горизонту, а не кольца вокруг вершины. Купол даёт изолинии-кольца,
+         * поэтому рельеф луга строим как хребет вдоль этой оси: изолинии высоты вытягиваются
+         * вдоль неё, и подпорные стенки идут длинными лентами, как на фото.
+         */
+        public final double axisX, axisZ;
         public final int riverLevel;
         public static final double RIVER_HW = 1.6;
 
@@ -79,6 +86,8 @@ public final class VioletHills {
             double base = 98 + rnd.nextDouble() * 14;
             this.meadow = new CityPlan.Island(cx, cz, R, base, R * 0.6 + 12, rnd.nextDouble() * 6.283, rnd.nextDouble() * 6.283,
                     rnd.nextDouble() * 6.283, 7, 0.9);
+            double aa = rnd.nextDouble() * Math.PI * 2;
+            this.axisX = Math.cos(aa); this.axisZ = Math.sin(aa);
             // the two churches face the meadow centre from opposite sides
             double th = rnd.nextDouble() * Math.PI * 2, jj = (rnd.nextDouble() - 0.5) * 0.7;
             double rr = R * 0.52;

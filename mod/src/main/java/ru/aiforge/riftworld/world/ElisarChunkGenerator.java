@@ -293,7 +293,20 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 // волна холмов + наплыв от кромки острова, и уже оно режется на террасы по 3 блока.
                 double tm = Math.max(0.0, Math.min(1.0, isl.t(px, pz)));
                 double rimY = plan.ocean + 2.0;
-                double dome = rimY + (isl.base - rimY) * Math.pow(tm, 0.75);
+                // Рев 14.59, по референсу 04: рельеф луга — ХРЕБЕТ вдоль оси региона, а не купол.
+                // У купола изолинии высоты — замкнутые кольца, поэтому террасы замыкались в
+                // «каменные вазы». У хребта изолинии вытянуты вдоль оси: получаются длинные
+                // параллельные ленты террас, уходящие к горизонту — ровно как на фото.
+                VioletHills.Region vax = VioletHills.regionAt(px, pz);
+                double ridge = 1.0;
+                if (vax != null) {
+                    double perp = Math.abs((px - isl.cx) * vax.axisZ - (pz - isl.cz) * vax.axisX);
+                    double along = Math.abs((px - isl.cx) * vax.axisX + (pz - isl.cz) * vax.axisZ);
+                    // поперёк оси — плавный подъём к гребню, вдоль — длинный ровный участок
+                    ridge = Math.pow(Math.max(0.0, 1.0 - perp / (isl.R * 0.95)), 0.55);
+                    ridge *= 1.0 - 0.25 * Math.pow(Math.min(1.0, along / (isl.R * 1.15)), 2.2);
+                }
+                double dome = rimY + (isl.base - rimY) * Math.pow(tm, 0.32) * ridge;
                 // Рев 14.42, по кадру 51 итерации 38: волны были крутоваты (7 блоков на ~110 блоков
                 // хода), ступени 3 блока — и террасы крошились на изолированные «пятачки» с
                 // каменными бортами. На фото терраса — ДЛИННАЯ ЛЕНТА по склону. Волна ниже и
@@ -302,8 +315,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 // «дрожал» на масштабе ~50 блоков, и стенки шли короткими обрубками. Убираем вторую
                 // гармонику почти полностью и удлиняем первую: контур становится плавной длинной
                 // линией, а подпорная стенка читается сплошной лентой, как на референсе 04.
-                dome += 3.4 * (vnoise(px * 0.0042, pz * 0.0042, 71) - 0.5) * tm;
-                dome += 0.9 * (vnoise(px * 0.011, pz * 0.011, 72) - 0.5) * tm;
+                dome += 2.6 * (vnoise(px * 0.0042, pz * 0.0042, 71) - 0.5) * tm;
+                dome += 0.8 * (vnoise(px * 0.011, pz * 0.011, 72) - 0.5) * tm;
                 top = violetTerrace(dome);
                 VioletHills.Region vr = VioletHills.regionAt(px, pz);
                 if (vr != null && vr.meadow == isl) {
