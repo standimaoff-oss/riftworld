@@ -123,8 +123,11 @@ public final class VioletHills {
                 boolean ok = true;
                 for (CityPlan.Tree t : trees) if (Math.abs(t.x - x) < 11 && Math.abs(t.z - z) < 11) { ok = false; break; }
                 if (!ok) continue;
-                // на референсе все деревья поля — с лиловой кроной, разного размера
-                trees.add(new CityPlan.Tree(x, z, TREE_VIOLET, 7 + rnd.nextInt(5), rnd.nextInt(1 << 30)));
+                // на референсе все деревья поля — с лиловой кроной, разного размера.
+                // Рев 14.78: стволы были 7–11 блоков, и зонт висел почти на уровне гряд — деревья
+                // читались кустами (кадры 49/52 итерации 73). На фото ствол виден полностью,
+                // а крона стоит на 11–17 блоках над полем.
+                trees.add(new CityPlan.Tree(x, z, TREE_VIOLET, 11 + rnd.nextInt(7), rnd.nextInt(1 << 30)));
                 ++k;
             }
         }
