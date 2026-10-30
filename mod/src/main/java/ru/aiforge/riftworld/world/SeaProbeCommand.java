@@ -583,8 +583,11 @@ public final class SeaProbeCommand {
                     // Рев 16: столб воды выше моря — это струя водопада. У настоящей струи есть
                     // исток (source) на кромке полки; у «статичной» воды источника не было.
                     if (colWater > 3) { fallWater += colWater; if (hasSource) ++fallSrc; }
+                    // Рев 16: «подводный ярус» — это ПОЛКА ниже моря. Пруд на нижней полке тоже
+                    // уходит дном под воду, но это пруд, а не ярус: его не считаем.
                     ElisarChunkGenerator.Col topC = ElisarChunkGenerator.column(CityPlan.get(), x, z);
-                    if (topC.garden && topC.isl != null && topC.top <= ocean) ++dryCols;
+                    if (topC.garden && topC.isl != null && topC.top <= ocean
+                            && !topC.pond && topC.waterTop == Integer.MIN_VALUE) ++dryCols;
                 }
             if (!bestGarden.falls.isEmpty()) {
                 WaterfallGardens.Fall f0 = bestGarden.falls.get(0);

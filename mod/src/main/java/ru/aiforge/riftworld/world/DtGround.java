@@ -253,7 +253,11 @@ public final class DtGround {
             if (r.nextFloat() > chance) continue;
             BlockPos ground = surfaceUnder(level, start, sea);
             if (ground == null) continue;
-            if (plant(level, ground, sp, 3 + r.nextInt(4) * 2)) ++planted;
+            // Рев 16.1: у луговых деревьев на кадрах 49–51 итерации 53 была узкая крона на голом
+            // стволе («гриб на палке»). Радиус диска задаёт форму из jo_code: 6..8 — широкая
+            // округлая крона, как у деревьев на референсе 04.
+            int radius = sp.equals("riftworlddt:lilac") ? 6 + r.nextInt(3) : 3 + r.nextInt(4) * 2;
+            if (plant(level, ground, sp, radius)) ++planted;
         }
         return planted;
     }
