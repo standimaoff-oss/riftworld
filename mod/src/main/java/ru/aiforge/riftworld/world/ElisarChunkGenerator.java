@@ -830,7 +830,11 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                 double rock = vnoise(x * 0.055, z * 0.055, 97);
                                 if (rock > 0.70 && h < 0.88) chunk.setBlockState(mp.set(x, c.top + 1, z), mossy, false);
                                 else if (h < 0.13) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
-                                else if (h < 0.44 && vnoise(x * 0.075, z * 0.075, 95) > 0.50) {
+                                // Рев 14.81: на референсе 05 фиалки стоят КУРТИНКАМИ вокруг стволов и мшистых
+                                // валунов, а не равномерным ковром по всей роще. Второй, крупный шум
+                                // (0.028 — пятна ~35 блоков) собирает цветы в такие куртинки.
+                                else if (h < 0.46 && vnoise(x * 0.075, z * 0.075, 95) > 0.44
+                                        && vnoise(x * 0.028, z * 0.028, 98) > 0.42) {
                                     int f = (int) (hash(x, z, 96) * 100);
                                     chunk.setBlockState(mp.set(x, c.top + 1, z), st(f < 40 ? ElisarBlocks.VIOLET_BLOOM : f < 72 ? ElisarBlocks.LILAC_BLOOM : f < 88 ? ElisarBlocks.PALE_BLOOM : ElisarBlocks.FLOWERS), false);
                                 }
