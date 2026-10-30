@@ -424,8 +424,9 @@ public final class SeaProbeCommand {
         }
         final int gy = groundY;
         final String g = ground;
+        final int bl = blocked;          // лямбда требует effectively final (иначе не компилируется)
         src.sendSuccess(() -> Component.literal("riftcam at=" + x + "," + z + " ground=" + gy + ":" + g
-                + " blocked=" + blocked), false);
+                + " blocked=" + bl), false);
         return 1;
     }
 
