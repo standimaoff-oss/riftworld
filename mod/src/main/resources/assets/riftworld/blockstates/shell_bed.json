@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "waterlogged=true": {
+      "model": "riftworld:block/shell_bed"
+    },
+    "waterlogged=false": {
+      "model": "riftworld:block/shell_bed"
+    }
+  }
+}

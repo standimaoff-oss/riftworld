@@ -1,1 +1,21 @@
-{"has_precipitation": true, "temperature": 0.7, "downfall": 0.6, "effects": {"sky_color": 12830952, "fog_color": 14210796, "water_color": 4880840, "water_fog_color": 2837132, "grass_color": 9677178, "foliage_color": 10984388, "particle": {"type": "minecraft:cherry_leaves", "probability": 0.0012}}, "spawners": {}, "spawn_costs": {}, "carvers": {}, "features": []}
+{
+  "has_precipitation": true,
+  "temperature": 0.75,
+  "downfall": 0.55,
+  "effects": {
+    "sky_color": 14269657,
+    "fog_color": 15322072,
+    "water_color": 5882575,
+    "water_fog_color": 3046022,
+    "grass_color": 10335087,
+    "foliage_color": 10335087,
+    "particle": {
+      "type": "minecraft:cherry_leaves",
+      "probability": 0.0016
+    }
+  },
+  "spawners": {},
+  "spawn_costs": {},
+  "carvers": {},
+  "features": []
+}

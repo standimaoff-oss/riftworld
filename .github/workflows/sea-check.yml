@@ -18,16 +18,28 @@ on:
         type: string
         required: false
         default: ''
+      iteration:
+        description: 'Номер итерации для reports/iteration-N (пусто = следующий по счёту)'
+        type: string
+        required: false
+        default: ''
 
 permissions:
   contents: write
 
+# Рев 14.33: прогон #182 был ОТМЕНЁН на 70-й минуте. Причина — вот эта группа: любой пуш в ту же
+# ветку (в том числе собственный коммит кадров с [skip ci]) создаёт новый прогон и гасит текущий.
+# Теперь группа включает SHA коммита, а отмена выключена: прогон длиной 1.5 часа не может быть
+# убит своим же коммитом кадров.
 concurrency:
-  group: sea-check-${{ github.ref }}
-  cancel-in-progress: true
+  group: sea-check-${{ github.ref }}-${{ github.sha }}
+  cancel-in-progress: false
 
 jobs:
   verify:
+    # Коммит кадров в reports/ тоже пушит в эту ветку — без [skip ci] и этой проверки
+    # прогон запускал бы сам себя бесконечно.
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
@@ -44,21 +56,122 @@ jobs:
 
       - name: Build mod jar
         run: |
+          set -o pipefail   # без этого падение gradle маскировалось tee, и джоб шёл дальше «успешным»
           mkdir -p ci-out
           cd mod
           chmod +x gradlew
-          ./gradlew jar --no-daemon --console=plain 2>&1 | tee ../ci-out/build.log
+          # Рев 14.2: сборочная сеть на раннере флапает (icu4j/jna с forge-maven отваливаются),
+          # поэтому до трёх попыток — уже скачанные артефакты остаются в кэше gradle.
+          # Рев 15: БЕЗ -PwithDT. Аддон (dtJar) компилируется без Dynamic Trees — он общается с DT
+          # только рефлексией. А `-PwithDT` тянул jar DT из maven, где лежит БИТЫЙ pom
+          # ("Already seen doctype") — и этот мусор в кеше Gradle валил ВСЮ сборку
+          # ("Invalid patcher dependency: forge:…:userdev"), причём ещё на этапе конфигурации.
+          # Dynamic Trees теперь ставится на сервер обычным curl-ом (tools/ci/server_check.sh),
+          # так что от maven-артефакта сборка больше не зависит.
+          ok=0
+          for attempt in 1 2 3; do
+            if ./gradlew jar dtJar --no-daemon --console=plain -PdtMaven="$GITHUB_WORKSPACE/ci/maven" 2>&1 | tee ../ci-out/build.log; then
+              ok=1; break
+            fi
+            echo "== gradle попытка $attempt упала (сеть/Maven), повтор через 20 c"
+            sleep 20
+          done
+          if [ "$ok" != "1" ]; then
+            # Рев 15.5: раньше причина падения сборки оставалась только в артефакте, а артефакты
+            # blob-хранилища отсюда не скачиваются — приходилось гадать. Теперь ошибки javac/gradle
+            # уходят аннотациями (::error::), и их видно прямо через API прогона.
+            grep -E "error:|error;|FAILURE:|What went wrong|Caused by|Execution failed|Could not|Invalid patcher|> Task .*FAILED|^e: " ../ci-out/build.log | head -40 \
+              | while IFS= read -r line; do echo "::error::${line}"; done
+            echo "::error::сборка упала — см. строки ошибок выше"
+            exit 1
+          fi
         continue-on-error: false
 
+      # Рев 15.2: Dynamic Trees скачиваем ОДИН раз обычным curl-ом (не через Gradle!): из maven
+      # приходит битый pom, а локальный jar подключается и к серверу, и к dev-клиенту.
+      - name: Fetch Dynamic Trees jar
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          mkdir -p ci/dt
+          DTVER=$(sed -n 's/^dynamic_trees_version=//p' mod/gradle.properties | head -1)
+          OUT=ci/dt/dynamictrees.jar
+          for url in \
+            "https://harleyoconnor.com/maven/com/ferreusveritas/dynamictrees/DynamicTrees-1.20.1/${DTVER}/DynamicTrees-1.20.1-${DTVER}.jar" \
+            "https://api.cfwidget.com/mods/mc-mods/dynamic-trees/versions/${DTVER}/download"; do
+            echo "== $url"
+            if curl -fsSL --retry 2 -o "$OUT.tmp" "$url"; then
+              if unzip -l "$OUT.tmp" >/dev/null 2>&1; then mv "$OUT.tmp" "$OUT"; echo "DT jar: $(ls -l "$OUT" | awk '{print $5}') байт"; break; fi
+              echo "  это не zip — пропускаю"
+            fi
+            rm -f "$OUT.tmp"
+          done
+          if [ ! -f "$OUT" ]; then
+            echo "::warning title=DT::Dynamic Trees не скачался — аддон проверить не выйдет"
+            exit 0
+          fi
+          # Рев 15.3: раскладываем jar в ЛОКАЛЬНЫЙ maven с корректным pom — иначе ForgeGradle
+          # тянет битый pom с harleyoconnor.com и валит всю сборку, а простой файл не деобфусцируется.
+          M=ci/maven/com/ferreusveritas/dynamictrees/DynamicTrees-1.20.1/${DTVER}
+          mkdir -p "$M"
+          cp "$OUT" "$M/DynamicTrees-1.20.1-${DTVER}.jar"
+          if [ ! -f "$M/DynamicTrees-1.20.1-${DTVER}.pom" ]; then
+            printf '%s\n' '<?xml version="1.0" encoding="UTF-8"?>' \
+              '<project xmlns="http://maven.apache.org/POM/4.0.0">' \
+              '  <modelVersion>4.0.0</modelVersion>' \
+              '  <groupId>com.ferreusveritas.dynamictrees</groupId>' \
+              "  <artifactId>DynamicTrees-1.20.1</artifactId>" \
+              "  <version>${DTVER}</version>" \
+              '  <packaging>jar</packaging>' \
+              '</project>' > "$M/DynamicTrees-1.20.1-${DTVER}.pom"
+          fi
+          echo "локальный maven: $M"
+          ls -l "$M"
+
       - name: Boot Forge server with the mod and probe it
+        id: server
+        # Рев 13.21: серверный шаг не должен «съедать» весь прогон: даже если он упал,
+        # шаг клиента пытается отработать (у него if: always()) и его отчёт попадает в артефакты.
+        continue-on-error: true
         run: bash tools/ci/server_check.sh
+        env:
+          WITH_DT: "1"   # Рев 12: сервер тоже с Dynamic Trees + аддоном
+          DT_JAR: ${{ github.workspace }}/ci/dt/dynamictrees.jar
 
       # без игрока в измерении сервер Элисар не генерирует — съёмка и настоящие пробы идут в шаге клиента
 
       - name: Launch real Minecraft client, enter Elisar and take screenshots
         if: always()
-        timeout-minutes: 40
-        run: bash tools/ci/client_check.sh
+        timeout-minutes: 50
+        env:
+          # Рев 15.2: клиент поднимается С Dynamic Trees, но подключённым ЛОКАЛЬНЫМ jar-ом
+          # (-PdtJarPath), а не из maven — оттуда приходит битый pom и валит сборку.
+          # Мод-листы клиента и сервера обязаны совпадать, иначе Forge выкинет «Incompatible mod set».
+          WITH_DT: "1"
+          DT_JAR: ${{ github.workspace }}/ci/dt/dynamictrees.jar
+          DT_MAVEN: ${{ github.workspace }}/ci/maven
+        run: |
+          bash tools/ci/client_check.sh
+          rc=$?
+          if [ "$rc" -ne 0 ]; then
+            echo "::error title=клиент::шаг клиента упал (код $rc), хвост лога ниже"
+            for f in ci-shots/client.log ci-shots/report_client.md ci-shots/probes.txt; do
+              [ -f "$f" ] || continue
+              echo "===== $f ====="
+              tail -60 "$f" | while IFS= read -r line; do echo "::error title=${f##*/}::${line:0:350}"; done
+            done
+          fi
+          exit $rc
+
+      - name: Проверка серверного шага
+        if: always()
+        # Итог серверного шага выносим отдельной аннотацией: continue-on-error скрывает статус.
+        run: |
+          echo "server outcome: ${{ steps.server.outcome }}"
+          if [ "${{ steps.server.outcome }}" != "success" ]; then
+            echo "::error title=сервер::шаг сервера: ${{ steps.server.outcome }} — см. report_server.md в артефактах"
+            exit 1
+          fi
 
       - name: Stage jar for artifacts
         if: always()
@@ -66,6 +179,8 @@ jobs:
           mkdir -p ci-out
           JAR=$(ls mod/build/libs/riftworld-*.jar 2>/dev/null | grep -v -e sources -e javadoc | head -1 || true)
           if [ -n "$JAR" ]; then cp "$JAR" "ci-out/$(basename "$JAR")"; echo "staged $JAR"; fi
+          DTJAR=$(ls mod/build/libs/riftworld-dt-*.jar 2>/dev/null | grep -v -e sources -e javadoc | head -1 || true)
+          if [ -n "$DTJAR" ]; then cp "$DTJAR" "ci-out/$(basename "$DTJAR")"; echo "staged addon $DTJAR"; fi
 
       - name: Resolve release tag
         id: tag
@@ -74,6 +189,12 @@ jobs:
           TAG="${{ inputs.release_tag }}"
           if [ -z "$TAG" ]; then
             TAG=$(git log -1 --pretty=%B | sed -n 's/.*\[release \([^]]*\)\].*/\1/p')
+          fi
+          # Рев 15.2: страховка — если тега нет в сообщении коммита, публикуем версию из
+          # gradle.properties. Владельцу нужен jar на КАЖДОМ прогоне («ссылку на jar всегда»).
+          if [ -z "$TAG" ]; then
+            TAG="v$(sed -n 's/^mod_version=//p' mod/gradle.properties | head -1)"
+            echo "тег не задан в коммите — беру версию из gradle.properties: $TAG"
           fi
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "release tag: [$TAG]"
@@ -94,14 +215,99 @@ jobs:
             set -x
             [ -n "$JAR" ] || { echo "jar не найден"; exit 1; }
             cp "$JAR" "ci-out/riftworld-$TAG.jar"
+            DTJAR=$(ls mod/build/libs/riftworld-dt-*.jar 2>/dev/null | head -1 || true)
+            [ -n "$DTJAR" ] && cp "$DTJAR" "ci-out/riftworld-dt-$TAG.jar" || true
             echo "notes: $NOTES ($(wc -c < "$NOTES" 2>/dev/null || echo none) байт)"
             gh release delete "$TAG" --yes --cleanup-tag || true
-            gh release create "$TAG" "ci-out/riftworld-$TAG.jar" --title "${TITLE:-$TAG}" --notes-file "$NOTES"
+            gh release create "$TAG" "ci-out/riftworld-$TAG.jar" "ci-out/riftworld-dt-$TAG.jar" --title "${TITLE:-$TAG}" --notes-file "$NOTES"
           } > ci-out/release.log 2>&1 || {
             echo "== публикация релиза не удалась =="
             tail -40 ci-out/release.log
             exit 1
           }
+
+      # Рев 14: владелец попросил складывать кадры прямо в репозиторий, в reports/iteration-N —
+      # чтобы на каждый кадр можно было дать прямую ссылку с GitHub, а не искать артефакт прогона.
+      - name: Publish screenshots to reports/iteration-N
+        if: always()
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          SHOTS=(ci-shots/*.jpg)
+          if [ ${#SHOTS[@]} -eq 0 ]; then
+            echo "нет кадров — публиковать нечего"
+            exit 0
+          fi
+          # номер итерации: из входа workflow_dispatch или следующий по счёту в reports/
+          # (первый прогон упал в reports/iteration-/ с пустым номером — фильтруем всё, кроме цифр)
+          IT=$(printf '%s' "${{ inputs.iteration }}" | tr -dc '0-9')
+          if [ -z "$IT" ]; then
+            LAST=$(ls -d reports/iteration-[0-9]* 2>/dev/null | sed 's#.*iteration-##' | sort -n | tail -1 || true)
+            IT=$(( ${LAST:-0} + 1 ))
+          fi
+          [ -n "$IT" ] || IT=1
+          DEST="reports/iteration-$IT"
+          echo "публикую ${#SHOTS[@]} кадров в $DEST"
+          mkdir -p "$DEST/shots"
+          # сжимаем до 854 px по ширине, чтобы кадры не раздували репозиторий
+          for f in "${SHOTS[@]}"; do
+            convert "$f" -resize 854x -quality 78 "$DEST/shots/$(basename "$f")" 2>/dev/null \
+              || cp "$f" "$DEST/shots/$(basename "$f")"
+          done
+          cp ci-shots/probes.txt "$DEST/" 2>/dev/null || true
+          # jar этой итерации кладём рядом с кадрами: на него тоже нужна прямая ссылка в сообщении
+          JAR=$(ls mod/build/libs/riftworld-*.jar 2>/dev/null | grep -v -e sources -e javadoc | head -1 || true)
+          [ -n "$JAR" ] && cp "$JAR" "$DEST/$(basename "$JAR")" || echo "jar не найден — пропускаю"
+          DTJAR=$(ls mod/build/libs/riftworld-dt-*.jar 2>/dev/null | head -1 || true)
+          [ -n "$DTJAR" ] && cp "$DTJAR" "$DEST/$(basename "$DTJAR")" || true
+          cp ci-shots/report_client.md "$DEST/" 2>/dev/null || true
+          cp ci-out/report.md "$DEST/" 2>/dev/null || true
+          # Рев 15.2: лог клиента тоже кладём в репозиторий (хвост). Артефакты прогона
+          # недоступны для скачивания, и без этого «шаг клиента упал» никак не объяснить.
+          if [ -f ci-shots/client.log ]; then
+            tail -c 200000 ci-shots/client.log > "$DEST/client.log" || true
+          fi
+          if [ -f ci-shots/client_attempt1.log ]; then
+            tail -c 100000 ci-shots/client_attempt1.log > "$DEST/client_attempt1.log" || true
+          fi
+          grep -nE 'Exception|\\bERROR\\b|FATAL|Unable to load model|Missing textures' ci-shots/client.log 2>/dev/null \
+            | tail -80 > "$DEST/client_errors.txt" || true
+          # индекс с прямыми ссылками на каждый кадр
+          {
+            echo "# Итерация $IT — кадры живого прогона"
+            echo
+            echo "Прогон: [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+            echo "Коммит: \`${{ github.sha }}\`"
+            echo
+            if ls "$DEST"/*.jar >/dev/null 2>&1; then
+              echo
+              echo "## Jar этой итерации"
+              for j in "$DEST"/*.jar; do
+                echo "- [$(basename "$j")](../$DEST/$(basename "$j"))"
+              done
+            fi
+            echo
+            echo "## Кадры"
+            for f in "$DEST"/shots/*.jpg; do
+              n=$(basename "$f")
+              echo "- [$n](../$DEST/shots/$n)"
+            done
+          } > "$DEST/README.md"
+          # jar держим только в свежей итерации: 6 МБ за прогон иначе раздувают ветку
+          for old in reports/iteration-[0-9]*/; do
+            [ "$old" = "$DEST/" ] && continue
+            rm -f "$old"*.jar
+          done
+          git config user.name "riftworld-ci"
+          git config user.email "riftworld-ci@users.noreply.github.com"
+          git add -A "$DEST"
+          if git diff --cached --quiet; then
+            echo "кадры не изменились"
+            exit 0
+          fi
+          git commit -qm "кадры итерации $IT (прогон #${{ github.run_number }}) [skip ci]"
+          git push origin "HEAD:${{ github.ref_name }}" || echo "::warning title=reports::push кадров не прошёл"
+          echo "готово: $DEST"
 
       - name: Upload artifacts
         if: always()
@@ -117,13 +323,22 @@ jobs:
           set -euo pipefail
           git config user.name "riftworld-ci"
           git config user.email "riftworld-ci@users.noreply.github.com"
-          cp -r ci-out /tmp/artifacts
-          cp -r ci-shots /tmp/artifacts/shots 2>/dev/null || true
+          rm -rf /tmp/artifacts
+          mkdir -p /tmp/artifacts
+          cp -r ci-out/. /tmp/artifacts/ 2>/dev/null || echo "нет ci-out (шаг сборки упал раньше)"
+          cp -r ci-shots/. /tmp/artifacts/shots/ 2>/dev/null || echo "нет ci-shots (клиент не дошёл до снимков)"
+          echo "артефактов: $(find /tmp/artifacts -type f | wc -l)"
+          # Рев 13: раньше push в ветку отчёта тихо падал и разбирать прогон было нечем.
           git checkout --orphan ci-artifacts
           git rm -rf -q --cached . >/dev/null 2>&1 || true
           rm -rf ./* ./.github 2>/dev/null || true
           cp -r /tmp/artifacts/* .
           git add -A
-          git commit -qm "CI artifacts for ${{ github.sha }} (${{ github.run_number }})" || true
-          git push -f origin HEAD:ci-artifacts || echo 'WARN: ветка ci-artifacts занята параллельным прогоном'
+          git commit -qm "CI artifacts for ${{ github.sha }} (${{ github.run_number }})" || echo "нечего коммитить"
+          if git push -f origin HEAD:ci-artifacts 2>/tmp/push.log; then
+            echo "отчёт залит в ветку ci-artifacts: $(git rev-parse --short HEAD)"
+          else
+            echo "::error title=ci-artifacts::push не прошёл: $(tail -3 /tmp/push.log | tr '\n' ' ')"
+            cat /tmp/push.log
+          fi
           echo "jar в ветке: $(ls -1 *.jar 2>/dev/null | head -1)"

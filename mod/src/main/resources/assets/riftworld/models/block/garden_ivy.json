@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/vine",
+  "textures": {
+    "vine": "riftworld:block/garden_ivy",
+    "particle": "riftworld:block/garden_ivy"
+  },
+  "render_type": "minecraft:cutout"
+}

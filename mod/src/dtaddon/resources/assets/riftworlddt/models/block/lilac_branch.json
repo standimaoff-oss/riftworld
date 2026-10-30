@@ -1,0 +1,7 @@
+{
+  "loader": "dynamictrees:branch",
+  "textures": {
+    "bark": "riftworld:block/lilac_bark",
+    "rings": "riftworld:block/lilac_rings"
+  }
+}

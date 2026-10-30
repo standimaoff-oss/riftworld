@@ -1,0 +1,7 @@
+{
+  "parent": "dynamictrees:item/branch",
+  "textures": {
+    "bark": "riftworld:block/garden_log",
+    "rings": "riftworld:block/garden_log_top"
+  }
+}

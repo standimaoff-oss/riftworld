@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "riftworld:elisar_water",
+    "riftworld:flowing_elisar_water",
+    "riftworld:garden_water",
+    "riftworld:flowing_garden_water"
+  ]
+}

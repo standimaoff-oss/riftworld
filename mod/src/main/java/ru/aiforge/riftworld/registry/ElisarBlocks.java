@@ -50,16 +50,17 @@ public final class ElisarBlocks {
     public static final RegistryObject<Block> PLASTER = cube("elisar_plaster", MapColor.SAND, 1.2F, SoundType.STONE);
     public static final RegistryObject<Block> TIMBER_CROSS = cube("timber_frame_cross", MapColor.SAND, 1.5F, SoundType.WOOD);
     public static final RegistryObject<Block> TIMBER_POST = cube("timber_frame_post", MapColor.SAND, 1.5F, SoundType.WOOD);
-    public static final RegistryObject<Block> SIZO_PLANKS = cube("sizo_planks", MapColor.COLOR_LIGHT_BLUE, 2.0F, SoundType.WOOD);
-    public static final RegistryObject<Block> AMBRA_PLANKS = cube("ambra_planks", MapColor.COLOR_ORANGE, 2.0F, SoundType.WOOD);
+    public static final RegistryObject<Block> SIZO_PLANKS = cube("sizo_planks", MapColor.COLOR_LIGHT_GRAY, 2.0F, SoundType.WOOD);
+    public static final RegistryObject<Block> AMBRA_PLANKS = cube("ambra_planks", MapColor.SAND, 2.0F, SoundType.WOOD);
     public static final RegistryObject<Block> THATCH = cube("thatch", MapColor.COLOR_YELLOW, 0.5F, SoundType.GRASS);
     public static final RegistryObject<Block> ROOF_RED = cube("roof_red", MapColor.COLOR_RED, 1.5F, SoundType.STONE);
     public static final RegistryObject<Block> ROOF_BLUE = cube("roof_blue", MapColor.COLOR_BLUE, 1.5F, SoundType.STONE);
     // trees
-    public static final RegistryObject<RotatedPillarBlock> SIZO_LOG = ModBlocks.reg("sizo_log", () -> new RotatedPillarBlock(p(MapColor.COLOR_GRAY, 2.0F, SoundType.WOOD)));
-    public static final RegistryObject<RotatedPillarBlock> AMBRA_LOG = ModBlocks.reg("ambra_log", () -> new RotatedPillarBlock(p(MapColor.COLOR_BROWN, 2.0F, SoundType.WOOD)));
-    public static final RegistryObject<LeavesBlock> SIZO_LEAVES = ModBlocks.reg("sizo_leaves", () -> new LeavesBlock(leaves(MapColor.COLOR_CYAN)));
-    public static final RegistryObject<LeavesBlock> AMBRA_LEAVES = ModBlocks.reg("ambra_leaves", () -> new LeavesBlock(leaves(MapColor.COLOR_ORANGE)));
+    public static final RegistryObject<RotatedPillarBlock> SIZO_LOG = ModBlocks.reg("sizo_log", () -> new RotatedPillarBlock(p(MapColor.COLOR_LIGHT_GRAY, 2.0F, SoundType.WOOD)));
+    public static final RegistryObject<RotatedPillarBlock> AMBRA_LOG = ModBlocks.reg("ambra_log", () -> new RotatedPillarBlock(p(MapColor.COLOR_LIGHT_GRAY, 2.0F, SoundType.WOOD)));
+    // Рев 12: листва снова белая/холодная — на карте и в палитре мира цвет должен совпадать
+    public static final RegistryObject<LeavesBlock> SIZO_LEAVES = ModBlocks.reg("sizo_leaves", () -> new LeavesBlock(leaves(MapColor.SNOW)));
+    public static final RegistryObject<LeavesBlock> AMBRA_LEAVES = ModBlocks.reg("ambra_leaves", () -> new LeavesBlock(leaves(MapColor.QUARTZ)));
     // shapes
     public static final RegistryObject<StairBlock> ROOF_RED_STAIRS = stairs("roof_red_stairs", ROOF_RED);
     public static final RegistryObject<StairBlock> ROOF_BLUE_STAIRS = stairs("roof_blue_stairs", ROOF_BLUE);
@@ -108,6 +109,36 @@ public final class ElisarBlocks {
     public static final RegistryObject<PlantBlock> LILAC_BLOOM = ModBlocks.reg("lilac_bloom", () -> new PlantBlock(plant()));
     public static final RegistryObject<PlantBlock> PALE_BLOOM = ModBlocks.reg("pale_bloom", () -> new PlantBlock(plant()));
     public static final RegistryObject<VineBlock> IVY = ModBlocks.reg("elisar_ivy", () -> new VineBlock(plant().randomTicks()));
+    /** Рев 14.25: плющ Висячих садов — сочно-зелёный (на референсе стены увиты зеленью, а не сухими плетями). */
+    public static final RegistryObject<VineBlock> GARDEN_IVY = ModBlocks.reg("garden_ivy", () -> new VineBlock(plant().randomTicks()));
+    // ----- Рев 14 «Висячие сады по референсу»: у биома 07 своя зелёная палитра.
+    // На референсе полки — ярко-зелёная трава, обрывы увиты плющом, деревья — обычные дубы
+    // с зелёной кроной и бурой корой. В Элисаре трава кремовая, а деревья белые, поэтому
+    // садам нужны собственные блоки, иначе биом не совпадает с фотографией.
+    public static final RegistryObject<Block> GARDEN_GRASS = cube("garden_grass", MapColor.GRASS, 0.6F, SoundType.GRASS);
+    public static final RegistryObject<RotatedPillarBlock> GARDEN_LOG =
+            ModBlocks.reg("garden_log", () -> new RotatedPillarBlock(p(MapColor.WOOD, 2.0F, SoundType.WOOD)));
+    public static final RegistryObject<LeavesBlock> GARDEN_LEAVES =
+            ModBlocks.reg("garden_leaves", () -> new LeavesBlock(leaves(MapColor.PLANT)));
+    // ----- Рев 14.29 «Фиолетовые холмы по референсу»: на фото деревья с СИРЕНЕВОЙ кроной
+    // (лиловые шапки над полями лаванды). У Элисара деревья белые, поэтому биому 04 нужна
+    // собственная листва — иначе поля фиолетовые, а деревья чужие.
+    public static final RegistryObject<RotatedPillarBlock> LILAC_LOG =
+            ModBlocks.reg("lilac_log", () -> new RotatedPillarBlock(p(MapColor.COLOR_PURPLE, 2.0F, SoundType.WOOD)));
+    public static final RegistryObject<LeavesBlock> VIOLET_LEAVES =
+            ModBlocks.reg("violet_leaves", () -> new LeavesBlock(leaves(MapColor.COLOR_PURPLE)));
+    // ----- Рев 14.36 «Фиолетовые холмы по референсу 04»: на фото террасы — это НЕ редкие цветы
+    // на траве, а плотные гряды лаванды: сплошная фиолетовая масса рядами через борозду.
+    // Отдельный блок-«куст» (полный куб) даёт эту массу; одиночные цветы остаются сверху для пуха.
+    /**
+     * Рев 15: лаванда — РАСТЕНИЕ (крестик), а не куб. Раньше это был лиловый куб: поля Фиолетовых
+     * холмов из-за него читались «пластиковыми плитами» (кадры 49–51 итерации 44). Теперь это
+     * куст с цветущими колосьями, сквозь который можно пройти.
+     */
+    public static final RegistryObject<PlantBlock> LAVENDER_BED = ModBlocks.reg("lavender_bed", () -> new PlantBlock(plant()));
+    // обрывы: светлый известняк горизонтальными пластами (мох — у самого низа стены)
+    public static final RegistryObject<Block> GARDEN_LIMESTONE = cube("garden_limestone", MapColor.QUARTZ, 1.5F, SoundType.STONE);
+    public static final RegistryObject<Block> GARDEN_LIMESTONE_MOSSY = cube("garden_limestone_mossy", MapColor.QUARTZ, 1.5F, SoundType.STONE);
     // ===== Рев 8 «Живое море»: дно, рифы и подводная флора =====
     // породы дна
     public static final RegistryObject<Block> SILT = cube("elisar_silt", MapColor.COLOR_BLACK, 0.7F, SoundType.SOUL_SAND);
@@ -122,24 +153,52 @@ public final class ElisarBlocks {
     public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> CORAL_TUBE =
             ModBlocks.reg("coral_tube", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant()));
     public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> CORAL_GLOW =
-            ModBlocks.reg("coral_glow", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant().lightLevel(s -> 12)));
+            ModBlocks.reg("coral_glow", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant().lightLevel(s -> 14)));
     public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> SEA_GRASS =
             ModBlocks.reg("sea_grass", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant()));
     public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> SEA_KELP =
             ModBlocks.reg("sea_kelp", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant(), true));
     public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> SEA_KELP_TOP =
             ModBlocks.reg("sea_kelp_top", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant(), true));
+    // Рев 13: свет 11 не пробивал толщу воды — пещеры выглядели чёрным экраном.
+    // 15 — как у морского фонаря: нарост освещает всю полость.
     public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> CAVE_GLOW =
-            ModBlocks.reg("cave_glow", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant().lightLevel(s -> 11)));
+            ModBlocks.reg("cave_glow", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant().lightLevel(s -> 15)));
     public static final RegistryObject<ru.aiforge.riftworld.block.SeaDecalBlock> SEA_SHELLS =
             ModBlocks.reg("sea_shells", () -> new ru.aiforge.riftworld.block.SeaDecalBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.SAND).strength(0.2F).sound(SoundType.CORAL_BLOCK).noCollission()
                     .pushReaction(PushReaction.DESTROY).noOcclusion()));
+    // ----- Рев 10 «Живое море 2»: тропический риф. Три палитры рифовых шапок + новая жизнь на дне.
+    public static final RegistryObject<Block> CORAL_CAP_PINK = cube("coral_cap_pink", MapColor.COLOR_PINK, 1.2F, SoundType.CORAL_BLOCK);
+    public static final RegistryObject<Block> CORAL_CAP_TEAL = cube("coral_cap_teal", MapColor.WARPED_WART_BLOCK, 1.2F, SoundType.CORAL_BLOCK);
+    public static final RegistryObject<Block> CORAL_CAP_VIOLET = cube("coral_cap_violet", MapColor.COLOR_PURPLE, 1.2F, SoundType.CORAL_BLOCK);
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> ANEMONE =
+            ModBlocks.reg("anemone", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant().lightLevel(s -> 9)));
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> CORAL_BUSH =
+            ModBlocks.reg("coral_bush", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant()));
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaPlantBlock> TUBE_WORMS =
+            ModBlocks.reg("tube_worms", () -> new ru.aiforge.riftworld.block.SeaPlantBlock(seaPlant().lightLevel(s -> 4)));
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaDecalBlock> SEA_STAR =
+            ModBlocks.reg("sea_star", () -> new ru.aiforge.riftworld.block.SeaDecalBlock(decal()));
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaDecalBlock> SEA_URCHIN =
+            ModBlocks.reg("sea_urchin", () -> new ru.aiforge.riftworld.block.SeaDecalBlock(decal()));
+    public static final RegistryObject<ru.aiforge.riftworld.block.SeaDecalBlock> SHELL_BED =
+            ModBlocks.reg("shell_bed", () -> new ru.aiforge.riftworld.block.SeaDecalBlock(decal()));
+
+    private static BlockBehaviour.Properties decal() {
+        return BlockBehaviour.Properties.of().mapColor(MapColor.SAND).strength(0.2F).sound(SoundType.CORAL_BLOCK)
+                .noCollission().pushReaction(PushReaction.DESTROY).noOcclusion();
+    }
 
     private static BlockBehaviour.Properties seaPlant() {
         return BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_CYAN).replaceable().noCollission().instabreak()
                 .sound(SoundType.GRASS).offsetType(BlockBehaviour.OffsetType.XZ).pushReaction(PushReaction.DESTROY).noOcclusion();
     }
+
+    /** Рев 14.24: бирюзовая вода Висячих садов (своя текстура). */
+    public static final RegistryObject<LiquidBlock> GARDEN_WATER = ModBlocks.BLOCKS.register("garden_water", () -> new LiquidBlock(ModFluids.GARDEN_SOURCE,
+            BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_CYAN).replaceable().noCollission().strength(100.0F).pushReaction(PushReaction.DESTROY)
+                    .noLootTable().liquid()));
 
     // water (no item: the bucket is the item)
     public static final RegistryObject<LiquidBlock> WATER = ModBlocks.BLOCKS.register("elisar_water", () -> new LiquidBlock(ModFluids.SOURCE,
@@ -178,7 +237,9 @@ public final class ElisarBlocks {
 
         @Override
         protected boolean mayPlaceOn(BlockState s, BlockGetter level, BlockPos pos) {
-            return s.is(GRASS.get()) || s.is(SOIL.get()) || s.is(PATH.get()) || s.is(MOSS.get());
+            return s.is(GRASS.get()) || s.is(SOIL.get()) || s.is(PATH.get()) || s.is(MOSS.get())
+                    || s.is(GARDEN_GRASS.get()) || s.is(GARDEN_LIMESTONE.get()) || s.is(GARDEN_LIMESTONE_MOSSY.get())
+                    || s.is(CRUST.get());
         }
 
         @Override

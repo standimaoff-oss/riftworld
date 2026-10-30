@@ -1,0 +1,62 @@
+[
+  {
+    "_comment": "Роща Сизо: только деревья аддона — сизоствол и его великан. Обычные (stock) деревья генератора в мире с DT не ставятся вовсе.",
+    "select": {
+      "name": "riftworld:sizo_grove"
+    },
+    "apply": {
+      "species": {
+        "random": {
+          "riftworlddt:sizo": 9,
+          "riftworlddt:giant_sizo": 2
+        }
+      },
+      "density": [
+        0.25,
+        0.45
+      ],
+      "chance": 1.0
+    }
+  },
+  {
+    "_comment": "Холмы: единственный вид — лиловый хлыст (бывшая форма кораллового хлыста, переименованная и перекрашенная). Плотность подобрана так, чтобы это был ЛУГ с редкими деревьями, как на референсе 04.",
+    "select": {
+      "name": "riftworld:violet_hills"
+    },
+    "apply": {
+      "species": "riftworlddt:lilac",
+      "density": [
+        0.1,
+        0.2
+      ],
+      "chance": 1.0
+    }
+  },
+  {
+    "_comment": "Рев 16: В САДАХ ТОЛЬКО САДОВЫЙ ДУБ. Сизоствол оттуда убран (владелец: «сизо не должен расти в Висячих садах»), обычные дубы генератора отключены — дерево ставит аддон видом garden_oak.",
+    "select": {
+      "name": "riftworld:waterfall_gardens"
+    },
+    "apply": {
+      "species": "riftworlddt:garden_oak",
+      "density": [
+        0.22,
+        0.18
+      ],
+      "chance": 1.0
+    }
+  },
+  {
+    "select": {
+      "name": "riftworld:elisar_city"
+    },
+    "apply": {
+      "species": "riftworlddt:ambra",
+      "density": [
+        0.2,
+        0.15
+      ],
+      "chance": 0.35
+    }
+  }
+]

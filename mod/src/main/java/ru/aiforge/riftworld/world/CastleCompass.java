@@ -22,7 +22,6 @@ import ru.aiforge.riftworld.RiftWorld;
  */
 @Mod.EventBusSubscriber(modid = RiftWorld.MODID)
 public final class CastleCompass {
-    private static final String KEY = "riftworld_castle_compass";
     private static final String TAG = "RiftCastleCompass", RUINS = "RiftRuinsMode";
 
     private CastleCompass() {
@@ -32,7 +31,8 @@ public final class CastleCompass {
         ItemStack s = new ItemStack(Items.COMPASS);
         CompoundTag t = s.getOrCreateTag();
         t.putString("LodestoneDimension", RiftWorld.MODID + ":elisar");
-        t.put("LodestonePos", NbtUtils.writeBlockPos(new BlockPos(CastleSite.CX, CastleSite.Y + 1, CastleSite.Z0)));
+        AshenLands.Region rg = AshenLands.nearest(0, 0);
+        t.put("LodestonePos", NbtUtils.writeBlockPos(new BlockPos(rg.cx, CastleSite.Y + 1, rg.z0)));
         t.putBoolean("LodestoneTracked", false);
         t.putBoolean(TAG, true);
         s.setHoverName(Component.translatable("item.riftworld.castle_compass").withStyle(ChatFormatting.GOLD));
@@ -59,7 +59,8 @@ public final class CastleCompass {
             t.putBoolean(RUINS, true);
             p.displayClientMessage(Component.translatable("riftworld.compass.ruins", site.cx, site.cz).withStyle(ChatFormatting.GOLD), true);
         } else {
-            t.put("LodestonePos", NbtUtils.writeBlockPos(new BlockPos(CastleSite.CX, CastleSite.Y + 1, CastleSite.Z0)));
+            AshenLands.Region rg = AshenLands.nearest(p.getX(), p.getZ());
+            t.put("LodestonePos", NbtUtils.writeBlockPos(new BlockPos(rg.cx, CastleSite.Y + 1, rg.z0)));
             t.putBoolean(RUINS, false);
             p.displayClientMessage(Component.translatable("riftworld.compass.castle").withStyle(ChatFormatting.GOLD), true);
         }
@@ -74,14 +75,7 @@ public final class CastleCompass {
             e.getToolTip().add(Component.translatable("item.riftworld.castle_compass.tip").withStyle(ChatFormatting.DARK_GRAY));
     }
 
-    @SubscribeEvent
-    public static void onDim(PlayerEvent.PlayerChangedDimensionEvent e) {
-        Player p = e.getEntity();
-        if (p.level().isClientSide || !e.getTo().location().getPath().equals("elisar")) return;
-        CompoundTag data = p.getPersistentData();
-        if (data.getBoolean(KEY)) return;
-        data.putBoolean(KEY, true);
-        if (!p.getInventory().add(make())) p.drop(make(), false);
-        p.sendSystemMessage(Component.translatable("riftworld.castle_compass.got").withStyle(ChatFormatting.GOLD));
-    }
+    // Рев 14.26: компас больше НЕ выдаётся при входе в мир (владелец: «убрать компас при попадании
+    // в мир»). Предмет остаётся работающим для тех, кто уже держит его в инвентаре, но новый игрок
+    // приходит в Элисар без компаса.
 }

@@ -26,7 +26,9 @@ public final class ElisarSky extends DimensionSpecialEffects {
     @Override
     public Vec3 getBrightnessDependentFogColor(Vec3 fog, float brightness) {
         float k = brightness * 0.94F + 0.06F;
-        return new Vec3(Mth.lerp(0.45, fog.x, CREAM.x) * k, Mth.lerp(0.45, fog.y, CREAM.y) * k, Mth.lerp(0.45, fog.z, CREAM.z) * k);
+        // Рев 14.37: меньше «молока» в небе — дальние холмы и церкви должны читаться,
+        // как на референсе 04, а не растворяться в белой пелене.
+        return new Vec3(Mth.lerp(0.30, fog.x, CREAM.x) * k, Mth.lerp(0.30, fog.y, CREAM.y) * k, Mth.lerp(0.30, fog.z, CREAM.z) * k);
     }
 
     @Override
@@ -45,6 +47,40 @@ public final class ElisarSky extends DimensionSpecialEffects {
 
     @Mod.EventBusSubscriber(modid = RiftWorld.MODID, value = Dist.CLIENT)
     public static final class Fog {
+        private static long gardenKey = Long.MIN_VALUE;
+        private static boolean gardenHit;
+
+        /** Кешированная проверка «мы над Висячими садами» (регион считается из сида). */
+        private static boolean gardenAt(Vec3 p) {
+            long key = ((long) (int) Math.floor(p.x / 16) << 20) ^ (long) (int) Math.floor(p.z / 16);
+            if (key == gardenKey) return gardenHit;
+            boolean hit = false;
+            try {
+                hit = ru.aiforge.riftworld.world.WaterfallGardens.skyInside(p.x, p.z);
+            } catch (Throwable ignored) {
+            }
+            gardenKey = key;
+            gardenHit = hit;
+            return hit;
+        }
+
+        private static long violetKey = Long.MIN_VALUE;
+        private static boolean violetHit;
+
+        /** Кешированная проверка «мы над Фиолетовыми холмами» (рев 14.29: тёплая розовая дымка). */
+        private static boolean violetAt(Vec3 p) {
+            long key = ((long) (int) Math.floor(p.x / 16) << 20) ^ (long) (int) Math.floor(p.z / 16);
+            if (key == violetKey) return violetHit;
+            boolean hit = false;
+            try {
+                hit = ru.aiforge.riftworld.world.VioletHills.inside(p.x, p.z);
+            } catch (Throwable ignored) {
+            }
+            violetKey = key;
+            violetHit = hit;
+            return hit;
+        }
+
         private static boolean inElisar() {
             var mc = net.minecraft.client.Minecraft.getInstance();
             return mc.level != null && mc.level.dimension().location().equals(ID);
@@ -60,6 +96,17 @@ public final class ElisarSky extends DimensionSpecialEffects {
             float m = mist(pos);
             float nearF = far * Mth.lerp(g, 0.45F, 0.55F);
             float farF = far * Mth.lerp(g, 1.05F, 1.0F);
+            // Рев 14.31: над Фиолетовыми холмами воздух должен быть ПРОЗРАЧНЫМ (на референсе
+            // видно поля до горизонта), иначе кремовая дымка выбеливает лаванду в серое.
+            if (violetAt(pos)) {
+                // Рев 14.36: на референсе 04 воздух ПРОЗРАЧНЫЙ — дальние холмы и церкви видны,
+                // только слегка в тёплой дымке. Прошлые 0.72/1.55 давали «молочный экран»:
+                // на кадрах 49–51 не было видно ни полей, ни деревьев. Теперь дымка мягкая.
+                e.setNearPlaneDistance(far * 0.95F);
+                e.setFarPlaneDistance(far * 1.10F);
+                e.setCanceled(true);
+                return;
+            }
             // the sea breathes: close over the water the horizon dissolves in a milky band (Rev 4: light optimised sea mist)
             e.setNearPlaneDistance(nearF * Mth.lerp(m, 1.0F, 0.42F));
             e.setFarPlaneDistance(farF * Mth.lerp(m, 1.0F, 0.62F));
@@ -76,7 +123,8 @@ public final class ElisarSky extends DimensionSpecialEffects {
 
         /** 0 in the white Elisar haze, 1 over the castle's scorched island (ash-brown, gloomy air). */
         public static float gloom(Vec3 cam) {
-            double d = Math.hypot(cam.x - ru.aiforge.riftworld.world.CastleSite.CX, cam.z - ru.aiforge.riftworld.world.CastleSite.CZ);
+            ru.aiforge.riftworld.world.AshenLands.Region rg = ru.aiforge.riftworld.world.AshenLands.regionAt(cam.x, cam.z);
+            double d = rg != null ? Math.hypot(cam.x - rg.cx, cam.z - rg.cz) : 1e9;
             double t = Mth.clamp((170 - d) / 80.0, 0, 1);
             t = Math.max(t, ru.aiforge.riftworld.world.AshenLands.weight(cam.x, cam.z) * 0.85);   // the whole Ashen Lands are gloomy
             return (float) (t * t * (3 - 2 * t));
@@ -85,9 +133,31 @@ public final class ElisarSky extends DimensionSpecialEffects {
         private static final Vec3 ASH = new Vec3(0.34, 0.235, 0.20);
         private static final Vec3 SEA_MIST = new Vec3(0.965, 0.945, 0.885);   // warm milk of the sea haze (TZ_atmosphere_fx palette)
 
+        private static final Vec3 GARDEN_HAZE = new Vec3(0.80, 0.89, 0.96);   // светло-голубая дымка садов (референс)
+
         @SubscribeEvent
         public static void fogColor(ViewportEvent.ComputeFogColor e) {
             if (!inElisar()) return;
+            var pos = e.getCamera().getPosition();
+            // Рев 14.18: над садами кремовая дымка Элисара гасит голубое небо — кадры выходили
+            // жёлто-зелёными. В регионе садов туман светлый и голубой, как на референсе.
+            if (gardenAt(pos)) {
+                e.setRed((float) Mth.lerp(0.92F, e.getRed(), GARDEN_HAZE.x));
+                e.setGreen((float) Mth.lerp(0.92F, e.getGreen(), GARDEN_HAZE.y));
+                e.setBlue((float) Mth.lerp(0.92F, e.getBlue(), GARDEN_HAZE.z));
+                return;
+            }
+            // Рев 14.29: у Фиолетовых холмов на референсе тёплый закатный воздух (розово-персиковый):
+            // кремовая дымка Элисара гасила лаванду в серое. Красим туман под биом.
+            if (violetAt(pos)) {
+                // тёплый закатный воздух референса: персиково-розовый, но не белёсый
+                // тёплый закатный воздух: персиковый оттенок, но не заливка — цвет неба остаётся,
+                // иначе кадры выглядят розовым экраном (так было в итерациях 29–33).
+                e.setRed((float) Mth.lerp(0.28F, e.getRed(), 0.99F));
+                e.setGreen((float) Mth.lerp(0.24F, e.getGreen(), 0.86F));
+                e.setBlue((float) Mth.lerp(0.20F, e.getBlue(), 0.90F));
+                return;
+            }
             float g = gloom(e.getCamera().getPosition());
             float m = mist(e.getCamera().getPosition()) * 0.62F;
             if (m > 0) {

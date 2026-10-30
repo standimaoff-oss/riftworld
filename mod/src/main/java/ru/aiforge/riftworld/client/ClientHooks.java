@@ -49,6 +49,8 @@ public final class ClientHooks {
         e.enqueueWork(() -> {
             net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(ru.aiforge.riftworld.registry.ModFluids.SOURCE.get(), net.minecraft.client.renderer.RenderType.translucent());
             net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(ru.aiforge.riftworld.registry.ModFluids.FLOWING.get(), net.minecraft.client.renderer.RenderType.translucent());
+            net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(ru.aiforge.riftworld.registry.ModFluids.GARDEN_SOURCE.get(), net.minecraft.client.renderer.RenderType.translucent());
+            net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(ru.aiforge.riftworld.registry.ModFluids.GARDEN_FLOWING.get(), net.minecraft.client.renderer.RenderType.translucent());
         });
     }
 
@@ -58,9 +60,8 @@ public final class ClientHooks {
         e.register((state, level, pos, idx) -> level != null && pos != null
                         ? net.minecraft.client.renderer.BiomeColors.getAverageGrassColor(level, pos)
                         : net.minecraft.world.level.GrassColor.get(0.5, 1.0),
+                // листва НЕ тонируется травой: у сизо своя сине-сиреневая текстура, у амбры — янтарная
                 ru.aiforge.riftworld.registry.ElisarBlocks.GRASS.get(),
-                ru.aiforge.riftworld.registry.ElisarBlocks.SIZO_LEAVES.get(),
-                ru.aiforge.riftworld.registry.ElisarBlocks.AMBRA_LEAVES.get(),
                 ru.aiforge.riftworld.registry.ElisarBlocks.TALL_GRASS.get(),
                 ru.aiforge.riftworld.registry.ElisarBlocks.FLOWERS.get());
     }

@@ -16,6 +16,20 @@ base {
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
+
+// ------------------------------------------------------------------ Рев 11: аддон к Dynamic Trees
+// Отдельный мод (modid riftworlddt) со своей точкой входа и своим mods.toml, но собирается тем же
+// gradle: ./gradlew jar dtJar -> riftworld-*.jar + riftworld-dt-*.jar.
+sourceSets {
+    dtaddon {
+        java.srcDir 'src/dtaddon/java'
+        resources.srcDir 'src/dtaddon/resources'
+    }
+}
+configurations {
+    dtaddonImplementation.extendsFrom implementation      // наследуем Minecraft/Forge с classpath
+}
+
 minecraft {
     // The mappings can be changed at any time and must be in the following format.
     // Channel:   Version:
@@ -83,9 +97,17 @@ minecraft {
         }
 
         client {
+            // Рев 11: вместе с -PwithDT в dev-клиент грузится и аддон к Dynamic Trees
+            if (project.hasProperty('withDT')) {
+                mods {
+                    "riftworlddt" {
+                        source sourceSets.dtaddon
+                    }
+                }
+            }
             // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
             property 'forge.enabledGameTestNamespaces', mod_id
-            jvmArgs '-Xmx1024M', '-XX:+UseSerialGC'
+            jvmArgs '-Xmx1600M', '-XX:+UseSerialGC'
             property 'fml.earlyprogresswindow', 'false'
             property 'fml.earlyWindowControl', 'false'
             args '--username', 'TestPlayer'
@@ -96,7 +118,7 @@ minecraft {
 
         server {
             property 'forge.enabledGameTestNamespaces', mod_id
-            jvmArgs '-Xmx768M', '-XX:+UseSerialGC'
+            jvmArgs '-Xmx1400M', '-XX:+UseSerialGC'
             args '--nogui'
         }
 
@@ -122,8 +144,22 @@ minecraft {
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
+    // Рев 15.3: ЛОКАЛЬНЫЙ maven с Dynamic Trees. CI скачивает jar обычным curl-ом и кладёт сюда
+    // вместе с корректным pom.xml. Почему так: удалённый maven DT периодически отдаёт БИТЫЙ pom
+    // ("Already seen doctype") — он оседает в кеше Gradle и валит сборку целиком; а подключить
+    // DT просто файлом нельзя: dev-клиенту нужен ДЕОБФУСЦИРОВАННЫЙ jar, и делает это только
+    // ForgeGradle при обычной maven-зависимости (fg.deobf по файлу даёт обф jar → NoSuchMethodError).
+    maven { url = uri(project.findProperty('dtMaven') ?: "${rootDir}/../ci/maven") }
     // Offline-friendly: anything we manually pre-seeded into ~/.m2 is honoured first (flaky-network repair path).
     mavenLocal()
+    // Рев 14.2: maven.minecraftforge.net периодически отдаёт библиотеки Minecraft обрезанными
+    // (icu4j/jna: Premature end of Content-Length / Read timed out). Эти же артефакты лежат
+    // в Maven Central — пробуем её раньше Forge-зеркала.
+    mavenCentral()
+    maven {
+        name = 'HarleyOConnor'      // публичный maven Dynamic Trees (com.ferreusveritas.dynamictrees)
+        url = 'https://harleyoconnor.com/maven'
+    }
     maven {
         name = 'MinecraftForge'
         url = 'https://maven.minecraftforge.net'
@@ -157,6 +193,19 @@ dependencies {
     // For more info:
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
+
+    // Рев 11: Dynamic Trees нужен только для живой проверки аддона (./gradlew runClient -PwithDT).
+    // В обычной сборке зависимость не тянется — мод остаётся самостоятельным.
+    // Рев 15.3: DT берётся из ЛОКАЛЬНОГО maven (ci/maven, его наполняет CI) — -PdtMaven.
+    // Удалённый maven DT периодически отдаёт битый pom ("Already seen doctype"), он оседает
+    // в кеше Gradle и валит сборку целиком. Подключение просто файлом не годится: dev-клиенту
+    // нужен ДЕОБФУСЦИРОВАННЫЙ jar, а деобф делает ForgeGradle только для maven-координаты
+    // (fg.deobf по файлу оставлял обф jar → NoSuchMethodError ResourceLocation.getNamespace).
+    //   ./gradlew runClient -PwithDT -PdtMaven=/abs/path/ci/maven
+    if (project.hasProperty('withDT')) {
+        runtimeOnly fg.deobf("com.ferreusveritas.dynamictrees:DynamicTrees-${minecraft_version}:${dynamic_trees_version}")
+        println "DT: com.ferreusveritas.dynamictrees:DynamicTrees-${minecraft_version}:${dynamic_trees_version} (деобф через ForgeGradle)"
+    }
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
@@ -194,6 +243,70 @@ tasks.named('jar', Jar).configure {
 
     // This is the preferred method to reobfuscate your jar file
     finalizedBy 'reobfJar'
+}
+
+// Рев 11.16: ForgeGradle подмешивает META-INF/mods.toml в каждый sourceSet,
+// из-за чего processDtaddonResources падал на duplicate entry. Свой mods.toml аддона
+// оставляем, чужие (из main) — выбрасываем.
+tasks.named('processDtaddonResources', ProcessResources).configure {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    exclude { det -> det.file.name == 'mods.toml' && !det.file.absolutePath.contains('dtaddon') }
+    // Рев 13: в mods.toml аддона версия подставляется из gradle.properties (раньше она жёстко
+    // оставалась 0.9.0, и Forge показывал аддон «старее» основного мода).
+    var replaceProperties = [
+            minecraft_version: minecraft_version, minecraft_version_range: minecraft_version_range,
+            forge_version: forge_version, forge_version_range: forge_version_range,
+            loader_version_range: loader_version_range,
+            mod_id: mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
+            mod_authors: mod_authors, mod_description: mod_description,
+    ]
+    inputs.properties replaceProperties
+    filesMatching(['META-INF/mods.toml']) {
+        expand replaceProperties + [project: project]
+    }
+}
+
+// диагностика для CI: какие папки реально попадают в аддон
+tasks.register('dtInfo') {
+    doLast {
+        println "DTINFO resources: " + sourceSets.dtaddon.resources.srcDirs
+        println "DTINFO output: " + sourceSets.dtaddon.output.files
+        println "DTINFO files: " + sourceSets.dtaddon.resources.files.collect { it.name }
+    }
+}
+
+// Рев 11: jar аддона к Dynamic Trees (свой modid, свой mods.toml, папка trees/)
+tasks.register('dtJar', Jar) {
+    dependsOn 'dtaddonClasses'
+    archiveBaseName = 'riftworld-dt'
+    destinationDirectory = layout.buildDirectory.dir('libs')
+    from sourceSets.dtaddon.output
+    manifest {
+        attributes([
+                'Specification-Title'     : 'riftworlddt',
+                'Specification-Vendor'    : mod_authors,
+                'Specification-Version'   : '1',
+                'Implementation-Title'    : 'riftworld-dt',
+                'Implementation-Version'  : project.version,
+                'Implementation-Vendor'   : mod_authors,
+        ])
+    }
+}
+
+// Рев 15: задача осталась для CI, но больше не резолвит maven-конфигурацию (см. выше про битый pom).
+// Источник — локальный jar из -PdtJarPath / DT_JAR.
+tasks.register('copyDTJar', Copy) {
+    dependsOn 'jar'
+    doLast {
+        def dtPath = project.findProperty('dtJarPath') ?: System.getenv('DT_JAR')
+        if (dtPath != null && file(dtPath).exists()) {
+            mkdir layout.buildDirectory.dir('dtlib')
+            copy { from dtPath; into layout.buildDirectory.dir('dtlib'); rename { 'dynamictrees.jar' } }
+            println "DTJAR: ${dtPath} -> build/dtlib/dynamictrees.jar"
+        } else {
+            println "DTJAR: пропущено (dtJarPath/DT_JAR не задан)"
+        }
+    }
 }
 
 // However if you are in a multi-project build, dev time needs unobfed jar files, so you can delay the obfuscation until publishing by doing:

@@ -1,1 +1,7 @@
-{"has_precipitation": false, "temperature": 0.95, "downfall": 0.6, "effects": {"sky_color": 11056344, "fog_color": 13037042, "water_color": 3139529, "water_fog_color": 2002848, "grass_color": 15792374, "foliage_color": 7854656, "particle": {"options": {"type": "minecraft:bubble"}, "probability": 0.006}, "ambient_sound": "minecraft:ambient.underwater.loop", "additions_sound": {"sound": "minecraft:ambient.underwater.loop.additions", "tick_chance": 0.0072}}, "spawners": {}, "spawn_costs": {}, "carvers": {}, "features": []}
+{"has_precipitation": false, "temperature": 0.95, "downfall": 0.6,
+ "effects": {"sky_color": 11056344, "fog_color": 13037042, "water_color": 3139529, "water_fog_color": 2002848,
+             "grass_color": 10346332, "foliage_color": 7854656,
+             "particle": {"options": {"type": "minecraft:bubble"}, "probability": 0.006},
+             "ambient_sound": "minecraft:ambient.underwater.loop",
+             "additions_sound": {"sound": "minecraft:ambient.underwater.loop.additions", "tick_chance": 0.0072}},
+ "spawners": {}, "spawn_costs": {}, "carvers": {}, "features": []}

@@ -40,15 +40,8 @@ for n in CUBES:
     w(f"{A}/models/block/{n}.json", {"parent": "minecraft:block/cube_all", "textures": {"all": NS + n}})
     item(n); DROPS.append(n)
 # grass
-w(f"{A}/models/block/elisar_grass.json", {
-    "textures": {"particle": NS + "elisar_soil", "top": NS + "elisar_grass_top", "side": NS + "elisar_grass_side", "bottom": NS + "elisar_soil"},
-    "elements": [{"from": [0, 0, 0], "to": [16, 16, 16], "faces": {
-        "down": {"texture": "#bottom", "cullface": "down"},
-        "up": {"texture": "#top", "tintindex": 0, "cullface": "up"},
-        "north": {"texture": "#side", "cullface": "north"},
-        "south": {"texture": "#side", "cullface": "south"},
-        "west": {"texture": "#side", "cullface": "west"},
-        "east": {"texture": "#side", "cullface": "east"}}}]})
+w(f"{A}/models/block/elisar_grass.json", {"parent": "minecraft:block/cube_bottom_top", "textures": {
+    "top": NS + "elisar_grass_top", "side": NS + "elisar_grass_side", "bottom": NS + "elisar_soil", "particle": NS + "elisar_soil"}})
 w(f"{A}/blockstates/elisar_grass.json", {"variants": {"": [{"model": NS + "elisar_grass", "y": r} for r in (0, 90, 180, 270)]}})
 item("elisar_grass"); DROPS.append("elisar_grass")
 # logs

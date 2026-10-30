@@ -45,21 +45,24 @@ public final class WildIslands {
         int cx = Math.floorDiv((int) Math.floor(x), CELL), cz = Math.floorDiv((int) Math.floor(z), CELL);
         if (Math.hypot(x, z) < CITY_CLEAR - 120) return Collections.emptyList();
         List<CityPlan.Island> out = new ArrayList<>(8);
-        if (CastleSite.near(x, z, 2)) out.add(CastleSite.ISLAND);
+        CityPlan.Island castleIsl = CastleSite.islandNear(x, z, 4);
+        if (castleIsl != null) out.add(castleIsl);
         EmberRuins.Site es = EmberRuins.siteAt(x, z);
-        if (es != null && Math.abs(x - es.cx) < es.island.R * 1.2 + 2 && Math.abs(z - es.cz) < es.island.R * 1.2 + 2) out.add(es.island);
+        if (es != null && Math.abs(x - es.cx) < es.island.maxReach() && Math.abs(z - es.cz) < es.island.maxReach()) out.add(es.island);
         VioletHills.Region vr = VioletHills.regionAt(x, z);
-        if (vr != null && Math.abs(x - vr.meadow.cx) < vr.meadow.R * 1.2 + 2 && Math.abs(z - vr.meadow.cz) < vr.meadow.R * 1.2 + 2) out.add(vr.meadow);
+        if (vr != null && Math.abs(x - vr.meadow.cx) < vr.meadow.maxReach() && Math.abs(z - vr.meadow.cz) < vr.meadow.maxReach()) out.add(vr.meadow);
         SizoGrove.Region sr = SizoGrove.regionAt(x, z);
-        if (sr != null && Math.abs(x - sr.hub.cx) < sr.hub.R * 1.2 + 2 && Math.abs(z - sr.hub.cz) < sr.hub.R * 1.2 + 2) out.add(sr.hub);
+        if (sr != null && Math.abs(x - sr.hub.cx) < sr.hub.maxReach() && Math.abs(z - sr.hub.cz) < sr.hub.maxReach()) out.add(sr.hub);
+        // Рев 14.26: у садов теперь архипелаг из 3–6 островов — в выборку попадает каждый,
+        // чья форма может дотянуться до точки (раньше добавлялся только один hub).
         WaterfallGardens.Region gr = WaterfallGardens.regionAt(x, z);
-        if (gr != null && Math.abs(x - gr.hub.cx) < gr.hub.R * 1.2 + 2 && Math.abs(z - gr.hub.cz) < gr.hub.R * 1.2 + 2) out.add(gr.hub);
-        TerracedMountains.Region tr = TerracedMountains.regionAt(x, z);
-        if (tr != null && Math.abs(x - tr.massif.cx) < tr.massif.R * 1.2 + 2 && Math.abs(z - tr.massif.cz) < tr.massif.R * 1.2 + 2) out.add(tr.massif);
+        if (gr != null)
+            for (CityPlan.Island gi : gr.isles)
+                if (Math.abs(x - gi.cx) < gi.maxReach() && Math.abs(z - gi.cz) < gi.maxReach()) out.add(gi);
         for (int dx = -1; dx <= 1; ++dx)
             for (int dz = -1; dz <= 1; ++dz) {
                 for (CityPlan.Island i : cell(cx + dx, cz + dz).islands) {
-                    if (Math.abs(x - i.cx) < i.R * 1.2 + 2 && Math.abs(z - i.cz) < i.R * 1.2 + 2) out.add(i);
+                    if (Math.abs(x - i.cx) < i.maxReach() && Math.abs(z - i.cz) < i.maxReach()) out.add(i);
                 }
             }
         return out;
@@ -69,16 +72,13 @@ public final class WildIslands {
         if (Math.hypot(x, z) < CITY_CLEAR - 120) return Collections.emptyList();
         int cx = Math.floorDiv(x, CELL), cz = Math.floorDiv(z, CELL);
         List<CityPlan.Tree> out = new ArrayList<>();
-        if (CastleSite.near(x, z, 6))
-            for (CityPlan.Tree t : CastleSite.TREES) if (Math.abs(x - t.x) <= 4 && Math.abs(z - t.z) <= 4) out.add(t);
-        if (AshenLands.weight(x, z) > 0) {
+        if (AshenLands.weight(x, z) > 0 || CastleSite.near(x, z, 6)) {
             out.addAll(AshenLands.treesNear(x, z));
             out.addAll(EmberRuins.treesNear(x, z));
         }
         out.addAll(VioletHills.treesNear(x, z));
         out.addAll(SizoGrove.treesNear(x, z));
         out.addAll(WaterfallGardens.treesNear(x, z));
-        out.addAll(TerracedMountains.treesNear(x, z));
         for (int dx = -1; dx <= 1; ++dx)
             for (int dz = -1; dz <= 1; ++dz)
                 for (CityPlan.Tree t : cell(cx + dx, cz + dz).trees)
@@ -107,15 +107,14 @@ public final class WildIslands {
                 if (m * 2 >= CELL) break;
                 double x = ox + m + r.nextDouble() * (CELL - 2 * m), z = oz + m + r.nextDouble() * (CELL - 2 * m);
                 if (Math.hypot(x, z) - R * 1.15 < CITY_CLEAR) continue;
-                if (Math.hypot(x - CastleSite.CX, z - CastleSite.CZ) < R * 1.15 + CastleSite.R * 1.15 + 14) continue;   // castle site
+                if (AshenLands.blocks(x, z, R * 1.15 + 28)) continue;                                               // any AshenLands castle region
                 EmberRuins.Site es = EmberRuins.siteAt(x, z);
-                if (es != null && Math.hypot(x - es.cx, z - es.cz) < R * 1.15 + es.island.R * 1.15 + 10) continue;     // ruins island
+                if (es != null && Math.hypot(x - es.cx, z - es.cz) < R * 1.15 + es.island.maxReach() + 10) continue; // ruins island
                 VioletHills.Region vr = VioletHills.regionAt(x, z);                                                 // violet meadow island
-                if (vr != null && Math.hypot(x - vr.meadow.cx, z - vr.meadow.cz) < R * 1.15 + vr.meadow.R * 1.15 + 12) continue;
+                if (vr != null && Math.hypot(x - vr.meadow.cx, z - vr.meadow.cz) < R * 1.15 + vr.meadow.maxReach() + 16) continue;
                 SizoGrove.Region sr = SizoGrove.regionAt(x, z);                                                     // sizo grove hub
-                if (sr != null && Math.hypot(x - sr.hub.cx, z - sr.hub.cz) < R * 1.15 + sr.hub.R * 1.15 + 12) continue;
-                WaterfallGardens.Region gr = WaterfallGardens.regionAt(x, z);                                       // waterfall gardens hub
-                if (gr != null && Math.hypot(x - gr.hub.cx, z - gr.hub.cz) < R * 1.15 + gr.hub.R * 1.15 + 12) continue;
+                if (sr != null && Math.hypot(x - sr.hub.cx, z - sr.hub.cz) < R * 1.15 + sr.hub.maxReach() + 16) continue;
+                if (WaterfallGardens.nearAny(x, z, R * 1.15, 48)) continue;                                         // waterfall gardens archipelago + rivers
                 MistKeep.Region mk = MistKeep.regionAt(x, z);                                                          // туманный данж: вода между столбами остаётся морем
                 if (mk != null && Math.hypot(x - mk.cx, z - mk.cz) < R * 1.15 + mk.Rr + 40) continue;
                 boolean ok = true;

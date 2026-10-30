@@ -1,0 +1,8 @@
+{
+  "common_species": "riftworlddt:lilac",
+  "common_leaves": "riftworlddt:lilac",
+  "primitive_log": "riftworld:lilac_log",
+  "max_branch_radius": 8,
+  "primary_thickness": 2,
+  "secondary_thickness": 3
+}

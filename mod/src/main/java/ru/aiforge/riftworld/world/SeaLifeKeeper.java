@@ -29,10 +29,12 @@ import ru.aiforge.riftworld.flight.Flight;
  */
 @Mod.EventBusSubscriber(modid = RiftWorld.MODID)
 public final class SeaLifeKeeper {
-    private static final int PEACEFUL_TARGET = 12;
+    private static final int PEACEFUL_TARGET = 14;
     private static final int JELLY_TARGET = 2;
     private static final int RAY_TARGET = 1;
-    private static final int HOSTILE_TARGET = 3;
+    private static final int TURTLE_TARGET = 1;
+    /** Рев 10: хищники пещер — РЕДКИЕ. Не больше двух рядом и только в затопленных полостях. */
+    private static final int HOSTILE_TARGET = 2;
     private static final int WORLD_CAP = 320;
     private static int failsafe = 0;
 
@@ -59,20 +61,23 @@ public final class SeaLifeKeeper {
         if (total >= WORLD_CAP) return;
 
         for (ServerPlayer sp : new ArrayList<>(sl.players())) {
-            int peaceful = 0, jelly = 0, ray = 0, hostile = 0;
+            int peaceful = 0, jelly = 0, ray = 0, turtle = 0, hostile = 0;
             for (var ent : ents) {
                 if (!(ent instanceof SeaFishEntity f)) continue;
                 if (f.distanceToSqr(sp) > 80 * 80) continue;
                 int v = f.variant();
                 if (v == SeaFishEntity.JELLY) ++jelly;
                 else if (v == SeaFishEntity.RAY) ++ray;
+                else if (v == SeaFishEntity.TURTLE) ++turtle;
                 else if (f.hostile()) ++hostile;
                 else ++peaceful;
             }
             if (peaceful < PEACEFUL_TARGET) school(sl, sp, peaceful);
             if (jelly < JELLY_TARGET) single(sl, sp, SeaFishEntity.JELLY, false);
             if (ray < RAY_TARGET) single(sl, sp, SeaFishEntity.RAY, false);
-            if (hostile < HOSTILE_TARGET) single(sl, sp, rnd().nextDouble() < 0.55 ? SeaFishEntity.ANGLER : SeaFishEntity.EEL, true);
+            if (turtle < TURTLE_TARGET) single(sl, sp, SeaFishEntity.TURTLE, false);
+            // «злые и редкие»: только в затопленных пещерах, редко и по одному
+            if (hostile < HOSTILE_TARGET && rnd().nextDouble() < 0.55) single(sl, sp, cavePredator(), true);
         }
     }
 
@@ -80,11 +85,21 @@ public final class SeaLifeKeeper {
         return ThreadLocalRandom.current();
     }
 
+    /** Кто именно выйдет из темноты: удильщик и угорь обычны, глот и жгучая медуза — редкая находка. */
+    private static int cavePredator() {
+        double r = rnd().nextDouble();
+        if (r < 0.34) return SeaFishEntity.ANGLER;
+        if (r < 0.64) return SeaFishEntity.EEL;
+        if (r < 0.86) return SeaFishEntity.GLOOM;
+        return SeaFishEntity.STING;
+    }
+
     /** Косяк мирных рыб: 6..9 штук одной породы, в открытой воде недалеко от игрока. */
     private static void school(ServerLevel sl, ServerPlayer sp, int havePeaceful) {
-        int variant = switch (rnd().nextInt(10)) {
+        int variant = switch (rnd().nextInt(14)) {
             case 0, 1 -> SeaFishEntity.GOLD;
             case 2, 3, 4 -> SeaFishEntity.STRIPED;
+            case 5, 6 -> SeaFishEntity.SURGEON;      // тропический хирург — стайками у рифов
             default -> SeaFishEntity.SILVER;
         };
         Vec3 at = findWater(sl, sp, false);
@@ -125,6 +140,10 @@ public final class SeaLifeKeeper {
             }
             BlockPos p = new BlockPos(x, y, z);
             if (!SeaFishEntity.elisarWater(sl, p) || !SeaFishEntity.elisarWater(sl, p.above())) continue;
+            if (cave) {
+                // хищник выходит только в темноте: над полостью не должно быть открытого света
+                if (sl.getBrightness(net.minecraft.world.level.LightLayer.SKY, p) > 4) continue;
+            }
             if (cave && !(sl.getBlockState(p.below()).isSolidRender(sl, p.below()))) {
                 // хотим «с потолком над головой» — проверяем, что над рыбой не сразу открытое море
                 boolean roofed = false;
