@@ -215,34 +215,39 @@ if [ "${NORMAL_PROBE:-1}" = "1" ]; then
   sed -i 's/^enable-rcon=.*/enable-rcon=false/' "$SRV/server.properties"
   printf 'level-name=world_normal\n' >> "$SRV/server.properties"
   rm -rf "$SRV/world_normal"
-  ( cd "$SRV" && nohup java -Xmx2G -Dfml.earlyprogresswindow=false @libraries/net/minecraftforge/forge/$FORGE/unix_args.txt nogui > normal.log 2>&1 & echo $! > normal.pid )
-  nok=0
-  for i in $(seq 1 180); do
-    if grep -q "Done (" "$SRV/normal.log" 2>/dev/null; then nok=1; break; fi
-    if ! kill -0 "$(cat "$SRV/normal.pid")" 2>/dev/null; then break; fi
-    sleep 2
-  done
+  # Рев 16.4: сервер запускаем СИНХРОННО под timeout. В прогоне #252 фоновый запуск оставил
+  # normal.log ПУСТЫМ (0 байт) — вердикт «не поднялся» был, а причины в логе не было вовсе.
+  # Теперь виден и код возврата, и первые строки вывода.
+  ( cd "$SRV" && timeout 420 java -Xmx2G -Dfml.earlyprogresswindow=false @libraries/net/minecraftforge/forge/$FORGE/unix_args.txt nogui > normal.log 2>&1 )
+  NRC=$?
+  NOK=0
+  grep -q "Done (" "$SRV/normal.log" 2>/dev/null && NOK=1
   CYCLE=$(grep -m1 -i "feature order cycle" "$SRV/normal.log" 2>/dev/null | tr -d '\r' || true)
-  NORMALTXT=$(tr -d '\r' < "$SRV/normal.log" 2>/dev/null | grep -m3 -i "feature order cycle\|Reported exception\|Failed to start\|net.minecraft.ReportedException\|Failed to bind" || true)
+  NORMALTXT=$(tr -d '\r' < "$SRV/normal.log" 2>/dev/null | grep -m4 -i "feature order cycle\|Reported exception\|Failed to start\|net.minecraft.ReportedException\|Failed to bind\|OutOfMemory\|Exception in thread" || true)
   cp "$SRV/normal.log" "$OUT/normal.log" 2>/dev/null || true
-  if [ "$nok" = "1" ]; then
-    echo "normal world: server booted, no feature order cycle" | tee "$OUT/normal.txt"
-    # именно warning: notice в аннотациях GitHub не виден, а вердикт пробы нужно читать без артефактов
+  {
+    if [ "$NOK" = "1" ]; then
+      echo "normal world: server BOOTED (rc=$NRC), no feature order cycle"
+    else
+      echo "normal world: server FAILED to boot (rc=$NRC, log=$(wc -c < "$SRV/normal.log" 2>/dev/null || echo 0) байт)"
+      [ -n "$NORMALTXT" ] && echo "$NORMALTXT"
+      # даже если исключения нет в отфильтрованном виде — печатаем хвост, чтобы причина была видна
+      tail -25 "$SRV/normal.log" 2>/dev/null | sed 's/^/  /' || true
+    fi
+  } > "$OUT/normal.txt"
+  if [ "$NOK" = "1" ]; then
     echo "::warning title=обычный мир::сервер с level-type=normal поднялся, feature order cycle НЕ воспроизвёлся"
   else
-    echo "normal world: server FAILED to boot" | tee "$OUT/normal.txt"
-    [ -n "$NORMALTXT" ] && echo "$NORMALTXT" >> "$OUT/normal.txt"
-    if [ -n "$NORMALTXT" ]; then
-      echo "$NORMALTXT" | head -3 | while IFS= read -r line; do
-        echo "::error title=обычный мир::${line:0:400}"
-      done
-    fi
+    echo "::error title=обычный мир::сервер с level-type=normal НЕ поднялся (rc=$NRC), см. normal.txt в отчёте"
     if [ -n "$CYCLE" ]; then echo "::error title=worldgen::${CYCLE:0:600}"; fi
+    if [ -n "$NORMALTXT" ]; then
+      echo "$NORMALTXT" | head -4 | while IFS= read -r line; do echo "::error title=обычный мир::${line:0:400}"; done
+    else
+      tail -6 "$SRV/normal.log" 2>/dev/null | while IFS= read -r line; do echo "::error title=normal.log::${line:0:400}"; done
+    fi
     echo "$NORMALTXT" >> "$OUT/errors.txt" 2>/dev/null || true
   fi
   cat "$OUT/normal.txt" 2>/dev/null || true
-  kill "$(cat "$SRV/normal.pid")" 2>/dev/null || true
-  sleep 3
   mv "$SRV/server.properties.flat" "$SRV/server.properties" 2>/dev/null || true
 fi
 
