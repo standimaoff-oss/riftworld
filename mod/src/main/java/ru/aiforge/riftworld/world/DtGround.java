@@ -247,16 +247,19 @@ public final class DtGround {
             boolean sea = false;                       // подводных деревьев аддона больше нет
             // Рев 16: в Фиолетовых холмах деревья РЕДКИЕ (это луг, а не лес), в роще — как было,
             // в городе амбра стоит вдоль улиц, в садах дуб растёт рощей на полках.
-            float chance = sp.equals("riftworlddt:lilac") ? 0.22f
-                    : sp.equals("riftworlddt:ambra") ? 0.30f
-                    : sp.equals("riftworlddt:garden_oak") ? 0.40f : 0.45f;
+            // Рев 16.6: после удаления дублирующего biome_modifier деревья наконец пошли массово,
+            // и холмы превратились в сплошной «капустный лес» (кадр 49 итерации 59). По референсу
+            // 04 это ЛУГ с редкими деревьями: лиловый хлыст сажаем в ~13 раз реже остальных видов.
+            float chance = sp.equals("riftworlddt:lilac") ? 0.035f
+                    : sp.equals("riftworlddt:ambra") ? 0.22f
+                    : sp.equals("riftworlddt:garden_oak") ? 0.30f : 0.35f;
             if (r.nextFloat() > chance) continue;
             BlockPos ground = surfaceUnder(level, start, sea);
             if (ground == null) continue;
             // Рев 16.1: у луговых деревьев на кадрах 49–51 итерации 53 была узкая крона на голом
             // стволе («гриб на палке»). Радиус диска задаёт форму из jo_code: 6..8 — широкая
             // округлая крона, как у деревьев на референсе 04.
-            int radius = sp.equals("riftworlddt:lilac") ? 6 + r.nextInt(3) : 3 + r.nextInt(4) * 2;
+            int radius = sp.equals("riftworlddt:lilac") ? 5 + r.nextInt(3) : 3 + r.nextInt(4) * 2;
             if (plant(level, ground, sp, radius)) ++planted;
         }
         return planted;
