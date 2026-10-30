@@ -23,7 +23,7 @@ mkdir -p "$OUT" "$RUN/client"
 
 # ---------------------------------------------------------------- зависимости
 sudo apt-get update -qq >/dev/null 2>&1 || true
-sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq xvfb x11-utils xdotool imagemagick libgl1 libglx-mesa0 \
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq xvfb openbox x11-utils xdotool imagemagick libgl1 libglx-mesa0 \
   libxi6 libxxf86vm1 libxfixes3 libxrender1 libxkbcommon0 libsm6 libopenal1 >/dev/null 2>&1 || true
 command -v Xvfb >/dev/null || { echo "FATAL: нет Xvfb"; exit 1; }
 command -v import >/dev/null || { echo "FATAL: нет imagemagick"; exit 1; }
@@ -37,25 +37,47 @@ opts = {
     "joinedFirstServer": "true", "renderDistance": "12", "simulationDistance": "8", "maxFps": "30",
     "guiScale": "2", "fov": "0.0", "graphicsMode": "1", "renderClouds": "false",
     "pauseOnLostFocus": "false", "narrator": "0", "soundCategory_master": "0.0",
-    "fullscreen": "false", "showSubtitles": "false", "autoJump": "false",
+    "fullscreen": "true", "showSubtitles": "false", "autoJump": "false",
     "darkMojangStudiosBackground": "true", "skipRealms32bitWarning": "true",
     "gamma": "1.0", "hideGui": "false", "bobView": "false",
     "overrideWidth": "1920", "overrideHeight": "1080", "mipmapLevels": "0",
     "entityDistanceScaling": "1.5", "biomeBlendRadius": "3",
 }
-os.makedirs(run + "/client", exist_ok=True)
+os.makedirs(run + "/client/config", exist_ok=True)
 with open(run + "/client/options.txt", "w", encoding="utf-8") as f:
     for k, v in opts.items():
         f.write(f"{k}:{v}\n")
-print("client options ->", run + "/client/options.txt")
+with open(run + "/client/config/fml.toml", "w", encoding="utf-8") as f:
+    f.write(
+        "splashscreen = true\n"
+        "maxThreads = -1\n"
+        "versionCheck = false\n"
+        "defaultConfigPath = \"defaultconfigs\"\n"
+        "disableOptimizedDFU = true\n"
+        "earlyWindowControl = true\n"
+        "earlyWindowWidth = 1920\n"
+        "earlyWindowHeight = 1080\n"
+        "earlyWindowFBScale = 1\n"
+        "earlyWindowMaximized = true\n"
+        "earlyWindowProvider = \"fmlearlywindow\"\n"
+        "earlyWindowSkipGLVersions = []\n"
+        "earlyWindowLogHelpMessage = false\n"
+        "earlyWindowSquir = false\n"
+        "earlyWindowShowCPU = false\n"
+    )
+print("client options + fml.toml 1920x1080 ->", run + "/client/options.txt")
 PY
 
-# ---------------------------------------------------------------- дисплей (Full HD 1920x1080)
+# ---------------------------------------------------------------- дисплей (Full HD 1920x1080 + WM openbox)
 if ! pgrep -f "Xvfb $DISP" >/dev/null; then
   Xvfb "$DISP" -screen 0 1920x1080x24 -nolisten tcp >/tmp/xvfb.log 2>&1 &
   sleep 3
 fi
 export DISPLAY=$DISP LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe MESA_GL_VERSION_OVERRIDE=3.3
+if command -v openbox >/dev/null 2>&1 && ! pgrep -x openbox >/dev/null 2>&1; then
+  openbox >/tmp/openbox.log 2>&1 &
+  sleep 2
+fi
 
 WID=""
 geom() {  # найти окно игры и его геометрию (x y w h)
@@ -1157,8 +1179,17 @@ biome_section() {
       lookat "$((VX + VRR * 2 / 5))" "$((VGY + 8))" "$((VZ + VRR * 2 / 5))" "$VX" "$((VGY + 2))" "$VZ" 16 "49_violet_hills"
     fi
     lookat "$((VX + VRR * 2 / 5))" "$((VGY + 9))" "$((VZ + VRR / 3))" "$VX" "$((VGY + 2))" "$VZ" 16 "50_violet_fields"
-    lookat "$((VX + VRR / 4))" "$((VGY + 3))" "$((VZ + VRR / 6))" "$VX" "$((VGY + 2))" "$VZ" 15 "51_violet_path"
-    lookat "$((VX + 14))" "$((VGY + 4))" "$((VZ + 14))" "$VX" "$((VGY + 5))" "$VZ" 15 "52_violet_trees_closeup"
+    local VPATH
+    VPATH=$(printf '%s' "$VL" | grep -o 'vpath=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^vpath=//')
+    if [ -n "${VPATH:-}" ]; then
+      local VPCAM VPLOOK
+      VPCAM=$(printf '%s' "$VPATH" | cut -d: -f1 | tr ',' ' ')
+      VPLOOK=$(printf '%s' "$VPATH" | cut -d: -f2 | tr ',' ' ')
+      lookat $VPCAM $VPLOOK 15 "51_violet_path"
+    else
+      lookat "$((VX + VRR / 4))" "$((VGY + 5))" "$((VZ + VRR / 6))" "$VX" "$((VGY + 2))" "$VZ" 15 "51_violet_path"
+    fi
+    lookat "$((VX + 14))" "$((VGY + 6))" "$((VZ + 14))" "$VX" "$((VGY + 6))" "$VZ" 15 "52_violet_trees_closeup"
     EL tp TestPlayer "$VX" "$((VGY + 4))" "$VZ" >/dev/null 2>&1 || true
     sleep 3
   fi

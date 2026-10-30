@@ -635,7 +635,7 @@ public final class SeaProbeCommand {
         }
         String vio = "";
         if (violet) {
-            String vroad = "-";
+            String vroad = "-", vpath = "-";
             int vgY = CityPlan.get().ocean + 16;
             if (bestViolet != null) {
                 int oc = CityPlan.get().ocean;
@@ -646,9 +646,15 @@ public final class SeaProbeCommand {
                 int vty = ElisarChunkGenerator.violetTop(bestViolet.meadow, pTgt[0], pTgt[1], oc) + 2;
                 vroad = Math.round(pCam[0]) + "," + vcy + "," + Math.round(pCam[1]) + ":"
                         + Math.round(pTgt[0]) + "," + vty + "," + Math.round(pTgt[1]);
+                double[] ppCam = bestViolet.roadPoint(0.42);
+                double[] ppTgt = bestViolet.roadPoint(0.68);
+                int vpcy = ElisarChunkGenerator.violetTop(bestViolet.meadow, ppCam[0], ppCam[1], oc) + 2;
+                int vpty = ElisarChunkGenerator.violetTop(bestViolet.meadow, ppTgt[0], ppTgt[1], oc) + 2;
+                vpath = Math.round(ppCam[0]) + "," + vpcy + "," + Math.round(ppCam[1]) + ":"
+                        + Math.round(ppTgt[0]) + "," + vpty + "," + Math.round(ppTgt[1]);
             }
             vio = " violet_blooms=" + violetBlooms + " violet_leaves=" + violetLeaves + " lavender=" + lavender
-                    + " fences=" + fences + " lamps=" + lamps + " vground=" + vgY + " road=" + vroad;
+                    + " fences=" + fences + " lamps=" + lamps + " vground=" + vgY + " road=" + vroad + " vpath=" + vpath;
         }
         // Рев 14.35: каким биомом НА САМОМ ДЕЛЕ числится земля региона. Это ловит перепутанные
         // поля биом-сурса (именно так «сады» оказались на островках данжа в море).
@@ -986,8 +992,8 @@ public final class SeaProbeCommand {
         BlockPos at = BlockPos.containing(src.getPosition());
         int dt = 0, rooty = 0, branch = 0, leaves = 0;
         java.util.Map<String, Integer> named = new java.util.TreeMap<>();
-        int y0 = Math.max(level.getMinBuildHeight(), at.getY() - 40);
-        int y1 = Math.min(level.getMaxBuildHeight() - 1, at.getY() + 40);
+        int y0 = Math.max(level.getMinBuildHeight(), Math.min(60, at.getY() - 40));
+        int y1 = Math.min(level.getMaxBuildHeight() - 1, Math.max(150, at.getY() + 40));
         for (int x = at.getX() - r; x <= at.getX() + r; ++x) {
             for (int z = at.getZ() - r; z <= at.getZ() + r; ++z) {
                 if (!level.hasChunk(x >> 4, z >> 4)) continue;

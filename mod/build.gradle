@@ -109,7 +109,6 @@ minecraft {
             property 'forge.enabledGameTestNamespaces', mod_id
             jvmArgs '-Xmx2400M', '-XX:+UseG1GC'
             property 'fml.earlyprogresswindow', 'false'
-            property 'fml.earlyWindowControl', 'false'
             args '--username', 'TestPlayer', '--width', '1920', '--height', '1080'
             if (project.hasProperty('autoJoin')) {
                 args '--quickPlayMultiplayer', project.property('autoJoin')
