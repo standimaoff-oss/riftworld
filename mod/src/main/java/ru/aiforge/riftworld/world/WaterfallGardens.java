@@ -141,7 +141,7 @@ public final class WaterfallGardens {
                     boolean ok = true;
                     for (Fall f : falls) if (Math.hypot(f.x - fx, f.z - fz) < 9) { ok = false; break; }
                     if (!ok) continue;
-                    falls.add(new Fall((int) Math.floor(fx), (int) Math.floor(fz), 3.0 + rnd.nextDouble() * 3.0, rnd.nextLong()));
+                    falls.add(new Fall((int) Math.floor(fx), (int) Math.floor(fz), 2.0 + rnd.nextDouble() * 1.4, rnd.nextLong()));
                     ++k;
                 }
             }

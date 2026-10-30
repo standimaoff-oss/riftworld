@@ -26,8 +26,8 @@
     "apply": {
       "species": "riftworlddt:lilac",
       "density": [
-        0.02,
-        0.03
+        0.012,
+        0.02
       ],
       "chance": 1.0
     }
