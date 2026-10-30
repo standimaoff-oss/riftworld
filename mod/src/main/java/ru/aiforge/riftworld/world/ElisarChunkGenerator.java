@@ -1264,7 +1264,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         int topY = base + t.h + 2;                       // first disc altitude (trunk tops out here)
         if (inTrunk) {
             // ствол идёт до САМОГО ВЕРХНЕГО яруса, иначе верхний диск висит в воздухе
-            for (int y = base; y <= topY + 3; ++y) chunk.setBlockState(mp.set(x, y, z), logS, false);
+            for (int y = base; y <= topY + 4; ++y) chunk.setBlockState(mp.set(x, y, z), logS, false);
             return;
         }
         // branch cross under the discs (trunk centre sits between the 4 trunk cells)
@@ -1282,7 +1282,9 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         // плотный шар из белых кубиков (кадр 45 итерации 56) вместо этажерки.
         // tiers: {radius, dy} — dy отсчитывается от верха ствола
         double dc = Math.hypot(dx - 0.5, dz - 0.5);
-        double[][] tiers = new double[][] {{2.6, 3}, {4.4, 0}, {5.6, -4}, {4.2, -8}};
+        // Рев 14.74: на фото ярусов ПЯТЬ-ШЕСТЬ, и они плоские и тонкие, а не три толстых блина.
+        // Разносим диски на 4 блока, самый широкий — в середине кроны, верхний и нижний — уже.
+        double[][] tiers = new double[][] {{2.4, 4}, {3.8, 1}, {5.2, -3}, {5.6, -7}, {3.8, -11}};
         long seed = t.seed;
         for (double[] ti : tiers) {
             double r = ti[0]; int yy = topY + (int) ti[1];
