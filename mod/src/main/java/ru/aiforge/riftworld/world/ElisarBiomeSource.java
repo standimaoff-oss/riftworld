@@ -73,6 +73,7 @@ public class ElisarBiomeSource extends BiomeSource {
             if (at.kind == WaterfallGardens.KIND && WaterfallGardens.landAt(x, z) != null) return gardens;
             if (at.kind == SizoGrove.KIND && SizoGrove.inside(x, z)) return sizo;
             if (at.kind == 7 && VioletHills.inside(x, z)) return violet;
+            if (at.kind == 5) return ashen;
         }
         // Биомы суши живут ТОЛЬКО выше уровня моря: у садов и рощи остров продолжается под водой
         // голыми каменными ярусами, и без этой проверки /locate biome отдавал точку в море —

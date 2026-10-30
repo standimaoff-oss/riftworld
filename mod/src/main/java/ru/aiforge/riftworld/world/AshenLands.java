@@ -219,8 +219,7 @@ public final class AshenLands {
 
     public static boolean inside(double x, double z) {
         Region rg = regionAt(x, z);
-        if (rg != null && Math.hypot(x - rg.cx, z - rg.cz) < rg.R - 18) return true;
-        return weight(x, z) > 0.5;
+        return rg != null && Math.hypot(x - rg.cx, z - rg.cz) < CastleSite.R + 46;
     }
 
     private static int moundTopIn(List<Mound> mounds, int x, int z) {

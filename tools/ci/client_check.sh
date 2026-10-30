@@ -900,7 +900,8 @@ biome_section() {
       # вообще другую». Имя биома ещё ничего не доказывает, поэтому телепортируем игрока в точку
       # /locate и считаем вокруг НАСТОЯЩУЮ садовую землю (/riftaround): известняк полок, садовая
       # трава и пустоты под островом (holes — дыры до бедрока).
-      RCON execute in riftworld:elisar run tp TestPlayer "$LX" "$((LY + 2))" "$LZ" >/dev/null 2>&1 || true
+      local TPY=$(( ${LGY:-90} + 2 ))
+      RCON execute in riftworld:elisar run tp TestPlayer "$LX" "$TPY" "$LZ" >/dev/null 2>&1 || true
       sleep 3
       local LAROUND LALIME LAGRS LAHOLES
       LAROUND=$(EL execute at TestPlayer in riftworld:elisar run riftaround 24 2>&1 | tr '\r\n' '  ')
@@ -990,7 +991,16 @@ biome_section() {
     # кадры под референс: сверху (общий план архипелага и рек + террасы), сбоку (стены и водопады), у пруда
     local GTOP2=${GTOP:-110}
     local GR2=${GR_R:-30}
-    lookat "$((GX + GR2 * 2))" "$((GTOP2 + 46))" "$((GZ + GR2 * 2))" "$GX" "66" "$GZ" 18 "40b_garden_archipelago_rivers"
+    local RIVER
+    RIVER=$(printf '%s' "$LIN" | grep -o 'river=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^river=//')
+    if [ -n "${RIVER:-}" ]; then
+      local RCAM RLOOK
+      RCAM=$(printf '%s' "$RIVER" | cut -d: -f1 | tr ',' ' ')
+      RLOOK=$(printf '%s' "$RIVER" | cut -d: -f2 | tr ',' ' ')
+      lookat $RCAM $RLOOK 18 "40b_garden_archipelago_rivers"
+    else
+      lookat "$((GX + GR2))" "$((GTOP2 + 16))" "$((GZ - GR2))" "$GX" "66" "$GZ" 18 "40b_garden_archipelago_rivers"
+    fi
     lookat "$((GX + GR2))" "$((GTOP2 + 18))" "$((GZ + GR2))" "$GX" "$((GTOP2 - 6))" "$GZ" 18 "40_garden_overview"
     lookat "$((GX + GR2 * 6 / 5))" "$((GTOP2 + 10))" "$((GZ + GR2 / 3))" "$GX" "$((GTOP2 - 8))" "$GZ" 16 "41_garden_terraces"
     lookat "$((GX + GR2 * 9 / 10))" "$((GTOP2 + 6))" "$((GZ + GR2 / 2))" "$((GX + GR2 / 4))" "$((GTOP2 - 10))" "$GZ" 14 "42_garden_walls"
@@ -1060,10 +1070,19 @@ biome_section() {
   ALX=$(printf '%s' "$ALOCP" | cut -d, -f1)
   ALZ=$(printf '%s' "$ALOCP" | cut -d, -f3)
   if [ -n "${ALX:-}" ] && [ -n "${ALZ:-}" ]; then
-    EL tp TestPlayer "$ALX" 138 "$ALZ" >/dev/null 2>&1 || true
-    sleep 12
-    lookat "$((ALX + 65))" 136 "$((ALZ - 75))" "$ALX" 112 "$ALZ" 16 "60_ashen_castle_biome"
-    log "  OK   /locate biome ashen_lands нашёл случайный биом адского острова ($ALX, $ALZ)"
+    EL tp TestPlayer "$ALX" 126 "$ALZ" >/dev/null 2>&1 || true
+    sleep 4
+    local ASHL ACX ACZ
+    ASHL=$(EL execute in riftworld:elisar at TestPlayer run riftbiome ashen 2>&1 | tr '\r\n' '  ')
+    log "  /riftbiome ashen -> ${ASHL:0:220}"
+    ACX=$(printf '%s' "$ASHL" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\1/p' | tail -1)
+    ACZ=$(printf '%s' "$ASHL" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\2/p' | tail -1)
+    ACX=${ACX:-$ALX}
+    ACZ=${ACZ:-$ALZ}
+    EL tp TestPlayer "$ACX" 128 "$ACZ" >/dev/null 2>&1 || true
+    sleep 14
+    lookat "$((ACX + 42))" 132 "$((ACZ - 64))" "$ACX" 112 "$ACZ" 18 "60_ashen_castle_biome"
+    log "  OK   /locate biome ashen_lands нашёл случайный биом адского острова с замком ($ACX, $ACZ)"
   else
     log "  FAIL /locate biome ashen_lands не вернул координаты"; FAILS=$((FAILS + 1))
   fi

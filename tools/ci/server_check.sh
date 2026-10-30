@@ -216,13 +216,18 @@ if [ "${NORMAL_PROBE:-1}" = "1" ]; then
   printf 'level-name=world_normal\n' >> "$SRV/server.properties"
   rm -rf "$SRV/world_normal"
   # Запускаем сервер обычного мира и останавливаем его сразу после Done (не ждём 420 с впустую)
-  ( cd "$SRV" && java -Xmx2G -Dfml.earlyprogresswindow=false @libraries/net/minecraftforge/forge/$FORGE/unix_args.txt nogui > normal.log 2>&1 & echo $! > normal.pid )
+  rm -f "$SRV/normal.log" "$SRV/normal.pid"
+  (
+    cd "$SRV" || exit 1
+    nohup java -Xmx2G -Dfml.earlyprogresswindow=false @libraries/net/minecraftforge/forge/$FORGE/unix_args.txt nogui > normal.log 2>&1 &
+    echo $! > normal.pid
+  )
   NPID=$(cat "$SRV/normal.pid" 2>/dev/null || echo "")
   NOK=0
   for _ni in $(seq 1 180); do
     grep -q "Done (" "$SRV/normal.log" 2>/dev/null && { NOK=1; break; }
     grep -qiE "feature order cycle|A fatal error|Failed to start the minecraft server|Exception in thread \"main\"" "$SRV/normal.log" 2>/dev/null && break
-    [ -n "$NPID" ] && kill -0 "$NPID" 2>/dev/null || break
+    if [ -n "$NPID" ] && ! kill -0 "$NPID" 2>/dev/null; then break; fi
     sleep 2
   done
   [ -n "$NPID" ] && kill -TERM "$NPID" 2>/dev/null || true

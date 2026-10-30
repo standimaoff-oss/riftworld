@@ -434,6 +434,19 @@ public final class SeaProbeCommand {
         var level = src.getLevel();
         BlockPos at = src.getPlayer() != null ? src.getPlayer().blockPosition() : new BlockPos(0, 0, 0);
         String lname = name.toLowerCase(java.util.Locale.ROOT);
+        if (lname.startsWith("ashen")) {
+            AshenLands.Region ar = AshenLands.nearest(at.getX(), at.getZ());
+            if (ar == null) {
+                src.sendFailure(Component.literal("riftbiome: рядом нет региона ashen"));
+                return 0;
+            }
+            String abio = level.getBiome(new BlockPos(ar.cx, CastleSite.Y + 4, ar.cz)).unwrapKey()
+                    .map(k -> k.location().toString()).orElse("?");
+            String aline = "riftbiome name=ashen at=" + ar.cx + "," + ar.cz + " bio=" + abio
+                    + " r=" + (int) CastleSite.R + " top=" + CastleSite.Y + " castle=" + ar.x0 + "," + ar.z0;
+            src.sendSuccess(() -> Component.literal(aline), false);
+            return 1;
+        }
         // Рев 14.29: /riftbiome violet — Фиолетовые холмы (третий биом в порядке владельца).
         boolean violet = lname.startsWith("violet");
         boolean gardens = !violet && !lname.startsWith("sizo");
@@ -551,12 +564,30 @@ public final class SeaProbeCommand {
         // Рев 16: цифры архипелага и ВОДОПАДОВ. Владелец: «водопады должны стекать», «острова
         // радиусом 40–55, разной формы», «сизо в садах не растёт». Всё это видно только пробами.
         String gardenStat = "";
+        String river = "-";
         if (bestGarden != null) {
             double rMin = 1e9, rMax = 0;
             for (CityPlan.Island g2 : bestGarden.isles) { rMin = Math.min(rMin, g2.R); rMax = Math.max(rMax, g2.R); }
             gardenStat = " isles=" + bestGarden.isles.size()
                     + " isl_r=" + String.format(java.util.Locale.ROOT, "%.0f..%.0f", rMin, rMax)
                     + " sea=" + CityPlan.get().ocean;
+            if (bestGarden.isles.size() >= 2) {
+                CityPlan.Island aI = bestGarden.isles.get(0), bI = bestGarden.isles.get(1);
+                double bestGap = 1e9;
+                for (int i = 0; i < bestGarden.isles.size(); ++i)
+                    for (int j = i + 1; j < bestGarden.isles.size(); ++j) {
+                        CityPlan.Island p1 = bestGarden.isles.get(i), p2 = bestGarden.isles.get(j);
+                        double gap = Math.hypot(p1.cx - p2.cx, p1.cz - p2.cz) - p1.R - p2.R;
+                        if (gap < bestGap) { bestGap = gap; aI = p1; bI = p2; }
+                    }
+                double mx = 0.5 * (aI.cx + bI.cx), mz = 0.5 * (aI.cz + bI.cz);
+                double ddx = bI.cx - aI.cx, ddz = bI.cz - aI.cz, dlen = Math.max(1.0, Math.hypot(ddx, ddz));
+                double ux = -ddz / dlen, uz = ddx / dlen;
+                int oc = CityPlan.get().ocean;
+                int rcx = (int) Math.round(mx + ux * 40), rcy = oc + 30, rcz = (int) Math.round(mz + uz * 40);
+                int rlx = (int) Math.round(mx - ux * 12), rly = oc + 6, rlz = (int) Math.round(mz - uz * 12);
+                river = rcx + "," + rcy + "," + rcz + ":" + rlx + "," + rly + "," + rlz;
+            }
         }
         int fallWater = 0, fallSrc = 0, sizoInGardens = 0, gardenOak = 0, dryCols = 0, submergedAir = 0;
         if (gardens) {
@@ -615,7 +646,7 @@ public final class SeaProbeCommand {
                 + " r=" + bestR + " top=" + top + " water=" + water + " garden_grass=" + gardenGrass
                 + " garden_leaves=" + leaves + " garden_logs=" + logs + " ivy=" + ivy
                 + " planks=" + planks + " lantern=" + lanterns + " struct=" + struct
-                + " fall=" + fallAt + " wall=" + wall + vio + gardenStat
+                + " fall=" + fallAt + " wall=" + wall + " river=" + river + vio + gardenStat
                 + " falls_water=" + fallWater + " falls_src=" + fallSrc
                 + " garden_oak=" + gardenOak + " sizo_blocks=" + sizoInGardens
                 + " below_sea_cols=" + dryCols + " submerged_air=" + submergedAir
