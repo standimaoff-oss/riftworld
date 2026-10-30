@@ -227,7 +227,8 @@ if [ "${NORMAL_PROBE:-1}" = "1" ]; then
   cp "$SRV/normal.log" "$OUT/normal.log" 2>/dev/null || true
   if [ "$nok" = "1" ]; then
     echo "normal world: server booted, no feature order cycle" | tee "$OUT/normal.txt"
-    echo "::notice title=обычный мир::сервер с level-type=normal поднялся, feature order cycle НЕ воспроизвёлся"
+    # именно warning: notice в аннотациях GitHub не виден, а вердикт пробы нужно читать без артефактов
+    echo "::warning title=обычный мир::сервер с level-type=normal поднялся, feature order cycle НЕ воспроизвёлся"
   else
     echo "normal world: server FAILED to boot" | tee "$OUT/normal.txt"
     [ -n "$NORMALTXT" ] && echo "$NORMALTXT" >> "$OUT/normal.txt"

@@ -555,7 +555,8 @@ public final class SeaProbeCommand {
             double rMin = 1e9, rMax = 0;
             for (CityPlan.Island g2 : bestGarden.isles) { rMin = Math.min(rMin, g2.R); rMax = Math.max(rMax, g2.R); }
             gardenStat = " isles=" + bestGarden.isles.size()
-                    + " isl_r=" + String.format(java.util.Locale.ROOT, "%.0f..%.0f", rMin, rMax);
+                    + " isl_r=" + String.format(java.util.Locale.ROOT, "%.0f..%.0f", rMin, rMax)
+                    + " sea=" + CityPlan.get().ocean;
         }
         int fallWater = 0, fallSrc = 0, sizoInGardens = 0, gardenOak = 0, dryCols = 0;
         if (gardens) {
