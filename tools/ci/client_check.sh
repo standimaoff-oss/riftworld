@@ -1039,6 +1039,22 @@ biome_section() {
     wh=$(EL execute in riftworld:elisar run riftwhere "$lx" "$lz" 2>&1 | tr '\r\n' '  ')
     log "  /riftwhere у $label -> ${wh:0:220}"
     bio=$(printf '%s' "$wh" | sed -n 's/.* biome=\([^ ]*\).*/\1/p' | tail -1)
+    # Рев 16.15: /locate возвращает позицию СЕТКИ квантования биомов (клетка 4 блока), и на кромке
+    # острова она может попасть в соседнюю клетку — тогда «в точке биом riftworld:abyss», хотя
+    # биом рядом (прогон #276). Проверяем окрестность ±8 как её видит игрок и берём первую точку,
+    # где биом действительно нужный.
+    if [ "${bio:-}" != "$id" ]; then
+      for d in 4 -4 8 -8; do
+        local w2 b2
+        w2=$(EL execute in riftworld:elisar run riftwhere "$((lx + d))" "$lz" 2>&1 | tr '\r\n' '  ')
+        b2=$(printf '%s' "$w2" | sed -n 's/.* biome=\([^ ]*\).*/\1/p' | tail -1)
+        if [ "${b2:-}" = "$id" ]; then wh=$w2; bio=$b2; lx=$((lx + d)); break; fi
+        w2=$(EL execute in riftworld:elisar run riftwhere "$lx" "$((lz + d))" 2>&1 | tr '\r\n' '  ')
+        b2=$(printf '%s' "$w2" | sed -n 's/.* biome=\([^ ]*\).*/\1/p' | tail -1)
+        if [ "${b2:-}" = "$id" ]; then wh=$w2; bio=$b2; lz=$((lz + d)); break; fi
+      done
+      log "  /riftwhere рядом с $label -> ${wh:0:220}"
+    fi
     local gnd gy
     gnd=$(printf '%s' "$wh" | sed -n 's/.* ground=[-0-9]*:\([^ ]*\).*/\1/p' | tail -1)
     gy=$(printf '%s' "$wh" | sed -n 's/.* ground=\([-0-9]*\):.*/\1/p' | tail -1)
