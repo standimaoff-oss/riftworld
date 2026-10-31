@@ -63,3 +63,9 @@
 - [model_08_turtle.jpg](../reports/iteration-4/shots/model_08_turtle.jpg)
 - [model_09_gloom.jpg](../reports/iteration-4/shots/model_09_gloom.jpg)
 - [model_10_sting.jpg](../reports/iteration-4/shots/model_10_sting.jpg)
+
+## Концепт-референсы нового биома (выбор для следующей итерации)
+- [01_amber_canyons.png — «Янтарные каньоны»](new_biome_refs/01_amber_canyons.png)
+- [02_crystal_sanctum.png — «Хрустальные разломы»](new_biome_refs/02_crystal_sanctum.png)
+- [03_crimson_terraces.png — «Багряные террасы»](new_biome_refs/03_crimson_terraces.png)
+- [04_spore_hollows.png — «Светящиеся споровые кущи»](new_biome_refs/04_spore_hollows.png)
