@@ -355,5 +355,18 @@
   "fluid_type.riftworld.garden_water": "Garden Spring Water",
   "block.riftworld.violet_leaves": "Lilac Blossom Leaves",
   "block.riftworld.lavender_bed": "Lavender Bed",
-  "block.riftworld.lilac_log": "Lilac Blossom Log"
+  "block.riftworld.lilac_log": "Lilac Blossom Log",
+  "block.riftworld.crystal_block_deep": "Deep Rift Crystal Block",
+  "block.riftworld.crystal_block": "Rift Crystal Block",
+  "block.riftworld.crystal_block_bright": "Luminous Rift Crystal Core",
+  "block.riftworld.rift_marble": "Rift Marble",
+  "block.riftworld.rift_marble_mossy": "Mossy Rift Marble",
+  "block.riftworld.rift_marble_slab": "Rift Marble Slab",
+  "block.riftworld.rift_marble_stairs": "Rift Marble Stairs",
+  "block.riftworld.rift_slate": "Rift Slate",
+  "block.riftworld.crystal_log": "Crystal Silverwood Log",
+  "block.riftworld.crystal_leaves": "Crystal Silverwood Leaves",
+  "block.riftworld.crystal_cluster": "Rift Crystal Cluster",
+  "block.riftworld.crystal_shroom": "Luminous Rift Mushroom",
+  "biome.riftworld.crystal_rifts": "Crystal Rifts"
 }

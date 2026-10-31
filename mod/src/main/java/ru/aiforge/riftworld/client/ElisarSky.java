@@ -49,6 +49,7 @@ public final class ElisarSky extends DimensionSpecialEffects {
         private static final Vec3 SEA_MIST = new Vec3(0.965, 0.945, 0.885);
         private static final Vec3 GARDEN_HAZE = new Vec3(0.80, 0.89, 0.96);
         private static final Vec3 SIZO_MIST = new Vec3(0.95, 0.94, 0.90);
+        private static final Vec3 CRYSTAL_HAZE = new Vec3(0.84, 0.95, 0.97);
 
         private static Vec3 lastFogCam;
         private static long lastFogNs;
@@ -66,9 +67,9 @@ public final class ElisarSky extends DimensionSpecialEffects {
             float far = e.getFarPlaneDistance();
             Vec3 pos = e.getCamera().getPosition();
             float[] w = GardenSky.smoothWeights(pos);
-            float wg = w[0], wv = w[1], ws = w[2];
+            float wg = w[0], wv = w[1], ws = w[2], wc = w[3];
             float g = gloom(pos);
-            float m = mist(pos) * (1.0F - Mth.clamp(wg + wv + ws, 0.0F, 1.0F));
+            float m = mist(pos) * (1.0F - Mth.clamp(wg + wv + ws + wc, 0.0F, 1.0F));
 
             float nearDist = far * Mth.lerp(g, 0.45F, 0.55F) * Mth.lerp(m, 1.0F, 0.42F);
             float farDist = far * Mth.lerp(g, 1.05F, 1.00F) * Mth.lerp(m, 1.0F, 0.62F);
@@ -85,6 +86,10 @@ public final class ElisarSky extends DimensionSpecialEffects {
             if (ws > 0.001F) {
                 nearDist = Mth.lerp(ws, nearDist, Math.min(far * 0.38F, 46.0F));
                 farDist = Mth.lerp(ws, farDist, Math.min(far * 0.96F, 136.0F));
+            }
+            if (wc > 0.001F) {
+                nearDist = Mth.lerp(wc, nearDist, far * 0.68F);
+                farDist = Mth.lerp(wc, farDist, far * 1.14F);
             }
             e.setNearPlaneDistance(nearDist);
             e.setFarPlaneDistance(farDist);
@@ -113,8 +118,8 @@ public final class ElisarSky extends DimensionSpecialEffects {
             if (!inElisar()) return;
             Vec3 pos = e.getCamera().getPosition();
             float[] w = GardenSky.smoothWeights(pos);
-            float wg = w[0], wv = w[1], ws = w[2];
-            float customCover = Mth.clamp(wg + wv + ws, 0.0F, 1.0F);
+            float wg = w[0], wv = w[1], ws = w[2], wc = w[3];
+            float customCover = Mth.clamp(wg + wv + ws + wc, 0.0F, 1.0F);
 
             float r = e.getRed();
             float gr = e.getGreen();
@@ -142,6 +147,12 @@ public final class ElisarSky extends DimensionSpecialEffects {
                 r = (float) Mth.lerp(ks, r, SIZO_MIST.x);
                 gr = (float) Mth.lerp(ks, gr, SIZO_MIST.y);
                 bl = (float) Mth.lerp(ks, bl, SIZO_MIST.z);
+            }
+            if (wc > 0.001F) {
+                float kc = 0.64F * wc;
+                r = (float) Mth.lerp(kc, r, CRYSTAL_HAZE.x);
+                gr = (float) Mth.lerp(kc, r, CRYSTAL_HAZE.y);
+                bl = (float) Mth.lerp(kc, r, CRYSTAL_HAZE.z);
             }
             float g = gloom(pos);
             if (g > 0.001F) {

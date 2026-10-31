@@ -15,6 +15,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.joml.Matrix4f;
 import ru.aiforge.riftworld.RiftWorld;
+import ru.aiforge.riftworld.world.CrystalRifts;
 import ru.aiforge.riftworld.world.SizoGrove;
 import ru.aiforge.riftworld.world.VioletHills;
 import ru.aiforge.riftworld.world.WaterfallGardens;
@@ -23,7 +24,8 @@ import ru.aiforge.riftworld.world.WaterfallGardens;
  * Атмосферные купола биомов Элисара с плавным пространственно-временным переходом (без резких скачков):
  * - Висячие сады (07_waterfall_gardens.png): чистое голубое небо со светлым горизонтом;
  * - Фиолетовые холмы (04_violet_hills.png): нежно-сиреневый зенит + тёплое розово-персиковое зарево у горизонта с крупным тёплым диском солнца;
- * - Роща Сизо (05_biome_sizo_grove.png): мягкое бледно-лазурное небо вверху и тёплая солнечная дымка между стволами у горизонта.
+ * - Роща Сизо (05_biome_sizo_grove.png): мягкое бледно-лазурное небо вверху и тёплая солнечная дымка между стволами у горизонта;
+ * - Хрустальные разломы (02_crystal_sanctum.png): перламутрово-лазурный купол с бирюзовым сиянием над горизонтом.
  */
 public final class GardenSky {
     private static final float G_ZEN_R = 0.31F, G_ZEN_G = 0.55F, G_ZEN_B = 0.86F;
@@ -37,9 +39,13 @@ public final class GardenSky {
     private static final float S_ZEN_R = 0.77F, S_ZEN_G = 0.85F, S_ZEN_B = 0.90F;
     private static final float S_HOR_R = 0.95F, S_HOR_G = 0.93F, S_HOR_B = 0.88F;
 
+    // 02_crystal_sanctum.png: ледяная перламутровая лазурь в зените и бирюзово-жемчужная дымка у горизонта
+    private static final float C_ZEN_R = 0.60F, C_ZEN_G = 0.83F, C_ZEN_B = 0.94F;
+    private static final float C_HOR_R = 0.86F, C_HOR_G = 0.96F, C_HOR_B = 0.98F;
+
     private static Vec3 lastCam;
     private static long lastNs;
-    private static float curGarden, curViolet, curSizo;
+    private static float curGarden, curViolet, curSizo, curCrystal;
     private static double sunAng = 0.7;
     private static boolean sunInit;
 
@@ -47,16 +53,17 @@ public final class GardenSky {
     }
 
     /**
-     * Синхронное плавное состояние весов атмосферы {gardens, violet, sizo} в [0..1].
+     * Синхронное плавное состояние весов атмосферы {gardens, violet, sizo, crystal} в [0..1].
      * При ходьбе и полёте веса плавно интерполируются и по расстоянию (smoothstep ~90 блоков),
      * и по времени кадра; при далёком телепорте (/tp) сбрасываются мгновенно в целевую точку.
      */
     public static float[] smoothWeights(Vec3 cam) {
-        float tg = 0.0F, tv = 0.0F, ts = 0.0F;
+        float tg = 0.0F, tv = 0.0F, ts = 0.0F, tc = 0.0F;
         try {
             tg = WaterfallGardens.skyWeight(cam.x, cam.z);
             tv = VioletHills.skyWeight(cam.x, cam.z);
             ts = SizoGrove.skyWeight(cam.x, cam.z);
+            tc = CrystalRifts.skyWeight(cam.x, cam.z);
         } catch (Throwable ignored) {
         }
         long now = System.nanoTime();
@@ -65,6 +72,7 @@ public final class GardenSky {
             curGarden = tg;
             curViolet = tv;
             curSizo = ts;
+            curCrystal = tc;
         } else {
             float dt = Mth.clamp((now - lastNs) * 1.0e-9F, 0.0F, 0.25F);
             if (dt > 1.0e-4F) {
@@ -72,11 +80,12 @@ public final class GardenSky {
                 curGarden = Mth.lerp(k, curGarden, tg);
                 curViolet = Mth.lerp(k, curViolet, tv);
                 curSizo = Mth.lerp(k, curSizo, ts);
+                curCrystal = Mth.lerp(k, curCrystal, tc);
             }
         }
         lastCam = cam;
         lastNs = now;
-        return new float[]{curGarden, curViolet, curSizo};
+        return new float[]{curGarden, curViolet, curSizo, curCrystal};
     }
 
     @Mod.EventBusSubscriber(modid = RiftWorld.MODID, value = Dist.CLIENT)
@@ -88,18 +97,18 @@ public final class GardenSky {
             if (mc.level == null || !mc.level.dimension().location().equals(ElisarSky.ID)) return;
             Vec3 cam = e.getCamera().getPosition();
             float[] w = smoothWeights(cam);
-            float wg = w[0], wv = w[1], ws = w[2];
-            float wSum = wg + wv + ws;
+            float wg = w[0], wv = w[1], ws = w[2], wc = w[3];
+            float wSum = wg + wv + ws + wc;
             if (wSum < 0.002F) return;
 
             float inv = 1.0F / wSum;
-            float ng = wg * inv, nv = wv * inv, ns = ws * inv;
-            float zr = G_ZEN_R * ng + V_ZEN_R * nv + S_ZEN_R * ns;
-            float zg = G_ZEN_G * ng + V_ZEN_G * nv + S_ZEN_G * ns;
-            float zb = G_ZEN_B * ng + V_ZEN_B * nv + S_ZEN_B * ns;
-            float hr = G_HOR_R * ng + V_HOR_R * nv + S_HOR_R * ns;
-            float hg = G_HOR_G * ng + V_HOR_G * nv + S_HOR_G * ns;
-            float hb = G_HOR_B * ng + V_HOR_B * nv + S_HOR_B * ns;
+            float ng = wg * inv, nv = wv * inv, ns = ws * inv, nc = wc * inv;
+            float zr = G_ZEN_R * ng + V_ZEN_R * nv + S_ZEN_R * ns + C_ZEN_R * nc;
+            float zg = G_ZEN_G * ng + V_ZEN_G * nv + S_ZEN_G * ns + C_ZEN_G * nc;
+            float zb = G_ZEN_B * ng + V_ZEN_B * nv + S_ZEN_B * ns + C_ZEN_B * nc;
+            float hr = G_HOR_R * ng + V_HOR_R * nv + S_HOR_R * ns + C_HOR_R * nc;
+            float hg = G_HOR_G * ng + V_HOR_G * nv + S_HOR_G * ns + C_HOR_G * nc;
+            float hb = G_HOR_B * ng + V_HOR_B * nv + S_HOR_B * ns + C_HOR_B * nc;
             float alpha = Mth.clamp(wSum, 0.0F, 1.0F);
 
             Matrix4f m = e.getPoseStack().last().pose();
@@ -160,6 +169,24 @@ public final class GardenSky {
                 b.vertex(m, sx + tx * sr, sy - sr, sz + tz * sr).color(1.0F, 0.97F, 0.89F, diskA).endVertex();
                 b.vertex(m, sx + tx * sr, sy + sr, sz + tz * sr).color(1.0F, 0.97F, 0.89F, diskA).endVertex();
                 b.vertex(m, sx - tx * sr, sy + sr, sz - tz * sr).color(1.0F, 0.97F, 0.89F, diskA).endVertex();
+            }
+
+            // Мягкое перламутрово-бирюзовое сияние в небе Хрустальных разломов (02_crystal_sanctum.png)
+            if (wc > 0.005F) {
+                CrystalRifts.Region cr = CrystalRifts.regionAt(cam.x, cam.z);
+                double cAng = cr != null ? cr.phi : 0.45;
+                float dist = s * 0.78F;
+                float ax = (float) (Math.cos(cAng) * dist);
+                float az = (float) (Math.sin(cAng) * dist);
+                float tx = (float) (-Math.sin(cAng));
+                float tz = (float) (Math.cos(cAng));
+                float ay = s * 0.34F;
+                float hw = s * 0.52F, hh = s * 0.16F;
+                float aGlow = 0.32F * wc;
+                b.vertex(m, ax - tx * hw, ay - hh, az - tz * hw).color(0.56F, 0.97F, 0.98F, 0.0F).endVertex();
+                b.vertex(m, ax + tx * hw, ay - hh, az + tz * hw).color(0.56F, 0.97F, 0.98F, 0.0F).endVertex();
+                b.vertex(m, ax + tx * hw, ay + hh, az + tz * hw).color(0.76F, 0.99F, 1.00F, aGlow).endVertex();
+                b.vertex(m, ax - tx * hw, ay + hh, az - tz * hw).color(0.76F, 0.99F, 1.00F, aGlow).endVertex();
             }
 
             Tesselator.getInstance().end();

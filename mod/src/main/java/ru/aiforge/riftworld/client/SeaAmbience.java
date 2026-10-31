@@ -56,6 +56,7 @@ public final class SeaAmbience {
         if (!under) {
             float wV = ru.aiforge.riftworld.world.VioletHills.skyWeight(camPos.x, camPos.z);
             float wS = ru.aiforge.riftworld.world.SizoGrove.skyWeight(camPos.x, camPos.z);
+            float wC = ru.aiforge.riftworld.world.CrystalRifts.skyWeight(camPos.x, camPos.z);
             if (wV > 0.15F && tick % 4 == 0 && RND.nextFloat() < 0.70F * wV) {
                 var look = cam.getLookVector();
                 double fwd = 7.0 + RND.nextDouble() * 24.0;
@@ -80,6 +81,18 @@ public final class SeaAmbience {
                         0.010 + RND.nextDouble() * 0.008,
                         -0.004 - RND.nextDouble() * 0.006,
                         (RND.nextDouble() - 0.5) * 0.008);
+            } else if (wC > 0.15F && tick % 6 == 0 && RND.nextFloat() < 0.45F * wC) {
+                var look = cam.getLookVector();
+                double fwd = 6.0 + RND.nextDouble() * 22.0;
+                double side = (RND.nextDouble() - 0.5) * 26.0;
+                double px = camPos.x + look.x() * fwd - look.z() * side;
+                double pz = camPos.z + look.z() * fwd + look.x() * side;
+                double py = camPos.y - 0.5 + RND.nextDouble() * 9.5;
+                level.addAlwaysVisibleParticle(ParticleTypes.END_ROD,
+                        true, px, py, pz,
+                        (RND.nextDouble() - 0.5) * 0.005,
+                        0.006 + RND.nextDouble() * 0.008,
+                        (RND.nextDouble() - 0.5) * 0.005);
             }
         }
 

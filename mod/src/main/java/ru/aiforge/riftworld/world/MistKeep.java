@@ -50,6 +50,8 @@ public final class MistKeep {
                 if (sr != null && Math.hypot(cx - sr.cx, cz - sr.cz) < sr.Rr + 260) return null;
                 VioletHills.Region vr = VioletHills.region(Math.floorDiv(cx, VioletHills.SUPER) + dx, Math.floorDiv(cz, VioletHills.SUPER) + dz);
                 if (vr != null && Math.hypot(cx - vr.cx, cz - vr.cz) < vr.Rr + 260) return null;
+                CrystalRifts.Region cr = CrystalRifts.region(Math.floorDiv(cx, CrystalRifts.SUPER) + dx, Math.floorDiv(cz, CrystalRifts.SUPER) + dz);
+                if (cr != null && Math.hypot(cx - cr.cx, cz - cr.cz) < cr.Rr + 240) return null;
             }
         return new Region(cx, cz, Rr, FIXED ^ ((long) cx * 1000003L + (long) cz * 7867L));
     }

@@ -250,10 +250,9 @@ jobs:
           DEST="reports/iteration-$IT"
           echo "публикую ${#SHOTS[@]} кадров в $DEST"
           mkdir -p "$DEST/shots"
-          # сжимаем до 854 px по ширине, чтобы кадры не раздували репозиторий
+          # сохраняем чёткие кадры 1280x720 (mipmapLevels:0, quality 95) без размывающего даунскейла
           for f in "${SHOTS[@]}"; do
-            convert "$f" -resize 854x -quality 78 "$DEST/shots/$(basename "$f")" 2>/dev/null \
-              || cp "$f" "$DEST/shots/$(basename "$f")"
+            cp "$f" "$DEST/shots/$(basename "$f")"
           done
           cp ci-shots/probes.txt "$DEST/" 2>/dev/null || true
           # jar этой итерации кладём рядом с кадрами: на него тоже нужна прямая ссылка в сообщении
@@ -284,14 +283,14 @@ jobs:
               echo
               echo "## Jar этой итерации"
               for j in "$DEST"/*.jar; do
-                echo "- [$(basename "$j")](../$DEST/$(basename "$j"))"
+                echo "- [$(basename "$j")](./$(basename "$j"))"
               done
             fi
             echo
             echo "## Кадры"
             for f in "$DEST"/shots/*.jpg; do
               n=$(basename "$f")
-              echo "- [$n](../$DEST/shots/$n)"
+              echo "- [$n](./shots/$n)"
             done
           } > "$DEST/README.md"
           # jar держим только в свежей итерации: 6 МБ за прогон иначе раздувают ветку

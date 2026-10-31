@@ -1306,6 +1306,93 @@ biome_section() {
     log "  FAIL DT в мире не растёт (${DTN:-0} блоков аддона) — фичи биома не запускаются"
     FAILS=$((FAILS + 1))
   fi
+
+  # ---------- Новый биом: Хрустальные разломы (riftworld:crystal_rifts, 02_crystal_sanctum.png) ----------
+  locate_check riftworld:crystal_rifts crystal_rifts
+  local CL0 CHX CHZ CI1X CI1Z CMX CMZ CL CBIO CISL CBRGW CBRGN CCRYS CMARB CFLORA CWAT CSIZO
+  CL0=$(EL execute at TestPlayer in riftworld:elisar run riftbiome crystal 2>&1 | tr '\r\n' '  ')
+  CHX=$(printf '%s' "$CL0" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\1/p' | tail -1)
+  CHZ=$(printf '%s' "$CL0" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\2/p' | tail -1)
+  CI1X=$(printf '%s' "$CL0" | sed -n 's/.* isl1=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\1/p' | tail -1)
+  CI1Z=$(printf '%s' "$CL0" | sed -n 's/.* isl1=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\2/p' | tail -1)
+  if [ -z "${CHX:-}" ] || [ -z "${CHZ:-}" ]; then
+    log "  FAIL /riftbiome crystal не нашёл архипелаг Хрустальных разломов"; FAILS=$((FAILS + 1))
+  else
+    # Прогружаем чанки святилища, каменного арочного моста и главного кристального острова #1
+    EL tp TestPlayer "$CHX" 102 "$CHZ" >/dev/null 2>&1 || true
+    sleep 5
+    if [ -n "${CI1X:-}" ] && [ -n "${CI1Z:-}" ]; then
+      CMX=$(( (CHX + CI1X) / 2 )); CMZ=$(( (CHZ + CI1Z) / 2 ))
+      EL tp TestPlayer "$CMX" 102 "$CMZ" >/dev/null 2>&1 || true
+      sleep 4
+      EL tp TestPlayer "$CI1X" 106 "$CI1Z" >/dev/null 2>&1 || true
+      sleep 5
+    fi
+    EL tp TestPlayer "$CHX" 98 "$CHZ" >/dev/null 2>&1 || true
+    sleep 4
+    CL=$(EL execute at TestPlayer in riftworld:elisar run riftbiome crystal 2>&1 | tr '\r\n' '  ')
+    log "  /riftbiome crystal -> ${CL:0:360}"
+    CBIO=$(printf '%s' "$CL" | sed -n 's/.* bio=\([^ ]*\).*/\1/p' | tail -1)
+    CISL=$(printf '%s' "$CL" | sed -n 's/.* cislands=\([0-9]*\).*/\1/p' | tail -1)
+    CBRGN=$(printf '%s' "$CL" | sed -n 's/.* cbridges=\([0-9]*\).*/\1/p' | tail -1)
+    CBRGW=$(printf '%s' "$CL" | sed -n 's/.* bridge_walkable=\([0-9]*\).*/\1/p' | tail -1)
+    CCRYS=$(printf '%s' "$CL" | sed -n 's/.* crystal_blocks=\([0-9]*\).*/\1/p' | tail -1)
+    CMARB=$(printf '%s' "$CL" | sed -n 's/.* marble_blocks=\([0-9]*\).*/\1/p' | tail -1)
+    CFLORA=$(printf '%s' "$CL" | sed -n 's/.* crystal_flora=\([0-9]*\).*/\1/p' | tail -1)
+    CWAT=$(printf '%s' "$CL" | sed -n 's/.* water=\([0-9]*\).*/\1/p' | tail -1)
+    CSIZO=$(printf '%s' "$CL" | sed -n 's/.* sizo_blocks=\([0-9]*\).*/\1/p' | tail -1)
+
+    if [ "${CBIO:-}" = "riftworld:crystal_rifts" ]; then log "  OK   Хрустальные разломы: биом святилища ${CBIO}"
+    else log "  FAIL Хрустальные разломы: биом ${CBIO:-?} вместо riftworld:crystal_rifts"; FAILS=$((FAILS + 1)); fi
+
+    if [ "${CISL:-0}" -ge 4 ] && [ "${CISL:-0}" -le 6 ] && [ "${CBRGN:-0}" -ge 3 ]; then
+      log "  OK   Хрустальные разломы: архипелаг из ${CISL} островов и ${CBRGN} арочных мостов"
+    else
+      log "  FAIL Хрустальные разломы: островов=${CISL:-0}, мостов=${CBRGN:-0}"; FAILS=$((FAILS + 1))
+    fi
+
+    if [ "${CBRGW:-0}" -eq 1 ]; then
+      log "  OK   Хрустальные разломы: каменный арочный мост непрерывен и полностью проходим пешком"
+    else
+      log "  FAIL Хрустальные разломы: мост между островами имеет разрыв (bridge_walkable=${CBRGW:-0})"; FAILS=$((FAILS + 1))
+    fi
+
+    if [ "${CCRYS:-0}" -ge 250 ] && [ "${CMARB:-0}" -ge 1500 ] && [ "${CWAT:-0}" -ge 40 ]; then
+      log "  OK   Хрустальные разломы: блочные кристаллы (${CCRYS}), мрамор/сланец (${CMARB}), чаши/водопады (${CWAT}), флора (${CFLORA:-0})"
+    else
+      log "  FAIL Хрустальные разломы: кристаллов=${CCRYS:-0} мрамора=${CMARB:-0} воды=${CWAT:-0}"; FAILS=$((FAILS + 1))
+    fi
+
+    if [ "${CSIZO:-1}" -eq 0 ]; then
+      log "  OK   Хрустальные разломы: чужих деревьев сизо нет (sizo_blocks=0)"
+    else
+      log "  FAIL Хрустальные разломы: найдены блоки сизо (${CSIZO})"; FAILS=$((FAILS + 1))
+    fi
+
+    if [ "${WITH_DT:-0}" = "1" ]; then
+      local CDTW CDTN
+      CDTW=$(EL execute at TestPlayer in riftworld:elisar run riftdtwild 44 2>&1 | tr '\r\n' '  ')
+      log "  /riftdtwild (хрустальные разломы, серебрица) -> ${CDTW:0:240}"
+      CDTN=$(printf '%s' "$CDTW" | sed -n 's/.* dt=\([0-9]*\).*/\1/p' | tail -1)
+      if [ "${CDTN:-0}" -ge 120 ]; then
+        log "  OK   Хрустальные разломы: серебристые деревья аддона DT выросли (${CDTN} блоков)"
+      else
+        log "  FAIL Хрустальные разломы: мало блоков DT (${CDTN:-0}, нужно >=120)"; FAILS=$((FAILS + 1))
+      fi
+    fi
+
+    local CV1 CV2 CV3 CV4 CV5
+    CV1=$(printf '%s' "$CL" | grep -o 'cview1=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^cview1=//')
+    CV2=$(printf '%s' "$CL" | grep -o 'cview2=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^cview2=//')
+    CV3=$(printf '%s' "$CL" | grep -o 'cview3=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^cview3=//')
+    CV4=$(printf '%s' "$CL" | grep -o 'cview4=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^cview4=//')
+    CV5=$(printf '%s' "$CL" | grep -o 'cview5=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^cview5=//')
+    [ -n "${CV1:-}" ] && lookat $(printf '%s' "$CV1" | cut -d: -f1 | tr ',' ' ') $(printf '%s' "$CV1" | cut -d: -f2 | tr ',' ' ') 18 "70_crystal_sanctum_overview"
+    [ -n "${CV2:-}" ] && lookat $(printf '%s' "$CV2" | cut -d: -f1 | tr ',' ' ') $(printf '%s' "$CV2" | cut -d: -f2 | tr ',' ' ') 16 "71_crystal_bridge_passage"
+    [ -n "${CV3:-}" ] && lookat $(printf '%s' "$CV3" | cut -d: -f1 | tr ',' ' ') $(printf '%s' "$CV3" | cut -d: -f2 | tr ',' ' ') 16 "72_crystal_giant_spire_pool"
+    [ -n "${CV4:-}" ] && lookat $(printf '%s' "$CV4" | cut -d: -f1 | tr ',' ' ') $(printf '%s' "$CV4" | cut -d: -f2 | tr ',' ' ') 16 "73_crystal_astrolabe_avenue"
+    [ -n "${CV5:-}" ] && lookat $(printf '%s' "$CV5" | cut -d: -f1 | tr ',' ' ') $(printf '%s' "$CV5" | cut -d: -f2 | tr ',' ' ') 16 "74_crystal_archipelago_falls"
+  fi
   EL gamemode creative TestPlayer >/dev/null 2>&1 || true
 }
 biome_section || log "  FAIL секция биомов упала с кодом $?"

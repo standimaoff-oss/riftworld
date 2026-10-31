@@ -53,6 +53,10 @@ public final class WildIslands {
         if (vr != null)
             for (CityPlan.Island vi : vr.isles)
                 if (Math.abs(x - vi.cx) < vi.maxReach() && Math.abs(z - vi.cz) < vi.maxReach()) out.add(vi);
+        CrystalRifts.Region cr = CrystalRifts.regionAt(x, z);
+        if (cr != null)
+            for (CityPlan.Island ci : cr.isles)
+                if (Math.abs(x - ci.cx) < ci.maxReach() && Math.abs(z - ci.cz) < ci.maxReach()) out.add(ci);
         SizoGrove.Region sr = SizoGrove.regionAt(x, z);
         if (sr != null && Math.abs(x - sr.hub.cx) < sr.hub.maxReach() && Math.abs(z - sr.hub.cz) < sr.hub.maxReach()) out.add(sr.hub);
         // Рев 14.26: у садов теперь архипелаг из 3–6 островов — в выборку попадает каждый,
@@ -113,6 +117,7 @@ public final class WildIslands {
                 EmberRuins.Site es = EmberRuins.siteAt(x, z);
                 if (es != null && Math.hypot(x - es.cx, z - es.cz) < R * 1.15 + es.island.maxReach() + 10) continue; // ruins island
                 if (VioletHills.nearAny(x, z, R * 1.15, 36)) continue;                                              // violet hills archipelago + chasms
+                if (CrystalRifts.nearAny(x, z, R * 1.15, 36)) continue;                                             // crystal rifts archipelago + stone bridges
                 SizoGrove.Region sr = SizoGrove.regionAt(x, z);                                                     // sizo grove hub
                 if (sr != null && Math.hypot(x - sr.hub.cx, z - sr.hub.cz) < R * 1.15 + sr.hub.maxReach() + 16) continue;
                 if (WaterfallGardens.nearAny(x, z, R * 1.15, 48)) continue;                                         // waterfall gardens archipelago + rivers

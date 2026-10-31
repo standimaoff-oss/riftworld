@@ -237,6 +237,11 @@ public final class DtGround {
             }
             return r.nextInt(5) == 0 ? "riftworlddt:sizo" : "riftworlddt:giant_sizo";
         }
+        if ((isl != null && isl.kind == CrystalRifts.KIND) || CrystalRifts.inside(px, pz) || biome.endsWith(":crystal_rifts")) {
+            CrystalRifts.Region cr = CrystalRifts.regionAt(px, pz);
+            if (cr != null && cr.nearCrystalOrStructure(px, pz, 2.8)) return null;
+            return "riftworlddt:crystal_birch";
+        }
         if (isl != null || biome.endsWith(":elisar_city")) {
             return "riftworlddt:ambra";
         }
@@ -262,14 +267,41 @@ public final class DtGround {
             if (sp == null) continue;
             float chance = sp.equals("riftworlddt:lilac") ? 0.036f
                     : sp.equals("riftworlddt:giant_sizo") ? 0.24f
+                    : sp.equals("riftworlddt:crystal_birch") ? 0.26f
                     : sp.equals("riftworlddt:ambra") ? 0.22f
                     : sp.equals("riftworlddt:garden_oak") ? 0.30f : 0.22f;
             if (r.nextFloat() > chance) continue;
             int radius = sp.equals("riftworlddt:lilac") ? 5 + r.nextInt(3)
                     : sp.equals("riftworlddt:giant_sizo") ? 6 + r.nextInt(3)
+                    : sp.equals("riftworlddt:crystal_birch") ? 4 + r.nextInt(4)
                     : 4 + r.nextInt(3);
             if (plant(level, ground, sp, radius)) ++planted;
             if (sp.equals("riftworlddt:giant_sizo") && planted >= 1) break;
+        }
+        // Аллея хрустальных серебриц вдоль белой мраморной дороги к астролябии (референс 02_crystal_sanctum.png)
+        CrystalRifts.Region creg = CrystalRifts.regionAt(pos.getMinBlockX() + 8, pos.getMinBlockZ() + 8);
+        if (creg != null) {
+            double ax = creg.aveAx, az = creg.aveAz, bx = creg.aveBx, bz = creg.aveBz;
+            double len = Math.max(1.0, Math.hypot(bx - ax, bz - az));
+            double ux = (bx - ax) / len, uz = (bz - az) / len;
+            double px = -uz, pz = ux;
+            int count = Math.max(2, (int) Math.floor(len / 8.5));
+            for (int k = 0; k < count; ++k) {
+                double dist = 5.0 + k * 8.5;
+                if (dist > len - 3.5) break;
+                for (int side = -1; side <= 1; side += 2) {
+                    int tx = (int) Math.round(ax + ux * dist + px * side * (CrystalRifts.Region.AVE_HW + 2.6));
+                    int tz = (int) Math.round(az + uz * dist + pz * side * (CrystalRifts.Region.AVE_HW + 2.6));
+                    if (tx < pos.getMinBlockX() + 2 || tx > pos.getMaxBlockX() - 2
+                            || tz < pos.getMinBlockZ() + 2 || tz > pos.getMaxBlockZ() - 2) continue;
+                    BlockPos g = surfaceUnder(level, new BlockPos(tx, 0, tz), false);
+                    if (g != null && g.getY() > ocean && !creg.nearCrystalOrStructure(tx + 0.5, tz + 0.5, 1.5)) {
+                        if (plant(level, g, "riftworlddt:crystal_birch", 4 + ((k + (side > 0 ? 1 : 0)) % 3))) {
+                            ++planted;
+                        }
+                    }
+                }
+            }
         }
         return planted;
     }

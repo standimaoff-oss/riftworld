@@ -1,0 +1,26 @@
+{
+  "family": "riftworlddt:crystal_birch",
+  "tapering": 0.32,
+  "signal_energy": 14.0,
+  "growth_rate": 0.9,
+  "leaves_properties": "riftworlddt:crystal_birch",
+  "generate_seed": true,
+  "generate_sapling": true,
+  "acceptable_soils": [
+    "dirt_like"
+  ],
+  "perfect_biomes": {
+    "name": "riftworld:crystal_rifts"
+  },
+  "lang_overrides": {
+    "seed": "Crystal Silverwood Seed",
+    "sapling": "Crystal Silverwood Sapling"
+  },
+  "only_if_loaded": "riftworld",
+  "sapling_shape": "slim_sapling",
+  "world_gen_acceptable_soils": [
+    "dirt_like"
+  ],
+  "transformable": false,
+  "does_rot": false
+}

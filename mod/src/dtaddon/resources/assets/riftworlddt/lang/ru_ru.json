@@ -33,5 +33,12 @@
   "family.riftworlddt.ambra": "Янтарник",
   "block.riftworlddt.rooty_elisar_moss": "Корневой мох Элисара",
   "block.riftworlddt.rooty_garden_grass": "Корневой дёрн садов",
-  "family.riftworlddt.lilac": "Лиловый ветвецвет"
+  "family.riftworlddt.lilac": "Лиловый ветвецвет",
+  "block.riftworlddt.crystal_birch_branch": "Ствол хрустальной серебрицы",
+  "block.riftworlddt.crystal_birch_leaves": "Листва хрустальной серебрицы",
+  "block.riftworlddt.crystal_birch_sapling": "Саженец хрустальной серебрицы",
+  "item.riftworlddt.crystal_birch_seed": "Семя хрустальной серебрицы",
+  "item.riftworlddt.crystal_birch_branch": "Ствол хрустальной серебрицы",
+  "species.riftworlddt.crystal_birch": "Хрустальная серебрица",
+  "family.riftworlddt.crystal_birch": "Хрустальная серебрица"
 }

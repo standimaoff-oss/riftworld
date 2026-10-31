@@ -139,6 +139,27 @@ public final class ElisarBlocks {
     // обрывы: светлый известняк горизонтальными пластами (мох — у самого низа стены)
     public static final RegistryObject<Block> GARDEN_LIMESTONE = cube("garden_limestone", MapColor.QUARTZ, 1.5F, SoundType.STONE);
     public static final RegistryObject<Block> GARDEN_LIMESTONE_MOSSY = cube("garden_limestone_mossy", MapColor.QUARTZ, 1.5F, SoundType.STONE);
+
+    // ===== Рев 17 «Хрустальные разломы» (02_crystal_sanctum.png): мраморные острова, мосты и блочные кристаллы =====
+    public static final RegistryObject<Block> CRYSTAL_BLOCK_DEEP = ModBlocks.reg("crystal_block_deep",
+            () -> new Block(p(MapColor.COLOR_CYAN, 1.8F, SoundType.AMETHYST).lightLevel(s -> 12)));
+    public static final RegistryObject<Block> CRYSTAL_BLOCK = ModBlocks.reg("crystal_block",
+            () -> new Block(p(MapColor.DIAMOND, 1.8F, SoundType.AMETHYST).lightLevel(s -> 14)));
+    public static final RegistryObject<Block> CRYSTAL_BLOCK_BRIGHT = ModBlocks.reg("crystal_block_bright",
+            () -> new Block(p(MapColor.DIAMOND, 1.8F, SoundType.AMETHYST).lightLevel(s -> 15)));
+    public static final RegistryObject<Block> RIFT_MARBLE = cube("rift_marble", MapColor.QUARTZ, 1.6F, SoundType.STONE);
+    public static final RegistryObject<Block> RIFT_MARBLE_MOSSY = cube("rift_marble_mossy", MapColor.QUARTZ, 1.6F, SoundType.STONE);
+    public static final RegistryObject<Block> RIFT_SLATE = cube("rift_slate", MapColor.COLOR_LIGHT_BLUE, 2.0F, SoundType.DEEPSLATE);
+    public static final RegistryObject<SlabBlock> RIFT_MARBLE_SLAB = slab("rift_marble_slab", MapColor.QUARTZ, SoundType.STONE);
+    public static final RegistryObject<StairBlock> RIFT_MARBLE_STAIRS = stairs("rift_marble_stairs", RIFT_MARBLE);
+    public static final RegistryObject<RotatedPillarBlock> CRYSTAL_LOG =
+            ModBlocks.reg("crystal_log", () -> new RotatedPillarBlock(p(MapColor.QUARTZ, 2.0F, SoundType.WOOD)));
+    public static final RegistryObject<LeavesBlock> CRYSTAL_LEAVES =
+            ModBlocks.reg("crystal_leaves", () -> new LeavesBlock(leaves(MapColor.ICE)));
+    public static final RegistryObject<PlantBlock> CRYSTAL_CLUSTER =
+            ModBlocks.reg("crystal_cluster", () -> new PlantBlock(plant().sound(SoundType.AMETHYST_CLUSTER).lightLevel(s -> 13)));
+    public static final RegistryObject<PlantBlock> CRYSTAL_SHROOM =
+            ModBlocks.reg("crystal_shroom", () -> new PlantBlock(plant().lightLevel(s -> 11)));
     // ===== Рев 8 «Живое море»: дно, рифы и подводная флора =====
     // породы дна
     public static final RegistryObject<Block> SILT = cube("elisar_silt", MapColor.COLOR_BLACK, 0.7F, SoundType.SOUL_SAND);
@@ -239,6 +260,7 @@ public final class ElisarBlocks {
         protected boolean mayPlaceOn(BlockState s, BlockGetter level, BlockPos pos) {
             return s.is(GRASS.get()) || s.is(SOIL.get()) || s.is(PATH.get()) || s.is(MOSS.get())
                     || s.is(GARDEN_GRASS.get()) || s.is(GARDEN_LIMESTONE.get()) || s.is(GARDEN_LIMESTONE_MOSSY.get())
+                    || s.is(RIFT_MARBLE.get()) || s.is(RIFT_MARBLE_MOSSY.get()) || s.is(RIFT_SLATE.get())
                     || s.is(CRUST.get());
         }
 

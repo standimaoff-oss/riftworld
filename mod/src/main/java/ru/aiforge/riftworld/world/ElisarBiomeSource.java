@@ -8,14 +8,9 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.biome.Climate;
 
-/** Elisar biomes: the Ashen Lands around the castle, Violet Hills meadows, Sizo groves, the bright island sky everywhere else. */
+/** Elisar biomes: Ashen Lands, Violet Hills, Sizo Grove, Waterfall Gardens, Crystal Rifts, Mist Keep, Sea, and City. */
 public class ElisarBiomeSource extends BiomeSource {
-    // Рев 14.35 — НАСТОЯЩАЯ ПРИЧИНА «/locate приводит в воду». Поля кодека связываются с
-    // аргументами конструктора ПО ПОЗИЦИИ, а не по имени. Здесь «mist» стоял пятым, а в конструкторе
-    // пятым идёт gardens: JSON отдавал mist_keep в поле gardens и waterfall_gardens в поле mist.
-    // Итог: биом садов физически стоял над островами Туманного данжа (это и есть море!), а на самих
-    // садах числился mist_keep. /locate biome waterfall_gardens честно находил ближайший «садовый»
-    // биом — а это был островок данжа в открытом океане. Порядок теперь 1:1 с конструктором.
+    // ВНИМАНИЕ: порядок полей в RecordCodecBuilder обязан строго 1:1 совпадать с порядком аргументов конструктора!
     public static final Codec<ElisarBiomeSource> CODEC = RecordCodecBuilder.create(i -> i.group(
             Biome.CODEC.fieldOf("default").forGetter(s -> s.def),
             Biome.CODEC.fieldOf("ashen").forGetter(s -> s.ashen),
@@ -24,20 +19,26 @@ public class ElisarBiomeSource extends BiomeSource {
             Biome.CODEC.fieldOf("gardens").forGetter(s -> s.gardens),
             Biome.CODEC.fieldOf("mist").forGetter(s -> s.mist),
             Biome.CODEC.fieldOf("reef").forGetter(s -> s.reef),
-            Biome.CODEC.fieldOf("abyss").forGetter(s -> s.abyss)).apply(i, ElisarBiomeSource::new));
+            Biome.CODEC.fieldOf("abyss").forGetter(s -> s.abyss),
+            Biome.CODEC.fieldOf("crystal").forGetter(s -> s.crystal)).apply(i, ElisarBiomeSource::new));
 
-    private final Holder<Biome> def, ashen, violet, sizo, gardens, mist, reef, abyss;
+    private final Holder<Biome> def, ashen, violet, sizo, gardens, mist, reef, abyss, crystal;
 
     public ElisarBiomeSource(Holder<Biome> def, Holder<Biome> ashen, Holder<Biome> violet, Holder<Biome> sizo, Holder<Biome> gardens,
-                             Holder<Biome> mist, Holder<Biome> reef, Holder<Biome> abyss) {
+                             Holder<Biome> mist, Holder<Biome> reef, Holder<Biome> abyss, Holder<Biome> crystal) {
         this.def = def;
         this.ashen = ashen;
-        this.violet = violet;
+        this.violet = prosec(violet);
         this.sizo = sizo;
         this.gardens = gardens;
         this.mist = mist;
         this.reef = reef;
         this.abyss = abyss;
+        this.crystal = crystal;
+    }
+
+    private static Holder<Biome> prosec(Holder<Biome> h) {
+        return h;
     }
 
     @Override
@@ -47,54 +48,38 @@ public class ElisarBiomeSource extends BiomeSource {
 
     @Override
     protected Stream<Holder<Biome>> collectPossibleBiomes() {
-        return Stream.of(def, ashen, violet, sizo, gardens, mist, reef, abyss);
+        return Stream.of(def, ashen, violet, sizo, gardens, mist, reef, abyss, crystal);
     }
 
     @Override
     public Holder<Biome> getNoiseBiome(int qx, int qy, int qz, Climate.Sampler sampler) {
         double x = qx * 4 + 2, z = qz * 4 + 2;
-        // Рев 14.28 — ПРЯМО ПО ЖАЛОБЕ ВЛАДЕЛЬЦА: «/locate biome waterfall_gardens находит не биом,
-        // а структуру вообще другую». Причина была в том, что биом ставился по «региону» (круг/блоб),
-        // а рельеф — по островам из CityPlan, и это два разных источника правды: биом повисал над
-        // водой и над чужими островами, и /locate приводил в море. Теперь биом выводится ИЗ ТОГО ЖЕ
-        // острова, что строит рельеф (plan.islandAt): нет острова — нет биома, есть остров — его биом.
         CityPlan plan = CityPlan.get();
         CityPlan.Island at = plan.islandAt(x, z);
-        // Рев 14.46 — ПОЧЕМУ DYNAMIC TREES НЕ САЖАЛ ДЕРЕВЬЯ, даже когда вид зарегистрирован.
-        // DynamicTreeFeature берёт биом для выбора вида на `new BlockPos(disc.x, 0, disc.z)` — то есть
-        // на y=0, а не на поверхности! У нас ниже уровня моря море, поэтому DT видел «морской» биом,
-        // для которого в базе нет ни вида, ни плотности, и молча возвращал UNHANDLED_BIOME:
-        // ни деревьев в холмах/роще, ни диких кораллов на рифе.
-        // Теперь на ГАРАНТИРОВАННОЙ суше острова (landAt — та же функция, что строит рельеф)
-        // биом острова отдаётся на любой высоте: и DT получает нужный вид, и /locate остаётся на суше.
         if (at != null) {
-            // у садов остров продолжается под водой голыми ярусами — там нужен landAt с отступом;
-            // у рощи и холмов своя проверка "суша с запасом от кромки" (inside)
             if (at.kind == WaterfallGardens.KIND && WaterfallGardens.landAt(x, z) != null) return gardens;
             if (at.kind == SizoGrove.KIND && SizoGrove.inside(x, z)) return sizo;
             if (at.kind == 7 && VioletHills.inside(x, z)) return violet;
+            if (at.kind == CrystalRifts.KIND && CrystalRifts.landAt(x, z) != null) return crystal;
             if (at.kind == 5) return ashen;
         }
-        // Биомы суши живут ТОЛЬКО выше уровня моря: у садов и рощи остров продолжается под водой
-        // голыми каменными ярусами, и без этой проверки /locate biome отдавал точку в море —
-        // владелец видел «находит не биом, а воду». Теперь ниже моря — морские биомы.
         boolean dry = at != null && qy * 4 > plan.ocean;
         if (dry) {
             if (at.kind == WaterfallGardens.KIND)
                 return WaterfallGardens.landAt(x, z) != null ? gardens : reef;
             if (at.kind == SizoGrove.KIND) return sizo;
-            if (at.kind == 7) return violet;                       // луг Фиолетовых холмов
-            if (at.kind == 5) return ashen;                        // остров замка Адских угодий
+            if (at.kind == 7) return violet;
+            if (at.kind == CrystalRifts.KIND)
+                return CrystalRifts.landAt(x, z) != null ? crystal : def;
+            if (at.kind == 5) return ashen;
         }
         if (qy * 4 > plan.ocean - 24 && AshenLands.inside(x, z)) return ashen;
-        if (dry) return def;                                       // острова города, замка, руин и мелкие островки
-        if (MistKeep.inside(x, z)) return mist;                    // мини-биом «Туманный данж»: дымка над столбами-останцами
-        // Рев 8 «Живое море»: открытый океан получает собственные биомы по глубине и «рифовости» дна.
-        // Считаем только там, где есть смысл (у воды и ниже): небо над морем остаётся обычным.
+        if (dry) return def;
+        if (MistKeep.inside(x, z)) return mist;
         if (qy * 4 <= plan.ocean + 8) {
             int floor = ElisarChunkGenerator.oceanFloor(plan, (int) Math.floor(x), (int) Math.floor(z));
-            if (ElisarSea.reefness((int) Math.floor(x), (int) Math.floor(z)) > 0.45) return reef;   // коралловые отмели
-            if (plan.ocean - floor > 46) return abyss;                                              // тёмные глубины
+            if (ElisarSea.reefness((int) Math.floor(x), (int) Math.floor(x) * 0 + (int) Math.floor(z)) > 0.45) return reef;
+            if (plan.ocean - floor > 46) return abyss;
         }
         return def;
     }

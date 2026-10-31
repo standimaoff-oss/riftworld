@@ -58,5 +58,19 @@
       ],
       "chance": 0.35
     }
+  },
+  {
+    "_comment": "Хрустальные разломы: эксклюзивная хрустальная серебрица (riftworlddt:crystal_birch) со светлой корой и морозно-голубой кроной.",
+    "select": {
+      "name": "riftworld:crystal_rifts"
+    },
+    "apply": {
+      "species": "riftworlddt:crystal_birch",
+      "density": [
+        0.1,
+        0.14
+      ],
+      "chance": 0.55
+    }
   }
 ]

@@ -1,1 +1,18 @@
-{"type": "riftworld:elisar", "generator": {"type": "riftworld:elisar", "biome_source": {"type": "riftworld:elisar", "default": "riftworld:elisar_city", "ashen": "riftworld:ashen_lands", "violet": "riftworld:violet_hills", "sizo": "riftworld:sizo_grove", "gardens": "riftworld:waterfall_gardens", "mist": "riftworld:mist_keep", "reef": "riftworld:shallow_reef", "abyss": "riftworld:abyss"}}}
+{
+  "type": "riftworld:elisar",
+  "generator": {
+    "type": "riftworld:elisar",
+    "biome_source": {
+      "type": "riftworld:elisar",
+      "default": "riftworld:elisar_city",
+      "ashen": "riftworld:ashen_lands",
+      "violet": "riftworld:violet_hills",
+      "sizo": "riftworld:sizo_grove",
+      "gardens": "riftworld:waterfall_gardens",
+      "mist": "riftworld:mist_keep",
+      "reef": "riftworld:shallow_reef",
+      "abyss": "riftworld:abyss",
+      "crystal": "riftworld:crystal_rifts"
+    }
+  }
+}

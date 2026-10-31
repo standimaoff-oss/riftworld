@@ -458,6 +458,9 @@ public final class SeaProbeCommand {
             src.sendSuccess(() -> Component.literal(aline), false);
             return 1;
         }
+        if (lname.startsWith("crystal")) {
+            return probeCrystalRifts(src, level, at);
+        }
         // Рев 14.29: /riftbiome violet — Фиолетовые холмы (третий биом в порядке владельца).
         boolean violet = lname.startsWith("violet");
         boolean gardens = !violet && !lname.startsWith("sizo");
@@ -814,6 +817,196 @@ public final class SeaProbeCommand {
         src.sendSuccess(() -> Component.literal(line), false);
         found = water;
         return found;
+    }
+
+    /**
+     * Полная проверка биома «Хрустальные разломы» ({@code /riftbiome crystal}, референс {@code 02_crystal_sanctum.png}):
+     * архипелаг 4–6 парящих островов, непрерывные проходимые каменные арочные мосты между островами,
+     * гигантские блочные кристаллы, минеральная бирюзовая чаша с водопадами, разрушенная колоннада-астролябия
+     * и отсутствие чужих деревьев Сизо, плюс 5 выверенных точек съёмки {@code cview1..cview5}.
+     */
+    private static int probeCrystalRifts(CommandSourceStack src, ServerLevel level, BlockPos at) {
+        CrystalRifts.Region best = null;
+        double bestD = Double.MAX_VALUE;
+        for (int dx = -6; dx <= 6; ++dx) {
+            for (int dz = -6; dz <= 6; ++dz) {
+                int sx = Math.floorDiv(at.getX(), CrystalRifts.SUPER) + dx;
+                int sz = Math.floorDiv(at.getZ(), CrystalRifts.SUPER) + dz;
+                CrystalRifts.Region rg = CrystalRifts.region(sx, sz);
+                if (rg == null) continue;
+                double d = Math.hypot(rg.cx - at.getX(), rg.cz - at.getZ());
+                if (d < bestD) { bestD = d; best = rg; }
+            }
+        }
+        if (best == null) {
+            src.sendFailure(Component.literal("riftbiome: рядом нет региона crystal_rifts"));
+            return 0;
+        }
+        int hx = (int) Math.round(best.hub.cx), hz = (int) Math.round(best.hub.cz);
+        CityPlan.Island isl1 = best.isles.size() > 1 ? best.isles.get(1) : best.hub;
+        int i1x = (int) Math.round(isl1.cx), i1z = (int) Math.round(isl1.cz);
+
+        int crystalBlocks = 0, marbleBlocks = 0, crystalFlora = 0, water = 0, ivy = 0, sizoBlocks = 0;
+        var cDeep = ElisarBlocks.CRYSTAL_BLOCK_DEEP.get();
+        var cMid = ElisarBlocks.CRYSTAL_BLOCK.get();
+        var cBright = ElisarBlocks.CRYSTAL_BLOCK_BRIGHT.get();
+        var rMarb = ElisarBlocks.RIFT_MARBLE.get();
+        var rMarbM = ElisarBlocks.RIFT_MARBLE_MOSSY.get();
+        var rSlate = ElisarBlocks.RIFT_SLATE.get();
+        var rSlab = ElisarBlocks.RIFT_MARBLE_SLAB.get();
+        var cClust = ElisarBlocks.CRYSTAL_CLUSTER.get();
+        var cShroom = ElisarBlocks.CRYSTAL_SHROOM.get();
+        var gWat = ElisarBlocks.GARDEN_WATER.get();
+
+        // Сканируем как hub (святилище + аллея), так и главный кристальный остров #1 (гигантский кристалл + чаша + водопады)
+        int[][] centers = {{hx, hz, 48}, {i1x, i1z, 52}};
+        java.util.Set<Long> visitedCols = new java.util.HashSet<>();
+        for (int[] c0 : centers) {
+            int cx = c0[0], cz = c0[1], rad = c0[2];
+            for (int x = cx - rad; x <= cx + rad; ++x) {
+                for (int z = cz - rad; z <= cz + rad; ++z) {
+                    long ck = ((long) x << 32) ^ (z & 0xFFFFFFFFL);
+                    if (!visitedCols.add(ck)) continue;
+                    if (!level.hasChunk(x >> 4, z >> 4)) continue;
+                    for (int y = 62; y <= 140; ++y) {
+                        BlockState bs = level.getBlockState(new BlockPos(x, y, z));
+                        if (bs.isAir()) continue;
+                        var b = bs.getBlock();
+                        if (b == cDeep || b == cMid || b == cBright) ++crystalBlocks;
+                        else if (b == rMarb || b == rMarbM || b == rSlate || b == rSlab) ++marbleBlocks;
+                        else if (b == cClust || b == cShroom) ++crystalFlora;
+                        else if (b == gWat || bs.is(net.minecraft.world.level.block.Blocks.WATER)) ++water;
+                        else if (b instanceof net.minecraft.world.level.block.VineBlock) ++ivy;
+                        else {
+                            var k = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(b);
+                            if (k != null && k.getPath().contains("sizo")) ++sizoBlocks;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Проверяем реальную непрерывную проходимость первого каменного арочного моста (Span #0) по загруженным блокам
+        int bridgeWalkable = 0;
+        if (!best.spans.isEmpty()) {
+            CrystalRifts.Span sp0 = best.spans.get(0);
+            boolean allSolid = true;
+            int prevY = Integer.MIN_VALUE;
+            for (int step = 0; step <= 28; ++step) {
+                double u = step / 28.0;
+                double[] pt = sp0.pointAt(u);
+                int bx = (int) Math.floor(pt[0]), bz = (int) Math.floor(pt[1]);
+                if (!level.hasChunk(bx >> 4, bz >> 4)) { allSolid = false; break; }
+                int topSolid = Integer.MIN_VALUE;
+                for (int y = 120; y >= 70; --y) {
+                    BlockState bs = level.getBlockState(new BlockPos(bx, y, bz));
+                    if (!bs.isAir() && bs.getFluidState().isEmpty()
+                            && !(bs.getBlock() instanceof net.minecraft.world.level.block.VineBlock)
+                            && bs.getBlock() != cClust && bs.getBlock() != cShroom) {
+                        topSolid = y;
+                        break;
+                    }
+                }
+                if (topSolid == Integer.MIN_VALUE) { allSolid = false; break; }
+                if (prevY != Integer.MIN_VALUE && Math.abs(topSolid - prevY) > 2) { allSolid = false; break; }
+                prevY = topSolid;
+            }
+            if (allSolid) bridgeWalkable = 1;
+        }
+
+        String hubBio = level.getBiome(new BlockPos(hx, best.astroY + 2, hz)).unwrapKey()
+                .map(k -> k.location().toString()).orElse("?");
+
+        // 5 точек съёмки (cview1..cview5) строго по композиции референса 02_crystal_sanctum.png:
+        double ux = Math.cos(best.phi), uz = Math.sin(best.phi);
+        double sx = -uz, sz = ux;
+        // 1) Главный кадр-открытка: беломраморная аллея с серебристыми DT-деревьями -> колоннада-астролябия -> кристаллы и мосты!
+        int v1cx = (int) Math.round(best.aveAx + ux * 6.0);
+        int v1cz = (int) Math.round(best.aveAz + uz * 6.0);
+        int v1cy = best.astroY + 7;
+        int v1lx = (int) Math.round(best.astroX + ux * 16.0);
+        int v1lz = (int) Math.round(best.astroZ + uz * 16.0);
+        int v1ly = best.astroY + 5;
+        String cview1 = v1cx + "," + v1cy + "," + v1cz + ":" + v1lx + "," + v1ly + "," + v1lz;
+
+        // 2) Каменный арочный мост-переход через пропасть между парящими островами (Span #0)
+        String cview2 = cview1;
+        if (!best.spans.isEmpty()) {
+            CrystalRifts.Span sp0 = best.spans.get(0);
+            double[] pStart = sp0.pointAt(0.08);
+            double[] pMid = sp0.pointAt(0.58);
+            int ya = sp0.islA == best.hub ? best.astroY : (int) Math.round(sp0.islA.base + 2);
+            int yb = sp0.islB == best.hub ? best.astroY : (int) Math.round(sp0.islB.base + 2);
+            int c2x = (int) Math.round(pStart[0] + sp0.perpX * 3.2);
+            int c2z = (int) Math.round(pStart[1] + sp0.perpZ * 3.2);
+            int c2y = ya + 5;
+            int l2x = (int) Math.round(pMid[0]);
+            int l2z = (int) Math.round(pMid[1]);
+            int l2y = (ya + yb) / 2 + 2;
+            cview2 = c2x + "," + c2y + "," + c2z + ":" + l2x + "," + l2y + "," + l2z;
+        }
+
+        // 3) Гигантский шестигранный блочный кристалл и бирюзовая минеральная чаша на острове #1
+        String cview3 = cview1;
+        if (!best.pools.isEmpty() && !best.spires.isEmpty()) {
+            CrystalRifts.Pool pl = best.pools.get(0);
+            CrystalRifts.Spire sp = best.spires.get(0);
+            double toHubX = best.hub.cx - pl.isl.cx, toHubZ = best.hub.cz - pl.isl.cz;
+            double tl = Math.max(1.0, Math.hypot(toHubX, toHubZ));
+            toHubX /= tl; toHubZ /= tl;
+            int c3x = (int) Math.round(pl.cx + toHubX * (pl.r + 6.5) - toHubZ * 3.5);
+            int c3z = (int) Math.round(pl.cz + toHubZ * (pl.r + 6.5) + toHubX * 3.5);
+            int c3y = pl.waterY + 5;
+            int l3x = (int) Math.round(sp.ox + sp.dx * (sp.length * 0.42));
+            int l3y = (int) Math.round(sp.oy + sp.dy * (sp.length * 0.42));
+            int l3z = (int) Math.round(sp.oz + sp.dz * (sp.length * 0.42));
+            cview3 = c3x + "," + c3y + "," + c3z + ":" + l3x + "," + l3y + "," + l3z;
+        }
+
+        // 4) Крупный план разрушенной мраморной колоннады-астролябии и парящего ядра
+        int c4x = (int) Math.round(best.astroX - ux * 15.0 + sx * 3.2);
+        int c4z = (int) Math.round(best.astroZ - uz * 15.0 + sz * 3.2);
+        int c4y = best.astroY + 4;
+        int l4x = (int) Math.round(best.astroX);
+        int l4z = (int) Math.round(best.astroZ);
+        int l4y = best.astroY + 4;
+        String cview4 = c4x + "," + c4y + "," + c4z + ":" + l4x + "," + l4y + "," + l4z;
+
+        // 5) Панорама парящего архипелага со стороны пролива: мраморно-сланцевые утёсы, сталактиты, парные водопады и арочный мост
+        String cview5 = cview2;
+        if (!best.falls.isEmpty()) {
+            CrystalRifts.Fall f0 = best.falls.get(0);
+            double outX = best.hub.cx - f0.isl.cx, outZ = best.hub.cz - f0.isl.cz;
+            double ol = Math.max(1.0, Math.hypot(outX, outZ));
+            outX /= ol; outZ /= ol;
+            int oc = CityPlan.get().ocean;
+            int c5x = (int) Math.round(f0.x + outX * 26.0 - outZ * 8.0);
+            int c5z = (int) Math.round(f0.z + outZ * 26.0 + outX * 8.0);
+            int c5y = oc + 19;
+            int l5x = (int) Math.round(f0.x - outX * 4.0);
+            int l5z = (int) Math.round(f0.z - outZ * 4.0);
+            int l5y = (int) Math.round(f0.isl.base);
+            cview5 = c5x + "," + c5y + "," + c5z + ":" + l5x + "," + l5y + "," + l5z;
+        }
+
+        String line = "riftbiome name=crystal at=" + hx + "," + hz + " isl1=" + i1x + "," + i1z
+                + " bio=" + hubBio
+                + " cislands=" + best.isles.size()
+                + " cbridges=" + best.spans.size()
+                + " bridge_walkable=" + bridgeWalkable
+                + " crystal_blocks=" + crystalBlocks
+                + " marble_blocks=" + marbleBlocks
+                + " crystal_flora=" + crystalFlora
+                + " water=" + water
+                + " ivy=" + ivy
+                + " sizo_blocks=" + sizoBlocks
+                + " cview1=" + cview1
+                + " cview2=" + cview2
+                + " cview3=" + cview3
+                + " cview4=" + cview4
+                + " cview5=" + cview5;
+        src.sendSuccess(() -> Component.literal(line), false);
+        return 1;
     }
 
     /**
@@ -1224,13 +1417,13 @@ public final class SeaProbeCommand {
      * {@code ok=}, {@code wrong_ns=}, {@code missing=} и валиден ли сам хендлер DT.
      */
     private static int dt(CommandSourceStack src) {
-        String[] blocks = {"sizo_leaves", "ambra_leaves", "garden_oak_leaves", "lilac_leaves",
+        String[] blocks = {"sizo_leaves", "ambra_leaves", "garden_oak_leaves", "lilac_leaves", "crystal_birch_leaves",
                 "rooty_elisar_grass", "rooty_elisar_soil", "rooty_elisar_moss", "rooty_garden_grass",
-                "sizo_branch", "ambra_branch", "garden_oak_branch", "lilac_branch",
+                "sizo_branch", "ambra_branch", "garden_oak_branch", "lilac_branch", "crystal_birch_branch",
                 // саженцы DT — только блоки, предметов у них нет по дизайну самого DT
-                "sizo_sapling", "ambra_sapling", "giant_sizo_sapling", "garden_oak_sapling", "lilac_sapling"};
-        String[] items = {"sizo_seed", "ambra_seed", "garden_oak_seed", "lilac_seed", "giant_sizo_seed",
-                "sizo_branch", "ambra_branch", "garden_oak_branch", "lilac_branch"};
+                "sizo_sapling", "ambra_sapling", "giant_sizo_sapling", "garden_oak_sapling", "lilac_sapling", "crystal_birch_sapling"};
+        String[] items = {"sizo_seed", "ambra_seed", "garden_oak_seed", "lilac_seed", "giant_sizo_seed", "crystal_birch_seed",
+                "sizo_branch", "ambra_branch", "garden_oak_branch", "lilac_branch", "crystal_birch_branch"};
         int ok = 0, wrong = 0, missing = 0;
         StringBuilder wrongList = new StringBuilder();
         for (String b : blocks) {
@@ -1384,7 +1577,7 @@ public final class SeaProbeCommand {
             for (Object o : names) {
                 String s2 = String.valueOf(o);
                 if (!s2.startsWith("riftworlddt:")) continue;
-                if (n++ >= 6) { sb.append(",.."); break; }
+                if (n++ >= 12) { sb.append(",.."); break; }
                 if (sb.length() > 0) sb.append(',');
                 sb.append(s2.substring("riftworlddt:".length()));
             }

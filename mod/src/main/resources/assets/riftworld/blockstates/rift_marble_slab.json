@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "riftworld:block/rift_marble_slab"
+    },
+    "type=top": {
+      "model": "riftworld:block/rift_marble_slab_top"
+    },
+    "type=double": {
+      "model": "riftworld:block/rift_marble"
+    }
+  }
+}
