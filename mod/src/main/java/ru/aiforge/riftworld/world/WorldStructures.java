@@ -201,22 +201,22 @@ public final class WorldStructures {
                 WaterfallGardens.Region gr = WaterfallGardens.region(
                         Math.floorDiv((int) x, WaterfallGardens.SUPER) + dx,
                         Math.floorDiv((int) z, WaterfallGardens.SUPER) + dz);
-                if (gr != null && Math.hypot(x - gr.cx, z - gr.cz) < gr.R + clear + 40) return true;
+                if (gr != null && Math.hypot(x - gr.cx, z - gr.cz) < gr.Rr + clear + 40) return true;
 
                 VioletHills.Region vr = VioletHills.region(
                         Math.floorDiv((int) x, VioletHills.SUPER) + dx,
                         Math.floorDiv((int) z, VioletHills.SUPER) + dz);
-                if (vr != null && Math.hypot(x - vr.cx, z - vr.cz) < vr.R + clear + 40) return true;
+                if (vr != null && Math.hypot(x - vr.cx, z - vr.cz) < vr.Rr + clear + 40) return true;
 
                 SizoGrove.Region sr = SizoGrove.region(
                         Math.floorDiv((int) x, SizoGrove.SUPER) + dx,
                         Math.floorDiv((int) z, SizoGrove.SUPER) + dz);
-                if (sr != null && Math.hypot(x - sr.cx, z - sr.cz) < sr.R + clear + 40) return true;
+                if (sr != null && Math.hypot(x - sr.cx, z - sr.cz) < sr.Rr + clear + 40) return true;
 
                 CrystalRifts.Region cr = CrystalRifts.region(
                         Math.floorDiv((int) x, CrystalRifts.SUPER) + dx,
                         Math.floorDiv((int) z, CrystalRifts.SUPER) + dz);
-                if (cr != null && Math.hypot(x - cr.cx, z - cr.cz) < cr.R + clear + 40) return true;
+                if (cr != null && Math.hypot(x - cr.cx, z - cr.cz) < cr.Rr + clear + 40) return true;
             }
         }
         return false;
