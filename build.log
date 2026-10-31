@@ -1,0 +1,213 @@
+Downloading https://services.gradle.org/distributions/gradle-8.8-bin.zip
+.............10%.............20%.............30%.............40%.............50%.............60%..............70%.............80%.............90%.............100%
+
+Welcome to Gradle 8.8!
+
+Here are the highlights of this release:
+ - Running Gradle on Java 22
+ - Configurable Gradle daemon JVM
+ - Improved IDE performance for large projects
+
+For more details see https://docs.gradle.org/8.8/release-notes.html
+
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.8/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Configure project :
+Java: 17.0.21, JVM: 17.0.21+9 (Eclipse Adoptium), Arch: amd64
+
+> Task :compileJava
+Setting up MCP environment
+Initializing steps
+Executing steps
+ > Running 'downloadManifest'
+ > Running 'downloadJson'
+ > Running 'downloadClient'
+ > Running 'downloadServer'
+ > Running 'extractServer'
+ > Running 'downloadClientMappings'
+ > Running 'mergeMappings'
+ > Running 'stripClient'
+ > Running 'stripServer'
+ > Running 'merge'
+ > Running 'listLibraries'
+ > Running 'rename'
+Stopping at requested step: /home/runner/.gradle/caches/forge_gradle/mcp_repo/de/oceanlabs/mcp/mcp_config/1.20.1-20230612.114412/joined/rename/output.jar
+[18:17:56] [main/INFO]: Writing debug log file accesstransform.log
+[18:17:56] [main/INFO]: Access Transformer processor running version 8.2.14
+[18:17:56] [main/INFO]: Command line arguments [--inJar, /home/runner/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.23/forge-1.20.1-47.4.23-injected.jar, --outJar, /home/runner/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.23_mapped_official_1.20.1/forge-1.20.1-47.4.23_mapped_official_1.20.1.jar, --logFile, accesstransform.log, --atFile, /home/runner/work/riftworld/riftworld/mod/build/_atJar_4/parent_at.cfg]
+[18:17:56] [main/INFO]: Reading from /home/runner/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.23/forge-1.20.1-47.4.23-injected.jar
+[18:17:56] [main/INFO]: Writing to /home/runner/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.23_mapped_official_1.20.1/forge-1.20.1-47.4.23_mapped_official_1.20.1.jar
+[18:17:56] [main/INFO]: Transformer file /home/runner/work/riftworld/riftworld/mod/build/_atJar_4/parent_at.cfg
+[18:17:56] [main/WARN]: Found existing output jar /home/runner/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.23_mapped_official_1.20.1/forge-1.20.1-47.4.23_mapped_official_1.20.1.jar, overwriting
+[18:17:58] [main/INFO]: JAR transformation complete /home/runner/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.23_mapped_official_1.20.1/forge-1.20.1-47.4.23_mapped_official_1.20.1.jar
+Creating SRG -> MCP TSRG
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/net/Net.java:13: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+    public static final SimpleChannel CH = NetworkRegistry.newSimpleChannel(new ResourceLocation(RiftWorld.MODID, "main"), () -> V, V::equals, V::equals);
+                                                                            ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/RiftWorld.java:19: warning: [removal] get() in FMLJavaModLoadingContext has been deprecated and marked for removal
+        IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
+                                                ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/registry/ModFluids.java:37: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+                private final ResourceLocation still = new ResourceLocation(RiftWorld.MODID, "block/elisar_water_still");
+                                                       ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/registry/ModFluids.java:38: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+                private final ResourceLocation flow = new ResourceLocation(RiftWorld.MODID, "block/elisar_water_flow");
+                                                      ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/registry/ModFluids.java:95: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+                private final ResourceLocation still = new ResourceLocation(RiftWorld.MODID, "block/garden_water_still");
+                                                       ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/registry/ModFluids.java:96: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+                private final ResourceLocation flow = new ResourceLocation(RiftWorld.MODID, "block/garden_water_flow");
+                                                      ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/flight/Flight.java:57: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+    public static final ResourceKey<Level> TRANSIT_DIM = ResourceKey.create(Registries.DIMENSION, new ResourceLocation(RiftWorld.MODID, "transit"));
+                                                                                                  ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/flight/Flight.java:58: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+    public static final ResourceKey<Level> ELISAR_DIM = ResourceKey.create(Registries.DIMENSION, new ResourceLocation(RiftWorld.MODID, "elisar"));
+                                                                                                 ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/geo/GeoModel.java:108: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+        ResourceLocation loc = new ResourceLocation("riftworld", "geo/" + name + ".json");
+                               ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/RiftMobRenderer.java:30: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+        this.glb = new ResourceLocation(RiftWorld.MODID, "models/glb/" + model + ".glb");
+                   ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/GlbRenderer.java:37: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+    private static final ResourceLocation WHITE = new ResourceLocation("minecraft", "textures/misc/white.png");
+                                                  ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/GlbAssets.java:61: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+                ResourceLocation id = new ResourceLocation("riftworld", "glb/" + path.getPath().replaceAll("[^a-z0-9_./-]", "_").replace('/', '_') + "_" + i);
+                                      ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/GlbAssets.java:80: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+        ResourceLocation lp = new ResourceLocation(path.getNamespace(), p.substring(0, p.length() - 4) + "_lod1.glb");
+                              ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/ElisarEye.java:34: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+        return new ResourceLocation(RiftWorld.MODID, "textures/environment/" + n + ".png");
+               ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/ModelItemRenderer.java:76: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+        GlbAssets.Loaded lm = GlbAssets.get(new net.minecraft.resources.ResourceLocation(ru.aiforge.riftworld.RiftWorld.MODID, "models/glb/" + gi.glb() + ".glb"));
+                                            ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/ModelItemRenderer.java:211: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+        net.minecraft.resources.ResourceLocation tex = new net.minecraft.resources.ResourceLocation(
+                                                       ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/CrystalClientHandler.java:41: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+    private static final ResourceLocation TEX_SHARD = new ResourceLocation("riftworld", "textures/entity/crystal_shard.png");
+                                                      ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/ScytheDropRenderer.java:15: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+    static final ResourceLocation GLB = new ResourceLocation(RiftWorld.MODID, "models/glb/scythe.glb");
+                                        ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/ElisarSky.java:19: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+    public static final ResourceLocation ID = new ResourceLocation(RiftWorld.MODID, "elisar");
+                                              ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/FlightFx.java:44: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+    public static final ResourceLocation TRANSIT_FX = new ResourceLocation(RiftWorld.MODID, "transit");
+                                                      ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/FlightFx.java:45: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+    private static final ResourceLocation CAPSULE = new ResourceLocation(RiftWorld.MODID, "models/glb/capsule.glb");
+                                                    ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/FlightFx.java:68: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+        return new ResourceLocation(RiftWorld.MODID, "textures/environment/" + n + ".png");
+               ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/CrystalGeoRenderers.java:31: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+    private static final ResourceLocation TEX_BOSS = new ResourceLocation("riftworld", "textures/entity/rift_obelisk_boss.png");
+                                                     ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/CrystalGeoRenderers.java:32: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+    private static final ResourceLocation TEX_MINION = new ResourceLocation("riftworld", "textures/entity/crystal_minion.png");
+                                                       ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/CrystalGeoRenderers.java:33: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+    private static final ResourceLocation TEX_SHIELD = new ResourceLocation("riftworld", "textures/entity/crystal_shield.png");
+                                                       ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/CrystalGeoRenderers.java:34: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+    private static final ResourceLocation TEX_SHARD = new ResourceLocation("riftworld", "textures/entity/crystal_shard.png");
+                                                      ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/BossColumnRenderer.java:21: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+    private static final ResourceLocation GLB = new ResourceLocation(RiftWorld.MODID, "models/glb/boss_column.glb");
+                                                ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/ClientHooks.java:70: warning: [removal] setRenderLayer(Block,RenderType) in ItemBlockRenderTypes has been deprecated and marked for removal
+            net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(ru.aiforge.riftworld.registry.ElisarBlocks.VIOLET_LEAVES.get(), cutout);
+                                                              ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/ClientHooks.java:71: warning: [removal] setRenderLayer(Block,RenderType) in ItemBlockRenderTypes has been deprecated and marked for removal
+            net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(ru.aiforge.riftworld.registry.ElisarBlocks.GARDEN_LEAVES.get(), cutout);
+                                                              ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/ClientHooks.java:72: warning: [removal] setRenderLayer(Block,RenderType) in ItemBlockRenderTypes has been deprecated and marked for removal
+            net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(ru.aiforge.riftworld.registry.ElisarBlocks.CRYSTAL_LEAVES.get(), cutout);
+                                                              ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/ClientHooks.java:73: warning: [removal] setRenderLayer(Block,RenderType) in ItemBlockRenderTypes has been deprecated and marked for removal
+            net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(ru.aiforge.riftworld.registry.ElisarBlocks.SIZO_LEAVES.get(), cutout);
+                                                              ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/ClientHooks.java:75: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+                var dtBlock = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getValue(new net.minecraft.resources.ResourceLocation("riftworlddt", dtId));
+                                                                                            ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/ClientHooks.java:77: warning: [removal] setRenderLayer(Block,RenderType) in ItemBlockRenderTypes has been deprecated and marked for removal
+                    net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(dtBlock, cutout);
+                                                                      ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/WindowLights.java:57: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+    private static final ResourceLocation GLASS_TEX = new ResourceLocation(RiftWorld.MODID, "block/stained_glass");
+                                                      ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/LaunchCoreRenderer.java:19: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+    private static final ResourceLocation HATCH = new ResourceLocation(RiftWorld.MODID, "models/glb/shaft_hatch.glb");
+                                                  ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/LaunchCoreRenderer.java:20: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+    private static final ResourceLocation CAPSULE = new ResourceLocation(RiftWorld.MODID, "models/glb/capsule.glb");
+                                                    ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/SeaFishRenderer.java:40: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+        return new ResourceLocation("riftworld", "textures/entity/" + modelName(e.variant()) + ".png");
+               ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/ModelBER.java:31: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+        if (r == null) PATHS[k.ordinal()] = r = new ResourceLocation(RiftWorld.MODID, "models/glb/" + k.glb + ".glb");
+                                                ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/world/ElisarChunkGenerator.java:1840: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+            ResourceLocation id = new ResourceLocation("riftworld", "city/" + p.template());
+                                  ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/world/ElisarChunkGenerator.java:1857: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+            stm.get(new ResourceLocation("riftworld", "castle/castle")).ifPresent(tpl -> {
+                    ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/world/ElisarChunkGenerator.java:1962: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+            stm.get(new ResourceLocation("riftworld", "ruins/chapel")).ifPresent(tpl -> {
+                    ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/world/WorldStructures.java:904: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+            Optional<StructureTemplate> tpl = stm.get(new ResourceLocation("riftworld", hp.nbtPath));
+                                                      ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/world/OvergrownTemplePiece.java:61: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+        Optional<StructureTemplate> t = tm.get(new ResourceLocation("riftworld", template));
+                                               ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/world/SeaProbeCommand.java:1251: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+                            new net.minecraft.resources.ResourceLocation("minecraft", "plains"));
+                            ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/world/SeaProbeCommand.java:1452: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+            if (net.minecraftforge.registries.ForgeRegistries.BLOCKS.containsKey(new net.minecraft.resources.ResourceLocation("riftworlddt", b))) ok++;
+                                                                                 ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/world/SeaProbeCommand.java:1453: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+            else if (net.minecraftforge.registries.ForgeRegistries.BLOCKS.containsKey(new net.minecraft.resources.ResourceLocation("dynamictrees", b))) {
+                                                                                      ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/world/SeaProbeCommand.java:1461: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+            if (net.minecraftforge.registries.ForgeRegistries.ITEMS.containsKey(new net.minecraft.resources.ResourceLocation("riftworlddt", i))) {
+                                                                                ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/world/SeaProbeCommand.java:1486: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+                        .invoke(reg, new net.minecraft.resources.ResourceLocation("dynamictrees", "riftworlddt"));
+                                     ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/world/DtGround.java:187: warning: [removal] ResourceLocation(String) in ResourceLocation has been deprecated and marked for removal
+                    .invoke(null, new net.minecraft.resources.ResourceLocation(id));
+                                  ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/world/DtGround.java:374: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+                    new net.minecraft.resources.ResourceLocation("riftworlddt", "crystal_birch_leaves")).defaultBlockState();
+                    ^
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+50 warnings
+
+> Task :processResources
+> Task :classes
+> Task :jar
+> Task :downloadMcpConfig
+> Task :extractSrg
+> Task :createMcpToSrg
+> Task :reobfJar
+> Task :compileDtaddonJava
+> Task :processDtaddonResources
+> Task :dtaddonClasses
+> Task :dtJar
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1793470592115.json
+
+BUILD SUCCESSFUL in 1m 55s
+10 actionable tasks: 10 executed

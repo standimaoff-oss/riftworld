@@ -1,0 +1,153 @@
+[31Oct2026 18:18:39.069] [main/INFO] [cpw.mods.modlauncher.Launcher/MODLAUNCHER]: ModLauncher running: args [--launchTarget, forgeserver, --fml.forgeVersion, 47.4.23, --fml.mcVersion, 1.20.1, --fml.forgeGroup, net.minecraftforge, --fml.mcpVersion, 20230612.114412, nogui]
+[31Oct2026 18:18:39.072] [main/INFO] [cpw.mods.modlauncher.Launcher/MODLAUNCHER]: ModLauncher 10.0.9+10.0.9+main.dcd20f30 starting: java version 17.0.21 by Eclipse Adoptium; OS Linux arch amd64 version 7.0.0-1017-azure
+[31Oct2026 18:18:39.132] [main/WARN] [net.minecraftforge.fml.loading.FMLConfig/CORE]: Configuration file /home/runner/work/riftworld/riftworld/ci/server/config/fml.toml is not correct. Correcting
+[31Oct2026 18:18:39.134] [main/INFO] [net.minecraftforge.fml.loading.FMLConfig/CORE]: Incorrect key [earlyWindowSkipGLVersions] was corrected from null to []
+[31Oct2026 18:18:39.134] [main/INFO] [net.minecraftforge.fml.loading.FMLConfig/CORE]: Incorrect key [earlyWindowLogHelpMessage] was corrected from null to true
+[31Oct2026 18:18:39.134] [main/INFO] [net.minecraftforge.fml.loading.FMLConfig/CORE]: Incorrect key [earlyWindowSquir] was corrected from null to false
+[31Oct2026 18:18:39.134] [main/INFO] [net.minecraftforge.fml.loading.FMLConfig/CORE]: Incorrect key [earlyWindowShowCPU] was corrected from null to false
+[31Oct2026 18:18:39.166] [main/INFO] [net.minecraftforge.fml.loading.ImmediateWindowHandler/]: ImmediateWindowProvider not loading because launch target is forgeserver
+[31Oct2026 18:18:39.198] [main/INFO] [mixin/]: SpongePowered MIXIN Subsystem Version=0.8.5 Source=union:/home/runner/work/riftworld/riftworld/ci/server/libraries/org/spongepowered/mixin/0.8.5/mixin-0.8.5.jar%2365!/ Service=ModLauncher Env=SERVER
+[31Oct2026 18:18:39.346] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file /home/runner/work/riftworld/riftworld/ci/server/libraries/net/minecraftforge/fmlcore/1.20.1-47.4.23/fmlcore-1.20.1-47.4.23.jar is missing mods.toml file
+[31Oct2026 18:18:39.347] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file /home/runner/work/riftworld/riftworld/ci/server/libraries/net/minecraftforge/javafmllanguage/1.20.1-47.4.23/javafmllanguage-1.20.1-47.4.23.jar is missing mods.toml file
+[31Oct2026 18:18:39.347] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file /home/runner/work/riftworld/riftworld/ci/server/libraries/net/minecraftforge/lowcodelanguage/1.20.1-47.4.23/lowcodelanguage-1.20.1-47.4.23.jar is missing mods.toml file
+[31Oct2026 18:18:39.348] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file /home/runner/work/riftworld/riftworld/ci/server/libraries/net/minecraftforge/mclanguage/1.20.1-47.4.23/mclanguage-1.20.1-47.4.23.jar is missing mods.toml file
+[31Oct2026 18:18:39.374] [main/INFO] [net.minecraftforge.fml.loading.moddiscovery.JarInJarDependencyLocator/]: No dependencies to load found. Skipping!
+[31Oct2026 18:18:40.456] [main/INFO] [cpw.mods.modlauncher.LaunchServiceHandler/MODLAUNCHER]: Launching target 'forgeserver' with arguments [nogui]
+[31Oct2026 18:18:43.737] [modloading-worker-0/INFO] [net.minecraftforge.common.ForgeMod/FORGEMOD]: Forge mod loading, version 47.4.23, for MC 1.20.1 with MCP 20230612.114412
+[31Oct2026 18:18:43.750] [modloading-worker-0/INFO] [net.minecraftforge.common.MinecraftForge/FORGE]: MinecraftForge v47.4.23 Initialized
+[31Oct2026 18:18:43.750] [modloading-worker-0/INFO] [riftworlddt/]: [riftworlddt] RegistryHandler setup OK: блоки/предметы аддона идут в namespace 'riftworlddt'
+[31Oct2026 18:18:43.831] [modloading-worker-0/INFO] [riftworld/]: [riftworld] DT GroundFinder для riftworld:elisar установлен: грунт ищется сканом колонки
+[31Oct2026 18:18:44.327] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Configuration file /home/runner/work/riftworld/riftworld/ci/server/config/dynamictrees-common.toml is not correct. Correcting
+[31Oct2026 18:18:44.327] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key vanilla was corrected from null to its default, SimpleCommentedConfig:{}. 
+[31Oct2026 18:18:44.327] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key vanilla.replaceVanillaSapling was corrected from null to its default, false. 
+[31Oct2026 18:18:44.328] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key vanilla.replaceNyliumFungi was corrected from null to its default, true. 
+[31Oct2026 18:18:44.328] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key vanilla.cancelVanillaVillageTrees was corrected from null to its default, true. 
+[31Oct2026 18:18:44.328] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key misc was corrected from null to its default, SimpleCommentedConfig:{}. 
+[31Oct2026 18:18:44.329] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key misc.generateDirtBucketRecipes was corrected from null to its default, true. 
+[31Oct2026 18:18:44.329] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key misc.generateMegaSeedRecipe was corrected from null to its default, false. 
+[31Oct2026 18:18:44.329] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key misc.biocharBrewingBase was corrected from null to its default, thick. 
+[31Oct2026 18:18:44.330] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key integration was corrected from null to its default, SimpleCommentedConfig:{}. 
+[31Oct2026 18:18:44.330] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key integration.preferredSeasonMod was corrected from null to its default, *. 
+[31Oct2026 18:18:44.330] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key integration.enableSeasonalSeedDropFactor was corrected from null to its default, true. 
+[31Oct2026 18:18:44.330] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key integration.enableSeasonalGrowthFactor was corrected from null to its default, true. 
+[31Oct2026 18:18:44.330] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key integration.enableSeasonalFruitProductionFactor was corrected from null to its default, true. 
+[31Oct2026 18:18:44.598] [Forge Version Check/INFO] [net.minecraftforge.fml.VersionChecker/]: [forge] Starting version check at https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json
+[31Oct2026 18:18:44.994] [Forge Version Check/INFO] [net.minecraftforge.fml.VersionChecker/]: [forge] Found status: OUTDATED Current: 47.4.23 Target: 47.4.28
+[31Oct2026 18:18:44.995] [Forge Version Check/INFO] [net.minecraftforge.fml.VersionChecker/]: [dynamictrees] Starting version check at https://github.com/DynamicTreesTeam/DynamicTreesVersionInfo/blob/master/DynamicTrees.json?raw=true
+[31Oct2026 18:18:45.225] [Forge Version Check/INFO] [net.minecraftforge.fml.VersionChecker/]: [dynamictrees] Found status: BETA Current: 1.20.1-1.4.10 Target: null
+[31Oct2026 18:18:45.343] [main/INFO] [com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService/]: Environment: authHost='https://authserver.mojang.com', accountsHost='https://api.mojang.com', sessionHost='https://sessionserver.mojang.com', servicesHost='https://api.minecraftservices.com', name='PROD'
+[31Oct2026 18:18:45.369] [main/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/home/runner/work/riftworld/riftworld/ci/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23107!/assets/.mcassetsroot' uses unexpected schema
+[31Oct2026 18:18:45.369] [main/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/home/runner/work/riftworld/riftworld/ci/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23107!/data/.mcassetsroot' uses unexpected schema
+[31Oct2026 18:18:46.617] [main/ERROR] [net.minecraft.world.item.crafting.RecipeManager/]: Parsing error loading recipe dynamictrees:guide
+com.google.gson.JsonSyntaxException: Missing conditions, expected to find a JsonArray
+	at net.minecraft.util.GsonHelper.m_13933_(GsonHelper.java:447) ~[server-1.20.1-20230612.114412-srg.jar%23107!/:?]
+	at net.minecraftforge.common.crafting.ConditionalRecipe$Serializer.fromJson(ConditionalRecipe.java:56) ~[forge-1.20.1-47.4.23-universal.jar%23112!/:?]
+	at net.minecraft.world.item.crafting.RecipeManager.fromJson(RecipeManager.java:171) ~[server-1.20.1-20230612.114412-srg.jar%23107!/:?]
+	at net.minecraft.world.item.crafting.RecipeManager.m_5787_(RecipeManager.java:67) ~[server-1.20.1-20230612.114412-srg.jar%23107!/:?]
+	at net.minecraft.world.item.crafting.RecipeManager.m_5787_(RecipeManager.java:34) ~[server-1.20.1-20230612.114412-srg.jar%23107!/:?]
+	at net.minecraft.server.packs.resources.SimplePreparableReloadListener.m_10789_(SimplePreparableReloadListener.java:13) ~[server-1.20.1-20230612.114412-srg.jar%23107!/:?]
+	at java.util.concurrent.CompletableFuture$UniAccept.tryFire(CompletableFuture.java:718) ~[?:?]
+	at java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482) ~[?:?]
+	at net.minecraft.server.packs.resources.SimpleReloadInstance.m_143940_(SimpleReloadInstance.java:69) ~[server-1.20.1-20230612.114412-srg.jar%23107!/:?]
+	at net.minecraft.Util.m_214652_(Util.java:783) ~[server-1.20.1-20230612.114412-srg.jar%23107!/:?]
+	at net.minecraft.Util.m_214679_(Util.java:772) ~[server-1.20.1-20230612.114412-srg.jar%23107!/:?]
+	at net.minecraft.server.Main.main(Main.java:166) ~[server-1.20.1-20230612.114412-srg.jar%23107!/:?]
+	at jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[?:?]
+	at jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77) ~[?:?]
+	at jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[?:?]
+	at java.lang.reflect.Method.invoke(Method.java:569) ~[?:?]
+	at net.minecraftforge.fml.loading.targets.CommonLaunchHandler.runTarget(CommonLaunchHandler.java:111) ~[fmlloader-1.20.1-47.4.23.jar%2369!/:?]
+	at net.minecraftforge.fml.loading.targets.CommonLaunchHandler.serverService(CommonLaunchHandler.java:103) ~[fmlloader-1.20.1-47.4.23.jar%2369!/:?]
+	at net.minecraftforge.fml.loading.targets.CommonServerLaunchHandler.lambda$makeService$0(CommonServerLaunchHandler.java:27) ~[fmlloader-1.20.1-47.4.23.jar%2369!/:?]
+	at cpw.mods.modlauncher.LaunchServiceHandlerDecorator.launch(LaunchServiceHandlerDecorator.java:30) ~[modlauncher-10.0.9.jar%2355!/:?]
+	at cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:53) ~[modlauncher-10.0.9.jar%2355!/:?]
+	at cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:71) ~[modlauncher-10.0.9.jar%2355!/:?]
+	at cpw.mods.modlauncher.Launcher.run(Launcher.java:108) ~[modlauncher-10.0.9.jar%2355!/:?]
+	at cpw.mods.modlauncher.Launcher.main(Launcher.java:78) ~[modlauncher-10.0.9.jar%2355!/:?]
+	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:26) ~[modlauncher-10.0.9.jar%2355!/:?]
+	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:23) ~[modlauncher-10.0.9.jar%2355!/:?]
+	at cpw.mods.bootstraplauncher.BootstrapLauncher.main(BootstrapLauncher.java:141) ~[bootstraplauncher-1.1.2.jar:?]
+[31Oct2026 18:18:46.623] [main/INFO] [net.minecraft.world.item.crafting.RecipeManager/]: Loaded 7 recipes
+[31Oct2026 18:18:46.696] [main/INFO] [net.minecraft.advancements.AdvancementList/]: Loaded 1271 advancements
+[31Oct2026 18:18:47.148] [Server thread/INFO] [net.minecraft.server.dedicated.DedicatedServer/]: Starting minecraft server version 1.20.1
+[31Oct2026 18:18:47.149] [Server thread/INFO] [net.minecraft.server.dedicated.DedicatedServer/]: Loading properties
+[31Oct2026 18:18:47.149] [Server thread/INFO] [net.minecraft.server.dedicated.DedicatedServer/]: Default game type: CREATIVE
+[31Oct2026 18:18:47.149] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Generating keypair
+[31Oct2026 18:18:47.233] [Server thread/INFO] [net.minecraft.server.dedicated.DedicatedServer/]: Starting Minecraft server on *:25565
+[31Oct2026 18:18:47.254] [Server thread/INFO] [net.minecraft.server.network.ServerConnectionListener/]: Using epoll channel type
+[31Oct2026 18:18:47.307] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+[31Oct2026 18:18:47.307] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: The server will make no attempt to authenticate usernames. Beware.
+[31Oct2026 18:18:47.307] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+[31Oct2026 18:18:47.307] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: To change this, set "online-mode" to "true" in the server.properties file.
+[31Oct2026 18:18:47.326] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Configuration file ./world/serverconfig/dynamictrees-server.toml is not correct. Correcting
+[31Oct2026 18:18:47.327] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key seeds was corrected from null to its default, SimpleCommentedConfig:{}. 
+[31Oct2026 18:18:47.327] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key seeds.leavesSeedDropRate was corrected from null to its default, 1.0. 
+[31Oct2026 18:18:47.327] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key seeds.voluntarySeedDropRate was corrected from null to its default, 0.01. 
+[31Oct2026 18:18:47.327] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key seeds.seedPlantRate was corrected from null to its default, 0.1666666716337204. 
+[31Oct2026 18:18:47.327] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key seeds.timeToLive was corrected from null to its default, 1200. 
+[31Oct2026 18:18:47.327] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key seeds.seedOnlyForest was corrected from null to its default, true. 
+[31Oct2026 18:18:47.327] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key seeds.seedMinForestness was corrected from null to its default, 0.0. 
+[31Oct2026 18:18:47.328] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key trees was corrected from null to its default, SimpleCommentedConfig:{}. 
+[31Oct2026 18:18:47.328] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key trees.growthMultiplier was corrected from null to its default, 0.5. 
+[31Oct2026 18:18:47.328] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key trees.harvestMultiplier was corrected from null to its default, 1.0. 
+[31Oct2026 18:18:47.328] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key trees.maxTreeHardness was corrected from null to its default, 20.0. 
+[31Oct2026 18:18:47.328] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key trees.treeHardnessMultiplier was corrected from null to its default, 1.0. 
+[31Oct2026 18:18:47.329] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key trees.growthFolding was corrected from null to its default, 2. 
+[31Oct2026 18:18:47.329] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key trees.dropSticks was corrected from null to its default, true. 
+[31Oct2026 18:18:47.329] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key trees.scaleBiomeGrowthRate was corrected from null to its default, 0.5. 
+[31Oct2026 18:18:47.329] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key trees.diseaseChance was corrected from null to its default, 0.0. 
+[31Oct2026 18:18:47.329] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key trees.maxBranchRotRadius was corrected from null to its default, 7. 
+[31Oct2026 18:18:47.329] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key trees.rootyBlockHardnessMultiplier was corrected from null to its default, 40.0. 
+[31Oct2026 18:18:47.329] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key trees.swampOaksInWater was corrected from null to its default, ROOTED. 
+[31Oct2026 18:18:47.329] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key trees.boneMealGrowthPulses was corrected from null to its default, 1. 
+[31Oct2026 18:18:47.330] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key interaction was corrected from null to its default, SimpleCommentedConfig:{}. 
+[31Oct2026 18:18:47.330] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key interaction.isLeavesPassable was corrected from null to its default, false. 
+[31Oct2026 18:18:47.330] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key interaction.vanillaLeavesCollision was corrected from null to its default, false. 
+[31Oct2026 18:18:47.330] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key interaction.enableBranchClimbling was corrected from null to its default, true. 
+[31Oct2026 18:18:47.330] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key interaction.canopyCrash was corrected from null to its default, true. 
+[31Oct2026 18:18:47.330] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key interaction.axeDamageMode was corrected from null to its default, THICKNESS. 
+[31Oct2026 18:18:47.330] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key interaction.enableFallingTrees was corrected from null to its default, true. 
+[31Oct2026 18:18:47.331] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key interaction.enableFallingTreeDamage was corrected from null to its default, true. 
+[31Oct2026 18:18:47.331] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key interaction.fallingTreeDamageMultiplier was corrected from null to its default, 1.0. 
+[31Oct2026 18:18:47.331] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key interaction.dirtBucketPlacesDirt was corrected from null to its default, true. 
+[31Oct2026 18:18:47.331] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key interaction.sloppyBreakDrops was corrected from null to its default, false. 
+[31Oct2026 18:18:47.331] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key interaction.minRadiusForStrip was corrected from null to its default, 6. 
+[31Oct2026 18:18:47.331] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key interaction.enableStripRadiusReduction was corrected from null to its default, true. 
+[31Oct2026 18:18:47.331] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key interaction.canBoneMealFruit was corrected from null to its default, false. 
+[31Oct2026 18:18:47.331] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key interaction.canBoneMealPods was corrected from null to its default, true. 
+[31Oct2026 18:18:47.331] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key interaction.dynamicSaplingDrops was corrected from null to its default, true. 
+[31Oct2026 18:18:47.332] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key growthFolding was corrected from null to its default, 400. 
+[31Oct2026 18:18:47.333] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key world was corrected from null to its default, SimpleCommentedConfig:{}. 
+[31Oct2026 18:18:47.334] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key world.podzolGen was corrected from null to its default, true. 
+[31Oct2026 18:18:47.334] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key world.worldGen was corrected from null to its default, true. 
+[31Oct2026 18:18:47.334] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key world.dimensionsBlacklist was corrected from null to its default, []. 
+[31Oct2026 18:18:47.335] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key debug was corrected from null to its default, SimpleCommentedConfig:{}. 
+[31Oct2026 18:18:47.335] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key debug.debug was corrected from null to its default, false. 
+[31Oct2026 18:18:47.338] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Configuration file ./world/serverconfig/forge-server.toml is not correct. Correcting
+[31Oct2026 18:18:47.339] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server was corrected from null to its default, SimpleCommentedConfig:{}. 
+[31Oct2026 18:18:47.339] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.removeErroringBlockEntities was corrected from null to its default, false. 
+[31Oct2026 18:18:47.339] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.removeErroringEntities was corrected from null to its default, false. 
+[31Oct2026 18:18:47.339] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.fullBoundingBoxLadders was corrected from null to its default, false. 
+[31Oct2026 18:18:47.339] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.zombieBaseSummonChance was corrected from null to its default, 0.1. 
+[31Oct2026 18:18:47.339] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.zombieBabyChance was corrected from null to its default, 0.05. 
+[31Oct2026 18:18:47.339] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.permissionHandler was corrected from null to its default, forge:default_handler. 
+[31Oct2026 18:18:47.339] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.advertiseDedicatedServerToLan was corrected from null to its default, true. 
+[31Oct2026 18:18:47.339] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.useItemWithDurationZero was corrected from null to its default, false. 
+[31Oct2026 18:18:47.360] [Server thread/INFO] [net.minecraft.server.dedicated.DedicatedServer/]: Preparing level "world"
+[31Oct2026 18:18:47.907] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Preparing start region for dimension minecraft:overworld
+[31Oct2026 18:18:48.433] [Worker-Main-1/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
+[31Oct2026 18:18:48.438] [Worker-Main-2/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
+[31Oct2026 18:18:48.908] [Worker-Main-1/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 21%
+[31Oct2026 18:18:49.445] [Worker-Main-3/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 96%
+[31Oct2026 18:18:49.470] [Server thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Time elapsed: 1563 ms
+[31Oct2026 18:18:49.471] [Server thread/INFO] [net.minecraft.server.dedicated.DedicatedServer/]: Done (2.146s)! For help, type "help"
+[31Oct2026 18:18:49.471] [Server thread/INFO] [net.minecraft.server.dedicated.DedicatedServer/]: Starting remote control listener
+[31Oct2026 18:18:49.473] [Server thread/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Listener started
+[31Oct2026 18:18:49.473] [Server thread/INFO] [net.minecraft.server.rcon.thread.RconThread/]: RCON running on 0.0.0.0:25575
+[31Oct2026 18:18:49.485] [Server thread/INFO] [net.minecraftforge.server.permission.PermissionAPI/]: Successfully initialized permission handler forge:default_handler
+[31Oct2026 18:18:49.794] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[31Oct2026 18:18:49.804] [RCON Client /127.0.0.1 #2/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[31Oct2026 18:18:49.830] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[31Oct2026 18:18:49.832] [RCON Client /127.0.0.1 #3/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[31Oct2026 18:18:49.882] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[31Oct2026 18:18:49.896] [RCON Client /127.0.0.1 #4/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
