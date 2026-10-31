@@ -551,13 +551,12 @@ public class ElisarChunkGenerator extends ChunkGenerator {
      */
     public static double violetProfile(CityPlan.Island isl, double px, double pz, int ocean) {
         double tm = Math.max(0.0, Math.min(1.0, isl.t(px, pz)));
-        double rimY = ocean + 2.2;
-        // Референс 04_violet_hills.png: дорога вьётся по пологой долине, а ПО ОБЕ СТОРОНЫ ВОКРУГ ДОРОГИ
-        // поднимаются выразительные ярусные лавандовые холмы (не один пик по центру острова и не блин).
+        // Парящие острова архипелага Фиолетовых холмов: выразительный обрыв над морем и пропастями (y ~ ocean+14..19)
+        double rimY = Math.max(ocean + 13.5, isl.base - 3.5);
         VioletHills.Region vr = VioletHills.regionAt(px, pz);
         double rd = vr != null ? vr.mainRoadDist(px, pz) : 28.0;
         double brd = vr != null ? vr.branchRoadDist(px, pz) : 40.0;
-        double valleyFloor = ocean + 11.8
+        double valleyFloor = isl.base - 1.2
                 + 2.8 * (vnoise(px * 0.0046, pz * 0.0046, 70) - 0.5)
                 + 1.0 * (vnoise(px * 0.014, pz * 0.014, 74) - 0.5);
         // Несколько отдельных мягких холмов слева и справа от дороги (+9..+17 блоков над дорожкой)
@@ -568,7 +567,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         double branchCut = 1.0 - 0.42 * Math.exp(-(brd * brd) / (9.0 * 9.0));
         double hills = Math.max(0.0, 13.4 * hillWave) * flankMask * branchCut
                 + 0.85 * (vnoise(px * 0.026, pz * 0.026, 73) - 0.5) * flankMask;
-        double inland = smooth(tm / 0.17);
+        double inland = smooth(tm / 0.14);
         return rimY + (valleyFloor + hills - rimY) * inland;
     }
 
@@ -608,12 +607,13 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                           VioletHills.Region vr, double[] tt) {
         CityPlan.Island isl = c.isl;
         if (isl == null || isl.kind != 7) return;
-        if (isl.t(px, pz) < 0.13) return;
+        // Дорога доходит прямо до кромки парящего острова и обрывается над пустой пропастью между островами
+        if (isl.t(px, pz) < 0.025) return;
         double dm = vr.mainRoadDist(px, pz);
         double db = vr.branchRoadDist(px, pz);
         double hw = VioletHills.Region.RIVER_HW;
         double bhw = VioletHills.Region.BRANCH_HW;
-        if (dm <= hw || (isl.t(px, pz) > 0.20 && db <= bhw)) {
+        if (dm <= hw || (isl.t(px, pz) > 0.04 && db <= bhw)) {
             c.soft = Double.NaN;
             c.surface = S_COBBLE;
         } else if (dm <= hw + 1.95 || db <= bhw + 1.15) {
@@ -890,21 +890,23 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                     }
                                     double rp = soft * 0.55 + (x * 0.21 + z * 0.15) + 2.8 * vnoise(x * 0.015, z * 0.015, 91);
                                     double frac = rp - Math.floor(rp);
-                                    boolean row = frac < 0.76 && !stepLip;
+                                    boolean row = frac < 0.58 && !stepLip;
                                     double band = vnoise(x * 0.013, z * 0.013, 94) + (hash(x, z, 98) - 0.5) * 0.18;
                                     BlockState bloom = st(band < 0.44 ? ElisarBlocks.VIOLET_BLOOM
                                             : band < 0.84 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM);
                                     chunk.setBlockState(mp.set(x, c.top, z), vTurf, false);
+                                    // Воздушные одиночные ярусы цветов (1 блок в высоту, без двухэтажных нагромождений) + просветы зелёной травы
                                     if (accentBloom != null) {
                                         chunk.setBlockState(mp.set(x, c.top + 1, z), accentBloom, false);
-                                    } else if (row) {
-                                        chunk.setBlockState(mp.set(x, c.top + 1, z), st(ElisarBlocks.LAVENDER_BED), false);
-                                        chunk.setBlockState(mp.set(x, c.top + 2, z), bloom, false);
-                                    } else if (stepLip && h < 0.42) {
-                                        chunk.setBlockState(mp.set(x, c.top + 1, z), h < 0.18 ? Blocks.FERN.defaultBlockState() : vGrass, false);
-                                    } else if (h < 0.88) {
-                                        chunk.setBlockState(mp.set(x, c.top + 1, z), h < 0.34 ? st(ElisarBlocks.LAVENDER_BED) : bloom, false);
-                                    } else {
+                                    } else if (row && h < 0.84) {
+                                        chunk.setBlockState(mp.set(x, c.top + 1, z),
+                                                h < 0.72 ? st(ElisarBlocks.LAVENDER_BED) : bloom, false);
+                                    } else if (stepLip && h < 0.36) {
+                                        chunk.setBlockState(mp.set(x, c.top + 1, z), h < 0.14 ? Blocks.FERN.defaultBlockState() : vGrass, false);
+                                    } else if (h < 0.52) {
+                                        chunk.setBlockState(mp.set(x, c.top + 1, z),
+                                                h < 0.22 ? st(ElisarBlocks.LAVENDER_BED) : bloom, false);
+                                    } else if (h < 0.76) {
                                         chunk.setBlockState(mp.set(x, c.top + 1, z), vGrass, false);
                                     }
                                 }
@@ -947,10 +949,11 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 // льющиеся через край) и длинные плети плюща по отвесной стене. И то и другое ставим
                 // в СВОЮ колонку у подножия стены: писать в соседний чанк при генерации нельзя.
                 if (c.garden && (c.surface == S_GRASS || c.surface == S_BARE) && c.deckY == Integer.MIN_VALUE) {
+                    int foot = c.surface == S_BARE ? plan.ocean : (c.waterTop != Integer.MIN_VALUE ? c.waterTop : c.top);
+                    boolean placedFall = false;
                     for (Direction d : Direction.Plane.HORIZONTAL) {
                         Col n = cols[dx + 1 + d.getStepX()][dz + 1 + d.getStepZ()];
                         if (n.isl == null || n.surface != S_GRASS) continue;
-                        int foot = c.surface == S_BARE ? plan.ocean : (c.waterTop != Integer.MIN_VALUE ? c.waterTop : c.top);
                         int rise = n.top - foot;
                         if (rise < 4) continue;
                         int nxp = x + d.getStepX(), nzp = z + d.getStepZ();
@@ -965,17 +968,38 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                 if (chunk.getBlockState(wp).canBeReplaced())
                                     chunk.setBlockState(wp, y == n.top ? gWater : gFalling, false);
                             }
-                        } else if (vnoise(x * 0.21, z * 0.21, 151) > 0.30) {       // плети плюща прижаты к стене обрыва
-                            int len = Math.min(rise - 1, 6 + (int) (hash(x, z, 152) * 9.0));
-                            int from = Math.max(foot + 1, n.top - 1 - len);
-                            BlockState face = ivyFace(d, gIvy);
-                            for (int y = from; y <= n.top - 1; ++y) {
+                            placedFall = true;
+                            break;
+                        }
+                    }
+                    if (!placedFall && vnoise(x * 0.21, z * 0.21, 151) > 0.30) {
+                        int minFrom = Integer.MAX_VALUE, maxTop = Integer.MIN_VALUE;
+                        for (Direction d : Direction.Plane.HORIZONTAL) {
+                            Col n = cols[dx + 1 + d.getStepX()][dz + 1 + d.getStepZ()];
+                            if (n.isl == null || n.surface != S_GRASS || n.top - foot < 4) continue;
+                            int len = Math.min(n.top - foot - 1, 6 + (int) (hash(x + d.getStepX(), z + d.getStepZ(), 152) * 9.0));
+                            minFrom = Math.min(minFrom, Math.max(foot + 1, n.top - 1 - len));
+                            maxTop = Math.max(maxTop, n.top - 1);
+                        }
+                        for (int y = minFrom; y <= maxTop; ++y) {
+                            BlockState face = gIvy;
+                            boolean any = false;
+                            for (Direction d : Direction.Plane.HORIZONTAL) {
+                                Col n = cols[dx + 1 + d.getStepX()][dz + 1 + d.getStepZ()];
+                                if (n.isl == null || n.surface != S_GRASS || n.top - foot < 4) continue;
+                                int len = Math.min(n.top - foot - 1, 6 + (int) (hash(x + d.getStepX(), z + d.getStepZ(), 152) * 9.0));
+                                int from = Math.max(foot + 1, n.top - 1 - len);
+                                if (y >= from && y <= n.top - 1) {
+                                    face = ivyFace(d, face);
+                                    any = true;
+                                }
+                            }
+                            if (any) {
                                 BlockPos vp = mp.set(x, y, z);
                                 BlockState cur = chunk.getBlockState(vp);
                                 if (cur.isAir() || cur.canBeReplaced()) chunk.setBlockState(vp, face, false);
                             }
                         }
-                        break;
                     }
                 }
                 if (c.waterTop != Integer.MIN_VALUE) {
@@ -1174,7 +1198,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             if (base < 0) continue;
             if (t.kind == 2) { deadTree(chunk, mp, t, base, x, z); continue; }
             if (t.kind == SizoGrove.TREE_GIANT) { giantSizo(chunk, mp, t, base, x, z); continue; }
-            boolean sizo = t.kind == 0;
+            boolean sizo = t.kind == 0 && SizoGrove.inside(t.x + 0.5, t.z + 0.5);
             // Рев 11: дерево строится по «чертежу» — ствол, настоящие наклонные ВЕТКИ и крона-облако
             // на их концах. Раньше сизо был набором колец, а амбра — шаром: издалека это читалось
             // сплошным квадратом. Теперь у каждого дерева свой скелет из ветвей.
@@ -1722,7 +1746,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                     prevX = Integer.MIN_VALUE;
                     continue;
                 }
-                if (vr.meadow.t(bx + 0.5, bz + 0.5) < 0.18) {
+                CityPlan.Island bIsl = vr.islandAt(bx + 0.5, bz + 0.5);
+                if (bIsl == null || bIsl.t(bx + 0.5, bz + 0.5) < 0.08) {
                     prevX = Integer.MIN_VALUE;
                     continue;
                 }

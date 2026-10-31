@@ -238,7 +238,7 @@ public final class DtGround {
             return r.nextInt(5) == 0 ? "riftworlddt:sizo" : "riftworlddt:giant_sizo";
         }
         if (isl != null || biome.endsWith(":elisar_city")) {
-            return r.nextInt(3) == 0 ? "riftworlddt:sizo" : "riftworlddt:ambra";
+            return "riftworlddt:ambra";
         }
         return null;
     }

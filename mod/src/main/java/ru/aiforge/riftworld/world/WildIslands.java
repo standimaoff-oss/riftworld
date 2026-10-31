@@ -50,7 +50,9 @@ public final class WildIslands {
         EmberRuins.Site es = EmberRuins.siteAt(x, z);
         if (es != null && Math.abs(x - es.cx) < es.island.maxReach() && Math.abs(z - es.cz) < es.island.maxReach()) out.add(es.island);
         VioletHills.Region vr = VioletHills.regionAt(x, z);
-        if (vr != null && Math.abs(x - vr.meadow.cx) < vr.meadow.maxReach() && Math.abs(z - vr.meadow.cz) < vr.meadow.maxReach()) out.add(vr.meadow);
+        if (vr != null)
+            for (CityPlan.Island vi : vr.isles)
+                if (Math.abs(x - vi.cx) < vi.maxReach() && Math.abs(z - vi.cz) < vi.maxReach()) out.add(vi);
         SizoGrove.Region sr = SizoGrove.regionAt(x, z);
         if (sr != null && Math.abs(x - sr.hub.cx) < sr.hub.maxReach() && Math.abs(z - sr.hub.cz) < sr.hub.maxReach()) out.add(sr.hub);
         // Рев 14.26: у садов теперь архипелаг из 3–6 островов — в выборку попадает каждый,
@@ -110,8 +112,7 @@ public final class WildIslands {
                 if (AshenLands.blocks(x, z, R * 1.15 + 28)) continue;                                               // any AshenLands castle region
                 EmberRuins.Site es = EmberRuins.siteAt(x, z);
                 if (es != null && Math.hypot(x - es.cx, z - es.cz) < R * 1.15 + es.island.maxReach() + 10) continue; // ruins island
-                VioletHills.Region vr = VioletHills.regionAt(x, z);                                                 // violet meadow island
-                if (vr != null && Math.hypot(x - vr.meadow.cx, z - vr.meadow.cz) < R * 1.15 + vr.meadow.maxReach() + 16) continue;
+                if (VioletHills.nearAny(x, z, R * 1.15, 36)) continue;                                              // violet hills archipelago + chasms
                 SizoGrove.Region sr = SizoGrove.regionAt(x, z);                                                     // sizo grove hub
                 if (sr != null && Math.hypot(x - sr.hub.cx, z - sr.hub.cz) < R * 1.15 + sr.hub.maxReach() + 16) continue;
                 if (WaterfallGardens.nearAny(x, z, R * 1.15, 48)) continue;                                         // waterfall gardens archipelago + rivers
@@ -154,8 +155,8 @@ public final class WildIslands {
             boolean ok = true;
             for (CityPlan.Tree t : c.trees) if (Math.abs(t.x - x) < 4 && Math.abs(t.z - z) < 4) { ok = false; break; }
             if (!ok) continue;
-            int kind = r.nextDouble() < 0.55 ? 0 : 1;
-            int h = kind == 0 ? 8 + r.nextInt(6) : 5 + r.nextInt(4);
+            int kind = 1; // только янтарник (сизоствол растёт исключительно в Роще Сизо)
+            int h = 5 + r.nextInt(4);
             if (AshenLands.weight(x, z) > 0.3) {             // burnt: bare dead trees only
                 kind = 2;
                 h = 5 + r.nextInt(6);

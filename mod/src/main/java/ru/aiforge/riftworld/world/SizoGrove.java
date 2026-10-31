@@ -269,6 +269,24 @@ public final class SizoGrove {
         return rg.hub.t(x, z) > 0.10 + 8.0 / rg.hub.R;
     }
 
+    /** Плавный вес атмосферы Рощи Сизо [0..1] с smoothstep-поясом 88 блоков вокруг рощи. */
+    public static float skyWeight(double x, double z) {
+        int sx = Math.floorDiv((int) Math.floor(x), SUPER), sz = Math.floorDiv((int) Math.floor(z), SUPER);
+        float best = 0.0F;
+        for (int dx = -1; dx <= 1; ++dx) {
+            for (int dz = -1; dz <= 1; ++dz) {
+                Region rg = region(sx + dx, sz + dz);
+                if (rg == null) continue;
+                double d = Math.hypot(x - rg.cx, z - rg.cz);
+                if (d >= rg.Rr + 98.0) continue;
+                double u = 1.0 - Math.max(0.0, Math.min(1.0, (d - (rg.Rr + 10.0)) / 88.0));
+                float w = (float) (u * u * (3.0 - 2.0 * u));
+                if (w > best) best = w;
+            }
+        }
+        return best;
+    }
+
     public static List<CityPlan.Tree> treesNear(int x, int z) {
         Region rg = regionAt(x + 0.5, z + 0.5);
         if (rg == null) return List.of();

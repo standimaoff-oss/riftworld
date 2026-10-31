@@ -262,14 +262,25 @@ public final class WaterfallGardens {
      * для {@code GardenSky} и {@code ElisarSky}: голубое небо, облака и солнечная дымка не гаснут над реками.
      */
     public static boolean skyInside(double x, double z) {
+        return skyWeight(x, z) > 0.01F;
+    }
+
+    /** Плавный вес атмосферы Висячих садов [0..1] с smoothstep-поясом 90 блоков вокруг архипелага. */
+    public static float skyWeight(double x, double z) {
         int sx = Math.floorDiv((int) Math.floor(x), SUPER), sz = Math.floorDiv((int) Math.floor(z), SUPER);
-        for (int dx = -1; dx <= 1; ++dx)
+        float best = 0.0F;
+        for (int dx = -1; dx <= 1; ++dx) {
             for (int dz = -1; dz <= 1; ++dz) {
                 Region rg = region(sx + dx, sz + dz);
                 if (rg == null) continue;
-                if (Math.hypot(x - rg.cx, z - rg.cz) < rg.Rr + 60.0) return true;
+                double d = Math.hypot(x - rg.cx, z - rg.cz);
+                if (d >= rg.Rr + 102.0) continue;
+                double u = 1.0 - Math.max(0.0, Math.min(1.0, (d - (rg.Rr + 12.0)) / 90.0));
+                float w = (float) (u * u * (3.0 - 2.0 * u));
+                if (w > best) best = w;
             }
-        return false;
+        }
+        return best;
     }
 
     public static Fall fallNear(Region rg, double x, double z) {

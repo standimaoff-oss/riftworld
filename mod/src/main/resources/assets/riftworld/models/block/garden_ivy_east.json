@@ -1,0 +1,43 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "particle": "riftworld:block/garden_ivy",
+    "vine": "riftworld:block/garden_ivy"
+  },
+  "elements": [
+    {
+      "from": [
+        15.2,
+        0.0,
+        0.0
+      ],
+      "to": [
+        15.2,
+        16.0,
+        16.0
+      ],
+      "shade": false,
+      "faces": {
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#vine"
+        },
+        "east": {
+          "uv": [
+            16,
+            0,
+            0,
+            16
+          ],
+          "texture": "#vine"
+        }
+      }
+    }
+  ]
+}

@@ -608,7 +608,7 @@ echo "== деревья Элисара: ствол + ветки =="
 EL tp TestPlayer -30 120 58 180 0 >/dev/null 2>&1
 sleep 4
 # сизо ярче амбры: на кадре видно и крону, и ветки (амбра почти белая на светлом грунте)
-TREE_RAW=$(EL execute at TestPlayer run rifttree sizo 2>&1)
+TREE_RAW=$(EL execute at TestPlayer run rifttree ambra 2>&1)
 printf '%s' "$TREE_RAW" | grep -q "at=" || TREE_RAW=$(EL execute at TestPlayer run rifttree 2>&1)
 log "  /rifttree raw: ${TREE_RAW:0:240}"
 TREE_AT=$(printf '%s' "$TREE_RAW" | sed -n 's/.*at=\([-0-9]*,[-0-9]*,[-0-9]*\).*/\1/p' | head -1)
@@ -621,7 +621,7 @@ if [ -n "$TREE_AT" ]; then
   # телепорт к дереву, чтобы чанк прогрузился, и повторный счёт уже по настоящим блокам
   EL tp TestPlayer "$((TX + 10))" "$((TY + 10))" "$((TZ + 10))" 225 20 >/dev/null 2>&1
   sleep 8
-  TREE2=$(EL execute at TestPlayer run rifttree sizo 2>&1)
+  TREE2=$(EL execute at TestPlayer run rifttree ambra 2>&1)
   printf '%s' "$TREE2" | grep -q "at=" || TREE2=$(EL execute at TestPlayer run rifttree 2>&1)
   log "  /rifttree повтор: ${TREE2:0:200}"
   BR2=$(printf '%s' "$TREE2" | sed -n 's/.*branches=\([0-9]*\).*/\1/p' | head -1)
@@ -1178,18 +1178,31 @@ biome_section() {
   VLAM=$(printf '%s' "$VL" | sed -n 's/.* lamps=\([0-9]*\).*/\1/p' | tail -1)
   VLAV=$(printf '%s' "$VL" | sed -n 's/.* lavender=\([0-9]*\).*/\1/p' | tail -1)
   VACC=$(printf '%s' "$VL" | sed -n 's/.* accent_flowers=\([0-9]*\).*/\1/p' | tail -1)
+  local VISL VSIZO
+  VISL=$(printf '%s' "$VL" | sed -n 's/.* vislands=\([0-9]*\).*/\1/p' | tail -1)
+  VSIZO=$(printf '%s' "$VL" | sed -n 's/.* sizo_blocks=\([0-9]*\).*/\1/p' | tail -1)
   if [ -z "${VX:-}" ]; then
     log "  FAIL /riftbiome violet не нашёл регион Фиолетовых холмов"; FAILS=$((FAILS + 1))
   else
-    # поля лаванды: на референсе это сплошные грядки, а не редкие кустики
-    if [ "${VLAV:-0}" -ge 3000 ] || [ "${VBLOOM:-0}" -ge 2500 ]; then
-      log "  OK   холмы: лаванды всего $(( ${VLAV:-0} + ${VBLOOM:-0} )) блоков (гряды ${VLAV:-0} + цветы ${VBLOOM:-0})"
+    if [ "${VISL:-0}" -ge 3 ] && [ "${VISL:-0}" -le 6 ]; then
+      log "  OK   холмы: архипелаг из ${VISL} огромных парящих островов"
     else
-      log "  FAIL холмы: лаванды ${VLAV:-0} гряд + ${VBLOOM:-0} цветов (нужно >=2500 на поле)"
+      log "  FAIL холмы: островов ${VISL:-0} (нужно 3..6 огромных островов)"; FAILS=$((FAILS + 1))
+    fi
+    if [ "${VSIZO:-1}" -eq 0 ]; then
+      log "  OK   холмы: сизоствола нет (sizo_blocks=0)"
+    else
+      log "  FAIL холмы: найден сизоствол (${VSIZO:-?} блоков) — он должен расти только в Роще Сизо"; FAILS=$((FAILS + 1))
+    fi
+    # поля лаванды: воздушные одиночные ярусы цветов (без двухэтажных нагромождений)
+    if [ "${VLAV:-0}" -ge 2000 ] || [ "${VBLOOM:-0}" -ge 1800 ]; then
+      log "  OK   холмы: воздушных цветов всего $(( ${VLAV:-0} + ${VBLOOM:-0} )) блоков (лаванда ${VLAV:-0} + соцветия ${VBLOOM:-0})"
+    else
+      log "  FAIL холмы: лаванды ${VLAV:-0} + соцветий ${VBLOOM:-0} (нужно >=2000 на поле)"
       FAILS=$((FAILS + 1))
     fi
-    if [ "${VLAV:-0}" -ge 3000 ]; then log "  OK   холмы: гряд лаванды $VLAV блоков (сплошные поля, как на фото)"
-    else log "  FAIL холмы: гряд лаванды ${VLAV:-0} (нужно >=3000 — поля сплошной массой)"; FAILS=$((FAILS + 1)); fi
+    if [ "${VLAV:-0}" -ge 2000 ]; then log "  OK   холмы: гряд лаванды $VLAV блоков (воздушные ряды)"
+    else log "  FAIL холмы: гряд лаванды ${VLAV:-0} (нужно >=2000)"; FAILS=$((FAILS + 1)); fi
     if [ "${VWALL:-0}" -ge 15 ] && [ "${VFEN:-0}" -ge 15 ] && [ "${VLAM:-0}" -ge 4 ]; then
       log "  OK   холмы: вдоль дороги каменные стенки (${VWALL}), деревянные заборы (${VFEN}) и столбы с факелами (${VLAM})"
     else
@@ -1214,8 +1227,9 @@ biome_section() {
     local VTOP2=${VTOP:-90} VRR=${VR:-80} VGY
     VGY=$(printf '%s' "$VL" | sed -n 's/.* vground=\(-\?[0-9]*\).*/\1/p' | tail -1)
     VGY=${VGY:-80}
-    local VROAD VFIELDS VPATH VTREES
+    local VROAD VARCH VFIELDS VPATH VTREES
     VROAD=$(printf '%s' "$VL" | grep -o 'road=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^road=//')
+    VARCH=$(printf '%s' "$VL" | grep -o 'varch=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^varch=//')
     VFIELDS=$(printf '%s' "$VL" | grep -o 'vfields=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^vfields=//')
     VPATH=$(printf '%s' "$VL" | grep -o 'vpath=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^vpath=//')
     VTREES=$(printf '%s' "$VL" | grep -o 'vtrees=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^vtrees=//')
@@ -1223,6 +1237,9 @@ biome_section() {
       lookat $(printf '%s' "$VROAD" | cut -d: -f1 | tr ',' ' ') $(printf '%s' "$VROAD" | cut -d: -f2 | tr ',' ' ') 18 "49_violet_hills"
     else
       lookat "$((VX + VRR * 2 / 5))" "$((VGY + 8))" "$((VZ + VRR * 2 / 5))" "$VX" "$((VGY + 2))" "$VZ" 16 "49_violet_hills"
+    fi
+    if [ -n "${VARCH:-}" ]; then
+      lookat $(printf '%s' "$VARCH" | cut -d: -f1 | tr ',' ' ') $(printf '%s' "$VARCH" | cut -d: -f2 | tr ',' ' ') 18 "49b_violet_archipelago"
     fi
     if [ -n "${VFIELDS:-}" ]; then
       lookat $(printf '%s' "$VFIELDS" | cut -d: -f1 | tr ',' ' ') $(printf '%s' "$VFIELDS" | cut -d: -f2 | tr ',' ' ') 16 "50_violet_fields"

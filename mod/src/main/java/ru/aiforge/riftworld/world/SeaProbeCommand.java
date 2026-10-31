@@ -527,7 +527,7 @@ public final class SeaProbeCommand {
         }
         // Рев 14.29: отдельные счётчики лаванды, сиреневой листвы, заборов и фонарей —
         // по ним CI отличает «поля рядами» от «веснушек» и видит рукотворное у дорожек.
-        int violetBlooms = 0, violetLeaves = 0, fences = 0, lamps = 0, lavender = 0, walls = 0, accentFlowers = 0;
+        int violetBlooms = 0, violetLeaves = 0, fences = 0, lamps = 0, lavender = 0, walls = 0, accentFlowers = 0, sizoInGardens = 0;
         if (violet) {
             var bloom = new java.util.HashSet<net.minecraft.world.level.block.Block>();
             bloom.add(ru.aiforge.riftworld.registry.ElisarBlocks.VIOLET_BLOOM.get());
@@ -559,6 +559,14 @@ public final class SeaProbeCommand {
                         if (bs.getBlock() == wallBlk) { walls++; continue; }
                         if (bs.getBlock() instanceof net.minecraft.world.level.block.LanternBlock
                                 || bs.getBlock() == torchBlk) lamps++;
+                        var bKey = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(bs.getBlock());
+                        if (bKey != null) {
+                            String bp = bKey.getPath();
+                            if (bp.equals("sizo_log") || bp.equals("sizo_leaves")
+                                    || bp.equals("sizo_branch") || bp.equals("sizo_sapling") || bp.equals("giant_sizo_sapling")) {
+                                sizoInGardens++;
+                            }
+                        }
                     }
                 }
             }
@@ -604,7 +612,7 @@ public final class SeaProbeCommand {
                 river = rcx + "," + rcy + "," + rcz + ":" + rlx + "," + rly + "," + rlz;
             }
         }
-        int fallWater = 0, fallSrc = 0, sizoInGardens = 0, gardenOak = 0, dryCols = 0, submergedAir = 0;
+        int fallWater = 0, fallSrc = 0, gardenOak = 0, dryCols = 0, submergedAir = 0;
         if (gardens) {
             int ocean = CityPlan.get().ocean;
             var gsrc = ru.aiforge.riftworld.registry.ElisarBlocks.GARDEN_WATER.get();
@@ -695,29 +703,53 @@ public final class SeaProbeCommand {
         }
         String vio = "";
         if (violet) {
-            String vroad = "-", vpath = "-", vfields = "-", vtrees = "-";
+            String vroad = "-", vpath = "-", vfields = "-", vtrees = "-", varch = "-";
             int vgY = CityPlan.get().ocean + 16;
+            int vislands = 0;
+            String vislR = "-";
             if (bestViolet != null) {
+                vislands = bestViolet.isles.size();
+                double vrMin = 1e9, vrMax = 0.0;
+                for (CityPlan.Island vi : bestViolet.isles) {
+                    vrMin = Math.min(vrMin, vi.R);
+                    vrMax = Math.max(vrMax, vi.R);
+                }
+                vislR = String.format(java.util.Locale.ROOT, "%.0f..%.0f", vrMin, vrMax);
                 int oc = CityPlan.get().ocean;
-                vgY = ElisarChunkGenerator.violetTop(bestViolet.meadow, bestX, bestZ, oc);
-                double[] pCam = bestViolet.roadPoint(0.24);
-                double[] pTgt = bestViolet.roadPoint(0.62);
-                int vcy = ElisarChunkGenerator.violetTop(bestViolet.meadow, pCam[0], pCam[1], oc) + 6;
-                int vty = ElisarChunkGenerator.violetTop(bestViolet.meadow, pTgt[0], pTgt[1], oc) + 3;
+                double hRim = Math.max(0.28, bestViolet.hubRimU);
+                vgY = ElisarChunkGenerator.violetTop(bestViolet.hub, bestX, bestZ, oc);
+
+                // 49_violet_hills: извилистая дорога с оградой и холмами на главном острове
+                double[] pCam = bestViolet.roadPoint(0.22 * hRim);
+                double[] pTgt = bestViolet.roadPoint(0.76 * hRim);
+                int vcy = ElisarChunkGenerator.violetTop(bestViolet.hub, pCam[0], pCam[1], oc) + 6;
+                int vty = ElisarChunkGenerator.violetTop(bestViolet.hub, pTgt[0], pTgt[1], oc) + 3;
                 vroad = Math.round(pCam[0]) + "," + vcy + "," + Math.round(pCam[1]) + ":"
                         + Math.round(pTgt[0]) + "," + vty + "," + Math.round(pTgt[1]);
 
-                double[] pfCam = bestViolet.roadSidePoint(0.32 * bestViolet.mainRoadLen(), -19.0);
-                double[] pfTgt = bestViolet.roadPoint(0.56);
-                int vfcy = ElisarChunkGenerator.violetTop(bestViolet.meadow, pfCam[0], pfCam[1], oc) + 6;
-                int vfty = ElisarChunkGenerator.violetTop(bestViolet.meadow, pfTgt[0], pfTgt[1], oc) + 2;
+                // 49b_violet_archipelago: панорама огромных парящих островов и пустой пропасти, где обрывается дорога
+                double[] paCam = bestViolet.roadSidePoint(0.68 * hRim * bestViolet.mainRoadLen(), -24.0);
+                double[] paTgt = bestViolet.roadPoint(Math.min(0.92, bestViolet.nextRimU + 0.08));
+                CityPlan.Island camIsl = bestViolet.islandAt(paCam[0], paCam[1]);
+                int vacy = (camIsl != null ? ElisarChunkGenerator.violetTop(camIsl, paCam[0], paCam[1], oc) : vgY) + 24;
+                CityPlan.Island tgtIsl = bestViolet.isles.size() > 1 ? bestViolet.isles.get(1) : bestViolet.hub;
+                int vaty = ElisarChunkGenerator.violetTop(tgtIsl, paTgt[0], paTgt[1], oc) + 2;
+                varch = Math.round(paCam[0]) + "," + vacy + "," + Math.round(paCam[1]) + ":"
+                        + Math.round(paTgt[0]) + "," + vaty + "," + Math.round(paTgt[1]);
+
+                // 50_violet_fields: воздушные лавандовые склоны без плотных нагромождений
+                double[] pfCam = bestViolet.roadSidePoint(0.42 * hRim * bestViolet.mainRoadLen(), -19.0);
+                double[] pfTgt = bestViolet.roadPoint(0.74 * hRim);
+                int vfcy = ElisarChunkGenerator.violetTop(bestViolet.hub, pfCam[0], pfCam[1], oc) + 6;
+                int vfty = ElisarChunkGenerator.violetTop(bestViolet.hub, pfTgt[0], pfTgt[1], oc) + 2;
                 vfields = Math.round(pfCam[0]) + "," + vfcy + "," + Math.round(pfCam[1]) + ":"
                         + Math.round(pfTgt[0]) + "," + vfty + "," + Math.round(pfTgt[1]);
 
-                double[] ppCam = bestViolet.roadPoint(0.40);
-                double[] ppTgt = bestViolet.roadPoint(0.68);
-                int vpcy = ElisarChunkGenerator.violetTop(bestViolet.meadow, ppCam[0], ppCam[1], oc) + 2;
-                int vpty = ElisarChunkGenerator.violetTop(bestViolet.meadow, ppTgt[0], ppTgt[1], oc) + 2;
+                // 51_violet_path: прогулочный кадр по дороге к обрыву над пропастью между островами
+                double[] ppCam = bestViolet.roadPoint(0.56 * hRim);
+                double[] ppTgt = bestViolet.roadPoint(Math.min(0.95, bestViolet.nextRimU + 0.03));
+                int vpcy = ElisarChunkGenerator.violetTop(bestViolet.hub, ppCam[0], ppCam[1], oc) + 2;
+                int vpty = ElisarChunkGenerator.violetTop(tgtIsl, ppTgt[0], ppTgt[1], oc) + 1;
                 vpath = Math.round(ppCam[0]) + "," + vpcy + "," + Math.round(ppCam[1]) + ":"
                         + Math.round(ppTgt[0]) + "," + vpty + "," + Math.round(ppTgt[1]);
 
@@ -727,7 +759,7 @@ public final class SeaProbeCommand {
                 for (int x = bestX - 36; x <= bestX + 36; ++x)
                     for (int z = bestZ - 36; z <= bestZ + 36; ++z) {
                         if (!level.isLoaded(new BlockPos(x, at.getY(), z))) continue;
-                        int gy = ElisarChunkGenerator.violetTop(bestViolet.meadow, x, z, oc);
+                        int gy = ElisarChunkGenerator.violetTop(bestViolet.hub, x, z, oc);
                         for (int y = gy + 1; y <= gy + 6; ++y) {
                             BlockState bs = level.getBlockState(new BlockPos(x, y, z));
                             var k = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(bs.getBlock());
@@ -744,14 +776,15 @@ public final class SeaProbeCommand {
                     double dxT = bestX - txTree, dzT = bestZ - tzTree, lenT = Math.max(1.0, Math.hypot(dxT, dzT));
                     int camX = (int) Math.round(txTree + dxT / lenT * 11.0);
                     int camZ = (int) Math.round(tzTree + dzT / lenT * 11.0);
-                    int camY = ElisarChunkGenerator.violetTop(bestViolet.meadow, camX, camZ, oc) + 4;
+                    int camY = ElisarChunkGenerator.violetTop(bestViolet.hub, camX, camZ, oc) + 4;
                     vtrees = camX + "," + camY + "," + camZ + ":" + txTree + "," + (tyTree + 4) + "," + tzTree;
                 }
             }
-            vio = " violet_blooms=" + violetBlooms + " violet_leaves=" + violetLeaves + " lavender=" + lavender
+            vio = " vislands=" + vislands + " visl_r=" + vislR
+                    + " violet_blooms=" + violetBlooms + " violet_leaves=" + violetLeaves + " lavender=" + lavender
                     + " accent_flowers=" + accentFlowers + " walls=" + walls
                     + " fences=" + fences + " lamps=" + lamps + " vground=" + vgY
-                    + " road=" + vroad + " vfields=" + vfields + " vpath=" + vpath + " vtrees=" + vtrees;
+                    + " road=" + vroad + " varch=" + varch + " vfields=" + vfields + " vpath=" + vpath + " vtrees=" + vtrees;
         }
         // Рев 14.35: каким биомом НА САМОМ ДЕЛЕ числится земля региона. Это ловит перепутанные
         // поля биом-сурса (именно так «сады» оказались на островках данжа в море).

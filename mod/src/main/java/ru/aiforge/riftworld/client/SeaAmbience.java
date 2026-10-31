@@ -16,16 +16,7 @@ import ru.aiforge.riftworld.flight.Flight;
 import ru.aiforge.riftworld.registry.ElisarBlocks;
 
 /**
- * Рев 10 «Живое море 2»: атмосфера под водой — планктон, пузыри, искры.
- *
- * <p>Полностью клиентская: ни одного пакета на сервер, частицы живут 1–2 секунды и стоят копейки.
- * <ul>
- *   <li><b>планктон</b> — мелкие светящиеся точки, медленно плывущие в толще воды (заметен на просвет);</li>
- *   <li><b>пузыри</b> — поднимаются от дна и из устьев пещер, у самого дна чаще;</li>
- *   <li><b>искры</b> — у светящихся кораллов и пещерных наростов, чтобы риф «дышал»;</li>
- *   <li><b>взвесь ила</b> — у дна в илистых низинах.</li>
- * </ul>
- * Срабатывает только в Элисаре и только когда камера под водой, поэтому на поверхности не мешает.
+ * Рев 10 «Живое море 2» + лёгкая воздушная взвесь лепестков/листьев в надземных биомах Элисара.
  */
 @Mod.EventBusSubscriber(modid = RiftWorld.MODID, value = Dist.CLIENT)
 public final class SeaAmbience {
@@ -61,36 +52,34 @@ public final class SeaAmbience {
             }
         }
 
-        // ---- надземные кастомные частицы листьев в воздухе (Фиолетовые холмы + Роща Сизо)
+        // ---- надземные кастомные частицы листьев в воздухе: разреженные, с плавным появлением по весу биома
         if (!under) {
-            if (ru.aiforge.riftworld.world.VioletHills.regionAt(camPos.x, camPos.z) != null) {
+            float wV = ru.aiforge.riftworld.world.VioletHills.skyWeight(camPos.x, camPos.z);
+            float wS = ru.aiforge.riftworld.world.SizoGrove.skyWeight(camPos.x, camPos.z);
+            if (wV > 0.15F && tick % 4 == 0 && RND.nextFloat() < 0.70F * wV) {
                 var look = cam.getLookVector();
-                for (int i = 0; i < 8; ++i) {
-                    double fwd = 6.0 + RND.nextDouble() * 28.0;
-                    double side = (RND.nextDouble() - 0.5) * 38.0;
-                    double px = camPos.x + look.x() * fwd - look.z() * side + (RND.nextDouble() - 0.5) * 8.0;
-                    double pz = camPos.z + look.z() * fwd + look.x() * side + (RND.nextDouble() - 0.5) * 8.0;
-                    double py = camPos.y - 1.0 + RND.nextDouble() * 17.0;
-                    level.addAlwaysVisibleParticle(ru.aiforge.riftworld.registry.ModParticles.VIOLET_LEAF.get(),
-                            true, px, py, pz,
-                            0.018 + RND.nextDouble() * 0.014,
-                            -0.005 - RND.nextDouble() * 0.008,
-                            0.008 + (RND.nextDouble() - 0.4) * 0.014);
-                }
-            } else if (ru.aiforge.riftworld.world.SizoGrove.regionAt(camPos.x, camPos.z) != null) {
+                double fwd = 7.0 + RND.nextDouble() * 24.0;
+                double side = (RND.nextDouble() - 0.5) * 32.0;
+                double px = camPos.x + look.x() * fwd - look.z() * side + (RND.nextDouble() - 0.5) * 6.0;
+                double pz = camPos.z + look.z() * fwd + look.x() * side + (RND.nextDouble() - 0.5) * 6.0;
+                double py = camPos.y - 1.5 + RND.nextDouble() * 9.5;
+                level.addAlwaysVisibleParticle(ru.aiforge.riftworld.registry.ModParticles.VIOLET_LEAF.get(),
+                        true, px, py, pz,
+                        0.016 + RND.nextDouble() * 0.012,
+                        -0.005 - RND.nextDouble() * 0.007,
+                        0.007 + (RND.nextDouble() - 0.4) * 0.012);
+            } else if (wS > 0.15F && tick % 6 == 0 && RND.nextFloat() < 0.65F * wS) {
                 var look = cam.getLookVector();
-                for (int i = 0; i < 4; ++i) {
-                    double fwd = 5.0 + RND.nextDouble() * 24.0;
-                    double side = (RND.nextDouble() - 0.5) * 28.0;
-                    double px = camPos.x + look.x() * fwd - look.z() * side;
-                    double pz = camPos.z + look.z() * fwd + look.x() * side;
-                    double py = camPos.y - 1.0 + RND.nextDouble() * 14.0;
-                    level.addAlwaysVisibleParticle(ru.aiforge.riftworld.registry.ModParticles.SIZO_LEAF.get(),
-                            true, px, py, pz,
-                            0.010 + RND.nextDouble() * 0.008,
-                            -0.004 - RND.nextDouble() * 0.006,
-                            (RND.nextDouble() - 0.5) * 0.008);
-                }
+                double fwd = 6.0 + RND.nextDouble() * 22.0;
+                double side = (RND.nextDouble() - 0.5) * 26.0;
+                double px = camPos.x + look.x() * fwd - look.z() * side;
+                double pz = camPos.z + look.z() * fwd + look.x() * side;
+                double py = camPos.y - 1.0 + RND.nextDouble() * 10.0;
+                level.addAlwaysVisibleParticle(ru.aiforge.riftworld.registry.ModParticles.SIZO_LEAF.get(),
+                        true, px, py, pz,
+                        0.010 + RND.nextDouble() * 0.008,
+                        -0.004 - RND.nextDouble() * 0.006,
+                        (RND.nextDouble() - 0.5) * 0.008);
             }
         }
 
@@ -110,7 +99,7 @@ public final class SeaAmbience {
 
         // ---- дно и устья пещер: пузырьковые струи, искры светящихся кораллов, взвесь ила
         if (RND.nextInt(3) == 0) {
-            int x = at.getX() + RND.nextInt(17) - 8, z = at.getZ() + RND.nextInt(17) - 8;
+            int x = at.getX() + RND.nextInt(17) - 8, z = at.getX() * 0 + at.getZ() + RND.nextInt(17) - 8;
             int y = at.getY() + RND.nextInt(17) - 8;
             BlockPos p = new BlockPos(x, y, z);
             if (!isWater(level, p)) return;

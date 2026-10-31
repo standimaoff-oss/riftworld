@@ -11,7 +11,7 @@
     "foliage_color": 16777215,
     "particle": {
       "type": "riftworld:sizo_leaf",
-      "probability": 0.005
+      "probability": 0.0012
     }
   },
   "spawners": {},
