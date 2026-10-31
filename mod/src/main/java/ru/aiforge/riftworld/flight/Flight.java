@@ -99,7 +99,7 @@ public final class Flight {
         State s = new State();
         s.from = core.getBlockPos();
         for (CityPlan.Plot pl : CityPlan.get().plots) {
-            if (!pl.template().equals("temple_great")) continue;
+            if (!pl.template().equals("temple_great") && !pl.template().equals("city_castle")) continue;
             int cx0 = (pl.x0() - 8) >> 4, cz0 = (pl.z0() - 8) >> 4, cx1 = (pl.x0() + pl.w() + 8) >> 4, cz1 = (pl.z0() + pl.d() + 8) >> 4;
             for (int cx = cx0; cx <= cx1; ++cx)
                 for (int cz = cz0; cz <= cz1; ++cz) s.scan.add(new ChunkPos(cx, cz));

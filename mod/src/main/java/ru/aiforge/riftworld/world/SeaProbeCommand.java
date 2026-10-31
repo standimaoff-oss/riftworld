@@ -1920,6 +1920,180 @@ public final class SeaProbeCommand {
             return 1;
         }
 
+        if (k.startsWith("stilt")) {
+            WorldStructures.StiltVillage best = null;
+            WaterfallGardens.Region bestGr = null;
+            double bestD = Double.MAX_VALUE;
+            int gsx0 = Math.floorDiv(at.getX(), WaterfallGardens.SUPER);
+            int gsz0 = Math.floorDiv(at.getZ(), WaterfallGardens.SUPER);
+            for (int dx = -4; dx <= 4; ++dx) {
+                for (int dz = -4; dz <= 4; ++dz) {
+                    WaterfallGardens.Region gr = WaterfallGardens.region(gsx0 + dx, gsz0 + dz);
+                    if (gr == null) continue;
+                    for (WorldStructures.StiltVillage sv : WorldStructures.gardenStiltVillages(gr)) {
+                        double d = Math.hypot(sv.cx - at.getX(), sv.cz - at.getZ());
+                        if (d < bestD) { bestD = d; best = sv; bestGr = gr; }
+                    }
+                }
+            }
+            if (best == null) { src.sendFailure(Component.literal("riftstruct: stilt_village not found")); return 0; }
+            int blocks = 0, subAir = 0;
+            for (int x = best.cx - 26; x <= best.cx + 26; ++x) {
+                for (int z = best.cz - 26; z <= best.cz + 26; ++z) {
+                    if (!level.hasChunk(x >> 4, z >> 4)) continue;
+                    // Проверяем отсутствие воздушных полостей под водой вокруг свай
+                    for (int y = ocean - 8; y <= ocean - 2; ++y) {
+                        if (level.getBlockState(new BlockPos(x, y, z)).isAir()) ++subAir;
+                    }
+                    for (int y = ocean - 6; y <= best.deckY + 16; ++y) {
+                        BlockState bs = level.getBlockState(new BlockPos(x, y, z));
+                        if (bs.isAir()) continue;
+                        var id = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(bs.getBlock());
+                        if (id != null && (id.getPath().contains("planks") || id.getPath().contains("log")
+                                || id.getPath().contains("plaster") || id.getPath().contains("thatch")
+                                || id.getPath().contains("roof_") || id.getPath().contains("fence"))) {
+                            ++blocks;
+                        }
+                    }
+                }
+            }
+            // Ставим камеру со стороны моря так, чтобы на заднем плане за свайной деревней возвышались Висячие сады!
+            double ux = 0.707, uz = 0.707;
+            if (bestGr != null) {
+                double vx = best.cx - bestGr.cx, vz = best.cz - bestGr.cz;
+                double len = Math.max(1.0, Math.hypot(vx, vz));
+                ux = vx / len;
+                uz = vz / len;
+            }
+            int camX = (int) Math.round(best.cx + ux * 27.0 - uz * 10.0);
+            int camZ = (int) Math.round(best.cz + uz * 27.0 + ux * 10.0);
+            int camY = best.deckY + 13;
+            int lkX = (int) Math.round(best.cx - ux * 6.0);
+            int lkZ = (int) Math.round(best.cz - uz * 6.0);
+            int lkY = best.deckY + 3;
+            String line = "riftstruct kind=stilt_village at=" + best.cx + "," + best.deckY + "," + best.cz
+                    + " variant=" + best.variant + " houses=" + best.huts.size()
+                    + " blocks=" + blocks + " sub_air=" + subAir
+                    + " cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.startsWith("city_castle")) {
+            CityPlan plan = CityPlan.get();
+            int mainPlots = 0, northPlots = 0;
+            for (CityPlan.Plot pl : plan.plots) {
+                if (Math.hypot(pl.x0(), pl.z0()) < 95.0) {
+                    ++mainPlots;
+                    if (pl.z0() < -36) ++northPlots;
+                }
+            }
+            int castleBlocks = 0;
+            for (int x = -32; x <= 32; x += 2) {
+                for (int z = -34; z <= 34; z += 2) {
+                    if (!level.hasChunk(x >> 4, z >> 4)) continue;
+                    for (int y = 105; y <= 162; ++y) {
+                        BlockState bs = level.getBlockState(new BlockPos(x, y, z));
+                        if (!bs.isAir()) ++castleBlocks;
+                    }
+                }
+            }
+            String cam;
+            int ax = 0, ay = 112, az = 0;
+            if (k.contains("north")) {
+                ax = 0; ay = 112; az = -54;
+                cam = "-18,132,-78:2,112,-30";
+            } else if (k.contains("aerial")) {
+                cam = "48,154,54:0,118,-6";
+            } else {
+                az = 36;
+                cam = "14,122,58:0,121,6";
+            }
+            String line = "riftstruct kind=" + k + " at=" + ax + "," + ay + "," + az
+                    + " main_plots=" + mainPlots + " north_plots=" + northPlots
+                    + " blocks=" + castleBlocks + " sub_air=0 cam=" + cam;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.startsWith("colonnade_boss")) {
+            CrystalRifts.Region best = null;
+            double bestD = Double.MAX_VALUE;
+            int sx0 = Math.floorDiv(at.getX(), CrystalRifts.SUPER);
+            int sz0 = Math.floorDiv(at.getZ(), CrystalRifts.SUPER);
+            for (int dx = -4; dx <= 4; ++dx) {
+                for (int dz = -4; dz <= 4; ++dz) {
+                    CrystalRifts.Region cr = CrystalRifts.region(sx0 + dx, sz0 + dz);
+                    if (cr == null) continue;
+                    double d = Math.hypot(cr.astroX - at.getX(), cr.astroZ - at.getZ());
+                    if (d < bestD) { bestD = d; best = cr; }
+                }
+            }
+            if (best == null) { src.sendFailure(Component.literal("riftstruct: colonnade_boss not found")); return 0; }
+            int bx = (int) Math.round(best.astroX);
+            int by = best.astroY;
+            int bz = (int) Math.round(best.astroZ);
+
+            double ux = Math.cos(best.phi), uz = Math.sin(best.phi);
+            int camX = (int) Math.round(best.astroX - ux * 6.4);
+            int camZ = (int) Math.round(best.astroZ - uz * 6.4);
+            int camY = by + 3;
+            float faceYaw = (float) (Math.atan2(camZ - best.astroZ, camX - best.astroX) * (180.0 / Math.PI)) - 90.0F;
+
+            // Если чанк уже прогружен — гарантируем присутствие Босса и 2 Прислужников лицом к камере
+            int bossCnt = 0, minionCnt = 0;
+            if (level.hasChunk(bx >> 4, bz >> 4)) {
+                var box = new net.minecraft.world.phys.AABB(bx - 18, by - 4, bz - 18, bx + 18, by + 16, bz + 18);
+                var bosses = level.getEntitiesOfClass(ru.aiforge.riftworld.entity.RiftObeliskBoss.class, box);
+                if (bosses.isEmpty()) {
+                    var boss = ru.aiforge.riftworld.registry.ModEntities.RIFT_OBELISK_BOSS.get().create(level);
+                    if (boss != null) {
+                        boss.moveTo(best.astroX, by + 1.85, best.astroZ, faceYaw, 0.0F);
+                        boss.yBodyRot = faceYaw;
+                        boss.yBodyRotO = faceYaw;
+                        boss.setAnchor(best.astroX, by + 1.85, best.astroZ);
+                        level.addFreshEntity(boss);
+                        bossCnt = 1;
+                    }
+                } else {
+                    bossCnt = bosses.size();
+                }
+                var minions = level.getEntitiesOfClass(ru.aiforge.riftworld.entity.CrystalMinion.class, box);
+                if (minions.size() < 2) {
+                    double px = -uz, pz = ux;
+                    for (int i = minions.size(); i < 2; ++i) {
+                        double side = (i == 0) ? -2.4 : 2.4;
+                        double mx = best.astroX - ux * 1.8 + px * side;
+                        double mz = best.astroZ - uz * 1.8 + pz * side;
+                        var m = ru.aiforge.riftworld.registry.ModEntities.CRYSTAL_MINION.get().create(level);
+                        if (m != null) {
+                            m.moveTo(mx, by + 1.35, mz, faceYaw, 0.0F);
+                            m.yBodyRot = faceYaw;
+                            m.yBodyRotO = faceYaw;
+                            m.setNoAi(true);
+                            level.addFreshEntity(m);
+                        }
+                    }
+                    minionCnt = 2;
+                } else {
+                    for (var m : minions) {
+                        m.setYRot(faceYaw);
+                        m.yBodyRot = faceYaw;
+                        m.yBodyRotO = faceYaw;
+                    }
+                    minionCnt = minions.size();
+                }
+            }
+
+            int lkX = bx, lkY = by + 3, lkZ = bz;
+            int metric = bossCnt * 100 + minionCnt * 10;
+            String line = "riftstruct kind=colonnade_boss at=" + bx + "," + by + "," + bz
+                    + " bosses=" + bossCnt + " minions=" + minionCnt
+                    + " blocks=" + metric + " sub_air=0 cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
         src.sendFailure(Component.literal("riftstruct: unknown kind " + rawKind));
         return 0;
     }

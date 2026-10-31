@@ -20,6 +20,10 @@ public class ModelItemRenderer extends BlockEntityWithoutLevelRenderer {
 
     @Override
     public void renderByItem(ItemStack stack, ItemDisplayContext ctx, PoseStack ps, MultiBufferSource buffers, int light, int overlay) {
+        if (stack.getItem() instanceof ru.aiforge.riftworld.item.CrystalGeoItem cgi) {
+            renderCrystalGeoItem(cgi, ctx, ps, buffers, light, overlay);
+            return;
+        }
         if (stack.getItem() instanceof ru.aiforge.riftworld.item.GlbItem gi) {
             renderGlbItem(gi, ctx, ps, buffers, light, overlay);
             return;
@@ -115,6 +119,102 @@ public class ModelItemRenderer extends BlockEntityWithoutLevelRenderer {
             }
         }
         GlbRenderer.render(lm, lm.staticPose(), ps, buffers, light, overlay);
+        ps.popPose();
+    }
+
+    private void renderCrystalGeoItem(ru.aiforge.riftworld.item.CrystalGeoItem cgi, ItemDisplayContext ctx,
+                                      PoseStack ps, MultiBufferSource buffers, int light, int overlay) {
+        String geoName = cgi.geoModel();
+        ru.aiforge.riftworld.client.geo.GeoModel gm = ru.aiforge.riftworld.client.geo.GeoModel.of(geoName);
+        if (gm == null) return;
+        gm.animate(0.0F);
+        float time = (System.currentTimeMillis() % 360000L) * 0.02F;
+
+        if ("astral_prism".equals(geoName)) {
+            try {
+                var ra = gm.root.getChild("ring_a");
+                var rb = gm.root.getChild("ring_b");
+                var co = gm.root.getChild("core");
+                ra.yRot += time * 0.09F;
+                rb.xRot -= time * 0.07F;
+                rb.zRot += time * 0.06F;
+                co.yRot = time * 0.08F;
+            } catch (Exception ignored) {
+            }
+        }
+
+        boolean isShield = "crystal_shield".equals(geoName);
+        boolean isKatar = "crystal_katar".equals(geoName);
+        boolean isPrism = "astral_prism".equals(geoName);
+
+        ps.pushPose();
+        ps.translate(0.5, 0.5, 0.5);
+        switch (ctx) {
+            case FIRST_PERSON_RIGHT_HAND, FIRST_PERSON_LEFT_HAND -> {
+                float side = ctx == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND ? 1.0F : -1.0F;
+                if (isKatar) {
+                    ps.translate(0.08 * side, -0.14, -0.12);
+                    ps.mulPose(com.mojang.math.Axis.XP.rotationDegrees(-18.0F));
+                    ps.mulPose(com.mojang.math.Axis.YP.rotationDegrees(12.0F * side));
+                    ps.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(-8.0F * side));
+                    ps.scale(0.72F, 0.72F, 0.72F);
+                } else if (isShield) {
+                    ps.translate(0.06 * side, -0.34, -0.05);
+                    ps.mulPose(com.mojang.math.Axis.YP.rotationDegrees(-22.0F * side));
+                    ps.scale(0.34F, 0.34F, 0.34F);
+                } else if (isPrism) {
+                    ps.translate(0.04 * side, -0.04 + 0.03 * Math.sin(time * 0.1F), -0.06);
+                    ps.scale(0.68F, 0.68F, 0.68F);
+                } else {
+                    ps.translate(0.04 * side, -0.08, -0.08);
+                    ps.mulPose(com.mojang.math.Axis.XP.rotationDegrees(-14.0F));
+                    ps.scale(0.76F, 0.76F, 0.76F);
+                }
+            }
+            case THIRD_PERSON_RIGHT_HAND, THIRD_PERSON_LEFT_HAND -> {
+                if (isKatar) {
+                    ps.translate(0.0, 0.05, -0.12);
+                    ps.scale(0.78F, 0.78F, 0.78F);
+                } else if (isShield) {
+                    ps.translate(0.0, -0.35, -0.08);
+                    ps.scale(0.42F, 0.42F, 0.42F);
+                } else {
+                    ps.scale(0.68F, 0.68F, 0.68F);
+                }
+            }
+            default -> {
+                // GUI / Ground / Fixed
+                float gScale = ctx == ItemDisplayContext.GROUND ? 0.65F : 1.0F;
+                if (isKatar) {
+                    ps.translate(0.12, -0.10, 0.0);
+                    ps.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(-45.0F));
+                    ps.mulPose(com.mojang.math.Axis.YP.rotationDegrees(90.0F));
+                    ps.scale(0.62F * gScale, 0.62F * gScale, 0.62F * gScale);
+                } else if (isShield) {
+                    ps.translate(0.0, -0.38, 0.0);
+                    ps.mulPose(com.mojang.math.Axis.YP.rotationDegrees(25.0F));
+                    ps.mulPose(com.mojang.math.Axis.XP.rotationDegrees(12.0F));
+                    ps.scale(0.36F * gScale, 0.36F * gScale, 0.36F * gScale);
+                } else if (isPrism) {
+                    ps.mulPose(com.mojang.math.Axis.XP.rotationDegrees(22.0F));
+                    ps.mulPose(com.mojang.math.Axis.YP.rotationDegrees(35.0F));
+                    ps.scale(0.78F * gScale, 0.78F * gScale, 0.78F * gScale);
+                } else {
+                    ps.translate(0.0, -0.04, 0.0);
+                    ps.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(-35.0F));
+                    ps.mulPose(com.mojang.math.Axis.YP.rotationDegrees(65.0F));
+                    ps.scale(0.78F * gScale, 0.78F * gScale, 0.78F * gScale);
+                }
+            }
+        }
+
+        net.minecraft.resources.ResourceLocation tex = new net.minecraft.resources.ResourceLocation(
+                ru.aiforge.riftworld.RiftWorld.MODID, "textures/entity/" + cgi.geoTexture() + ".png");
+        var vc = buffers.getBuffer(gm.translucent
+                ? net.minecraft.client.renderer.RenderType.entityTranslucent(tex)
+                : net.minecraft.client.renderer.RenderType.entityCutoutNoCull(tex));
+        int glowLight = Math.max(light, net.minecraft.client.renderer.LightTexture.pack(13, 15));
+        gm.root.render(ps, vc, glowLight, overlay, 1.0F, 1.0F, 1.0F, 1.0F);
         ps.popPose();
     }
 }

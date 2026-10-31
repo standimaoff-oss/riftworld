@@ -1458,6 +1458,49 @@ biome_section() {
   probe_and_shot_struct "white_village"  200 "83_white_village_hamlet" 0 1
   probe_and_shot_struct "burned_village" 140 "84_burned_village_ashen" 0 1
 
+  # ---------- v0.19.0: Надводная свайная деревня, Королевский Замок города, Босс Колоннады, Прислужники и 3D-оружие ----------
+  echo "== v0.19.0: свайная деревня у Висячих садов, замок в центре города, Босс Колоннады и 3D-оружие =="
+  probe_and_shot_struct "stilt_village"      200 "85_stilt_village_gardens"      0 1
+  probe_and_shot_struct "city_castle_front" 2000 "86_city_castle_barbican"       0 0
+  probe_and_shot_struct "city_castle_aerial" 2000 "87_city_castle_aerial"        0 0
+  probe_and_shot_struct "city_castle_north" 2000 "88_city_castle_rear_district"  0 0
+  probe_and_shot_struct "colonnade_boss"     110 "89_colonnade_boss_and_minions" 0 0
+
+  # Витрина 3D-оружия от 1-го лица на Колоннаде (Длань Осколка + активный 3D щит Бастиона Граней + Призма Архонта)
+  CB_LINE=$(EL execute at TestPlayer in riftworld:elisar run riftstruct colonnade_boss 2>&1 | tr '\r\n' '  ')
+  CB_CAM=$(printf '%s' "$CB_LINE" | grep -o 'cam=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^cam=//')
+  if [ -n "${CB_CAM:-}" ]; then
+    EL gamemode creative TestPlayer >/dev/null 2>&1 || true
+    key F1
+    sleep 1
+    EL clear TestPlayer >/dev/null 2>&1 || true
+    EL item replace entity TestPlayer weapon.mainhand with riftworld:crystal_katar >/dev/null 2>&1 || true
+    EL item replace entity TestPlayer hotbar.1 with riftworld:crystal_barrage 16 >/dev/null 2>&1 || true
+    EL item replace entity TestPlayer hotbar.2 with riftworld:crystal_aegis 16 >/dev/null 2>&1 || true
+    EL item replace entity TestPlayer hotbar.3 with riftworld:astral_prism >/dev/null 2>&1 || true
+    CX1=$(printf '%s' "$CB_CAM" | cut -d: -f1 | cut -d, -f1)
+    CY1=$(printf '%s' "$CB_CAM" | cut -d: -f1 | cut -d, -f2)
+    CZ1=$(printf '%s' "$CB_CAM" | cut -d: -f1 | cut -d, -f3)
+    LX1=$(printf '%s' "$CB_CAM" | cut -d: -f2 | cut -d, -f1)
+    LY1=$(printf '%s' "$CB_CAM" | cut -d: -f2 | cut -d, -f2)
+    LZ1=$(printf '%s' "$CB_CAM" | cut -d: -f2 | cut -d, -f3)
+    EL tp TestPlayer "$CX1" "$((CY1 - 1))" "$CZ1" facing "$LX1" "$LY1" "$LZ1" >/dev/null 2>&1 || true
+    sleep 2
+    EL execute at TestPlayer positioned ^ ^ ^2.2 run summon riftworld:crystal_shield ~ ~ ~ >/dev/null 2>&1 || true
+    sleep 3
+    shot "90_crystal_katar_and_shield"
+    EL execute at TestPlayer run kill @e[type=riftworld:crystal_shield,distance=..16] >/dev/null 2>&1 || true
+    EL item replace entity TestPlayer weapon.mainhand with riftworld:astral_prism >/dev/null 2>&1 || true
+    EL execute at TestPlayer positioned ^-0.4 ^0.2 ^1.8 run summon riftworld:crystal_shard ~ ~ ~ {NoGravity:1b} >/dev/null 2>&1 || true
+    EL execute at TestPlayer positioned ^0.0 ^0.35 ^1.9 run summon riftworld:crystal_shard ~ ~ ~ {NoGravity:1b} >/dev/null 2>&1 || true
+    EL execute at TestPlayer positioned ^0.4 ^0.2 ^1.8 run summon riftworld:crystal_shard ~ ~ ~ {NoGravity:1b} >/dev/null 2>&1 || true
+    sleep 3
+    shot "91_astral_prism_and_barrage"
+    EL execute at TestPlayer run kill @e[type=riftworld:crystal_shard,distance=..16] >/dev/null 2>&1 || true
+    key F1
+    log "  OK   3D-оружие Колоннады (crystal_katar, crystal_barrage, crystal_aegis, astral_prism) выдано и отснято"
+  fi
+
   EL gamemode creative TestPlayer >/dev/null 2>&1 || true
 }
 biome_section || log "  FAIL секция биомов упала с кодом $?"

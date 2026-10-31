@@ -69,12 +69,14 @@ public final class WorldStructures {
     public static final int SUPER_CRASH = 620;
     public static final int SUPER_SUNKEN = 580;
     public static final int SUPER_OCEAN_BLDG = 660;
+    public static final int SUPER_STILT = 680;
 
     private static final long SEED_VILLAGE = 0x711A6E01L;
     private static final long SEED_BURNED = 0xB07ED911L;
     private static final long SEED_CRASH = 0xC7A5451FL;
     private static final long SEED_SUNKEN = 0x504CE451L;
     private static final long SEED_OBLDG = 0x0CEA4B1DL;
+    private static final long SEED_STILT = 0x57117A9EL;
 
     /** Небольшие шаблоны Белого города: {имя, ширина_south, глубина_south}. */
     private static final String[][] SMALL_CITY_HOUSES = {
@@ -85,7 +87,10 @@ public final class WorldStructures {
             {"hunter_house", "10", "9"},
             {"shop", "10", "9"},
             {"shop2", "10", "9"},
-            {"forge", "11", "10"}
+            {"forge", "11", "10"},
+            {"bakery", "11", "9"},
+            {"guardhouse", "10", "9"},
+            {"manor", "12", "10"}
     };
 
     /** Сгоревшие шаблоны (из тех же малых домов Белого города): {имя, ширина_south, глубина_south}. */
@@ -170,12 +175,36 @@ public final class WorldStructures {
         }
     }
 
+    /** Отдельная свайная постройка в надводной деревне (kind: 0=дом рыбака, 1=двухэтажный терем, 2=эллинг с лодкой, 3=лавка под навесом, 4=маячная башня). */
+    public record StiltHut(int cx, int cz, int hw, int hd, int deckY, int kind, Direction facing) {
+    }
+
+    /** Надводная деревня на сваях: часто спавнится в лагунах возле «Висячих садов», а также на морских отмелях. */
+    public static final class StiltVillage {
+        public final int cx, cz, deckY, variant;
+        public final boolean nearGardens;
+        public final double reachR;
+        public final List<StiltHut> huts;
+
+        StiltVillage(int cx, int cz, int deckY, int variant, boolean nearGardens, double reachR, List<StiltHut> huts) {
+            this.cx = cx;
+            this.cz = cz;
+            this.deckY = deckY;
+            this.variant = variant;
+            this.nearGardens = nearGardens;
+            this.reachR = reachR;
+            this.huts = Collections.unmodifiableList(huts);
+        }
+    }
+
     private static final ConcurrentHashMap<Long, Optional<Village>> WHITE_CACHE = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Long, Optional<Village>> BURNED_ISLE_CACHE = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Long, Village> ASHEN_PLAIN_CACHE = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Long, Optional<ShipSite>> CRASH_CACHE = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Long, Optional<ShipSite>> SUNKEN_CACHE = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Long, Optional<OceanBuilding>> OBLDG_CACHE = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Long, List<StiltVillage>> GARDEN_STILT_CACHE = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Long, Optional<StiltVillage>> SEA_STILT_CACHE = new ConcurrentHashMap<>();
 
     private WorldStructures() {
     }
@@ -439,7 +468,166 @@ public final class WorldStructures {
 
     public static boolean inFootprint(double x, double z, double margin) {
         Village v = anyVillageAt(x, z, 52 + margin);
-        return v != null && v.inFootprint(x, z, margin);
+        if (v != null && v.inFootprint(x, z, margin)) return true;
+        StiltVillage sv = stiltVillageNear(x, z, 36 + margin);
+        return sv != null && Math.hypot(x - sv.cx, z - sv.cz) <= sv.reachR + margin;
+    }
+
+    // =========================================================================
+    // 6. НАДВОДНЫЕ ДЕРЕВНИ НА СВАЯХ (ЧАСТО ВОЗЛЕ «ВИСЯЧИХ САДОВ» + В МОРЕ)
+    // =========================================================================
+    public static List<StiltVillage> gardenStiltVillages(WaterfallGardens.Region rg) {
+        if (rg == null) return Collections.emptyList();
+        return GARDEN_STILT_CACHE.computeIfAbsent(key(rg.cx, rg.cz), k -> genGardenStiltVillages(rg));
+    }
+
+    private static List<StiltVillage> genGardenStiltVillages(WaterfallGardens.Region rg) {
+        Random rnd = new Random(SEED_STILT ^ (rg.cx * 4827149287L + rg.cz * 9182736451L));
+        int want = rnd.nextDouble() < 0.72 ? 2 : 1; // 1..2 свайные деревни в лагуне у каждого архипелага Висячих садов!
+        List<StiltVillage> res = new ArrayList<>(want);
+        int ocean = CityPlan.get().ocean;
+        double baseAng = rnd.nextDouble() * Math.PI * 2.0;
+
+        for (int slot = 0; slot < want; ++slot) {
+            for (int attempt = 0; attempt < 36; ++attempt) {
+                double ang = baseAng + slot * Math.PI + (attempt * 0.21) * (attempt % 2 == 0 ? 1 : -1);
+                // Ищем внешний берег архипелага в направлении ang и отступаем 25..34 блока в чистую лагуну
+                CityPlan.Island outer = rg.hub;
+                double bestProj = -1e9;
+                for (CityPlan.Island gi : rg.isles) {
+                    double proj = (gi.cx - rg.cx) * Math.cos(ang) + (gi.cz - rg.cz) * Math.sin(ang) + gi.maxReach();
+                    if (proj > bestProj) {
+                        bestProj = proj;
+                        outer = gi;
+                    }
+                }
+                double offshore = outer.maxReach() + 25.0 + (attempt % 4) * 3.0;
+                int vx = (int) Math.round(outer.cx + Math.cos(ang) * offshore);
+                int vz = (int) Math.round(outer.cz + Math.sin(ang) * offshore);
+
+                if (nearProtectedZones(vx, vz, 55)) continue;
+                if (AshenLands.blocks(vx, vz, 95) || EmberRuins.siteAt(vx, vz) != null || MistKeep.inside(vx, vz)) continue;
+                if (VioletHills.nearAny(vx, vz, 34, 30) || CrystalRifts.nearAny(vx, vz, 34, 30) || SizoGrove.regionAt(vx, vz) != null) continue;
+                if (anyVillageAt(vx, vz, 85) != null) continue;
+
+                // Проверяем, что вся акватория деревни (±24 блока) лежит в воде и НЕ налезает на сушу садов
+                boolean clearLagoon = true;
+                for (int dx = -24; dx <= 24 && clearLagoon; dx += 8) {
+                    for (int dz = -24; dz <= 24; dz += 8) {
+                        if (WaterfallGardens.landAt(vx + dx, vz + dz) != null) {
+                            clearLagoon = false;
+                            break;
+                        }
+                        for (CityPlan.Island gi : rg.isles) {
+                            if (gi.t(vx + dx, vz + dz) > 0.06) {
+                                clearLagoon = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (!clearLagoon) continue;
+                boolean tooClose = false;
+                for (StiltVillage prev : res) {
+                    if (Math.hypot(vx - prev.cx, vz - prev.cz) < 95.0) {
+                        tooClose = true;
+                        break;
+                    }
+                }
+                if (tooClose) continue;
+
+                res.add(makeStiltLayout(vx, vz, ocean + 3, rnd.nextInt(3), true, rnd));
+                break;
+            }
+        }
+        return res.isEmpty() ? Collections.emptyList() : Collections.unmodifiableList(res);
+    }
+
+    public static StiltVillage seaStiltVillage(int sx, int sz) {
+        return SEA_STILT_CACHE.computeIfAbsent(key(sx, sz), k -> Optional.ofNullable(genSeaStiltVillage(sx, sz))).orElse(null);
+    }
+
+    private static StiltVillage genSeaStiltVillage(int sx, int sz) {
+        Random rnd = new Random(SEED_STILT ^ 0x33AA55CCL ^ (sx * 1928374651L + sz * 5647382913L));
+        if (rnd.nextDouble() > 0.45) return null;
+        int margin = 115;
+        int ocean = CityPlan.get().ocean;
+        for (int tries = 0; tries < 14; ++tries) {
+            int cx = sx * SUPER_STILT + margin + rnd.nextInt(SUPER_STILT - 2 * margin);
+            int cz = sz * SUPER_STILT + margin + rnd.nextInt(SUPER_STILT - 2 * margin);
+            if (!openDeepSea(cx, cz, 8, true)) continue;
+            if (crashedShipNear(cx, cz, 85) != null || sunkenShipNear(cx, cz, 85) != null || oceanBuildingNear(cx, cz, 85) != null) continue;
+            return makeStiltLayout(cx, cz, ocean + 3, rnd.nextInt(3), false, rnd);
+        }
+        return null;
+    }
+
+    private static StiltVillage makeStiltLayout(int cx, int cz, int deckY, int variant, boolean nearGardens, Random rnd) {
+        // 4..6 свайных построек вокруг центральной деревянной площади-пристани на мостиках:
+        //  kind 0 = рыбацкий дом с сушильней сетей, 1 = двухэтажный свайный терем,
+        //  2 = крытый эллинг с лодкой, 3 = торговая лавка под навесом, 4 = маячная башня лагуны
+        int count = switch (variant) {
+            case 0 -> 5 + rnd.nextInt(2); // 5..6: круговая лагунная слобода с эллингом и теремом
+            case 1 -> 5;                  // 5: крестообразная пристань с маячной башней
+            default -> 4 + rnd.nextInt(2); // 4..5: уютный рыбацкий посад на воде
+        };
+        int[][] templates = {
+                {4, 3, 0}, // 9x7 рыбацкий дом
+                {5, 4, 1}, // 11x9 двухэтажный свайный терем
+                {5, 4, 2}, // 11x9 крытый эллинг с лодкой на воде
+                {4, 4, 3}, // 9x9 лавка торговца под полосатым навесом
+                {3, 3, 4}  // 7x7 высокая дозорно-маячная вышка
+        };
+        List<StiltHut> huts = new ArrayList<>(count);
+        double a0 = rnd.nextDouble() * Math.PI * 2.0;
+        for (int i = 0; i < count; ++i) {
+            double ang = a0 + (Math.PI * 2.0 * i) / count + (rnd.nextDouble() - 0.5) * 0.18;
+            double dist = 15.0 + (i % 2) * 2.5;
+            int hx = cx + (int) Math.round(Math.cos(ang) * dist);
+            int hz = cz + (int) Math.round(Math.sin(ang) * dist);
+            int pick = (i == 0) ? 1 : (i == 1 ? 2 : (i == 2 && variant == 1 ? 4 : (i == 3 ? 3 : 0)));
+            int hw = templates[pick][0];
+            int hd = templates[pick][1];
+            int kind = templates[pick][2];
+            Direction face;
+            double dxToHub = cx - hx, dzToHub = cz - hz;
+            if (Math.abs(dxToHub) > Math.abs(dzToHub)) {
+                face = dxToHub > 0 ? Direction.EAST : Direction.WEST;
+            } else {
+                face = dzToHub > 0 ? Direction.SOUTH : Direction.NORTH;
+            }
+            if (face == Direction.EAST || face == Direction.WEST) {
+                int tmp = hw;
+                hw = hd;
+                hd = tmp;
+            }
+            int hDeck = deckY + ((i % 2 == 1 && kind != 2) ? 1 : 0);
+            huts.add(new StiltHut(hx, hz, hw, hd, hDeck, kind, face));
+        }
+        return new StiltVillage(cx, cz, deckY, variant, nearGardens, 26.0, huts);
+    }
+
+    public static StiltVillage stiltVillageNear(double x, double z, double range) {
+        int gsx = Math.floorDiv((int) Math.floor(x), WaterfallGardens.SUPER);
+        int gsz = Math.floorDiv((int) Math.floor(z), WaterfallGardens.SUPER);
+        for (int dx = -1; dx <= 1; ++dx) {
+            for (int dz = -1; dz <= 1; ++dz) {
+                WaterfallGardens.Region rg = WaterfallGardens.region(gsx + dx, gsz + dz);
+                if (rg == null) continue;
+                for (StiltVillage sv : gardenStiltVillages(rg)) {
+                    if (Math.abs(x - sv.cx) <= range && Math.abs(z - sv.cz) <= range) return sv;
+                }
+            }
+        }
+        int ssx = Math.floorDiv((int) Math.floor(x), SUPER_STILT);
+        int ssz = Math.floorDiv((int) Math.floor(z), SUPER_STILT);
+        for (int dx = -1; dx <= 1; ++dx) {
+            for (int dz = -1; dz <= 1; ++dz) {
+                StiltVillage sv = seaStiltVillage(ssx + dx, ssz + dz);
+                if (sv != null && Math.abs(x - sv.cx) <= range && Math.abs(z - sv.cz) <= range) return sv;
+            }
+        }
+        return null;
     }
 
     // =========================================================================
@@ -448,6 +636,17 @@ public final class WorldStructures {
     private static boolean openDeepSea(int cx, int cz, int minDepthBelowSea, boolean surfaceSkyClear) {
         if (overlapsSpecialBiomes(cx, cz, 55)) return false;
         if (anyVillageAt(cx, cz, 95) != null) return false;
+        // Проверяем лагунные свайные деревни у Висячих садов (без рекурсии в seaStiltVillage)
+        int gsx = Math.floorDiv(cx, WaterfallGardens.SUPER), gsz = Math.floorDiv(cz, WaterfallGardens.SUPER);
+        for (int dx = -1; dx <= 1; ++dx) {
+            for (int dz = -1; dz <= 1; ++dz) {
+                WaterfallGardens.Region rg = WaterfallGardens.region(gsx + dx, gsz + dz);
+                if (rg == null) continue;
+                for (StiltVillage sv : gardenStiltVillages(rg)) {
+                    if (Math.hypot(cx - sv.cx, cz - sv.cz) < 95.0) return false;
+                }
+            }
+        }
         CityPlan plan = CityPlan.get();
         for (int dx = -24; dx <= 24; dx += 12) {
             for (int dz = -24; dz <= 24; dz += 12) {
@@ -623,6 +822,12 @@ public final class WorldStructures {
         OceanBuilding ob = oceanBuildingNear(midX, midZ, 34);
         if (ob != null) {
             buildOceanBuilding(chunk, mp, plan, ob, x0, z0);
+        }
+
+        // 6) Надводная деревня на сваях (часто в лагунах возле Висячих садов + на отмелях)
+        StiltVillage sv = stiltVillageNear(midX, midZ, 42);
+        if (sv != null) {
+            buildStiltVillage(chunk, mp, plan, sv, x0, z0);
         }
     }
 
@@ -1323,6 +1528,357 @@ public final class WorldStructures {
             for (int lx = -6; lx <= 6; lx += 6) {
                 putChunk(chunk, mp, x0, z0, b.cx + lx, fy + 1, b.cz, keepM);
                 putChunk(chunk, mp, x0, z0, b.cx + lx, fy + 2, b.cz, cageLantern);
+            }
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // 6. Постройка надводной деревни на сваях (StiltVillage: сваи до дна, мостки, лодки и 5 типов домов)
+    // -------------------------------------------------------------------------
+    private static void drivePiling(ChunkAccess chunk, BlockPos.MutableBlockPos mp, CityPlan plan,
+                                    int x0, int z0, int px, int pz, int topY,
+                                    BlockState logY, BlockState footing) {
+        if (px < x0 || px > x0 + 15 || pz < z0 || pz > z0 + 15) return;
+        int floorY = Math.max(4, ElisarChunkGenerator.oceanFloor(plan, px, pz) - 1);
+        for (int y = topY; y >= floorY; --y) {
+            BlockState cur = chunk.getBlockState(mp.set(px, y, pz));
+            // Если ниже дна уже твёрдая скала (например подводная терраса садов), опираемся прямо на неё
+            if (y < plan.ocean - 2 && cur.isSolidRender(chunk, mp) && y < topY - 4) {
+                putChunk(chunk, mp, x0, z0, px, y + 1, pz, footing);
+                break;
+            }
+            putChunk(chunk, mp, x0, z0, px, y, pz, y <= floorY + 2 ? footing : logY);
+        }
+    }
+
+    private static void buildStiltVillage(ChunkAccess chunk, BlockPos.MutableBlockPos mp,
+                                          CityPlan plan, StiltVillage sv, int x0, int z0) {
+        int ocean = plan.ocean;
+        int dy0 = sv.deckY; // ocean + 3 (y = 67)
+        BlockState logY = (sv.nearGardens ? ElisarBlocks.GARDEN_LOG.get() : ElisarBlocks.AMBRA_LOG.get()).defaultBlockState();
+        BlockState sizoLogY = ElisarBlocks.SIZO_LOG.get().defaultBlockState();
+        BlockState footing = ElisarBlocks.LIMESTONE_MOSSY.get().defaultBlockState();
+        BlockState deck = ElisarBlocks.AMBRA_PLANKS.get().defaultBlockState();
+        BlockState deckAlt = ElisarBlocks.SIZO_PLANKS.get().defaultBlockState();
+        BlockState deckSlabTop = ElisarBlocks.AMBRA_SLAB.get().defaultBlockState().setValue(SlabBlock.TYPE, SlabType.TOP);
+        BlockState deckSlabBot = ElisarBlocks.AMBRA_SLAB.get().defaultBlockState().setValue(SlabBlock.TYPE, SlabType.BOTTOM);
+        BlockState plaster = ElisarBlocks.PLASTER.get().defaultBlockState();
+        BlockState timber = ElisarBlocks.TIMBER_CROSS.get().defaultBlockState();
+        BlockState thatch = ElisarBlocks.THATCH.get().defaultBlockState();
+        BlockState roofBlue = ElisarBlocks.ROOF_BLUE.get().defaultBlockState();
+        BlockState roofRed = ElisarBlocks.ROOF_RED.get().defaultBlockState();
+        BlockState gold = ModBlocks.TEMPLE_GOLD.get().defaultBlockState();
+        BlockState fence = ElisarBlocks.FENCE.get().defaultBlockState();
+        BlockState glass = Blocks.LIGHT_BLUE_STAINED_GLASS.defaultBlockState();
+        BlockState lanternH = Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING, true);
+        BlockState lantern = Blocks.LANTERN.defaultBlockState();
+        BlockState seaLantern = Blocks.SEA_LANTERN.defaultBlockState();
+        BlockState barrel = Blocks.BARREL.defaultBlockState().setValue(BarrelBlock.FACING, Direction.UP);
+        BlockState chest = Blocks.CHEST.defaultBlockState();
+        BlockState chain = Blocks.CHAIN.defaultBlockState();
+        BlockState campfire = Blocks.CAMPFIRE.defaultBlockState().setValue(CampfireBlock.LIT, true);
+        BlockState air = Blocks.AIR.defaultBlockState();
+
+        // А) Центральная восьмигранная свайная площадь-пристань (R = 5.5) с беседкой-фонарём и лодочным пирсом
+        for (int dx = -6; dx <= 6; ++dx) {
+            for (int dz = -6; dz <= 6; ++dz) {
+                double d = Math.hypot(dx, dz);
+                if (d <= 5.6) {
+                    putChunk(chunk, mp, x0, z0, sv.cx + dx, dy0, sv.cz + dz,
+                            (Math.abs(dx) + Math.abs(dz)) % 3 == 0 ? deckAlt : deck);
+                    for (int ay = dy0 + 1; ay <= dy0 + 5; ++ay) {
+                        putChunk(chunk, mp, x0, z0, sv.cx + dx, ay, sv.cz + dz, air);
+                    }
+                    // Перила по краю кроме выходов на мостики и спуска к воде
+                    if (d >= 4.6 && Math.abs(dx) > 1 && Math.abs(dz) > 1) {
+                        putChunk(chunk, mp, x0, z0, sv.cx + dx, dy0 + 1, sv.cz + dz, fence);
+                    }
+                }
+            }
+        }
+        int[][] hubPilings = {{-4, -4}, {4, -4}, {-4, 4}, {4, 4}, {0, -5}, {0, 5}, {-5, 0}, {5, 0}, {0, 0}};
+        for (int[] hp : hubPilings) {
+            drivePiling(chunk, mp, plan, x0, z0, sv.cx + hp[0], sv.cz + hp[1], dy0, logY, footing);
+        }
+        // Центральная крытая беседка-маячок на площади
+        for (int sx : new int[]{-2, 2}) {
+            for (int sz : new int[]{-2, 2}) {
+                for (int y = dy0 + 1; y <= dy0 + 4; ++y) {
+                    putChunk(chunk, mp, x0, z0, sv.cx + sx, y, sv.cz + sz, sizoLogY);
+                }
+            }
+        }
+        for (int dx = -3; dx <= 3; ++dx) {
+            for (int dz = -3; dz <= 3; ++dz) {
+                int distM = Math.max(Math.abs(dx), Math.abs(dz));
+                if (distM <= 3) putChunk(chunk, mp, x0, z0, sv.cx + dx, dy0 + 5 + (3 - distM) / 2, sv.cz + dz, roofBlue);
+            }
+        }
+        putChunk(chunk, mp, x0, z0, sv.cx, dy0 + 6, sv.cz, gold);
+        putChunk(chunk, mp, x0, z0, sv.cx, dy0 + 4, sv.cz, lanternH);
+        putChunk(chunk, mp, x0, z0, sv.cx + 2, dy0 + 1, sv.cz, barrel);
+        putChunk(chunk, mp, x0, z0, sv.cx - 2, dy0 + 1, sv.cz + 1, chest);
+
+        // Низкий плавучий причал у южного края площади (ocean + 1) + деревянная рыбацкая лодка на воде!
+        for (int dz = 6; dz <= 10; ++dz) {
+            int wy = dz == 6 ? dy0 - 1 : (dz == 7 ? ocean + 1 : ocean + 1);
+            for (int dx = -1; dx <= 1; ++dx) {
+                putChunk(chunk, mp, x0, z0, sv.cx + dx, wy, sv.cz + dz, deck);
+            }
+            if (dz == 10) {
+                drivePiling(chunk, mp, plan, x0, z0, sv.cx - 1, sv.cz + dz, ocean + 2, logY, footing);
+                drivePiling(chunk, mp, plan, x0, z0, sv.cx + 1, sv.cz + dz, ocean + 2, logY, footing);
+                putChunk(chunk, mp, x0, z0, sv.cx + 1, ocean + 3, sv.cz + dz, lantern);
+            }
+        }
+        buildMooredSkiff(chunk, mp, x0, z0, sv.cx + 4, ocean + 1, sv.cz + 9, deckAlt, logY, lantern);
+
+        // Б) Поднятые деревянные мостики (ширина 3, с перилами и сваями каждые 5 блоков) от площади к каждому дому
+        for (StiltHut h : sv.huts) {
+            double vx = h.cx - sv.cx, vz = h.cz - sv.cz;
+            double len = Math.max(1.0, Math.hypot(vx, vz));
+            int steps = (int) Math.ceil(len);
+            for (int s = 4; s <= steps - 3; ++s) {
+                double u = s / len;
+                int bx = (int) Math.round(sv.cx + vx * u);
+                int bz = (int) Math.round(sv.cz + vz * u);
+                int by = u > 0.72 ? h.deckY : dy0;
+                double nx = -vz / len, nz = vx / len;
+                for (int w = -1; w <= 1; ++w) {
+                    int wx = (int) Math.round(bx + nx * w);
+                    int wz = (int) Math.round(bz + nz * w);
+                    putChunk(chunk, mp, x0, z0, wx, by, wz, s % 4 == 0 ? deckAlt : deck);
+                    putChunk(chunk, mp, x0, z0, wx, by + 1, wz, air);
+                    putChunk(chunk, mp, x0, z0, wx, by + 2, wz, air);
+                }
+                int rx1 = (int) Math.round(bx + nx * 1.65), rz1 = (int) Math.round(bz + nz * 1.65);
+                int rx2 = (int) Math.round(bx - nx * 1.65), rz2 = (int) Math.round(bz - nz * 1.65);
+                if (s % 5 == 0) {
+                    drivePiling(chunk, mp, plan, x0, z0, rx1, rz1, by + 1, logY, footing);
+                    drivePiling(chunk, mp, plan, x0, z0, rx2, rz2, by + 1, logY, footing);
+                    if (s == 10) putChunk(chunk, mp, x0, z0, rx1, by + 2, rz1, lantern);
+                } else {
+                    putChunk(chunk, mp, x0, z0, rx1, by, rz1, deckSlabTop);
+                    putChunk(chunk, mp, x0, z0, rx2, by, rz2, deckSlabTop);
+                    putChunk(chunk, mp, x0, z0, rx1, by + 1, rz1, fence);
+                    putChunk(chunk, mp, x0, z0, rx2, by + 1, rz2, fence);
+                }
+            }
+        }
+
+        // В) Постройка каждого из 5 уникальных свайных домов
+        for (StiltHut h : sv.huts) {
+            buildSingleStiltHut(chunk, mp, plan, x0, z0, h, ocean, logY, sizoLogY, footing,
+                    deck, deckAlt, deckSlabBot, plaster, timber, thatch, roofBlue, roofRed,
+                    gold, fence, glass, lantern, lanternH, seaLantern, barrel, chest, chain, campfire, air);
+        }
+    }
+
+    private static void buildMooredSkiff(ChunkAccess chunk, BlockPos.MutableBlockPos mp,
+                                         int x0, int z0, int bx, int wy, int bz,
+                                         BlockState hull, BlockState gunwale, BlockState lantern) {
+        // Изящная 7-блочная деревянная лодка-пирога на воде (wy = ocean + 1)
+        for (int dz = -3; dz <= 3; ++dz) {
+            int hw = Math.abs(dz) >= 3 ? 0 : 1;
+            for (int dx = -hw; dx <= hw; ++dx) {
+                putChunk(chunk, mp, x0, z0, bx + dx, wy, bz + dz, hull);
+                if (Math.abs(dx) == hw && hw > 0 && dz % 2 == 0) {
+                    putChunk(chunk, mp, x0, z0, bx + dx, wy + 1, bz + dz, gunwale);
+                }
+            }
+        }
+        putChunk(chunk, mp, x0, z0, bx, wy + 1, bz - 3, lantern);
+    }
+
+    private static void buildSingleStiltHut(ChunkAccess chunk, BlockPos.MutableBlockPos mp, CityPlan plan,
+                                            int x0, int z0, StiltHut h, int ocean,
+                                            BlockState logY, BlockState sizoLogY, BlockState footing,
+                                            BlockState deck, BlockState deckAlt, BlockState deckSlabBot,
+                                            BlockState plaster, BlockState timber, BlockState thatch,
+                                            BlockState roofBlue, BlockState roofRed, BlockState gold,
+                                            BlockState fence, BlockState glass, BlockState lantern,
+                                            BlockState lanternH, BlockState seaLantern, BlockState barrel,
+                                            BlockState chest, BlockState chain, BlockState campfire, BlockState air) {
+        int hy = h.deckY;
+        int hw = h.hw, hd = h.hd;
+
+        // 1) Свайное основание по углам и центрам сторон каждого дома (строго до самого морского дна!)
+        int[] xs = {-hw, 0, hw};
+        int[] zs = {-hd, 0, hd};
+        for (int sx : xs) {
+            for (int sz : zs) {
+                if (h.kind == 2 && sx == 0 && sz == 0) continue; // у эллинга в центре — водный канал под лодку!
+                drivePiling(chunk, mp, plan, x0, z0, h.cx + sx, h.cz + sz, hy, logY, footing);
+            }
+        }
+
+        // 2) Широкая деревянная терраса-палуба вокруг дома (выступ +1 блок с перилами)
+        for (int dx = -hw - 1; dx <= hw + 1; ++dx) {
+            for (int dz = -hd - 1; dz <= hd + 1; ++dz) {
+                // В эллинге (kind == 2) оставляем открытый водный слип по центру с внешней стороны!
+                boolean slipway = (h.kind == 2) && Math.abs(dx) <= 1 && Math.abs(dz) <= hd;
+                if (slipway) continue;
+                putChunk(chunk, mp, x0, z0, h.cx + dx, hy, h.cz + dz,
+                        (Math.abs(dx) == hw + 1 || Math.abs(dz) == hd + 1) ? deckAlt : deck);
+                for (int ay = hy + 1; ay <= hy + 8; ++ay) {
+                    putChunk(chunk, mp, x0, z0, h.cx + dx, ay, h.cz + dz, air);
+                }
+                boolean outerEdge = Math.abs(dx) == hw + 1 || Math.abs(dz) == hd + 1;
+                boolean doorGap = (h.facing == Direction.SOUTH && dz == hd + 1 && Math.abs(dx) <= 1)
+                        || (h.facing == Direction.NORTH && dz == -hd - 1 && Math.abs(dx) <= 1)
+                        || (h.facing == Direction.EAST && dx == hw + 1 && Math.abs(dz) <= 1)
+                        || (h.facing == Direction.WEST && dx == -hw - 1 && Math.abs(dz) <= 1);
+                if (outerEdge && !doorGap) {
+                    putChunk(chunk, mp, x0, z0, h.cx + dx, hy + 1, h.cz + dz, fence);
+                }
+            }
+        }
+
+        if (h.kind == 3) {
+            // KIND 3: Открытая лагунная торговая лавка под полосатым красно-соломенным навесом!
+            for (int sx : new int[]{-hw, hw}) {
+                for (int sz : new int[]{-hd, hd}) {
+                    for (int y = hy + 1; y <= hy + 4; ++y) {
+                        putChunk(chunk, mp, x0, z0, h.cx + sx, y, h.cz + sz, sizoLogY);
+                    }
+                }
+            }
+            for (int dx = -hw - 1; dx <= hw + 1; ++dx) {
+                for (int dz = -hd - 1; dz <= hd + 1; ++dz) {
+                    int m = Math.max(Math.abs(dx), Math.abs(dz));
+                    int ry = hy + 5 + Math.max(0, (hw + 1 - m) / 2);
+                    putChunk(chunk, mp, x0, z0, h.cx + dx, ry, h.cz + dz, (dx + dz) % 2 == 0 ? roofRed : thatch);
+                }
+            }
+            for (int dx = -2; dx <= 2; ++dx) {
+                putChunk(chunk, mp, x0, z0, h.cx + dx, hy + 1, h.cz, deckAlt);
+            }
+            putChunk(chunk, mp, x0, z0, h.cx - 2, hy + 1, h.cz - 2, barrel);
+            putChunk(chunk, mp, x0, z0, h.cx - 2, hy + 2, h.cz - 2, barrel);
+            putChunk(chunk, mp, x0, z0, h.cx + 2, hy + 1, h.cz - 2, chest);
+            putChunk(chunk, mp, x0, z0, h.cx, hy + 4, h.cz, lanternH);
+            return;
+        }
+
+        if (h.kind == 4) {
+            // KIND 4: Высокая дозорно-маячная башня лагуны на сваях (высота 15 блоков над палубой + синий шпиль!)
+            for (int y = hy + 1; y <= hy + 11; ++y) {
+                for (int dx = -hw + 1; dx <= hw - 1; ++dx) {
+                    for (int dz = -hd + 1; dz <= hd - 1; ++dz) {
+                        boolean corner = Math.abs(dx) == hw - 1 && Math.abs(dz) == hd - 1;
+                        boolean wall = Math.abs(dx) == hw - 1 || Math.abs(dz) == hd - 1;
+                        if (corner) {
+                            putChunk(chunk, mp, x0, z0, h.cx + dx, y, h.cz + dz, sizoLogY);
+                        } else if (wall && y <= hy + 8) {
+                            if (y == hy + 5 || (y <= hy + 2 && (dx == 0 || dz == 0))) {
+                                putChunk(chunk, mp, x0, z0, h.cx + dx, y, h.cz + dz, y <= hy + 2 ? air : glass);
+                            } else {
+                                putChunk(chunk, mp, x0, z0, h.cx + dx, y, h.cz + dz, y % 3 == 0 ? timber : plaster);
+                            }
+                        } else if (y == hy + 9) {
+                            putChunk(chunk, mp, x0, z0, h.cx + dx, y, h.cz + dz, deck);
+                        }
+                    }
+                }
+            }
+            putChunk(chunk, mp, x0, z0, h.cx, hy + 10, h.cz, seaLantern);
+            putChunk(chunk, mp, x0, z0, h.cx, hy + 11, h.cz, campfire);
+            for (int sy = 0; sy <= 4; ++sy) {
+                int r = Math.max(0, hw - sy);
+                for (int dx = -r; dx <= r; ++dx) {
+                    for (int dz = -r; dz <= r; ++dz) {
+                        putChunk(chunk, mp, x0, z0, h.cx + dx, hy + 12 + sy, h.cz + dz, sy == 4 ? gold : roofBlue);
+                    }
+                }
+            }
+            return;
+        }
+
+        // KIND 0 (рыбацкий дом), KIND 1 (двухэтажный свайный терем), KIND 2 (крытый эллинг с лодкой под сводом)
+        int wallH = (h.kind == 1) ? 8 : 4;
+        BlockState roofMat = (h.kind == 1) ? roofBlue : (h.kind == 2 ? roofRed : thatch);
+        boolean ridgeAlongX = hw >= hd;
+
+        for (int dx = -hw; dx <= hw; ++dx) {
+            for (int dz = -hd; dz <= hd; ++dz) {
+                boolean corner = Math.abs(dx) == hw && Math.abs(dz) == hd;
+                boolean wall = Math.abs(dx) == hw || Math.abs(dz) == hd;
+                for (int dy = 1; dy <= wallH; ++dy) {
+                    if (corner) {
+                        putChunk(chunk, mp, x0, z0, h.cx + dx, hy + dy, h.cz + dz, sizoLogY);
+                    } else if (wall) {
+                        boolean isDoor = dy <= 2 && ((h.facing == Direction.SOUTH && dz == hd && dx == 0)
+                                || (h.facing == Direction.NORTH && dz == -hd && dx == 0)
+                                || (h.facing == Direction.EAST && dx == hw && dz == 0)
+                                || (h.facing == Direction.WEST && dx == -hw && dz == 0));
+                        // В эллинге (kind == 2) — широкие лодочные ворота к воде
+                        boolean boatArch = (h.kind == 2) && dy <= 2 && Math.abs(dx) <= 1 && Math.abs(dz) == hd;
+                        boolean isWin = (dy == 2 || dy == 6) && ((Math.abs(dx) == hw && dz == 0) || (Math.abs(dz) == hd && dx == 0)) && !isDoor;
+                        if (isDoor || boatArch) {
+                            putChunk(chunk, mp, x0, z0, h.cx + dx, hy + dy, h.cz + dz, air);
+                        } else if (isWin) {
+                            putChunk(chunk, mp, x0, z0, h.cx + dx, hy + dy, h.cz + dz, glass);
+                        } else {
+                            putChunk(chunk, mp, x0, z0, h.cx + dx, hy + dy, h.cz + dz,
+                                    (dy == 4 || dy == wallH) ? timber : plaster);
+                        }
+                    } else if (h.kind == 1 && dy == 4) {
+                        putChunk(chunk, mp, x0, z0, h.cx + dx, hy + dy, h.cz + dz, deck);
+                    }
+                }
+            }
+        }
+
+        // Высокая азиатско-островная крыша с изогнутым свесом и золотыми коньками у терема
+        int span = ridgeAlongX ? hd + 1 : hw + 1;
+        for (int k = 0; k <= span; ++k) {
+            int ry = hy + wallH + 1 + k;
+            if (ridgeAlongX) {
+                int zL = -hd - 1 + k, zR = hd + 1 - k;
+                if (zL > zR) break;
+                for (int dx = -hw - 1; dx <= hw + 1; ++dx) {
+                    BlockState rb = (zL == zR && h.kind == 1 && Math.abs(dx) == hw + 1) ? gold : roofMat;
+                    putChunk(chunk, mp, x0, z0, h.cx + dx, ry, h.cz + zL, rb);
+                    putChunk(chunk, mp, x0, z0, h.cx + dx, ry, h.cz + zR, rb);
+                    if (Math.abs(dx) == hw && zL + 1 <= zR - 1) {
+                        for (int gz = zL + 1; gz <= zR - 1; ++gz) {
+                            putChunk(chunk, mp, x0, z0, h.cx + dx, ry, h.cz + gz, plaster);
+                        }
+                    }
+                }
+            } else {
+                int xL = -hw - 1 + k, xR = hw + 1 - k;
+                if (xL > xR) break;
+                for (int dz = -hd - 1; dz <= hd + 1; ++dz) {
+                    BlockState rb = (xL == xR && h.kind == 1 && Math.abs(dz) == hd + 1) ? gold : roofMat;
+                    putChunk(chunk, mp, x0, z0, h.cx + xL, ry, h.cz + dz, rb);
+                    putChunk(chunk, mp, x0, z0, h.cx + xR, ry, h.cz + dz, rb);
+                    if (Math.abs(dz) == hd && xL + 1 <= xR - 1) {
+                        for (int gx = xL + 1; gx <= xR - 1; ++gx) {
+                            putChunk(chunk, mp, x0, z0, h.cx + gx, ry, h.cz + dz, plaster);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Обстановка внутри и детали снаружи
+        putChunk(chunk, mp, x0, z0, h.cx, hy + wallH, h.cz, lanternH);
+        if (h.kind == 2) {
+            // Внутри водного канала эллинга стоит лодка прямо на воде (ocean + 1), а сверху висит цепь-лебёдка!
+            buildMooredSkiff(chunk, mp, x0, z0, h.cx, ocean + 1, h.cz, deckAlt, logY, lantern);
+            for (int cy = ocean + 3; cy <= hy + 3; ++cy) {
+                putChunk(chunk, mp, x0, z0, h.cx, cy, h.cz, cy == ocean + 3 ? lanternH : chain);
+            }
+            putChunk(chunk, mp, x0, z0, h.cx - hw + 1, hy + 1, h.cz, barrel);
+            putChunk(chunk, mp, x0, z0, h.cx + hw - 1, hy + 1, h.cz, chest);
+        } else {
+            putChunk(chunk, mp, x0, z0, h.cx - hw + 1, hy + 1, h.cz - hd + 1, chest);
+            putChunk(chunk, mp, x0, z0, h.cx + hw - 1, hy + 1, h.cz - hd + 1, barrel);
+            if (h.kind == 0) {
+                // Сушильня рыболовных сетей и фонарь на боковой террасе рыбацкого дома
+                putChunk(chunk, mp, x0, z0, h.cx + hw + 1, hy + 2, h.cz, fence);
+                putChunk(chunk, mp, x0, z0, h.cx + hw + 1, hy + 3, h.cz, lanternH);
             }
         }
     }

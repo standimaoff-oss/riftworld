@@ -22,6 +22,12 @@ public final class ModTabs {
                 out.accept(ModItems.GUARD_SICKLE.get());
                 out.accept(ModItems.MORGRATH_EGG.get());
                 out.accept(ModItems.GUARD_EGG.get());
+                out.accept(ModItems.CRYSTAL_KATAR.get());
+                out.accept(ModItems.CRYSTAL_BARRAGE.get());
+                out.accept(ModItems.CRYSTAL_AEGIS.get());
+                out.accept(ModItems.ASTRAL_PRISM.get());
+                out.accept(ModItems.RIFT_OBELISK_BOSS_EGG.get());
+                out.accept(ModItems.CRYSTAL_MINION_EGG.get());
                 out.accept(ModItems.ELISAR_DUCAT.get());
                 out.accept(ModItems.EGG_SILVER.get());
                 out.accept(ModItems.EGG_GOLD.get());

@@ -6,7 +6,8 @@ import net.minecraft.world.item.crafting.Ingredient;
 /** Material tiers of the castle weapons. */
 public enum RiftTiers implements Tier {
     MORGRATH(2400, 9.0F, 0.0F, 4, 18),
-    EMBER_IRON(420, 6.0F, 1.0F, 2, 10);
+    EMBER_IRON(420, 6.0F, 1.0F, 2, 10),
+    RIFT_CRYSTAL(780, 7.5F, 1.5F, 3, 15);
 
     private final int uses, level, ench;
     private final float speed, damage;

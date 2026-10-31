@@ -19,6 +19,8 @@ public final class Net {
                 .encoder(FlightMsg::encode).decoder(FlightMsg::decode).consumerMainThread(FlightMsg::handle).add();
         CH.messageBuilder(ComboMsg.class, 1, NetworkDirection.PLAY_TO_SERVER)
                 .encoder(ComboMsg::encode).decoder(ComboMsg::decode).consumerMainThread(ComboMsg::handle).add();
+        CH.messageBuilder(CrystalActionMsg.class, 2, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(CrystalActionMsg::encode).decoder(CrystalActionMsg::decode).consumerMainThread(CrystalActionMsg::handle).add();
     }
 
     public static void send(ServerPlayer p, Object msg) {

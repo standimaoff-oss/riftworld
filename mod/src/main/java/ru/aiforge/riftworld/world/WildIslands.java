@@ -125,6 +125,7 @@ public final class WildIslands {
                 MistKeep.Region mk = MistKeep.regionAt(x, z);                                                          // туманный данж: вода между столбами остаётся морем
                 if (mk != null && Math.hypot(x - mk.cx, z - mk.cz) < R * 1.15 + mk.Rr + 40) continue;
                 if (WorldStructures.anyVillageAt(x, z, R * 1.15 + 68) != null) continue;                              // белые и сгоревшие деревни на собственных островах
+                if (WorldStructures.stiltVillageNear(x, z, R * 1.15 + 42) != null) continue;                          // надводные свайные деревни в лагунах и море
                 boolean ok = true;
                 for (CityPlan.Island o : c.islands) {
                     if (Math.hypot(x - o.cx, z - o.cz) < (R + o.R) * 1.15 + 6) { ok = false; break; }

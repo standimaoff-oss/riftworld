@@ -38,6 +38,20 @@ public final class ModItems {
     public static final RegistryObject<Item> GUARD_EGG = ITEMS.register("ember_guard_spawn_egg",
             () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.GUARD, 0x3b2b26, 0xe0602a, new Item.Properties()));
 
+    // v0.19.0: Босс Колоннады, его Прислужники и 4 уникальных кристальных оружия/артефакта
+    public static final RegistryObject<Item> CRYSTAL_KATAR = ITEMS.register("crystal_katar",
+            () -> new ru.aiforge.riftworld.item.CrystalKatarItem(new Item.Properties().rarity(Rarity.RARE)));
+    public static final RegistryObject<Item> CRYSTAL_BARRAGE = ITEMS.register("crystal_barrage",
+            () -> new ru.aiforge.riftworld.item.CrystalBarrageItem(new Item.Properties().stacksTo(64).rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> CRYSTAL_AEGIS = ITEMS.register("crystal_aegis",
+            () -> new ru.aiforge.riftworld.item.CrystalAegisItem(new Item.Properties().stacksTo(64).rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> ASTRAL_PRISM = ITEMS.register("astral_prism",
+            () -> new ru.aiforge.riftworld.item.AstralPrismItem(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC).fireResistant()));
+    public static final RegistryObject<Item> RIFT_OBELISK_BOSS_EGG = ITEMS.register("rift_obelisk_boss_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.RIFT_OBELISK_BOSS, 0xDDE4F0, 0x56E8FF, new Item.Properties()));
+    public static final RegistryObject<Item> CRYSTAL_MINION_EGG = ITEMS.register("crystal_minion_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.CRYSTAL_MINION, 0xCFD8E8, 0x32C4E8, new Item.Properties()));
+
     // Рев 8: яйца призыва морской живности (по одному на характерный вид)
     public static final RegistryObject<Item> EGG_SILVER = egg("silver_fish_spawn_egg", ru.aiforge.riftworld.entity.SeaFishEntity.SILVER, 0xC6D3DC, 0x2B3440);
     public static final RegistryObject<Item> EGG_GOLD = egg("gold_fish_spawn_egg", ru.aiforge.riftworld.entity.SeaFishEntity.GOLD, 0xE9C25A, 0xC29A38);

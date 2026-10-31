@@ -28,6 +28,15 @@ public final class ClientHooks {
         return itemRenderer;
     }
 
+    public static net.minecraftforge.client.extensions.common.IClientItemExtensions geoItemExt() {
+        return new net.minecraftforge.client.extensions.common.IClientItemExtensions() {
+            @Override
+            public BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                return itemRenderer();
+            }
+        };
+    }
+
     @SubscribeEvent
     public static void renderers(EntityRenderersEvent.RegisterRenderers e) {
         e.registerBlockEntityRenderer(ModBlockEntities.MODEL.get(), ModelBER::new);
@@ -41,6 +50,10 @@ public final class ClientHooks {
         e.registerEntityRenderer(ru.aiforge.riftworld.registry.ModEntities.BOSS.get(), RiftMobRenderer::boss);
         e.registerEntityRenderer(ru.aiforge.riftworld.registry.ModEntities.GUARD.get(), RiftMobRenderer::guard);
         e.registerEntityRenderer(ru.aiforge.riftworld.registry.ModEntities.SCYTHE_ITEM.get(), ScytheDropRenderer::new);
+        e.registerEntityRenderer(ModEntities.RIFT_OBELISK_BOSS.get(), CrystalGeoRenderers.Boss::new);
+        e.registerEntityRenderer(ModEntities.CRYSTAL_MINION.get(), CrystalGeoRenderers.Minion::new);
+        e.registerEntityRenderer(ModEntities.CRYSTAL_SHIELD.get(), CrystalGeoRenderers.Shield::new);
+        e.registerEntityRenderer(ModEntities.CRYSTAL_SHARD.get(), CrystalGeoRenderers.Shard::new);
     }
 
     @SubscribeEvent
@@ -51,6 +64,19 @@ public final class ClientHooks {
             net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(ru.aiforge.riftworld.registry.ModFluids.FLOWING.get(), net.minecraft.client.renderer.RenderType.translucent());
             net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(ru.aiforge.riftworld.registry.ModFluids.GARDEN_SOURCE.get(), net.minecraft.client.renderer.RenderType.translucent());
             net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(ru.aiforge.riftworld.registry.ModFluids.GARDEN_FLOWING.get(), net.minecraft.client.renderer.RenderType.translucent());
+            // Гарантируем ванильный cutoutMipped-рендер со сквозными просветами для всей листвы биомов и Dynamic Trees!
+            net.minecraft.world.level.block.LeavesBlock.setFancy(true);
+            var cutout = net.minecraft.client.renderer.RenderType.cutoutMipped();
+            net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(ru.aiforge.riftworld.registry.ElisarBlocks.VIOLET_LEAVES.get(), cutout);
+            net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(ru.aiforge.riftworld.registry.ElisarBlocks.GARDEN_LEAVES.get(), cutout);
+            net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(ru.aiforge.riftworld.registry.ElisarBlocks.CRYSTAL_LEAVES.get(), cutout);
+            net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(ru.aiforge.riftworld.registry.ElisarBlocks.SIZO_LEAVES.get(), cutout);
+            for (String dtId : new String[]{"lilac_leaves", "garden_oak_leaves", "crystal_birch_leaves", "sizo_leaves"}) {
+                var dtBlock = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getValue(new net.minecraft.resources.ResourceLocation("riftworlddt", dtId));
+                if (dtBlock != null && dtBlock != net.minecraft.world.level.block.Blocks.AIR) {
+                    net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(dtBlock, cutout);
+                }
+            }
             if ("true".equalsIgnoreCase(System.getProperty("riftworld.fhd"))) {
                 try {
                     long win = Minecraft.getInstance().getWindow().getWindow();

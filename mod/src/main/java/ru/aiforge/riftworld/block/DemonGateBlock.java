@@ -94,9 +94,9 @@ public class DemonGateBlock extends Block implements EntityBlock {
     public static BlockPos templeApron(ServerLevel elisar) {
         int fx = 0, fz = 0;
         for (CityPlan.Plot pl : CityPlan.get().plots) {
-            if (!pl.template().equals("temple_great")) continue;
+            if (!pl.template().equals("temple_great") && !pl.template().equals("city_castle")) continue;
             fx = pl.x0() + pl.w() / 2;
-            fz = pl.z0() + pl.d() - 6;
+            fz = pl.z0() + pl.d() - 3;
             break;
         }
         BlockPos mid = new BlockPos(fx, 64, fz);
