@@ -445,14 +445,21 @@ public final class WorldStructures {
     // =========================================================================
     // 3 & 4. КОРАБЛИ: ВРЕЗАВШИЙСЯ В СКАЛУ И ЗАТОНУВШИЙ НА ДНЕ ОКЕАНА
     // =========================================================================
-    private static boolean openDeepSea(int cx, int cz, int minDepthBelowSea) {
+    private static boolean openDeepSea(int cx, int cz, int minDepthBelowSea, boolean surfaceSkyClear) {
         if (overlapsSpecialBiomes(cx, cz, 55)) return false;
-        if (anyVillageAt(cx, cz, 105) != null) return false;
+        if (anyVillageAt(cx, cz, 95) != null) return false;
         CityPlan plan = CityPlan.get();
-        // Никаких парящих островов прямо над точкой морской структуры и вокруг неё!
-        for (int dx = -56; dx <= 56; dx += 14) {
-            for (int dz = -56; dz <= 56; dz += 14) {
+        for (int dx = -24; dx <= 24; dx += 12) {
+            for (int dz = -24; dz <= 24; dz += 12) {
                 if (plan.islandAt(cx + dx, cz + dz) != null) return false;
+            }
+        }
+        if (surfaceSkyClear) {
+            for (int dx = -44; dx <= 44; dx += 22) {
+                for (int dz = -44; dz <= 44; dz += 22) {
+                    CityPlan.Island isl = plan.islandAt(cx + dx, cz + dz);
+                    if (isl != null && isl.R > 16.0) return false;
+                }
             }
         }
         int fl = ElisarChunkGenerator.oceanFloor(plan, cx, cz);
@@ -465,21 +472,24 @@ public final class WorldStructures {
 
     private static ShipSite genCrashedShip(int sx, int sz) {
         Random rnd = new Random(SEED_CRASH ^ (sx * 492876847L + sz * 715225739L));
-        if (rnd.nextDouble() > 0.62) return null;
-        int margin = 110;
-        int cx = sx * SUPER_CRASH + margin + rnd.nextInt(SUPER_CRASH - 2 * margin);
-        int cz = sz * SUPER_CRASH + margin + rnd.nextInt(SUPER_CRASH - 2 * margin);
-        if (!openDeepSea(cx, cz, 26)) return null;
+        if (rnd.nextDouble() > 0.72) return null;
+        int margin = 95;
+        for (int tries = 0; tries < 18; ++tries) {
+            int cx = sx * SUPER_CRASH + margin + rnd.nextInt(SUPER_CRASH - 2 * margin);
+            int cz = sz * SUPER_CRASH + margin + rnd.nextInt(SUPER_CRASH - 2 * margin);
+            if (!openDeepSea(cx, cz, 24, true)) continue;
 
-        int ocean = CityPlan.get().ocean;
-        double yaw = rnd.nextDouble() * Math.PI * 2.0;
-        int variant = rnd.nextInt(2); // 0 = скала с руиной маяка, 1 = двойной рифовый клык
-        double ux = Math.cos(yaw), uz = Math.sin(yaw);
-        int rockX = (int) Math.round(cx + ux * 17.5);
-        int rockZ = (int) Math.round(cz + uz * 17.5);
-        int rockTopY = ocean + 20 + rnd.nextInt(7);
-        double rockR = 10.5 + rnd.nextDouble() * 2.5;
-        return new ShipSite(cx, cz, variant, false, yaw, ocean, rockX, rockZ, rockTopY, rockR);
+            int ocean = CityPlan.get().ocean;
+            double yaw = rnd.nextDouble() * Math.PI * 2.0;
+            int variant = rnd.nextInt(2); // 0 = скала с руиной маяка, 1 = двойной рифовый клык
+            double ux = Math.cos(yaw), uz = Math.sin(yaw);
+            int rockX = (int) Math.round(cx + ux * 17.5);
+            int rockZ = (int) Math.round(cz + uz * 17.5);
+            int rockTopY = ocean + 20 + rnd.nextInt(7);
+            double rockR = 10.5 + rnd.nextDouble() * 2.5;
+            return new ShipSite(cx, cz, variant, false, yaw, ocean, rockX, rockZ, rockTopY, rockR);
+        }
+        return null;
     }
 
     public static ShipSite sunkenShip(int sx, int sz) {
@@ -488,18 +498,21 @@ public final class WorldStructures {
 
     private static ShipSite genSunkenShip(int sx, int sz) {
         Random rnd = new Random(SEED_SUNKEN ^ (sx * 6364136223846793005L + sz * 1442695040888963407L));
-        if (rnd.nextDouble() > 0.65) return null;
-        int margin = 105;
-        int cx = sx * SUPER_SUNKEN + margin + rnd.nextInt(SUPER_SUNKEN - 2 * margin);
-        int cz = sz * SUPER_SUNKEN + margin + rnd.nextInt(SUPER_SUNKEN - 2 * margin);
-        if (!openDeepSea(cx, cz, 34)) return null;
-        if (crashedShipNear(cx, cz, 90) != null) return null;
-
+        if (rnd.nextDouble() > 0.75) return null;
+        int margin = 90;
         CityPlan plan = CityPlan.get();
-        int floorY = Math.max(5, ElisarChunkGenerator.oceanFloor(plan, cx, cz));
-        double yaw = rnd.nextDouble() * Math.PI * 2.0;
-        int variant = rnd.nextInt(3); // 0 = целый накренившийся с якорем, 1 = разломанный пополам, 2 = коралловый остов
-        return new ShipSite(cx, cz, variant, true, yaw, floorY, cx, cz, floorY, 0.0);
+        for (int tries = 0; tries < 18; ++tries) {
+            int cx = sx * SUPER_SUNKEN + margin + rnd.nextInt(SUPER_SUNKEN - 2 * margin);
+            int cz = sz * SUPER_SUNKEN + margin + rnd.nextInt(SUPER_SUNKEN - 2 * margin);
+            if (!openDeepSea(cx, cz, 32, false)) continue;
+            if (crashedShipNear(cx, cz, 90) != null) continue;
+
+            int floorY = Math.max(5, ElisarChunkGenerator.oceanFloor(plan, cx, cz));
+            double yaw = rnd.nextDouble() * Math.PI * 2.0;
+            int variant = rnd.nextInt(3); // 0 = целый накренившийся с якорем, 1 = разломанный пополам, 2 = коралловый остов
+            return new ShipSite(cx, cz, variant, true, yaw, floorY, cx, cz, floorY, 0.0);
+        }
+        return null;
     }
 
     public static ShipSite crashedShipNear(double x, double z, double range) {
@@ -535,18 +548,21 @@ public final class WorldStructures {
 
     private static OceanBuilding genOceanBuilding(int sx, int sz) {
         Random rnd = new Random(SEED_OBLDG ^ (sx * 2862933555777941757L + sz * 3037000493L));
-        if (rnd.nextDouble() > 0.58) return null;
-        int margin = 120;
-        int cx = sx * SUPER_OCEAN_BLDG + margin + rnd.nextInt(SUPER_OCEAN_BLDG - 2 * margin);
-        int cz = sz * SUPER_OCEAN_BLDG + margin + rnd.nextInt(SUPER_OCEAN_BLDG - 2 * margin);
-        if (!openDeepSea(cx, cz, 32)) return null;
-        if (crashedShipNear(cx, cz, 85) != null || sunkenShipNear(cx, cz, 85) != null) return null;
-
+        if (rnd.nextDouble() > 0.68) return null;
+        int margin = 100;
         CityPlan plan = CityPlan.get();
-        int floorY = Math.max(6, ElisarChunkGenerator.oceanFloor(plan, cx, cz));
-        int variant = rnd.nextInt(4); // 0=ротонда, 1=двухэтажный дом-архив, 2=подводные врата, 3=затопленная улочка
-        int rad = variant == 3 ? 16 : 12;
-        return new OceanBuilding(cx, cz, floorY, variant, rnd.nextDouble() * Math.PI * 2.0, rad);
+        for (int tries = 0; tries < 18; ++tries) {
+            int cx = sx * SUPER_OCEAN_BLDG + margin + rnd.nextInt(SUPER_OCEAN_BLDG - 2 * margin);
+            int cz = sz * SUPER_OCEAN_BLDG + margin + rnd.nextInt(SUPER_OCEAN_BLDG - 2 * margin);
+            if (!openDeepSea(cx, cz, 30, false)) continue;
+            if (crashedShipNear(cx, cz, 85) != null || sunkenShipNear(cx, cz, 85) != null) continue;
+
+            int floorY = Math.max(6, ElisarChunkGenerator.oceanFloor(plan, cx, cz));
+            int variant = rnd.nextInt(4); // 0=ротонда, 1=двухэтажный дом-архив, 2=подводные врата, 3=затопленная улочка
+            int rad = variant == 3 ? 16 : 12;
+            return new OceanBuilding(cx, cz, floorY, variant, rnd.nextDouble() * Math.PI * 2.0, rad);
+        }
+        return null;
     }
 
     public static OceanBuilding oceanBuildingNear(double x, double z, double range) {
