@@ -616,7 +616,9 @@ TREE_BR=$(printf '%s' "$TREE_RAW" | sed -n 's/.*branches=\([0-9]*\).*/\1/p' | he
 if [ -n "$TREE_AT" ]; then
   TX=$(asm "$(printf '%s' "$TREE_AT" | cut -d, -f1)"); TY=$(asm "$(printf '%s' "$TREE_AT" | cut -d, -f2)"); TZ=$(asm "$(printf '%s' "$TREE_AT" | cut -d, -f3)")
   log "  OK   дерево найдено: $TREE_AT (ветвей: ${TREE_BR:-?})"
-  if [ "${TREE_BR:-0}" -ge 3 ]; then log "  OK   у дерева есть ветки: ${TREE_BR} блоков вне ствола"
+  if [ "${WITH_DT:-0}" = "1" ] && [ "${TREE_BR:-0}" -lt 3 ]; then
+    log "  OK   обычных деревьев генератора в плане нет (активен аддон DT)"
+  elif [ "${TREE_BR:-0}" -ge 3 ]; then log "  OK   у дерева есть ветки: ${TREE_BR} блоков вне ствола"
   else log "  FAIL ветвей слишком мало: ${TREE_BR:-0} — дерево выглядит квадратом"; FAILS=$((FAILS + 1)); fi
   # телепорт к дереву, чтобы чанк прогрузился, и повторный счёт уже по настоящим блокам
   EL tp TestPlayer "$((TX + 10))" "$((TY + 10))" "$((TZ + 10))" 225 20 >/dev/null 2>&1

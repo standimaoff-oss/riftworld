@@ -189,6 +189,17 @@ public final class SeaProbeCommand {
                                 != net.minecraft.core.Direction.Axis.Y) ++branches;
                     } else if (st.is(ElisarBlocks.SIZO_LEAVES.get()) || st.is(ElisarBlocks.AMBRA_LEAVES.get())) {
                         ++leaves;
+                    } else {
+                        var rk = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(st.getBlock());
+                        if (rk != null && "riftworlddt".equals(rk.getNamespace())) {
+                            String rp = rk.getPath();
+                            if (rp.contains("branch")) {
+                                ++logs;
+                                if (dx != 0 || dz != 0) ++branches;
+                            } else if (rp.contains("leaves")) {
+                                ++leaves;
+                            }
+                        }
                     }
                 }
             }
