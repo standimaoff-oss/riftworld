@@ -33,6 +33,7 @@
   "family.riftworlddt.ambra": "Ambra",
   "block.riftworlddt.rooty_elisar_moss": "Rooty Elisar Moss",
   "block.riftworlddt.rooty_garden_grass": "Rooty Garden Grass",
+  "block.riftworlddt.rooty_rift_turf": "Rooty Rift Turf",
   "family.riftworlddt.lilac": "Lilac Blossom",
   "block.riftworlddt.crystal_birch_branch": "Crystal Silverwood Branch",
   "block.riftworlddt.crystal_birch_leaves": "Crystal Silverwood Leaves",
@@ -40,5 +41,6 @@
   "item.riftworlddt.crystal_birch_seed": "Crystal Silverwood Seed",
   "item.riftworlddt.crystal_birch_branch": "Crystal Silverwood Branch",
   "species.riftworlddt.crystal_birch": "Crystal Silverwood",
-  "family.riftworlddt.crystal_birch": "Crystal Silverwood"
+  "family.riftworlddt.crystal_birch": "Crystal Silverwood",
+  "block.riftworlddt.rooty_rift_turf": "Rooty Rift Moss Turf"
 }

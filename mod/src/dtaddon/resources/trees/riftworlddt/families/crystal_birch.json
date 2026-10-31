@@ -6,7 +6,7 @@
   "generate_surface_root": false,
   "max_branch_radius": 8,
   "primary_thickness": 1,
-  "secondary_thickness": 2,
+  "secondary_thickness": 1,
   "branch_properties": {
     "sound": "wood",
     "map_color": "QUARTZ"

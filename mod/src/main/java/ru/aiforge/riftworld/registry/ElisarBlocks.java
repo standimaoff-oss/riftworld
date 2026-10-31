@@ -150,6 +150,7 @@ public final class ElisarBlocks {
     public static final RegistryObject<Block> RIFT_MARBLE = cube("rift_marble", MapColor.QUARTZ, 1.6F, SoundType.STONE);
     public static final RegistryObject<Block> RIFT_MARBLE_MOSSY = cube("rift_marble_mossy", MapColor.QUARTZ, 1.6F, SoundType.STONE);
     public static final RegistryObject<Block> RIFT_SLATE = cube("rift_slate", MapColor.COLOR_LIGHT_BLUE, 2.0F, SoundType.DEEPSLATE);
+    public static final RegistryObject<Block> RIFT_TURF = cube("rift_turf", MapColor.WARPED_NYLIUM, 0.8F, SoundType.MOSS);
     public static final RegistryObject<SlabBlock> RIFT_MARBLE_SLAB = slab("rift_marble_slab", MapColor.QUARTZ, SoundType.STONE);
     public static final RegistryObject<StairBlock> RIFT_MARBLE_STAIRS = stairs("rift_marble_stairs", RIFT_MARBLE);
     public static final RegistryObject<RotatedPillarBlock> CRYSTAL_LOG =
@@ -160,6 +161,8 @@ public final class ElisarBlocks {
             ModBlocks.reg("crystal_cluster", () -> new PlantBlock(plant().sound(SoundType.AMETHYST_CLUSTER).lightLevel(s -> 13)));
     public static final RegistryObject<PlantBlock> CRYSTAL_SHROOM =
             ModBlocks.reg("crystal_shroom", () -> new PlantBlock(plant().lightLevel(s -> 11)));
+    public static final RegistryObject<PlantBlock> RIFT_GRASS =
+            ModBlocks.reg("rift_grass", () -> new PlantBlock(plant().lightLevel(s -> 2)));
     // ===== Рев 8 «Живое море»: дно, рифы и подводная флора =====
     // породы дна
     public static final RegistryObject<Block> SILT = cube("elisar_silt", MapColor.COLOR_BLACK, 0.7F, SoundType.SOUL_SAND);
@@ -260,7 +263,7 @@ public final class ElisarBlocks {
         protected boolean mayPlaceOn(BlockState s, BlockGetter level, BlockPos pos) {
             return s.is(GRASS.get()) || s.is(SOIL.get()) || s.is(PATH.get()) || s.is(MOSS.get())
                     || s.is(GARDEN_GRASS.get()) || s.is(GARDEN_LIMESTONE.get()) || s.is(GARDEN_LIMESTONE_MOSSY.get())
-                    || s.is(RIFT_MARBLE.get()) || s.is(RIFT_MARBLE_MOSSY.get()) || s.is(RIFT_SLATE.get())
+                    || s.is(RIFT_TURF.get()) || s.is(RIFT_MARBLE.get()) || s.is(RIFT_MARBLE_MOSSY.get()) || s.is(RIFT_SLATE.get())
                     || s.is(CRUST.get());
         }
 

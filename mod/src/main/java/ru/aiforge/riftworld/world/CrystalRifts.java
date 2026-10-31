@@ -378,42 +378,68 @@ public final class CrystalRifts {
                     }
                 }
 
-                // 1) Главный исполинский шестигранный кристалл (длина 15..19.5 блоков, радиус 2.7..3.4)
-                double tilt = 0.42 + rnd.nextDouble() * 0.18; // наклон ~25°..35° от вертикали
-                double tiltAng = Math.atan2(toHubZ, toHubX) + (i % 2 == 1 ? -0.35 : 0.35);
-                double mainLen = (i == 1 ? 17.5 : 14.5) + rnd.nextDouble() * 2.5;
-                double mainRad = (i == 1 ? 3.1 : 2.65) + rnd.nextDouble() * 0.35;
+                // 1) Главный исполинский шестигранный кристалл (длина 18.5..23.5 блоков, радиус 3.1..3.6)
+                double tilt = 0.40 + rnd.nextDouble() * 0.18;
+                double tiltAng = Math.atan2(toHubZ, toHubX) + (i % 2 == 1 ? -0.32 : 0.32);
+                double mainLen = (i == 1 ? 19.5 : 16.5) + rnd.nextDouble() * 3.5;
+                double mainRad = (i == 1 ? 3.25 : 2.85) + rnd.nextDouble() * 0.35;
                 spireList.add(new Spire(
                         spX, terraceY - 1.5, spZ,
                         Math.cos(tiltAng) * Math.sin(tilt), Math.cos(tilt), Math.sin(tiltAng) * Math.sin(tilt),
                         mainLen, mainRad, rnd.nextDouble() * Math.PI));
 
-                // 2) 2–3 боковых кристалла-отростка вокруг корня главного кристалла (как пучок кварца на фото!)
-                int prongs = 2 + rnd.nextInt(2);
-                for (int p = 0; p < prongs; ++p) {
-                    double pAng = tiltAng + 1.35 + p * 1.85 + (rnd.nextDouble() - 0.5) * 0.35;
-                    double pTilt = 0.62 + rnd.nextDouble() * 0.24; // ~38°..52°
-                    double pLen = 7.0 + rnd.nextDouble() * 4.2;
-                    double pRad = 1.55 + rnd.nextDouble() * 0.55;
+                // 2) 3 боковых кристалла-отростка вокруг корня главного кристалла (пучок кварца как на 02_crystal_sanctum.png)
+                for (int p = 0; p < 3; ++p) {
+                    double pAng = tiltAng + 1.15 + p * 1.65 + (rnd.nextDouble() - 0.5) * 0.30;
+                    double pTilt = 0.60 + rnd.nextDouble() * 0.24;
+                    double pLen = 8.0 + rnd.nextDouble() * 4.5;
+                    double pRad = 1.65 + rnd.nextDouble() * 0.55;
                     spireList.add(new Spire(
                             spX + Math.cos(pAng) * 2.2, terraceY - 1.2, spZ + Math.sin(pAng) * 2.2,
                             Math.cos(pAng) * Math.sin(pTilt), Math.cos(pTilt), Math.sin(pAng) * Math.sin(pTilt),
                             pLen, pRad, rnd.nextDouble() * Math.PI));
                 }
 
-                // 3) Диагональный кристалл, пробивающий снизу скальный обрыв над проливом (деталь левого острова на фото!)
-                if (i <= 2) {
-                    double cliffDist = rimDist(isl, toHubX, toHubZ) * 0.80;
-                    double clX = isl.cx + toHubX * cliffDist + sideX * (i == 1 ? -3.5 : 3.5);
-                    double clZ = isl.cz + toHubZ * cliffDist + sideZ * (i == 1 ? -3.5 : 3.5);
+                // 3) Ещё 3 многоблочные кристальные друзы на скальных гребнях и террасах острова (вместо лесов деревьев!)
+                double[][] ridgeOffsets = {
+                        {-0.32, -0.44, 2.0},
+                        {-0.26,  0.46, 2.0},
+                        {-0.54,  0.04, 5.0}
+                };
+                for (int rc = 0; rc < ridgeOffsets.length; ++rc) {
+                    double rcx = isl.cx + toHubX * (isl.R * ridgeOffsets[rc][0]) + sideX * (isl.R * ridgeOffsets[rc][1]);
+                    double rcz = isl.cz + toHubZ * (isl.R * ridgeOffsets[rc][0]) + sideZ * (isl.R * ridgeOffsets[rc][1]);
+                    double rcy = terraceY + ridgeOffsets[rc][2];
+                    double rAng = tiltAng + (rc - 1) * 0.65 + (rnd.nextDouble() - 0.5) * 0.35;
+                    double rTilt = 0.36 + rnd.nextDouble() * 0.22;
+                    double rLen = 11.5 + rnd.nextDouble() * 4.5;
+                    double rRad = 2.05 + rnd.nextDouble() * 0.50;
                     spireList.add(new Spire(
-                            clX, terraceY - 8.5, clZ,
-                            toHubX * 0.82 + sideX * 0.18, -0.54, toHubZ * 0.82 + sideZ * 0.18,
-                            9.5 + rnd.nextDouble() * 2.5, 1.9 + rnd.nextDouble() * 0.3, rnd.nextDouble() * Math.PI));
+                            rcx, rcy - 1.5, rcz,
+                            Math.cos(rAng) * Math.sin(rTilt), Math.cos(rTilt), Math.sin(rAng) * Math.sin(rTilt),
+                            rLen, rRad, rnd.nextDouble() * Math.PI));
+                    for (int rp = 0; rp < 2; ++rp) {
+                        double rpAng = rAng + (rp == 0 ? -1.15 : 1.20);
+                        double rpTilt = 0.64 + rnd.nextDouble() * 0.20;
+                        spireList.add(new Spire(
+                                rcx + Math.cos(rpAng) * 1.8, rcy - 1.0, rcz + Math.sin(rpAng) * 1.8,
+                                Math.cos(rpAng) * Math.sin(rpTilt), Math.cos(rpTilt), Math.sin(rpAng) * Math.sin(rpTilt),
+                                6.8 + rnd.nextDouble() * 3.0, 1.40 + rnd.nextDouble() * 0.35, rnd.nextDouble() * Math.PI));
+                    }
+                }
+
+                // 4) Диагональные кристаллы, пробивающие снизу скальный обрыв над проливом на КАЖДОМ острове
+                double cliffDist = rimDist(isl, toHubX, toHubZ) * 0.80;
+                for (int cs = -1; cs <= (i <= 2 ? 1 : -1); cs += 2) {
+                    double clX = isl.cx + toHubX * cliffDist + sideX * (cs * 4.5);
+                    double clZ = isl.cz + toHubZ * cliffDist + sideZ * (cs * 4.5);
+                    spireList.add(new Spire(
+                            clX, terraceY - 8.0, clZ,
+                            toHubX * 0.80 + sideX * (0.20 * cs), -0.54, toHubZ * 0.80 + sideZ * (0.20 * cs),
+                            10.0 + rnd.nextDouble() * 3.0, 1.95 + rnd.nextDouble() * 0.35, rnd.nextDouble() * Math.PI));
                 }
             }
-            // Парные монументальные кристаллы на скалистых плечах главного острова по бокам за колоннадой
-            // (как на 02_crystal_sanctum.png — стройные бирюзовые шпили обрамляют астролябию слева и справа!)
+            // Парные монументальные кристаллы на скалистых плечах главного острова по бокам за колоннадой + друзы у скал аллеи
             double hux = Math.cos(phi), huz = Math.sin(phi);
             double hsx = -huz, hsz = hux;
             for (int side = -1; side <= 1; side += 2) {
@@ -424,15 +450,27 @@ public final class CrystalRifts {
                 spireList.add(new Spire(
                         fx, astroY - 1.5, fz,
                         Math.cos(fAng) * Math.sin(fTilt), Math.cos(fTilt), Math.sin(fAng) * Math.sin(fTilt),
-                        15.0 + rnd.nextDouble() * 3.0, 2.55 + rnd.nextDouble() * 0.35, rnd.nextDouble() * Math.PI));
-                for (int p = 0; p < 2; ++p) {
-                    double pAng = fAng + (p == 0 ? -0.95 : 1.05);
+                        16.5 + rnd.nextDouble() * 3.0, 2.75 + rnd.nextDouble() * 0.35, rnd.nextDouble() * Math.PI));
+                for (int p = 0; p < 3; ++p) {
+                    double pAng = fAng + (p - 1) * 0.95 + 0.35;
                     double pTilt = 0.58 + rnd.nextDouble() * 0.18;
                     spireList.add(new Spire(
                             fx + Math.cos(pAng) * 2.0, astroY - 1.0, fz + Math.sin(pAng) * 2.0,
                             Math.cos(pAng) * Math.sin(pTilt), Math.cos(pTilt), Math.sin(pAng) * Math.sin(pTilt),
-                            8.2 + rnd.nextDouble() * 2.8, 1.55 + rnd.nextDouble() * 0.35, rnd.nextDouble() * Math.PI));
+                            8.8 + rnd.nextDouble() * 3.0, 1.60 + rnd.nextDouble() * 0.35, rnd.nextDouble() * Math.PI));
                 }
+                // Дополнительная друза кристаллов на внешних мшистых скалах по бокам главного острова
+                double ax2 = aveAx + hux * 11.0 + hsx * side * 17.5;
+                double az2 = aveAz + huz * 11.0 + hsz * side * 17.5;
+                double aAng = phi - side * 0.55;
+                spireList.add(new Spire(
+                        ax2, astroY + 0.5, az2,
+                        Math.cos(aAng) * 0.42, 0.90, Math.sin(aAng) * 0.42,
+                        11.0 + rnd.nextDouble() * 2.5, 2.10 + rnd.nextDouble() * 0.30, rnd.nextDouble() * Math.PI));
+                spireList.add(new Spire(
+                        ax2 + hsx * side * 2.0, astroY, az2 + hsz * side * 2.0,
+                        Math.cos(aAng + 0.8) * 0.62, 0.78, Math.sin(aAng + 0.8) * 0.62,
+                        6.8 + rnd.nextDouble() * 2.0, 1.45 + rnd.nextDouble() * 0.25, rnd.nextDouble() * Math.PI));
             }
             this.spires = Collections.unmodifiableList(spireList);
             this.pools = Collections.unmodifiableList(poolList);

@@ -65,6 +65,7 @@ public final class WildIslands {
         if (gr != null)
             for (CityPlan.Island gi : gr.isles)
                 if (Math.abs(x - gi.cx) < gi.maxReach() && Math.abs(z - gi.cz) < gi.maxReach()) out.add(gi);
+        out.addAll(WorldStructures.islandsNear(x, z));
         for (int dx = -1; dx <= 1; ++dx)
             for (int dz = -1; dz <= 1; ++dz) {
                 for (CityPlan.Island i : cell(cx + dx, cz + dz).islands) {
@@ -123,6 +124,7 @@ public final class WildIslands {
                 if (WaterfallGardens.nearAny(x, z, R * 1.15, 48)) continue;                                         // waterfall gardens archipelago + rivers
                 MistKeep.Region mk = MistKeep.regionAt(x, z);                                                          // туманный данж: вода между столбами остаётся морем
                 if (mk != null && Math.hypot(x - mk.cx, z - mk.cz) < R * 1.15 + mk.Rr + 40) continue;
+                if (WorldStructures.anyVillageAt(x, z, R * 1.15 + 68) != null) continue;                              // белые и сгоревшие деревни на собственных островах
                 boolean ok = true;
                 for (CityPlan.Island o : c.islands) {
                     if (Math.hypot(x - o.cx, z - o.cz) < (R + o.R) * 1.15 + 6) { ok = false; break; }

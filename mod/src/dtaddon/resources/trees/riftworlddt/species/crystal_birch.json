@@ -1,8 +1,10 @@
 {
   "family": "riftworlddt:crystal_birch",
-  "tapering": 0.32,
-  "signal_energy": 14.0,
-  "growth_rate": 0.9,
+  "tapering": 0.42,
+  "signal_energy": 6.0,
+  "up_probability": 1,
+  "lowest_branch_height": 1,
+  "growth_rate": 0.8,
   "leaves_properties": "riftworlddt:crystal_birch",
   "generate_seed": true,
   "generate_sapling": true,

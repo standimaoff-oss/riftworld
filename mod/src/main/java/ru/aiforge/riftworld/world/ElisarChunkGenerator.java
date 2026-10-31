@@ -298,6 +298,13 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                     double o = es.outside(px, pz);
                     top = o <= 0 ? es.y : es.y + (top - es.y) * smooth(o / 6.0);
                 }
+            } else if (isl.kind == WorldStructures.VILLAGE_KIND || isl.kind == WorldStructures.BURNED_VILLAGE_KIND) {
+                WorldStructures.Village wv = WorldStructures.anyVillageAt(px, pz, 56);
+                if (wv != null && wv.island == isl) {
+                    double o = Math.hypot(px - wv.cx, pz - wv.cz) - wv.flatR;
+                    double flatTop = wv.baseY - 1.0;
+                    top = o <= 0 ? flatTop : flatTop + (top - flatTop) * smooth(o / 9.0);
+                }
             } else if (isl.kind == 7) {                                // Фиолетовые холмы (референс 04)
                 // Рев 15 — биом переделан с нуля по просьбе владельца («сейчас сделано ужасно»).
                 // Что было не так на кадрах 49–51 итерации 44: серые «кучи» подпорных стенок на
@@ -621,12 +628,12 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             }
         }
         // Острые мраморно-сланцевые скальные пики вдоль диких плеч острова
-        double cragMask = smooth((minClear - 4.2) / 7.5) * smooth(t / 0.055);
-        double ridge = Math.max(0.0, vnoise(px * 0.048, pz * 0.048, 703) - 0.47) * 24.0
-                + Math.max(0.0, vnoise(px * 0.11, pz * 0.11, 704) - 0.54) * 9.5;
-        double crag = ridge * cragMask * ((cr != null && isl == cr.hub) ? 0.48 : 1.0);
+        double cragMask = smooth((minClear - 3.6) / 6.5) * smooth(t / 0.050);
+        double ridge = Math.max(0.0, vnoise(px * 0.048, pz * 0.048, 703) - 0.44) * 28.0
+                + Math.max(0.0, vnoise(px * 0.11, pz * 0.11, 704) - 0.50) * 11.5;
+        double crag = ridge * cragMask * ((cr != null && isl == cr.hub) ? 0.52 : 1.0);
         top += crag;
-        if (crag > 3.3) c.surface = S_BARE;
+        if (crag > 3.0) c.surface = S_BARE;
 
         if (cr != null && cr.owns(isl)) {
             // 1) Площадь астролябии и центральная беломраморная аллея на hub
@@ -912,6 +919,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         BlockState lime = st(ElisarBlocks.GARDEN_LIMESTONE), limeMossy = st(ElisarBlocks.GARDEN_LIMESTONE_MOSSY);
         BlockState riftMarble = st(ElisarBlocks.RIFT_MARBLE), riftMarbleMossy = st(ElisarBlocks.RIFT_MARBLE_MOSSY);
         BlockState riftSlate = st(ElisarBlocks.RIFT_SLATE), riftMarbleSlab = st(ElisarBlocks.RIFT_MARBLE_SLAB);
+        BlockState riftTurf = st(ElisarBlocks.RIFT_TURF), riftGrass = st(ElisarBlocks.RIFT_GRASS);
         BlockState crystalDeep = st(ElisarBlocks.CRYSTAL_BLOCK_DEEP), crystalMid = st(ElisarBlocks.CRYSTAL_BLOCK);
         BlockState crystalBright = st(ElisarBlocks.CRYSTAL_BLOCK_BRIGHT);
         BlockState crystalCluster = st(ElisarBlocks.CRYSTAL_CLUSTER), crystalShroom = st(ElisarBlocks.CRYSTAL_SHROOM);
@@ -961,7 +969,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
 
                 tower(chunk, mp, x, z);
                 if (c.isl != null) {
-                    if (c.isl.kind == 5 || c.isl.kind == 6 || ashen && c.isl.kind != 0) {
+                    if (c.isl.kind == 5 || c.isl.kind == 6 || c.isl.kind == WorldStructures.BURNED_VILLAGE_KIND
+                            || ashen && c.isl.kind != 0) {
                         scorched(chunk, mp, c, x, z);
                     } else for (int y = c.bottom; y <= c.top; ++y) {
                         BlockState s;
@@ -1023,8 +1032,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                         }
                                         if (rimEdge && hash(x, z, 726) < 0.80)
                                             yield hash(x, z, 727) < 0.62 ? riftMarble : riftMarbleMossy;
-                                        yield vnoise(x * 0.13, z * 0.13, 728) > 0.72
-                                                ? Blocks.MOSS_BLOCK.defaultBlockState() : vTurf;
+                                        // Собственный шалфейно-изумрудный дёрн на белом мраморе (0 ванильной земли и травы!)
+                                        yield vnoise(x * 0.14, z * 0.14, 728) > 0.80 ? riftMarbleMossy : riftTurf;
                                     }
                                     // Рев 15: луг Фиолетовых холмов — ЗЕЛЁНАЯ трава (на референсе сочный
                                     // зелёный газон), а не белёсая элисарская корка. Именно из-за неё
@@ -1054,10 +1063,9 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                 }
                             };
                         } else if (y == c.top - 1) {
-                            // Рев 14: под травой полки — не кремовая корка, а слой земли/камня,
-                            // как на референсе: трава не «наклеена» на известняк.
+                            // В Хрустальных разломах под шалфейным дёрном сразу лежит замшелый/белый мрамор — без коричневой земли!
                             s = c.isl.kind == CrystalRifts.KIND
-                                    ? (c.surface == S_GRASS && !c.pondRim ? soil : riftMarble)
+                                    ? (c.surface == S_GRASS && !c.pondRim ? riftMarbleMossy : riftMarble)
                                     : (c.garden || c.isl.kind == 7 ? soil : crust);
                         } else if (c.isl.kind == CrystalRifts.KIND) {
                             // Светло-мраморные верхние обрывы -> тёмный сланец и сталактитовые кили снизу (без одиночных крапинок кристалла)
@@ -1200,23 +1208,17 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                     chunk.setBlockState(mp.set(x, c.top + 1, z), bloom, false);
                                 }
                             } else if (c.isl.kind == CrystalRifts.KIND) {
-                                // biome 10 (02_crystal_sanctum.png): светящиеся бирюзовые грибы, мелкие друзы кристаллов, папоротники и изумрудный дёрн
+                                // biome 10 (02_crystal_sanctum.png): собственная шалфейно-морозная трава разлома, друзы кристаллов и светящиеся грибы (0 ванильной травы!)
                                 if (c.spanTop == Integer.MIN_VALUE) {
                                     double patch = vnoise(x * 0.14, z * 0.14, 731);
-                                    if (patch > 0.64 && h < 0.085) {
+                                    if (patch > 0.63 && h < 0.095) {
                                         chunk.setBlockState(mp.set(x, c.top + 1, z), crystalShroom, false);
-                                    } else if (h < 0.022 || (c.pondRim && h < 0.11)) {
+                                    } else if (h < 0.042 || (c.pondRim && h < 0.14)) {
                                         chunk.setBlockState(mp.set(x, c.top + 1, z), crystalCluster, false);
-                                    } else if (h < 0.068) {
-                                        chunk.setBlockState(mp.set(x, c.top + 1, z), Blocks.FERN.defaultBlockState(), false);
-                                    } else if (h < 0.21) {
-                                        chunk.setBlockState(mp.set(x, c.top + 1, z), vGrass, false);
-                                    } else if (h < 0.242 && vnoise(x * 0.09, z * 0.09, 732) > 0.45) {
-                                        double fl = hash(x, z, 733);
-                                        BlockState coolBloom = fl < 0.46 ? st(ElisarBlocks.PALE_BLOOM)
-                                                : fl < 0.78 ? Blocks.BLUE_ORCHID.defaultBlockState()
-                                                : Blocks.ALLIUM.defaultBlockState();
-                                        chunk.setBlockState(mp.set(x, c.top + 1, z), coolBloom, false);
+                                    } else if (h < 0.255) {
+                                        chunk.setBlockState(mp.set(x, c.top + 1, z), riftGrass, false);
+                                    } else if (h < 0.278 && vnoise(x * 0.09, z * 0.09, 732) > 0.48) {
+                                        chunk.setBlockState(mp.set(x, c.top + 1, z), st(ElisarBlocks.PALE_BLOOM), false);
                                     }
                                 }
                             } else if (c.isl.kind == SizoGrove.KIND || (c.isl.kind != 4 && SizoGrove.inside(x + 0.5, z + 0.5))) {
@@ -1467,8 +1469,9 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             else s = hash(x, y, z) < 0.25 ? stone : sst;
             chunk.setBlockState(mp.set(x, y, z), s, false);
         }
-        // boulders of scorched stone (outside the castle)
-        if (!CastleSite.inFootprint(x, z, 3) && !EmberRuins.inFootprint(x, z, 3) && c.top - c.bottom > 3) {
+        // boulders of scorched stone (outside the castle & villages)
+        if (!CastleSite.inFootprint(x, z, 3) && !EmberRuins.inFootprint(x, z, 3)
+                && !WorldStructures.inFootprint(x, z, 3) && c.top - c.bottom > 3) {
             int gx = Math.floorDiv(x, 9), gz = Math.floorDiv(z, 9);
             if (hash(gx, gz, 53) < 0.22) {
                 double bx = gx * 9 + 2 + hash(gx, gz, 54) * 5, bz = gz * 9 + 2 + hash(gx, gz, 55) * 5, br = 1.2 + hash(gx, gz, 56) * 1.6;
@@ -1976,9 +1979,15 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         if (AshenLands.weight(x0 + 8, z0 + 8) > 0) {
             for (AshenLands.Placed pl : AshenLands.decorNear(x0, z0)) {
                 BlockPos bp = pl.pos();
-                if (bp.getX() >= x0 && bp.getX() <= x0 + 15 && bp.getZ() >= z0 && bp.getZ() <= z0 + 15) level.setBlock(bp, pl.state(), 2);
+                if (bp.getX() >= x0 && bp.getX() <= x0 + 15 && bp.getZ() >= z0 && bp.getZ() <= z0 + 15
+                        && !WorldStructures.inFootprint(bp.getX(), bp.getZ(), 2)) {
+                    level.setBlock(bp, pl.state(), 2);
+                }
             }
         }
+        // Новые мировые структуры Элисара: малые белые деревни (<=6 домов), сгоревшие деревни,
+        // большой корабль в скале, затонувший корабль на дне и редкие подводные здания!
+        WorldStructures.buildInChunk(level, chunk, box, stm, rnd, plan, x0, z0);
         for (CityPlan.Prop p : props) {
             Direction f = Direction.byName(p.facing());
             if (f == null || f.getAxis() == Direction.Axis.Y) f = Direction.SOUTH;
@@ -2575,24 +2584,17 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                         BlockPos cp = mp.set(bx, cl, bz);
                         BlockState st0 = chunk.getBlockState(cp);
                         if (st0.is(ElisarBlocks.CRYSTAL_SHROOM.get()) || st0.is(ElisarBlocks.CRYSTAL_CLUSTER.get())
+                                || st0.is(ElisarBlocks.RIFT_GRASS.get())
                                 || st0.is(Blocks.GRASS) || st0.is(Blocks.FERN)) {
                             chunk.setBlockState(cp, Blocks.AIR.defaultBlockState(), false);
                         }
                     }
-                    if (r < 1.15) {
-                        // Центральный мраморный пьедестал и парящее хрустальное ядро астролябии
-                        chunk.setBlockState(mp.set(bx, ay, bz), riftMarble, false);
-                        chunk.setBlockState(mp.set(bx, ay + 1, bz), riftMarbleSlab, false);
-                        chunk.setBlockState(mp.set(bx, ay + 3, bz), crystalMid, false);
-                        chunk.setBlockState(mp.set(bx, ay + 4, bz), crystalBright, false);
-                        chunk.setBlockState(mp.set(bx, ay + 5, bz), crystalBright, false);
-                        chunk.setBlockState(mp.set(bx, ay + 6, bz), crystalCluster, false);
-                    } else if (r < 2.35) {
-                        // Светящаяся бирюзовая чаша вокруг пьедестала + каменное кольцо астролябии сверху
-                        chunk.setBlockState(mp.set(bx, ay, bz), gWater, false);
-                        if (r >= 1.65 && r <= 2.25 && (Math.abs(dx) < 0.65 || Math.abs(dz) < 0.65)) {
-                            chunk.setBlockState(mp.set(bx, ay + 4, bz), riftMarbleSlab, false);
-                        }
+                    if (r < 1.35) {
+                        // Светящаяся руническая печать в центре открытой арены колоннады (под будущего босса-сущность!)
+                        chunk.setBlockState(mp.set(bx, ay, bz), r < 0.75 ? crystalBright : crystalMid, false);
+                    } else if (r < 2.55) {
+                        // Внутреннее бирюзовое водяное/мраморное кольцо призыва (центр арены полностью открыт!)
+                        chunk.setBlockState(mp.set(bx, ay, bz), r < 2.05 ? gWater : riftMarble, false);
                     } else if (r >= 5.15 && r <= 5.95) {
                         // Врезанное в мраморный пол светящееся хрустальное кольцо
                         chunk.setBlockState(mp.set(bx, ay, bz), hash(bx, bz, 760) < 0.65 ? crystalMid : crystalDeep, false);
@@ -2679,38 +2681,34 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             }
         }
 
-        // 3) Запасные серебристые деревья (ТОЛЬКО если аддон Dynamic Trees не загружен!)
+        // 3) Запасные миниатюрные деревца вдоль аллеи (ТОЛЬКО если аддон Dynamic Trees не загружен!)
         if (!DtGround.dtPresent()) {
             BlockState cLog = st(ElisarBlocks.CRYSTAL_LOG);
             BlockState cLeaf = st(ElisarBlocks.CRYSTAL_LEAVES).setValue(LeavesBlock.PERSISTENT, true);
-            for (int gx = (x0 - 4) >> 3; gx <= (x0 + 19) >> 3; ++gx) {
-                for (int gz = (z0 - 4) >> 3; gz <= (z0 + 19) >> 3; ++gz) {
-                    if (hash(gx, gz, 770) > 0.34) continue;
-                    int tx = (gx << 3) + 2 + (int) (hash(gx, gz, 771) * 4.0);
-                    int tz = (gz << 3) + 2 + (int) (hash(gx, gz, 772) * 4.0);
-                    if (cr.nearCrystalOrStructure(tx + 0.5, tz + 0.5, 2.5)) continue;
+            double ax = cr.aveAx, az = cr.aveAz, bx = cr.aveBx, bz = cr.aveBz;
+            double len = Math.max(1.0, Math.hypot(bx - ax, bz - az));
+            double ux = (bx - ax) / len, uz = (bz - az) / len;
+            double px2 = -uz, pz2 = ux;
+            int count = Math.min(4, Math.max(2, (int) Math.floor(len / 8.5)));
+            for (int k = 0; k < count; ++k) {
+                double dist = 5.0 + k * 8.5;
+                if (dist > len - 6.0) break;
+                for (int side = -1; side <= 1; side += 2) {
+                    int tx = (int) Math.round(ax + ux * dist + px2 * side * (CrystalRifts.Region.AVE_HW + 2.4));
+                    int tz = (int) Math.round(az + uz * dist + pz2 * side * (CrystalRifts.Region.AVE_HW + 2.4));
                     Col tc = column(plan, tx, tz);
-                    if (tc.isl == null || tc.isl.kind != CrystalRifts.KIND || tc.surface != S_GRASS
-                            || tc.waterTop != Integer.MIN_VALUE || tc.spanTop != Integer.MIN_VALUE) continue;
-                    if (tc.isl.t(tx + 0.5, tz + 0.5) < 0.14) continue;
-                    int th = 6 + (int) (hash(gx, gz, 773) * 3.0);
+                    if (tc.isl == null || tc.isl.kind != CrystalRifts.KIND || tc.surface != S_GRASS) continue;
+                    int th = 2 + (k % 2);
                     if (tx >= x0 && tx <= x0 + 15 && tz >= z0 && tz <= z0 + 15) {
-                        for (int y = 1; y <= th; ++y) {
-                            chunk.setBlockState(mp.set(tx, tc.top + y, tz), cLog, false);
-                        }
+                        for (int y = 1; y <= th; ++y) chunk.setBlockState(mp.set(tx, tc.top + y, tz), cLog, false);
+                        chunk.setBlockState(mp.set(tx, tc.top + th + 1, tz), cLeaf, false);
                     }
-                    for (int dy = -2; dy <= 2; ++dy) {
-                        int rad = (dy == -2 || dy == 2) ? 1 : 2;
-                        for (int dx = -rad; dx <= rad; ++dx) {
-                            for (int dz = -rad; dz <= rad; ++dz) {
-                                if (Math.abs(dx) == rad && Math.abs(dz) == rad && hash(tx + dx, tz + dz, 774 + dy) < 0.45) continue;
-                                int lx = tx + dx, lz = tz + dz, ly = tc.top + th + dy;
-                                if (lx < x0 || lx > x0 + 15 || lz < z0 || lz > z0 + 15) continue;
-                                BlockPos lp = mp.set(lx, ly, lz);
-                                if (chunk.getBlockState(lp).isAir()) {
-                                    chunk.setBlockState(lp, cLeaf, false);
-                                }
-                            }
+                    int[][] tufts = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+                    for (int ti = 0; ti < tufts.length; ++ti) {
+                        if (((k + ti) & 1) == 0) continue;
+                        int lx = tx + tufts[ti][0], lz = tz + tufts[ti][1];
+                        if (lx >= x0 && lx <= x0 + 15 && lz >= z0 && lz <= z0 + 15) {
+                            chunk.setBlockState(mp.set(lx, tc.top + th, lz), cLeaf, false);
                         }
                     }
                 }

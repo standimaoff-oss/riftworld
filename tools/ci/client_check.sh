@@ -1338,6 +1338,10 @@ biome_section() {
     CBRGW=$(printf '%s' "$CL" | sed -n 's/.* bridge_walkable=\([0-9]*\).*/\1/p' | tail -1)
     CCRYS=$(printf '%s' "$CL" | sed -n 's/.* crystal_blocks=\([0-9]*\).*/\1/p' | tail -1)
     CMARB=$(printf '%s' "$CL" | sed -n 's/.* marble_blocks=\([0-9]*\).*/\1/p' | tail -1)
+    CTURF=$(printf '%s' "$CL" | sed -n 's/.* rift_turf=\([0-9]*\).*/\1/p' | tail -1)
+    CRGRS=$(printf '%s' "$CL" | sed -n 's/.* rift_grass=\([0-9]*\).*/\1/p' | tail -1)
+    CVGRS=$(printf '%s' "$CL" | sed -n 's/.* vanilla_grass=\([0-9]*\).*/\1/p' | tail -1)
+    CI1TR=$(printf '%s' "$CL" | sed -n 's/.* isl1_trees=\([0-9]*\).*/\1/p' | tail -1)
     CFLORA=$(printf '%s' "$CL" | sed -n 's/.* crystal_flora=\([0-9]*\).*/\1/p' | tail -1)
     CWAT=$(printf '%s' "$CL" | sed -n 's/.* water=\([0-9]*\).*/\1/p' | tail -1)
     CSIZO=$(printf '%s' "$CL" | sed -n 's/.* sizo_blocks=\([0-9]*\).*/\1/p' | tail -1)
@@ -1357,10 +1361,16 @@ biome_section() {
       log "  FAIL Хрустальные разломы: мост между островами имеет разрыв (bridge_walkable=${CBRGW:-0})"; FAILS=$((FAILS + 1))
     fi
 
-    if [ "${CCRYS:-0}" -ge 250 ] && [ "${CMARB:-0}" -ge 1500 ] && [ "${CWAT:-0}" -ge 40 ]; then
-      log "  OK   Хрустальные разломы: блочные кристаллы (${CCRYS}), мрамор/сланец (${CMARB}), чаши/водопады (${CWAT}), флора (${CFLORA:-0})"
+    if [ "${CCRYS:-0}" -ge 450 ] && [ "${CMARB:-0}" -ge 1500 ] && [ "${CWAT:-0}" -ge 40 ]; then
+      log "  OK   Хрустальные разломы: многоблочные кристаллы на всех островах (${CCRYS}), мрамор/сланец (${CMARB}), чаши/водопады (${CWAT})"
     else
       log "  FAIL Хрустальные разломы: кристаллов=${CCRYS:-0} мрамора=${CMARB:-0} воды=${CWAT:-0}"; FAILS=$((FAILS + 1))
+    fi
+
+    if [ "${CTURF:-0}" -ge 250 ] && [ "${CRGRS:-0}" -ge 40 ] && [ "${CVGRS:-1}" -eq 0 ] && [ "${CI1TR:-1}" -eq 0 ]; then
+      log "  OK   Хрустальные разломы: собственный шалфейный дёрн (${CTURF}) и трава разлома (${CRGRS}), ванильной травы=0, деревьев на кристальном острове=0"
+    else
+      log "  FAIL Хрустальные разломы: rift_turf=${CTURF:-0} rift_grass=${CRGRS:-0} vanilla_grass=${CVGRS:-?} isl1_trees=${CI1TR:-?}"; FAILS=$((FAILS + 1))
     fi
 
     if [ "${CSIZO:-1}" -eq 0 ]; then
@@ -1372,12 +1382,12 @@ biome_section() {
     if [ "${WITH_DT:-0}" = "1" ]; then
       local CDTW CDTN
       CDTW=$(EL execute at TestPlayer in riftworld:elisar run riftdtwild 44 2>&1 | tr '\r\n' '  ')
-      log "  /riftdtwild (хрустальные разломы, серебрица) -> ${CDTW:0:240}"
+      log "  /riftdtwild (хрустальные разломы, мини-бонсай серебрица) -> ${CDTW:0:240}"
       CDTN=$(printf '%s' "$CDTW" | sed -n 's/.* dt=\([0-9]*\).*/\1/p' | tail -1)
-      if [ "${CDTN:-0}" -ge 120 ] && ! printf '%s' "$CDTW" | grep -q 'ambra_'; then
-        log "  OK   Хрустальные разломы: серебристые деревья аддона DT выросли (${CDTN} блоков, 0 чужих ambra)"
+      if [ "${CDTN:-0}" -ge 16 ] && [ "${CDTN:-0}" -le 260 ] && ! printf '%s' "$CDTW" | grep -q 'ambra_'; then
+        log "  OK   Хрустальные разломы: миниатюрные редкие деревца DT вдоль аллеи (${CDTN} блоков, без лесов и без ambra)"
       else
-        log "  FAIL Хрустальные разломы: проблемы с DT (dt=${CDTN:-0}, raw=${CDTW:0:120})"; FAILS=$((FAILS + 1))
+        log "  FAIL Хрустальные разломы: проблемы с мини-бонсай DT (dt=${CDTN:-0}, raw=${CDTW:0:120})"; FAILS=$((FAILS + 1))
       fi
     fi
 
@@ -1393,6 +1403,61 @@ biome_section() {
     [ -n "${CV4:-}" ] && lookat $(printf '%s' "$CV4" | cut -d: -f1 | tr ',' ' ') $(printf '%s' "$CV4" | cut -d: -f2 | tr ',' ' ') 16 "73_crystal_astrolabe_avenue"
     [ -n "${CV5:-}" ] && lookat $(printf '%s' "$CV5" | cut -d: -f1 | tr ',' ' ') $(printf '%s' "$CV5" | cut -d: -f2 | tr ',' ' ') 16 "74_crystal_archipelago_falls"
   fi
+
+  # ---------- Новые мировые структуры Элисара (v0.18.0: корабли, подводные здания, малые белые и сгоревшие деревни) ----------
+  echo "== новые мировые структуры Элисара =="
+  EL tp TestPlayer 0 110 0 >/dev/null 2>&1 || true
+  sleep 2
+
+  probe_and_shot_struct() {
+    local skind="$1" min_blk="$2" shot_name="$3" underw="${4:-0}" check_houses="${5:-0}"
+    local S0 SAT SX SY SZ S1 SBLK SAIR SHSE SCAM
+    EL tp TestPlayer 0 110 0 >/dev/null 2>&1 || true
+    sleep 1
+    S0=$(EL execute at TestPlayer in riftworld:elisar run riftstruct "$skind" 2>&1 | tr '\r\n' '  ')
+    SAT=$(printf '%s' "$S0" | sed -n 's/.* at=\([-0-9]*,[-0-9]*,[-0-9]*\).*/\1/p' | tail -1)
+    if [ -z "${SAT:-}" ]; then
+      log "  FAIL /riftstruct $skind не нашёл структуру (${S0:0:140})"; FAILS=$((FAILS + 1)); return
+    fi
+    SX=$(printf '%s' "$SAT" | cut -d, -f1); SY=$(printf '%s' "$SAT" | cut -d, -f2); SZ=$(printf '%s' "$SAT" | cut -d, -f3)
+    if [ "$underw" = "1" ]; then
+      RCON effect give TestPlayer minecraft:night_vision 120 0 true >/dev/null 2>&1 || true
+      RCON effect give TestPlayer minecraft:conduit_power 120 0 true >/dev/null 2>&1 || true
+    else
+      RCON effect clear TestPlayer >/dev/null 2>&1 || true
+    fi
+    EL tp TestPlayer "$SX" "$((SY + 8))" "$SZ" >/dev/null 2>&1 || true
+    sleep 6
+    S1=$(EL execute at TestPlayer in riftworld:elisar run riftstruct "$skind" 2>&1 | tr '\r\n' '  ')
+    log "  /riftstruct $skind -> ${S1:0:280}"
+    SBLK=$(printf '%s' "$S1" | sed -n 's/.* blocks=\([0-9]*\).*/\1/p' | tail -1)
+    SAIR=$(printf '%s' "$S1" | sed -n 's/.* sub_air=\([0-9]*\).*/\1/p' | tail -1)
+    SHSE=$(printf '%s' "$S1" | sed -n 's/.* houses=\([0-9]*\).*/\1/p' | tail -1)
+    SCAM=$(printf '%s' "$S1" | grep -o 'cam=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^cam=//')
+    if [ "${SBLK:-0}" -ge "$min_blk" ] && [ "${SAIR:-0}" -eq 0 ]; then
+      log "  OK   структура $skind построена: blocks=${SBLK}, sub_air=${SAIR:-0}"
+    else
+      log "  FAIL структура $skind: blocks=${SBLK:-0} (ожидалось >=${min_blk}), sub_air=${SAIR:-?}"; FAILS=$((FAILS + 1))
+    fi
+    if [ "$check_houses" = "1" ]; then
+      if [ "${SHSE:-0}" -ge 3 ] && [ "${SHSE:-0}" -le 6 ]; then
+        log "  OK   деревня $skind содержит ровно ${SHSE} небольших домов (лимит <= 6 соблюдён)"
+      else
+        log "  FAIL деревня $skind: houses=${SHSE:-0} (ожидалось 3..6)"; FAILS=$((FAILS + 1))
+      fi
+    fi
+    if [ -n "${SCAM:-}" ]; then
+      lookat $(printf '%s' "$SCAM" | cut -d: -f1 | tr ',' ' ') $(printf '%s' "$SCAM" | cut -d: -f2 | tr ',' ' ') 16 "$shot_name"
+    fi
+    RCON effect clear TestPlayer >/dev/null 2>&1 || true
+  }
+
+  probe_and_shot_struct "crashed_ship"   160 "80_crashed_ship_cliff"   0 0
+  probe_and_shot_struct "sunken_ship"    140 "81_sunken_ship_seabed"   1 0
+  probe_and_shot_struct "ocean_building"  80 "82_ocean_floor_building" 1 0
+  probe_and_shot_struct "white_village"  200 "83_white_village_hamlet" 0 1
+  probe_and_shot_struct "burned_village" 140 "84_burned_village_ashen" 0 1
+
   EL gamemode creative TestPlayer >/dev/null 2>&1 || true
 }
 biome_section || log "  FAIL секция биомов упала с кодом $?"

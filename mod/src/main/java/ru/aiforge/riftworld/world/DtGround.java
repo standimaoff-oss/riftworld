@@ -92,11 +92,13 @@ public final class DtGround {
         if (start == null) return null;
         if (!sea) {
             double px0 = start.getX() + 0.5, pz0 = start.getZ() + 0.5;
+            if (WorldStructures.inFootprint(px0, pz0, 1.5)) return null;
             CityPlan.Island cisl = CityPlan.get().islandAt(px0, pz0);
+            if (cisl != null && (cisl.kind == 5 || cisl.kind == WorldStructures.BURNED_VILLAGE_KIND)) return null;
             if (cisl != null && cisl.kind == CrystalRifts.KIND) {
                 if (cisl.t(px0, pz0) < 0.14) return null;
                 CrystalRifts.Region creg0 = CrystalRifts.regionAt(px0, pz0);
-                if (creg0 != null && creg0.nearCrystalOrStructure(px0, pz0, 3.4)) return null;
+                if (creg0 != null && creg0.nearCrystalOrStructure(px0, pz0, 0.8)) return null;
             }
         }
         BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos(start.getX(), 0, start.getZ());
@@ -247,9 +249,13 @@ public final class DtGround {
             return r.nextInt(5) == 0 ? "riftworlddt:sizo" : "riftworlddt:giant_sizo";
         }
         if ((isl != null && isl.kind == CrystalRifts.KIND) || CrystalRifts.inside(px, pz) || biome.endsWith(":crystal_rifts")) {
-            CrystalRifts.Region cr = CrystalRifts.regionAt(px, pz);
-            if (cr != null && cr.nearCrystalOrStructure(px, pz, 2.8)) return null;
-            return "riftworlddt:crystal_birch";
+            // На островах Хрустальных разломов растут многоблочные кристаллы, а не леса деревьев!
+            // Миниатюрные бонсай-деревца высаживаются строго вдоль мраморной аллеи на главном острове.
+            return null;
+        }
+        if (WorldStructures.inFootprint(px, pz, 2.0)
+                || (isl != null && (isl.kind == 5 || isl.kind == WorldStructures.BURNED_VILLAGE_KIND))) {
+            return null;
         }
         if (isl != null || biome.endsWith(":elisar_city")) {
             return "riftworlddt:ambra";
@@ -276,36 +282,37 @@ public final class DtGround {
             if (sp == null) continue;
             float chance = sp.equals("riftworlddt:lilac") ? 0.036f
                     : sp.equals("riftworlddt:giant_sizo") ? 0.24f
-                    : sp.equals("riftworlddt:crystal_birch") ? 0.26f
                     : sp.equals("riftworlddt:ambra") ? 0.22f
                     : sp.equals("riftworlddt:garden_oak") ? 0.30f : 0.22f;
             if (r.nextFloat() > chance) continue;
             int radius = sp.equals("riftworlddt:lilac") ? 5 + r.nextInt(3)
                     : sp.equals("riftworlddt:giant_sizo") ? 6 + r.nextInt(3)
-                    : sp.equals("riftworlddt:crystal_birch") ? 4 + r.nextInt(4)
                     : 4 + r.nextInt(3);
             if (plant(level, ground, sp, radius)) ++planted;
             if (sp.equals("riftworlddt:giant_sizo") && planted >= 1) break;
         }
-        // Аллея хрустальных серебриц вдоль белой мраморной дороги к астролябии (референс 02_crystal_sanctum.png)
+        // Миниатюрные редкие деревца вдоль белой мраморной аллеи к колоннаде (референс 02_crystal_sanctum.png:
+        // деревца ОЧЕНЬ маленькие, на тонких ветвях и с совсем небольшим количеством морозной листвы!)
         CrystalRifts.Region creg = CrystalRifts.regionAt(pos.getMinBlockX() + 8, pos.getMinBlockZ() + 8);
         if (creg != null) {
             double ax = creg.aveAx, az = creg.aveAz, bx = creg.aveBx, bz = creg.aveBz;
             double len = Math.max(1.0, Math.hypot(bx - ax, bz - az));
             double ux = (bx - ax) / len, uz = (bz - az) / len;
             double px = -uz, pz = ux;
-            int count = Math.max(2, (int) Math.floor(len / 9.0));
+            int count = Math.min(4, Math.max(2, (int) Math.floor(len / 8.5)));
             for (int k = 0; k < count; ++k) {
-                double dist = 5.5 + k * 9.0;
-                if (dist > len - 6.5) break;
+                double dist = 5.0 + k * 8.5;
+                if (dist > len - 6.0) break;
                 for (int side = -1; side <= 1; side += 2) {
-                    int tx = (int) Math.round(ax + ux * dist + px * side * (CrystalRifts.Region.AVE_HW + 4.8));
-                    int tz = (int) Math.round(az + uz * dist + pz * side * (CrystalRifts.Region.AVE_HW + 4.8));
+                    int tx = (int) Math.round(ax + ux * dist + px * side * (CrystalRifts.Region.AVE_HW + 2.4));
+                    int tz = (int) Math.round(az + uz * dist + pz * side * (CrystalRifts.Region.AVE_HW + 2.4));
                     if (tx < pos.getMinBlockX() + 2 || tx > pos.getMaxBlockX() - 2
                             || tz < pos.getMinBlockZ() + 2 || tz > pos.getMaxBlockZ() - 2) continue;
                     BlockPos g = surfaceUnder(level, new BlockPos(tx, 0, tz), false);
-                    if (g != null && g.getY() > ocean && !creg.nearCrystalOrStructure(tx + 0.5, tz + 0.5, 1.5)) {
-                        if (plant(level, g, "riftworlddt:crystal_birch", 4 + ((k + (side > 0 ? 1 : 0)) % 3))) {
+                    if (g != null && g.getY() > ocean && !creg.nearCrystalOrStructure(tx + 0.5, tz + 0.5, 0.8)) {
+                        int tinyRad = 2 + ((k + (side > 0 ? 1 : 0)) % 2);
+                        if (plant(level, g, "riftworlddt:crystal_birch", tinyRad)) {
+                            sculptBonsaiCrown(level, g);
                             ++planted;
                         }
                     }
@@ -313,6 +320,65 @@ public final class DtGround {
             }
         }
         return planted;
+    }
+
+    /**
+     * Подрезает крону миниатюрной {@code crystal_birch} под бонсай-силуэт с референса
+     * {@code 02_crystal_sanctum.png}: ствол внизу открыт, ветви не утопают в шаре листвы,
+     * а на кончиках веточек остаётся лишь лёгкое воздушное облачко из 5–12 блоков листвы.
+     */
+    private static void sculptBonsaiCrown(LevelAccessor level, BlockPos g) {
+        BlockPos topBranch = null;
+        java.util.List<BlockPos> leaves = new java.util.ArrayList<>();
+        for (int dy = 1; dy <= 7; ++dy) {
+            for (int dx = -4; dx <= 4; ++dx) {
+                for (int dz = -4; dz <= 4; ++dz) {
+                    BlockPos p = g.offset(dx, dy, dz);
+                    var key = ForgeRegistries.BLOCKS.getKey(level.getBlockState(p).getBlock());
+                    if (key == null) continue;
+                    String path = key.getPath();
+                    if (path.equals("crystal_birch_branch")) {
+                        if (topBranch == null || p.getY() > topBranch.getY()) topBranch = p.immutable();
+                    } else if (path.equals("crystal_birch_leaves")) {
+                        leaves.add(p.immutable());
+                    }
+                }
+            }
+        }
+        if (leaves.isEmpty()) return;
+        int kept = 0;
+        java.util.List<BlockPos> tipFallback = new java.util.ArrayList<>();
+        for (BlockPos lp : leaves) {
+            int dy = lp.getY() - g.getY();
+            boolean adjBranch = false;
+            for (net.minecraft.core.Direction dir : net.minecraft.core.Direction.values()) {
+                var bk = ForgeRegistries.BLOCKS.getKey(level.getBlockState(lp.relative(dir)).getBlock());
+                if (bk != null && bk.getPath().equals("crystal_birch_branch")) {
+                    adjBranch = true;
+                    break;
+                }
+            }
+            if (topBranch != null && lp.distManhattan(topBranch) <= 1 && dy >= 2) {
+                tipFallback.add(lp);
+            }
+            int h = (lp.getX() * 734287 + lp.getY() * 912931 + lp.getZ() * 19937) & 7;
+            if (dy <= 1 || !adjBranch || h < 3) {
+                level.setBlock(lp, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 2);
+            } else {
+                ++kept;
+            }
+        }
+        // Гарантируем, что на самой верхушке веточки остаётся хотя бы 4 морозных листика
+        if (kept < 4 && !tipFallback.isEmpty()) {
+            BlockState leafState = ForgeRegistries.BLOCKS.getValue(
+                    new net.minecraft.resources.ResourceLocation("riftworlddt", "crystal_birch_leaves")).defaultBlockState();
+            for (BlockPos tp : tipFallback) {
+                if (level.getBlockState(tp).isAir()) {
+                    level.setBlock(tp, leafState, 2);
+                    if (++kept >= 4) break;
+                }
+            }
+        }
     }
     /** Объявлен ли блок почвой в Dynamic Trees (реестр SoilHelper), т.е. дерево вообще имеет право тут встать. */
     private static boolean isDtSoil(LevelAccessor level, BlockPos p) {

@@ -359,6 +359,8 @@
   "block.riftworld.crystal_block_bright": "Сияющее ядро кристалла разлома",
   "block.riftworld.rift_marble": "Мрамор разломов",
   "block.riftworld.rift_marble_mossy": "Замшелый мрамор разломов",
+  "block.riftworld.rift_turf": "Дёрн разломов",
+  "block.riftworld.rift_grass": "Трава разломов",
   "block.riftworld.rift_marble_slab": "Плита из мрамора разломов",
   "block.riftworld.rift_marble_stairs": "Ступени из мрамора разломов",
   "block.riftworld.rift_slate": "Сланец разломов",
@@ -366,5 +368,7 @@
   "block.riftworld.crystal_leaves": "Листва хрустальной серебрицы",
   "block.riftworld.crystal_cluster": "Друза кристалла разлома",
   "block.riftworld.crystal_shroom": "Светящийся гриб разломов",
-  "biome.riftworld.crystal_rifts": "Хрустальные разломы"
+  "biome.riftworld.crystal_rifts": "Хрустальные разломы",
+  "block.riftworld.rift_turf": "Дёрн разломов",
+  "block.riftworld.rift_grass": "Хрустальная трава"
 }

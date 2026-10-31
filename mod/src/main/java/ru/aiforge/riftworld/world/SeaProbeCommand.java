@@ -52,6 +52,10 @@ public final class SeaProbeCommand {
                 .then(Commands.argument("name", com.mojang.brigadier.arguments.StringArgumentType.word())
                         .executes(c -> biome(c.getSource(),
                                 com.mojang.brigadier.arguments.StringArgumentType.getString(c, "name")))));
+        e.getDispatcher().register(Commands.literal("riftstruct").requires(s2 -> s2.hasPermission(2))
+                .then(Commands.argument("kind", com.mojang.brigadier.arguments.StringArgumentType.word())
+                        .executes(c -> probeStruct(c.getSource(),
+                                com.mojang.brigadier.arguments.StringArgumentType.getString(c, "kind")))));
         // Рев 13.6: /riftdtat — что DT реально поставил в точке посадки. Один вызов RCON вместо
         // сотен «execute if block»: считает все блоки аддона вокруг корня.
         e.getDispatcher().register(Commands.literal("riftdtat").requires(s2 -> s2.hasPermission(2))
@@ -847,6 +851,7 @@ public final class SeaProbeCommand {
         int i1x = (int) Math.round(isl1.cx), i1z = (int) Math.round(isl1.cz);
 
         int crystalBlocks = 0, marbleBlocks = 0, crystalFlora = 0, water = 0, ivy = 0, sizoBlocks = 0;
+        int riftTurfCnt = 0, riftGrassCnt = 0, vanillaGrassCnt = 0, isl1Trees = 0;
         var cDeep = ElisarBlocks.CRYSTAL_BLOCK_DEEP.get();
         var cMid = ElisarBlocks.CRYSTAL_BLOCK.get();
         var cBright = ElisarBlocks.CRYSTAL_BLOCK_BRIGHT.get();
@@ -854,32 +859,45 @@ public final class SeaProbeCommand {
         var rMarbM = ElisarBlocks.RIFT_MARBLE_MOSSY.get();
         var rSlate = ElisarBlocks.RIFT_SLATE.get();
         var rSlab = ElisarBlocks.RIFT_MARBLE_SLAB.get();
+        var rTurf = ElisarBlocks.RIFT_TURF.get();
+        var rGrass = ElisarBlocks.RIFT_GRASS.get();
         var cClust = ElisarBlocks.CRYSTAL_CLUSTER.get();
         var cShroom = ElisarBlocks.CRYSTAL_SHROOM.get();
         var gWat = ElisarBlocks.GARDEN_WATER.get();
 
-        // Сканируем как hub (святилище + аллея), так и главный кристальный остров #1 (гигантский кристалл + чаша + водопады)
+        // Сканируем как hub (святилище + аллея), так и главный кристальный остров #1 (гигантские кристаллы + чаша + водопады)
         int[][] centers = {{hx, hz, 48}, {i1x, i1z, 52}};
         java.util.Set<Long> visitedCols = new java.util.HashSet<>();
-        for (int[] c0 : centers) {
+        for (int ci = 0; ci < centers.length; ++ci) {
+            int[] c0 = centers[ci];
             int cx = c0[0], cz = c0[1], rad = c0[2];
             for (int x = cx - rad; x <= cx + rad; ++x) {
                 for (int z = cz - rad; z <= cz + rad; ++z) {
                     long ck = ((long) x << 32) ^ (z & 0xFFFFFFFFL);
                     if (!visitedCols.add(ck)) continue;
                     if (!level.hasChunk(x >> 4, z >> 4)) continue;
+                    CityPlan.Island ownIsl = CityPlan.get().islandAt(x + 0.5, z + 0.5);
+                    boolean inCrystalIsl = ownIsl != null && ownIsl.kind == CrystalRifts.KIND;
                     for (int y = 62; y <= 140; ++y) {
                         BlockState bs = level.getBlockState(new BlockPos(x, y, z));
                         if (bs.isAir()) continue;
                         var b = bs.getBlock();
                         if (b == cDeep || b == cMid || b == cBright) ++crystalBlocks;
                         else if (b == rMarb || b == rMarbM || b == rSlate || b == rSlab) ++marbleBlocks;
+                        else if (b == rTurf) ++riftTurfCnt;
+                        else if (b == rGrass) { ++riftGrassCnt; ++crystalFlora; }
                         else if (b == cClust || b == cShroom) ++crystalFlora;
                         else if (b == gWat || bs.is(net.minecraft.world.level.block.Blocks.WATER)) ++water;
                         else if (b instanceof net.minecraft.world.level.block.VineBlock) ++ivy;
-                        else {
+                        else if (inCrystalIsl && (bs.is(net.minecraft.world.level.block.Blocks.GRASS_BLOCK)
+                                || bs.is(net.minecraft.world.level.block.Blocks.GRASS))) {
+                            ++vanillaGrassCnt;
+                        } else {
                             var k = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(b);
-                            if (k != null && k.getPath().contains("sizo")) ++sizoBlocks;
+                            if (k != null) {
+                                if (k.getPath().contains("sizo")) ++sizoBlocks;
+                                if (ci == 1 && ownIsl == isl1 && k.getPath().equals("crystal_birch_branch")) ++isl1Trees;
+                            }
                         }
                     }
                 }
@@ -902,7 +920,7 @@ public final class SeaProbeCommand {
                     BlockState bs = level.getBlockState(new BlockPos(bx, y, bz));
                     if (!bs.isAir() && bs.getFluidState().isEmpty()
                             && !(bs.getBlock() instanceof net.minecraft.world.level.block.VineBlock)
-                            && bs.getBlock() != cClust && bs.getBlock() != cShroom) {
+                            && bs.getBlock() != cClust && bs.getBlock() != cShroom && bs.getBlock() != rGrass) {
                         topSolid = y;
                         break;
                     }
@@ -996,6 +1014,10 @@ public final class SeaProbeCommand {
                 + " bridge_walkable=" + bridgeWalkable
                 + " crystal_blocks=" + crystalBlocks
                 + " marble_blocks=" + marbleBlocks
+                + " rift_turf=" + riftTurfCnt
+                + " rift_grass=" + riftGrassCnt
+                + " vanilla_grass=" + vanillaGrassCnt
+                + " isl1_trees=" + isl1Trees
                 + " crystal_flora=" + crystalFlora
                 + " water=" + water
                 + " ivy=" + ivy
@@ -1418,7 +1440,7 @@ public final class SeaProbeCommand {
      */
     private static int dt(CommandSourceStack src) {
         String[] blocks = {"sizo_leaves", "ambra_leaves", "garden_oak_leaves", "lilac_leaves", "crystal_birch_leaves",
-                "rooty_elisar_grass", "rooty_elisar_soil", "rooty_elisar_moss", "rooty_garden_grass",
+                "rooty_elisar_grass", "rooty_elisar_soil", "rooty_elisar_moss", "rooty_garden_grass", "rooty_rift_turf",
                 "sizo_branch", "ambra_branch", "garden_oak_branch", "lilac_branch", "crystal_birch_branch",
                 // саженцы DT — только блоки, предметов у них нет по дизайну самого DT
                 "sizo_sapling", "ambra_sapling", "giant_sizo_sapling", "garden_oak_sapling", "lilac_sapling", "crystal_birch_sapling"};
@@ -1676,5 +1698,229 @@ public final class SeaProbeCommand {
     public static List<String> plantIds() {
         return new ArrayList<>(List.of("coral_branch", "coral_fan", "coral_tube", "coral_glow", "coral_brain",
                 "sea_grass", "sea_kelp", "sea_kelp_top", "sea_shells", "cave_glow"));
+    }
+
+    /**
+     * Проба новых мировых структур Элисара ({@code /riftstruct <white_village|burned_village|crashed_ship|sunken_ship|ocean_building>}):
+     * находит ближайший экземпляр структуры, считает её реальные блоки в загруженных чанках, проверяет ограничения
+     * (например, {@code houses=3..6} и {@code sub_air=0} под водой) и отдаёт ракурс камеры {@code cam=cx,cy,cz:lx,ly,lz}.
+     */
+    private static int probeStruct(CommandSourceStack src, String rawKind) {
+        ServerLevel level = src.getLevel();
+        BlockPos at = BlockPos.containing(src.getPosition());
+        String k = rawKind == null ? "" : rawKind.toLowerCase(java.util.Locale.ROOT);
+        int ocean = CityPlan.get().ocean;
+
+        if (k.startsWith("white")) {
+            WorldStructures.Village best = null;
+            double bestD = Double.MAX_VALUE;
+            int sx0 = Math.floorDiv(at.getX(), WorldStructures.SUPER_VILLAGE);
+            int sz0 = Math.floorDiv(at.getZ(), WorldStructures.SUPER_VILLAGE);
+            for (int dx = -5; dx <= 5; ++dx) {
+                for (int dz = -5; dz <= 5; ++dz) {
+                    WorldStructures.Village v = WorldStructures.whiteVillage(sx0 + dx, sz0 + dz);
+                    if (v == null) continue;
+                    double d = Math.hypot(v.cx - at.getX(), v.cz - at.getZ());
+                    if (d < bestD) { bestD = d; best = v; }
+                }
+            }
+            if (best == null) { src.sendFailure(Component.literal("riftstruct: white_village not found")); return 0; }
+            int blocks = 0;
+            for (int x = best.cx - 28; x <= best.cx + 28; ++x) {
+                for (int z = best.cz - 28; z <= best.cz + 28; ++z) {
+                    if (!level.hasChunk(x >> 4, z >> 4)) continue;
+                    for (int y = best.baseY; y <= best.baseY + 13; ++y) {
+                        BlockState bs = level.getBlockState(new BlockPos(x, y, z));
+                        if (bs.isAir()) continue;
+                        var id = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(bs.getBlock());
+                        if (id != null && (id.getPath().contains("plaster") || id.getPath().contains("bricks")
+                                || id.getPath().contains("timber") || id.getPath().contains("roof_"))) {
+                            ++blocks;
+                        }
+                    }
+                }
+            }
+            String cam = (best.cx + 8) + "," + (best.baseY + 11) + "," + (best.cz + 24)
+                    + ":" + best.cx + "," + (best.baseY + 3) + "," + (best.cz - 4);
+            String line = "riftstruct kind=white_village at=" + best.cx + "," + best.baseY + "," + best.cz
+                    + " variant=" + best.variant + " houses=" + best.houses.size()
+                    + " blocks=" + blocks + " sub_air=0 cam=" + cam;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.startsWith("burn")) {
+            AshenLands.Region bestReg = null;
+            double bestD = Double.MAX_VALUE;
+            int sx0 = Math.floorDiv(at.getX(), AshenLands.SUPER);
+            int sz0 = Math.floorDiv(at.getZ(), AshenLands.SUPER);
+            for (int dx = -4; dx <= 4; ++dx) {
+                for (int dz = -4; dz <= 4; ++dz) {
+                    AshenLands.Region rg = AshenLands.region(sx0 + dx, sz0 + dz);
+                    if (rg == null) continue;
+                    double d = Math.hypot(rg.cx - at.getX(), rg.cz - at.getZ());
+                    if (d < bestD) { bestD = d; bestReg = rg; }
+                }
+            }
+            WorldStructures.Village best = WorldStructures.ashenPlainVillage(bestReg);
+            if (best == null) { src.sendFailure(Component.literal("riftstruct: burned_village not found")); return 0; }
+            int blocks = 0, fires = 0;
+            for (int x = best.cx - 28; x <= best.cx + 28; ++x) {
+                for (int z = best.cz - 28; z <= best.cz + 28; ++z) {
+                    if (!level.hasChunk(x >> 4, z >> 4)) continue;
+                    for (int y = best.baseY; y <= best.baseY + 12; ++y) {
+                        BlockState bs = level.getBlockState(new BlockPos(x, y, z));
+                        if (bs.isAir()) continue;
+                        if (bs.is(net.minecraft.world.level.block.Blocks.CAMPFIRE)) ++fires;
+                        var id = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(bs.getBlock());
+                        if (id != null && (id.getPath().contains("charred") || id.getPath().contains("scorched")
+                                || id.getPath().contains("castle_bricks") || id.getPath().contains("dark_planks")
+                                || id.getPath().equals("blackstone"))) {
+                            ++blocks;
+                        }
+                    }
+                }
+            }
+            String bio = level.getBiome(new BlockPos(best.cx, best.baseY + 2, best.cz)).unwrapKey()
+                    .map(rk -> rk.location().toString()).orElse("?");
+            String cam = (best.cx + 7) + "," + (best.baseY + 10) + "," + (best.cz + 23)
+                    + ":" + best.cx + "," + (best.baseY + 3) + "," + (best.cz - 3);
+            String line = "riftstruct kind=burned_village at=" + best.cx + "," + best.baseY + "," + best.cz
+                    + " bio=" + bio + " variant=" + best.variant + " houses=" + best.houses.size()
+                    + " blocks=" + blocks + " fires=" + fires + " sub_air=0 cam=" + cam;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.startsWith("crash")) {
+            WorldStructures.ShipSite best = null;
+            double bestD = Double.MAX_VALUE;
+            int sx0 = Math.floorDiv(at.getX(), WorldStructures.SUPER_CRASH);
+            int sz0 = Math.floorDiv(at.getZ(), WorldStructures.SUPER_CRASH);
+            for (int dx = -5; dx <= 5; ++dx) {
+                for (int dz = -5; dz <= 5; ++dz) {
+                    WorldStructures.ShipSite s = WorldStructures.crashedShip(sx0 + dx, sz0 + dz);
+                    if (s == null) continue;
+                    double d = Math.hypot(s.cx - at.getX(), s.cz - at.getZ());
+                    if (d < bestD) { bestD = d; best = s; }
+                }
+            }
+            if (best == null) { src.sendFailure(Component.literal("riftstruct: crashed_ship not found")); return 0; }
+            int shipBlocks = 0, rockBlocks = 0;
+            for (int x = best.cx - 26; x <= best.cx + 26; ++x) {
+                for (int z = best.cz - 26; z <= best.cz + 26; ++z) {
+                    if (!level.hasChunk(x >> 4, z >> 4)) continue;
+                    for (int y = ocean - 4; y <= ocean + 30; ++y) {
+                        BlockState bs = level.getBlockState(new BlockPos(x, y, z));
+                        if (bs.isAir()) continue;
+                        var id = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(bs.getBlock());
+                        if (id == null) continue;
+                        String p = id.getPath();
+                        if (p.contains("planks") || p.contains("dark_beam") || p.contains("wool") || p.contains("sizo_log")) ++shipBlocks;
+                        else if (y > ocean + 2 && (p.contains("stone") || p.contains("moss"))) ++rockBlocks;
+                    }
+                }
+            }
+            double ux = Math.cos(best.yaw), uz = Math.sin(best.yaw);
+            double vx = -uz, vz = ux;
+            int camX = (int) Math.round(best.cx - ux * 6.0 + vx * 23.0);
+            int camZ = (int) Math.round(best.cz - uz * 6.0 + vz * 23.0);
+            int camY = ocean + 12;
+            int lkX = (int) Math.round(best.cx + ux * 7.0);
+            int lkZ = (int) Math.round(best.cz + uz * 7.0);
+            int lkY = ocean + 9;
+            String line = "riftstruct kind=crashed_ship at=" + best.cx + "," + (ocean + 4) + "," + best.cz
+                    + " variant=" + best.variant + " blocks=" + shipBlocks + " rock=" + rockBlocks
+                    + " sub_air=0 cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.startsWith("sunk")) {
+            WorldStructures.ShipSite best = null;
+            double bestD = Double.MAX_VALUE;
+            int sx0 = Math.floorDiv(at.getX(), WorldStructures.SUPER_SUNKEN);
+            int sz0 = Math.floorDiv(at.getZ(), WorldStructures.SUPER_SUNKEN);
+            for (int dx = -5; dx <= 5; ++dx) {
+                for (int dz = -5; dz <= 5; ++dz) {
+                    WorldStructures.ShipSite s = WorldStructures.sunkenShip(sx0 + dx, sz0 + dz);
+                    if (s == null) continue;
+                    double d = Math.hypot(s.cx - at.getX(), s.cz - at.getZ());
+                    if (d < bestD) { bestD = d; best = s; }
+                }
+            }
+            if (best == null) { src.sendFailure(Component.literal("riftstruct: sunken_ship not found")); return 0; }
+            int shipBlocks = 0, subAir = 0;
+            for (int x = best.cx - 20; x <= best.cx + 20; ++x) {
+                for (int z = best.cz - 20; z <= best.cz + 20; ++z) {
+                    if (!level.hasChunk(x >> 4, z >> 4)) continue;
+                    for (int y = Math.max(3, best.baseY); y <= Math.min(ocean - 3, best.baseY + 20); ++y) {
+                        BlockState bs = level.getBlockState(new BlockPos(x, y, z));
+                        if (bs.isAir()) { ++subAir; continue; }
+                        var id = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(bs.getBlock());
+                        if (id != null && (id.getPath().contains("planks") || id.getPath().contains("dark_beam")
+                                || id.getPath().contains("sea_lantern") || id.getPath().contains("chest"))) {
+                            ++shipBlocks;
+                        }
+                    }
+                }
+            }
+            double ux = Math.cos(best.yaw), uz = Math.sin(best.yaw);
+            double vx = -uz, vz = ux;
+            int camX = (int) Math.round(best.cx - ux * 5.0 + vx * 13.5);
+            int camZ = (int) Math.round(best.cz - uz * 5.0 + vz * 13.5);
+            int camY = Math.min(ocean - 4, best.baseY + 10);
+            int lkX = (int) Math.round(best.cx + ux * 2.0);
+            int lkZ = (int) Math.round(best.cz + uz * 2.0);
+            int lkY = best.baseY + 5;
+            String line = "riftstruct kind=sunken_ship at=" + best.cx + "," + (best.baseY + 4) + "," + best.cz
+                    + " variant=" + best.variant + " blocks=" + shipBlocks + " sub_air=" + subAir
+                    + " cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.startsWith("ocean")) {
+            WorldStructures.OceanBuilding best = null;
+            double bestD = Double.MAX_VALUE;
+            int sx0 = Math.floorDiv(at.getX(), WorldStructures.SUPER_OCEAN_BLDG);
+            int sz0 = Math.floorDiv(at.getZ(), WorldStructures.SUPER_OCEAN_BLDG);
+            for (int dx = -5; dx <= 5; ++dx) {
+                for (int dz = -5; dz <= 5; ++dz) {
+                    WorldStructures.OceanBuilding b = WorldStructures.oceanBuilding(sx0 + dx, sz0 + dz);
+                    if (b == null) continue;
+                    double d = Math.hypot(b.cx - at.getX(), b.cz - at.getZ());
+                    if (d < bestD) { bestD = d; best = b; }
+                }
+            }
+            if (best == null) { src.sendFailure(Component.literal("riftstruct: ocean_building not found")); return 0; }
+            int blocks = 0, subAir = 0;
+            for (int x = best.cx - 16; x <= best.cx + 16; ++x) {
+                for (int z = best.cz - 16; z <= best.cz + 16; ++z) {
+                    if (!level.hasChunk(x >> 4, z >> 4)) continue;
+                    for (int y = best.floorY + 1; y <= Math.min(ocean - 3, best.floorY + 15); ++y) {
+                        BlockState bs = level.getBlockState(new BlockPos(x, y, z));
+                        if (bs.isAir()) { ++subAir; continue; }
+                        var id = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(bs.getBlock());
+                        if (id != null && (id.getPath().contains("limestone") || id.getPath().contains("bricks")
+                                || id.getPath().contains("roof_blue") || id.getPath().contains("mosaic")
+                                || id.getPath().contains("sea_lantern"))) {
+                            ++blocks;
+                        }
+                    }
+                }
+            }
+            int camX = best.cx + 12, camZ = best.cz + 12;
+            int camY = Math.min(ocean - 4, best.floorY + 9);
+            int lkX = best.cx, lkZ = best.cz, lkY = best.floorY + 4;
+            String line = "riftstruct kind=ocean_building at=" + best.cx + "," + (best.floorY + 3) + "," + best.cz
+                    + " variant=" + best.variant + " blocks=" + blocks + " sub_air=" + subAir
+                    + " cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        src.sendFailure(Component.literal("riftstruct: unknown kind " + rawKind));
+        return 0;
     }
 }
