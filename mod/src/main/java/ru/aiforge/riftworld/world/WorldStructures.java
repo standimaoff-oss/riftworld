@@ -1557,7 +1557,7 @@ public final class WorldStructures {
         int dy0 = sv.deckY; // ocean + 3 (y = 67)
         BlockState logY = (sv.nearGardens ? ElisarBlocks.GARDEN_LOG.get() : ElisarBlocks.AMBRA_LOG.get()).defaultBlockState();
         BlockState sizoLogY = ElisarBlocks.SIZO_LOG.get().defaultBlockState();
-        BlockState footing = ElisarBlocks.LIMESTONE_MOSSY.get().defaultBlockState();
+        BlockState footing = ElisarBlocks.GARDEN_LIMESTONE_MOSSY.get().defaultBlockState();
         BlockState deck = ElisarBlocks.AMBRA_PLANKS.get().defaultBlockState();
         BlockState deckAlt = ElisarBlocks.SIZO_PLANKS.get().defaultBlockState();
         BlockState deckSlabTop = ElisarBlocks.AMBRA_SLAB.get().defaultBlockState().setValue(SlabBlock.TYPE, SlabType.TOP);
@@ -1567,7 +1567,7 @@ public final class WorldStructures {
         BlockState thatch = ElisarBlocks.THATCH.get().defaultBlockState();
         BlockState roofBlue = ElisarBlocks.ROOF_BLUE.get().defaultBlockState();
         BlockState roofRed = ElisarBlocks.ROOF_RED.get().defaultBlockState();
-        BlockState gold = ModBlocks.TEMPLE_GOLD.get().defaultBlockState();
+        BlockState gold = ru.aiforge.riftworld.registry.TempleBlocks.GOLD.get().defaultBlockState();
         BlockState fence = ElisarBlocks.FENCE.get().defaultBlockState();
         BlockState glass = Blocks.LIGHT_BLUE_STAINED_GLASS.defaultBlockState();
         BlockState lanternH = Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING, true);

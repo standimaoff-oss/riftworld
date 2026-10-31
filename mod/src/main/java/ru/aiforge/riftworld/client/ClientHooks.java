@@ -65,7 +65,7 @@ public final class ClientHooks {
             net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(ru.aiforge.riftworld.registry.ModFluids.GARDEN_SOURCE.get(), net.minecraft.client.renderer.RenderType.translucent());
             net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(ru.aiforge.riftworld.registry.ModFluids.GARDEN_FLOWING.get(), net.minecraft.client.renderer.RenderType.translucent());
             // Гарантируем ванильный cutoutMipped-рендер со сквозными просветами для всей листвы биомов и Dynamic Trees!
-            net.minecraft.world.level.block.LeavesBlock.setFancy(true);
+            net.minecraft.client.renderer.ItemBlockRenderTypes.setFancy(true);
             var cutout = net.minecraft.client.renderer.RenderType.cutoutMipped();
             net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(ru.aiforge.riftworld.registry.ElisarBlocks.VIOLET_LEAVES.get(), cutout);
             net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(ru.aiforge.riftworld.registry.ElisarBlocks.GARDEN_LEAVES.get(), cutout);
