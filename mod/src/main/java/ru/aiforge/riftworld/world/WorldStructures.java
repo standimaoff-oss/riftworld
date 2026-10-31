@@ -447,11 +447,11 @@ public final class WorldStructures {
     // =========================================================================
     private static boolean openDeepSea(int cx, int cz, int minDepthBelowSea) {
         if (overlapsSpecialBiomes(cx, cz, 55)) return false;
-        if (anyVillageAt(cx, cz, 95) != null) return false;
+        if (anyVillageAt(cx, cz, 105) != null) return false;
         CityPlan plan = CityPlan.get();
-        // Никаких парящих островов прямо над точкой морской структуры!
-        for (int dx = -24; dx <= 24; dx += 12) {
-            for (int dz = -24; dz <= 24; dz += 12) {
+        // Никаких парящих островов прямо над точкой морской структуры и вокруг неё!
+        for (int dx = -56; dx <= 56; dx += 14) {
+            for (int dz = -56; dz <= 56; dz += 14) {
                 if (plan.islandAt(cx + dx, cz + dz) != null) return false;
             }
         }
@@ -809,7 +809,7 @@ public final class WorldStructures {
     private static void buildCrashedShipAndRock(ChunkAccess chunk, BlockPos.MutableBlockPos mp,
                                                 CityPlan plan, ShipSite s, int x0, int z0) {
         int ocean = plan.ocean;
-        BlockState seaWater = ElisarBlocks.WATER.get().defaultBlockState();
+        BlockState seaWater = Blocks.WATER.defaultBlockState();
         BlockState reefRock = ElisarBlocks.REEF_STONE.get().defaultBlockState();
         BlockState keepStone = ElisarBlocks.KEEP_STONE.get().defaultBlockState();
         BlockState keepMossy = ElisarBlocks.KEEP_STONE_MOSSY.get().defaultBlockState();
@@ -885,7 +885,7 @@ public final class WorldStructures {
     private static void buildSunkenShip(ChunkAccess chunk, BlockPos.MutableBlockPos mp,
                                         CityPlan plan, ShipSite s, int x0, int z0) {
         int ocean = plan.ocean;
-        BlockState seaWater = ElisarBlocks.WATER.get().defaultBlockState();
+        BlockState seaWater = Blocks.WATER.defaultBlockState();
         BlockState seabed = ElisarBlocks.SEABED.get().defaultBlockState();
         BlockState reefRock = ElisarBlocks.REEF_STONE.get().defaultBlockState();
 
@@ -1154,7 +1154,7 @@ public final class WorldStructures {
                                            CityPlan plan, OceanBuilding b, int x0, int z0) {
         int fy = b.floorY;
         int ocean = plan.ocean;
-        BlockState seaWater = ElisarBlocks.WATER.get().defaultBlockState();
+        BlockState seaWater = Blocks.WATER.defaultBlockState();
         BlockState lime = ElisarBlocks.GARDEN_LIMESTONE.get().defaultBlockState();
         BlockState limeM = ElisarBlocks.GARDEN_LIMESTONE_MOSSY.get().defaultBlockState();
         BlockState brick = ElisarBlocks.BRICKS.get().defaultBlockState();

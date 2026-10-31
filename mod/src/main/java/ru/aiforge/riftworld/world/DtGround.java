@@ -310,7 +310,7 @@ public final class DtGround {
                             || tz < pos.getMinBlockZ() + 2 || tz > pos.getMaxBlockZ() - 2) continue;
                     BlockPos g = surfaceUnder(level, new BlockPos(tx, 0, tz), false);
                     if (g != null && g.getY() > ocean && !creg.nearCrystalOrStructure(tx + 0.5, tz + 0.5, 0.8)) {
-                        int tinyRad = 2 + ((k + (side > 0 ? 1 : 0)) % 2);
+                        int tinyRad = 3 + ((k + (side > 0 ? 1 : 0)) % 2);
                         if (plant(level, g, "riftworlddt:crystal_birch", tinyRad)) {
                             sculptBonsaiCrown(level, g);
                             ++planted;
@@ -362,14 +362,14 @@ public final class DtGround {
                 tipFallback.add(lp);
             }
             int h = (lp.getX() * 734287 + lp.getY() * 912931 + lp.getZ() * 19937) & 7;
-            if (dy <= 1 || !adjBranch || h < 3) {
+            if (dy <= 1 || (!adjBranch && h < 6) || (adjBranch && h < 2)) {
                 level.setBlock(lp, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 2);
             } else {
                 ++kept;
             }
         }
-        // Гарантируем, что на самой верхушке веточки остаётся хотя бы 4 морозных листика
-        if (kept < 4 && !tipFallback.isEmpty()) {
+        // Гарантируем, что на веточках остаётся воздушное облачко из минимум 6 морозных листиков (не кубик-леденец!)
+        if (kept < 6 && !tipFallback.isEmpty()) {
             BlockState leafState = ForgeRegistries.BLOCKS.getValue(
                     new net.minecraft.resources.ResourceLocation("riftworlddt", "crystal_birch_leaves")).defaultBlockState();
             for (BlockPos tp : tipFallback) {

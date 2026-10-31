@@ -433,8 +433,8 @@ def build_bonsai_crystal_tree(rng, radius):
         children[v] = []
         return v
 
-    # Short gnarled bonsai stem: only 1..2 blocks before splitting into 2..3 slender twigs!
-    trunk_h = 1 if radius <= 3 else (1 + rng.randint(0, 1))
+    # Short gnarled bonsai stem: 2 blocks up, then ALWAYS splits into 2..3 spreading silver twigs!
+    trunk_h = 2
     cur = (0, 0, 0)
     for _ in range(trunk_h):
         nxt = add_edge(cur, 1)
@@ -445,8 +445,8 @@ def build_bonsai_crystal_tree(rng, radius):
     top_trunk = cur
     horiz_dirs = [2, 3, 4, 5]
     rng.shuffle(horiz_dirs)
-    n_limbs = 2 if radius <= 2 else (2 + rng.randint(0, 1))
-    limb_len = 1 if radius <= 3 else 2
+    n_limbs = 2 if radius <= 3 else (2 + rng.randint(0, 1))
+    limb_len = 1 if radius <= 4 else 2
 
     for idx in range(n_limbs):
         hd = horiz_dirs[idx]
@@ -464,10 +464,6 @@ def build_bonsai_crystal_tree(rng, radius):
             if moved is None:
                 break
             p = moved
-
-    # Tiny 1-block central tip if height < 3
-    if top_trunk[1] <= 1 and rng.random() < 0.7:
-        add_edge(top_trunk, 1)
 
     ops = []
 
@@ -850,11 +846,11 @@ def main():
     })
     write_json(os.path.join(DT_RES, "trees", "riftworlddt", "species", "crystal_birch.json"), {
         "family": "riftworlddt:crystal_birch",
-        "tapering": 0.42,
-        "signal_energy": 6.0,
+        "tapering": 0.38,
+        "signal_energy": 8.5,
         "up_probability": 1,
-        "lowest_branch_height": 1,
-        "growth_rate": 0.8,
+        "lowest_branch_height": 2,
+        "growth_rate": 0.85,
         "leaves_properties": "riftworlddt:crystal_birch",
         "generate_seed": True,
         "generate_sapling": True,
