@@ -344,7 +344,7 @@ public final class CrystalRifts {
                 // Главный гигантский кристалл стоит чуть глубже центра террасы, наклоняясь вверх и в сторону пролива/святилища
                 double spX = isl.cx + toHubX * (isl.R * 0.10) + sideX * ((rnd.nextDouble() - 0.5) * isl.R * 0.16);
                 double spZ = isl.cz + toHubZ * (isl.R * 0.10) + sideZ * ((rnd.nextDouble() - 0.5) * isl.R * 0.16);
-                int terraceY = isl.base + 2;
+                int terraceY = (int) Math.round(isl.base + 2);
 
                 if (i == 1 || (i == 2 && rnd.nextBoolean())) {
                     // Минеральная бирюзовая чаша перед главным кристаллом (как на левом острове 02_crystal_sanctum.png)

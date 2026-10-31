@@ -393,7 +393,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                             for (int ddz = -2; ddz <= 2; ++ddz)
                                 if (isl.t(px + ddx, pz + ddz) <= 0.025) { nearRim = true; break; }
                         if (nearRim) {
-                            int fallLvl = isl.base + 2;
+                            int fallLvl = (int) Math.round(isl.base + 2);
                             for (CrystalRifts.Pool pl3 : crp.pools) if (pl3.isl == isl) { fallLvl = pl3.waterY; break; }
                             c.fallTop = fallLvl;
                             c.fallBottom = plan.ocean + 1;
