@@ -825,7 +825,7 @@ public final class WorldStructures {
     private static void buildCrashedShipAndRock(ChunkAccess chunk, BlockPos.MutableBlockPos mp,
                                                 CityPlan plan, ShipSite s, int x0, int z0) {
         int ocean = plan.ocean;
-        BlockState seaWater = Blocks.WATER.defaultBlockState();
+        BlockState seaWater = ElisarBlocks.WATER.get().defaultBlockState();
         BlockState reefRock = ElisarBlocks.REEF_STONE.get().defaultBlockState();
         BlockState keepStone = ElisarBlocks.KEEP_STONE.get().defaultBlockState();
         BlockState keepMossy = ElisarBlocks.KEEP_STONE_MOSSY.get().defaultBlockState();
@@ -901,7 +901,7 @@ public final class WorldStructures {
     private static void buildSunkenShip(ChunkAccess chunk, BlockPos.MutableBlockPos mp,
                                         CityPlan plan, ShipSite s, int x0, int z0) {
         int ocean = plan.ocean;
-        BlockState seaWater = Blocks.WATER.defaultBlockState();
+        BlockState seaWater = ElisarBlocks.WATER.get().defaultBlockState();
         BlockState seabed = ElisarBlocks.SEABED.get().defaultBlockState();
         BlockState reefRock = ElisarBlocks.REEF_STONE.get().defaultBlockState();
 
@@ -934,13 +934,13 @@ public final class WorldStructures {
                 int ax = (int) Math.round(s.cx + ux * (15.0 + step * 0.9) + vx * (step * 0.4));
                 int az = (int) Math.round(s.cz + uz * (15.0 + step * 0.9) + vz * (step * 0.4));
                 int ay = Math.max(4, s.baseY + (step < 3 ? 2 - step : 0));
-                BlockState ch = waterlogged(ElisarBlocks.CHAIN.get().defaultBlockState()
-                        .setValue(ChainBlock.AXIS, step < 3 ? Direction.Axis.Y : Direction.Axis.X), true);
+                BlockState ch = CastleBlocks.DARK_BEAM.get().defaultBlockState()
+                        .setValue(RotatedPillarBlock.AXIS, step < 3 ? Direction.Axis.Y : Direction.Axis.X);
                 putChunk(chunk, mp, x0, z0, ax, ay, az, ch);
                 if (step == 8) {
                     putChunk(chunk, mp, x0, z0, ax, ay, az, Blocks.IRON_BLOCK.defaultBlockState());
-                    putChunk(chunk, mp, x0, z0, ax + 1, ay, az, waterlogged(CastleBlocks.DARK_SLAB.get().defaultBlockState(), true));
-                    putChunk(chunk, mp, x0, z0, ax - 1, ay, az, waterlogged(CastleBlocks.DARK_SLAB.get().defaultBlockState(), true));
+                    putChunk(chunk, mp, x0, z0, ax + 1, ay, az, Blocks.IRON_BLOCK.defaultBlockState());
+                    putChunk(chunk, mp, x0, z0, ax - 1, ay, az, Blocks.IRON_BLOCK.defaultBlockState());
                 }
             }
         }
@@ -1020,7 +1020,11 @@ public final class WorldStructures {
 
                     if (isRail) {
                         if (sunken && variant == 2 && ElisarChunkGenerator.hash(ix, iy, iz) < 0.55) continue;
-                        BlockState rail = waterlogged(CastleBlocks.DARK_FENCE.get().defaultBlockState(), sub);
+                        // Под водой в elisar_water ванильный WATERLOGGED ставит minecraft:water с видимыми гранями —
+                        // поэтому на затонувшем корабле делаем зубчатый деревянный фальшборт из цельных блоков без рамок воды!
+                        BlockState rail = sub
+                                ? (((ix + iz) & 1) == 0 ? hullDark : seaWater)
+                                : CastleBlocks.DARK_FENCE.get().defaultBlockState();
                         putChunk(chunk, mp, x0, z0, ix, iy, iz, rail);
                     } else if (isShell || isCabinBulkhead) {
                         // В древнем коралловом остове (sunken variant 2) часть досок сгнила, обнажая шпангоуты и кораллы
@@ -1071,9 +1075,11 @@ public final class WorldStructures {
             putChunk(chunk, mp, x0, z0, ix, iy, iz, keelLog);
         }
 
-        // Трюмные и палубные детали: сундук с сокровищами, бочки и морские/обычные фонари
+        // Трюмные и палубные детали: сундук/бочки с грузом и морские/обычные фонари
         placeShipProp(chunk, mp, x0, z0, cx, cy, cz, ux, uz, vx, vz, pitch, roll, -12.0, 0.0, 5.2,
-                waterlogged(Blocks.CHEST.defaultBlockState(), sunken || (cy + 5.2 <= ocean)));
+                (sunken || (cy + 5.2 <= ocean))
+                        ? Blocks.BARREL.defaultBlockState()
+                        : Blocks.CHEST.defaultBlockState());
         placeShipProp(chunk, mp, x0, z0, cx, cy, cz, ux, uz, vx, vz, pitch, roll, -11.5, 2.0, 5.2,
                 sunken ? Blocks.SEA_LANTERN.defaultBlockState()
                         : ElisarBlocks.LANTERN.get().defaultBlockState());
@@ -1170,7 +1176,7 @@ public final class WorldStructures {
                                            CityPlan plan, OceanBuilding b, int x0, int z0) {
         int fy = b.floorY;
         int ocean = plan.ocean;
-        BlockState seaWater = Blocks.WATER.defaultBlockState();
+        BlockState seaWater = ElisarBlocks.WATER.get().defaultBlockState();
         BlockState lime = ElisarBlocks.GARDEN_LIMESTONE.get().defaultBlockState();
         BlockState limeM = ElisarBlocks.GARDEN_LIMESTONE_MOSSY.get().defaultBlockState();
         BlockState brick = ElisarBlocks.BRICKS.get().defaultBlockState();
@@ -1179,8 +1185,8 @@ public final class WorldStructures {
         BlockState mosaic = CastleBlocks.MOSAIC.get().defaultBlockState();
         BlockState roofBlue = ElisarBlocks.ROOF_BLUE.get().defaultBlockState();
         BlockState seaLantern = Blocks.SEA_LANTERN.defaultBlockState();
-        BlockState cageLantern = waterlogged(ElisarBlocks.CAGE_LANTERN.get().defaultBlockState(), true);
-        BlockState chest = waterlogged(Blocks.CHEST.defaultBlockState(), true);
+        BlockState cageLantern = Blocks.SEA_LANTERN.defaultBlockState();
+        BlockState chest = Blocks.BARREL.defaultBlockState();
         BlockState glowCoral = ElisarBlocks.CORAL_GLOW.get().defaultBlockState();
 
         // Каменный цоколь до рельефа дна, чтобы подводное здание стояло монолитно
