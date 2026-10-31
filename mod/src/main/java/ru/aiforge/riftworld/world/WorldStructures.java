@@ -510,11 +510,15 @@ public final class WorldStructures {
                 if (VioletHills.nearAny(vx, vz, 34, 30) || CrystalRifts.nearAny(vx, vz, 34, 30) || SizoGrove.regionAt(vx, vz) != null) continue;
                 if (anyVillageAt(vx, vz, 85) != null) continue;
 
-                // Проверяем, что вся акватория деревни (±24 блока) лежит в воде и НЕ налезает на сушу садов
+                // Проверяем, что вся акватория деревни (±24 блока) лежит в воде и НЕ налезает на сушу садов или диких островов
                 boolean clearLagoon = true;
                 for (int dx = -24; dx <= 24 && clearLagoon; dx += 8) {
                     for (int dz = -24; dz <= 24; dz += 8) {
                         if (WaterfallGardens.landAt(vx + dx, vz + dz) != null) {
+                            clearLagoon = false;
+                            break;
+                        }
+                        if (WildIslands.near(vx + dx, vz + dz) != null) {
                             clearLagoon = false;
                             break;
                         }
