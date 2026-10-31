@@ -1486,15 +1486,17 @@ biome_section() {
     LZ1=$(printf '%s' "$CB_CAM" | cut -d: -f2 | cut -d, -f3)
     EL tp TestPlayer "$CX1" "$((CY1 - 1))" "$CZ1" facing "$LX1" "$LY1" "$LZ1" >/dev/null 2>&1 || true
     sleep 2
-    EL execute at TestPlayer positioned ^ ^ ^2.2 run summon riftworld:crystal_shield ~ ~ ~ >/dev/null 2>&1 || true
-    sleep 3
+    EL execute at TestPlayer anchored eyes positioned ^-0.45 ^-0.25 ^2.4 run summon riftworld:crystal_shield ~ ~ ~ >/dev/null 2>&1 || true
+    sleep 2
     shot "90_crystal_katar_and_shield"
     EL execute at TestPlayer run kill @e[type=riftworld:crystal_shield,distance=..16] >/dev/null 2>&1 || true
     EL item replace entity TestPlayer weapon.mainhand with riftworld:astral_prism >/dev/null 2>&1 || true
-    EL execute at TestPlayer positioned ^-0.4 ^0.2 ^1.8 run summon riftworld:crystal_shard ~ ~ ~ {NoGravity:1b} >/dev/null 2>&1 || true
-    EL execute at TestPlayer positioned ^0.0 ^0.35 ^1.9 run summon riftworld:crystal_shard ~ ~ ~ {NoGravity:1b} >/dev/null 2>&1 || true
-    EL execute at TestPlayer positioned ^0.4 ^0.2 ^1.8 run summon riftworld:crystal_shard ~ ~ ~ {NoGravity:1b} >/dev/null 2>&1 || true
-    sleep 3
+    EL execute at TestPlayer anchored eyes positioned ^-0.85 ^0.18 ^2.2 run summon riftworld:crystal_shard ~ ~ ~ {NoGravity:1b} >/dev/null 2>&1 || true
+    EL execute at TestPlayer anchored eyes positioned ^-0.42 ^0.38 ^2.3 run summon riftworld:crystal_shard ~ ~ ~ {NoGravity:1b} >/dev/null 2>&1 || true
+    EL execute at TestPlayer anchored eyes positioned ^0.0 ^0.48 ^2.4 run summon riftworld:crystal_shard ~ ~ ~ {NoGravity:1b} >/dev/null 2>&1 || true
+    EL execute at TestPlayer anchored eyes positioned ^0.42 ^0.38 ^2.3 run summon riftworld:crystal_shard ~ ~ ~ {NoGravity:1b} >/dev/null 2>&1 || true
+    EL execute at TestPlayer anchored eyes positioned ^0.85 ^0.18 ^2.2 run summon riftworld:crystal_shard ~ ~ ~ {NoGravity:1b} >/dev/null 2>&1 || true
+    sleep 2
     shot "91_astral_prism_and_barrage"
     EL execute at TestPlayer run kill @e[type=riftworld:crystal_shard,distance=..16] >/dev/null 2>&1 || true
     key F1

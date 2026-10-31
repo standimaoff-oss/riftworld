@@ -55,13 +55,13 @@ public class CrystalShardEntity extends Projectile {
     @Override
     public void tick() {
         super.tick();
+        Vec3 vel = this.getDeltaMovement();
         ++this.life;
-        if (this.life > 80) {
+        int maxLife = (this.isNoGravity() && vel.lengthSqr() < 1.0E-5) ? 240 : 80;
+        if (this.life > maxLife) {
             this.discard();
             return;
         }
-
-        Vec3 vel = this.getDeltaMovement();
         if (this.xRotO == 0.0F && this.yRotO == 0.0F && vel.lengthSqr() > 1.0E-5) {
             double h = vel.horizontalDistance();
             this.setYRot((float) (Mth.atan2(vel.x, vel.z) * (180.0 / Math.PI)));

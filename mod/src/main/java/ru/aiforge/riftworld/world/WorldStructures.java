@@ -491,26 +491,24 @@ public final class WorldStructures {
         for (int slot = 0; slot < want; ++slot) {
             for (int attempt = 0; attempt < 36; ++attempt) {
                 double ang = baseAng + slot * Math.PI + (attempt * 0.21) * (attempt % 2 == 0 ? 1 : -1);
-                // Ищем внешний берег архипелага в направлении ang и отступаем 25..34 блока в чистую лагуну
-                CityPlan.Island outer = rg.hub;
-                double bestProj = -1e9;
-                for (CityPlan.Island gi : rg.isles) {
-                    double proj = (gi.cx - rg.cx) * Math.cos(ang) + (gi.cz - rg.cz) * Math.sin(ang) + gi.maxReach();
-                    if (proj > bestProj) {
-                        bestProj = proj;
-                        outer = gi;
+                double ca = Math.cos(ang), sa = Math.sin(ang);
+                // Находим реальную внешнюю кромку надводной суши архипелага в направлении луча ang
+                double tShore = 36.0;
+                for (double dRay = 12.0; dRay <= rg.Rr + 8.0; dRay += 4.0) {
+                    if (WaterfallGardens.landAt(rg.cx + ca * dRay, rg.cz + sa * dRay) != null) {
+                        tShore = dRay;
                     }
                 }
-                double offshore = outer.maxReach() + 25.0 + (attempt % 4) * 3.0;
-                int vx = (int) Math.round(outer.cx + Math.cos(ang) * offshore);
-                int vz = (int) Math.round(outer.cz + Math.sin(ang) * offshore);
+                double offshore = tShore + 30.0 + (attempt % 5) * 4.0;
+                int vx = (int) Math.round(rg.cx + ca * offshore);
+                int vz = (int) Math.round(rg.cz + sa * offshore);
 
                 if (nearProtectedZones(vx, vz, 55)) continue;
                 if (AshenLands.blocks(vx, vz, 95) || EmberRuins.siteAt(vx, vz) != null || MistKeep.inside(vx, vz)) continue;
                 if (VioletHills.nearAny(vx, vz, 34, 30) || CrystalRifts.nearAny(vx, vz, 34, 30) || SizoGrove.regionAt(vx, vz) != null) continue;
                 if (anyVillageAt(vx, vz, 85) != null) continue;
 
-                // Проверяем, что вся акватория деревни (±24 блока) лежит в воде и НЕ налезает на сушу садов или диких островов
+                // Проверяем, что вся акватория деревни (±24 блока) лежит в чистой лагуне и НЕ налезает на надводную сушу
                 boolean clearLagoon = true;
                 for (int dx = -24; dx <= 24 && clearLagoon; dx += 8) {
                     for (int dz = -24; dz <= 24; dz += 8) {
@@ -518,12 +516,9 @@ public final class WorldStructures {
                             clearLagoon = false;
                             break;
                         }
-                        if (WildIslands.near(vx + dx, vz + dz) != null) {
-                            clearLagoon = false;
-                            break;
-                        }
-                        for (CityPlan.Island gi : rg.isles) {
-                            if (gi.t(vx + dx, vz + dz) > 0.06) {
+                        for (CityPlan.Island wi : WildIslands.near(vx + dx, vz + dz)) {
+                            double thresh = (wi.kind == WaterfallGardens.KIND) ? 0.17 : 0.05;
+                            if (wi.t(vx + dx, vz + dz) >= thresh) {
                                 clearLagoon = false;
                                 break;
                             }

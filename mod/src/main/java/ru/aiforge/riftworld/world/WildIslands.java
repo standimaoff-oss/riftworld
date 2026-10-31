@@ -121,7 +121,7 @@ public final class WildIslands {
                 if (CrystalRifts.nearAny(x, z, R * 1.15, 36)) continue;                                             // crystal rifts archipelago + stone bridges
                 SizoGrove.Region sr = SizoGrove.regionAt(x, z);                                                     // sizo grove hub
                 if (sr != null && Math.hypot(x - sr.hub.cx, z - sr.hub.cz) < R * 1.15 + sr.hub.maxReach() + 16) continue;
-                if (WaterfallGardens.nearAny(x, z, R * 1.15, 48)) continue;                                         // waterfall gardens archipelago + rivers
+                if (WaterfallGardens.nearAny(x, z, R * 1.15, 76)) continue;                                         // waterfall gardens archipelago + turquoise lagoon
                 MistKeep.Region mk = MistKeep.regionAt(x, z);                                                          // туманный данж: вода между столбами остаётся морем
                 if (mk != null && Math.hypot(x - mk.cx, z - mk.cz) < R * 1.15 + mk.Rr + 40) continue;
                 if (WorldStructures.anyVillageAt(x, z, R * 1.15 + 68) != null) continue;                              // белые и сгоревшие деревни на собственных островах

@@ -1926,13 +1926,25 @@ public final class SeaProbeCommand {
             double bestD = Double.MAX_VALUE;
             int gsx0 = Math.floorDiv(at.getX(), WaterfallGardens.SUPER);
             int gsz0 = Math.floorDiv(at.getZ(), WaterfallGardens.SUPER);
-            for (int dx = -4; dx <= 4; ++dx) {
-                for (int dz = -4; dz <= 4; ++dz) {
+            for (int dx = -6; dx <= 6; ++dx) {
+                for (int dz = -6; dz <= 6; ++dz) {
                     WaterfallGardens.Region gr = WaterfallGardens.region(gsx0 + dx, gsz0 + dz);
                     if (gr == null) continue;
                     for (WorldStructures.StiltVillage sv : WorldStructures.gardenStiltVillages(gr)) {
                         double d = Math.hypot(sv.cx - at.getX(), sv.cz - at.getZ());
                         if (d < bestD) { bestD = d; best = sv; bestGr = gr; }
+                    }
+                }
+            }
+            if (best == null) {
+                int ssx0 = Math.floorDiv(at.getX(), WorldStructures.SUPER_STILT);
+                int ssz0 = Math.floorDiv(at.getZ(), WorldStructures.SUPER_STILT);
+                for (int dx = -5; dx <= 5; ++dx) {
+                    for (int dz = -5; dz <= 5; ++dz) {
+                        WorldStructures.StiltVillage sv = WorldStructures.seaStiltVillage(ssx0 + dx, ssz0 + dz);
+                        if (sv == null) continue;
+                        double d = Math.hypot(sv.cx - at.getX(), sv.cz - at.getZ());
+                        if (d < bestD) { bestD = d; best = sv; }
                     }
                 }
             }
@@ -2035,12 +2047,12 @@ public final class SeaProbeCommand {
             int bz = (int) Math.round(best.astroZ);
 
             double ux = Math.cos(best.phi), uz = Math.sin(best.phi);
-            int camX = (int) Math.round(best.astroX - ux * 6.4);
-            int camZ = (int) Math.round(best.astroZ - uz * 6.4);
+            int camX = (int) Math.round(best.astroX - ux * 6.0);
+            int camZ = (int) Math.round(best.astroZ - uz * 6.0);
             int camY = by + 3;
-            float faceYaw = (float) (Math.atan2(camZ - best.astroZ, camX - best.astroX) * (180.0 / Math.PI)) - 90.0F;
+            float bossYaw = (float) (Math.atan2(-(camX - best.astroX), camZ - best.astroZ) * (180.0 / Math.PI));
 
-            // Если чанк уже прогружен — гарантируем присутствие Босса и 2 Прислужников лицом к камере
+            // Если чанк уже прогружен — гарантируем присутствие Босса и 2 Прислужников на передних флангах лицом к камере
             int bossCnt = 0, minionCnt = 0;
             if (level.hasChunk(bx >> 4, bz >> 4)) {
                 var box = new net.minecraft.world.phys.AABB(bx - 18, by - 4, bz - 18, bx + 18, by + 16, bz + 18);
@@ -2048,9 +2060,11 @@ public final class SeaProbeCommand {
                 if (bosses.isEmpty()) {
                     var boss = ru.aiforge.riftworld.registry.ModEntities.RIFT_OBELISK_BOSS.get().create(level);
                     if (boss != null) {
-                        boss.moveTo(best.astroX, by + 1.85, best.astroZ, faceYaw, 0.0F);
-                        boss.yBodyRot = faceYaw;
-                        boss.yBodyRotO = faceYaw;
+                        boss.moveTo(best.astroX, by + 1.85, best.astroZ, bossYaw, 0.0F);
+                        boss.yBodyRot = bossYaw;
+                        boss.yBodyRotO = bossYaw;
+                        boss.yHeadRot = bossYaw;
+                        boss.yHeadRotO = bossYaw;
                         boss.setAnchor(best.astroX, by + 1.85, best.astroZ);
                         level.addFreshEntity(boss);
                         bossCnt = 1;
@@ -2058,31 +2072,26 @@ public final class SeaProbeCommand {
                 } else {
                     bossCnt = bosses.size();
                 }
-                var minions = level.getEntitiesOfClass(ru.aiforge.riftworld.entity.CrystalMinion.class, box);
-                if (minions.size() < 2) {
-                    double px = -uz, pz = ux;
-                    for (int i = minions.size(); i < 2; ++i) {
-                        double side = (i == 0) ? -2.4 : 2.4;
-                        double mx = best.astroX - ux * 1.8 + px * side;
-                        double mz = best.astroZ - uz * 1.8 + pz * side;
-                        var m = ru.aiforge.riftworld.registry.ModEntities.CRYSTAL_MINION.get().create(level);
-                        if (m != null) {
-                            m.moveTo(mx, by + 1.35, mz, faceYaw, 0.0F);
-                            m.yBodyRot = faceYaw;
-                            m.yBodyRotO = faceYaw;
-                            m.setNoAi(true);
-                            level.addFreshEntity(m);
-                        }
+                var oldMinions = level.getEntitiesOfClass(ru.aiforge.riftworld.entity.CrystalMinion.class, box);
+                for (var oldM : oldMinions) oldM.discard();
+                double px = -uz, pz = ux;
+                for (int i = 0; i < 2; ++i) {
+                    double side = (i == 0) ? -1.55 : 1.55;
+                    double mx = best.astroX - ux * 3.0 + px * side;
+                    double mz = best.astroZ - uz * 3.0 + pz * side;
+                    float mYaw = (float) (Math.atan2(-(camX - mx), camZ - mz) * (180.0 / Math.PI));
+                    var m = ru.aiforge.riftworld.registry.ModEntities.CRYSTAL_MINION.get().create(level);
+                    if (m != null) {
+                        m.moveTo(mx, by + 2.15, mz, mYaw, 0.0F);
+                        m.yBodyRot = mYaw;
+                        m.yBodyRotO = mYaw;
+                        m.yHeadRot = mYaw;
+                        m.yHeadRotO = mYaw;
+                        m.setNoAi(true);
+                        level.addFreshEntity(m);
                     }
-                    minionCnt = 2;
-                } else {
-                    for (var m : minions) {
-                        m.setYRot(faceYaw);
-                        m.yBodyRot = faceYaw;
-                        m.yBodyRotO = faceYaw;
-                    }
-                    minionCnt = minions.size();
                 }
+                minionCnt = 2;
             }
 
             int lkX = bx, lkY = by + 3, lkZ = bz;
