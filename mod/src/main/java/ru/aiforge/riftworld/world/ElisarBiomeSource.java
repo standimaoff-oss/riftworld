@@ -69,8 +69,7 @@ public class ElisarBiomeSource extends BiomeSource {
                 return WaterfallGardens.landAt(x, z) != null ? gardens : reef;
             if (at.kind == SizoGrove.KIND) return sizo;
             if (at.kind == 7) return violet;
-            if (at.kind == CrystalRifts.KIND)
-                return CrystalRifts.landAt(x, z) != null ? crystal : def;
+            if (at.kind == CrystalRifts.KIND) return crystal;
             if (at.kind == 5) return ashen;
         }
         if (qy * 4 > plan.ocean - 24 && AshenLands.inside(x, z)) return ashen;

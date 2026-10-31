@@ -90,6 +90,15 @@ public final class DtGround {
 
     private static BlockPos surfaceUnder(LevelAccessor level, BlockPos start, boolean sea) {
         if (start == null) return null;
+        if (!sea) {
+            double px0 = start.getX() + 0.5, pz0 = start.getZ() + 0.5;
+            CityPlan.Island cisl = CityPlan.get().islandAt(px0, pz0);
+            if (cisl != null && cisl.kind == CrystalRifts.KIND) {
+                if (cisl.t(px0, pz0) < 0.14) return null;
+                CrystalRifts.Region creg0 = CrystalRifts.regionAt(px0, pz0);
+                if (creg0 != null && creg0.nearCrystalOrStructure(px0, pz0, 3.4)) return null;
+            }
+        }
         BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos(start.getX(), 0, start.getZ());
         for (int y = level.getMaxBuildHeight() - 1; y > level.getMinBuildHeight(); --y) {
             p.setY(y);
@@ -285,13 +294,13 @@ public final class DtGround {
             double len = Math.max(1.0, Math.hypot(bx - ax, bz - az));
             double ux = (bx - ax) / len, uz = (bz - az) / len;
             double px = -uz, pz = ux;
-            int count = Math.max(2, (int) Math.floor(len / 8.5));
+            int count = Math.max(2, (int) Math.floor(len / 9.0));
             for (int k = 0; k < count; ++k) {
-                double dist = 5.0 + k * 8.5;
-                if (dist > len - 3.5) break;
+                double dist = 5.5 + k * 9.0;
+                if (dist > len - 6.5) break;
                 for (int side = -1; side <= 1; side += 2) {
-                    int tx = (int) Math.round(ax + ux * dist + px * side * (CrystalRifts.Region.AVE_HW + 2.6));
-                    int tz = (int) Math.round(az + uz * dist + pz * side * (CrystalRifts.Region.AVE_HW + 2.6));
+                    int tx = (int) Math.round(ax + ux * dist + px * side * (CrystalRifts.Region.AVE_HW + 4.8));
+                    int tz = (int) Math.round(az + uz * dist + pz * side * (CrystalRifts.Region.AVE_HW + 4.8));
                     if (tx < pos.getMinBlockX() + 2 || tx > pos.getMaxBlockX() - 2
                             || tz < pos.getMinBlockZ() + 2 || tz > pos.getMaxBlockZ() - 2) continue;
                     BlockPos g = surfaceUnder(level, new BlockPos(tx, 0, tz), false);

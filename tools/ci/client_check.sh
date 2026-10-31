@@ -1374,10 +1374,10 @@ biome_section() {
       CDTW=$(EL execute at TestPlayer in riftworld:elisar run riftdtwild 44 2>&1 | tr '\r\n' '  ')
       log "  /riftdtwild (хрустальные разломы, серебрица) -> ${CDTW:0:240}"
       CDTN=$(printf '%s' "$CDTW" | sed -n 's/.* dt=\([0-9]*\).*/\1/p' | tail -1)
-      if [ "${CDTN:-0}" -ge 120 ]; then
-        log "  OK   Хрустальные разломы: серебристые деревья аддона DT выросли (${CDTN} блоков)"
+      if [ "${CDTN:-0}" -ge 120 ] && ! printf '%s' "$CDTW" | grep -q 'ambra_'; then
+        log "  OK   Хрустальные разломы: серебристые деревья аддона DT выросли (${CDTN} блоков, 0 чужих ambra)"
       else
-        log "  FAIL Хрустальные разломы: мало блоков DT (${CDTN:-0}, нужно >=120)"; FAILS=$((FAILS + 1))
+        log "  FAIL Хрустальные разломы: проблемы с DT (dt=${CDTN:-0}, raw=${CDTW:0:120})"; FAILS=$((FAILS + 1))
       fi
     fi
 

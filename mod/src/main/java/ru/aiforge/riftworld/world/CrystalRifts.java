@@ -412,6 +412,28 @@ public final class CrystalRifts {
                             9.5 + rnd.nextDouble() * 2.5, 1.9 + rnd.nextDouble() * 0.3, rnd.nextDouble() * Math.PI));
                 }
             }
+            // Парные монументальные кристаллы на скалистых плечах главного острова по бокам за колоннадой
+            // (как на 02_crystal_sanctum.png — стройные бирюзовые шпили обрамляют астролябию слева и справа!)
+            double hux = Math.cos(phi), huz = Math.sin(phi);
+            double hsx = -huz, hsz = hux;
+            for (int side = -1; side <= 1; side += 2) {
+                double fx = astroX + hux * 15.5 + hsx * side * 16.5;
+                double fz = astroZ + huz * 15.5 + hsz * side * 16.5;
+                double fAng = phi + side * (0.48 + rnd.nextDouble() * 0.14);
+                double fTilt = 0.34 + rnd.nextDouble() * 0.12;
+                spireList.add(new Spire(
+                        fx, astroY - 1.5, fz,
+                        Math.cos(fAng) * Math.sin(fTilt), Math.cos(fTilt), Math.sin(fAng) * Math.sin(fTilt),
+                        15.0 + rnd.nextDouble() * 3.0, 2.55 + rnd.nextDouble() * 0.35, rnd.nextDouble() * Math.PI));
+                for (int p = 0; p < 2; ++p) {
+                    double pAng = fAng + (p == 0 ? -0.95 : 1.05);
+                    double pTilt = 0.58 + rnd.nextDouble() * 0.18;
+                    spireList.add(new Spire(
+                            fx + Math.cos(pAng) * 2.0, astroY - 1.0, fz + Math.sin(pAng) * 2.0,
+                            Math.cos(pAng) * Math.sin(pTilt), Math.cos(pTilt), Math.sin(pAng) * Math.sin(pTilt),
+                            8.2 + rnd.nextDouble() * 2.8, 1.55 + rnd.nextDouble() * 0.35, rnd.nextDouble() * Math.PI));
+                }
+            }
             this.spires = Collections.unmodifiableList(spireList);
             this.pools = Collections.unmodifiableList(poolList);
             this.falls = Collections.unmodifiableList(fallList);

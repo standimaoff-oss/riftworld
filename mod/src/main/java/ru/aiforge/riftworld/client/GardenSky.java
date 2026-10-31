@@ -40,8 +40,8 @@ public final class GardenSky {
     private static final float S_HOR_R = 0.95F, S_HOR_G = 0.93F, S_HOR_B = 0.88F;
 
     // 02_crystal_sanctum.png: ледяная перламутровая лазурь в зените и бирюзово-жемчужная дымка у горизонта
-    private static final float C_ZEN_R = 0.60F, C_ZEN_G = 0.83F, C_ZEN_B = 0.94F;
-    private static final float C_HOR_R = 0.86F, C_HOR_G = 0.96F, C_HOR_B = 0.98F;
+    private static final float C_ZEN_R = 0.62F, C_ZEN_G = 0.85F, C_ZEN_B = 0.95F;
+    private static final float C_HOR_R = 0.88F, C_HOR_G = 0.97F, C_HOR_B = 0.99F;
 
     private static Vec3 lastCam;
     private static long lastNs;
@@ -169,24 +169,6 @@ public final class GardenSky {
                 b.vertex(m, sx + tx * sr, sy - sr, sz + tz * sr).color(1.0F, 0.97F, 0.89F, diskA).endVertex();
                 b.vertex(m, sx + tx * sr, sy + sr, sz + tz * sr).color(1.0F, 0.97F, 0.89F, diskA).endVertex();
                 b.vertex(m, sx - tx * sr, sy + sr, sz - tz * sr).color(1.0F, 0.97F, 0.89F, diskA).endVertex();
-            }
-
-            // Мягкое перламутрово-бирюзовое сияние в небе Хрустальных разломов (02_crystal_sanctum.png)
-            if (wc > 0.005F) {
-                CrystalRifts.Region cr = CrystalRifts.regionAt(cam.x, cam.z);
-                double cAng = cr != null ? cr.phi : 0.45;
-                float dist = s * 0.78F;
-                float ax = (float) (Math.cos(cAng) * dist);
-                float az = (float) (Math.sin(cAng) * dist);
-                float tx = (float) (-Math.sin(cAng));
-                float tz = (float) (Math.cos(cAng));
-                float ay = s * 0.34F;
-                float hw = s * 0.52F, hh = s * 0.16F;
-                float aGlow = 0.32F * wc;
-                b.vertex(m, ax - tx * hw, ay - hh, az - tz * hw).color(0.56F, 0.97F, 0.98F, 0.0F).endVertex();
-                b.vertex(m, ax + tx * hw, ay - hh, az + tz * hw).color(0.56F, 0.97F, 0.98F, 0.0F).endVertex();
-                b.vertex(m, ax + tx * hw, ay + hh, az + tz * hw).color(0.76F, 0.99F, 1.00F, aGlow).endVertex();
-                b.vertex(m, ax - tx * hw, ay + hh, az - tz * hw).color(0.76F, 0.99F, 1.00F, aGlow).endVertex();
             }
 
             Tesselator.getInstance().end();

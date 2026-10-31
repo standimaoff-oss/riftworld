@@ -1060,19 +1060,16 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                     ? (c.surface == S_GRASS && !c.pondRim ? soil : riftMarble)
                                     : (c.garden || c.isl.kind == 7 ? soil : crust);
                         } else if (c.isl.kind == CrystalRifts.KIND) {
-                            // Светло-мраморные верхние обрывы -> тёмный сланец и сталактитовые кили снизу + хрустальные жилы
+                            // Светло-мраморные верхние обрывы -> тёмный сланец и сталактитовые кили снизу (без одиночных крапинок кристалла)
                             int spanH = Math.max(4, c.top - c.bottom);
                             double rel = (y - c.bottom) / (double) spanH;
                             double hv = hash(x, y, z);
-                            if (y <= c.bottom + 2 && hv < 0.10) {
-                                s = crystalDeep;
-                            } else if (rel < 0.34) {
-                                s = hv < 0.74 ? riftSlate : (hv < 0.92 ? riftMarble : crystalDeep);
+                            if (rel < 0.36) {
+                                s = hv < 0.84 ? riftSlate : riftMarble;
                             } else {
-                                s = hv < 0.62 ? riftMarble
-                                        : hv < 0.82 ? riftMarbleMossy
-                                        : hv < 0.97 ? riftSlate
-                                        : crystalDeep;
+                                s = hv < 0.66 ? riftMarble
+                                        : hv < 0.86 ? riftMarbleMossy
+                                        : riftSlate;
                             }
                         } else if (c.isl.kind == 7) {
                             // Рев 15: обрыв яруса Фиолетовых холмов — каменная стенка террасы

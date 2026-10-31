@@ -921,12 +921,12 @@ public final class SeaProbeCommand {
         double ux = Math.cos(best.phi), uz = Math.sin(best.phi);
         double sx = -uz, sz = ux;
         // 1) Главный кадр-открытка: беломраморная аллея с серебристыми DT-деревьями -> колоннада-астролябия -> кристаллы и мосты!
-        int v1cx = (int) Math.round(best.aveAx + ux * 6.0);
-        int v1cz = (int) Math.round(best.aveAz + uz * 6.0);
-        int v1cy = best.astroY + 7;
-        int v1lx = (int) Math.round(best.astroX + ux * 16.0);
-        int v1lz = (int) Math.round(best.astroZ + uz * 16.0);
-        int v1ly = best.astroY + 5;
+        int v1cx = (int) Math.round(best.aveAx + ux * 4.5);
+        int v1cz = (int) Math.round(best.aveAz + uz * 4.5);
+        int v1cy = best.astroY + 4;
+        int v1lx = (int) Math.round(best.astroX + ux * 12.0);
+        int v1lz = (int) Math.round(best.astroZ + uz * 12.0);
+        int v1ly = best.astroY + 4;
         String cview1 = v1cx + "," + v1cy + "," + v1cz + ":" + v1lx + "," + v1ly + "," + v1lz;
 
         // 2) Каменный арочный мост-переход через пропасть между парящими островами (Span #0)
@@ -963,10 +963,10 @@ public final class SeaProbeCommand {
             cview3 = c3x + "," + c3y + "," + c3z + ":" + l3x + "," + l3y + "," + l3z;
         }
 
-        // 4) Крупный план разрушенной мраморной колоннады-астролябии и парящего ядра
-        int c4x = (int) Math.round(best.astroX - ux * 15.0 + sx * 3.2);
-        int c4z = (int) Math.round(best.astroZ - uz * 15.0 + sz * 3.2);
-        int c4y = best.astroY + 4;
+        // 4) Крупный план разрушенной мраморной колоннады-астролябии и парящего ядра строго по оси мраморной аллеи
+        int c4x = (int) Math.round(best.astroX - ux * 15.5);
+        int c4z = (int) Math.round(best.astroZ - uz * 15.5);
+        int c4y = best.astroY + 3;
         int l4x = (int) Math.round(best.astroX);
         int l4z = (int) Math.round(best.astroZ);
         int l4y = best.astroY + 4;
@@ -980,12 +980,12 @@ public final class SeaProbeCommand {
             double ol = Math.max(1.0, Math.hypot(outX, outZ));
             outX /= ol; outZ /= ol;
             int oc = CityPlan.get().ocean;
-            int c5x = (int) Math.round(f0.x + outX * 26.0 - outZ * 8.0);
-            int c5z = (int) Math.round(f0.z + outZ * 26.0 + outX * 8.0);
-            int c5y = oc + 19;
-            int l5x = (int) Math.round(f0.x - outX * 4.0);
-            int l5z = (int) Math.round(f0.z - outZ * 4.0);
-            int l5y = (int) Math.round(f0.isl.base);
+            int c5x = (int) Math.round(f0.x + outX * 29.0 + outZ * 17.0);
+            int c5z = (int) Math.round(f0.z + outZ * 29.0 - outX * 17.0);
+            int c5y = oc + 23;
+            int l5x = (int) Math.round(f0.x + outX * 2.0 - outZ * 4.0);
+            int l5z = (int) Math.round(f0.z + outZ * 2.0 + outX * 4.0);
+            int l5y = (int) Math.round(f0.isl.base + 1);
             cview5 = c5x + "," + c5y + "," + c5z + ":" + l5x + "," + l5y + "," + l5z;
         }
 
