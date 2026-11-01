@@ -44,7 +44,7 @@ public final class ClientHooks {
         e.registerBlockEntityRenderer(ModBlockEntities.LAUNCH_CORE.get(), LaunchCoreRenderer::new);
         e.registerBlockEntityRenderer(ru.aiforge.riftworld.registry.ArenaBlocks.COLUMN_BE.get(), BossColumnRenderer::new);
         e.registerBlockEntityRenderer(ModBlockEntities.BRIDGE_POST.get(), BridgePostRenderer::new);
-        e.registerBlockEntityRenderer(ModBlockEntities.DEMON_GATE.get(), DemonGateRenderer::new);
+        e.registerEntityRenderer(ModEntities.SPATIAL_RIFT.get(), SpatialRiftRenderer::new);
         e.registerEntityRenderer(ModEntities.PAPER_DRAGON.get(), PaperDragonRenderer::new);
         e.registerEntityRenderer(ModEntities.SEA_FISH.get(), SeaFishRenderer::new);
         e.registerEntityRenderer(ru.aiforge.riftworld.registry.ModEntities.BOSS.get(), RiftMobRenderer::boss);
@@ -54,6 +54,8 @@ public final class ClientHooks {
         e.registerEntityRenderer(ModEntities.CRYSTAL_MINION.get(), CrystalGeoRenderers.Minion::new);
         e.registerEntityRenderer(ModEntities.CRYSTAL_SHIELD.get(), CrystalGeoRenderers.Shield::new);
         e.registerEntityRenderer(ModEntities.CRYSTAL_SHARD.get(), CrystalGeoRenderers.Shard::new);
+        e.registerEntityRenderer(ModEntities.ICE_PILLAR.get(), CrystalGeoRenderers.IcePillar::new);
+        e.registerEntityRenderer(ModEntities.ICE_HAIL_BOULDER.get(), CrystalGeoRenderers.IceHailBoulder::new);
     }
 
     @SubscribeEvent

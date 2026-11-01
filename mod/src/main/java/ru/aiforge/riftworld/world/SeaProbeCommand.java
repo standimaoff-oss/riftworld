@@ -2114,7 +2114,56 @@ public final class SeaProbeCommand {
             }
 
             int lkX = bx, lkY = by + 5, lkZ = bz;
-            if (k.contains("minion")) {
+            int liftedOk = 0;
+            if (k.equals("colonnade_boss_pillars") && level.hasChunk(bx >> 4, bz >> 4)) {
+                var box = new net.minecraft.world.phys.AABB(bx - 22, by - 6, bz - 22, bx + 22, by + 24, bz + 22);
+                level.getEntitiesOfClass(ru.aiforge.riftworld.entity.IcePillarEntity.class, box).forEach(net.minecraft.world.entity.Entity::discard);
+                level.getEntitiesOfClass(net.minecraft.world.entity.decoration.ArmorStand.class, box).forEach(net.minecraft.world.entity.Entity::discard);
+                var bosses = level.getEntitiesOfClass(ru.aiforge.riftworld.entity.RiftObeliskBoss.class, box);
+                if (!bosses.isEmpty()) {
+                    var ringCenter = new net.minecraft.world.phys.Vec3(best.astroX - ux * 6.5, by + 1.0, best.astroZ - uz * 6.5);
+                    bosses.get(0).castUnjoinedIcePillarCircle(ringCenter);
+                    var pillars = level.getEntitiesOfClass(ru.aiforge.riftworld.entity.IcePillarEntity.class, box);
+                    if (pillars.size() == 5) {
+                        // Ставим тестовую стойку прямо на точку подъёма 1-го столба и прокручиваем 44 тика — проверяем реальный подъём!
+                        var p0 = pillars.get(0);
+                        var stand = new net.minecraft.world.entity.decoration.ArmorStand(level, p0.getX(), p0.getY(), p0.getZ());
+                        double startStandY = stand.getY();
+                        level.addFreshEntity(stand);
+                        for (int step = 0; step < 44; ++step) {
+                            for (var pl : pillars) pl.tick();
+                        }
+                        if (stand.getY() - startStandY >= 4.2) liftedOk = 1;
+                        stand.discard();
+                    }
+                    camX = (int) Math.round(ringCenter.x - ux * 8.2 + px * 3.8);
+                    camY = by + 6;
+                    camZ = (int) Math.round(ringCenter.z - uz * 8.2 + pz * 3.8);
+                    lkX = (int) Math.round(ringCenter.x + ux * 1.5);
+                    lkY = by + 3;
+                    lkZ = (int) Math.round(ringCenter.z + uz * 1.5);
+                }
+            } else if (k.equals("colonnade_boss_hail") && level.hasChunk(bx >> 4, bz >> 4)) {
+                var box = new net.minecraft.world.phys.AABB(bx - 24, by - 6, bz - 24, bx + 24, by + 28, bz + 24);
+                level.getEntitiesOfClass(ru.aiforge.riftworld.entity.IceHailBoulderEntity.class, box).forEach(net.minecraft.world.entity.Entity::discard);
+                var bosses = level.getEntitiesOfClass(ru.aiforge.riftworld.entity.RiftObeliskBoss.class, box);
+                if (!bosses.isEmpty()) {
+                    var hailCenter = new net.minecraft.world.phys.Vec3(best.astroX - ux * 6.0, by + 1.0, best.astroZ - uz * 6.0);
+                    bosses.get(0).castSkyIceHailVolley(hailCenter);
+                    // Прокручиваем 31 тик: 1-я глыба уже летит вниз в свою метку, а остальные 4 ждут своей очереди в небе со светящимися метками на полу!
+                    var boulders = level.getEntitiesOfClass(ru.aiforge.riftworld.entity.IceHailBoulderEntity.class, box);
+                    for (int step = 0; step < 31; ++step) {
+                        for (var bd : boulders) bd.tick();
+                    }
+                    liftedOk = (boulders.size() == 5) ? 1 : 0;
+                    camX = (int) Math.round(hailCenter.x - ux * 13.5 + px * 4.5);
+                    camY = by + 7;
+                    camZ = (int) Math.round(hailCenter.z - uz * 13.5 + pz * 4.5);
+                    lkX = (int) Math.round(hailCenter.x);
+                    lkY = by + 6;
+                    lkZ = (int) Math.round(hailCenter.z);
+                }
+            } else if (k.contains("minion")) {
                 camX = (int) Math.round(m0x - ux * 3.1);
                 camY = by + 2;
                 camZ = (int) Math.round(m0z - uz * 3.1);
@@ -2122,9 +2171,9 @@ public final class SeaProbeCommand {
                 lkY = by + 3;
                 lkZ = (int) Math.round(m0z);
             }
-            int metric = bossCnt * 100 + minionCnt * 10;
+            int metric = bossCnt * 100 + minionCnt * 10 + liftedOk * 50;
             String line = "riftstruct kind=" + k + " at=" + bx + "," + by + "," + bz
-                    + " bosses=" + bossCnt + " minions=" + minionCnt
+                    + " bosses=" + bossCnt + " minions=" + minionCnt + " attack_ok=" + liftedOk
                     + " blocks=" + metric + " sub_air=0 cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
@@ -2184,22 +2233,47 @@ public final class SeaProbeCommand {
                 }
             }
 
-            // Камера сбоку-снизу в открытом проливе так, чтобы одновременно видеть каменный свод острова,
-            // изгибающегося под ним белого оригами-дракона и 2D белые волны на воде под островом!
+            // Камера для съёмки супер-детализированного 27-метрового оригами-дракона:
+            // - origami_dragon_over: величественно парит НАД парящим островом и его деревьями!
+            // - origami_dragon_under: плавно летит ПОД каменным сводом парящего острова над морем!
+            // - origami_dragon_closeup: крупный план многослойной головы, рогов, усов, лап и модулей!
+            boolean overIsland = k.contains("over");
+            if (overIsland) {
+                dx = pick.cx + ca * (rim * 0.45);
+                dz = pick.cz + sa * (rim * 0.45);
+                dy = pick.base + 18.0;
+            }
             double tx = -sa, tz = ca; // касательная полёта
             boolean closeup = k.contains("closeup");
-            int camX = (int) Math.round(dx + ca * (closeup ? 6.2 : 13.5) + tx * (closeup ? 2.6 : 5.2));
-            int camY = (int) Math.round(closeup ? (dy + 0.5) : (sea + 7.5));
-            int camZ = (int) Math.round(dz + sa * (closeup ? 6.2 : 13.5) + tz * (closeup ? 2.6 : 5.2));
-            int lkX = (int) Math.round(dx - tx * (closeup ? 2.0 : 1.5));
-            int lkY = (int) Math.round(closeup ? (dy + 0.2) : (dy - 0.6));
-            int lkZ = (int) Math.round(dz - tz * (closeup ? 2.0 : 1.5));
+            int camX, camY, camZ, lkX, lkY, lkZ;
+            if (closeup) {
+                camX = (int) Math.round(dx + ca * 7.8 + tx * 4.6);
+                camY = (int) Math.round(dy + 1.4);
+                camZ = (int) Math.round(dz + sa * 7.8 + tz * 4.6);
+                lkX = (int) Math.round(dx - tx * 3.2);
+                lkY = (int) Math.round(dy + 0.5);
+                lkZ = (int) Math.round(dz - tz * 3.2);
+            } else if (overIsland) {
+                camX = (int) Math.round(dx + ca * 22.0 + tx * 8.0);
+                camY = (int) Math.round(dy + 5.0);
+                camZ = (int) Math.round(dz + sa * 22.0 + tz * 8.0);
+                lkX = (int) Math.round(dx - tx * 5.0);
+                lkY = (int) Math.round(dy - 2.0);
+                lkZ = (int) Math.round(dz - tz * 5.0);
+            } else {
+                camX = (int) Math.round(dx + ca * 19.0 + tx * 7.5);
+                camY = (int) Math.round(Math.max(sea + 8.0, dy - 2.5));
+                camZ = (int) Math.round(dz + sa * 19.0 + tz * 7.5);
+                lkX = (int) Math.round(dx - tx * 4.5);
+                lkY = (int) Math.round(dy + 0.4);
+                lkZ = (int) Math.round(dz - tz * 4.5);
+            }
 
             int dragonCnt = 0;
             if (level.hasChunk(((int) Math.floor(dx)) >> 4, ((int) Math.floor(dz)) >> 4)) {
-                var box = new net.minecraft.world.phys.AABB(dx - 56, sea, dz - 56, dx + 56, pick.base + 24, dz + 56);
+                var box = new net.minecraft.world.phys.AABB(dx - 72, sea, dz - 72, dx + 72, pick.base + 48, dz + 72);
                 var existing = level.getEntitiesOfClass(ru.aiforge.riftworld.entity.PaperDragonEntity.class, box);
-                float yaw = (float) (Math.atan2(-tx, tz) * (180.0 / Math.PI));
+                float yaw = (float) (Math.atan2(tz, tx) * (180.0 / Math.PI)) - 90.0F;
                 boolean releaseAi = k.contains("release");
                 ru.aiforge.riftworld.entity.PaperDragonEntity d;
                 if (existing.isEmpty()) {
@@ -2209,19 +2283,27 @@ public final class SeaProbeCommand {
                     d = existing.get(0);
                     dragonCnt = existing.size();
                 }
-                if (!releaseAi) {
-                    d.moveTo(dx, dy, dz, yaw, -4.0F);
-                    d.setDeltaMovement(0.0, 0.0, 0.0);
-                    d.yRotO = yaw;
-                    d.yBodyRot = yaw;
-                    d.yBodyRotO = yaw;
-                    d.yHeadRot = yaw;
-                    d.yHeadRotO = yaw;
-                    d.setNoAi(true);
-                } else {
-                    d.setAnchorIsland(pick);
-                    d.setNoAi(false);
-                    d.setDeltaMovement(tx * 0.38, 0.02, tz * 0.38);
+                if (d != null) {
+                    d.setFlightMode(overIsland
+                            ? ru.aiforge.riftworld.entity.PaperDragonEntity.FLIGHT_OVER_ISLAND
+                            : ru.aiforge.riftworld.entity.PaperDragonEntity.FLIGHT_UNDER_ISLAND);
+                    if (!releaseAi) {
+                        d.moveTo(dx, dy, dz, yaw, overIsland ? -5.0F : -2.0F);
+                        d.setDeltaMovement(tx * 0.42, 0.0, tz * 0.42);
+                        d.yRotO = yaw;
+                        d.yBodyRot = yaw;
+                        d.yBodyRotO = yaw;
+                        d.yHeadRot = yaw;
+                        d.yHeadRotO = yaw;
+                        d.setNoAi(true);
+                    } else {
+                        d.setHomeAnchor(new net.minecraft.world.phys.Vec3(pick.cx, pick.base, pick.cz),
+                                overIsland
+                                        ? ru.aiforge.riftworld.entity.PaperDragonEntity.FLIGHT_OVER_ISLAND
+                                        : ru.aiforge.riftworld.entity.PaperDragonEntity.FLIGHT_UNDER_ISLAND);
+                        d.setNoAi(false);
+                        d.setDeltaMovement(tx * 0.48, 0.02, tz * 0.48);
+                    }
                 }
             }
 
@@ -2321,10 +2403,20 @@ public final class SeaProbeCommand {
                 }
             }
             if (best == null) { src.sendFailure(Component.literal("riftstruct: harbor_port not found")); return 0; }
+            // Прогружаем чанки прибрежного острова позади набережной порта и проверяем, что порт стоит СТРОГО у берега острова!
+            for (int cdx = -2; cdx <= 2; ++cdx) {
+                for (int cdz = -4; cdz <= 2; ++cdz) {
+                    level.getChunk((best.cx >> 4) + cdx, (best.cz >> 4) + cdz);
+                }
+            }
+            ElisarChunkGenerator.Col islandCol = ElisarChunkGenerator.column(CityPlan.get(), best.cx, best.cz - 34);
+            boolean attachedToIsland = best.island != null && islandCol.isl != null && islandCol.top >= ocean + 4;
             int[] cnt = countStructBlocksAndSubAir(level, best.cx, best.cz, 20, best.floorY + 1, best.quayY + 14, ocean);
-            int camX = best.cx + 22, camY = best.quayY + 13, camZ = best.cz + 24;
-            int lkX = best.cx - 2, lkY = best.quayY + 4, lkZ = best.cz - 2;
+            if (!attachedToIsland) cnt[0] = 0; // Проваливаем пробу, если порт вдруг не у берега острова!
+            int camX = best.cx + 26, camY = best.quayY + 17, camZ = best.cz + 28;
+            int lkX = best.cx - 2, lkY = best.quayY + 4, lkZ = best.cz - 10;
             String line = "riftstruct kind=harbor_port at=" + best.cx + "," + best.quayY + "," + best.cz
+                    + " island_top=" + islandCol.top
                     + " blocks=" + cnt[0] + " sub_air=" + cnt[1]
                     + " cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
             src.sendSuccess(() -> Component.literal(line), false);
@@ -2564,10 +2656,10 @@ public final class SeaProbeCommand {
             }
             BlockPos base = new BlockPos(px, topY, pz);
 
-            // Возводим живописную поляну древних руин в Обычном мире БЕЗ квадратной рамки портала:
-            // только 1 невидимый наземный якорь demon_gate в центре, из которого в самое небо уходит
-            // огромный 3D-Прорыв Пространства (узкий у земли и расширяющийся к облакам)!
-            BlockState gate = ru.aiforge.riftworld.registry.TempleBlocks.DEMON_GATE.get().defaultBlockState();
+            // Возводим живописную поляну древних руин в Обычном мире ПОЛНОСТЬЮ БЕЗ БЛОКОВ ПОРТАЛА:
+            // в центре на полу лежит только древняя ритуальная печать (MOSAIC_CORE + GOLD_RUNE),
+            // над которой после 4-секундного узора и яркой вспышки разверзнется Белый 3D-Пролом в Пространстве!
+            BlockState mosaicCore = ru.aiforge.riftworld.registry.TempleBlocks.MOSAIC_CORE.get().defaultBlockState();
             BlockState rune = ru.aiforge.riftworld.registry.TempleBlocks.GOLD_RUNE.get().defaultBlockState();
             BlockState bricks = ru.aiforge.riftworld.registry.TempleBlocks.BRICKS.get().defaultBlockState();
             BlockState cracked = ru.aiforge.riftworld.registry.TempleBlocks.CRACKED.get().defaultBlockState();
@@ -2577,6 +2669,10 @@ public final class SeaProbeCommand {
             BlockState oakLog = net.minecraft.world.level.block.Blocks.OAK_LOG.defaultBlockState();
             BlockState oakLeaves = net.minecraft.world.level.block.Blocks.OAK_LEAVES.defaultBlockState()
                     .setValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT, true);
+
+            overworld.getEntitiesOfClass(ru.aiforge.riftworld.entity.SpatialRiftEntity.class,
+                    new net.minecraft.world.phys.AABB(base).inflate(48.0))
+                    .forEach(net.minecraft.world.entity.Entity::discard);
 
             for (int dx = -10; dx <= 10; ++dx) {
                 for (int dz = -6; dz <= 16; ++dz) {
@@ -2588,12 +2684,14 @@ public final class SeaProbeCommand {
                     }
                 }
             }
-            // Единственная точка якоря 3D-Прорыва Пространства у земли (никакого квадратного портала!)
-            overworld.setBlock(base, gate, 2);
-            overworld.setBlock(base.offset(0, -1, 0), rune, 2);
+            // Напольная мозаично-руническая печать (НИ ОДНОГО блока портала в воздухе!)
+            overworld.setBlock(base.offset(0, -1, 0), mosaicCore, 2);
+            overworld.setBlock(base.offset(-1, -1, 0), rune, 2);
+            overworld.setBlock(base.offset(1, -1, 0), rune, 2);
+            overworld.setBlock(base.offset(0, -1, -1), rune, 2);
+            overworld.setBlock(base.offset(0, -1, 1), rune, 2);
             overworld.setBlock(base.offset(-3, 0, 1), ivy, 2);
             overworld.setBlock(base.offset(3, 0, 1), cracked, 2);
-            overworld.setBlock(base.offset(0, -1, 2), rune, 2);
 
             // Древние руинные колонны и деревья по краям поляны (под основаниями ставим DIRT до слепка,
             // чтобы ванильный randomTick травы под непрозрачной колонной не менял GRASS_BLOCK -> DIRT!)
@@ -2655,6 +2753,23 @@ public final class SeaProbeCommand {
             boolean ok = ru.aiforge.riftworld.flight.PortalRitual.start(sp, portalTestOrigin, "offer");
             final String msg = "riftportal trigger started=" + ok;
             src.sendSuccess(() -> Component.literal(msg), false);
+            return ok ? 1 : 0;
+        }
+
+        if ("walkin".equals(mode)) {
+            var sp = src.getPlayer();
+            if (sp == null && !overworld.players().isEmpty()) {
+                sp = overworld.players().get(0);
+            }
+            if (sp == null || portalTestOrigin == null) {
+                src.sendFailure(Component.literal("riftportal: no player or setup not run"));
+                return 0;
+            }
+            var rift = ru.aiforge.riftworld.flight.PortalRitual.spawnOpenBreach(overworld, portalTestOrigin);
+            sp.setGameMode(net.minecraft.world.level.GameType.CREATIVE);
+            sp.teleportTo(overworld, portalTestOrigin.getX() + 0.5, portalTestOrigin.getY() + 0.1, portalTestOrigin.getZ() + 0.5, 180.0F, 0.0F);
+            boolean ok = ru.aiforge.riftworld.flight.PortalRitual.beginWalkInTransit(sp, rift);
+            src.sendSuccess(() -> Component.literal("riftportal walkin started=" + ok), false);
             return ok ? 1 : 0;
         }
 

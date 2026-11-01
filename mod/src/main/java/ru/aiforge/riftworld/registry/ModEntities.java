@@ -26,10 +26,25 @@ public final class ModEntities {
     public static final RegistryObject<EntityType<ScytheItemEntity>> SCYTHE_ITEM = TYPES.register("scythe_item", () -> EntityType.Builder
             .<ScytheItemEntity>of(ScytheItemEntity::new, MobCategory.MISC).sized(0.5F, 0.3F).fireImmune().clientTrackingRange(8)
             .updateInterval(20).build("riftworld:scythe_item"));
-    /** v0.20.0: Модульный белый оригами-дракон в китайском стиле (средних размеров, редкий, безвредный, парит вдоль и под островами). */
+    /** v0.22.0: Крупный супер-детализированный модульный 3D оригами-дракон (~22 м), парящий и ПОД островами, и НАД островами! */
     public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.PaperDragonEntity>> PAPER_DRAGON = TYPES.register("paper_dragon",
             () -> EntityType.Builder.<ru.aiforge.riftworld.entity.PaperDragonEntity>of(ru.aiforge.riftworld.entity.PaperDragonEntity::new, MobCategory.AMBIENT)
-                    .sized(2.2F, 1.3F).updateInterval(2).clientTrackingRange(20).build("riftworld:paper_dragon"));
+                    .sized(2.6F, 1.9F).updateInterval(1).clientTrackingRange(24).build("riftworld:paper_dragon"));
+
+    /** v0.22.0: Безблочный белый 3D-геометрический Пролом в Пространстве (от узкого острия у земли до широкого разлома в небе). */
+    public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.SpatialRiftEntity>> SPATIAL_RIFT = TYPES.register("spatial_rift",
+            () -> EntityType.Builder.<ru.aiforge.riftworld.entity.SpatialRiftEntity>of(ru.aiforge.riftworld.entity.SpatialRiftEntity::new, MobCategory.MISC)
+                    .sized(2.2F, 4.2F).fireImmune().updateInterval(2).clientTrackingRange(24).build("riftworld:spatial_rift"));
+
+    /** v0.22.0: Кастомная атака Босса — плавно вырастающий из-под земли и уходящий под землю Ледяной Столб (поднимает стоящего игрока!). */
+    public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.IcePillarEntity>> ICE_PILLAR = TYPES.register("ice_pillar",
+            () -> EntityType.Builder.<ru.aiforge.riftworld.entity.IcePillarEntity>of(ru.aiforge.riftworld.entity.IcePillarEntity::new, MobCategory.MISC)
+                    .sized(1.76F, 5.4F).fireImmune().updateInterval(1).clientTrackingRange(12).build("riftworld:ice_pillar"));
+
+    /** v0.22.0: Кастомная атака Босса — огромная острая квадратная ледяная глыба в небе + метка приземления. */
+    public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.IceHailBoulderEntity>> ICE_HAIL_BOULDER = TYPES.register("ice_hail_boulder",
+            () -> EntityType.Builder.<ru.aiforge.riftworld.entity.IceHailBoulderEntity>of(ru.aiforge.riftworld.entity.IceHailBoulderEntity::new, MobCategory.MISC)
+                    .sized(2.0F, 2.0F).fireImmune().updateInterval(1).clientTrackingRange(14).build("riftworld:ice_hail_boulder"));
 
     /** Рев 8 «Живое море»: вся ихтиофауна Элисара одной сущностью (вариант — в данных). */
     public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.SeaFishEntity>> SEA_FISH = TYPES.register("sea_fish",

@@ -68,8 +68,6 @@
   "block.riftworld.dead_moss": "Dead Moss",
   "block.riftworld.dead_vines": "Dead Vines",
   "block.riftworld.debris": "Debris",
-  "block.riftworld.demon_frame": "Demonstone Frame",
-  "block.riftworld.demon_gate": "Demonic Teleport",
   "block.riftworld.desk_computer": "Office Desk",
   "block.riftworld.dirt_pile": "Dirt Pile",
   "block.riftworld.dish_cupboard": "Dish Cupboard",
@@ -391,5 +389,10 @@
   "item.riftworld.astral_prism.desc2": "RMB: blink 9 blocks ahead and leave a 5s resonance beacon",
   "item.riftworld.astral_prism.desc3": "Grants Resistance I & Speed I to the wielder",
   "item.riftworld.rift_obelisk_boss_spawn_egg": "Shattered Obelisk Spawn Egg",
-  "item.riftworld.crystal_minion_spawn_egg": "Faceted Servant Spawn Egg"
+  "item.riftworld.crystal_minion_spawn_egg": "Faceted Servant Spawn Egg",
+  "entity.riftworld.spatial_rift": "Spatial Breach",
+  "entity.riftworld.ice_pillar": "Glacial Rift Pillar",
+  "entity.riftworld.ice_hail_boulder": "Sky Ice Boulder",
+  "cutscene.riftworld.elisar.dim": "E L I S A R",
+  "cutscene.riftworld.elisar.city": "The White City of the Sanctuary"
 }

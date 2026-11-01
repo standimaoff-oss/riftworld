@@ -312,6 +312,12 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                     double flatTop = gt.baseY - 1.0;
                     top = o <= 0 ? flatTop : flatTop + (top - flatTop) * smooth(o / 9.0);
                 }
+            } else if (isl.kind == LandmarkStructures.HARBOR_COAST_KIND) {
+                // Пологий зелёный прибрежный остров, выходящий прямо из моря к каменной набережной порта
+                double ct = Math.max(0.0, isl.t(px, pz));
+                double hill = (plan.ocean - 3.0) + 14.5 * Math.pow(ct, 0.58)
+                        + 3.5 * (vnoise(px * 0.055, pz * 0.055, 809) - 0.35) * smooth(ct / 0.25);
+                top = hill;
             } else if (isl.kind == 7) {                                // Фиолетовые холмы (референс 04)
                 // Рев 15 — биом переделан с нуля по просьбе владельца («сейчас сделано ужасно»).
                 // Что было не так на кадрах 49–51 итерации 44: серые «кучи» подпорных стенок на
@@ -470,7 +476,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             double stal = Math.max(0, vnoise(px * 0.21, pz * 0.21, 12) - 0.6) * 48 * Math.pow(Math.max(t, 0), 0.3);
             c.bottom = Math.max(plan.ocean + 6, (int) Math.floor(c.top - depth - stal));
             c.bottom = Math.min(c.bottom, c.top - 2);
-            if (isl.kind == WaterfallGardens.KIND) {
+            if (isl.kind == WaterfallGardens.KIND || isl.kind == LandmarkStructures.HARBOR_COAST_KIND) {
                 // Подводные ярусы (ocean - 9 и ocean - 4) — голый камень S_BARE под водой,
                 // а основание острова — сплошной камень до самого бедрока без единой пустоты.
                 if (c.top <= plan.ocean) {
@@ -1108,7 +1114,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                         }
                         chunk.setBlockState(mp.set(x, y, z), s, false);
                     }
-                    if (c.isl.kind == WaterfallGardens.KIND) {
+                    if (c.isl.kind == WaterfallGardens.KIND || c.isl.kind == LandmarkStructures.HARBOR_COAST_KIND) {
                         // Сплошное каменное основание острова до бедрока (0 дыр) + вода над подводными ярусами (0 воздуха под водой).
                         for (int y = MIN_Y + 2; y < c.bottom; ++y) {
                             BlockState base = hash(x, y, z) < 0.18 ? limeMossy : stone;

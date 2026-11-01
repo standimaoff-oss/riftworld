@@ -9,7 +9,6 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraftforge.registries.RegistryObject;
 import ru.aiforge.riftworld.block.LightBridgeBlock;
-import ru.aiforge.riftworld.block.DemonGateBlock;
 import ru.aiforge.riftworld.block.MosaicBlock;
 import ru.aiforge.riftworld.block.MosaicCoreBlock;
 import ru.aiforge.riftworld.block.RitualCandleBlock;
@@ -45,12 +44,9 @@ public final class TempleBlocks {
     public static final RegistryObject<Block> IVY = ModBlocks.reg("temple_bricks_ivy", () -> new Block(p(MapColor.TERRACOTTA_WHITE, 2.5F, SoundType.STONE)));
     public static final RegistryObject<ru.aiforge.riftworld.block.GoldRuneBlock> GOLD_RUNE = ModBlocks.reg("temple_gold_rune",
             () -> new ru.aiforge.riftworld.block.GoldRuneBlock(p(MapColor.GOLD, 2.0F, SoundType.METAL)));
-    public static final RegistryObject<Block> DEMON_FRAME = ModBlocks.reg("demon_frame",
-            () -> new Block(p(MapColor.COLOR_BLACK, 8.0F, SoundType.DEEPSLATE).lightLevel(s -> 3)));
-        /** Part 11: a sleeping carved face that wakes and whispers at the living. */
+    /** Part 11: a sleeping carved face that wakes and whispers at the living. */
     public static final RegistryObject<ru.aiforge.riftworld.block.TempleSpiritBlock> SPIRIT = ModBlocks.reg("temple_spirit",
             () -> new ru.aiforge.riftworld.block.TempleSpiritBlock(p(MapColor.TERRACOTTA_WHITE, 2.5F, SoundType.STONE)));
-public static final RegistryObject<DemonGateBlock> DEMON_GATE = ModBlocks.reg("demon_gate", DemonGateBlock::new);
 
     /** Rev 6 «Храм с нуля»: детализированная резная колонна (3D модель с канелюрами). */
     public static final RegistryObject<RotatedPillarBlock> GRAND_COLUMN = ModBlocks.reg("temple_grand_column",

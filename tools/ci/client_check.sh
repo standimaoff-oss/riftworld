@@ -1506,14 +1506,14 @@ biome_section() {
     log "  OK   3D-оружие Колоннады (crystal_katar, crystal_barrage, crystal_aegis, astral_prism) выдано и отснято"
   fi
 
-  # ---------- v0.21.0: 7 новых мировых структур + окклюзия небесного 2D-глаза + огромный 3D-Прорыв Пространства ----------
-  echo "== v0.21.0: 7 новых структур Элисара, 2D-волны, окклюзия глаза и 3D-Прорыв Пространства =="
+  # ---------- v0.22.0: 7 структур (пристань у острова, заброшенный театр, скромные сундуки), Кастомные Атаки Босса, Супер-Оригами Дракон и Белый Пролом ----------
+  echo "== v0.22.0: структуры, кастомные атаки босса, оригами-дракон (под и над островами), белый 3D-Пролом и катсцена Белого Города =="
   EL gamemode spectator TestPlayer >/dev/null 2>&1 || true
 
   probe_and_shot_struct "ocean_island_waves"      180 "95_ocean_island_waves"           0 0
   probe_and_shot_struct "waterfall_ocean_waves"   180 "96_waterfall_ocean_ripples"      0 0
 
-  # Все 7 новых структур в общей генерации мира Элисара + проверка отсутствия просвечивания 2D-глаза сквозь блоки
+  # Все 7 структур (пристань СТРОГО у прибрежного острова, театр заброшенный, скромные сундуки с лутом) + окклюзия 2D-глаза
   probe_and_shot_struct "harbor_port"             350 "101_harbor_port"                 0 0
   probe_and_shot_struct "grand_theater"           450 "102_grand_theater"               0 0
   probe_and_shot_struct "sea_lighthouse"          350 "103_sea_lighthouse"              0 0
@@ -1523,7 +1523,16 @@ biome_section() {
   probe_and_shot_struct "violet_wind_observatory" 280 "107_violet_wind_observatory"     0 0
   probe_and_shot_struct "elisar_eye_occlusion"    200 "108_elisar_eye_block_occlusion"  0 0
 
-  # Проба и съёмка огромного уходящего в небо 3D-Прорыва Пространства + узоров по полу Элисара + 2D-глаз высоко в небе
+  # Кастомные атаки Босса Колоннады: (1) 5 ледяных столбов несомкнутым кругом + подъём игрока; (2) град 5 ледяных глыб с метками и очередью
+  probe_and_shot_struct "colonnade_boss_pillars"  150 "109_boss_ice_pillars_circle"     0 0
+  probe_and_shot_struct "colonnade_boss_hail"     150 "110_boss_sky_ice_hail"           0 0
+
+  # Супер-детализированный модульный 3D Оригами-Дракон (~27 м): крупный план + полёт ПОД островом + полёт НАД островом!
+  probe_and_shot_struct "origami_dragon_closeup"         200 "111_origami_dragon_closeup"      0 0
+  probe_and_shot_struct "origami_dragon_under_release"   200 "112_origami_dragon_under_island" 0 0
+  probe_and_shot_struct "origami_dragon_over_release"    200 "113_origami_dragon_over_island"  0 0
+
+  # Безблочный Белый 3D-Пролом в Пространстве + вход внутрь + мягкая вуаль без GUI/F5 + катсцена Белого Города с титрами!
   EL gamemode creative TestPlayer >/dev/null 2>&1 || true
   EL clear TestPlayer >/dev/null 2>&1 || true
   P_SET=$(RCON execute in minecraft:overworld run riftportal setup 2>&1 | tr '\r\n' '  ')
@@ -1539,34 +1548,47 @@ biome_section() {
     RCON execute in minecraft:overworld run gamemode spectator TestPlayer >/dev/null 2>&1 || true
     RCON execute in minecraft:overworld run time set 6000 >/dev/null 2>&1 || true
     RCON execute in minecraft:overworld run weather clear >/dev/null 2>&1 || true
-    # 1) До ритуала: ракурс от земли вверх в небо на 3D-Прорыв Пространства (узкий у земли, толстый и огромный в небе!)
-    YP1=$(python3 tools/ci/lookat_angles.py "$PCX" "$PCY" "$PCZ" "$PLX" "$PLY" "$PLZ")
-    RCON execute in minecraft:overworld run tp TestPlayer "$PCX" "$PCY" "$PCZ" ${YP1% *} ${YP1#* } >/dev/null 2>&1 || true
-    sleep 7
-    shot "97_spatial_rift_skyward"
 
-    # 2) Запускаем ритуал: накладывающиеся узоры Элисара по полу (мандала + орнамент) + оттенок измерения + низ 3D-Прорыва!
+    YP0=$(python3 tools/ci/lookat_angles.py "$PCX" "$PCY" "$PCZ" "$PLX" "$PLY" "$PLZ")
+    RCON execute in minecraft:overworld run tp TestPlayer "$PCX" "$PCY" "$PCZ" ${YP0% *} ${YP0#* } >/dev/null 2>&1 || true
+    sleep 4
+
+    # 1) Запускаем 4-секундное открытие портала: окружение бледнеет в оттенок Элисара, на земле разворачивается красивый узор печати, в небе 2D-глаза!
     P_TRG=$(RCON execute as TestPlayer at @s in minecraft:overworld run riftportal trigger 2>&1 | tr '\r\n' '  ')
     log "  /riftportal trigger -> ${P_TRG:0:180}"
-    YP2=$(python3 tools/ci/lookat_angles.py "$((PLX + 4))" "$((PCY + 5))" "$((PLZ + 12))" "$PLX" "$((PCY - 2))" "$((PLZ + 2))")
-    RCON execute in minecraft:overworld run tp TestPlayer "$((PLX + 4))" "$((PCY + 5))" "$((PLZ + 12))" ${YP2% *} ${YP2#* } >/dev/null 2>&1 || true
-    sleep 2.3
-    shot "98_portal_elisar_floor_patterns"
+    YP1=$(python3 tools/ci/lookat_angles.py "$((PLX + 4))" "$((PCY + 5))" "$((PLZ + 12))" "$PLX" "$((PCY - 1))" "$((PLZ + 1))")
+    RCON execute in minecraft:overworld run tp TestPlayer "$((PLX + 4))" "$((PCY + 5))" "$((PLZ + 12))" ${YP1% *} ${YP1#* } >/dev/null 2>&1 || true
+    sleep 2.4
+    shot "97_portal_opening_pattern_shade"
 
-    # 3) Переводим взгляд выше в небо вдоль расширяющегося Разлома — видны 2D-глаза Элисара высоко в небесном куполе!
-    YP3=$(python3 tools/ci/lookat_angles.py "$PCX" "$PCY" "$((PLZ + 15))" "$PLX" "$((PLY + 6))" "$PLZ")
-    RCON execute in minecraft:overworld run tp TestPlayer "$PCX" "$PCY" "$((PLZ + 15))" ${YP3% *} ${YP3#* } >/dev/null 2>&1 || true
-    sleep 2.1
-    shot "99_portal_sky_2d_eyes"
+    # 2) После яркой вспышки (t > 4.2 с) открылся БЕЛЫЙ 3D-геометрический Пролом от земли до неба (от земли к небу толще и толще)!
+    sleep 2.4
+    YP2=$(python3 tools/ci/lookat_angles.py "$PCX" "$PCY" "$((PLZ + 16))" "$PLX" "$((PLY + 4))" "$PLZ")
+    RCON execute in minecraft:overworld run tp TestPlayer "$PCX" "$PCY" "$((PLZ + 16))" ${YP2% *} ${YP2#* } >/dev/null 2>&1 || true
+    sleep 1.4
+    shot "98_white_spatial_breach_skyward"
 
-    sleep 4.1
-    shot "100_portal_flash_arrival"
+    # 3) Включаем обычный игровой HUD (F1) и ЗАХОДИМ в белый пролом: проверяем скрытие инвентаря/GUI, блокировку F5,
+    #    1 дальний панорамный ракурс Белого Города с титрами («Э Л И С А Р» / «Белый Город Святилища») и плавный подлёт камеры к игроку!
+    key F1
+    sleep 0.5
+    P_WLK=$(RCON execute as TestPlayer at @s in minecraft:overworld run riftportal walkin 2>&1 | tr '\r\n' '  ')
+    log "  /riftportal walkin -> ${P_WLK:0:180}"
+    sleep 2.2
+    key F5
+    shot "99_walkin_city_cutscene_titles"
+
+    sleep 2.7
+    shot "100_cutscene_glide_to_player"
+
+    sleep 2.6
+    key F1
     P_DIM=$(RCON data get entity TestPlayer Dimension 2>&1 | tr '\r\n' '  ')
     P_VER=$(RCON execute in minecraft:overworld run riftportal verify 2>&1 | tr '\r\n' '  ')
     P_MUT=$(printf '%s' "$P_VER" | sed -n 's/.* mutated=\([0-9]*\).*/\1/p' | tail -1)
-    log "  после вспышки портала: Dimension=${P_DIM:0:90} | ${P_VER:0:140}"
+    log "  после захода в белый пролом и катсцены: Dimension=${P_DIM:0:90} | ${P_VER:0:140}"
     if echo "$P_DIM" | grep -q "riftworld:elisar" && [ "${P_MUT:-99}" -eq 0 ]; then
-      log "  OK   3D-Прорыв Пространства бесшовно перенёс в riftworld:elisar, изменённых блоков в обычном мире: 0"
+      log "  OK   белый 3D-Пролом при входе бесшовно перенёс в Белый Город с катсценой, изменённых блоков: 0"
     else
       log "  FAIL кастомный портал: Dimension=${P_DIM:0:80}, mutated=${P_MUT:-?}"; FAILS=$((FAILS + 1))
     fi

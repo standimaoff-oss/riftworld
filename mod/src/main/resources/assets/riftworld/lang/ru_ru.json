@@ -68,8 +68,6 @@
   "block.riftworld.dead_moss": "Мёртвый мох",
   "block.riftworld.dead_vines": "Мёртвые лианы",
   "block.riftworld.debris": "Обломки",
-  "block.riftworld.demon_frame": "Демоническая каменная рама",
-  "block.riftworld.demon_gate": "Демонический телепорт",
   "block.riftworld.desk_computer": "Рабочий стол с компьютером",
   "block.riftworld.dirt_pile": "Куча грязи",
   "block.riftworld.dish_cupboard": "Буфет с посудой",
@@ -389,5 +387,10 @@
   "item.riftworld.astral_prism.desc2": "ПКМ: переносит на 9 блоков вперёд и оставляет на 5 с маяк резонанса",
   "item.riftworld.astral_prism.desc3": "Дарует Сопротивление I и Скорость I владельцу",
   "item.riftworld.rift_obelisk_boss_spawn_egg": "Яйцо призыва Расколотого Обелиска",
-  "item.riftworld.crystal_minion_spawn_egg": "Яйцо призыва Гранёного Прислужника"
+  "item.riftworld.crystal_minion_spawn_egg": "Яйцо призыва Гранёного Прислужника",
+  "entity.riftworld.spatial_rift": "Пролом в Пространстве",
+  "entity.riftworld.ice_pillar": "Ледяной Столб Разлома",
+  "entity.riftworld.ice_hail_boulder": "Ледяная Глыба Небесного Града",
+  "cutscene.riftworld.elisar.dim": "Э Л И С А Р",
+  "cutscene.riftworld.elisar.city": "Белый Город Святилища"
 }

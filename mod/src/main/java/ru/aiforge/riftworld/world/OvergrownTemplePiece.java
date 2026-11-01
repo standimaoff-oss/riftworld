@@ -78,45 +78,27 @@ public class OvergrownTemplePiece extends StructurePiece {
                 anchor.getZ() - (bb.minZ() + bb.maxZ()) / 2);
         t.get().placeInWorld(level, origin, origin, s, rnd, 2);
 
-        // Превращаем старый квадратный портал шаблона (demon_frame + demon_gate) в безрамочный 3D-Разлом:
-        // убираем все блоки demon_frame / demon_gate в пересечении чанка и ставим один якорь в центре основания!
-        BoundingBox fullBb = t.get().getBoundingBox(new StructurePlaceSettings().setRotation(rot), origin);
-        long sumX = 0, sumZ = 0;
-        int count = 0;
-        int minGateY = Integer.MAX_VALUE;
-        for (StructureTemplate.StructureBlockInfo info : t.get().filterBlocks(origin,
-                new StructurePlaceSettings().setRotation(rot), TempleBlocks.DEMON_GATE.get())) {
-            BlockPos gp = info.pos();
-            sumX += gp.getX();
-            sumZ += gp.getZ();
-            ++count;
-            if (gp.getY() < minGateY) minGateY = gp.getY();
-        }
-
-        int x0 = Math.max(box.minX(), fullBb.minX());
-        int x1 = Math.min(box.maxX(), fullBb.maxX());
-        int y0 = Math.max(box.minY(), fullBb.minY());
-        int y1 = Math.min(box.maxY(), fullBb.maxY());
-        int z0 = Math.max(box.minZ(), fullBb.minZ());
-        int z1 = Math.min(box.maxZ(), fullBb.maxZ());
-        BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
-        for (int bx = x0; bx <= x1; ++bx) {
-            for (int bz = z0; bz <= z1; ++bz) {
-                for (int by = y0; by <= y1; ++by) {
-                    mp.set(bx, by, bz);
-                    BlockState st = level.getBlockState(mp);
-                    if (st.is(TempleBlocks.DEMON_FRAME.get()) || st.is(TempleBlocks.DEMON_GATE.get())) {
-                        level.setBlock(mp, Blocks.AIR.defaultBlockState(), 2);
-                    }
-                }
+        // В центре заросших руин закладываем безблочную древнюю ритуальную печать (MOSAIC_CORE + GOLD_RUNE)
+        // и скромный сундук странника (никаких блоков портала в мире больше нет!).
+        BlockPos sealCenter = new BlockPos(anchor.getX(), y, anchor.getZ());
+        for (int dx = -1; dx <= 1; ++dx) {
+            for (int dz = -1; dz <= 1; ++dz) {
+                BlockPos fp = sealCenter.offset(dx, 0, dz);
+                if (!box.isInside(fp)) continue;
+                BlockState floorSt = (dx == 0 && dz == 0)
+                        ? TempleBlocks.MOSAIC_CORE.get().defaultBlockState()
+                        : TempleBlocks.GOLD_RUNE.get().defaultBlockState();
+                level.setBlock(fp, floorSt, 2);
+                level.setBlock(fp.above(), Blocks.AIR.defaultBlockState(), 2);
+                level.setBlock(fp.above(2), Blocks.AIR.defaultBlockState(), 2);
             }
         }
-
-        BlockPos riftAnchor = count > 0
-                ? new BlockPos((int) Math.round((double) sumX / count), minGateY, (int) Math.round((double) sumZ / count))
-                : new BlockPos(anchor.getX(), y + 1, anchor.getZ());
-        if (box.isInside(riftAnchor)) {
-            level.setBlock(riftAnchor, TempleBlocks.DEMON_GATE.get().defaultBlockState(), 2);
+        BlockPos chestPos = sealCenter.offset(2, 1, -2);
+        if (box.isInside(chestPos)) {
+            LandmarkStructures.putLootChest(level.getChunk(chestPos),
+                    chestPos.getX() & ~15, chestPos.getZ() & ~15,
+                    chestPos.getX(), chestPos.getY(), chestPos.getZ(),
+                    net.minecraft.core.Direction.WEST, LandmarkStructures.LOOT_MODEST_WAYFARER);
         }
     }
 }

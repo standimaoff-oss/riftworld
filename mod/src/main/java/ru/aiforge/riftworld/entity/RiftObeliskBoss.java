@@ -56,9 +56,17 @@ public class RiftObeliskBoss extends Monster {
     public static final int STATE_VOLLEY = 1;
     public static final int STATE_SUMMON = 2;
     public static final int STATE_PULSE = 3;
+    public static final int STATE_ICE_PILLARS = 4;
+    public static final int STATE_ICE_HAIL = 5;
+    public static final int STATE_GLACIAL_WAVE = 6;
+    public static final int STATE_FROST_BEAMS = 7;
 
     private static final EntityDataAccessor<Integer> BOSS_STATE =
             SynchedEntityData.defineId(RiftObeliskBoss.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DATA_FROST_BEAM_TICKS =
+            SynchedEntityData.defineId(RiftObeliskBoss.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Float> DATA_FROST_BEAM_START_YAW =
+            SynchedEntityData.defineId(RiftObeliskBoss.class, EntityDataSerializers.FLOAT);
 
     private final ServerBossEvent bossBar = new ServerBossEvent(
             Component.translatable("entity.riftworld.rift_obelisk_boss"),
@@ -66,8 +74,9 @@ public class RiftObeliskBoss extends Monster {
             BossEvent.BossBarOverlay.NOTCHED_10);
 
     private Vec3 anchorPos;
-    private int actionTimer = 40;
+    private int actionTimer = 36;
     private int stateTicks = 0;
+    private int customAttackCycle = 0;
 
     public RiftObeliskBoss(EntityType<? extends RiftObeliskBoss> type, Level level) {
         super(type, level);
@@ -95,10 +104,20 @@ public class RiftObeliskBoss extends Monster {
     protected void defineSynchedData() {
         super.defineSynchedData();
         this.entityData.define(BOSS_STATE, STATE_IDLE);
+        this.entityData.define(DATA_FROST_BEAM_TICKS, 0);
+        this.entityData.define(DATA_FROST_BEAM_START_YAW, 0.0F);
     }
 
     public int bossState() {
         return this.entityData.get(BOSS_STATE);
+    }
+
+    public int frostBeamTicks() {
+        return this.entityData.get(DATA_FROST_BEAM_TICKS);
+    }
+
+    public float frostBeamStartYaw() {
+        return this.entityData.get(DATA_FROST_BEAM_START_YAW);
     }
 
     @Override
@@ -146,6 +165,12 @@ public class RiftObeliskBoss extends Monster {
             this.yBodyRot = yaw;
         }
 
+        int bt = frostBeamTicks();
+        if (bt > 0) {
+            this.entityData.set(DATA_FROST_BEAM_TICKS, bt - 1);
+            tickSweepingFrostBeams(bt);
+        }
+
         if (this.stateTicks > 0) {
             --this.stateTicks;
             if (this.stateTicks == 0) {
@@ -164,8 +189,29 @@ public class RiftObeliskBoss extends Monster {
         double dist2 = this.distanceToSqr(target);
         int activeMinions = this.level().getEntitiesOfClass(CrystalMinion.class, this.getBoundingBox().inflate(32.0)).size();
 
-        if (dist2 < 36.0 && this.random.nextFloat() < 0.48F) {
-            // 1) Астральный Импульс Колоннады (телеграфированная раскрутка колец -> волна отбрасывания)
+        // Чередуем 4 сигнатурные ледяные/призматические атаки с классическими залпами и прислужниками!
+        int pick = (this.customAttackCycle++) % 6;
+        if (pick == 0) {
+            this.entityData.set(BOSS_STATE, STATE_ICE_PILLARS);
+            this.stateTicks = 22;
+            this.actionTimer = enraged ? 48 : 66;
+            castUnjoinedIcePillarCircle(target.position());
+        } else if (pick == 1) {
+            this.entityData.set(BOSS_STATE, STATE_ICE_HAIL);
+            this.stateTicks = 24;
+            this.actionTimer = enraged ? 54 : 72;
+            castSkyIceHailVolley(target.position());
+        } else if (pick == 2) {
+            this.entityData.set(BOSS_STATE, STATE_GLACIAL_WAVE);
+            this.stateTicks = 18;
+            this.actionTimer = enraged ? 42 : 58;
+            castGlacialSpikeWave(target.position());
+        } else if (pick == 3) {
+            this.entityData.set(BOSS_STATE, STATE_FROST_BEAMS);
+            this.stateTicks = 24;
+            this.actionTimer = enraged ? 56 : 74;
+            castSweepingFrostBeams(target);
+        } else if (dist2 < 36.0 && this.random.nextFloat() < 0.48F) {
             this.entityData.set(BOSS_STATE, STATE_PULSE);
             this.stateTicks = 20;
             this.actionTimer = enraged ? 42 : 58;
@@ -173,17 +219,15 @@ public class RiftObeliskBoss extends Monster {
             if (this.level() instanceof ServerLevel sl) {
                 sl.sendParticles(ParticleTypes.GLOW, this.getX(), this.getY() + 1.8, this.getZ(), 28, 1.2, 1.0, 1.2, 0.05);
             }
-        } else if (activeMinions < (enraged ? 5 : 3) && this.random.nextFloat() < 0.45F) {
-            // 2) Призыв Гранёных Прислужников вокруг колоннады
+        } else if (activeMinions < (enraged ? 5 : 3) && this.random.nextFloat() < 0.55F) {
             this.entityData.set(BOSS_STATE, STATE_SUMMON);
             this.stateTicks = 16;
-            this.actionTimer = enraged ? 55 : 75;
-            summonMinions(enraged ? 2 : 2);
+            this.actionTimer = enraged ? 52 : 68;
+            summonMinions(2);
         } else {
-            // 3) Веерный залп кристальных осколков из призматического ядра
             this.entityData.set(BOSS_STATE, STATE_VOLLEY);
             this.stateTicks = 14;
-            this.actionTimer = enraged ? 32 : 46;
+            this.actionTimer = enraged ? 30 : 44;
             firePrismVolley(target, enraged ? 5 : 3);
         }
     }
@@ -221,6 +265,147 @@ public class RiftObeliskBoss extends Monster {
             sl.addFreshEntity(minion);
             sl.sendParticles(ParticleTypes.END_ROD, sx, sy + 1.0, sz, 20, 0.35, 0.65, 0.35, 0.05);
         }
+    }
+
+    /**
+     * КАСТОМНАЯ АТАКА #1: Из-под земли плавно выходят 5 ледяных столбов, соединяясь в НЕ СОМКНУТЫЙ круг
+     * (широкий открытый проход 112° для выхода + зазоры между столбами), поднимают наверх тех,
+     * кто стоит на месте подъёма столба, а затем плавно уходят обратно под землю и пропадают!
+     */
+    public void castUnjoinedIcePillarCircle(Vec3 aroundPos) {
+        if (!(this.level() instanceof ServerLevel sl)) return;
+        sl.playSound(null, this.blockPosition(), SoundEvents.RESPAWN_ANCHOR_CHARGE, SoundSource.HOSTILE, 1.35F, 1.32F);
+
+        double radius = 4.35;
+        double gapCenterAng = Math.atan2(this.getZ() - aroundPos.z, this.getX() - aroundPos.x) + Math.PI;
+        double startAng = gapCenterAng + Math.toRadians(56.0);
+        double stepAng = Math.toRadians(62.0); // 4 интервала по 62° = 248°, остаётся разомкнутая дуга 112° для выхода!
+
+        for (int i = 0; i < 5; ++i) {
+            double ang = startAng + i * stepAng;
+            double px = aroundPos.x + Math.cos(ang) * radius;
+            double pz = aroundPos.z + Math.sin(ang) * radius;
+            int gy = findArenaFloorY(sl, px, aroundPos.y, pz);
+
+            IcePillarEntity pillar = ModEntities.ICE_PILLAR.get().create(sl);
+            if (pillar == null) continue;
+            pillar.moveTo(px, gy, pz, (float) Math.toDegrees(ang), 0.0F);
+            pillar.configure(this, 5.4F, false, 0);
+            sl.addFreshEntity(pillar);
+        }
+    }
+
+    /**
+     * КАСТОМНАЯ АТАКА #2: Град из 5 огромных острых квадратных ледяных глыб в небе:
+     * сначала появляются 5 меток куда они прилетят, и по очереди (1 за 1) глыбы летят в разные точки!
+     */
+    public void castSkyIceHailVolley(Vec3 centerTarget) {
+        if (!(this.level() instanceof ServerLevel sl)) return;
+        sl.playSound(null, this.blockPosition(), SoundEvents.BEACON_POWER_SELECT, SoundSource.HOSTILE, 1.4F, 0.78F);
+
+        double baseAng = 0.42;
+        double[][] offsets = {
+                {0.0, 0.0},
+                {Math.cos(baseAng) * 4.6, Math.sin(baseAng) * 4.6},
+                {Math.cos(baseAng + 1.32) * 5.8, Math.sin(baseAng + 1.32) * 5.8},
+                {Math.cos(baseAng + 2.68) * 5.0, Math.sin(baseAng + 2.68) * 5.0},
+                {Math.cos(baseAng + 4.18) * 6.0, Math.sin(baseAng + 4.18) * 6.0}
+        };
+
+        for (int i = 0; i < 5; ++i) {
+            double tx = centerTarget.x + offsets[i][0];
+            double tz = centerTarget.z + offsets[i][1];
+            int ty = findArenaFloorY(sl, tx, centerTarget.y, tz);
+
+            double skyArc = baseAng + (i - 2) * 0.48;
+            double sx = centerTarget.x + Math.cos(skyArc) * 5.2;
+            double sy = ty + 11.8 + (i % 2) * 1.3;
+            double sz = centerTarget.z + Math.sin(skyArc) * 5.2;
+
+            IceHailBoulderEntity boulder = ModEntities.ICE_HAIL_BOULDER.get().create(sl);
+            if (boulder == null) continue;
+            boulder.moveTo(sx, sy, sz, i * 72.0F, 0.0F);
+            // Метки на земле загораются СРАЗУ для всех 5, а летят глыбы строго по очереди 1 за 1 (тик 28, 42, 56, 70, 84)!
+            boulder.configure(this, new Vec3(tx, ty, tz), 28 + i * 14);
+            sl.addFreshEntity(boulder);
+        }
+    }
+
+    /** КАСТОМНАЯ АТАКА #3: Расходящаяся 3-лучевая волна ледяных шипов из-под земли. */
+    public void castGlacialSpikeWave(Vec3 towardPos) {
+        if (!(this.level() instanceof ServerLevel sl)) return;
+        sl.playSound(null, this.blockPosition(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.HOSTILE, 1.4F, 0.62F);
+
+        double baseAng = Math.atan2(towardPos.z - this.getZ(), towardPos.x - this.getX());
+        double[] fan = {-0.34, 0.0, +0.34};
+        for (double delta : fan) {
+            double ang = baseAng + delta;
+            for (int step = 0; step < 7; ++step) {
+                double dist = 4.2 + step * 2.55;
+                double sx = this.getX() + Math.cos(ang) * dist;
+                double sz = this.getZ() + Math.sin(ang) * dist;
+                int gy = findArenaFloorY(sl, sx, towardPos.y, sz);
+
+                IcePillarEntity spike = ModEntities.ICE_PILLAR.get().create(sl);
+                if (spike == null) continue;
+                spike.moveTo(sx, gy, sz, (float) Math.toDegrees(ang), 0.0F);
+                spike.configure(this, 3.2F + (step % 2) * 0.55F, true, -step * 3);
+                sl.addFreshEntity(spike);
+            }
+        }
+    }
+
+    /** КАСТОМНАЯ АТАКА #4: 4 вращающихся крестообразных морозно-призматических луча вокруг арены. */
+    public void castSweepingFrostBeams(LivingEntity target) {
+        this.entityData.set(DATA_FROST_BEAM_START_YAW, this.getYRot() + 28.0F);
+        this.entityData.set(DATA_FROST_BEAM_TICKS, 64);
+        this.level().playSound(null, this.blockPosition(), SoundEvents.BEACON_ACTIVATE, SoundSource.HOSTILE, 1.4F, 0.72F);
+    }
+
+    private void tickSweepingFrostBeams(int remainingTicks) {
+        if (!(this.level() instanceof ServerLevel sl) || remainingTicks > 48) return;
+        float prog = (48 - remainingTicks) / 48.0F;
+        float baseDeg = frostBeamStartYaw() + prog * 115.0F;
+        double beamLen = 17.5;
+        double beamY = this.getY() + 0.85;
+
+        for (int arm = 0; arm < 4; ++arm) {
+            double rad = Math.toRadians(baseDeg + arm * 90.0F);
+            double ux = Math.cos(rad), uz = Math.sin(rad);
+            if (remainingTicks % 3 == 0) {
+                for (double d = 3.0; d <= beamLen; d += 3.5) {
+                    sl.sendParticles(ParticleTypes.SNOWFLAKE,
+                            this.getX() + ux * d, beamY, this.getZ() + uz * d,
+                            1, 0.12, 0.12, 0.12, 0.01);
+                }
+            }
+            if (remainingTicks % 5 == 0) {
+                AABB scan = this.getBoundingBox().inflate(beamLen, 3.5, beamLen);
+                for (LivingEntity v : sl.getEntitiesOfClass(LivingEntity.class, scan,
+                        e -> e.isAlive() && !(e instanceof RiftObeliskBoss) && !(e instanceof CrystalMinion))) {
+                    double vx = v.getX() - this.getX(), vz = v.getZ() - this.getZ();
+                    double proj = vx * ux + vz * uz;
+                    if (proj < 1.8 || proj > beamLen) continue;
+                    double perp = Math.abs(-vx * uz + vz * ux);
+                    if (perp <= 0.95 && Math.abs((v.getY() + v.getBbHeight() * 0.5) - beamY) <= 1.95) {
+                        v.hurt(sl.damageSources().freeze(), 4.5F);
+                    }
+                }
+            }
+        }
+    }
+
+    private static int findArenaFloorY(ServerLevel sl, double wx, double hintY, double wz) {
+        int ix = Mth.floor(wx), iz = Mth.floor(wz);
+        int startY = Mth.floor(hintY) + 5;
+        BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
+        for (int y = startY; y >= startY - 14; --y) {
+            mp.set(ix, y, iz);
+            if (sl.getBlockState(mp).isSolidRender(sl, mp)) {
+                return y + 1;
+            }
+        }
+        return Mth.floor(hintY);
     }
 
     private void unleashAstralShockwave() {

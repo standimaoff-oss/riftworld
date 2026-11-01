@@ -468,6 +468,11 @@ public final class WorldStructures {
             if (out == null) out = new ArrayList<>(thIsles.size());
             out.addAll(thIsles);
         }
+        List<CityPlan.Island> hbIsles = LandmarkStructures.harborIslandsNear(x, z);
+        if (!hbIsles.isEmpty()) {
+            if (out == null) out = new ArrayList<>(hbIsles.size());
+            out.addAll(hbIsles);
+        }
         return out == null ? Collections.emptyList() : out;
     }
 
@@ -1031,6 +1036,9 @@ public final class WorldStructures {
             putChunk(chunk, mp, x0, z0, cx + lp[0], y + 2, cz + lp[1], post);
             putChunk(chunk, mp, x0, z0, cx + lp[0], y + 3, cz + lp[1], lanternStand);
         }
+        // Скромные сундуки с дорожными припасами у деревенской площади (для белых и сгоревших деревень)
+        LandmarkStructures.putLootChest(chunk, x0, z0, cx - 3, y, cz + 2, Direction.NORTH, LandmarkStructures.LOOT_MODEST_WAYFARER);
+        LandmarkStructures.putLootChest(chunk, x0, z0, cx + 3, y, cz + 2, Direction.NORTH, LandmarkStructures.LOOT_MODEST_WAYFARER);
     }
 
     // -------------------------------------------------------------------------
@@ -1289,11 +1297,14 @@ public final class WorldStructures {
             putChunk(chunk, mp, x0, z0, ix, iy, iz, keelLog);
         }
 
-        // Трюмные и палубные детали: сундук/бочки с грузом и морские/обычные фонари
-        placeShipProp(chunk, mp, x0, z0, cx, cy, cz, ux, uz, vx, vz, pitch, roll, -12.0, 0.0, 5.2,
-                (sunken || (cy + 5.2 <= ocean))
-                        ? Blocks.BARREL.defaultBlockState()
-                        : Blocks.CHEST.defaultBlockState());
+        // Трюмные и палубные детали: скромный сундук с морским лутом (и для разбившегося, и для затонувшего корабля!) + бочки
+        {
+            double cs = -12.0, cw = 0.0, ch = 5.2;
+            int chestX = (int) Math.floor(cx + ux * cs + vx * cw);
+            int chestY = (int) Math.floor(cy + ch + cs * Math.sin(pitch) + cw * Math.sin(roll));
+            int chestZ = (int) Math.floor(cz + uz * cs + vz * cw);
+            LandmarkStructures.putLootChest(chunk, x0, z0, chestX, chestY, chestZ, Direction.NORTH, LandmarkStructures.LOOT_MODEST_MARITIME);
+        }
         placeShipProp(chunk, mp, x0, z0, cx, cy, cz, ux, uz, vx, vz, pitch, roll, -11.5, 2.0, 5.2,
                 sunken ? Blocks.SEA_LANTERN.defaultBlockState()
                         : ElisarBlocks.LANTERN.get().defaultBlockState());
@@ -1539,6 +1550,8 @@ public final class WorldStructures {
                 putChunk(chunk, mp, x0, z0, b.cx + lx, fy + 2, b.cz, cageLantern);
             }
         }
+        // Во всех вариациях подводных зданий ставим скромный затопленный сундук с морскими находками (WATERLOGGED = true, sub_air = 0)
+        LandmarkStructures.putLootChest(chunk, x0, z0, b.cx + 1, fy + 1, b.cz - 1, Direction.SOUTH, LandmarkStructures.LOOT_MODEST_MARITIME);
     }
 
     // -------------------------------------------------------------------------
@@ -1880,9 +1893,9 @@ public final class WorldStructures {
                 putChunk(chunk, mp, x0, z0, h.cx, cy, h.cz, cy == ocean + 3 ? lanternH : chain);
             }
             putChunk(chunk, mp, x0, z0, h.cx - hw + 1, hy + 1, h.cz, barrel);
-            putChunk(chunk, mp, x0, z0, h.cx + hw - 1, hy + 1, h.cz, chest);
+            LandmarkStructures.putLootChest(chunk, x0, z0, h.cx + hw - 1, hy + 1, h.cz, Direction.WEST, LandmarkStructures.LOOT_MODEST_MARITIME);
         } else {
-            putChunk(chunk, mp, x0, z0, h.cx - hw + 1, hy + 1, h.cz - hd + 1, chest);
+            LandmarkStructures.putLootChest(chunk, x0, z0, h.cx - hw + 1, hy + 1, h.cz - hd + 1, Direction.SOUTH, LandmarkStructures.LOOT_MODEST_MARITIME);
             putChunk(chunk, mp, x0, z0, h.cx + hw - 1, hy + 1, h.cz - hd + 1, barrel);
             if (h.kind == 0) {
                 // Сушильня рыболовных сетей и фонарь на боковой террасе рыбацкого дома

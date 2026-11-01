@@ -1,6 +1,5 @@
 package ru.aiforge.riftworld.flight;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -8,340 +7,337 @@ import java.util.Map;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.level.TicketType;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.phys.AABB;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.living.LivingAttackEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import ru.aiforge.riftworld.RiftWorld;
+import ru.aiforge.riftworld.entity.SpatialRiftEntity;
 import ru.aiforge.riftworld.net.Net;
 import ru.aiforge.riftworld.net.PortalRitualMsg;
+import ru.aiforge.riftworld.registry.ModEntities;
 import ru.aiforge.riftworld.registry.ModItems;
 import ru.aiforge.riftworld.registry.TempleBlocks;
-import ru.aiforge.riftworld.world.CityPlan;
 
 /**
- * v0.20.0: Кастомный бесшовный переход через портал в Элисар БЕЗ загрузочного экрана!
- *
+ * Безблочный ритуал открытия Белого Пространственного Пролома и кинематографического прибытия в Элисар:
  * <ol>
- *   <li>Активация действием у портала: поднести кристалл/предмет, нажать ПКМ или расколоть багровую печать ЛКМ;</li>
- *   <li>Игрок остаётся в обычном мире, пока чанки точки прибытия в {@code riftworld:elisar} фоном подгружаются тикетами;</li>
- *   <li>От центра портала мир плавно белеет в тон слоновой кости города Элисара (чисто визуально на клиенте —
- *       <b>в коде не меняется ни один блок!</b>);</li>
- *   <li>В воздухе вокруг портала и игрока открывается множество парящих глаз, неотрывно смотрящих на игрока;</li>
- *   <li>Резкая ослепительно-белая вспышка — и мгновенное появление на беломраморной площади Элисара без экрана земли!</li>
+ *   <li>{@link #AWAKEN} (4 секунды = 80 тиков): всё вокруг плавно бледнеет до тёплого оттенка Элисара
+ *       ({@code mutated = 0}), на земле разворачивается красивый сакрально-геометрический узор, в небе
+ *       открываются 2D-глаза Элисара -> в финале яркая вспышка разрывает пространство и открывает
+ *       высокий белый геометрический 3D-Пролом ({@link SpatialRiftEntity}) от земли до неба!</li>
+ *   <li>{@link #TRANSIT_VEIL} (12 тиков): когда игрок ЗАХОДИТ в белый пролом, экран мягко белеет
+ *       (не слишком ярко), скрывается инвентарь и весь GUI, блокируется переключение лиц (F5),
+ *       и без земляного экрана загрузки игрок переносится в Белый Город Элисара.</li>
+ *   <li>{@link #CITY_CUTSCENE} (124 тика): 1 дальний панорамный ракурс Белого Города с названием
+ *       измерения («ЭЛИСАР») и снизу названием города («Белый Город Святилища») -> текст плавно
+ *       исчезает -> камера плавно подлетает к глазам игрока -> возвращаются интерфейс и управление!</li>
  * </ol>
  */
-@Mod.EventBusSubscriber(modid = RiftWorld.MODID)
+@Mod.EventBusSubscriber(modid = RiftWorld.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class PortalRitual {
     public static final int NONE = 0;
     public static final int AWAKEN = 1;
-    public static final int ARRIVE_FLASH = 2;
+    public static final int TRANSIT_VEIL = 2;
+    public static final int CITY_CUTSCENE = 3;
+    public static final int ARRIVE_FLASH = 4;
 
-    /** Длительность фазы пробуждения в обычном мире (6.4 с): выбеливание + парящие глаза + резкая вспышка. */
-    public static final int AWAKEN_TICKS = 128;
-    /** Короткое затухание белой вспышки уже в загруженном Элисаре (0.9 с). */
-    public static final int ARRIVE_TICKS = 18;
+    /** 4.0 секунды (80 тиков) постепенного побледнения до оттенка Элисара + узора перед яркой вспышкой открытия! */
+    public static final int AWAKEN_TICKS = 80;
+    public static final int AWAKEN_SETTLE_TICKS = 92;
+    /** 0.6 секунды мягкого побеления экрана при заходе в пролом перед бесшовным переносом. */
+    public static final int TRANSIT_TICKS = 12;
+    /** 6.2 секунды кинематографической катсцены Белого Города (дальний ракурс + титры -> плавный подлёт к игроку). */
+    public static final int CUTSCENE_TICKS = 124;
+    public static final int ARRIVE_TICKS = 26;
 
-    private static final class State {
-        final BlockPos portalCenter;
-        final int destApronX, destApronZ;
-        final List<ChunkPos> preloadQueue = new ArrayList<>(49);
-        int preloadIdx = 0;
-        BlockPos resolvedTarget;
-        int phase = AWAKEN;
-        int tick = 0;
+    private static final class Session {
+        final UUID playerId;
+        ResourceKey<Level> dimKey;
+        BlockPos portalCenter;
+        int mode; // AWAKEN, TRANSIT_VEIL, CITY_CUTSCENE, ARRIVE_FLASH
+        int tick;
+        boolean riftSpawned;
 
-        State(BlockPos portalCenter, int destApronX, int destApronZ) {
+        Session(UUID playerId, ResourceKey<Level> dimKey, BlockPos portalCenter, int mode) {
+            this.playerId = playerId;
+            this.dimKey = dimKey;
             this.portalCenter = portalCenter;
-            this.destApronX = destApronX;
-            this.destApronZ = destApronZ;
-            int ccx = destApronX >> 4, ccz = destApronZ >> 4;
-            for (int r = 0; r <= 3; ++r) {
-                for (int dx = -r; dx <= r; ++dx) {
-                    for (int dz = -r; dz <= r; ++dz) {
-                        if (Math.max(Math.abs(dx), Math.abs(dz)) != r) continue;
-                        preloadQueue.add(new ChunkPos(ccx + dx, ccz + dz));
-                    }
-                }
-            }
+            this.mode = mode;
         }
     }
 
-    private static final Map<UUID, State> ACTIVE = new HashMap<>();
+    private static final Map<UUID, Session> ACTIVE = new HashMap<>();
+    private static int itemScanCooldown = 0;
 
     private PortalRitual() {
     }
 
-    public static boolean isActive(UUID id) {
-        return ACTIVE.containsKey(id);
+    public static boolean isOfferingItem(ItemStack st) {
+        if (st.isEmpty()) return false;
+        return st.is(ModItems.RESONANCE_STONE.get())
+                || st.is(ModItems.ELISAR_DUCAT.get())
+                || st.is(Items.DIAMOND)
+                || st.is(Items.EMERALD)
+                || st.is(Items.AMETHYST_SHARD)
+                || st.is(Items.ENDER_PEARL)
+                || st.is(Items.GOLD_INGOT)
+                || st.is(ItemTags.FLOWERS);
     }
 
-    /** Проверяет, является ли предмет подходящим даром для пробуждения портала. */
-    public static boolean isOfferingItem(ItemStack stack) {
-        if (stack.isEmpty()) return false;
-        return stack.is(Items.AMETHYST_SHARD)
-                || stack.is(Items.QUARTZ)
-                || stack.is(Items.ENDER_PEARL)
-                || stack.is(Items.DIAMOND)
-                || stack.is(Items.EMERALD)
-                || stack.is(Items.GOLD_INGOT)
-                || stack.is(Items.LAPIS_LAZULI)
-                || stack.is(Items.PRISMARINE_CRYSTALS)
-                || stack.is(Items.GLOWSTONE_DUST)
-                || stack.is(ModItems.ASTRAL_PRISM.get())
-                || stack.is(ModItems.CRYSTAL_KATAR.get())
-                || stack.is(ModItems.CRYSTAL_BARRAGE.get())
-                || stack.is(ModItems.CRYSTAL_AEGIS.get());
+    /** Проверяет, открыт ли уже белый пролом рядом с точкой. */
+    public static SpatialRiftEntity findNearbyOpenRift(Level level, BlockPos center, double radius) {
+        AABB box = new AABB(center).inflate(radius, 8.0, radius);
+        List<SpatialRiftEntity> found = level.getEntitiesOfClass(SpatialRiftEntity.class, box, Entity::isAlive);
+        return found.isEmpty() ? null : found.get(0);
     }
 
-    /** Находит геометрический центр полотна портала {@code demon_gate} рядом с указанной точкой. */
-    public static BlockPos findGateCenter(Level level, BlockPos near) {
-        int sx = 0, sy = 0, sz = 0, cnt = 0;
-        for (BlockPos p : BlockPos.betweenClosed(near.offset(-4, -4, -4), near.offset(4, 4, 4))) {
-            if (level.getBlockState(p).is(TempleBlocks.DEMON_GATE.get())) {
-                sx += p.getX();
-                sy += p.getY();
-                sz += p.getZ();
-                ++cnt;
-            }
+    private static final class Entity {
+        static boolean isAlive(SpatialRiftEntity e) {
+            return e != null && e.isAlive();
         }
-        return cnt > 0 ? new BlockPos(Math.round((float) sx / cnt), Math.round((float) sy / cnt), Math.round((float) sz / cnt)) : near.immutable();
     }
 
     /**
-     * Запускает кастомный переход в Элисар (вызывается при нажатии/подношении/ударе по порталу или из пробы).
-     * Блоки мира НЕ изменяются!
+     * Запускает 4-секундный ритуал ОТКРЫТИЯ белого геометрического пролома (в конце спавнит {@link SpatialRiftEntity}).
      */
-    public static boolean start(ServerPlayer sp, BlockPos rawOrigin, String triggerKind) {
-        if (sp == null || !sp.isAlive() || Flight.locked(sp) || ACTIVE.containsKey(sp.getUUID())) {
-            return false;
-        }
-        if (!(sp.level() instanceof ServerLevel sl)) return false;
-        ServerLevel elisar = sl.getServer().getLevel(Flight.ELISAR_DIM);
-        if (elisar == null || sl.dimension() == Flight.ELISAR_DIM) {
-            return false;
-        }
+    public static boolean start(ServerPlayer sp, BlockPos origin, String reason) {
+        if (sp == null || sp.level().isClientSide) return false;
+        Session existing = ACTIVE.get(sp.getUUID());
+        if (existing != null) return false;
+        if (findNearbyOpenRift(sp.level(), origin, 5.0) != null) return false;
 
-        BlockPos center = findGateCenter(sl, rawOrigin);
-        int[] apron = computeTempleApronXZ();
-        State st = new State(center, apron[0], apron[1]);
-        ACTIVE.put(sp.getUUID(), st);
+        ServerLevel level = sp.serverLevel();
+        BlockPos center = origin.immutable();
+        ACTIVE.put(sp.getUUID(), new Session(sp.getUUID(), level.dimension(), center, AWAKEN));
 
-        // Немедленно вешаем билет предзагрузки на чанки Элисара, пока игрок остаётся в Обычном мире!
-        ChunkPos destChunk = new ChunkPos(apron[0] >> 4, apron[1] >> 4);
-        elisar.getChunkSource().addRegionTicket(TicketType.PORTAL, destChunk, 4, new BlockPos(apron[0], 90, apron[1]));
-
-        // Звуковой и визуальный отклик пробуждения печати (без изменения блоков!)
-        if ("offer".equals(triggerKind)) {
-            sl.playSound(null, center, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 1.4F, 1.15F);
-            sl.playSound(null, center, SoundEvents.BEACON_POWER_SELECT, SoundSource.BLOCKS, 1.1F, 1.25F);
-            sp.displayClientMessage(Component.literal("\u0414\u0430\u0440 \u043f\u0440\u0438\u043d\u044f\u0442 \u0420\u0430\u0437\u043b\u043e\u043c\u043e\u043c \u2014 \u043c\u0438\u0440 \u0440\u0430\u0441\u0442\u0432\u043e\u0440\u044f\u0435\u0442\u0441\u044f \u0432 \u0431\u0435\u043b\u0438\u0437\u043d\u0435..."), true);
-        } else if ("break".equals(triggerKind)) {
-            sl.playSound(null, center, SoundEvents.AMETHYST_CLUSTER_BREAK, SoundSource.BLOCKS, 1.4F, 0.85F);
-            sl.playSound(null, center, SoundEvents.GLASS_BREAK, SoundSource.BLOCKS, 1.0F, 0.75F);
-            sp.displayClientMessage(Component.literal("\u041f\u0435\u0447\u0430\u0442\u044c \u0432\u0440\u0430\u0442 \u0440\u0430\u0441\u043a\u043e\u043b\u043e\u0442\u0430 \u2014 \u042d\u043b\u0438\u0441\u0430\u0440 \u0441\u043c\u043e\u0442\u0440\u0438\u0442 \u0441\u043a\u0432\u043e\u0437\u044c \u0420\u0430\u0437\u043b\u043e\u043c..."), true);
-        } else {
-            sl.playSound(null, center, SoundEvents.BEACON_ACTIVATE, SoundSource.BLOCKS, 1.2F, 1.25F);
-            sl.playSound(null, center, SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.BLOCKS, 1.3F, 0.95F);
-            sp.displayClientMessage(Component.literal("\u0412\u0440\u0430\u0442\u0430 \u043f\u0440\u043e\u0431\u0443\u0436\u0434\u0435\u043d\u044b \u2014 \u0441\u0432\u0435\u0442 \u042d\u043b\u0438\u0441\u0430\u0440\u0430 \u0437\u0430\u0442\u043e\u043f\u043b\u044f\u0435\u0442 \u043c\u0438\u0440..."), true);
-        }
-        sl.sendParticles(ParticleTypes.END_ROD, center.getX() + 0.5, center.getY() + 0.5, center.getZ() + 0.5,
-                36, 0.85, 1.15, 0.85, 0.06);
-
+        level.playSound(null, center, SoundEvents.RESPAWN_ANCHOR_CHARGE, SoundSource.BLOCKS, 1.15F, 0.72F);
+        level.playSound(null, center, SoundEvents.BEACON_ACTIVATE, SoundSource.BLOCKS, 1.0F, 1.12F);
         Net.send(sp, new PortalRitualMsg(AWAKEN, center, 0));
         return true;
     }
 
-    private static int[] computeTempleApronXZ() {
-        int fx = 0, fz = 0;
-        for (CityPlan.Plot pl : CityPlan.get().plots) {
-            if (!pl.template().equals("temple_great") && !pl.template().equals("city_castle")) continue;
-            fx = pl.x0() + pl.w() / 2;
-            fz = pl.z0() + pl.d() - 3;
-            break;
-        }
-        return new int[]{fx, fz};
+    /**
+     * Срабатывает, когда игрок ЗАХОДИТ ногами в открытый белый 3D-Пролом ({@link SpatialRiftEntity}).
+     */
+    public static boolean beginWalkInTransit(ServerPlayer sp, SpatialRiftEntity rift) {
+        if (sp == null || sp.level().isClientSide) return false;
+        Session existing = ACTIVE.get(sp.getUUID());
+        if (existing != null && existing.mode != AWAKEN) return false;
+
+        BlockPos center = rift != null ? rift.blockPosition() : sp.blockPosition();
+        Session ses = new Session(sp.getUUID(), sp.serverLevel().dimension(), center, TRANSIT_VEIL);
+        ACTIVE.put(sp.getUUID(), ses);
+
+        sp.serverLevel().playSound(null, center, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 1.1F, 0.88F);
+        Net.send(sp, new PortalRitualMsg(TRANSIT_VEIL, center, 0));
+        return true;
     }
 
-    /** Позволяет активировать Разлом нажатием ПКМ по рунным камням рядом или прямо в ствол 3D-Разлома на уровне глаз! */
+    /** Спавнит открытый белый 3D-геометрический Пролом в точке {@code center}. */
+    public static SpatialRiftEntity spawnOpenBreach(ServerLevel level, BlockPos center) {
+        SpatialRiftEntity existing = findNearbyOpenRift(level, center, 4.5);
+        if (existing != null) return existing;
+        SpatialRiftEntity rift = ModEntities.SPATIAL_RIFT.get().create(level);
+        if (rift == null) return null;
+        rift.moveTo(center.getX() + 0.5, center.getY() + 0.02, center.getZ() + 0.5, 0.0F, 0.0F);
+        level.addFreshEntity(rift);
+        return rift;
+    }
+
+    /** Активация древней печати храма (MOSAIC_CORE / GOLD_RUNE) подношением предмета в руке. */
     @SubscribeEvent
-    public static void onRightClickFrame(PlayerInteractEvent.RightClickBlock e) {
-        Level level = e.getLevel();
-        BlockPos pos = e.getPos();
-        BlockState st = level.getBlockState(pos);
-        if (level.dimension() == Flight.ELISAR_DIM) return;
-        if (!st.is(TempleBlocks.DEMON_FRAME.get()) && !st.is(TempleBlocks.GOLD_RUNE.get())) {
-            // Если игрок кликнул по земле прямо у подножия 3D-Разлома с кристаллом/даром в руке
-            if (!isOfferingItem(e.getItemStack())) return;
-        }
-
-        // Проверяем, что рядом действительно есть якорь Разлома demon_gate
-        BlockPos gateAnchor = null;
-        for (BlockPos p : BlockPos.betweenClosed(pos.offset(-3, -2, -3), pos.offset(3, 3, 3))) {
-            if (level.getBlockState(p).is(TempleBlocks.DEMON_GATE.get())) {
-                gateAnchor = p.immutable();
-                break;
-            }
-        }
-        if (gateAnchor == null) return;
-
-        if (level.isClientSide) {
-            e.setCancellationResult(InteractionResult.SUCCESS);
-            e.setCanceled(true);
-            return;
-        }
+    public static void onUseBlock(PlayerInteractEvent.RightClickBlock e) {
+        if (e.getLevel().isClientSide || e.getHand() != InteractionHand.MAIN_HAND) return;
+        ItemStack held = e.getItemStack();
+        if (!isOfferingItem(held)) return;
+        BlockState st = e.getLevel().getBlockState(e.getPos());
+        if (!st.is(TempleBlocks.MOSAIC_CORE.get()) && !st.is(TempleBlocks.GOLD_RUNE.get())) return;
         if (e.getEntity() instanceof ServerPlayer sp) {
-            ItemStack held = sp.getItemInHand(e.getHand());
-            boolean offered = isOfferingItem(held);
-            if (start(sp, gateAnchor, offered ? "offer" : "press")) {
-                if (offered && !sp.getAbilities().instabuild) {
+            BlockPos riftPos = e.getPos().above();
+            if (start(sp, riftPos, "altar_offer")) {
+                if (!sp.getAbilities().instabuild) {
                     held.shrink(1);
                 }
+                e.setCancellationResult(InteractionResult.CONSUME);
+                e.setCanceled(true);
             }
-            e.setCancellationResult(InteractionResult.CONSUME);
-            e.setCanceled(true);
-        }
-    }
-
-    /** Активация ПКМ с предметом в воздухе при взгляде на узкий наземный ствол 3D-Прорыва Пространства (y .. y+4.5). */
-    @SubscribeEvent
-    public static void onRightClickItemTowardsRift(PlayerInteractEvent.RightClickItem e) {
-        Level level = e.getLevel();
-        if (level.dimension() == Flight.ELISAR_DIM) return;
-        var player = e.getEntity();
-        BlockPos p0 = player.blockPosition();
-        BlockPos gateAnchor = null;
-        for (BlockPos p : BlockPos.betweenClosed(p0.offset(-5, -3, -5), p0.offset(5, 3, 5))) {
-            if (level.getBlockState(p).is(TempleBlocks.DEMON_GATE.get())) {
-                // Проверяем, что взгляд игрока направлен в сторону вертикальной оси Разлома
-                var eye = player.getEyePosition();
-                var look = player.getLookAngle();
-                double rx = (p.getX() + 0.5) - eye.x;
-                double rz = (p.getZ() + 0.5) - eye.z;
-                double horizDist = Math.hypot(rx, rz);
-                if (horizDist <= 5.5) {
-                    double dot = (rx * look.x + rz * look.z) / Math.max(0.001, Math.hypot(rx, rz) * Math.hypot(look.x, look.z));
-                    if (dot > 0.72) {
-                        gateAnchor = p.immutable();
-                        break;
-                    }
-                }
-            }
-        }
-        if (gateAnchor == null) return;
-        if (!level.isClientSide && player instanceof ServerPlayer sp) {
-            ItemStack held = sp.getItemInHand(e.getHand());
-            boolean offered = isOfferingItem(held);
-            if (start(sp, gateAnchor, offered ? "offer" : "press")) {
-                if (offered && !sp.getAbilities().instabuild) {
-                    held.shrink(1);
-                }
-            }
-        }
-        e.setCancellationResult(InteractionResult.SUCCESS);
-        e.setCanceled(true);
-    }
-
-    /** Защита игрока от случайного урона во время ритуала перехода. */
-    @SubscribeEvent
-    public static void onHurt(LivingAttackEvent e) {
-        if (e.getEntity() instanceof ServerPlayer sp && ACTIVE.containsKey(sp.getUUID())) {
-            e.setCanceled(true);
-        }
-    }
-
-    @SubscribeEvent
-    public static void onLogout(PlayerEvent.PlayerLoggedOutEvent e) {
-        if (e.getEntity() instanceof ServerPlayer sp) {
-            ACTIVE.remove(sp.getUUID());
         }
     }
 
     @SubscribeEvent
     public static void serverTick(TickEvent.ServerTickEvent e) {
-        if (e.phase != TickEvent.Phase.END || ACTIVE.isEmpty()) return;
-        MinecraftServer server = e.getServer();
-        ServerLevel elisar = server.getLevel(Flight.ELISAR_DIM);
+        if (e.phase != TickEvent.Phase.END) return;
+        MinecraftServer srv = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+        if (srv == null) return;
 
-        Iterator<Map.Entry<UUID, State>> it = ACTIVE.entrySet().iterator();
+        // Проверка брошенного на алтарную печать MOSAIC_CORE предмета-подношения (раз в 10 тиков)
+        if (++itemScanCooldown >= 10) {
+            itemScanCooldown = 0;
+            for (ServerPlayer sp : srv.getPlayerList().getPlayers()) {
+                if (ACTIVE.containsKey(sp.getUUID())) continue;
+                ServerLevel lvl = sp.serverLevel();
+                List<ItemEntity> drops = lvl.getEntitiesOfClass(ItemEntity.class, sp.getBoundingBox().inflate(10.0),
+                        it -> it.isAlive() && it.getAge() >= 8 && isOfferingItem(it.getItem()));
+                for (ItemEntity drop : drops) {
+                    BlockPos bp = drop.blockPosition();
+                    BlockPos below = bp.below();
+                    if (lvl.getBlockState(below).is(TempleBlocks.MOSAIC_CORE.get())
+                            || lvl.getBlockState(below).is(TempleBlocks.GOLD_RUNE.get())) {
+                        drop.getItem().shrink(1);
+                        if (drop.getItem().isEmpty()) drop.discard();
+                        start(sp, bp, "thrown_offer");
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (ACTIVE.isEmpty()) return;
+        Iterator<Map.Entry<UUID, Session>> it = ACTIVE.entrySet().iterator();
         while (it.hasNext()) {
-            Map.Entry<UUID, State> entry = it.next();
-            ServerPlayer sp = server.getPlayerList().getPlayer(entry.getKey());
-            State s = entry.getValue();
-            if (sp == null || elisar == null) {
-                if (sp != null) Net.send(sp, new PortalRitualMsg(NONE, BlockPos.ZERO, 0));
+            Session s = it.next().getValue();
+            ServerPlayer sp = srv.getPlayerList().getPlayer(s.playerId);
+            if (sp == null || !sp.isAlive()) {
                 it.remove();
                 continue;
             }
-
             ++s.tick;
 
-            if (s.phase == AWAKEN) {
-                // Плавная фоновая предзагрузка по 1 чанку Элисара за тик, пока игрок смотрит на белеющий мир и глаза!
-                if (s.preloadIdx < s.preloadQueue.size()) {
-                    ChunkPos cp = s.preloadQueue.get(s.preloadIdx++);
-                    elisar.getChunk(cp.x, cp.z);
+            if (s.mode == AWAKEN) {
+                if (sp.level().dimension() != s.dimKey) {
+                    Net.send(sp, new PortalRitualMsg(NONE, BlockPos.ZERO, 0));
+                    it.remove();
+                    continue;
                 }
-                if (s.resolvedTarget == null && s.preloadIdx >= 9) {
-                    BlockPos mid = new BlockPos(s.destApronX, 64, s.destApronZ);
-                    s.resolvedTarget = elisar.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, mid).above();
-                }
+                ServerLevel lvl = sp.serverLevel();
+                double cx = s.portalCenter.getX() + 0.5;
+                double cy = s.portalCenter.getY() + 0.2;
+                double cz = s.portalCenter.getZ() + 0.5;
 
-                // Атмосферные звуковые акценты открытия глаз и нарастания вспышки
-                if (s.tick == 44 || s.tick == 82) {
-                    sp.level().playSound(null, sp.blockPosition(), SoundEvents.WARDEN_HEARTBEAT, SoundSource.PLAYERS, 0.9F, 0.85F + (s.tick == 82 ? 0.20F : 0.0F));
+                if (s.tick % 4 == 0 && s.tick <= AWAKEN_TICKS) {
+                    double ringR = 0.6 + (s.tick / (double) AWAKEN_TICKS) * 12.0;
+                    for (int k = 0; k < 10; ++k) {
+                        double a = (k / 10.0) * Math.PI * 2.0 + s.tick * 0.11;
+                        lvl.sendParticles(ParticleTypes.END_ROD,
+                                cx + Math.cos(a) * ringR, cy + 0.15 + (k % 3) * 0.35, cz + Math.sin(a) * ringR,
+                                1, 0.03, 0.08, 0.03, 0.01);
+                    }
                 }
-                if (s.tick == AWAKEN_TICKS - 7) {
-                    // Момент резкой белой вспышки!
-                    sp.level().playSound(null, sp.blockPosition(), SoundEvents.END_PORTAL_SPAWN, SoundSource.PLAYERS, 0.85F, 1.55F);
-                    sp.level().playSound(null, sp.blockPosition(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 1.5F, 1.35F);
+                if (s.tick == 28 || s.tick == 54) {
+                    lvl.playSound(null, s.portalCenter, SoundEvents.AMETHYST_BLOCK_CHIME,
+                            SoundSource.BLOCKS, 1.1F, 0.72F + s.tick * 0.005F);
                 }
-
-                if (s.tick % 6 == 0) {
+                if (s.tick == 72) {
+                    lvl.playSound(null, s.portalCenter, SoundEvents.BEACON_POWER_SELECT,
+                            SoundSource.BLOCKS, 1.35F, 1.18F);
+                }
+                // На пике яркой вспышки (t = 78) пространство разрывается и появляется белый 3D-Пролом!
+                if (!s.riftSpawned && s.tick >= AWAKEN_TICKS - 2) {
+                    s.riftSpawned = true;
+                    spawnOpenBreach(lvl, s.portalCenter);
+                    lvl.sendParticles(ParticleTypes.FLASH, cx, cy + 2.0, cz, 2, 0.0, 0.0, 0.0, 0.0);
+                    lvl.sendParticles(ParticleTypes.END_ROD, cx, cy + 3.0, cz, 45, 0.8, 3.2, 0.8, 0.08);
+                    lvl.playSound(null, s.portalCenter, SoundEvents.END_PORTAL_SPAWN,
+                            SoundSource.BLOCKS, 0.85F, 1.32F);
+                }
+                if (s.tick % 20 == 0 && s.tick < AWAKEN_SETTLE_TICKS) {
                     Net.send(sp, new PortalRitualMsg(AWAKEN, s.portalCenter, s.tick));
                 }
+                if (s.tick >= AWAKEN_SETTLE_TICKS) {
+                    Net.send(sp, new PortalRitualMsg(NONE, BlockPos.ZERO, 0));
+                    it.remove();
+                }
 
-                if (s.tick >= AWAKEN_TICKS) {
-                    BlockPos target = s.resolvedTarget != null
-                            ? s.resolvedTarget
-                            : elisar.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, new BlockPos(s.destApronX, 64, s.destApronZ)).above();
-                    ChunkPos tcp = new ChunkPos(target);
-                    elisar.getChunkSource().addRegionTicket(TicketType.PORTAL, tcp, 4, target);
-
-                    // Перенос строго внутри пика белой вспышки в уже сгенерированные чанки Элисара!
-                    s.phase = ARRIVE_FLASH;
+            } else if (s.mode == TRANSIT_VEIL) {
+                if (s.tick >= TRANSIT_TICKS) {
+                    boolean intoElisar = sp.level().dimension() != RiftWorld.RIFT_DIM;
+                    BlockPos arrival = performDimensionalTransfer(sp);
+                    s.dimKey = sp.level().dimension();
+                    s.portalCenter = arrival;
                     s.tick = 0;
-                    Net.send(sp, new PortalRitualMsg(ARRIVE_FLASH, target, 0));
-                    sp.teleportTo(elisar, target.getX() + 0.5, target.getY(), target.getZ() + 0.5, sp.getYRot(), sp.getXRot());
-                    sp.fallDistance = 0.0F;
-                    Net.send(sp, new PortalRitualMsg(ARRIVE_FLASH, target, 0));
-                    elisar.playSound(null, target, SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.PLAYERS, 1.1F, 1.25F);
+                    if (intoElisar) {
+                        s.mode = CITY_CUTSCENE;
+                        prewarmCityCutsceneChunks(sp.serverLevel(), arrival);
+                        Net.send(sp, new PortalRitualMsg(CITY_CUTSCENE, arrival, 0));
+                    } else {
+                        s.mode = ARRIVE_FLASH;
+                        Net.send(sp, new PortalRitualMsg(ARRIVE_FLASH, arrival, 0));
+                    }
                 }
-            } else if (s.phase == ARRIVE_FLASH) {
-                if (s.tick % 4 == 0) {
-                    Net.send(sp, new PortalRitualMsg(ARRIVE_FLASH, s.portalCenter, s.tick));
+
+            } else if (s.mode == CITY_CUTSCENE) {
+                // Во время катсцены мягко удерживаем игрока на точке прибытия без урона и смещения
+                sp.setDeltaMovement(0.0, 0.0, 0.0);
+                sp.fallDistance = 0.0F;
+                if (s.tick % 25 == 0 && s.tick < CUTSCENE_TICKS) {
+                    Net.send(sp, new PortalRitualMsg(CITY_CUTSCENE, s.portalCenter, s.tick));
                 }
+                if (s.tick >= CUTSCENE_TICKS) {
+                    Net.send(sp, new PortalRitualMsg(NONE, BlockPos.ZERO, 0));
+                    it.remove();
+                }
+
+            } else if (s.mode == ARRIVE_FLASH) {
                 if (s.tick >= ARRIVE_TICKS) {
                     Net.send(sp, new PortalRitualMsg(NONE, BlockPos.ZERO, 0));
                     it.remove();
                 }
             }
         }
+    }
+
+    private static void prewarmCityCutsceneChunks(ServerLevel dest, BlockPos arrival) {
+        int baseCx = arrival.getX() >> 4;
+        int baseCz = arrival.getZ() >> 4;
+        for (int dx = -3; dx <= 3; ++dx) {
+            for (int dz = -5; dz <= 6; ++dz) {
+                ChunkPos cp = new ChunkPos(baseCx + dx, baseCz + dz);
+                dest.getChunk(cp.x, cp.z);
+            }
+        }
+    }
+
+    private static BlockPos performDimensionalTransfer(ServerPlayer sp) {
+        MinecraftServer srv = sp.getServer();
+        if (srv == null) return sp.blockPosition();
+        boolean inElisar = sp.level().dimension() == RiftWorld.RIFT_DIM;
+        ServerLevel dest = srv.getLevel(inElisar ? Level.OVERWORLD : RiftWorld.RIFT_DIM);
+        if (dest == null) return sp.blockPosition();
+
+        int tx = inElisar ? sp.getBlockX() : 0;
+        int tz = inElisar ? sp.getBlockZ() : 22;
+        dest.getChunk(tx >> 4, tz >> 4);
+        int ty = dest.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, tx, tz);
+        if (ty <= dest.getMinBuildHeight() + 2) ty = inElisar ? 72 : 128;
+
+        sp.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 180, 0, false, false));
+        sp.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 160, 4, false, false));
+        // Направляем взгляд игрока строго на север (yaw = 180°), прямо на проспект и Замок Белого Города!
+        float arriveYaw = inElisar ? sp.getYRot() : 180.0F;
+        float arrivePitch = inElisar ? 0.0F : -5.0F;
+        sp.teleportTo(dest, tx + 0.5, ty + 0.2, tz + 0.5, arriveYaw, arrivePitch);
+        dest.playSound(null, BlockPos.containing(tx + 0.5, ty + 1.0, tz + 0.5),
+                SoundEvents.BEACON_ACTIVATE, SoundSource.PLAYERS, 0.95F, 1.15F);
+        return new BlockPos(tx, ty, tz);
     }
 }

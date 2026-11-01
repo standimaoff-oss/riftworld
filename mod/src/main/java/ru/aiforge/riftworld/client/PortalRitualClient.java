@@ -7,20 +7,26 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.math.Axis;
 import net.minecraft.client.Camera;
+import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.GenericDirtMessageScreen;
 import net.minecraft.client.gui.screens.ProgressScreen;
 import net.minecraft.client.gui.screens.ReceivingLevelScreen;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Marker;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FogType;
@@ -28,6 +34,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.client.event.ScreenEvent;
@@ -43,34 +50,40 @@ import ru.aiforge.riftworld.flight.PortalRitual;
 import ru.aiforge.riftworld.net.PortalRitualMsg;
 
 /**
- * v0.21.0: Обновлённая клиентская визуализация бесшовного телепорта через 3D-Прорыв Пространства в Элисар
- * (<b>100% совместимо с любыми шейдерпаками, {@code mutated = 0} — ни один блок в коде не меняется!</b>):
- * <ul>
- *   <li>Окружающий мир окрашивается НЕ в плоский белый цвет, а в фирменный тёплый известняково-кремовый оттенок
- *       измерения Элисар ({@code ~#D4CEBE}), а <b>прямо поверх пола накладываются резные геометрические и
- *       рунические узоры Элисара</b> ({@code portal_floor_tile.png} + радиальная мандала {@code portal_floor_mandala.png});</li>
- *   <li>Вместо мелких 3D-глаз рядом с игроком <b>высоко в куполе неба</b> (точно как в измерении Элисар!)
- *       открываются величественные 2D-глаза {@code eye_closed/eye_half/eye_open/eye_iris.png} на небесной дистанции
- *       {@link ShaderCompat#celestialDistance} с честным тестом глубины {@code GL_LEQUAL} (не просвечиваются сквозь блоки!);</li>
- *   <li>Финальная резкая вспышка света Элисара и мгновенный перенос без экрана загрузки.</li>
- * </ul>
+ * Клиентская часть ритуала открытия белого Пролома и кинематографической катсцены Белого Города:
+ * <ol>
+ *   <li>{@link PortalRitual#AWAKEN} (4 с = 80 тиков): окружение плавно бледнеет в тёплый оттенок Элисара
+ *       ({@code mutated = 0}), на земле разворачивается резной геометрический узор печати, в небе
+ *       открываются 2D-глаза Элисара, затем яркая вспышка открывает белый 3D-Пролом.</li>
+ *   <li>{@link PortalRitual#TRANSIT_VEIL} + {@link PortalRitual#CITY_CUTSCENE}:
+ *       при входе в пролом экран мягко белеет (не ослепляюще, матово-фарфоровый тон {@code #EAE3D5}),
+ *       полностью скрывается инвентарь и весь GUI, блокируется переключение лиц ({@code F5}),
+ *       без загрузочного экрана показывается 1 панорамный дальний ракурс Белого Города с названием
+ *       измерения и снизу названием города -> текст исчезает -> камера плавно летит к глазам игрока ->
+ *       возвращаются интерфейс и управление камерой!</li>
+ * </ol>
  */
-@Mod.EventBusSubscriber(modid = RiftWorld.MODID, value = Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = RiftWorld.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public final class PortalRitualClient {
     private static final ResourceLocation FLOOR_TILE_TEX =
             new ResourceLocation(RiftWorld.MODID, "textures/environment/portal_floor_tile.png");
     private static final ResourceLocation FLOOR_MANDALA_TEX =
             new ResourceLocation(RiftWorld.MODID, "textures/environment/portal_floor_mandala.png");
+    private static final ResourceLocation OPEN_SEAL_TEX =
+            new ResourceLocation(RiftWorld.MODID, "textures/environment/portal_open_seal.png");
 
-    private static final int MAX_FACES = 36000;
-    private static final int BLEACH_SCAN_R = 34;
-    private static final int SKY_EYE_COUNT = 16;
+    /** Мягкий не-ослепляющий тёпло-фарфоровый цвет экрана перехода (НЕ режущий глаза #FFFFFF!). */
+    private static final int SOFT_VEIL_RGB = 0xEAE3D5;
+    private static final int CUTSCENE_CAM_ENTITY_ID = -77701;
 
     public static int phase = PortalRitual.NONE;
-    public static BlockPos center = BlockPos.ZERO;
-    public static int tick = 0;
+    private static BlockPos center = BlockPos.ZERO;
+    private static int tick = 0;
 
-    // Кэш открытых граней блоков вокруг портала (ТОЛЬКО ЧТЕНИЕ из ClientLevel, 0 изменений блоков!)
+    // Кэш граней блоков вокруг открывающегося портала (READ-ONLY: 0 изменённых блоков мира!)
+    private static final int BLEACH_SCAN_R = 24;
+    private static final int MAX_FACES = 36000;
+    private static BlockPos capturedFor = null;
     private static int faceCount = 0;
     private static final float[] fMinX = new float[MAX_FACES];
     private static final float[] fMinY = new float[MAX_FACES];
@@ -80,93 +93,235 @@ public final class PortalRitualClient {
     private static final float[] fMaxZ = new float[MAX_FACES];
     private static final byte[] fDir = new byte[MAX_FACES];
     private static final float[] fDist = new float[MAX_FACES];
-    private static BlockPos capturedFor = null;
 
-    // Мировые единичные векторы направления к 16 небесным 2D-глазам Элисара (ВСЕ строго высоко в небе dy > 0!)
+    // Купол 2D-глаз Элисара высоко в небе при открытии портала
+    private static final int SKY_EYE_COUNT = 22;
     private static final Vector3f[] skyEyeDir = new Vector3f[SKY_EYE_COUNT];
-    private static final float[] skyEyeScale = new float[SKY_EYE_COUNT];
     private static final float[] skyEyeWake = new float[SKY_EYE_COUNT];
+    private static final float[] skyEyeScale = new float[SKY_EYE_COUNT];
     private static final float[] skyEyeSeed = new float[SKY_EYE_COUNT];
 
+    // Клиентская сущность-камера для дальнего ракурса Белого Города и плавного подлёта к игроку
+    private static Marker cutsceneCam = null;
+    private static float camYaw = 180.0F;
+    private static float camPitch = 10.0F;
+
     static {
-        // Первые 4 небесных глаза обрамляют в вышине ствол уходящего в небо Разлома на севере (-Z),
-        // а остальные 12 равномерно раскрываются по всему верхнему куполу неба (24° .. 66° над горизонтом)!
-        float[][] curated = {
-                {-0.42F, 0.44F, -0.79F, 0.88F},
-                { 0.44F, 0.52F, -0.73F, 0.80F},
-                {-0.18F, 0.66F, -0.73F, 0.64F},
-                { 0.22F, 0.34F, -0.91F, 0.58F}
-        };
         for (int i = 0; i < SKY_EYE_COUNT; ++i) {
-            if (i < curated.length) {
-                skyEyeDir[i] = new Vector3f(curated[i][0], curated[i][1], curated[i][2]).normalize();
-                skyEyeScale[i] = curated[i][3];
-            } else {
-                double az = ((i - curated.length) * 2.39996323) + 0.55;
-                double el = Math.toRadians(26.0 + ((i * 7) % 8) * 5.2); // строго +26°..+63° вверх в небе!
-                float dx = (float) (Math.cos(az) * Math.cos(el));
-                float dy = (float) Math.sin(el);
-                float dz = (float) (Math.sin(az) * Math.cos(el));
-                skyEyeDir[i] = new Vector3f(dx, dy, dz).normalize();
-                skyEyeScale[i] = 0.48F + (i % 5) * 0.10F;
-            }
-            skyEyeWake[i] = 26.0F + (52.0F * i) / SKY_EYE_COUNT;
-            skyEyeSeed[i] = i * 1.917F;
+            float golden = i * 2.3999632F;
+            float ring = (i % 5) / 4.0F;
+            float elDeg = 22.0F + ring * 44.0F + (i == 0 ? 12.0F : 0.0F);
+            float el = elDeg * Mth.DEG_TO_RAD;
+            float cosEl = Mth.cos(el);
+            skyEyeDir[i] = new Vector3f(
+                    cosEl * Mth.sin(golden),
+                    Mth.sin(el),
+                    cosEl * Mth.cos(golden)).normalize();
+            skyEyeWake[i] = 10.0F + i * 2.1F;
+            skyEyeScale[i] = (i == 0) ? 0.56F : (0.28F + (i % 4) * 0.075F);
+            skyEyeSeed[i] = i * 1.713F;
         }
     }
 
     private PortalRitualClient() {
     }
 
+    public static boolean isHudAndPerspectiveLocked() {
+        return phase == PortalRitual.TRANSIT_VEIL
+                || phase == PortalRitual.CITY_CUTSCENE
+                || phase == PortalRitual.ARRIVE_FLASH;
+    }
+
     public static void onMsg(PortalRitualMsg m) {
+        Minecraft mc = Minecraft.getInstance();
         int prevPhase = phase;
         phase = m.phase();
         center = m.center();
         tick = m.elapsed();
 
-        Minecraft mc = Minecraft.getInstance();
         if (phase == PortalRitual.AWAKEN && (prevPhase != PortalRitual.AWAKEN || !center.equals(capturedFor))) {
-            if (mc.level != null) {
-                captureBleachFaces(mc.level, center);
-            }
-        } else if (phase == PortalRitual.NONE) {
             capturedFor = null;
             faceCount = 0;
-            if (mc.screen instanceof WhiteReceivingScreen) {
-                mc.setScreen(null);
+        } else if (phase == PortalRitual.TRANSIT_VEIL || phase == PortalRitual.CITY_CUTSCENE) {
+            enforceLockedFirstPersonAndNoScreen(mc);
+            if (phase == PortalRitual.CITY_CUTSCENE) {
+                updateCutsceneCamera(mc, 0.0F, true);
             }
+        } else if (phase == PortalRitual.NONE) {
+            releaseCutsceneCamera(mc);
+            capturedFor = null;
+            faceCount = 0;
         }
     }
 
-    public static boolean isNearActivePortal(BlockPos pos) {
-        return phase == PortalRitual.AWAKEN && center.distSqr(pos) <= 36.0;
+    public static float currentTime(float partialTick) {
+        return tick + partialTick;
     }
 
-    public static float currentTime(float pt) {
-        return tick + pt;
-    }
-
-    /** Текущий радиус волны оттенка Элисара и напольных узоров от центра Разлома (0 -> 37 блоков). */
-    public static float bleachRadius(float pt) {
+    public static float bleachRadius(float partialTick) {
         if (phase != PortalRitual.AWAKEN) return 0.0F;
-        float u = Mth.clamp(currentTime(pt) / 90.0F, 0.0F, 1.0F);
-        float s = u * u * (3.0F - 2.0F * u);
-        return 0.9F + 36.5F * s;
+        float u = Mth.clamp(currentTime(partialTick) / (PortalRitual.AWAKEN_TICKS - 6.0F), 0.0F, 1.0F);
+        return (0.25F * u + 0.75F * u * u) * (BLEACH_SCAN_R + 3.0F);
     }
 
-    /** Яркость резкой вспышки света Элисара (0..1) на границе переноса без экрана загрузки. */
-    public static float flashIntensity(float pt) {
-        float t = currentTime(pt);
+    /**
+     * Яркость экранной вуали:
+     * <ul>
+     *   <li>{@code AWAKEN}: короткая яркая вспышка на 72..80 тиках (открывающая белый Пролом в пространстве) и затухание к 92 тику;</li>
+     *   <li>{@code TRANSIT_VEIL}: мягкое не-слишком-яркое побеление экрана (альфа до 0.93 матового фарфора {@code #EAE3D5});</li>
+     *   <li>{@code CITY_CUTSCENE}: плавное растворение вуали за первые 18 тиков дальнего ракурса Белого Города;</li>
+     *   <li>{@code ARRIVE_FLASH}: мягкое растворение вуали при обратном выходе.</li>
+     * </ul>
+     */
+    public static float veilOpacity(float partialTick) {
+        float t = currentTime(partialTick);
         if (phase == PortalRitual.AWAKEN) {
-            float f = Mth.clamp((t - (PortalRitual.AWAKEN_TICKS - 8.0F)) / 6.5F, 0.0F, 1.0F);
-            return f * f;
+            if (t < PortalRitual.AWAKEN_TICKS - 8.0F) return 0.0F;
+            if (t <= PortalRitual.AWAKEN_TICKS) {
+                float f = Mth.clamp((t - (PortalRitual.AWAKEN_TICKS - 8.0F)) / 7.5F, 0.0F, 1.0F);
+                return f * f;
+            }
+            float out = 1.0F - Mth.clamp((t - PortalRitual.AWAKEN_TICKS) / 11.0F, 0.0F, 1.0F);
+            return out * out;
+        }
+        if (phase == PortalRitual.TRANSIT_VEIL) {
+            float u = Mth.clamp(t / 7.0F, 0.0F, 1.0F);
+            return (u * u * (3.0F - 2.0F * u)) * 0.94F;
+        }
+        if (phase == PortalRitual.CITY_CUTSCENE) {
+            if (t <= 3.0F) return 0.94F;
+            float fade = 1.0F - Mth.clamp((t - 3.0F) / 16.0F, 0.0F, 1.0F);
+            return fade * fade * 0.94F;
         }
         if (phase == PortalRitual.ARRIVE_FLASH) {
-            if (t <= 4.0F) return 1.0F;
-            float fade = 1.0F - Mth.clamp((t - 4.0F) / (PortalRitual.ARRIVE_TICKS - 4.0F), 0.0F, 1.0F);
-            return fade * fade;
+            if (t <= 3.0F) return 0.92F;
+            float fade = 1.0F - Mth.clamp((t - 3.0F) / (PortalRitual.ARRIVE_TICKS - 3.0F), 0.0F, 1.0F);
+            return fade * fade * 0.92F;
         }
         return 0.0F;
+    }
+
+    private static void enforceLockedFirstPersonAndNoScreen(Minecraft mc) {
+        if (mc.options.getCameraType() != CameraType.FIRST_PERSON) {
+            mc.options.setCameraType(CameraType.FIRST_PERSON);
+        }
+        while (mc.options.keyTogglePerspective.consumeClick()) {
+            // съедаем любые нажатия F5 во время перехода и катсцены
+        }
+        while (mc.options.keyInventory.consumeClick()) {
+            // блокируем открытие инвентаря во время перехода и катсцены
+        }
+        if (mc.screen != null && !(mc.screen instanceof WhiteReceivingScreen)) {
+            mc.setScreen(null);
+        }
+    }
+
+    private static void releaseCutsceneCamera(Minecraft mc) {
+        if (cutsceneCam != null) {
+            if (mc.level != null) {
+                mc.level.removeEntity(CUTSCENE_CAM_ENTITY_ID, Entity.RemovalReason.DISCARDED);
+            }
+            cutsceneCam = null;
+        }
+        if (mc.player != null && mc.getCameraEntity() != mc.player) {
+            mc.setCameraEntity(mc.player);
+        }
+    }
+
+    /**
+     * Обновляет позицию и углы панорамной камеры Белого Города:
+     * <ul>
+     *   <li>Тики {@code 0..76}: 1 величественный дальний ракурс Белого Города с южного подступа
+     *       {@code (24, arrivalY + 33, 88)} с лёгким кинематографическим дрейфом вперёд (вид на весь остров,
+     *       дома и шпили Замка Белого Города);</li>
+     *   <li>Тики {@code 76..121}: текст уже исчез, и камера плавно по кривой Эрмита подлетает прямо
+     *       к глазам игрока {@code (player.x, player.eyeY, player.z)}, выравнивая взгляд с игроком;</li>
+     *   <li>Тики {@code 122..124}: бесшовная передача камеры самому игроку.</li>
+     * </ul>
+     */
+    private static void updateCutsceneCamera(Minecraft mc, float partialTick, boolean snapPrev) {
+        if (mc.level == null || mc.player == null) return;
+        float t = tick + partialTick;
+
+        if (t >= PortalRitual.CUTSCENE_TICKS - 2.0F) {
+            releaseCutsceneCamera(mc);
+            return;
+        }
+
+        if (cutsceneCam == null || cutsceneCam.level() != mc.level) {
+            cutsceneCam = new Marker(EntityType.MARKER, mc.level);
+            mc.level.putNonPlayerEntity(CUTSCENE_CAM_ENTITY_ID, cutsceneCam);
+        }
+
+        double px = Mth.lerp(partialTick, mc.player.xo, mc.player.getX());
+        double py = Mth.lerp(partialTick, mc.player.yo, mc.player.getY()) + mc.player.getEyeHeight();
+        double pz = Mth.lerp(partialTick, mc.player.zo, mc.player.getZ());
+
+        double baseY = center.getY();
+        // Единый дальний панорамный ракурс Белого Города (смотрит на северо-запад на весь город и Замок!)
+        Vec3 shotStart = new Vec3(26.0, baseY + 34.0, 92.0);
+        Vec3 shotHoldEnd = new Vec3(21.5, baseY + 30.5, 82.0);
+        // Точка взгляда на Белый Город и его центральный Замок (севернее точки прибытия)
+        Vec3 cityTarget = new Vec3(-2.0, baseY + 18.0, -18.0);
+
+        Vec3 camPos;
+        float targetYaw;
+        float targetPitch;
+
+        if (t <= 76.0F) {
+            float u = Mth.clamp(t / 76.0F, 0.0F, 1.0F);
+            camPos = shotStart.lerp(shotHoldEnd, u);
+            Vec3 look = cityTarget.subtract(camPos);
+            double horiz = Math.hypot(look.x, look.z);
+            targetYaw = (float) (Mth.atan2(-look.x, look.z) * Mth.RAD_TO_DEG);
+            targetPitch = (float) (-Mth.atan2(look.y, horiz) * Mth.RAD_TO_DEG);
+        } else {
+            // Плавный полёт камеры от дальнего ракурса прямо к глазам игрока!
+            float u = Mth.clamp((t - 76.0F) / 45.0F, 0.0F, 1.0F);
+            float s = u * u * u * (u * (u * 6.0F - 15.0F) + 10.0F); // quintic smoothstep (0 рывков в начале и в конце!)
+            Vec3 playerEye = new Vec3(px, py, pz);
+            // Лёгкая дуга сверху вниз при подлёте к игроку
+            double arcLift = Math.sin(u * Math.PI) * 3.5;
+            camPos = shotHoldEnd.lerp(playerEye, s).add(0.0, arcLift, 0.0);
+
+            Vec3 lookStart = cityTarget.subtract(shotHoldEnd);
+            float startYaw = (float) (Mth.atan2(-lookStart.x, lookStart.z) * Mth.RAD_TO_DEG);
+            float startPitch = (float) (-Mth.atan2(lookStart.y, Math.hypot(lookStart.x, lookStart.z)) * Mth.RAD_TO_DEG);
+
+            targetYaw = rotLerp(s, startYaw, mc.player.getViewYRot(partialTick));
+            targetPitch = Mth.lerp(s, startPitch, mc.player.getViewXRot(partialTick));
+        }
+
+        camYaw = targetYaw;
+        camPitch = targetPitch;
+
+        if (snapPrev) {
+            cutsceneCam.xo = camPos.x;
+            cutsceneCam.yo = camPos.y;
+            cutsceneCam.zo = camPos.z;
+        } else {
+            cutsceneCam.xo = cutsceneCam.getX();
+            cutsceneCam.yo = cutsceneCam.getY();
+            cutsceneCam.zo = cutsceneCam.getZ();
+        }
+        cutsceneCam.setPos(camPos.x, camPos.y, camPos.z);
+        cutsceneCam.setYRot(camYaw);
+        cutsceneCam.setXRot(camPitch);
+        cutsceneCam.yRotO = camYaw;
+        cutsceneCam.xRotO = camPitch;
+
+        // На последних 3 тиках (когда камера уже в 0.6 м от глаз игрока) передаём управление без пересечения головы модели
+        if (t < PortalRitual.CUTSCENE_TICKS - 3.5F) {
+            if (mc.getCameraEntity() != cutsceneCam) {
+                mc.setCameraEntity(cutsceneCam);
+            }
+        } else if (mc.getCameraEntity() != mc.player) {
+            mc.setCameraEntity(mc.player);
+        }
+    }
+
+    private static float rotLerp(float k, float a, float b) {
+        return a + k * Mth.wrapDegrees(b - a);
     }
 
     @SubscribeEvent
@@ -174,18 +329,43 @@ public final class PortalRitualClient {
         if (e.phase != TickEvent.Phase.END || phase == PortalRitual.NONE) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.isPaused()) return;
+
+        if (isHudAndPerspectiveLocked()) {
+            enforceLockedFirstPersonAndNoScreen(mc);
+        }
+
         if (phase == PortalRitual.AWAKEN && capturedFor == null && mc.level != null) {
             captureBleachFaces(mc.level, center);
         }
-        int maxLen = phase == PortalRitual.AWAKEN ? PortalRitual.AWAKEN_TICKS + 6 : PortalRitual.ARRIVE_TICKS + 4;
+
+        int maxLen = switch (phase) {
+            case PortalRitual.AWAKEN -> PortalRitual.AWAKEN_SETTLE_TICKS + 4;
+            case PortalRitual.TRANSIT_VEIL -> PortalRitual.TRANSIT_TICKS + 24;
+            case PortalRitual.CITY_CUTSCENE -> PortalRitual.CUTSCENE_TICKS + 2;
+            default -> PortalRitual.ARRIVE_TICKS + 4;
+        };
+
         if (tick < maxLen) {
             ++tick;
-        } else if (phase == PortalRitual.ARRIVE_FLASH) {
+        } else if (phase != PortalRitual.TRANSIT_VEIL) {
             phase = PortalRitual.NONE;
+            releaseCutsceneCamera(mc);
             if (mc.screen instanceof WhiteReceivingScreen) {
                 mc.setScreen(null);
             }
         }
+
+        if (phase == PortalRitual.CITY_CUTSCENE) {
+            updateCutsceneCamera(mc, 0.0F, tick <= 1);
+        }
+    }
+
+    /** Блокируем F5 и клавишу инвентаря на уровне клавиатурного ввода во время входа в портал и катсцены. */
+    @SubscribeEvent
+    public static void onKeyInput(InputEvent.Key e) {
+        if (!isHudAndPerspectiveLocked()) return;
+        Minecraft mc = Minecraft.getInstance();
+        enforceLockedFirstPersonAndNoScreen(mc);
     }
 
     @SubscribeEvent
@@ -195,25 +375,144 @@ public final class PortalRitualClient {
         if ((s instanceof ReceivingLevelScreen || s instanceof ProgressScreen || s instanceof GenericDirtMessageScreen)
                 && !(s instanceof WhiteReceivingScreen)) {
             e.setNewScreen(new WhiteReceivingScreen());
+            return;
+        }
+        // Во время входа в пролом и катсцены Белого Города не открываем инвентарь и контейнеры!
+        if (isHudAndPerspectiveLocked() && s instanceof AbstractContainerScreen<?>) {
+            e.setCanceled(true);
         }
     }
 
+    /** Полностью скрываем весь игровой HUD (хотбар, инвентарь, сердца, прицел) во время входа в портал и катсцены! */
     @SubscribeEvent
     public static void onOverlay(RenderGuiOverlayEvent.Pre e) {
         if (phase == PortalRitual.NONE) return;
-        float a = flashIntensity(e.getPartialTick());
+        if (isHudAndPerspectiveLocked()) {
+            e.setCanceled(true);
+            return;
+        }
+        float a = veilOpacity(e.getPartialTick());
         if (a <= 0.004F) return;
         GuiGraphics g = e.getGuiGraphics();
         int alpha = Mth.clamp(Math.round(a * 255.0F), 0, 255);
-        g.fill(0, 0, g.guiWidth(), g.guiHeight(), (alpha << 24) | 0xFFF7EFE0);
+        g.fill(0, 0, g.guiWidth(), g.guiHeight(), (alpha << 24) | 0xFAF4E8);
+    }
+
+    @SubscribeEvent
+    public static void cameraAngles(ViewportEvent.ComputeCameraAngles e) {
+        if (phase != PortalRitual.CITY_CUTSCENE) return;
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null || mc.player == null) return;
+        float pt = (float) e.getPartialTick();
+        float t = tick + pt;
+        if (t >= PortalRitual.CUTSCENE_TICKS - 3.0F) return;
+
+        // Плавно вычисляем точные пофреймовые углы камеры для 60+ FPS без ступенек тика!
+        double baseY = center.getY();
+        Vec3 shotStart = new Vec3(26.0, baseY + 34.0, 92.0);
+        Vec3 shotHoldEnd = new Vec3(21.5, baseY + 30.5, 82.0);
+        Vec3 cityTarget = new Vec3(-2.0, baseY + 18.0, -18.0);
+        if (t <= 76.0F) {
+            float u = Mth.clamp(t / 76.0F, 0.0F, 1.0F);
+            Vec3 cp = shotStart.lerp(shotHoldEnd, u);
+            Vec3 look = cityTarget.subtract(cp);
+            e.setYaw((float) (Mth.atan2(-look.x, look.z) * Mth.RAD_TO_DEG));
+            e.setPitch((float) (-Mth.atan2(look.y, Math.hypot(look.x, look.z)) * Mth.RAD_TO_DEG));
+        } else {
+            float u = Mth.clamp((t - 76.0F) / 45.0F, 0.0F, 1.0F);
+            float s = u * u * u * (u * (u * 6.0F - 15.0F) + 10.0F);
+            Vec3 lookStart = cityTarget.subtract(shotHoldEnd);
+            float startYaw = (float) (Mth.atan2(-lookStart.x, lookStart.z) * Mth.RAD_TO_DEG);
+            float startPitch = (float) (-Mth.atan2(lookStart.y, Math.hypot(lookStart.x, lookStart.z)) * Mth.RAD_TO_DEG);
+            e.setYaw(rotLerp(s, startYaw, mc.player.getViewYRot(pt)));
+            e.setPitch(Mth.lerp(s, startPitch, mc.player.getViewXRot(pt)));
+        }
+        e.setRoll(0.0F);
+    }
+
+    /**
+     * Финальный 2D-проход кадра (работает даже при скрытом HUD и при F1!):
+     * рисует мягкую фарфоровую вуаль при заходе в портал и титры названия Измерения + Города в катсцене!
+     */
+    @SubscribeEvent
+    public static void onRenderTickEnd(TickEvent.RenderTickEvent e) {
+        if (e.phase != TickEvent.Phase.END || !isHudAndPerspectiveLocked()) return;
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null || mc.getWindow() == null) return;
+
+        float pt = e.renderTickTime;
+        GuiGraphics g = new GuiGraphics(mc, mc.renderBuffers().bufferSource());
+        int sw = mc.getWindow().getGuiScaledWidth();
+        int sh = mc.getWindow().getGuiScaledHeight();
+
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.disableDepthTest();
+
+        // 1) Мягкое не-слишком-яркое побеление экрана при заходе в портал и начале панорамы
+        float veil = veilOpacity(pt);
+        if (veil > 0.004F) {
+            int alpha = Mth.clamp(Math.round(veil * 255.0F), 0, 255);
+            g.fill(0, 0, sw, sh, (alpha << 24) | SOFT_VEIL_RGB);
+        }
+
+        // 2) В фазе CITY_CUTSCENE на дальнем ракурсе города показываем Название Измерения и снизу Название Города,
+        //    после чего к тику 75 текст полностью исчезает ПЕРЕД тем, как камера плавно полетит к игроку!
+        if (phase == PortalRitual.CITY_CUTSCENE) {
+            float t = currentTime(pt);
+            float textIn = Mth.clamp((t - 10.0F) / 14.0F, 0.0F, 1.0F);
+            float textOut = 1.0F - Mth.clamp((t - 58.0F) / 16.0F, 0.0F, 1.0F);
+            float textAlpha = textIn * textIn * (3.0F - 2.0F * textIn) * (textOut * textOut);
+
+            if (textAlpha > 0.02F) {
+                Font font = mc.font;
+                String dimTitle = Component.translatable("cutscene.riftworld.elisar.dim").getString();
+                String citySub = Component.translatable("cutscene.riftworld.elisar.city").getString();
+
+                int aMain = Mth.clamp(Math.round(textAlpha * 252.0F), 4, 255);
+                int aPlate = Mth.clamp(Math.round(textAlpha * 118.0F), 0, 255);
+                int aGold = Mth.clamp(Math.round(textAlpha * 228.0F), 4, 255);
+
+                int centerX = sw / 2;
+                int bannerY = (int) (sh * 0.66F);
+
+                // Тонкая кинематографическая полупрозрачная подложка, чтобы светлые буквы идеально читались на фоне Белого Города
+                int plateHalfW = 148;
+                g.fill(centerX - plateHalfW, bannerY - 22, centerX + plateHalfW, bannerY + 30, (aPlate << 24) | 0x1E1B16);
+
+                // Крупное название измерения: «Э Л И С А Р»
+                g.pose().pushPose();
+                g.pose().translate(centerX, bannerY - 14, 0.0F);
+                g.pose().scale(2.35F, 2.35F, 1.0F);
+                int dimW = font.width(dimTitle);
+                g.drawString(font, dimTitle, -dimW / 2, 0, (aMain << 24) | 0xFCF7EB, true);
+                g.pose().popPose();
+
+                // Изящная золотая разделительная линия с центральным ромбом
+                int lineHalfW = 86;
+                g.fill(centerX - lineHalfW, bannerY + 9, centerX + lineHalfW, bannerY + 10, (aGold << 24) | 0xE2C478);
+                g.fill(centerX - 3, bannerY + 7, centerX + 3, bannerY + 12, (aGold << 24) | 0xF5E1A4);
+
+                // Снизу — название города: «Белый Город Святилища»
+                g.pose().pushPose();
+                g.pose().translate(centerX, bannerY + 16, 0.0F);
+                g.pose().scale(1.20F, 1.20F, 1.0F);
+                int subW = font.width(citySub);
+                g.drawString(font, citySub, -subW / 2, 0, (aMain << 24) | 0xEDE3CA, true);
+                g.pose().popPose();
+            }
+        }
+
+        g.flush();
+        RenderSystem.enableDepthTest();
+        RenderSystem.disableBlend();
     }
 
     @SubscribeEvent
     public static void fogColor(ViewportEvent.ComputeFogColor e) {
         if (phase != PortalRitual.AWAKEN) return;
-        float u = Mth.clamp((currentTime((float) e.getPartialTick()) - 12.0F) / 68.0F, 0.0F, 1.0F);
+        float u = Mth.clamp((currentTime((float) e.getPartialTick()) - 8.0F) / 62.0F, 0.0F, 1.0F);
         float k = u * u * (3.0F - 2.0F * u);
-        // Точный тёплый известняково-кремовый тон неба Элисара (чтобы 2D-глаза в небе читались контрастно 1:1 как в Элисаре!)
         e.setRed(Mth.lerp(k, e.getRed(), 0.945F));
         e.setGreen(Mth.lerp(k, e.getGreen(), 0.928F));
         e.setBlue(Mth.lerp(k, e.getBlue(), 0.888F));
@@ -224,12 +523,12 @@ public final class PortalRitualClient {
         if (phase != PortalRitual.AWAKEN || e.getMode() != FogRenderer.FogMode.FOG_TERRAIN) return;
         if (e.getCamera().getFluidInCamera() != FogType.NONE) return;
         if (ShaderCompat.isShaderPackActive()) return;
-        float u = Mth.clamp((currentTime((float) e.getPartialTick()) - 18.0F) / 70.0F, 0.0F, 1.0F);
+        float u = Mth.clamp((currentTime((float) e.getPartialTick()) - 12.0F) / 60.0F, 0.0F, 1.0F);
         if (u <= 0.001F) return;
         float k = u * u * (3.0F - 2.0F * u);
         float far = e.getFarPlaneDistance();
         e.setNearPlaneDistance(Mth.lerp(k, far * 0.65F, 24.0F));
-        e.setFarPlaneDistance(Mth.lerp(k, far, 76.0F));
+        e.setFarPlaneDistance(Mth.lerp(k, far, 78.0F));
         e.setCanceled(true);
     }
 
@@ -244,10 +543,9 @@ public final class PortalRitualClient {
         Vec3 cam = e.getCamera().getPosition();
         PoseStack ps = e.getPoseStack();
 
-        // Плавная небесная вуаль оттенка Элисара в ванили, чтобы обычное голубое небо мягко превращалось в небо Элисара
         if (phase == PortalRitual.AWAKEN && e.getStage() == RenderLevelStageEvent.Stage.AFTER_SKY
                 && !ShaderCompat.isShaderPackActive()) {
-            float u = Mth.clamp((currentTime(pt) - 10.0F) / 68.0F, 0.0F, 1.0F);
+            float u = Mth.clamp((currentTime(pt) - 8.0F) / 58.0F, 0.0F, 1.0F);
             int skyA = Mth.clamp(Math.round(u * u * (3.0F - 2.0F * u) * 238.0F), 0, 238);
             if (skyA > 2) {
                 float r = Math.min(mc.gameRenderer.getDepthFar() * 0.52F, 180.0F);
@@ -263,16 +561,62 @@ public final class PortalRitualClient {
             renderElisarSurfaceAndFloorPatterns(ps, cam, pt);
         } else if (e.getStage() == RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) {
             if (phase == PortalRitual.AWAKEN) {
+                renderOpeningGroundSeal(ps, cam, pt);
                 renderCelestial2DEyesInSky(mc, ps, e.getCamera(), pt);
-            }
-            if (mc.options.hideGui) {
-                renderCameraFlashVeil(ps, e.getCamera(), pt);
+                if (mc.options.hideGui) {
+                    renderAwakenFlashQuad(ps, e.getCamera(), pt);
+                }
             }
         }
     }
 
-    private static void renderCameraFlashVeil(PoseStack ps, Camera camera, float pt) {
-        float fl = flashIntensity(pt);
+    /** Красивый разворачивающийся на земле многокольцевой геометрический узор при открытии портала! */
+    private static void renderOpeningGroundSeal(PoseStack ps, Vec3 cam, float pt) {
+        float t = currentTime(pt);
+        float u = Mth.clamp(t / 52.0F, 0.0F, 1.0F);
+        float ease = 1.0F - (1.0F - u) * (1.0F - u) * (1.0F - u);
+        if (ease <= 0.02F) return;
+
+        float cx = center.getX() + 0.5F - (float) cam.x;
+        float cy = center.getY() + 0.045F - (float) cam.y;
+        float cz = center.getZ() + 0.5F - (float) cam.z;
+
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.enableDepthTest();
+        RenderSystem.depthFunc(GL11.GL_LEQUAL);
+        RenderSystem.depthMask(false);
+        RenderSystem.disableCull();
+        RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+        RenderSystem.setShaderTexture(0, OPEN_SEAL_TEX);
+
+        drawWorldGroundDisc(ps, cx, cy, cz, 5.4F * ease, t * 0.024F, 252, 247, 236, Mth.clamp(Math.round(ease * 242.0F), 0, 255));
+        drawWorldGroundDisc(ps, cx, cy + 0.015F, cz, 3.0F * ease, -t * 0.040F, 255, 253, 246, Mth.clamp(Math.round(ease * 252.0F), 0, 255));
+
+        RenderSystem.enableCull();
+        RenderSystem.depthMask(true);
+        RenderSystem.disableBlend();
+    }
+
+    private static void drawWorldGroundDisc(PoseStack ps, float cx, float cy, float cz, float rad, float rot,
+                                            int r, int g, int b, int a) {
+        if (a <= 2) return;
+        ps.pushPose();
+        ps.translate(cx, cy, cz);
+        ps.mulPose(com.mojang.math.Axis.YP.rotation(rot));
+        Matrix4f m = ps.last().pose();
+        BufferBuilder bb = Tesselator.getInstance().getBuilder();
+        bb.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        bb.vertex(m, -rad, 0.0F, -rad).uv(0.0F, 0.0F).color(r, g, b, a).endVertex();
+        bb.vertex(m, -rad, 0.0F, rad).uv(0.0F, 1.0F).color(r, g, b, a).endVertex();
+        bb.vertex(m, rad, 0.0F, rad).uv(1.0F, 1.0F).color(r, g, b, a).endVertex();
+        bb.vertex(m, rad, 0.0F, -rad).uv(1.0F, 0.0F).color(r, g, b, a).endVertex();
+        Tesselator.getInstance().end();
+        ps.popPose();
+    }
+
+    private static void renderAwakenFlashQuad(PoseStack ps, Camera camera, float pt) {
+        float fl = veilOpacity(pt);
         if (fl <= 0.005F) return;
         int alpha = Mth.clamp(Math.round(fl * 255.0F), 0, 255);
         Matrix4f mat = ps.last().pose();
@@ -297,10 +641,10 @@ public final class PortalRitualClient {
         Vec3 p1 = fwd.subtract(right).subtract(up);
         Vec3 p2 = fwd.add(right).subtract(up);
         Vec3 p3 = fwd.add(right).add(up);
-        bb.vertex(mat, (float) p0.x, (float) p0.y, (float) p0.z).uv(0.5F, 0.5F).color(247, 239, 224, alpha).endVertex();
-        bb.vertex(mat, (float) p1.x, (float) p1.y, (float) p1.z).uv(0.5F, 0.5F).color(247, 239, 224, alpha).endVertex();
-        bb.vertex(mat, (float) p2.x, (float) p2.y, (float) p2.z).uv(0.5F, 0.5F).color(247, 239, 224, alpha).endVertex();
-        bb.vertex(mat, (float) p3.x, (float) p3.y, (float) p3.z).uv(0.5F, 0.5F).color(247, 239, 224, alpha).endVertex();
+        bb.vertex(mat, (float) p0.x, (float) p0.y, (float) p0.z).uv(0.5F, 0.5F).color(250, 245, 234, alpha).endVertex();
+        bb.vertex(mat, (float) p1.x, (float) p1.y, (float) p1.z).uv(0.5F, 0.5F).color(250, 245, 234, alpha).endVertex();
+        bb.vertex(mat, (float) p2.x, (float) p2.y, (float) p2.z).uv(0.5F, 0.5F).color(250, 245, 234, alpha).endVertex();
+        bb.vertex(mat, (float) p3.x, (float) p3.y, (float) p3.z).uv(0.5F, 0.5F).color(250, 245, 234, alpha).endVertex();
         Tesselator.getInstance().end();
 
         RenderSystem.enableCull();
@@ -309,13 +653,6 @@ public final class PortalRitualClient {
         RenderSystem.disableBlend();
     }
 
-    /**
-     * 1) Боковые/нижние грани блоков и деревьев плавно окрашивает в тёплый известняково-песчаниковый
-     *    оттенок измерения Элисар (НЕ просто белый!);
-     * 2) На все верхние грани пола ({@code UP}) прямо накладывает резные храмовые плиты и золотые рунические
-     *    узоры Элисара ({@link #FLOOR_TILE_TEX} + радиальную мандалу {@link #FLOOR_MANDALA_TEX})!
-     * Ни один блок в мире при этом не изменяется ({@code mutated = 0}).
-     */
     private static void renderElisarSurfaceAndFloorPatterns(PoseStack ps, Vec3 cam, float pt) {
         if (faceCount <= 0) return;
         float rad = bleachRadius(pt);
@@ -326,6 +663,9 @@ public final class PortalRitualClient {
         float rcx = center.getX() + 0.5F;
         float rcz = center.getZ() + 0.5F;
         float t = currentTime(pt);
+        float settleFade = t <= PortalRitual.AWAKEN_TICKS
+                ? 1.0F
+                : 1.0F - Mth.clamp((t - PortalRitual.AWAKEN_TICKS) / 12.0F, 0.0F, 1.0F);
 
         RenderSystem.enableBlend();
         RenderSystem.blendFuncSeparate(
@@ -341,24 +681,22 @@ public final class PortalRitualClient {
 
         BufferBuilder bb = Tesselator.getInstance().getBuilder();
 
-        // ПРОХОД A: Боковые и нижние грани (стволы, листва, камни руин) -> тёплый известняково-пергаментный оттенок Элисара
         RenderSystem.setShaderTexture(0, ShaderCompat.WHITE_TEX);
         bb.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
         for (int i = 0; i < faceCount; ++i) {
-            if (fDir[i] == 1) continue; // пол (UP) рисуем во втором проходе сразу с узором Элисара!
+            if (fDir[i] == 1) continue;
             float d = fDist[i];
             if (d > rad) continue;
             float u = Mth.clamp((rad - d) / 5.4F, 0.0F, 1.0F);
-            float w = u * u * (3.0F - 2.0F * u);
+            float w = u * u * (3.0F - 2.0F * u) * settleFade;
             int a = Mth.clamp(Math.round(w * 218.0F), 0, 255);
             if (a <= 2) continue;
 
-            // Истинный тёплый оттенок известняка/травы Элисара (из elisar_grass_top & temple_gold_rune: ~211, 205, 189)
             int r, g, b;
             switch (fDir[i]) {
-                case 0 -> { r = 166; g = 159; b = 144; } // DOWN
-                case 2, 3 -> { r = 198; g = 191; b = 175; } // NORTH / SOUTH
-                default -> { r = 184; g = 177; b = 161; }   // WEST / EAST
+                case 0 -> { r = 166; g = 159; b = 144; }
+                case 2, 3 -> { r = 198; g = 191; b = 175; }
+                default -> { r = 184; g = 177; b = 161; }
             }
 
             float x0 = fMinX[i] - camX, y0 = fMinY[i] - camY, z0 = fMinZ[i] - camZ;
@@ -396,16 +734,15 @@ public final class PortalRitualClient {
                 }
                 case 5 -> {
                     float xp = x1 + eps;
-                    bb.vertex(mat, xp, y1, z1).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
                     bb.vertex(mat, xp, y0, z1).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, xp, y0, z0).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, xp, y1, z1).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
                     bb.vertex(mat, xp, y1, z0).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, xp, y0, z0).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
                 }
             }
         }
         Tesselator.getInstance().end();
 
-        // ПРОХОД B: Все верхние грани пола (UP) — бесшовный храмовый узор Элисара (4x4 м медальоны + золотая инкрустация)
         RenderSystem.setShaderTexture(0, FLOOR_TILE_TEX);
         bb.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
         for (int i = 0; i < faceCount; ++i) {
@@ -413,10 +750,9 @@ public final class PortalRitualClient {
             float d = fDist[i];
             if (d > rad) continue;
             float u = Mth.clamp((rad - d) / 5.0F, 0.0F, 1.0F);
-            float w = u * u * (3.0F - 2.0F * u);
-            // Золотистый бегущий гребень прямо на кромке волны!
+            float w = u * u * (3.0F - 2.0F * u) * settleFade;
             float crest = Mth.clamp(1.0F - Math.abs((rad - d) - 1.2F) / 1.4F, 0.0F, 1.0F);
-            int tr = Mth.clamp(Math.round(Mth.lerp(crest * 0.35F, 255.0F, 255.0F)), 0, 255);
+            int tr = 255;
             int tg = Mth.clamp(Math.round(Mth.lerp(crest * 0.35F, 255.0F, 236.0F)), 0, 255);
             int tb = Mth.clamp(Math.round(Mth.lerp(crest * 0.45F, 255.0F, 178.0F)), 0, 255);
             int a = Mth.clamp(Math.round(w * 244.0F), 0, 255);
@@ -426,7 +762,6 @@ public final class PortalRitualClient {
             float wx1 = fMaxX[i], wz1 = fMaxZ[i];
             float yp = (fMaxY[i] - camY) + 0.004F;
 
-            // Мировые UV с периодом 4x4 блока, центрированные относительно оси Разлома
             float u0 = (wx0 - rcx + 2.0F) * 0.25F;
             float u1 = (wx1 - rcx + 2.0F) * 0.25F;
             float v0 = (wz0 - rcz + 2.0F) * 0.25F;
@@ -439,23 +774,21 @@ public final class PortalRitualClient {
         }
         Tesselator.getInstance().end();
 
-        // ПРОХОД C: Прямо поверх пола вокруг Разлома (радиус 16 блоков) — Большая Руническая Мандала Элисара!
         RenderSystem.polygonOffset(-2.5F, -4.0F);
         RenderSystem.setShaderTexture(0, FLOOR_MANDALA_TEX);
         bb.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-        float rot = t * 0.0045F; // еле заметное торжественное вращение астролябии-мандалы по полу
+        float rot = t * 0.0055F;
         float cosR = Mth.cos(rot), sinR = Mth.sin(rot);
 
         for (int i = 0; i < faceCount; ++i) {
             if (fDir[i] != 1) continue;
             float d = fDist[i];
             if (d > rad || d > 17.5F) continue;
-            // Исключаем кроны высоких деревьев (> 5 блоков выше основания разлома), чтобы мандала лежала именно по полу и ступеням руин!
             if (fMaxY[i] > center.getY() + 4.5F) continue;
 
             float uWave = Mth.clamp((rad - d) / 4.2F, 0.0F, 1.0F);
             float pulse = 0.90F + 0.10F * Mth.sin(t * 0.14F - d * 0.35F);
-            int a = Mth.clamp(Math.round(uWave * uWave * (3.0F - 2.0F * uWave) * 252.0F * pulse), 0, 255);
+            int a = Mth.clamp(Math.round(uWave * uWave * (3.0F - 2.0F * uWave) * 252.0F * pulse * settleFade), 0, 255);
             if (a <= 3) continue;
 
             float wx0 = fMinX[i], wz0 = fMinZ[i];
@@ -490,13 +823,13 @@ public final class PortalRitualClient {
         bb.vertex(mat, wx - camX, yp, wz - camZ).uv(u, v).color(255, 252, 242, alpha).endVertex();
     }
 
-    /**
-     * Рисует высоко в куполе неба (на небесной дистанции {@link ShaderCompat#celestialDistance}, НЕ близко к игроку!)
-     * аутентичные 2D-глаза измерения Элисар ({@code eye_closed/eye_half/eye_open/eye_iris.png}).
-     * Включён тест глубины {@code GL_LEQUAL}, поэтому деревья, стены и руины честно перекрывают глаза!
-     */
     private static void renderCelestial2DEyesInSky(Minecraft mc, PoseStack ps, Camera camera, float pt) {
         float t = currentTime(pt);
+        float settleFade = t <= PortalRitual.AWAKEN_TICKS
+                ? 1.0F
+                : 1.0F - Mth.clamp((t - PortalRitual.AWAKEN_TICKS) / 12.0F, 0.0F, 1.0F);
+        if (settleFade <= 0.01F) return;
+
         float skyDist = ShaderCompat.celestialDistance(mc);
         float distScale = skyDist / 100.0F;
 
@@ -518,19 +851,18 @@ public final class PortalRitualClient {
             float dt = t - skyEyeWake[i];
             if (dt <= 0.0F) continue;
 
-            float fade = Mth.clamp(dt / 11.0F, 0.0F, 1.0F);
-            // Чуть более выразительная альфа (0.72), чтобы 2D-глаза Элисара в небе отчётливо читались во время ритуала!
-            float alpha = fade * 0.72F;
+            float fade = Mth.clamp(dt / 9.0F, 0.0F, 1.0F);
+            float alpha = fade * 0.74F * settleFade;
             if (alpha <= 0.01F) continue;
 
             ResourceLocation lid;
-            if (dt < 4.0F) {
+            if (dt < 3.5F) {
                 lid = ElisarEye.CLOSED;
-            } else if (dt < 8.5F) {
+            } else if (dt < 7.0F) {
                 lid = ElisarEye.HALF;
             } else {
                 float blinkCycle = (t * 0.065F + skyEyeSeed[i] * 2.1F) % 6.283F;
-                if (t < PortalRitual.AWAKEN_TICKS - 14.0F && blinkCycle > 5.88F) {
+                if (t < PortalRitual.AWAKEN_TICKS - 10.0F && blinkCycle > 5.88F) {
                     lid = (blinkCycle > 6.02F && blinkCycle < 6.16F) ? ElisarEye.CLOSED : ElisarEye.HALF;
                 } else {
                     lid = ElisarEye.OPEN;
@@ -548,7 +880,6 @@ public final class PortalRitualClient {
             Vector3f c = new Vector3f(dir).mul(dEye);
 
             if (lid != ElisarEye.CLOSED) {
-                // Зрачок плавно смещается в сторону взгляда игрока, как у главного небесного глаза Элисара!
                 float gx = Mth.clamp((float) (-lookVec.dot(new Vec3(right.x, right.y, right.z)) * 0.65)
                         + Mth.sin(t * 0.03F + skyEyeSeed[i]) * 0.16F, -0.85F, 0.85F) * w * 0.05F;
                 float gy = Mth.clamp((float) (-lookVec.dot(new Vec3(up.x, up.y, up.z)) * 0.45)
@@ -565,9 +896,6 @@ public final class PortalRitualClient {
         RenderSystem.disableBlend();
     }
 
-    /**
-     * Однократное чтение геометрии вокруг портала (READ-ONLY: ни один блок в мире НЕ изменяется!).
-     */
     private static void captureBleachFaces(ClientLevel level, BlockPos c) {
         capturedFor = c.immutable();
         faceCount = 0;
@@ -624,11 +952,11 @@ public final class PortalRitualClient {
         }
     }
 
-    /** Маска в тон света Элисара вместо ванильного земляного экрана загрузки при смене измерения. */
+    /** Мягкая не-ослепляющая фарфоровая маска вместо ванильного земляного экрана загрузки при смене измерения. */
     public static final class WhiteReceivingScreen extends ReceivingLevelScreen {
         @Override
         public void render(GuiGraphics g, int mx, int my, float pt) {
-            g.fill(0, 0, this.width, this.height, 0xFFF7EFE0);
+            g.fill(0, 0, this.width, this.height, 0xFF000000 | SOFT_VEIL_RGB);
         }
 
         @Override

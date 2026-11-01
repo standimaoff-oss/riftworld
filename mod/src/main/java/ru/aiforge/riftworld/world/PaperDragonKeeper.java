@@ -1,103 +1,90 @@
 package ru.aiforge.riftworld.world;
 
-import java.util.ArrayList;
-import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import ru.aiforge.riftworld.RiftWorld;
 import ru.aiforge.riftworld.entity.PaperDragonEntity;
-import ru.aiforge.riftworld.flight.Flight;
+import ru.aiforge.riftworld.registry.ModEntities;
 
 /**
- * v0.20.0: Поддерживает разреженную популяцию (2–3 особи в радиусе видимости) безвредных
- * модульных оригами-драконов, парящих вдоль и под летающими островами Элисара.
+ * Поддерживает естественное появление супер-детализированных модульных оригами-драконов в Элисаре:
+ * часть драконов начинает полёт ПОД сводами парящих островов ({@link PaperDragonEntity#FLIGHT_UNDER_ISLAND}),
+ * а часть — высоко НАД кронами и башнями островов ({@link PaperDragonEntity#FLIGHT_OVER_ISLAND}),
+ * после чего каждый дракон плавно циклирует между полётом над и под островами!
  */
 @Mod.EventBusSubscriber(modid = RiftWorld.MODID)
 public final class PaperDragonKeeper {
-    private static final int MAX_NEAR_PLAYER = 2;
-    private static final double MIN_SPACING = 88.0;
-    private static final double KEEP_RANGE = 270.0;
+    private static final int CAP_NEAR_PLAYER = 3;
+    private static final int SCAN_RADIUS = 300;
+    private static int tick;
 
     private PaperDragonKeeper() {
     }
 
     @SubscribeEvent
-    public static void tick(TickEvent.LevelTickEvent e) {
-        if (e.phase != TickEvent.Phase.END) return;
-        if (!(e.level instanceof ServerLevel sl) || sl.dimension() != Flight.ELISAR_DIM) return;
-        if (sl.getGameTime() % 60 != 20) return;
+    public static void onLevelTick(TickEvent.LevelTickEvent e) {
+        if (e.phase != TickEvent.Phase.END || e.level.isClientSide) return;
+        if (e.level.dimension() != RiftWorld.RIFT_DIM) return;
+        if ((++tick % 140) != 0) return;
 
-        List<ServerPlayer> players = sl.players();
-        List<PaperDragonEntity> live = new ArrayList<>();
-        for (Entity ent : sl.getAllEntities()) {
-            if (ent instanceof PaperDragonEntity d && d.isAlive()) {
-                live.add(d);
-            }
-        }
+        ServerLevel sl = (ServerLevel) e.level;
+        CityPlan plan = CityPlan.get();
+        RandomSource rnd = sl.random;
 
-        if (players.isEmpty()) return;
-
-        // Мягко убираем драконов, ушедших слишком далеко от всех игроков (> 270 блоков)
-        for (int i = live.size() - 1; i >= 0; --i) {
-            PaperDragonEntity d = live.get(i);
-            boolean nearAny = false;
-            for (ServerPlayer sp : players) {
-                if (sp.distanceToSqr(d) <= KEEP_RANGE * KEEP_RANGE) {
-                    nearAny = true;
-                    break;
-                }
-            }
-            if (!nearAny && live.size() > MAX_NEAR_PLAYER) {
-                d.discard();
-                live.remove(i);
-            }
-        }
-
-        for (ServerPlayer sp : players) {
+        for (ServerPlayer sp : sl.players()) {
             if (sp.isSpectator()) continue;
-            int around = 0;
-            for (PaperDragonEntity d : live) {
-                if (sp.distanceToSqr(d) <= 235.0 * 235.0) {
-                    ++around;
+
+            AABB nearBox = new AABB(sp.blockPosition()).inflate(SCAN_RADIUS, 160, SCAN_RADIUS);
+            int nearby = sl.getEntitiesOfClass(PaperDragonEntity.class, nearBox).size();
+            if (nearby >= CAP_NEAR_PLAYER) continue;
+
+            if (nearby >= 1 && rnd.nextFloat() > 0.45F) continue;
+
+            // Чередуем начальный режим: чётный дракон появляется ПОД островом, нечётный — НАД островом!
+            boolean spawnOver = (nearby & 1) == 1;
+
+            for (int attempt = 0; attempt < 16; ++attempt) {
+                double ang = rnd.nextDouble() * Math.PI * 2.0;
+                double dist = 70.0 + rnd.nextDouble() * 115.0;
+                int sx = Mth.floor(sp.getX() + Math.cos(ang) * dist);
+                int sz = Mth.floor(sp.getZ() + Math.sin(ang) * dist);
+
+                if (AshenLands.blocks(sx, sz, 40) || EmberRuins.siteAt(sx, sz) != null) continue;
+                if (!sl.isLoaded(new BlockPos(sx, plan.ocean + 20, sz))) continue;
+
+                ElisarChunkGenerator.Col col = ElisarChunkGenerator.column(plan, sx, sz);
+                if (col.isl == null || col.isl.base < plan.ocean + 20) continue;
+
+                int sy;
+                int initMode;
+                if (spawnOver) {
+                    int surfY = (col.top > plan.ocean) ? col.top : col.isl.base + 8;
+                    sy = surfY + 18 + rnd.nextInt(12);
+                    initMode = PaperDragonEntity.FLIGHT_OVER_ISLAND;
+                } else {
+                    if (col.bottom < plan.ocean + 16) continue;
+                    sy = Math.max(plan.ocean + 10, col.bottom - (8 + rnd.nextInt(7)));
+                    initMode = PaperDragonEntity.FLIGHT_UNDER_ISLAND;
                 }
+
+                BlockPos pos = new BlockPos(sx, sy, sz);
+                if (!sl.getBlockState(pos).isAir() || !sl.getBlockState(pos.above(2)).isAir()) continue;
+
+                PaperDragonEntity dragon = ModEntities.PAPER_DRAGON.get().create(sl);
+                if (dragon == null) break;
+                dragon.moveTo(sx + 0.5, sy + 0.5, sz + 0.5, rnd.nextFloat() * 360.0F, 0.0F);
+                dragon.setHomeAnchor(new Vec3(col.isl.cx, col.isl.base, col.isl.cz), initMode);
+                sl.addFreshEntity(dragon);
+                break;
             }
-            if (around >= MAX_NEAR_PLAYER) continue;
-
-            List<CityPlan.Island> islands = FloatingIslands.gather(sp.getX(), sp.getZ(), 210.0, true);
-            if (islands.isEmpty()) continue;
-
-            CityPlan.Island pick = null;
-            double bestDist = Double.MAX_VALUE;
-            for (CityPlan.Island cand : islands) {
-                double distPlayer = Math.hypot(cand.cx - sp.getX(), cand.cz - sp.getZ());
-                if (distPlayer > 210.0) continue;
-                boolean occupied = false;
-                for (PaperDragonEntity d : live) {
-                    if (Math.hypot(d.getX() - cand.cx, d.getZ() - cand.cz) < Math.max(MIN_SPACING, cand.R * 0.9)) {
-                        occupied = true;
-                        break;
-                    }
-                }
-                if (occupied) continue;
-                if (distPlayer < bestDist) {
-                    bestDist = distPlayer;
-                    pick = cand;
-                }
-            }
-            if (pick == null) continue;
-
-            double ang = Math.atan2(sp.getZ() - pick.cz, sp.getX() - pick.cx) + (sl.random.nextDouble() - 0.5) * 0.9;
-            double checkX = pick.cx + Math.cos(ang) * pick.R * 0.8;
-            double checkZ = pick.cz + Math.sin(ang) * pick.R * 0.8;
-            if (!sl.isLoaded(BlockPos.containing(checkX, CityPlan.get().ocean + 8, checkZ))) continue;
-
-            PaperDragonEntity spawned = PaperDragonEntity.spawnForIsland(sl, pick, ang);
-            live.add(spawned);
         }
     }
 }
