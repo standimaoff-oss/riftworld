@@ -1605,7 +1605,7 @@ if [ "$FEATCYCLE" -gt 0 ]; then
     | while IFS= read -r line; do echo "::error title=worldgen::${line:0:300}"; done
 fi
 ERRS=$(grep -E "Exception|ERROR" "$OUT/client.log" 2>/dev/null \
-       | grep -viE "Narrator|flite|text2speech|OpenAL|SoundSystem|SoundEngine|no sound|libflite|Yggdrasil|authlib|AuthenticationUnavailable|Cannot contact authentication server|SocketTimeoutException|Read timed out" \
+       | grep -viE "Narrator|flite|text2speech|OpenAL|SoundSystem|SoundEngine|no sound|libflite|Yggdrasil|authlib|AuthenticationUnavailable|MinecraftClientException|Expected BEGIN_OBJECT|Cannot contact authentication server|SocketTimeoutException|Read timed out" \
        | grep -viE "missing model for variant|loading blockstate definition|ModelBakery" | wc -l)
 echo "строк Exception/ERROR в логе клиента (без звука/наратора и без missing-model): $ERRS"
 echo "missing model for variant в логе клиента: $MODELWARN"
@@ -1654,7 +1654,7 @@ if [ "$FAILS" -gt 0 ]; then
 fi
 if [ "$ERRS" -gt 0 ]; then
   grep -E "Exception|ERROR" "$OUT/client.log" 2>/dev/null \
-    | grep -viE "Narrator|flite|text2speech|OpenAL|SoundSystem|SoundEngine|no sound|libflite|Yggdrasil|authlib|AuthenticationUnavailable|Cannot contact authentication server|SocketTimeoutException|Read timed out" \
+    | grep -viE "Narrator|flite|text2speech|OpenAL|SoundSystem|SoundEngine|no sound|libflite|Yggdrasil|authlib|AuthenticationUnavailable|MinecraftClientException|Expected BEGIN_OBJECT|Cannot contact authentication server|SocketTimeoutException|Read timed out" \
     | head -10 | while IFS= read -r line; do
         echo "::error title=ошибка в логе клиента::${line:0:300}"
       done

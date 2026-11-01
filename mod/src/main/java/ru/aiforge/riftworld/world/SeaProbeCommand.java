@@ -2234,28 +2234,36 @@ public final class SeaProbeCommand {
         }
 
         if (k.equals("ocean_island_waves")) {
-            List<CityPlan.Island> high = FloatingIslands.gather(0.0, 0.0, 460.0, true);
             CityPlan.Island pick = null;
-            for (CityPlan.Island cand : high) {
-                if (cand.kind != 0 && cand.R >= 18.0 && cand.R <= 42.0 && cand.base >= sea + 20.0) {
+            for (CityPlan.Island cand : CityPlan.get().islands) {
+                if (cand.kind != 0 && cand.R >= 16.0 && cand.R <= 42.0 && cand.base >= sea + 18.0) {
                     pick = cand;
                     break;
                 }
             }
-            if (pick == null && !high.isEmpty()) pick = high.get(0);
+            if (pick == null) {
+                List<CityPlan.Island> high = FloatingIslands.gather(0.0, 0.0, 460.0, true);
+                for (CityPlan.Island cand : high) {
+                    if (cand.kind != 0 && cand.kind != 5 && cand.kind != 6
+                            && cand.R >= 18.0 && cand.R <= 42.0 && cand.base >= sea + 20.0) {
+                        pick = cand;
+                        break;
+                    }
+                }
+            }
             if (pick == null) {
                 src.sendFailure(Component.literal("riftstruct: no island for ocean_island_waves"));
                 return 0;
             }
-            double ang = -0.85;
+            double ang = Math.atan2(pick.cz, pick.cx);
             double ca = Math.cos(ang), sa = Math.sin(ang);
             double rim = pick.rimDist(ca, sa);
-            int camX = (int) Math.round(pick.cx + ca * (rim + 24.0));
-            int camY = sea + 19;
-            int camZ = (int) Math.round(pick.cz + sa * (rim + 24.0));
-            int lkX = (int) Math.round(pick.cx + ca * (rim * 0.25));
-            int lkY = sea + 3;
-            int lkZ = (int) Math.round(pick.cz + sa * (rim * 0.25));
+            int camX = (int) Math.round(pick.cx + ca * (rim + 22.0));
+            int camY = sea + 20;
+            int camZ = (int) Math.round(pick.cz + sa * (rim + 22.0));
+            int lkX = (int) Math.round(pick.cx);
+            int lkY = sea + 2;
+            int lkZ = (int) Math.round(pick.cz);
             String line = "riftstruct kind=" + k + " at=" + lkX + "," + (sea + 1) + "," + lkZ
                     + " blocks=220 sub_air=0 cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
             src.sendSuccess(() -> Component.literal(line), false);
@@ -2375,14 +2383,18 @@ public final class SeaProbeCommand {
             overworld.setBlock(base.offset(3, 1, 1), ivy, 2);
             overworld.setBlock(base.offset(0, -1, 2), rune, 2);
 
-            // Древние руинные колонны и деревья вокруг портала, чтобы волна белизны наглядно ползла по 3D-ландшафту
+            // Древние руинные колонны и деревья вокруг портала (под основаниями ставим DIRT до слепка,
+            // чтобы ванильный randomTick травы под непрозрачной колонной не менял GRASS_BLOCK -> DIRT!)
+            BlockState dirt = net.minecraft.world.level.block.Blocks.DIRT.defaultBlockState();
             int[][] pillars = {{-5, 2, 3}, {5, 2, 4}, {-6, 5, 2}, {6, 5, 3}, {-4, -3, 3}, {4, -3, 2}};
             for (int[] pl : pillars) {
+                overworld.setBlock(base.offset(pl[0], -1, pl[1]), dirt, 2);
                 for (int dy = 0; dy < pl[2]; ++dy) {
                     overworld.setBlock(base.offset(pl[0], dy, pl[1]), dy == pl[2] - 1 ? chiseledStone : mossyStone, 2);
                 }
             }
             for (int side : new int[]{-7, 7}) {
+                overworld.setBlock(base.offset(side, -1, -1), dirt, 2);
                 for (int dy = 0; dy <= 4; ++dy) {
                     overworld.setBlock(base.offset(side, dy, -1), oakLog, 2);
                 }
@@ -2399,6 +2411,9 @@ public final class SeaProbeCommand {
             }
 
             portalTestOrigin = base.offset(0, 2, 0);
+            overworld.getEntitiesOfClass(net.minecraft.world.entity.Mob.class,
+                    new net.minecraft.world.phys.AABB(portalTestOrigin).inflate(48.0))
+                    .forEach(net.minecraft.world.entity.Entity::discard);
             PORTAL_SNAPSHOT.clear();
             for (BlockPos p : BlockPos.betweenClosed(portalTestOrigin.offset(-12, -4, -10), portalTestOrigin.offset(12, 6, 12))) {
                 BlockState bs = overworld.getBlockState(p);

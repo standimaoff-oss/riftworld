@@ -32,12 +32,16 @@ public final class FloatingIslands {
             addIfMatch(isl, x, z, range, ocean, onlyHighFloating, seen, out);
         }
 
-        // Сетка точек вокруг (x, z) с шагом 140 блоков покрывает все соседние ячейки диких островов и биомов
-        int steps = Math.max(1, (int) Math.ceil(range / 140.0));
+        // Сетка точек вокруг (x, z) с шагом 110 блоков покрывает все соседние ячейки диких островов и биомов
+        int steps = Math.max(1, (int) Math.ceil(range / 110.0));
         for (int gx = -steps; gx <= steps; ++gx) {
             for (int gz = -steps; gz <= steps; ++gz) {
-                double sx = x + gx * 140.0;
-                double sz = z + gz * 140.0;
+                double sx = x + gx * 110.0;
+                double sz = z + gz * 110.0;
+                CityPlan.Island castleIsl = CastleSite.islandNear(sx, sz, 4);
+                if (castleIsl != null) {
+                    addIfMatch(castleIsl, x, z, range, ocean, onlyHighFloating, seen, out);
+                }
                 for (CityPlan.Island wi : WildIslands.near(sx, sz)) {
                     addIfMatch(wi, x, z, range, ocean, onlyHighFloating, seen, out);
                 }
