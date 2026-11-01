@@ -128,18 +128,29 @@ public final class BlacktideCitadel {
             double dz = (wz + 0.5) - landZ;
             double inland = -(dx * outUx + dz * outUz); // 0 у начала моста, >0 вглубь Пепельного биома
             double perp = Math.abs(-dx * outUz + dz * outUx);
-            if (inland < -6.0 || inland > 54.0 || perp > 26.0) return Integer.MIN_VALUE;
+            if (inland < -12.0 || inland > 62.0 || perp > 64.0) return Integer.MIN_VALUE;
 
-            double targetY = baseY + 40.0; // ровно под настил устоя моста (78..79)
-            double uAlong = inland <= 6.0 ? 1.0 : Math.max(0.0, 1.0 - (inland - 6.0) / 46.0);
-            double sAlong = uAlong * uAlong * (3.0 - 2.0 * uAlong);
+            // Широкий скалистый береговой обрыв Пепельного биома по обе стороны от начала моста (ocean+3..ocean+8)
+            double coastAlong = inland < -12.0 ? 0.0 : (inland <= 18.0 ? Math.min(1.0, (inland + 12.0) / 10.0)
+                    : Math.max(0.0, 1.0 - (inland - 18.0) / 44.0));
+            double coastSide = perp <= 42.0 ? 1.0 : Math.max(0.0, 1.0 - (perp - 42.0) / 22.0);
+            double crag = 3.5 + 4.5 * ElisarChunkGenerator.vnoise(wx * 0.06, wz * 0.06, 913);
+            double bluffH = (ocean + 1.0) + crag * coastAlong * coastSide;
 
-            double halfW = 10.5 + (1.0 - sAlong) * 12.0;
-            if (perp >= halfW) return Integer.MIN_VALUE;
-            double uSide = perp <= 4.5 ? 1.0 : Math.max(0.0, 1.0 - (perp - 4.5) / Math.max(1.0, halfW - 4.5));
-            double sSide = uSide * uSide * (3.0 - 2.0 * uSide);
-
-            double h = (ocean + 1.0) + (targetY - (ocean + 1.0)) * sAlong * sSide;
+            // Центральный плавный пандус-мыс прямо к настилу берегового устоя моста (baseY + 40 = 78)
+            double rampH = Integer.MIN_VALUE;
+            if (inland >= -6.0 && inland <= 54.0 && perp <= 26.0) {
+                double targetY = baseY + 40.0;
+                double uAlong = inland <= 6.0 ? 1.0 : Math.max(0.0, 1.0 - (inland - 6.0) / 46.0);
+                double sAlong = uAlong * uAlong * (3.0 - 2.0 * uAlong);
+                double halfW = 10.5 + (1.0 - sAlong) * 12.0;
+                if (perp < halfW) {
+                    double uSide = perp <= 4.5 ? 1.0 : Math.max(0.0, 1.0 - (perp - 4.5) / Math.max(1.0, halfW - 4.5));
+                    double sSide = uSide * uSide * (3.0 - 2.0 * uSide);
+                    rampH = (ocean + 1.0) + (targetY - (ocean + 1.0)) * sAlong * sSide;
+                }
+            }
+            double h = Math.max(bluffH, rampH);
             if (h <= ocean + 1.4) return Integer.MIN_VALUE;
             return (int) Math.round(h);
         }

@@ -384,15 +384,15 @@ public final class AshenLands {
                     double bdx = x - bt.landX, bdz = z - bt.landZ;
                     double seaward = bdx * bt.outUx + bdz * bt.outUz; // <=0 на суше биома, >0 вдоль моста в море
                     double perp = Math.abs(-bdx * bt.outUz + bdz * bt.outUx);
-                    if (seaward >= -54.0 && seaward <= 18.0 && perp <= 26.0) {
-                        // Начало моста и вулканический мыс гарантированно стоят на твёрдой суше Пепельного биома!
-                        double sideFade = perp <= 16.0 ? 1.0 : Math.max(0.0, 1.0 - (perp - 16.0) / 10.0);
+                    if (seaward >= -72.0 && seaward <= 16.0 && perp <= 72.0) {
+                        // Начало моста и широкий вулканический берег Пепельного биома стоят на твёрдой суше!
+                        double sideFade = perp <= 48.0 ? 1.0 : Math.max(0.0, 1.0 - (perp - 48.0) / 24.0);
                         w = Math.max(w, sideFade);
-                    } else if (seaward > 18.0 && seaward < 28.0 && perp <= 135.0) {
-                        // Плавный уход береговой черты под арками моста в открытое море
-                        double seaClamp = 1.0 - (seaward - 18.0) / 10.0;
+                    } else if (seaward > 16.0 && seaward < 28.0 && perp <= 135.0) {
+                        // Плавный уход береговой черты под первыми арками моста в открытое море
+                        double seaClamp = 1.0 - (seaward - 16.0) / 12.0;
                         w = Math.min(w, seaClamp);
-                    } else if (seaward >= 28.0 && perp <= 140.0) {
+                    } else if (seaward >= 28.0 && perp <= 145.0) {
                         // Весь остров и замок Цитадели Чёрного утёса стоят в открытом море!
                         w = 0.0;
                     }

@@ -2542,21 +2542,23 @@ public final class SeaProbeCommand {
             boolean bridgeOnAshenLand = AshenLands.inside(bs.landX, bs.landZ)
                     && AshenLands.weight(bs.landX + 0.5, bs.landZ + 0.5) >= 0.85;
             int[] landCnt = countStructBlocksAndSubAir(level, bs.landX, bs.landZ, 12, ocean + 2, bs.baseY + 62, ocean);
-            // 2) Проверяем, что сам замок (cx, cz / keepX, keepZ) стоит В ОТКРЫТОМ МОРЕ (weight == 0.0, вокруг elisar_water, 0 sub_air)!
+            // 2) Проверяем, что сам замок (cx, cz / keepX, keepZ) стоит В ОТКРЫТОМ МОРЕ (weight == 0.0, вокруг elisar_water ниже ряби волн, 0 sub_air)!
             boolean castleInSea = AshenLands.weight(bs.cx + 0.5, bs.cz + 0.5) == 0.0
                     && AshenLands.weight(bs.keepX + 0.5, bs.keepZ + 0.5) == 0.0;
+            int[][] seaProbes = {
+                    {0, -108}, {0, 122}, {-42, 122}, {130, 0}, {88, -108}, {88, 122}
+            };
             int seaWaterAround = 0;
-            for (int a = 0; a < 12; ++a) {
-                double ang = (Math.PI * 2.0 * a) / 12.0;
-                int wx = bs.cx + (int) Math.round(Math.cos(ang) * 82.0);
-                int wz = bs.cz + (int) Math.round(Math.sin(ang) * 82.0);
+            for (int[] sp : seaProbes) {
+                int wx = bs.cx + BlacktideCitadel.rotX(sp[0], sp[1], bs.rot);
+                int wz = bs.cz + BlacktideCitadel.rotZ(sp[0], sp[1], bs.rot);
                 if (!level.hasChunk(wx >> 4, wz >> 4)) continue;
-                if (level.getBlockState(new BlockPos(wx, ocean, wz)).is(ElisarBlocks.WATER.get())) {
+                if (level.getBlockState(new BlockPos(wx, ocean - 2, wz)).is(ElisarBlocks.WATER.get())) {
                     ++seaWaterAround;
                 }
             }
             int[] seaCnt = countStructBlocksAndSubAir(level, bs.keepX, bs.keepZ, 24, ocean - 8, bs.baseY + 145, ocean);
-            int totalBlocks = (bridgeOnAshenLand && castleInSea && landCnt[0] >= 80 && seaWaterAround >= 4) ? seaCnt[0] : 0;
+            int totalBlocks = (bridgeOnAshenLand && castleInSea && landCnt[0] >= 80 && seaWaterAround >= 2) ? seaCnt[0] : 0;
 
             double ux = bs.outUx, uz = bs.outUz;
             double px = -uz, pz = ux;
@@ -2674,12 +2676,17 @@ public final class SeaProbeCommand {
         if (k.equals("enlarged_biomes_audit")) {
             double ashR = 0, vhR = 0, crR = 0, sgR = 0, wgR = 0, mkR = 0;
             VioletHills.Region pickVh = null;
+            double bestVhDist = Double.MAX_VALUE;
             for (int sx = -3; sx <= 3; ++sx) {
                 for (int sz = -3; sz <= 3; ++sz) {
                     AshenLands.Region ar = AshenLands.region(sx, sz);
                     if (ar != null && ar.R > ashR) ashR = ar.R;
                     VioletHills.Region vr = VioletHills.region(sx, sz);
-                    if (vr != null && vr.hub.R > vhR) { vhR = vr.hub.R; pickVh = vr; }
+                    if (vr != null) {
+                        if (vr.hub.R > vhR) vhR = vr.hub.R;
+                        double d0 = Math.hypot(vr.hub.cx, vr.hub.cz);
+                        if (d0 < bestVhDist) { bestVhDist = d0; pickVh = vr; }
+                    }
                     CrystalRifts.Region cr = CrystalRifts.region(sx, sz);
                     if (cr != null && cr.hub.R > crR) crR = cr.hub.R;
                     SizoGrove.Region sr = SizoGrove.region(sx, sz);
@@ -2693,9 +2700,11 @@ public final class SeaProbeCommand {
             boolean allBig = ashR >= 370 && vhR >= 122 && crR >= 72 && sgR >= 142 && wgR >= 66 && mkR >= 84;
             int ax = pickVh != null ? (int) Math.round(pickVh.hub.cx) : 0;
             int az = pickVh != null ? (int) Math.round(pickVh.hub.cz) : 0;
-            int ay = pickVh != null ? (int) Math.round(pickVh.hub.base) + 34 : 130;
-            int camX = ax - 95, camY = ay + 28, camZ = az + 95;
-            int lkX = ax + 30, lkY = ay - 18, lkZ = az - 30;
+            int ay = pickVh != null ? ElisarChunkGenerator.violetTop(pickVh.hub, ax, az, ocean) + 2 : 108;
+            int camX = ax - 42, camZ = az + 42;
+            int camY = (pickVh != null ? ElisarChunkGenerator.violetTop(pickVh.hub, camX, camZ, ocean) : ay) + 14;
+            int lkX = ax + 24, lkZ = az - 24;
+            int lkY = (pickVh != null ? ElisarChunkGenerator.violetTop(pickVh.hub, lkX, lkZ, ocean) : ay) + 2;
             String line = "riftstruct kind=enlarged_biomes_audit at=" + ax + "," + ay + "," + az
                     + " ash_r=" + Math.round(ashR) + " violet_r=" + Math.round(vhR)
                     + " crystal_r=" + Math.round(crR) + " sizo_r=" + Math.round(sgR)

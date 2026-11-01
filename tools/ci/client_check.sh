@@ -1597,8 +1597,14 @@ biome_section() {
   # ---------- v0.23.0: Цитадель Чёрного утёса (blacktide.nbt: мост на земле Пепельного биома, сам замок в море!),
   #            Сгоревшая Пепельная Церковь, вариативные комбинации структур в Пепельном биоме и увеличенные биомы! ----------
   echo "== v0.23.0: Blacktide (мост на земле биома + замок в море), Сгоревшая Церковь, комбинации Пепельного биома и увеличенные биомы =="
-  probe_and_shot_struct "blacktide_citadel"       6000 "114_blacktide_citadel_sea_and_shore"   0 0 24
+  BT_PRE=$(EL execute at TestPlayer in riftworld:elisar run riftstruct blacktide_citadel 2>&1 | tr '\r\n' '  ')
+  BT_AT=$(printf '%s' "$BT_PRE" | sed -n 's/.* at=\([-0-9]*,[-0-9]*,[-0-9]*\).*/\1/p' | tail -1)
+  if [ -n "${BT_AT:-}" ]; then
+    EL tp TestPlayer $(printf '%s' "$BT_AT" | tr ',' ' ') >/dev/null 2>&1 || true
+    sleep 10
+  fi
   probe_and_shot_struct "blacktide_bridge_shore"  6000 "115_blacktide_bridge_from_ashen_land"  0 0 22
+  probe_and_shot_struct "blacktide_citadel"       6000 "114_blacktide_citadel_sea_and_shore"   0 0 24
   probe_and_shot_struct "ashen_burned_church"      900 "116_ashen_burned_church"               0 0 16
   probe_and_shot_struct "ashen_combo_matrix"       100 "117_ashen_empty_biome_panorama"        0 0 16
   probe_and_shot_struct "enlarged_biomes_audit"    500 "118_enlarged_violet_hills_panorama"    0 0 18

@@ -1071,7 +1071,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                     }
                                     if (c.isl.kind == LandmarkStructures.HARBOR_COAST_KIND) {
                                         if (c.surface == S_BARE) yield hash(x, z, 65) < 0.35 ? limeMossy : lime;
-                                        yield vnoise(x * 0.14, z * 0.14, 67) > 0.72 ? moss : gardenGrass;
+                                        yield vnoise(x * 0.14, z * 0.14, 67) > 0.68 ? moss : Blocks.MOSS_BLOCK.defaultBlockState();
                                     }
                                     boolean groveTan = c.isl.kind == SizoGrove.KIND || (c.isl.kind != 4 && SizoGrove.inside(x + 0.5, z + 0.5));
                                     yield groveTan
