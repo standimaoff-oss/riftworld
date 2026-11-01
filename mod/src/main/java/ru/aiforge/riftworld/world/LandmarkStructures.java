@@ -20,7 +20,7 @@ import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.StairBlock;
-import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.level.block.state.properties.SlabType;
@@ -308,12 +308,12 @@ public final class LandmarkStructures {
                 int az = (int) Math.round(bz + nz * off);
                 if (sg.hub.t(ax, az) < 0.34) continue;
                 if (sg.temple && Math.hypot(ax - sg.tx, az - sg.tz) < 25.0) continue;
-                int baseY = ElisarChunkGenerator.column(plan, ax, az).top + 1;
+                int baseY = (int) Math.floor(sg.hub.raw(ax + 0.5, az + 0.5)) + 1;
                 if (baseY <= plan.ocean + 4) continue;
                 return new BiomeLandmark(SiteKind.ANCIENT_TREE_ALTAR, ax, az, baseY, -nx * Math.signum(off), -nz * Math.signum(off), 15.0);
             }
         }
-        int baseY = ElisarChunkGenerator.column(plan, sg.cx, sg.cz).top + 1;
+        int baseY = (int) Math.floor(sg.hub.raw(sg.cx + 0.5, sg.cz + 0.5)) + 1;
         return new BiomeLandmark(SiteKind.ANCIENT_TREE_ALTAR, sg.cx, sg.cz, Math.max(plan.ocean + 6, baseY), 0.0, 1.0, 15.0);
     }
 
@@ -364,7 +364,8 @@ public final class LandmarkStructures {
                 }
             }
         }
-        int baseY = Math.max(plan.ocean + 8, ElisarChunkGenerator.column(plan, bestX, bestZ).top + 1);
+        int rawTop = (int) Math.floor(isl.raw(bestX + 0.5, bestZ + 0.5));
+        int baseY = Math.max(plan.ocean + 8, rawTop + 1);
         return new BiomeLandmark(SiteKind.SHATTERED_SHARD_FORGE, bestX, bestZ, baseY, 0.0, 1.0, 14.5);
     }
 
@@ -398,7 +399,7 @@ public final class LandmarkStructures {
         double obsD = Math.max(8.0, rimD - 11.5);
         int ox = (int) Math.round(isl.cx + ux * obsD);
         int oz = (int) Math.round(isl.cz + uz * obsD);
-        int baseY = Math.max(plan.ocean + 10, ElisarChunkGenerator.column(plan, ox, oz).top + 1);
+        int baseY = Math.max(plan.ocean + 10, ElisarChunkGenerator.violetTop(isl, ox + 0.5, oz + 0.5, plan.ocean) + 1);
         return new BiomeLandmark(SiteKind.VIOLET_WIND_OBSERVATORY, ox, oz, baseY, ux, uz, 22.0);
     }
 
@@ -450,6 +451,15 @@ public final class LandmarkStructures {
     // 2. ПОСТРОЙКА ВСЕХ 7 СТРУКТУР В ТЕКУЩЕМ ЧАНКЕ (0 ПОДВОДНЫХ ПУСТОТ sub_air=0!)
     // =========================================================================
 
+    /**
+     * Безопасная оценка высоты грунта колонки (НИКОГДА не возвращает {@code Integer.MIN_VALUE} на воде или пепельной равнине!).
+     */
+    private static int safeGroundY(CityPlan plan, int x, int z, int fallback) {
+        ElisarChunkGenerator.Col c = ElisarChunkGenerator.column(plan, x, z);
+        if (c.top == Integer.MIN_VALUE || c.top < plan.ocean - 16) return fallback;
+        return Math.max(fallback - 12, Math.min(fallback, c.top));
+    }
+
     private static void put(ChunkAccess chunk, BlockPos.MutableBlockPos mp, int x0, int z0,
                             int x, int y, int z, BlockState st) {
         if (x >= x0 && x <= x0 + 15 && z >= z0 && z <= z0 + 15
@@ -464,8 +474,10 @@ public final class LandmarkStructures {
         if (x < x0 || x > x0 + 15 || z < z0 || z > z0 + 15) return;
         BlockPos pos = new BlockPos(x, y, z);
         BlockState st = Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, facing);
-        level.setBlock(pos, st, 2);
-        RandomizableContainerBlockEntity.setLootTable(level, rnd, pos, table);
+        chunk.setBlockState(pos, st, false);
+        ChestBlockEntity be = new ChestBlockEntity(pos, st);
+        be.setLootTable(table, rnd.nextLong());
+        chunk.setBlockEntity(be);
     }
 
     public static void buildInChunk(WorldGenLevel level, ChunkAccess chunk, RandomSource rnd,
@@ -533,7 +545,7 @@ public final class LandmarkStructures {
                     put(chunk, mp, x0, z0, x, y, z, air);
                 }
                 // Надёжное каменное основание до поверхности острова
-                int colTop = ElisarChunkGenerator.column(plan, x, z).top;
+                int colTop = safeGroundY(plan, x, z, by - 3);
                 for (int y = Math.min(colTop, by - 2); y < by; ++y) {
                     put(chunk, mp, x0, z0, x, y, z, marble);
                 }
@@ -975,7 +987,7 @@ public final class LandmarkStructures {
                 double r = Math.hypot(dx, dz);
                 if (r > 13.6) continue;
 
-                int colTop = ElisarChunkGenerator.column(plan, x, z).top;
+                int colTop = safeGroundY(plan, x, z, by - 4);
                 for (int y = by; y <= by + 16; ++y) {
                     put(chunk, mp, x0, z0, x, y, z, air);
                 }
@@ -1118,8 +1130,11 @@ public final class LandmarkStructures {
                 double dAll = Math.hypot(x - cx, z - cz);
                 if (dAll > 20.5) continue;
 
-                int colTop = ElisarChunkGenerator.column(plan, x, z).top;
-                for (int y = Math.min(colTop, by - 3); y < by; ++y) {
+                // На пепельной равнине (c.isl == null) AshenLands.column уже заполнил камень до plan.ocean+1;
+                // если край площади попадает на пограничную колонку моря, доводим сплошной цоколь до дна (sub_air=0)!
+                int seaFloor = Math.max(4, ElisarChunkGenerator.oceanFloor(plan, x, z));
+                int baseStart = AshenLands.weight(x + 0.5, z + 0.5) > 0.45 ? (by - 4) : seaFloor;
+                for (int y = baseStart; y < by; ++y) {
                     put(chunk, mp, x0, z0, x, y, z, scorched);
                 }
                 for (int y = by; y <= by + 29; ++y) {
@@ -1251,7 +1266,7 @@ public final class LandmarkStructures {
                 double r = Math.hypot(dx, dz);
                 if (r > 13.0) continue;
 
-                int colTop = ElisarChunkGenerator.column(plan, x, z).top;
+                int colTop = safeGroundY(plan, x, z, by - 5);
                 for (int y = by; y <= by + 18; ++y) {
                     put(chunk, mp, x0, z0, x, y, z, air);
                 }
@@ -1373,7 +1388,7 @@ public final class LandmarkStructures {
                 double r = Math.hypot(dx, dz);
                 if (r > 8.2) continue;
 
-                int colTop = ElisarChunkGenerator.column(plan, x, z).top;
+                int colTop = safeGroundY(plan, x, z, by - 6);
                 for (int y = by; y <= by + 20; ++y) {
                     put(chunk, mp, x0, z0, x, y, z, air);
                 }

@@ -226,7 +226,8 @@ public final class DtGround {
     /** Вид для точки посадки по острову и биому; {@code null} — здесь живые деревья не сажаем. */
     private static String speciesFor(BlockPos ground, String biome, java.util.Random r) {
         double px = ground.getX() + 0.5, pz = ground.getZ() + 0.5;
-        if (CastleSite.inFootprint(px, pz, 5) || EmberRuins.inFootprint(px, pz, 5)) return null;
+        if (CastleSite.inFootprint(px, pz, 5) || EmberRuins.inFootprint(px, pz, 5)
+                || WorldStructures.inFootprint(px, pz, 2.5)) return null;
         if (AshenLands.weight(px, pz) > 0.25 || biome.endsWith(":ashen_lands")) return null;
         CityPlan.Island isl = CityPlan.get().islandAt(px, pz);
         if ((isl != null && isl.kind == WaterfallGardens.KIND) || biome.endsWith(":waterfall_gardens")) {
