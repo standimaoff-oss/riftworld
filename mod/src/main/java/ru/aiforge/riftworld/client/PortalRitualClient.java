@@ -105,6 +105,10 @@ public final class PortalRitualClient {
     private static Marker cutsceneCam = null;
     private static float camYaw = 180.0F;
     private static float camPitch = 10.0F;
+    private static boolean hideGuiSaved = false;
+    private static boolean prevHideGuiValue = false;
+    private static int renderFrameSeq = 0;
+    private static int drawnFrameSeq = -1;
 
     static {
         for (int i = 0; i < SKY_EYE_COUNT; ++i) {
@@ -202,6 +206,14 @@ public final class PortalRitualClient {
     }
 
     private static void enforceLockedFirstPersonAndNoScreen(Minecraft mc) {
+        if (!hideGuiSaved) {
+            prevHideGuiValue = mc.options.hideGui;
+            hideGuiSaved = true;
+        }
+        // Гарантируем, что ForgeGui.render вызывается в каждом кадре (чтобы рисовались мягкая вуаль и титры города,
+        // при этом все ванильные оверлеи хотбара/инвентаря/сердец отменяются в onOverlay!)
+        mc.options.hideGui = false;
+
         if (mc.options.getCameraType() != CameraType.FIRST_PERSON) {
             mc.options.setCameraType(CameraType.FIRST_PERSON);
         }
@@ -210,6 +222,9 @@ public final class PortalRitualClient {
         }
         while (mc.options.keyInventory.consumeClick()) {
             // блокируем открытие инвентаря во время перехода и катсцены
+        }
+        while (mc.options.keyHideGui.consumeClick()) {
+            // не даём F1 сбить рендер кинематографических титров во время катсцены
         }
         if (mc.screen != null && !(mc.screen instanceof WhiteReceivingScreen)) {
             mc.setScreen(null);
@@ -225,6 +240,10 @@ public final class PortalRitualClient {
         }
         if (mc.player != null && mc.getCameraEntity() != mc.player) {
             mc.setCameraEntity(mc.player);
+        }
+        if (hideGuiSaved) {
+            mc.options.hideGui = prevHideGuiValue;
+            hideGuiSaved = false;
         }
     }
 
@@ -391,11 +410,25 @@ public final class PortalRitualClient {
         }
     }
 
-    /** Полностью скрываем весь игровой HUD (хотбар, инвентарь, сердца, прицел) во время входа в портал и катсцены! */
+    @SubscribeEvent
+    public static void onRenderTickStart(TickEvent.RenderTickEvent e) {
+        if (e.phase == TickEvent.Phase.START) {
+            ++renderFrameSeq;
+        }
+    }
+
+    /**
+     * Полностью скрываем весь игровой HUD (хотбар, инвентарь, сердца, прицел) во время входа в портал и катсцены,
+     * а ровно 1 раз за кадр внутри буфера ForgeGui (ДО blitToScreen!) рисуем мягкую фарфоровую вуаль и титры города!
+     */
     @SubscribeEvent
     public static void onOverlay(RenderGuiOverlayEvent.Pre e) {
         if (phase == PortalRitual.NONE) return;
         if (isHudAndPerspectiveLocked()) {
+            if (drawnFrameSeq != renderFrameSeq) {
+                drawnFrameSeq = renderFrameSeq;
+                renderCutsceneVeilAndTitles(e.getGuiGraphics(), e.getPartialTick());
+            }
             e.setCanceled(true);
             return;
         }
@@ -438,20 +471,11 @@ public final class PortalRitualClient {
         e.setRoll(0.0F);
     }
 
-    /**
-     * Финальный 2D-проход кадра (работает даже при скрытом HUD и при F1!):
-     * рисует мягкую фарфоровую вуаль при заходе в портал и титры названия Измерения + Города в катсцене!
-     */
-    @SubscribeEvent
-    public static void onRenderTickEnd(TickEvent.RenderTickEvent e) {
-        if (e.phase != TickEvent.Phase.END || !isHudAndPerspectiveLocked()) return;
+    private static void renderCutsceneVeilAndTitles(GuiGraphics g, float pt) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.level == null || mc.getWindow() == null) return;
-
-        float pt = e.renderTickTime;
-        GuiGraphics g = new GuiGraphics(mc, mc.renderBuffers().bufferSource());
-        int sw = mc.getWindow().getGuiScaledWidth();
-        int sh = mc.getWindow().getGuiScaledHeight();
+        if (mc.level == null) return;
+        int sw = g.guiWidth();
+        int sh = g.guiHeight();
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
@@ -468,7 +492,7 @@ public final class PortalRitualClient {
         //    после чего к тику 124 текст полностью исчезает ПЕРЕД тем, как камера плавно полетит к игроку!
         if (phase == PortalRitual.CITY_CUTSCENE) {
             float t = currentTime(pt);
-            float textIn = Mth.clamp((t - 12.0F) / 14.0F, 0.0F, 1.0F);
+            float textIn = Mth.clamp((t - 10.0F) / 14.0F, 0.0F, 1.0F);
             float textOut = 1.0F - Mth.clamp((t - 106.0F) / 18.0F, 0.0F, 1.0F);
             float textAlpha = textIn * textIn * (3.0F - 2.0F * textIn) * (textOut * textOut);
 
@@ -478,33 +502,33 @@ public final class PortalRitualClient {
                 String citySub = Component.translatable("cutscene.riftworld.elisar.city").getString();
 
                 int aMain = Mth.clamp(Math.round(textAlpha * 252.0F), 4, 255);
-                int aPlate = Mth.clamp(Math.round(textAlpha * 118.0F), 0, 255);
-                int aGold = Mth.clamp(Math.round(textAlpha * 228.0F), 4, 255);
+                int aPlate = Mth.clamp(Math.round(textAlpha * 138.0F), 0, 255);
+                int aGold = Mth.clamp(Math.round(textAlpha * 235.0F), 4, 255);
 
                 int centerX = sw / 2;
-                int bannerY = (int) (sh * 0.66F);
+                int bannerY = (int) (sh * 0.72F);
 
                 // Тонкая кинематографическая полупрозрачная подложка, чтобы светлые буквы идеально читались на фоне Белого Города
-                int plateHalfW = 148;
-                g.fill(centerX - plateHalfW, bannerY - 22, centerX + plateHalfW, bannerY + 30, (aPlate << 24) | 0x1E1B16);
+                int plateHalfW = 156;
+                g.fill(centerX - plateHalfW, bannerY - 24, centerX + plateHalfW, bannerY + 32, (aPlate << 24) | 0x1A1712);
 
                 // Крупное название измерения: «Э Л И С А Р»
                 g.pose().pushPose();
-                g.pose().translate(centerX, bannerY - 14, 0.0F);
-                g.pose().scale(2.35F, 2.35F, 1.0F);
+                g.pose().translate(centerX, bannerY - 15, 0.0F);
+                g.pose().scale(2.40F, 2.40F, 1.0F);
                 int dimW = font.width(dimTitle);
                 g.drawString(font, dimTitle, -dimW / 2, 0, (aMain << 24) | 0xFCF7EB, true);
                 g.pose().popPose();
 
                 // Изящная золотая разделительная линия с центральным ромбом
-                int lineHalfW = 86;
+                int lineHalfW = 92;
                 g.fill(centerX - lineHalfW, bannerY + 9, centerX + lineHalfW, bannerY + 10, (aGold << 24) | 0xE2C478);
                 g.fill(centerX - 3, bannerY + 7, centerX + 3, bannerY + 12, (aGold << 24) | 0xF5E1A4);
 
                 // Снизу — название города: «Белый Город Святилища»
                 g.pose().pushPose();
                 g.pose().translate(centerX, bannerY + 16, 0.0F);
-                g.pose().scale(1.20F, 1.20F, 1.0F);
+                g.pose().scale(1.25F, 1.25F, 1.0F);
                 int subW = font.width(citySub);
                 g.drawString(font, citySub, -subW / 2, 0, (aMain << 24) | 0xEDE3CA, true);
                 g.pose().popPose();

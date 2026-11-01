@@ -110,7 +110,20 @@ key() { # key <F1>
   if geom; then xdotool windowactivate --sync "$WID" 2>/dev/null || true; xdotool key --window "$WID" "$1" 2>/dev/null || xdotool key "$1"; fi
 }
 
-RCON() { python3 tools/rcon.py --password "$RCON_PW" --log "" --timeout 120 "$@" 2>&1; }
+RCON() {
+  local out rc
+  for _try in 1 2 3; do
+    out=$(python3 tools/rcon.py --password "$RCON_PW" --log "" --timeout 120 "$@" 2>&1)
+    rc=$?
+    if [ "$rc" -eq 0 ] && ! printf '%s' "$out" | grep -q '<unreachable:'; then
+      printf '%s\n' "$out"
+      return 0
+    fi
+    sleep 1.2
+  done
+  printf '%s\n' "$out"
+  return "$rc"
+}
 if ! RCON list >/dev/null 2>&1; then
   echo "::error title=клиент::сервер не отвечает по RCON — проверка клиента невозможна"
   echo "FATAL: сервер не отвечает по RCON — клиенту некуда заходить (см. отчёт шага сервера)"
@@ -1630,10 +1643,10 @@ biome_section() {
     key F5
     shot "99_walkin_city_cutscene_titles"
 
-    sleep 3.6
+    sleep 3.0
     shot "100_cutscene_glide_to_player"
 
-    sleep 2.8
+    sleep 3.4
     key F1
     P_DIM=$(RCON data get entity TestPlayer Dimension 2>&1 | tr '\r\n' '  ')
     P_VER=$(RCON execute in minecraft:overworld run riftportal verify 2>&1 | tr '\r\n' '  ')
