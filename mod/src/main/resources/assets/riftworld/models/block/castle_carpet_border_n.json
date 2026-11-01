@@ -1,7 +1,6 @@
 {
-  "parent": "minecraft:block/block",
   "textures": {
-    "t": "riftworld:block/castle_carpet_border",
+    "t": "riftworld:block/castle_carpet_trim",
     "particle": "riftworld:block/castle_carpet"
   },
   "elements": [
@@ -21,17 +20,8 @@
           "uv": [
             0,
             0,
-            16,
-            3
-          ],
-          "texture": "#t"
-        },
-        "down": {
-          "uv": [
-            0,
-            13,
-            16,
-            16
+            8,
+            1.5
           ],
           "texture": "#t"
         },
@@ -39,26 +29,17 @@
           "uv": [
             0,
             0,
-            16,
-            3
+            8,
+            0.5
           ],
           "texture": "#t"
         },
         "south": {
           "uv": [
             0,
-            13,
-            16,
-            16
-          ],
-          "texture": "#t"
-        },
-        "east": {
-          "uv": [
-            16,
-            0,
-            19,
-            3
+            1,
+            8,
+            1.5
           ],
           "texture": "#t"
         },
@@ -66,8 +47,17 @@
           "uv": [
             0,
             0,
-            3,
-            3
+            1.5,
+            0.5
+          ],
+          "texture": "#t"
+        },
+        "east": {
+          "uv": [
+            6.5,
+            0,
+            8,
+            0.5
           ],
           "texture": "#t"
         }

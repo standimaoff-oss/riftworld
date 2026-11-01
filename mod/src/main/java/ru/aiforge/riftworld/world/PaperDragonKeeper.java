@@ -1,12 +1,13 @@
 package ru.aiforge.riftworld.world;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
-import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -16,76 +17,125 @@ import ru.aiforge.riftworld.flight.Flight;
 import ru.aiforge.riftworld.registry.ModEntities;
 
 /**
- * Поддерживает естественное появление супер-детализированных модульных оригами-драконов в Элисаре:
- * часть драконов начинает полёт ПОД сводами парящих островов ({@link PaperDragonEntity#FLIGHT_UNDER_ISLAND}),
- * а часть — высоко НАД кронами и башнями островов ({@link PaperDragonEntity#FLIGHT_OVER_ISLAND}),
- * после чего каждый дракон плавно циклирует между полётом над и под островами!
+ * v0.24.0: Spawns and maintains majestic giant Origami Dragons ONLY outside the White City,
+ * gliding along wild floating island cliffs, beneath high floating island vaults, and over open sea.
  */
 @Mod.EventBusSubscriber(modid = RiftWorld.MODID)
 public final class PaperDragonKeeper {
-    private static final int CAP_NEAR_PLAYER = 3;
-    private static final int SCAN_RADIUS = 300;
-    private static int tick;
+    private static final int CHECK_EVERY = 90;
+    private static final int RADIUS = 260;
+    private static final int WANT = 2;
+
+    private static final ResourceLocation VIOLET  = new ResourceLocation(RiftWorld.MODID, "violet_hills");
+    private static final ResourceLocation GARDENS = new ResourceLocation(RiftWorld.MODID, "waterfall_gardens");
+    private static final ResourceLocation SIZO    = new ResourceLocation(RiftWorld.MODID, "sizo_grove");
+    private static final ResourceLocation CRYSTAL = new ResourceLocation(RiftWorld.MODID, "crystal_rifts");
+    private static final ResourceLocation SEA     = new ResourceLocation(RiftWorld.MODID, "elisar_sea");
+    private static final ResourceLocation REEF    = new ResourceLocation(RiftWorld.MODID, "shallow_reef");
 
     private PaperDragonKeeper() {
     }
 
     @SubscribeEvent
-    public static void onLevelTick(TickEvent.LevelTickEvent e) {
-        if (e.phase != TickEvent.Phase.END || e.level.isClientSide) return;
-        if (e.level.dimension() != Flight.ELISAR_DIM) return;
-        if ((++tick % 140) != 0) return;
+    public static void levelTick(TickEvent.LevelTickEvent event) {
+        if (event.phase != TickEvent.Phase.END || !(event.level instanceof ServerLevel level)) return;
+        if (!level.dimension().equals(Flight.ELISAR_DIM)) return;
+        if (level.getGameTime() % CHECK_EVERY != 0) return;
 
-        ServerLevel sl = (ServerLevel) e.level;
         CityPlan plan = CityPlan.get();
-        RandomSource rnd = sl.random;
+        int ocean = plan.ocean;
 
-        for (ServerPlayer sp : sl.players()) {
-            if (sp.isSpectator()) continue;
+        for (ServerPlayer player : level.players()) {
+            if (player.isSpectator()) continue;
+            // Игрок внутри центра Белого Города — драконы в Город НЕ залетают и там не спавнятся!
+            if (PaperDragonEntity.isInsideCityNoFlyZone(plan, player.getX(), player.getZ(), -40.0)) continue;
 
-            AABB nearBox = new AABB(sp.blockPosition()).inflate(SCAN_RADIUS, 160, SCAN_RADIUS);
-            int nearby = sl.getEntitiesOfClass(PaperDragonEntity.class, nearBox).size();
-            if (nearby >= CAP_NEAR_PLAYER) continue;
+            AABB box = player.getBoundingBox().inflate(RADIUS, 160, RADIUS);
+            int present = level.getEntitiesOfClass(PaperDragonEntity.class, box).size();
+            if (present >= WANT) continue;
 
-            if (nearby >= 1 && rnd.nextFloat() > 0.45F) continue;
+            var rng = level.random;
+            for (int attempt = 0; attempt < 10; ++attempt) {
+                double ang = rng.nextDouble() * Mth.TWO_PI;
+                double dist = 85.0 + rng.nextDouble() * 115.0;
+                int sx = Mth.floor(player.getX() + Math.cos(ang) * dist);
+                int sz = Mth.floor(player.getZ() + Math.sin(ang) * dist);
+                // Строгий запрет спавна рядом с Белым Городом!
+                if (PaperDragonEntity.isInsideCityNoFlyZone(plan, sx + 0.5, sz + 0.5, 45.0)) continue;
+                if (!level.hasChunk(sx >> 4, sz >> 4)) continue;
 
-            // Чередуем начальный режим: чётный дракон появляется ПОД островом, нечётный — НАД островом!
-            boolean spawnOver = (nearby & 1) == 1;
+                ResourceLocation biomeKey = level.getBiome(new BlockPos(sx, ocean + 20, sz))
+                        .unwrapKey().map(k -> k.location()).orElse(null);
+                if (!allowedWildBiome(biomeKey)) continue;
 
-            for (int attempt = 0; attempt < 16; ++attempt) {
-                double ang = rnd.nextDouble() * Math.PI * 2.0;
-                double dist = 70.0 + rnd.nextDouble() * 115.0;
-                int sx = Mth.floor(sp.getX() + Math.cos(ang) * dist);
-                int sz = Mth.floor(sp.getZ() + Math.sin(ang) * dist);
-
-                if (AshenLands.blocks(sx, sz, 40) || EmberRuins.siteAt(sx, sz) != null) continue;
-                if (!sl.isLoaded(new BlockPos(sx, plan.ocean + 20, sz))) continue;
-
-                ElisarChunkGenerator.Col col = ElisarChunkGenerator.column(plan, sx, sz);
-                if (col.isl == null || col.isl.base < plan.ocean + 20) continue;
-
-                int sy;
-                int initMode;
-                if (spawnOver) {
-                    int surfY = (col.top > plan.ocean) ? col.top : (int) Math.round(col.isl.base + 8.0);
-                    sy = surfY + 18 + rnd.nextInt(12);
-                    initMode = PaperDragonEntity.FLIGHT_OVER_ISLAND;
-                } else {
-                    if (col.bottom < plan.ocean + 16) continue;
-                    sy = Math.max(plan.ocean + 10, col.bottom - (8 + rnd.nextInt(7)));
-                    initMode = PaperDragonEntity.FLIGHT_UNDER_ISLAND;
+                // Ищем живописный ДИКИЙ парящий остров поблизости, чтобы сразу запустить плавный облёт вдоль его скал
+                CityPlan.Island wildIsl = null;
+                double bestD2 = Double.MAX_VALUE;
+                for (CityPlan.Island cand : FloatingIslands.gather(sx + 0.5, sz + 0.5, 190.0, false)) {
+                    if (cand.kind == 0 || cand.R < 20.0) continue;
+                    if (PaperDragonEntity.isInsideCityNoFlyZone(plan, cand.cx, cand.cz, 55.0)) continue;
+                    double d2 = (cand.cx - sx) * (cand.cx - sx) + (cand.cz - sz) * (cand.cz - sz);
+                    if (d2 < bestD2) {
+                        bestD2 = d2;
+                        wildIsl = cand;
+                    }
                 }
 
-                BlockPos pos = new BlockPos(sx, sy, sz);
-                if (!sl.getBlockState(pos).isAir() || !sl.getBlockState(pos.above(2)).isAir()) continue;
+                int spawnX = sx;
+                int spawnZ = sz;
+                int spawnY;
+                if (wildIsl != null) {
+                    // Размещаем дракона СНАРУЖИ кромки острова (вдоль обрывов, а НЕ между постройками/деревьями!)
+                    double rimAng = Math.atan2(sz - wildIsl.cz, sx - wildIsl.cx);
+                    double perimeterR = wildIsl.maxReach() + 28.0 + rng.nextDouble() * 18.0;
+                    spawnX = Mth.floor(wildIsl.cx + Math.cos(rimAng) * perimeterR);
+                    spawnZ = Mth.floor(wildIsl.cz + Math.sin(rimAng) * perimeterR);
+                    if (PaperDragonEntity.isInsideCityNoFlyZone(plan, spawnX + 0.5, spawnZ + 0.5, 40.0)) continue;
+                    if (!level.hasChunk(spawnX >> 4, spawnZ >> 4)) continue;
 
-                PaperDragonEntity dragon = ModEntities.PAPER_DRAGON.get().create(sl);
-                if (dragon == null) break;
-                dragon.moveTo(sx + 0.5, sy + 0.5, sz + 0.5, rnd.nextFloat() * 360.0F, 0.0F);
-                dragon.setHomeAnchor(new Vec3(col.isl.cx, col.isl.base, col.isl.cz), initMode);
-                sl.addFreshEntity(dragon);
+                    double vaultBottom = wildIsl.base - wildIsl.depth;
+                    if (vaultBottom - ocean >= 30.0 && rng.nextFloat() < 0.35F) {
+                        spawnY = Mth.floor(Mth.lerp(0.5, ocean + 12.0, vaultBottom - 10.0));
+                    } else {
+                        spawnY = Mth.floor(wildIsl.base + 8.0 + rng.nextDouble() * 20.0);
+                    }
+                } else {
+                    int top = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, spawnX, spawnZ);
+                    spawnY = Math.max(top, ocean) + 28 + rng.nextInt(26);
+                }
+
+                spawnY = Mth.clamp(spawnY, ocean + 14, level.getMaxBuildHeight() - 36);
+                BlockPos pos = new BlockPos(spawnX, spawnY, spawnZ);
+                if (!isClearAirBox(level, pos, 5, 3)) continue;
+
+                PaperDragonEntity dragon = ModEntities.PAPER_DRAGON.get().create(level);
+                if (dragon == null) return;
+                float initYaw = rng.nextFloat() * 360.0F;
+                dragon.moveTo(spawnX + 0.5, spawnY + 0.5, spawnZ + 0.5, initYaw, 0.0F);
+                dragon.finalizeSpawn(level, level.getCurrentDifficultyAt(pos), MobSpawnType.NATURAL, null, null);
+                level.addFreshEntity(dragon);
                 break;
             }
         }
+    }
+
+    private static boolean allowedWildBiome(ResourceLocation key) {
+        return VIOLET.equals(key) || GARDENS.equals(key) || SIZO.equals(key)
+                || CRYSTAL.equals(key) || SEA.equals(key) || REEF.equals(key);
+    }
+
+    private static boolean isClearAirBox(ServerLevel level, BlockPos center, int rHoriz, int rVert) {
+        BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
+        for (int dx = -rHoriz; dx <= rHoriz; dx += 2) {
+            for (int dz = -rHoriz; dz <= rHoriz; dz += 2) {
+                for (int dy = -rVert; dy <= rVert; ++dy) {
+                    mp.set(center.getX() + dx, center.getY() + dy, center.getZ() + dz);
+                    if (!level.getBlockState(mp).isAir() || !level.getFluidState(mp).isEmpty()) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
     }
 }

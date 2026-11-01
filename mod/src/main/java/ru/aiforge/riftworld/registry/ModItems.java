@@ -70,7 +70,7 @@ public final class ModItems {
 
     static {
         for (RegistryObject<? extends net.minecraft.world.level.block.Block> b : ModBlocks.WITH_ITEM) {
-            ITEMS.register(b.getId().getPath(), () -> b.get() instanceof ModelBlock mb
+            ITEMS.register(b.getId().getPath(), () -> (b.get() instanceof ModelBlock mb && !(mb instanceof ru.aiforge.riftworld.block.MergingRugBlock))
                     ? new ModelBlockItem(mb, new Item.Properties())
                     : new BlockItem(b.get(), new Item.Properties()));
         }

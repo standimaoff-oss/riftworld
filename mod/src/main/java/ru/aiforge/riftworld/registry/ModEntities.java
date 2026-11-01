@@ -26,10 +26,10 @@ public final class ModEntities {
     public static final RegistryObject<EntityType<ScytheItemEntity>> SCYTHE_ITEM = TYPES.register("scythe_item", () -> EntityType.Builder
             .<ScytheItemEntity>of(ScytheItemEntity::new, MobCategory.MISC).sized(0.5F, 0.3F).fireImmune().clientTrackingRange(8)
             .updateInterval(20).build("riftworld:scythe_item"));
-    /** v0.22.0: Крупный супер-детализированный модульный 3D оригами-дракон (~22 м), парящий и ПОД островами, и НАД островами! */
+    /** v0.24.0: Огромный плавный модульный 3D оригами-дракон (~47.7 м), парящий вдоль диких островов, под сводами и над морем (вне Города!). */
     public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.PaperDragonEntity>> PAPER_DRAGON = TYPES.register("paper_dragon",
             () -> EntityType.Builder.<ru.aiforge.riftworld.entity.PaperDragonEntity>of(ru.aiforge.riftworld.entity.PaperDragonEntity::new, MobCategory.AMBIENT)
-                    .sized(2.6F, 1.9F).updateInterval(1).clientTrackingRange(24).build("riftworld:paper_dragon"));
+                    .sized(3.8F, 2.8F).updateInterval(3).clientTrackingRange(32).build("riftworld:paper_dragon"));
 
     /** v0.22.0: Безблочный белый 3D-геометрический Пролом в Пространстве (от узкого острия у земли до широкого разлома в небе). */
     public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.SpatialRiftEntity>> SPATIAL_RIFT = TYPES.register("spatial_rift",

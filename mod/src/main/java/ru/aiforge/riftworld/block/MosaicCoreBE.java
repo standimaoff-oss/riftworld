@@ -107,7 +107,18 @@ public class MosaicCoreBE extends BlockEntity {
                 if (stage < 3) {
                     setStage(sl, pos, stage + 1);
                     sl.playSound(null, pos, SoundEvents.BEACON_POWER_SELECT, SoundSource.BLOCKS, 1.6F, 0.8F + 0.2F * stage);
-                } else {                                      // fully charged -> the flash
+                } else if (sl.dimension() == Level.OVERWORLD) {
+                    // В Обычном мире полное зажигание свечей и заряд ядра открывают Белый 3D-Пролом в Элисар!
+                    be.progress = 0;
+                    List<ServerPlayer> nearSp = sl.getEntitiesOfClass(ServerPlayer.class,
+                            new AABB(pos).inflate(12.0), p -> p.isAlive() && !p.isSpectator());
+                    if (!nearSp.isEmpty()) {
+                        ru.aiforge.riftworld.flight.PortalRitual.start(nearSp.get(0), pos.above(), "observatory_candles");
+                    } else {
+                        ru.aiforge.riftworld.flight.PortalRitual.awakenObservatorySanctum(sl, pos);
+                    }
+                    be.setChanged();
+                } else {                                      // fully charged -> the flash (Elisar Great Temple return pool)
                     be.flash = 60;
                     sl.playSound(null, pos, SoundEvents.LIGHTNING_BOLT_THUNDER, SoundSource.BLOCKS, 2.0F, 1.4F);
                     sl.playSound(null, pos, SoundEvents.BEACON_ACTIVATE, SoundSource.BLOCKS, 2.0F, 0.6F);

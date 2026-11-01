@@ -18,36 +18,31 @@ import ru.aiforge.riftworld.RiftWorld;
 import ru.aiforge.riftworld.entity.PaperDragonEntity;
 
 /**
- * СУПЕР-ДЕТАЛИЗИРОВАННЫЙ 3D МОДУЛЬНЫЙ ОРИГАМИ-ДРАКОН (Golden-Venture Chinese Modular Origami, ~27 м):
+ * v0.24.0: Enlarged (~47.7m), butter-smooth Modular 3D Origami Dragon Renderer.
  * <ul>
- *   <li><b>0 Z-fighting и тёплая кремовая бумага васи ({@code origami_washi.png})</b>: каждая треугольная грань
- *       рисуется строго один раз с честной внешней нормалью + внутренний бумажный цилиндр перекрытия,
- *       поэтому никаких серых пятен Z-fighting'а и никаких сквозных дыр нет ни на солнце, ни в тени под островом!</li>
- *   <li><b>768 индивидуальных 3D-сложенных бумажных модулей</b> вдоль 64 колец тела (по 12 модулей в кольце
- *       с шахматным вкладыванием кармашков 1:1 как в настоящем модульном оригами {@code 01_origami_dragon_ref.png})
- *       + 56 спинных гребней-пластин!</li>
- *   <li><b>Многослойная оригами-голова</b>: ступенчатая переносица, вздёрнутый нос, живая открывающаяся нижняя
- *       челюсть, выразительные тёмные бумажные глаза с бликом, ветвистые модульные рога, пышный бумажный воротник-грива
- *       и 2 длинных развевающихся по потоку воздуха 6-сегментных уса!</li>
- *   <li><b>4 шарнирные модульные лапы</b> (плечо -> бедро из вложенных бумажных модулей -> локоть/колено ->
- *       предплечье -> 4 растопыренных бумажных когтя) с живой анимацией взмахов и поджатия в виражах +
- *       7-лучевой императорский бумажный веер хвоста!</li>
- *   <li><b>Реальная сплайновая физика следования хвоста, бегущая S-волна и аэродинамический крен в поворотах!</b></li>
+ *   <li>Interpolates directly across the persistent 72-node arc-length-locked spine chain
+ *       ({@code prevChain -> chain}) and smoothed head forward vector — 0 jitter, 0 vanishing head/points!</li>
+ *   <li>Uses non-degenerate midpoint-split quads ({@code p1, p2, mid(p2,p3), p3}) so zero triangles
+ *       are ever dropped by GPU/Mesa rasterizers or shaderpacks!</li>
+ *   <li>1.62x enlarged scale (chest diameter ~2.48m, 71 rings × 14 Golden-Venture folded paper pockets = 994 modules).</li>
  * </ul>
  */
 public class PaperDragonRenderer extends EntityRenderer<PaperDragonEntity> {
-    private static final ResourceLocation WASHI_TEX =
-            new ResourceLocation(RiftWorld.MODID, "textures/entity/origami_washi.png");
+    private static final ResourceLocation TEX = new ResourceLocation(RiftWorld.MODID, "textures/entity/paper_dragon.png");
 
-    private static final int SEGS = PaperDragonEntity.SEGS; // 64 кольца!
-    private static final int MODULES_PER_RING = 12;         // 12 модулей Golden-Venture в каждом кольце!
+    private static final int SEGS = PaperDragonEntity.SEGS;
+    private static final int MODULES_PER_RING = 14;
+    /** 1.62x enlargement over v0.22–v0.23 -> ~47.7m colossal celestial origami dragon! */
+    private static final float SCALE = 1.62F;
 
-    // Тёплые оттенки настоящей сложенной сливочно-белой бумаги васи (без двойного затемнения!)
-    private static final int CR_R = 255, CR_G = 252, CR_B = 244; // солнечное ребро сгиба
-    private static final int FL_R = 247, FL_G = 241, FL_B = 229; // основная грань бумажного кармашка
-    private static final int SH_R = 228, SH_G = 219, SH_B = 202; // внутренняя складка / кармашек
-    private static final int IN_R = 216, IN_G = 206, IN_B = 188; // внутренний несущий цилиндр бумаги
-    private static final int EYE_R = 38, EYE_G = 33, EYE_B = 29;  // обсидианово-тушевой сгиб глаза
+    private static final int FORELEG_SEG = 15;
+    private static final int HINDLEG_SEG = 44;
+
+    private static final int CR_R = 252, CR_G = 249, CR_B = 241;
+    private static final int FL_R = 240, FL_G = 234, FL_B = 221;
+    private static final int SH_R = 219, SH_G = 211, SH_B = 195;
+    private static final int IN_R = 200, IN_G = 191, IN_B = 175;
+    private static final int EYE_R = 46, EYE_G = 40, EYE_B = 38;
 
     public PaperDragonRenderer(EntityRendererProvider.Context ctx) {
         super(ctx);
@@ -55,225 +50,193 @@ public class PaperDragonRenderer extends EntityRenderer<PaperDragonEntity> {
     }
 
     @Override
-    public boolean shouldRender(PaperDragonEntity e, Frustum frustum, double cx, double cy, double cz) {
-        return e.distanceToSqr(cx, cy, cz) < 420.0 * 420.0;
+    public ResourceLocation getTextureLocation(PaperDragonEntity e) {
+        return TEX;
     }
 
     @Override
-    public ResourceLocation getTextureLocation(PaperDragonEntity e) {
-        return WASHI_TEX;
+    public boolean shouldRender(PaperDragonEntity e, Frustum frustum, double camX, double camY, double camZ) {
+        return e.distanceToSqr(camX, camY, camZ) < 384.0 * 384.0;
     }
 
-    /** Гарантируем мягкую подсветку тёплой бумаги даже в глубокой тени ПОД парящими островами! */
-    private static int warmPaperLight(int worldLight) {
-        int block = Math.max(LightTexture.block(worldLight), 9);
-        int sky = Math.max(LightTexture.sky(worldLight), 13);
-        return LightTexture.pack(block, sky);
-    }
-
-    /** Профиль толщины модульного тела (мощная грудная клетка ~0.76 м радиуса -> изящное сужение к хвосту). */
-    private static float bodyRadius(int i) {
-        float u = (float) i / (float) (SEGS - 1);
+    private static float bodyRadius(int seg) {
+        float u = (float) seg / (float) (SEGS - 1);
+        float base;
         if (u < 0.08F) {
-            // Шея у головы -> плавное расширение к плечевому поясу
-            return Mth.lerp(u / 0.08F, 0.50F, 0.68F);
-        }
-        if (u < 0.24F) {
-            // Мощный грудной отдел (передние лапы на i = 13)
+            base = Mth.lerp(u / 0.08F, 0.56F, 0.68F);
+        } else if (u < 0.24F) {
             float k = (u - 0.08F) / 0.16F;
-            return 0.68F + 0.09F * Mth.sin(k * Mth.PI);
+            base = Mth.lerp(k * k * (3.0F - 2.0F * k), 0.68F, 0.77F);
+        } else if (u < 0.64F) {
+            float k = (u - 0.24F) / 0.40F;
+            base = Mth.lerp(k, 0.77F, 0.60F);
+        } else {
+            float k = (u - 0.64F) / 0.36F;
+            base = Mth.lerp(k * k, 0.60F, 0.16F);
         }
-        // Плавное змеевидное сужение через задний пояс (i = 38) к кончику хвоста
-        float t = (u - 0.24F) / 0.76F;
-        return Mth.lerp((float) Math.pow(t, 1.15), 0.68F, 0.13F);
+        return base * SCALE;
     }
 
     @Override
     public void render(PaperDragonEntity e, float entityYaw, float pt, PoseStack ps, MultiBufferSource buf, int packedLight) {
-        int paperLight = warmPaperLight(packedLight);
+        int blockL = Math.max(LightTexture.block(packedLight), 10);
+        int skyL = Math.max(LightTexture.sky(packedLight), 14);
+        int warmLight = LightTexture.pack(blockL, skyL);
         int ov = OverlayTexture.NO_OVERLAY;
+
+        float time = e.tickCount + pt;
+        float phase = e.wavePhase();
+        float headRollDeg = Mth.lerp(pt, e.bankRollPrev, e.bankRoll);
+        float jawOpen = Mth.lerp(pt, e.jawAnimPrev, e.jawAnim);
 
         double headWx = Mth.lerp(pt, e.xo, e.getX());
         double headWy = Mth.lerp(pt, e.yo, e.getY());
         double headWz = Mth.lerp(pt, e.zo, e.getZ());
 
-        float time = e.tickCount + pt;
-        float phase = e.wavePhase();
-        float bankDeg = Mth.lerp(pt, e.clientBankRollO, e.clientBankRoll);
-        float jawOpen = Mth.lerp(pt, e.clientJawOpenO, e.clientJawOpen);
-
-        // 1) Вычисляем 64 узла позвоночника в локальных координатах относительно головы (0,0,0)
-        //    по реальному кольцевому буферу траектории + бегущей S-волне изгиба серпантина!
         Vec3[] spine = new Vec3[SEGS];
         float[] segRoll = new float[SEGS];
-        sampleSplineSpineAndWaves(e, headWx, headWy, headWz, bankDeg, time, phase, pt, spine, segRoll);
+        Vec3 headForward = samplePersistentChain(e, pt, headWx, headWy, headWz, headRollDeg, spine, segRoll);
 
-        // 2) Строим гладкий безрывковый ортонормированный репер (parallel transport + крен segRoll) вдоль всех 64 колец!
+        // Parallel-transport (Bishop) frames along the 72-node spine — zero sudden roll flips at steep pitch!
         Vec3[] tangents = new Vec3[SEGS];
-        Vec3[] normals = new Vec3[SEGS];   // вверх спины (с учётом аэродинамического крена!)
-        Vec3[] binormals = new Vec3[SEGS]; // вправо тела
+        Vec3[] normals = new Vec3[SEGS];
+        Vec3[] binormals = new Vec3[SEGS];
 
-        for (int i = 0; i < SEGS; ++i) {
-            Vec3 dir;
-            if (i == 0) {
-                dir = spine[0].subtract(spine[1]);
-            } else if (i == SEGS - 1) {
-                dir = spine[SEGS - 2].subtract(spine[SEGS - 1]);
+        tangents[0] = headForward;
+        for (int i = 1; i < SEGS; ++i) {
+            Vec3 dir = (i < SEGS - 1)
+                    ? spine[i - 1].subtract(spine[i + 1])
+                    : spine[i - 1].subtract(spine[i]);
+            if (dir.lengthSqr() < 1.0E-6) {
+                tangents[i] = tangents[i - 1];
             } else {
-                dir = spine[i - 1].subtract(spine[i + 1]);
+                tangents[i] = dir.normalize();
             }
-            if (dir.lengthSqr() < 1.0E-6) dir = new Vec3(0, 0, 1);
-            tangents[i] = dir.normalize();
         }
 
-        // Начальный вектор «вверх» у головы с параллельным переносом вдоль позвоночника (0 перекручиваний на петлях!)
+        // Initial orthonormal frame at neck (i = 0)
         Vec3 worldUp = new Vec3(0.0, 1.0, 0.0);
-        Vec3 prevUp = worldUp.subtract(tangents[0].scale(worldUp.dot(tangents[0])));
-        if (prevUp.lengthSqr() < 1.0E-5) prevUp = new Vec3(1.0, 0.0, 0.0);
-        prevUp = prevUp.normalize();
+        Vec3 baseSide0 = tangents[0].cross(worldUp);
+        if (baseSide0.lengthSqr() < 1.0E-4) {
+            baseSide0 = new Vec3(1.0, 0.0, 0.0);
+        } else {
+            baseSide0 = baseSide0.normalize();
+        }
+        Vec3 baseUp0 = baseSide0.cross(tangents[0]).normalize();
 
+        Vec3 prevUpRef = baseUp0;
         for (int i = 0; i < SEGS; ++i) {
-            Vec3 t = tangents[i];
-            // Смешиваем параллельный перенос с мировым верхом, чтобы спина всегда естественно ориентировалась к небу
-            Vec3 transportUp = prevUp.subtract(t.scale(prevUp.dot(t)));
-            Vec3 skyProj = worldUp.subtract(t.scale(worldUp.dot(t)));
-            Vec3 baseUp = (skyProj.lengthSqr() > 0.02)
-                    ? transportUp.scale(0.65).add(skyProj.normalize().scale(0.35))
-                    : transportUp;
-            if (baseUp.lengthSqr() < 1.0E-5) baseUp = prevUp;
-            baseUp = baseUp.normalize();
-            prevUp = baseUp;
+            Vec3 fw = tangents[i];
+            // Parallel-transport prevUpRef onto plane perpendicular to fw, gently relaxed toward horizon up
+            Vec3 upProj = prevUpRef.subtract(fw.scale(prevUpRef.dot(fw)));
+            Vec3 worldUpProj = worldUp.subtract(fw.scale(worldUp.dot(fw)));
+            if (worldUpProj.lengthSqr() > 1.0E-3) {
+                upProj = upProj.scale(0.84).add(worldUpProj.normalize().scale(0.16));
+            }
+            if (upProj.lengthSqr() < 1.0E-5) {
+                upProj = prevUpRef;
+            } else {
+                upProj = upProj.normalize();
+            }
+            prevUpRef = upProj;
 
-            Vec3 baseSide = t.cross(baseUp);
-            if (baseSide.lengthSqr() < 1.0E-5) baseSide = new Vec3(1.0, 0.0, 0.0);
-            baseSide = baseSide.normalize();
+            Vec3 sideRef = fw.cross(upProj);
+            if (sideRef.lengthSqr() < 1.0E-5) sideRef = baseSide0;
+            else sideRef = sideRef.normalize();
 
-            // Применяем аэродинамический крен виража + лёгкое волновое кручение вдоль хвоста
-            float rollRad = segRoll[i] * Mth.DEG_TO_RAD;
-            float cr = Mth.cos(rollRad), sr = Mth.sin(rollRad);
-            Vec3 rolledUp = baseUp.scale(cr).add(baseSide.scale(sr)).normalize();
-            Vec3 rolledSide = baseSide.scale(cr).subtract(baseUp.scale(sr)).normalize();
-
-            normals[i] = rolledUp;
-            binormals[i] = rolledSide;
+            float rRad = segRoll[i] * Mth.DEG_TO_RAD;
+            float cr = Mth.cos(rRad);
+            float sr = Mth.sin(rRad);
+            normals[i] = upProj.scale(cr).add(sideRef.scale(sr)).normalize();
+            binormals[i] = sideRef.scale(cr).subtract(upProj.scale(sr)).normalize();
         }
 
+        VertexConsumer vc = buf.getBuffer(RenderType.entityCutoutNoCull(TEX));
         ps.pushPose();
-        ps.translate(0.0, 0.75, 0.0);
-        VertexConsumer vc = buf.getBuffer(RenderType.entityCutoutNoCull(WASHI_TEX));
+        ps.translate(0.0, e.getBbHeight() * 0.45, 0.0);
         Matrix4f pose = ps.last().pose();
         Matrix3f normMat = ps.last().normal();
 
-        // 3A) Внутренний несущий бумажный цилиндр (чтобы между кармашками модулей никогда не светились пустые щели!)
-        renderInnerPaperTube(vc, pose, normMat, spine, normals, binormals, paperLight, ov);
+        renderInnerPaperTube(vc, pose, normMat, spine, normals, binormals, warmLight, ov);
+        renderModularOrigamiScales(vc, pose, normMat, spine, tangents, normals, binormals, time, phase, warmLight, ov);
+        renderDorsalOrigamiCrest(vc, pose, normMat, spine, tangents, normals, binormals, time, phase, warmLight, ov);
 
-        // 3B) 768 вложенных 3D треугольных модулей Golden-Venture (63 кольца × 12 модулей в шахматном порядке!)
-        renderModularOrigamiScales(vc, pose, normMat, spine, tangents, normals, binormals, time, phase, paperLight, ov);
+        renderOrigamiDragonHead(vc, pose, normMat,
+                spine[0], tangents[0], normals[0], binormals[0],
+                jawOpen, time, phase, warmLight, ov);
 
-        // 3C) Спинной зубчатый бумажный гребень вдоль всего позвоночника + брюшные килевые пластины
-        renderDorsalOrigamiCrest(vc, pose, normMat, spine, tangents, normals, binormals, time, phase, paperLight, ov);
+        renderArticulatedOrigamiPairOfLegs(vc, pose, normMat,
+                spine[FORELEG_SEG], tangents[FORELEG_SEG], normals[FORELEG_SEG], binormals[FORELEG_SEG],
+                bodyRadius(FORELEG_SEG), true, time, phase, segRoll[FORELEG_SEG], warmLight, ov);
+        renderArticulatedOrigamiPairOfLegs(vc, pose, normMat,
+                spine[HINDLEG_SEG], tangents[HINDLEG_SEG], normals[HINDLEG_SEG], binormals[HINDLEG_SEG],
+                bodyRadius(HINDLEG_SEG), false, time, phase + 1.8F, segRoll[HINDLEG_SEG], warmLight, ov);
 
-        // 3D) Супер-детализированная многослойная оригами-голова (челюсти, рога, глаза, воротник, длинные живые усы!)
-        renderOrigamiDragonHead(vc, pose, normMat, spine[0], tangents[0], normals[0], binormals[0], jawOpen, time, phase, paperLight, ov);
-
-        // 3E) 4 шарнирные модульные лапы с 4 бумажными когтями каждая (передняя пара на кольце 13, задняя на кольце 39)
-        renderArticulatedOrigamiPairOfLegs(vc, pose, normMat, spine[13], tangents[13], normals[13], binormals[13],
-                bodyRadius(13), true, time, phase, bankDeg, paperLight, ov);
-        renderArticulatedOrigamiPairOfLegs(vc, pose, normMat, spine[39], tangents[39], normals[39], binormals[39],
-                bodyRadius(39), false, time, phase + 1.65F, bankDeg, paperLight, ov);
-
-        // 3F) Пышный 7-лучевой императорский бумажный веер хвоста на кончике!
-        renderImperialOrigamiTailFan(vc, pose, normMat, spine[SEGS - 1], tangents[SEGS - 1], normals[SEGS - 1], binormals[SEGS - 1],
-                time, phase, paperLight, ov);
+        renderImperialOrigamiTailFan(vc, pose, normMat,
+                spine[SEGS - 1], tangents[SEGS - 1], normals[SEGS - 1], binormals[SEGS - 1],
+                time, phase, warmLight, ov);
 
         ps.popPose();
         super.render(e, entityYaw, pt, ps, buf, packedLight);
     }
 
     /**
-     * Сэмплирует мировую траекторию полёта по длине дуги {@code STEP = 0.34 м} и накладывает живую
-     * бегущую синусоидальную S-волну изгиба тела (как у настоящего парящего китайского дракона!).
+     * Interpolates the persistent 72-node client chain at partialTick {@code pt} and returns
+     * the guaranteed unit-length head forward vector.
      */
-    private static void sampleSplineSpineAndWaves(PaperDragonEntity e,
-                                                  double headWx, double headWy, double headWz,
-                                                  float headRollDeg, float time, float phase, float pt,
-                                                  Vec3[] outSpine, float[] outRoll) {
+    private static Vec3 samplePersistentChain(PaperDragonEntity e, float pt,
+                                              double headWx, double headWy, double headWz, float headRollDeg,
+                                              Vec3[] outSpine, float[] outRoll) {
+        if (!e.chainInit) {
+            float yawRad = Mth.rotLerp(pt, e.yRotO, e.getYRot()) * Mth.DEG_TO_RAD;
+            float pitchRad = Mth.clamp(Mth.lerp(pt, e.xRotO, e.getXRot()), -30.0F, 30.0F) * Mth.DEG_TO_RAD;
+            Vec3 fw = new Vec3(-Mth.sin(yawRad) * Mth.cos(pitchRad), -Mth.sin(pitchRad), Mth.cos(yawRad) * Mth.cos(pitchRad));
+            if (fw.lengthSqr() < 1.0E-5) fw = new Vec3(0.0, 0.0, 1.0);
+            else fw = fw.normalize();
+            for (int i = 0; i < SEGS; ++i) {
+                outSpine[i] = fw.scale(-i * PaperDragonEntity.STEP);
+                outRoll[i] = headRollDeg * (1.0F - 0.35F * ((float) i / (SEGS - 1)));
+            }
+            return fw;
+        }
+
+        double c0x = Mth.lerp(pt, e.prevChainX[0], e.chainX[0]);
+        double c0y = Mth.lerp(pt, e.prevChainY[0], e.chainY[0]);
+        double c0z = Mth.lerp(pt, e.prevChainZ[0], e.chainZ[0]);
+
         outSpine[0] = Vec3.ZERO;
         outRoll[0] = headRollDeg;
-
-        float yawRad = Mth.rotLerp(pt, e.yRotO, e.getYRot()) * Mth.DEG_TO_RAD;
-        float pitchRad = Mth.lerp(pt, e.xRotO, e.getXRot()) * Mth.DEG_TO_RAD;
-        double cosP = Math.cos(pitchRad);
-        Vec3 fallbackBack = new Vec3(Math.sin(yawRad) * cosP, Math.sin(pitchRad), -Math.cos(yawRad) * cosP).normalize();
-
-        int count = e.trailCount;
-        int headIdx = e.trailHead;
-
-        double prevX = headWx, prevY = headWy, prevZ = headWz;
-        float prevR = headRollDeg;
-        double accumDist = 0.0;
-        int trailCursor = 0;
-
-        for (int seg = 1; seg < SEGS; ++seg) {
-            double wantDist = seg * PaperDragonEntity.STEP;
-
-            while (trailCursor < count && accumDist < wantDist) {
-                int ringIdx = (headIdx - trailCursor + PaperDragonEntity.TRAIL_CAPACITY) % PaperDragonEntity.TRAIL_CAPACITY;
-                double tx = e.trailX[ringIdx];
-                double ty = e.trailY[ringIdx];
-                double tz = e.trailZ[ringIdx];
-                float tr = e.trailRoll[ringIdx];
-                double stepLen = Math.sqrt((tx - prevX) * (tx - prevX) + (ty - prevY) * (ty - prevY) + (tz - prevZ) * (tz - prevZ));
-                if (accumDist + stepLen >= wantDist && stepLen > 1.0E-5) {
-                    double frac = (wantDist - accumDist) / stepLen;
-                    double sx = Mth.lerp(frac, prevX, tx) - headWx;
-                    double sy = Mth.lerp(frac, prevY, ty) - headWy;
-                    double sz = Mth.lerp(frac, prevZ, tz) - headWz;
-                    outSpine[seg] = new Vec3(sx, sy, sz);
-                    outRoll[seg] = Mth.lerp((float) frac, prevR, tr);
-                    break;
-                }
-                accumDist += stepLen;
-                prevX = tx;
-                prevY = ty;
-                prevZ = tz;
-                prevR = tr;
-                ++trailCursor;
-            }
-
-            if (outSpine[seg] == null) {
-                double rem = wantDist - accumDist;
-                Vec3 tailBase = new Vec3(prevX - headWx, prevY - headWy, prevZ - headWz).add(fallbackBack.scale(rem));
-                outSpine[seg] = tailBase;
-                outRoll[seg] = prevR * 0.92F;
-            }
+        for (int i = 1; i < SEGS; ++i) {
+            double sx = Mth.lerp(pt, e.prevChainX[i], e.chainX[i]) - c0x;
+            double sy = Mth.lerp(pt, e.prevChainY[i], e.chainY[i]) - c0y;
+            double sz = Mth.lerp(pt, e.prevChainZ[i], e.chainZ[i]) - c0z;
+            outSpine[i] = new Vec3(sx, sy, sz);
+            outRoll[i] = Mth.lerp(pt, e.prevChainRoll[i], e.chainRoll[i]);
         }
 
-        // Накладываем живую бегущую волну серпантина (голова стабильна, а тело и хвост плавно струятся в воздухе!)
-        for (int seg = 1; seg < SEGS; ++seg) {
-            float u = (float) seg / (float) (SEGS - 1);
-            Vec3 tang = outSpine[Math.max(0, seg - 1)].subtract(outSpine[Math.min(SEGS - 1, seg + 1)]);
-            Vec3 side = new Vec3(-tang.z, 0.0, tang.x);
-            if (side.lengthSqr() > 1.0E-5) side = side.normalize();
-            else side = new Vec3(1.0, 0.0, 0.0);
-
-            float env = Mth.clamp(u * 2.6F, 0.0F, 1.0F) * (0.42F + 0.72F * u);
-            double latWave = Math.sin(time * 0.135F - seg * 0.21F + phase) * 0.44 * env;
-            double vertWave = Math.cos(time * 0.105F - seg * 0.17F + phase * 0.7F) * 0.20 * env;
-
-            outSpine[seg] = outSpine[seg].add(side.scale(latWave)).add(0.0, vertWave, 0.0);
-            outRoll[seg] += Mth.sin(time * 0.135F - seg * 0.21F + phase) * 8.5F * env;
+        // Smooth unit head forward vector blended seamlessly with neck chord (0->1)
+        Vec3 hFw = new Vec3(
+                Mth.lerp(pt, e.prevHeadFx, e.headFx),
+                Mth.lerp(pt, e.prevHeadFy, e.headFy),
+                Mth.lerp(pt, e.prevHeadFz, e.headFz));
+        Vec3 neckChord = outSpine[0].subtract(outSpine[1]);
+        if (neckChord.lengthSqr() > 1.0E-4) {
+            neckChord = neckChord.normalize();
+            hFw = hFw.scale(0.65).add(neckChord.scale(0.35));
         }
+        if (hFw.lengthSqr() < 1.0E-5) {
+            return new Vec3(0.0, 0.0, 1.0);
+        }
+        return hFw.normalize();
     }
 
-    /** Внутренняя плотная бумажная основа под кармашками модулей (0 сквозных просветов между кольцами!). */
     private static void renderInnerPaperTube(VertexConsumer vc, Matrix4f pose, Matrix3f normMat,
                                              Vec3[] spine, Vec3[] normals, Vec3[] binormals,
                                              int light, int ov) {
-        int tubeSides = 8;
+        int tubeSides = 10;
         for (int i = 0; i < SEGS - 1; ++i) {
-            float r0 = bodyRadius(i) * 0.76F;
-            float r1 = bodyRadius(i + 1) * 0.76F;
+            float r0 = bodyRadius(i) * 0.78F;
+            float r1 = bodyRadius(i + 1) * 0.78F;
             Vec3 c0 = spine[i], c1 = spine[i + 1];
             Vec3 u0 = normals[i], s0 = binormals[i];
             Vec3 u1 = normals[i + 1], s1 = binormals[i + 1];
@@ -290,11 +253,6 @@ public class PaperDragonRenderer extends EntityRenderer<PaperDragonEntity> {
         }
     }
 
-    /**
-     * 63 кольца × 12 трёхмерных сложенных бумажных модулей Golden-Venture:
-     * каждый модуль состоит из 2 внешних треугольных «крылышек» со складкой посередине и 2 внутренних
-     * подворотов кармашка, уложенных в настоящую шахматную перевязку с соседним кольцом!
-     */
     private static void renderModularOrigamiScales(VertexConsumer vc, Matrix4f pose, Matrix3f normMat,
                                                    Vec3[] spine, Vec3[] tangents, Vec3[] normals, Vec3[] binormals,
                                                    float time, float phase, int light, int ov) {
@@ -307,29 +265,23 @@ public class PaperDragonRenderer extends EntityRenderer<PaperDragonEntity> {
             Vec3 u0 = normals[i], s0 = binormals[i];
             Vec3 u1 = normals[i + 1], s1 = binormals[i + 1];
 
-            // Шахматное смещение каждого нечётного кольца на полмодуля — точная геометрия модульного оригами!
             float ringStagger = (i & 1) * (Mth.PI / MODULES_PER_RING);
             float halfSlot = (Mth.PI / MODULES_PER_RING) * 0.96F;
-            // Лёгкое «дыхание» бумажных чешуек при изгибе тела
-            float breath = 1.0F + 0.045F * Mth.sin(time * 0.14F - i * 0.25F + phase);
+            float breath = 1.0F + 0.035F * Mth.sin(time * 0.085F - i * 0.22F + phase);
 
             for (int m = 0; m < MODULES_PER_RING; ++m) {
                 float angMid = ringStagger + (Mth.TWO_PI * m) / MODULES_PER_RING;
-                // Небольшое брюшное уплощение снизу (как у настоящего бумажного дракона с фото-референса)
                 float radialScale = 1.0F - 0.10F * Math.max(0.0F, -Mth.cos(angMid));
 
                 float radBase = r0 * radialScale;
-                // Аккуратный 3D-рельеф бумажного уголка (+34% от радиуса — плотная многослойная укладка, НЕ колючки!)
                 float radTip = (r1 * radialScale * 0.88F + r0 * 0.34F * breath);
 
                 Vec3 baseLeft = ringPt(c0, u0, s0, angMid - halfSlot, radBase * 0.90F);
                 Vec3 baseRight = ringPt(c0, u0, s0, angMid + halfSlot, radBase * 0.90F);
                 Vec3 ridgeMid = ringPt(c0, u0, s0, angMid, radBase * 1.14F).subtract(t0.scale(PaperDragonEntity.STEP * 0.18));
-                // Острый сложенный кончик модуля направлен назад вдоль тела и перекрывает следующее кольцо!
                 Vec3 tipApex = ringPt(c1, u1, s1, angMid, radTip).subtract(t0.scale(PaperDragonEntity.STEP * 0.42));
                 Vec3 innerTuck = ringPt(c1, u1, s1, angMid, r1 * radialScale * 0.78F);
 
-                // Левая и правая внешние грани сложенного бумажного модуля (разный угол к свету -> чёткое ребро сгиба!)
                 paperTriSingle(vc, pose, normMat,
                         baseLeft, ridgeMid, tipApex,
                         0.05F, 0.06F, 0.35F, 0.50F, 0.98F, 0.50F,
@@ -339,7 +291,6 @@ public class PaperDragonRenderer extends EntityRenderer<PaperDragonEntity> {
                         0.35F, 0.50F, 0.05F, 0.94F, 0.98F, 0.50F,
                         CR_R, CR_G, CR_B, SH_R, SH_G, SH_B, FL_R, FL_G, FL_B, light, ov);
 
-                // Нижний подворот бумажного кармашка (закрывает толщину сложенного листа сбоку/сзади!)
                 paperTriSingle(vc, pose, normMat,
                         baseLeft, tipApex, innerTuck,
                         0.10F, 0.08F, 0.96F, 0.50F, 0.25F, 0.50F,
@@ -352,28 +303,26 @@ public class PaperDragonRenderer extends EntityRenderer<PaperDragonEntity> {
         }
     }
 
-    /** Высокий выразительный ряд спинных бумажных зубцов-гребней вдоль всего позвоночника дракона. */
     private static void renderDorsalOrigamiCrest(VertexConsumer vc, Matrix4f pose, Matrix3f normMat,
                                                  Vec3[] spine, Vec3[] tangents, Vec3[] normals, Vec3[] binormals,
                                                  float time, float phase, int light, int ov) {
         for (int i = 1; i < SEGS - 2; ++i) {
             float r = bodyRadius(i);
             float u = (float) i / (float) (SEGS - 1);
-            float crestH = (0.32F + 0.56F * Mth.sin(Mth.clamp(u * 1.15F, 0.05F, 1.0F) * Mth.PI * 0.88F))
-                    * (0.94F + 0.06F * Mth.sin(time * 0.18F - i * 0.35F + phase));
+            float crestH = SCALE * (0.32F + 0.56F * Mth.sin(Mth.clamp(u * 1.15F, 0.05F, 1.0F) * Mth.PI * 0.88F))
+                    * (0.95F + 0.05F * Mth.sin(time * 0.10F - i * 0.30F + phase));
 
             Vec3 c = spine[i];
             Vec3 fw = tangents[i];
             Vec3 up = normals[i];
             Vec3 sd = binormals[i];
 
-            Vec3 rootFront = c.add(up.scale(r * 0.96)).add(fw.scale(0.16));
-            Vec3 rootBack = c.add(up.scale(r * 0.92)).subtract(fw.scale(0.24));
-            Vec3 sideL = c.add(up.scale(r * 0.98)).subtract(sd.scale(0.11));
-            Vec3 sideR = c.add(up.scale(r * 0.98)).add(sd.scale(0.11));
-            Vec3 crestTip = c.add(up.scale(r + crestH)).subtract(fw.scale(0.34));
+            Vec3 rootFront = c.add(up.scale(r * 0.96)).add(fw.scale(0.16 * SCALE));
+            Vec3 rootBack = c.add(up.scale(r * 0.92)).subtract(fw.scale(0.24 * SCALE));
+            Vec3 sideL = c.add(up.scale(r * 0.98)).subtract(sd.scale(0.11 * SCALE));
+            Vec3 sideR = c.add(up.scale(r * 0.98)).add(sd.scale(0.11 * SCALE));
+            Vec3 crestTip = c.add(up.scale(r + crestH)).subtract(fw.scale(0.34 * SCALE));
 
-            // 4-гранный объёмный сложенный зуб гребня (никаких плоских 2D-пластинок!)
             paperTriSingle(vc, pose, normMat, rootFront, sideL, crestTip,
                     0.1F, 0.5F, 0.2F, 0.1F, 0.98F, 0.5F, CR_R, CR_G, CR_B, FL_R, FL_G, FL_B, CR_R, CR_G, CR_B, light, ov);
             paperTriSingle(vc, pose, normMat, sideR, rootFront, crestTip,
@@ -385,15 +334,9 @@ public class PaperDragonRenderer extends EntityRenderer<PaperDragonEntity> {
         }
     }
 
-    /**
-     * Супер-детализированная многослойная оригами-голова императорского китайского дракона:
-     * ступенчатая морда из 6 модульных складок, вздёрнутый бумажный кончик носа, шарнирная нижняя челюсть,
-     * выразительные тёмные глаза с бумажным бликом, ветвистые модульные рога, корона-воротник и 2 длинных живых уса!
-     */
     private static void renderOrigamiDragonHead(VertexConsumer vc, Matrix4f pose, Matrix3f normMat,
                                                 Vec3 neck, Vec3 fw, Vec3 up, Vec3 sd,
                                                 float jawOpen, float time, float phase, int light, int ov) {
-        // 1) Черепная коробка и ступенчатая верхняя челюсть / морда (длина 2.55 м вперёд от шеи!)
         int snoutSteps = 6;
         for (int s = 0; s < snoutSteps; ++s) {
             float u0 = (float) s / snoutSteps;
@@ -403,50 +346,45 @@ public class PaperDragonRenderer extends EntityRenderer<PaperDragonEntity> {
             float w0 = Mth.lerp(u0, 0.72F, 0.26F);
             float w1 = Mth.lerp(u1, 0.72F, 0.22F);
             float hTop0 = Mth.lerp(u0, 0.64F, 0.26F) + (s == snoutSteps - 1 ? 0.14F : 0.0F);
-            float hTop1 = Mth.lerp(u1, 0.64F, 0.34F); // вздёрнутый вверх императорский кончик носа!
+            float hTop1 = Mth.lerp(u1, 0.64F, 0.34F);
             float lipY0 = Mth.lerp(u0, -0.10F, 0.02F);
             float lipY1 = Mth.lerp(u1, -0.10F, 0.06F);
 
-            Vec3 top0 = headPt(neck, fw, up, sd, d0, hTop0, 0.0F);
-            Vec3 top1 = headPt(neck, fw, up, sd, d1, hTop1, 0.0F);
-            Vec3 l0 = headPt(neck, fw, up, sd, d0, lipY0, -w0);
-            Vec3 r0 = headPt(neck, fw, up, sd, d0, lipY0, +w0);
-            Vec3 l1 = headPt(neck, fw, up, sd, d1, lipY1, -w1);
-            Vec3 r1 = headPt(neck, fw, up, sd, d1, lipY1, +w1);
+            Vec3 top0 = headPtScaled(neck, fw, up, sd, d0, hTop0, 0.0F);
+            Vec3 top1 = headPtScaled(neck, fw, up, sd, d1, hTop1, 0.0F);
+            Vec3 l0 = headPtScaled(neck, fw, up, sd, d0, lipY0, -w0);
+            Vec3 r0 = headPtScaled(neck, fw, up, sd, d0, lipY0, +w0);
+            Vec3 l1 = headPtScaled(neck, fw, up, sd, d1, lipY1, -w1);
+            Vec3 r1 = headPtScaled(neck, fw, up, sd, d1, lipY1, +w1);
 
-            // Ступенчатый накладной бумажный модуль на переносице каждого сегмента морды!
-            Vec3 crestMid = headPt(neck, fw, up, sd, (d0 + d1) * 0.5F - 0.12F, (hTop0 + hTop1) * 0.5F + 0.14F, 0.0F);
+            Vec3 crestMid = headPtScaled(neck, fw, up, sd, (d0 + d1) * 0.5F - 0.12F, (hTop0 + hTop1) * 0.5F + 0.14F, 0.0F);
             paperTriSingle(vc, pose, normMat, l0, top0, l1, 0.1F, 0.1F, 0.4F, 0.5F, 0.9F, 0.2F, FL_R, FL_G, FL_B, CR_R, CR_G, CR_B, FL_R, FL_G, FL_B, light, ov);
             paperTriSingle(vc, pose, normMat, top0, top1, l1, 0.4F, 0.5F, 0.95F, 0.5F, 0.9F, 0.2F, CR_R, CR_G, CR_B, CR_R, CR_G, CR_B, FL_R, FL_G, FL_B, light, ov);
             paperTriSingle(vc, pose, normMat, top0, r0, r1, 0.4F, 0.5F, 0.1F, 0.9F, 0.9F, 0.8F, CR_R, CR_G, CR_B, SH_R, SH_G, SH_B, FL_R, FL_G, FL_B, light, ov);
             paperTriSingle(vc, pose, normMat, top0, r1, top1, 0.4F, 0.5F, 0.9F, 0.8F, 0.95F, 0.5F, CR_R, CR_G, CR_B, FL_R, FL_G, FL_B, CR_R, CR_G, CR_B, light, ov);
-            // Накладной треугольник-складка на спинке носа
             paperTriSingle(vc, pose, normMat, l0.lerp(top0, 0.55), crestMid, top1, 0.1F, 0.2F, 0.5F, 0.5F, 0.98F, 0.5F, FL_R, FL_G, FL_B, CR_R, CR_G, CR_B, CR_R, CR_G, CR_B, light, ov);
             paperTriSingle(vc, pose, normMat, crestMid, r0.lerp(top0, 0.55), top1, 0.5F, 0.5F, 0.1F, 0.8F, 0.98F, 0.5F, CR_R, CR_G, CR_B, SH_R, SH_G, SH_B, CR_R, CR_G, CR_B, light, ov);
-            // Нёбо верхней челюсти
             paperQuadSingle(vc, pose, normMat, l0, l1, r1, r0, IN_R, IN_G, IN_B, light, ov);
         }
 
-        // Заострённый бумажный кончик носа и рельефные ноздри-оригами
-        Vec3 noseBridge = headPt(neck, fw, up, sd, 2.35F, 0.34F, 0.0F);
-        Vec3 noseTip = headPt(neck, fw, up, sd, 2.72F, 0.48F, 0.0F);
-        Vec3 noseL = headPt(neck, fw, up, sd, 2.35F, 0.06F, -0.22F);
-        Vec3 noseR = headPt(neck, fw, up, sd, 2.35F, 0.06F, +0.22F);
+        Vec3 noseBridge = headPtScaled(neck, fw, up, sd, 2.35F, 0.34F, 0.0F);
+        Vec3 noseTip = headPtScaled(neck, fw, up, sd, 2.72F, 0.48F, 0.0F);
+        Vec3 noseL = headPtScaled(neck, fw, up, sd, 2.35F, 0.06F, -0.22F);
+        Vec3 noseR = headPtScaled(neck, fw, up, sd, 2.35F, 0.06F, +0.22F);
         paperTriSingle(vc, pose, normMat, noseL, noseBridge, noseTip, 0.1F, 0.2F, 0.5F, 0.5F, 0.98F, 0.5F, FL_R, FL_G, FL_B, CR_R, CR_G, CR_B, CR_R, CR_G, CR_B, light, ov);
         paperTriSingle(vc, pose, normMat, noseBridge, noseR, noseTip, 0.5F, 0.5F, 0.1F, 0.8F, 0.98F, 0.5F, CR_R, CR_G, CR_B, SH_R, SH_G, SH_B, CR_R, CR_G, CR_B, light, ov);
         paperTriSingle(vc, pose, normMat, noseR, noseL, noseTip, 0.2F, 0.8F, 0.2F, 0.2F, 0.95F, 0.5F, SH_R, SH_G, SH_B, SH_R, SH_G, SH_B, FL_R, FL_G, FL_B, light, ov);
 
-        // 2) Подвижная шарнирная нижняя челюсть с бумажными клыками и подбородком-бородой!
         Vec3 jawDir = fw.scale(Math.cos(jawOpen)).subtract(up.scale(Math.sin(jawOpen))).normalize();
         Vec3 jawUp = up.scale(Math.cos(jawOpen)).add(fw.scale(Math.sin(jawOpen))).normalize();
-        Vec3 jawHinge = headPt(neck, fw, up, sd, 0.22F, -0.18F, 0.0F);
+        Vec3 jawHinge = headPtScaled(neck, fw, up, sd, 0.22F, -0.18F, 0.0F);
 
-        Vec3 jl0 = jawHinge.subtract(sd.scale(0.56));
-        Vec3 jr0 = jawHinge.add(sd.scale(0.56));
-        Vec3 jKeel = jawHinge.add(jawDir.scale(1.05)).subtract(jawUp.scale(0.34));
-        Vec3 jTip = jawHinge.add(jawDir.scale(2.08)).subtract(jawUp.scale(0.04));
-        Vec3 jlMid = jawHinge.add(jawDir.scale(1.15)).subtract(sd.scale(0.32));
-        Vec3 jrMid = jawHinge.add(jawDir.scale(1.15)).add(sd.scale(0.32));
+        Vec3 jl0 = jawHinge.subtract(sd.scale(0.56 * SCALE));
+        Vec3 jr0 = jawHinge.add(sd.scale(0.56 * SCALE));
+        Vec3 jKeel = jawHinge.add(jawDir.scale(1.05 * SCALE)).subtract(jawUp.scale(0.34 * SCALE));
+        Vec3 jTip = jawHinge.add(jawDir.scale(2.08 * SCALE)).subtract(jawUp.scale(0.04 * SCALE));
+        Vec3 jlMid = jawHinge.add(jawDir.scale(1.15 * SCALE)).subtract(sd.scale(0.32 * SCALE));
+        Vec3 jrMid = jawHinge.add(jawDir.scale(1.15 * SCALE)).add(sd.scale(0.32 * SCALE));
 
         paperTriSingle(vc, pose, normMat, jl0, jKeel, jlMid, 0.1F, 0.1F, 0.5F, 0.5F, 0.8F, 0.2F, SH_R, SH_G, SH_B, FL_R, FL_G, FL_B, FL_R, FL_G, FL_B, light, ov);
         paperTriSingle(vc, pose, normMat, jKeel, jTip, jlMid, 0.5F, 0.5F, 0.98F, 0.5F, 0.8F, 0.2F, FL_R, FL_G, FL_B, CR_R, CR_G, CR_B, FL_R, FL_G, FL_B, light, ov);
@@ -456,21 +394,19 @@ public class PaperDragonRenderer extends EntityRenderer<PaperDragonEntity> {
         paperTriSingle(vc, pose, normMat, jl0, jrMid, jr0, 0.2F, 0.2F, 0.8F, 0.8F, 0.2F, 0.8F, IN_R, IN_G, IN_B, IN_R, IN_G, IN_B, IN_R, IN_G, IN_B, light, ov);
         paperTriSingle(vc, pose, normMat, jlMid, jTip, jrMid, 0.2F, 0.2F, 0.98F, 0.5F, 0.8F, 0.8F, FL_R, FL_G, FL_B, CR_R, CR_G, CR_B, FL_R, FL_G, FL_B, light, ov);
 
-        // Бумажные клыки-треугольники и острая бородка под нижней челюстью
         for (int side = -1; side <= 1; side += 2) {
-            Vec3 fangBase1 = headPt(neck, fw, up, sd, 1.72F, 0.02F, side * 0.27F);
-            Vec3 fangBase2 = headPt(neck, fw, up, sd, 1.92F, 0.04F, side * 0.23F);
-            Vec3 fangTip = headPt(neck, fw, up, sd, 1.82F, -0.22F, side * 0.24F);
+            Vec3 fangBase1 = headPtScaled(neck, fw, up, sd, 1.72F, 0.02F, side * 0.27F);
+            Vec3 fangBase2 = headPtScaled(neck, fw, up, sd, 1.92F, 0.04F, side * 0.23F);
+            Vec3 fangTip = headPtScaled(neck, fw, up, sd, 1.82F, -0.22F, side * 0.24F);
             paperTriSingle(vc, pose, normMat, fangBase1, fangBase2, fangTip, 0.2F, 0.2F, 0.2F, 0.8F, 0.98F, 0.5F, CR_R, CR_G, CR_B, CR_R, CR_G, CR_B, CR_R, CR_G, CR_B, light, ov);
         }
 
-        // 3) Выразительные надбровные бумажные дуги + тёмные оригами-глаза с живым бликом!
         for (int side = -1; side <= 1; side += 2) {
             float sg = (float) side;
-            Vec3 browFront = headPt(neck, fw, up, sd, 1.28F, 0.42F, sg * 0.46F);
-            Vec3 browMid = headPt(neck, fw, up, sd, 0.86F, 0.58F, sg * 0.64F);
-            Vec3 browBack = headPt(neck, fw, up, sd, 0.35F, 0.52F, sg * 0.68F);
-            Vec3 socket = headPt(neck, fw, up, sd, 0.92F, 0.30F, sg * 0.52F);
+            Vec3 browFront = headPtScaled(neck, fw, up, sd, 1.28F, 0.42F, sg * 0.46F);
+            Vec3 browMid = headPtScaled(neck, fw, up, sd, 0.86F, 0.58F, sg * 0.64F);
+            Vec3 browBack = headPtScaled(neck, fw, up, sd, 0.35F, 0.52F, sg * 0.68F);
+            Vec3 socket = headPtScaled(neck, fw, up, sd, 0.92F, 0.30F, sg * 0.52F);
             if (side < 0) {
                 paperTriSingle(vc, pose, normMat, socket, browMid, browFront, 0.2F, 0.2F, 0.6F, 0.5F, 0.95F, 0.5F, FL_R, FL_G, FL_B, CR_R, CR_G, CR_B, CR_R, CR_G, CR_B, light, ov);
                 paperTriSingle(vc, pose, normMat, browBack, browMid, socket, 0.2F, 0.2F, 0.95F, 0.5F, 0.3F, 0.8F, SH_R, SH_G, SH_B, CR_R, CR_G, CR_B, FL_R, FL_G, FL_B, light, ov);
@@ -479,11 +415,10 @@ public class PaperDragonRenderer extends EntityRenderer<PaperDragonEntity> {
                 paperTriSingle(vc, pose, normMat, socket, browMid, browBack, 0.3F, 0.8F, 0.95F, 0.5F, 0.2F, 0.2F, FL_R, FL_G, FL_B, CR_R, CR_G, CR_B, SH_R, SH_G, SH_B, light, ov);
             }
 
-            // Ромбовидный тёмный бумажный глаз снаружи глазницы (0 Z-fighting благодаря выносу +0.035 по sd!)
-            Vec3 eFront = headPt(neck, fw, up, sd, 1.16F, 0.28F, sg * 0.565F);
-            Vec3 eBack = headPt(neck, fw, up, sd, 0.72F, 0.32F, sg * 0.605F);
-            Vec3 eTop = headPt(neck, fw, up, sd, 0.94F, 0.41F, sg * 0.585F);
-            Vec3 eBot = headPt(neck, fw, up, sd, 0.94F, 0.19F, sg * 0.575F);
+            Vec3 eFront = headPtScaled(neck, fw, up, sd, 1.16F, 0.28F, sg * 0.57F);
+            Vec3 eBack = headPtScaled(neck, fw, up, sd, 0.72F, 0.32F, sg * 0.61F);
+            Vec3 eTop = headPtScaled(neck, fw, up, sd, 0.94F, 0.41F, sg * 0.59F);
+            Vec3 eBot = headPtScaled(neck, fw, up, sd, 0.94F, 0.19F, sg * 0.58F);
             if (side < 0) {
                 paperQuadSingle(vc, pose, normMat, eBack, eTop, eFront, eBot, EYE_R, EYE_G, EYE_B, light, ov);
             } else {
@@ -491,94 +426,82 @@ public class PaperDragonRenderer extends EntityRenderer<PaperDragonEntity> {
             }
         }
 
-        // 4) Два длинных ветвистых модульных рога-антенны (5 вложенных бумажных звеньев + боковой отросток!)
         for (int side = -1; side <= 1; side += 2) {
             float sg = (float) side;
-            Vec3 hStart = headPt(neck, fw, up, sd, 0.38F, 0.56F, sg * 0.36F);
+            Vec3 hStart = headPtScaled(neck, fw, up, sd, 0.38F, 0.56F, sg * 0.36F);
             Vec3 hDir = fw.scale(-0.76).add(up.scale(0.58)).add(sd.scale(sg * 0.32)).normalize();
-            renderStackedOrigamiChain(vc, pose, normMat, hStart, hDir, up, sd, 6, 0.40F, 0.24F, 0.05F, light, ov);
-            // Боковой зубец ветвистого оленьего рога китайского дракона
-            Vec3 tineStart = hStart.add(hDir.scale(0.95));
+            renderStackedOrigamiChain(vc, pose, normMat, hStart, hDir, up, sd, 6, 0.42F * SCALE, 0.25F * SCALE, 0.055F * SCALE, light, ov);
+            Vec3 tineStart = hStart.add(hDir.scale(0.95 * SCALE));
             Vec3 tineDir = fw.scale(-0.42).add(up.scale(0.78)).add(sd.scale(sg * 0.46)).normalize();
-            renderStackedOrigamiChain(vc, pose, normMat, tineStart, tineDir, up, sd, 3, 0.30F, 0.13F, 0.035F, light, ov);
+            renderStackedOrigamiChain(vc, pose, normMat, tineStart, tineDir, up, sd, 3, 0.32F * SCALE, 0.14F * SCALE, 0.04F * SCALE, light, ov);
         }
 
-        // 5) Пышный королевский бумажный воротник-грива из 9 расходящихся сложенных веерных модулей вокруг затылка!
-        for (int k = 0; k < 9; ++k) {
-            float ang = -Mth.PI * 0.72F + (Mth.PI * 1.44F * k) / 8.0F;
+        for (int k = 0; k < 11; ++k) {
+            float ang = -Mth.PI * 0.74F + (Mth.PI * 1.48F * k) / 10.0F;
             Vec3 radDir = up.scale(Mth.cos(ang)).add(sd.scale(Mth.sin(ang))).normalize();
             Vec3 tangRing = up.scale(-Mth.sin(ang)).add(sd.scale(Mth.cos(ang))).normalize();
-            Vec3 mRoot = neck.add(fw.scale(0.10)).add(radDir.scale(0.58));
-            Vec3 mLeft = mRoot.subtract(tangRing.scale(0.22));
-            Vec3 mRight = mRoot.add(tangRing.scale(0.22));
-            Vec3 mRidge = mRoot.add(radDir.scale(0.22)).subtract(fw.scale(0.18));
-            Vec3 mTip = mRoot.add(radDir.scale(0.68)).subtract(fw.scale(0.78));
+            Vec3 mRoot = neck.add(fw.scale(0.10 * SCALE)).add(radDir.scale(0.60 * SCALE));
+            Vec3 mLeft = mRoot.subtract(tangRing.scale(0.23 * SCALE));
+            Vec3 mRight = mRoot.add(tangRing.scale(0.23 * SCALE));
+            Vec3 mRidge = mRoot.add(radDir.scale(0.24 * SCALE)).subtract(fw.scale(0.18 * SCALE));
+            Vec3 mTip = mRoot.add(radDir.scale(0.72 * SCALE)).subtract(fw.scale(0.82 * SCALE));
             paperTriSingle(vc, pose, normMat, mLeft, mRidge, mTip, 0.1F, 0.1F, 0.4F, 0.5F, 0.98F, 0.5F, FL_R, FL_G, FL_B, CR_R, CR_G, CR_B, CR_R, CR_G, CR_B, light, ov);
             paperTriSingle(vc, pose, normMat, mRidge, mRight, mTip, 0.4F, 0.5F, 0.1F, 0.9F, 0.98F, 0.5F, CR_R, CR_G, CR_B, SH_R, SH_G, SH_B, FL_R, FL_G, FL_B, light, ov);
         }
 
-        // 6) Два длинных изгибающихся по ветру 6-сегментных бумажных уса китайского дракона по бокам морды!
         for (int side = -1; side <= 1; side += 2) {
             float sg = (float) side;
-            Vec3 wPrev = headPt(neck, fw, up, sd, 2.05F, 0.14F, sg * 0.25F);
-            for (int ws = 1; ws <= 6; ++ws) {
-                float wu = ws / 6.0F;
-                float flutter = Mth.sin(time * 0.22F - ws * 0.65F + phase + side) * (0.14F + 0.24F * wu);
-                float liftW = Mth.cos(time * 0.17F - ws * 0.55F + phase) * 0.12F * wu;
+            Vec3 wPrev = headPtScaled(neck, fw, up, sd, 2.05F, 0.14F, sg * 0.25F);
+            for (int ws = 1; ws <= 7; ++ws) {
+                float wu = ws / 7.0F;
+                float flutter = Mth.sin(time * 0.11F - ws * 0.55F + phase + side) * (0.12F + 0.22F * wu) * SCALE;
+                float liftW = Mth.cos(time * 0.085F - ws * 0.45F + phase) * 0.11F * wu * SCALE;
                 Vec3 wNext = wPrev
-                        .subtract(fw.scale(0.42))
-                        .add(sd.scale(sg * (0.24 + 0.08 * (1.0F - wu)) + flutter))
-                        .add(up.scale(0.05 + liftW));
-                float wThick = Mth.lerp(wu, 0.075F, 0.018F);
+                        .subtract(fw.scale(0.42 * SCALE))
+                        .add(sd.scale(sg * (0.24 + 0.08 * (1.0F - wu)) * SCALE + flutter))
+                        .add(up.scale(0.05 * SCALE + liftW));
+                float wThick = Mth.lerp(wu, 0.078F, 0.018F) * SCALE;
                 renderOrigamiPrismSegment(vc, pose, normMat, wPrev, wNext, up, sd, wThick, wThick * 0.72F, light, ov);
                 wPrev = wNext;
             }
         }
     }
 
-    /**
-     * Шарнирная пара модульных оригами-лап (передние или задние):
-     * наплечный бумажный модуль -> бедро из 3 вложенных модулей -> сустав колена/локтя ->
-     * голень/предплечье из 3 модулей -> 4 растопыренных острых бумажных когтя!
-     */
     private static void renderArticulatedOrigamiPairOfLegs(VertexConsumer vc, Matrix4f pose, Matrix3f normMat,
                                                            Vec3 bodyCenter, Vec3 fw, Vec3 up, Vec3 sd,
                                                            float bodyRad, boolean forelegs,
                                                            float time, float phase, float bankDeg, int light, int ov) {
         for (int side = -1; side <= 1; side += 2) {
             float sg = (float) side;
-            // Плавный гребной цикл лап в полёте + асимметричное поджатие при крене в вираже
-            float stride = Mth.sin(time * 0.13F + phase + (side > 0 ? 0.0F : Mth.PI));
-            float bankTuck = Mth.clamp(bankDeg * sg * 0.008F, -0.22F, 0.22F);
+            float stride = Mth.sin(time * 0.075F + phase + (side > 0 ? 0.0F : Mth.PI));
+            float bankTuck = Mth.clamp(bankDeg * sg * 0.008F, -0.20F, 0.20F);
 
             Vec3 shoulder = bodyCenter
                     .add(sd.scale(sg * bodyRad * 0.86))
                     .subtract(up.scale(bodyRad * 0.42));
 
-            // Наплечный резной бумажный щиток-эполет
-            Vec3 shShieldTip = shoulder.add(sd.scale(sg * 0.42)).subtract(fw.scale(0.48)).subtract(up.scale(0.18));
+            Vec3 shShieldTip = shoulder.add(sd.scale(sg * 0.42 * SCALE)).subtract(fw.scale(0.48 * SCALE)).subtract(up.scale(0.18 * SCALE));
             paperTriSingle(vc, pose, normMat,
-                    shoulder.add(fw.scale(0.24)), shoulder.add(up.scale(0.28)), shShieldTip,
+                    shoulder.add(fw.scale(0.24 * SCALE)), shoulder.add(up.scale(0.28 * SCALE)), shShieldTip,
                     0.1F, 0.2F, 0.4F, 0.5F, 0.98F, 0.5F, FL_R, FL_G, FL_B, CR_R, CR_G, CR_B, CR_R, CR_G, CR_B, light, ov);
             paperTriSingle(vc, pose, normMat,
-                    shoulder.add(up.scale(0.28)), shoulder.subtract(fw.scale(0.22)), shShieldTip,
+                    shoulder.add(up.scale(0.28 * SCALE)), shoulder.subtract(fw.scale(0.22 * SCALE)), shShieldTip,
                     0.4F, 0.5F, 0.1F, 0.8F, 0.98F, 0.5F, CR_R, CR_G, CR_B, SH_R, SH_G, SH_B, FL_R, FL_G, FL_B, light, ov);
 
-            // Верхнее звено лапы (бедро/плечо): направлено наружу, вниз и слегка назад
             Vec3 upperDir = sd.scale(sg * 0.52)
                     .subtract(up.scale(0.74 - bankTuck))
-                    .add(fw.scale((forelegs ? -0.24 : -0.36) + stride * 0.18))
+                    .add(fw.scale((forelegs ? -0.24 : -0.36) + stride * 0.14))
                     .normalize();
-            Vec3 elbow = renderStackedOrigamiChain(vc, pose, normMat, shoulder, upperDir, up, sd, 3, 0.36F, 0.25F, 0.18F, light, ov);
+            Vec3 elbow = renderStackedOrigamiChain(vc, pose, normMat, shoulder, upperDir, up, sd, 3,
+                    0.37F * SCALE, 0.26F * SCALE, 0.185F * SCALE, light, ov);
 
-            // Нижнее звено лапы (предплечье/цевка): сгиб вперёд и вниз к когтистой кисти!
-            Vec3 lowerDir = fw.scale(0.54 + stride * 0.16)
+            Vec3 lowerDir = fw.scale(0.54 + stride * 0.12)
                     .subtract(up.scale(0.72))
                     .add(sd.scale(sg * 0.22))
                     .normalize();
-            Vec3 wrist = renderStackedOrigamiChain(vc, pose, normMat, elbow, lowerDir, up, sd, 3, 0.33F, 0.19F, 0.13F, light, ov);
+            Vec3 wrist = renderStackedOrigamiChain(vc, pose, normMat, elbow, lowerDir, up, sd, 3,
+                    0.34F * SCALE, 0.195F * SCALE, 0.135F * SCALE, light, ov);
 
-            // 4 растопыренных сложенных из бумаги драконьих когтя (3 передних + 1 внутренний шпоровый коготь)
             for (int c = 0; c < 4; ++c) {
                 Vec3 clawDir;
                 float clawLen;
@@ -588,17 +511,17 @@ public class PaperDragonRenderer extends EntityRenderer<PaperDragonEntity> {
                             .subtract(up.scale(0.46 + 0.08 * Math.abs(c - 1)))
                             .add(sd.scale(spread + sg * 0.10))
                             .normalize();
-                    clawLen = (c == 1) ? 0.56F : 0.46F;
+                    clawLen = ((c == 1) ? 0.58F : 0.47F) * SCALE;
                 } else {
                     clawDir = fw.scale(-0.48).subtract(up.scale(0.68)).subtract(sd.scale(sg * 0.25)).normalize();
-                    clawLen = 0.36F;
+                    clawLen = 0.37F * SCALE;
                 }
-                renderOrigamiPrismSegment(vc, pose, normMat, wrist, wrist.add(clawDir.scale(clawLen)), up, sd, 0.095F, 0.015F, light, ov);
+                renderOrigamiPrismSegment(vc, pose, normMat, wrist, wrist.add(clawDir.scale(clawLen)),
+                        up, sd, 0.098F * SCALE, 0.016F * SCALE, light, ov);
             }
         }
     }
 
-    /** Императорский 7-лучевой бумажный веер на кончике хвоста (как у классического китайского оригами-дракона!). */
     private static void renderImperialOrigamiTailFan(VertexConsumer vc, Matrix4f pose, Matrix3f normMat,
                                                      Vec3 tailTip, Vec3 fw, Vec3 up, Vec3 sd,
                                                      float time, float phase, int light, int ov) {
@@ -606,16 +529,16 @@ public class PaperDragonRenderer extends EntityRenderer<PaperDragonEntity> {
         for (int p = -3; p <= 3; ++p) {
             float normP = p / 3.0F;
             float fanSpread = normP * 0.72F;
-            float wave = Mth.sin(time * 0.19F + p * 0.55F + phase) * 0.12F;
-            float plumeLen = 2.65F - Math.abs(normP) * 0.78F;
-            float plumeW = 0.24F - Math.abs(normP) * 0.04F;
+            float wave = Mth.sin(time * 0.10F + p * 0.55F + phase) * 0.10F;
+            float plumeLen = (2.75F - Math.abs(normP) * 0.80F) * SCALE;
+            float plumeW = (0.25F - Math.abs(normP) * 0.04F) * SCALE;
 
             Vec3 plumeDir = back.scale(Math.cos(fanSpread))
                     .add(sd.scale(Math.sin(fanSpread) * 0.88))
                     .add(up.scale(0.18F * (1.0F - Math.abs(normP)) + wave))
                     .normalize();
 
-            Vec3 root = tailTip.add(sd.scale(normP * 0.08));
+            Vec3 root = tailTip.add(sd.scale(normP * 0.09 * SCALE));
             Vec3 mid = root.add(plumeDir.scale(plumeLen * 0.52));
             Vec3 tip = root.add(plumeDir.scale(plumeLen));
 
@@ -627,7 +550,6 @@ public class PaperDragonRenderer extends EntityRenderer<PaperDragonEntity> {
             Vec3 mTop = mid.add(ridgeAxis.scale(plumeW * 0.55));
             Vec3 mBot = mid.subtract(ridgeAxis.scale(plumeW * 0.40));
 
-            // 4-гранное сложенное бумажное перо хвоста (верхние и нижние складки без Z-fighting!)
             paperTriSingle(vc, pose, normMat, root, mL, mTop, 0.1F, 0.2F, 0.5F, 0.1F, 0.5F, 0.5F, FL_R, FL_G, FL_B, FL_R, FL_G, FL_B, CR_R, CR_G, CR_B, light, ov);
             paperTriSingle(vc, pose, normMat, root, mTop, mR, 0.1F, 0.8F, 0.5F, 0.5F, 0.5F, 0.9F, FL_R, FL_G, FL_B, CR_R, CR_G, CR_B, SH_R, SH_G, SH_B, light, ov);
             paperTriSingle(vc, pose, normMat, mL, tip, mTop, 0.5F, 0.1F, 0.98F, 0.5F, 0.5F, 0.5F, FL_R, FL_G, FL_B, CR_R, CR_G, CR_B, CR_R, CR_G, CR_B, light, ov);
@@ -640,7 +562,6 @@ public class PaperDragonRenderer extends EntityRenderer<PaperDragonEntity> {
         }
     }
 
-    /** Вспомогательный строитель цепочки из вложенных друг в друга 3D оригами-модулей (для лап и ветвистых рогов). */
     private static Vec3 renderStackedOrigamiChain(VertexConsumer vc, Matrix4f pose, Matrix3f normMat,
                                                   Vec3 start, Vec3 dir, Vec3 refUp, Vec3 refSide,
                                                   int count, float stepLen, float startRad, float endRad,
@@ -652,7 +573,6 @@ public class PaperDragonRenderer extends EntityRenderer<PaperDragonEntity> {
             float r0 = Mth.lerp(u0, startRad, endRad);
             float r1 = Mth.lerp(u1, startRad, endRad) * 0.72F;
             Vec3 next = cur.add(dir.scale(stepLen));
-            // Перекрытие следующего звена (+25% длины) создаёт характерную ступенчатую чешуйчатую фактуру оригами!
             Vec3 flareEnd = cur.add(dir.scale(stepLen * 1.24));
             renderOrigamiPrismSegment(vc, pose, normMat, cur, flareEnd, refUp, refSide, r0, r1, light, ov);
             cur = next;
@@ -660,7 +580,6 @@ public class PaperDragonRenderer extends EntityRenderer<PaperDragonEntity> {
         return cur;
     }
 
-    /** 4-гранная ромбическая бумажная призма одного звена рога/лапы/уса (строго односторонняя наружу — 0 Z-fighting!). */
     private static void renderOrigamiPrismSegment(VertexConsumer vc, Matrix4f pose, Matrix3f normMat,
                                                   Vec3 a, Vec3 b, Vec3 hintUp, Vec3 hintSide,
                                                   float rA, float rB, int light, int ov) {
@@ -702,16 +621,17 @@ public class PaperDragonRenderer extends EntityRenderer<PaperDragonEntity> {
                 center.z + up.z * ca + side.z * sa);
     }
 
-    private static Vec3 headPt(Vec3 origin, Vec3 fw, Vec3 up, Vec3 sd, float f, float u, float s) {
+    private static Vec3 headPtScaled(Vec3 origin, Vec3 fw, Vec3 up, Vec3 sd, float f, float u, float s) {
+        float fs = f * SCALE, us = u * SCALE, ss = s * SCALE;
         return new Vec3(
-                origin.x + fw.x * f + up.x * u + sd.x * s,
-                origin.y + fw.y * f + up.y * u + sd.y * s,
-                origin.z + fw.z * f + up.z * u + sd.z * s);
+                origin.x + fw.x * fs + up.x * us + sd.x * ss,
+                origin.y + fw.y * fs + up.y * us + sd.y * ss,
+                origin.z + fw.z * fs + up.z * us + sd.z * ss);
     }
 
     /**
-     * РИСУЕТ СТРОГО ОДИН ТРЕУГОЛЬНИК С ЧЕСТНОЙ ВНЕШНЕЙ НОРМАЛЬЮ (НИКАКИХ ДУБЛИРУЮЩИХ ЗАДНИХ ГРАНЕЙ -> 0 Z-FIGHTING!).
-     * {@code RenderType.entityCutoutNoCull} уже отключает отсечение задних граней, поэтому одна грань видна с обеих сторон чисто!
+     * Emits a triangle as TWO positive-area halves of a quad: (p1, p2, mid(p2,p3), p3) —
+     * 0 degenerate zero-area triangles, 0 Z-fighting, 0 dropped points on any GPU/Mesa/shader pipeline!
      */
     private static void paperTriSingle(VertexConsumer vc, Matrix4f pose, Matrix3f normMat,
                                        Vec3 p1, Vec3 p2, Vec3 p3,
@@ -727,7 +647,6 @@ public class PaperDragonRenderer extends EntityRenderer<PaperDragonEntity> {
         float nx = nl > 1.0E-6 ? (float) (n.x / nl) : 0.0F;
         float ny = nl > 1.0E-6 ? (float) (n.y / nl) : 1.0F;
         float nz = nl > 1.0E-6 ? (float) (n.z / nl) : 0.0F;
-        // Смягчаем вертикальную компоненту нормали кверху (+0.35), чтобы бумажные чешуйки оставались светло-сливочными, а не серыми!
         float bnx = nx * 0.72F;
         float bny = Mth.clamp(ny * 0.72F + 0.38F, -0.35F, 1.0F);
         float bnz = nz * 0.72F;
@@ -738,9 +657,18 @@ public class PaperDragonRenderer extends EntityRenderer<PaperDragonEntity> {
             bnz /= bLen;
         }
 
+        float mx = (float) ((p2.x + p3.x) * 0.5);
+        float my = (float) ((p2.y + p3.y) * 0.5);
+        float mz = (float) ((p2.z + p3.z) * 0.5);
+        float mu = (u2 + u3) * 0.5F;
+        float mv = (v2 + v3) * 0.5F;
+        int mr = (r2 + r3) >> 1;
+        int mg = (g2 + g3) >> 1;
+        int mb = (b2 + b3) >> 1;
+
         vc.vertex(pose, (float) p1.x, (float) p1.y, (float) p1.z).color(r1, g1, b1, 255).uv(u1, v1).overlayCoords(ov).uv2(light).normal(normMat, bnx, bny, bnz).endVertex();
         vc.vertex(pose, (float) p2.x, (float) p2.y, (float) p2.z).color(r2, g2, b2, 255).uv(u2, v2).overlayCoords(ov).uv2(light).normal(normMat, bnx, bny, bnz).endVertex();
-        vc.vertex(pose, (float) p3.x, (float) p3.y, (float) p3.z).color(r3, g3, b3, 255).uv(u3, v3).overlayCoords(ov).uv2(light).normal(normMat, bnx, bny, bnz).endVertex();
+        vc.vertex(pose, mx, my, mz).color(mr, mg, mb, 255).uv(mu, mv).overlayCoords(ov).uv2(light).normal(normMat, bnx, bny, bnz).endVertex();
         vc.vertex(pose, (float) p3.x, (float) p3.y, (float) p3.z).color(r3, g3, b3, 255).uv(u3, v3).overlayCoords(ov).uv2(light).normal(normMat, bnx, bny, bnz).endVertex();
     }
 

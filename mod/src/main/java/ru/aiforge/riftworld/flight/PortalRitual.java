@@ -164,6 +164,49 @@ public final class PortalRitual {
         return rift;
     }
 
+    /**
+     * Прогрессивная волна пробуждения зала портала: зажигает ритуальные свечи, золотые руны (GOLD_RUNE)
+     * и мозаичные кольца вокруг печати на радиусе {@code maxRadius}.
+     */
+    public static void pulseSanctumRunesAndCandles(ServerLevel level, BlockPos sealFloorCenter, int maxRadius) {
+        BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
+        int rSq = maxRadius * maxRadius;
+        for (int dx = -maxRadius; dx <= maxRadius; ++dx) {
+            for (int dz = -maxRadius; dz <= maxRadius; ++dz) {
+                if (dx * dx + dz * dz > rSq) continue;
+                for (int dy = -2; dy <= 4; ++dy) {
+                    mp.set(sealFloorCenter.getX() + dx, sealFloorCenter.getY() + dy, sealFloorCenter.getZ() + dz);
+                    if (!level.isLoaded(mp)) continue;
+                    BlockState st = level.getBlockState(mp);
+                    if (st.getBlock() instanceof ru.aiforge.riftworld.block.RitualCandleBlock
+                            && !st.getValue(ru.aiforge.riftworld.block.RitualCandleBlock.LIT)) {
+                        BlockPos imm = mp.immutable();
+                        level.setBlock(imm, st.setValue(ru.aiforge.riftworld.block.RitualCandleBlock.LIT, true), 3);
+                        level.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, imm.getX() + 0.5, imm.getY() + 1.15, imm.getZ() + 0.5,
+                                5, 0.08, 0.12, 0.08, 0.01);
+                    } else if (st.getBlock() instanceof ru.aiforge.riftworld.block.GoldRuneBlock
+                            && !st.getValue(ru.aiforge.riftworld.block.GoldRuneBlock.LIT)) {
+                        BlockPos imm = mp.immutable();
+                        level.setBlock(imm, st.setValue(ru.aiforge.riftworld.block.GoldRuneBlock.LIT, true), 3);
+                        level.sendParticles(ParticleTypes.END_ROD, imm.getX() + 0.5, imm.getY() + 1.05, imm.getZ() + 0.5,
+                                3, 0.15, 0.15, 0.15, 0.02);
+                    } else if (st.getBlock() instanceof ru.aiforge.riftworld.block.MosaicBlock) {
+                        int wantStage = (dx == 0 && dz == 0) ? 3 : 2;
+                        if (st.getValue(ru.aiforge.riftworld.block.MosaicBlock.STAGE) < wantStage) {
+                            level.setBlock(mp.immutable(), st.setValue(ru.aiforge.riftworld.block.MosaicBlock.STAGE, wantStage), 3);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /** Полное мгновенное пробуждение зала портала в Обычном мире (руны + свечи + открытый Белый 3D-Пролом). */
+    public static SpatialRiftEntity awakenObservatorySanctum(ServerLevel level, BlockPos sealFloorCenter) {
+        pulseSanctumRunesAndCandles(level, sealFloorCenter, 12);
+        return spawnOpenBreach(level, sealFloorCenter.above());
+    }
+
     /** Активация древней печати храма (MOSAIC_CORE / GOLD_RUNE) подношением предмета в руке. */
     @SubscribeEvent
     public static void onUseBlock(PlayerInteractEvent.RightClickBlock e) {
@@ -235,6 +278,8 @@ public final class PortalRitual {
                 double cz = s.portalCenter.getZ() + 0.5;
 
                 if (s.tick % 4 == 0 && s.tick <= AWAKEN_TICKS) {
+                    int runeWaveR = Math.min(12, 1 + (s.tick * 11) / AWAKEN_TICKS);
+                    pulseSanctumRunesAndCandles(lvl, s.portalCenter.below(), runeWaveR);
                     double ringR = 0.6 + (s.tick / (double) AWAKEN_TICKS) * 12.0;
                     for (int k = 0; k < 10; ++k) {
                         double a = (k / 10.0) * Math.PI * 2.0 + s.tick * 0.11;

@@ -163,6 +163,7 @@ public final class ModBlocks {
             case PORTAL_LEVER -> new PortalLeverBlock(k, props);
             case LAB_DOOR -> new LabDoorBlock(k, props);
             case CRATE_WOOD, CRATE_METAL, CASTLE_CHEST -> new CrateBlock(k, props);
+            case RUG -> new ru.aiforge.riftworld.block.MergingRugBlock(k, props);
             default -> k.isElisar() ? new ModelBlock(k, props) : new ru.aiforge.riftworld.block.ModelEntityBlock(k, props);
         });
         MODELS.put(k, r);

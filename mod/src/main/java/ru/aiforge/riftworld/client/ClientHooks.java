@@ -110,6 +110,33 @@ public final class ClientHooks {
     }
 
     @SubscribeEvent
+    public static void modifyBakedModels(net.minecraftforge.client.event.ModelEvent.ModifyBakingResult e) {
+        var models = e.getModels();
+        wrapConnectedCarpet(models,
+                ru.aiforge.riftworld.registry.CastleBlocks.CARPET.get(),
+                new net.minecraft.resources.ResourceLocation(RiftWorld.MODID, "block/castle_carpet_center"),
+                new net.minecraft.resources.ResourceLocation(RiftWorld.MODID, "block/castle_carpet_trim"));
+        wrapConnectedCarpet(models,
+                ru.aiforge.riftworld.registry.ModBlocks.MODELS.get(ru.aiforge.riftworld.block.ModelKind.RUG).get(),
+                new net.minecraft.resources.ResourceLocation(RiftWorld.MODID, "block/rug_center"),
+                new net.minecraft.resources.ResourceLocation(RiftWorld.MODID, "block/rug_trim"));
+    }
+
+    private static void wrapConnectedCarpet(
+            java.util.Map<net.minecraft.resources.ResourceLocation, net.minecraft.client.resources.model.BakedModel> models,
+            net.minecraft.world.level.block.Block block,
+            net.minecraft.resources.ResourceLocation centerLoc,
+            net.minecraft.resources.ResourceLocation trimLoc) {
+        for (var state : block.getStateDefinition().getPossibleStates()) {
+            var mrl = net.minecraft.client.renderer.block.BlockModelShaper.stateToModelLocation(state);
+            var orig = models.get(mrl);
+            if (orig != null && !(orig instanceof ConnectedCarpetBakedModel)) {
+                models.put(mrl, new ConnectedCarpetBakedModel(orig, centerLoc, trimLoc));
+            }
+        }
+    }
+
+    @SubscribeEvent
     public static void reload(RegisterClientReloadListenersEvent e) {
         e.registerReloadListener((PreparableReloadListener) (ResourceManagerReloadListener) rm -> GlbAssets.clear());
     }

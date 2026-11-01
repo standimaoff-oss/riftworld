@@ -524,10 +524,13 @@ public final class BlacktideCitadel {
             }
         }
 
-        // 3) Скромные сундуки с припасами внутри надвратной башни, башни нижнего двора и зала Донжона!
-        placeCitadelChest(chunk, site, x0, z0, -54, 48, 36, Direction.NORTH, LandmarkStructures.LOOT_MODEST_MARITIME);
-        placeCitadelChest(chunk, site, x0, z0, -76, 49, -43, Direction.EAST, LandmarkStructures.LOOT_MODEST_MARITIME);
-        placeCitadelChest(chunk, site, x0, z0, 12, 64, -14, Direction.SOUTH, LandmarkStructures.LOOT_MODEST_WAYFARER);
+        // 3) Скромные сундуки с припасами в залах, крипте, ротонде, барбакане и башнях Цитадели!
+        placeCitadelChest(chunk, site, x0, z0, 45, 70, -29, Direction.SOUTH, LandmarkStructures.LOOT_MODEST_WAYFARER);
+        placeCitadelChest(chunk, site, x0, z0, 45, 70, -21, Direction.NORTH, LandmarkStructures.LOOT_MODEST_WAYFARER);
+        placeCitadelChest(chunk, site, x0, z0, -70, 72, 35, Direction.EAST, LandmarkStructures.LOOT_MODEST_MARITIME);
+        placeCitadelChest(chunk, site, x0, z0, -25, 64, 29, Direction.NORTH, LandmarkStructures.LOOT_MODEST_WAYFARER);
+        placeCitadelChest(chunk, site, x0, z0, -14, 53, -29, Direction.SOUTH, LandmarkStructures.LOOT_MODEST_MARITIME);
+        placeCitadelChest(chunk, site, x0, z0, -76, 48, -45, Direction.EAST, LandmarkStructures.LOOT_MODEST_MARITIME);
     }
 
     private static void placeCitadelChest(ChunkAccess chunk, Site site, int x0, int z0,

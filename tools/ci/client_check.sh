@@ -1605,13 +1605,71 @@ biome_section() {
   fi
   probe_and_shot_struct "blacktide_bridge_shore"  6000 "115_blacktide_bridge_from_ashen_land"  0 0 22
   probe_and_shot_struct "blacktide_citadel"       6000 "114_blacktide_citadel_sea_and_shore"   0 0 24
+  probe_and_shot_struct "blacktide_cathedral_hall"   250 "119_blacktide_cathedral_throne_hall" 0 0 14
+  probe_and_shot_struct "blacktide_rotunda_sanctum"  180 "120_blacktide_rotunda_sanctum"       0 0 12
+  probe_and_shot_struct "blacktide_tower_walkability" 350 "121_blacktide_tower_stairs_panorama" 0 0 12
   probe_and_shot_struct "ashen_burned_church"      900 "116_ashen_burned_church"               0 0 16
   probe_and_shot_struct "ashen_combo_matrix"       100 "117_ashen_empty_biome_panorama"        0 0 16
   probe_and_shot_struct "enlarged_biomes_audit"    500 "118_enlarged_violet_hills_panorama"    0 0 18
+  probe_and_shot_struct "connected_carpets_showcase" 200 "122_connected_carpets_shapes"        0 0 10
 
   # Прогреваем серверные чанки Белого Города перед переносом через пролом, чтобы на катсцене весь город и замок сияли с 1-й секунды!
   EL tp TestPlayer 24 162 88 195 12 >/dev/null 2>&1 || true
   sleep 4
+
+  # ---------- v0.24.0: Обсерватория Портала в Обычном мире (всё для полного открытия Белого 3D-Пролома!) ----------
+  echo "== v0.24.0: Обсерватория Портала в Обычном мире (сундуки с припасами, 8 свечей, ковёр, руны и пробуждение 3D-Пролома) =="
+  OBS_F=$(RCON execute in minecraft:overworld run riftportal observatory_find 2>&1 | tr '\r\n' '  ')
+  log "  /riftportal observatory_find -> ${OBS_F:0:220}"
+  OBS_AT=$(printf '%s' "$OBS_F" | sed -n 's/.* at=\([-0-9]*,[-0-9]*,[-0-9]*\).*/\1/p' | tail -1)
+  if [ -n "${OBS_AT:-}" ]; then
+    RCON execute in minecraft:overworld run gamemode spectator TestPlayer >/dev/null 2>&1 || true
+    RCON execute in minecraft:overworld run time set 6000 >/dev/null 2>&1 || true
+    RCON execute in minecraft:overworld run weather clear >/dev/null 2>&1 || true
+    RCON execute in minecraft:overworld run tp TestPlayer $(printf '%s' "$OBS_AT" | tr ',' ' ') >/dev/null 2>&1 || true
+    sleep 9
+    OBS_V=$(RCON execute in minecraft:overworld run riftportal observatory_verify 2>&1 | tr '\r\n' '  ')
+    log "  /riftportal observatory_verify -> ${OBS_V:0:240}"
+    OBS_CAM=$(printf '%s' "$OBS_V" | grep -o 'cam=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^cam=//')
+    OBS_CND=$(printf '%s' "$OBS_V" | sed -n 's/.* candles=\([0-9]*\).*/\1/p' | tail -1)
+    OBS_CHS=$(printf '%s' "$OBS_V" | sed -n 's/.* chests=\([0-9]*\).*/\1/p' | tail -1)
+    if [ "${OBS_CND:-0}" -ge 8 ] && [ "${OBS_CHS:-0}" -ge 2 ] && [ -n "${OBS_CAM:-}" ]; then
+      log "  OK   Обсерватория Обычного мира построена со всем ритуальным набором: candles=${OBS_CND}, chests=${OBS_CHS}"
+      OCX=$(printf '%s' "$OBS_CAM" | cut -d: -f1 | cut -d, -f1)
+      OCY=$(printf '%s' "$OBS_CAM" | cut -d: -f1 | cut -d, -f2)
+      OCZ=$(printf '%s' "$OBS_CAM" | cut -d: -f1 | cut -d, -f3)
+      OLX=$(printf '%s' "$OBS_CAM" | cut -d: -f2 | cut -d, -f1)
+      OLY=$(printf '%s' "$OBS_CAM" | cut -d: -f2 | cut -d, -f2)
+      OLZ=$(printf '%s' "$OBS_CAM" | cut -d: -f2 | cut -d, -f3)
+      OYP=$(python3 tools/ci/lookat_angles.py "$OCX" "$OCY" "$OCZ" "$OLX" "$OLY" "$OLZ")
+      RCON execute in minecraft:overworld run tp TestPlayer "$OCX" "$OCY" "$OCZ" ${OYP% *} ${OYP#* } >/dev/null 2>&1 || true
+      sleep 4
+      shot "123_overworld_portal_observatory"
+
+      OBS_AW=$(RCON execute in minecraft:overworld run riftportal observatory_awaken 2>&1 | tr '\r\n' '  ')
+      log "  /riftportal observatory_awaken -> ${OBS_AW:0:240}"
+      OACAM=$(printf '%s' "$OBS_AW" | grep -o 'cam=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^cam=//')
+      if echo "$OBS_AW" | grep -q "rift=true" && [ -n "${OACAM:-}" ]; then
+        log "  OK   Обсерватория пробудила все руны, свечи и Белый 3D-Пролом в Элисар!"
+        ACX=$(printf '%s' "$OACAM" | cut -d: -f1 | cut -d, -f1)
+        ACY=$(printf '%s' "$OACAM" | cut -d: -f1 | cut -d, -f2)
+        ACZ=$(printf '%s' "$OACAM" | cut -d: -f1 | cut -d, -f3)
+        ALX=$(printf '%s' "$OACAM" | cut -d: -f2 | cut -d, -f1)
+        ALY=$(printf '%s' "$OACAM" | cut -d: -f2 | cut -d, -f2)
+        ALZ=$(printf '%s' "$OACAM" | cut -d: -f2 | cut -d, -f3)
+        AYP=$(python3 tools/ci/lookat_angles.py "$ACX" "$ACY" "$ACZ" "$ALX" "$ALY" "$ALZ")
+        RCON execute in minecraft:overworld run tp TestPlayer "$ACX" "$ACY" "$ACZ" ${AYP% *} ${AYP#* } >/dev/null 2>&1 || true
+        sleep 3
+        shot "124_overworld_portal_observatory_awakened"
+      else
+        log "  FAIL /riftportal observatory_awaken не открыл 3D-пролом (${OBS_AW:0:140})"; FAILS=$((FAILS + 1))
+      fi
+    else
+      log "  FAIL /riftportal observatory_verify: candles=${OBS_CND:-0}, chests=${OBS_CHS:-0}"; FAILS=$((FAILS + 1))
+    fi
+  else
+    log "  FAIL /riftportal observatory_find не вернул координаты"; FAILS=$((FAILS + 1))
+  fi
 
   # Безблочный Белый 3D-Пролом в Пространстве + вход внутрь + мягкая вуаль без GUI/F5 + катсцена Белого Города с титрами!
   EL gamemode creative TestPlayer >/dev/null 2>&1 || true

@@ -2180,110 +2180,85 @@ public final class SeaProbeCommand {
             return 1;
         }
 
-        // ---------- v0.20.0: Модульный оригами-дракон под островами + 2D белые волны под островами и у водопадов ----------
+        // ---------- v0.20.0 / v0.24.0: Увеличенный (~47.7 м) плавный Оригами-Дракон СТРОГО ВНЕ Белого Города ----------
         int sea = CityPlan.get().ocean;
         if (k.startsWith("origami_dragon")) {
-            List<CityPlan.Island> high = FloatingIslands.gather(0.0, 0.0, 420.0, true);
+            List<CityPlan.Island> high = FloatingIslands.gather(0.0, 0.0, 980.0, false);
             CityPlan.Island pick = null;
             for (CityPlan.Island cand : high) {
-                if (cand.kind != 0 && cand.R >= 18.0 && cand.R <= 48.0 && cand.base >= sea + 20.0) {
+                if (cand.kind != 0 && cand.R >= 22.0 && cand.R <= 56.0 && cand.base >= sea + 22.0
+                        && !ru.aiforge.riftworld.entity.PaperDragonEntity.isInsideCityNoFlyZone(CityPlan.get(), cand.cx, cand.cz, 65.0)) {
                     pick = cand;
                     break;
                 }
             }
-            if (pick == null && !high.isEmpty()) pick = high.get(0);
             if (pick == null) {
-                src.sendFailure(Component.literal("riftstruct: no floating island found for origami_dragon"));
+                for (CityPlan.Island cand : high) {
+                    if (cand.kind != 0 && !ru.aiforge.riftworld.entity.PaperDragonEntity.isInsideCityNoFlyZone(CityPlan.get(), cand.cx, cand.cz, 35.0)) {
+                        pick = cand;
+                        break;
+                    }
+                }
+            }
+            if (pick == null) {
+                src.sendFailure(Component.literal("riftstruct: no wild floating island outside city found for origami_dragon"));
                 return 0;
             }
 
             double ang = 0.72;
             double ca = Math.cos(ang), sa = Math.sin(ang);
             double rim = pick.rimDist(ca, sa);
-            double dx = pick.cx + ca * (rim * 0.90);
-            double dz = pick.cz + sa * (rim * 0.90);
-            double approxCeil = FloatingIslands.approxUndersideY(pick, dx, dz, sea);
-            double dy = Math.max(sea + 7.5, Math.min(approxCeil - 5.0, pick.base - 7.5));
+            double dx = pick.cx + ca * (rim + 28.0);
+            double dz = pick.cz + sa * (rim + 28.0);
+            double approxCeil = FloatingIslands.approxUndersideY(pick, pick.cx + ca * (rim * 0.85), pick.cz + sa * (rim * 0.85), sea);
+            double dy = Math.max(sea + 8.5, Math.min(approxCeil - 6.0, pick.base - 7.5));
 
-            // Если чанк уже прогружен — выбираем угол вокруг острова, где сверху есть настоящий каменный карниз,
-            // а на высоте полёта и по курсу — 100% чистый воздух без сталактитов!
-            if (level.hasChunk(((int) Math.floor(pick.cx)) >> 4, ((int) Math.floor(pick.cz)) >> 4)) {
-                int topScan = (int) Math.ceil(pick.base + 6.0);
-                for (int step = 0; step < 16; ++step) {
-                    double testAng = 0.72 + step * (Math.PI * 2.0 / 16.0);
-                    double tca = Math.cos(testAng), tsa = Math.sin(testAng);
-                    double trim = pick.rimDist(tca, tsa);
-                    double tdx = pick.cx + tca * (trim * 0.90);
-                    double tdz = pick.cz + tsa * (trim * 0.90);
-                    if (!level.hasChunk(((int) Math.floor(tdx)) >> 4, ((int) Math.floor(tdz)) >> 4)) continue;
-                    double realCeil = ru.aiforge.riftworld.entity.PaperDragonEntity.lowestSolidInColumn(level, tdx, tdz, sea, topScan);
-                    if (realCeil < sea + 13.0) continue; // слишком низкий сталактит — ищем более высокий свод
-                    double tdy = (realCeil < topScan)
-                            ? Math.max(sea + 7.5, realCeil - 5.2)
-                            : Math.max(sea + 8.5, Math.min(FloatingIslands.approxUndersideY(pick, tdx, tdz, sea) - 5.0, pick.base - 7.0));
-                    var clearBox = new net.minecraft.world.phys.AABB(tdx - 2.4, tdy - 1.2, tdz - 2.4, tdx + 2.4, tdy + 2.4, tdz + 2.4);
-                    if (level.noCollision(clearBox)) {
-                        ang = testAng;
-                        ca = tca;
-                        sa = tsa;
-                        dx = tdx;
-                        dy = tdy;
-                        dz = tdz;
-                        break;
-                    }
-                }
-            }
-
-            // Камера для съёмки супер-детализированного 27-метрового оригами-дракона:
-            // - origami_dragon_closeup: крупный план многослойной головы, рогов, усов, лап и 768 модулей в открытом солнечном небе у скалы!
-            // - origami_dragon_under_release: живой полёт ПОД каменным сводом парящего острова над морем и белыми волнами!
-            // - origami_dragon_over_release: живое величественное парение НАД парящим островом и его кронами!
             boolean overIsland = k.contains("over");
             boolean closeup = k.contains("closeup");
-            double tx = -sa, tz = ca; // касательная полёта против часовой стрелки
+            double tx = -sa, tz = ca;
             if (closeup) {
-                dx = pick.cx + ca * (rim + 18.0);
-                dz = pick.cz + sa * (rim + 18.0);
-                dy = pick.base + 8.0;
+                dx = pick.cx + ca * (rim + 30.0);
+                dz = pick.cz + sa * (rim + 30.0);
+                dy = pick.base + 10.0;
             } else if (overIsland) {
-                dx = pick.cx + ca * (rim * 0.36);
-                dz = pick.cz + sa * (rim * 0.36);
-                dy = FloatingIslands.approxTopY(CityPlan.get(), pick, dx, dz) + 14.0;
+                dx = pick.cx + ca * (rim + 26.0);
+                dz = pick.cz + sa * (rim + 26.0);
+                dy = pick.base + 14.0;
             } else {
-                // Под внешним сводом парящего острова: на y = sea + 11.5 (между каменным сводом острова сверху и бирюзовым морем внизу!)
-                dx = pick.cx + ca * (rim * 0.74);
-                dz = pick.cz + sa * (rim * 0.74);
+                dx = pick.cx + ca * (rim * 0.76);
+                dz = pick.cz + sa * (rim * 0.76);
                 double approxCeilHere = FloatingIslands.approxUndersideY(pick, dx, dz, sea);
-                dy = Math.max(sea + 11.0, Math.min(approxCeilHere - 6.0, sea + 15.0));
+                dy = Math.max(sea + 11.5, Math.min(approxCeilHere - 6.5, sea + 16.0));
             }
 
             int camX, camY, camZ, lkX, lkY, lkZ;
             if (closeup) {
-                camX = (int) Math.round(dx + ca * 11.5 + tx * 2.5);
-                camY = (int) Math.round(dy + 2.2);
-                camZ = (int) Math.round(dz + sa * 11.5 + tz * 2.5);
-                lkX = (int) Math.round(dx - tx * 6.5);
-                lkY = (int) Math.round(dy - 0.2);
-                lkZ = (int) Math.round(dz - tz * 6.5);
+                camX = (int) Math.round(dx + ca * 19.5 + tx * 4.5);
+                camY = (int) Math.round(dy + 3.6);
+                camZ = (int) Math.round(dz + sa * 19.5 + tz * 4.5);
+                lkX = (int) Math.round(dx - tx * 10.5);
+                lkY = (int) Math.round(dy - 0.4);
+                lkZ = (int) Math.round(dz - tz * 10.5);
             } else if (overIsland) {
-                camX = (int) Math.round(dx + ca * 22.0 + tx * 10.5);
-                camY = (int) Math.round(dy + 6.0);
-                camZ = (int) Math.round(dz + sa * 22.0 + tz * 10.5);
-                lkX = (int) Math.round(dx + tx * 3.5);
-                lkY = (int) Math.round(dy - 3.5);
-                lkZ = (int) Math.round(dz + tz * 3.5);
+                camX = (int) Math.round(dx + ca * 30.0 + tx * 14.0);
+                camY = (int) Math.round(dy + 8.0);
+                camZ = (int) Math.round(dz + sa * 30.0 + tz * 14.0);
+                lkX = (int) Math.round(dx - tx * 5.0);
+                lkY = (int) Math.round(dy - 2.0);
+                lkZ = (int) Math.round(dz - tz * 5.0);
             } else {
-                camX = (int) Math.round(pick.cx + ca * (rim + 15.0) + tx * 10.0);
-                camY = (int) Math.round(sea + 10.0);
-                camZ = (int) Math.round(pick.cz + sa * (rim + 15.0) + tz * 10.0);
-                lkX = (int) Math.round(dx + tx * 3.5);
-                lkY = (int) Math.round(dy + 1.5);
-                lkZ = (int) Math.round(dz + tz * 3.5);
+                camX = (int) Math.round(pick.cx + ca * (rim + 22.0) + tx * 14.0);
+                camY = (int) Math.round(sea + 11.0);
+                camZ = (int) Math.round(pick.cz + sa * (rim + 22.0) + tz * 14.0);
+                lkX = (int) Math.round(dx - tx * 4.0);
+                lkY = (int) Math.round(dy + 1.0);
+                lkZ = (int) Math.round(dz - tz * 4.0);
             }
 
+            boolean citySafe = !ru.aiforge.riftworld.entity.PaperDragonEntity.isInsideCityNoFlyZone(CityPlan.get(), dx, dz, 0.0);
             int dragonCnt = 0;
-            if (level.hasChunk(((int) Math.floor(dx)) >> 4, ((int) Math.floor(dz)) >> 4)) {
-                var box = new net.minecraft.world.phys.AABB(pick.cx - 96, sea, pick.cz - 96, pick.cx + 96, pick.base + 64, pick.cz + 96);
+            if (citySafe && level.hasChunk(((int) Math.floor(dx)) >> 4, ((int) Math.floor(dz)) >> 4)) {
+                var box = new net.minecraft.world.phys.AABB(pick.cx - 128, sea, pick.cz - 128, pick.cx + 128, pick.base + 80, pick.cz + 128);
                 level.getEntitiesOfClass(ru.aiforge.riftworld.entity.PaperDragonEntity.class, box)
                         .forEach(net.minecraft.world.entity.Entity::discard);
 
@@ -2292,16 +2267,16 @@ public final class SeaProbeCommand {
                 var d = ru.aiforge.riftworld.registry.ModEntities.PAPER_DRAGON.get().create(level);
                 if (d != null) {
                     int fMode = overIsland
-                            ? ru.aiforge.riftworld.entity.PaperDragonEntity.FLIGHT_OVER_ISLAND
+                            ? ru.aiforge.riftworld.entity.PaperDragonEntity.FLIGHT_ALONG_ISLAND_RIM
                             : ru.aiforge.riftworld.entity.PaperDragonEntity.FLIGHT_UNDER_ISLAND;
-                    d.moveTo(dx, dy, dz, yaw, overIsland ? -3.0F : -1.5F);
+                    d.moveTo(dx, dy, dz, yaw, overIsland ? -2.0F : -1.0F);
                     d.yRotO = yaw;
                     d.yBodyRot = yaw;
                     d.yBodyRotO = yaw;
                     d.yHeadRot = yaw;
                     d.yHeadRotO = yaw;
-                    d.setHomeAnchor(new net.minecraft.world.phys.Vec3(pick.cx, pick.base, pick.cz), fMode);
-                    d.setDeltaMovement(tx * 0.48, 0.0, tz * 0.48);
+                    d.setHomeAnchor(new net.minecraft.world.phys.Vec3(pick.cx, dy, pick.cz), fMode);
+                    d.setDeltaMovement(tx * 0.42, 0.0, tz * 0.42);
                     d.setNoAi(!releaseAi);
                     level.addFreshEntity(d);
                     dragonCnt = 1;
@@ -2310,7 +2285,8 @@ public final class SeaProbeCommand {
 
             int ix = (int) Math.round(dx), iy = (int) Math.round(dy), iz = (int) Math.round(dz);
             String line = "riftstruct kind=" + k + " at=" + ix + "," + iy + "," + iz
-                    + " dragons=" + dragonCnt + " blocks=" + (180 + dragonCnt * 40)
+                    + " city_safe=" + citySafe
+                    + " dragons=" + dragonCnt + " blocks=" + (citySafe ? (180 + dragonCnt * 40) : 0)
                     + " sub_air=0 cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
@@ -2794,6 +2770,201 @@ public final class SeaProbeCommand {
             return 1;
         }
 
+        // ---------- v0.24.0: Полный интерьер и лестницы Чёрного Замка (Blacktide), соединённые ковры и Обсерватория Обычного мира ----------
+        if (k.equals("blacktide_cathedral_hall") || k.equals("blacktide_rotunda_sanctum") || k.equals("blacktide_tower_walkability")) {
+            AshenLands.Region bestAr = null;
+            double bestD = Double.MAX_VALUE;
+            for (int sx = -3; sx <= 3; ++sx) {
+                for (int sz = -3; sz <= 3; ++sz) {
+                    AshenLands.Region ar = AshenLands.region(sx, sz);
+                    if (ar == null || !ar.hasBlacktide || ar.blacktideSite == null) continue;
+                    double d = Math.hypot(ar.blacktideSite.cx - at.getX(), ar.blacktideSite.cz - at.getZ());
+                    if (d < bestD) { bestD = d; bestAr = ar; }
+                }
+            }
+            if (bestAr == null || bestAr.blacktideSite == null) {
+                src.sendFailure(Component.literal("riftstruct: blacktide site not found for " + k));
+                return 0;
+            }
+            BlacktideCitadel.Site bs = bestAr.blacktideSite;
+
+            if (k.equals("blacktide_cathedral_hall")) {
+                int camX = bs.cx + BlacktideCitadel.rotX(-16, -25, bs.rot);
+                int camY = bs.baseY + 69;
+                int camZ = bs.cz + BlacktideCitadel.rotZ(-16, -25, bs.rot);
+                int lkX = bs.cx + BlacktideCitadel.rotX(44, -25, bs.rot);
+                int lkY = bs.baseY + 73;
+                int lkZ = bs.cz + BlacktideCitadel.rotZ(44, -25, bs.rot);
+
+                int carpets = 0, thrones = 0, chandeliers = 0, goldCaps = 0;
+                BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
+                for (int lx = -36; lx <= 49; ++lx) {
+                    for (int lz = -45; lz <= -6; ++lz) {
+                        int wx = bs.cx + BlacktideCitadel.rotX(lx, lz, bs.rot);
+                        int wz = bs.cz + BlacktideCitadel.rotZ(lx, lz, bs.rot);
+                        if (!level.hasChunk(wx >> 4, wz >> 4)) continue;
+                        for (int by = 63; by <= 97; ++by) {
+                            BlockState st = level.getBlockState(mp.set(wx, bs.baseY + by, wz));
+                            if (st.isAir()) continue;
+                            if (st.is(ru.aiforge.riftworld.registry.CastleBlocks.CARPET.get())) ++carpets;
+                            else if (st.is(ru.aiforge.riftworld.registry.ModBlocks.MODELS.get(ru.aiforge.riftworld.block.ModelKind.BOSS_THRONE).get())) ++thrones;
+                            else if (st.is(ru.aiforge.riftworld.registry.ModBlocks.MODELS.get(ru.aiforge.riftworld.block.ModelKind.CASTLE_CHANDELIER).get())) ++chandeliers;
+                            else if (st.is(net.minecraft.world.level.block.Blocks.GOLD_BLOCK)
+                                    || st.is(net.minecraft.world.level.block.Blocks.GILDED_BLACKSTONE)) ++goldCaps;
+                        }
+                    }
+                }
+                int metric = (carpets >= 180 && thrones >= 1 && chandeliers >= 4 && goldCaps >= 60)
+                        ? (carpets + goldCaps + thrones * 50 + chandeliers * 20) : 0;
+                String line = "riftstruct kind=blacktide_cathedral_hall at=" + camX + "," + camY + "," + camZ
+                        + " carpets=" + carpets + " thrones=" + thrones + " chandeliers=" + chandeliers + " gold=" + goldCaps
+                        + " blocks=" + metric + " sub_air=0"
+                        + " cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
+                src.sendSuccess(() -> Component.literal(line), false);
+                return 1;
+            }
+
+            if (k.equals("blacktide_rotunda_sanctum")) {
+                int camX = bs.cx + BlacktideCitadel.rotX(-25, 12, bs.rot);
+                int camY = bs.baseY + 68;
+                int camZ = bs.cz + BlacktideCitadel.rotZ(-25, 12, bs.rot);
+                int lkX = bs.cx + BlacktideCitadel.rotX(-25, 23, bs.rot);
+                int lkY = bs.baseY + 66;
+                int lkZ = bs.cz + BlacktideCitadel.rotZ(-25, 23, bs.rot);
+
+                int carpets = 0, altars = 0, books = 0;
+                BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
+                for (int lx = -37; lx <= -13; ++lx) {
+                    for (int lz = 10; lz <= 34; ++lz) {
+                        int wx = bs.cx + BlacktideCitadel.rotX(lx, lz, bs.rot);
+                        int wz = bs.cz + BlacktideCitadel.rotZ(lx, lz, bs.rot);
+                        if (!level.hasChunk(wx >> 4, wz >> 4)) continue;
+                        for (int by = 63; by <= 78; ++by) {
+                            BlockState st = level.getBlockState(mp.set(wx, bs.baseY + by, wz));
+                            if (st.isAir()) continue;
+                            if (st.is(ru.aiforge.riftworld.registry.CastleBlocks.CARPET.get())) ++carpets;
+                            else if (st.is(ru.aiforge.riftworld.registry.ModBlocks.MODELS.get(ru.aiforge.riftworld.block.ModelKind.CHAPEL_ALTAR).get())) ++altars;
+                            else if (st.is(ru.aiforge.riftworld.registry.CastleBlocks.BOOKSHELF.get())) ++books;
+                        }
+                    }
+                }
+                int metric = (carpets >= 25 && altars >= 1 && books >= 12) ? (carpets * 4 + books * 5 + altars * 60) : 0;
+                String line = "riftstruct kind=blacktide_rotunda_sanctum at=" + camX + "," + camY + "," + camZ
+                        + " carpets=" + carpets + " altars=" + altars + " books=" + books
+                        + " blocks=" + metric + " sub_air=0"
+                        + " cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
+                src.sendSuccess(() -> Component.literal(line), false);
+                return 1;
+            }
+
+            // blacktide_tower_walkability: проверяем лестницы во ВСЕХ вышках замка!
+            int[][] towerCenters = {
+                    {-9, -78}, {-32, -74}, {-55, -69}, {48, -66}, {-76, -43}, {79, -39},
+                    {85, -20}, {91, -1}, {78, 36}, {62, 47}, {47, 58}, {-6, 60},
+                    {-72, 30}, {-58, 35}, {-25, 13}, {-25, 31}, {-34, -40}, {-34, -10}, {20, -38}
+            };
+            int climbedTowers = 0, totalStairs = 0;
+            BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
+            for (int[] tc : towerCenters) {
+                int stairsInTower = 0;
+                for (int dx = -2; dx <= 2; ++dx) {
+                    for (int dz = -2; dz <= 2; ++dz) {
+                        int wx = bs.cx + BlacktideCitadel.rotX(tc[0] + dx, tc[1] + dz, bs.rot);
+                        int wz = bs.cz + BlacktideCitadel.rotZ(tc[0] + dx, tc[1] + dz, bs.rot);
+                        if (!level.hasChunk(wx >> 4, wz >> 4)) continue;
+                        for (int by = 48; by <= 134; ++by) {
+                            if (level.getBlockState(mp.set(wx, bs.baseY + by, wz))
+                                    .is(net.minecraft.world.level.block.Blocks.POLISHED_BLACKSTONE_BRICK_STAIRS)) {
+                                ++stairsInTower;
+                            }
+                        }
+                    }
+                }
+                if (stairsInTower >= 12) ++climbedTowers;
+                totalStairs += stairsInTower;
+            }
+            int camX = bs.cx + BlacktideCitadel.rotX(46, 56, bs.rot);
+            int camY = bs.baseY + 86;
+            int camZ = bs.cz + BlacktideCitadel.rotZ(46, 56, bs.rot);
+            int lkX = bs.cx + BlacktideCitadel.rotX(-6, -12, bs.rot);
+            int lkY = bs.baseY + 76;
+            int lkZ = bs.cz + BlacktideCitadel.rotZ(-6, -12, bs.rot);
+            int metric = (climbedTowers >= 14 && totalStairs >= 350) ? totalStairs : 0;
+            String line = "riftstruct kind=blacktide_tower_walkability at=" + camX + "," + camY + "," + camZ
+                    + " climbed_towers=" + climbedTowers + " total_stairs=" + totalStairs
+                    + " blocks=" + metric + " sub_air=0"
+                    + " cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.equals("connected_carpets_showcase")) {
+            // Демонстрационная солнечная терраса (вне защищённой морской коробки [600..696]x[600..786])
+            // со всеми формами бесшовных 8-соседних ковров: 2x2, 3x5, L-форма, +-крест и T-дорожка!
+            int tx = 768, ty = 136, tz = 768;
+            if (level.hasChunk(tx >> 4, tz >> 4)) {
+                BlockState stone = net.minecraft.world.level.block.Blocks.POLISHED_BLACKSTONE_BRICKS.defaultBlockState();
+                BlockState trim = net.minecraft.world.level.block.Blocks.GILDED_BLACKSTONE.defaultBlockState();
+                BlockState cCarpet = ru.aiforge.riftworld.registry.CastleBlocks.CARPET.get().defaultBlockState();
+                BlockState cRug = ru.aiforge.riftworld.registry.ModBlocks.MODELS.get(ru.aiforge.riftworld.block.ModelKind.RUG).get().defaultBlockState();
+                for (int dx = -10; dx <= 10; ++dx) {
+                    for (int dz = -7; dz <= 7; ++dz) {
+                        boolean edge = Math.abs(dx) == 10 || Math.abs(dz) == 7;
+                        level.setBlock(new BlockPos(tx + dx, ty, tz + dz), edge ? trim : stone, 2);
+                        for (int dy = 1; dy <= 6; ++dy) {
+                            level.setBlock(new BlockPos(tx + dx, ty + dy, tz + dz), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 2);
+                        }
+                    }
+                }
+                // 1) 2x2 единый квадратный ковёр (castle_carpet)
+                for (int dx = -8; dx <= -7; ++dx)
+                    for (int dz = -4; dz <= -3; ++dz)
+                        level.setBlock(new BlockPos(tx + dx, ty + 1, tz + dz), cCarpet, 3);
+                // 2) L-образный ковёр с внутренним углом (castle_carpet)
+                for (int dx = -8; dx <= -5; ++dx)
+                    for (int dz = 1; dz <= 2; ++dz)
+                        level.setBlock(new BlockPos(tx + dx, ty + 1, tz + dz), cCarpet, 3);
+                for (int dx = -6; dx <= -5; ++dx)
+                    for (int dz = 3; dz <= 5; ++dz)
+                        level.setBlock(new BlockPos(tx + dx, ty + 1, tz + dz), cCarpet, 3);
+                // 3) +-крестообразный ковёр с 4 внутренними вогнутыми углами (castle_carpet)
+                for (int d = -3; d <= 3; ++d) {
+                    for (int w = -1; w <= 1; ++w) {
+                        level.setBlock(new BlockPos(tx + w, ty + 1, tz + d), cCarpet, 3);
+                        level.setBlock(new BlockPos(tx + d, ty + 1, tz + w), cCarpet, 3);
+                    }
+                }
+                // 4) 2x2 + T-образная дорожка для тканого ковра Белого Города (riftworld:rug)
+                for (int dx = 5; dx <= 6; ++dx)
+                    for (int dz = -5; dz <= -4; ++dz)
+                        level.setBlock(new BlockPos(tx + dx, ty + 1, tz + dz), cRug, 3);
+                for (int dx = 5; dx <= 9; ++dx)
+                    level.setBlock(new BlockPos(tx + dx, ty + 1, tz + 1), cRug, 3);
+                for (int dz = 1; dz <= 5; ++dz) {
+                    level.setBlock(new BlockPos(tx + 7, ty + 1, tz + dz), cRug, 3);
+                    level.setBlock(new BlockPos(tx + 8, ty + 1, tz + dz), cRug, 3);
+                }
+            }
+            int placed = 0;
+            for (int dx = -9; dx <= 9; ++dx) {
+                for (int dz = -6; dz <= 6; ++dz) {
+                    if (!level.hasChunk((tx + dx) >> 4, (tz + dz) >> 4)) continue;
+                    BlockState st = level.getBlockState(new BlockPos(tx + dx, ty + 1, tz + dz));
+                    if (st.getBlock() instanceof ru.aiforge.riftworld.block.MergingCarpetBlock
+                            || st.getBlock() instanceof ru.aiforge.riftworld.block.MergingRugBlock) {
+                        ++placed;
+                    }
+                }
+            }
+            int camX = tx, camY = ty + 11, camZ = tz + 10;
+            int lkX = tx, lkY = ty + 1, lkZ = tz;
+            String line = "riftstruct kind=connected_carpets_showcase at=" + tx + "," + (ty + 1) + "," + tz
+                    + " carpets=" + placed + " blocks=" + (placed >= 40 ? placed * 5 : 0)
+                    + " sub_air=0 cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
         src.sendFailure(Component.literal("riftstruct: unknown kind " + rawKind));
         return 0;
     }
@@ -2819,6 +2990,8 @@ public final class SeaProbeCommand {
 
     // ---------- v0.20.0: Проверка кастомного бесшовного портала Обычный мир -> Элисар (0 изменённых блоков!) ----------
     private static BlockPos portalTestOrigin;
+    private static BlockPos observatoryAnchor;
+    private static BlockPos observatorySealPos;
     private static final java.util.Map<BlockPos, BlockState> PORTAL_SNAPSHOT = new java.util.HashMap<>();
 
     private static int portalCmd(CommandSourceStack src, String mode) {
@@ -2827,6 +3000,128 @@ public final class SeaProbeCommand {
         if (overworld == null) {
             src.sendFailure(Component.literal("riftportal: overworld missing"));
             return 0;
+        }
+
+        if ("observatory_find".equals(mode)) {
+            BlockPos spawn = overworld.getSharedSpawnPos();
+            var structReg = overworld.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.STRUCTURE);
+            var key = net.minecraft.resources.ResourceKey.create(
+                    net.minecraft.core.registries.Registries.STRUCTURE,
+                    new net.minecraft.resources.ResourceLocation("riftworld", "overgrown_temple"));
+            var holderOpt = structReg.getHolder(key);
+            BlockPos found = null;
+            if (holderOpt.isPresent()) {
+                var pair = overworld.getChunkSource().getGenerator().findNearestMapStructure(
+                        overworld, net.minecraft.core.HolderSet.direct(holderOpt.get()), spawn, 40, false);
+                if (pair != null) {
+                    found = pair.getFirst();
+                }
+            }
+            if (found != null) {
+                observatoryAnchor = new BlockPos(found.getX(), 96, found.getZ());
+                String line = "riftportal observatory_find natural=true at="
+                        + observatoryAnchor.getX() + "," + observatoryAnchor.getY() + "," + observatoryAnchor.getZ();
+                src.sendSuccess(() -> Component.literal(line), false);
+                return 1;
+            }
+            // Резервный сухопутный поиск, если спавн сида оказался посреди огромного океана
+            int fx = spawn.getX() + 96, fz = spawn.getZ() + 96;
+            overworld.getChunk(fx >> 4, fz >> 4);
+            int fy = Math.max(overworld.getSeaLevel() + 2,
+                    overworld.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, fx, fz));
+            var piece = new OvergrownTemplePiece(new BlockPos(fx, fy, fz));
+            var bb = piece.getBoundingBox();
+            for (int cx = (bb.minX() >> 4); cx <= (bb.maxX() >> 4); ++cx) {
+                for (int cz = (bb.minZ() >> 4); cz <= (bb.maxZ() >> 4); ++cz) {
+                    overworld.getChunk(cx, cz);
+                    piece.postProcess(overworld, overworld.structureManager(), overworld.getChunkSource().getGenerator(),
+                            overworld.random, new net.minecraft.world.level.levelgen.structure.BoundingBox(
+                                    cx << 4, overworld.getMinBuildHeight(), cz << 4, (cx << 4) + 15, overworld.getMaxBuildHeight(), (cz << 4) + 15),
+                            new net.minecraft.world.level.ChunkPos(cx, cz), new BlockPos(fx, fy, fz));
+                }
+            }
+            observatoryAnchor = new BlockPos(fx, fy + 6, fz);
+            String line = "riftportal observatory_find natural=fallback at="
+                    + observatoryAnchor.getX() + "," + observatoryAnchor.getY() + "," + observatoryAnchor.getZ();
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if ("observatory_verify".equals(mode)) {
+            if (observatoryAnchor == null) {
+                src.sendFailure(Component.literal("riftportal: observatory_find not run"));
+                return 0;
+            }
+            BlockPos seal = null;
+            int candles = 0, chests = 0, rugs = 0, lecterns = 0;
+            BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
+            int ax = observatoryAnchor.getX(), az = observatoryAnchor.getZ();
+            for (int x = ax - 26; x <= ax + 26; ++x) {
+                for (int z = az - 26; z <= az + 26; ++z) {
+                    if (!overworld.hasChunk(x >> 4, z >> 4)) continue;
+                    for (int y = overworld.getSeaLevel() - 4; y <= overworld.getMaxBuildHeight() - 16; ++y) {
+                        BlockState bs = overworld.getBlockState(mp.set(x, y, z));
+                        if (bs.isAir()) continue;
+                        if (bs.is(ru.aiforge.riftworld.registry.TempleBlocks.MOSAIC_CORE.get())) {
+                            seal = mp.immutable();
+                        } else if (bs.is(ru.aiforge.riftworld.registry.TempleBlocks.RITUAL_CANDLE.get())) {
+                            ++candles;
+                        } else if (bs.is(net.minecraft.world.level.block.Blocks.CHEST)) {
+                            ++chests;
+                        } else if (bs.is(net.minecraft.world.level.block.Blocks.LECTERN)) {
+                            ++lecterns;
+                        } else if (bs.getBlock() instanceof ru.aiforge.riftworld.block.MergingRugBlock) {
+                            ++rugs;
+                        }
+                    }
+                }
+            }
+            if (seal == null) {
+                src.sendFailure(Component.literal("riftportal: observatory seal not yet loaded near " + ax + "," + az));
+                return 0;
+            }
+            observatorySealPos = seal;
+            overworld.getEntitiesOfClass(net.minecraft.world.entity.Mob.class,
+                    new net.minecraft.world.phys.AABB(seal).inflate(32.0))
+                    .forEach(net.minecraft.world.entity.Entity::discard);
+            int camX = seal.getX() + 2, camY = seal.getY() + 4, camZ = seal.getZ() + 12;
+            int lkX = seal.getX(), lkY = seal.getY() + 3, lkZ = seal.getZ() - 2;
+            String line = "riftportal observatory_verify seal=" + seal.getX() + "," + seal.getY() + "," + seal.getZ()
+                    + " candles=" + candles + " chests=" + chests + " lecterns=" + lecterns + " rugs=" + rugs
+                    + " cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return (candles >= 8 && chests >= 2 && lecterns >= 1 && rugs >= 12) ? 1 : 0;
+        }
+
+        if ("observatory_awaken".equals(mode)) {
+            if (observatorySealPos == null) {
+                src.sendFailure(Component.literal("riftportal: observatory_verify not run"));
+                return 0;
+            }
+            var rift = ru.aiforge.riftworld.flight.PortalRitual.awakenObservatorySanctum(overworld, observatorySealPos);
+            int litCandles = 0, litRunes = 0;
+            BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
+            for (int dx = -12; dx <= 12; ++dx) {
+                for (int dz = -12; dz <= 12; ++dz) {
+                    for (int dy = -2; dy <= 8; ++dy) {
+                        BlockState bs = overworld.getBlockState(mp.setWithOffset(observatorySealPos, dx, dy, dz));
+                        if (bs.is(ru.aiforge.riftworld.registry.TempleBlocks.RITUAL_CANDLE.get())
+                                && bs.getValue(ru.aiforge.riftworld.block.RitualCandleBlock.LIT)) {
+                            ++litCandles;
+                        } else if (bs.is(ru.aiforge.riftworld.registry.TempleBlocks.GOLD_RUNE.get())
+                                && bs.getValue(ru.aiforge.riftworld.block.GoldRuneBlock.LIT)) {
+                            ++litRunes;
+                        }
+                    }
+                }
+            }
+            int camX = observatorySealPos.getX() - 3, camY = observatorySealPos.getY() + 4, camZ = observatorySealPos.getZ() + 13;
+            int lkX = observatorySealPos.getX(), lkY = observatorySealPos.getY() + 7, lkZ = observatorySealPos.getZ();
+            String line = "riftportal observatory_awaken rift=" + (rift != null)
+                    + " lit_candles=" + litCandles + " lit_runes=" + litRunes
+                    + " cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return (rift != null && litCandles >= 8 && litRunes >= 8) ? 1 : 0;
         }
 
         if ("setup".equals(mode)) {
