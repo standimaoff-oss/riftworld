@@ -373,7 +373,7 @@ public final class LandmarkStructures {
                 if (rg.blacktideSite != null && rg.blacktideSite.inFootprint(ax, az, 54.0)) continue;
                 boolean hitMound = false;
                 for (AshenLands.Mound m : rg.mounds) {
-                    if (Math.hypot(ax - m.x, az - m.z) < m.r + 26.0) { hitMound = true; break; }
+                    if (Math.hypot(ax - m.x(), az - m.z()) < m.r() + 26.0) { hitMound = true; break; }
                 }
                 if (hitMound) continue;
                 bestX = ax;

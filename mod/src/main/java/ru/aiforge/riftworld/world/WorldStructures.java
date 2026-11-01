@@ -329,7 +329,7 @@ public final class WorldStructures {
                 if (rg.blacktideSite != null && rg.blacktideSite.inFootprint(candX, candZ, 58.0)) continue;
                 boolean hitMound = false;
                 for (AshenLands.Mound m : rg.mounds) {
-                    if (Math.hypot(candX - m.x, candZ - m.z) < m.r + 28.0) { hitMound = true; break; }
+                    if (Math.hypot(candX - m.x(), candZ - m.z()) < m.r() + 28.0) { hitMound = true; break; }
                 }
                 if (hitMound) continue;
                 vx = candX;
