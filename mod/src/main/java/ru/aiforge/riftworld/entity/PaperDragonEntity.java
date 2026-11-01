@@ -119,6 +119,10 @@ public class PaperDragonEntity extends PathfinderMob {
             return;
         }
 
+        if (this.isNoAi()) {
+            return;
+        }
+
         if (this.level().dimension() != Flight.ELISAR_DIM) {
             return;
         }
@@ -226,7 +230,16 @@ public class PaperDragonEntity extends PathfinderMob {
         }
 
         this.setDeltaMovement(v);
-        this.move(net.minecraft.world.entity.MoverType.SELF, v);
+        if (!this.level().noCollision(this.getBoundingBox())) {
+            // Защита от зацепления за сталактит под островом: плавный выход наружу и чуть вниз в открытый воздух
+            double outX = Double.isNaN(this.anchorCx) ? v.x : (pos.x - this.anchorCx);
+            double outZ = Double.isNaN(this.anchorCz) ? v.z : (pos.z - this.anchorCz);
+            double ol = Math.max(0.001, Math.hypot(outX, outZ));
+            double ny = Math.max(ocean + 5.8, pos.y - 0.35);
+            this.setPos(pos.x + (outX / ol) * 0.45 + v.x * 0.5, ny, pos.z + (outZ / ol) * 0.45 + v.z * 0.5);
+        } else {
+            this.move(net.minecraft.world.entity.MoverType.SELF, v);
+        }
 
         float wantYaw = (float) (Mth.atan2(-v.x, v.z) * (180.0 / Math.PI));
         float newYaw = Mth.rotLerp(0.18F, this.getYRot(), wantYaw);
@@ -244,19 +257,30 @@ public class PaperDragonEntity extends PathfinderMob {
     }
 
     private double scanRealCeilingY(double wx, double wz, int ocean, int maxTopY) {
+        return lowestSolidInColumn(this.level(), wx, wz, ocean, maxTopY);
+    }
+
+    public static double lowestSolidInColumn(Level level, double wx, double wz, int ocean, int maxTopY) {
         BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
         int bx = Mth.floor(wx), bz = Mth.floor(wz);
-        if (!this.level().isLoaded(mp.set(bx, ocean + 4, bz))) {
+        if (!level.isLoaded(mp.set(bx, ocean + 4, bz))) {
             return maxTopY;
         }
-        for (int y = ocean + 4; y <= maxTopY; ++y) {
-            mp.set(bx, y, bz);
-            BlockState st = this.level().getBlockState(mp);
-            if (!st.isAir() && !st.getCollisionShape(this.level(), mp).isEmpty()) {
-                return y;
+        int minSolid = maxTopY;
+        for (int ox = -1; ox <= 1; ++ox) {
+            for (int oz = -1; oz <= 1; ++oz) {
+                if (!level.isLoaded(mp.set(bx + ox, ocean + 4, bz + oz))) continue;
+                for (int y = ocean + 4; y <= minSolid; ++y) {
+                    mp.set(bx + ox, y, bz + oz);
+                    BlockState st = level.getBlockState(mp);
+                    if (!st.isAir() && !st.getCollisionShape(level, mp).isEmpty()) {
+                        if (y < minSolid) minSolid = y;
+                        break;
+                    }
+                }
             }
         }
-        return maxTopY;
+        return minSolid;
     }
 
     private CityPlan.Island resolveTargetIsland() {
@@ -370,10 +394,12 @@ public class PaperDragonEntity extends PathfinderMob {
         int ocean = CityPlan.get().ocean;
         double cosA = Math.cos(angleRad), sinA = Math.sin(angleRad);
         double rim = isl.rimDist(cosA, sinA);
-        double sx = isl.cx + cosA * (rim * 0.80);
-        double sz = isl.cz + sinA * (rim * 0.80);
+        double sx = isl.cx + cosA * (rim * 0.88);
+        double sz = isl.cz + sinA * (rim * 0.88);
         double approxCeil = FloatingIslands.approxUndersideY(isl, sx, sz, ocean);
-        double sy = Mth.clamp(Math.min(approxCeil - 5.2, isl.base - 7.0), ocean + 5.5, isl.base - 3.5);
+        double realCeil = lowestSolidInColumn(sl, sx, sz, ocean, (int) Math.ceil(isl.base + 8.0));
+        double ceilY = Math.min(approxCeil, realCeil);
+        double sy = Mth.clamp(Math.min(ceilY - 5.2, isl.base - 7.0), ocean + 6.0, Math.max(ocean + 6.2, ceilY - 3.6));
 
         PaperDragonEntity d = new PaperDragonEntity(ModEntities.PAPER_DRAGON.get(), sl);
         d.setPos(sx, sy, sz);

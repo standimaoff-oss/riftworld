@@ -52,7 +52,7 @@ import ru.aiforge.riftworld.net.PortalRitualMsg;
 public final class PortalRitualClient {
     private static final int MAX_FACES = 36000;
     private static final int BLEACH_SCAN_R = 34;
-    private static final int EYE_COUNT = 34;
+    private static final int EYE_COUNT = 38;
 
     public static int phase = PortalRitual.NONE;
     public static BlockPos center = BlockPos.ZERO;
@@ -79,17 +79,17 @@ public final class PortalRitualClient {
     private static final float[] eyeSeed = new float[EYE_COUNT];
 
     static {
-        // Золотая спираль Фибоначчи вокруг арки портала на разных высотах и дистанциях (3.2 .. 13.5 блоков)
+        // Золотая спираль Фибоначчи вокруг арки портала на разных высотах и дистанциях (2.8 .. 12.6 блоков)
         for (int i = 0; i < EYE_COUNT; ++i) {
             double u = (i + 0.5) / EYE_COUNT;
             double goldenAngle = i * 2.39996323;
-            double r = 3.2 + 10.2 * Math.sqrt(u) + Math.sin(i * 1.9) * 0.8;
-            double y = 0.6 + (i % 7) * 1.08 + Math.cos(i * 2.7) * 0.45;
+            double r = 2.8 + 9.8 * Math.sqrt(u) + Math.sin(i * 1.9) * 0.7;
+            double y = -0.85 + (i % 7) * 0.90 + Math.cos(i * 2.7) * 0.36;
             eyeOffX[i] = Math.cos(goldenAngle) * r;
             eyeOffY[i] = y;
             eyeOffZ[i] = Math.sin(goldenAngle) * r;
-            eyeScale[i] = 0.46F + (float) ((i * 37 % 11) / 10.0) * 0.52F;
-            eyeWake[i] = 44.0F + (38.0F * i) / EYE_COUNT;
+            eyeScale[i] = 0.50F + (float) ((i * 37 % 11) / 10.0) * 0.54F;
+            eyeWake[i] = 44.0F + (36.0F * i) / EYE_COUNT;
             eyeSeed[i] = i * 1.713F;
         }
     }
@@ -214,7 +214,7 @@ public final class PortalRitualClient {
 
     @SubscribeEvent
     public static void renderStage(RenderLevelStageEvent e) {
-        if (phase != PortalRitual.AWAKEN) return;
+        if (phase == PortalRitual.NONE) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
 
@@ -222,11 +222,51 @@ public final class PortalRitualClient {
         Vec3 cam = e.getCamera().getPosition();
         PoseStack ps = e.getPoseStack();
 
-        if (e.getStage() == RenderLevelStageEvent.Stage.AFTER_CUTOUT_BLOCKS) {
+        if (phase == PortalRitual.AWAKEN && e.getStage() == RenderLevelStageEvent.Stage.AFTER_CUTOUT_BLOCKS) {
             renderWorldIvoryBleach(ps, cam, pt);
         } else if (e.getStage() == RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) {
-            renderPortalSingularityAndWatchingEyes(ps, e.getCamera(), cam, pt);
+            if (phase == PortalRitual.AWAKEN) {
+                renderPortalSingularityAndWatchingEyes(ps, e.getCamera(), cam, pt);
+            }
+            if (mc.options.hideGui) {
+                renderCameraFlashVeil(ps, e.getCamera(), pt);
+            }
         }
+    }
+
+    private static void renderCameraFlashVeil(PoseStack ps, Camera camera, float pt) {
+        float fl = flashIntensity(pt);
+        if (fl <= 0.005F) return;
+        int alpha = Mth.clamp(Math.round(fl * 255.0F), 0, 255);
+        Matrix4f mat = ps.last().pose();
+        Vector3f look = camera.getLookVector();
+        Vector3f leftV = camera.getLeftVector();
+        Vector3f upV = camera.getUpVector();
+        Vec3 fwd = new Vec3(look.x(), look.y(), look.z()).scale(0.18);
+        Vec3 right = new Vec3(-leftV.x(), -leftV.y(), -leftV.z()).scale(1.8);
+        Vec3 up = new Vec3(upV.x(), upV.y(), upV.z()).scale(1.8);
+
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.disableDepthTest();
+        RenderSystem.depthMask(false);
+        RenderSystem.disableCull();
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+
+        BufferBuilder bb = Tesselator.getInstance().getBuilder();
+        bb.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        quad(bb, mat,
+                fwd.subtract(right).add(up),
+                fwd.subtract(right).subtract(up),
+                fwd.add(right).subtract(up),
+                fwd.add(right).add(up),
+                255, 253, 248, alpha);
+        Tesselator.getInstance().end();
+
+        RenderSystem.enableCull();
+        RenderSystem.depthMask(true);
+        RenderSystem.enableDepthTest();
+        RenderSystem.disableBlend();
     }
 
     /**
@@ -247,6 +287,7 @@ public final class PortalRitualClient {
                 GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
         RenderSystem.enableDepthTest();
         RenderSystem.depthMask(false);
+        RenderSystem.disableCull();
         RenderSystem.polygonOffset(-1.5F, -2.5F);
         RenderSystem.enablePolygonOffset();
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
@@ -272,43 +313,50 @@ public final class PortalRitualClient {
 
             float x0 = fMinX[i] - cx, y0 = fMinY[i] - cy, z0 = fMinZ[i] - cz;
             float x1 = fMaxX[i] - cx, y1 = fMaxY[i] - cy, z1 = fMaxZ[i] - cz;
+            float eps = 0.004F;
 
             switch (fDir[i]) {
                 case 0 -> { // DOWN (-Y)
-                    bb.vertex(mat, x0, y0, z1).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x0, y0, z0).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x1, y0, z0).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x1, y0, z1).color(r, g, b, a).endVertex();
+                    float yn = y0 - eps;
+                    bb.vertex(mat, x0, yn, z1).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, x0, yn, z0).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, x1, yn, z0).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, x1, yn, z1).color(r, g, b, a).endVertex();
                 }
                 case 1 -> { // UP (+Y)
-                    bb.vertex(mat, x0, y1, z0).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x0, y1, z1).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x1, y1, z1).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x1, y1, z0).color(r, g, b, a).endVertex();
+                    float yp = y1 + eps;
+                    bb.vertex(mat, x0, yp, z0).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, x0, yp, z1).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, x1, yp, z1).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, x1, yp, z0).color(r, g, b, a).endVertex();
                 }
                 case 2 -> { // NORTH (-Z)
-                    bb.vertex(mat, x1, y1, z0).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x1, y0, z0).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x0, y0, z0).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x0, y1, z0).color(r, g, b, a).endVertex();
+                    float zn = z0 - eps;
+                    bb.vertex(mat, x1, y1, zn).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, x1, y0, zn).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, x0, y0, zn).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, x0, y1, zn).color(r, g, b, a).endVertex();
                 }
                 case 3 -> { // SOUTH (+Z)
-                    bb.vertex(mat, x0, y1, z1).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x0, y0, z1).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x1, y0, z1).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x1, y1, z1).color(r, g, b, a).endVertex();
+                    float zp = z1 + eps;
+                    bb.vertex(mat, x0, y1, zp).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, x0, y0, zp).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, x1, y0, zp).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, x1, y1, zp).color(r, g, b, a).endVertex();
                 }
                 case 4 -> { // WEST (-X)
-                    bb.vertex(mat, x0, y1, z0).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x0, y0, z0).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x0, y0, z1).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x0, y1, z1).color(r, g, b, a).endVertex();
+                    float xn = x0 - eps;
+                    bb.vertex(mat, xn, y1, z0).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, xn, y0, z0).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, xn, y0, z1).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, xn, y1, z1).color(r, g, b, a).endVertex();
                 }
                 case 5 -> { // EAST (+X)
-                    bb.vertex(mat, x1, y1, z1).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x1, y0, z1).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x1, y0, z0).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x1, y1, z0).color(r, g, b, a).endVertex();
+                    float xp = x1 + eps;
+                    bb.vertex(mat, xp, y1, z1).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, xp, y0, z1).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, xp, y0, z0).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, xp, y1, z0).color(r, g, b, a).endVertex();
                 }
             }
         }
@@ -317,6 +365,7 @@ public final class PortalRitualClient {
 
         RenderSystem.disablePolygonOffset();
         RenderSystem.polygonOffset(0.0F, 0.0F);
+        RenderSystem.enableCull();
         RenderSystem.depthMask(true);
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableBlend();

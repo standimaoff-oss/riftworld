@@ -1512,10 +1512,10 @@ biome_section() {
   probe_and_shot_struct "origami_dragon"         180 "93_origami_dragon_under_island" 0 0
   probe_and_shot_struct "origami_dragon_closeup" 180 "94_origami_dragon_closeup"      0 0
   # Проба живого полёта оригами-дракона вдоль и под островом (NoAi=false)
-  OD_REL=$(EL execute at TestPlayer in riftworld:elisar run riftstruct origami_dragon_release 2>&1 | tr '\r\n' '  ')
-  OD_P1=$(EL data get entity @e[type=riftworld:paper_dragon,limit=1,sort=nearest] Pos 2>&1 | tr '\r\n' '  ')
+  OD_REL=$(EL execute as TestPlayer at @s in riftworld:elisar run riftstruct origami_dragon_release 2>&1 | tr '\r\n' '  ')
+  OD_P1=$(EL execute as TestPlayer at @s in riftworld:elisar run data get entity @e[type=riftworld:paper_dragon,limit=1,sort=nearest] Pos 2>&1 | tr '\r\n' '  ')
   sleep 3
-  OD_P2=$(EL data get entity @e[type=riftworld:paper_dragon,limit=1,sort=nearest] Pos 2>&1 | tr '\r\n' '  ')
+  OD_P2=$(EL execute as TestPlayer at @s in riftworld:elisar run data get entity @e[type=riftworld:paper_dragon,limit=1,sort=nearest] Pos 2>&1 | tr '\r\n' '  ')
   if [ -n "${OD_P1:-}" ] && [ "${OD_P1}" != "${OD_P2}" ]; then
     log "  OK   оригами-дракон плавно летит вдоль и под парящим островом (${OD_P1:0:80} -> ${OD_P2:0:80})"
   else
@@ -1542,17 +1542,14 @@ biome_section() {
     RCON execute in minecraft:overworld run weather clear >/dev/null 2>&1 || true
     RCON execute in minecraft:overworld run tp TestPlayer "$PCX" "$PCY" "$PCZ" facing "$PLX" "$PLY" "$PLZ" >/dev/null 2>&1 || true
     sleep 7
-    key F1
-    sleep 0.5
     P_TRG=$(RCON execute as TestPlayer at @s in minecraft:overworld run riftportal trigger 2>&1 | tr '\r\n' '  ')
     log "  /riftportal trigger -> ${P_TRG:0:180}"
-    sleep 1.4
+    sleep 1.6
     shot "97_portal_ivory_bleach"
-    sleep 2.2
+    sleep 2.5
     shot "98_portal_watching_eyes"
-    sleep 4.8
+    sleep 4.4
     shot "99_portal_flash_arrival"
-    key F1
     P_DIM=$(RCON data get entity TestPlayer Dimension 2>&1 | tr '\r\n' '  ')
     P_VER=$(RCON execute in minecraft:overworld run riftportal verify 2>&1 | tr '\r\n' '  ')
     P_MUT=$(printf '%s' "$P_VER" | sed -n 's/.* mutated=\([0-9]*\).*/\1/p' | tail -1)

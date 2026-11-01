@@ -1884,7 +1884,7 @@ public final class SeaProbeCommand {
             return 1;
         }
 
-        if (k.startsWith("ocean")) {
+        if (k.startsWith("ocean") && !k.equals("ocean_island_waves")) {
             WorldStructures.OceanBuilding best = null;
             double bestD = Double.MAX_VALUE;
             int sx0 = Math.floorDiv(at.getX(), WorldStructures.SUPER_OCEAN_BLDG);
@@ -2150,50 +2150,78 @@ public final class SeaProbeCommand {
             double ang = 0.72;
             double ca = Math.cos(ang), sa = Math.sin(ang);
             double rim = pick.rimDist(ca, sa);
-            double dx = pick.cx + ca * (rim * 0.84);
-            double dz = pick.cz + sa * (rim * 0.84);
+            double dx = pick.cx + ca * (rim * 0.90);
+            double dz = pick.cz + sa * (rim * 0.90);
             double approxCeil = FloatingIslands.approxUndersideY(pick, dx, dz, sea);
-            double dy = Math.max(sea + 6.5, Math.min(approxCeil - 4.8, pick.base - 7.5));
+            double dy = Math.max(sea + 7.5, Math.min(approxCeil - 5.0, pick.base - 7.5));
+
+            // Если чанк уже прогружен — выбираем угол вокруг острова, где сверху есть настоящий каменный карниз,
+            // а на высоте полёта и по курсу — 100% чистый воздух без сталактитов!
+            if (level.hasChunk(((int) Math.floor(pick.cx)) >> 4, ((int) Math.floor(pick.cz)) >> 4)) {
+                int topScan = (int) Math.ceil(pick.base + 6.0);
+                for (int step = 0; step < 16; ++step) {
+                    double testAng = 0.72 + step * (Math.PI * 2.0 / 16.0);
+                    double tca = Math.cos(testAng), tsa = Math.sin(testAng);
+                    double trim = pick.rimDist(tca, tsa);
+                    double tdx = pick.cx + tca * (trim * 0.90);
+                    double tdz = pick.cz + tsa * (trim * 0.90);
+                    if (!level.hasChunk(((int) Math.floor(tdx)) >> 4, ((int) Math.floor(tdz)) >> 4)) continue;
+                    double realCeil = ru.aiforge.riftworld.entity.PaperDragonEntity.lowestSolidInColumn(level, tdx, tdz, sea, topScan);
+                    if (realCeil < sea + 13.0) continue; // слишком низкий сталактит — ищем более высокий свод
+                    double tdy = (realCeil < topScan)
+                            ? Math.max(sea + 7.5, realCeil - 5.2)
+                            : Math.max(sea + 8.5, Math.min(FloatingIslands.approxUndersideY(pick, tdx, tdz, sea) - 5.0, pick.base - 7.0));
+                    var clearBox = new net.minecraft.world.phys.AABB(tdx - 2.4, tdy - 1.2, tdz - 2.4, tdx + 2.4, tdy + 2.4, tdz + 2.4);
+                    if (level.noCollision(clearBox)) {
+                        ang = testAng;
+                        ca = tca;
+                        sa = tsa;
+                        dx = tdx;
+                        dy = tdy;
+                        dz = tdz;
+                        break;
+                    }
+                }
+            }
 
             // Камера сбоку-снизу в открытом проливе так, чтобы одновременно видеть каменный свод острова,
             // изгибающегося под ним белого оригами-дракона и 2D белые волны на воде под островом!
             double tx = -sa, tz = ca; // касательная полёта
             boolean closeup = k.contains("closeup");
-            int camX = (int) Math.round(dx + ca * (closeup ? 5.6 : 14.5) + tx * (closeup ? 2.4 : 5.5));
-            int camY = (int) Math.round(closeup ? (dy + 0.6) : (sea + 7.5));
-            int camZ = (int) Math.round(dz + sa * (closeup ? 5.6 : 14.5) + tz * (closeup ? 2.4 : 5.5));
-            int lkX = (int) Math.round(dx - tx * (closeup ? 2.2 : 1.5));
-            int lkY = (int) Math.round(closeup ? (dy + 0.3) : (dy - 0.8));
-            int lkZ = (int) Math.round(dz - tz * (closeup ? 2.2 : 1.5));
+            int camX = (int) Math.round(dx + ca * (closeup ? 6.2 : 13.5) + tx * (closeup ? 2.6 : 5.2));
+            int camY = (int) Math.round(closeup ? (dy + 0.5) : (sea + 7.5));
+            int camZ = (int) Math.round(dz + sa * (closeup ? 6.2 : 13.5) + tz * (closeup ? 2.6 : 5.2));
+            int lkX = (int) Math.round(dx - tx * (closeup ? 2.0 : 1.5));
+            int lkY = (int) Math.round(closeup ? (dy + 0.2) : (dy - 0.6));
+            int lkZ = (int) Math.round(dz - tz * (closeup ? 2.0 : 1.5));
 
             int dragonCnt = 0;
             if (level.hasChunk(((int) Math.floor(dx)) >> 4, ((int) Math.floor(dz)) >> 4)) {
-                var box = new net.minecraft.world.phys.AABB(dx - 42, sea, dz - 42, dx + 42, pick.base + 24, dz + 42);
+                var box = new net.minecraft.world.phys.AABB(dx - 56, sea, dz - 56, dx + 56, pick.base + 24, dz + 56);
                 var existing = level.getEntitiesOfClass(ru.aiforge.riftworld.entity.PaperDragonEntity.class, box);
                 float yaw = (float) (Math.atan2(-tx, tz) * (180.0 / Math.PI));
                 boolean releaseAi = k.contains("release");
+                ru.aiforge.riftworld.entity.PaperDragonEntity d;
                 if (existing.isEmpty()) {
-                    var d = ru.aiforge.riftworld.entity.PaperDragonEntity.spawnForIsland(level, pick, ang);
-                    d.moveTo(dx, dy, dz, yaw, -6.0F);
+                    d = ru.aiforge.riftworld.entity.PaperDragonEntity.spawnForIsland(level, pick, ang);
+                    dragonCnt = 1;
+                } else {
+                    d = existing.get(0);
+                    dragonCnt = existing.size();
+                }
+                if (!releaseAi) {
+                    d.moveTo(dx, dy, dz, yaw, -4.0F);
+                    d.setDeltaMovement(0.0, 0.0, 0.0);
                     d.yRotO = yaw;
                     d.yBodyRot = yaw;
                     d.yBodyRotO = yaw;
                     d.yHeadRot = yaw;
                     d.yHeadRotO = yaw;
-                    d.setNoAi(!releaseAi);
-                    dragonCnt = 1;
+                    d.setNoAi(true);
                 } else {
-                    var d = existing.get(0);
-                    if (!releaseAi) {
-                        d.moveTo(dx, dy, dz, yaw, -6.0F);
-                        d.yRotO = yaw;
-                        d.yBodyRot = yaw;
-                        d.yBodyRotO = yaw;
-                        d.yHeadRot = yaw;
-                        d.yHeadRotO = yaw;
-                    }
-                    d.setNoAi(!releaseAi);
-                    dragonCnt = existing.size();
+                    d.setAnchorIsland(pick);
+                    d.setNoAi(false);
+                    d.setDeltaMovement(tx * 0.38, 0.02, tz * 0.38);
                 }
             }
 
@@ -2209,7 +2237,7 @@ public final class SeaProbeCommand {
             List<CityPlan.Island> high = FloatingIslands.gather(0.0, 0.0, 460.0, true);
             CityPlan.Island pick = null;
             for (CityPlan.Island cand : high) {
-                if (cand.kind != 0 && cand.R >= 18.0 && cand.R <= 42.0 && cand.base >= sea + 22.0) {
+                if (cand.kind != 0 && cand.R >= 18.0 && cand.R <= 42.0 && cand.base >= sea + 20.0) {
                     pick = cand;
                     break;
                 }
@@ -2222,12 +2250,12 @@ public final class SeaProbeCommand {
             double ang = -0.85;
             double ca = Math.cos(ang), sa = Math.sin(ang);
             double rim = pick.rimDist(ca, sa);
-            int camX = (int) Math.round(pick.cx + ca * (rim + 36.0));
-            int camY = sea + 22;
-            int camZ = (int) Math.round(pick.cz + sa * (rim + 36.0));
-            int lkX = (int) Math.round(pick.cx);
-            int lkY = sea + 5;
-            int lkZ = (int) Math.round(pick.cz);
+            int camX = (int) Math.round(pick.cx + ca * (rim + 24.0));
+            int camY = sea + 19;
+            int camZ = (int) Math.round(pick.cz + sa * (rim + 24.0));
+            int lkX = (int) Math.round(pick.cx + ca * (rim * 0.25));
+            int lkY = sea + 3;
+            int lkZ = (int) Math.round(pick.cz + sa * (rim * 0.25));
             String line = "riftstruct kind=" + k + " at=" + lkX + "," + (sea + 1) + "," + lkZ
                     + " blocks=220 sub_air=0 cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
             src.sendSuccess(() -> Component.literal(line), false);
@@ -2289,7 +2317,8 @@ public final class SeaProbeCommand {
         if ("setup".equals(mode)) {
             BlockPos spawn = overworld.getSharedSpawnPos();
             int px = spawn.getX() + 24, pz = spawn.getZ() + 24;
-            int topY = 64;
+            overworld.getChunk(px >> 4, pz >> 4);
+            int topY = overworld.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, px, pz);
             outer:
             for (int r = 24; r <= 192; r += 24) {
                 for (int ang = 0; ang < 8; ++ang) {
@@ -2298,7 +2327,9 @@ public final class SeaProbeCommand {
                     overworld.getChunk(cx >> 4, cz >> 4);
                     int ty = overworld.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, cx, cz);
                     BlockPos ground = new BlockPos(cx, ty - 1, cz);
-                    if (ty >= 63 && overworld.getFluidState(ground).isEmpty() && !overworld.getBlockState(ground).isAir()) {
+                    if (ty > overworld.getMinBuildHeight() + 1
+                            && overworld.getFluidState(ground).isEmpty()
+                            && !overworld.getBlockState(ground).isAir()) {
                         px = cx;
                         pz = cz;
                         topY = ty;
@@ -2308,20 +2339,26 @@ public final class SeaProbeCommand {
             }
             BlockPos base = new BlockPos(px, topY, pz);
 
-            // Возводим руинную арку портала (demon_frame + 3x3 demon_gate + temple_gold_rune) на поляне обычного мира
+            // Возводим живописную поляну руин портала в Обычном мире (арка demon_frame + demon_gate,
+            // мшистые колонны и пара дубов по бокам) ДО снятия контрольного слепка PORTAL_SNAPSHOT!
             BlockState frame = ru.aiforge.riftworld.registry.TempleBlocks.DEMON_FRAME.get().defaultBlockState();
             BlockState gate = ru.aiforge.riftworld.registry.TempleBlocks.DEMON_GATE.get().defaultBlockState();
             BlockState rune = ru.aiforge.riftworld.registry.TempleBlocks.GOLD_RUNE.get().defaultBlockState();
             BlockState bricks = ru.aiforge.riftworld.registry.TempleBlocks.BRICKS.get().defaultBlockState();
             BlockState cracked = ru.aiforge.riftworld.registry.TempleBlocks.CRACKED.get().defaultBlockState();
             BlockState ivy = ru.aiforge.riftworld.registry.TempleBlocks.IVY.get().defaultBlockState();
+            BlockState mossyStone = net.minecraft.world.level.block.Blocks.MOSSY_STONE_BRICKS.defaultBlockState();
+            BlockState chiseledStone = net.minecraft.world.level.block.Blocks.CHISELED_STONE_BRICKS.defaultBlockState();
+            BlockState oakLog = net.minecraft.world.level.block.Blocks.OAK_LOG.defaultBlockState();
+            BlockState oakLeaves = net.minecraft.world.level.block.Blocks.OAK_LEAVES.defaultBlockState()
+                    .setValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT, true);
 
-            for (int dx = -4; dx <= 4; ++dx) {
-                for (int dz = -3; dz <= 9; ++dz) {
+            for (int dx = -8; dx <= 8; ++dx) {
+                for (int dz = -5; dz <= 12; ++dz) {
                     if (Math.abs(dx) <= 3 && dz >= -2 && dz <= 4) {
                         overworld.setBlock(base.offset(dx, -1, dz), (dx + dz) % 2 == 0 ? bricks : cracked, 2);
                     }
-                    for (int dy = 0; dy <= 6; ++dy) {
+                    for (int dy = 0; dy <= 8; ++dy) {
                         overworld.setBlock(base.offset(dx, dy, dz), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 2);
                     }
                 }
@@ -2338,17 +2375,39 @@ public final class SeaProbeCommand {
             overworld.setBlock(base.offset(3, 1, 1), ivy, 2);
             overworld.setBlock(base.offset(0, -1, 2), rune, 2);
 
+            // Древние руинные колонны и деревья вокруг портала, чтобы волна белизны наглядно ползла по 3D-ландшафту
+            int[][] pillars = {{-5, 2, 3}, {5, 2, 4}, {-6, 5, 2}, {6, 5, 3}, {-4, -3, 3}, {4, -3, 2}};
+            for (int[] pl : pillars) {
+                for (int dy = 0; dy < pl[2]; ++dy) {
+                    overworld.setBlock(base.offset(pl[0], dy, pl[1]), dy == pl[2] - 1 ? chiseledStone : mossyStone, 2);
+                }
+            }
+            for (int side : new int[]{-7, 7}) {
+                for (int dy = 0; dy <= 4; ++dy) {
+                    overworld.setBlock(base.offset(side, dy, -1), oakLog, 2);
+                }
+                for (int lx = -2; lx <= 2; ++lx) {
+                    for (int lz = -2; lz <= 2; ++lz) {
+                        for (int ly = 3; ly <= 5; ++ly) {
+                            if (Math.abs(lx) + Math.abs(lz) + (ly == 5 ? 1 : 0) <= 3
+                                    && overworld.getBlockState(base.offset(side + lx, ly, -1 + lz)).isAir()) {
+                                overworld.setBlock(base.offset(side + lx, ly, -1 + lz), oakLeaves, 2);
+                            }
+                        }
+                    }
+                }
+            }
+
             portalTestOrigin = base.offset(0, 2, 0);
             PORTAL_SNAPSHOT.clear();
-            for (BlockPos p : BlockPos.betweenClosed(portalTestOrigin.offset(-10, -4, -10), portalTestOrigin.offset(10, 6, 10))) {
+            for (BlockPos p : BlockPos.betweenClosed(portalTestOrigin.offset(-12, -4, -10), portalTestOrigin.offset(12, 6, 12))) {
                 BlockState bs = overworld.getBlockState(p);
-                if (!bs.isAir() && !(bs.getBlock() instanceof net.minecraft.world.level.block.LeavesBlock)
-                        && !bs.getCollisionShape(overworld, p).isEmpty()) {
+                if (!bs.isAir()) {
                     PORTAL_SNAPSHOT.put(p.immutable(), bs);
                 }
             }
 
-            int camX = px, camY = topY + 1, camZ = pz + 8;
+            int camX = px, camY = topY, camZ = pz + 10;
             int lkX = px, lkY = topY + 2, lkZ = pz;
             String line = "riftportal setup center=" + portalTestOrigin.getX() + "," + portalTestOrigin.getY() + "," + portalTestOrigin.getZ()
                     + " snapshot=" + PORTAL_SNAPSHOT.size()
