@@ -270,7 +270,7 @@ public final class PortalRitual {
 
             } else if (s.mode == TRANSIT_VEIL) {
                 if (s.tick >= TRANSIT_TICKS) {
-                    boolean intoElisar = sp.level().dimension() != RiftWorld.RIFT_DIM;
+                    boolean intoElisar = sp.level().dimension() != Flight.ELISAR_DIM;
                     BlockPos arrival = performDimensionalTransfer(sp);
                     s.dimKey = sp.level().dimension();
                     s.portalCenter = arrival;
@@ -320,8 +320,8 @@ public final class PortalRitual {
     private static BlockPos performDimensionalTransfer(ServerPlayer sp) {
         MinecraftServer srv = sp.getServer();
         if (srv == null) return sp.blockPosition();
-        boolean inElisar = sp.level().dimension() == RiftWorld.RIFT_DIM;
-        ServerLevel dest = srv.getLevel(inElisar ? Level.OVERWORLD : RiftWorld.RIFT_DIM);
+        boolean inElisar = sp.level().dimension() == Flight.ELISAR_DIM;
+        ServerLevel dest = srv.getLevel(inElisar ? Level.OVERWORLD : Flight.ELISAR_DIM);
         if (dest == null) return sp.blockPosition();
 
         int tx = inElisar ? sp.getBlockX() : 0;

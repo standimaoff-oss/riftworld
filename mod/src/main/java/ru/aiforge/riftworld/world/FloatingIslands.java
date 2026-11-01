@@ -111,4 +111,13 @@ public final class FloatingIslands {
         double cone = 3.5 + isl.depth * Math.pow(t, 0.54) * 0.92;
         return Math.max(ocean + 6.0, isl.base - cone);
     }
+
+    /** Безопасная высота верхней поверхности парящего острова в точке (x, z) (для полёта НАД островом). */
+    public static double approxTopY(CityPlan plan, CityPlan.Island fallbackIsl, double x, double z) {
+        ElisarChunkGenerator.Col c = ElisarChunkGenerator.column(plan, (int) Math.round(x), (int) Math.round(z));
+        if (c.isl != null && c.top > plan.ocean) {
+            return c.top;
+        }
+        return fallbackIsl != null ? fallbackIsl.base + 8.0 : plan.ocean + 24.0;
+    }
 }

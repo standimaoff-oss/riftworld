@@ -12,6 +12,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import ru.aiforge.riftworld.RiftWorld;
 import ru.aiforge.riftworld.entity.PaperDragonEntity;
+import ru.aiforge.riftworld.flight.Flight;
 import ru.aiforge.riftworld.registry.ModEntities;
 
 /**
@@ -32,7 +33,7 @@ public final class PaperDragonKeeper {
     @SubscribeEvent
     public static void onLevelTick(TickEvent.LevelTickEvent e) {
         if (e.phase != TickEvent.Phase.END || e.level.isClientSide) return;
-        if (e.level.dimension() != RiftWorld.RIFT_DIM) return;
+        if (e.level.dimension() != Flight.ELISAR_DIM) return;
         if ((++tick % 140) != 0) return;
 
         ServerLevel sl = (ServerLevel) e.level;
@@ -66,7 +67,7 @@ public final class PaperDragonKeeper {
                 int sy;
                 int initMode;
                 if (spawnOver) {
-                    int surfY = (col.top > plan.ocean) ? col.top : col.isl.base + 8;
+                    int surfY = (col.top > plan.ocean) ? col.top : (int) Math.round(col.isl.base + 8.0);
                     sy = surfY + 18 + rnd.nextInt(12);
                     initMode = PaperDragonEntity.FLIGHT_OVER_ISLAND;
                 } else {

@@ -17,9 +17,9 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import ru.aiforge.riftworld.RiftWorld;
+import ru.aiforge.riftworld.flight.Flight;
 import ru.aiforge.riftworld.world.CityPlan;
-import ru.aiforge.riftworld.world.ElisarChunkGenerator;
+import ru.aiforge.riftworld.world.FloatingIslands;
 
 /**
  * Крупный супер-детализированный модульный 3D оригами-дракон в императорском китайском стиле (~26 м с головой и хвостом).
@@ -255,7 +255,7 @@ public class PaperDragonEntity extends FlyingMob {
 
     private Vec3 smoothAvoidObstacles(Vec3 pos, Vec3 dir) {
         BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
-        int oceanY = this.level().dimension() == RiftWorld.RIFT_DIM ? CityPlan.get().ocean : 62;
+        int oceanY = this.level().dimension() == Flight.ELISAR_DIM ? CityPlan.get().ocean : 62;
         Vec3 steer = Vec3.ZERO;
 
         double[] probes = {4.5, 9.5, 15.0};
@@ -301,7 +301,7 @@ public class PaperDragonEntity extends FlyingMob {
             this.modePhaseSteps = 0;
         }
 
-        if (this.level().dimension() != RiftWorld.RIFT_DIM) {
+        if (this.level().dimension() != Flight.ELISAR_DIM) {
             double r = 34.0 + this.random.nextDouble() * 18.0;
             double wy = this.homeAnchor.y + (mode >= 2 ? 18.0 : 4.0) + this.random.nextDouble() * 8.0;
             this.waypoint = new Vec3(
@@ -326,10 +326,8 @@ public class PaperDragonEntity extends FlyingMob {
                 double rad = islR * (0.28 + this.random.nextDouble() * 0.48);
                 double wx = icx + Math.cos(this.orbitAngle) * rad;
                 double wz = icz + Math.sin(this.orbitAngle) * rad;
-                ElisarChunkGenerator.Col c = ElisarChunkGenerator.column(plan, (int) Math.round(wx), (int) Math.round(wz));
-                double underCeiling = (c.isl != null && c.bottom > ocean + 16)
-                        ? c.bottom - (7.0 + this.random.nextDouble() * 5.0)
-                        : Math.max(ocean + 12.0, targetIsl.base - targetIsl.depth * 0.55 - 8.0);
+                double vaultY = FloatingIslands.approxUndersideY(targetIsl, wx, wz, ocean);
+                double underCeiling = vaultY - (7.0 + this.random.nextDouble() * 5.0);
                 double wy = Mth.clamp(underCeiling, ocean + 9.5, targetIsl.base - 6.0);
                 this.waypoint = new Vec3(wx, wy, wz);
                 return;
@@ -349,8 +347,7 @@ public class PaperDragonEntity extends FlyingMob {
                 double rad = islR * (0.22 + this.random.nextDouble() * 0.68);
                 double wx = icx + Math.cos(this.orbitAngle) * rad;
                 double wz = icz + Math.sin(this.orbitAngle) * rad;
-                ElisarChunkGenerator.Col c = ElisarChunkGenerator.column(plan, (int) Math.round(wx), (int) Math.round(wz));
-                double surfTop = (c.isl != null && c.top > ocean) ? c.top : (targetIsl.base + 8.0);
+                double surfTop = FloatingIslands.approxTopY(plan, targetIsl, wx, wz);
                 double wy = surfTop + 16.0 + this.random.nextDouble() * 12.0;
                 this.waypoint = new Vec3(wx, wy, wz);
                 return;
@@ -414,24 +411,14 @@ public class PaperDragonEntity extends FlyingMob {
     public static CityPlan.Island findScenicFloatingIsland(CityPlan plan, double x, double z) {
         CityPlan.Island best = null;
         double bestScore = Double.MAX_VALUE;
-        for (int rStep = 0; rStep <= 220; rStep += 28) {
-            int samples = rStep == 0 ? 1 : 12;
-            for (int i = 0; i < samples; ++i) {
-                double a = (Math.PI * 2.0 * i) / samples;
-                double sx = x + Math.cos(a) * rStep;
-                double sz = z + Math.sin(a) * rStep;
-                ElisarChunkGenerator.Col c = ElisarChunkGenerator.column(plan, (int) Math.round(sx), (int) Math.round(sz));
-                if (c.isl != null && c.isl.base >= plan.ocean + 20 && c.bottom >= plan.ocean + 12) {
-                    double d = Math.hypot(c.isl.cx - x, c.isl.cz - z);
-                    if (d < bestScore) {
-                        bestScore = d;
-                        best = c.isl;
-                    }
-                }
+        for (CityPlan.Island isl : FloatingIslands.gather(x, z, 240.0, true)) {
+            double d = Math.hypot(isl.cx - x, isl.cz - z);
+            if (d < bestScore) {
+                bestScore = d;
+                best = isl;
             }
-            if (best != null) return best;
         }
-        return null;
+        return best;
     }
 
     @Override
