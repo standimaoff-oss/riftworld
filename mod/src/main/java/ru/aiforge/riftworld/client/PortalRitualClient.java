@@ -223,9 +223,6 @@ public final class PortalRitualClient {
         while (mc.options.keyInventory.consumeClick()) {
             // блокируем открытие инвентаря во время перехода и катсцены
         }
-        while (mc.options.keyHideGui.consumeClick()) {
-            // не даём F1 сбить рендер кинематографических титров во время катсцены
-        }
         if (mc.screen != null && !(mc.screen instanceof WhiteReceivingScreen)) {
             mc.setScreen(null);
         }
