@@ -592,26 +592,28 @@ def build_castle_interiors():
         put(-25, cy, 22, CHAIN_Y)
     place_prop("castle_chandelier", -25, 74, 22, facing="south", powered=True, passable=True)
 
-    # Spiral stairs up BOTH Rotunda Twin Spires (-25, +13) and (-25, +31) up to by=92!
-    build_spiral_tower(-25, 13, 64, 91, r_in=2, ground_door_dir="south", rampart_y=76)
-    build_spiral_tower(-25, 31, 64, 91, r_in=2, ground_door_dir="north", rampart_y=76)
+    # Spiral stairs up BOTH Rotunda Twin Spires (-29, +13) and (-21, +31) inside their natural stone shafts!
+    build_spiral_tower(-29, 13, 64, 90, r_in=2, ground_door_dir="south", rampart_y=76)
+    build_spiral_tower(-21, 31, 64, 90, r_in=2, ground_door_dir="north", rampart_y=76)
 
     # =========================================================================
     # 5. THE GRAND BLACK CATHEDRAL THRONE HALL (03_citadel_hall_cathedral_throne.png!)
-    #    Spanning lx = -37..+50, lz = -46..-5, floor by = 63, vaults to by = 98!
+    #    Spanning lx = -37..+49, lz = -46..-5 (East Chancel lx>=37 spans lz=-33..-9), vaults to by = 98!
     # =========================================================================
 
-    # 5A) Clear entire hollow Cathedral box cleanly & lay sunken Nave (by=63) + raised Side Aisles (by=64)
+    # 5A) Clear hollow Cathedral cleanly while preserving sculpted East Chancel exterior walls (lx>=37)!
     for lz in range(-46, -4):
         in_nave = (-32 <= lz <= -18)
         for lx in range(-37, 50):
+            if lx >= 37 and not (-33 <= lz <= -9):
+                continue
             # Keep solid foundation below floor (except Undercroft stairwell carved later)
             put(lx, 62, lz, PBB)
             if in_nave:
                 # Rich dark-slate & gilded geometric nave inlay
                 is_rib = ((lx % 8 == 0) or lz in (-32, -18))
                 put(lx, 63, lz, GILDED if (is_rib and (lx + lz) % 4 == 0) else (DEEP_TILES if ((lx + lz) & 1) == 0 else PBB))
-                ceil_y = 97
+                ceil_y = 97 if lx < 37 else 93
                 for by in range(64, ceil_y):
                     put(lx, by, lz, AIR)
             else:
@@ -623,7 +625,7 @@ def build_castle_interiors():
                     put(lx, 64, lz, pbb_stair("south"))
                 else:
                     put(lx, 64, lz, DEEP_BRICKS if ((lx + lz) & 1) == 0 else PBB)
-                for by in range(65, 92):
+                for by in range(65, 92 if lx < 37 else 88):
                     put(lx, by, lz, AIR)
 
     # 5B) Grand Portals: South Courtyard Portal (lx=+4..+10, lz=-4) & West Ceremonial Portal (lx=-38, lz=-28..-22)
@@ -759,6 +761,12 @@ def build_castle_interiors():
                 glass = GOLD_GLASS if (dz == 0 and wy % 3 == 0) else (RED_GLASS if abs(dz) == 1 else GLOW_GLASS_NS)
                 put(50, wy, center_z + dz, glass)
                 put(51, wy, center_z + dz, AIR)
+    # Matching pointed stained-glass lancets on North & South Chancel walls (lx=41..45 at lz=-34 and lz=-8)
+    for dx in range(-2, 3):
+        for wy in range(73, 87 - abs(dx) * 2):
+            glass = GOLD_GLASS if (dx == 0 and wy % 4 == 0) else (RED_GLASS if abs(dx) == 2 else GLOW_GLASS_EW)
+            put(43 + dx, wy, -34, glass)
+            put(43 + dx, wy, -8, glass)
 
     # 5G) Seamless Connected +-Cross Royal Carpet Runner + Monumental Stepped Throne Sanctuary!
     # Main Nave Royal Runner (7 blocks wide: lz=-28..-22, lx=-35..+33)

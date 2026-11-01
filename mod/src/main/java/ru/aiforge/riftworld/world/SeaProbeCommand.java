@@ -2825,12 +2825,12 @@ public final class SeaProbeCommand {
             }
 
             if (k.equals("blacktide_rotunda_sanctum")) {
-                int camX = bs.cx + BlacktideCitadel.rotX(-25, 12, bs.rot);
-                int camY = bs.baseY + 68;
-                int camZ = bs.cz + BlacktideCitadel.rotZ(-25, 12, bs.rot);
-                int lkX = bs.cx + BlacktideCitadel.rotX(-25, 23, bs.rot);
-                int lkY = bs.baseY + 66;
-                int lkZ = bs.cz + BlacktideCitadel.rotZ(-25, 23, bs.rot);
+                int camX = bs.cx + BlacktideCitadel.rotX(-19, 15, bs.rot);
+                int camY = bs.baseY + 69;
+                int camZ = bs.cz + BlacktideCitadel.rotZ(-19, 15, bs.rot);
+                int lkX = bs.cx + BlacktideCitadel.rotX(-26, 23, bs.rot);
+                int lkY = bs.baseY + 65;
+                int lkZ = bs.cz + BlacktideCitadel.rotZ(-26, 23, bs.rot);
 
                 int carpets = 0, altars = 0, books = 0;
                 BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
@@ -2861,7 +2861,7 @@ public final class SeaProbeCommand {
             int[][] towerCenters = {
                     {-9, -78}, {-32, -74}, {-55, -69}, {48, -66}, {-76, -43}, {79, -39},
                     {85, -20}, {91, -1}, {78, 36}, {62, 47}, {47, 58}, {-6, 60},
-                    {-72, 30}, {-58, 35}, {-25, 13}, {-25, 31}, {-34, -40}, {-34, -10}, {20, -38}
+                    {-72, 30}, {-58, 35}, {-29, 13}, {-21, 31}, {-34, -40}, {-34, -10}, {20, -38}
             };
             int climbedTowers = 0, totalStairs = 0;
             BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
