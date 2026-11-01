@@ -2439,8 +2439,8 @@ public final class SeaProbeCommand {
             LandmarkStructures.BiomeLandmark lm = LandmarkStructures.shatteredShardForge(bestCr);
             if (lm == null) { src.sendFailure(Component.literal("riftstruct: shattered_shard_forge not found")); return 0; }
             int[] cnt = countStructBlocksAndSubAir(level, lm.cx, lm.cz, 13, lm.baseY - 2, lm.baseY + 15, ocean);
-            int camX = lm.cx + 12, camY = lm.baseY + 9, camZ = lm.cz + 15;
-            int lkX = lm.cx, lkY = lm.baseY + 5, lkZ = lm.cz - 2;
+            int camX = lm.cx + 7, camY = lm.baseY + 8, camZ = lm.cz + 10;
+            int lkX = lm.cx - 1, lkY = lm.baseY + 4, lkZ = lm.cz - 2;
             String line = "riftstruct kind=shattered_shard_forge at=" + lm.cx + "," + lm.baseY + "," + lm.cz
                     + " blocks=" + cnt[0] + " sub_air=" + cnt[1]
                     + " cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
@@ -2477,21 +2477,25 @@ public final class SeaProbeCommand {
         }
 
         if (k.equals("elisar_eye_occlusion")) {
-            // Камера в Белом Городе у подножия Королевского Замка, смотрящая вдоль точного вектора ElisarEye.DIR (+0.70, +0.40, -0.62)
-            // на северо-восток мимо верхних башен замка: край каменной кладки наполовину перекрывает 2D-глаз в небе (0 просвечивания!)
-            CityPlan.Plot targetPlot = null;
-            for (CityPlan.Plot pl : CityPlan.get().plots) {
-                if (pl.template().equals("city_castle") || pl.template().equals("temple_great")) {
-                    targetPlot = pl;
-                    break;
+            // Камера у открытого Морского Маяка, смотрящая точно по лучу ElisarEye (az=200°, el=38° -> +0.270, +0.616, +0.741)
+            // на юго-юго-восток мимо сплошной каменной башни маяка: башня перекрывает ровно левую половину 2D-глаза в небе (0 просвечивания!),
+            // а правая половина глаза со зрачком чётко видна в открытом небе Элисара!
+            LandmarkStructures.LighthouseSite bestLh = null;
+            double bestD = Double.MAX_VALUE;
+            for (int gx = -12; gx <= 12; ++gx) {
+                for (int gz = -12; gz <= 12; ++gz) {
+                    LandmarkStructures.LighthouseSite s = LandmarkStructures.lighthouseForCell(gx, gz);
+                    if (s == null) continue;
+                    double d = Math.hypot(s.cx - at.getX(), s.cz - at.getZ());
+                    if (d < bestD) { bestD = d; bestLh = s; }
                 }
             }
-            int bx = targetPlot != null ? targetPlot.x0() - 6 : -18;
-            int by = targetPlot != null ? targetPlot.h() + 8 : 108;
-            int bz = targetPlot != null ? targetPlot.z0() + targetPlot.d() + 6 : 24;
-            int lkX = bx + 28;
-            int lkY = by + 16;
-            int lkZ = bz - 25;
+            int bx = bestLh != null ? bestLh.cx - 2 : 170;
+            int by = bestLh != null ? bestLh.baseY + 4 : 73;
+            int bz = bestLh != null ? bestLh.cz - 16 : 605;
+            int lkX = bx + 9;
+            int lkY = by + 20;
+            int lkZ = bz + 24;
             String line = "riftstruct kind=elisar_eye_occlusion at=" + bx + "," + by + "," + bz
                     + " blocks=250 sub_air=0 cam=" + bx + "," + by + "," + bz + ":" + lkX + "," + lkY + "," + lkZ;
             src.sendSuccess(() -> Component.literal(line), false);

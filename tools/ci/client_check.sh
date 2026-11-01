@@ -286,7 +286,7 @@ write_report() {
     echo "- море: дно y=$SEA_FLOOR, вода $SEA_WATER блоков, глубочайшее дно y=$SEA_MIN"
     echo "- пещеры: $SEA_CAVES колонок, воды $SEA_WET / воздуха $SEA_AIR блоков (у свода $SEA_CEIL, висячего $SEA_FLOAT)"
     echo "- провалов проб: **$FAILS**"
-    echo "- строк Exception/ERROR в логе клиента (без звука/наратора): **$(grep -E "Exception|ERROR" "$OUT/client.log" 2>/dev/null | grep -viE "Narrator|flite|text2speech|OpenAL|SoundSystem|SoundEngine" | wc -l)**"
+    echo "- строк Exception/ERROR в логе клиента (без звука/наратора/authlib): **$(grep -E "Exception|ERROR" "$OUT/client.log" 2>/dev/null | grep -viE "Narrator|flite|text2speech|OpenAL|SoundSystem|SoundEngine|no sound|libflite|Yggdrasil|authlib|AuthenticationUnavailable|MinecraftClientException|JsonSyntaxException|Expected BEGIN_OBJECT|Cannot contact authentication server|SocketTimeoutException|Read timed out" | wc -l)**"
     echo
     echo "## пробы"; echo '```'; cat "$PROBES" 2>/dev/null; echo '```'
     echo "## колонка (y; W=вода, S=донный песок, a=воздух/пещера, .=прочее)"; echo '```'; cat "$OUT/column.txt" 2>/dev/null; echo '```'
@@ -1540,23 +1540,26 @@ biome_section() {
     RCON execute in minecraft:overworld run time set 6000 >/dev/null 2>&1 || true
     RCON execute in minecraft:overworld run weather clear >/dev/null 2>&1 || true
     # 1) До ритуала: ракурс от земли вверх в небо на 3D-Прорыв Пространства (узкий у земли, толстый и огромный в небе!)
-    RCON execute in minecraft:overworld run tp TestPlayer "$PCX" "$PCY" "$PCZ" facing "$PLX" "$PLY" "$PLZ" >/dev/null 2>&1 || true
+    YP1=$(python3 tools/ci/lookat_angles.py "$PCX" "$PCY" "$PCZ" "$PLX" "$PLY" "$PLZ")
+    RCON execute in minecraft:overworld run tp TestPlayer "$PCX" "$PCY" "$PCZ" ${YP1% *} ${YP1#* } >/dev/null 2>&1 || true
     sleep 7
     shot "97_spatial_rift_skyward"
 
-    # 2) Запускаем ритуал: накладывающиеся узоры Элисара по полу + оттенок измерения + 2D-глаза высоко в небе!
+    # 2) Запускаем ритуал: накладывающиеся узоры Элисара по полу (мандала + орнамент) + оттенок измерения + низ 3D-Прорыва!
     P_TRG=$(RCON execute as TestPlayer at @s in minecraft:overworld run riftportal trigger 2>&1 | tr '\r\n' '  ')
     log "  /riftportal trigger -> ${P_TRG:0:180}"
-    RCON execute in minecraft:overworld run tp TestPlayer "$((PLX + 5))" "$((PCY + 3))" "$((PLZ + 11))" facing "$PLX" "$((PCY - 1))" "$PLZ" >/dev/null 2>&1 || true
-    sleep 2.2
+    YP2=$(python3 tools/ci/lookat_angles.py "$((PLX + 4))" "$((PCY + 5))" "$((PLZ + 12))" "$PLX" "$((PCY - 2))" "$((PLZ + 2))")
+    RCON execute in minecraft:overworld run tp TestPlayer "$((PLX + 4))" "$((PCY + 5))" "$((PLZ + 12))" ${YP2% *} ${YP2#* } >/dev/null 2>&1 || true
+    sleep 2.3
     shot "98_portal_elisar_floor_patterns"
 
     # 3) Переводим взгляд выше в небо вдоль расширяющегося Разлома — видны 2D-глаза Элисара высоко в небесном куполе!
-    RCON execute in minecraft:overworld run tp TestPlayer "$PCX" "$PCY" "$((PLZ + 15))" facing "$PLX" "$((PLY + 8))" "$PLZ" >/dev/null 2>&1 || true
+    YP3=$(python3 tools/ci/lookat_angles.py "$PCX" "$PCY" "$((PLZ + 15))" "$PLX" "$((PLY + 6))" "$PLZ")
+    RCON execute in minecraft:overworld run tp TestPlayer "$PCX" "$PCY" "$((PLZ + 15))" ${YP3% *} ${YP3#* } >/dev/null 2>&1 || true
     sleep 2.1
     shot "99_portal_sky_2d_eyes"
 
-    sleep 4.2
+    sleep 4.1
     shot "100_portal_flash_arrival"
     P_DIM=$(RCON data get entity TestPlayer Dimension 2>&1 | tr '\r\n' '  ')
     P_VER=$(RCON execute in minecraft:overworld run riftportal verify 2>&1 | tr '\r\n' '  ')
@@ -1613,7 +1616,7 @@ if [ "$FEATCYCLE" -gt 0 ]; then
     | while IFS= read -r line; do echo "::error title=worldgen::${line:0:300}"; done
 fi
 ERRS=$(grep -E "Exception|ERROR" "$OUT/client.log" 2>/dev/null \
-       | grep -viE "Narrator|flite|text2speech|OpenAL|SoundSystem|SoundEngine|no sound|libflite|Yggdrasil|authlib|AuthenticationUnavailable|MinecraftClientException|Expected BEGIN_OBJECT|Cannot contact authentication server|SocketTimeoutException|Read timed out" \
+       | grep -viE "Narrator|flite|text2speech|OpenAL|SoundSystem|SoundEngine|no sound|libflite|Yggdrasil|authlib|AuthenticationUnavailable|MinecraftClientException|JsonSyntaxException|Expected BEGIN_OBJECT|Cannot contact authentication server|SocketTimeoutException|Read timed out" \
        | grep -viE "missing model for variant|loading blockstate definition|ModelBakery" | wc -l)
 echo "строк Exception/ERROR в логе клиента (без звука/наратора и без missing-model): $ERRS"
 echo "missing model for variant в логе клиента: $MODELWARN"
