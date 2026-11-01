@@ -38,5 +38,7 @@ public final class RiftWorld {
         // успел закэшировать стандартный GroundFinder по heightmap.
         ru.aiforge.riftworld.world.DtGround.install();
         ru.aiforge.riftworld.net.Net.init();
+        bus.addListener((net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent e) ->
+                e.enqueueWork(ru.aiforge.riftworld.world.BlacktideCitadel::warmupAsync));
     }
 }

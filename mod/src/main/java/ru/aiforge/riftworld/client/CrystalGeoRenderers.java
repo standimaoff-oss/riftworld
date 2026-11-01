@@ -684,36 +684,35 @@ public final class CrystalGeoRenderers {
                                    float x0, float y0, float z0, float x1, float y1, float z1,
                                    int r, int g, int b, int light) {
         Matrix4f m = ps.last().pose();
-        org.joml.Matrix3f n = ps.last().normal();
         int ov = OverlayTexture.NO_OVERLAY;
         float uSpan = Math.min(1.0F, Math.max(0.25F, (x1 - x0) * 0.5F));
         float vSpan = Math.min(1.0F, Math.max(0.25F, (y1 - y0) * 0.5F));
 
-        // UP (+Y)
-        iceQuad(vc, m, n, 0, 1, 0, x0, y1, z0, x0, y1, z1, x1, y1, z1, x1, y1, z0, uSpan, uSpan, r, g, b, light, ov);
-        // DOWN (-Y)
-        iceQuad(vc, m, n, 0, -1, 0, x0, y0, z1, x0, y0, z0, x1, y0, z0, x1, y0, z1, uSpan, uSpan, (int) (r * 0.84F), (int) (g * 0.86F), b, light, ov);
+        // UP (+Y) — ослепительный бело-голубой кристальный блик
+        iceQuad(vc, m, 0.0F, 1.0F, 0.0F, x0, y1, z0, x0, y1, z1, x1, y1, z1, x1, y1, z0, uSpan, uSpan, r, g, b, light, ov);
+        // DOWN (-Y) — чистый светло-бирюзовый отсвет без тёмно-серой тени
+        iceQuad(vc, m, 0.0F, 1.0F, 0.0F, x0, y0, z1, x0, y0, z0, x1, y0, z0, x1, y0, z1, uSpan, uSpan, (int) (r * 0.86F), (int) (g * 0.96F), b, light, ov);
         // SOUTH (+Z)
-        iceQuad(vc, m, n, 0, 0, 1, x0, y1, z1, x0, y0, z1, x1, y0, z1, x1, y1, z1, uSpan, vSpan, (int) (r * 0.94F), (int) (g * 0.96F), b, light, ov);
+        iceQuad(vc, m, 0.0F, 0.99F, 0.14F, x0, y1, z1, x0, y0, z1, x1, y0, z1, x1, y1, z1, uSpan, vSpan, (int) (r * 0.95F), (int) (g * 0.99F), b, light, ov);
         // NORTH (-Z)
-        iceQuad(vc, m, n, 0, 0, -1, x1, y1, z0, x1, y0, z0, x0, y0, z0, x0, y1, z0, uSpan, vSpan, (int) (r * 0.94F), (int) (g * 0.96F), b, light, ov);
-        // EAST (+X)
-        iceQuad(vc, m, n, 1, 0, 0, x1, y1, z1, x1, y0, z1, x1, y0, z0, x1, y1, z0, uSpan, vSpan, (int) (r * 0.89F), (int) (g * 0.92F), b, light, ov);
+        iceQuad(vc, m, 0.0F, 0.99F, -0.14F, x1, y1, z0, x1, y0, z0, x0, y0, z0, x0, y1, z0, uSpan, vSpan, (int) (r * 0.95F), (int) (g * 0.99F), b, light, ov);
+        // EAST (+X) — прохладная бирюзовая грань кристалла (0 серости!)
+        iceQuad(vc, m, 0.14F, 0.99F, 0.0F, x1, y1, z1, x1, y0, z1, x1, y0, z0, x1, y1, z0, uSpan, vSpan, (int) (r * 0.84F), (int) (g * 0.97F), b, light, ov);
         // WEST (-X)
-        iceQuad(vc, m, n, -1, 0, 0, x0, y1, z0, x0, y0, z0, x0, y0, z1, x0, y1, z1, uSpan, vSpan, (int) (r * 0.89F), (int) (g * 0.92F), b, light, ov);
+        iceQuad(vc, m, -0.14F, 0.99F, 0.0F, x0, y1, z0, x0, y0, z0, x0, y0, z1, x0, y1, z1, uSpan, vSpan, (int) (r * 0.84F), (int) (g * 0.97F), b, light, ov);
     }
 
-    private static void iceQuad(VertexConsumer vc, Matrix4f m, org.joml.Matrix3f n,
+    private static void iceQuad(VertexConsumer vc, Matrix4f m,
                                 float nx, float ny, float nz,
                                 float x0, float y0, float z0,
                                 float x1, float y1, float z1,
                                 float x2, float y2, float z2,
                                 float x3, float y3, float z3,
                                 float u1, float v1, int r, int g, int b, int light, int ov) {
-        vc.vertex(m, x0, y0, z0).color(r, g, b, 255).uv(0.0F, 0.0F).overlayCoords(ov).uv2(light).normal(n, nx, ny, nz).endVertex();
-        vc.vertex(m, x1, y1, z1).color(r, g, b, 255).uv(0.0F, v1).overlayCoords(ov).uv2(light).normal(n, nx, ny, nz).endVertex();
-        vc.vertex(m, x2, y2, z2).color(r, g, b, 255).uv(u1, v1).overlayCoords(ov).uv2(light).normal(n, nx, ny, nz).endVertex();
-        vc.vertex(m, x3, y3, z3).color(r, g, b, 255).uv(u1, 0.0F).overlayCoords(ov).uv2(light).normal(n, nx, ny, nz).endVertex();
+        vc.vertex(m, x0, y0, z0).color(r, g, b, 255).uv(0.0F, 0.0F).overlayCoords(ov).uv2(light).normal(nx, ny, nz).endVertex();
+        vc.vertex(m, x1, y1, z1).color(r, g, b, 255).uv(0.0F, v1).overlayCoords(ov).uv2(light).normal(nx, ny, nz).endVertex();
+        vc.vertex(m, x2, y2, z2).color(r, g, b, 255).uv(u1, v1).overlayCoords(ov).uv2(light).normal(nx, ny, nz).endVertex();
+        vc.vertex(m, x3, y3, z3).color(r, g, b, 255).uv(u1, 0.0F).overlayCoords(ov).uv2(light).normal(nx, ny, nz).endVertex();
     }
 }
 

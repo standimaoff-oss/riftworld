@@ -2535,12 +2535,9 @@ public final class SeaProbeCommand {
                 return 0;
             }
             BlacktideCitadel.Site bs = bestAr.blacktideSite;
-            // Прогружаем все чанки моста на берегу Пепельного биома и самой цитадели в открытом море!
-            for (int cx = (bs.minX >> 4) - 1; cx <= (bs.maxX >> 4) + 1; ++cx) {
-                for (int cz = (bs.minZ >> 4) - 1; cz <= (bs.maxZ >> 4) + 1; ++cz) {
-                    level.getChunk(cx, cz);
-                }
-            }
+            // НИКОГДА не вызываем синхронный level.getChunk(...) по 300 чанкам на первом шаге S0:
+            // возвращаем at=... мгновенно (<1 мс), после чего TestPlayer телепортируется в (cx, cz),
+            // пул потоков сервера сам генерирует все чанки в радиусе 12 чанков (192 м), и на S1 все чанки уже в памяти!
             // 1) Проверяем, что начало моста (landX, landZ) стоит НА СУШЕ Пепельного биома!
             boolean bridgeOnAshenLand = AshenLands.inside(bs.landX, bs.landZ)
                     && AshenLands.weight(bs.landX + 0.5, bs.landZ + 0.5) >= 0.85;
@@ -2551,20 +2548,24 @@ public final class SeaProbeCommand {
             int seaWaterAround = 0;
             for (int a = 0; a < 12; ++a) {
                 double ang = (Math.PI * 2.0 * a) / 12.0;
-                int wx = bs.cx + (int) Math.round(Math.cos(ang) * 98.0);
-                int wz = bs.cz + (int) Math.round(Math.sin(ang) * 98.0);
+                int wx = bs.cx + (int) Math.round(Math.cos(ang) * 82.0);
+                int wz = bs.cz + (int) Math.round(Math.sin(ang) * 82.0);
+                if (!level.hasChunk(wx >> 4, wz >> 4)) continue;
                 if (level.getBlockState(new BlockPos(wx, ocean, wz)).is(ElisarBlocks.WATER.get())) {
                     ++seaWaterAround;
                 }
             }
-            int[] seaCnt = countStructBlocksAndSubAir(level, bs.keepX, bs.keepZ, 28, ocean - 8, bs.baseY + 145, ocean);
-            int totalBlocks = (bridgeOnAshenLand && castleInSea && landCnt[0] >= 120 && seaWaterAround >= 5) ? seaCnt[0] : 0;
+            int[] seaCnt = countStructBlocksAndSubAir(level, bs.keepX, bs.keepZ, 24, ocean - 8, bs.baseY + 145, ocean);
+            int totalBlocks = (bridgeOnAshenLand && castleInSea && landCnt[0] >= 80 && seaWaterAround >= 4) ? seaCnt[0] : 0;
 
             double ux = bs.outUx, uz = bs.outUz;
             double px = -uz, pz = ux;
 
-            int camX, camY, camZ, lkX, lkY, lkZ;
+            int atX, atY, atZ, camX, camY, camZ, lkX, lkY, lkZ;
             if (k.equals("blacktide_bridge_shore")) {
+                atX = bs.gateX;
+                atY = bs.baseY + 46;
+                atZ = bs.gateZ;
                 // Вид прямо с пепельного берега биома вдоль каменного моста, уходящего через морские волны к башням замка!
                 camX = (int) Math.round(bs.landX - ux * 16.0 + px * 18.0);
                 camY = bs.baseY + 52;
@@ -2573,17 +2574,20 @@ public final class SeaProbeCommand {
                 lkY = bs.baseY + 56;
                 lkZ = (int) Math.round(bs.gateZ + uz * 18.0);
             } else {
+                atX = bs.cx;
+                atY = bs.baseY + 46;
+                atZ = bs.cz;
                 // Панорамный морской ракурс: одновременно виден и берег Пепельного биома с началом моста, и весь огромный замок в открытом море!
                 double midX = (bs.landX * 0.35 + bs.cx * 0.65);
                 double midZ = (bs.landZ * 0.35 + bs.cz * 0.65);
-                camX = (int) Math.round(midX + px * 118.0 - ux * 18.0);
-                camY = ocean + 54;
-                camZ = (int) Math.round(midZ + pz * 118.0 - uz * 18.0);
+                camX = (int) Math.round(midX + px * 112.0 - ux * 16.0);
+                camY = ocean + 52;
+                camZ = (int) Math.round(midZ + pz * 112.0 - uz * 16.0);
                 lkX = (int) Math.round(bs.cx - ux * 12.0);
                 lkY = bs.baseY + 62;
                 lkZ = (int) Math.round(bs.cz - uz * 12.0);
             }
-            String line = "riftstruct kind=" + k + " at=" + bs.cx + "," + (bs.baseY + 40) + "," + bs.cz
+            String line = "riftstruct kind=" + k + " at=" + atX + "," + atY + "," + atZ
                     + " bridge_land=" + bridgeOnAshenLand + " castle_sea=" + castleInSea
                     + " water_ring=" + seaWaterAround + " land_blocks=" + landCnt[0]
                     + " blocks=" + totalBlocks + " sub_air=" + (landCnt[1] + seaCnt[1])
@@ -2605,11 +2609,6 @@ public final class SeaProbeCommand {
             }
             LandmarkStructures.BiomeLandmark lm = LandmarkStructures.ashenBurnedChurch(bestAr);
             if (lm == null) { src.sendFailure(Component.literal("riftstruct: ashen_burned_church not found")); return 0; }
-            for (int cx = ((lm.cx - 28) >> 4); cx <= ((lm.cx + 28) >> 4); ++cx) {
-                for (int cz = ((lm.cz - 28) >> 4); cz <= ((lm.cz + 28) >> 4); ++cz) {
-                    level.getChunk(cx, cz);
-                }
-            }
             int[] cnt = countStructBlocksAndSubAir(level, lm.cx, lm.cz, 18, lm.baseY, lm.baseY + 24, ocean);
             int camX = lm.cx - 25, camY = lm.baseY + 11, camZ = lm.cz + 18;
             int lkX = lm.cx - 2, lkY = lm.baseY + 8, lkZ = lm.cz;
@@ -2645,23 +2644,22 @@ public final class SeaProbeCommand {
                         + emptyCnt + " partial=" + singleOrPairCnt + " all=" + allThreeCnt));
                 return 0;
             }
-            // Прогружаем центр пустого Пепельного биома и убеждаемся, что там действительно широкая вулканическая пустошь без замка!
-            for (int dx = -2; dx <= 2; ++dx) {
-                for (int dz = -2; dz <= 2; ++dz) {
-                    level.getChunk((emptySample.cx >> 4) + dx, (emptySample.cz >> 4) + dz);
-                }
-            }
+            boolean loadedCenter = level.hasChunk(emptySample.cx >> 4, emptySample.cz >> 4);
             int castleBricksInEmpty = 0;
-            for (int x = emptySample.cx - 24; x <= emptySample.cx + 24; ++x) {
-                for (int z = emptySample.cz - 24; z <= emptySample.cz + 24; ++z) {
-                    for (int y = ocean + 6; y <= ocean + 30; ++y) {
-                        if (level.getBlockState(new BlockPos(x, y, z)).is(ru.aiforge.riftworld.registry.CastleBlocks.BRICKS.get())) {
-                            ++castleBricksInEmpty;
+            if (loadedCenter) {
+                for (int x = emptySample.cx - 24; x <= emptySample.cx + 24; ++x) {
+                    for (int z = emptySample.cz - 24; z <= emptySample.cz + 24; ++z) {
+                        if (!level.hasChunk(x >> 4, z >> 4)) continue;
+                        for (int y = ocean + 6; y <= ocean + 30; ++y) {
+                            if (level.getBlockState(new BlockPos(x, y, z)).is(ru.aiforge.riftworld.registry.CastleBlocks.BRICKS.get())) {
+                                ++castleBricksInEmpty;
+                            }
                         }
                     }
                 }
             }
-            int okBlocks = (castleBricksInEmpty == 0 && emptySample.R >= 365.0) ? (emptyCnt * 100 + singleOrPairCnt * 10 + allThreeCnt) : 0;
+            int okBlocks = (loadedCenter && castleBricksInEmpty == 0 && emptySample.R >= 365.0)
+                    ? (emptyCnt * 100 + singleOrPairCnt * 10 + allThreeCnt) : 0;
             int camX = emptySample.cx - 48, camY = ocean + 26, camZ = emptySample.cz + 48;
             int lkX = emptySample.cx + 42, lkY = ocean + 4, lkZ = emptySample.cz - 42;
             String line = "riftstruct kind=ashen_combo_matrix at=" + emptySample.cx + "," + (ocean + 2) + "," + emptySample.cz

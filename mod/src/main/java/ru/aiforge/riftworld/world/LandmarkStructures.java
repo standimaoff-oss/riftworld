@@ -1958,8 +1958,9 @@ public final class LandmarkStructures {
             }
         }
 
-        // 2) Два высоких изогнутых Пилона-Камертона Резонатора (dx = -7 и +7), сходящихся к парящему Астральному Ядру!
+        // 2) Два высоких изогнутых Пилона-Камертона Резонатора (dx = -7 и +7), плавно и непрерывно сходящихся к парящему Астральному Ядру!
         for (int side = -1; side <= 1; side += 2) {
+            int prevPx = cx + side * 7;
             for (int dy = 0; dy <= 14; ++dy) {
                 int shiftIn = dy < 6 ? 0 : (dy - 5) / 2;
                 int px = cx + side * (7 - shiftIn);
@@ -1969,8 +1970,14 @@ public final class LandmarkStructures {
                             : (dy % 4 == 0 ? slate : marble);
                     if (!st.isAir()) {
                         put(chunk, mp, x0, z0, px, by + dy, cz + dz, st);
+                        // Плавная консольная ступень в местах изгиба арки, чтобы не было диагонального разрыва
+                        if (px != prevPx && dz == 0) {
+                            put(chunk, mp, x0, z0, prevPx, by + dy, cz, stair(riftStair, side < 0 ? Direction.EAST : Direction.WEST, Half.BOTTOM));
+                            put(chunk, mp, x0, z0, px, by + dy - 1, cz, stair(riftStair, side < 0 ? Direction.WEST : Direction.EAST, Half.TOP));
+                        }
                     }
                 }
+                prevPx = px;
                 if (dy == 10) {
                     // Горизонтальные резонаторные лучи к парящему кристаллу
                     for (int bx = Math.min(px, cx + side * 2); bx <= Math.max(px, cx + side * 2); ++bx) {

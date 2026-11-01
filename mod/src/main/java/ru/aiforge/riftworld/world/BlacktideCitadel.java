@@ -549,6 +549,19 @@ public final class BlacktideCitadel {
         LandmarkStructures.putLootChest(chunk, x0, z0, wx, placeY, wz, mcRot.rotate(localFacing), table);
     }
 
+    /** Фоновая предзагрузка {@code blacktide.nbt} в память при старте игры — 0 задержки на первом чанке. */
+    public static void warmupAsync() {
+        Thread t = new Thread(() -> {
+            try {
+                template();
+            } catch (Throwable ex) {
+                LOG.warn("BlacktideCitadel warmup skipped: {}", ex.toString());
+            }
+        }, "riftworld-blacktide-warmup");
+        t.setDaemon(true);
+        t.start();
+    }
+
     private BlacktideCitadel() {
     }
 }

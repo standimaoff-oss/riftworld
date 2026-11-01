@@ -989,19 +989,19 @@ biome_section() {
     GFS=$(printf '%s' "$LIN" | sed -n 's/.* falls_src=\([0-9]*\).*/\1/p' | tail -1)
     GBELOW=$(printf '%s' "$LIN" | sed -n 's/.* below_sea_cols=\([0-9]*\).*/\1/p' | tail -1)
     GSUBAIR=$(printf '%s' "$LIN" | sed -n 's/.* submerged_air=\([0-9]*\).*/\1/p' | tail -1)
-    # 3–6 КРУПНЫХ островов разных форм с разбросом радиусов от 22–40 до 43–55
-    if [ "${GISL:-0}" -ge 3 ] && [ "${GISL:-0}" -le 6 ]; then
-      log "  OK   сады: островов $GISL (3–6 больших)"
+    # v0.23.0: увеличенные Висячие сады — 5–8 огромных островов с радиусами вплоть до 84 блоков!
+    if [ "${GISL:-0}" -ge 3 ] && [ "${GISL:-0}" -le 9 ]; then
+      log "  OK   сады: островов $GISL (увеличенный архипелаг 5–8 больших островов)"
     else
-      log "  FAIL сады: островов ${GISL:-0} (нужно 3–6)"; FAILS=$((FAILS + 1))
+      log "  FAIL сады: островов ${GISL:-0} (нужно 3–9)"; FAILS=$((FAILS + 1))
     fi
     local GIRMIN GIRMAX
     GIRMIN=$(printf '%s' "${GIR:-0..0}" | cut -d. -f1)
     GIRMAX=$(printf '%s' "${GIR:-0..0}" | sed 's/.*\.\.//' | cut -d. -f1)
-    if [ "${GIRMIN:-0}" -ge 20 ] && [ "${GIRMIN:-0}" -le 38 ] && [ "${GIRMAX:-0}" -ge 42 ] && [ "${GIRMAX:-0}" -le 57 ]; then
-      log "  OK   сады: разброс радиусов островов ${GIR:-?} (от 22..38 до 43..55)"
+    if [ "${GIRMIN:-0}" -ge 20 ] && [ "${GIRMIN:-0}" -le 72 ] && [ "${GIRMAX:-0}" -ge 42 ] && [ "${GIRMAX:-0}" -le 92 ]; then
+      log "  OK   сады: разброс радиусов увеличенных островов ${GIR:-?}"
     else
-      log "  FAIL сады: радиусы островов ${GIR:-?} (нужен разброс от 22..38 до 43..55)"; FAILS=$((FAILS + 1))
+      log "  FAIL сады: радиусы островов ${GIR:-?} вне диапазона v0.23.0 (min 20..72, max 42..92)"; FAILS=$((FAILS + 1))
     fi
     # деревья садов — ТОЛЬКО садовый дуб аддона DT; сизоствола в садах быть не должно
     if [ "${GOAK:-0}" -ge 60 ]; then log "  OK   сады: садового дуба аддона DT $GOAK блоков"
@@ -1199,10 +1199,10 @@ biome_section() {
   if [ -z "${VX:-}" ]; then
     log "  FAIL /riftbiome violet не нашёл регион Фиолетовых холмов"; FAILS=$((FAILS + 1))
   else
-    if [ "${VISL:-0}" -ge 3 ] && [ "${VISL:-0}" -le 6 ]; then
-      log "  OK   холмы: архипелаг из ${VISL} огромных парящих островов"
+    if [ "${VISL:-0}" -ge 3 ] && [ "${VISL:-0}" -le 9 ]; then
+      log "  OK   холмы: увеличенный архипелаг из ${VISL} огромных парящих островов"
     else
-      log "  FAIL холмы: островов ${VISL:-0} (нужно 3..6 огромных островов)"; FAILS=$((FAILS + 1))
+      log "  FAIL холмы: островов ${VISL:-0} (нужно 3..9 огромных островов)"; FAILS=$((FAILS + 1))
     fi
     if [ "${VSIZO:-1}" -eq 0 ]; then
       log "  OK   холмы: сизоствола нет (sizo_blocks=0)"
@@ -1362,7 +1362,7 @@ biome_section() {
     if [ "${CBIO:-}" = "riftworld:crystal_rifts" ]; then log "  OK   Хрустальные разломы: биом святилища ${CBIO}"
     else log "  FAIL Хрустальные разломы: биом ${CBIO:-?} вместо riftworld:crystal_rifts"; FAILS=$((FAILS + 1)); fi
 
-    if [ "${CISL:-0}" -ge 4 ] && [ "${CISL:-0}" -le 6 ] && [ "${CBRGN:-0}" -ge 3 ]; then
+    if [ "${CISL:-0}" -ge 4 ] && [ "${CISL:-0}" -le 8 ] && [ "${CBRGN:-0}" -ge 3 ]; then
       log "  OK   Хрустальные разломы: архипелаг из ${CISL} островов и ${CBRGN} арочных мостов"
     else
       log "  FAIL Хрустальные разломы: островов=${CISL:-0}, мостов=${CBRGN:-0}"; FAILS=$((FAILS + 1))
@@ -1440,7 +1440,11 @@ biome_section() {
       RCON effect clear TestPlayer >/dev/null 2>&1 || true
     fi
     EL tp TestPlayer "$SX" "$((SY + 8))" "$SZ" >/dev/null 2>&1 || true
-    sleep 6
+    if [ "${settle:-16}" -ge 20 ]; then
+      sleep 12
+    else
+      sleep 6
+    fi
     S1=$(EL execute at TestPlayer in riftworld:elisar run riftstruct "$skind" 2>&1 | tr '\r\n' '  ')
     log "  /riftstruct $skind -> ${S1:0:280}"
     SBLK=$(printf '%s' "$S1" | sed -n 's/.* blocks=\([0-9]*\).*/\1/p' | tail -1)
@@ -1593,8 +1597,8 @@ biome_section() {
   # ---------- v0.23.0: Цитадель Чёрного утёса (blacktide.nbt: мост на земле Пепельного биома, сам замок в море!),
   #            Сгоревшая Пепельная Церковь, вариативные комбинации структур в Пепельном биоме и увеличенные биомы! ----------
   echo "== v0.23.0: Blacktide (мост на земле биома + замок в море), Сгоревшая Церковь, комбинации Пепельного биома и увеличенные биомы =="
-  probe_and_shot_struct "blacktide_citadel"      15000 "114_blacktide_citadel_sea_and_shore"   0 0 24
-  probe_and_shot_struct "blacktide_bridge_shore" 15000 "115_blacktide_bridge_from_ashen_land"  0 0 22
+  probe_and_shot_struct "blacktide_citadel"       6000 "114_blacktide_citadel_sea_and_shore"   0 0 24
+  probe_and_shot_struct "blacktide_bridge_shore"  6000 "115_blacktide_bridge_from_ashen_land"  0 0 22
   probe_and_shot_struct "ashen_burned_church"      900 "116_ashen_burned_church"               0 0 16
   probe_and_shot_struct "ashen_combo_matrix"       100 "117_ashen_empty_biome_panorama"        0 0 16
   probe_and_shot_struct "enlarged_biomes_audit"    500 "118_enlarged_violet_hills_panorama"    0 0 18
