@@ -122,30 +122,33 @@ public class ModelItemRenderer extends BlockEntityWithoutLevelRenderer {
         ps.popPose();
     }
 
+    private ru.aiforge.riftworld.glb.Pose prismPose;
+
     private void renderCrystalGeoItem(ru.aiforge.riftworld.item.CrystalGeoItem cgi, ItemDisplayContext ctx,
                                       PoseStack ps, MultiBufferSource buffers, int light, int overlay) {
         String geoName = cgi.geoModel();
-        ru.aiforge.riftworld.client.geo.GeoModel gm = ru.aiforge.riftworld.client.geo.GeoModel.of(geoName);
-        if (gm == null) return;
-        gm.animate(0.0F);
+        net.minecraft.resources.ResourceLocation glbLoc = new net.minecraft.resources.ResourceLocation(
+                ru.aiforge.riftworld.RiftWorld.MODID, "models/glb/" + geoName + ".glb");
+        GlbAssets.Loaded lm = GlbAssets.get(glbLoc);
+        if (lm == null) return;
+
         float time = (System.currentTimeMillis() % 360000L) * 0.02F;
-
-        if ("astral_prism".equals(geoName)) {
-            try {
-                var ra = gm.root.getChild("ring_a");
-                var rb = gm.root.getChild("ring_b");
-                var co = gm.root.getChild("core");
-                ra.yRot += time * 0.09F;
-                rb.xRot -= time * 0.07F;
-                rb.zRot += time * 0.06F;
-                co.yRot = time * 0.08F;
-            } catch (Exception ignored) {
-            }
-        }
-
         boolean isShield = "crystal_shield".equals(geoName);
         boolean isKatar = "crystal_katar".equals(geoName);
         boolean isPrism = "astral_prism".equals(geoName);
+
+        ru.aiforge.riftworld.glb.Pose usePose = lm.staticPose();
+        if (isPrism) {
+            if (this.prismPose == null || this.prismPose.model() != lm.model) {
+                this.prismPose = new ru.aiforge.riftworld.glb.Pose(lm.model);
+            }
+            this.prismPose.reset();
+            this.prismPose.rotate("ring_a", time * 0.085F, 0.0F, 1.0F, 0.0F);
+            this.prismPose.rotate("ring_b", time * 0.115F, 0.0F, 0.0F, 1.0F);
+            this.prismPose.rotate("core", -time * 0.095F, 0.0F, 1.0F, 0.0F);
+            this.prismPose.compute();
+            usePose = this.prismPose;
+        }
 
         ps.pushPose();
         ps.translate(0.5, 0.5, 0.5);
@@ -153,68 +156,69 @@ public class ModelItemRenderer extends BlockEntityWithoutLevelRenderer {
             case FIRST_PERSON_RIGHT_HAND, FIRST_PERSON_LEFT_HAND -> {
                 float side = ctx == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND ? 1.0F : -1.0F;
                 if (isKatar) {
-                    ps.translate(0.08 * side, -0.14, -0.12);
-                    ps.mulPose(com.mojang.math.Axis.XP.rotationDegrees(-18.0F));
-                    ps.mulPose(com.mojang.math.Axis.YP.rotationDegrees(12.0F * side));
-                    ps.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(-8.0F * side));
-                    ps.scale(0.72F, 0.72F, 0.72F);
-                } else if (isShield) {
-                    ps.translate(0.06 * side, -0.34, -0.05);
-                    ps.mulPose(com.mojang.math.Axis.YP.rotationDegrees(-22.0F * side));
-                    ps.scale(0.34F, 0.34F, 0.34F);
-                } else if (isPrism) {
-                    ps.translate(0.04 * side, -0.04 + 0.03 * Math.sin(time * 0.1F), -0.06);
-                    ps.scale(0.68F, 0.68F, 0.68F);
-                } else {
-                    ps.translate(0.04 * side, -0.08, -0.08);
+                    // Катар-наруч (лезвие вдоль +Z -> разворачиваем вперёд в -Z с лёгким наклоном к прицелу)
+                    ps.translate(0.06 * side, -0.14, -0.06);
+                    ps.mulPose(com.mojang.math.Axis.YP.rotationDegrees(side > 0 ? 194.0F : 166.0F));
                     ps.mulPose(com.mojang.math.Axis.XP.rotationDegrees(-14.0F));
-                    ps.scale(0.76F, 0.76F, 0.76F);
+                    ps.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(8.0F * side));
+                    ps.scale(0.84F, 0.84F, 0.84F);
+                } else if (isShield) {
+                    ps.translate(0.06 * side, -0.06, -0.06);
+                    ps.mulPose(com.mojang.math.Axis.YP.rotationDegrees(side > 0 ? 156.0F : -156.0F));
+                    ps.scale(0.42F, 0.42F, 0.42F);
+                } else if (isPrism) {
+                    ps.translate(0.04 * side, -0.02 + 0.025 * Math.sin(time * 0.09F), -0.06);
+                    ps.scale(0.66F, 0.66F, 0.66F);
+                } else {
+                    // crystal_shard (остриё вдоль +Z -> разворачиваем вперёд в -Z)
+                    ps.translate(0.04 * side, -0.08, -0.06);
+                    ps.mulPose(com.mojang.math.Axis.YP.rotationDegrees(side > 0 ? 190.0F : 170.0F));
+                    ps.mulPose(com.mojang.math.Axis.XP.rotationDegrees(-14.0F));
+                    ps.scale(0.95F, 0.95F, 0.95F);
                 }
             }
             case THIRD_PERSON_RIGHT_HAND, THIRD_PERSON_LEFT_HAND -> {
                 if (isKatar) {
-                    ps.translate(0.0, 0.05, -0.12);
-                    ps.scale(0.78F, 0.78F, 0.78F);
+                    ps.translate(0.0, 0.02, -0.08);
+                    ps.mulPose(com.mojang.math.Axis.YP.rotationDegrees(180.0F));
+                    ps.scale(0.85F, 0.85F, 0.85F);
                 } else if (isShield) {
-                    ps.translate(0.0, -0.35, -0.08);
-                    ps.scale(0.42F, 0.42F, 0.42F);
-                } else {
+                    ps.mulPose(com.mojang.math.Axis.YP.rotationDegrees(180.0F));
+                    ps.scale(0.50F, 0.50F, 0.50F);
+                } else if (isPrism) {
                     ps.scale(0.68F, 0.68F, 0.68F);
+                } else {
+                    ps.mulPose(com.mojang.math.Axis.YP.rotationDegrees(180.0F));
+                    ps.scale(0.90F, 0.90F, 0.90F);
                 }
             }
             default -> {
                 // GUI / Ground / Fixed
                 float gScale = ctx == ItemDisplayContext.GROUND ? 0.65F : 1.0F;
                 if (isKatar) {
-                    ps.translate(0.12, -0.10, 0.0);
-                    ps.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(-45.0F));
-                    ps.mulPose(com.mojang.math.Axis.YP.rotationDegrees(90.0F));
-                    ps.scale(0.62F * gScale, 0.62F * gScale, 0.62F * gScale);
+                    ps.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(-38.0F));
+                    ps.mulPose(com.mojang.math.Axis.YP.rotationDegrees(-112.0F));
+                    ps.scale(0.68F * gScale, 0.68F * gScale, 0.68F * gScale);
+                    ps.translate(0.0, 0.0, -0.30);
                 } else if (isShield) {
-                    ps.translate(0.0, -0.38, 0.0);
-                    ps.mulPose(com.mojang.math.Axis.YP.rotationDegrees(25.0F));
-                    ps.mulPose(com.mojang.math.Axis.XP.rotationDegrees(12.0F));
-                    ps.scale(0.36F * gScale, 0.36F * gScale, 0.36F * gScale);
+                    ps.mulPose(com.mojang.math.Axis.YP.rotationDegrees(24.0F));
+                    ps.mulPose(com.mojang.math.Axis.XP.rotationDegrees(14.0F));
+                    ps.scale(0.46F * gScale, 0.46F * gScale, 0.46F * gScale);
                 } else if (isPrism) {
-                    ps.mulPose(com.mojang.math.Axis.XP.rotationDegrees(22.0F));
-                    ps.mulPose(com.mojang.math.Axis.YP.rotationDegrees(35.0F));
-                    ps.scale(0.78F * gScale, 0.78F * gScale, 0.78F * gScale);
+                    ps.mulPose(com.mojang.math.Axis.XP.rotationDegrees(24.0F));
+                    ps.mulPose(com.mojang.math.Axis.YP.rotationDegrees(32.0F));
+                    ps.scale(0.86F * gScale, 0.86F * gScale, 0.86F * gScale);
                 } else {
-                    ps.translate(0.0, -0.04, 0.0);
-                    ps.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(-35.0F));
-                    ps.mulPose(com.mojang.math.Axis.YP.rotationDegrees(65.0F));
-                    ps.scale(0.78F * gScale, 0.78F * gScale, 0.78F * gScale);
+                    ps.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(-38.0F));
+                    ps.mulPose(com.mojang.math.Axis.YP.rotationDegrees(-110.0F));
+                    ps.scale(0.98F * gScale, 0.98F * gScale, 0.98F * gScale);
+                    ps.translate(0.0, 0.0, -0.12);
                 }
             }
         }
 
-        net.minecraft.resources.ResourceLocation tex = new net.minecraft.resources.ResourceLocation(
-                ru.aiforge.riftworld.RiftWorld.MODID, "textures/entity/" + cgi.geoTexture() + ".png");
-        var vc = buffers.getBuffer(gm.translucent
-                ? net.minecraft.client.renderer.RenderType.entityTranslucent(tex)
-                : net.minecraft.client.renderer.RenderType.entityCutoutNoCull(tex));
         int glowLight = Math.max(light, net.minecraft.client.renderer.LightTexture.pack(13, 15));
-        gm.root.render(ps, vc, glowLight, overlay, 1.0F, 1.0F, 1.0F, 1.0F);
+        GlbRenderer.render(lm, usePose, ps, buffers, glowLight, overlay);
         ps.popPose();
     }
 }

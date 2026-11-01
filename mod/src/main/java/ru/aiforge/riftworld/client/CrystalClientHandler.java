@@ -73,9 +73,8 @@ public final class CrystalClientHandler {
         int count = CrystalBarrageItem.builtCrystals(used);
         if (count <= 0) return;
 
-        GeoModel shardModel = GeoModel.of("crystal_shard");
-        if (shardModel == null) return;
-        shardModel.animate(0.0F);
+        GlbAssets.Loaded shardGlb = GlbAssets.get(CrystalGeoRenderers.SHARD_GLB);
+        if (shardGlb == null) return;
 
         Camera cam = e.getCamera();
         Vec3 camPos = cam.getPosition();
@@ -93,7 +92,6 @@ public final class CrystalClientHandler {
 
         PoseStack ps = e.getPoseStack();
         MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
-        VertexConsumer vc = buffers.getBuffer(RenderType.entityCutoutNoCull(TEX_SHARD));
 
         for (int i = 0; i < count; ++i) {
             double[] off = CrystalBarrageItem.FOV_OFFSETS[i];
@@ -101,17 +99,17 @@ public final class CrystalClientHandler {
             Vec3 worldPos = eye.add(right.scale(off[0])).add(up.scale(off[1] + bob)).add(fwd.scale(off[2]));
             Vec3 toAim = aim.subtract(worldPos).normalize();
             float yaw = (float) (Mth.atan2(toAim.x, toAim.z) * (180.0 / Math.PI));
-            float pitch = (float) (Mth.atan2(toAim.y, toAim.horizontalDistance()) * (180.0 / Math.PI));
+            float pitch = (float) (-Mth.atan2(toAim.y, toAim.horizontalDistance()) * (180.0 / Math.PI));
 
             ps.pushPose();
             ps.translate(worldPos.x - camPos.x, worldPos.y - camPos.y, worldPos.z - camPos.z);
-            ps.mulPose(Axis.YP.rotationDegrees(yaw - 180.0F));
+            ps.mulPose(Axis.YP.rotationDegrees(yaw));
             ps.mulPose(Axis.XP.rotationDegrees(pitch));
             ps.mulPose(Axis.ZP.rotationDegrees((p.tickCount + partial) * 5.0F + i * 36.0F));
-            ps.scale(0.52F, 0.52F, 0.52F);
-            shardModel.root.render(ps, vc, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+            ps.scale(0.68F, 0.68F, 0.68F);
+            GlbRenderer.render(shardGlb, shardGlb.staticPose(), ps, buffers, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
             ps.popPose();
         }
-        buffers.endBatch(RenderType.entityCutoutNoCull(TEX_SHARD));
+        buffers.endBatch();
     }
 }

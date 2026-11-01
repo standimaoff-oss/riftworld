@@ -2047,13 +2047,16 @@ public final class SeaProbeCommand {
             int bz = (int) Math.round(best.astroZ);
 
             double ux = Math.cos(best.phi), uz = Math.sin(best.phi);
-            int camX = (int) Math.round(best.astroX - ux * 6.0);
-            int camZ = (int) Math.round(best.astroZ - uz * 6.0);
+            double px = -uz, pz = ux;
+            int camX = (int) Math.round(best.astroX - ux * 6.8);
+            int camZ = (int) Math.round(best.astroZ - uz * 6.8);
             int camY = by + 3;
             float bossYaw = (float) (Math.atan2(-(camX - best.astroX), camZ - best.astroZ) * (180.0 / Math.PI));
 
             // Если чанк уже прогружен — гарантируем присутствие Босса и 2 Прислужников на передних флангах лицом к камере
             int bossCnt = 0, minionCnt = 0;
+            double m0x = best.astroX - ux * 2.8 - px * 2.35;
+            double m0z = best.astroZ - uz * 2.8 - pz * 2.35;
             if (level.hasChunk(bx >> 4, bz >> 4)) {
                 var box = new net.minecraft.world.phys.AABB(bx - 18, by - 4, bz - 18, bx + 18, by + 16, bz + 18);
                 var bosses = level.getEntitiesOfClass(ru.aiforge.riftworld.entity.RiftObeliskBoss.class, box);
@@ -2065,24 +2068,36 @@ public final class SeaProbeCommand {
                         boss.yBodyRotO = bossYaw;
                         boss.yHeadRot = bossYaw;
                         boss.yHeadRotO = bossYaw;
+                        boss.setNoAi(true);
                         boss.setAnchor(best.astroX, by + 1.85, best.astroZ);
                         level.addFreshEntity(boss);
                         bossCnt = 1;
                     }
                 } else {
+                    for (var boss : bosses) {
+                        boss.moveTo(best.astroX, by + 1.85, best.astroZ, bossYaw, 0.0F);
+                        boss.yRotO = bossYaw;
+                        boss.yBodyRot = bossYaw;
+                        boss.yBodyRotO = bossYaw;
+                        boss.yHeadRot = bossYaw;
+                        boss.yHeadRotO = bossYaw;
+                        boss.setNoAi(true);
+                        boss.setAnchor(best.astroX, by + 1.85, best.astroZ);
+                    }
                     bossCnt = bosses.size();
                 }
                 var oldMinions = level.getEntitiesOfClass(ru.aiforge.riftworld.entity.CrystalMinion.class, box);
                 for (var oldM : oldMinions) oldM.discard();
-                double px = -uz, pz = ux;
                 for (int i = 0; i < 2; ++i) {
-                    double side = (i == 0) ? -1.55 : 1.55;
-                    double mx = best.astroX - ux * 3.0 + px * side;
-                    double mz = best.astroZ - uz * 3.0 + pz * side;
-                    float mYaw = (float) (Math.atan2(-(camX - mx), camZ - mz) * (180.0 / Math.PI));
+                    double side = (i == 0) ? -2.35 : 2.35;
+                    double mx = best.astroX - ux * 2.8 + px * side;
+                    double mz = best.astroZ - uz * 2.8 + pz * side;
+                    int mCamX = k.contains("minion") && i == 0 ? (int) Math.round(mx - ux * 3.1) : camX;
+                    int mCamZ = k.contains("minion") && i == 0 ? (int) Math.round(mz - uz * 3.1) : camZ;
+                    float mYaw = (float) (Math.atan2(-(mCamX - mx), mCamZ - mz) * (180.0 / Math.PI));
                     var m = ru.aiforge.riftworld.registry.ModEntities.CRYSTAL_MINION.get().create(level);
                     if (m != null) {
-                        m.moveTo(mx, by + 2.15, mz, mYaw, 0.0F);
+                        m.moveTo(mx, by + 1.85, mz, mYaw, 0.0F);
                         m.yBodyRot = mYaw;
                         m.yBodyRotO = mYaw;
                         m.yHeadRot = mYaw;
@@ -2094,9 +2109,17 @@ public final class SeaProbeCommand {
                 minionCnt = 2;
             }
 
-            int lkX = bx, lkY = by + 3, lkZ = bz;
+            int lkX = bx, lkY = by + 4, lkZ = bz;
+            if (k.contains("minion")) {
+                camX = (int) Math.round(m0x - ux * 3.1);
+                camY = by + 2;
+                camZ = (int) Math.round(m0z - uz * 3.1);
+                lkX = (int) Math.round(m0x);
+                lkY = by + 3;
+                lkZ = (int) Math.round(m0z);
+            }
             int metric = bossCnt * 100 + minionCnt * 10;
-            String line = "riftstruct kind=colonnade_boss at=" + bx + "," + by + "," + bz
+            String line = "riftstruct kind=" + k + " at=" + bx + "," + by + "," + bz
                     + " bosses=" + bossCnt + " minions=" + minionCnt
                     + " blocks=" + metric + " sub_air=0 cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
             src.sendSuccess(() -> Component.literal(line), false);
