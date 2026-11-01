@@ -2131,6 +2131,7 @@ public final class SeaProbeCommand {
         }
 
         // ---------- v0.20.0: Модульный оригами-дракон под островами + 2D белые волны под островами и у водопадов ----------
+        int sea = CityPlan.get().ocean;
         if (k.startsWith("origami_dragon")) {
             List<CityPlan.Island> high = FloatingIslands.gather(0.0, 0.0, 420.0, true);
             CityPlan.Island pick = null;
