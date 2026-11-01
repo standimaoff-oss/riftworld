@@ -268,8 +268,8 @@ public final class PortalRitualClient {
         float targetYaw;
         float targetPitch;
 
-        if (t <= 76.0F) {
-            float u = Mth.clamp(t / 76.0F, 0.0F, 1.0F);
+        if (t <= 126.0F) {
+            float u = Mth.clamp(t / 126.0F, 0.0F, 1.0F);
             camPos = shotStart.lerp(shotHoldEnd, u);
             Vec3 look = cityTarget.subtract(camPos);
             double horiz = Math.hypot(look.x, look.z);
@@ -277,7 +277,7 @@ public final class PortalRitualClient {
             targetPitch = (float) (-Mth.atan2(look.y, horiz) * Mth.RAD_TO_DEG);
         } else {
             // Плавный полёт камеры от дальнего ракурса прямо к глазам игрока!
-            float u = Mth.clamp((t - 76.0F) / 45.0F, 0.0F, 1.0F);
+            float u = Mth.clamp((t - 126.0F) / 54.0F, 0.0F, 1.0F);
             float s = u * u * u * (u * (u * 6.0F - 15.0F) + 10.0F); // quintic smoothstep (0 рывков в начале и в конце!)
             Vec3 playerEye = new Vec3(px, py, pz);
             // Лёгкая дуга сверху вниз при подлёте к игроку
@@ -383,6 +383,14 @@ public final class PortalRitualClient {
         }
     }
 
+    /** Полностью скрываем руку/предмет от 1-го лица во время входа в пролом и панорамной катсцены города! */
+    @SubscribeEvent
+    public static void onRenderHand(net.minecraftforge.client.event.RenderHandEvent e) {
+        if (isHudAndPerspectiveLocked()) {
+            e.setCanceled(true);
+        }
+    }
+
     /** Полностью скрываем весь игровой HUD (хотбар, инвентарь, сердца, прицел) во время входа в портал и катсцены! */
     @SubscribeEvent
     public static void onOverlay(RenderGuiOverlayEvent.Pre e) {
@@ -412,14 +420,14 @@ public final class PortalRitualClient {
         Vec3 shotStart = new Vec3(26.0, baseY + 34.0, 92.0);
         Vec3 shotHoldEnd = new Vec3(21.5, baseY + 30.5, 82.0);
         Vec3 cityTarget = new Vec3(-2.0, baseY + 18.0, -18.0);
-        if (t <= 76.0F) {
-            float u = Mth.clamp(t / 76.0F, 0.0F, 1.0F);
+        if (t <= 126.0F) {
+            float u = Mth.clamp(t / 126.0F, 0.0F, 1.0F);
             Vec3 cp = shotStart.lerp(shotHoldEnd, u);
             Vec3 look = cityTarget.subtract(cp);
             e.setYaw((float) (Mth.atan2(-look.x, look.z) * Mth.RAD_TO_DEG));
             e.setPitch((float) (-Mth.atan2(look.y, Math.hypot(look.x, look.z)) * Mth.RAD_TO_DEG));
         } else {
-            float u = Mth.clamp((t - 76.0F) / 45.0F, 0.0F, 1.0F);
+            float u = Mth.clamp((t - 126.0F) / 54.0F, 0.0F, 1.0F);
             float s = u * u * u * (u * (u * 6.0F - 15.0F) + 10.0F);
             Vec3 lookStart = cityTarget.subtract(shotHoldEnd);
             float startYaw = (float) (Mth.atan2(-lookStart.x, lookStart.z) * Mth.RAD_TO_DEG);
@@ -457,11 +465,11 @@ public final class PortalRitualClient {
         }
 
         // 2) В фазе CITY_CUTSCENE на дальнем ракурсе города показываем Название Измерения и снизу Название Города,
-        //    после чего к тику 75 текст полностью исчезает ПЕРЕД тем, как камера плавно полетит к игроку!
+        //    после чего к тику 124 текст полностью исчезает ПЕРЕД тем, как камера плавно полетит к игроку!
         if (phase == PortalRitual.CITY_CUTSCENE) {
             float t = currentTime(pt);
-            float textIn = Mth.clamp((t - 10.0F) / 14.0F, 0.0F, 1.0F);
-            float textOut = 1.0F - Mth.clamp((t - 58.0F) / 16.0F, 0.0F, 1.0F);
+            float textIn = Mth.clamp((t - 12.0F) / 14.0F, 0.0F, 1.0F);
+            float textOut = 1.0F - Mth.clamp((t - 106.0F) / 18.0F, 0.0F, 1.0F);
             float textAlpha = textIn * textIn * (3.0F - 2.0F * textIn) * (textOut * textOut);
 
             if (textAlpha > 0.02F) {

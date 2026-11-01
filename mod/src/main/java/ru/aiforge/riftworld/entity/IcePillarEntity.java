@@ -88,7 +88,7 @@ public class IcePillarEntity extends Entity {
     }
 
     public int totalLifetime() {
-        return isWaveSpike() ? 52 : 116;
+        return isWaveSpike() ? 52 : 156;
     }
 
     /** Плавная кривая высоты столба над землёй (от 0 до {@code maxH} и обратно в 0 под землю). */
@@ -110,7 +110,7 @@ public class IcePillarEntity extends Entity {
         }
 
         // Классический 5-столбовой разомкнутый круг:
-        // 0..14: ледяная трещина на земле; 14..42: плавный подъём (28 тиков); 42..86: стоит (44 тика); 86..114: плавный уход под землю!
+        // 0..14: ледяная трещина на земле; 14..42: плавный подъём (28 тиков); 42..126: стоит (84 тика); 126..154: плавный уход под землю!
         if (t < 14.0F) {
             return 0.18F * (t / 14.0F);
         }
@@ -119,10 +119,10 @@ public class IcePillarEntity extends Entity {
             float s = u * u * (3.0F - 2.0F * u);
             return 0.18F + (maxH - 0.18F) * s;
         }
-        if (t < 86.0F) {
+        if (t < 126.0F) {
             return maxH;
         }
-        float u = Mth.clamp((t - 86.0F) / 28.0F, 0.0F, 1.0F);
+        float u = Mth.clamp((t - 126.0F) / 28.0F, 0.0F, 1.0F);
         float s = u * u * (3.0F - 2.0F * u);
         return maxH * (1.0F - s);
     }

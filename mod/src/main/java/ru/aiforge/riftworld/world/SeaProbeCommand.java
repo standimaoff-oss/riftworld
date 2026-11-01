@@ -2116,12 +2116,12 @@ public final class SeaProbeCommand {
             int lkX = bx, lkY = by + 5, lkZ = bz;
             int liftedOk = 0;
             if (k.equals("colonnade_boss_pillars") && level.hasChunk(bx >> 4, bz >> 4)) {
-                var box = new net.minecraft.world.phys.AABB(bx - 22, by - 6, bz - 22, bx + 22, by + 24, bz + 22);
+                var box = new net.minecraft.world.phys.AABB(bx - 28, by - 6, bz - 28, bx + 28, by + 26, bz + 28);
                 level.getEntitiesOfClass(ru.aiforge.riftworld.entity.IcePillarEntity.class, box).forEach(net.minecraft.world.entity.Entity::discard);
                 level.getEntitiesOfClass(net.minecraft.world.entity.decoration.ArmorStand.class, box).forEach(net.minecraft.world.entity.Entity::discard);
                 var bosses = level.getEntitiesOfClass(ru.aiforge.riftworld.entity.RiftObeliskBoss.class, box);
                 if (!bosses.isEmpty()) {
-                    var ringCenter = new net.minecraft.world.phys.Vec3(best.astroX - ux * 6.5, by + 1.0, best.astroZ - uz * 6.5);
+                    var ringCenter = new net.minecraft.world.phys.Vec3(best.astroX - ux * 8.0, by + 1.0, best.astroZ - uz * 8.0);
                     bosses.get(0).castUnjoinedIcePillarCircle(ringCenter);
                     var pillars = level.getEntitiesOfClass(ru.aiforge.riftworld.entity.IcePillarEntity.class, box);
                     if (pillars.size() == 5) {
@@ -2136,31 +2136,33 @@ public final class SeaProbeCommand {
                         if (stand.getY() - startStandY >= 4.2) liftedOk = 1;
                         stand.discard();
                     }
-                    camX = (int) Math.round(ringCenter.x - ux * 8.2 + px * 3.8);
+                    camX = (int) Math.round(ringCenter.x - ux * 10.5 + px * 4.2);
                     camY = by + 6;
-                    camZ = (int) Math.round(ringCenter.z - uz * 8.2 + pz * 3.8);
-                    lkX = (int) Math.round(ringCenter.x + ux * 1.5);
+                    camZ = (int) Math.round(ringCenter.z - uz * 10.5 + pz * 4.2);
+                    lkX = (int) Math.round(ringCenter.x + ux * 1.2);
                     lkY = by + 3;
-                    lkZ = (int) Math.round(ringCenter.z + uz * 1.5);
+                    lkZ = (int) Math.round(ringCenter.z + uz * 1.2);
                 }
             } else if (k.equals("colonnade_boss_hail") && level.hasChunk(bx >> 4, bz >> 4)) {
-                var box = new net.minecraft.world.phys.AABB(bx - 24, by - 6, bz - 24, bx + 24, by + 28, bz + 24);
+                var box = new net.minecraft.world.phys.AABB(bx - 28, by - 6, bz - 28, bx + 28, by + 34, bz + 28);
+                level.getEntitiesOfClass(ru.aiforge.riftworld.entity.IcePillarEntity.class, box).forEach(net.minecraft.world.entity.Entity::discard);
                 level.getEntitiesOfClass(ru.aiforge.riftworld.entity.IceHailBoulderEntity.class, box).forEach(net.minecraft.world.entity.Entity::discard);
                 var bosses = level.getEntitiesOfClass(ru.aiforge.riftworld.entity.RiftObeliskBoss.class, box);
                 if (!bosses.isEmpty()) {
-                    var hailCenter = new net.minecraft.world.phys.Vec3(best.astroX - ux * 6.0, by + 1.0, best.astroZ - uz * 6.0);
+                    var hailCenter = new net.minecraft.world.phys.Vec3(best.astroX - ux * 8.0, by + 1.0, best.astroZ - uz * 8.0);
                     bosses.get(0).castSkyIceHailVolley(hailCenter);
-                    // Прокручиваем 31 тик: 1-я глыба уже летит вниз в свою метку, а остальные 4 ждут своей очереди в небе со светящимися метками на полу!
+                    // Прокручиваем 16 тиков: все 5 огромных острых ледяных глыб парят в небе над 5 светящимися метками на земле,
+                    // и через ~14 живых тиков (во время кадра!) 1-я глыба стремительно летит вниз, а остальные ждут своей очереди!
                     var boulders = level.getEntitiesOfClass(ru.aiforge.riftworld.entity.IceHailBoulderEntity.class, box);
-                    for (int step = 0; step < 31; ++step) {
+                    for (int step = 0; step < 16; ++step) {
                         for (var bd : boulders) bd.tick();
                     }
                     liftedOk = (boulders.size() == 5) ? 1 : 0;
-                    camX = (int) Math.round(hailCenter.x - ux * 13.5 + px * 4.5);
-                    camY = by + 7;
-                    camZ = (int) Math.round(hailCenter.z - uz * 13.5 + pz * 4.5);
+                    camX = (int) Math.round(hailCenter.x - ux * 17.5 + px * 5.0);
+                    camY = by + 8;
+                    camZ = (int) Math.round(hailCenter.z - uz * 17.5 + pz * 5.0);
                     lkX = (int) Math.round(hailCenter.x);
-                    lkY = by + 6;
+                    lkY = by + 9;
                     lkZ = (int) Math.round(hailCenter.z);
                 }
             } else if (k.contains("minion")) {
@@ -2234,76 +2236,76 @@ public final class SeaProbeCommand {
             }
 
             // Камера для съёмки супер-детализированного 27-метрового оригами-дракона:
-            // - origami_dragon_over: величественно парит НАД парящим островом и его деревьями!
-            // - origami_dragon_under: плавно летит ПОД каменным сводом парящего острова над морем!
-            // - origami_dragon_closeup: крупный план многослойной головы, рогов, усов, лап и модулей!
+            // - origami_dragon_closeup: крупный план многослойной головы, рогов, усов, лап и 768 модулей в открытом солнечном небе у скалы!
+            // - origami_dragon_under_release: живой полёт ПОД каменным сводом парящего острова над морем и белыми волнами!
+            // - origami_dragon_over_release: живое величественное парение НАД парящим островом и его кронами!
             boolean overIsland = k.contains("over");
-            if (overIsland) {
-                dx = pick.cx + ca * (rim * 0.45);
-                dz = pick.cz + sa * (rim * 0.45);
-                dy = pick.base + 18.0;
-            }
-            double tx = -sa, tz = ca; // касательная полёта
             boolean closeup = k.contains("closeup");
+            double tx = -sa, tz = ca; // касательная полёта против часовой стрелки
+            if (closeup) {
+                dx = pick.cx + ca * (rim + 18.0);
+                dz = pick.cz + sa * (rim + 18.0);
+                dy = pick.base + 8.0;
+            } else if (overIsland) {
+                dx = pick.cx + ca * (rim * 0.36);
+                dz = pick.cz + sa * (rim * 0.36);
+                dy = FloatingIslands.approxTopY(CityPlan.get(), pick, dx, dz) + 14.0;
+            } else {
+                // Под внешним сводом парящего острова: на y = sea + 11.5 (между каменным сводом острова сверху и бирюзовым морем внизу!)
+                dx = pick.cx + ca * (rim * 0.74);
+                dz = pick.cz + sa * (rim * 0.74);
+                double approxCeilHere = FloatingIslands.approxUndersideY(pick, dx, dz, sea);
+                dy = Math.max(sea + 11.0, Math.min(approxCeilHere - 6.0, sea + 15.0));
+            }
+
             int camX, camY, camZ, lkX, lkY, lkZ;
             if (closeup) {
-                camX = (int) Math.round(dx + ca * 7.8 + tx * 4.6);
-                camY = (int) Math.round(dy + 1.4);
-                camZ = (int) Math.round(dz + sa * 7.8 + tz * 4.6);
-                lkX = (int) Math.round(dx - tx * 3.2);
-                lkY = (int) Math.round(dy + 0.5);
-                lkZ = (int) Math.round(dz - tz * 3.2);
+                camX = (int) Math.round(dx + ca * 11.5 + tx * 2.5);
+                camY = (int) Math.round(dy + 2.2);
+                camZ = (int) Math.round(dz + sa * 11.5 + tz * 2.5);
+                lkX = (int) Math.round(dx - tx * 6.5);
+                lkY = (int) Math.round(dy - 0.2);
+                lkZ = (int) Math.round(dz - tz * 6.5);
             } else if (overIsland) {
-                camX = (int) Math.round(dx + ca * 22.0 + tx * 8.0);
-                camY = (int) Math.round(dy + 5.0);
-                camZ = (int) Math.round(dz + sa * 22.0 + tz * 8.0);
-                lkX = (int) Math.round(dx - tx * 5.0);
-                lkY = (int) Math.round(dy - 2.0);
-                lkZ = (int) Math.round(dz - tz * 5.0);
+                camX = (int) Math.round(dx + ca * 22.0 + tx * 10.5);
+                camY = (int) Math.round(dy + 6.0);
+                camZ = (int) Math.round(dz + sa * 22.0 + tz * 10.5);
+                lkX = (int) Math.round(dx + tx * 3.5);
+                lkY = (int) Math.round(dy - 3.5);
+                lkZ = (int) Math.round(dz + tz * 3.5);
             } else {
-                camX = (int) Math.round(dx + ca * 19.0 + tx * 7.5);
-                camY = (int) Math.round(Math.max(sea + 8.0, dy - 2.5));
-                camZ = (int) Math.round(dz + sa * 19.0 + tz * 7.5);
-                lkX = (int) Math.round(dx - tx * 4.5);
-                lkY = (int) Math.round(dy + 0.4);
-                lkZ = (int) Math.round(dz - tz * 4.5);
+                camX = (int) Math.round(pick.cx + ca * (rim + 15.0) + tx * 10.0);
+                camY = (int) Math.round(sea + 10.0);
+                camZ = (int) Math.round(pick.cz + sa * (rim + 15.0) + tz * 10.0);
+                lkX = (int) Math.round(dx + tx * 3.5);
+                lkY = (int) Math.round(dy + 1.5);
+                lkZ = (int) Math.round(dz + tz * 3.5);
             }
 
             int dragonCnt = 0;
             if (level.hasChunk(((int) Math.floor(dx)) >> 4, ((int) Math.floor(dz)) >> 4)) {
-                var box = new net.minecraft.world.phys.AABB(dx - 72, sea, dz - 72, dx + 72, pick.base + 48, dz + 72);
-                var existing = level.getEntitiesOfClass(ru.aiforge.riftworld.entity.PaperDragonEntity.class, box);
+                var box = new net.minecraft.world.phys.AABB(pick.cx - 96, sea, pick.cz - 96, pick.cx + 96, pick.base + 64, pick.cz + 96);
+                level.getEntitiesOfClass(ru.aiforge.riftworld.entity.PaperDragonEntity.class, box)
+                        .forEach(net.minecraft.world.entity.Entity::discard);
+
                 float yaw = (float) (Math.atan2(tz, tx) * (180.0 / Math.PI)) - 90.0F;
                 boolean releaseAi = k.contains("release");
-                ru.aiforge.riftworld.entity.PaperDragonEntity d;
-                if (existing.isEmpty()) {
-                    d = ru.aiforge.riftworld.entity.PaperDragonEntity.spawnForIsland(level, pick, ang);
-                    dragonCnt = 1;
-                } else {
-                    d = existing.get(0);
-                    dragonCnt = existing.size();
-                }
+                var d = ru.aiforge.riftworld.registry.ModEntities.PAPER_DRAGON.get().create(level);
                 if (d != null) {
-                    d.setFlightMode(overIsland
+                    int fMode = overIsland
                             ? ru.aiforge.riftworld.entity.PaperDragonEntity.FLIGHT_OVER_ISLAND
-                            : ru.aiforge.riftworld.entity.PaperDragonEntity.FLIGHT_UNDER_ISLAND);
-                    if (!releaseAi) {
-                        d.moveTo(dx, dy, dz, yaw, overIsland ? -5.0F : -2.0F);
-                        d.setDeltaMovement(tx * 0.42, 0.0, tz * 0.42);
-                        d.yRotO = yaw;
-                        d.yBodyRot = yaw;
-                        d.yBodyRotO = yaw;
-                        d.yHeadRot = yaw;
-                        d.yHeadRotO = yaw;
-                        d.setNoAi(true);
-                    } else {
-                        d.setHomeAnchor(new net.minecraft.world.phys.Vec3(pick.cx, pick.base, pick.cz),
-                                overIsland
-                                        ? ru.aiforge.riftworld.entity.PaperDragonEntity.FLIGHT_OVER_ISLAND
-                                        : ru.aiforge.riftworld.entity.PaperDragonEntity.FLIGHT_UNDER_ISLAND);
-                        d.setNoAi(false);
-                        d.setDeltaMovement(tx * 0.48, 0.02, tz * 0.48);
-                    }
+                            : ru.aiforge.riftworld.entity.PaperDragonEntity.FLIGHT_UNDER_ISLAND;
+                    d.moveTo(dx, dy, dz, yaw, overIsland ? -3.0F : -1.5F);
+                    d.yRotO = yaw;
+                    d.yBodyRot = yaw;
+                    d.yBodyRotO = yaw;
+                    d.yHeadRot = yaw;
+                    d.yHeadRotO = yaw;
+                    d.setHomeAnchor(new net.minecraft.world.phys.Vec3(pick.cx, pick.base, pick.cz), fMode);
+                    d.setDeltaMovement(tx * 0.48, 0.0, tz * 0.48);
+                    d.setNoAi(!releaseAi);
+                    level.addFreshEntity(d);
+                    dragonCnt = 1;
                 }
             }
 
@@ -2732,8 +2734,8 @@ public final class SeaProbeCommand {
                 }
             }
 
-            int camX = px, camY = topY + 2, camZ = pz + 16;
-            int lkX = px, lkY = topY + 14, lkZ = pz;
+            int camX = px + 4, camY = topY + 3, camZ = pz + 24;
+            int lkX = px, lkY = topY + 11, lkZ = pz;
             String line = "riftportal setup center=" + portalTestOrigin.getX() + "," + portalTestOrigin.getY() + "," + portalTestOrigin.getZ()
                     + " snapshot=" + PORTAL_SNAPSHOT.size()
                     + " cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;

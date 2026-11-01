@@ -1523,14 +1523,63 @@ biome_section() {
   probe_and_shot_struct "violet_wind_observatory" 280 "107_violet_wind_observatory"     0 0
   probe_and_shot_struct "elisar_eye_occlusion"    200 "108_elisar_eye_block_occlusion"  0 0
 
+  # Помощник для ЖИВЫХ тайминговых кастомных атак босса и летящих оригами-драконов:
+  # СНАЧАЛА ставит камеру на место съёмки и ждёт 8 с мешинга чанков в llvmpipe,
+  # а ЗАТЕМ вызывает /riftstruct (спавн атаки/дракона прямо в уже прогруженных чанках) и снимает через $4 секунд!
+  probe_and_fast_shot() {
+    local skind="$1" min_blk="$2" shot_name="$3" shot_pause="${4:-1.0}"
+    local S0 SAT SCAM0 S1 SBLK SAIR SCAM
+    EL tp TestPlayer 0 110 0 >/dev/null 2>&1 || true
+    sleep 1
+    S0=$(EL execute at TestPlayer in riftworld:elisar run riftstruct "$skind" 2>&1 | tr '\r\n' '  ')
+    SAT=$(printf '%s' "$S0" | sed -n 's/.* at=\([-0-9]*,[-0-9]*,[-0-9]*\).*/\1/p' | tail -1)
+    SCAM0=$(printf '%s' "$S0" | grep -o 'cam=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^cam=//')
+    if [ -z "${SAT:-}" ]; then
+      log "  FAIL /riftstruct $skind не нашёл структуру (${S0:0:140})"; FAILS=$((FAILS + 1)); return
+    fi
+    if [ -n "${SCAM0:-}" ]; then
+      local cx0 cy0 cz0 lx0 ly0 lz0 yp0
+      cx0=$(printf '%s' "$SCAM0" | cut -d: -f1 | cut -d, -f1)
+      cy0=$(printf '%s' "$SCAM0" | cut -d: -f1 | cut -d, -f2)
+      cz0=$(printf '%s' "$SCAM0" | cut -d: -f1 | cut -d, -f3)
+      lx0=$(printf '%s' "$SCAM0" | cut -d: -f2 | cut -d, -f1)
+      ly0=$(printf '%s' "$SCAM0" | cut -d: -f2 | cut -d, -f2)
+      lz0=$(printf '%s' "$SCAM0" | cut -d: -f2 | cut -d, -f3)
+      yp0=$(python3 tools/ci/lookat_angles.py "$cx0" "$cy0" "$cz0" "$lx0" "$ly0" "$lz0")
+      EL tp TestPlayer "$cx0" "$cy0" "$cz0" ${yp0% *} ${yp0#* } >/dev/null 2>&1 || true
+    else
+      local sx0 sy0 sz0
+      sx0=$(printf '%s' "$SAT" | cut -d, -f1); sy0=$(printf '%s' "$SAT" | cut -d, -f2); sz0=$(printf '%s' "$SAT" | cut -d, -f3)
+      EL tp TestPlayer "$sx0" "$((sy0 + 8))" "$sz0" >/dev/null 2>&1 || true
+    fi
+    sleep 9
+    S1=$(EL execute at TestPlayer in riftworld:elisar run riftstruct "$skind" 2>&1 | tr '\r\n' '  ')
+    log "  /riftstruct $skind -> ${S1:0:280}"
+    SBLK=$(printf '%s' "$S1" | sed -n 's/.* blocks=\([0-9]*\).*/\1/p' | tail -1)
+    SAIR=$(printf '%s' "$S1" | sed -n 's/.* sub_air=\([0-9]*\).*/\1/p' | tail -1)
+    SCAM=$(printf '%s' "$S1" | grep -o 'cam=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^cam=//')
+    if [ "${SBLK:-0}" -ge "$min_blk" ] && [ "${SAIR:-0}" -eq 0 ]; then
+      log "  OK   структура $skind построена: blocks=${SBLK}, sub_air=${SAIR:-0}"
+    else
+      log "  FAIL структура $skind: blocks=${SBLK:-0} (ожидалось >=${min_blk}), sub_air=${SAIR:-?}"; FAILS=$((FAILS + 1))
+    fi
+    if [ -n "${SCAM:-}" ]; then
+      lookat $(printf '%s' "$SCAM" | cut -d: -f1 | tr ',' ' ') $(printf '%s' "$SCAM" | cut -d: -f2 | tr ',' ' ') "$shot_pause" "$shot_name"
+    fi
+  }
+
   # Кастомные атаки Босса Колоннады: (1) 5 ледяных столбов несомкнутым кругом + подъём игрока; (2) град 5 ледяных глыб с метками и очередью
-  probe_and_shot_struct "colonnade_boss_pillars"  150 "109_boss_ice_pillars_circle"     0 0
-  probe_and_shot_struct "colonnade_boss_hail"     150 "110_boss_sky_ice_hail"           0 0
+  probe_and_fast_shot "colonnade_boss_pillars"  150 "109_boss_ice_pillars_circle"     0.9
+  probe_and_fast_shot "colonnade_boss_hail"     150 "110_boss_sky_ice_hail"           1.1
 
   # Супер-детализированный модульный 3D Оригами-Дракон (~27 м): крупный план + полёт ПОД островом + полёт НАД островом!
-  probe_and_shot_struct "origami_dragon_closeup"         200 "111_origami_dragon_closeup"      0 0
-  probe_and_shot_struct "origami_dragon_under_release"   200 "112_origami_dragon_under_island" 0 0
-  probe_and_shot_struct "origami_dragon_over_release"    200 "113_origami_dragon_over_island"  0 0
+  probe_and_fast_shot "origami_dragon_closeup"         200 "111_origami_dragon_closeup"      1.2
+  probe_and_fast_shot "origami_dragon_under_release"   200 "112_origami_dragon_under_island" 0.8
+  probe_and_fast_shot "origami_dragon_over_release"    200 "113_origami_dragon_over_island"  0.8
+
+  # Прогреваем серверные чанки Белого Города перед переносом через пролом, чтобы на катсцене весь город и замок сияли с 1-й секунды!
+  EL tp TestPlayer 24 162 88 195 12 >/dev/null 2>&1 || true
+  sleep 4
 
   # Безблочный Белый 3D-Пролом в Пространстве + вход внутрь + мягкая вуаль без GUI/F5 + катсцена Белого Города с титрами!
   EL gamemode creative TestPlayer >/dev/null 2>&1 || true
@@ -1556,32 +1605,35 @@ biome_section() {
     # 1) Запускаем 4-секундное открытие портала: окружение бледнеет в оттенок Элисара, на земле разворачивается красивый узор печати, в небе 2D-глаза!
     P_TRG=$(RCON execute as TestPlayer at @s in minecraft:overworld run riftportal trigger 2>&1 | tr '\r\n' '  ')
     log "  /riftportal trigger -> ${P_TRG:0:180}"
-    YP1=$(python3 tools/ci/lookat_angles.py "$((PLX + 4))" "$((PCY + 5))" "$((PLZ + 12))" "$PLX" "$((PCY - 1))" "$((PLZ + 1))")
-    RCON execute in minecraft:overworld run tp TestPlayer "$((PLX + 4))" "$((PCY + 5))" "$((PLZ + 12))" ${YP1% *} ${YP1#* } >/dev/null 2>&1 || true
+    YP1=$(python3 tools/ci/lookat_angles.py "$((PLX + 4))" "$((PLX * 0 + PCY + 4))" "$((PLZ + 12))" "$PLX" "$((PCY - 2))" "$((PLZ + 1))")
+    RCON execute in minecraft:overworld run tp TestPlayer "$((PLX + 4))" "$((PCY + 4))" "$((PLZ + 12))" ${YP1% *} ${YP1#* } >/dev/null 2>&1 || true
     sleep 2.4
     shot "97_portal_opening_pattern_shade"
 
     # 2) После яркой вспышки (t > 4.2 с) открылся БЕЛЫЙ 3D-геометрический Пролом от земли до неба (от земли к небу толще и толще)!
     sleep 2.4
-    YP2=$(python3 tools/ci/lookat_angles.py "$PCX" "$PCY" "$((PLZ + 16))" "$PLX" "$((PLY + 4))" "$PLZ")
-    RCON execute in minecraft:overworld run tp TestPlayer "$PCX" "$PCY" "$((PLZ + 16))" ${YP2% *} ${YP2#* } >/dev/null 2>&1 || true
+    YP2=$(python3 tools/ci/lookat_angles.py "$PCX" "$PCY" "$PCZ" "$PLX" "$PLY" "$PLZ")
+    RCON execute in minecraft:overworld run tp TestPlayer "$PCX" "$PCY" "$PCZ" ${YP2% *} ${YP2#* } >/dev/null 2>&1 || true
     sleep 1.4
     shot "98_white_spatial_breach_skyward"
 
-    # 3) Включаем обычный игровой HUD (F1) и ЗАХОДИМ в белый пролом: проверяем скрытие инвентаря/GUI, блокировку F5,
-    #    1 дальний панорамный ракурс Белого Города с титрами («Э Л И С А Р» / «Белый Город Святилища») и плавный подлёт камеры к игроку!
+    # 3) Включаем обычный игровой HUD (F1) и ЗАХОДИМ в белый пролом: проверяем мягкое побеление без GUI/инвентаря,
+    #    блокировку F5, 1 дальний панорамный ракурс Белого Города с титрами («Э Л И С А Р» / «Белый Город Святилища») и плавный подлёт камеры к игроку!
     key F1
     sleep 0.5
     P_WLK=$(RCON execute as TestPlayer at @s in minecraft:overworld run riftportal walkin 2>&1 | tr '\r\n' '  ')
     log "  /riftportal walkin -> ${P_WLK:0:180}"
-    sleep 2.2
+    sleep 0.5
+    shot "98a_walkin_soft_veil_no_hud"
+
+    sleep 3.6
     key F5
     shot "99_walkin_city_cutscene_titles"
 
-    sleep 2.7
+    sleep 3.6
     shot "100_cutscene_glide_to_player"
 
-    sleep 2.6
+    sleep 2.8
     key F1
     P_DIM=$(RCON data get entity TestPlayer Dimension 2>&1 | tr '\r\n' '  ')
     P_VER=$(RCON execute in minecraft:overworld run riftportal verify 2>&1 | tr '\r\n' '  ')

@@ -66,8 +66,8 @@ public final class PortalRitual {
     public static final int AWAKEN_SETTLE_TICKS = 92;
     /** 0.6 секунды мягкого побеления экрана при заходе в пролом перед бесшовным переносом. */
     public static final int TRANSIT_TICKS = 12;
-    /** 6.2 секунды кинематографической катсцены Белого Города (дальний ракурс + титры -> плавный подлёт к игроку). */
-    public static final int CUTSCENE_TICKS = 124;
+    /** 9.2 секунды кинематографической катсцены Белого Города (дальний ракурс + титры -> плавный подлёт к игроку). */
+    public static final int CUTSCENE_TICKS = 184;
     public static final int ARRIVE_TICKS = 26;
 
     private static final class Session {
