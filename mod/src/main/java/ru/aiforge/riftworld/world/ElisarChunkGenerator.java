@@ -305,6 +305,13 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                     double flatTop = wv.baseY - 1.0;
                     top = o <= 0 ? flatTop : flatTop + (top - flatTop) * smooth(o / 9.0);
                 }
+            } else if (isl.kind == LandmarkStructures.THEATER_KIND) {
+                LandmarkStructures.GrandTheater gt = LandmarkStructures.theaterAt(px, pz, 56);
+                if (gt != null && gt.island == isl) {
+                    double o = Math.hypot(px - gt.cx, pz - gt.cz) - gt.flatR;
+                    double flatTop = gt.baseY - 1.0;
+                    top = o <= 0 ? flatTop : flatTop + (top - flatTop) * smooth(o / 9.0);
+                }
             } else if (isl.kind == 7) {                                // Фиолетовые холмы (референс 04)
                 // Рев 15 — биом переделан с нуля по просьбе владельца («сейчас сделано ужасно»).
                 // Что было не так на кадрах 49–51 итерации 44: серые «кучи» подпорных стенок на

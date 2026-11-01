@@ -220,7 +220,7 @@ public final class WorldStructures {
         return false;
     }
 
-    private static boolean overlapsSpecialBiomes(double x, double z, double clear) {
+    static boolean overlapsSpecialBiomes(double x, double z, double clear) {
         if (nearProtectedZones(x, z, clear)) return true;
         if (AshenLands.blocks(x, z, clear + 50)) return true;
         if (EmberRuins.siteAt(x, z) != null) return true;
@@ -463,6 +463,11 @@ public final class WorldStructures {
                 }
             }
         }
+        List<CityPlan.Island> thIsles = LandmarkStructures.theaterIslandsNear(x, z);
+        if (!thIsles.isEmpty()) {
+            if (out == null) out = new ArrayList<>(thIsles.size());
+            out.addAll(thIsles);
+        }
         return out == null ? Collections.emptyList() : out;
     }
 
@@ -470,7 +475,8 @@ public final class WorldStructures {
         Village v = anyVillageAt(x, z, 52 + margin);
         if (v != null && v.inFootprint(x, z, margin)) return true;
         StiltVillage sv = stiltVillageNear(x, z, 36 + margin);
-        return sv != null && Math.hypot(x - sv.cx, z - sv.cz) <= sv.reachR + margin;
+        if (sv != null && Math.hypot(x - sv.cx, z - sv.cz) <= sv.reachR + margin) return true;
+        return LandmarkStructures.inFootprint(x, z, margin);
     }
 
     // =========================================================================
@@ -828,6 +834,10 @@ public final class WorldStructures {
         if (sv != null) {
             buildStiltVillage(chunk, mp, plan, sv, x0, z0);
         }
+
+        // 7..13) 7 новых уникальных структур Элисара (Порт, Театр, Маяк, Алтарь Векового Древа,
+        //        Пепельная Колокольня-Курган, Расколотая Кузня Осколков, Обсерватория Фиолетовых Ветров)
+        LandmarkStructures.buildInChunk(level, chunk, rnd, plan, x0, z0);
     }
 
     // -------------------------------------------------------------------------

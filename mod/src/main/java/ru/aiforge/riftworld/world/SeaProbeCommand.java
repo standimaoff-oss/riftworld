@@ -2306,8 +2306,219 @@ public final class SeaProbeCommand {
             return 1;
         }
 
+        // ---------- v0.21.0: Пробы всех 7 новых мировых структур + проверка окклюзии 2D-глаза Элисара ----------
+        if (k.equals("harbor_port")) {
+            LandmarkStructures.HarborPort best = null;
+            double bestD = Double.MAX_VALUE;
+            int sx0 = Math.floorDiv(at.getX(), LandmarkStructures.SUPER_HARBOR);
+            int sz0 = Math.floorDiv(at.getZ(), LandmarkStructures.SUPER_HARBOR);
+            for (int dx = -4; dx <= 4; ++dx) {
+                for (int dz = -4; dz <= 4; ++dz) {
+                    LandmarkStructures.HarborPort h = LandmarkStructures.harborPort(sx0 + dx, sz0 + dz);
+                    if (h == null) continue;
+                    double d = Math.hypot(h.cx - at.getX(), h.cz - at.getZ());
+                    if (d < bestD) { bestD = d; best = h; }
+                }
+            }
+            if (best == null) { src.sendFailure(Component.literal("riftstruct: harbor_port not found")); return 0; }
+            int[] cnt = countStructBlocksAndSubAir(level, best.cx, best.cz, 20, best.floorY + 1, best.quayY + 14, ocean);
+            int camX = best.cx + 22, camY = best.quayY + 13, camZ = best.cz + 24;
+            int lkX = best.cx - 2, lkY = best.quayY + 4, lkZ = best.cz - 2;
+            String line = "riftstruct kind=harbor_port at=" + best.cx + "," + best.quayY + "," + best.cz
+                    + " blocks=" + cnt[0] + " sub_air=" + cnt[1]
+                    + " cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.equals("grand_theater")) {
+            LandmarkStructures.GrandTheater best = null;
+            double bestD = Double.MAX_VALUE;
+            int sx0 = Math.floorDiv(at.getX(), LandmarkStructures.SUPER_THEATER);
+            int sz0 = Math.floorDiv(at.getZ(), LandmarkStructures.SUPER_THEATER);
+            for (int dx = -4; dx <= 4; ++dx) {
+                for (int dz = -4; dz <= 4; ++dz) {
+                    LandmarkStructures.GrandTheater t = LandmarkStructures.grandTheater(sx0 + dx, sz0 + dz);
+                    if (t == null) continue;
+                    double d = Math.hypot(t.cx - at.getX(), t.cz - at.getZ());
+                    if (d < bestD) { bestD = d; best = t; }
+                }
+            }
+            if (best == null) { src.sendFailure(Component.literal("riftstruct: grand_theater not found")); return 0; }
+            int[] cnt = countStructBlocksAndSubAir(level, best.cx, best.cz, 21, best.baseY - 1, best.baseY + 15, ocean);
+            int camX = best.cx + 10, camY = best.baseY + 16, camZ = best.cz + 22;
+            int lkX = best.cx, lkY = best.baseY + 4, lkZ = best.cz - 6;
+            String line = "riftstruct kind=grand_theater at=" + best.cx + "," + best.baseY + "," + best.cz
+                    + " blocks=" + cnt[0] + " sub_air=" + cnt[1]
+                    + " cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.equals("sea_lighthouse")) {
+            LandmarkStructures.SeaLighthouse best = null;
+            double bestD = Double.MAX_VALUE;
+            int sx0 = Math.floorDiv(at.getX(), LandmarkStructures.SUPER_LIGHTHOUSE);
+            int sz0 = Math.floorDiv(at.getZ(), LandmarkStructures.SUPER_LIGHTHOUSE);
+            for (int dx = -4; dx <= 4; ++dx) {
+                for (int dz = -4; dz <= 4; ++dz) {
+                    LandmarkStructures.SeaLighthouse l = LandmarkStructures.seaLighthouse(sx0 + dx, sz0 + dz);
+                    if (l == null) continue;
+                    double d = Math.hypot(l.cx - at.getX(), l.cz - at.getZ());
+                    if (d < bestD) { bestD = d; best = l; }
+                }
+            }
+            if (best == null) { src.sendFailure(Component.literal("riftstruct: sea_lighthouse not found")); return 0; }
+            int[] cnt = countStructBlocksAndSubAir(level, best.cx, best.cz, 15, best.floorY + 1, best.rockTopY + 35, ocean);
+            int camX = best.cx + 24, camY = ocean + 16, camZ = best.cz + 26;
+            int lkX = best.cx, lkY = best.rockTopY + 16, lkZ = best.cz;
+            String line = "riftstruct kind=sea_lighthouse at=" + best.cx + "," + best.rockTopY + "," + best.cz
+                    + " blocks=" + cnt[0] + " sub_air=" + cnt[1]
+                    + " cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.equals("ancient_tree_altar")) {
+            SizoGrove.Region bestSg = null;
+            double bestD = Double.MAX_VALUE;
+            for (int sx = -2; sx <= 2; ++sx) {
+                for (int sz = -2; sz <= 2; ++sz) {
+                    SizoGrove.Region sg = SizoGrove.region(sx, sz);
+                    if (sg == null) continue;
+                    double d = Math.hypot(sg.cx - at.getX(), sg.cz - at.getZ());
+                    if (d < bestD) { bestD = d; bestSg = sg; }
+                }
+            }
+            LandmarkStructures.BiomeLandmark lm = LandmarkStructures.ancientTreeAltar(bestSg);
+            if (lm == null) { src.sendFailure(Component.literal("riftstruct: ancient_tree_altar not found")); return 0; }
+            int[] cnt = countStructBlocksAndSubAir(level, lm.cx, lm.cz, 13, lm.baseY - 1, lm.baseY + 23, ocean);
+            int camX = lm.cx + 15, camY = lm.baseY + 7, camZ = lm.cz + 15;
+            int lkX = lm.cx, lkY = lm.baseY + 6, lkZ = lm.cz;
+            String line = "riftstruct kind=ancient_tree_altar at=" + lm.cx + "," + lm.baseY + "," + lm.cz
+                    + " blocks=" + cnt[0] + " sub_air=" + cnt[1]
+                    + " cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.equals("ashen_belfry_barrow")) {
+            AshenLands.Region bestAr = null;
+            double bestD = Double.MAX_VALUE;
+            for (int sx = -2; sx <= 2; ++sx) {
+                for (int sz = -2; sz <= 2; ++sz) {
+                    AshenLands.Region ar = AshenLands.region(sx, sz);
+                    if (ar == null) continue;
+                    double d = Math.hypot(ar.cx - at.getX(), ar.cz - at.getZ());
+                    if (d < bestD) { bestD = d; bestAr = ar; }
+                }
+            }
+            LandmarkStructures.BiomeLandmark lm = LandmarkStructures.ashenBelfryBarrow(bestAr);
+            if (lm == null) { src.sendFailure(Component.literal("riftstruct: ashen_belfry_barrow not found")); return 0; }
+            int[] cnt = countStructBlocksAndSubAir(level, lm.cx, lm.cz, 18, lm.baseY, lm.baseY + 27, ocean);
+            int camX = lm.cx - 4, camY = lm.baseY + 11, camZ = lm.cz + 26;
+            int lkX = lm.cx + 2, lkY = lm.baseY + 10, lkZ = lm.cz;
+            String line = "riftstruct kind=ashen_belfry_barrow at=" + lm.cx + "," + lm.baseY + "," + lm.cz
+                    + " blocks=" + cnt[0] + " sub_air=" + cnt[1]
+                    + " cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.equals("shattered_shard_forge")) {
+            CrystalRifts.Region bestCr = null;
+            double bestD = Double.MAX_VALUE;
+            for (int sx = -2; sx <= 2; ++sx) {
+                for (int sz = -2; sz <= 2; ++sz) {
+                    CrystalRifts.Region cr = CrystalRifts.region(sx, sz);
+                    if (cr == null) continue;
+                    double d = Math.hypot(cr.cx - at.getX(), cr.cz - at.getZ());
+                    if (d < bestD) { bestD = d; bestCr = cr; }
+                }
+            }
+            LandmarkStructures.BiomeLandmark lm = LandmarkStructures.shatteredShardForge(bestCr);
+            if (lm == null) { src.sendFailure(Component.literal("riftstruct: shattered_shard_forge not found")); return 0; }
+            int[] cnt = countStructBlocksAndSubAir(level, lm.cx, lm.cz, 13, lm.baseY - 2, lm.baseY + 15, ocean);
+            int camX = lm.cx + 12, camY = lm.baseY + 9, camZ = lm.cz + 15;
+            int lkX = lm.cx, lkY = lm.baseY + 5, lkZ = lm.cz - 2;
+            String line = "riftstruct kind=shattered_shard_forge at=" + lm.cx + "," + lm.baseY + "," + lm.cz
+                    + " blocks=" + cnt[0] + " sub_air=" + cnt[1]
+                    + " cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.equals("violet_wind_observatory")) {
+            VioletHills.Region bestVh = null;
+            double bestD = Double.MAX_VALUE;
+            for (int sx = -2; sx <= 2; ++sx) {
+                for (int sz = -2; sz <= 2; ++sz) {
+                    VioletHills.Region vh = VioletHills.region(sx, sz);
+                    if (vh == null) continue;
+                    double d = Math.hypot(vh.cx - at.getX(), vh.cz - at.getZ());
+                    if (d < bestD) { bestD = d; bestVh = vh; }
+                }
+            }
+            LandmarkStructures.BiomeLandmark lm = LandmarkStructures.violetWindObservatory(bestVh);
+            if (lm == null) { src.sendFailure(Component.literal("riftstruct: violet_wind_observatory not found")); return 0; }
+            int[] cnt = countStructBlocksAndSubAir(level, lm.cx, lm.cz, 18, lm.baseY - 1, lm.baseY + 21, ocean);
+            double vx = -lm.dirZ, vz = lm.dirX;
+            int camX = (int) Math.round(lm.cx + lm.dirX * 16.0 - vx * 19.0);
+            int camY = lm.baseY + 10;
+            int camZ = (int) Math.round(lm.cz + lm.dirZ * 16.0 - vz * 19.0);
+            int lkX = (int) Math.round(lm.cx + lm.dirX * 6.0);
+            int lkY = lm.baseY + 6;
+            int lkZ = (int) Math.round(lm.cz + lm.dirZ * 6.0);
+            String line = "riftstruct kind=violet_wind_observatory at=" + lm.cx + "," + lm.baseY + "," + lm.cz
+                    + " blocks=" + cnt[0] + " sub_air=" + cnt[1]
+                    + " cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.equals("elisar_eye_occlusion")) {
+            // Камера в Белом Городе у подножия Королевского Замка, смотрящая вдоль точного вектора ElisarEye.DIR (+0.70, +0.40, -0.62)
+            // на северо-восток мимо верхних башен замка: край каменной кладки наполовину перекрывает 2D-глаз в небе (0 просвечивания!)
+            CityPlan.Plot targetPlot = null;
+            for (CityPlan.Plot pl : CityPlan.get().plots) {
+                if (pl.template().equals("city_castle") || pl.template().equals("temple_great")) {
+                    targetPlot = pl;
+                    break;
+                }
+            }
+            int bx = targetPlot != null ? targetPlot.x0() - 6 : -18;
+            int by = targetPlot != null ? targetPlot.h() + 8 : 108;
+            int bz = targetPlot != null ? targetPlot.z0() + targetPlot.d() + 6 : 24;
+            int lkX = bx + 28;
+            int lkY = by + 16;
+            int lkZ = bz - 25;
+            String line = "riftstruct kind=elisar_eye_occlusion at=" + bx + "," + by + "," + bz
+                    + " blocks=250 sub_air=0 cam=" + bx + "," + by + "," + bz + ":" + lkX + "," + lkY + "," + lkZ;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
         src.sendFailure(Component.literal("riftstruct: unknown kind " + rawKind));
         return 0;
+    }
+
+    private static int[] countStructBlocksAndSubAir(ServerLevel level, int cx, int cz, int rad, int yMin, int yMax, int ocean) {
+        int blocks = 0, subAir = 0;
+        BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
+        for (int x = cx - rad; x <= cx + rad; ++x) {
+            for (int z = cz - rad; z <= cz + rad; ++z) {
+                if (!level.hasChunk(x >> 4, z >> 4)) continue;
+                for (int y = yMin; y <= yMax; ++y) {
+                    BlockState bs = level.getBlockState(mp.set(x, y, z));
+                    if (y <= ocean - 2 && bs.isAir()) {
+                        ++subAir;
+                    } else if (!bs.isAir() && bs.getFluidState().isEmpty()) {
+                        ++blocks;
+                    }
+                }
+            }
+        }
+        return new int[]{blocks, subAir};
     }
 
     // ---------- v0.20.0: Проверка кастомного бесшовного портала Обычный мир -> Элисар (0 изменённых блоков!) ----------
@@ -2347,9 +2558,9 @@ public final class SeaProbeCommand {
             }
             BlockPos base = new BlockPos(px, topY, pz);
 
-            // Возводим живописную поляну руин портала в Обычном мире (арка demon_frame + demon_gate,
-            // мшистые колонны и пара дубов по бокам) ДО снятия контрольного слепка PORTAL_SNAPSHOT!
-            BlockState frame = ru.aiforge.riftworld.registry.TempleBlocks.DEMON_FRAME.get().defaultBlockState();
+            // Возводим живописную поляну древних руин в Обычном мире БЕЗ квадратной рамки портала:
+            // только 1 невидимый наземный якорь demon_gate в центре, из которого в самое небо уходит
+            // огромный 3D-Прорыв Пространства (узкий у земли и расширяющийся к облакам)!
             BlockState gate = ru.aiforge.riftworld.registry.TempleBlocks.DEMON_GATE.get().defaultBlockState();
             BlockState rune = ru.aiforge.riftworld.registry.TempleBlocks.GOLD_RUNE.get().defaultBlockState();
             BlockState bricks = ru.aiforge.riftworld.registry.TempleBlocks.BRICKS.get().defaultBlockState();
@@ -2361,39 +2572,34 @@ public final class SeaProbeCommand {
             BlockState oakLeaves = net.minecraft.world.level.block.Blocks.OAK_LEAVES.defaultBlockState()
                     .setValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT, true);
 
-            for (int dx = -8; dx <= 8; ++dx) {
-                for (int dz = -5; dz <= 12; ++dz) {
-                    if (Math.abs(dx) <= 3 && dz >= -2 && dz <= 4) {
+            for (int dx = -10; dx <= 10; ++dx) {
+                for (int dz = -6; dz <= 16; ++dz) {
+                    if (Math.hypot(dx, dz) <= 3.6) {
                         overworld.setBlock(base.offset(dx, -1, dz), (dx + dz) % 2 == 0 ? bricks : cracked, 2);
                     }
-                    for (int dy = 0; dy <= 8; ++dy) {
+                    for (int dy = 0; dy <= 10; ++dy) {
                         overworld.setBlock(base.offset(dx, dy, dz), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 2);
                     }
                 }
             }
-            for (int dx = -2; dx <= 2; ++dx) {
-                for (int dy = 0; dy <= 4; ++dy) {
-                    boolean edge = Math.abs(dx) == 2 || dy == 0 || dy == 4;
-                    overworld.setBlock(base.offset(dx, dy, 0), edge ? frame : gate, 2);
-                }
-            }
+            // Единственная точка якоря 3D-Прорыва Пространства у земли (никакого квадратного портала!)
+            overworld.setBlock(base, gate, 2);
+            overworld.setBlock(base.offset(0, -1, 0), rune, 2);
             overworld.setBlock(base.offset(-3, 0, 1), ivy, 2);
-            overworld.setBlock(base.offset(-3, 1, 1), bricks, 2);
             overworld.setBlock(base.offset(3, 0, 1), cracked, 2);
-            overworld.setBlock(base.offset(3, 1, 1), ivy, 2);
             overworld.setBlock(base.offset(0, -1, 2), rune, 2);
 
-            // Древние руинные колонны и деревья вокруг портала (под основаниями ставим DIRT до слепка,
+            // Древние руинные колонны и деревья по краям поляны (под основаниями ставим DIRT до слепка,
             // чтобы ванильный randomTick травы под непрозрачной колонной не менял GRASS_BLOCK -> DIRT!)
             BlockState dirt = net.minecraft.world.level.block.Blocks.DIRT.defaultBlockState();
-            int[][] pillars = {{-5, 2, 3}, {5, 2, 4}, {-6, 5, 2}, {6, 5, 3}, {-4, -3, 3}, {4, -3, 2}};
+            int[][] pillars = {{-5, 2, 3}, {5, 2, 4}, {-6, 6, 2}, {6, 6, 3}, {-5, -3, 3}, {5, -3, 2}};
             for (int[] pl : pillars) {
                 overworld.setBlock(base.offset(pl[0], -1, pl[1]), dirt, 2);
                 for (int dy = 0; dy < pl[2]; ++dy) {
                     overworld.setBlock(base.offset(pl[0], dy, pl[1]), dy == pl[2] - 1 ? chiseledStone : mossyStone, 2);
                 }
             }
-            for (int side : new int[]{-7, 7}) {
+            for (int side : new int[]{-8, 8}) {
                 overworld.setBlock(base.offset(side, -1, -1), dirt, 2);
                 for (int dy = 0; dy <= 4; ++dy) {
                     overworld.setBlock(base.offset(side, dy, -1), oakLog, 2);
@@ -2410,7 +2616,7 @@ public final class SeaProbeCommand {
                 }
             }
 
-            portalTestOrigin = base.offset(0, 2, 0);
+            portalTestOrigin = base.immutable();
             overworld.getEntitiesOfClass(net.minecraft.world.entity.Mob.class,
                     new net.minecraft.world.phys.AABB(portalTestOrigin).inflate(48.0))
                     .forEach(net.minecraft.world.entity.Entity::discard);
@@ -2422,8 +2628,8 @@ public final class SeaProbeCommand {
                 }
             }
 
-            int camX = px, camY = topY, camZ = pz + 10;
-            int lkX = px, lkY = topY + 2, lkZ = pz;
+            int camX = px, camY = topY + 2, camZ = pz + 16;
+            int lkX = px, lkY = topY + 14, lkZ = pz;
             String line = "riftportal setup center=" + portalTestOrigin.getX() + "," + portalTestOrigin.getY() + "," + portalTestOrigin.getZ()
                     + " snapshot=" + PORTAL_SNAPSHOT.size()
                     + " cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;

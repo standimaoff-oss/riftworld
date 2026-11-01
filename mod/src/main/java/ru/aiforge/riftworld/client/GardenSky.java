@@ -21,25 +21,24 @@ import ru.aiforge.riftworld.world.VioletHills;
 import ru.aiforge.riftworld.world.WaterfallGardens;
 
 /**
- * Атмосферные купола биомов Элисара с плавным пространственно-временным переходом (без резких скачков):
- * - Висячие сады (07_waterfall_gardens.png): чистое голубое небо со светлым горизонтом;
- * - Фиолетовые холмы (04_violet_hills.png): нежно-сиреневый зенит + тёплое розово-персиковое зарево у горизонта с крупным тёплым диском солнца;
- * - Роща Сизо (05_biome_sizo_grove.png): мягкое бледно-лазурное небо вверху и тёплая солнечная дымка между стволами у горизонта;
- * - Хрустальные разломы (02_crystal_sanctum.png): перламутрово-лазурный купол с бирюзовым сиянием над горизонтом.
+ * Атмосферные купола биомов Элисара с плавным переходом и полной совместимостью со ВСЕМИ шейдерпаками:
+ * <ul>
+ *   <li>{@link #smoothWeights(Vec3)} питает плавные цвета тумана в {@link ElisarSky.Fog} и в ванили, и в шейдерпаках;</li>
+ *   <li>При активном шейдерпаке ({@link ShaderCompat#isShaderPackActive()}) мы НЕ перекрываем небесный G-буфер
+ *       коробкой в {@code AFTER_SKY} (именно это рвало небо на белые куски в IterationT и других шейдерах!),
+ *       а в ванили рисуем гладкий сферический купол через {@code POSITION_TEX_COLOR} внутри {@code depthFar}.</li>
+ * </ul>
  */
 public final class GardenSky {
     private static final float G_ZEN_R = 0.31F, G_ZEN_G = 0.55F, G_ZEN_B = 0.86F;
     private static final float G_HOR_R = 0.80F, G_HOR_G = 0.90F, G_HOR_B = 0.97F;
 
-    // 04_violet_hills.png: пастельно-лавандовый верх и тёплое персиково-розовое зарево у горизонта
     private static final float V_ZEN_R = 0.78F, V_ZEN_G = 0.72F, V_ZEN_B = 0.88F;
     private static final float V_HOR_R = 0.96F, V_HOR_G = 0.82F, V_HOR_B = 0.76F;
 
-    // 05_biome_sizo_grove.png: светло-голубая прохлада в зените и тёплая молочно-золотистая лесная дымка
     private static final float S_ZEN_R = 0.77F, S_ZEN_G = 0.85F, S_ZEN_B = 0.90F;
     private static final float S_HOR_R = 0.95F, S_HOR_G = 0.93F, S_HOR_B = 0.88F;
 
-    // 02_crystal_sanctum.png: ледяная перламутровая лазурь в зените и бирюзово-жемчужная дымка у горизонта
     private static final float C_ZEN_R = 0.62F, C_ZEN_G = 0.85F, C_ZEN_B = 0.95F;
     private static final float C_HOR_R = 0.88F, C_HOR_G = 0.97F, C_HOR_B = 0.99F;
 
@@ -52,11 +51,6 @@ public final class GardenSky {
     private GardenSky() {
     }
 
-    /**
-     * Синхронное плавное состояние весов атмосферы {gardens, violet, sizo, crystal} в [0..1].
-     * При ходьбе и полёте веса плавно интерполируются и по расстоянию (smoothstep ~90 блоков),
-     * и по времени кадра; при далёком телепорте (/tp) сбрасываются мгновенно в целевую точку.
-     */
     public static float[] smoothWeights(Vec3 cam) {
         float tg = 0.0F, tv = 0.0F, ts = 0.0F, tc = 0.0F;
         try {
@@ -93,6 +87,8 @@ public final class GardenSky {
         @SubscribeEvent
         public static void sky(RenderLevelStageEvent e) {
             if (e.getStage() != RenderLevelStageEvent.Stage.AFTER_SKY) return;
+            if (ShaderCompat.isRenderingShadowPass() || ShaderCompat.isShaderPackActive()) return;
+
             Minecraft mc = Minecraft.getInstance();
             if (mc.level == null || !mc.level.dimension().location().equals(ElisarSky.ID)) return;
             Vec3 cam = e.getCamera().getPosition();
@@ -103,42 +99,22 @@ public final class GardenSky {
 
             float inv = 1.0F / wSum;
             float ng = wg * inv, nv = wv * inv, ns = ws * inv, nc = wc * inv;
-            float zr = G_ZEN_R * ng + V_ZEN_R * nv + S_ZEN_R * ns + C_ZEN_R * nc;
-            float zg = G_ZEN_G * ng + V_ZEN_G * nv + S_ZEN_G * ns + C_ZEN_G * nc;
-            float zb = G_ZEN_B * ng + V_ZEN_B * nv + S_ZEN_B * ns + C_ZEN_B * nc;
-            float hr = G_HOR_R * ng + V_HOR_R * nv + S_HOR_R * ns + C_HOR_R * nc;
-            float hg = G_HOR_G * ng + V_HOR_G * nv + S_HOR_G * ns + C_HOR_G * nc;
-            float hb = G_HOR_B * ng + V_HOR_B * nv + S_HOR_B * ns + C_HOR_B * nc;
-            float alpha = Mth.clamp(wSum, 0.0F, 1.0F);
+            int zr = Mth.clamp(Math.round((G_ZEN_R * ng + V_ZEN_R * nv + S_ZEN_R * ns + C_ZEN_R * nc) * 255.0F), 0, 255);
+            int zg = Mth.clamp(Math.round((G_ZEN_G * ng + V_ZEN_G * nv + S_ZEN_G * ns + C_ZEN_G * nc) * 255.0F), 0, 255);
+            int zb = Mth.clamp(Math.round((G_ZEN_B * ng + V_ZEN_B * nv + S_ZEN_B * ns + C_ZEN_B * nc) * 255.0F), 0, 255);
+            int hr = Mth.clamp(Math.round((G_HOR_R * ng + V_HOR_R * nv + S_HOR_R * ns + C_HOR_R * nc) * 255.0F), 0, 255);
+            int hg = Mth.clamp(Math.round((G_HOR_G * ng + V_HOR_G * nv + S_HOR_G * ns + C_HOR_G * nc) * 255.0F), 0, 255);
+            int hb = Mth.clamp(Math.round((G_HOR_B * ng + V_HOR_B * nv + S_HOR_B * ns + C_HOR_B * nc) * 255.0F), 0, 255);
+            int alpha = Mth.clamp(Math.round(Mth.clamp(wSum, 0.0F, 1.0F) * 255.0F), 0, 255);
 
+            float radius = Math.min(mc.gameRenderer.getDepthFar() * 0.52F, 180.0F);
             Matrix4f m = e.getPoseStack().last().pose();
-            RenderSystem.setShader(GameRenderer::getPositionColorShader);
-            RenderSystem.enableBlend();
-            RenderSystem.defaultBlendFunc();
-            RenderSystem.disableCull();
-            RenderSystem.depthMask(false);
-            final float s = Math.max(96F, mc.options.getEffectiveRenderDistance() * 16F * 0.85F);
-            BufferBuilder b = Tesselator.getInstance().getBuilder();
-            b.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-            float[][] corners = {{-s, -s}, {s, -s}, {s, s}, {-s, s}};
-            for (int i = 0; i < 4; i++) {
-                float[] p0 = corners[i], p1 = corners[(i + 1) % 4];
-                b.vertex(m, p0[0], -s * 0.35F, p0[1]).color(hr, hg, hb, alpha).endVertex();
-                b.vertex(m, p1[0], -s * 0.35F, p1[1]).color(hr, hg, hb, alpha).endVertex();
-                b.vertex(m, p1[0], s, p1[1]).color(zr, zg, zb, alpha).endVertex();
-                b.vertex(m, p0[0], s, p0[1]).color(zr, zg, zb, alpha).endVertex();
-                // нижняя полусфера купола
-                b.vertex(m, p0[0], -s, p0[1]).color(hr, hg, hb, alpha).endVertex();
-                b.vertex(m, p1[0], -s, p1[1]).color(hr, hg, hb, alpha).endVertex();
-                b.vertex(m, p1[0], -s * 0.35F, p1[1]).color(hr, hg, hb, alpha).endVertex();
-                b.vertex(m, p0[0], -s * 0.35F, p0[1]).color(hr, hg, hb, alpha).endVertex();
-            }
-            b.vertex(m, -s, s, -s).color(zr, zg, zb, alpha).endVertex();
-            b.vertex(m, s, s, -s).color(zr, zg, zb, alpha).endVertex();
-            b.vertex(m, s, s, s).color(zr, zg, zb, alpha).endVertex();
-            b.vertex(m, -s, s, s).color(zr, zg, zb, alpha).endVertex();
+            ShaderCompat.drawSphericalSkyDome(m, radius,
+                    zr, zg, zb, alpha,
+                    hr, hg, hb, alpha,
+                    hr, hg, hb, alpha);
 
-            // Крупное тёплое низкое солнце над горизонтом Фиолетовых холмов с плавным проявлением
+            // Тёплый низкий солнечный диск Фиолетовых холмов (внутри радиуса сферы, без выхода за depthFar)
             if (wv > 0.005F) {
                 VioletHills.Region vr = VioletHills.regionAt(cam.x, cam.z);
                 if (vr != null) {
@@ -151,31 +127,41 @@ public final class GardenSky {
                         sunAng += diff * 0.08;
                     }
                 }
-                float dist = s * 0.80F;
+                float dist = radius * 0.90F;
                 float sx = (float) (Math.cos(sunAng) * dist);
                 float sz = (float) (Math.sin(sunAng) * dist);
                 float tx = (float) (-Math.sin(sunAng));
                 float tz = (float) (Math.cos(sunAng));
-                float sy = s * 0.19F;
-                float haloA = 0.42F * wv;
-                float diskA = 0.96F * wv;
-                float hr2 = s * 0.22F;
-                b.vertex(m, sx - tx * hr2, sy - hr2, sz - tz * hr2).color(1.0F, 0.91F, 0.80F, haloA).endVertex();
-                b.vertex(m, sx + tx * hr2, sy - hr2, sz + tz * hr2).color(1.0F, 0.91F, 0.80F, haloA).endVertex();
-                b.vertex(m, sx + tx * hr2, sy + hr2, sz + tz * hr2).color(1.0F, 0.91F, 0.80F, haloA).endVertex();
-                b.vertex(m, sx - tx * hr2, sy + hr2, sz - tz * hr2).color(1.0F, 0.91F, 0.80F, haloA).endVertex();
-                float sr = s * 0.14F;
-                b.vertex(m, sx - tx * sr, sy - sr, sz - tz * sr).color(1.0F, 0.97F, 0.89F, diskA).endVertex();
-                b.vertex(m, sx + tx * sr, sy - sr, sz + tz * sr).color(1.0F, 0.97F, 0.89F, diskA).endVertex();
-                b.vertex(m, sx + tx * sr, sy + sr, sz + tz * sr).color(1.0F, 0.97F, 0.89F, diskA).endVertex();
-                b.vertex(m, sx - tx * sr, sy + sr, sz - tz * sr).color(1.0F, 0.97F, 0.89F, diskA).endVertex();
-            }
+                float sy = radius * 0.21F;
+                int haloA = Mth.clamp(Math.round(0.42F * wv * 255.0F), 0, 255);
+                int diskA = Mth.clamp(Math.round(0.96F * wv * 255.0F), 0, 255);
+                float hr2 = radius * 0.24F;
+                float sr = radius * 0.15F;
 
-            Tesselator.getInstance().end();
-            RenderSystem.depthMask(true);
-            RenderSystem.enableCull();
-            RenderSystem.disableBlend();
-            RenderSystem.setShaderColor(1, 1, 1, 1);
+                RenderSystem.enableBlend();
+                RenderSystem.defaultBlendFunc();
+                RenderSystem.disableCull();
+                RenderSystem.depthMask(false);
+                RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+                RenderSystem.setShaderTexture(0, ShaderCompat.WHITE_TEX);
+
+                BufferBuilder b = Tesselator.getInstance().getBuilder();
+                b.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+                b.vertex(m, sx - tx * hr2, sy - hr2, sz - tz * hr2).uv(0.5F, 0.5F).color(255, 232, 204, haloA).endVertex();
+                b.vertex(m, sx + tx * hr2, sy - hr2, sz + tz * hr2).uv(0.5F, 0.5F).color(255, 232, 204, haloA).endVertex();
+                b.vertex(m, sx + tx * hr2, sy + hr2, sz + tz * hr2).uv(0.5F, 0.5F).color(255, 232, 204, haloA).endVertex();
+                b.vertex(m, sx - tx * hr2, sy + hr2, sz - tz * hr2).uv(0.5F, 0.5F).color(255, 232, 204, haloA).endVertex();
+
+                b.vertex(m, sx - tx * sr, sy - sr, sz - tz * sr).uv(0.5F, 0.5F).color(255, 247, 227, diskA).endVertex();
+                b.vertex(m, sx + tx * sr, sy - sr, sz + tz * sr).uv(0.5F, 0.5F).color(255, 247, 227, diskA).endVertex();
+                b.vertex(m, sx + tx * sr, sy + sr, sz + tz * sr).uv(0.5F, 0.5F).color(255, 247, 227, diskA).endVertex();
+                b.vertex(m, sx - tx * sr, sy + sr, sz - tz * sr).uv(0.5F, 0.5F).color(255, 247, 227, diskA).endVertex();
+                Tesselator.getInstance().end();
+
+                RenderSystem.depthMask(true);
+                RenderSystem.enableCull();
+                RenderSystem.disableBlend();
+            }
         }
     }
 }

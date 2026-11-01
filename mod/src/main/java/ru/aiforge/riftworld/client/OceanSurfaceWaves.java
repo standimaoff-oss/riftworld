@@ -60,6 +60,7 @@ public final class OceanSurfaceWaves {
     @SubscribeEvent
     public static void render(RenderLevelStageEvent e) {
         if (e.getStage() != RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) return;
+        if (ShaderCompat.isRenderingShadowPass()) return;
         Minecraft mc = Minecraft.getInstance();
         ClientLevel level = mc.level;
         if (level == null || level.dimension() != Flight.ELISAR_DIM) return;
@@ -102,10 +103,11 @@ public final class OceanSurfaceWaves {
         RenderSystem.enableDepthTest();
         RenderSystem.depthMask(false);
         RenderSystem.disableCull();
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+        RenderSystem.setShaderTexture(0, ShaderCompat.WHITE_TEX);
 
         BufferBuilder bb = Tesselator.getInstance().getBuilder();
-        bb.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        bb.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
 
         // 1. Контурные 2D белые волны под парящими островами (как на 02_island_water_ripples_ref.png)
         double ySurf = (ocean + 0.904) - cam.y;
@@ -311,16 +313,16 @@ public final class OceanSurfaceWaves {
             float ot1x = (float) (px[i + 1] + nx[i + 1] * hw1), ot1z = (float) (pz[i + 1] + nz[i + 1] * hw1);
 
             // Внутренняя половина ленты (растушёвка к центру)
-            bb.vertex(mat, in0x, yf, in0z).color(r, g, b, 0).endVertex();
-            bb.vertex(mat, md0x, yf, md0z).color(r, g, b, a0).endVertex();
-            bb.vertex(mat, md1x, yf, md1z).color(r, g, b, a1).endVertex();
-            bb.vertex(mat, in1x, yf, in1z).color(r, g, b, 0).endVertex();
+            bb.vertex(mat, in0x, yf, in0z).uv(0.5F, 0.5F).color(r, g, b, 0).endVertex();
+            bb.vertex(mat, md0x, yf, md0z).uv(0.5F, 0.5F).color(r, g, b, a0).endVertex();
+            bb.vertex(mat, md1x, yf, md1z).uv(0.5F, 0.5F).color(r, g, b, a1).endVertex();
+            bb.vertex(mat, in1x, yf, in1z).uv(0.5F, 0.5F).color(r, g, b, 0).endVertex();
 
             // Внешняя половина ленты (растушёвка наружу)
-            bb.vertex(mat, md0x, yf, md0z).color(r, g, b, a0).endVertex();
-            bb.vertex(mat, ot0x, yf, ot0z).color(r, g, b, 0).endVertex();
-            bb.vertex(mat, ot1x, yf, ot1z).color(r, g, b, 0).endVertex();
-            bb.vertex(mat, md1x, yf, md1z).color(r, g, b, a1).endVertex();
+            bb.vertex(mat, md0x, yf, md0z).uv(0.5F, 0.5F).color(r, g, b, a0).endVertex();
+            bb.vertex(mat, ot0x, yf, ot0z).uv(0.5F, 0.5F).color(r, g, b, 0).endVertex();
+            bb.vertex(mat, ot1x, yf, ot1z).uv(0.5F, 0.5F).color(r, g, b, 0).endVertex();
+            bb.vertex(mat, md1x, yf, md1z).uv(0.5F, 0.5F).color(r, g, b, a1).endVertex();
         }
     }
 

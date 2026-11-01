@@ -7,6 +7,7 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.math.Axis;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -18,6 +19,7 @@ import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -35,24 +37,34 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import org.lwjgl.opengl.GL11;
 import ru.aiforge.riftworld.RiftWorld;
 import ru.aiforge.riftworld.flight.PortalRitual;
 import ru.aiforge.riftworld.net.PortalRitualMsg;
 
 /**
- * v0.20.0: Клиентская визуализация кастомного бесшовного телепорта в Элисар:
+ * v0.21.0: Обновлённая клиентская визуализация бесшовного телепорта через 3D-Прорыв Пространства в Элисар
+ * (<b>100% совместимо с любыми шейдерпаками, {@code mutated = 0} — ни один блок в коде не меняется!</b>):
  * <ul>
- *   <li>Плавное выбеливание блоков вокруг портала от его центра в тёплый бело-слоновый тон Элисара
- *       (<b>чисто визуальная 3D-оболочка поверх геометрии — в коде не меняется ни один блок!</b>);</li>
- *   <li>Появление в воздухе 34 парящих мистических глаз Разлома, неотрывно смотрящих на игрока;</li>
- *   <li>Резкая белая вспышка и подавление ванильного экрана загрузки земли ({@link ReceivingLevelScreen}).</li>
+ *   <li>Окружающий мир окрашивается НЕ в плоский белый цвет, а в фирменный тёплый известняково-кремовый оттенок
+ *       измерения Элисар ({@code ~#D4CEBE}), а <b>прямо поверх пола накладываются резные геометрические и
+ *       рунические узоры Элисара</b> ({@code portal_floor_tile.png} + радиальная мандала {@code portal_floor_mandala.png});</li>
+ *   <li>Вместо мелких 3D-глаз рядом с игроком <b>высоко в куполе неба</b> (точно как в измерении Элисар!)
+ *       открываются величественные 2D-глаза {@code eye_closed/eye_half/eye_open/eye_iris.png} на небесной дистанции
+ *       {@link ShaderCompat#celestialDistance} с честным тестом глубины {@code GL_LEQUAL} (не просвечиваются сквозь блоки!);</li>
+ *   <li>Финальная резкая вспышка света Элисара и мгновенный перенос без экрана загрузки.</li>
  * </ul>
  */
 @Mod.EventBusSubscriber(modid = RiftWorld.MODID, value = Dist.CLIENT)
 public final class PortalRitualClient {
+    private static final ResourceLocation FLOOR_TILE_TEX =
+            new ResourceLocation(RiftWorld.MODID, "textures/environment/portal_floor_tile.png");
+    private static final ResourceLocation FLOOR_MANDALA_TEX =
+            new ResourceLocation(RiftWorld.MODID, "textures/environment/portal_floor_mandala.png");
+
     private static final int MAX_FACES = 36000;
     private static final int BLEACH_SCAN_R = 34;
-    private static final int EYE_COUNT = 38;
+    private static final int SKY_EYE_COUNT = 16;
 
     public static int phase = PortalRitual.NONE;
     public static BlockPos center = BlockPos.ZERO;
@@ -70,27 +82,36 @@ public final class PortalRitualClient {
     private static final float[] fDist = new float[MAX_FACES];
     private static BlockPos capturedFor = null;
 
-    // Параметры 34 парящих в воздухе глаз вокруг портала и игрока
-    private static final double[] eyeOffX = new double[EYE_COUNT];
-    private static final double[] eyeOffY = new double[EYE_COUNT];
-    private static final double[] eyeOffZ = new double[EYE_COUNT];
-    private static final float[] eyeScale = new float[EYE_COUNT];
-    private static final float[] eyeWake = new float[EYE_COUNT];
-    private static final float[] eyeSeed = new float[EYE_COUNT];
+    // Мировые единичные векторы направления к 16 небесным 2D-глазам Элисара (ВСЕ строго высоко в небе dy > 0!)
+    private static final Vector3f[] skyEyeDir = new Vector3f[SKY_EYE_COUNT];
+    private static final float[] skyEyeScale = new float[SKY_EYE_COUNT];
+    private static final float[] skyEyeWake = new float[SKY_EYE_COUNT];
+    private static final float[] skyEyeSeed = new float[SKY_EYE_COUNT];
 
     static {
-        // Золотая спираль Фибоначчи вокруг арки портала на разных высотах и дистанциях (2.8 .. 12.6 блоков)
-        for (int i = 0; i < EYE_COUNT; ++i) {
-            double u = (i + 0.5) / EYE_COUNT;
-            double goldenAngle = i * 2.39996323;
-            double r = 2.8 + 9.8 * Math.sqrt(u) + Math.sin(i * 1.9) * 0.7;
-            double y = -0.85 + (i % 7) * 0.90 + Math.cos(i * 2.7) * 0.36;
-            eyeOffX[i] = Math.cos(goldenAngle) * r;
-            eyeOffY[i] = y;
-            eyeOffZ[i] = Math.sin(goldenAngle) * r;
-            eyeScale[i] = 0.50F + (float) ((i * 37 % 11) / 10.0) * 0.54F;
-            eyeWake[i] = 44.0F + (36.0F * i) / EYE_COUNT;
-            eyeSeed[i] = i * 1.713F;
+        // Первые 4 небесных глаза обрамляют в вышине ствол уходящего в небо Разлома на севере (-Z),
+        // а остальные 12 равномерно раскрываются по всему верхнему куполу неба (24° .. 66° над горизонтом)!
+        float[][] curated = {
+                {-0.42F, 0.44F, -0.79F, 0.88F},
+                { 0.44F, 0.52F, -0.73F, 0.80F},
+                {-0.18F, 0.66F, -0.73F, 0.64F},
+                { 0.22F, 0.34F, -0.91F, 0.58F}
+        };
+        for (int i = 0; i < SKY_EYE_COUNT; ++i) {
+            if (i < curated.length) {
+                skyEyeDir[i] = new Vector3f(curated[i][0], curated[i][1], curated[i][2]).normalize();
+                skyEyeScale[i] = curated[i][3];
+            } else {
+                double az = ((i - curated.length) * 2.39996323) + 0.55;
+                double el = Math.toRadians(26.0 + ((i * 7) % 8) * 5.2); // строго +26°..+63° вверх в небе!
+                float dx = (float) (Math.cos(az) * Math.cos(el));
+                float dy = (float) Math.sin(el);
+                float dz = (float) (Math.sin(az) * Math.cos(el));
+                skyEyeDir[i] = new Vector3f(dx, dy, dz).normalize();
+                skyEyeScale[i] = 0.48F + (i % 5) * 0.10F;
+            }
+            skyEyeWake[i] = 26.0F + (52.0F * i) / SKY_EYE_COUNT;
+            skyEyeSeed[i] = i * 1.917F;
         }
     }
 
@@ -118,27 +139,27 @@ public final class PortalRitualClient {
     }
 
     public static boolean isNearActivePortal(BlockPos pos) {
-        return phase == PortalRitual.AWAKEN && center.distSqr(pos) <= 25.0;
+        return phase == PortalRitual.AWAKEN && center.distSqr(pos) <= 36.0;
     }
 
     public static float currentTime(float pt) {
         return tick + pt;
     }
 
-    /** Текущий радиус волны белого цвета слоновой кости от центра портала (0 -> 37 блоков). */
+    /** Текущий радиус волны оттенка Элисара и напольных узоров от центра Разлома (0 -> 37 блоков). */
     public static float bleachRadius(float pt) {
         if (phase != PortalRitual.AWAKEN) return 0.0F;
-        float u = Mth.clamp(currentTime(pt) / 92.0F, 0.0F, 1.0F);
+        float u = Mth.clamp(currentTime(pt) / 90.0F, 0.0F, 1.0F);
         float s = u * u * (3.0F - 2.0F * u);
-        return 0.8F + 36.5F * s;
+        return 0.9F + 36.5F * s;
     }
 
-    /** Яркость резкой белой вспышки (0..1) на границе переноса без экрана загрузки. */
+    /** Яркость резкой вспышки света Элисара (0..1) на границе переноса без экрана загрузки. */
     public static float flashIntensity(float pt) {
         float t = currentTime(pt);
         if (phase == PortalRitual.AWAKEN) {
             float f = Mth.clamp((t - (PortalRitual.AWAKEN_TICKS - 8.0F)) / 6.5F, 0.0F, 1.0F);
-            return f * f; // резкая вспышка!
+            return f * f;
         }
         if (phase == PortalRitual.ARRIVE_FLASH) {
             if (t <= 4.0F) return 1.0F;
@@ -167,7 +188,6 @@ public final class PortalRitualClient {
         }
     }
 
-    /** Полное подавление ванильного земляного экрана загрузки при смене измерения! */
     @SubscribeEvent
     public static void onScreenOpen(ScreenEvent.Opening e) {
         if (phase == PortalRitual.NONE) return;
@@ -185,36 +205,38 @@ public final class PortalRitualClient {
         if (a <= 0.004F) return;
         GuiGraphics g = e.getGuiGraphics();
         int alpha = Mth.clamp(Math.round(a * 255.0F), 0, 255);
-        // Тёпло-белая ослепительная вспышка в тон света Элисара (#FFFDF8)
-        g.fill(0, 0, g.guiWidth(), g.guiHeight(), (alpha << 24) | 0xFFFDF8);
+        g.fill(0, 0, g.guiWidth(), g.guiHeight(), (alpha << 24) | 0xFFF7EFE0);
     }
 
     @SubscribeEvent
     public static void fogColor(ViewportEvent.ComputeFogColor e) {
         if (phase != PortalRitual.AWAKEN) return;
-        float u = Mth.clamp((currentTime((float) e.getPartialTick()) - 14.0F) / 68.0F, 0.0F, 1.0F);
+        float u = Mth.clamp((currentTime((float) e.getPartialTick()) - 12.0F) / 68.0F, 0.0F, 1.0F);
         float k = u * u * (3.0F - 2.0F * u);
-        e.setRed(Mth.lerp(k, e.getRed(), 0.962F));
-        e.setGreen(Mth.lerp(k, e.getGreen(), 0.948F));
-        e.setBlue(Mth.lerp(k, e.getBlue(), 0.912F));
+        // Точный тёплый известняково-кремовый тон неба Элисара (чтобы 2D-глаза в небе читались контрастно 1:1 как в Элисаре!)
+        e.setRed(Mth.lerp(k, e.getRed(), 0.945F));
+        e.setGreen(Mth.lerp(k, e.getGreen(), 0.928F));
+        e.setBlue(Mth.lerp(k, e.getBlue(), 0.888F));
     }
 
     @SubscribeEvent
     public static void renderFog(ViewportEvent.RenderFog e) {
         if (phase != PortalRitual.AWAKEN || e.getMode() != FogRenderer.FogMode.FOG_TERRAIN) return;
         if (e.getCamera().getFluidInCamera() != FogType.NONE) return;
+        if (ShaderCompat.isShaderPackActive()) return;
         float u = Mth.clamp((currentTime((float) e.getPartialTick()) - 18.0F) / 70.0F, 0.0F, 1.0F);
         if (u <= 0.001F) return;
         float k = u * u * (3.0F - 2.0F * u);
         float far = e.getFarPlaneDistance();
-        e.setNearPlaneDistance(Mth.lerp(k, far * 0.65F, 16.0F));
-        e.setFarPlaneDistance(Mth.lerp(k, far, 44.0F));
+        e.setNearPlaneDistance(Mth.lerp(k, far * 0.65F, 24.0F));
+        e.setFarPlaneDistance(Mth.lerp(k, far, 76.0F));
         e.setCanceled(true);
     }
 
     @SubscribeEvent
     public static void renderStage(RenderLevelStageEvent e) {
         if (phase == PortalRitual.NONE) return;
+        if (ShaderCompat.isRenderingShadowPass()) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
 
@@ -222,11 +244,26 @@ public final class PortalRitualClient {
         Vec3 cam = e.getCamera().getPosition();
         PoseStack ps = e.getPoseStack();
 
+        // Плавная небесная вуаль оттенка Элисара в ванили, чтобы обычное голубое небо мягко превращалось в небо Элисара
+        if (phase == PortalRitual.AWAKEN && e.getStage() == RenderLevelStageEvent.Stage.AFTER_SKY
+                && !ShaderCompat.isShaderPackActive()) {
+            float u = Mth.clamp((currentTime(pt) - 10.0F) / 68.0F, 0.0F, 1.0F);
+            int skyA = Mth.clamp(Math.round(u * u * (3.0F - 2.0F * u) * 238.0F), 0, 238);
+            if (skyA > 2) {
+                float r = Math.min(mc.gameRenderer.getDepthFar() * 0.52F, 180.0F);
+                ShaderCompat.drawSphericalSkyDome(ps.last().pose(), r,
+                        242, 238, 228, skyA,
+                        231, 226, 214, skyA,
+                        216, 210, 196, skyA);
+            }
+            return;
+        }
+
         if (phase == PortalRitual.AWAKEN && e.getStage() == RenderLevelStageEvent.Stage.AFTER_CUTOUT_BLOCKS) {
-            renderWorldIvoryBleach(ps, cam, pt);
+            renderElisarSurfaceAndFloorPatterns(ps, cam, pt);
         } else if (e.getStage() == RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) {
             if (phase == PortalRitual.AWAKEN) {
-                renderPortalSingularityAndWatchingEyes(ps, e.getCamera(), cam, pt);
+                renderCelestial2DEyesInSky(mc, ps, e.getCamera(), pt);
             }
             if (mc.options.hideGui) {
                 renderCameraFlashVeil(ps, e.getCamera(), pt);
@@ -251,16 +288,19 @@ public final class PortalRitualClient {
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false);
         RenderSystem.disableCull();
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+        RenderSystem.setShaderTexture(0, ShaderCompat.WHITE_TEX);
 
         BufferBuilder bb = Tesselator.getInstance().getBuilder();
-        bb.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-        quad(bb, mat,
-                fwd.subtract(right).add(up),
-                fwd.subtract(right).subtract(up),
-                fwd.add(right).subtract(up),
-                fwd.add(right).add(up),
-                255, 253, 248, alpha);
+        bb.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        Vec3 p0 = fwd.subtract(right).add(up);
+        Vec3 p1 = fwd.subtract(right).subtract(up);
+        Vec3 p2 = fwd.add(right).subtract(up);
+        Vec3 p3 = fwd.add(right).add(up);
+        bb.vertex(mat, (float) p0.x, (float) p0.y, (float) p0.z).uv(0.5F, 0.5F).color(247, 239, 224, alpha).endVertex();
+        bb.vertex(mat, (float) p1.x, (float) p1.y, (float) p1.z).uv(0.5F, 0.5F).color(247, 239, 224, alpha).endVertex();
+        bb.vertex(mat, (float) p2.x, (float) p2.y, (float) p2.z).uv(0.5F, 0.5F).color(247, 239, 224, alpha).endVertex();
+        bb.vertex(mat, (float) p3.x, (float) p3.y, (float) p3.z).uv(0.5F, 0.5F).color(247, 239, 224, alpha).endVertex();
         Tesselator.getInstance().end();
 
         RenderSystem.enableCull();
@@ -270,97 +310,163 @@ public final class PortalRitualClient {
     }
 
     /**
-     * Визуально превращает блоки вокруг портала (траву, деревья, руины) в благородный белый известняк Элисара,
-     * расходящийся волной от центра портала, БЕЗ единого изменения блоков в мире!
+     * 1) Боковые/нижние грани блоков и деревьев плавно окрашивает в тёплый известняково-песчаниковый
+     *    оттенок измерения Элисар (НЕ просто белый!);
+     * 2) На все верхние грани пола ({@code UP}) прямо накладывает резные храмовые плиты и золотые рунические
+     *    узоры Элисара ({@link #FLOOR_TILE_TEX} + радиальную мандалу {@link #FLOOR_MANDALA_TEX})!
+     * Ни один блок в мире при этом не изменяется ({@code mutated = 0}).
      */
-    private static void renderWorldIvoryBleach(PoseStack ps, Vec3 cam, float pt) {
+    private static void renderElisarSurfaceAndFloorPatterns(PoseStack ps, Vec3 cam, float pt) {
         if (faceCount <= 0) return;
         float rad = bleachRadius(pt);
         if (rad <= 0.2F) return;
 
         Matrix4f mat = ps.last().pose();
-        float cx = (float) cam.x, cy = (float) cam.y, cz = (float) cam.z;
+        float camX = (float) cam.x, camY = (float) cam.y, camZ = (float) cam.z;
+        float rcx = center.getX() + 0.5F;
+        float rcz = center.getZ() + 0.5F;
+        float t = currentTime(pt);
 
         RenderSystem.enableBlend();
         RenderSystem.blendFuncSeparate(
                 GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
                 GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
         RenderSystem.enableDepthTest();
+        RenderSystem.depthFunc(GL11.GL_LEQUAL);
         RenderSystem.depthMask(false);
         RenderSystem.disableCull();
         RenderSystem.polygonOffset(-1.5F, -2.5F);
         RenderSystem.enablePolygonOffset();
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
 
         BufferBuilder bb = Tesselator.getInstance().getBuilder();
-        bb.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
+        // ПРОХОД A: Боковые и нижние грани (стволы, листва, камни руин) -> тёплый известняково-пергаментный оттенок Элисара
+        RenderSystem.setShaderTexture(0, ShaderCompat.WHITE_TEX);
+        bb.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
         for (int i = 0; i < faceCount; ++i) {
+            if (fDir[i] == 1) continue; // пол (UP) рисуем во втором проходе сразу с узором Элисара!
             float d = fDist[i];
             if (d > rad) continue;
-            float u = Mth.clamp((rad - d) / 5.6F, 0.0F, 1.0F);
+            float u = Mth.clamp((rad - d) / 5.4F, 0.0F, 1.0F);
             float w = u * u * (3.0F - 2.0F * u);
-            int a = Mth.clamp(Math.round(w * 246.0F), 0, 255);
+            int a = Mth.clamp(Math.round(w * 218.0F), 0, 255);
             if (a <= 2) continue;
 
+            // Истинный тёплый оттенок известняка/травы Элисара (из elisar_grass_top & temple_gold_rune: ~211, 205, 189)
             int r, g, b;
             switch (fDir[i]) {
-                case 1 -> { r = 248; g = 244; b = 235; } // UP — солнечный бело-слоновый тон Элисара
-                case 0 -> { r = 208; g = 201; b = 188; } // DOWN
-                case 2, 3 -> { r = 236; g = 230; b = 219; } // NORTH / SOUTH
-                default -> { r = 224; g = 218; b = 205; }   // WEST / EAST
+                case 0 -> { r = 166; g = 159; b = 144; } // DOWN
+                case 2, 3 -> { r = 198; g = 191; b = 175; } // NORTH / SOUTH
+                default -> { r = 184; g = 177; b = 161; }   // WEST / EAST
             }
 
-            float x0 = fMinX[i] - cx, y0 = fMinY[i] - cy, z0 = fMinZ[i] - cz;
-            float x1 = fMaxX[i] - cx, y1 = fMaxY[i] - cy, z1 = fMaxZ[i] - cz;
+            float x0 = fMinX[i] - camX, y0 = fMinY[i] - camY, z0 = fMinZ[i] - camZ;
+            float x1 = fMaxX[i] - camX, y1 = fMaxY[i] - camY, z1 = fMaxZ[i] - camZ;
             float eps = 0.004F;
 
             switch (fDir[i]) {
-                case 0 -> { // DOWN (-Y)
+                case 0 -> {
                     float yn = y0 - eps;
-                    bb.vertex(mat, x0, yn, z1).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x0, yn, z0).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x1, yn, z0).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x1, yn, z1).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, x0, yn, z1).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, x0, yn, z0).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, x1, yn, z0).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, x1, yn, z1).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
                 }
-                case 1 -> { // UP (+Y)
-                    float yp = y1 + eps;
-                    bb.vertex(mat, x0, yp, z0).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x0, yp, z1).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x1, yp, z1).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x1, yp, z0).color(r, g, b, a).endVertex();
-                }
-                case 2 -> { // NORTH (-Z)
+                case 2 -> {
                     float zn = z0 - eps;
-                    bb.vertex(mat, x1, y1, zn).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x1, y0, zn).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x0, y0, zn).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x0, y1, zn).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, x1, y1, zn).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, x1, y0, zn).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, x0, y0, zn).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, x0, y1, zn).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
                 }
-                case 3 -> { // SOUTH (+Z)
+                case 3 -> {
                     float zp = z1 + eps;
-                    bb.vertex(mat, x0, y1, zp).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x0, y0, zp).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x1, y0, zp).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x1, y1, zp).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, x0, y1, zp).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, x0, y0, zp).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, x1, y0, zp).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, x1, y1, zp).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
                 }
-                case 4 -> { // WEST (-X)
+                case 4 -> {
                     float xn = x0 - eps;
-                    bb.vertex(mat, xn, y1, z0).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, xn, y0, z0).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, xn, y0, z1).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, xn, y1, z1).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, xn, y1, z0).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, xn, y0, z0).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, xn, y0, z1).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, xn, y1, z1).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
                 }
-                case 5 -> { // EAST (+X)
+                case 5 -> {
                     float xp = x1 + eps;
-                    bb.vertex(mat, xp, y1, z1).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, xp, y0, z1).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, xp, y0, z0).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, xp, y1, z0).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, xp, y1, z1).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, xp, y0, z1).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, xp, y0, z0).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                    bb.vertex(mat, xp, y1, z0).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
                 }
             }
         }
+        Tesselator.getInstance().end();
 
+        // ПРОХОД B: Все верхние грани пола (UP) — бесшовный храмовый узор Элисара (4x4 м медальоны + золотая инкрустация)
+        RenderSystem.setShaderTexture(0, FLOOR_TILE_TEX);
+        bb.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        for (int i = 0; i < faceCount; ++i) {
+            if (fDir[i] != 1) continue;
+            float d = fDist[i];
+            if (d > rad) continue;
+            float u = Mth.clamp((rad - d) / 5.0F, 0.0F, 1.0F);
+            float w = u * u * (3.0F - 2.0F * u);
+            // Золотистый бегущий гребень прямо на кромке волны!
+            float crest = Mth.clamp(1.0F - Math.abs((rad - d) - 1.2F) / 1.4F, 0.0F, 1.0F);
+            int tr = Mth.clamp(Math.round(Mth.lerp(crest * 0.35F, 255.0F, 255.0F)), 0, 255);
+            int tg = Mth.clamp(Math.round(Mth.lerp(crest * 0.35F, 255.0F, 236.0F)), 0, 255);
+            int tb = Mth.clamp(Math.round(Mth.lerp(crest * 0.45F, 255.0F, 178.0F)), 0, 255);
+            int a = Mth.clamp(Math.round(w * 244.0F), 0, 255);
+            if (a <= 2) continue;
+
+            float wx0 = fMinX[i], wz0 = fMinZ[i];
+            float wx1 = fMaxX[i], wz1 = fMaxZ[i];
+            float yp = (fMaxY[i] - camY) + 0.004F;
+
+            // Мировые UV с периодом 4x4 блока, центрированные относительно оси Разлома
+            float u0 = (wx0 - rcx + 2.0F) * 0.25F;
+            float u1 = (wx1 - rcx + 2.0F) * 0.25F;
+            float v0 = (wz0 - rcz + 2.0F) * 0.25F;
+            float v1 = (wz1 - rcz + 2.0F) * 0.25F;
+
+            bb.vertex(mat, wx0 - camX, yp, wz0 - camZ).uv(u0, v0).color(tr, tg, tb, a).endVertex();
+            bb.vertex(mat, wx0 - camX, yp, wz1 - camZ).uv(u0, v1).color(tr, tg, tb, a).endVertex();
+            bb.vertex(mat, wx1 - camX, yp, wz1 - camZ).uv(u1, v1).color(tr, tg, tb, a).endVertex();
+            bb.vertex(mat, wx1 - camX, yp, wz0 - camZ).uv(u1, v0).color(tr, tg, tb, a).endVertex();
+        }
+        Tesselator.getInstance().end();
+
+        // ПРОХОД C: Прямо поверх пола вокруг Разлома (радиус 16 блоков) — Большая Руническая Мандала Элисара!
+        RenderSystem.polygonOffset(-2.5F, -4.0F);
+        RenderSystem.setShaderTexture(0, FLOOR_MANDALA_TEX);
+        bb.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        float rot = t * 0.0045F; // еле заметное торжественное вращение астролябии-мандалы по полу
+        float cosR = Mth.cos(rot), sinR = Mth.sin(rot);
+
+        for (int i = 0; i < faceCount; ++i) {
+            if (fDir[i] != 1) continue;
+            float d = fDist[i];
+            if (d > rad || d > 17.5F) continue;
+            // Исключаем кроны высоких деревьев (> 5 блоков выше основания разлома), чтобы мандала лежала именно по полу и ступеням руин!
+            if (fMaxY[i] > center.getY() + 4.5F) continue;
+
+            float uWave = Mth.clamp((rad - d) / 4.2F, 0.0F, 1.0F);
+            float pulse = 0.90F + 0.10F * Mth.sin(t * 0.14F - d * 0.35F);
+            int a = Mth.clamp(Math.round(uWave * uWave * (3.0F - 2.0F * uWave) * 252.0F * pulse), 0, 255);
+            if (a <= 3) continue;
+
+            float wx0 = fMinX[i], wz0 = fMinZ[i];
+            float wx1 = fMaxX[i], wz1 = fMaxZ[i];
+            float yp = (fMaxY[i] - camY) + 0.007F;
+
+            emitMandalaVertex(bb, mat, wx0, wz0, yp, camX, camZ, rcx, rcz, cosR, sinR, a);
+            emitMandalaVertex(bb, mat, wx0, wz1, yp, camX, camZ, rcx, rcz, cosR, sinR, a);
+            emitMandalaVertex(bb, mat, wx1, wz1, yp, camX, camZ, rcx, rcz, cosR, sinR, a);
+            emitMandalaVertex(bb, mat, wx1, wz0, yp, camX, camZ, rcx, rcz, cosR, sinR, a);
+        }
         Tesselator.getInstance().end();
 
         RenderSystem.disablePolygonOffset();
@@ -371,197 +477,92 @@ public final class PortalRitualClient {
         RenderSystem.disableBlend();
     }
 
-    /**
-     * Рисует световое ядро в центре арки портала и множество (34) парящих в воздухе глаз Разлома,
-     * каждый из которых плавно открывается и неотрывно следит зрачком за игроком!
-     */
-    private static void renderPortalSingularityAndWatchingEyes(PoseStack ps, Camera camera, Vec3 cam, float pt) {
-        float t = currentTime(pt);
-        Matrix4f mat = ps.last().pose();
+    private static void emitMandalaVertex(BufferBuilder bb, Matrix4f mat,
+                                          float wx, float wz, float yp,
+                                          float camX, float camZ,
+                                          float rcx, float rcz, float cosR, float sinR, int alpha) {
+        float dx = wx - rcx;
+        float dz = wz - rcz;
+        float rx = dx * cosR - dz * sinR;
+        float rz = dx * sinR + dz * cosR;
+        float u = rx / 32.0F + 0.5F;
+        float v = rz / 32.0F + 0.5F;
+        bb.vertex(mat, wx - camX, yp, wz - camZ).uv(u, v).color(255, 252, 242, alpha).endVertex();
+    }
 
-        Vector3f leftV = camera.getLeftVector();
-        Vector3f upV = camera.getUpVector();
-        Vec3 right = new Vec3(-leftV.x(), -leftV.y(), -leftV.z()).normalize();
-        Vec3 up = new Vec3(upV.x(), upV.y(), upV.z()).normalize();
+    /**
+     * Рисует высоко в куполе неба (на небесной дистанции {@link ShaderCompat#celestialDistance}, НЕ близко к игроку!)
+     * аутентичные 2D-глаза измерения Элисар ({@code eye_closed/eye_half/eye_open/eye_iris.png}).
+     * Включён тест глубины {@code GL_LEQUAL}, поэтому деревья, стены и руины честно перекрывают глаза!
+     */
+    private static void renderCelestial2DEyesInSky(Minecraft mc, PoseStack ps, Camera camera, float pt) {
+        float t = currentTime(pt);
+        float skyDist = ShaderCompat.celestialDistance(mc);
+        float distScale = skyDist / 100.0F;
 
         RenderSystem.enableBlend();
         RenderSystem.blendFuncSeparate(
                 GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
                 GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
         RenderSystem.enableDepthTest();
+        RenderSystem.depthFunc(GL11.GL_LEQUAL);
         RenderSystem.depthMask(false);
         RenderSystem.disableCull();
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
-        BufferBuilder bb = Tesselator.getInstance().getBuilder();
-        bb.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        Matrix4f mat = ps.last().pose();
+        Vec3 lookVec = new Vec3(camera.getLookVector().x(), camera.getLookVector().y(), camera.getLookVector().z());
 
-        // 1. Сияющее бело-золотое сердце Разлома в центре портала
-        Vec3 pCenter = Vec3.atCenterOf(center).subtract(cam);
-        float coreR = 0.85F + 0.55F * Mth.clamp(t / 60.0F, 0.0F, 1.0F) + 0.12F * Mth.sin(t * 0.25F);
-        drawBillboardDisc(bb, mat, pCenter, right, up, coreR * 2.1F, 248, 240, 214, 115, 248, 240, 214, 0, 20);
-        drawBillboardDisc(bb, mat, pCenter, right, up, coreR * 0.95F, 255, 253, 246, 235, 248, 236, 198, 0, 16);
-
-        // 2. Множество парящих в воздухе глаз, смотрящих прямо на игрока
-        double baseCx = center.getX() + 0.5;
-        double baseCy = center.getY() + 0.5;
-        double baseCz = center.getZ() + 0.5;
-
-        for (int i = 0; i < EYE_COUNT; ++i) {
-            float dt = t - eyeWake[i];
+        for (int i = 0; i < SKY_EYE_COUNT; ++i) {
+            float dt = t - skyEyeWake[i];
             if (dt <= 0.0F) continue;
 
-            float fadeIn = Mth.clamp(dt / 7.5F, 0.0F, 1.0F);
-            // Редкое живое моргание отдельных глаз; перед самой вспышкой все глаза распахиваются шире!
-            float blinkCycle = (t * 0.075F + eyeSeed[i] * 1.9F) % 6.283F;
-            float blink = (t < PortalRitual.AWAKEN_TICKS - 14 && blinkCycle > 5.85F)
-                    ? Mth.sin(((blinkCycle - 5.85F) / 0.433F) * Mth.PI)
-                    : 0.0F;
-            float wideSurge = Mth.clamp((t - (PortalRitual.AWAKEN_TICKS - 14.0F)) / 10.0F, 0.0F, 1.0F) * 0.22F;
-            float open = Mth.clamp(Mth.clamp(dt / 10.0F, 0.08F, 1.0F) * (1.0F - 0.88F * blink) + wideSurge, 0.06F, 1.22F);
+            float fade = Mth.clamp(dt / 11.0F, 0.0F, 1.0F);
+            // Чуть более выразительная альфа (0.72), чтобы 2D-глаза Элисара в небе отчётливо читались во время ритуала!
+            float alpha = fade * 0.72F;
+            if (alpha <= 0.01F) continue;
 
-            double bob = Math.sin(t * 0.09 + eyeSeed[i]) * 0.18;
-            Vec3 worldEye = new Vec3(baseCx + eyeOffX[i], baseCy + eyeOffY[i] + bob, baseCz + eyeOffZ[i]);
-            // Не рисуем глаз слишком близко к лицу игрока (< 1.6 блока), чтобы не перекрывать обзор целиком
-            if (worldEye.distanceToSqr(cam) < 2.6) continue;
+            ResourceLocation lid;
+            if (dt < 4.0F) {
+                lid = ElisarEye.CLOSED;
+            } else if (dt < 8.5F) {
+                lid = ElisarEye.HALF;
+            } else {
+                float blinkCycle = (t * 0.065F + skyEyeSeed[i] * 2.1F) % 6.283F;
+                if (t < PortalRitual.AWAKEN_TICKS - 14.0F && blinkCycle > 5.88F) {
+                    lid = (blinkCycle > 6.02F && blinkCycle < 6.16F) ? ElisarEye.CLOSED : ElisarEye.HALF;
+                } else {
+                    lid = ElisarEye.OPEN;
+                }
+            }
 
-            Vec3 rel = worldEye.subtract(cam);
-            Vec3 toCam = rel.scale(-1.0).normalize();
-            float s = eyeScale[i];
+            Vector3f dir = skyEyeDir[i];
+            Vector3f right = new Vector3f(dir).cross(0, 1, 0).normalize();
+            Vector3f up = new Vector3f(right).cross(dir).normalize();
 
-            drawWatchingEye(bb, mat, rel, right, up, toCam, s, open, fadeIn, t, eyeSeed[i]);
+            float sc = skyEyeScale[i] * distScale;
+            float w = 74.0F * sc;
+            float h = 37.0F * sc;
+            float dEye = skyDist - i * 0.45F;
+            Vector3f c = new Vector3f(dir).mul(dEye);
+
+            if (lid != ElisarEye.CLOSED) {
+                // Зрачок плавно смещается в сторону взгляда игрока, как у главного небесного глаза Элисара!
+                float gx = Mth.clamp((float) (-lookVec.dot(new Vec3(right.x, right.y, right.z)) * 0.65)
+                        + Mth.sin(t * 0.03F + skyEyeSeed[i]) * 0.16F, -0.85F, 0.85F) * w * 0.05F;
+                float gy = Mth.clamp((float) (-lookVec.dot(new Vec3(up.x, up.y, up.z)) * 0.45)
+                        + Mth.cos(t * 0.024F + skyEyeSeed[i]) * 0.12F, -0.55F, 0.55F) * h * 0.07F;
+                Vector3f ci = new Vector3f(c).add(new Vector3f(right).mul(gx)).add(new Vector3f(up).mul(gy));
+                ElisarEye.drawWorldSkyQuad(mat, ElisarEye.IRIS, ci, right, up, w * 0.5F, h * 0.5F, alpha);
+            }
+            ElisarEye.drawWorldSkyQuad(mat, lid, c, right, up, w * 0.5F, h * 0.5F, alpha);
         }
-
-        Tesselator.getInstance().end();
 
         RenderSystem.enableCull();
         RenderSystem.depthMask(true);
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableBlend();
-    }
-
-    /**
-     * Высококонтрастный мистический парящий глаз Разлома в 3D-пространстве:
-     * тёмно-обсидиановые веки с золотистым контуром, фарфорово-белая склера и живой бирюзово-золотой
-     * зрачок со световым бликом, неотрывно направленный на игрока!
-     */
-    private static void drawWatchingEye(BufferBuilder bb, Matrix4f mat,
-                                        Vec3 centerRel, Vec3 right, Vec3 up, Vec3 forwardToCam,
-                                        float scale, float openness, float alphaMul, float t, float seed) {
-        int segs = 12;
-        float halfW = 0.82F * scale;
-        float halfH = 0.36F * scale * openness;
-        float lidThick = (0.085F + 0.03F * (1.0F - Mth.clamp(openness, 0.0F, 1.0F))) * scale;
-
-        // 0) Тёмно-золотистый эфирный ореол позади глаза, чтобы глаз чётко читался на фоне белеющего мира!
-        Vec3 back = centerRel.subtract(forwardToCam.scale(0.02));
-        drawBillboardEllipse(bb, mat, back, right, up, halfW * 1.42F, Math.max(0.24F * scale, halfH * 1.75F),
-                36, 30, 48, Math.round(115 * alphaMul), 212, 182, 108, 0, 14);
-
-        // 1) Миндалевидная фарфоровая склера глаза
-        int scA = Math.round(248 * alphaMul);
-        int lidA = Math.round(252 * alphaMul);
-        int goldA = Math.round(215 * alphaMul);
-        for (int i = 0; i < segs; ++i) {
-            float u0 = -1.0F + (2.0F * i) / segs;
-            float u1 = -1.0F + (2.0F * (i + 1)) / segs;
-            float arch0 = (1.0F - u0 * u0);
-            float arch1 = (1.0F - u1 * u1);
-
-            float x0 = u0 * halfW, x1 = u1 * halfW;
-            float yTop0 = arch0 * halfH, yTop1 = arch1 * halfH;
-            float yBot0 = -arch0 * halfH, yBot1 = -arch1 * halfH;
-
-            // Склера (чуть притенённая к уголкам для объёма глазного яблока)
-            int shade0 = 232 + Math.round(23 * arch0);
-            int shade1 = 232 + Math.round(23 * arch1);
-            Vec3 st0 = pt2d(centerRel, right, up, x0, yTop0);
-            Vec3 sb0 = pt2d(centerRel, right, up, x0, yBot0);
-            Vec3 sb1 = pt2d(centerRel, right, up, x1, yBot1);
-            Vec3 st1 = pt2d(centerRel, right, up, x1, yTop1);
-            quad(bb, mat, st0, sb0, sb1, st1, shade0, shade0, shade1, scA);
-
-            // Верхнее обсидиановое веко + золотая ресничная дуга
-            Vec3 lidFront = centerRel.add(forwardToCam.scale(0.016));
-            Vec3 ut0 = pt2d(lidFront, right, up, x0, yTop0 + lidThick);
-            Vec3 ub0 = pt2d(lidFront, right, up, x0, yTop0 - lidThick * 0.18F);
-            Vec3 ub1 = pt2d(lidFront, right, up, x1, yTop1 - lidThick * 0.18F);
-            Vec3 ut1 = pt2d(lidFront, right, up, x1, yTop1 + lidThick);
-            quad(bb, mat, ut0, ub0, ub1, ut1, 24, 20, 34, lidA);
-
-            Vec3 gt0 = pt2d(lidFront, right, up, x0, yTop0 + lidThick * 1.32F);
-            Vec3 gt1 = pt2d(lidFront, right, up, x1, yTop1 + lidThick * 1.32F);
-            quad(bb, mat, gt0, ut0, ut1, gt1, 216, 180, 96, goldA);
-
-            // Нижнее обсидиановое веко
-            Vec3 lt0 = pt2d(lidFront, right, up, x0, yBot0 + lidThick * 0.16F);
-            Vec3 lb0 = pt2d(lidFront, right, up, x0, yBot0 - lidThick * 0.82F);
-            Vec3 lb1 = pt2d(lidFront, right, up, x1, yBot1 - lidThick * 0.82F);
-            Vec3 lt1 = pt2d(lidFront, right, up, x1, yBot1 + lidThick * 0.16F);
-            quad(bb, mat, lt0, lb0, lb1, lt1, 28, 24, 38, lidA);
-        }
-
-        // 2) Радужка и зрачок, неотрывно смотрящие прямо на игрока (с лёгким живым микротремором взгляда)
-        if (openness > 0.18F) {
-            float gazeX = Mth.sin(t * 0.19F + seed * 3.1F) * 0.035F * scale;
-            float gazeY = Mth.cos(t * 0.15F + seed * 2.3F) * 0.020F * scale;
-            Vec3 irisCenter = centerRel.add(forwardToCam.scale(0.008))
-                    .add(right.scale(gazeX)).add(up.scale(gazeY));
-            float irisR = Math.min(0.24F * scale, halfH * 0.88F);
-            // Бирюзово-золотая радужка Разлома
-            drawBillboardDisc(bb, mat, irisCenter, right, up, irisR,
-                    48, 204, 228, Math.round(248 * alphaMul),
-                    24, 96, 132, Math.round(245 * alphaMul), 14);
-            drawBillboardDisc(bb, mat, irisCenter.add(forwardToCam.scale(0.003)), right, up, irisR * 0.72F,
-                    232, 188, 86, Math.round(235 * alphaMul),
-                    52, 198, 224, Math.round(180 * alphaMul), 12);
-            // Глубокий угольно-чёрный зрачок
-            Vec3 pupilCenter = irisCenter.add(forwardToCam.scale(0.006));
-            drawBillboardDisc(bb, mat, pupilCenter, right, up, irisR * 0.44F,
-                    10, 9, 16, Math.round(255 * alphaMul),
-                    14, 12, 22, Math.round(250 * alphaMul), 12);
-            // Живой белый блик на роговице
-            Vec3 spark = pupilCenter.add(forwardToCam.scale(0.004))
-                    .add(right.scale(-irisR * 0.26F)).add(up.scale(irisR * 0.26F));
-            drawBillboardDisc(bb, mat, spark, right, up, irisR * 0.16F,
-                    255, 255, 255, Math.round(250 * alphaMul),
-                    255, 255, 255, 0, 8);
-        }
-    }
-
-    private static Vec3 pt2d(Vec3 origin, Vec3 right, Vec3 up, float x, float y) {
-        return origin.add(right.scale(x)).add(up.scale(y));
-    }
-
-    private static void quad(BufferBuilder bb, Matrix4f mat, Vec3 a, Vec3 b, Vec3 c, Vec3 d,
-                             int r, int g, int bl, int alpha) {
-        bb.vertex(mat, (float) a.x, (float) a.y, (float) a.z).color(r, g, bl, alpha).endVertex();
-        bb.vertex(mat, (float) b.x, (float) b.y, (float) b.z).color(r, g, bl, alpha).endVertex();
-        bb.vertex(mat, (float) c.x, (float) c.y, (float) c.z).color(r, g, bl, alpha).endVertex();
-        bb.vertex(mat, (float) d.x, (float) d.y, (float) d.z).color(r, g, bl, alpha).endVertex();
-    }
-
-    private static void drawBillboardDisc(BufferBuilder bb, Matrix4f mat, Vec3 c, Vec3 right, Vec3 up, float radius,
-                                          int rIn, int gIn, int bIn, int aIn,
-                                          int rOut, int gOut, int bOut, int aOut, int segs) {
-        drawBillboardEllipse(bb, mat, c, right, up, radius, radius, rIn, gIn, bIn, aIn, rOut, gOut, bOut, aOut, segs);
-    }
-
-    private static void drawBillboardEllipse(BufferBuilder bb, Matrix4f mat, Vec3 c, Vec3 right, Vec3 up,
-                                             float rx, float ry,
-                                             int rIn, int gIn, int bIn, int aIn,
-                                             int rOut, int gOut, int bOut, int aOut, int segs) {
-        float cx = (float) c.x, cy = (float) c.y, cz = (float) c.z;
-        for (int i = 0; i < segs; ++i) {
-            double a0 = (Math.PI * 2.0 * i) / segs;
-            double a1 = (Math.PI * 2.0 * (i + 1)) / segs;
-            Vec3 p0 = c.add(right.scale(Math.cos(a0) * rx)).add(up.scale(Math.sin(a0) * ry));
-            Vec3 p1 = c.add(right.scale(Math.cos(a1) * rx)).add(up.scale(Math.sin(a1) * ry));
-            bb.vertex(mat, cx, cy, cz).color(rIn, gIn, bIn, aIn).endVertex();
-            bb.vertex(mat, (float) p0.x, (float) p0.y, (float) p0.z).color(rOut, gOut, bOut, aOut).endVertex();
-            bb.vertex(mat, (float) p1.x, (float) p1.y, (float) p1.z).color(rOut, gOut, bOut, aOut).endVertex();
-            bb.vertex(mat, cx, cy, cz).color(rIn, gIn, bIn, aIn).endVertex();
-        }
     }
 
     /**
@@ -592,10 +593,9 @@ public final class PortalRitualClient {
 
                     boolean isLeaves = st.getBlock() instanceof LeavesBlock;
                     VoxelShape colShape = st.getCollisionShape(level, mp);
-                    if (!isLeaves && colShape.isEmpty()) continue; // пропускаем мелкую траву/цветы
+                    if (!isLeaves && colShape.isEmpty()) continue;
 
                     AABB box = isLeaves ? new AABB(0, 0, 0, 1, 1, 1) : colShape.bounds();
-                    // Лёгкий органический шум фронта волны, чтобы белизна ползла живым узором, а не циркулем
                     float jitter = (float) (Math.sin(bx * 0.43 + bz * 0.37 + by * 0.29) * 1.15);
                     float dist = Math.max(0.0F, (float) Math.sqrt(
                             (bx + 0.5 - cx) * (bx + 0.5 - cx)
@@ -624,11 +624,11 @@ public final class PortalRitualClient {
         }
     }
 
-    /** Чисто-белая маска вместо ванильного земляного экрана загрузки при смене измерения в пике вспышки. */
+    /** Маска в тон света Элисара вместо ванильного земляного экрана загрузки при смене измерения. */
     public static final class WhiteReceivingScreen extends ReceivingLevelScreen {
         @Override
         public void render(GuiGraphics g, int mx, int my, float pt) {
-            g.fill(0, 0, this.width, this.height, 0xFFFFFDF8);
+            g.fill(0, 0, this.width, this.height, 0xFFF7EFE0);
         }
 
         @Override

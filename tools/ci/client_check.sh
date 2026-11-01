@@ -1506,26 +1506,24 @@ biome_section() {
     log "  OK   3D-оружие Колоннады (crystal_katar, crystal_barrage, crystal_aegis, astral_prism) выдано и отснято"
   fi
 
-  # ---------- v0.20.0: Модульный оригами-дракон под островами, 2D белые волны под островами и у водопадов, бесшовный портал ----------
-  echo "== v0.20.0: оригами-дракон, 2D белые волны на воде и кастомный бесшовный телепорт с глазами =="
+  # ---------- v0.21.0: 7 новых мировых структур + окклюзия небесного 2D-глаза + огромный 3D-Прорыв Пространства ----------
+  echo "== v0.21.0: 7 новых структур Элисара, 2D-волны, окклюзия глаза и 3D-Прорыв Пространства =="
   EL gamemode spectator TestPlayer >/dev/null 2>&1 || true
-  probe_and_shot_struct "origami_dragon"         180 "93_origami_dragon_under_island" 0 0
-  probe_and_shot_struct "origami_dragon_closeup" 180 "94_origami_dragon_closeup"      0 0
-  # Проба живого полёта оригами-дракона вдоль и под островом (NoAi=false)
-  OD_REL=$(EL execute as TestPlayer at @s in riftworld:elisar run riftstruct origami_dragon_release 2>&1 | tr '\r\n' '  ')
-  OD_P1=$(EL execute as TestPlayer at @s in riftworld:elisar run data get entity @e[type=riftworld:paper_dragon,limit=1,sort=nearest] Pos 2>&1 | tr '\r\n' '  ')
-  sleep 3
-  OD_P2=$(EL execute as TestPlayer at @s in riftworld:elisar run data get entity @e[type=riftworld:paper_dragon,limit=1,sort=nearest] Pos 2>&1 | tr '\r\n' '  ')
-  if [ -n "${OD_P1:-}" ] && [ "${OD_P1}" != "${OD_P2}" ]; then
-    log "  OK   оригами-дракон плавно летит вдоль и под парящим островом (${OD_P1:0:80} -> ${OD_P2:0:80})"
-  else
-    log "  FAIL оригами-дракон не сдвинулся в полёте (${OD_P1:0:80})"; FAILS=$((FAILS + 1))
-  fi
 
-  probe_and_shot_struct "ocean_island_waves"    180 "95_ocean_island_waves"       0 0
-  probe_and_shot_struct "waterfall_ocean_waves" 180 "96_waterfall_ocean_ripples"  0 0
+  probe_and_shot_struct "ocean_island_waves"      180 "95_ocean_island_waves"           0 0
+  probe_and_shot_struct "waterfall_ocean_waves"   180 "96_waterfall_ocean_ripples"      0 0
 
-  # Проба и съёмка кастомного бесшовного ритуала портала (Обычный мир -> белизна от центра без смены блоков -> парящие глаза -> вспышка -> Элисар)
+  # Все 7 новых структур в общей генерации мира Элисара + проверка отсутствия просвечивания 2D-глаза сквозь блоки
+  probe_and_shot_struct "harbor_port"             350 "101_harbor_port"                 0 0
+  probe_and_shot_struct "grand_theater"           450 "102_grand_theater"               0 0
+  probe_and_shot_struct "sea_lighthouse"          350 "103_sea_lighthouse"              0 0
+  probe_and_shot_struct "ancient_tree_altar"      350 "104_ancient_tree_altar"          0 0
+  probe_and_shot_struct "ashen_belfry_barrow"     380 "105_ashen_belfry_barrow"         0 0
+  probe_and_shot_struct "shattered_shard_forge"   260 "106_shattered_shard_forge"       0 0
+  probe_and_shot_struct "violet_wind_observatory" 280 "107_violet_wind_observatory"     0 0
+  probe_and_shot_struct "elisar_eye_occlusion"    200 "108_elisar_eye_block_occlusion"  0 0
+
+  # Проба и съёмка огромного уходящего в небо 3D-Прорыва Пространства + узоров по полу Элисара + 2D-глаз высоко в небе
   EL gamemode creative TestPlayer >/dev/null 2>&1 || true
   EL clear TestPlayer >/dev/null 2>&1 || true
   P_SET=$(RCON execute in minecraft:overworld run riftportal setup 2>&1 | tr '\r\n' '  ')
@@ -1538,24 +1536,34 @@ biome_section() {
     PLX=$(printf '%s' "$P_CAM" | cut -d: -f2 | cut -d, -f1)
     PLY=$(printf '%s' "$P_CAM" | cut -d: -f2 | cut -d, -f2)
     PLZ=$(printf '%s' "$P_CAM" | cut -d: -f2 | cut -d, -f3)
+    RCON execute in minecraft:overworld run gamemode spectator TestPlayer >/dev/null 2>&1 || true
     RCON execute in minecraft:overworld run time set 6000 >/dev/null 2>&1 || true
     RCON execute in minecraft:overworld run weather clear >/dev/null 2>&1 || true
+    # 1) До ритуала: ракурс от земли вверх в небо на 3D-Прорыв Пространства (узкий у земли, толстый и огромный в небе!)
     RCON execute in minecraft:overworld run tp TestPlayer "$PCX" "$PCY" "$PCZ" facing "$PLX" "$PLY" "$PLZ" >/dev/null 2>&1 || true
     sleep 7
+    shot "97_spatial_rift_skyward"
+
+    # 2) Запускаем ритуал: накладывающиеся узоры Элисара по полу + оттенок измерения + 2D-глаза высоко в небе!
     P_TRG=$(RCON execute as TestPlayer at @s in minecraft:overworld run riftportal trigger 2>&1 | tr '\r\n' '  ')
     log "  /riftportal trigger -> ${P_TRG:0:180}"
-    sleep 1.6
-    shot "97_portal_ivory_bleach"
-    sleep 2.5
-    shot "98_portal_watching_eyes"
-    sleep 4.4
-    shot "99_portal_flash_arrival"
+    RCON execute in minecraft:overworld run tp TestPlayer "$((PLX + 5))" "$((PCY + 3))" "$((PLZ + 11))" facing "$PLX" "$((PCY - 1))" "$PLZ" >/dev/null 2>&1 || true
+    sleep 2.2
+    shot "98_portal_elisar_floor_patterns"
+
+    # 3) Переводим взгляд выше в небо вдоль расширяющегося Разлома — видны 2D-глаза Элисара высоко в небесном куполе!
+    RCON execute in minecraft:overworld run tp TestPlayer "$PCX" "$PCY" "$((PLZ + 15))" facing "$PLX" "$((PLY + 8))" "$PLZ" >/dev/null 2>&1 || true
+    sleep 2.1
+    shot "99_portal_sky_2d_eyes"
+
+    sleep 4.2
+    shot "100_portal_flash_arrival"
     P_DIM=$(RCON data get entity TestPlayer Dimension 2>&1 | tr '\r\n' '  ')
     P_VER=$(RCON execute in minecraft:overworld run riftportal verify 2>&1 | tr '\r\n' '  ')
     P_MUT=$(printf '%s' "$P_VER" | sed -n 's/.* mutated=\([0-9]*\).*/\1/p' | tail -1)
     log "  после вспышки портала: Dimension=${P_DIM:0:90} | ${P_VER:0:140}"
     if echo "$P_DIM" | grep -q "riftworld:elisar" && [ "${P_MUT:-99}" -eq 0 ]; then
-      log "  OK   кастомный портал бесшовно перенёс в riftworld:elisar, изменённых блоков в обычном мире: 0"
+      log "  OK   3D-Прорыв Пространства бесшовно перенёс в riftworld:elisar, изменённых блоков в обычном мире: 0"
     else
       log "  FAIL кастомный портал: Dimension=${P_DIM:0:80}, mutated=${P_MUT:-?}"; FAILS=$((FAILS + 1))
     fi

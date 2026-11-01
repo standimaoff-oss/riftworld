@@ -81,6 +81,10 @@ public final class FloatingIslands {
                 if (vil != null && vil.island != null) {
                     addIfMatch(vil.island, x, z, range, ocean, onlyHighFloating, seen, out);
                 }
+                LandmarkStructures.GrandTheater gt = LandmarkStructures.theaterAt(sx, sz, 90.0);
+                if (gt != null && gt.island != null) {
+                    addIfMatch(gt.island, x, z, range, ocean, onlyHighFloating, seen, out);
+                }
             }
         }
         return out;

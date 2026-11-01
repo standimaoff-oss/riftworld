@@ -179,24 +179,27 @@ public final class PortalRitual {
         return new int[]{fx, fz};
     }
 
-    /** Позволяет также активировать портал нажатием ПКМ по рамке портала (demon_frame) или руне у арки. */
+    /** Позволяет активировать Разлом нажатием ПКМ по рунным камням рядом или прямо в ствол 3D-Разлома на уровне глаз! */
     @SubscribeEvent
     public static void onRightClickFrame(PlayerInteractEvent.RightClickBlock e) {
         Level level = e.getLevel();
         BlockPos pos = e.getPos();
         BlockState st = level.getBlockState(pos);
-        if (!st.is(TempleBlocks.DEMON_FRAME.get()) && !st.is(TempleBlocks.GOLD_RUNE.get())) return;
         if (level.dimension() == Flight.ELISAR_DIM) return;
+        if (!st.is(TempleBlocks.DEMON_FRAME.get()) && !st.is(TempleBlocks.GOLD_RUNE.get())) {
+            // Если игрок кликнул по земле прямо у подножия 3D-Разлома с кристаллом/даром в руке
+            if (!isOfferingItem(e.getItemStack())) return;
+        }
 
-        // Проверяем, что рядом действительно есть полотно портала demon_gate
-        boolean hasGate = false;
-        for (BlockPos p : BlockPos.betweenClosed(pos.offset(-3, -3, -3), pos.offset(3, 3, 3))) {
+        // Проверяем, что рядом действительно есть якорь Разлома demon_gate
+        BlockPos gateAnchor = null;
+        for (BlockPos p : BlockPos.betweenClosed(pos.offset(-3, -2, -3), pos.offset(3, 3, 3))) {
             if (level.getBlockState(p).is(TempleBlocks.DEMON_GATE.get())) {
-                hasGate = true;
+                gateAnchor = p.immutable();
                 break;
             }
         }
-        if (!hasGate) return;
+        if (gateAnchor == null) return;
 
         if (level.isClientSide) {
             e.setCancellationResult(InteractionResult.SUCCESS);
@@ -206,7 +209,7 @@ public final class PortalRitual {
         if (e.getEntity() instanceof ServerPlayer sp) {
             ItemStack held = sp.getItemInHand(e.getHand());
             boolean offered = isOfferingItem(held);
-            if (start(sp, pos, offered ? "offer" : "press")) {
+            if (start(sp, gateAnchor, offered ? "offer" : "press")) {
                 if (offered && !sp.getAbilities().instabuild) {
                     held.shrink(1);
                 }
@@ -214,6 +217,45 @@ public final class PortalRitual {
             e.setCancellationResult(InteractionResult.CONSUME);
             e.setCanceled(true);
         }
+    }
+
+    /** Активация ПКМ с предметом в воздухе при взгляде на узкий наземный ствол 3D-Прорыва Пространства (y .. y+4.5). */
+    @SubscribeEvent
+    public static void onRightClickItemTowardsRift(PlayerInteractEvent.RightClickItem e) {
+        Level level = e.getLevel();
+        if (level.dimension() == Flight.ELISAR_DIM) return;
+        var player = e.getEntity();
+        BlockPos p0 = player.blockPosition();
+        BlockPos gateAnchor = null;
+        for (BlockPos p : BlockPos.betweenClosed(p0.offset(-5, -3, -5), p0.offset(5, 3, 5))) {
+            if (level.getBlockState(p).is(TempleBlocks.DEMON_GATE.get())) {
+                // Проверяем, что взгляд игрока направлен в сторону вертикальной оси Разлома
+                var eye = player.getEyePosition();
+                var look = player.getLookAngle();
+                double rx = (p.getX() + 0.5) - eye.x;
+                double rz = (p.getZ() + 0.5) - eye.z;
+                double horizDist = Math.hypot(rx, rz);
+                if (horizDist <= 5.5) {
+                    double dot = (rx * look.x + rz * look.z) / Math.max(0.001, Math.hypot(rx, rz) * Math.hypot(look.x, look.z));
+                    if (dot > 0.72) {
+                        gateAnchor = p.immutable();
+                        break;
+                    }
+                }
+            }
+        }
+        if (gateAnchor == null) return;
+        if (!level.isClientSide && player instanceof ServerPlayer sp) {
+            ItemStack held = sp.getItemInHand(e.getHand());
+            boolean offered = isOfferingItem(held);
+            if (start(sp, gateAnchor, offered ? "offer" : "press")) {
+                if (offered && !sp.getAbilities().instabuild) {
+                    held.shrink(1);
+                }
+            }
+        }
+        e.setCancellationResult(InteractionResult.SUCCESS);
+        e.setCanceled(true);
     }
 
     /** Защита игрока от случайного урона во время ритуала перехода. */

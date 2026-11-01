@@ -1,8 +1,11 @@
 package ru.aiforge.riftworld.client;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
+import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.material.FogType;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterDimensionSpecialEffectsEvent;
@@ -10,23 +13,36 @@ import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import ru.aiforge.riftworld.RiftWorld;
+import ru.aiforge.riftworld.world.AshenLands;
+import ru.aiforge.riftworld.world.CityPlan;
 
 /**
- * Elisar atmosphere: bleached white-cream haze, no clouds (the islands float inside the cloud layer).
- * All biome fog colours and distances blend smoothly across biome boundaries without abrupt snaps.
+ * Небо и туман Элисара с универсальной совместимостью со ВСЕМИ шейдерпаками
+ * (Oculus / Iris / OptiFine: IterationT, Complementary, Bliss, Photon, BSL, SEUS и др.):
+ * <ul>
+ *   <li>{@code hasGround = false} убирает тёмный нижний полукупол {@code darkBuffer} под парящими островами,
+ *       который в шейдерпаках давал резкий разлом неба у горизонта;</li>
+ *   <li>Стандартный небесный конвейер {@code SkyType.NORMAL} остаётся штатным (не перехватывает {@code renderSky}),
+ *       поэтому {@code gbuffers_skybasic} в IterationT и других deferred-шейдерах всегда корректно заполняет
+ *       G-буфер неба без «белых кусков»!</li>
+ *   <li>Плавное пространственно-временное сглаживание цветов тумана без ступенек между биомами.</li>
+ * </ul>
  */
 public final class ElisarSky extends DimensionSpecialEffects {
     public static final ResourceLocation ID = new ResourceLocation(RiftWorld.MODID, "elisar");
     private static final Vec3 CREAM = new Vec3(0.93, 0.915, 0.875);
 
     public ElisarSky() {
-        super(Float.NaN, true, SkyType.NORMAL, false, false);
+        super(Float.NaN, false, SkyType.NORMAL, false, false);
     }
 
     @Override
     public Vec3 getBrightnessDependentFogColor(Vec3 fog, float brightness) {
         float k = brightness * 0.94F + 0.06F;
-        return new Vec3(Mth.lerp(0.30, fog.x, CREAM.x) * k, Mth.lerp(0.30, fog.y, CREAM.y) * k, Mth.lerp(0.30, fog.z, CREAM.z) * k);
+        return new Vec3(
+                Mth.lerp(0.30, fog.x, CREAM.x) * k,
+                Mth.lerp(0.30, fog.y, CREAM.y) * k,
+                Mth.lerp(0.30, fog.z, CREAM.z) * k);
     }
 
     @Override
@@ -56,14 +72,19 @@ public final class ElisarSky extends DimensionSpecialEffects {
         private static float smoothR = -1.0F, smoothG = -1.0F, smoothB = -1.0F;
 
         private static boolean inElisar() {
-            var mc = net.minecraft.client.Minecraft.getInstance();
+            Minecraft mc = Minecraft.getInstance();
             return mc.level != null && mc.level.dimension().location().equals(ID);
         }
 
         @SubscribeEvent
         public static void fog(ViewportEvent.RenderFog e) {
-            if (!inElisar() || e.getMode() != net.minecraft.client.renderer.FogRenderer.FogMode.FOG_TERRAIN) return;
-            if (e.getCamera().getFluidInCamera() != net.minecraft.world.level.material.FogType.NONE) return;
+            if (!inElisar() || e.getMode() != FogRenderer.FogMode.FOG_TERRAIN) return;
+            if (e.getCamera().getFluidInCamera() != FogType.NONE) return;
+            if (ShaderCompat.isShaderPackActive()) {
+                // При активном шейдерпаке не сжимаем ванильный линейный туман у горизонта,
+                // чтобы объёмная атмосфера шейдера (IterationT / Bliss / Complementary) работала без швов.
+                return;
+            }
             float far = e.getFarPlaneDistance();
             Vec3 pos = e.getCamera().getPosition();
             float[] w = GardenSky.smoothWeights(pos);
@@ -74,7 +95,6 @@ public final class ElisarSky extends DimensionSpecialEffects {
             float nearDist = far * Mth.lerp(g, 0.45F, 0.55F) * Mth.lerp(m, 1.0F, 0.42F);
             float farDist = far * Mth.lerp(g, 1.05F, 1.00F) * Mth.lerp(m, 1.0F, 0.62F);
 
-            // Плавная интерполяция дальностей тумана для каждого биома без резких скачков
             if (wg > 0.001F) {
                 nearDist = Mth.lerp(wg, nearDist, far * 0.60F);
                 farDist = Mth.lerp(wg, farDist, far * 1.08F);
@@ -96,20 +116,18 @@ public final class ElisarSky extends DimensionSpecialEffects {
             e.setCanceled(true);
         }
 
-        /** 1 on the rolling crest, fading out ~26 blocks above the sea; 0 underwater. */
         public static float mist(Vec3 cam) {
-            double sea = ru.aiforge.riftworld.world.CityPlan.get().ocean + 1;
+            double sea = CityPlan.get().ocean + 1;
             double dy = cam.y - sea;
             if (dy < -2) return 0.0F;
             return (float) Mth.clamp(1.0 - dy / 26.0, 0.0, 1.0);
         }
 
-        /** 0 in the white Elisar haze, 1 over the castle's scorched island (ash-brown, gloomy air). */
         public static float gloom(Vec3 cam) {
-            ru.aiforge.riftworld.world.AshenLands.Region rg = ru.aiforge.riftworld.world.AshenLands.regionAt(cam.x, cam.z);
+            AshenLands.Region rg = AshenLands.regionAt(cam.x, cam.z);
             double d = rg != null ? Math.hypot(cam.x - rg.cx, cam.z - rg.cz) : 1e9;
             double t = Mth.clamp((170 - d) / 80.0, 0, 1);
-            t = Math.max(t, ru.aiforge.riftworld.world.AshenLands.weight(cam.x, cam.z) * 0.85);
+            t = Math.max(t, AshenLands.weight(cam.x, cam.z) * 0.85);
             return (float) (t * t * (3 - 2 * t));
         }
 
@@ -151,8 +169,8 @@ public final class ElisarSky extends DimensionSpecialEffects {
             if (wc > 0.001F) {
                 float kc = 0.64F * wc;
                 r = (float) Mth.lerp(kc, r, CRYSTAL_HAZE.x);
-                gr = (float) Mth.lerp(kc, r, CRYSTAL_HAZE.y);
-                bl = (float) Mth.lerp(kc, r, CRYSTAL_HAZE.z);
+                gr = (float) Mth.lerp(kc, gr, CRYSTAL_HAZE.y);
+                bl = (float) Mth.lerp(kc, bl, CRYSTAL_HAZE.z);
             }
             float g = gloom(pos);
             if (g > 0.001F) {
@@ -161,7 +179,6 @@ public final class ElisarSky extends DimensionSpecialEffects {
                 bl = (float) Mth.lerp(g, bl, ASH.z);
             }
 
-            // Дополнительное временное сглаживание итогового цвета тумана (убирает ступеньки ванильного biomeBlend)
             long now = System.nanoTime();
             boolean teleported = lastFogCam == null || smoothR < 0.0F || pos.distanceToSqr(lastFogCam) > 64.0;
             if (teleported) {
