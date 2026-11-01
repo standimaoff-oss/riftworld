@@ -98,9 +98,9 @@ public final class CrystalGeoRenderers {
                 r0, g0, b0, a0, r1, g1, b1, a1);
     }
 
-    // ==================== 1. БОСС КОЛОННАДЫ (БЕЗ ТЕНИ ЧЕЛОВЕКА!) ====================
+    // ==================== 1. БОСС КОЛОННАДЫ (БЕЗ ТЕНИ ЧЕЛОВЕКА, УВЕЛИЧЕН ДО 2.45x!) ====================
     public static final class Boss extends EntityRenderer<RiftObeliskBoss> {
-        public static final float BOSS_SCALE = 1.75F;
+        public static final float BOSS_SCALE = 2.45F;
         private Pose pose;
 
         public Boss(EntityRendererProvider.Context ctx) {
@@ -110,7 +110,7 @@ public final class CrystalGeoRenderers {
 
         @Override
         public boolean shouldRender(RiftObeliskBoss e, Frustum frustum, double cx, double cy, double cz) {
-            AABB box = e.getBoundingBox().inflate(6.5, 5.5, 6.5);
+            AABB box = e.getBoundingBox().inflate(9.5, 8.8, 9.5);
             return frustum.isVisible(box);
         }
 
@@ -180,18 +180,18 @@ public final class CrystalGeoRenderers {
             boolean telegraph = fbt > 48;
             float prog = telegraph ? 0.0F : ((48.0F - (fbt - pt)) / 48.0F);
             float baseDeg = e.frostBeamStartYaw() + prog * 115.0F;
-            float len = 17.5F;
-            float width = telegraph ? 0.10F : 0.34F;
+            float len = 22.0F;
+            float width = telegraph ? 0.13F : 0.42F;
             int alpha = telegraph ? 95 : 215;
 
             for (int arm = 0; arm < 4; ++arm) {
                 float rad = (baseDeg + arm * 90.0F) * Mth.DEG_TO_RAD;
                 float ex = Mth.cos(rad) * len;
                 float ez = Mth.sin(rad) * len;
-                energySegment(vc, m, 0.0F, 0.85F, 0.0F, ex, 0.85F, ez,
+                energySegment(vc, m, 0.0F, 1.15F, 0.0F, ex, 1.15F, ez,
                         width, width * 0.55F,
-                        205, 248, 255, alpha,
-                        95, 215, 255, alpha / 2);
+                        220, 252, 255, alpha,
+                        115, 225, 255, alpha / 2);
             }
             ps.popPose();
         }
@@ -202,8 +202,8 @@ public final class CrystalGeoRenderers {
             float pulse = 0.82F + 0.18F * Mth.sin(age * 0.13F);
             int boost = enraged ? 22 : 0;
 
-            // 1. Вертикальный столб призыва от печати Колоннады (y = -0.84 - bob) до нижнего кристалла обелиска (y = +0.25)
-            float sealY = -0.82F - bob;
+            // 1. Вертикальный столб призыва от печати Колоннады до нижнего кристалла обелиска
+            float sealY = -1.24F - bob;
             energySegment(vc, m, 0.0F, sealY, 0.0F, 0.0F, 0.28F, 0.0F,
                     0.34F * pulse, 0.16F * pulse,
                     40, 235, 255, Math.min(255, 135 + boost),
@@ -434,10 +434,14 @@ public final class CrystalGeoRenderers {
         }
     }
 
-    private static final ResourceLocation BLUE_ICE_TEX = new ResourceLocation("minecraft", "textures/block/blue_ice.png");
-    private static final ResourceLocation PACKED_ICE_TEX = new ResourceLocation("minecraft", "textures/block/packed_ice.png");
+    private static final ResourceLocation GLACIAL_CRYSTAL_BRIGHT_TEX =
+            new ResourceLocation("riftworld", "textures/block/glacial_crystal_bright.png");
+    private static final ResourceLocation GLACIAL_CRYSTAL_PRISM_TEX =
+            new ResourceLocation("riftworld", "textures/block/glacial_crystal_prism.png");
+    private static final ResourceLocation ELISAR_CRYSTAL_BRIGHT_TEX =
+            new ResourceLocation("riftworld", "textures/block/crystal_block_bright.png");
 
-    // ==================== 5. ЛЕДЯНОЙ СТОЛБ ИЗ-ПОД ЗЕМЛИ (КАСТОМНЫЕ АТАКИ БОССА #1 И #3) ====================
+    // ==================== 5. ВЫТЯНУТЫЙ СВЕТЛЫЙ КРИСТАЛЬНЫЙ СТОЛБ ИЗ-ПОД ЗЕМЛИ (АТАКИ БОССА #1 И #3) ====================
     public static final class IcePillar extends EntityRenderer<IcePillarEntity> {
         public IcePillar(EntityRendererProvider.Context ctx) {
             super(ctx);
@@ -446,7 +450,7 @@ public final class CrystalGeoRenderers {
 
         @Override
         public boolean shouldRender(IcePillarEntity e, Frustum frustum, double cx, double cy, double cz) {
-            return e.distanceToSqr(cx, cy, cz) < 160.0 * 160.0;
+            return e.distanceToSqr(cx, cy, cz) < 190.0 * 190.0;
         }
 
         @Override
@@ -454,65 +458,92 @@ public final class CrystalGeoRenderers {
             float t = e.pillarAge() + pt;
             float h = e.computeHeight(t);
             boolean wave = e.isWaveSpike();
-            float baseW = wave ? 0.56F : 0.84F;
-            int bright = Math.max(light, LightTexture.pack(13, 15));
+            float baseW = wave ? 0.40F : 0.56F;
+            int bright = LightTexture.FULL_BRIGHT;
 
             ps.pushPose();
-            // 1) Морозное кольцо разлома на земле вокруг основания столба
+            // 1) Яркое сияющее кристальное кольцо разлома на земле вокруг основания столба
             float ringFade = Mth.clamp(1.0F - Math.max(0.0F, t - (e.totalLifetime() - 14.0F)) / 14.0F, 0.0F, 1.0F);
             if (ringFade > 0.03F) {
                 VertexConsumer lvc = buf.getBuffer(RenderType.lightning());
                 Matrix4f lm = ps.last().pose();
                 int segs = 12;
-                float rIn = baseW * 0.72F, rOut = baseW * 1.48F;
-                int ra = (int) (145 * ringFade);
+                float rIn = baseW * 0.72F, rOut = baseW * 1.95F;
+                int ra = (int) (185 * ringFade);
                 for (int i = 0; i < segs; ++i) {
                     float a0 = (Mth.TWO_PI * i) / segs;
                     float a1 = (Mth.TWO_PI * (i + 1)) / segs;
-                    lvc.vertex(lm, Mth.cos(a0) * rIn, 0.035F, Mth.sin(a0) * rIn).color(210, 248, 255, ra).endVertex();
-                    lvc.vertex(lm, Mth.cos(a1) * rIn, 0.035F, Mth.sin(a1) * rIn).color(210, 248, 255, ra).endVertex();
-                    lvc.vertex(lm, Mth.cos(a1) * rOut, 0.035F, Mth.sin(a1) * rOut).color(110, 210, 250, 0).endVertex();
-                    lvc.vertex(lm, Mth.cos(a0) * rOut, 0.035F, Mth.sin(a0) * rOut).color(110, 210, 250, 0).endVertex();
+                    lvc.vertex(lm, Mth.cos(a0) * rIn, 0.04F, Mth.sin(a0) * rIn).color(242, 254, 255, ra).endVertex();
+                    lvc.vertex(lm, Mth.cos(a1) * rIn, 0.04F, Mth.sin(a1) * rIn).color(242, 254, 255, ra).endVertex();
+                    lvc.vertex(lm, Mth.cos(a1) * rOut, 0.04F, Mth.sin(a1) * rOut).color(165, 240, 255, 0).endVertex();
+                    lvc.vertex(lm, Mth.cos(a0) * rOut, 0.04F, Mth.sin(a0) * rOut).color(165, 240, 255, 0).endVertex();
                 }
             }
 
             if (h > 0.03F) {
                 ps.mulPose(Axis.YP.rotationDegrees(-e.getYRot()));
-                // 2) Ступенчатый гранёно-блочный ледяной столб (плавно выходит снизу вверх, поэтому верхняя площадка всегда ровно на y = h!)
-                VertexConsumer blueVc = buf.getBuffer(RenderType.entitySolid(BLUE_ICE_TEX));
-                VertexConsumer packVc = buf.getBuffer(RenderType.entitySolid(PACKED_ICE_TEX));
 
-                // Центральный монолитный ствол (ровная площадка на вершине y = h, чтобы игрок устойчиво стоял сверху!)
-                drawIceBox(ps, blueVc, -baseW, 0.0F, -baseW, baseW, h, baseW, 242, 250, 255, bright);
+                // 2) Стройный ВЫТЯНУТЫЙ восьмигранный ствол из светлых кристальных блоков
+                // (верхняя грань ровно на y = h, чтобы стоящий игрок плавно поднимался на вершину кристалла!)
+                VertexConsumer brightVc = buf.getBuffer(RenderType.entitySolid(GLACIAL_CRYSTAL_BRIGHT_TEX));
+                drawIceBox(ps, brightVc, -baseW, 0.0F, -baseW, baseW, h, baseW, 252, 255, 255, bright);
 
-                // Острые боковые квадратные ледяные контрфорсы и зубцы вокруг ствола (чуть ниже вершины h, чтобы не мешать стоять сверху)
-                float buttressH1 = Math.max(0.0F, h - (wave ? 0.25F : 0.65F));
-                float buttressH2 = Math.max(0.0F, h - (wave ? 0.55F : 1.35F));
-                if (buttressH1 > 0.08F) {
+                // Повёрнутая на 45° призматическая сердцевина для острых кристальных граней по всей высоте!
+                float octH = Math.max(0.02F, h - 0.14F);
+                ps.pushPose();
+                ps.mulPose(Axis.YP.rotationDegrees(45.0F));
+                float octW = baseW * 0.92F;
+                drawIceBox(ps, brightVc, -octW, 0.0F, -octW, octW, octH, octW, 242, 252, 255, bright);
+                ps.popPose();
+
+                // 3) Вытянутые ступенчатые боковые кристальные иглы-друзы из более светлых кристальных блоков!
+                VertexConsumer prismVc = buf.getBuffer(RenderType.entitySolid(GLACIAL_CRYSTAL_PRISM_TEX));
+                float n1 = Math.max(0.0F, h * 0.84F - (wave ? 0.18F : 0.35F));
+                float n2 = Math.max(0.0F, h * 0.68F - (wave ? 0.25F : 0.45F));
+                float n3 = Math.max(0.0F, h * 0.46F - (wave ? 0.30F : 0.55F));
+
+                if (n1 > 0.10F) {
+                    float sw = baseW * 0.38F;
+                    drawIceBox(ps, prismVc, -baseW * 1.42F, 0.0F, -sw, -baseW * 0.72F, n1, sw, 246, 254, 255, bright);
+                    drawIceBox(ps, prismVc, baseW * 0.72F, 0.0F, -sw, baseW * 1.38F, n1 * 0.91F, sw, 246, 254, 255, bright);
+                    // Острые светлые кристальные вершинки боковых игл
+                    float tw = sw * 0.56F;
+                    drawIceBox(ps, brightVc, -baseW * 1.22F, n1, -tw, -baseW * 0.84F, Math.min(h - 0.08F, n1 + 0.62F), tw, 255, 255, 255, bright);
+                    drawIceBox(ps, brightVc, baseW * 0.84F, n1 * 0.91F, -tw, baseW * 1.20F, Math.min(h - 0.12F, n1 * 0.91F + 0.56F), tw, 255, 255, 255, bright);
+                }
+                if (n2 > 0.10F) {
+                    float sw = baseW * 0.36F;
+                    drawIceBox(ps, prismVc, -sw, 0.0F, -baseW * 1.44F, sw, n2, -baseW * 0.72F, 238, 251, 255, bright);
+                    drawIceBox(ps, prismVc, -sw, 0.0F, baseW * 0.72F, sw, n2 * 0.87F, baseW * 1.40F, 238, 251, 255, bright);
+                    float tw = sw * 0.55F;
+                    drawIceBox(ps, brightVc, -tw, n2, -baseW * 1.24F, tw, Math.min(h - 0.14F, n2 + 0.54F), -baseW * 0.84F, 255, 255, 255, bright);
+                }
+                if (n3 > 0.10F) {
+                    VertexConsumer coreVc = buf.getBuffer(RenderType.entitySolid(ELISAR_CRYSTAL_BRIGHT_TEX));
                     ps.pushPose();
                     ps.mulPose(Axis.YP.rotationDegrees(45.0F));
-                    float bw = baseW * 0.86F;
-                    drawIceBox(ps, packVc, -bw, 0.0F, -bw, bw, buttressH1, bw, 226, 242, 255, bright);
+                    float dw = baseW * 0.30F;
+                    drawIceBox(ps, coreVc, -baseW * 1.52F, 0.0F, -dw, -baseW * 0.85F, n3, dw, 240, 254, 255, bright);
+                    drawIceBox(ps, coreVc, baseW * 0.85F, 0.0F, -dw, baseW * 1.52F, n3 * 0.90F, dw, 240, 254, 255, bright);
                     ps.popPose();
                 }
-                if (buttressH2 > 0.08F) {
-                    float sw = baseW * 0.44F;
-                    drawIceBox(ps, packVc, -baseW * 1.24F, 0.0F, -sw, -baseW * 0.55F, buttressH2, sw, 232, 246, 255, bright);
-                    drawIceBox(ps, packVc, baseW * 0.55F, 0.0F, -sw, baseW * 1.24F, buttressH2 * 0.88F, sw, 232, 246, 255, bright);
-                    drawIceBox(ps, packVc, -sw, 0.0F, -baseW * 1.24F, sw, buttressH2 * 0.92F, -baseW * 0.55F, 220, 238, 255, bright);
-                    drawIceBox(ps, packVc, -sw, 0.0F, baseW * 0.55F, sw, buttressH2 * 0.82F, baseW * 1.24F, 220, 238, 255, bright);
-                }
+
+                // Внешнее лучистое сияние граней кристального столба
+                VertexConsumer lvc = buf.getBuffer(RenderType.lightning());
+                Matrix4f lm = ps.last().pose();
+                energySegment(lvc, lm, 0.0F, 0.05F, 0.0F, 0.0F, h + 0.22F, 0.0F,
+                        baseW * 0.32F, 0.05F, 235, 253, 255, 110, 255, 255, 255, 0);
             }
             ps.popPose();
         }
 
         @Override
         public ResourceLocation getTextureLocation(IcePillarEntity e) {
-            return BLUE_ICE_TEX;
+            return GLACIAL_CRYSTAL_BRIGHT_TEX;
         }
     }
 
-    // ==================== 6. ОГРОМНАЯ ОСТРАЯ КВАДРАТНАЯ ЛЕДЯНАЯ ГЛЫБА + МЕТКА НА ЗЕМЛЕ (АТАКА #2) ====================
+    // ==================== 6. ВЫТЯНУТАЯ СВЕТЛАЯ КРИСТАЛЬНАЯ ГЛЫБА-КОПЬЁ В НЕБЕ + МЕТКА НА ЗЕМЛЕ (АТАКА #2) ====================
     public static final class IceHailBoulder extends EntityRenderer<IceHailBoulderEntity> {
         public IceHailBoulder(EntityRendererProvider.Context ctx) {
             super(ctx);
@@ -521,7 +552,7 @@ public final class CrystalGeoRenderers {
 
         @Override
         public boolean shouldRender(IceHailBoulderEntity e, Frustum frustum, double cx, double cy, double cz) {
-            return e.distanceToSqr(cx, cy, cz) < 190.0 * 190.0;
+            return e.distanceToSqr(cx, cy, cz) < 220.0 * 220.0;
         }
 
         @Override
@@ -535,10 +566,10 @@ public final class CrystalGeoRenderers {
             boolean impacted = e.hasImpacted();
             int bright = LightTexture.FULL_BRIGHT;
 
-            // 1) СНАЧАЛА И ДО ПРИЛЁТА РИСУЕМ НА ЗЕМЛЕ ЯРКУЮ ЛЕДЯНУЮ МЕТКУ ТОЧКИ УДАРА (target - curPos)!
+            // 1) СНАЧАЛА И ДО ПРИЛЁТА РИСУЕМ НА ЗЕМЛЕ ЯРКУЮ КРИСТАЛЬНУЮ МЕТКУ ТОЧКИ УДАРА (target - curPos)!
             float markFade = impacted
                     ? Mth.clamp(1.0F - (age - e.impactAge()) / 10.0F, 0.0F, 1.0F)
-                    : Mth.clamp(age / 8.0F, 0.15F, 1.0F);
+                    : Mth.clamp(age / 8.0F, 0.18F, 1.0F);
             if (markFade > 0.02F) {
                 ps.pushPose();
                 ps.translate(target.x - curPos.x, (target.y + 0.045) - curPos.y, target.z - curPos.z);
@@ -546,43 +577,42 @@ public final class CrystalGeoRenderers {
                 Matrix4f m = ps.last().pose();
 
                 float pulse = 0.90F + 0.10F * Mth.sin(age * 0.32F);
-                float outerR = 2.45F * pulse;
-                float innerR = 1.95F * pulse;
-                int aRing = (int) (215 * markFade);
+                float outerR = 2.65F * pulse;
+                float innerR = 2.05F * pulse;
+                int aRing = (int) (225 * markFade);
 
-                // Квадратно-ромбовидный ледяной прицел + внутреннее сходящееся кольцо до момента броска
                 int segs = 16;
                 for (int i = 0; i < segs; ++i) {
                     float a0 = (Mth.TWO_PI * i) / segs + age * 0.025F;
                     float a1 = (Mth.TWO_PI * (i + 1)) / segs + age * 0.025F;
-                    lvc.vertex(m, Mth.cos(a0) * innerR, 0.0F, Mth.sin(a0) * innerR).color(220, 250, 255, aRing).endVertex();
-                    lvc.vertex(m, Mth.cos(a1) * innerR, 0.0F, Mth.sin(a1) * innerR).color(220, 250, 255, aRing).endVertex();
-                    lvc.vertex(m, Mth.cos(a1) * outerR, 0.0F, Mth.sin(a1) * outerR).color(85, 205, 255, 40).endVertex();
-                    lvc.vertex(m, Mth.cos(a0) * outerR, 0.0F, Mth.sin(a0) * outerR).color(85, 205, 255, 40).endVertex();
+                    lvc.vertex(m, Mth.cos(a0) * innerR, 0.0F, Mth.sin(a0) * innerR).color(240, 253, 255, aRing).endVertex();
+                    lvc.vertex(m, Mth.cos(a1) * innerR, 0.0F, Mth.sin(a1) * innerR).color(240, 253, 255, aRing).endVertex();
+                    lvc.vertex(m, Mth.cos(a1) * outerR, 0.0F, Mth.sin(a1) * outerR).color(140, 232, 255, 45).endVertex();
+                    lvc.vertex(m, Mth.cos(a0) * outerR, 0.0F, Mth.sin(a0) * outerR).color(140, 232, 255, 45).endVertex();
                 }
-                // Острое перекрестие и квадратная рамка прицела на земле
-                float cr = 2.2F;
+                // Острое кристальное перекрестие на земле
+                float cr = 2.35F;
                 float cw = 0.14F;
-                lvc.vertex(m, -cr, 0.01F, -cw).color(245, 253, 255, aRing).endVertex();
-                lvc.vertex(m, -cr, 0.01F, cw).color(245, 253, 255, aRing).endVertex();
-                lvc.vertex(m, cr, 0.01F, cw).color(245, 253, 255, aRing).endVertex();
-                lvc.vertex(m, cr, 0.01F, -cw).color(245, 253, 255, aRing).endVertex();
+                lvc.vertex(m, -cr, 0.01F, -cw).color(250, 255, 255, aRing).endVertex();
+                lvc.vertex(m, -cr, 0.01F, cw).color(250, 255, 255, aRing).endVertex();
+                lvc.vertex(m, cr, 0.01F, cw).color(250, 255, 255, aRing).endVertex();
+                lvc.vertex(m, cr, 0.01F, -cw).color(250, 255, 255, aRing).endVertex();
 
-                lvc.vertex(m, -cw, 0.01F, -cr).color(245, 253, 255, aRing).endVertex();
-                lvc.vertex(m, cw, 0.01F, -cr).color(245, 253, 255, aRing).endVertex();
-                lvc.vertex(m, cw, 0.01F, cr).color(245, 253, 255, aRing).endVertex();
-                lvc.vertex(m, -cw, 0.01F, cr).color(245, 253, 255, aRing).endVertex();
+                lvc.vertex(m, -cw, 0.01F, -cr).color(250, 255, 255, aRing).endVertex();
+                lvc.vertex(m, cw, 0.01F, -cr).color(250, 255, 255, aRing).endVertex();
+                lvc.vertex(m, cw, 0.01F, cr).color(250, 255, 255, aRing).endVertex();
+                lvc.vertex(m, -cw, 0.01F, cr).color(250, 255, 255, aRing).endVertex();
 
-                // Тонкий вертикальный луч-маячок над точкой падения, чтобы игрок мгновенно видел все 5 точек!
-                float beaconH = impacted ? 0.6F : 3.2F;
-                lvc.vertex(m, -0.09F, 0.0F, 0.0F).color(230, 252, 255, aRing).endVertex();
-                lvc.vertex(m, 0.09F, 0.0F, 0.0F).color(230, 252, 255, aRing).endVertex();
-                lvc.vertex(m, 0.04F, beaconH, 0.0F).color(120, 215, 255, 0).endVertex();
-                lvc.vertex(m, -0.04F, beaconH, 0.0F).color(120, 215, 255, 0).endVertex();
+                // Вертикальный кристальный луч-маячок над точкой падения
+                float beaconH = impacted ? 0.7F : 3.8F;
+                lvc.vertex(m, -0.10F, 0.0F, 0.0F).color(242, 254, 255, aRing).endVertex();
+                lvc.vertex(m, 0.10F, 0.0F, 0.0F).color(242, 254, 255, aRing).endVertex();
+                lvc.vertex(m, 0.04F, beaconH, 0.0F).color(160, 235, 255, 0).endVertex();
+                lvc.vertex(m, -0.04F, beaconH, 0.0F).color(160, 235, 255, 0).endVertex();
                 ps.popPose();
             }
 
-            // 2) САМА ОГРОМНАЯ ОСТРАЯ КВАДРАТНАЯ ЛЕДЯНАЯ ГЛЫБА В НЕБЕ / В ПОЛЁТЕ!
+            // 2) ВЫТЯНУТАЯ (~4.9 м длиной!) СВЕТЛАЯ КРИСТАЛЬНАЯ ГЛЫБА-МОНОЛИТ, НАЦЕЛЕННАЯ ОСТРИЕМ В МЕТКУ!
             float spawnScale = Mth.clamp(age / 10.0F, 0.05F, 1.0F);
             if (impacted) {
                 spawnScale *= Mth.clamp(1.0F - (age - e.impactAge()) / 8.0F, 0.0F, 1.0F);
@@ -591,39 +621,62 @@ public final class CrystalGeoRenderers {
 
             ps.pushPose();
             ps.scale(spawnScale, spawnScale, spawnScale);
-            float spinSpeed = (age >= e.launchTick()) ? 14.0F : 3.2F;
-            ps.mulPose(Axis.YP.rotationDegrees(e.getYRot() + age * spinSpeed));
-            ps.mulPose(Axis.XP.rotationDegrees(28.0F + age * spinSpeed * 0.65F));
-            ps.mulPose(Axis.ZP.rotationDegrees(19.0F));
 
-            VertexConsumer blueVc = buf.getBuffer(RenderType.entitySolid(BLUE_ICE_TEX));
-            VertexConsumer packVc = buf.getBuffer(RenderType.entitySolid(PACKED_ICE_TEX));
+            // Ориентируем длинную ось кристальной глыбы (-Y остриём вниз/вперёд) точно по линии полёта к target!
+            Vec3 toTgt = target.subtract(curPos);
+            double horiz = Math.hypot(toTgt.x, toTgt.z);
+            if (toTgt.lengthSqr() > 0.04) {
+                float aimYaw = (float) (Math.atan2(toTgt.x, toTgt.z) * Mth.RAD_TO_DEG);
+                float tiltFromDown = (float) (Math.atan2(horiz, Math.max(0.15, -toTgt.y)) * Mth.RAD_TO_DEG);
+                ps.mulPose(Axis.YP.rotationDegrees(aimYaw));
+                ps.mulPose(Axis.XP.rotationDegrees(-tiltFromDown));
+            }
+            // Плавное осевое вращение вокруг собственной длинной оси кристалла (быстрее в полёте!)
+            float axialSpin = (age >= e.launchTick()) ? (age * 16.0F) : (age * 3.6F);
+            ps.mulPose(Axis.YP.rotationDegrees(e.getYRot() + axialSpin));
 
-            // Крупный квадратный центральный блок льда (1.7 x 1.7 x 1.7 м)
-            drawIceBox(ps, blueVc, -0.85F, -0.85F, -0.85F, 0.85F, 0.85F, 0.85F, 240, 250, 255, bright);
+            // 2А) Главный ступенчатый вытянутый кристальный ствол (длина 4.9 м от -2.45 до +2.45, ширина всего 0.48 м!)
+            VertexConsumer brightVc = buf.getBuffer(RenderType.entitySolid(GLACIAL_CRYSTAL_BRIGHT_TEX));
+            // Центральная вытянутая призма
+            drawIceBox(ps, brightVc, -0.46F, -1.15F, -0.46F, 0.46F, 1.15F, 0.46F, 252, 255, 255, bright);
+            // Нижнее сужающееся копьё-остриё (направлено в точку удара!)
+            drawIceBox(ps, brightVc, -0.34F, -1.85F, -0.34F, 0.34F, -1.15F, 0.34F, 254, 255, 255, bright);
+            drawIceBox(ps, brightVc, -0.18F, -2.48F, -0.18F, 0.18F, -1.85F, 0.18F, 255, 255, 255, bright);
+            // Верхнее вытянутое хвостовое завершение кристалла
+            drawIceBox(ps, brightVc, -0.35F, 1.15F, -0.35F, 0.35F, 1.82F, 0.35F, 248, 254, 255, bright);
+            drawIceBox(ps, brightVc, -0.19F, 1.82F, -0.19F, 0.19F, 2.42F, 0.19F, 255, 255, 255, bright);
 
-            // Второй врезанный под 45° угловатый квадратный блок для острых рёбер!
+            // 2Б) Врезанная под 45° восьмигранная кристальная рубашка + боковые вытянутые осколки-перья!
+            VertexConsumer prismVc = buf.getBuffer(RenderType.entitySolid(GLACIAL_CRYSTAL_PRISM_TEX));
             ps.pushPose();
             ps.mulPose(Axis.YP.rotationDegrees(45.0F));
-            ps.mulPose(Axis.XP.rotationDegrees(45.0F));
-            drawIceBox(ps, packVc, -0.76F, -0.76F, -0.76F, 0.76F, 0.76F, 0.76F, 224, 242, 255, bright);
+            drawIceBox(ps, prismVc, -0.42F, -1.42F, -0.42F, 0.42F, 1.38F, 0.42F, 240, 252, 255, bright);
+            drawIceBox(ps, prismVc, -0.24F, -2.12F, -0.24F, 0.24F, -1.42F, 0.24F, 248, 254, 255, bright);
             ps.popPose();
 
-            // 3 длинных пересекающихся квадратных ледяных бруска-шипа по осям X, Y, Z ("острых и квадратненьких"!)
-            drawIceBox(ps, blueVc, -1.48F, -0.34F, -0.34F, 1.48F, 0.34F, 0.34F, 248, 253, 255, bright);
-            drawIceBox(ps, packVc, -0.34F, -1.56F, -0.34F, 0.34F, 1.56F, 0.34F, 248, 253, 255, bright);
-            drawIceBox(ps, blueVc, -0.34F, -0.34F, -1.48F, 0.34F, 0.34F, 1.48F, 232, 246, 255, bright);
-            // Ещё более тонкие острые квадратные кончики шипов!
-            drawIceBox(ps, packVc, -1.86F, -0.16F, -0.16F, 1.86F, 0.16F, 0.16F, 255, 255, 255, bright);
-            drawIceBox(ps, blueVc, -0.16F, -1.95F, -0.16F, 0.16F, 1.95F, 0.16F, 255, 255, 255, bright);
-            drawIceBox(ps, packVc, -0.16F, -0.16F, -1.86F, 0.16F, 0.16F, 1.86F, 255, 255, 255, bright);
+            // 4 длинных прижатых к стволу боковых кристальных лезвия (подчёркивают вытянутую форму кристальной друзы!)
+            drawIceBox(ps, prismVc, -0.74F, -0.82F, -0.19F, -0.42F, 1.46F, 0.19F, 244, 253, 255, bright);
+            drawIceBox(ps, prismVc, 0.42F, -0.96F, -0.19F, 0.74F, 1.32F, 0.19F, 244, 253, 255, bright);
+            drawIceBox(ps, prismVc, -0.19F, -0.90F, -0.74F, 0.19F, 1.38F, -0.42F, 238, 250, 255, bright);
+            drawIceBox(ps, prismVc, -0.19F, -0.76F, 0.42F, 0.19F, 1.52F, 0.74F, 238, 250, 255, bright);
+
+            // Тонкие светящиеся кристальные кончики боковых перьев
+            VertexConsumer coreVc = buf.getBuffer(RenderType.entitySolid(ELISAR_CRYSTAL_BRIGHT_TEX));
+            drawIceBox(ps, coreVc, -0.66F, 1.46F, -0.11F, -0.46F, 2.02F, 0.11F, 255, 255, 255, bright);
+            drawIceBox(ps, coreVc, 0.46F, 1.32F, -0.11F, 0.66F, 1.92F, 0.11F, 255, 255, 255, bright);
+
+            // Ослепительное призматическое сияние вдоль оси кристального копья
+            VertexConsumer lvc = buf.getBuffer(RenderType.lightning());
+            Matrix4f lm = ps.last().pose();
+            energySegment(lvc, lm, 0.0F, -2.65F, 0.0F, 0.0F, 2.75F, 0.0F,
+                    0.22F, 0.14F, 255, 255, 255, 135, 185, 245, 255, 55);
 
             ps.popPose();
         }
 
         @Override
         public ResourceLocation getTextureLocation(IceHailBoulderEntity e) {
-            return BLUE_ICE_TEX;
+            return GLACIAL_CRYSTAL_BRIGHT_TEX;
         }
     }
 

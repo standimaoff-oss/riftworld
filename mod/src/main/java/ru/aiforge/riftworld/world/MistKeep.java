@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Сетка 720, ~3 из 10 секторов, детерминировано; дикие острова держатся подальше.
  */
 public final class MistKeep {
-    public static final int SUPER = 720;
+    public static final int SUPER = 980;
     private static final long FIXED = 0x5F0A11EDL;
 
     /** Одна скопа: центр, радиус, семя её руины. */
@@ -34,26 +34,31 @@ public final class MistKeep {
 
     private static Region gen(int sx, int sz) {
         Random r = new Random(FIXED ^ (sx * 53982894593057L + sz * 317074912223L) * 0x9E3779B97F4A7C15L);
-        if (r.nextDouble() > 0.30) return null;             // ~3 из 10 секторов
-        int cx = sx * SUPER + 180 + r.nextInt(SUPER - 360), cz = sz * SUPER + 180 + r.nextInt(SUPER - 360);
-        int Rr = 42 + r.nextInt(21);
-        if (Math.hypot(cx, cz) < 700) return null;          // городское море - просто море
-        if (AshenLands.blocks(cx, cz, 300)) return null;
-        if (Math.hypot(cx - CastleSite.CX, cz - CastleSite.CZ) < CastleSite.R + 300) return null;
-        EmberRuins.Site es = EmberRuins.nearest(cx, cz);
-        if (es != null && Math.hypot(cx - es.cx, cz - es.cz) < es.island.R + 380) return null;
-        for (int dx = -1; dx <= 1; ++dx)
-            for (int dz = -1; dz <= 1; ++dz) {
-                WaterfallGardens.Region gr = WaterfallGardens.region(Math.floorDiv(cx, WaterfallGardens.SUPER) + dx, Math.floorDiv(cz, WaterfallGardens.SUPER) + dz);
-                if (gr != null && Math.hypot(cx - gr.cx, cz - gr.cz) < gr.Rr + 260) return null;
-                SizoGrove.Region sr = SizoGrove.region(Math.floorDiv(cx, SizoGrove.SUPER) + dx, Math.floorDiv(cz, SizoGrove.SUPER) + dz);
-                if (sr != null && Math.hypot(cx - sr.cx, cz - sr.cz) < sr.Rr + 260) return null;
-                VioletHills.Region vr = VioletHills.region(Math.floorDiv(cx, VioletHills.SUPER) + dx, Math.floorDiv(cz, VioletHills.SUPER) + dz);
-                if (vr != null && Math.hypot(cx - vr.cx, cz - vr.cz) < vr.Rr + 260) return null;
-                CrystalRifts.Region cr = CrystalRifts.region(Math.floorDiv(cx, CrystalRifts.SUPER) + dx, Math.floorDiv(cz, CrystalRifts.SUPER) + dz);
-                if (cr != null && Math.hypot(cx - cr.cx, cz - cr.cz) < cr.Rr + 240) return null;
-            }
-        return new Region(cx, cz, Rr, FIXED ^ ((long) cx * 1000003L + (long) cz * 7867L));
+        if (r.nextDouble() > 0.42) return null;
+        for (int attempt = 0; attempt < 8; ++attempt) {
+            int cx = sx * SUPER + 210 + r.nextInt(SUPER - 420), cz = sz * SUPER + 210 + r.nextInt(SUPER - 420);
+            int Rr = 84 + r.nextInt(32); // v0.23.0: увеличен в ~2 раза по радиусу (~4x по площади)!
+            if (Math.hypot(cx, cz) < 760) continue;
+            if (Math.hypot(cx - 648, cz - 693) < Rr + 280) continue;
+            if (AshenLands.blocks(cx, cz, Rr + 220)) continue;
+            EmberRuins.Site es = EmberRuins.nearest(cx, cz);
+            if (es != null && Math.hypot(cx - es.cx, cz - es.cz) < es.island.R + Rr + 260) continue;
+            boolean ok = true;
+            for (int dx = -1; dx <= 1 && ok; ++dx)
+                for (int dz = -1; dz <= 1 && ok; ++dz) {
+                    WaterfallGardens.Region gr = WaterfallGardens.region(Math.floorDiv(cx, WaterfallGardens.SUPER) + dx, Math.floorDiv(cz, WaterfallGardens.SUPER) + dz);
+                    if (gr != null && Math.hypot(cx - gr.cx, cz - gr.cz) < gr.Rr + Rr + 180) ok = false;
+                    SizoGrove.Region sr = SizoGrove.region(Math.floorDiv(cx, SizoGrove.SUPER) + dx, Math.floorDiv(cz, SizoGrove.SUPER) + dz);
+                    if (sr != null && Math.hypot(cx - sr.cx, cz - sr.cz) < sr.Rr + Rr + 180) ok = false;
+                    VioletHills.Region vr = VioletHills.region(Math.floorDiv(cx, VioletHills.SUPER) + dx, Math.floorDiv(cz, VioletHills.SUPER) + dz);
+                    if (vr != null && Math.hypot(cx - vr.cx, cz - vr.cz) < vr.Rr + Rr + 180) ok = false;
+                    CrystalRifts.Region cr = CrystalRifts.region(Math.floorDiv(cx, CrystalRifts.SUPER) + dx, Math.floorDiv(cz, CrystalRifts.SUPER) + dz);
+                    if (cr != null && Math.hypot(cx - cr.cx, cz - cr.cz) < cr.Rr + Rr + 180) ok = false;
+                }
+            if (!ok) continue;
+            return new Region(cx, cz, Rr, FIXED ^ ((long) cx * 1000003L + (long) cz * 7867L));
+        }
+        return null;
     }
 
     public static Region regionAt(double x, double z) {
@@ -61,7 +66,7 @@ public final class MistKeep {
         for (int dx = -1; dx <= 1; ++dx)
             for (int dz = -1; dz <= 1; ++dz) {
                 Region rg = region(sx + dx, sz + dz);
-                if (rg != null && Math.abs(x - rg.cx) < rg.Rr + 90 && Math.abs(z - rg.cz) < rg.Rr + 90) return rg;
+                if (rg != null && Math.abs(x - rg.cx) < rg.Rr + 110 && Math.abs(z - rg.cz) < rg.Rr + 110) return rg;
             }
         return null;
     }
@@ -81,13 +86,16 @@ public final class MistKeep {
             if (d > 10.2 + j) return -1;
             return ocean + 3;
         }
-        // кольцо столбов: отдельные тощие останцы на полосе 15..R, зубчатые разновысокие
-        double ring = Math.abs(d - (rg.Rr * 0.62 + (ElisarChunkGenerator.vnoise(x * 0.05, z * 0.05, 882) - 0.5) * 9));
-        if (d < 15 || d > rg.Rr + 8 || ring > 6.5) return -1;
-        double cell = ElisarChunkGenerator.vnoise(x * 0.16, z * 0.16, 883);               // разрезает кольцо на отдельные столбы
-        if (cell < 0.60) return -1;
+        // два концентрических кольца высоких зубчатых скальных столбов в густом морском тумане (v0.23.0)!
+        double wob = (ElisarChunkGenerator.vnoise(x * 0.05, z * 0.05, 882) - 0.5) * 12.0;
+        double ring1 = Math.abs(d - (rg.Rr * 0.42 + wob));
+        double ring2 = Math.abs(d - (rg.Rr * 0.78 - wob * 0.8));
+        double ring = Math.min(ring1, ring2);
+        if (d < 16 || d > rg.Rr + 10 || ring > 8.5) return -1;
+        double cell = ElisarChunkGenerator.vnoise(x * 0.14, z * 0.14, 883);
+        if (cell < 0.57) return -1;
         double hgt = ElisarChunkGenerator.vnoise(x * 0.21, z * 0.21, 884);
-        int rise = 1 + (int) Math.round((cell - 0.60) * (6 + hgt * 14));                 // 1..13 над водой
-        return Math.min(ocean + 13, ocean - 1 + rise);
+        int rise = 2 + (int) Math.round((cell - 0.57) * (8 + hgt * 18));
+        return Math.min(ocean + 18, ocean - 1 + rise);
     }
 }

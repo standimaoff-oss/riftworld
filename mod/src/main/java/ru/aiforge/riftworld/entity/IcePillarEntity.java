@@ -45,7 +45,7 @@ public class IcePillarEntity extends Entity {
     private static final EntityDataAccessor<Boolean> DATA_WAVE_SPIKE =
             SynchedEntityData.defineId(IcePillarEntity.class, EntityDataSerializers.BOOLEAN);
 
-    private static final float HALF_WIDTH = 0.88F;
+    private static final float HALF_WIDTH = 0.68F;
 
     @Nullable
     private UUID ownerId;
@@ -71,7 +71,7 @@ public class IcePillarEntity extends Entity {
     @Override
     protected void defineSynchedData() {
         this.entityData.define(DATA_AGE, 0);
-        this.entityData.define(DATA_MAX_H, 5.6F);
+        this.entityData.define(DATA_MAX_H, 7.6F);
         this.entityData.define(DATA_WAVE_SPIKE, false);
     }
 
@@ -217,10 +217,11 @@ public class IcePillarEntity extends Entity {
                         SoundSource.HOSTILE, 0.95F, nextAge == 1 ? 0.72F : 0.58F);
             }
             if (nextAge <= 36 && nextAge % 3 == 0) {
-                sl.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.PACKED_ICE.defaultBlockState()),
-                        getX(), getY() + 0.15, getZ(), 6, 0.55, 0.12, 0.55, 0.06);
-                sl.sendParticles(ParticleTypes.SNOWFLAKE,
-                        getX(), getY() + Math.max(0.2, newH), getZ(), 4, 0.45, 0.25, 0.45, 0.02);
+                sl.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK,
+                                ru.aiforge.riftworld.registry.ElisarBlocks.CRYSTAL_BLOCK_BRIGHT.get().defaultBlockState()),
+                        getX(), getY() + 0.15, getZ(), 6, 0.45, 0.12, 0.45, 0.06);
+                sl.sendParticles(ParticleTypes.END_ROD,
+                        getX(), getY() + Math.max(0.2, newH), getZ(), 4, 0.35, 0.25, 0.35, 0.02);
             }
             // Урон волны ледяных шипов (или лёгкий морозный урон в момент прорыва)
             int burstTick = isWaveSpike() ? 11 : 18;

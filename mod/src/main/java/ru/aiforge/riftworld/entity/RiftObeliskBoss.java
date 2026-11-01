@@ -254,9 +254,9 @@ public class RiftObeliskBoss extends Monster {
         double baseAng = this.random.nextDouble() * Math.PI * 2.0;
         for (int i = 0; i < count; ++i) {
             double ang = baseAng + (Math.PI * 2.0 * i) / count;
-            double sx = this.getX() + Math.cos(ang) * 5.8;
+            double sx = this.getX() + Math.cos(ang) * 7.4;
             double sy = this.getY() + 0.4;
-            double sz = this.getZ() + Math.sin(ang) * 5.8;
+            double sz = this.getZ() + Math.sin(ang) * 7.4;
             CrystalMinion minion = ModEntities.CRYSTAL_MINION.get().create(sl);
             if (minion == null) continue;
             minion.moveTo(sx, sy, sz, this.getYRot(), 0.0F);
@@ -268,18 +268,18 @@ public class RiftObeliskBoss extends Monster {
     }
 
     /**
-     * КАСТОМНАЯ АТАКА #1: Из-под земли плавно выходят 5 ледяных столбов, соединяясь в НЕ СОМКНУТЫЙ круг
-     * (широкий открытый проход 112° для выхода + зазоры между столбами), поднимают наверх тех,
-     * кто стоит на месте подъёма столба, а затем плавно уходят обратно под землю и пропадают!
+     * КАСТОМНАЯ АТАКА #1 (v0.23.0): Из-под земли БОЛЬШИМ РАДИУСОМ (7.85 м!) плавно выходят 5 вытянутых
+     * светлых кристальных столбов, образуя НЕ СОМКНУТЫЙ круг (широкий открытый проход 108° для выхода),
+     * поднимают наверх тех, кто стоит на месте подъёма столба, а затем плавно уходят обратно под землю!
      */
     public void castUnjoinedIcePillarCircle(Vec3 aroundPos) {
         if (!(this.level() instanceof ServerLevel sl)) return;
         sl.playSound(null, this.blockPosition(), SoundEvents.RESPAWN_ANCHOR_CHARGE, SoundSource.HOSTILE, 1.35F, 1.32F);
 
-        double radius = 4.35;
+        double radius = 7.85;
         double gapCenterAng = Math.atan2(this.getZ() - aroundPos.z, this.getX() - aroundPos.x) + Math.PI;
-        double startAng = gapCenterAng + Math.toRadians(56.0);
-        double stepAng = Math.toRadians(62.0); // 4 интервала по 62° = 248°, остаётся разомкнутая дуга 112° для выхода!
+        double startAng = gapCenterAng + Math.toRadians(54.0);
+        double stepAng = Math.toRadians(63.0); // 4 интервала по 63° = 252°, остаётся разомкнутая дуга 108° для выхода!
 
         for (int i = 0; i < 5; ++i) {
             double ang = startAng + i * stepAng;
@@ -290,13 +290,13 @@ public class RiftObeliskBoss extends Monster {
             IcePillarEntity pillar = ModEntities.ICE_PILLAR.get().create(sl);
             if (pillar == null) continue;
             pillar.moveTo(px, gy, pz, (float) Math.toDegrees(ang), 0.0F);
-            pillar.configure(this, 5.4F, false, 0);
+            pillar.configure(this, 7.6F, false, 0);
             sl.addFreshEntity(pillar);
         }
     }
 
     /**
-     * КАСТОМНАЯ АТАКА #2: Град из 5 огромных острых квадратных ледяных глыб в небе:
+     * КАСТОМНАЯ АТАКА #2 (v0.23.0): Град из 5 вытянутых светлых кристальных глыб-копий в небе:
      * сначала появляются 5 меток куда они прилетят, и по очереди (1 за 1) глыбы летят в разные точки!
      */
     public void castSkyIceHailVolley(Vec3 centerTarget) {
@@ -306,10 +306,10 @@ public class RiftObeliskBoss extends Monster {
         double baseAng = 0.42;
         double[][] offsets = {
                 {0.0, 0.0},
-                {Math.cos(baseAng) * 4.6, Math.sin(baseAng) * 4.6},
-                {Math.cos(baseAng + 1.32) * 5.8, Math.sin(baseAng + 1.32) * 5.8},
-                {Math.cos(baseAng + 2.68) * 5.0, Math.sin(baseAng + 2.68) * 5.0},
-                {Math.cos(baseAng + 4.18) * 6.0, Math.sin(baseAng + 4.18) * 6.0}
+                {Math.cos(baseAng) * 5.8, Math.sin(baseAng) * 5.8},
+                {Math.cos(baseAng + 1.32) * 7.2, Math.sin(baseAng + 1.32) * 7.2},
+                {Math.cos(baseAng + 2.68) * 6.4, Math.sin(baseAng + 2.68) * 6.4},
+                {Math.cos(baseAng + 4.18) * 7.6, Math.sin(baseAng + 4.18) * 7.6}
         };
 
         for (int i = 0; i < 5; ++i) {
@@ -317,21 +317,21 @@ public class RiftObeliskBoss extends Monster {
             double tz = centerTarget.z + offsets[i][1];
             int ty = findArenaFloorY(sl, tx, centerTarget.y, tz);
 
-            double skyArc = baseAng + (i - 2) * 0.48;
-            double sx = centerTarget.x + Math.cos(skyArc) * 5.2;
-            double sy = ty + 11.8 + (i % 2) * 1.3;
-            double sz = centerTarget.z + Math.sin(skyArc) * 5.2;
+            double skyArc = baseAng + (i - 2) * 0.50;
+            double sx = centerTarget.x + Math.cos(skyArc) * 6.4;
+            double sy = ty + 14.2 + (i % 2) * 1.6;
+            double sz = centerTarget.z + Math.sin(skyArc) * 6.4;
 
             IceHailBoulderEntity boulder = ModEntities.ICE_HAIL_BOULDER.get().create(sl);
             if (boulder == null) continue;
             boulder.moveTo(sx, sy, sz, i * 72.0F, 0.0F);
-            // Метки на земле загораются СРАЗУ для всех 5, а летят глыбы строго по очереди 1 за 1 (тик 28, 42, 56, 70, 84)!
+            // Метки на земле загораются СРАЗУ для всех 5, а летят вытянутые кристальные глыбы по очереди 1 за 1 (тик 28, 42, 56, 70, 84)!
             boulder.configure(this, new Vec3(tx, ty, tz), 28 + i * 14);
             sl.addFreshEntity(boulder);
         }
     }
 
-    /** КАСТОМНАЯ АТАКА #3: Расходящаяся 3-лучевая волна ледяных шипов из-под земли. */
+    /** КАСТОМНАЯ АТАКА #3: Расходящаяся 3-лучевая волна вытянутых светлых кристальных шипов из-под земли. */
     public void castGlacialSpikeWave(Vec3 towardPos) {
         if (!(this.level() instanceof ServerLevel sl)) return;
         sl.playSound(null, this.blockPosition(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.HOSTILE, 1.4F, 0.62F);
@@ -340,8 +340,8 @@ public class RiftObeliskBoss extends Monster {
         double[] fan = {-0.34, 0.0, +0.34};
         for (double delta : fan) {
             double ang = baseAng + delta;
-            for (int step = 0; step < 7; ++step) {
-                double dist = 4.2 + step * 2.55;
+            for (int step = 0; step < 8; ++step) {
+                double dist = 5.0 + step * 2.85;
                 double sx = this.getX() + Math.cos(ang) * dist;
                 double sz = this.getZ() + Math.sin(ang) * dist;
                 int gy = findArenaFloorY(sl, sx, towardPos.y, sz);
@@ -349,7 +349,7 @@ public class RiftObeliskBoss extends Monster {
                 IcePillarEntity spike = ModEntities.ICE_PILLAR.get().create(sl);
                 if (spike == null) continue;
                 spike.moveTo(sx, gy, sz, (float) Math.toDegrees(ang), 0.0F);
-                spike.configure(this, 3.2F + (step % 2) * 0.55F, true, -step * 3);
+                spike.configure(this, 4.6F + (step % 2) * 0.85F, true, -step * 3);
                 sl.addFreshEntity(spike);
             }
         }
@@ -366,8 +366,8 @@ public class RiftObeliskBoss extends Monster {
         if (!(this.level() instanceof ServerLevel sl) || remainingTicks > 48) return;
         float prog = (48 - remainingTicks) / 48.0F;
         float baseDeg = frostBeamStartYaw() + prog * 115.0F;
-        double beamLen = 17.5;
-        double beamY = this.getY() + 0.85;
+        double beamLen = 22.0;
+        double beamY = this.getY() + 1.15;
 
         for (int arm = 0; arm < 4; ++arm) {
             double rad = Math.toRadians(baseDeg + arm * 90.0F);

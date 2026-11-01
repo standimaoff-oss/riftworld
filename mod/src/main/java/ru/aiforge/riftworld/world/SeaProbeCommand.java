@@ -454,7 +454,7 @@ public final class SeaProbeCommand {
         BlockPos at = src.getPlayer() != null ? src.getPlayer().blockPosition() : new BlockPos(0, 0, 0);
         String lname = name.toLowerCase(java.util.Locale.ROOT);
         if (lname.startsWith("ashen")) {
-            AshenLands.Region ar = AshenLands.nearest(at.getX(), at.getZ());
+            AshenLands.Region ar = AshenLands.nearestWithRedCastle(at.getX(), at.getZ());
             if (ar == null) {
                 src.sendFailure(Component.literal("riftbiome: рядом нет региона ashen"));
                 return 0;
@@ -462,7 +462,8 @@ public final class SeaProbeCommand {
             String abio = level.getBiome(new BlockPos(ar.cx, CastleSite.Y + 4, ar.cz)).unwrapKey()
                     .map(k -> k.location().toString()).orElse("?");
             String aline = "riftbiome name=ashen at=" + ar.cx + "," + ar.cz + " bio=" + abio
-                    + " r=" + (int) CastleSite.R + " top=" + CastleSite.Y + " castle=" + ar.x0 + "," + ar.z0;
+                    + " r=" + (int) Math.round(ar.R) + " combo=" + ar.comboMode
+                    + " top=" + CastleSite.Y + " castle=" + ar.x0 + "," + ar.z0;
             src.sendSuccess(() -> Component.literal(aline), false);
             return 1;
         }
@@ -1761,7 +1762,7 @@ public final class SeaProbeCommand {
             for (int dx = -4; dx <= 4; ++dx) {
                 for (int dz = -4; dz <= 4; ++dz) {
                     AshenLands.Region rg = AshenLands.region(sx0 + dx, sz0 + dz);
-                    if (rg == null) continue;
+                    if (rg == null || !rg.hasVillage) continue;
                     double d = Math.hypot(rg.cx - at.getX(), rg.cz - at.getZ());
                     if (d < bestD) { bestD = d; bestReg = rg; }
                 }
@@ -2052,50 +2053,50 @@ public final class SeaProbeCommand {
 
             double ux = Math.cos(best.phi), uz = Math.sin(best.phi);
             double px = -uz, pz = ux;
-            int camX = (int) Math.round(best.astroX - ux * 9.8);
-            int camZ = (int) Math.round(best.astroZ - uz * 9.8);
-            int camY = by + 3;
+            int camX = (int) Math.round(best.astroX - ux * 11.4);
+            int camZ = (int) Math.round(best.astroZ - uz * 11.4);
+            int camY = by + 4;
             float bossYaw = (float) (Math.atan2(-(camX - best.astroX), camZ - best.astroZ) * (180.0 / Math.PI));
 
-            // Если чанк уже прогружен — гарантируем присутствие увеличенного Босса (1.75x) и 2 Прислужников лицом к камере
+            // Если чанк уже прогружен — гарантируем присутствие ещё больше увеличенного Босса (2.45x!) и 2 Прислужников лицом к камере
             int bossCnt = 0, minionCnt = 0;
-            double m0x = best.astroX - ux * 3.5 - px * 3.1;
-            double m0z = best.astroZ - uz * 3.5 - pz * 3.1;
+            double m0x = best.astroX - ux * 4.4 - px * 3.8;
+            double m0z = best.astroZ - uz * 4.4 - pz * 3.8;
             if (level.hasChunk(bx >> 4, bz >> 4)) {
-                var box = new net.minecraft.world.phys.AABB(bx - 18, by - 4, bz - 18, bx + 18, by + 20, bz + 18);
+                var box = new net.minecraft.world.phys.AABB(bx - 22, by - 4, bz - 22, bx + 22, by + 24, bz + 22);
                 var bosses = level.getEntitiesOfClass(ru.aiforge.riftworld.entity.RiftObeliskBoss.class, box);
                 if (bosses.isEmpty()) {
                     var boss = ru.aiforge.riftworld.registry.ModEntities.RIFT_OBELISK_BOSS.get().create(level);
                     if (boss != null) {
-                        boss.moveTo(best.astroX, by + 2.40, best.astroZ, bossYaw, 0.0F);
+                        boss.moveTo(best.astroX, by + 3.05, best.astroZ, bossYaw, 0.0F);
                         boss.yBodyRot = bossYaw;
                         boss.yBodyRotO = bossYaw;
                         boss.yHeadRot = bossYaw;
                         boss.yHeadRotO = bossYaw;
                         boss.setNoAi(true);
-                        boss.setAnchor(best.astroX, by + 2.40, best.astroZ);
+                        boss.setAnchor(best.astroX, by + 3.05, best.astroZ);
                         level.addFreshEntity(boss);
                         bossCnt = 1;
                     }
                 } else {
                     for (var boss : bosses) {
-                        boss.moveTo(best.astroX, by + 2.40, best.astroZ, bossYaw, 0.0F);
+                        boss.moveTo(best.astroX, by + 3.05, best.astroZ, bossYaw, 0.0F);
                         boss.yRotO = bossYaw;
                         boss.yBodyRot = bossYaw;
                         boss.yBodyRotO = bossYaw;
                         boss.yHeadRot = bossYaw;
                         boss.yHeadRotO = bossYaw;
                         boss.setNoAi(true);
-                        boss.setAnchor(best.astroX, by + 2.40, best.astroZ);
+                        boss.setAnchor(best.astroX, by + 3.05, best.astroZ);
                     }
                     bossCnt = bosses.size();
                 }
                 var oldMinions = level.getEntitiesOfClass(ru.aiforge.riftworld.entity.CrystalMinion.class, box);
                 for (var oldM : oldMinions) oldM.discard();
                 for (int i = 0; i < 2; ++i) {
-                    double side = (i == 0) ? -3.1 : 3.1;
-                    double mx = best.astroX - ux * 3.5 + px * side;
-                    double mz = best.astroZ - uz * 3.5 + pz * side;
+                    double side = (i == 0) ? -3.8 : 3.8;
+                    double mx = best.astroX - ux * 4.4 + px * side;
+                    double mz = best.astroZ - uz * 4.4 + pz * side;
                     int mCamX = k.contains("minion") && i == 0 ? (int) Math.round(mx - ux * 3.1) : camX;
                     int mCamZ = k.contains("minion") && i == 0 ? (int) Math.round(mz - uz * 3.1) : camZ;
                     float mYaw = (float) (Math.atan2(-(mCamX - mx), mCamZ - mz) * (180.0 / Math.PI));
@@ -2113,19 +2114,19 @@ public final class SeaProbeCommand {
                 minionCnt = 2;
             }
 
-            int lkX = bx, lkY = by + 5, lkZ = bz;
+            int lkX = bx, lkY = by + 6, lkZ = bz;
             int liftedOk = 0;
             if (k.equals("colonnade_boss_pillars") && level.hasChunk(bx >> 4, bz >> 4)) {
-                var box = new net.minecraft.world.phys.AABB(bx - 28, by - 6, bz - 28, bx + 28, by + 26, bz + 28);
+                var box = new net.minecraft.world.phys.AABB(bx - 36, by - 6, bz - 36, bx + 36, by + 30, bz + 36);
                 level.getEntitiesOfClass(ru.aiforge.riftworld.entity.IcePillarEntity.class, box).forEach(net.minecraft.world.entity.Entity::discard);
                 level.getEntitiesOfClass(net.minecraft.world.entity.decoration.ArmorStand.class, box).forEach(net.minecraft.world.entity.Entity::discard);
                 var bosses = level.getEntitiesOfClass(ru.aiforge.riftworld.entity.RiftObeliskBoss.class, box);
                 if (!bosses.isEmpty()) {
-                    var ringCenter = new net.minecraft.world.phys.Vec3(best.astroX - ux * 8.0, by + 1.0, best.astroZ - uz * 8.0);
+                    var ringCenter = new net.minecraft.world.phys.Vec3(best.astroX - ux * 11.0, by + 1.0, best.astroZ - uz * 11.0);
                     bosses.get(0).castUnjoinedIcePillarCircle(ringCenter);
                     var pillars = level.getEntitiesOfClass(ru.aiforge.riftworld.entity.IcePillarEntity.class, box);
                     if (pillars.size() == 5) {
-                        // Ставим тестовую стойку прямо на точку подъёма 1-го столба и прокручиваем 44 тика — проверяем реальный подъём!
+                        // Ставим тестовую стойку прямо на точку подъёма 1-го вытянутого кристального столба (R = 7.85!) и проверяем реальный подъём!
                         var p0 = pillars.get(0);
                         var stand = new net.minecraft.world.entity.decoration.ArmorStand(level, p0.getX(), p0.getY(), p0.getZ());
                         double startStandY = stand.getY();
@@ -2133,36 +2134,34 @@ public final class SeaProbeCommand {
                         for (int step = 0; step < 44; ++step) {
                             for (var pl : pillars) pl.tick();
                         }
-                        if (stand.getY() - startStandY >= 4.2) liftedOk = 1;
+                        if (stand.getY() - startStandY >= 5.2) liftedOk = 1;
                         stand.discard();
                     }
-                    camX = (int) Math.round(ringCenter.x - ux * 10.5 + px * 4.2);
-                    camY = by + 6;
-                    camZ = (int) Math.round(ringCenter.z - uz * 10.5 + pz * 4.2);
-                    lkX = (int) Math.round(ringCenter.x + ux * 1.2);
-                    lkY = by + 3;
-                    lkZ = (int) Math.round(ringCenter.z + uz * 1.2);
+                    camX = (int) Math.round(ringCenter.x - ux * 16.5 + px * 5.8);
+                    camY = by + 9;
+                    camZ = (int) Math.round(ringCenter.z - uz * 16.5 + pz * 5.8);
+                    lkX = (int) Math.round(ringCenter.x + ux * 2.0);
+                    lkY = by + 4;
+                    lkZ = (int) Math.round(ringCenter.z + uz * 2.0);
                 }
             } else if (k.equals("colonnade_boss_hail") && level.hasChunk(bx >> 4, bz >> 4)) {
-                var box = new net.minecraft.world.phys.AABB(bx - 28, by - 6, bz - 28, bx + 28, by + 34, bz + 28);
+                var box = new net.minecraft.world.phys.AABB(bx - 36, by - 6, bz - 36, bx + 36, by + 38, bz + 36);
                 level.getEntitiesOfClass(ru.aiforge.riftworld.entity.IcePillarEntity.class, box).forEach(net.minecraft.world.entity.Entity::discard);
                 level.getEntitiesOfClass(ru.aiforge.riftworld.entity.IceHailBoulderEntity.class, box).forEach(net.minecraft.world.entity.Entity::discard);
                 var bosses = level.getEntitiesOfClass(ru.aiforge.riftworld.entity.RiftObeliskBoss.class, box);
                 if (!bosses.isEmpty()) {
-                    var hailCenter = new net.minecraft.world.phys.Vec3(best.astroX - ux * 8.0, by + 1.0, best.astroZ - uz * 8.0);
+                    var hailCenter = new net.minecraft.world.phys.Vec3(best.astroX - ux * 10.5, by + 1.0, best.astroZ - uz * 10.5);
                     bosses.get(0).castSkyIceHailVolley(hailCenter);
-                    // Прокручиваем 16 тиков: все 5 огромных острых ледяных глыб парят в небе над 5 светящимися метками на земле,
-                    // и через ~14 живых тиков (во время кадра!) 1-я глыба стремительно летит вниз, а остальные ждут своей очереди!
                     var boulders = level.getEntitiesOfClass(ru.aiforge.riftworld.entity.IceHailBoulderEntity.class, box);
                     for (int step = 0; step < 16; ++step) {
                         for (var bd : boulders) bd.tick();
                     }
                     liftedOk = (boulders.size() == 5) ? 1 : 0;
-                    camX = (int) Math.round(hailCenter.x - ux * 17.5 + px * 5.0);
-                    camY = by + 8;
-                    camZ = (int) Math.round(hailCenter.z - uz * 17.5 + pz * 5.0);
+                    camX = (int) Math.round(hailCenter.x - ux * 20.5 + px * 6.0);
+                    camY = by + 9;
+                    camZ = (int) Math.round(hailCenter.z - uz * 20.5 + pz * 6.0);
                     lkX = (int) Math.round(hailCenter.x);
-                    lkY = by + 9;
+                    lkY = by + 10;
                     lkZ = (int) Math.round(hailCenter.z);
                 }
             } else if (k.contains("minion")) {
@@ -2359,7 +2358,7 @@ public final class SeaProbeCommand {
             double bestD = Double.MAX_VALUE;
             for (int sx = -2; sx <= 2; ++sx) {
                 for (int sz = -2; sz <= 2; ++sz) {
-                    CrystalRifts.Region r = CrystalRifts.regionAt(sx * CrystalRifts.SUPER + 520, sz * CrystalRifts.SUPER + 520);
+                    CrystalRifts.Region r = CrystalRifts.region(sx, sz);
                     if (r == null || r.falls.isEmpty()) continue;
                     double d = Math.hypot(r.cx, r.cz);
                     if (d < bestD) {
@@ -2499,10 +2498,10 @@ public final class SeaProbeCommand {
         if (k.equals("ashen_belfry_barrow")) {
             AshenLands.Region bestAr = null;
             double bestD = Double.MAX_VALUE;
-            for (int sx = -2; sx <= 2; ++sx) {
-                for (int sz = -2; sz <= 2; ++sz) {
+            for (int sx = -3; sx <= 3; ++sx) {
+                for (int sz = -3; sz <= 3; ++sz) {
                     AshenLands.Region ar = AshenLands.region(sx, sz);
-                    if (ar == null) continue;
+                    if (ar == null || !ar.hasBelfry) continue;
                     double d = Math.hypot(ar.cx - at.getX(), ar.cz - at.getZ());
                     if (d < bestD) { bestD = d; bestAr = ar; }
                 }
@@ -2514,6 +2513,196 @@ public final class SeaProbeCommand {
             int lkX = lm.cx + 2, lkY = lm.baseY + 10, lkZ = lm.cz;
             String line = "riftstruct kind=ashen_belfry_barrow at=" + lm.cx + "," + lm.baseY + "," + lm.cz
                     + " blocks=" + cnt[0] + " sub_air=" + cnt[1]
+                    + " cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        // ---------- v0.23.0: «Цитадель Чёрного утёса» (blacktide.nbt), Сгоревшая Церковь, комбинации Пепельного биома и увеличенные биомы ----------
+        if (k.equals("blacktide_citadel") || k.equals("blacktide_bridge_shore")) {
+            AshenLands.Region bestAr = null;
+            double bestD = Double.MAX_VALUE;
+            for (int sx = -3; sx <= 3; ++sx) {
+                for (int sz = -3; sz <= 3; ++sz) {
+                    AshenLands.Region ar = AshenLands.region(sx, sz);
+                    if (ar == null || !ar.hasBlacktide || ar.blacktideSite == null) continue;
+                    double d = Math.hypot(ar.blacktideSite.cx - at.getX(), ar.blacktideSite.cz - at.getZ());
+                    if (d < bestD) { bestD = d; bestAr = ar; }
+                }
+            }
+            if (bestAr == null || bestAr.blacktideSite == null) {
+                src.sendFailure(Component.literal("riftstruct: blacktide_citadel not found"));
+                return 0;
+            }
+            BlacktideCitadel.Site bs = bestAr.blacktideSite;
+            // Прогружаем все чанки моста на берегу Пепельного биома и самой цитадели в открытом море!
+            for (int cx = (bs.minX >> 4) - 1; cx <= (bs.maxX >> 4) + 1; ++cx) {
+                for (int cz = (bs.minZ >> 4) - 1; cz <= (bs.maxZ >> 4) + 1; ++cz) {
+                    level.getChunk(cx, cz);
+                }
+            }
+            // 1) Проверяем, что начало моста (landX, landZ) стоит НА СУШЕ Пепельного биома!
+            boolean bridgeOnAshenLand = AshenLands.inside(bs.landX, bs.landZ)
+                    && AshenLands.weight(bs.landX + 0.5, bs.landZ + 0.5) >= 0.85;
+            int[] landCnt = countStructBlocksAndSubAir(level, bs.landX, bs.landZ, 12, ocean + 2, bs.baseY + 62, ocean);
+            // 2) Проверяем, что сам замок (cx, cz / keepX, keepZ) стоит В ОТКРЫТОМ МОРЕ (weight == 0.0, вокруг elisar_water, 0 sub_air)!
+            boolean castleInSea = AshenLands.weight(bs.cx + 0.5, bs.cz + 0.5) == 0.0
+                    && AshenLands.weight(bs.keepX + 0.5, bs.keepZ + 0.5) == 0.0;
+            int seaWaterAround = 0;
+            for (int a = 0; a < 12; ++a) {
+                double ang = (Math.PI * 2.0 * a) / 12.0;
+                int wx = bs.cx + (int) Math.round(Math.cos(ang) * 98.0);
+                int wz = bs.cz + (int) Math.round(Math.sin(ang) * 98.0);
+                if (level.getBlockState(new BlockPos(wx, ocean, wz)).is(ElisarBlocks.WATER.get())) {
+                    ++seaWaterAround;
+                }
+            }
+            int[] seaCnt = countStructBlocksAndSubAir(level, bs.keepX, bs.keepZ, 28, ocean - 8, bs.baseY + 145, ocean);
+            int totalBlocks = (bridgeOnAshenLand && castleInSea && landCnt[0] >= 120 && seaWaterAround >= 5) ? seaCnt[0] : 0;
+
+            double ux = bs.outUx, uz = bs.outUz;
+            double px = -uz, pz = ux;
+
+            int camX, camY, camZ, lkX, lkY, lkZ;
+            if (k.equals("blacktide_bridge_shore")) {
+                // Вид прямо с пепельного берега биома вдоль каменного моста, уходящего через морские волны к башням замка!
+                camX = (int) Math.round(bs.landX - ux * 16.0 + px * 18.0);
+                camY = bs.baseY + 52;
+                camZ = (int) Math.round(bs.landZ - uz * 16.0 + pz * 18.0);
+                lkX = (int) Math.round(bs.gateX + ux * 18.0);
+                lkY = bs.baseY + 56;
+                lkZ = (int) Math.round(bs.gateZ + uz * 18.0);
+            } else {
+                // Панорамный морской ракурс: одновременно виден и берег Пепельного биома с началом моста, и весь огромный замок в открытом море!
+                double midX = (bs.landX * 0.35 + bs.cx * 0.65);
+                double midZ = (bs.landZ * 0.35 + bs.cz * 0.65);
+                camX = (int) Math.round(midX + px * 118.0 - ux * 18.0);
+                camY = ocean + 54;
+                camZ = (int) Math.round(midZ + pz * 118.0 - uz * 18.0);
+                lkX = (int) Math.round(bs.cx - ux * 12.0);
+                lkY = bs.baseY + 62;
+                lkZ = (int) Math.round(bs.cz - uz * 12.0);
+            }
+            String line = "riftstruct kind=" + k + " at=" + bs.cx + "," + (bs.baseY + 40) + "," + bs.cz
+                    + " bridge_land=" + bridgeOnAshenLand + " castle_sea=" + castleInSea
+                    + " water_ring=" + seaWaterAround + " land_blocks=" + landCnt[0]
+                    + " blocks=" + totalBlocks + " sub_air=" + (landCnt[1] + seaCnt[1])
+                    + " cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.equals("ashen_burned_church")) {
+            AshenLands.Region bestAr = null;
+            double bestD = Double.MAX_VALUE;
+            for (int sx = -3; sx <= 3; ++sx) {
+                for (int sz = -3; sz <= 3; ++sz) {
+                    AshenLands.Region ar = AshenLands.region(sx, sz);
+                    if (ar == null || !ar.hasBurnedChurch) continue;
+                    double d = Math.hypot(ar.churchX - at.getX(), ar.churchZ - at.getZ());
+                    if (d < bestD) { bestD = d; bestAr = ar; }
+                }
+            }
+            LandmarkStructures.BiomeLandmark lm = LandmarkStructures.ashenBurnedChurch(bestAr);
+            if (lm == null) { src.sendFailure(Component.literal("riftstruct: ashen_burned_church not found")); return 0; }
+            for (int cx = ((lm.cx - 28) >> 4); cx <= ((lm.cx + 28) >> 4); ++cx) {
+                for (int cz = ((lm.cz - 28) >> 4); cz <= ((lm.cz + 28) >> 4); ++cz) {
+                    level.getChunk(cx, cz);
+                }
+            }
+            int[] cnt = countStructBlocksAndSubAir(level, lm.cx, lm.cz, 18, lm.baseY, lm.baseY + 24, ocean);
+            int camX = lm.cx - 25, camY = lm.baseY + 11, camZ = lm.cz + 18;
+            int lkX = lm.cx - 2, lkY = lm.baseY + 8, lkZ = lm.cz;
+            String line = "riftstruct kind=ashen_burned_church at=" + lm.cx + "," + lm.baseY + "," + lm.cz
+                    + " blocks=" + cnt[0] + " sub_air=" + cnt[1]
+                    + " cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.equals("ashen_combo_matrix")) {
+            int emptyCnt = 0, singleOrPairCnt = 0, allThreeCnt = 0;
+            AshenLands.Region emptySample = null;
+            for (int sx = -4; sx <= 4; ++sx) {
+                for (int sz = -4; sz <= 4; ++sz) {
+                    AshenLands.Region ar = AshenLands.region(sx, sz);
+                    if (ar == null) continue;
+                    int majors = (ar.hasRedCastle ? 1 : 0) + (ar.hasBurnedChurch ? 1 : 0) + (ar.hasBlacktide ? 1 : 0);
+                    if (majors == 0 && ar.isEmptyBiome()) {
+                        ++emptyCnt;
+                        if (emptySample == null || Math.hypot(ar.cx, ar.cz) < Math.hypot(emptySample.cx, emptySample.cz)) {
+                            emptySample = ar;
+                        }
+                    } else if (majors == 3) {
+                        ++allThreeCnt;
+                    } else {
+                        ++singleOrPairCnt;
+                    }
+                }
+            }
+            if (emptySample == null || emptyCnt == 0 || singleOrPairCnt == 0 || allThreeCnt == 0) {
+                src.sendFailure(Component.literal("riftstruct: ashen_combo_matrix missing variety empty="
+                        + emptyCnt + " partial=" + singleOrPairCnt + " all=" + allThreeCnt));
+                return 0;
+            }
+            // Прогружаем центр пустого Пепельного биома и убеждаемся, что там действительно широкая вулканическая пустошь без замка!
+            for (int dx = -2; dx <= 2; ++dx) {
+                for (int dz = -2; dz <= 2; ++dz) {
+                    level.getChunk((emptySample.cx >> 4) + dx, (emptySample.cz >> 4) + dz);
+                }
+            }
+            int castleBricksInEmpty = 0;
+            for (int x = emptySample.cx - 24; x <= emptySample.cx + 24; ++x) {
+                for (int z = emptySample.cz - 24; z <= emptySample.cz + 24; ++z) {
+                    for (int y = ocean + 6; y <= ocean + 30; ++y) {
+                        if (level.getBlockState(new BlockPos(x, y, z)).is(ru.aiforge.riftworld.registry.CastleBlocks.BRICKS.get())) {
+                            ++castleBricksInEmpty;
+                        }
+                    }
+                }
+            }
+            int okBlocks = (castleBricksInEmpty == 0 && emptySample.R >= 365.0) ? (emptyCnt * 100 + singleOrPairCnt * 10 + allThreeCnt) : 0;
+            int camX = emptySample.cx - 48, camY = ocean + 26, camZ = emptySample.cz + 48;
+            int lkX = emptySample.cx + 42, lkY = ocean + 4, lkZ = emptySample.cz - 42;
+            String line = "riftstruct kind=ashen_combo_matrix at=" + emptySample.cx + "," + (ocean + 2) + "," + emptySample.cz
+                    + " empty=" + emptyCnt + " partial=" + singleOrPairCnt + " all_three=" + allThreeCnt
+                    + " ash_r=" + Math.round(emptySample.R)
+                    + " blocks=" + okBlocks + " sub_air=0"
+                    + " cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.equals("enlarged_biomes_audit")) {
+            double ashR = 0, vhR = 0, crR = 0, sgR = 0, wgR = 0, mkR = 0;
+            VioletHills.Region pickVh = null;
+            for (int sx = -3; sx <= 3; ++sx) {
+                for (int sz = -3; sz <= 3; ++sz) {
+                    AshenLands.Region ar = AshenLands.region(sx, sz);
+                    if (ar != null && ar.R > ashR) ashR = ar.R;
+                    VioletHills.Region vr = VioletHills.region(sx, sz);
+                    if (vr != null && vr.hub.R > vhR) { vhR = vr.hub.R; pickVh = vr; }
+                    CrystalRifts.Region cr = CrystalRifts.region(sx, sz);
+                    if (cr != null && cr.hub.R > crR) crR = cr.hub.R;
+                    SizoGrove.Region sr = SizoGrove.region(sx, sz);
+                    if (sr != null && sr.hub.R > sgR) sgR = sr.hub.R;
+                    WaterfallGardens.Region wr = WaterfallGardens.region(sx, sz);
+                    if (wr != null && !wr.isles.isEmpty() && wr.isles.get(0).R > wgR) wgR = wr.isles.get(0).R;
+                    MistKeep.Region mr = MistKeep.region(sx, sz);
+                    if (mr != null && mr.Rr > mkR) mkR = mr.Rr;
+                }
+            }
+            boolean allBig = ashR >= 370 && vhR >= 122 && crR >= 72 && sgR >= 142 && wgR >= 66 && mkR >= 84;
+            int ax = pickVh != null ? (int) Math.round(pickVh.hub.cx) : 0;
+            int az = pickVh != null ? (int) Math.round(pickVh.hub.cz) : 0;
+            int ay = pickVh != null ? (int) Math.round(pickVh.hub.base) + 34 : 130;
+            int camX = ax - 95, camY = ay + 28, camZ = az + 95;
+            int lkX = ax + 30, lkY = ay - 18, lkZ = az - 30;
+            String line = "riftstruct kind=enlarged_biomes_audit at=" + ax + "," + ay + "," + az
+                    + " ash_r=" + Math.round(ashR) + " violet_r=" + Math.round(vhR)
+                    + " crystal_r=" + Math.round(crR) + " sizo_r=" + Math.round(sgR)
+                    + " gardens_r=" + Math.round(wgR) + " mist_r=" + Math.round(mkR)
+                    + " blocks=" + (allBig ? 600 : 0) + " sub_air=0"
                     + " cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;

@@ -17,10 +17,10 @@ public final class CastleSite {
     private CastleSite() {
     }
 
-    /** Остров замка региона адских угодий рядом с (x, z), или null. */
+    /** Остров замка региона адских угодий рядом с (x, z), или null (если в этом биоме замок не сгенерирован). */
     public static CityPlan.Island islandNear(double x, double z, double pad) {
         AshenLands.Region rg = AshenLands.regionAt(x, z);
-        if (rg == null) return null;
+        if (rg == null || rg.island == null) return null;
         double reach = rg.island.maxReach() + pad;
         return Math.abs(x - rg.cx) < reach && Math.abs(z - rg.cz) < reach ? rg.island : null;
     }

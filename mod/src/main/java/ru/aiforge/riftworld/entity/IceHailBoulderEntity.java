@@ -165,10 +165,11 @@ public class IceHailBoulderEntity extends Entity {
                 SoundEvents.GLASS_BREAK, SoundSource.HOSTILE, 1.5F, 0.58F);
         sl.playSound(null, BlockPos.containing(target.x, target.y, target.z),
                 SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, 0.65F, 1.38F);
-        sl.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.BLUE_ICE.defaultBlockState()),
-                target.x, target.y + 0.6, target.z, 42, 1.15, 0.65, 1.15, 0.18);
-        sl.sendParticles(ParticleTypes.SNOWFLAKE,
-                target.x, target.y + 0.5, target.z, 28, 1.35, 0.45, 1.35, 0.08);
+        sl.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK,
+                        ru.aiforge.riftworld.registry.ElisarBlocks.CRYSTAL_BLOCK_BRIGHT.get().defaultBlockState()),
+                target.x, target.y + 0.6, target.z, 46, 1.15, 0.65, 1.15, 0.18);
+        sl.sendParticles(ParticleTypes.END_ROD,
+                target.x, target.y + 0.5, target.z, 32, 1.25, 0.55, 1.25, 0.09);
 
         AABB blast = new AABB(
                 target.x - 2.85, target.y - 1.2, target.z - 2.85,

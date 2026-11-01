@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * </ul>
  */
 public final class CrystalRifts {
-    public static final int SUPER = 1120;
+    public static final int SUPER = 1560;
     public static final int KIND = 10;
     private static final long FIXED = 0x4352595354414CL;
     private static final Map<Long, Optional<Region>> CACHE = new ConcurrentHashMap<>();
@@ -181,12 +181,12 @@ public final class CrystalRifts {
         public final List<Fall> falls;
         public final List<IslandPath> paths;
 
-        // Центральная разрушенная каменная колоннада-астролябия и мраморная аллея на hub
+        // Центральная разрушенная каменная колоннада-астролябия и мраморная аллея на hub (расширена в v0.23.0!)
         public final double astroX, astroZ;
         public final int astroY;
         public final double aveAx, aveAz, aveBx, aveBz;
-        public static final double AVE_HW = 3.1;
-        public static final double ASTRO_R = 8.2;
+        public static final double AVE_HW = 3.8;
+        public static final double ASTRO_R = 13.8;
 
         Region(int cx, int cz, Random r) {
             this.cx = cx;
@@ -198,28 +198,28 @@ public final class CrystalRifts {
             double ux = Math.cos(phi), uz = Math.sin(phi);
             double px = -uz, pz = ux;
 
-            // 4..6 огромных парящих островов (hub + 3..5 расколотых кристальных островов вокруг)
-            int count = 4 + rnd.nextInt(3); // 4, 5 или 6
+            // 5..7 огромных парящих островов (v0.23.0 — существенно увеличенный архипелаг Хрустальных разломов!)
+            int count = 5 + rnd.nextInt(3); // 5, 6 или 7
             List<CityPlan.Island> built = new ArrayList<>(count);
 
-            double hubR = 47.0 + rnd.nextDouble() * 7.0; // 47..54
-            int hubBase = ocean + 23 + rnd.nextInt(4);   // 85..88
+            double hubR = 72.0 + rnd.nextDouble() * 12.0; // 72..84
+            int hubBase = ocean + 23 + rnd.nextInt(4);    // 85..88
             CityPlan.Island hubIsl = new CityPlan.Island(
-                    cx, cz, hubR, hubBase, 28 + rnd.nextInt(6),
+                    cx, cz, hubR, hubBase, 34 + rnd.nextInt(8),
                     rnd.nextDouble() * 6.283, rnd.nextDouble() * 6.283, rnd.nextDouble() * 6.283,
                     KIND, 0.9);
             built.add(hubIsl);
             this.hub = hubIsl;
 
             // Колоннада-астролябия ближе к передней части hub (в сторону главных островов #1 и #2),
-            // а мраморная аллея ведёт к ней от противоположного края hub — точь-в-точь кадр 02_crystal_sanctum.png!
+            // а мраморная аллея ведёт к ней от противоположного края hub
             this.astroX = cx + ux * (hubR * 0.20);
             this.astroZ = cz + uz * (hubR * 0.20);
             this.astroY = hubBase + 1;
             this.aveAx = cx - ux * (hubR * 0.72);
             this.aveAz = cz - uz * (hubR * 0.72);
-            this.aveBx = this.astroX - ux * 5.5;
-            this.aveBz = this.astroZ - uz * 5.5;
+            this.aveBx = this.astroX - ux * 8.5;
+            this.aveBz = this.astroZ - uz * 8.5;
 
             // Размещаем окружающие острова полумесяцем/архипелагом вокруг hub с проливами 18..25 блоков
             double[] relAngles = {
@@ -227,14 +227,15 @@ public final class CrystalRifts {
                     -0.60 + (rnd.nextDouble() - 0.5) * 0.10,  // #2 правый остров с кристаллом и светящимися грибами
                     1.42 + (rnd.nextDouble() - 0.5) * 0.16,   // #3 дальний левый остров
                     -1.44 + (rnd.nextDouble() - 0.5) * 0.16,  // #4 дальний правый остров
-                    0.02 + (rnd.nextDouble() - 0.5) * 0.14    // #5 дальний центральный остров за проливом
+                    0.02 + (rnd.nextDouble() - 0.5) * 0.14,   // #5 дальний центральный остров за проливом
+                    2.38 + (rnd.nextDouble() - 0.5) * 0.20    // #6 тыловой кристальный остров архипелага
             };
 
             int[] parentIdx = new int[count];
             for (int i = 1; i < count; ++i) {
-                double rIsl = i == 1 ? (58.0 + rnd.nextDouble() * 10.0)
-                        : i == 2 ? (53.0 + rnd.nextDouble() * 9.0)
-                        : (48.0 + rnd.nextDouble() * 12.0);
+                double rIsl = i == 1 ? (86.0 + rnd.nextDouble() * 14.0)
+                        : i == 2 ? (78.0 + rnd.nextDouble() * 12.0)
+                        : (68.0 + rnd.nextDouble() * 16.0);
                 int baseIsl = ocean + 25 + rnd.nextInt(6); // 87..92
                 CityPlan.Island proto = new CityPlan.Island(
                         cx, cz, rIsl, baseIsl, 30 + rnd.nextInt(8),
@@ -609,9 +610,9 @@ public final class CrystalRifts {
         if (cached != null) return cached.orElse(null);
 
         Random baseRnd = new Random(FIXED ^ (sx * 53982894593057L + sz * 317074912223L) * 0x9E3779B97F4A7C15L);
-        int margin = 230;
+        int margin = 280;
         Region built = null;
-        for (int attempt = 0; attempt < 8; ++attempt) {
+        for (int attempt = 0; attempt < 12; ++attempt) {
             int cx = sx * SUPER + margin + baseRnd.nextInt(SUPER - 2 * margin);
             int cz = sz * SUPER + margin + baseRnd.nextInt(SUPER - 2 * margin);
             if (!spotClear(cx, cz)) continue;
@@ -623,9 +624,9 @@ public final class CrystalRifts {
     }
 
     private static boolean spotClear(int cx, int cz) {
-        if (Math.hypot(cx, cz) < 550) return false;
-        if (Math.hypot(cx - 640, cz - 690) < 380) return false; // не перекрываем морские пробы spots.json
-        if (AshenLands.blocks(cx, cz, 300)) return false;
+        if (Math.hypot(cx, cz) < 720) return false;
+        if (Math.hypot(cx - 648, cz - 693) < 480) return false; // не перекрываем морские пробы spots.json
+        if (AshenLands.blocks(cx, cz, 320)) return false;
         EmberRuins.Site es = EmberRuins.nearest(cx, cz);
         if (es != null && Math.hypot(cx - es.cx, cz - es.cz) < 440) return false;
         for (int dx = -1; dx <= 1; ++dx) {

@@ -22,14 +22,14 @@ import java.util.concurrent.ConcurrentHashMap;
  * </ul>
  */
 public final class VioletHills {
-    public static final int SUPER = 1160;
+    public static final int SUPER = 1520;
     private static final long SEED = 0x9B1C7L;
 
     public static final class Region {
         public final int cx, cz;
         public final double Rr;
-        /** 3–6 огромных парящих островов архипелага; {@link #hub} ({@link #meadow}) — главный остров. */
-        public final List<CityPlan.Island> isles = new ArrayList<>(6);
+        /** 5–8 огромных парящих островов архипелага (v0.23.0 — существенно увеличенный биом!); {@link #hub} ({@link #meadow}) — главный остров. */
+        public final List<CityPlan.Island> isles = new ArrayList<>(8);
         public final CityPlan.Island hub;
         public final CityPlan.Island meadow;
         // главная извилистая дорога через долину с обрывом над пропастью между hub и вторым островом
@@ -46,14 +46,14 @@ public final class VioletHills {
             this.cx = cx;
             this.cz = cz;
             int ocean = CityPlan.get().ocean;
-            int want = 3 + rnd.nextInt(4); // строго от 3 до 6 огромных островов (3, 4, 5 или 6)
+            int want = 5 + rnd.nextInt(4); // 5..8 огромных островов!
 
             double[] rs = new double[want];
-            rs[0] = 84.0 + rnd.nextDouble() * 16.0; // 84..100 (~180..215 блоков в поперечнике)
-            rs[1] = 66.0 + rnd.nextDouble() * 14.0; // 66..80  (~140..175 блоков)
-            rs[2] = 56.0 + rnd.nextDouble() * 14.0; // 56..70  (~120..150 блоков)
+            rs[0] = 122.0 + rnd.nextDouble() * 24.0; // 122..146 (~260..310 блоков в поперечнике!)
+            rs[1] = 96.0 + rnd.nextDouble() * 20.0;  // 96..116
+            rs[2] = 84.0 + rnd.nextDouble() * 18.0;  // 84..102
             for (int i = 3; i < want; ++i) {
-                rs[i] = 52.0 + rnd.nextDouble() * 16.0; // 52..68 (~110..145 блоков)
+                rs[i] = 74.0 + rnd.nextDouble() * 22.0; // 74..96
             }
 
             double phi = rnd.nextDouble() * Math.PI;
@@ -84,7 +84,7 @@ public final class VioletHills {
                 double px = first.cx + Math.cos(ang2) * d2;
                 double pz = first.cz + Math.sin(ang2) * d2;
                 CityPlan.Island sh = copyAt(cand2, px, pz);
-                if (minGapToAll(sh, isles) >= 17.5 && Math.hypot(px - cx, pz - cz) + rs[2] * 1.25 <= 360.0) {
+                if (minGapToAll(sh, isles) >= 17.5 && Math.hypot(px - cx, pz - cz) + rs[2] * 1.25 <= 520.0) {
                     placed2 = sh;
                     break;
                 }
@@ -109,7 +109,7 @@ public final class VioletHills {
                     double dist = outerRadius(parent, ang) + outerRadius(cand, ang + Math.PI) + chasm;
                     double px = parent.cx + Math.cos(ang) * dist;
                     double pz = parent.cz + Math.sin(ang) * dist;
-                    if (Math.hypot(px - cx, pz - cz) + ri * 1.25 > 375.0) continue;
+                    if (Math.hypot(px - cx, pz - cz) + ri * 1.25 > 540.0) continue;
                     CityPlan.Island sh = copyAt(cand, px, pz);
                     if (minGapToAll(sh, isles) >= 17.5) {
                         placed = sh;
@@ -325,15 +325,19 @@ public final class VioletHills {
 
     private static Region gen(int sx, int sz) {
         Random r = new Random(SEED ^ (sx * 53982894593057L + sz * 317074912223L) * 0x9E3779B97F4A7C15L);
-        if (r.nextDouble() > 0.48) return null;
-        int margin = 250;
-        int cx = sx * SUPER + margin + r.nextInt(SUPER - 2 * margin);
-        int cz = sz * SUPER + margin + r.nextInt(SUPER - 2 * margin);
-        if (Math.hypot(cx, cz) < 640) return null;
-        if (AshenLands.blocks(cx, cz, 340)) return null;
-        EmberRuins.Site es = EmberRuins.nearest(cx, cz);
-        if (es != null && Math.hypot(cx - es.cx, cz - es.cz) < 460) return null;
-        return new Region(cx, cz, r);
+        if (r.nextDouble() > 0.56) return null;
+        int margin = 320;
+        for (int attempt = 0; attempt < 8; ++attempt) {
+            int cx = sx * SUPER + margin + r.nextInt(SUPER - 2 * margin);
+            int cz = sz * SUPER + margin + r.nextInt(SUPER - 2 * margin);
+            if (Math.hypot(cx, cz) < 780) continue;
+            if (Math.hypot(cx - 648, cz - 693) < 540) continue;
+            if (AshenLands.blocks(cx, cz, 380)) continue;
+            EmberRuins.Site es = EmberRuins.nearest(cx, cz);
+            if (es != null && Math.hypot(cx - es.cx, cz - es.cz) < 460) continue;
+            return new Region(cx, cz, new Random(r.nextLong()));
+        }
+        return null;
     }
 
     public static Region regionAt(double x, double z) {

@@ -36,25 +36,25 @@ public final class ModEntities {
             () -> EntityType.Builder.<ru.aiforge.riftworld.entity.SpatialRiftEntity>of(ru.aiforge.riftworld.entity.SpatialRiftEntity::new, MobCategory.MISC)
                     .sized(2.2F, 4.2F).fireImmune().updateInterval(2).clientTrackingRange(24).build("riftworld:spatial_rift"));
 
-    /** v0.22.0: Кастомная атака Босса — плавно вырастающий из-под земли и уходящий под землю Ледяной Столб (поднимает стоящего игрока!). */
+    /** v0.23.0: Кастомная атака Босса — вытянутый светлый кристальный столб из-под земли (поднимает стоящего игрока!). */
     public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.IcePillarEntity>> ICE_PILLAR = TYPES.register("ice_pillar",
             () -> EntityType.Builder.<ru.aiforge.riftworld.entity.IcePillarEntity>of(ru.aiforge.riftworld.entity.IcePillarEntity::new, MobCategory.MISC)
-                    .sized(1.76F, 5.4F).fireImmune().updateInterval(1).clientTrackingRange(12).build("riftworld:ice_pillar"));
+                    .sized(1.36F, 7.6F).fireImmune().updateInterval(1).clientTrackingRange(16).build("riftworld:ice_pillar"));
 
-    /** v0.22.0: Кастомная атака Босса — огромная острая квадратная ледяная глыба в небе + метка приземления. */
+    /** v0.23.0: Кастомная атака Босса — вытянутая светлая кристальная глыба-копьё в небе + метка приземления. */
     public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.IceHailBoulderEntity>> ICE_HAIL_BOULDER = TYPES.register("ice_hail_boulder",
             () -> EntityType.Builder.<ru.aiforge.riftworld.entity.IceHailBoulderEntity>of(ru.aiforge.riftworld.entity.IceHailBoulderEntity::new, MobCategory.MISC)
-                    .sized(2.0F, 2.0F).fireImmune().updateInterval(1).clientTrackingRange(14).build("riftworld:ice_hail_boulder"));
+                    .sized(1.4F, 4.6F).fireImmune().updateInterval(1).clientTrackingRange(18).build("riftworld:ice_hail_boulder"));
 
     /** Рев 8 «Живое море»: вся ихтиофауна Элисара одной сущностью (вариант — в данных). */
     public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.SeaFishEntity>> SEA_FISH = TYPES.register("sea_fish",
             () -> EntityType.Builder.<ru.aiforge.riftworld.entity.SeaFishEntity>of(ru.aiforge.riftworld.entity.SeaFishEntity::new, MobCategory.WATER_CREATURE)
                     .sized(0.8F, 0.6F).updateInterval(2).clientTrackingRange(12).build("riftworld:sea_fish"));
 
-    /** v0.20.0: Увеличенный Босс Колоннады «Расколотый Обелиск Разлома» (стационарный левитирующий обелиск без тени человека). */
+    /** v0.23.0: Ещё более крупный Босс Колоннады «Расколотый Обелиск Разлома» (2.45x, стационарный левитирующий обелиск без тени человека). */
     public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.RiftObeliskBoss>> RIFT_OBELISK_BOSS = TYPES.register("rift_obelisk_boss",
             () -> EntityType.Builder.<ru.aiforge.riftworld.entity.RiftObeliskBoss>of(ru.aiforge.riftworld.entity.RiftObeliskBoss::new, MobCategory.MONSTER)
-                    .sized(3.1F, 6.6F).fireImmune().clientTrackingRange(16).build("riftworld:rift_obelisk_boss"));
+                    .sized(4.3F, 9.4F).fireImmune().clientTrackingRange(20).build("riftworld:rift_obelisk_boss"));
 
     /** v0.19.0: Призываемый парящий «Гранёный Прислужник» Колоннады. */
     public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.CrystalMinion>> CRYSTAL_MINION = TYPES.register("crystal_minion",

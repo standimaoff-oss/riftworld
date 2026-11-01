@@ -66,6 +66,7 @@ public final class LandmarkStructures {
     public enum SiteKind {
         ANCIENT_TREE_ALTAR,
         ASHEN_BELFRY_BARROW,
+        ASHEN_BURNED_CHURCH,
         SHATTERED_SHARD_FORGE,
         VIOLET_WIND_OBSERVATORY
     }
@@ -136,7 +137,8 @@ public final class LandmarkStructures {
     private static final ConcurrentHashMap<Long, Optional<HarborPort>> HARBOR_CACHE = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Long, Optional<SeaLighthouse>> LIGHTHOUSE_CACHE = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Long, Optional<BiomeLandmark>> SIZO_ALTAR_CACHE = new ConcurrentHashMap<>();
-    private static final ConcurrentHashMap<Long, BiomeLandmark> ASHEN_BELFRY_CACHE = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Long, Optional<BiomeLandmark>> ASHEN_BELFRY_CACHE = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Long, Optional<BiomeLandmark>> ASHEN_CHURCH_CACHE = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Long, Optional<BiomeLandmark>> CRYSTAL_FORGE_CACHE = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Long, Optional<BiomeLandmark>> VIOLET_OBS_CACHE = new ConcurrentHashMap<>();
 
@@ -355,16 +357,41 @@ public final class LandmarkStructures {
         return new BiomeLandmark(SiteKind.ANCIENT_TREE_ALTAR, sg.cx, sg.cz, Math.max(plan.ocean + 6, baseY), 0.0, 1.0, 15.0);
     }
 
-    /** #4 Пепельный Маяк-Колокольня и Курган Павших Стражей в каждом регионе Адских угодий. */
+    /** #4 Пепельный Маяк-Колокольня и Курган Павших Стражей в регионе Адских угодий (если выпал в comboMode!). */
     public static BiomeLandmark ashenBelfryBarrow(AshenLands.Region rg) {
-        if (rg == null) return null;
+        if (rg == null || !rg.hasBelfry) return null;
         return ASHEN_BELFRY_CACHE.computeIfAbsent(key(rg.cx, rg.cz), k -> {
-            // Сектор (+124, +26) на пепельной равнине полностью свободен от замка, всех 3 курганов и сгоревшей деревни!
-            int ax = rg.cx + 124;
-            int az = rg.cz + 26;
+            double baseAng = rg.hasBurnedChurch
+                    ? Math.atan2(rg.churchZ - rg.cz, rg.churchX - rg.cx) + 2.15
+                    : 0.42;
+            int bestX = rg.cx + 148, bestZ = rg.cz + 34;
+            for (int step = 0; step < 16; ++step) {
+                double a = baseAng + step * 0.39;
+                int ax = (int) Math.round(rg.cx + Math.cos(a) * (rg.R * 0.44));
+                int az = (int) Math.round(rg.cz + Math.sin(a) * (rg.R * 0.44));
+                if (rg.hasBurnedChurch && Math.hypot(ax - rg.churchX, az - rg.churchZ) < 95.0) continue;
+                if (rg.blacktideSite != null && rg.blacktideSite.inFootprint(ax, az, 54.0)) continue;
+                boolean hitMound = false;
+                for (AshenLands.Mound m : rg.mounds) {
+                    if (Math.hypot(ax - m.x, az - m.z) < m.r + 26.0) { hitMound = true; break; }
+                }
+                if (hitMound) continue;
+                bestX = ax;
+                bestZ = az;
+                break;
+            }
             int baseY = CityPlan.get().ocean + 2;
-            return new BiomeLandmark(SiteKind.ASHEN_BELFRY_BARROW, ax, az, baseY, -1.0, 0.0, 21.0);
-        });
+            return Optional.of(new BiomeLandmark(SiteKind.ASHEN_BELFRY_BARROW, bestX, bestZ, baseY, -1.0, 0.0, 24.0));
+        }).orElse(null);
+    }
+
+    /** v0.23.0: Готическая Сгоревшая Пепельная Церковь в регионе Адских угодий (если rg.hasBurnedChurch == true!). */
+    public static BiomeLandmark ashenBurnedChurch(AshenLands.Region rg) {
+        if (rg == null || !rg.hasBurnedChurch) return null;
+        return ASHEN_CHURCH_CACHE.computeIfAbsent(key(rg.cx, rg.cz), k ->
+                Optional.of(new BiomeLandmark(SiteKind.ASHEN_BURNED_CHURCH,
+                        rg.churchX, rg.churchZ, rg.churchY, 1.0, 0.0, 25.0))
+        ).orElse(null);
     }
 
     /** Расколотая Кузня Осколков (Резонаторная Мастерская) на 3-м острове каждого региона Хрустальных разломов. */
@@ -441,16 +468,28 @@ public final class LandmarkStructures {
         return new BiomeLandmark(SiteKind.VIOLET_WIND_OBSERVATORY, ox, oz, baseY, ux, uz, 22.0);
     }
 
-    public static BiomeLandmark biomeLandmarkNear(double x, double z, double extraMargin) {
+    public static List<BiomeLandmark> biomeLandmarksNear(double x, double z, double extraMargin) {
+        List<BiomeLandmark> out = null;
         SizoGrove.Region sg = SizoGrove.regionAt(x, z);
         if (sg != null) {
             BiomeLandmark lm = ancientTreeAltar(sg);
-            if (lm != null && Math.hypot(x - lm.cx, z - lm.cz) <= lm.reachR + extraMargin) return lm;
+            if (lm != null && Math.hypot(x - lm.cx, z - lm.cz) <= lm.reachR + extraMargin) {
+                out = new ArrayList<>(2);
+                out.add(lm);
+            }
         }
         AshenLands.Region ar = AshenLands.regionAt(x, z);
         if (ar != null) {
-            BiomeLandmark lm = ashenBelfryBarrow(ar);
-            if (lm != null && Math.hypot(x - lm.cx, z - lm.cz) <= lm.reachR + extraMargin) return lm;
+            BiomeLandmark belfry = ashenBelfryBarrow(ar);
+            if (belfry != null && Math.hypot(x - belfry.cx, z - belfry.cz) <= belfry.reachR + extraMargin) {
+                if (out == null) out = new ArrayList<>(2);
+                out.add(belfry);
+            }
+            BiomeLandmark church = ashenBurnedChurch(ar);
+            if (church != null && Math.hypot(x - church.cx, z - church.cz) <= church.reachR + extraMargin) {
+                if (out == null) out = new ArrayList<>(2);
+                out.add(church);
+            }
         }
         int csx = Math.floorDiv((int) Math.floor(x), CrystalRifts.SUPER);
         int csz = Math.floorDiv((int) Math.floor(z), CrystalRifts.SUPER);
@@ -459,7 +498,10 @@ public final class LandmarkStructures {
                 CrystalRifts.Region cr = CrystalRifts.region(csx + dx, csz + dz);
                 if (cr == null) continue;
                 BiomeLandmark lm = shatteredShardForge(cr);
-                if (lm != null && Math.hypot(x - lm.cx, z - lm.cz) <= lm.reachR + extraMargin) return lm;
+                if (lm != null && Math.hypot(x - lm.cx, z - lm.cz) <= lm.reachR + extraMargin) {
+                    if (out == null) out = new ArrayList<>(2);
+                    out.add(lm);
+                }
             }
         }
         int vsx = Math.floorDiv((int) Math.floor(x), VioletHills.SUPER);
@@ -469,10 +511,18 @@ public final class LandmarkStructures {
                 VioletHills.Region vh = VioletHills.region(vsx + dx, vsz + dz);
                 if (vh == null) continue;
                 BiomeLandmark lm = violetWindObservatory(vh);
-                if (lm != null && Math.hypot(x - lm.cx, z - lm.cz) <= lm.reachR + extraMargin) return lm;
+                if (lm != null && Math.hypot(x - lm.cx, z - lm.cz) <= lm.reachR + extraMargin) {
+                    if (out == null) out = new ArrayList<>(2);
+                    out.add(lm);
+                }
             }
         }
-        return null;
+        return out == null ? Collections.emptyList() : out;
+    }
+
+    public static BiomeLandmark biomeLandmarkNear(double x, double z, double extraMargin) {
+        List<BiomeLandmark> list = biomeLandmarksNear(x, z, extraMargin);
+        return list.isEmpty() ? null : list.get(0);
     }
 
     public static boolean inFootprint(double x, double z, double margin) {
@@ -522,6 +572,14 @@ public final class LandmarkStructures {
         chunk.setBlockEntity(be);
     }
 
+    private static BlockState stair(BlockState base, Direction facing, Half half) {
+        return base.setValue(StairBlock.FACING, facing).setValue(StairBlock.HALF, half);
+    }
+
+    private static BlockState slabTop(BlockState base) {
+        return base.setValue(SlabBlock.TYPE, SlabType.TOP);
+    }
+
     private static void putLootChest(WorldGenLevel level, ChunkAccess chunk, BlockPos.MutableBlockPos mp,
                                      RandomSource rnd, int x0, int z0,
                                      int x, int y, int z, Direction facing, net.minecraft.resources.ResourceLocation table) {
@@ -548,11 +606,12 @@ public final class LandmarkStructures {
             buildSeaLighthouse(level, chunk, mp, rnd, plan, lh, x0, z0);
         }
 
-        BiomeLandmark lm = biomeLandmarkNear(midX, midZ, 26);
-        if (lm != null) {
+        List<BiomeLandmark> lms = biomeLandmarksNear(midX, midZ, 30);
+        for (BiomeLandmark lm : lms) {
             switch (lm.kind) {
                 case ANCIENT_TREE_ALTAR -> buildAncientTreeAltar(level, chunk, mp, rnd, plan, lm, x0, z0);
                 case ASHEN_BELFRY_BARROW -> buildAshenBelfryBarrow(level, chunk, mp, rnd, plan, lm, x0, z0);
+                case ASHEN_BURNED_CHURCH -> buildAshenBurnedChurch(level, chunk, mp, rnd, plan, lm, x0, z0);
                 case SHATTERED_SHARD_FORGE -> buildShatteredShardForge(level, chunk, mp, rnd, plan, lm, x0, z0);
                 case VIOLET_WIND_OBSERVATORY -> buildVioletWindObservatory(level, chunk, mp, rnd, plan, lm, x0, z0);
             }
@@ -597,9 +656,32 @@ public final class LandmarkStructures {
             for (int z = z0; z <= z0 + 15; ++z) {
                 int dx = x - cx, dz = z - cz;
                 double r = Math.hypot(dx, dz);
-                if (r > 22.5) continue;
+                if (r > 26.8) continue;
 
                 double h2d = ElisarChunkGenerator.hash(x, z, 601);
+
+                // v0.23.0: Естественный парковый пояс совместимости с островом (r = 22.2 .. 26.8) —
+                // кипарисы Сизо, замшелые валуны, цветущие лужайки и плавный спуск к траве острова!
+                if (r > 22.2) {
+                    int gTop = safeGroundY(plan, x, z, by - 2);
+                    if (gTop > plan.ocean + 2) {
+                        double blend = (26.8 - r) / 4.6;
+                        if (h2d < blend * 0.72) {
+                            put(chunk, mp, x0, z0, x, gTop, z, h2d < 0.28 ? mossBlock : ElisarBlocks.GRASS.get().defaultBlockState());
+                            if (h2d < 0.14) {
+                                put(chunk, mp, x0, z0, x, gTop + 1, z, h2d < 0.06 ? flowers : tallGrass);
+                            } else if (Math.abs(r - 24.2) < 0.65 && ((dx * 17 + dz * 31) & 15) == 0 && dz > -8) {
+                                // Стройные парковые кипарисы вокруг чаши античного театра
+                                for (int cy = 1; cy <= 6; ++cy) {
+                                    put(chunk, mp, x0, z0, x, gTop + cy, z,
+                                            cy <= 2 ? ElisarBlocks.SIZO_LOG.get().defaultBlockState()
+                                                    : ElisarBlocks.GARDEN_LEAVES.get().defaultBlockState().setValue(LeavesBlock.PERSISTENT, true));
+                                }
+                            }
+                        }
+                    }
+                    continue;
+                }
 
                 // Очищаем воздух над чашей театра и сценой
                 for (int y = by; y <= by + 18; ++y) {
@@ -660,8 +742,14 @@ public final class LandmarkStructures {
                         put(chunk, mp, x0, z0, x, seatY, z, seatStair);
                     }
 
-                    // Разрушенная верхняя колоннада амфитеатра (часть колонн обломлена на разной высоте, часть увита плющом!)
+                    // Разрушенная верхняя колоннада амфитеатра с контрфорсами, карнизами и рельефным архитравом (v0.23.0!)
                     if (r >= 18.5 && !collapsedSector) {
+                        boolean buttress = Math.abs(Math.sin(ang * 5.0)) < 0.14 && r >= 19.2;
+                        if (buttress) {
+                            for (int by2 = by; by2 <= by + 6; ++by2) {
+                                put(chunk, mp, x0, z0, x, by2, z, by2 % 3 == 0 ? keepMossy : marble);
+                            }
+                        }
                         put(chunk, mp, x0, z0, x, by + 7, z, h2d < 0.45 ? ivyBrick : cracked);
                         int arcStep = (int) Math.round((ang + Math.PI) * 10.0);
                         boolean intactSpan = Math.sin(ang * 2.3 + 0.6) > -0.15;
@@ -671,8 +759,11 @@ public final class LandmarkStructures {
                                 put(chunk, mp, x0, z0, x, py, z, py == colTopY && !intactSpan ? cracked : pillar);
                             }
                         }
-                        if (intactSpan && h2d > 0.22) {
-                            put(chunk, mp, x0, z0, x, by + 12, z, h2d < 0.55 ? mossBlock : TempleBlocks.SLAB.get().defaultBlockState());
+                        if (intactSpan && h2d > 0.18) {
+                            put(chunk, mp, x0, z0, x, by + 12, z,
+                                    arcStep % 3 == 1 ? slabTop(TempleBlocks.SLAB.get().defaultBlockState()) : marble);
+                            put(chunk, mp, x0, z0, x, by + 13, z,
+                                    h2d < 0.48 ? mossBlock : TempleBlocks.SLAB.get().defaultBlockState());
                         }
                     }
                 }
@@ -843,7 +934,11 @@ public final class LandmarkStructures {
             }
         }
 
-        // 2) Двухэтажное здание Портовой Таможни и арочного Склада на западной/центральной части набережной (lx: -11..+3, lz: -10..-4)
+        // 2) Двухэтажное здание Портовой Таможни и арочного Склада с эркером, кронштейнами, ставнями и трубой (v0.23.0!)
+        BlockState ashlarStair = CastleBlocks.ASHLAR_STAIRS.get().defaultBlockState();
+        BlockState roofBlueStairN = stair(ElisarBlocks.ROOF_BLUE_STAIRS.get().defaultBlockState(), Direction.NORTH, Half.BOTTOM);
+        BlockState roofBlueStairS = stair(ElisarBlocks.ROOF_BLUE_STAIRS.get().defaultBlockState(), Direction.SOUTH, Half.BOTTOM);
+        BlockState darkStair = CastleBlocks.DARK_STAIRS.get().defaultBlockState();
         for (int lx = -11; lx <= 3; ++lx) {
             for (int lz = -10; lz <= -4; ++lz) {
                 int wx = cx + lx, wz = cz + lz;
@@ -851,41 +946,69 @@ public final class LandmarkStructures {
                 boolean wallZ = (lz == -10 || lz == -4);
                 boolean wall = wallX || wallZ;
 
-                // 1-й этаж: каменная аркада склада (высота qy+1 .. qy+4)
+                // 1-й этаж: каменная аркада склада со ступенчатыми пятами арок и рустованными углами (qy+1 .. qy+4)
                 for (int dy = 1; dy <= 4; ++dy) {
                     if (wall) {
-                        boolean archOpen = (lz == -4 && dy <= 3 && (Math.abs(lx + 7) <= 1 || Math.abs(lx + 1) <= 1));
-                        if (!archOpen) {
-                            BlockState st = (wallX && wallZ) ? ashlarPillar : brick;
-                            put(chunk, mp, x0, z0, wx, qy + dy, wz, st);
+                        boolean archCenter = (lz == -4 && (lx == -7 || lx == -1));
+                        boolean archSide = (lz == -4 && (Math.abs(lx + 7) == 1 || Math.abs(lx + 1) == 1));
+                        if (archCenter && dy <= 3) continue;
+                        if (archSide && dy <= 2) continue;
+                        if (archSide && dy == 3) {
+                            Direction inDir = (lx == -8 || lx == -2) ? Direction.WEST : Direction.EAST;
+                            put(chunk, mp, x0, z0, wx, qy + dy, wz, stair(ashlarStair, inDir, Half.TOP));
+                            continue;
                         }
+                        BlockState st = (wallX && wallZ) ? ashlarPillar
+                                : (dy == 1 ? ashlar : ((lx + dy) % 4 == 0 ? ElisarBlocks.BRICKS_MOSSY.get().defaultBlockState() : brick));
+                        put(chunk, mp, x0, z0, wx, qy + dy, wz, st);
                     }
                 }
-                // Межэтажное перекрытие + фахверковый 2-й этаж Портовой Таможни (qy+5 .. qy+8)
+                // Межэтажное перекрытие + нависающий фахверковый 2-й этаж Портовой Таможни (qy+5 .. qy+8)
                 put(chunk, mp, x0, z0, wx, qy + 5, wz, darkPlank);
                 for (int dy = 6; dy <= 8; ++dy) {
                     if (wall) {
                         boolean win = (dy == 7 && !wallX && (lx == -8 || lx == -4 || lx == 0));
                         BlockState st = (wallX && wallZ) ? darkBeamY
+                                : (lx == -4 && !wallZ) ? darkBeamY
                                 : win ? ElisarBlocks.WINDOW.get().defaultBlockState()
-                                : (dy == 7 ? timber : plaster);
+                                : (dy == 7 || (dy == 6 && (lx + lz) % 3 == 0) ? timber : plaster);
                         put(chunk, mp, x0, z0, wx, qy + dy, wz, st);
                     }
                 }
             }
+            // Консольные деревянные кронштейны нависающего карниза и цветочницы под окнами со стороны гавани (lz == -3)
+            put(chunk, mp, x0, z0, cx + lx, qy + 5, cz - 3,
+                    (lx == -11 || lx == -7 || lx == -4 || lx == -1 || lx == 3)
+                            ? stair(darkStair, Direction.NORTH, Half.TOP)
+                            : slabTop(CastleBlocks.DARK_SLAB.get().defaultBlockState()));
+            if (lx == -8 || lx == 0) {
+                put(chunk, mp, x0, z0, cx + lx, qy + 6, cz - 3, Blocks.SPRUCE_TRAPDOOR.defaultBlockState());
+            }
         }
-        // Двускатная синяя черепичная крыша Таможни
+        // Рельефная ступенчатая синяя черепичная крыша Таможни + фронтон дормера + каменная печная труба с дымком!
         for (int lx = -12; lx <= 4; ++lx) {
             for (int lz = -11; lz <= -3; ++lz) {
                 int distMid = Math.abs(lz + 7);
                 int ry = qy + 12 - distMid;
-                put(chunk, mp, x0, z0, cx + lx, ry, cz + lz, roofBlue);
+                BlockState rSt = distMid == 0 ? ElisarBlocks.ROOF_BLUE_SLAB.get().defaultBlockState()
+                        : (lz < -7 ? roofBlueStairS : roofBlueStairN);
+                if (lx == -12 || lx == 4) {
+                    rSt = stair(darkStair, lz < -7 ? Direction.SOUTH : Direction.NORTH, Half.BOTTOM);
+                }
+                put(chunk, mp, x0, z0, cx + lx, ry, cz + lz, rSt);
+                if (distMid > 0 && distMid < 4 && lx > -12 && lx < 4) {
+                    put(chunk, mp, x0, z0, cx + lx, ry - 1, cz + lz, roofBlue);
+                }
                 if ((lx == -11 || lx == 3) && distMid < 3) {
                     for (int fy = qy + 9; fy < ry; ++fy) {
-                        put(chunk, mp, x0, z0, cx + lx, fy, cz + lz, plaster);
+                        put(chunk, mp, x0, z0, cx + lx, fy, cz + lz, fy == qy + 10 && lx == -11 ? ElisarBlocks.WINDOW.get().defaultBlockState() : plaster);
                     }
                 }
             }
+        }
+        // Каменная каминная труба на западном крыле Таможни
+        for (int cy = qy + 9; cy <= qy + 14; ++cy) {
+            put(chunk, mp, x0, z0, cx - 10, cy, cz - 9, cy == qy + 14 ? CastleBlocks.ASHLAR_SLAB.get().defaultBlockState() : ashlar);
         }
         put(chunk, mp, x0, z0, cx - 7, qy + 1, cz - 8, barrel);
         put(chunk, mp, x0, z0, cx - 6, qy + 1, cz - 8, barrel);
@@ -946,34 +1069,63 @@ public final class LandmarkStructures {
         put(chunk, mp, x0, z0, kx, qy + 4, kz + 5, barrel);
         put(chunk, mp, x0, z0, kx, qy + 3, kz + 5, lanternHang);
 
-        // 4) Пришвартованная в гавани между пирсами Торговая Каравелла (cx, cz + 8, плавает прямо на elisar_water!)
+        // 4) Детализированная Торговая Каравелла с кормовым кастлем, бушпритом и двумя мачтами (v0.23.0, 0 sub_air!)
         int sx = cx, sz = cz + 8;
-        for (int dz = -7; dz <= 7; ++dz) {
-            int hw = dz <= -6 || dz >= 6 ? 0 : (Math.abs(dz) >= 4 ? 1 : 2);
+        for (int dz = -8; dz <= 8; ++dz) {
+            int hw = Math.abs(dz) >= 7 ? 0 : (Math.abs(dz) >= 5 ? 1 : (Math.abs(dz) >= 3 ? 2 : 3));
             for (int dx = -hw; dx <= hw; ++dx) {
-                // Киль и днище на уровне воды (ocean) и борта над водой (ocean+1 .. ocean+2) — 0 подводного воздуха!
                 put(chunk, mp, x0, z0, sx + dx, ocean, sz + dz, darkPlank);
-                boolean gunwale = (Math.abs(dx) == hw || Math.abs(dz) >= 6);
+                boolean gunwale = (Math.abs(dx) == hw || Math.abs(dz) >= 7);
                 put(chunk, mp, x0, z0, sx + dx, ocean + 1, sz + dz, gunwale ? darkPlank : ElisarBlocks.SIZO_PLANKS.get().defaultBlockState());
                 if (gunwale) {
-                    put(chunk, mp, x0, z0, sx + dx, ocean + 2, sz + dz, (Math.abs(dz) >= 5) ? darkPlank : CastleBlocks.DARK_SLAB.get().defaultBlockState());
+                    put(chunk, mp, x0, z0, sx + dx, ocean + 2, sz + dz,
+                            (dz <= -4 || dz >= 6) ? darkPlank : CastleBlocks.DARK_SLAB.get().defaultBlockState());
+                }
+                // Возвышенный кормовой квартердек (каюта капитана на dz = -7 .. -4)
+                if (dz >= -7 && dz <= -4 && Math.abs(dx) <= hw) {
+                    if (gunwale || dz == -4) {
+                        put(chunk, mp, x0, z0, sx + dx, ocean + 3, sz + dz,
+                                (dz == -7 && dx == 0) ? ElisarBlocks.WINDOW.get().defaultBlockState() : darkPlank);
+                    }
+                    put(chunk, mp, x0, z0, sx + dx, ocean + 4, sz + dz, CastleBlocks.DARK_SLAB.get().defaultBlockState());
+                    if (gunwale && dz <= -5) {
+                        put(chunk, mp, x0, z0, sx + dx, ocean + 5, sz + dz, fence);
+                    }
                 }
             }
         }
-        // Грот-мачта и бело-лазурный парус каравеллы
-        for (int my = ocean + 2; my <= ocean + 13; ++my) {
+        // Бушприт на носу каравеллы (dz = +8 .. +12) и кормовой фонарь
+        for (int b = 8; b <= 12; ++b) {
+            put(chunk, mp, x0, z0, sx, ocean + 2 + (b - 8) / 2, sz + b, darkBeamZ);
+        }
+        put(chunk, mp, x0, z0, sx, ocean + 6, sz - 7, lantern);
+        // Грот-мачта и фок-мачта с пузатыми бело-лазурными парусами и вантами
+        for (int my = ocean + 2; my <= ocean + 15; ++my) {
             put(chunk, mp, x0, z0, sx, my, sz, sizoLog);
         }
+        for (int my = ocean + 4; my <= ocean + 11; ++my) {
+            put(chunk, mp, x0, z0, sx, my, sz - 5, sizoLog);
+        }
         for (int dx = -4; dx <= 4; ++dx) {
-            put(chunk, mp, x0, z0, sx + dx, ocean + 11, sz, darkBeamX);
+            put(chunk, mp, x0, z0, sx + dx, ocean + 12, sz, darkBeamX);
             put(chunk, mp, x0, z0, sx + dx, ocean + 6, sz, darkBeamX);
-            for (int sy = ocean + 7; sy <= ocean + 10; ++sy) {
-                int bulge = (Math.abs(dx) <= 2) ? 1 : 0;
+            for (int sy = ocean + 7; sy <= ocean + 11; ++sy) {
+                int bulge = (Math.abs(dx) <= 2 && sy >= ocean + 8 && sy <= ocean + 10) ? 1 : 0;
                 put(chunk, mp, x0, z0, sx + dx, sy, sz + bulge, (sy == ocean + 9) ? sailBlue : sailWhite);
             }
         }
-        put(chunk, mp, x0, z0, sx, ocean + 14, sz, lantern);
-        put(chunk, mp, x0, z0, sx, ocean + 2, sz - 3, barrel);
+        for (int dx = -2; dx <= 2; ++dx) {
+            put(chunk, mp, x0, z0, sx + dx, ocean + 9, sz - 5, darkBeamX);
+            for (int sy = ocean + 6; sy <= ocean + 8; ++sy) {
+                put(chunk, mp, x0, z0, sx + dx, sy, sz - 5, sy == ocean + 7 ? sailBlue : sailWhite);
+            }
+        }
+        for (int wy = ocean + 3; wy <= ocean + 7; ++wy) {
+            put(chunk, mp, x0, z0, sx - 2, wy, sz, chain);
+            put(chunk, mp, x0, z0, sx + 2, wy, sz, chain);
+        }
+        put(chunk, mp, x0, z0, sx, ocean + 16, sz, lantern);
+        put(chunk, mp, x0, z0, sx, ocean + 2, sz - 2, barrel);
     }
 
     // -------------------------------------------------------------------------
@@ -1074,8 +1226,53 @@ public final class LandmarkStructures {
             }
         }
 
-        // 3) Выносная смотровая галерея с коваными перилами и Сияющая Фонарная Камера (линза Френеля!)
+        // 3) Выносная смотровая галерея на резных каменных кронштейнах и Сияющая Фонарная Камера (v0.23.0!)
+        BlockState ashlarStair = CastleBlocks.ASHLAR_STAIRS.get().defaultBlockState();
         int galY = rTop + 1 + towerH + 1;
+        for (Direction d4 : Direction.Plane.HORIZONTAL) {
+            put(chunk, mp, x0, z0, cx + d4.getStepX() * 4, galY - 1, cz + d4.getStepZ() * 4,
+                    stair(ashlarStair, d4.getOpposite(), Half.TOP));
+            put(chunk, mp, x0, z0, cx + d4.getStepX() * 6, rTop + 1, cz + d4.getStepZ() * 6,
+                    stair(ashlarStair, d4.getOpposite(), Half.BOTTOM));
+        }
+        // Уютный каменный Домик Смотрителя Маяка с синей двускатной крышей и каминной трубой на западном плече рифа (dx: -9..-4, dz: -3..+3)
+        for (int kx = -9; kx <= -4; ++kx) {
+            for (int kz = -3; kz <= 3; ++kz) {
+                int wx = cx + kx, wz = cz + kz;
+                int fl = Math.max(3, ElisarChunkGenerator.oceanFloor(plan, wx, wz));
+                for (int y = fl; y <= rTop; ++y) {
+                    put(chunk, mp, x0, z0, wx, y, wz, y <= ocean + 1 ? mossy : stone);
+                }
+                boolean kwX = (kx == -9 || kx == -4);
+                boolean kwZ = (kz == -3 || kz == 3);
+                for (int dy = 1; dy <= 4; ++dy) {
+                    if (kwX || kwZ) {
+                        if (kx == -4 && kz == 0 && dy <= 2) continue; // проход к башне маяка
+                        boolean win = dy == 2 && ((kwZ && kx == -7) || (kx == -9 && kz == 0));
+                        BlockState kst = (kwX && kwZ) ? CastleBlocks.ASHLAR_PILLAR.get().defaultBlockState()
+                                : win ? ElisarBlocks.WINDOW.get().defaultBlockState()
+                                : (dy == 1 ? CastleBlocks.ASHLAR.get().defaultBlockState() : whiteWall);
+                        put(chunk, mp, x0, z0, wx, rTop + dy, wz, kst);
+                    } else {
+                        put(chunk, mp, x0, z0, wx, rTop + dy, wz, dy == 1 ? darkPlank : Blocks.AIR.defaultBlockState());
+                    }
+                }
+                int distK = Math.abs(kz);
+                int ry = rTop + 8 - distK;
+                put(chunk, mp, x0, z0, wx, ry, wz,
+                        distK == 0 ? ElisarBlocks.ROOF_BLUE_SLAB.get().defaultBlockState()
+                                : stair(ElisarBlocks.ROOF_BLUE_STAIRS.get().defaultBlockState(),
+                                kz < 0 ? Direction.SOUTH : Direction.NORTH, Half.BOTTOM));
+                if (kwX && distK < 3) {
+                    for (int fy = rTop + 5; fy < ry; ++fy) {
+                        put(chunk, mp, x0, z0, wx, fy, wz, whiteWall);
+                    }
+                }
+            }
+        }
+        for (int cy = rTop + 5; cy <= rTop + 10; ++cy) {
+            put(chunk, mp, x0, z0, cx - 8, cy, cz - 2, CastleBlocks.ASHLAR.get().defaultBlockState());
+        }
         for (int dx = -5; dx <= 5; ++dx) {
             for (int dz = -5; dz <= 5; ++dz) {
                 double d = Math.hypot(dx, dz);
@@ -1137,12 +1334,25 @@ public final class LandmarkStructures {
         BlockState chain = ElisarBlocks.CHAIN.get().defaultBlockState().setValue(ChainBlock.AXIS, Direction.Axis.Y);
         BlockState air = Blocks.AIR.defaultBlockState();
 
-        // 1) Утопленное круглое замшелое святилище с руническим каменным полом (r <= 13.0)
+        // 1) Утопленное круглое замшелое святилище с мягким лесным переходом в Рощу Сизо (r <= 17.5, v0.23.0!)
+        BlockState cobbleStair = ElisarBlocks.COBBLE_STAIRS.get().defaultBlockState();
         for (int x = x0; x <= x0 + 15; ++x) {
             for (int z = z0; z <= z0 + 15; ++z) {
                 int dx = x - cx, dz = z - cz;
                 double r = Math.hypot(dx, dz);
-                if (r > 13.6) continue;
+                if (r > 17.5) continue;
+                if (r > 13.4) {
+                    // Мягкий мшисто-корневой пояс с папоротниками и цветами, сливающий круг святилища с лесом Сизо!
+                    int gTop = safeGroundY(plan, x, z, by - 1);
+                    double h = ElisarChunkGenerator.hash(x, z, 631);
+                    if (gTop > plan.ocean + 3 && h < (17.5 - r) / 4.1) {
+                        put(chunk, mp, x0, z0, x, gTop, z, h < 0.45 ? moss : mossyStone);
+                        if (h < 0.22) {
+                            put(chunk, mp, x0, z0, x, gTop + 1, z, h < 0.10 ? flowers : Blocks.FERN.defaultBlockState());
+                        }
+                    }
+                    continue;
+                }
 
                 int colTop = safeGroundY(plan, x, z, by - 4);
                 for (int y = by; y <= by + 16; ++y) {
@@ -1152,14 +1362,23 @@ public final class LandmarkStructures {
                     put(chunk, mp, x0, z0, x, y, z, mossyStone);
                 }
 
-                boolean outerRim = r >= 11.2 && r <= 13.0;
+                boolean stepRing = r >= 10.6 && r < 11.4;
+                boolean outerRim = r >= 11.4 && r <= 13.4;
                 int floorY = outerRim ? by : by - 1;
-                BlockState tile = (Math.abs(r - 6.8) < 0.55 || (Math.abs(dx) == 0 && r < 10.5) || (Math.abs(dz) == 0 && r < 10.5))
-                        ? goldRune
-                        : ((dx * 7 + dz * 13) % 5 == 0 ? moss : ((dx + dz) % 2 == 0 ? mossyBrick : floor));
-                put(chunk, mp, x0, z0, x, floorY, z, tile);
-                if (!outerRim && r > 4.2 && r < 10.2 && ((dx * 31 ^ dz * 17) & 15) == 0) {
-                    put(chunk, mp, x0, z0, x, floorY + 1, z, flowers);
+                if (stepRing) {
+                    Direction inDir = Math.abs(dx) > Math.abs(dz)
+                            ? (dx > 0 ? Direction.WEST : Direction.EAST)
+                            : (dz > 0 ? Direction.NORTH : Direction.SOUTH);
+                    put(chunk, mp, x0, z0, x, by - 1, z, mossyStone);
+                    put(chunk, mp, x0, z0, x, by, z, stair(cobbleStair, inDir.getOpposite(), Half.BOTTOM));
+                } else {
+                    BlockState tile = (Math.abs(r - 6.8) < 0.55 || (Math.abs(dx) == 0 && r < 10.5) || (Math.abs(dz) == 0 && r < 10.5))
+                            ? goldRune
+                            : ((dx * 7 + dz * 13) % 5 == 0 ? moss : ((dx + dz) % 2 == 0 ? mossyBrick : floor));
+                    put(chunk, mp, x0, z0, x, floorY, z, tile);
+                    if (!outerRim && r > 4.2 && r < 10.2 && ((dx * 31 ^ dz * 17) & 15) == 0) {
+                        put(chunk, mp, x0, z0, x, floorY + 1, z, flowers);
+                    }
                 }
             }
         }
@@ -1281,14 +1500,19 @@ public final class LandmarkStructures {
         int bxCenter = cx - 7, bzCenter = cz;
         int txCenter = cx + 8, tzCenter = cz;
 
-        // 1) Вымощенная обожжённым камнем мемориальная площадь + Курган Павших Стражей со склепом внутри!
+        // 1) Вымощенная обожжённым камнем мемориальная площадь с плавной пепельно-базальтовой каймой (r <= 24.5, v0.23.0!)
         for (int x = x0; x <= x0 + 15; ++x) {
             for (int z = z0; z <= z0 + 15; ++z) {
                 double dAll = Math.hypot(x - cx, z - cz);
-                if (dAll > 20.5) continue;
+                if (dAll > 24.5) continue;
+                double hAsh = ElisarChunkGenerator.hash(x, z, 645);
+                if (dAll > 20.2) {
+                    if (AshenLands.weight(x + 0.5, z + 0.5) > 0.45 && hAsh < (24.5 - dAll) / 4.3) {
+                        put(chunk, mp, x0, z0, x, by - 1, z, hAsh < 0.35 ? ash : (hAsh < 0.7 ? burntSoil : scorched));
+                    }
+                    continue;
+                }
 
-                // На пепельной равнине (c.isl == null) AshenLands.column уже заполнил камень до plan.ocean+1;
-                // если край площади попадает на пограничную колонку моря, доводим сплошной цоколь до дна (sub_air=0)!
                 int seaFloor = Math.max(4, ElisarChunkGenerator.oceanFloor(plan, x, z));
                 int baseStart = AshenLands.weight(x + 0.5, z + 0.5) > 0.45 ? (by - 4) : seaFloor;
                 for (int y = baseStart; y < by; ++y) {
@@ -1297,7 +1521,8 @@ public final class LandmarkStructures {
                 for (int y = by; y <= by + 29; ++y) {
                     put(chunk, mp, x0, z0, x, y, z, air);
                 }
-                put(chunk, mp, x0, z0, x, by - 1, z, ((x + z) % 5 == 0) ? ash : scorched);
+                put(chunk, mp, x0, z0, x, by - 1, z,
+                        hAsh < 0.18 ? ash : (hAsh < 0.36 ? blackstone : (hAsh < 0.55 ? crackedBrick : scorched)));
 
                 // Купол Кургана (r <= 9.6 вокруг bxCenter, bzCenter) с подземно-купольным склепом внутри!
                 int dxB = x - bxCenter, dzB = z - bzCenter;
@@ -1398,6 +1623,268 @@ public final class LandmarkStructures {
             }
         }
         put(chunk, mp, x0, z0, txCenter, by + 16, tzCenter, soulLantern);
+        // v0.23.0: Рельефные ступенчатые готические контрфорсы и стрельчатые фронтоны у Пепельной Колокольни!
+        BlockState bsStair = Blocks.POLISHED_BLACKSTONE_BRICK_STAIRS.defaultBlockState();
+        BlockState bsWall = Blocks.POLISHED_BLACKSTONE_BRICK_WALL.defaultBlockState();
+        for (Direction d4 : Direction.Plane.HORIZONTAL) {
+            int sx = d4.getStepX(), sz = d4.getStepZ();
+            for (int oy = 0; oy <= 6; ++oy) {
+                put(chunk, mp, x0, z0, txCenter + sx * 5, by + oy, tzCenter + sz * 4, oy == 6 ? stair(bsStair, d4.getOpposite(), Half.BOTTOM) : blackstone);
+                put(chunk, mp, x0, z0, txCenter + sx * 4, by + oy, tzCenter + sz * 5, oy == 6 ? stair(bsStair, d4.getOpposite(), Half.BOTTOM) : blackstone);
+            }
+            for (int oy = 7; oy <= 13; ++oy) {
+                put(chunk, mp, x0, z0, txCenter + sx * 4, by + oy, tzCenter + sz * 3, oy == 13 ? stair(bsStair, d4.getOpposite(), Half.BOTTOM) : bsWall);
+                put(chunk, mp, x0, z0, txCenter + sx * 3, by + oy, tzCenter + sz * 4, oy == 13 ? stair(bsStair, d4.getOpposite(), Half.BOTTOM) : bsWall);
+            }
+            put(chunk, mp, x0, z0, txCenter + sx * 4, by + 14, tzCenter, stair(bsStair, d4.getOpposite(), Half.TOP));
+            put(chunk, mp, x0, z0, txCenter, by + 14, tzCenter + sz * 4, stair(bsStair, d4.getOpposite(), Half.TOP));
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // НОВАЯ СТРУКТУРА v0.23.0: ГОТИЧЕСКАЯ СГОРЕВШАЯ ПЕПЕЛЬНАЯ ЦЕРКОВЬ (Адские угодья)
+    // -------------------------------------------------------------------------
+    private static void buildAshenBurnedChurch(WorldGenLevel level, ChunkAccess chunk, BlockPos.MutableBlockPos mp,
+                                               RandomSource rnd, CityPlan plan, BiomeLandmark lm, int x0, int z0) {
+        int cx = lm.cx, cz = lm.cz, by = lm.baseY;
+        BlockState scorched = CastleBlocks.SCORCHED_STONE.get().defaultBlockState();
+        BlockState burntSoil = CastleBlocks.BURNT_SOIL.get().defaultBlockState();
+        BlockState ash = CastleBlocks.ASH.get().defaultBlockState();
+        BlockState brick = CastleBlocks.BRICKS.get().defaultBlockState();
+        BlockState cracked = CastleBlocks.BRICKS_CRACKED.get().defaultBlockState();
+        BlockState brickWall = CastleBlocks.BRICKS_WALL.get().defaultBlockState();
+        BlockState brickStair = CastleBlocks.BRICKS_STAIRS.get().defaultBlockState();
+        BlockState ashlar = CastleBlocks.ASHLAR.get().defaultBlockState();
+        BlockState ashlarStair = CastleBlocks.ASHLAR_STAIRS.get().defaultBlockState();
+        BlockState ashlarPillar = CastleBlocks.ASHLAR_PILLAR.get().defaultBlockState().setValue(RotatedPillarBlock.AXIS, Direction.Axis.Y);
+        BlockState blackstone = Blocks.POLISHED_BLACKSTONE_BRICKS.defaultBlockState();
+        BlockState bsCracked = Blocks.CRACKED_POLISHED_BLACKSTONE_BRICKS.defaultBlockState();
+        BlockState bsStair = Blocks.POLISHED_BLACKSTONE_BRICK_STAIRS.defaultBlockState();
+        BlockState bsWall = Blocks.POLISHED_BLACKSTONE_BRICK_WALL.defaultBlockState();
+        BlockState charredY = CastleBlocks.CHARRED_LOG.get().defaultBlockState().setValue(RotatedPillarBlock.AXIS, Direction.Axis.Y);
+        BlockState charredX = CastleBlocks.CHARRED_LOG.get().defaultBlockState().setValue(RotatedPillarBlock.AXIS, Direction.Axis.X);
+        BlockState charredZ = CastleBlocks.CHARRED_LOG.get().defaultBlockState().setValue(RotatedPillarBlock.AXIS, Direction.Axis.Z);
+        BlockState darkStair = CastleBlocks.DARK_STAIRS.get().defaultBlockState();
+        BlockState darkSlab = CastleBlocks.DARK_SLAB.get().defaultBlockState();
+        BlockState stainedRed = CastleBlocks.STAINED_GLASS.get().defaultBlockState();
+        BlockState bars = CastleBlocks.BARS.get().defaultBlockState();
+        BlockState chain = ElisarBlocks.CHAIN.get().defaultBlockState().setValue(ChainBlock.AXIS, Direction.Axis.Y);
+        BlockState soulHang = Blocks.SOUL_LANTERN.defaultBlockState().setValue(LanternBlock.HANGING, true);
+        BlockState soulStand = Blocks.SOUL_LANTERN.defaultBlockState();
+        BlockState candle = TempleBlocks.RITUAL_CANDLE.get().defaultBlockState();
+        BlockState carpet = CastleBlocks.CARPET.get().defaultBlockState();
+        BlockState cobweb = CastleBlocks.COBWEB.get().defaultBlockState();
+        BlockState air = Blocks.AIR.defaultBlockState();
+
+        // 1) Погост и пепельный двор базилики с плавным переходом в рельеф Адских угодий (r <= 24.5)
+        for (int x = x0; x <= x0 + 15; ++x) {
+            for (int z = z0; z <= z0 + 15; ++z) {
+                int dx = x - cx, dz = z - cz;
+                double r = Math.hypot(dx * 0.85, dz * 1.05);
+                if (r > 24.5) continue;
+                double h = ElisarChunkGenerator.hash(x, z, 677);
+                if (r > 19.8) {
+                    if (AshenLands.weight(x + 0.5, z + 0.5) > 0.40 && h < (24.5 - r) / 4.7) {
+                        put(chunk, mp, x0, z0, x, by - 1, z, h < 0.35 ? ash : (h < 0.72 ? burntSoil : scorched));
+                    }
+                    continue;
+                }
+                int seaFloor = Math.max(4, ElisarChunkGenerator.oceanFloor(plan, x, z));
+                int baseStart = AshenLands.weight(x + 0.5, z + 0.5) > 0.45 ? (by - 4) : seaFloor;
+                for (int y = baseStart; y < by; ++y) {
+                    put(chunk, mp, x0, z0, x, y, z, scorched);
+                }
+                for (int y = by; y <= by + 25; ++y) {
+                    put(chunk, mp, x0, z0, x, y, z, air);
+                }
+                // Каменная процессионная дорожка с запада к порталу (dz: -2..2, dx: -19..-13) и пепельный погост вокруг
+                boolean walk = (dx >= -19 && dx <= -13 && Math.abs(dz) <= 2);
+                BlockState yard = walk ? (h < 0.45 ? bsCracked : blackstone)
+                        : (h < 0.25 ? ash : (h < 0.58 ? burntSoil : scorched));
+                put(chunk, mp, x0, z0, x, by - 1, z, yard);
+
+                // Кованая ограда погоста с обрушенными пролётами по периметру двора
+                boolean fenceRing = (Math.abs(dx) == 18 && Math.abs(dz) <= 13 && Math.abs(dz) > 2)
+                        || (Math.abs(dz) == 13 && Math.abs(dx) <= 18);
+                if (fenceRing && h > 0.22) {
+                    boolean post = (dx % 4 == 0 && dz % 4 == 0) || (Math.abs(dx) == 18 && Math.abs(dz) == 3);
+                    put(chunk, mp, x0, z0, x, by, z, post ? blackstone : bsWall);
+                    if (post) {
+                        put(chunk, mp, x0, z0, x, by + 1, z, bsWall);
+                        if (Math.abs(dx) == 18 && Math.abs(dz) == 3) {
+                            put(chunk, mp, x0, z0, x, by + 2, z, soulStand);
+                        }
+                    } else if (h > 0.42) {
+                        put(chunk, mp, x0, z0, x, by + 1, z, bars);
+                    }
+                }
+                // Покосившиеся надгробия на северном и южном кладбищах церкви (|dz| >= 9 .. 11, |dx| <= 11)
+                if (Math.abs(dz) >= 9 && Math.abs(dz) <= 11 && Math.abs(dx) <= 10 && (dx % 4 == 0) && (dz % 2 != 0) && h > 0.30) {
+                    put(chunk, mp, x0, z0, x, by, z, bsWall);
+                    if (h > 0.62) put(chunk, mp, x0, z0, x, by + 1, z, CastleBlocks.ASHLAR_SLAB.get().defaultBlockState());
+                }
+            }
+        }
+
+        // 2) Крестообразный план Готической Базилики: Неф (dx: -12..+8, |dz| <= 6), Трансепт (dx: +1..+6, |dz| <= 9), Восточная Апсида (dx: +8..+13)
+        for (int dx = -13; dx <= 14; ++dx) {
+            for (int dz = -10; dz <= 10; ++dz) {
+                int wx = cx + dx, wz = cz + dz;
+                boolean inNave = dx >= -12 && dx <= 8 && Math.abs(dz) <= 6;
+                boolean inTransept = dx >= 1 && dx <= 6 && Math.abs(dz) <= 9;
+                double dApse = Math.hypot(dx - 8.0, dz);
+                boolean inApse = dx >= 8 && dApse <= 5.6;
+                if (!inNave && !inTransept && !inApse) {
+                    // Внешние ступенчатые контрфорсы вдоль стен нефа (dx = -10, -6, -2, +7; |dz| == 7)
+                    if ((dx == -10 || dx == -6 || dx == -2 || dx == 7) && Math.abs(dz) == 7) {
+                        Direction outZ = dz > 0 ? Direction.SOUTH : Direction.NORTH;
+                        for (int dy = 0; dy <= 8; ++dy) {
+                            BlockState bst = dy == 8 ? stair(bsStair, outZ.getOpposite(), Half.BOTTOM)
+                                    : (dy >= 5 ? bsWall : blackstone);
+                            put(chunk, mp, x0, z0, wx, by + dy, wz, bst);
+                        }
+                    }
+                    continue;
+                }
+
+                // Пол храма: возвышенная алтарная солея (dx >= 7 -> by+1), узорчатый чёрно-серый пол и ковровая дорожка с проплешинами пепла!
+                int floorY = dx >= 7 ? by + 1 : by;
+                double hf = ElisarChunkGenerator.hash(wx, wz, 681);
+                BlockState floorSt = (dx == 7 && Math.abs(dz) <= 4)
+                        ? stair(ashlarStair, Direction.EAST, Half.BOTTOM)
+                        : (hf < 0.16 ? ash : (((dx + dz) & 1) == 0 ? blackstone : ashlar));
+                for (int fy = by; fy <= floorY; ++fy) {
+                    put(chunk, mp, x0, z0, wx, fy, wz, fy == floorY ? floorSt : scorched);
+                }
+                if (Math.abs(dz) <= 1 && dx >= -11 && dx <= 6 && hf > 0.35) {
+                    put(chunk, mp, x0, z0, wx, floorY + 1, wz, carpet);
+                }
+
+                // Определяем наружную стену базилики
+                boolean naveWall = inNave && !inTransept && Math.abs(dz) == 6;
+                boolean westWall = dx == -12 && Math.abs(dz) <= 6;
+                boolean transWall = inTransept && (Math.abs(dz) == 9 || ((dx == 1 || dx == 6) && Math.abs(dz) > 6));
+                boolean apseWall = inApse && dApse >= 4.45;
+                boolean extWall = naveWall || westWall || transWall || apseWall;
+
+                if (extWall) {
+                    // Захватывающий рваный профиль обрушения стен в центре нефа и северном трансепте!
+                    int wallTop = westWall ? (14 - Math.abs(dz) / 2)
+                            : apseWall ? 11
+                            : (dz < 0 && dx >= -5 && dx <= 0) ? (7 + Math.abs(dx + 2))
+                            : 11;
+                    for (int dy = 1; dy <= wallTop; ++dy) {
+                        // Высокий стрельчатый западный портал (dx == -12, |dz| <= 1, dy <= 4)
+                        if (westWall && Math.abs(dz) <= 1 && dy <= 4) {
+                            if (dy == 4 && Math.abs(dz) == 1) {
+                                put(chunk, mp, x0, z0, wx, by + dy, wz, stair(bsStair, dz < 0 ? Direction.SOUTH : Direction.NORTH, Half.TOP));
+                            }
+                            continue;
+                        }
+                        // Круглое готическое окно-роза на западном фасаде (dx == -12, |dz| <= 2, dy = 7..11)
+                        if (westWall && Math.hypot(dz, dy - 9.0) <= 2.3) {
+                            put(chunk, mp, x0, z0, wx, by + dy, wz, (dz == 0 || dy == 9) ? bars : stainedRed);
+                            continue;
+                        }
+                        // Узкие стрельчатые витражные окна-ланцеты между контрфорсами нефа и апсиды
+                        boolean lancet = (naveWall && (dx == -8 || dx == -4 || dx == 0) && dy >= 4 && dy <= 8)
+                                || (transWall && Math.abs(dz) == 9 && (dx == 3 || dx == 4) && dy >= 4 && dy <= 9)
+                                || (apseWall && Math.abs(dz) <= 1 && dy >= 4 && dy <= 8);
+                        if (lancet) {
+                            double hw = ElisarChunkGenerator.hash(wx, by + dy, wz);
+                            put(chunk, mp, x0, z0, wx, by + dy, wz, hw < 0.35 ? air : (hw < 0.72 ? stainedRed : bars));
+                            continue;
+                        }
+                        double hm = ElisarChunkGenerator.hash(wx, by + dy, wz);
+                        BlockState wSt = (dy == 1 || dy == wallTop) ? bsCracked
+                                : (hm < 0.44 ? cracked : (hm < 0.78 ? brick : scorched));
+                        put(chunk, mp, x0, z0, wx, by + dy, wz, wSt);
+                    }
+                } else {
+                    // Внутренние колонны нефа (|dz| == 3, dx = -8, -4, 0) и обугленные скамьи прихожан!
+                    if (Math.abs(dz) == 3 && (dx == -8 || dx == -4 || dx == 0 || dx == 4)) {
+                        int cTop = (dx == -4 && dz < 0) ? 5 : 9;
+                        for (int dy = 1; dy <= cTop; ++dy) {
+                            put(chunk, mp, x0, z0, wx, by + dy, wz, dy == cTop && cTop < 9 ? cracked : ashlarPillar);
+                        }
+                    } else if (dx >= -9 && dx <= -1 && (dx % 3 != 0) && Math.abs(dz) >= 2 && Math.abs(dz) <= 4 && Math.abs(dz) != 3) {
+                        if (ElisarChunkGenerator.hash(wx, wz, 689) > 0.28) {
+                            put(chunk, mp, x0, z0, wx, by + 1, wz, stair(darkStair, Direction.WEST, Half.BOTTOM));
+                        }
+                    }
+                }
+
+                // Обугленные стропила и полуобрушенная сводчатая крыша базилики (пролом неба над средокрестием dx = -3..+4!)
+                boolean roofHole = (dx >= -3 && dx <= 4 && Math.abs(dz) <= 3);
+                if (inNave && !roofHole && Math.abs(dz) <= 6) {
+                    int ry = by + 15 - Math.abs(dz) / 2;
+                    boolean rafter = (dx % 4 == 0);
+                    if (rafter || ElisarChunkGenerator.hash(wx, wz, 693) > 0.42) {
+                        BlockState rSt = rafter ? (dz == 0 ? charredX : charredZ)
+                                : (dz == 0 ? darkSlab : stair(darkStair, dz < 0 ? Direction.SOUTH : Direction.NORTH, Half.BOTTOM));
+                        put(chunk, mp, x0, z0, wx, ry, wz, rSt);
+                    }
+                }
+            }
+        }
+
+        // 3) Две готические угловые башни западного фасада (южная уцелела со шпилем до by+22, северная обломлена на by+14!)
+        for (int side = -1; side <= 1; side += 2) {
+            int tzBase = cz + side * 6;
+            int txBase = cx - 12;
+            int tMax = (side > 0) ? 18 : 13;
+            for (int dy = 0; dy <= tMax; ++dy) {
+                for (int tx = -2; tx <= 2; ++tx) {
+                    for (int tz = -2; tz <= 2; ++tz) {
+                        boolean corner = Math.abs(tx) == 2 && Math.abs(tz) == 2;
+                        boolean edge = Math.abs(tx) == 2 || Math.abs(tz) == 2;
+                        if (!edge) continue;
+                        int wx = txBase + tx, wz = tzBase + tz;
+                        if (side < 0 && dy >= 12 && ElisarChunkGenerator.hash(wx, by + dy, wz) < 0.45) continue;
+                        if (dy >= 13 && dy <= 16 && ((tx == 0 && Math.abs(tz) == 2) || (tz == 0 && Math.abs(tx) == 2))) {
+                            put(chunk, mp, x0, z0, wx, by + dy, wz, bars);
+                            continue;
+                        }
+                        put(chunk, mp, x0, z0, wx, by + dy, wz, corner ? bsWall : (dy % 4 == 0 ? blackstone : cracked));
+                    }
+                }
+            }
+            if (side > 0) {
+                // Остроконечный обугленный шатёр южной колокольни (by + 19 .. by + 23) + церковный колокол!
+                for (int sy = 19; sy <= 23; ++sy) {
+                    int sr = sy <= 20 ? 1 : 0;
+                    for (int tx = -sr; tx <= sr; ++tx) {
+                        for (int tz = -sr; tz <= sr; ++tz) {
+                            put(chunk, mp, x0, z0, txBase + tx, by + sy, tzBase + tz, sy == 23 ? bars : charredY);
+                        }
+                    }
+                }
+                put(chunk, mp, x0, z0, txBase, by + 17, tzBase, chain);
+                put(chunk, mp, x0, z0, txBase, by + 16, tzBase, CastleBlocks.BRASS.get().defaultBlockState());
+                put(chunk, mp, x0, z0, txBase, by + 15, tzBase, soulHang);
+            }
+        }
+        // Резной портальный вимперг перед западным входом (dx == -13, |dz| <= 2)
+        for (int dz = -2; dz <= 2; ++dz) {
+            if (Math.abs(dz) == 2) {
+                for (int dy = 1; dy <= 5; ++dy) put(chunk, mp, x0, z0, cx - 13, by + dy, cz + dz, ashlarPillar);
+            }
+            put(chunk, mp, x0, z0, cx - 13, by + 6 - Math.abs(dz), cz + dz,
+                    dz == 0 ? blackstone : stair(bsStair, dz < 0 ? Direction.SOUTH : Direction.NORTH, Half.BOTTOM));
+        }
+
+        // Главный осквернённый Алтарь в восточной апсиде + канделябры душ + 2 скромных сундука (в ризнице и за алтарём)
+        for (int dz = -1; dz <= 1; ++dz) {
+            put(chunk, mp, x0, z0, cx + 10, by + 2, cz + dz, dz == 0 ? CastleBlocks.MOSAIC.get().defaultBlockState() : blackstone);
+        }
+        put(chunk, mp, x0, z0, cx + 10, by + 3, cz - 1, candle);
+        put(chunk, mp, x0, z0, cx + 10, by + 3, cz + 1, candle);
+        put(chunk, mp, x0, z0, cx + 10, by + 3, cz, Blocks.SOUL_CAMPFIRE.defaultBlockState());
+        put(chunk, mp, x0, z0, cx + 4, by + 8, cz, chain);
+        put(chunk, mp, x0, z0, cx + 4, by + 7, cz, soulHang);
+        put(chunk, mp, x0, z0, cx - 10, by + 6, cz + 4, cobweb);
+        putLootChest(level, chunk, mp, rnd, x0, z0, cx + 11, by + 2, cz, Direction.WEST, LOOT_MODEST_WAYFARER);
+        putLootChest(level, chunk, mp, rnd, x0, z0, cx + 4, by + 1, cz - 8, Direction.SOUTH, LOOT_MODEST_WAYFARER);
     }
 
     // -------------------------------------------------------------------------
@@ -1417,19 +1904,36 @@ public final class LandmarkStructures {
         BlockState water = ElisarBlocks.WATER.get().defaultBlockState();
         BlockState air = Blocks.AIR.defaultBlockState();
 
-        // 1) Круглая мраморно-сланцевая платформа мастерской (r <= 12.6), рассечённая посередине сияющим горном-разломом!
+        // 1) Мраморно-сланцевая платформа мастерской с естественными хрустальными террасами и друзами (r <= 16.8, v0.23.0!)
+        BlockState riftMossy = ElisarBlocks.RIFT_MARBLE_MOSSY.get().defaultBlockState();
+        BlockState riftTurf = ElisarBlocks.RIFT_TURF.get().defaultBlockState();
+        BlockState riftStair = ElisarBlocks.RIFT_MARBLE_STAIRS.get().defaultBlockState();
+        BlockState cluster = ElisarBlocks.CRYSTAL_CLUSTER.get().defaultBlockState();
+        BlockState shroom = ElisarBlocks.CRYSTAL_SHROOM.get().defaultBlockState();
         for (int x = x0; x <= x0 + 15; ++x) {
             for (int z = z0; z <= z0 + 15; ++z) {
                 int dx = x - cx, dz = z - cz;
                 double r = Math.hypot(dx, dz);
-                if (r > 13.0) continue;
+                if (r > 16.8) continue;
+                double hc = ElisarChunkGenerator.hash(x, z, 709);
+                if (r > 12.8) {
+                    // Ступенчатый мраморно-кристальный пояс совместимости с Хрустальными разломами!
+                    int gTop = safeGroundY(plan, x, z, by - 2);
+                    if (gTop > plan.ocean + 4 && hc < (16.8 - r) / 4.0) {
+                        put(chunk, mp, x0, z0, x, gTop, z, hc < 0.42 ? riftTurf : riftMossy);
+                        if (hc < 0.20) {
+                            put(chunk, mp, x0, z0, x, gTop + 1, z, hc < 0.11 ? cluster : shroom);
+                        }
+                    }
+                    continue;
+                }
 
                 int colTop = safeGroundY(plan, x, z, by - 5);
                 for (int y = by; y <= by + 18; ++y) {
                     put(chunk, mp, x0, z0, x, y, z, air);
                 }
                 for (int y = Math.min(colTop, by - 4); y < by - 1; ++y) {
-                    put(chunk, mp, x0, z0, x, y, z, marble);
+                    put(chunk, mp, x0, z0, x, y, z, y % 3 == 0 ? slate : marble);
                 }
 
                 // Светящаяся энергетическая расселина Горна Осколков вдоль оси Z (|dx| <= 1, |dz| <= 7)
@@ -1437,14 +1941,18 @@ public final class LandmarkStructures {
                     put(chunk, mp, x0, z0, x, by - 3, z, crystalDeep);
                     put(chunk, mp, x0, z0, x, by - 2, z, (dx == 0) ? crystalBright : crystal);
                     if (Math.abs(dz) == 3 || dz == 0) {
-                        // Каменные мостики-перемычки кузнецов над горном
                         put(chunk, mp, x0, z0, x, by - 1, z, ElisarBlocks.RIFT_MARBLE_SLAB.get().defaultBlockState().setValue(SlabBlock.TYPE, SlabType.TOP));
                     } else {
                         put(chunk, mp, x0, z0, x, by - 1, z, (dx == 0 && Math.abs(dz) <= 5) ? crystalBright : air);
                     }
+                } else if (r >= 11.8) {
+                    Direction inDir = Math.abs(dx) > Math.abs(dz)
+                            ? (dx > 0 ? Direction.WEST : Direction.EAST)
+                            : (dz > 0 ? Direction.NORTH : Direction.SOUTH);
+                    put(chunk, mp, x0, z0, x, by - 1, z, stair(riftStair, inDir, Half.BOTTOM));
                 } else {
-                    boolean ring = Math.abs(r - 11.4) < 0.8 || Math.abs(r - 6.2) < 0.55;
-                    BlockState fl = ring ? slate : ((Math.abs(dx) + Math.abs(dz)) % 6 == 0 ? gold : marble);
+                    boolean ring = Math.abs(r - 10.8) < 0.7 || Math.abs(r - 6.2) < 0.55;
+                    BlockState fl = ring ? slate : ((Math.abs(dx) + Math.abs(dz)) % 6 == 0 ? gold : (hc < 0.25 ? riftMossy : marble));
                     put(chunk, mp, x0, z0, x, by - 1, z, fl);
                 }
             }
@@ -1540,19 +2048,53 @@ public final class LandmarkStructures {
         BlockState whiteWool = Blocks.WHITE_WOOL.defaultBlockState();
         BlockState air = Blocks.AIR.defaultBlockState();
 
-        // 1) Круглая белокаменно-аметистовая Ротонда Обсерватории (r <= 7.8) с открытым куполом и телескопом!
+        // 1) Белокаменно-аметистовая Ротонда Обсерватории с цветущими лавандовыми террасами на склоне холма (r <= 14.2, v0.23.0!)
+        BlockState templeStair = TempleBlocks.STAIRS.get().defaultBlockState();
+        BlockState violetLeaves = ElisarBlocks.VIOLET_LEAVES.get().defaultBlockState().setValue(LeavesBlock.PERSISTENT, true);
+        BlockState lavender = ElisarBlocks.LAVENDER_BED.get().defaultBlockState();
+        BlockState lilacBloom = ElisarBlocks.LILAC_BLOOM.get().defaultBlockState();
         for (int x = x0; x <= x0 + 15; ++x) {
             for (int z = z0; z <= z0 + 15; ++z) {
                 int dx = x - cx, dz = z - cz;
                 double r = Math.hypot(dx, dz);
-                if (r > 8.2) continue;
+                if (r > 14.2) continue;
+                double hv = ElisarChunkGenerator.hash(x, z, 733);
+                if (r > 8.6) {
+                    // Мягкие лавандово-каменные террасы и стриженые фиолетовые кусты вокруг ротонды (не перекрывая Воздушную Пристань!)
+                    double fwd = dx * ux + dz * uz;
+                    if (fwd < 6.0) {
+                        int gTop = safeGroundY(plan, x, z, by - 2);
+                        if (gTop > plan.ocean + 5 && hv < (14.2 - r) / 5.6) {
+                            put(chunk, mp, x0, z0, x, gTop, z, hv < 0.65 ? ElisarBlocks.GRASS.get().defaultBlockState() : ElisarBlocks.MOSS.get().defaultBlockState());
+                            if (Math.abs(r - 10.2) < 0.55 && ((dx + dz) & 3) == 0) {
+                                put(chunk, mp, x0, z0, x, gTop + 1, z, violetLeaves);
+                            } else if (hv < 0.36) {
+                                put(chunk, mp, x0, z0, x, gTop + 1, z, hv < 0.22 ? lavender : lilacBloom);
+                            }
+                        }
+                    }
+                    continue;
+                }
 
                 int colTop = safeGroundY(plan, x, z, by - 6);
                 for (int y = by; y <= by + 20; ++y) {
                     put(chunk, mp, x0, z0, x, y, z, air);
                 }
                 for (int y = Math.min(colTop, by - 4); y < by; ++y) {
-                    put(chunk, mp, x0, z0, x, y, z, marble);
+                    put(chunk, mp, x0, z0, x, y, z, y == by - 1 && r > 7.8 ? ElisarBlocks.STONE_MOSSY.get().defaultBlockState() : marble);
+                }
+                if (r > 7.8) {
+                    Direction inDir = Math.abs(dx) > Math.abs(dz)
+                            ? (dx > 0 ? Direction.WEST : Direction.EAST)
+                            : (dz > 0 ? Direction.NORTH : Direction.SOUTH);
+                    put(chunk, mp, x0, z0, x, by - 1, z, stair(templeStair, inDir, Half.BOTTOM));
+                    if (Math.abs(Math.sin(Math.atan2(dz, dx) * 4.0)) < 0.16) {
+                        // Выступающие пилястры-контрфорсы вокруг ротонды!
+                        for (int py = 0; py <= 5; ++py) {
+                            put(chunk, mp, x0, z0, x, by + py, z, py == 5 ? stair(templeStair, inDir, Half.BOTTOM) : pillar);
+                        }
+                    }
+                    continue;
                 }
                 put(chunk, mp, x0, z0, x, by - 1, z, (Math.abs(r - 4.2) < 0.6) ? amethyst : ((dx == 0 || dz == 0) ? gold : floor));
 

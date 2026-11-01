@@ -1423,7 +1423,7 @@ biome_section() {
   sleep 2
 
   probe_and_shot_struct() {
-    local skind="$1" min_blk="$2" shot_name="$3" underw="${4:-0}" check_houses="${5:-0}"
+    local skind="$1" min_blk="$2" shot_name="$3" underw="${4:-0}" check_houses="${5:-0}" settle="${6:-16}"
     local S0 SAT SX SY SZ S1 SBLK SAIR SHSE SCAM
     EL tp TestPlayer 0 110 0 >/dev/null 2>&1 || true
     sleep 1
@@ -1460,7 +1460,7 @@ biome_section() {
       fi
     fi
     if [ -n "${SCAM:-}" ]; then
-      lookat $(printf '%s' "$SCAM" | cut -d: -f1 | tr ',' ' ') $(printf '%s' "$SCAM" | cut -d: -f2 | tr ',' ' ') 16 "$shot_name"
+      lookat $(printf '%s' "$SCAM" | cut -d: -f1 | tr ',' ' ') $(printf '%s' "$SCAM" | cut -d: -f2 | tr ',' ' ') "$settle" "$shot_name"
     fi
     RCON effect clear TestPlayer >/dev/null 2>&1 || true
   }
@@ -1589,6 +1589,15 @@ biome_section() {
   probe_and_fast_shot "origami_dragon_closeup"         200 "111_origami_dragon_closeup"      1.2
   probe_and_fast_shot "origami_dragon_under_release"   200 "112_origami_dragon_under_island" 0.8
   probe_and_fast_shot "origami_dragon_over_release"    200 "113_origami_dragon_over_island"  0.8
+
+  # ---------- v0.23.0: Цитадель Чёрного утёса (blacktide.nbt: мост на земле Пепельного биома, сам замок в море!),
+  #            Сгоревшая Пепельная Церковь, вариативные комбинации структур в Пепельном биоме и увеличенные биомы! ----------
+  echo "== v0.23.0: Blacktide (мост на земле биома + замок в море), Сгоревшая Церковь, комбинации Пепельного биома и увеличенные биомы =="
+  probe_and_shot_struct "blacktide_citadel"      15000 "114_blacktide_citadel_sea_and_shore"   0 0 24
+  probe_and_shot_struct "blacktide_bridge_shore" 15000 "115_blacktide_bridge_from_ashen_land"  0 0 22
+  probe_and_shot_struct "ashen_burned_church"      900 "116_ashen_burned_church"               0 0 16
+  probe_and_shot_struct "ashen_combo_matrix"       100 "117_ashen_empty_biome_panorama"        0 0 16
+  probe_and_shot_struct "enlarged_biomes_audit"    500 "118_enlarged_violet_hills_panorama"    0 0 18
 
   # Прогреваем серверные чанки Белого Города перед переносом через пролом, чтобы на катсцене весь город и замок сияли с 1-й секунды!
   EL tp TestPlayer 24 162 88 195 12 >/dev/null 2>&1 || true

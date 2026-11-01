@@ -1483,7 +1483,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             chunk.setBlockState(mp.set(x, y, z), s, false);
         }
         // boulders of scorched stone (outside the castle & villages)
-        if (!CastleSite.inFootprint(x, z, 3) && !EmberRuins.inFootprint(x, z, 3)
+        if (!CastleSite.inFootprint(x, z, 3) && !AshenLands.inAnyStructureFootprint(x, z, 3) && !EmberRuins.inFootprint(x, z, 3)
                 && !WorldStructures.inFootprint(x, z, 3) && c.top - c.bottom > 3) {
             int gx = Math.floorDiv(x, 9), gz = Math.floorDiv(z, 9);
             if (hash(gx, gz, 53) < 0.22) {
@@ -1865,13 +1865,19 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             tpl.get().placeInWorld(level, pos, pos, s, rnd, 2);
         }
         AshenLands.Region ashReg = AshenLands.regionAt(x0 + 8, z0 + 8);
-        if (ashReg != null && x0 + 15 >= ashReg.x0 && x0 <= ashReg.x0 + CastleSite.TW - 1
+        if (ashReg != null && ashReg.hasRedCastle
+                && x0 + 15 >= ashReg.x0 && x0 <= ashReg.x0 + CastleSite.TW - 1
                 && z0 + 15 >= ashReg.z0 && z0 <= ashReg.z0 + CastleSite.TD - 1) {
             stm.get(new ResourceLocation("riftworld", "castle/castle")).ifPresent(tpl -> {
                 StructurePlaceSettings s = new StructurePlaceSettings().setBoundingBox(box).setIgnoreEntities(true).setKnownShape(true);
                 BlockPos pos = new BlockPos(ashReg.x0, CastleSite.Y, ashReg.z0);
                 tpl.placeInWorld(level, pos, pos, s, rnd, 2);
             });
+        }
+        // v0.23.0: Прибрежно-морская «Цитадель Чёрного утёса» (blacktide.nbt): мост начинается на суше Пепельного биома, а сам замок стоит в море!
+        BlacktideCitadel.Site btSite = AshenLands.blacktideForChunk(x0, z0);
+        if (btSite != null) {
+            BlacktideCitadel.buildInChunk(chunk, plan, btSite, x0, z0);
         }
         // Inverted Tower interior dressing (reliquary, deck hall, landings)
         if (x0 + 15 >= TOWER_X - 12 && x0 <= TOWER_X + 12 && z0 + 15 >= TOWER_Z - 12 && z0 <= TOWER_Z + 12) {
@@ -2579,21 +2585,31 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             }
         }
 
-        // 2) Центральная разрушенная каменная колоннада-астролябия на hub (02_crystal_sanctum.png)
+        // 2) Центральная разрушенная каменная колоннада-астролябия на hub (расширена в v0.23.0 под крупного Босса 2.45x и широкий круг кристаллов!)
         int ay = cr.astroY;
-        if (x0 <= cr.astroX + 12 && x0 + 15 >= cr.astroX - 12 && z0 <= cr.astroZ + 12 && z0 + 15 >= cr.astroZ - 12) {
-            int ax0 = Math.max(x0, (int) Math.floor(cr.astroX - 11));
-            int ax1 = Math.min(x0 + 15, (int) Math.ceil(cr.astroX + 11));
-            int az0 = Math.max(z0, (int) Math.floor(cr.astroZ - 11));
-            int az1 = Math.min(z0 + 15, (int) Math.ceil(cr.astroZ + 11));
+        if (x0 <= cr.astroX + 18 && x0 + 15 >= cr.astroX - 18 && z0 <= cr.astroZ + 18 && z0 + 15 >= cr.astroZ - 18) {
+            int ax0 = Math.max(x0, (int) Math.floor(cr.astroX - 17));
+            int ax1 = Math.min(x0 + 15, (int) Math.ceil(cr.astroX + 17));
+            int az0 = Math.max(z0, (int) Math.floor(cr.astroZ - 17));
+            int az1 = Math.min(z0 + 15, (int) Math.ceil(cr.astroZ + 17));
             for (int bx = ax0; bx <= ax1; ++bx) {
                 for (int bz = az0; bz <= az1; ++bz) {
                     double dx = (bx + 0.5) - cr.astroX, dz = (bz + 0.5) - cr.astroZ;
                     double r = Math.hypot(dx, dz);
-                    if (r > 9.8) continue;
+                    if (r > 15.8) continue;
+                    // Плавная каменная ступень сопряжения святилища с рельефом острова (r = 14.5..15.8)
+                    if (r > 14.5) {
+                        if (hash(bx, bz, 759) < 0.78) {
+                            chunk.setBlockState(mp.set(bx, ay - 1, bz), riftMarbleMossy, false);
+                            chunk.setBlockState(mp.set(bx, ay, bz), riftMarbleSlab, false);
+                        }
+                        continue;
+                    }
                     // Подложка площади святилища
-                    chunk.setBlockState(mp.set(bx, ay - 1, bz), r < 2.5 ? crystalBright : riftMarble, false);
-                    for (int cl = ay + 1; cl <= ay + 9; ++cl) {
+                    for (int fy = ay - 3; fy <= ay - 1; ++fy) {
+                        chunk.setBlockState(mp.set(bx, fy, bz), (fy == ay - 1 && r < 3.2) ? crystalBright : riftMarble, false);
+                    }
+                    for (int cl = ay + 1; cl <= ay + 13; ++cl) {
                         BlockPos cp = mp.set(bx, cl, bz);
                         BlockState st0 = chunk.getBlockState(cp);
                         if (st0.is(ElisarBlocks.CRYSTAL_SHROOM.get()) || st0.is(ElisarBlocks.CRYSTAL_CLUSTER.get())
@@ -2602,18 +2618,17 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                             chunk.setBlockState(cp, Blocks.AIR.defaultBlockState(), false);
                         }
                     }
-                    if (r < 1.35) {
-                        // Светящаяся руническая печать в центре открытой арены колоннады (под будущего босса-сущность!)
-                        chunk.setBlockState(mp.set(bx, ay, bz), r < 0.75 ? crystalBright : crystalMid, false);
-                    } else if (r < 2.55) {
-                        // Внутреннее бирюзовое водяное/мраморное кольцо призыва (центр арены полностью открыт!)
-                        chunk.setBlockState(mp.set(bx, ay, bz), r < 2.05 ? gWater : riftMarble, false);
-                    } else if (r >= 5.15 && r <= 5.95) {
-                        // Врезанное в мраморный пол светящееся хрустальное кольцо
-                        chunk.setBlockState(mp.set(bx, ay, bz), hash(bx, bz, 760) < 0.65 ? crystalMid : crystalDeep, false);
+                    if (r < 1.85) {
+                        // Светящаяся руническая печать в центре открытой арены колоннады
+                        chunk.setBlockState(mp.set(bx, ay, bz), r < 1.05 ? crystalBright : crystalMid, false);
+                    } else if (r < 3.35) {
+                        chunk.setBlockState(mp.set(bx, ay, bz), r < 2.65 ? gWater : riftMarble, false);
+                    } else if ((r >= 6.4 && r <= 7.2) || (r >= 10.6 && r <= 11.3)) {
+                        // Два концентрических светящихся хрустальных кольца астролябии
+                        chunk.setBlockState(mp.set(bx, ay, bz), hash(bx, bz, 760) < 0.65 ? crystalBright : crystalMid, false);
                     } else {
                         double ang = Math.atan2(dz, dx) - cr.phi;
-                        boolean compassRay = Math.abs(Math.sin(ang * 4.0)) < 0.16 && r < 7.2;
+                        boolean compassRay = Math.abs(Math.sin(ang * 4.0)) < 0.13 && r < 12.0;
                         BlockState fl = compassRay ? riftSlate
                                 : (hash(bx, bz, 761) < 0.72 ? riftMarble : riftMarbleMossy);
                         chunk.setBlockState(mp.set(bx, ay, bz), fl, false);
@@ -2621,21 +2636,20 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 }
             }
 
-            // 8 величественных мраморных колонн по кругу R = 7.8 + каменный архитрав с плющом
-            double rCol = 7.8;
-            int[] colH = {7, 7, 4, 7, 7, 5, 7, 7};
-            for (int k = 0; k < 8; ++k) {
-                double ang = cr.phi + (k + 0.5) * (Math.PI / 4.0);
+            // 12 высоких каннелированных мраморных колонн по кругу R = 12.6 + резной двойной архитрав с плющом
+            double rCol = 12.6;
+            int[] colH = {10, 10, 6, 10, 10, 7, 10, 10, 5, 10, 10, 10};
+            for (int k = 0; k < 12; ++k) {
+                double ang = cr.phi + (k + 0.5) * (Math.PI / 6.0);
                 int px = (int) Math.floor(cr.astroX + Math.cos(ang) * rCol);
                 int pz = (int) Math.floor(cr.astroZ + Math.sin(ang) * rCol);
                 int h = colH[k];
-                // База колонны (крестообразное уширение у пола)
                 for (Direction d : Direction.Plane.HORIZONTAL) {
                     int sx = px + d.getStepX(), sz = pz + d.getStepZ();
                     if (sx >= x0 && sx <= x0 + 15 && sz >= z0 && sz <= z0 + 15) {
                         chunk.setBlockState(mp.set(sx, ay + 1, sz), riftMarbleSlab, false);
-                        if (h == 7) {
-                            chunk.setBlockState(mp.set(sx, ay + 7, sz),
+                        if (h == 10) {
+                            chunk.setBlockState(mp.set(sx, ay + 10, sz),
                                     riftMarbleSlab.setValue(net.minecraft.world.level.block.SlabBlock.TYPE,
                                             net.minecraft.world.level.block.state.properties.SlabType.TOP), false);
                         }
@@ -2643,18 +2657,18 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 }
                 if (px >= x0 && px <= x0 + 15 && pz >= z0 && pz <= z0 + 15) {
                     for (int y = 1; y <= h; ++y) {
-                        BlockState ps = (y == h && h < 7) ? riftMarbleMossy
+                        BlockState ps = (y == h && h < 10) ? riftMarbleMossy
+                                : (y == 5 && h >= 7) ? riftSlate
                                 : (hash(px, ay + y, pz) < 0.24 ? riftMarbleMossy : riftMarble);
                         chunk.setBlockState(mp.set(px, ay + y, pz), ps, false);
                     }
-                    if (h < 7) {
+                    if (h < 10) {
                         chunk.setBlockState(mp.set(px, ay + h + 1, pz), riftMarbleSlab, false);
                     }
                 }
-                // Рухнувшие барабаны сломанных колонн на траве неподалёку
-                if (h < 7) {
-                    int fx = (int) Math.floor(cr.astroX + Math.cos(ang) * (rCol + 2.3));
-                    int fz = (int) Math.floor(cr.astroZ + Math.sin(ang) * (rCol + 2.3));
+                if (h < 10) {
+                    int fx = (int) Math.floor(cr.astroX + Math.cos(ang) * (rCol + 2.5));
+                    int fz = (int) Math.floor(cr.astroZ + Math.sin(ang) * (rCol + 2.5));
                     if (fx >= x0 && fx <= x0 + 15 && fz >= z0 && fz <= z0 + 15) {
                         Col fc = column(plan, fx, fz);
                         if (fc.isl != null) {
@@ -2663,28 +2677,25 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                     }
                 }
             }
-            // Дуговой каменный архитрав между уцелевшими парами колонн (0-1, 3-4, 6-7, 7-0)
-            int[][] lintelPairs = {{0, 1}, {3, 4}, {6, 7}, {7, 8}};
+            int[][] lintelPairs = {{0, 1}, {3, 4}, {6, 7}, {9, 10}, {10, 11}, {11, 12}};
             for (int[] pair : lintelPairs) {
-                double a0 = cr.phi + (pair[0] + 0.5) * (Math.PI / 4.0);
-                double a1 = cr.phi + (pair[1] + 0.5) * (Math.PI / 4.0);
-                for (int step = 0; step <= 16; ++step) {
-                    double a = a0 + (a1 - a0) * (step / 16.0);
+                double a0 = cr.phi + (pair[0] + 0.5) * (Math.PI / 6.0);
+                double a1 = cr.phi + (pair[1] + 0.5) * (Math.PI / 6.0);
+                for (int step = 0; step <= 20; ++step) {
+                    double a = a0 + (a1 - a0) * (step / 20.0);
                     int lx = (int) Math.floor(cr.astroX + Math.cos(a) * rCol);
                     int lz = (int) Math.floor(cr.astroZ + Math.sin(a) * rCol);
                     if (lx < x0 || lx > x0 + 15 || lz < z0 || lz > z0 + 15) continue;
-                    chunk.setBlockState(mp.set(lx, ay + 8, lz),
-                            hash(lx, lz, 765) < 0.32 ? riftMarbleMossy : riftMarble, false);
-                    if (hash(lx, lz, 766) > 0.18) {
-                        chunk.setBlockState(mp.set(lx, ay + 9, lz), riftMarbleSlab, false);
-                    }
-                    // Свисающий плющ по внешней стороне архитрава
+                    chunk.setBlockState(mp.set(lx, ay + 11, lz),
+                            hash(lx, lz, 765) < 0.30 ? riftMarbleMossy : riftMarble, false);
+                    chunk.setBlockState(mp.set(lx, ay + 12, lz),
+                            step % 4 == 0 ? riftSlate : riftMarbleSlab, false);
                     int vx2 = lx + (Math.cos(a) >= 0 ? 1 : -1);
                     Direction attach = Math.cos(a) >= 0 ? Direction.WEST : Direction.EAST;
                     if (vx2 >= x0 && vx2 <= x0 + 15 && hash(lx, lz, 767) < 0.48) {
-                        int vLen = 1 + (int) (hash(lx, lz, 768) * 3.0);
+                        int vLen = 1 + (int) (hash(lx, lz, 768) * 4.0);
                         for (int vy2 = 0; vy2 < vLen; ++vy2) {
-                            BlockPos vp = mp.set(vx2, ay + 8 - vy2, lz);
+                            BlockPos vp = mp.set(vx2, ay + 11 - vy2, lz);
                             if (chunk.getBlockState(vp).isAir()) {
                                 chunk.setBlockState(vp, ivyFace(attach, gIvy), false);
                             }

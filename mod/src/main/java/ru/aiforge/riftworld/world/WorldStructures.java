@@ -199,7 +199,7 @@ public final class WorldStructures {
 
     private static final ConcurrentHashMap<Long, Optional<Village>> WHITE_CACHE = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Long, Optional<Village>> BURNED_ISLE_CACHE = new ConcurrentHashMap<>();
-    private static final ConcurrentHashMap<Long, Village> ASHEN_PLAIN_CACHE = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Long, Optional<Village>> ASHEN_PLAIN_CACHE = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Long, Optional<ShipSite>> CRASH_CACHE = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Long, Optional<ShipSite>> SUNKEN_CACHE = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Long, Optional<OceanBuilding>> OBLDG_CACHE = new ConcurrentHashMap<>();
@@ -311,21 +311,37 @@ public final class WorldStructures {
         return new Village(cx, cz, baseY + 1, variant, true, false, isl, houses, 23.0 + houseCount * 1.5);
     }
 
-    /** Гарантированная сгоревшая уничтоженная деревня на пепельной равнине каждого региона AshenLands! */
+    /** Сгоревшая уничтоженная деревня на пепельной равнине региона AshenLands (если выпала в comboMode v0.23.0!). */
     public static Village ashenPlainVillage(AshenLands.Region rg) {
-        if (rg == null) return null;
+        if (rg == null || !rg.hasVillage) return null;
         long k = key(rg.cx, rg.cz);
         return ASHEN_PLAIN_CACHE.computeIfAbsent(k, unused -> {
             Random rnd = new Random(SEED_BURNED ^ k ^ 0xA54E4L);
-            // Квадрант (+X, -Z) свободен от замка (cx, cz) и всех трёх курганов AshenLands!
-            int vx = rg.cx + 120;
-            int vz = rg.cz - 112;
+            double baseAng = rg.hasBurnedChurch
+                    ? Math.atan2(rg.churchZ - rg.cz, rg.churchX - rg.cx) - 2.15
+                    : -0.92;
+            int vx = rg.cx + 152, vz = rg.cz - 134;
+            for (int step = 0; step < 16; ++step) {
+                double a = baseAng - step * 0.39;
+                int candX = (int) Math.round(rg.cx + Math.cos(a) * (rg.R * 0.46));
+                int candZ = (int) Math.round(rg.cz + Math.sin(a) * (rg.R * 0.46));
+                if (rg.hasBurnedChurch && Math.hypot(candX - rg.churchX, candZ - rg.churchZ) < 95.0) continue;
+                if (rg.blacktideSite != null && rg.blacktideSite.inFootprint(candX, candZ, 58.0)) continue;
+                boolean hitMound = false;
+                for (AshenLands.Mound m : rg.mounds) {
+                    if (Math.hypot(candX - m.x, candZ - m.z) < m.r + 28.0) { hitMound = true; break; }
+                }
+                if (hitMound) continue;
+                vx = candX;
+                vz = candZ;
+                break;
+            }
             int vy = CityPlan.get().ocean + 2;
-            int count = 4 + rnd.nextInt(3); // 4..6 сгоревших домов
+            int count = 4 + rnd.nextInt(3); // 4..6 сгоревших домов (строго <= 6!)
             int variant = rnd.nextInt(3);
             List<HousePlot> houses = layoutHousesAroundCenter(vx, vz, vy, count, variant, true, rnd);
-            return new Village(vx, vz, vy, variant, true, true, null, houses, 26.0);
-        });
+            return Optional.of(new Village(vx, vz, vy, variant, true, true, null, houses, 27.0));
+        }).orElse(null);
     }
 
     private static List<HousePlot> layoutHousesAroundCenter(int cx, int cz, int y, int targetCount,
@@ -893,10 +909,33 @@ public final class WorldStructures {
                             ? (h < 0.48 ? brick : (h < 0.85 ? cobble : (v.burned ? ash : path)))
                             : (h < 0.62 ? path : cobble);
                     putChunk(chunk, mp, x0, z0, x, vy - 1, z, surf);
-                    // Очищаем траву над дорожкой/площадью
+                    // Очищаем траву над дорожкой/площадью + ставим садовые фонари и низкие каменные оградки вдоль улочек (v0.23.0!)
                     if (dc > 3.2) {
                         putChunk(chunk, mp, x0, z0, x, vy, z,
                                 (v.burned && h < 0.14) ? ModBlocks.DEBRIS.get().defaultBlockState() : air);
+                    }
+                } else if (dc > 7.2 && dc < v.flatR - 1.5) {
+                    // v0.23.0: Гармоничное слияние дворов деревни с биомом — палисадники, цветы, мох и низкие оградки!
+                    boolean inHouse = false;
+                    for (HousePlot hp : v.houses) {
+                        if (x >= hp.x0 - 1 && x <= hp.x0 + hp.w && z >= hp.z0 - 1 && z <= hp.z0 + hp.d) {
+                            inHouse = true;
+                            break;
+                        }
+                    }
+                    if (!inHouse) {
+                        double hg = ElisarChunkGenerator.hash(x, z, 823);
+                        if (!v.burned && Math.abs(dc - 8.2) < 0.55 && ((x + z) & 3) == 0) {
+                            putChunk(chunk, mp, x0, z0, x, vy, z, ElisarBlocks.STONE_WALL.get().defaultBlockState());
+                            if (((x * 3 + z) & 7) == 0) {
+                                putChunk(chunk, mp, x0, z0, x, vy + 1, z, ElisarBlocks.LANTERN.get().defaultBlockState());
+                            }
+                        } else if (!v.burned && hg < 0.11) {
+                            putChunk(chunk, mp, x0, z0, x, vy - 1, z, ElisarBlocks.MOSS.get().defaultBlockState());
+                            putChunk(chunk, mp, x0, z0, x, vy, z, ElisarBlocks.FLOWERS.get().defaultBlockState());
+                        } else if (v.burned && Math.abs(dc - 8.2) < 0.55 && ((x + z) & 3) == 0 && hg < 0.55) {
+                            putChunk(chunk, mp, x0, z0, x, vy, z, CastleBlocks.BRICKS_WALL.get().defaultBlockState());
+                        }
                     }
                 }
                 // Каменный фундамент строго под каждым домом (чтобы ни один угол дома не висел в воздухе)
@@ -1851,7 +1890,13 @@ public final class WorldStructures {
             }
         }
 
-        // Высокая азиатско-островная крыша с изогнутым свесом и золотыми коньками у терема
+        // Высокая азиатско-островная крыша со ступенчатыми скатами, изогнутыми свесами и золотыми коньками (v0.23.0!)
+        BlockState roofStairBase = (h.kind == 1) ? ElisarBlocks.ROOF_BLUE_STAIRS.get().defaultBlockState()
+                : (h.kind == 2 ? ElisarBlocks.ROOF_RED_STAIRS.get().defaultBlockState()
+                : ElisarBlocks.THATCH_STAIRS.get().defaultBlockState());
+        BlockState roofSlabBase = (h.kind == 1) ? ElisarBlocks.ROOF_BLUE_SLAB.get().defaultBlockState()
+                : (h.kind == 2 ? ElisarBlocks.ROOF_RED_SLAB.get().defaultBlockState()
+                : ElisarBlocks.THATCH_SLAB.get().defaultBlockState());
         int span = ridgeAlongX ? hd + 1 : hw + 1;
         for (int k = 0; k <= span; ++k) {
             int ry = hy + wallH + 1 + k;
@@ -1859,9 +1904,15 @@ public final class WorldStructures {
                 int zL = -hd - 1 + k, zR = hd + 1 - k;
                 if (zL > zR) break;
                 for (int dx = -hw - 1; dx <= hw + 1; ++dx) {
-                    BlockState rb = (zL == zR && h.kind == 1 && Math.abs(dx) == hw + 1) ? gold : roofMat;
-                    putChunk(chunk, mp, x0, z0, h.cx + dx, ry, h.cz + zL, rb);
-                    putChunk(chunk, mp, x0, z0, h.cx + dx, ry, h.cz + zR, rb);
+                    if (zL == zR) {
+                        BlockState ridge = (h.kind == 1 && Math.abs(dx) == hw + 1) ? gold : roofSlabBase;
+                        putChunk(chunk, mp, x0, z0, h.cx + dx, ry, h.cz + zL, ridge);
+                    } else {
+                        putChunk(chunk, mp, x0, z0, h.cx + dx, ry, h.cz + zL,
+                                roofStairBase.setValue(net.minecraft.world.level.block.StairBlock.FACING, Direction.SOUTH));
+                        putChunk(chunk, mp, x0, z0, h.cx + dx, ry, h.cz + zR,
+                                roofStairBase.setValue(net.minecraft.world.level.block.StairBlock.FACING, Direction.NORTH));
+                    }
                     if (Math.abs(dx) == hw && zL + 1 <= zR - 1) {
                         for (int gz = zL + 1; gz <= zR - 1; ++gz) {
                             putChunk(chunk, mp, x0, z0, h.cx + dx, ry, h.cz + gz, plaster);
@@ -1872,9 +1923,15 @@ public final class WorldStructures {
                 int xL = -hw - 1 + k, xR = hw + 1 - k;
                 if (xL > xR) break;
                 for (int dz = -hd - 1; dz <= hd + 1; ++dz) {
-                    BlockState rb = (xL == xR && h.kind == 1 && Math.abs(dz) == hd + 1) ? gold : roofMat;
-                    putChunk(chunk, mp, x0, z0, h.cx + xL, ry, h.cz + dz, rb);
-                    putChunk(chunk, mp, x0, z0, h.cx + xR, ry, h.cz + dz, rb);
+                    if (xL == xR) {
+                        BlockState ridge = (h.kind == 1 && Math.abs(dz) == hd + 1) ? gold : roofSlabBase;
+                        putChunk(chunk, mp, x0, z0, h.cx + xL, ry, h.cz + dz, ridge);
+                    } else {
+                        putChunk(chunk, mp, x0, z0, h.cx + xL, ry, h.cz + dz,
+                                roofStairBase.setValue(net.minecraft.world.level.block.StairBlock.FACING, Direction.EAST));
+                        putChunk(chunk, mp, x0, z0, h.cx + xR, ry, h.cz + dz,
+                                roofStairBase.setValue(net.minecraft.world.level.block.StairBlock.FACING, Direction.WEST));
+                    }
                     if (Math.abs(dz) == hd && xL + 1 <= xR - 1) {
                         for (int gx = xL + 1; gx <= xR - 1; ++gx) {
                             putChunk(chunk, mp, x0, z0, h.cx + gx, ry, h.cz + dz, plaster);

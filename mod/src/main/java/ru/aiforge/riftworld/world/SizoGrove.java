@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * столбами с янтарными фонарями мимо деревянной тележки и лесной часовенки к замшелой руине башни.
  */
 public final class SizoGrove {
-    public static final int SUPER = 1040;
+    public static final int SUPER = 1480;
     private static final long FIXED = 0x51E0F00DL;
 
     public static final int TREE_GIANT = 3;
@@ -67,9 +67,9 @@ public final class SizoGrove {
 
         Region(int cx, int cz, Random rnd) {
             this.cx = cx; this.cz = cz;
-            this.Rr = 148 + rnd.nextDouble() * 38;
-            double R = 84 + rnd.nextDouble() * 24;
-            double base = 98 + rnd.nextDouble() * 8;
+            this.Rr = 235 + rnd.nextDouble() * 52;
+            double R = 142 + rnd.nextDouble() * 36; // v0.23.0: существенно увеличенная Роща Сизо (радиус 142..178 -> диаметр ~320+ блоков!)
+            double base = 98 + rnd.nextDouble() * 10;
             this.hub = new CityPlan.Island(cx, cz, R, base, R * 0.6 + 14, rnd.nextDouble() * 6.283, rnd.nextDouble() * 6.283,
                     rnd.nextDouble() * 6.283, KIND, 0.7);
             this.hub.elong = 0.16 + rnd.nextDouble() * 0.16;
@@ -141,21 +141,21 @@ public final class SizoGrove {
                 if (nearLandmark(bx, bz, 4.5)) continue;
                 boulders.add(new Boulder(bx, bz, 2.5 + rnd.nextDouble() * 1.4, rnd.nextLong()));
             }
-            for (int k = 0, want = 8 + rnd.nextInt(5), tries = 0; k < want && tries < want * 18; ++tries) {
-                double a = rnd.nextDouble() * Math.PI * 2, d = (0.16 + rnd.nextDouble() * 0.68) * R;
+            for (int k = 0, want = 18 + rnd.nextInt(8), tries = 0; k < want && tries < want * 18; ++tries) {
+                double a = rnd.nextDouble() * Math.PI * 2, d = (0.14 + rnd.nextDouble() * 0.72) * R;
                 int x = (int) Math.floor(cx + Math.cos(a) * d), z = (int) Math.floor(cz + Math.sin(a) * d);
-                if (hub.t(x + 0.5, z + 0.5) < 0.34) continue;
+                if (hub.t(x + 0.5, z + 0.5) < 0.32) continue;
                 if (trailDist(x + 0.5, z + 0.5) < TRAIL_HW + 3.8) continue;
                 if (nearLandmark(x, z, 6.0)) continue;
                 boolean ok = true;
                 for (Boulder b : boulders) if (Math.hypot(b.x - x, b.z - z) < b.r + 6.5) { ok = false; break; }
                 if (!ok) continue;
-                boulders.add(new Boulder(x, z, 2.3 + rnd.nextDouble() * 1.6, rnd.nextLong()));
+                boulders.add(new Boulder(x, z, 2.4 + rnd.nextDouble() * 1.9, rnd.nextLong()));
                 ++k;
             }
 
             // Стволы гигантских сизо (для fallback без DT и ориентиров вдоль аллеи)
-            for (int k = 0, want = 14 + rnd.nextInt(5), tries = 0; k < want && tries < want * 24; ++tries) {
+            for (int k = 0, want = 30 + rnd.nextInt(10), tries = 0; k < want && tries < want * 24; ++tries) {
                 double a = rnd.nextDouble() * Math.PI * 2, d = (0.16 + rnd.nextDouble() * 0.66) * R;
                 int x = (int) Math.floor(cx + Math.cos(a) * d), z = (int) Math.floor(cz + Math.sin(a) * d);
                 if (hub.t(x + 0.5, z + 0.5) < 0.32) continue;
@@ -239,18 +239,26 @@ public final class SizoGrove {
 
     private static Region gen(int sx, int sz) {
         Random r = new Random(FIXED ^ (sx * 53982894593057L + sz * 317074912223L) * 0x9E3779B97F4A7C15L);
-        if (r.nextDouble() > 0.5) return null;
-        int cx = sx * SUPER + 520 + 160 + r.nextInt(SUPER - 840), cz = sz * SUPER + 520 + 160 + r.nextInt(SUPER - 840);
-        if (Math.hypot(cx, cz) < 600) return null;
-        if (AshenLands.blocks(cx, cz, 300)) return null;
-        EmberRuins.Site es = EmberRuins.nearest(cx, cz);
-        if (es != null && Math.hypot(cx - es.cx, cz - es.cz) < 460) return null;
-        for (int dx = -1; dx <= 1; ++dx)
-            for (int dz = -1; dz <= 1; ++dz) {
-                VioletHills.Region vr = VioletHills.region(Math.floorDiv(cx, VioletHills.SUPER) + dx, Math.floorDiv(cz, VioletHills.SUPER) + dz);
-                if (vr != null && Math.hypot(cx - vr.cx, cz - vr.cz) < vr.Rr + 240) return null;
-            }
-        return new Region(cx, cz, r);
+        if (r.nextDouble() > 0.58) return null;
+        int margin = 310;
+        for (int attempt = 0; attempt < 8; ++attempt) {
+            int cx = sx * SUPER + margin + r.nextInt(SUPER - 2 * margin);
+            int cz = sz * SUPER + margin + r.nextInt(SUPER - 2 * margin);
+            if (Math.hypot(cx, cz) < 720) continue;
+            if (Math.hypot(cx - 648, cz - 693) < 420) continue;
+            if (AshenLands.blocks(cx, cz, 320)) continue;
+            EmberRuins.Site es = EmberRuins.nearest(cx, cz);
+            if (es != null && Math.hypot(cx - es.cx, cz - es.cz) < 420) continue;
+            boolean ok = true;
+            for (int dx = -1; dx <= 1 && ok; ++dx)
+                for (int dz = -1; dz <= 1 && ok; ++dz) {
+                    VioletHills.Region vr = VioletHills.region(Math.floorDiv(cx, VioletHills.SUPER) + dx, Math.floorDiv(cz, VioletHills.SUPER) + dz);
+                    if (vr != null && Math.hypot(cx - vr.cx, cz - vr.cz) < vr.Rr + 250) ok = false;
+                }
+            if (!ok) continue;
+            return new Region(cx, cz, new Random(r.nextLong()));
+        }
+        return null;
     }
 
     public static Region regionAt(double x, double z) {

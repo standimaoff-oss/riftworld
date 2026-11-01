@@ -31,7 +31,7 @@ public final class CastleCompass {
         ItemStack s = new ItemStack(Items.COMPASS);
         CompoundTag t = s.getOrCreateTag();
         t.putString("LodestoneDimension", RiftWorld.MODID + ":elisar");
-        AshenLands.Region rg = AshenLands.nearest(0, 0);
+        AshenLands.Region rg = AshenLands.nearestWithRedCastle(0, 0);
         t.put("LodestonePos", NbtUtils.writeBlockPos(new BlockPos(rg.cx, CastleSite.Y + 1, rg.z0)));
         t.putBoolean("LodestoneTracked", false);
         t.putBoolean(TAG, true);
@@ -59,7 +59,7 @@ public final class CastleCompass {
             t.putBoolean(RUINS, true);
             p.displayClientMessage(Component.translatable("riftworld.compass.ruins", site.cx, site.cz).withStyle(ChatFormatting.GOLD), true);
         } else {
-            AshenLands.Region rg = AshenLands.nearest(p.getX(), p.getZ());
+            AshenLands.Region rg = AshenLands.nearestWithRedCastle(p.getX(), p.getZ());
             t.put("LodestonePos", NbtUtils.writeBlockPos(new BlockPos(rg.cx, CastleSite.Y + 1, rg.z0)));
             t.putBoolean(RUINS, false);
             p.displayClientMessage(Component.translatable("riftworld.compass.castle").withStyle(ChatFormatting.GOLD), true);

@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * </ul>
  */
 public final class WaterfallGardens {
-    public static final int SUPER = 1040;
+    public static final int SUPER = 1480;
     private static final long FIXED = 0x7A7EFA11L;
     /** Высота надводного яруса известняковых полок (блоков). */
     public static final double STEP = 7.0;
@@ -59,15 +59,14 @@ public final class WaterfallGardens {
             this.cx = cx;
             this.cz = cz;
             int ocean = CityPlan.get().ocean;
-            int want = 3 + rnd.nextInt(4); // строго от 3 до 6 крупных островов
+            int want = 5 + rnd.nextInt(4); // v0.23.0: 5..8 крупных ярусных островов в расширенном архипелаге садов!
 
-            // Разброс радиусов: от 22..33 у меньших крупных островов до 43..55 у главного массива
             double[] rs = new double[want];
-            rs[0] = 43.0 + rnd.nextDouble() * 12.0;                 // 43..55
-            rs[1] = 31.0 + rnd.nextDouble() * 11.0;                 // 31..42
-            rs[2] = 22.0 + rnd.nextDouble() * 11.0;                 // 22..33
+            rs[0] = 66.0 + rnd.nextDouble() * 18.0;                 // 66..84 (~150..185 блоков!)
+            rs[1] = 50.0 + rnd.nextDouble() * 16.0;                 // 50..66
+            rs[2] = 40.0 + rnd.nextDouble() * 14.0;                 // 40..54
             for (int i = 3; i < want; ++i) {
-                rs[i] = 23.0 + rnd.nextDouble() * 27.0;             // 23..50
+                rs[i] = 36.0 + rnd.nextDouble() * 32.0;             // 36..68
             }
 
             double a0 = rnd.nextDouble() * Math.PI * 2;
@@ -88,7 +87,7 @@ public final class WaterfallGardens {
                     double dist = shoreRadius(parent, ang) + shoreRadius(cand, ang + Math.PI) + riverWidth;
                     double px = parent.cx + Math.cos(ang) * dist;
                     double pz = parent.cz + Math.sin(ang) * dist;
-                    if (Math.hypot(px - cx, pz - cz) + ri * 1.45 > 215.0) continue;
+                    if (Math.hypot(px - cx, pz - cz) + ri * 1.45 > 350.0) continue;
 
                     CityPlan.Island shifted = copyAt(cand, px, pz);
                     boolean ok = true;
@@ -210,22 +209,28 @@ public final class WaterfallGardens {
 
     private static Region gen(int sx, int sz) {
         Random r = new Random(FIXED ^ (sx * 53982894593057L + sz * 317074912223L) * 0x9E3779B97F4A7C15L);
-        if (r.nextDouble() > 0.44) return null;
-        int cx = sx * SUPER + 240 + r.nextInt(SUPER - 480);
-        int cz = sz * SUPER + 240 + r.nextInt(SUPER - 480);
-        if (Math.hypot(cx, cz) < 680) return null;
-        if (Math.hypot(cx - 640, cz - 690) < 380) return null; // не перекрываем морские пробы spots.json
-        if (AshenLands.blocks(cx, cz, 340)) return null;
-        EmberRuins.Site es = EmberRuins.nearest(cx, cz);
-        if (es != null && Math.hypot(cx - es.cx, cz - es.cz) < 460) return null;
-        for (int dx = -1; dx <= 1; ++dx)
-            for (int dz = -1; dz <= 1; ++dz) {
-                SizoGrove.Region sr = SizoGrove.region(Math.floorDiv(cx, SizoGrove.SUPER) + dx, Math.floorDiv(cz, SizoGrove.SUPER) + dz);
-                if (sr != null && Math.hypot(cx - sr.cx, cz - sr.cz) < sr.Rr + 260) return null;
-                VioletHills.Region vr = VioletHills.region(Math.floorDiv(cx, VioletHills.SUPER) + dx, Math.floorDiv(cz, VioletHills.SUPER) + dz);
-                if (vr != null && Math.hypot(cx - vr.cx, cz - vr.cz) < vr.Rr + 260) return null;
-            }
-        return new Region(cx, cz, r);
+        if (r.nextDouble() > 0.56) return null;
+        int margin = 310;
+        for (int attempt = 0; attempt < 10; ++attempt) {
+            int cx = sx * SUPER + margin + r.nextInt(SUPER - 2 * margin);
+            int cz = sz * SUPER + margin + r.nextInt(SUPER - 2 * margin);
+            if (Math.hypot(cx, cz) < 760) continue;
+            if (Math.hypot(cx - 648, cz - 693) < 460) continue;
+            if (AshenLands.blocks(cx, cz, 340)) continue;
+            EmberRuins.Site es = EmberRuins.nearest(cx, cz);
+            if (es != null && Math.hypot(cx - es.cx, cz - es.cz) < 420) continue;
+            boolean ok = true;
+            for (int dx = -1; dx <= 1 && ok; ++dx)
+                for (int dz = -1; dz <= 1 && ok; ++dz) {
+                    SizoGrove.Region sr = SizoGrove.region(Math.floorDiv(cx, SizoGrove.SUPER) + dx, Math.floorDiv(cz, SizoGrove.SUPER) + dz);
+                    if (sr != null && Math.hypot(cx - sr.cx, cz - sr.cz) < sr.Rr + 260) ok = false;
+                    VioletHills.Region vr = VioletHills.region(Math.floorDiv(cx, VioletHills.SUPER) + dx, Math.floorDiv(cz, VioletHills.SUPER) + dz);
+                    if (vr != null && Math.hypot(cx - vr.cx, cz - vr.cz) < vr.Rr + 260) ok = false;
+                }
+            if (!ok) continue;
+            return new Region(cx, cz, new Random(r.nextLong()));
+        }
+        return null;
     }
 
     public static Region regionAt(double x, double z) {
