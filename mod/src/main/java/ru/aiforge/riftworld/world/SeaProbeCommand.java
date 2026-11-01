@@ -2480,18 +2480,20 @@ public final class SeaProbeCommand {
             // Камера у открытого Морского Маяка, смотрящая точно по лучу ElisarEye (az=200°, el=38° -> +0.270, +0.616, +0.741)
             // на юго-юго-восток мимо сплошной каменной башни маяка: башня перекрывает ровно левую половину 2D-глаза в небе (0 просвечивания!),
             // а правая половина глаза со зрачком чётко видна в открытом небе Элисара!
-            LandmarkStructures.LighthouseSite bestLh = null;
+            LandmarkStructures.SeaLighthouse bestLh = null;
             double bestD = Double.MAX_VALUE;
-            for (int gx = -12; gx <= 12; ++gx) {
-                for (int gz = -12; gz <= 12; ++gz) {
-                    LandmarkStructures.LighthouseSite s = LandmarkStructures.lighthouseForCell(gx, gz);
-                    if (s == null) continue;
-                    double d = Math.hypot(s.cx - at.getX(), s.cz - at.getZ());
-                    if (d < bestD) { bestD = d; bestLh = s; }
+            int sx0 = Math.floorDiv(at.getX(), LandmarkStructures.SUPER_LIGHTHOUSE);
+            int sz0 = Math.floorDiv(at.getZ(), LandmarkStructures.SUPER_LIGHTHOUSE);
+            for (int dx = -4; dx <= 4; ++dx) {
+                for (int dz = -4; dz <= 4; ++dz) {
+                    LandmarkStructures.SeaLighthouse l = LandmarkStructures.seaLighthouse(sx0 + dx, sz0 + dz);
+                    if (l == null) continue;
+                    double d = Math.hypot(l.cx - at.getX(), l.cz - at.getZ());
+                    if (d < bestD) { bestD = d; bestLh = l; }
                 }
             }
             int bx = bestLh != null ? bestLh.cx - 2 : 170;
-            int by = bestLh != null ? bestLh.baseY + 4 : 73;
+            int by = bestLh != null ? bestLh.rockTopY + 4 : 73;
             int bz = bestLh != null ? bestLh.cz - 16 : 605;
             int lkX = bx + 9;
             int lkY = by + 20;
