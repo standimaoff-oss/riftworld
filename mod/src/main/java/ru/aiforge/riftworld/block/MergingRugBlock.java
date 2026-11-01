@@ -2,13 +2,11 @@ package ru.aiforge.riftworld.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.client.model.data.ModelData;
 
 /**
  * v0.24.0: Seamless 8-neighbor connected Elisar woven rug ({@code riftworld:rug}),
@@ -47,10 +45,5 @@ public class MergingRugBlock extends ModelBlock {
         if (!newState.is(this)) {
             ConnectedCarpetData.notifyEightNeighbors(level, pos, this);
         }
-    }
-
-    @Override
-    public ModelData getModelData(BlockAndTintGetter level, BlockPos pos, BlockState state, ModelData modelData) {
-        return ConnectedCarpetData.compute(this, level, pos);
     }
 }

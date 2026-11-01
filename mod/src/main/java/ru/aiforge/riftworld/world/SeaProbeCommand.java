@@ -3029,7 +3029,7 @@ public final class SeaProbeCommand {
             overworld.getChunk(fx >> 4, fz >> 4);
             int fy = Math.max(overworld.getSeaLevel() + 2,
                     overworld.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, fx, fz));
-            var piece = new OvergrownTemplePiece(new BlockPos(fx, fy, fz));
+            var piece = new OvergrownTemplePiece(new BlockPos(fx, fy, fz), net.minecraft.world.level.block.Rotation.NONE);
             var bb = piece.getBoundingBox();
             for (int cx = (bb.minX() >> 4); cx <= (bb.maxX() >> 4); ++cx) {
                 for (int cz = (bb.minZ() >> 4); cz <= (bb.maxZ() >> 4); ++cz) {

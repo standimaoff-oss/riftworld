@@ -4,7 +4,6 @@ import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
@@ -13,7 +12,6 @@ import net.minecraft.world.level.block.PipeBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraftforge.client.model.data.ModelData;
 
 /**
  * v0.24.0: Full 8-neighbor connected carpet supporting 1x1, 1xN runners, 2x2, NxM rectangles,
@@ -72,10 +70,5 @@ public class MergingCarpetBlock extends CarpetBlock {
         if (!newState.is(this)) {
             ConnectedCarpetData.notifyEightNeighbors(level, pos, this);
         }
-    }
-
-    @Override
-    public ModelData getModelData(BlockAndTintGetter level, BlockPos pos, BlockState state, ModelData modelData) {
-        return ConnectedCarpetData.compute(this, level, pos);
     }
 }
