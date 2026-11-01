@@ -120,7 +120,8 @@ public final class CrystalGeoRenderers {
             }
 
             float age = e.tickCount + pt;
-            float speedMul = e.getPhase() >= 2 ? 1.85F : 1.0F;
+            boolean enraged = e.bossState() != RiftObeliskBoss.STATE_IDLE || e.getHealth() < e.getMaxHealth() * 0.5F;
+            float speedMul = enraged ? 1.85F : 1.0F;
             float bob = Mth.sin(age * 0.065F) * 0.10F;
 
             this.pose.reset();
@@ -156,7 +157,7 @@ public final class CrystalGeoRenderers {
             GlbRenderer.render(lm, this.pose, ps, buf, brightLight, overlay);
 
             // Объёмные бирюзово-белые потоки энергии Разлома (1:1 по 01_colonnade_boss_ref.png, строго без гуманоидного силуэта!)
-            renderBossEnergyStreams(ps, buf, age, bob, e.getPhase() >= 2);
+            renderBossEnergyStreams(ps, buf, age, bob, enraged);
 
             ps.popPose();
             super.render(e, yaw, pt, ps, buf, light);
