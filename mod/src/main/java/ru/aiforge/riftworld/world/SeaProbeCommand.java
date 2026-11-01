@@ -911,30 +911,41 @@ public final class SeaProbeCommand {
 
         // Проверяем реальную непрерывную проходимость первого каменного арочного моста (Span #0) по загруженным блокам
         int bridgeWalkable = 0;
-        if (!best.spans.isEmpty()) {
-            CrystalRifts.Span sp0 = best.spans.get(0);
-            boolean allSolid = true;
-            int prevY = Integer.MIN_VALUE;
-            for (int step = 0; step <= 28; ++step) {
-                double u = step / 28.0;
-                double[] pt = sp0.pointAt(u);
-                int bx = (int) Math.floor(pt[0]), bz = (int) Math.floor(pt[1]);
-                if (!level.hasChunk(bx >> 4, bz >> 4)) { allSolid = false; break; }
-                int topSolid = Integer.MIN_VALUE;
-                for (int y = 120; y >= 70; --y) {
-                    BlockState bs = level.getBlockState(new BlockPos(bx, y, bz));
-                    if (!bs.isAir() && bs.getFluidState().isEmpty()
-                            && !(bs.getBlock() instanceof net.minecraft.world.level.block.VineBlock)
-                            && bs.getBlock() != cClust && bs.getBlock() != cShroom && bs.getBlock() != rGrass) {
-                        topSolid = y;
-                        break;
+        boolean hubReady = level.hasChunk(hx >> 4, hz >> 4);
+        if (hubReady && !best.spans.isEmpty()) {
+            for (CrystalRifts.Span sp : best.spans) {
+                boolean allSolid = true;
+                int prevY = Integer.MIN_VALUE;
+                for (int step = 0; step <= 28; ++step) {
+                    double u = step / 28.0;
+                    double[] pt = sp.pointAt(u);
+                    int bx = (int) Math.floor(pt[0]), bz = (int) Math.floor(pt[1]);
+                    level.getChunk(bx >> 4, bz >> 4);
+                    int topSolid = Integer.MIN_VALUE;
+                    for (int y = 106; y >= 70; --y) {
+                        BlockState bs = level.getBlockState(new BlockPos(bx, y, bz));
+                        if (bs.isAir() || !bs.getFluidState().isEmpty()) continue;
+                        var b = bs.getBlock();
+                        if (b instanceof net.minecraft.world.level.block.VineBlock
+                                || b instanceof net.minecraft.world.level.block.LeavesBlock
+                                || b == cClust || b == cShroom || b == rGrass
+                                || b == cDeep || b == cMid || b == cBright) continue;
+                        var bk = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(b);
+                        if (bk != null && (bk.getPath().contains("branch") || bk.getPath().contains("leaves"))) continue;
+                        if (level.getBlockState(new BlockPos(bx, y + 1, bz)).getCollisionShape(level, new BlockPos(bx, y + 1, bz)).isEmpty()) {
+                            topSolid = y;
+                            break;
+                        }
                     }
+                    if (topSolid == Integer.MIN_VALUE) { allSolid = false; break; }
+                    if (prevY != Integer.MIN_VALUE && Math.abs(topSolid - prevY) > 2) { allSolid = false; break; }
+                    prevY = topSolid;
                 }
-                if (topSolid == Integer.MIN_VALUE) { allSolid = false; break; }
-                if (prevY != Integer.MIN_VALUE && Math.abs(topSolid - prevY) > 2) { allSolid = false; break; }
-                prevY = topSolid;
+                if (allSolid) {
+                    bridgeWalkable = 1;
+                    break;
+                }
             }
-            if (allSolid) bridgeWalkable = 1;
         }
 
         String hubBio = level.getBiome(new BlockPos(hx, best.astroY + 2, hz)).unwrapKey()
