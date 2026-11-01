@@ -26,20 +26,20 @@ public final class ModEntities {
     public static final RegistryObject<EntityType<ScytheItemEntity>> SCYTHE_ITEM = TYPES.register("scythe_item", () -> EntityType.Builder
             .<ScytheItemEntity>of(ScytheItemEntity::new, MobCategory.MISC).sized(0.5F, 0.3F).fireImmune().clientTrackingRange(8)
             .updateInterval(20).build("riftworld:scythe_item"));
-    /** Biome 01: the paper-dragons / kites drifting over the Paper-Dragon Sea (ambient, harmless). */
+    /** v0.20.0: Модульный белый оригами-дракон в китайском стиле (средних размеров, редкий, безвредный, парит вдоль и под островами). */
     public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.PaperDragonEntity>> PAPER_DRAGON = TYPES.register("paper_dragon",
             () -> EntityType.Builder.<ru.aiforge.riftworld.entity.PaperDragonEntity>of(ru.aiforge.riftworld.entity.PaperDragonEntity::new, MobCategory.AMBIENT)
-                    .sized(1.6F, 0.9F).updateInterval(3).clientTrackingRange(16).build("riftworld:paper_dragon"));
+                    .sized(2.2F, 1.3F).updateInterval(2).clientTrackingRange(20).build("riftworld:paper_dragon"));
 
     /** Рев 8 «Живое море»: вся ихтиофауна Элисара одной сущностью (вариант — в данных). */
     public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.SeaFishEntity>> SEA_FISH = TYPES.register("sea_fish",
             () -> EntityType.Builder.<ru.aiforge.riftworld.entity.SeaFishEntity>of(ru.aiforge.riftworld.entity.SeaFishEntity::new, MobCategory.WATER_CREATURE)
                     .sized(0.8F, 0.6F).updateInterval(2).clientTrackingRange(12).build("riftworld:sea_fish"));
 
-    /** v0.19.0: Босс Колоннады «Расколотый Обелиск Разлома» (стационарный левитирующий обелиск без тени человека). */
+    /** v0.20.0: Увеличенный Босс Колоннады «Расколотый Обелиск Разлома» (стационарный левитирующий обелиск без тени человека). */
     public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.RiftObeliskBoss>> RIFT_OBELISK_BOSS = TYPES.register("rift_obelisk_boss",
             () -> EntityType.Builder.<ru.aiforge.riftworld.entity.RiftObeliskBoss>of(ru.aiforge.riftworld.entity.RiftObeliskBoss::new, MobCategory.MONSTER)
-                    .sized(1.8F, 3.8F).fireImmune().clientTrackingRange(12).build("riftworld:rift_obelisk_boss"));
+                    .sized(3.1F, 6.6F).fireImmune().clientTrackingRange(16).build("riftworld:rift_obelisk_boss"));
 
     /** v0.19.0: Призываемый парящий «Гранёный Прислужник» Колоннады. */
     public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.CrystalMinion>> CRYSTAL_MINION = TYPES.register("crystal_minion",
@@ -63,7 +63,7 @@ public final class ModEntities {
     public static void attributes(EntityAttributeCreationEvent e) {
         e.put(BOSS.get(), MorgrathBoss.attributes().build());
         e.put(GUARD.get(), EmberGuard.attributes().build());
-        e.put(PAPER_DRAGON.get(), net.minecraft.world.entity.monster.Monster.createMonsterAttributes().build());
+        e.put(PAPER_DRAGON.get(), ru.aiforge.riftworld.entity.PaperDragonEntity.attributes().build());
         e.put(SEA_FISH.get(), ru.aiforge.riftworld.entity.SeaFishEntity.attributes().build());
         e.put(RIFT_OBELISK_BOSS.get(), ru.aiforge.riftworld.entity.RiftObeliskBoss.attributes().build());
         e.put(CRYSTAL_MINION.get(), ru.aiforge.riftworld.entity.CrystalMinion.attributes().build());

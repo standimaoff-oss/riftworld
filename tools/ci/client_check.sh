@@ -1506,6 +1506,66 @@ biome_section() {
     log "  OK   3D-оружие Колоннады (crystal_katar, crystal_barrage, crystal_aegis, astral_prism) выдано и отснято"
   fi
 
+  # ---------- v0.20.0: Модульный оригами-дракон под островами, 2D белые волны под островами и у водопадов, бесшовный портал ----------
+  echo "== v0.20.0: оригами-дракон, 2D белые волны на воде и кастомный бесшовный телепорт с глазами =="
+  EL gamemode spectator TestPlayer >/dev/null 2>&1 || true
+  probe_and_shot_struct "origami_dragon"         180 "93_origami_dragon_under_island" 0 0
+  probe_and_shot_struct "origami_dragon_closeup" 180 "94_origami_dragon_closeup"      0 0
+  # Проба живого полёта оригами-дракона вдоль и под островом (NoAi=false)
+  OD_REL=$(EL execute at TestPlayer in riftworld:elisar run riftstruct origami_dragon_release 2>&1 | tr '\r\n' '  ')
+  OD_P1=$(EL data get entity @e[type=riftworld:paper_dragon,limit=1,sort=nearest] Pos 2>&1 | tr '\r\n' '  ')
+  sleep 3
+  OD_P2=$(EL data get entity @e[type=riftworld:paper_dragon,limit=1,sort=nearest] Pos 2>&1 | tr '\r\n' '  ')
+  if [ -n "${OD_P1:-}" ] && [ "${OD_P1}" != "${OD_P2}" ]; then
+    log "  OK   оригами-дракон плавно летит вдоль и под парящим островом (${OD_P1:0:80} -> ${OD_P2:0:80})"
+  else
+    log "  FAIL оригами-дракон не сдвинулся в полёте (${OD_P1:0:80})"; FAILS=$((FAILS + 1))
+  fi
+
+  probe_and_shot_struct "ocean_island_waves"    180 "95_ocean_island_waves"       0 0
+  probe_and_shot_struct "waterfall_ocean_waves" 180 "96_waterfall_ocean_ripples"  0 0
+
+  # Проба и съёмка кастомного бесшовного ритуала портала (Обычный мир -> белизна от центра без смены блоков -> парящие глаза -> вспышка -> Элисар)
+  EL gamemode creative TestPlayer >/dev/null 2>&1 || true
+  EL clear TestPlayer >/dev/null 2>&1 || true
+  P_SET=$(RCON execute in minecraft:overworld run riftportal setup 2>&1 | tr '\r\n' '  ')
+  log "  /riftportal setup -> ${P_SET:0:220}"
+  P_CAM=$(printf '%s' "$P_SET" | grep -o 'cam=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^cam=//')
+  if [ -n "${P_CAM:-}" ]; then
+    PCX=$(printf '%s' "$P_CAM" | cut -d: -f1 | cut -d, -f1)
+    PCY=$(printf '%s' "$P_CAM" | cut -d: -f1 | cut -d, -f2)
+    PCZ=$(printf '%s' "$P_CAM" | cut -d: -f1 | cut -d, -f3)
+    PLX=$(printf '%s' "$P_CAM" | cut -d: -f2 | cut -d, -f1)
+    PLY=$(printf '%s' "$P_CAM" | cut -d: -f2 | cut -d, -f2)
+    PLZ=$(printf '%s' "$P_CAM" | cut -d: -f2 | cut -d, -f3)
+    RCON execute in minecraft:overworld run time set 6000 >/dev/null 2>&1 || true
+    RCON execute in minecraft:overworld run weather clear >/dev/null 2>&1 || true
+    RCON execute in minecraft:overworld run tp TestPlayer "$PCX" "$PCY" "$PCZ" facing "$PLX" "$PLY" "$PLZ" >/dev/null 2>&1 || true
+    sleep 7
+    key F1
+    sleep 0.5
+    P_TRG=$(RCON execute as TestPlayer at @s in minecraft:overworld run riftportal trigger 2>&1 | tr '\r\n' '  ')
+    log "  /riftportal trigger -> ${P_TRG:0:180}"
+    sleep 1.4
+    shot "97_portal_ivory_bleach"
+    sleep 2.2
+    shot "98_portal_watching_eyes"
+    sleep 4.8
+    shot "99_portal_flash_arrival"
+    key F1
+    P_DIM=$(RCON data get entity TestPlayer Dimension 2>&1 | tr '\r\n' '  ')
+    P_VER=$(RCON execute in minecraft:overworld run riftportal verify 2>&1 | tr '\r\n' '  ')
+    P_MUT=$(printf '%s' "$P_VER" | sed -n 's/.* mutated=\([0-9]*\).*/\1/p' | tail -1)
+    log "  после вспышки портала: Dimension=${P_DIM:0:90} | ${P_VER:0:140}"
+    if echo "$P_DIM" | grep -q "riftworld:elisar" && [ "${P_MUT:-99}" -eq 0 ]; then
+      log "  OK   кастомный портал бесшовно перенёс в riftworld:elisar, изменённых блоков в обычном мире: 0"
+    else
+      log "  FAIL кастомный портал: Dimension=${P_DIM:0:80}, mutated=${P_MUT:-?}"; FAILS=$((FAILS + 1))
+    fi
+  else
+    log "  FAIL /riftportal setup не вернул камеру"; FAILS=$((FAILS + 1))
+  fi
+
   EL gamemode creative TestPlayer >/dev/null 2>&1 || true
 }
 biome_section || log "  FAIL секция биомов упала с кодом $?"

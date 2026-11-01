@@ -249,14 +249,53 @@ def main():
     )
     garden_px = make_vanilla_cutout_leaves(garden_palette, 7301, garden_holes)
 
+    # Фигурные просветы для листвы Сизо (~80 прозрачных пикселей из 256 = ~31.2%, ванильный cutout в серебристо-шалфейном тоне Рощи Сизо!)
+    sizo_holes = [
+        (1, 2, [(0, 0), (1, 0), (0, 1), (1, 1), (2, 1)]),
+        (8, 1, [(0, 0), (1, 0), (2, 0), (0, 1), (1, 1)]),
+        (13, 3, [(0, 0), (1, 0), (0, 1), (1, 1), (1, 2)]),
+        (4, 5, [(0, 0), (1, 0), (0, 1), (1, 1), (2, 1)]),
+        (10, 7, [(0, 0), (1, 0), (0, 1), (1, 1), (2, 0), (2, 1)]),
+        (0, 8, [(0, 0), (1, 0), (0, 1), (1, 1), (1, 2)]),
+        (6, 10, [(0, 0), (1, 0), (0, 1), (1, 1), (2, 1)]),
+        (12, 11, [(0, 0), (1, 0), (0, 1), (1, 1), (1, 2)]),
+        (3, 13, [(0, 0), (1, 0), (2, 0), (0, 1), (1, 1)]),
+        (9, 14, [(0, 0), (1, 0), (0, 1), (1, 1), (2, 0)]),
+        (5, 0, [(0, 0), (1, 0), (0, 1)]),
+        (15, 0, [(0, 0), (0, 1), (1, 1)]),
+        (2, 6, [(0, 0), (0, 1), (1, 0)]),
+        (7, 5, [(0, 0), (1, 0), (1, 1)]),
+        (14, 8, [(0, 0), (1, 0), (0, 1)]),
+        (15, 13, [(0, 0), (0, 1), (1, 0)]),
+        (11, 4, [(0, 0), (1, 0)]),
+        (4, 9, [(0, 0), (0, 1)]),
+        (8, 12, [(0, 0), (1, 0)]),
+        (0, 14, [(0, 0), (1, 0)]),
+        (13, 15, [(0, 0), (1, 0)]),
+    ]
+    sizo_palette = (
+        (94, 112, 82),    # глубокая мшисто-шалфейная тень внутри кроны сизо
+        (118, 138, 103),  # нижний сизо-зелёный лист
+        (141, 162, 124),  # основной благородный шалфейно-сизый лист
+        (166, 186, 148),  # освещённый солнцем серебристо-шалфейный лист
+        (192, 208, 176),  # нежный туманно-серебристый блик на кончиках листьев
+    )
+    sizo_px = make_vanilla_cutout_leaves(sizo_palette, 9103, sizo_holes)
+
     save_png(os.path.join(TEX_BLOCK, "lilac_canopy.png"), lilac_px)
     save_png(os.path.join(TEX_BLOCK, "violet_leaves.png"), violet_px)
     save_png(os.path.join(TEX_BLOCK, "lilac_bark.png"), make_lilac_bark())
     save_png(os.path.join(TEX_BLOCK, "lilac_rings.png"), make_lilac_rings())
     save_png(os.path.join(TEX_BLOCK, "garden_leaves.png"), garden_px)
     save_png(os.path.join(TEX_BLOCK, "garden_log.png"), make_garden_bark())
+    save_png(os.path.join(TEX_BLOCK, "sizo_leaves.png"), sizo_px)
 
-    for nm, grid in [("lilac_canopy", lilac_px), ("violet_leaves", violet_px), ("garden_leaves", garden_px)]:
+    for nm, grid in [
+        ("lilac_canopy", lilac_px),
+        ("violet_leaves", violet_px),
+        ("garden_leaves", garden_px),
+        ("sizo_leaves", sizo_px),
+    ]:
         tr = sum(1 for row in grid for p in row if p[3] == 0)
         print(f"{nm:16s}: transparent={tr}/256 ({tr * 100.0 / 256:.1f}%)")
 

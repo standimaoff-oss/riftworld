@@ -28,17 +28,21 @@ public class DemonGateRenderer implements BlockEntityRenderer<DemonGateBE> {
         double phase = ((p * 0x9E3779B97F4A7C15L) & 0xFFFF) / 65535.0 * Math.PI * 2;
 
         VertexConsumer vc = buf.getBuffer(RenderType.debugQuads());
-        drawSwirl(vc, pose, 0.5, 0.5, 0.48, phase, t, 1);      // south-facing sheet
-        drawSwirl(vc, pose, 0.5, 0.5, 0.52, -phase, t, -1);   // north-facing sheet
+        drawSwirl(vc, pose, be.getBlockPos(), 0.5, 0.5, 0.48, phase, t, 1);      // south-facing sheet
+        drawSwirl(vc, pose, be.getBlockPos(), 0.5, 0.5, 0.52, -phase, t, -1);   // north-facing sheet
     }
 
-    private static void drawSwirl(VertexConsumer vc, PoseStack pose, double cx, double cy, double cz,
+    private static void drawSwirl(VertexConsumer vc, PoseStack pose, net.minecraft.core.BlockPos bePos, double cx, double cy, double cz,
                                   double phase, double t, int dir) {
         double twist = t * 0.9 * dir + phase;
+        boolean ritual = PortalRitualClient.isNearActivePortal(bePos);
+        float awaken = ritual ? net.minecraft.util.Mth.clamp(PortalRitualClient.currentTime(0.0F) / 36.0F, 0.0F, 1.0F) : 0.0F;
         for (int k = 0; k < RINGS; ++k) {
             double r0 = 0.06 + 0.115 * k, r1 = 0.06 + 0.115 * (k + 1);
             float dk = 1.0F - k / (float) RINGS;
-            int cr = (int) (150 + 105 * dk), cg = (int) (18 + 26 * dk), cb = (int) (26 + 14 * dk);
+            int cr = (int) net.minecraft.util.Mth.lerp(awaken, 150 + 105 * dk, 250);
+            int cg = (int) net.minecraft.util.Mth.lerp(awaken, 18 + 26 * dk, 245);
+            int cb = (int) net.minecraft.util.Mth.lerp(awaken, 26 + 14 * dk, 226);
             float alpha = 0.62F + 0.28F * dk;
             for (int i = 0; i < SEGS; ++i) {
                 double a0 = i * Math.PI * 2 / SEGS + twist + k * 0.35;

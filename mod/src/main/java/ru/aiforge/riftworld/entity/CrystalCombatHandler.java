@@ -227,7 +227,7 @@ public final class CrystalCombatHandler {
 
         RiftObeliskBoss boss = ModEntities.RIFT_OBELISK_BOSS.get().create(sl);
         if (boss != null) {
-            double bx = cr.astroX, by = cr.astroY + 1.85, bz = cr.astroZ;
+            double bx = cr.astroX, by = cr.astroY + 2.40, bz = cr.astroZ;
             boss.moveTo(bx, by, bz, 0.0F, 0.0F);
             boss.setAnchor(bx, by, bz);
             boss.finalizeSpawn(sl, sl.getCurrentDifficultyAt(altar), MobSpawnType.STRUCTURE, null, null);
@@ -235,9 +235,9 @@ public final class CrystalCombatHandler {
         }
         for (int i = 0; i < 2; ++i) {
             double ang = cr.phi + i * Math.PI;
-            double mx = cr.astroX + Math.cos(ang) * 4.8;
+            double mx = cr.astroX + Math.cos(ang) * 5.8;
             double my = cr.astroY + 1.5;
-            double mz = cr.astroZ + Math.sin(ang) * 4.8;
+            double mz = cr.astroZ + Math.sin(ang) * 5.8;
             CrystalMinion m = ModEntities.CRYSTAL_MINION.get().create(sl);
             if (m != null) {
                 m.moveTo(mx, my, mz, (float) (i * 180.0F), 0.0F);

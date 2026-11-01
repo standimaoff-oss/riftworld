@@ -98,6 +98,7 @@ public final class CrystalGeoRenderers {
 
     // ==================== 1. БОСС КОЛОННАДЫ (БЕЗ ТЕНИ ЧЕЛОВЕКА!) ====================
     public static final class Boss extends EntityRenderer<RiftObeliskBoss> {
+        public static final float BOSS_SCALE = 1.75F;
         private Pose pose;
 
         public Boss(EntityRendererProvider.Context ctx) {
@@ -107,7 +108,7 @@ public final class CrystalGeoRenderers {
 
         @Override
         public boolean shouldRender(RiftObeliskBoss e, Frustum frustum, double cx, double cy, double cz) {
-            AABB box = e.getBoundingBox().inflate(3.2, 2.8, 3.2);
+            AABB box = e.getBoundingBox().inflate(6.5, 5.5, 6.5);
             return frustum.isVisible(box);
         }
 
@@ -151,13 +152,14 @@ public final class CrystalGeoRenderers {
             float bodyYaw = Mth.rotLerp(pt, e.yBodyRotO, e.yBodyRot);
             ps.mulPose(Axis.YP.rotationDegrees(-bodyYaw));
             ps.translate(0.0, bob, 0.0);
+            ps.scale(BOSS_SCALE, BOSS_SCALE, BOSS_SCALE);
 
             int brightLight = Math.max(light, LightTexture.pack(12, 15));
             int overlay = e.hurtTime > 0 ? OverlayTexture.pack(OverlayTexture.u(1.0F), OverlayTexture.v(true)) : OverlayTexture.NO_OVERLAY;
             GlbRenderer.render(lm, this.pose, ps, buf, brightLight, overlay);
 
             // Объёмные бирюзово-белые потоки энергии Разлома (1:1 по 01_colonnade_boss_ref.png, строго без гуманоидного силуэта!)
-            renderBossEnergyStreams(ps, buf, age, bob, enraged);
+            renderBossEnergyStreams(ps, buf, age, bob / BOSS_SCALE, enraged);
 
             ps.popPose();
             super.render(e, yaw, pt, ps, buf, light);

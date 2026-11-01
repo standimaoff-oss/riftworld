@@ -92,6 +92,20 @@ public final class CityPlan {
             return R * (1 + elong) * (1.16 + Math.abs(lobe2) + Math.abs(lobe3) + Math.abs(bend) * 0.55) + 4.0;
         }
 
+        /** Точное расстояние от (cx, cz) до кромки острова (t == 0) вдоль луча (cosA, sinA). */
+        public double rimDist(double cosA, double sinA) {
+            if (elong == 0.0 && bend == 0.0) {
+                return shapeR(Math.atan2(sinA, cosA));
+            }
+            double lo = R * 0.25, hi = maxReach() + 6.0;
+            for (int i = 0; i < 8; ++i) {
+                double mid = 0.5 * (lo + hi);
+                if (t(cx + cosA * mid, cz + sinA * mid) >= 0.0) lo = mid;
+                else hi = mid;
+            }
+            return 0.5 * (lo + hi);
+        }
+
         /**
          * «Глубина» точки внутри острова: 1 в центре, 0 на кромке, &lt;0 снаружи.
          *

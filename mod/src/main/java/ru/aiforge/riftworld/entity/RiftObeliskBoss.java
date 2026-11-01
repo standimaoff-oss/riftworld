@@ -115,10 +115,10 @@ public class RiftObeliskBoss extends Monster {
             if ((this.tickCount & 1) == 0) {
                 double ang = this.tickCount * 0.16;
                 this.level().addParticle(ParticleTypes.END_ROD,
-                        this.getX() + Math.cos(ang) * 1.45,
-                        this.getY() + 1.8 + Math.sin(ang * 2.0) * 0.35,
-                        this.getZ() + Math.sin(ang) * 1.45,
-                        0, 0.015, 0);
+                        this.getX() + Math.cos(ang) * 2.55,
+                        this.getY() + 2.95 + Math.sin(ang * 2.0) * 0.55,
+                        this.getZ() + Math.sin(ang) * 2.55,
+                        0, 0.02, 0);
             }
             return;
         }
@@ -190,7 +190,7 @@ public class RiftObeliskBoss extends Monster {
 
     private void firePrismVolley(LivingEntity target, int count) {
         if (!(this.level() instanceof ServerLevel sl)) return;
-        Vec3 origin = new Vec3(this.getX(), this.getY() + 2.0, this.getZ());
+        Vec3 origin = new Vec3(this.getX(), this.getY() + 2.85, this.getZ());
         Vec3 toTarget = new Vec3(target.getX() - origin.x, (target.getY() + target.getEyeHeight() * 0.6) - origin.y, target.getZ() - origin.z).normalize();
         sl.playSound(null, this.blockPosition(), SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.HOSTILE, 1.5F, 1.15F);
 
@@ -198,7 +198,7 @@ public class RiftObeliskBoss extends Monster {
         for (int i = -half; i <= half; ++i) {
             Vec3 spread = toTarget.yRot((float) Math.toRadians(i * 9.5)).normalize().scale(1.15);
             CrystalShardEntity shard = new CrystalShardEntity(ModEntities.CRYSTAL_SHARD.get(), sl, this, 7.5F);
-            shard.setPos(origin.x + spread.x * 0.9, origin.y, origin.z + spread.z * 0.9);
+            shard.setPos(origin.x + spread.x * 1.35, origin.y, origin.z + spread.z * 1.35);
             shard.setDeltaMovement(spread);
             sl.addFreshEntity(shard);
         }
@@ -210,9 +210,9 @@ public class RiftObeliskBoss extends Monster {
         double baseAng = this.random.nextDouble() * Math.PI * 2.0;
         for (int i = 0; i < count; ++i) {
             double ang = baseAng + (Math.PI * 2.0 * i) / count;
-            double sx = this.getX() + Math.cos(ang) * 4.5;
-            double sy = this.getY() + 0.8;
-            double sz = this.getZ() + Math.sin(ang) * 4.5;
+            double sx = this.getX() + Math.cos(ang) * 5.8;
+            double sy = this.getY() + 0.4;
+            double sz = this.getZ() + Math.sin(ang) * 5.8;
             CrystalMinion minion = ModEntities.CRYSTAL_MINION.get().create(sl);
             if (minion == null) continue;
             minion.moveTo(sx, sy, sz, this.getYRot(), 0.0F);

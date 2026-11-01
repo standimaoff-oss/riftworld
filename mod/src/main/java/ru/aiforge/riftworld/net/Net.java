@@ -21,6 +21,8 @@ public final class Net {
                 .encoder(ComboMsg::encode).decoder(ComboMsg::decode).consumerMainThread(ComboMsg::handle).add();
         CH.messageBuilder(CrystalActionMsg.class, 2, NetworkDirection.PLAY_TO_SERVER)
                 .encoder(CrystalActionMsg::encode).decoder(CrystalActionMsg::decode).consumerMainThread(CrystalActionMsg::handle).add();
+        CH.messageBuilder(PortalRitualMsg.class, 3, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(PortalRitualMsg::encode).decoder(PortalRitualMsg::decode).consumerMainThread(PortalRitualMsg::handle).add();
     }
 
     public static void send(ServerPlayer p, Object msg) {
