@@ -384,7 +384,7 @@ public final class CrystalGeoRenderers {
             if (lm == null) return;
 
             ps.pushPose();
-            float renderYaw = Mth.rotLerp(pt, e.yRotO, e.getYRot());
+            float renderYaw = e.shieldYaw();
             ps.translate(0.0, 1.05, 0.0);
             ps.mulPose(Axis.YP.rotationDegrees(-renderYaw));
             ps.mulPose(Axis.XP.rotationDegrees(e.getXRot() * 0.45F));

@@ -196,12 +196,12 @@ public class CrystalShieldEntity extends Entity {
 
         UUID oid = ownerUuid();
         if (oid == null) {
-            // Если щит вызван командой /summon без владельца — стоит на месте до 6 секунд, повернувшись по YRot
+            // Если щит вызван командой /summon без владельца — стоит на месте до 6 секунд, синхронизируя YRot
             if (this.tickCount == 1) {
                 Player near = this.level().getNearestPlayer(this, 8.0);
                 if (near != null) this.setYRot(near.getYRot());
-                this.entityData.set(SHIELD_YAW, this.getYRot());
             }
+            this.entityData.set(SHIELD_YAW, this.getYRot());
             return;
         }
         Player owner = findOwner();

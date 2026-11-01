@@ -1069,24 +1069,22 @@ def generate_crystal_minion_glb(pngs: dict) -> bytes:
     # Subtle glowing cyan lightning fissure inside the central forehead & jaw gap
     mb_visage.add_bevel_box(mats["eye_glow"], (0.0, 1.54, 0.20), (0.018, 0.24, 0.06), bevel=0.004)
 
-    # Fierce slanted triangular/almond glowing cyan eyes nestled deep under the stone scowl!
+    # Fierce slanted triangular/almond glowing cyan eyes blazing clearly under the stone scowl!
     peye = mb_visage.prim(mats["core_white"])
     peye_rim = mb_visage.prim(mats["eye_glow"])
     for sgn in (-1.0, +1.0):
-        # Outer fierce slanted cyan eye polygon
-        e0 = (sgn * 0.085, 1.275, 0.292)
-        e1 = (sgn * 0.255, 1.318, 0.268)
-        e2 = (sgn * 0.245, 1.358, 0.268)
-        e3 = (sgn * 0.095, 1.312, 0.292)
+        e0 = (sgn * 0.080, 1.262, 0.318)
+        e1 = (sgn * 0.262, 1.308, 0.294)
+        e2 = (sgn * 0.250, 1.362, 0.294)
+        e3 = (sgn * 0.090, 1.314, 0.318)
         if sgn > 0:
             peye_rim.add_quad(e0, e1, e2, e3, two_sided=True)
         else:
             peye_rim.add_quad(e1, e0, e3, e2, two_sided=True)
-        # Inner bright white-cyan hot core
-        i0 = (sgn * 0.105, 1.285, 0.296)
-        i1 = (sgn * 0.230, 1.320, 0.275)
-        i2 = (sgn * 0.222, 1.345, 0.275)
-        i3 = (sgn * 0.112, 1.308, 0.296)
+        i0 = (sgn * 0.100, 1.274, 0.322)
+        i1 = (sgn * 0.236, 1.312, 0.300)
+        i2 = (sgn * 0.226, 1.346, 0.300)
+        i3 = (sgn * 0.108, 1.304, 0.322)
         if sgn > 0:
             peye.add_quad(i0, i1, i2, i3, two_sided=True)
         else:
@@ -1432,6 +1430,20 @@ def generate_crystal_shard_glb(pngs: dict) -> bytes:
     return sc.to_glb_bytes()
 
 
+def generate_crystal_barrage_item_glb(pngs: dict) -> bytes:
+    """3-shard radiant fan of faceted aquamarine crystal spears for the 'crystal_barrage' item."""
+    sc = GlbScene()
+    mats = setup_palette(sc, pngs)
+    mb = MeshBuilder("crystal_barrage_item_mesh")
+    for sgn, elev, ln in [(0.0, 0.04, 0.48), (-1.0, -0.02, 0.40), (+1.0, -0.02, 0.40)]:
+        bx = sgn * 0.08
+        tx = sgn * 0.24
+        mb.add_crystal_spire(mats["crystal_bright"], (bx, elev * 0.5, -0.16), (tx, elev, ln), 0.078, 0.052, sides=6, double_ended=True)
+        mb.add_crystal_spire(mats["crystal_glass"], (bx, elev * 0.5, -0.19), (tx * 1.04, elev, ln + 0.03), 0.094, 0.062, sides=6, double_ended=True)
+    sc.add_node("barrage_fan", sc.add_mesh(mb))
+    return sc.to_glb_bytes()
+
+
 def generate_astral_prism_glb(pngs: dict) -> bytes:
     sc = GlbScene()
     mats = setup_palette(sc, pngs)
@@ -1509,6 +1521,7 @@ def main():
         ("crystal_katar.glb", generate_crystal_katar_glb(pngs)),
         ("crystal_shield.glb", generate_crystal_shield_glb(pngs)),
         ("crystal_shard.glb", generate_crystal_shard_glb(pngs)),
+        ("crystal_barrage_item.glb", generate_crystal_barrage_item_glb(pngs)),
         ("astral_prism.glb", generate_astral_prism_glb(pngs)),
     ]
     for fn, blob in targets:
