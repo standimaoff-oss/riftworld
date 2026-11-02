@@ -53,9 +53,6 @@ import ru.aiforge.riftworld.world.WaterfallGardens;
  */
 @Mod.EventBusSubscriber(modid = RiftWorld.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public final class OceanSurfaceWaves {
-    private static final ResourceLocation WAVE_TEX =
-            new ResourceLocation(RiftWorld.MODID, "textures/environment/water_wave_band.png");
-
     private static final int MAX_ISLAND_SEGS = 40;
     private static final int RING_COUNT = 3;
     public static final double MAX_ISLAND_DIST = 520.0;
@@ -221,7 +218,7 @@ public final class OceanSurfaceWaves {
         RenderSystem.polygonOffset(-1.0F, -2.0F);
         RenderSystem.enablePolygonOffset();
         RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
-        RenderSystem.setShaderTexture(0, WAVE_TEX);
+        RenderSystem.setShaderTexture(0, ShaderCompat.WHITE_TEX);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
         BufferBuilder bb = Tesselator.getInstance().getBuilder();
