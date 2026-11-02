@@ -3191,7 +3191,7 @@ public final class SeaProbeCommand {
                     for (int by = 58; by <= 88; ++by) {
                         BlockState st = level.getBlockState(mp.set(wx, bs.baseY + by, wz));
                         if (st.getLightEmission(level, mp) >= 10) ++warmLights;
-                        if (by >= 70 && st.is(ru.aiforge.riftworld.registry.ModBlocks.MODELS.get(ru.aiforge.riftworld.block.ModelKind.CASTLE_BOOKSHELF).get())) {
+                        if (by >= 70 && st.is(ru.aiforge.riftworld.registry.CastleBlocks.BOOKSHELF.get())) {
                             ++upperBooks;
                         }
                     }
