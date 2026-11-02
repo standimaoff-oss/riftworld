@@ -14,6 +14,10 @@
     "riftworld:ashlar_stairs",
     "riftworld:dark_planks_stairs",
     "riftworld:castle_roof_stairs",
-    "riftworld:rift_marble_stairs"
+    "riftworld:rift_marble_stairs",
+    "riftworld:ivory_marble_stairs",
+    "riftworld:celadon_tiles_stairs",
+    "riftworld:pearl_calcite_stairs",
+    "riftworld:obsidian_bricks_stairs"
   ]
 }

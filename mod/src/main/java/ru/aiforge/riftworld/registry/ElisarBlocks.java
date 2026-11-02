@@ -163,6 +163,39 @@ public final class ElisarBlocks {
             ModBlocks.reg("crystal_shroom", () -> new PlantBlock(plant().lightLevel(s -> 11)));
     public static final RegistryObject<PlantBlock> RIFT_GRASS =
             ModBlocks.reg("rift_grass", () -> new PlantBlock(plant().lightLevel(s -> 2)));
+
+    // ===== v0.27.0: Белоснежный мрамор Святилища, селадоновая черепица, жемчужный кальцит и мирная флора =====
+    public static final RegistryObject<Block> IVORY_MARBLE = cube("ivory_marble", MapColor.QUARTZ, 1.8F, SoundType.STONE);
+    public static final RegistryObject<Block> IVORY_MARBLE_BRICKS = cube("ivory_marble_bricks", MapColor.QUARTZ, 2.0F, SoundType.STONE);
+    public static final RegistryObject<StairBlock> IVORY_MARBLE_STAIRS = stairs("ivory_marble_stairs", IVORY_MARBLE);
+    public static final RegistryObject<SlabBlock> IVORY_MARBLE_SLAB = slab("ivory_marble_slab", MapColor.QUARTZ, SoundType.STONE);
+    public static final RegistryObject<net.minecraft.world.level.block.WallBlock> IVORY_MARBLE_WALL = ModBlocks.reg("ivory_marble_wall",
+            () -> new net.minecraft.world.level.block.WallBlock(p(MapColor.QUARTZ, 2.0F, SoundType.STONE)));
+    public static final RegistryObject<RotatedPillarBlock> IVORY_MARBLE_PILLAR = ModBlocks.reg("ivory_marble_pillar",
+            () -> new RotatedPillarBlock(p(MapColor.QUARTZ, 2.0F, SoundType.STONE)));
+    public static final RegistryObject<Block> CHISELED_IVORY_MARBLE = cube("chiseled_ivory_marble", MapColor.QUARTZ, 2.0F, SoundType.STONE);
+    public static final RegistryObject<Block> IVORY_MARBLE_TILES = cube("ivory_marble_tiles", MapColor.QUARTZ, 2.0F, SoundType.STONE);
+    public static final RegistryObject<Block> GILDED_IVORY_MARBLE = cube("gilded_ivory_marble", MapColor.GOLD, 2.2F, SoundType.STONE);
+    public static final RegistryObject<Block> IVORY_PAVING_STONE = cube("ivory_paving_stone", MapColor.QUARTZ, 1.8F, SoundType.STONE);
+
+    public static final RegistryObject<Block> CELADON_TILES = cube("celadon_tiles", MapColor.WARPED_WART_BLOCK, 1.8F, SoundType.STONE);
+    public static final RegistryObject<StairBlock> CELADON_TILES_STAIRS = stairs("celadon_tiles_stairs", CELADON_TILES);
+    public static final RegistryObject<SlabBlock> CELADON_TILES_SLAB = slab("celadon_tiles_slab", MapColor.WARPED_WART_BLOCK, SoundType.STONE);
+
+    public static final RegistryObject<Block> PEARL_CALCITE = cube("pearl_calcite", MapColor.SNOW, 1.6F, SoundType.CALCITE);
+    public static final RegistryObject<Block> PEARL_CALCITE_BRICKS = cube("pearl_calcite_bricks", MapColor.SNOW, 1.8F, SoundType.CALCITE);
+    public static final RegistryObject<StairBlock> PEARL_CALCITE_STAIRS = stairs("pearl_calcite_stairs", PEARL_CALCITE_BRICKS);
+    public static final RegistryObject<SlabBlock> PEARL_CALCITE_SLAB = slab("pearl_calcite_slab", MapColor.SNOW, SoundType.CALCITE);
+    public static final RegistryObject<net.minecraft.world.level.block.WallBlock> PEARL_CALCITE_WALL = ModBlocks.reg("pearl_calcite_wall",
+            () -> new net.minecraft.world.level.block.WallBlock(p(MapColor.SNOW, 1.8F, SoundType.CALCITE)));
+
+    public static final RegistryObject<Block> BLOSSOM_MOSS = cube("blossom_moss_block", MapColor.PLANT, 0.5F, SoundType.MOSS);
+    public static final RegistryObject<PlantBlock> WHITE_LILY_CLUSTER =
+            ModBlocks.reg("white_lily_cluster", () -> new PlantBlock(plant().lightLevel(s -> 2)));
+    public static final RegistryObject<PlantBlock> CELADON_FERN =
+            ModBlocks.reg("celadon_fern", () -> new PlantBlock(plant()));
+    public static final RegistryObject<Block> PEARL_PRISM_LANTERN = ModBlocks.reg("pearl_prism_lantern",
+            () -> new Block(p(MapColor.QUARTZ, 1.5F, SoundType.GLASS).lightLevel(s -> 15)));
     // ===== Рев 8 «Живое море»: дно, рифы и подводная флора =====
     // породы дна
     public static final RegistryObject<Block> SILT = cube("elisar_silt", MapColor.COLOR_BLACK, 0.7F, SoundType.SOUL_SAND);
@@ -261,10 +294,10 @@ public final class ElisarBlocks {
 
         @Override
         protected boolean mayPlaceOn(BlockState s, BlockGetter level, BlockPos pos) {
-            return s.is(GRASS.get()) || s.is(SOIL.get()) || s.is(PATH.get()) || s.is(MOSS.get())
+            return s.is(GRASS.get()) || s.is(SOIL.get()) || s.is(PATH.get()) || s.is(MOSS.get()) || s.is(BLOSSOM_MOSS.get())
                     || s.is(GARDEN_GRASS.get()) || s.is(GARDEN_LIMESTONE.get()) || s.is(GARDEN_LIMESTONE_MOSSY.get())
                     || s.is(RIFT_TURF.get()) || s.is(RIFT_MARBLE.get()) || s.is(RIFT_MARBLE_MOSSY.get()) || s.is(RIFT_SLATE.get())
-                    || s.is(CRUST.get());
+                    || s.is(CRUST.get()) || s.is(net.minecraft.tags.BlockTags.DIRT);
         }
 
         @Override

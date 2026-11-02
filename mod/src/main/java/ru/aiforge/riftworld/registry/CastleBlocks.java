@@ -85,6 +85,19 @@ public final class CastleBlocks {
     public static final RegistryObject<WebBlock> COBWEB = ModBlocks.reg("castle_cobweb",
             () -> new WebBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOL).noCollission().strength(4.0F).noOcclusion()));
 
+    // v0.27.0: Черноводные обсидианово-базальтовые блоки, рунный базальт, кованые жаровни и окованные доски
+    public static final RegistryObject<Block> OBSIDIAN_BRICKS = cube("obsidian_bricks", p(MapColor.COLOR_BLACK, 4.0F, SoundType.DEEPSLATE_BRICKS));
+    public static final RegistryObject<StairBlock> OBSIDIAN_BRICKS_STAIRS = stairs("obsidian_bricks_stairs", OBSIDIAN_BRICKS);
+    public static final RegistryObject<SlabBlock> OBSIDIAN_BRICKS_SLAB = slab("obsidian_bricks_slab", OBSIDIAN_BRICKS);
+    public static final RegistryObject<WallBlock> OBSIDIAN_BRICKS_WALL = ModBlocks.reg("obsidian_bricks_wall",
+            () -> new WallBlock(p(MapColor.COLOR_BLACK, 4.0F, SoundType.DEEPSLATE_BRICKS)));
+    public static final RegistryObject<Block> CARVED_BASALT_RUNES = ModBlocks.reg("carved_basalt_runes",
+            () -> new Block(p(MapColor.COLOR_BLACK, 3.5F, SoundType.BASALT).lightLevel(st -> 7)));
+    public static final RegistryObject<Block> EMBER_BRAZIER = ModBlocks.reg("ember_brazier_block",
+            () -> new Block(p(MapColor.COLOR_ORANGE, 3.0F, SoundType.LANTERN).lightLevel(st -> 15)));
+    public static final RegistryObject<Block> IRONBOUND_DARK_PLANKS = cube("ironbound_dark_planks", p(MapColor.COLOR_BROWN, 3.0F, SoundType.WOOD));
+    public static final RegistryObject<Block> ASHEN_COBBLESTONE = cube("ashen_cobblestone", p(MapColor.COLOR_GRAY, 2.2F, SoundType.BASALT));
+
     public static void init() {
     }
 }

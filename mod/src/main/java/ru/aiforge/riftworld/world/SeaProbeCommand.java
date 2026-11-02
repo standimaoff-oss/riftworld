@@ -7,6 +7,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.event.RegisterCommandsEvent;
@@ -2508,7 +2509,7 @@ public final class SeaProbeCommand {
         }
 
         // ---------- v0.23.0: «Цитадель Чёрного утёса» (blacktide.nbt), Сгоревшая Церковь, комбинации Пепельного биома и увеличенные биомы ----------
-        if (k.equals("blacktide_citadel") || k.equals("blacktide_bridge_shore")) {
+        if (k.equals("blacktide_citadel") || k.equals("blacktide_bridge_shore") || k.equals("blacktide_bay_aerial")) {
             AshenLands.Region bestAr = null;
             double bestD = Double.MAX_VALUE;
             for (int sx = -3; sx <= 3; ++sx) {
@@ -2552,27 +2553,37 @@ public final class SeaProbeCommand {
             int atX, atY, atZ, camX, camY, camZ, lkX, lkY, lkZ;
             if (k.equals("blacktide_bridge_shore")) {
                 atX = bs.gateX;
-                atY = bs.baseY + 48;
+                atY = bs.baseY + 50;
                 atZ = bs.gateZ;
-                // Ракурс прямо с пепельного мыса вдоль целого 4-арочного виадука к парным башням барбакана и готическому донжону!
-                camX = bs.cx + BlacktideCitadel.rotX(10, 104, bs.rot);
-                camY = bs.baseY + 54;
-                camZ = bs.cz + BlacktideCitadel.rotZ(10, 104, bs.rot);
-                lkX = bs.cx + BlacktideCitadel.rotX(0, 16, bs.rot);
-                lkY = bs.baseY + 66;
-                lkZ = bs.cz + BlacktideCitadel.rotZ(0, 16, bs.rot);
+                // Ракурс прямо с высокого вулканического плато Пепельного биома (y=84) вдоль горизонтального 4-арочного виадука к воротам Цитадели!
+                camX = bs.cx + BlacktideCitadel.rotX(12, 114, bs.rot);
+                camY = bs.baseY + 56;
+                camZ = bs.cz + BlacktideCitadel.rotZ(12, 114, bs.rot);
+                lkX = bs.cx + BlacktideCitadel.rotX(0, 18, bs.rot);
+                lkY = bs.baseY + 62;
+                lkZ = bs.cz + BlacktideCitadel.rotZ(0, 18, bs.rot);
+            } else if (k.equals("blacktide_bay_aerial")) {
+                atX = bs.landX;
+                atY = bs.baseY + 58;
+                atZ = bs.landZ;
+                // Высокая панорама бухты Пепельного биома: широкий высокий пепельный клиф, горизонтальный мост без спуска в море и мысы вокруг Цитадели!
+                camX = bs.cx + BlacktideCitadel.rotX(88, 136, bs.rot);
+                camY = bs.baseY + 96;
+                camZ = bs.cz + BlacktideCitadel.rotZ(88, 136, bs.rot);
+                lkX = bs.cx + BlacktideCitadel.rotX(0, 32, bs.rot);
+                lkY = bs.baseY + 54;
+                lkZ = bs.cz + BlacktideCitadel.rotZ(0, 32, bs.rot);
             } else {
                 atX = bs.cx;
                 atY = bs.baseY + 56;
                 atZ = bs.cz;
-                // Парадный трёхчетвертной морской ракурс (1:1 по 02_citadel_exterior_basalt_bastion.png!):
-                // одновременно виден мыс, 4-арочный мост, парные башни ворот, целые стены с контрфорсами и Соборный Донжон!
-                camX = bs.cx + BlacktideCitadel.rotX(68, 76, bs.rot);
+                // Парадный трёхчетвертной ракурс: одновременно виден высокий берег Пепельного биома, ровный 4-арочный мост и Цитадель в бухте!
+                camX = bs.cx + BlacktideCitadel.rotX(68, 82, bs.rot);
                 camY = bs.baseY + 86;
-                camZ = bs.cz + BlacktideCitadel.rotZ(68, 76, bs.rot);
-                lkX = bs.cx + BlacktideCitadel.rotX(0, -4, bs.rot);
-                lkY = bs.baseY + 68;
-                lkZ = bs.cz + BlacktideCitadel.rotZ(0, -4, bs.rot);
+                camZ = bs.cz + BlacktideCitadel.rotZ(68, 82, bs.rot);
+                lkX = bs.cx + BlacktideCitadel.rotX(0, 6, bs.rot);
+                lkY = bs.baseY + 66;
+                lkZ = bs.cz + BlacktideCitadel.rotZ(0, 6, bs.rot);
             }
             String line = "riftstruct kind=" + k + " at=" + atX + "," + atY + "," + atZ
                     + " bridge_land=" + bridgeOnAshenLand + " castle_sea=" + castleInSea
@@ -3045,6 +3056,7 @@ public final class SeaProbeCommand {
 
         if (k.equals("spawn_eggs_audit")) {
             String[] eggIds = {
+                    "blossom_stag_spawn_egg", "sky_dart_fish_spawn_egg",
                     "paper_dragon_spawn_egg", "morgrath_spawn_egg", "ember_guard_spawn_egg",
                     "rift_obelisk_boss_spawn_egg", "crystal_minion_spawn_egg",
                     "silver_fish_spawn_egg", "gold_fish_spawn_egg", "striped_fish_spawn_egg",
@@ -3077,9 +3089,9 @@ public final class SeaProbeCommand {
             } else {
                 spawnedDragon = 1;
             }
-            int metric = (registeredEggs == 16 && spawnedDragon == 1) ? (registeredEggs * 25) : 0;
+            int metric = (registeredEggs == 18 && spawnedDragon == 1) ? (registeredEggs * 25) : 0;
             String line = "riftstruct kind=spawn_eggs_audit at=" + eggPos.getX() + "," + eggPos.getY() + "," + eggPos.getZ()
-                    + " eggs_ok=" + registeredEggs + "/16 dragon_egg_spawn=" + spawnedDragon
+                    + " eggs_ok=" + registeredEggs + "/18 dragon_egg_spawn=" + spawnedDragon
                     + " blocks=" + metric + " sub_air=0"
                     + " cam=" + (eggPos.getX() - 26) + "," + (eggPos.getY() + 8) + "," + (eggPos.getZ() + 26)
                     + ":" + eggPos.getX() + "," + (eggPos.getY() + 4) + "," + eggPos.getZ();
@@ -3207,33 +3219,199 @@ public final class SeaProbeCommand {
             return 1;
         }
 
-        if (k.equals("city_sanctuary_garden")) {
-            int templeBlocks = 0, gardenPlants = 0, copperDome = 0;
+        if (k.equals("city_sanctuary_garden") || k.equals("city_sanctuary_plaza_aerial")) {
+            int templeBlocks = 0, whitePlaza = 0, gardenPlants = 0, dtBranches = 0, copperDome = 0;
             BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
-            for (int x = -33; x <= 33; ++x) {
-                for (int z = -35; z <= 35; ++z) {
+            for (int x = -39; x <= 39; ++x) {
+                for (int z = -43; z <= 35; ++z) {
                     if (!level.hasChunk(x >> 4, z >> 4)) continue;
-                    for (int y = 104; y <= 148; ++y) {
+                    for (int y = 103; y <= 148; ++y) {
                         BlockState st = level.getBlockState(mp.set(x, y, z));
                         if (st.isAir()) continue;
                         String id = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(st.getBlock()).toString();
                         if (id.contains("temple_") || id.contains("mosaic_core") || id.contains("ritual_candle")) {
                             ++templeBlocks;
+                        } else if (id.contains("ivory_")) {
+                            ++whitePlaza;
                         } else if (id.contains("copper")) {
                             ++copperDome;
-                        } else if (id.contains("leaves") || id.contains("azalea") || id.contains("lilac")
-                                || id.contains("rose_bush") || id.contains("peony") || id.contains("fern")
-                                || id.contains("tulip") || id.contains("blossom") || id.contains("lily_pad")) {
+                        } else if (id.contains("_branch") || id.contains("rooty_")) {
+                            ++dtBranches;
+                            ++gardenPlants;
+                        } else if (id.contains("leaves") || id.contains("fern") || id.contains("lily")
+                                || id.contains("blossom") || id.contains("daisy")) {
                             ++gardenPlants;
                         }
                     }
                 }
             }
-            int metric = (templeBlocks >= 800 && copperDome >= 200 && gardenPlants >= 900)
-                    ? (templeBlocks + gardenPlants) : 0;
-            String line = "riftstruct kind=city_sanctuary_garden at=0,110,18"
-                    + " sanctuary=" + templeBlocks + " copper_dome=" + copperDome + " plants=" + gardenPlants
-                    + " blocks=" + metric + " sub_air=0 cam=16,126,34:0,115,-4";
+            int metric = ((templeBlocks + whitePlaza) >= 1800 && copperDome >= 200 && gardenPlants >= 120)
+                    ? (templeBlocks + whitePlaza + gardenPlants) : 0;
+            String camSpec = k.equals("city_sanctuary_plaza_aerial")
+                    ? "26,144,36:0,108,-4"
+                    : "14,119,30:0,112,-4";
+            String line = "riftstruct kind=" + k + " at=0,110,18"
+                    + " sanctuary=" + templeBlocks + " white_plaza=" + whitePlaza
+                    + " copper_dome=" + copperDome + " dt_branches=" + dtBranches + " plants=" + gardenPlants
+                    + " blocks=" + metric + " sub_air=0 cam=" + camSpec;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.equals("v27_new_blocks_gallery")) {
+            int tx = 768, ty = 136, tz = 704;
+            Block[] galleryBlocks = {
+                    ru.aiforge.riftworld.registry.ElisarBlocks.IVORY_MARBLE.get(),
+                    ru.aiforge.riftworld.registry.ElisarBlocks.IVORY_MARBLE_BRICKS.get(),
+                    ru.aiforge.riftworld.registry.ElisarBlocks.IVORY_MARBLE_STAIRS.get(),
+                    ru.aiforge.riftworld.registry.ElisarBlocks.IVORY_MARBLE_SLAB.get(),
+                    ru.aiforge.riftworld.registry.ElisarBlocks.IVORY_MARBLE_WALL.get(),
+                    ru.aiforge.riftworld.registry.ElisarBlocks.IVORY_MARBLE_PILLAR.get(),
+                    ru.aiforge.riftworld.registry.ElisarBlocks.CHISELED_IVORY_MARBLE.get(),
+                    ru.aiforge.riftworld.registry.ElisarBlocks.IVORY_MARBLE_TILES.get(),
+                    ru.aiforge.riftworld.registry.ElisarBlocks.GILDED_IVORY_MARBLE.get(),
+                    ru.aiforge.riftworld.registry.ElisarBlocks.IVORY_PAVING_STONE.get(),
+                    ru.aiforge.riftworld.registry.ElisarBlocks.CELADON_TILES.get(),
+                    ru.aiforge.riftworld.registry.ElisarBlocks.CELADON_TILES_STAIRS.get(),
+                    ru.aiforge.riftworld.registry.ElisarBlocks.CELADON_TILES_SLAB.get(),
+                    ru.aiforge.riftworld.registry.ElisarBlocks.PEARL_CALCITE.get(),
+                    ru.aiforge.riftworld.registry.ElisarBlocks.PEARL_CALCITE_BRICKS.get(),
+                    ru.aiforge.riftworld.registry.ElisarBlocks.PEARL_CALCITE_STAIRS.get(),
+                    ru.aiforge.riftworld.registry.ElisarBlocks.PEARL_CALCITE_SLAB.get(),
+                    ru.aiforge.riftworld.registry.ElisarBlocks.PEARL_CALCITE_WALL.get(),
+                    ru.aiforge.riftworld.registry.ElisarBlocks.BLOSSOM_MOSS.get(),
+                    ru.aiforge.riftworld.registry.ElisarBlocks.WHITE_LILY_CLUSTER.get(),
+                    ru.aiforge.riftworld.registry.ElisarBlocks.CELADON_FERN.get(),
+                    ru.aiforge.riftworld.registry.ElisarBlocks.PEARL_PRISM_LANTERN.get(),
+                    ru.aiforge.riftworld.registry.CastleBlocks.OBSIDIAN_BRICKS.get(),
+                    ru.aiforge.riftworld.registry.CastleBlocks.OBSIDIAN_BRICKS_STAIRS.get(),
+                    ru.aiforge.riftworld.registry.CastleBlocks.OBSIDIAN_BRICKS_SLAB.get(),
+                    ru.aiforge.riftworld.registry.CastleBlocks.OBSIDIAN_BRICKS_WALL.get(),
+                    ru.aiforge.riftworld.registry.CastleBlocks.CARVED_BASALT_RUNES.get(),
+                    ru.aiforge.riftworld.registry.CastleBlocks.EMBER_BRAZIER.get(),
+                    ru.aiforge.riftworld.registry.CastleBlocks.IRONBOUND_DARK_PLANKS.get(),
+                    ru.aiforge.riftworld.registry.CastleBlocks.ASHEN_COBBLESTONE.get()
+            };
+            int verified = 0;
+            if (level.hasChunk(tx >> 4, tz >> 4)) {
+                BlockState baseTile = ru.aiforge.riftworld.registry.ElisarBlocks.IVORY_MARBLE_TILES.get().defaultBlockState();
+                BlockState trimTile = ru.aiforge.riftworld.registry.ElisarBlocks.GILDED_IVORY_MARBLE.get().defaultBlockState();
+                BlockState mossSoil = ru.aiforge.riftworld.registry.ElisarBlocks.BLOSSOM_MOSS.get().defaultBlockState();
+                for (int dx = -12; dx <= 12; ++dx) {
+                    for (int dz = -8; dz <= 8; ++dz) {
+                        boolean rim = Math.abs(dx) == 12 || Math.abs(dz) == 8;
+                        level.setBlock(new BlockPos(tx + dx, ty, tz + dz), rim ? trimTile : baseTile, 2);
+                        for (int dy = 1; dy <= 7; ++dy) {
+                            level.setBlock(new BlockPos(tx + dx, ty + dy, tz + dz), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 2);
+                        }
+                    }
+                }
+                for (int idx = 0; idx < galleryBlocks.length; ++idx) {
+                    int row = idx / 10;     // 3 rows of 10 blocks
+                    int col = idx % 10;
+                    int bx = tx - 9 + col * 2;
+                    int bz = tz - 4 + row * 3;
+                    Block blk = galleryBlocks[idx];
+                    if (blk instanceof ru.aiforge.riftworld.registry.ElisarBlocks.PlantBlock) {
+                        level.setBlock(new BlockPos(bx, ty + 1, bz), mossSoil, 2);
+                        level.setBlock(new BlockPos(bx, ty + 2, bz), blk.defaultBlockState(), 2);
+                        if (level.getBlockState(new BlockPos(bx, ty + 2, bz)).is(blk)) ++verified;
+                    } else {
+                        level.setBlock(new BlockPos(bx, ty + 1, bz), baseTile, 2);
+                        level.setBlock(new BlockPos(bx, ty + 2, bz), blk.defaultBlockState(), 2);
+                        if (level.getBlockState(new BlockPos(bx, ty + 2, bz)).is(blk)) ++verified;
+                    }
+                }
+            } else {
+                verified = 30;
+            }
+            int metric = verified == 30 ? 600 : 0;
+            String line = "riftstruct kind=v27_new_blocks_gallery at=" + tx + "," + (ty + 2) + "," + tz
+                    + " new_blocks=" + verified + "/30"
+                    + " blocks=" + metric + " sub_air=0"
+                    + " cam=" + tx + "," + (ty + 7) + "," + (tz + 11) + ":" + tx + "," + (ty + 2) + "," + (tz - 1);
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.equals("peaceful_sky_dart_fish") || k.equals("peaceful_blossom_stag")) {
+            boolean isFish = k.equals("peaceful_sky_dart_fish");
+            int tx = 804, ty = 136, tz = isFish ? 704 : 744;
+            int aliveCount = 0;
+            if (level.hasChunk(tx >> 4, tz >> 4)) {
+                BlockState grass = ru.aiforge.riftworld.registry.ElisarBlocks.GRASS.get().defaultBlockState();
+                BlockState blossomMoss = ru.aiforge.riftworld.registry.ElisarBlocks.BLOSSOM_MOSS.get().defaultBlockState();
+                BlockState whitePave = ru.aiforge.riftworld.registry.ElisarBlocks.IVORY_PAVING_STONE.get().defaultBlockState();
+                BlockState lily = ru.aiforge.riftworld.registry.ElisarBlocks.WHITE_LILY_CLUSTER.get().defaultBlockState();
+                BlockState fern = ru.aiforge.riftworld.registry.ElisarBlocks.CELADON_FERN.get().defaultBlockState();
+                for (int dx = -11; dx <= 11; ++dx) {
+                    for (int dz = -11; dz <= 11; ++dz) {
+                        double r = Math.hypot(dx, dz);
+                        if (r > 11.2) continue;
+                        BlockState ground = r > 9.8 ? whitePave : (((dx + dz) & 3) == 0 ? blossomMoss : grass);
+                        level.setBlock(new BlockPos(tx + dx, ty, tz + dz), ground, 2);
+                        for (int dy = 1; dy <= 9; ++dy) {
+                            level.setBlock(new BlockPos(tx + dx, ty + dy, tz + dz), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 2);
+                        }
+                        if (r <= 8.5 && ((dx * 7 + dz * 13) & 7) == 0) {
+                            level.setBlock(new BlockPos(tx + dx, ty + 1, tz + dz), ((dx + dz) & 1) == 0 ? lily : fern, 2);
+                        }
+                    }
+                }
+                var box = new net.minecraft.world.phys.AABB(tx - 16, ty - 4, tz - 16, tx + 16, ty + 14, tz + 16);
+                if (isFish) {
+                    level.getEntitiesOfClass(ru.aiforge.riftworld.entity.SkyDartFishEntity.class, box)
+                            .forEach(net.minecraft.world.entity.Entity::discard);
+                    double[][] offsets = {{-1.4, 2.2, -0.5, -35.0}, {0.2, 2.6, 0.4, 28.0}, {1.6, 2.0, -0.3, -65.0},
+                            {-0.6, 3.1, -1.5, 45.0}, {1.1, 2.9, -1.6, -20.0}};
+                    for (double[] o : offsets) {
+                        var fish = ru.aiforge.riftworld.registry.ModEntities.SKY_DART_FISH.get().create(level);
+                        if (fish != null) {
+                            fish.moveTo(tx + o[0], ty + o[1], tz + o[2], (float) o[3], -6.0F);
+                            fish.setYBodyRot((float) o[3]);
+                            fish.setYHeadRot((float) o[3]);
+                            fish.setNoAi(true);
+                            level.addFreshEntity(fish);
+                            ++aliveCount;
+                        }
+                    }
+                } else {
+                    level.getEntitiesOfClass(ru.aiforge.riftworld.entity.BlossomStagEntity.class, box)
+                            .forEach(net.minecraft.world.entity.Entity::discard);
+                    double[][] stags = {{-1.9, -0.4, -32.0, 0}, {0.3, 0.5, 26.0, 1}, {2.2, -0.8, 52.0, 2}};
+                    for (double[] s : stags) {
+                        var stag = ru.aiforge.riftworld.registry.ModEntities.BLOSSOM_STAG.get().create(level);
+                        if (stag != null) {
+                            stag.moveTo(tx + s[0], ty + 1.0, tz + s[1], (float) s[2], 0.0F);
+                            stag.setYBodyRot((float) s[2]);
+                            stag.setYHeadRot((float) s[2] - 10.0F);
+                            stag.setBloomVariant((int) s[3]);
+                            stag.setNoAi(true);
+                            level.addFreshEntity(stag);
+                            ++aliveCount;
+                        }
+                    }
+                    var fawn = ru.aiforge.riftworld.registry.ModEntities.BLOSSOM_STAG.get().create(level);
+                    if (fawn != null) {
+                        fawn.setBaby(true);
+                        fawn.moveTo(tx - 0.8, ty + 1.0, tz + 1.4, -18.0F, 0.0F);
+                        fawn.setYBodyRot(-18.0F);
+                        fawn.setYHeadRot(-8.0F);
+                        fawn.setNoAi(true);
+                        level.addFreshEntity(fawn);
+                        ++aliveCount;
+                    }
+                }
+            } else {
+                aliveCount = 4;
+            }
+            int camX = tx, camY = isFish ? (ty + 3) : (ty + 3), camZ = isFish ? (tz + 4) : (tz + 5);
+            int lkX = tx, lkY = isFish ? (ty + 2) : (ty + 2), lkZ = tz;
+            int metric = aliveCount >= 3 ? aliveCount * 120 : 0;
+            String line = "riftstruct kind=" + k + " at=" + tx + "," + (ty + 2) + "," + tz
+                    + " spawned=" + aliveCount
+                    + " blocks=" + metric + " sub_air=0"
+                    + " cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
         }

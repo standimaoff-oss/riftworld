@@ -217,6 +217,32 @@ public final class AshenLands {
                     ++k;
                 }
             }
+            // Обугленные сухие деревья Пепельного биома вдоль высокого скалистого берега и мысов бухты у Цитадели!
+            if (this.blacktideSite != null) {
+                BlacktideCitadel.Site bt = this.blacktideSite;
+                for (int k = 0, tries = 0; k < 28 && tries < 320; ++tries) {
+                    boolean onCape = (tries % 3 == 0);
+                    double inland = onCape ? (-8.0 - mr.nextDouble() * 58.0) : (6.0 + mr.nextDouble() * 54.0);
+                    double sideSign = mr.nextBoolean() ? 1.0 : -1.0;
+                    double perp = onCape ? (114.0 + mr.nextDouble() * 44.0) : (14.0 + mr.nextDouble() * 128.0);
+                    int tx = (int) Math.round(bt.landX - bt.outUx * inland - bt.outUz * (perp * sideSign));
+                    int tz = (int) Math.round(bt.landZ - bt.outUz * inland + bt.outUx * (perp * sideSign));
+                    int ht = bt.headlandTop(tx, tz, OCEAN_Y);
+                    if (ht <= OCEAN_Y + 4) continue;
+                    boolean ok = true;
+                    for (CityPlan.Tree t : moundTrees) {
+                        if (Math.abs(t.x - tx) < 7 && Math.abs(t.z - tz) < 7) {
+                            ok = false;
+                            break;
+                        }
+                    }
+                    if (!ok) continue;
+                    CityPlan.Tree ct = new CityPlan.Tree(tx, tz, 2, 6 + mr.nextInt(5), mr.nextInt(1 << 30));
+                    ct.baseY = ht + 1;
+                    moundTrees.add(ct);
+                    ++k;
+                }
+            }
         }
 
         public boolean isEmptyBiome() {
@@ -382,19 +408,35 @@ public final class AshenLands {
                 if (rg.blacktideSite != null) {
                     BlacktideCitadel.Site bt = rg.blacktideSite;
                     double bdx = x - bt.landX, bdz = z - bt.landZ;
-                    double seaward = bdx * bt.outUx + bdz * bt.outUz; // <=0 вглубь Пепельного биома, >0 вдоль моста в море
+                    double seaward = bdx * bt.outUx + bdz * bt.outUz; // <=0 вглубь Пепельного биома, >0 вдоль моста в морскую бухту
+                    double inland = -seaward;
                     double perp = Math.abs(-bdx * bt.outUz + bdz * bt.outUx);
-                    if (seaward >= -120.0 && seaward <= 24.0 && perp <= 96.0) {
-                        // Монолитный сухопутный мыс Пепельного биома, без единой лужи/разрыва соединяющий равнину биома и начало моста!
-                        double sideFade = perp <= 68.0 ? 1.0 : Math.max(0.0, 1.0 - (perp - 68.0) / 28.0);
-                        w = Math.max(w, sideFade);
-                    } else if (seaward > 24.0 && seaward < 29.0 && perp <= 145.0) {
-                        // Чёткий скалистый береговой уступ под первой аркой моста (без шахматных пятен на воде)
-                        double seaClamp = 1.0 - (seaward - 24.0) / 5.0;
-                        w = Math.min(w, seaClamp);
-                    } else if (seaward >= 29.0 && perp <= 155.0) {
-                        // Три морские арки моста и вся Цитадель Чёрного утёса стоят в чистом открытом море прямо у берега биома!
-                        w = 0.0;
+                    double crag = (ElisarChunkGenerator.vnoise(x * 0.045, z * 0.045, 913) - 0.5) * 4.0;
+                    double sideEnv = perp <= 165.0 ? 1.0 : Math.max(0.0, 1.0 - (perp - 165.0) / 42.0);
+
+                    // 1) Сплошной широкий высокий берег Пепельного биома позади и по бокам моста (400+ м шириной, 0 луж!)
+                    double cliffSeawardLimit = 8.0 - (perp > 12.0 ? crag * 0.9 : 0.0);
+                    if (inland >= -cliffSeawardLimit && inland <= 110.0 && sideEnv > 0.0) {
+                        w = Math.max(w, sideEnv);
+                    }
+
+                    // 2) Парные скалистые мысы Пепельного биома, обнимающие бухту Цитадели с обеих сторон!
+                    double bayW = BlacktideCitadel.Site.bayHalfWidth(Math.max(0.0, seaward));
+                    if (seaward > 4.0 && seaward <= 135.0 && perp >= bayW + 4.5 + crag && sideEnv > 0.0) {
+                        double capeFade = seaward <= 75.0 ? 1.0 : Math.max(0.0, 1.0 - (seaward - 75.0) / 60.0);
+                        w = Math.max(w, sideEnv * capeFade);
+                    }
+
+                    // 3) Внутри полукруглой бухты вокруг самого замка и 4 арок моста — чистое открытое море (w = 0.0)!
+                    if (seaward > cliffSeawardLimit && perp < bayW + 3.5 + crag) {
+                        double edgeBlend = Math.min(
+                                (seaward - cliffSeawardLimit) / 3.5,
+                                ((bayW + 3.5 + crag) - perp) / 3.5);
+                        if (edgeBlend >= 1.0) {
+                            w = 0.0;
+                        } else if (edgeBlend > 0.0) {
+                            w = Math.min(w, 1.0 - edgeBlend);
+                        }
                     }
                 }
                 if (w > best) best = w;
@@ -444,7 +486,7 @@ public final class AshenLands {
 
     public static boolean inside(double x, double z) {
         Region rg = regionAt(x, z);
-        return rg != null && Math.hypot(x - rg.cx, z - rg.cz) < rg.R - 18.0 && weight(x, z) > 0.35;
+        return rg != null && weight(x, z) > 0.35;
     }
 
     private static int moundTopIn(List<Mound> mounds, int x, int z) {

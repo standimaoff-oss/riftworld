@@ -1,4 +1,32 @@
 {
   "replace": false,
-  "values": [ "riftworld:aurite_ore" ]
+  "values": [
+    "riftworld:aurite_ore",
+    "riftworld:ivory_marble",
+    "riftworld:ivory_marble_bricks",
+    "riftworld:ivory_marble_stairs",
+    "riftworld:ivory_marble_slab",
+    "riftworld:ivory_marble_wall",
+    "riftworld:ivory_marble_pillar",
+    "riftworld:chiseled_ivory_marble",
+    "riftworld:ivory_marble_tiles",
+    "riftworld:gilded_ivory_marble",
+    "riftworld:ivory_paving_stone",
+    "riftworld:celadon_tiles",
+    "riftworld:celadon_tiles_stairs",
+    "riftworld:celadon_tiles_slab",
+    "riftworld:pearl_calcite",
+    "riftworld:pearl_calcite_bricks",
+    "riftworld:pearl_calcite_stairs",
+    "riftworld:pearl_calcite_slab",
+    "riftworld:pearl_calcite_wall",
+    "riftworld:pearl_prism_lantern",
+    "riftworld:obsidian_bricks",
+    "riftworld:obsidian_bricks_stairs",
+    "riftworld:obsidian_bricks_slab",
+    "riftworld:obsidian_bricks_wall",
+    "riftworld:carved_basalt_runes",
+    "riftworld:ember_brazier_block",
+    "riftworld:ashen_cobblestone"
+  ]
 }

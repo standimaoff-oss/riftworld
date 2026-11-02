@@ -50,6 +50,8 @@ public final class ModTabs {
             }).build());
 
     private static void acceptAllSpawnEggs(CreativeModeTab.Output out) {
+        out.accept(ModItems.BLOSSOM_STAG_EGG.get());
+        out.accept(ModItems.SKY_DART_EGG.get());
         out.accept(ModItems.PAPER_DRAGON_EGG.get());
         out.accept(ModItems.MORGRATH_EGG.get());
         out.accept(ModItems.GUARD_EGG.get());

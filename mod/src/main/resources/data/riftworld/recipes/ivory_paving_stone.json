@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "#S",
+    "S#"
+  ],
+  "key": {
+    "#": {
+      "item": "riftworld:ivory_marble"
+    },
+    "S": {
+      "item": "riftworld:elisar_stone"
+    }
+  },
+  "result": {
+    "item": "riftworld:ivory_paving_stone",
+    "count": 4
+  }
+}

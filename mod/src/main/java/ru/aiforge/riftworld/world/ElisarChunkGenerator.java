@@ -100,6 +100,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         boolean crystal;          // biome 10 zone (CrystalRifts island or stone arch bridge)
         int spanTop = Integer.MIN_VALUE, spanBot = Integer.MIN_VALUE;
         boolean spanParapet, spanPost, spanLantern;
+        int sanctuaryZone;        // v0.27.0: 0=вне площади, 1=белый мрамор площади, 2=радиальная дорожка, 3=золотой узор, 4=зелёная клумба DT, 5=фонарная тумба
         /**
          * Рев 15: ГЛАДКАЯ (до квантования в ярусы) высота поверхности. Нужна Фиолетовым холмам:
          * гряды лаванды идут ПО КОНТУРУ яруса, а сам контур — это изолиния этой высоты, поэтому
@@ -315,6 +316,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             // plots: flatten (nearest plot wins), blend over the margin
             double best = 1e9;
             for (CityPlan.Plot p : bk.plots) {
+                if ("city_castle".equals(p.template())) continue; // v0.27.0: Святилище круглое, без квадратной подрезки!
                 double dx = Math.max(Math.max(p.x0() - px + 0.5, 0), px - 0.5 - (p.x0() + p.w() - 1));
                 double dz = Math.max(Math.max(p.z0() - pz + 0.5, 0), pz - 0.5 - (p.z0() + p.d() - 1));
                 double d = Math.hypot(dx, dz);
@@ -325,6 +327,60 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                         c.plot = true;
                     } else {
                         top = p.h() + (raw - p.h()) * smooth(d / (p.margin() + 1.0));
+                    }
+                }
+            }
+            // v0.27.0: Не-квадратная круглая белоснежная площадь вокруг Святилища Белого Города (центр 0, -4)
+            // с 8 плавными радиальными белыми дорожками к кольцевой улице и живыми клумбами под генеративные деревья DT!
+            if (!plan.islands.isEmpty() && isl == plan.islands.get(0)) {
+                double sdx = px;
+                double sdz = pz + 4.0;
+                double rSanct = Math.hypot(sdx, sdz);
+                double angSanct = Math.atan2(sdz, sdx);
+                double outerR = 36.8 - 1.6 * Math.cos(angSanct * 8.0) + 0.7 * (vnoise(px * 0.08, pz * 0.08, 411) - 0.5);
+                if (rSanct <= outerR + 6.0) {
+                    double sanctTop = 104.0;
+                    if (rSanct <= outerR) {
+                        top = sanctTop;
+                    } else {
+                        top = sanctTop + (top - sanctTop) * smooth((rSanct - outerR) / 6.0);
+                    }
+                    if (rSanct <= outerR) {
+                        boolean inRotunda = rSanct <= 16.0 || (Math.abs(sdx) <= 4.6 && sdz >= 11.5 && sdz <= 19.5);
+                        double innerRingR = 21.0 + 0.6 * Math.cos(angSanct * 8.0);
+                        double outerPromR = outerR - 2.5;
+                        if (inRotunda) {
+                            c.plot = true;
+                            c.sanctuaryZone = 1;
+                        } else if (rSanct <= innerRingR || rSanct >= outerPromR) {
+                            boolean goldInlay = Math.abs(rSanct - 18.4) < 0.55 || Math.abs(rSanct - (outerR - 1.1)) < 0.50;
+                            c.sanctuaryZone = goldInlay ? 3 : 1;
+                        } else {
+                            // 8 радиальных белых дорожек (южная к портику — парадная широкая, остальные 7 с плавным изгибом)
+                            double minArcDist = 1e9;
+                            boolean onSouthAve = (sdz > 0.0 && Math.abs(sdx) <= 3.1);
+                            double southDist = sdz > 0.0 ? Math.abs(sdx) : 1e9;
+                            for (int k = 0; k < 8; ++k) {
+                                if (k == 2) continue; // +pi/2 = южная аллея
+                                double targetA = k * (Math.PI / 4.0);
+                                double swirl = angSanct + 0.065 * Math.sin((rSanct - innerRingR) * 0.25);
+                                double da = Math.abs(Math.atan2(Math.sin(swirl - targetA), Math.cos(swirl - targetA)));
+                                double arcD = rSanct * da;
+                                if (arcD < minArcDist) minArcDist = arcD;
+                            }
+                            if (onSouthAve) {
+                                boolean lampPost = Math.abs(Math.abs(sdx) - 3.0) < 0.45
+                                        && (Math.abs(rSanct - 22.5) < 0.55 || Math.abs(rSanct - 31.5) < 0.55);
+                                if (lampPost) c.sanctuaryZone = 5;
+                                else if (southDist < 0.55 && (((int) Math.floor(pz)) & 1) == 0) c.sanctuaryZone = 3;
+                                else c.sanctuaryZone = 2;
+                            } else if (minArcDist <= 1.95) {
+                                boolean portalLamp = minArcDist > 1.35 && Math.abs(rSanct - 22.4) < 0.52;
+                                c.sanctuaryZone = portalLamp ? 5 : 2;
+                            } else {
+                                c.sanctuaryZone = 4; // живая полукруглая клумба для генеративных деревьев Dynamic Trees!
+                            }
+                        }
                     }
                 }
             }
@@ -1051,7 +1107,29 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                     } else for (int y = c.bottom; y <= c.top; ++y) {
                         BlockState s;
                         if (y == c.top) {
-                            s = switch (c.surface) {
+                            s = switch (c.sanctuaryZone) {
+                                case 1 -> hash(x, z, 412) < 0.58
+                                        ? st(ElisarBlocks.IVORY_MARBLE_TILES)
+                                        : st(ElisarBlocks.IVORY_MARBLE);
+                                case 2 -> ((x + z) & 3) == 0
+                                        ? st(ElisarBlocks.IVORY_MARBLE_BRICKS)
+                                        : st(ElisarBlocks.IVORY_PAVING_STONE);
+                                case 3 -> st(ElisarBlocks.GILDED_IVORY_MARBLE);
+                                case 5 -> st(ElisarBlocks.CHISELED_IVORY_MARBLE);
+                                case 4 -> {
+                                    // Живой газон elisar_grass (почва DT!) с цветочным мхом только у самой кромки дорожек
+                                    boolean nearWhiteEdge = false;
+                                    for (Direction dd : Direction.Plane.HORIZONTAL) {
+                                        int nz = cols[dx + 1 + dd.getStepX()][dz + 1 + dd.getStepZ()].sanctuaryZone;
+                                        if (nz >= 1 && nz <= 3) { nearWhiteEdge = true; break; }
+                                    }
+                                    yield (nearWhiteEdge && hash(x, z, 415) < 0.65)
+                                            ? st(ElisarBlocks.BLOSSOM_MOSS)
+                                            : grass;
+                                }
+                                default -> null;
+                            };
+                            if (s == null) s = switch (c.surface) {
                                 case S_COBBLE -> {
                                     if (c.isl.kind == CrystalRifts.KIND) {
                                         double mh = hash(x, z, 721);
@@ -1191,6 +1269,24 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                             for (int y = c.top + 1; y <= plan.ocean; ++y) {
                                 chunk.setBlockState(mp.set(x, y, z), water, false);
                             }
+                        }
+                    }
+                    // v0.27.0: Неразрушающий живой цветочный покров и белые мраморные фонарные тумбы на круглой площади Святилища
+                    if (c.sanctuaryZone == 5 && chunk.getBlockState(mp.set(x, c.top + 1, z)).isAir()) {
+                        chunk.setBlockState(mp.set(x, c.top + 1, z), st(ElisarBlocks.IVORY_MARBLE_WALL), false);
+                        if (chunk.getBlockState(mp.set(x, c.top + 2, z)).isAir()) {
+                            chunk.setBlockState(mp.set(x, c.top + 2, z), st(ElisarBlocks.LANTERN), false);
+                        }
+                    } else if (c.sanctuaryZone == 4 && chunk.getBlockState(mp.set(x, c.top + 1, z)).isAir()) {
+                        double fh = hash(x, z, 419);
+                        if (fh < 0.085) {
+                            chunk.setBlockState(mp.set(x, c.top + 1, z), st(ElisarBlocks.WHITE_LILY_CLUSTER), false);
+                        } else if (fh < 0.145) {
+                            chunk.setBlockState(mp.set(x, c.top + 1, z), st(ElisarBlocks.CELADON_FERN), false);
+                        } else if (fh < 0.180) {
+                            chunk.setBlockState(mp.set(x, c.top + 1, z), Blocks.OXEYE_DAISY.defaultBlockState(), false);
+                        } else if (fh < 0.205) {
+                            chunk.setBlockState(mp.set(x, c.top + 1, z), Blocks.LILY_OF_THE_VALLEY.defaultBlockState(), false);
                         }
                     }
                     // half-step slabs where a street or country lane climbs one block (smooth walking, no hard ledges)

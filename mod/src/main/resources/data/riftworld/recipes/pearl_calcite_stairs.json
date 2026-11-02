@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "#  ",
+    "## ",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "riftworld:pearl_calcite_bricks"
+    }
+  },
+  "result": {
+    "item": "riftworld:pearl_calcite_stairs",
+    "count": 4
+  }
+}

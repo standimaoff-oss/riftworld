@@ -417,39 +417,35 @@ def build_volcanic_island():
 # 2. SHORE ABUTMENT & UNBROKEN 4-ARCH VIADUCT BRIDGE (`lz = 36..104`, 0 SEA STUBS!)
 # =============================================================================
 def build_viaduct_bridge():
-    print("  [2/7] Building shore abutment & unbroken 4-arch Gothic sea viaduct...")
-    # A) Shore Abutment on Ashen Lands headland (`LAND_LX=0, LAND_LZ=96, LAND_BY=41`)
+    print("  [2/7] Building shore abutment & horizontal 4-arch Gothic sea viaduct...")
+    # A) Shore Abutment flush on the towering Ashen Lands sea-cliff (`LAND_LX=0, LAND_LZ=96, LAND_BY=46`)
     for lz in range(92, 108):
-        flare = 6 + max(0, (lz - 94) // 2)
+        flare = 6 + max(0, (lz - 93) // 2)
         for lx in range(0, flare + 1):
-            for by in range(0, 41):
-                put_sym(lx, by, lz, GRASS_SHORE if (by == 40 and lx > 5) else (DIRT_SHORE if (by >= 38 and lx > 5) else strata_rock(lx, by, lz)))
+            for by in range(0, 47):
+                put_sym(lx, by, lz, GRASS_SHORE if (by == 46 and lx > 5) else (DIRT_SHORE if (by >= 44 and lx > 5) else strata_rock(lx, by, lz)))
             if lx <= 5:
-                put_sym(lx, 40, lz, PBB if (lx in (0, 4, 5) or lz % 4 == 0) else PDS)
-                for cy in range(41, 50):
+                put_sym(lx, 46, lz, PBB if (lx in (0, 4, 5) or lz % 4 == 0) else PDS)
+                for cy in range(47, 56):
                     put_sym(lx, cy, lz, 0)
             elif lx == 6 and lz <= 100:
-                put_sym(lx, 41, lz, PBB)
-                put_sym(lx, 42, lz, PBB_SLAB_BOT)
+                put_sym(lx, 47, lz, PBB)
+                put_sym(lx, 48, lz, PBB_SLAB_BOT)
 
-    # Twin Shore Entry Pylons at `(±5, 98)`
+    # Twin Shore Entry Pylons at `(±5, 98)` standing directly on the flat Ashen cliff brow!
     for lx in (5, 6):
         for lz in (97, 98, 99):
-            for by in range(41, 49):
-                put_sym(lx, by, lz, BASALT_Y if (lx == 5 and lz == 98 and 42 <= by <= 46) else PBB)
-    put_sym(5, 49, 98, CPB)
-    put_sym(5, 50, 98, BRAZIER_S)
+            for by in range(47, 55):
+                put_sym(lx, by, lz, BASALT_Y if (lx == 5 and lz == 98 and 48 <= by <= 52) else PBB)
+    put_sym(5, 55, 98, CPB)
+    put_sym(5, 56, 98, BRAZIER_S)
 
     # B) 5 Cutwater Bridge Piers at `lz = 94, 79, 64, 49, 36` + 4 Pointed Gothic Arches (`lz = 36..94`)
     pier_zs = [94, 79, 64, 49, 36]
 
     def deck_y_at(lz: int) -> tuple[int, bool]:
-        # Smooth gentle rise from by=40 at lz=96 to by=46 at lz=36 (1 block per 10m, half-slab every 5m!)
-        u = max(0.0, min(1.0, (96.0 - lz) / 60.0))
-        exact = 40.0 + u * 6.0
-        full_y = int(math.floor(exact + 1e-4))
-        half_slab = (exact - full_y) >= 0.48
-        return full_y, half_slab
+        # Strictly horizontal grand viaduct deck at by=46 (worldY=84), flush with Castle Gate & Ashen Sea-Cliff!
+        return 46, False
 
     # Solid cutwater piers rooted all the way to `by = 0` (`sub_air == 0`)
     for pz in pier_zs:

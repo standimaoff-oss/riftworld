@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " I ",
+    "I#I",
+    " I "
+  ],
+  "key": {
+    "I": {
+      "item": "riftworld:ivory_marble"
+    },
+    "#": {
+      "item": "minecraft:sea_lantern"
+    }
+  },
+  "result": {
+    "item": "riftworld:pearl_prism_lantern",
+    "count": 2
+  }
+}

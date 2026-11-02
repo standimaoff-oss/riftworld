@@ -117,6 +117,38 @@ public final class ModItems {
     public static final RegistryObject<Item> EGG_GLOOM = egg("gloom_fish_spawn_egg", ru.aiforge.riftworld.entity.SeaFishEntity.GLOOM, 0x2A1F36, 0xC46BFF);
     public static final RegistryObject<Item> EGG_STING = egg("sting_fish_spawn_egg", ru.aiforge.riftworld.entity.SeaFishEntity.STING, 0xB05AD6, 0xFFE9FF);
 
+    // v0.27.0: Яйца призыва двух мирных существ обычного биома (летающая рыбка-стрекоза и белоснежный цветущий олень)
+    public static final RegistryObject<Item> SKY_DART_EGG = ITEMS.register("sky_dart_fish_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.SKY_DART_FISH, 0xF5F1E8, 0x7EC5BB, new Item.Properties()) {
+                @Override
+                public net.minecraft.world.InteractionResultHolder<net.minecraft.world.item.ItemStack> use(
+                        net.minecraft.world.level.Level level,
+                        net.minecraft.world.entity.player.Player player,
+                        net.minecraft.world.InteractionHand hand) {
+                    var res = super.use(level, player, hand);
+                    if (res.getResult().consumesAction()) return res;
+                    net.minecraft.world.item.ItemStack stack = player.getItemInHand(hand);
+                    var hit = getPlayerPOVHitResult(level, player, net.minecraft.world.level.ClipContext.Fluid.ANY);
+                    if (hit.getType() == net.minecraft.world.phys.HitResult.Type.MISS) {
+                        if (!level.isClientSide && level instanceof net.minecraft.server.level.ServerLevel sl) {
+                            net.minecraft.world.phys.Vec3 spawnPos = player.getEyePosition().add(player.getLookAngle().scale(3.5));
+                            var ent = ModEntities.SKY_DART_FISH.get().spawn(
+                                    sl, stack, player, net.minecraft.core.BlockPos.containing(spawnPos),
+                                    net.minecraft.world.entity.MobSpawnType.SPAWN_EGG, false, false);
+                            if (ent != null) {
+                                ent.moveTo(spawnPos.x, spawnPos.y, spawnPos.z, player.getYRot(), 0.0F);
+                                if (!player.getAbilities().instabuild) stack.shrink(1);
+                                player.awardStat(net.minecraft.stats.Stats.ITEM_USED.get(this));
+                            }
+                        }
+                        return net.minecraft.world.InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
+                    }
+                    return res;
+                }
+            });
+    public static final RegistryObject<Item> BLOSSOM_STAG_EGG = ITEMS.register("blossom_stag_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.BLOSSOM_STAG, 0xFAF8F5, 0xF4B8C4, new Item.Properties()));
+
     private static RegistryObject<Item> egg(String id, int variant, int back, int spots) {
         return ITEMS.register(id, () -> new ru.aiforge.riftworld.item.SeaEggItem(variant, new Item.Properties()));
     }

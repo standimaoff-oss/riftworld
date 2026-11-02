@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "riftworld:block/pearl_calcite_slab"
+    },
+    "type=top": {
+      "model": "riftworld:block/pearl_calcite_slab_top"
+    },
+    "type=double": {
+      "model": "riftworld:block/pearl_calcite_bricks"
+    }
+  }
+}

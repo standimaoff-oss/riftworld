@@ -2,6 +2,9 @@
   "replace": false,
   "values": [
     "riftworld:elisar_stone_wall",
-    "riftworld:castle_bricks_wall"
+    "riftworld:castle_bricks_wall",
+    "riftworld:ivory_marble_wall",
+    "riftworld:pearl_calcite_wall",
+    "riftworld:obsidian_bricks_wall"
   ]
 }

@@ -71,6 +71,16 @@ public final class ModEntities {
             () -> EntityType.Builder.<ru.aiforge.riftworld.entity.CrystalShieldEntity>of(ru.aiforge.riftworld.entity.CrystalShieldEntity::new, MobCategory.MISC)
                     .sized(2.1F, 2.1F).updateInterval(1).clientTrackingRange(10).build("riftworld:crystal_shield"));
 
+    /** v0.27.0: Дружелюбная летающая рыбка-стрекоза (фарфоровое тело + селадоновые плавники + 4 крылышка стрекозы) для обычных биомов. */
+    public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.SkyDartFishEntity>> SKY_DART_FISH = TYPES.register("sky_dart_fish",
+            () -> EntityType.Builder.<ru.aiforge.riftworld.entity.SkyDartFishEntity>of(ru.aiforge.riftworld.entity.SkyDartFishEntity::new, MobCategory.CREATURE)
+                    .sized(0.55F, 0.45F).updateInterval(2).clientTrackingRange(12).build("riftworld:sky_dart_fish"));
+
+    /** v0.27.0: Белоснежный грациозный олень с живыми цветами на ветвистых рогах для обычных мирных биомов. */
+    public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.BlossomStagEntity>> BLOSSOM_STAG = TYPES.register("blossom_stag",
+            () -> EntityType.Builder.<ru.aiforge.riftworld.entity.BlossomStagEntity>of(ru.aiforge.riftworld.entity.BlossomStagEntity::new, MobCategory.CREATURE)
+                    .sized(0.95F, 1.95F).clientTrackingRange(14).build("riftworld:blossom_stag"));
+
     private ModEntities() {
     }
 
@@ -82,5 +92,7 @@ public final class ModEntities {
         e.put(SEA_FISH.get(), ru.aiforge.riftworld.entity.SeaFishEntity.attributes().build());
         e.put(RIFT_OBELISK_BOSS.get(), ru.aiforge.riftworld.entity.RiftObeliskBoss.attributes().build());
         e.put(CRYSTAL_MINION.get(), ru.aiforge.riftworld.entity.CrystalMinion.attributes().build());
+        e.put(SKY_DART_FISH.get(), ru.aiforge.riftworld.entity.SkyDartFishEntity.attributes().build());
+        e.put(BLOSSOM_STAG.get(), ru.aiforge.riftworld.entity.BlossomStagEntity.attributes().build());
     }
 }

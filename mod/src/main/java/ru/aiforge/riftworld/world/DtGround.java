@@ -320,6 +320,32 @@ public final class DtGround {
                 }
             }
         }
+        // v0.27.0: Генеративные ветвистые деревья Dynamic Trees (ambra + sizo) в 8 живых полукруглых клумбах
+        // белоснежной круглой площади Святилища Белого Города (вокруг (0, -4)) — 0 статических NBT-деревьев и 0 удаления блоков!
+        if (Math.abs(pos.getMinBlockX() + 8) <= 56 && Math.abs(pos.getMinBlockZ() + 12) <= 56) {
+            for (int k = 0; k < 8; ++k) {
+                double midAng = (k + 0.5) * (Math.PI / 4.0);
+                double[][] rings = {
+                        {26.2, -0.11, (k % 2 == 0) ? 6 : 5},
+                        {30.6, 0.12, 4}
+                };
+                for (int rIdx = 0; rIdx < rings.length; ++rIdx) {
+                    double radDist = rings[rIdx][0];
+                    double ang = midAng + rings[rIdx][1];
+                    int tx = (int) Math.round(Math.cos(ang) * radDist);
+                    int tz = (int) Math.round(-4.0 + Math.sin(ang) * radDist);
+                    if (tx < pos.getMinBlockX() || tx > pos.getMaxBlockX()
+                            || tz < pos.getMinBlockZ() || tz > pos.getMaxBlockZ()) continue;
+                    BlockPos g = surfaceUnder(level, new BlockPos(tx, 0, tz), false);
+                    if (g != null && g.getY() > ocean) {
+                        String sp = (rIdx == 0 && (k & 1) == 1) ? "riftworlddt:sizo" : "riftworlddt:ambra";
+                        if (plant(level, g, sp, (int) rings[rIdx][2])) {
+                            ++planted;
+                        }
+                    }
+                }
+            }
+        }
         return planted;
     }
 

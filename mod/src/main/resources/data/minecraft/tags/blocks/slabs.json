@@ -14,6 +14,10 @@
     "riftworld:ashlar_slab",
     "riftworld:dark_planks_slab",
     "riftworld:castle_roof_slab",
-    "riftworld:rift_marble_slab"
+    "riftworld:rift_marble_slab",
+    "riftworld:ivory_marble_slab",
+    "riftworld:celadon_tiles_slab",
+    "riftworld:pearl_calcite_slab",
+    "riftworld:obsidian_bricks_slab"
   ]
 }

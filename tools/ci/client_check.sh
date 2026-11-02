@@ -1604,6 +1604,7 @@ biome_section() {
     sleep 10
   fi
   probe_and_shot_struct "blacktide_bridge_shore"  6000 "115_blacktide_bridge_from_ashen_land"  0 0 22
+  probe_and_shot_struct "blacktide_bay_aerial"    6000 "134_blacktide_ashen_bay_overview"      0 0 18
   probe_and_shot_struct "blacktide_cathedral_hall"   250 "119_blacktide_cathedral_throne_hall" 0 0 14
   probe_and_shot_struct "blacktide_second_floor"     400 "128_blacktide_second_floor_gallery"  0 0 12
   probe_and_shot_struct "blacktide_rotunda_sanctum"  180 "120_blacktide_rotunda_sanctum"       0 0 12
@@ -1616,11 +1617,15 @@ biome_section() {
 
   # ---------- v0.26.0: Святилище Белого Города в зелени, Виадуки, Дикие Перевёрнутые Башни + Дракон и Горн вне симуляции, Призма Архонта ----------
   echo "== v0.26.0: Святилище Белого Города в пышных садах, арочные виадуки, дикие Перевёрнутые башни, приручение Дракона, Горн вне симуляции и Призма Архонта =="
-  probe_and_shot_struct "city_sanctuary_garden"     1500 "129_city_sanctuary_lush_gardens"      0 0 14
-  probe_and_shot_struct "city_ornate_bridge"         150 "130_city_ornate_viaduct_bridge"       0 0 12
-  probe_and_shot_struct "wild_inverted_tower_dragon" 1200 "131_wild_inverted_tower_coiled_dragon" 0 0 14
-  probe_and_shot_struct "dragon_horn_beyond_sim"     350 "133_dragon_horn_beyond_sim_summon"    0 0 4
-  probe_and_shot_struct "astral_prism_epic"          200 "132_astral_prism_cataclysm"           0 0 2
+  probe_and_shot_struct "city_sanctuary_garden"       1500 "129_city_sanctuary_lush_gardens"        0 0 14
+  probe_and_shot_struct "city_sanctuary_plaza_aerial" 1500 "135_city_sanctuary_circular_white_plaza" 0 0 12
+  probe_and_shot_struct "city_ornate_bridge"           150 "130_city_ornate_viaduct_bridge"          0 0 12
+  probe_and_shot_struct "wild_inverted_tower_dragon"  1200 "131_wild_inverted_tower_coiled_dragon"   0 0 14
+  probe_and_shot_struct "dragon_horn_beyond_sim"       350 "133_dragon_horn_beyond_sim_summon"       0 0 4
+  probe_and_shot_struct "astral_prism_epic"            200 "132_astral_prism_cataclysm"              0 0 2
+  probe_and_shot_struct "v27_new_blocks_gallery"       500 "136_v27_thirty_new_blocks_gallery"       0 0 4
+  probe_and_shot_struct "peaceful_sky_dart_fish"       300 "137_peaceful_sky_dart_dragonfly_fish"    0 0 4
+  probe_and_shot_struct "peaceful_blossom_stag"        300 "138_peaceful_snow_white_blossom_stags"   0 0 4
 
   # ---------- v0.26.0: редкие выходы подводных пещер в море, /locate всех 26 структур и 9 биомов, все 16 яиц призыва ----------
   echo "== v0.26.0: редкие выходы пещер в море, /locate всех 26 структур и 9 биомов, яйца призыва всех 16 мобов (включая Дракона) =="
@@ -1670,7 +1675,7 @@ biome_section() {
   log "  /riftstruct spawn_eggs_audit -> ${EGG_AUD:0:260}"
   EGG_BLK=$(printf '%s' "$EGG_AUD" | sed -n 's/.* blocks=\([0-9]*\).*/\1/p' | tail -1)
   if [ "${EGG_BLK:-0}" -ge 400 ]; then
-    log "  OK   все 16/16 яиц призыва мобов зарегистрированы, Бумажный Дракон успешно призван яйцом (SPAWN_EGG)!"
+    log "  OK   все 18/18 яиц призыва мобов зарегистрированы (включая рыбку-стрекозу, цветущего оленя и Дракона)!"
   else
     log "  FAIL spawn_eggs_audit: ${EGG_AUD:0:200}"; FAILS=$((FAILS + 1))
   fi

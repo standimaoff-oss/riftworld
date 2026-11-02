@@ -56,6 +56,8 @@ public final class ClientHooks {
         e.registerEntityRenderer(ModEntities.CRYSTAL_SHARD.get(), CrystalGeoRenderers.Shard::new);
         e.registerEntityRenderer(ModEntities.ICE_PILLAR.get(), CrystalGeoRenderers.IcePillar::new);
         e.registerEntityRenderer(ModEntities.ICE_HAIL_BOULDER.get(), CrystalGeoRenderers.IceHailBoulder::new);
+        e.registerEntityRenderer(ModEntities.SKY_DART_FISH.get(), PeacefulFaunaRenderers.SkyDartFish::new);
+        e.registerEntityRenderer(ModEntities.BLOSSOM_STAG.get(), PeacefulFaunaRenderers.BlossomStag::new);
     }
 
     @SubscribeEvent
@@ -73,6 +75,9 @@ public final class ClientHooks {
             net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(ru.aiforge.riftworld.registry.ElisarBlocks.GARDEN_LEAVES.get(), cutout);
             net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(ru.aiforge.riftworld.registry.ElisarBlocks.CRYSTAL_LEAVES.get(), cutout);
             net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(ru.aiforge.riftworld.registry.ElisarBlocks.SIZO_LEAVES.get(), cutout);
+            var plantCutout = net.minecraft.client.renderer.RenderType.cutout();
+            net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(ru.aiforge.riftworld.registry.ElisarBlocks.WHITE_LILY_CLUSTER.get(), plantCutout);
+            net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(ru.aiforge.riftworld.registry.ElisarBlocks.CELADON_FERN.get(), plantCutout);
             for (String dtId : new String[]{"lilac_leaves", "garden_oak_leaves", "crystal_birch_leaves", "sizo_leaves"}) {
                 var dtBlock = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getValue(new net.minecraft.resources.ResourceLocation("riftworlddt", dtId));
                 if (dtBlock != null && dtBlock != net.minecraft.world.level.block.Blocks.AIR) {

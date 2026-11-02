@@ -41,8 +41,8 @@ public final class BlacktideCitadel {
     public static final int OZ = -100;
     public static final int SEA_BY = 24;
 
-    // Локальные координаты берегового устоя моста (на суше биома), ворот и донжона (в открытом море) — строго по оси симметрии lx = 0!
-    public static final int LAND_LX = 0, LAND_LZ = 96, LAND_BY = 41;
+    // Локальные координаты берегового устоя моста (на высоком плато биома), ворот и донжона (в бухте у берега) — строго по оси симметрии lx = 0!
+    public static final int LAND_LX = 0, LAND_LZ = 96, LAND_BY = 46;
     public static final int BRIDGE_START_LX = 0, BRIDGE_START_LZ = 96;
     public static final int GATE_LX = 0, GATE_LZ = 35, GATE_BY = 48;
     public static final int KEEP_LX = 0, KEEP_LZ = -20, KEEP_BY = 57;
@@ -105,60 +105,92 @@ public final class BlacktideCitadel {
             if (x >= minX - margin && x <= maxX + margin && z >= minZ - margin && z <= maxZ + margin) {
                 return true;
             }
-            // Широкая подходная дорога-мыс вглубь суши Пепельного биома к началу моста
+            // Береговое вулканическое плато и парные скальные мысы бухты Пепельного биома вокруг Цитадели
             double dx = x - landX, dz = z - landZ;
-            double along = -(dx * outUx + dz * outUz); // положительно вглубь суши Пепельного биома
+            double inland = -(dx * outUx + dz * outUz); // >=0 вглубь суши Пепельного биома, <0 в сторону бухты
             double perp = Math.abs(-dx * outUz + dz * outUx);
-            return along >= -12.0 && along <= 94.0 && perp <= 34.0 + margin;
+            return inland >= -110.0 && inland <= 96.0 && perp <= 195.0 + margin;
         }
 
         /**
-         * Высота широкого пологого вулканического мыса на суше Пепельного биома, поднимающегося прямо с равнины биома (ocean+1)
-         * к отметке берегового устоя моста ({@code baseY + 41 = 79}), чтобы мост начинался строго на высоком берегу Пепельного биома,
-         * а сам замок стоял в открытом море!
+         * Полуширина открытой морской акватории бухты вокруг Цитадели и её 4-арочного виадука.
+         * Внутри бухты — чистое глубокое море ({@code weight == 0.0}), а снаружи бухту с трёх сторон
+         * обнимают высокие базальтовые утёсы и парные вулканические мысы Пепельного биома!
+         */
+        public static double bayHalfWidth(double seaward) {
+            if (seaward <= 0.0) return 68.0;
+            if (seaward <= 56.0) return 68.0 + (seaward / 56.0) * 29.0; // 68 м у берегового клифа -> 97 м у ворот замка
+            if (seaward <= 110.0) return 97.0; // все морские пробы ±86 лежат с запасом в чистой воде бухты!
+            return 97.0 + (seaward - 110.0) * 0.42;
+        }
+
+        /**
+         * Высота широкого прибрежного вулканического плато и парных базальтовых мысов Пепельного биома:
+         * мост Цитадели ({@code by = 46 -> worldY = baseY + 46 = 84}) выходит РОВНО И ГОРИЗОНТАЛЬНО
+         * прямо на широкую (380 м!) скалистую береговую террасу Пепельного биома без бесконечной лестницы в море!
          */
         public int headlandTop(int wx, int wz, int ocean) {
             double dx = (wx + 0.5) - landX;
             double dz = (wz + 0.5) - landZ;
-            double inland = -(dx * outUx + dz * outUz); // 0 у начала моста, >0 глубоко внутри Пепельного биома, <0 к берегу моря
+            double inland = -(dx * outUx + dz * outUz); // 0 у начала моста, >0 вглубь Пепельного биома, <0 в сторону бухты
+            double seaward = -inland;
             double perp = Math.abs(-dx * outUz + dz * outUx);
-            if (inland < -22.0 || inland > 96.0 || perp > 84.0) return Integer.MIN_VALUE;
+            if (inland > 96.0 || seaward > 132.0 || perp > 205.0) return Integer.MIN_VALUE;
 
-            // Широкий скалистый береговой клиф Пепельного биома по обе стороны от устоя моста (ocean+4..ocean+11)
-            double coastAlong = inland < -22.0 ? 0.0 : (inland <= 24.0 ? Math.min(1.0, (inland + 22.0) / 10.0)
-                    : Math.max(0.0, 1.0 - (inland - 24.0) / 72.0));
-            double coastSide = perp <= 56.0 ? 1.0 : Math.max(0.0, 1.0 - (perp - 56.0) / 28.0);
-            double crag = 4.5 + 5.5 * ElisarChunkGenerator.vnoise(wx * 0.055, wz * 0.055, 913);
-            double bluffH = (ocean + 1.0) + crag * coastAlong * coastSide;
+            double crag = (ElisarChunkGenerator.vnoise(wx * 0.045, wz * 0.045, 913) - 0.5) * 4.0
+                    + (ElisarChunkGenerator.vnoise(wx * 0.11, wz * 0.11, 917) - 0.5) * 1.8;
+            double sideEnv = perp <= 150.0 ? 1.0 : Math.max(0.0, 1.0 - (perp - 150.0) / 55.0);
+            sideEnv = sideEnv * sideEnv * (3.0 - 2.0 * sideEnv);
+            if (sideEnv <= 0.001) return Integer.MIN_VALUE;
 
-            // Центральный широкий пандус-мыс прямо к настилу берегового устоя моста (baseY + 41 = 79)
-            double rampH = Integer.MIN_VALUE;
-            if (inland >= -14.0 && inland <= 88.0 && perp <= 38.0) {
-                double targetY = baseY + 41.0;
-                double uAlong = inland <= 8.0 ? 1.0 : Math.max(0.0, 1.0 - (inland - 8.0) / 78.0);
-                double sAlong = uAlong * uAlong * (3.0 - 2.0 * uAlong);
-                double halfW = 14.0 + (1.0 - sAlong) * 20.0;
-                if (perp < halfW) {
-                    double uSide = perp <= 6.5 ? 1.0 : Math.max(0.0, 1.0 - (perp - 6.5) / Math.max(1.0, halfW - 6.5));
-                    double sSide = uSide * uSide * (3.0 - 2.0 * uSide);
-                    rampH = (ocean + 1.0) + (targetY - (ocean + 1.0)) * sAlong * sSide;
+            double plateauY = baseY + 46.0; // 84 — строго в уровень настила 4-арочного моста!
+            double h = Integer.MIN_VALUE;
+
+            // А) Главный широкий береговой клиф и высокое плато Пепельного биома позади моста (ширина ~380 м!)
+            double cliffEdge = -3.5 + (perp > 12.0 ? crag * 0.9 : 0.0);
+            if (inland >= cliffEdge - 4.5) {
+                double seaRise = Math.max(0.0, Math.min(1.0, (inland - (cliffEdge - 4.5)) / 4.5));
+                double inlandSlope = inland <= 28.0 ? 1.0 : Math.max(0.0, 1.0 - (inland - 28.0) / 66.0);
+                inlandSlope = inlandSlope * inlandSlope * (3.0 - 2.0 * inlandSlope);
+                double env = seaRise * inlandSlope * sideEnv;
+
+                // В створе моста (perp <= 10, inland = -1..+22) держим идеально ровную площадку y = 84 без зазоров!
+                double roadFlat = (perp <= 10.0 && inland >= -1.5 && inland <= 22.0)
+                        ? 1.0
+                        : Math.max(0.0, 1.0 - Math.max(0.0, perp - 10.0) / 14.0)
+                          * Math.max(0.0, 1.0 - Math.max(0.0, inland - 22.0) / 14.0);
+                double localTop = (plateauY + crag * (1.0 - roadFlat));
+                h = (ocean + 1.0) + (localTop - (ocean + 1.0)) * env;
+            }
+
+            // Б) Парные скалистые вулканические мысы Пепельного биома по бокам морской бухты (perp ~ 99..205, seaward = 0..130):
+            // замок стоит в настоящей морской бухте вплотную к мощным берегам Пепельного биома!
+            if (seaward > -6.0 && seaward <= 132.0) {
+                double bayW = bayHalfWidth(Math.max(0.0, seaward)) + 5.5 + crag * 1.1;
+                if (perp > bayW) {
+                    double bankIn = Math.min(1.0, (perp - bayW) / 9.0);
+                    double capeLen = seaward <= 55.0 ? 1.0 : Math.max(0.0, 1.0 - (seaward - 55.0) / 77.0);
+                    capeLen = capeLen * capeLen * (3.0 - 2.0 * capeLen);
+                    double capeTop = (baseY + 42.0) + crag * 1.4;
+                    double capeH = (ocean + 1.0) + (capeTop - (ocean + 1.0)) * bankIn * capeLen * sideEnv;
+                    if (capeH > h) h = capeH;
                 }
             }
-            double h = Math.max(bluffH, rampH);
-            if (h <= ocean + 1.3) return Integer.MIN_VALUE;
+
+            if (h <= ocean + 1.25) return Integer.MIN_VALUE;
             return (int) Math.round(h);
         }
     }
 
-    /** Создаёт размещение Цитадели на побережье Пепельного биома для выбранного поворота {@code rot}. */
+    /** Создаёт размещение Цитадели в прибрежной бухте Пепельного биома для выбранного поворота {@code rot}. */
     public static Site createForCoast(int ashCx, int ashCz, double ashR, int ocean, int rot) {
         int r = rot & 3;
         double ux = rotDx(U0_X, U0_Z, r);
         double uz = rotDz(U0_X, U0_Z, r);
-        // Береговой устой моста (LAND_LZ=96) стоит на 82 блока ГЛУБОКО ВНУТРИ твёрдой суши Пепельного биома!
-        // Первая арка перешагивает скалистый берег (seaward ~ 24..28), 3 морские арки летят высоко над волнами (by=48),
-        // а вся огромная Цитадель Чёрного утёса (lz=35..-92) стоит в открытом море прямо у берега биома!
-        double landDist = ashR - 82.0;
+        // Придвигаем береговой устой моста (LAND_LZ=96) на 150 блоков ВГЛУБЬ радиуса Пепельного биома:
+        // замок стоит в скалистой морской бухте вплотную к высоким утесам Пепельного биома (всего в 3.5 чанках от берега!),
+        // а 4-арочный горизонтальный виадук выходит прямо на высокое пепельное плато без спуска в воду!
+        double landDist = Math.max(225.0, ashR - 150.0);
         double landWx = ashCx + ux * landDist;
         double landWz = ashCz + uz * landDist;
         int siteCx = (int) Math.round(landWx - rotX(LAND_LX, LAND_LZ, r));
@@ -425,14 +457,16 @@ public final class BlacktideCitadel {
         BlockState burntSoil = CastleBlocks.BURNT_SOIL.get().defaultBlockState();
         BlockState ash = CastleBlocks.ASH.get().defaultBlockState();
         BlockState scorched = CastleBlocks.SCORCHED_STONE.get().defaultBlockState();
-        BlockState roadBrick = Blocks.POLISHED_BLACKSTONE_BRICKS.defaultBlockState();
-        BlockState crackedRoad = Blocks.CRACKED_POLISHED_BLACKSTONE_BRICKS.defaultBlockState();
+        BlockState ashenCobble = CastleBlocks.ASHEN_COBBLESTONE.get().defaultBlockState();
+        BlockState obsBricks = CastleBlocks.OBSIDIAN_BRICKS.get().defaultBlockState();
+        BlockState runeBasalt = CastleBlocks.CARVED_BASALT_RUNES.get().defaultBlockState();
+        BlockState brazier = CastleBlocks.EMBER_BRAZIER.get().defaultBlockState();
         BlockState air = Blocks.AIR.defaultBlockState();
         BlockState seaWater = ElisarBlocks.WATER.get().defaultBlockState();
 
         BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
 
-        // 1) Мощёная базальтово-чернокаменная дорога по вулканическому мысу Пепельного биома прямо к началу моста!
+        // 1) Короткая ровная пепельно-булыжная тропа прямо по высокому плато Пепельного биома (y=84) от моста вглубь суши!
         for (int wx = x0; wx <= x0 + 15; ++wx) {
             for (int wz = z0; wz <= z0 + 15; ++wz) {
                 int ht = site.headlandTop(wx, wz, ocean);
@@ -441,16 +475,20 @@ public final class BlacktideCitadel {
                     double dz = (wz + 0.5) - site.landZ;
                     double inland = -(dx * site.outUx + dz * site.outUz);
                     double perp = Math.abs(-dx * site.outUz + dz * site.outUx);
-                    if (inland >= 2.0 && inland <= 50.0 && perp <= 3.6) {
+                    if (inland >= 10.0 && inland <= 34.0 && perp <= 4.2) {
                         double h2 = ElisarChunkGenerator.hash(wx, wz, 912);
-                        BlockState pave = perp <= 2.3
-                                ? (h2 < 0.35 ? crackedRoad : roadBrick)
+                        BlockState pave = perp <= 2.6
+                                ? (h2 < 0.48 ? ashenCobble : scorched)
                                 : (h2 < 0.5 ? ash : burntSoil);
                         chunk.setBlockState(mp.set(wx, ht, wz), pave, false);
-                        // Расчищаем воздух над дорогой подъёма к мосту
                         for (int cy = ht + 1; cy <= ht + 6; ++cy) {
                             chunk.setBlockState(mp.set(wx, cy, wz), air, false);
                         }
+                    } else if (Math.abs(inland - 16.0) < 0.6 && Math.abs(perp - 5.5) < 0.6) {
+                        // Парные пограничные рунные тумбы с коваными жаровнями на плато Пепельного биома!
+                        chunk.setBlockState(mp.set(wx, ht + 1, wz), obsBricks, false);
+                        chunk.setBlockState(mp.set(wx, ht + 2, wz), runeBasalt, false);
+                        chunk.setBlockState(mp.set(wx, ht + 3, wz), brazier, false);
                     }
                 }
             }
