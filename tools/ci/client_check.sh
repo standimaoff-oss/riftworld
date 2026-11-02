@@ -1700,23 +1700,31 @@ biome_section() {
     sleep 2.4
     shot "97_portal_opening_pattern_shade"
 
-    # 2) После яркой вспышки (t > 4.2 с) открылся БЕЛЫЙ 3D-геометрический Пролом от земли до неба (от земли к небу толще и толще)!
+    # 2) После раскрытия (t > 5.0 с) разлом остаётся ОТКРЫТЫМ: единая сплошная движущаяся 3D-фигура без просветов,
+    #    а вокруг на ~50 блоков сохраняется белизна с плавным угасанием к краю!
     sleep 2.4
     YP2=$(python3 tools/ci/lookat_angles.py "$PCX" "$PCY" "$PCZ" "$PLX" "$PLY" "$PLZ")
     RCON execute in minecraft:overworld run tp TestPlayer "$PCX" "$PCY" "$PCZ" ${YP2% *} ${YP2#* } >/dev/null 2>&1 || true
     sleep 1.4
     shot "98_white_spatial_breach_skyward"
 
-    # 3) Включаем обычный игровой HUD (F1) и ЗАХОДИМ в белый пролом: проверяем мягкое побеление без GUI/инвентаря,
-    #    блокировку F5, 1 дальний панорамный ракурс Белого Города с титрами («Э Л И С А Р» / «Белый Город Святилища») и плавный подлёт камеры к игроку!
-    key F1
+    # Панорамный кадр открытого разлома с высоты: белое выцветание вокруг открытого портала держится до ~50 блоков и редеет к краю!
+    YP2B=$(python3 tools/ci/lookat_angles.py "$((PLX + 18))" "$((PCY + 15))" "$((PLZ + 28))" "$PLX" "$((PLY - 1))" "$PLZ")
+    RCON execute in minecraft:overworld run tp TestPlayer "$((PLX + 18))" "$((PCY + 15))" "$((PLZ + 28))" ${YP2B% *} ${YP2B#* } >/dev/null 2>&1 || true
+    sleep 1.8
+    shot "125_open_rift_50m_white_aura"
+
+    # Возвращаем игрока прямо перед входом в пролом, включаем игровой HUD (F1) и ЗАХОДИМ в просвет -> вспышка именно при входе!
+    RCON execute in minecraft:overworld run tp TestPlayer "$PCX" "$PCY" "$PCZ" ${YP2% *} ${YP2#* } >/dev/null 2>&1 || true
     sleep 0.5
+    key F1
+    sleep 0.4
     P_WLK=$(RCON execute as TestPlayer at @s in minecraft:overworld run riftportal walkin 2>&1 | tr '\r\n' '  ')
     log "  /riftportal walkin -> ${P_WLK:0:180}"
-    sleep 0.5
+    sleep 0.2
     shot "98a_walkin_soft_veil_no_hud"
 
-    sleep 3.6
+    sleep 3.9
     key F5
     shot "99_walkin_city_cutscene_titles"
 

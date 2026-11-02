@@ -46,6 +46,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 import ru.aiforge.riftworld.RiftWorld;
+import ru.aiforge.riftworld.entity.SpatialRiftEntity;
 import ru.aiforge.riftworld.flight.PortalRitual;
 import ru.aiforge.riftworld.net.PortalRitualMsg;
 
@@ -72,17 +73,24 @@ public final class PortalRitualClient {
     private static final ResourceLocation OPEN_SEAL_TEX =
             new ResourceLocation(RiftWorld.MODID, "textures/environment/portal_open_seal.png");
 
-    /** Мягкий не-ослепляющий тёпло-фарфоровый цвет экрана перехода (НЕ режущий глаза #FFFFFF!). */
+    /** Мягкий не-ослепляющий тёпло-фарфоровый цвет экрана перехода и яркий тон вспышки входа в пролом. */
     private static final int SOFT_VEIL_RGB = 0xEAE3D5;
+    private static final int ENTRY_FLASH_RGB = 0xFCFAF2;
     private static final int CUTSCENE_CAM_ENTITY_ID = -77701;
 
     public static int phase = PortalRitual.NONE;
     private static BlockPos center = BlockPos.ZERO;
     private static int tick = 0;
 
-    // Кэш граней блоков вокруг открывающегося портала (READ-ONLY: 0 изменённых блоков мира!)
-    private static final int BLEACH_SCAN_R = 24;
-    private static final int MAX_FACES = 36000;
+    // Постоянная белая аура вокруг ОТКРЫТОГО пространственного разлома (~50 блоков, к краю всё скуднее!)
+    private static BlockPos openRiftCenter = null;
+    private static int openRiftAgeTicks = 0;
+    private static int openRiftScanCooldown = 0;
+
+    // Кэш граней блоков вокруг открывающегося/открытого портала на 50+ блоков (READ-ONLY: 0 изменённых блоков мира!)
+    private static final float MAX_BLEACH_RADIUS = 50.0F;
+    private static final int BLEACH_SCAN_R = 52;
+    private static final int MAX_FACES = 150000;
     private static BlockPos capturedFor = null;
     private static int faceCount = 0;
     private static final float[] fMinX = new float[MAX_FACES];
@@ -162,45 +170,54 @@ public final class PortalRitualClient {
         return tick + partialTick;
     }
 
+    public static BlockPos activeBleachCenter() {
+        if (phase == PortalRitual.AWAKEN) return center;
+        return openRiftCenter;
+    }
+
+    public static float activeBleachTime(float partialTick) {
+        if (phase == PortalRitual.AWAKEN) return tick + partialTick;
+        if (openRiftCenter != null) return openRiftAgeTicks + partialTick;
+        return 0.0F;
+    }
+
     public static float bleachRadius(float partialTick) {
+        // Когда разлом уже открыт — белая аура НЕ пропадает и держится на полных 50 блоках вокруг пролома!
+        if (openRiftCenter != null) {
+            return MAX_BLEACH_RADIUS;
+        }
         if (phase != PortalRitual.AWAKEN) return 0.0F;
         float u = Mth.clamp(currentTime(partialTick) / (PortalRitual.AWAKEN_TICKS - 6.0F), 0.0F, 1.0F);
-        return (0.25F * u + 0.75F * u * u) * (BLEACH_SCAN_R + 3.0F);
+        return (0.22F * u + 0.78F * u * u) * MAX_BLEACH_RADIUS;
     }
 
     /**
-     * Яркость экранной вуали:
+     * Яркость экранной вспышки и вуали:
      * <ul>
-     *   <li>{@code AWAKEN}: короткая яркая вспышка на 72..80 тиках (открывающая белый Пролом в пространстве) и затухание к 92 тику;</li>
-     *   <li>{@code TRANSIT_VEIL}: мягкое не-слишком-яркое побеление экрана (альфа до 0.93 матового фарфора {@code #EAE3D5});</li>
+     *   <li>{@code AWAKEN}: 0.0F — вспышка происходит ИМЕННО в момент захода игрока внутрь просвета!</li>
+     *   <li>{@code TRANSIT_VEIL}: мгновенная яркая белая вспышка входа в пролом с переходом в мягкую фарфоровую вуаль;</li>
      *   <li>{@code CITY_CUTSCENE}: плавное растворение вуали за первые 18 тиков дальнего ракурса Белого Города;</li>
      *   <li>{@code ARRIVE_FLASH}: мягкое растворение вуали при обратном выходе.</li>
      * </ul>
      */
     public static float veilOpacity(float partialTick) {
         float t = currentTime(partialTick);
-        if (phase == PortalRitual.AWAKEN) {
-            if (t < PortalRitual.AWAKEN_TICKS - 8.0F) return 0.0F;
-            if (t <= PortalRitual.AWAKEN_TICKS) {
-                float f = Mth.clamp((t - (PortalRitual.AWAKEN_TICKS - 8.0F)) / 7.5F, 0.0F, 1.0F);
-                return f * f;
-            }
-            float out = 1.0F - Mth.clamp((t - PortalRitual.AWAKEN_TICKS) / 11.0F, 0.0F, 1.0F);
-            return out * out;
-        }
         if (phase == PortalRitual.TRANSIT_VEIL) {
-            float u = Mth.clamp(t / 7.0F, 0.0F, 1.0F);
-            return (u * u * (3.0F - 2.0F * u)) * 0.94F;
+            if (t <= 2.5F) {
+                float u = Mth.clamp((t + 0.65F) / 2.5F, 0.35F, 1.0F);
+                return Mth.sin(u * (Mth.PI * 0.5F));
+            }
+            return Mth.lerp(Mth.clamp((t - 2.5F) / 6.5F, 0.0F, 1.0F), 1.0F, 0.95F);
         }
         if (phase == PortalRitual.CITY_CUTSCENE) {
-            if (t <= 3.0F) return 0.94F;
+            if (t <= 3.0F) return 0.95F;
             float fade = 1.0F - Mth.clamp((t - 3.0F) / 16.0F, 0.0F, 1.0F);
-            return fade * fade * 0.94F;
+            return fade * fade * 0.95F;
         }
         if (phase == PortalRitual.ARRIVE_FLASH) {
-            if (t <= 3.0F) return 0.92F;
+            if (t <= 3.0F) return 0.94F;
             float fade = 1.0F - Mth.clamp((t - 3.0F) / (PortalRitual.ARRIVE_TICKS - 3.0F), 0.0F, 1.0F);
-            return fade * fade * 0.92F;
+            return fade * fade * 0.94F;
         }
         return 0.0F;
     }
@@ -342,16 +359,56 @@ public final class PortalRitualClient {
 
     @SubscribeEvent
     public static void clientTick(TickEvent.ClientTickEvent e) {
-        if (e.phase != TickEvent.Phase.END || phase == PortalRitual.NONE) return;
+        if (e.phase != TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.isPaused()) return;
 
-        if (isHudAndPerspectiveLocked()) {
-            enforceLockedFirstPersonAndNoScreen(mc);
+        // Постоянно отслеживаем ближайший открытый SpatialRiftEntity, чтобы белая аура на 50 блоков держалась пока открыт разлом!
+        if (mc.level != null && mc.player != null) {
+            if (++openRiftScanCooldown >= 4 || openRiftCenter == null) {
+                openRiftScanCooldown = 0;
+                var rifts = mc.level.getEntitiesOfClass(SpatialRiftEntity.class,
+                        mc.player.getBoundingBox().inflate(88.0), Entity::isAlive);
+                SpatialRiftEntity nearest = null;
+                double bestD2 = Double.MAX_VALUE;
+                for (SpatialRiftEntity sr : rifts) {
+                    double d2 = sr.distanceToSqr(mc.player);
+                    if (d2 < bestD2) {
+                        bestD2 = d2;
+                        nearest = sr;
+                    }
+                }
+                if (nearest != null) {
+                    BlockPos rp = nearest.blockPosition();
+                    openRiftAgeTicks = nearest.riftAge();
+                    if (openRiftCenter == null || openRiftCenter.distSqr(rp) > 4.0) {
+                        openRiftCenter = rp.immutable();
+                    }
+                } else {
+                    openRiftCenter = null;
+                    openRiftAgeTicks = 0;
+                }
+            } else {
+                ++openRiftAgeTicks;
+            }
+
+            BlockPos bleachTarget = activeBleachCenter();
+            if (bleachTarget != null && (capturedFor == null || capturedFor.distSqr(bleachTarget) > 4.0)) {
+                captureBleachFaces(mc.level, bleachTarget);
+            } else if (bleachTarget == null && phase == PortalRitual.NONE && capturedFor != null) {
+                capturedFor = null;
+                faceCount = 0;
+            }
+        } else {
+            openRiftCenter = null;
+            capturedFor = null;
+            faceCount = 0;
         }
 
-        if (phase == PortalRitual.AWAKEN && capturedFor == null && mc.level != null) {
-            captureBleachFaces(mc.level, center);
+        if (phase == PortalRitual.NONE) return;
+
+        if (isHudAndPerspectiveLocked()) {
+            enforceLockedFirstPersonAndNoScreen(mc);
         }
 
         int maxLen = switch (phase) {
@@ -478,11 +535,19 @@ public final class PortalRitualClient {
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableDepthTest();
 
-        // 1) Мягкое не-слишком-яркое побеление экрана при заходе в портал и начале панорамы
+        // 1) Яркая вспышка ИМЕННО при входе в просвет (TRANSIT_VEIL t <= 4) с переходом в мягкую фарфоровую вуаль
         float veil = veilOpacity(pt);
         if (veil > 0.004F) {
             int alpha = Mth.clamp(Math.round(veil * 255.0F), 0, 255);
-            g.fill(0, 0, sw, sh, (alpha << 24) | SOFT_VEIL_RGB);
+            int rgb = SOFT_VEIL_RGB;
+            if (phase == PortalRitual.TRANSIT_VEIL) {
+                float flashMix = 1.0F - Mth.clamp(currentTime(pt) / 4.5F, 0.0F, 1.0F);
+                int vr = Math.round(Mth.lerp(flashMix, (SOFT_VEIL_RGB >> 16) & 0xFF, (ENTRY_FLASH_RGB >> 16) & 0xFF));
+                int vg = Math.round(Mth.lerp(flashMix, (SOFT_VEIL_RGB >> 8) & 0xFF, (ENTRY_FLASH_RGB >> 8) & 0xFF));
+                int vb = Math.round(Mth.lerp(flashMix, SOFT_VEIL_RGB & 0xFF, ENTRY_FLASH_RGB & 0xFF));
+                rgb = (vr << 16) | (vg << 8) | vb;
+            }
+            g.fill(0, 0, sw, sh, (alpha << 24) | rgb);
         }
 
         // 2) В фазе CITY_CUTSCENE на дальнем ракурсе города показываем Название Измерения и снизу Название Города,
@@ -537,11 +602,25 @@ public final class PortalRitualClient {
         RenderSystem.disableBlend();
     }
 
+    private static float openSkyAuraFactor(Vec3 camPos, float pt) {
+        if (phase == PortalRitual.AWAKEN) {
+            float u = Mth.clamp((currentTime(pt) - 8.0F) / 58.0F, 0.0F, 1.0F);
+            return u * u * (3.0F - 2.0F * u);
+        }
+        if (openRiftCenter != null) {
+            double dx = camPos.x - (openRiftCenter.getX() + 0.5);
+            double dz = camPos.z - (openRiftCenter.getZ() + 0.5);
+            float dist = (float) Math.hypot(dx, dz);
+            float k = Mth.clamp((54.0F - dist) / 42.0F, 0.0F, 1.0F);
+            return k * k * 0.72F;
+        }
+        return 0.0F;
+    }
+
     @SubscribeEvent
     public static void fogColor(ViewportEvent.ComputeFogColor e) {
-        if (phase != PortalRitual.AWAKEN) return;
-        float u = Mth.clamp((currentTime((float) e.getPartialTick()) - 8.0F) / 62.0F, 0.0F, 1.0F);
-        float k = u * u * (3.0F - 2.0F * u);
+        float k = openSkyAuraFactor(e.getCamera().getPosition(), (float) e.getPartialTick());
+        if (k <= 0.002F) return;
         e.setRed(Mth.lerp(k, e.getRed(), 0.945F));
         e.setGreen(Mth.lerp(k, e.getGreen(), 0.928F));
         e.setBlue(Mth.lerp(k, e.getBlue(), 0.888F));
@@ -549,21 +628,21 @@ public final class PortalRitualClient {
 
     @SubscribeEvent
     public static void renderFog(ViewportEvent.RenderFog e) {
-        if (phase != PortalRitual.AWAKEN || e.getMode() != FogRenderer.FogMode.FOG_TERRAIN) return;
+        if (e.getMode() != FogRenderer.FogMode.FOG_TERRAIN) return;
         if (e.getCamera().getFluidInCamera() != FogType.NONE) return;
         if (ShaderCompat.isShaderPackActive()) return;
-        float u = Mth.clamp((currentTime((float) e.getPartialTick()) - 12.0F) / 60.0F, 0.0F, 1.0F);
-        if (u <= 0.001F) return;
-        float k = u * u * (3.0F - 2.0F * u);
+        float k = openSkyAuraFactor(e.getCamera().getPosition(), (float) e.getPartialTick());
+        if (k <= 0.002F) return;
         float far = e.getFarPlaneDistance();
-        e.setNearPlaneDistance(Mth.lerp(k, far * 0.65F, 24.0F));
-        e.setFarPlaneDistance(Mth.lerp(k, far, 78.0F));
+        e.setNearPlaneDistance(Mth.lerp(k, far * 0.65F, 26.0F));
+        e.setFarPlaneDistance(Mth.lerp(k, far, 86.0F));
         e.setCanceled(true);
     }
 
     @SubscribeEvent
     public static void renderStage(RenderLevelStageEvent e) {
-        if (phase == PortalRitual.NONE) return;
+        boolean hasBleach = (phase == PortalRitual.AWAKEN || openRiftCenter != null);
+        if (phase == PortalRitual.NONE && !hasBleach) return;
         if (ShaderCompat.isRenderingShadowPass()) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
@@ -572,10 +651,10 @@ public final class PortalRitualClient {
         Vec3 cam = e.getCamera().getPosition();
         PoseStack ps = e.getPoseStack();
 
-        if (phase == PortalRitual.AWAKEN && e.getStage() == RenderLevelStageEvent.Stage.AFTER_SKY
+        if (hasBleach && e.getStage() == RenderLevelStageEvent.Stage.AFTER_SKY
                 && !ShaderCompat.isShaderPackActive()) {
-            float u = Mth.clamp((currentTime(pt) - 8.0F) / 58.0F, 0.0F, 1.0F);
-            int skyA = Mth.clamp(Math.round(u * u * (3.0F - 2.0F * u) * 238.0F), 0, 238);
+            float k = openSkyAuraFactor(cam, pt);
+            int skyA = Mth.clamp(Math.round(k * 232.0F), 0, 232);
             if (skyA > 2) {
                 float r = Math.min(mc.gameRenderer.getDepthFar() * 0.52F, 180.0F);
                 ShaderCompat.drawSphericalSkyDome(ps.last().pose(), r,
@@ -586,29 +665,33 @@ public final class PortalRitualClient {
             return;
         }
 
-        if (phase == PortalRitual.AWAKEN && e.getStage() == RenderLevelStageEvent.Stage.AFTER_CUTOUT_BLOCKS) {
+        if (hasBleach && e.getStage() == RenderLevelStageEvent.Stage.AFTER_CUTOUT_BLOCKS) {
             renderElisarSurfaceAndFloorPatterns(ps, cam, pt);
         } else if (e.getStage() == RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) {
-            if (phase == PortalRitual.AWAKEN) {
+            if (hasBleach) {
                 renderOpeningGroundSeal(ps, cam, pt);
+            }
+            if (phase == PortalRitual.AWAKEN) {
                 renderCelestial2DEyesInSky(mc, ps, e.getCamera(), pt);
-                if (mc.options.hideGui) {
-                    renderAwakenFlashQuad(ps, e.getCamera(), pt);
-                }
+            }
+            if (mc.options.hideGui && isHudAndPerspectiveLocked()) {
+                renderAwakenFlashQuad(ps, e.getCamera(), pt);
             }
         }
     }
 
-    /** Красивый разворачивающийся на земле многокольцевой геометрический узор при открытии портала! */
+    /** Красивый разворачивающийся на земле многокольцевой геометрический узор при открытии и вокруг открытого портала! */
     private static void renderOpeningGroundSeal(PoseStack ps, Vec3 cam, float pt) {
-        float t = currentTime(pt);
-        float u = Mth.clamp(t / 52.0F, 0.0F, 1.0F);
-        float ease = 1.0F - (1.0F - u) * (1.0F - u) * (1.0F - u);
+        BlockPos bc = activeBleachCenter();
+        if (bc == null) return;
+        float t = activeBleachTime(pt);
+        float ease = (openRiftCenter != null) ? 1.0F : Mth.clamp(t / 52.0F, 0.0F, 1.0F);
+        ease = 1.0F - (1.0F - ease) * (1.0F - ease) * (1.0F - ease);
         if (ease <= 0.02F) return;
 
-        float cx = center.getX() + 0.5F - (float) cam.x;
-        float cy = center.getY() + 0.045F - (float) cam.y;
-        float cz = center.getZ() + 0.5F - (float) cam.z;
+        float cx = bc.getX() + 0.5F - (float) cam.x;
+        float cy = bc.getY() + 0.045F - (float) cam.y;
+        float cz = bc.getZ() + 0.5F - (float) cam.z;
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
@@ -684,17 +767,16 @@ public final class PortalRitualClient {
 
     private static void renderElisarSurfaceAndFloorPatterns(PoseStack ps, Vec3 cam, float pt) {
         if (faceCount <= 0) return;
+        BlockPos bc = activeBleachCenter();
+        if (bc == null) return;
         float rad = bleachRadius(pt);
         if (rad <= 0.2F) return;
 
         Matrix4f mat = ps.last().pose();
         float camX = (float) cam.x, camY = (float) cam.y, camZ = (float) cam.z;
-        float rcx = center.getX() + 0.5F;
-        float rcz = center.getZ() + 0.5F;
-        float t = currentTime(pt);
-        float settleFade = t <= PortalRitual.AWAKEN_TICKS
-                ? 1.0F
-                : 1.0F - Mth.clamp((t - PortalRitual.AWAKEN_TICKS) / 12.0F, 0.0F, 1.0F);
+        float rcx = bc.getX() + 0.5F;
+        float rcz = bc.getZ() + 0.5F;
+        float t = activeBleachTime(pt);
 
         RenderSystem.enableBlend();
         RenderSystem.blendFuncSeparate(
@@ -716,16 +798,18 @@ public final class PortalRitualClient {
             if (fDir[i] == 1) continue;
             float d = fDist[i];
             if (d > rad) continue;
-            float u = Mth.clamp((rad - d) / 5.4F, 0.0F, 1.0F);
-            float w = u * u * (3.0F - 2.0F * u) * settleFade;
-            int a = Mth.clamp(Math.round(w * 218.0F), 0, 255);
+            // Волна раскрытия + постоянный градиент на 50 блоков: у разлома густо-белый, к краю 50 м всё скуднее!
+            float wave = Mth.clamp((rad - d) / 6.5F, 0.0F, 1.0F);
+            float radial = Mth.clamp((MAX_BLEACH_RADIUS - d) / (MAX_BLEACH_RADIUS - 7.0F), 0.0F, 1.0F);
+            float w = wave * wave * (3.0F - 2.0F * wave) * (float) Math.pow(radial, 1.50);
+            int a = Mth.clamp(Math.round(w * 224.0F), 0, 255);
             if (a <= 2) continue;
 
             int r, g, b;
             switch (fDir[i]) {
-                case 0 -> { r = 166; g = 159; b = 144; }
-                case 2, 3 -> { r = 198; g = 191; b = 175; }
-                default -> { r = 184; g = 177; b = 161; }
+                case 0 -> { r = 196; g = 190; b = 178; }
+                case 2, 3 -> { r = 236; g = 231; b = 220; }
+                default -> { r = 224; g = 219; b = 207; }
             }
 
             float x0 = fMinX[i] - camX, y0 = fMinY[i] - camY, z0 = fMinZ[i] - camZ;
@@ -778,13 +862,14 @@ public final class PortalRitualClient {
             if (fDir[i] != 1) continue;
             float d = fDist[i];
             if (d > rad) continue;
-            float u = Mth.clamp((rad - d) / 5.0F, 0.0F, 1.0F);
-            float w = u * u * (3.0F - 2.0F * u) * settleFade;
-            float crest = Mth.clamp(1.0F - Math.abs((rad - d) - 1.2F) / 1.4F, 0.0F, 1.0F);
+            float wave = Mth.clamp((rad - d) / 6.0F, 0.0F, 1.0F);
+            float radial = Mth.clamp((MAX_BLEACH_RADIUS - d) / (MAX_BLEACH_RADIUS - 7.5F), 0.0F, 1.0F);
+            float w = wave * wave * (3.0F - 2.0F * wave) * (float) Math.pow(radial, 1.42);
+            float crest = Mth.clamp(1.0F - Math.abs((rad - d) - 1.2F) / 1.6F, 0.0F, 1.0F);
             int tr = 255;
-            int tg = Mth.clamp(Math.round(Mth.lerp(crest * 0.35F, 255.0F, 236.0F)), 0, 255);
-            int tb = Mth.clamp(Math.round(Mth.lerp(crest * 0.45F, 255.0F, 178.0F)), 0, 255);
-            int a = Mth.clamp(Math.round(w * 244.0F), 0, 255);
+            int tg = Mth.clamp(Math.round(Mth.lerp(crest * 0.25F, 254.0F, 240.0F)), 0, 255);
+            int tb = Mth.clamp(Math.round(Mth.lerp(crest * 0.35F, 250.0F, 198.0F)), 0, 255);
+            int a = Mth.clamp(Math.round(w * 246.0F), 0, 255);
             if (a <= 2) continue;
 
             float wx0 = fMinX[i], wz0 = fMinZ[i];
@@ -813,11 +898,12 @@ public final class PortalRitualClient {
             if (fDir[i] != 1) continue;
             float d = fDist[i];
             if (d > rad || d > 17.5F) continue;
-            if (fMaxY[i] > center.getY() + 4.5F) continue;
+            if (fMaxY[i] > bc.getY() + 4.5F) continue;
 
             float uWave = Mth.clamp((rad - d) / 4.2F, 0.0F, 1.0F);
+            float innerFade = Mth.clamp((17.5F - d) / 8.5F, 0.0F, 1.0F);
             float pulse = 0.90F + 0.10F * Mth.sin(t * 0.14F - d * 0.35F);
-            int a = Mth.clamp(Math.round(uWave * uWave * (3.0F - 2.0F * uWave) * 252.0F * pulse * settleFade), 0, 255);
+            int a = Mth.clamp(Math.round(uWave * uWave * (3.0F - 2.0F * uWave) * innerFade * 246.0F * pulse), 0, 255);
             if (a <= 3) continue;
 
             float wx0 = fMinX[i], wz0 = fMinZ[i];
@@ -935,46 +1021,52 @@ public final class PortalRitualClient {
         double cx = c.getX() + 0.5, cy = c.getY() + 0.5, cz = c.getZ() + 0.5;
         int r2Max = BLEACH_SCAN_R * BLEACH_SCAN_R;
 
-        for (int dy = -12; dy <= 22 && faceCount < MAX_FACES; ++dy) {
-            for (int dx = -BLEACH_SCAN_R; dx <= BLEACH_SCAN_R && faceCount < MAX_FACES; ++dx) {
-                for (int dz = -BLEACH_SCAN_R; dz <= BLEACH_SCAN_R && faceCount < MAX_FACES; ++dz) {
-                    int d2 = dx * dx + dy * dy + dz * dz;
-                    if (d2 > r2Max) continue;
+        // Обходим концентрическими кольцами от центра разлома наружу до 52 блоков, чтобы поле всегда было 100% симметричным!
+        for (int ring = 0; ring <= BLEACH_SCAN_R && faceCount < MAX_FACES; ++ring) {
+            for (int dx = -ring; dx <= ring && faceCount < MAX_FACES; ++dx) {
+                for (int dz = -ring; dz <= ring && faceCount < MAX_FACES; ++dz) {
+                    if (Math.max(Math.abs(dx), Math.abs(dz)) != ring) continue;
+                    int h2 = dx * dx + dz * dz;
+                    if (h2 > r2Max) continue;
 
-                    int bx = c.getX() + dx, by = c.getY() + dy, bz = c.getZ() + dz;
-                    mp.set(bx, by, bz);
-                    if (!level.isLoaded(mp)) continue;
+                    for (int dy = -12; dy <= 24 && faceCount < MAX_FACES; ++dy) {
+                        if (h2 + dy * dy > r2Max) continue;
 
-                    BlockState st = level.getBlockState(mp);
-                    if (st.isAir() || !st.getFluidState().isEmpty()) continue;
+                        int bx = c.getX() + dx, by = c.getY() + dy, bz = c.getZ() + dz;
+                        mp.set(bx, by, bz);
+                        if (!level.isLoaded(mp)) continue;
 
-                    boolean isLeaves = st.getBlock() instanceof LeavesBlock;
-                    VoxelShape colShape = st.getCollisionShape(level, mp);
-                    if (!isLeaves && colShape.isEmpty()) continue;
+                        BlockState st = level.getBlockState(mp);
+                        if (st.isAir() || !st.getFluidState().isEmpty()) continue;
 
-                    AABB box = isLeaves ? new AABB(0, 0, 0, 1, 1, 1) : colShape.bounds();
-                    float jitter = (float) (Math.sin(bx * 0.43 + bz * 0.37 + by * 0.29) * 1.15);
-                    float dist = Math.max(0.0F, (float) Math.sqrt(
-                            (bx + 0.5 - cx) * (bx + 0.5 - cx)
-                                    + (by + 0.5 - cy) * (by + 0.5 - cy)
-                                    + (bz + 0.5 - cz) * (bz + 0.5 - cz)) + jitter);
+                        boolean isLeaves = st.getBlock() instanceof LeavesBlock;
+                        VoxelShape colShape = st.getCollisionShape(level, mp);
+                        if (!isLeaves && colShape.isEmpty()) continue;
 
-                    for (int di = 0; di < 6 && faceCount < MAX_FACES; ++di) {
-                        Direction d = dirs[di];
-                        np.setWithOffset(mp, d);
-                        BlockState nb = level.getBlockState(np);
-                        if (nb.isSolidRender(level, np)) continue;
-                        if (isLeaves && nb.getBlock() instanceof LeavesBlock) continue;
+                        AABB box = isLeaves ? new AABB(0, 0, 0, 1, 1, 1) : colShape.bounds();
+                        float jitter = (float) (Math.sin(bx * 0.43 + bz * 0.37 + by * 0.29) * 1.15);
+                        float dist = Math.max(0.0F, (float) Math.sqrt(
+                                (bx + 0.5 - cx) * (bx + 0.5 - cx)
+                                        + (by + 0.5 - cy) * (by + 0.5 - cy) * 0.45
+                                        + (bz + 0.5 - cz) * (bz + 0.5 - cz)) + jitter);
 
-                        int idx = faceCount++;
-                        fMinX[idx] = (float) (bx + box.minX);
-                        fMinY[idx] = (float) (by + box.minY);
-                        fMinZ[idx] = (float) (bz + box.minZ);
-                        fMaxX[idx] = (float) (bx + box.maxX);
-                        fMaxY[idx] = (float) (by + box.maxY);
-                        fMaxZ[idx] = (float) (bz + box.maxZ);
-                        fDir[idx] = (byte) di;
-                        fDist[idx] = dist;
+                        for (int di = 0; di < 6 && faceCount < MAX_FACES; ++di) {
+                            Direction d = dirs[di];
+                            np.setWithOffset(mp, d);
+                            BlockState nb = level.getBlockState(np);
+                            if (nb.isSolidRender(level, np)) continue;
+                            if (isLeaves && nb.getBlock() instanceof LeavesBlock) continue;
+
+                            int idx = faceCount++;
+                            fMinX[idx] = (float) (bx + box.minX);
+                            fMinY[idx] = (float) (by + box.minY);
+                            fMinZ[idx] = (float) (bz + box.minZ);
+                            fMaxX[idx] = (float) (bx + box.maxX);
+                            fMaxY[idx] = (float) (by + box.maxY);
+                            fMaxZ[idx] = (float) (bz + box.maxZ);
+                            fDir[idx] = (byte) di;
+                            fDist[idx] = dist;
+                        }
                     }
                 }
             }

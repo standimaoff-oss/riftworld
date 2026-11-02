@@ -2567,14 +2567,14 @@ public final class SeaProbeCommand {
                 atY = bs.baseY + 46;
                 atZ = bs.cz;
                 // Панорамный морской ракурс: одновременно виден и берег Пепельного биома с началом моста, и весь огромный замок в открытом море!
-                double midX = (bs.landX * 0.35 + bs.cx * 0.65);
-                double midZ = (bs.landZ * 0.35 + bs.cz * 0.65);
-                camX = (int) Math.round(midX + px * 112.0 - ux * 16.0);
-                camY = ocean + 52;
-                camZ = (int) Math.round(midZ + pz * 112.0 - uz * 16.0);
-                lkX = (int) Math.round(bs.cx - ux * 12.0);
+                double midX = (bs.landX * 0.30 + bs.cx * 0.70);
+                double midZ = (bs.landZ * 0.30 + bs.cz * 0.70);
+                camX = (int) Math.round(midX + px * 94.0 - ux * 10.0);
+                camY = ocean + 48;
+                camZ = (int) Math.round(midZ + pz * 94.0 - uz * 10.0);
+                lkX = (int) Math.round(bs.cx - ux * 8.0);
                 lkY = bs.baseY + 62;
-                lkZ = (int) Math.round(bs.cz - uz * 12.0);
+                lkZ = (int) Math.round(bs.cz - uz * 8.0);
             }
             String line = "riftstruct kind=" + k + " at=" + atX + "," + atY + "," + atZ
                     + " bridge_land=" + bridgeOnAshenLand + " castle_sea=" + castleInSea
@@ -2716,8 +2716,8 @@ public final class SeaProbeCommand {
             LandmarkStructures.BiomeLandmark lm = LandmarkStructures.shatteredShardForge(bestCr);
             if (lm == null) { src.sendFailure(Component.literal("riftstruct: shattered_shard_forge not found")); return 0; }
             int[] cnt = countStructBlocksAndSubAir(level, lm.cx, lm.cz, 13, lm.baseY - 2, lm.baseY + 15, ocean);
-            int camX = lm.cx + 7, camY = lm.baseY + 8, camZ = lm.cz + 10;
-            int lkX = lm.cx - 1, lkY = lm.baseY + 4, lkZ = lm.cz - 2;
+            int camX = lm.cx + 15, camY = lm.baseY + 9, camZ = lm.cz + 16;
+            int lkX = lm.cx, lkY = lm.baseY + 5, lkZ = lm.cz;
             String line = "riftstruct kind=shattered_shard_forge at=" + lm.cx + "," + lm.baseY + "," + lm.cz
                     + " blocks=" + cnt[0] + " sub_air=" + cnt[1]
                     + " cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
@@ -2800,17 +2800,18 @@ public final class SeaProbeCommand {
             BlacktideCitadel.Site bs = bestAr.blacktideSite;
 
             if (k.equals("blacktide_cathedral_hall")) {
-                int camX = bs.cx + BlacktideCitadel.rotX(-16, -25, bs.rot);
+                // Строго по главной оси симметрии Собора (lx = 12, от Южного портала к Северному трону!)
+                int camX = bs.cx + BlacktideCitadel.rotX(12, -8, bs.rot);
                 int camY = bs.baseY + 69;
-                int camZ = bs.cz + BlacktideCitadel.rotZ(-16, -25, bs.rot);
-                int lkX = bs.cx + BlacktideCitadel.rotX(44, -25, bs.rot);
-                int lkY = bs.baseY + 73;
-                int lkZ = bs.cz + BlacktideCitadel.rotZ(44, -25, bs.rot);
+                int camZ = bs.cz + BlacktideCitadel.rotZ(12, -8, bs.rot);
+                int lkX = bs.cx + BlacktideCitadel.rotX(12, -42, bs.rot);
+                int lkY = bs.baseY + 71;
+                int lkZ = bs.cz + BlacktideCitadel.rotZ(12, -42, bs.rot);
 
-                int carpets = 0, thrones = 0, chandeliers = 0, goldCaps = 0;
+                int carpets = 0, thrones = 0, chandeliers = 0, pillars = 0, gilded = 0;
                 BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
-                for (int lx = -36; lx <= 49; ++lx) {
-                    for (int lz = -45; lz <= -6; ++lz) {
+                for (int lx = -11; lx <= 35; ++lx) {
+                    for (int lz = -46; lz <= -5; ++lz) {
                         int wx = bs.cx + BlacktideCitadel.rotX(lx, lz, bs.rot);
                         int wz = bs.cz + BlacktideCitadel.rotZ(lx, lz, bs.rot);
                         if (!level.hasChunk(wx >> 4, wz >> 4)) continue;
@@ -2820,15 +2821,17 @@ public final class SeaProbeCommand {
                             if (st.is(ru.aiforge.riftworld.registry.CastleBlocks.CARPET.get())) ++carpets;
                             else if (st.is(ru.aiforge.riftworld.registry.ModBlocks.MODELS.get(ru.aiforge.riftworld.block.ModelKind.BOSS_THRONE).get())) ++thrones;
                             else if (st.is(ru.aiforge.riftworld.registry.ModBlocks.MODELS.get(ru.aiforge.riftworld.block.ModelKind.CASTLE_CHANDELIER).get())) ++chandeliers;
-                            else if (st.is(net.minecraft.world.level.block.Blocks.GOLD_BLOCK)
-                                    || st.is(net.minecraft.world.level.block.Blocks.GILDED_BLACKSTONE)) ++goldCaps;
+                            else if (st.is(net.minecraft.world.level.block.Blocks.POLISHED_BASALT)
+                                    || st.is(ru.aiforge.riftworld.registry.CastleBlocks.ASHLAR_PILLAR.get())) ++pillars;
+                            else if (st.is(net.minecraft.world.level.block.Blocks.GILDED_BLACKSTONE)) ++gilded;
                         }
                     }
                 }
-                int metric = (carpets >= 180 && thrones >= 1 && chandeliers >= 4 && goldCaps >= 60)
-                        ? (carpets + goldCaps + thrones * 50 + chandeliers * 20) : 0;
+                int metric = (gilded == 0 && carpets >= 180 && thrones >= 1 && chandeliers >= 5 && pillars >= 80)
+                        ? (carpets + pillars + thrones * 50 + chandeliers * 20) : 0;
                 String line = "riftstruct kind=blacktide_cathedral_hall at=" + camX + "," + camY + "," + camZ
-                        + " carpets=" + carpets + " thrones=" + thrones + " chandeliers=" + chandeliers + " gold=" + goldCaps
+                        + " carpets=" + carpets + " thrones=" + thrones + " chandeliers=" + chandeliers
+                        + " pillars=" + pillars + " gilded=" + gilded
                         + " blocks=" + metric + " sub_air=0"
                         + " cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
                 src.sendSuccess(() -> Component.literal(line), false);
@@ -2836,43 +2839,48 @@ public final class SeaProbeCommand {
             }
 
             if (k.equals("blacktide_rotunda_sanctum")) {
-                int camX = bs.cx + BlacktideCitadel.rotX(-19, 15, bs.rot);
-                int camY = bs.baseY + 69;
-                int camZ = bs.cz + BlacktideCitadel.rotZ(-19, 15, bs.rot);
-                int lkX = bs.cx + BlacktideCitadel.rotX(-26, 23, bs.rot);
-                int lkY = bs.baseY + 65;
-                int lkZ = bs.cz + BlacktideCitadel.rotZ(-26, 23, bs.rot);
+                // Строго по главной оси симметрии закрытой сводчатой Восточной Капеллы-Архива (lz = -21, lx = 38..57!)
+                int camX = bs.cx + BlacktideCitadel.rotX(38, -21, bs.rot);
+                int camY = bs.baseY + 68;
+                int camZ = bs.cz + BlacktideCitadel.rotZ(38, -21, bs.rot);
+                int lkX = bs.cx + BlacktideCitadel.rotX(54, -21, bs.rot);
+                int lkY = bs.baseY + 67;
+                int lkZ = bs.cz + BlacktideCitadel.rotZ(54, -21, bs.rot);
 
-                int carpets = 0, altars = 0, books = 0;
+                int carpets = 0, altars = 0, books = 0, gilded = 0;
                 BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
-                for (int lx = -37; lx <= -13; ++lx) {
-                    for (int lz = 10; lz <= 34; ++lz) {
+                for (int lx = 37; lx <= 57; ++lx) {
+                    for (int lz = -34; lz <= -8; ++lz) {
                         int wx = bs.cx + BlacktideCitadel.rotX(lx, lz, bs.rot);
                         int wz = bs.cz + BlacktideCitadel.rotZ(lx, lz, bs.rot);
                         if (!level.hasChunk(wx >> 4, wz >> 4)) continue;
-                        for (int by = 63; by <= 78; ++by) {
+                        for (int by = 63; by <= 92; ++by) {
                             BlockState st = level.getBlockState(mp.set(wx, bs.baseY + by, wz));
                             if (st.isAir()) continue;
                             if (st.is(ru.aiforge.riftworld.registry.CastleBlocks.CARPET.get())) ++carpets;
                             else if (st.is(ru.aiforge.riftworld.registry.ModBlocks.MODELS.get(ru.aiforge.riftworld.block.ModelKind.CHAPEL_ALTAR).get())) ++altars;
                             else if (st.is(ru.aiforge.riftworld.registry.CastleBlocks.BOOKSHELF.get())) ++books;
+                            else if (st.is(net.minecraft.world.level.block.Blocks.GILDED_BLACKSTONE)) ++gilded;
                         }
                     }
                 }
-                int metric = (carpets >= 25 && altars >= 1 && books >= 12) ? (carpets * 4 + books * 5 + altars * 60) : 0;
+                int metric = (gilded == 0 && carpets >= 40 && altars >= 1 && books >= 24)
+                        ? (carpets * 4 + books * 5 + altars * 60) : 0;
                 String line = "riftstruct kind=blacktide_rotunda_sanctum at=" + camX + "," + camY + "," + camZ
-                        + " carpets=" + carpets + " altars=" + altars + " books=" + books
+                        + " carpets=" + carpets + " altars=" + altars + " books=" + books + " gilded=" + gilded
                         + " blocks=" + metric + " sub_air=0"
                         + " cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
                 src.sendSuccess(() -> Component.literal(line), false);
                 return 1;
             }
 
-            // blacktide_tower_walkability: проверяем лестницы во ВСЕХ вышках замка!
+            // blacktide_tower_walkability: проверяем лестницы во ВСЕХ 19 реальных башнях замка и снимаем симметричный фасад с витражами в проёмах решёток!
             int[][] towerCenters = {
-                    {-9, -78}, {-32, -74}, {-55, -69}, {48, -66}, {-76, -43}, {79, -39},
-                    {85, -20}, {91, -1}, {78, 36}, {62, 47}, {47, 58}, {-6, 60},
-                    {-72, 30}, {-58, 35}, {-29, 13}, {-21, 31}, {-34, -40}, {-34, -10}, {20, -38}
+                    {-73, 29}, {-57, 40}, {-38, -38}, {-38, -12},
+                    {-9, -78}, {91, -1}, {-6, 60}, {-55, -69},
+                    {79, -39}, {47, 58}, {48, -66}, {-76, -43},
+                    {78, 36}, {-32, -74}, {85, -20}, {62, 47},
+                    {-28, 13}, {-22, 31}, {2, -31}
             };
             int climbedTowers = 0, totalStairs = 0;
             BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
@@ -2894,13 +2902,13 @@ public final class SeaProbeCommand {
                 if (stairsInTower >= 12) ++climbedTowers;
                 totalStairs += stairsInTower;
             }
-            int camX = bs.cx + BlacktideCitadel.rotX(46, 56, bs.rot);
-            int camY = bs.baseY + 86;
-            int camZ = bs.cz + BlacktideCitadel.rotZ(46, 56, bs.rot);
-            int lkX = bs.cx + BlacktideCitadel.rotX(-6, -12, bs.rot);
-            int lkY = bs.baseY + 76;
-            int lkZ = bs.cz + BlacktideCitadel.rotZ(-6, -12, bs.rot);
-            int metric = (climbedTowers >= 14 && totalStairs >= 350) ? totalStairs : 0;
+            int camX = bs.cx + BlacktideCitadel.rotX(12, 26, bs.rot);
+            int camY = bs.baseY + 84;
+            int camZ = bs.cz + BlacktideCitadel.rotZ(12, 26, bs.rot);
+            int lkX = bs.cx + BlacktideCitadel.rotX(12, -16, bs.rot);
+            int lkY = bs.baseY + 82;
+            int lkZ = bs.cz + BlacktideCitadel.rotZ(12, -16, bs.rot);
+            int metric = (climbedTowers >= 18 && totalStairs >= 400) ? totalStairs : 0;
             String line = "riftstruct kind=blacktide_tower_walkability at=" + camX + "," + camY + "," + camZ
                     + " climbed_towers=" + climbedTowers + " total_stairs=" + totalStairs
                     + " blocks=" + metric + " sub_air=0"
@@ -2915,7 +2923,7 @@ public final class SeaProbeCommand {
             int tx = 768, ty = 136, tz = 768;
             if (level.hasChunk(tx >> 4, tz >> 4)) {
                 BlockState stone = net.minecraft.world.level.block.Blocks.POLISHED_BLACKSTONE_BRICKS.defaultBlockState();
-                BlockState trim = net.minecraft.world.level.block.Blocks.GILDED_BLACKSTONE.defaultBlockState();
+                BlockState trim = net.minecraft.world.level.block.Blocks.CHISELED_POLISHED_BLACKSTONE.defaultBlockState();
                 BlockState cCarpet = ru.aiforge.riftworld.registry.CastleBlocks.CARPET.get().defaultBlockState();
                 BlockState cRug = ru.aiforge.riftworld.registry.ModBlocks.MODELS.get(ru.aiforge.riftworld.block.ModelKind.RUG).get().defaultBlockState();
                 for (int dx = -10; dx <= 10; ++dx) {
@@ -3175,7 +3183,7 @@ public final class SeaProbeCommand {
                     .setValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT, true);
 
             overworld.getEntitiesOfClass(ru.aiforge.riftworld.entity.SpatialRiftEntity.class,
-                    new net.minecraft.world.phys.AABB(base).inflate(48.0))
+                    new net.minecraft.world.phys.AABB(base).inflate(256.0))
                     .forEach(net.minecraft.world.entity.Entity::discard);
 
             for (int dx = -10; dx <= 10; ++dx) {

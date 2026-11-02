@@ -501,11 +501,12 @@ public final class BlacktideCitadel {
                                 // На берегу Пепельного биома трава устоя органично переходит в пепел и выжженную почву!
                                 st = hg < 0.48 ? burntSoil : (hg < 0.82 ? ash : scorched);
                             } else {
-                                // Во дворах морской цитадели — суровый вулканический туф, мшистый камень и пепельный дёрн
-                                st = hg < 0.44 ? burntSoil : (hg < 0.78 ? tuff : ElisarBlocks.KEEP_STONE_MOSSY.get().defaultBlockState());
+                                // Во дворах морской цитадели — ровная архитектурная кладка из тёмносланцевой плитки и чёрного кирпича без пятен!
+                                boolean courtRib = (Math.floorMod(lx, 6) == 0 || Math.floorMod(lz, 6) == 0);
+                                st = courtRib ? roadBrick : Blocks.DEEPSLATE_TILES.defaultBlockState();
                             }
                         } else if (v == tpl.dirtId) {
-                            st = onShoreLanding ? scorched : tuff;
+                            st = onShoreLanding ? scorched : Blocks.DEEPSLATE_BRICKS.defaultBlockState();
                         } else {
                             st = tpl.states[v][rot];
                         }
@@ -524,13 +525,13 @@ public final class BlacktideCitadel {
             }
         }
 
-        // 3) Скромные сундуки с припасами в залах, крипте, ротонде, барбакане и башнях Цитадели!
-        placeCitadelChest(chunk, site, x0, z0, 45, 70, -29, Direction.SOUTH, LandmarkStructures.LOOT_MODEST_WAYFARER);
-        placeCitadelChest(chunk, site, x0, z0, 45, 70, -21, Direction.NORTH, LandmarkStructures.LOOT_MODEST_WAYFARER);
-        placeCitadelChest(chunk, site, x0, z0, -70, 72, 35, Direction.EAST, LandmarkStructures.LOOT_MODEST_MARITIME);
-        placeCitadelChest(chunk, site, x0, z0, -25, 64, 29, Direction.NORTH, LandmarkStructures.LOOT_MODEST_WAYFARER);
-        placeCitadelChest(chunk, site, x0, z0, -14, 53, -29, Direction.SOUTH, LandmarkStructures.LOOT_MODEST_MARITIME);
-        placeCitadelChest(chunk, site, x0, z0, -76, 48, -45, Direction.EAST, LandmarkStructures.LOOT_MODEST_MARITIME);
+        // 3) Симметрично расставленные скромные сундуки с припасами в залах и капелле Цитадели!
+        placeCitadelChest(chunk, site, x0, z0,  3, 64, -42, Direction.SOUTH, LandmarkStructures.LOOT_MODEST_WAYFARER);
+        placeCitadelChest(chunk, site, x0, z0, 21, 64, -42, Direction.SOUTH, LandmarkStructures.LOOT_MODEST_WAYFARER);
+        placeCitadelChest(chunk, site, x0, z0, 42, 64, -32, Direction.SOUTH, LandmarkStructures.LOOT_MODEST_WAYFARER);
+        placeCitadelChest(chunk, site, x0, z0, 42, 64, -10, Direction.NORTH, LandmarkStructures.LOOT_MODEST_WAYFARER);
+        placeCitadelChest(chunk, site, x0, z0, -34, 64, -36, Direction.SOUTH, LandmarkStructures.LOOT_MODEST_MARITIME);
+        placeCitadelChest(chunk, site, x0, z0, -34, 64, -14, Direction.NORTH, LandmarkStructures.LOOT_MODEST_MARITIME);
     }
 
     private static void placeCitadelChest(ChunkAccess chunk, Site site, int x0, int z0,

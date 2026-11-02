@@ -14,7 +14,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
-import net.minecraft.world.level.block.BannerBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.LanternBlock;
@@ -23,8 +22,6 @@ import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.StairBlock;
-import net.minecraft.world.level.block.VineBlock;
-import net.minecraft.world.level.block.WallBannerBlock;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.entity.LecternBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -42,16 +39,15 @@ import ru.aiforge.riftworld.registry.ModWorldgen;
 import ru.aiforge.riftworld.registry.TempleBlocks;
 
 /**
- * v0.24.0: Overworld Abandoned Portal Observatory ({@code reports/portal_hall/ref_abandoned_overworld.png}).
+ * v0.25.0: Rebuilt-from-scratch Overworld Portal Sanctuary Rotunda.
  * <ul>
- *   <li>Octagonal weathered stone-brick, mossy temple-brick &amp; oxidized-copper vaulted pavilion with
- *       timber rafters, collapsed skylight oculus, hanging iron chains/lanterns, shallow floor puddles,
- *       connected woven entrance rug, and faded banners;</li>
- *   <li>Central stepped ritual dais ({@code MOSAIC_CORE} + concentric {@code MOSAIC} &amp; {@code GOLD_RUNE} rings
- *       + 8 {@code RITUAL_CANDLE} pedestals + 4 fluted {@code GRAND_COLUMN} rune pillars);</li>
- *   <li>Two Sanctuary Reliquary Chests + Keeper's Lectern Tome containing <b>everything needed</b>
- *       ({@code ResonanceStone}, {@code Flint & Steel}, {@code Ritual Candles}, offerings, and instructions)
- *       to perform the full awakening of the White 3D Spatial Breach into Elisar!</li>
+ *   <li>Monumental classical stone-brick &amp; patinated-copper Pantheon rotunda on a stepped circular crepidoma:
+ *       8 solid 2x2 buttressed piers, true semicircular stone arches, ordered horizontal masonry courses,
+ *       and an 8-ribbed copper dome crowned by a sculpted stone Oculus Collar open to the sky;</li>
+ *   <li>Clean radial pavement, stepped central Ritual Seal Dais ({@code MOSAIC_CORE} + concentric {@code GOLD_RUNE}
+ *       &amp; {@code MOSAIC} rings), 8 carved stone candle pedestals, and a seamless connected {@code RUG} runner;</li>
+ *   <li>Recessed West Reliquary &amp; East Scriptorium alcoves containing 2 Reliquary Chests + Keeper's Lectern Tome
+ *       with everything needed to awaken the White 3D Spatial Breach into Elisar.</li>
  * </ul>
  */
 public class OvergrownTemplePiece extends StructurePiece {
@@ -80,7 +76,6 @@ public class OvergrownTemplePiece extends StructurePiece {
                 center.getX() + r, center.getY() + TH + 4, center.getZ() + r);
     }
 
-    /** World position of the central MOSAIC_CORE seal for this Observatory piece. */
     public BlockPos sealWorldPos() {
         return new BlockPos(anchor.getX(), anchor.getY() + 1, anchor.getZ());
     }
@@ -113,283 +108,294 @@ public class OvergrownTemplePiece extends StructurePiece {
         level.setBlock(p, state.rotate(rot), 2);
     }
 
-    private static double detHash(int x, int y, int z) {
-        long h = x * 374761393L + y * 668265263L + z * 1274126177L;
-        h = (h ^ (h >> 13)) * 1103515245L;
-        return ((h ^ (h >> 16)) & 0xFFFFL) / 65535.0;
+    private static BlockState sbStair(Direction facing, Half half) {
+        return Blocks.STONE_BRICK_STAIRS.defaultBlockState()
+                .setValue(StairBlock.FACING, facing)
+                .setValue(StairBlock.HALF, half);
     }
 
-    private BlockState weatheredWall(int lx, int dy, int lz) {
-        double h = detHash(lx + anchor.getX(), dy, lz + anchor.getZ());
-        if (h < 0.24) return Blocks.MOSSY_STONE_BRICKS.defaultBlockState();
-        if (h < 0.44) return Blocks.CRACKED_STONE_BRICKS.defaultBlockState();
-        if (h < 0.66) return Blocks.STONE_BRICKS.defaultBlockState();
-        if (h < 0.80) return TempleBlocks.CRACKED.get().defaultBlockState();
-        if (h < 0.92) return TempleBlocks.IVY.get().defaultBlockState();
-        return TempleBlocks.BRICKS.get().defaultBlockState();
-    }
-
-    private BlockState oxidizedRoof(int lx, int dy, int lz) {
-        double h = detHash(lx * 3, dy * 5, lz * 7);
-        if (h < 0.46) return Blocks.OXIDIZED_CUT_COPPER.defaultBlockState();
-        if (h < 0.82) return Blocks.WEATHERED_CUT_COPPER.defaultBlockState();
-        return Blocks.EXPOSED_CUT_COPPER.defaultBlockState();
-    }
-
-    private BlockState oxidizedSlab(int lx, int dy, int lz, SlabType type) {
-        double h = detHash(lx * 7, dy * 3, lz * 5);
-        BlockState base = h < 0.55 ? Blocks.OXIDIZED_CUT_COPPER_SLAB.defaultBlockState()
-                : Blocks.WEATHERED_CUT_COPPER_SLAB.defaultBlockState();
-        return base.setValue(SlabBlock.TYPE, type);
+    private static BlockState sbSlab(SlabType type) {
+        return Blocks.STONE_BRICK_SLAB.defaultBlockState().setValue(SlabBlock.TYPE, type);
     }
 
     @Override
     public void postProcess(WorldGenLevel level, StructureManager sm, ChunkGenerator gen, RandomSource rnd,
                             BoundingBox box, ChunkPos cp, BlockPos pos) {
         BlockState air = Blocks.AIR.defaultBlockState();
+        BlockState sb = Blocks.STONE_BRICKS.defaultBlockState();
+        BlockState mossySb = Blocks.MOSSY_STONE_BRICKS.defaultBlockState();
+        BlockState chiseledSb = Blocks.CHISELED_STONE_BRICKS.defaultBlockState();
+        BlockState smoothStone = Blocks.SMOOTH_STONE.defaultBlockState();
         BlockState templeFloor = TempleBlocks.FLOOR.get().defaultBlockState();
+        BlockState templeBrick = TempleBlocks.BRICKS.get().defaultBlockState();
+        BlockState grandCol = TempleBlocks.GRAND_COLUMN.get().defaultBlockState()
+                .setValue(RotatedPillarBlock.AXIS, Direction.Axis.Y);
         BlockState mosaic = TempleBlocks.MOSAIC.get().defaultBlockState();
         BlockState mosaicCore = TempleBlocks.MOSAIC_CORE.get().defaultBlockState();
         BlockState goldRune = TempleBlocks.GOLD_RUNE.get().defaultBlockState();
-        BlockState grandCol = TempleBlocks.GRAND_COLUMN.get().defaultBlockState().setValue(RotatedPillarBlock.AXIS, Direction.Axis.Y);
-        BlockState chiseled = Blocks.CHISELED_STONE_BRICKS.defaultBlockState();
-        BlockState darkBeamX = Blocks.DARK_OAK_LOG.defaultBlockState().setValue(RotatedPillarBlock.AXIS, Direction.Axis.X);
-        BlockState darkBeamZ = Blocks.DARK_OAK_LOG.defaultBlockState().setValue(RotatedPillarBlock.AXIS, Direction.Axis.Z);
         BlockState rug = ModBlocks.MODELS.get(ModelKind.RUG).get().defaultBlockState();
-        BlockState waterPuddle = Blocks.STONE_BRICK_SLAB.defaultBlockState()
-                .setValue(SlabBlock.TYPE, SlabType.BOTTOM)
-                .setValue(SlabBlock.WATERLOGGED, true);
+        BlockState oxCopper = Blocks.OXIDIZED_CUT_COPPER.defaultBlockState();
+        BlockState weathCopper = Blocks.WEATHERED_CUT_COPPER.defaultBlockState();
+        BlockState oxSlabBot = Blocks.OXIDIZED_CUT_COPPER_SLAB.defaultBlockState().setValue(SlabBlock.TYPE, SlabType.BOTTOM);
+        BlockState oxSlabTop = Blocks.OXIDIZED_CUT_COPPER_SLAB.defaultBlockState().setValue(SlabBlock.TYPE, SlabType.TOP);
 
-        // 1) Octagonal pavilion foundation, cleared interior air volume, and sunken rain-puddle stone floor
-        for (int lx = -16; lx <= 16; ++lx) {
-            for (int lz = -16; lz <= 18; ++lz) {
-                double oct = Math.max(Math.abs(lx), Math.abs(lz)) + 0.42 * Math.min(Math.abs(lx), Math.abs(lz));
-                boolean inPorch = (Math.abs(lx) <= 4 && lz >= 12 && lz <= 18);
-                if (oct > 16.6 && !inPorch) continue;
+        // 1) Stepped Circular Crepidoma Foundation, Ground Skirt & Clean Radial Sanctuary Floor
+        for (int lx = -17; lx <= 17; ++lx) {
+            for (int lz = -17; lz <= 19; ++lz) {
+                double r = Math.hypot(lx, lz);
+                boolean inSouthPortico = (Math.abs(lx) <= 4 && lz >= 12 && lz <= 19);
+                if (r > 16.4 && !inSouthPortico) continue;
 
-                // Clear trees/brush inside & above the pavilion up to skylight height
-                for (int dy = 1; dy <= 21; ++dy) {
+                for (int dy = 1; dy <= 22; ++dy) {
                     put(level, box, lx, dy, lz, air);
                 }
 
-                // Foundation skirt down to solid Overworld ground so zero corners ever float!
-                for (int dy = -1; dy >= -14; --dy) {
+                // Deep stone foundation skirt down into natural terrain (0 floating corners!)
+                int topStylobate = (r <= 14.6 || (Math.abs(lx) <= 4 && lz <= 15)) ? 0 : (r <= 15.5 ? -1 : -2);
+                if (inSouthPortico && lz >= 16) {
+                    topStylobate = 15 - lz; // lz=16 -> -1, lz=17 -> -2, lz=18 -> -3
+                }
+                for (int dy = topStylobate - 1; dy >= -15; --dy) {
                     BlockPos wp = wpos(lx, dy, lz);
                     if (!box.isInside(wp)) break;
-                    BlockState cur = level.getBlockState(wp);
-                    if (cur.isSolidRender(level, wp) && dy < -3) break;
-                    level.setBlock(wp, dy >= -2 ? Blocks.STONE_BRICKS.defaultBlockState() : Blocks.COBBLESTONE.defaultBlockState(), 2);
+                    if (dy < topStylobate - 3 && level.getBlockState(wp).isSolidRender(level, wp)) break;
+                    level.setBlock(wp, dy >= topStylobate - 2 ? mossySb : Blocks.COBBLESTONE.defaultBlockState(), 2);
                 }
 
-                // Main floor at dy = 0 (with shallow rain puddles in cracked depressions, ref_abandoned_overworld.png!)
-                double distCenter = Math.hypot(lx, lz);
-                if (inPorch && lz >= 15) {
-                    // Stepped South Approach Stairs leading up from ground to porch
-                    int stepDy = (lz == 18) ? -2 : (lz == 17 ? -1 : 0);
-                    for (int fillY = -3; fillY < stepDy; ++fillY) {
-                        put(level, box, lx, fillY, lz, Blocks.STONE_BRICKS.defaultBlockState());
-                    }
-                    BlockState st = (lz >= 17 && Math.abs(lx) <= 3)
-                            ? Blocks.MOSSY_STONE_BRICK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.NORTH)
-                            : weatheredWall(lx, 0, lz);
-                    put(level, box, lx, stepDy, lz, st);
-                } else {
-                    double hp = detHash(lx + 31, 0, lz - 19);
-                    boolean isPuddle = distCenter > 6.8 && distCenter < 12.2
-                            && Math.abs(lx) > 2 && !(lz > 6 && Math.abs(lx) <= 3)
-                            && hp < 0.14;
-                    if (isPuddle) {
-                        put(level, box, lx, -1, lz, Blocks.MOSSY_STONE_BRICKS.defaultBlockState());
-                        put(level, box, lx, 0, lz, waterPuddle);
-                    } else if (distCenter <= 8.6) {
-                        put(level, box, lx, 0, lz, (hp < 0.22 && distCenter > 6.2) ? goldRune : templeFloor);
-                    } else {
-                        put(level, box, lx, 0, lz, hp < 0.30 ? TempleBlocks.FLOOR.get().defaultBlockState() : weatheredWall(lx, 0, lz));
-                        if (hp > 0.88 && distCenter > 10.2 && Math.abs(lx) > 3 && Math.abs(lz) > 3) {
-                            put(level, box, lx, 1, lz, hp > 0.94 ? Blocks.FERN.defaultBlockState() : Blocks.MOSS_CARPET.defaultBlockState());
+                if (inSouthPortico && lz >= 16) {
+                    if (Math.abs(lx) == 4) {
+                        // Sculpted cheek walls flanking the grand entrance steps
+                        for (int wy = topStylobate; wy <= 1; ++wy) {
+                            put(level, box, lx, wy, lz, wy == 1 ? chiseledSb : sb);
                         }
+                        if (lz == 18) {
+                            put(level, box, lx, 2, lz, Blocks.LANTERN.defaultBlockState());
+                        }
+                    } else if (lz <= 18) {
+                        put(level, box, lx, topStylobate, lz, sbStair(Direction.NORTH, Half.BOTTOM));
+                    } else {
+                        put(level, box, lx, topStylobate, lz, sb);
                     }
+                    continue;
                 }
+
+                if (r > 14.6) {
+                    // Outer stepped stone ring
+                    Direction inDir = Math.abs(lx) >= Math.abs(lz)
+                            ? (lx > 0 ? Direction.WEST : Direction.EAST)
+                            : (lz > 0 ? Direction.NORTH : Direction.SOUTH);
+                    put(level, box, lx, topStylobate, lz, r <= 15.5 ? sbStair(inDir, Half.BOTTOM) : mossySb);
+                    continue;
+                }
+
+                // Clean architectural radial pavement at dy = 0
+                boolean cardinalRib = (Math.abs(lx) <= 1 || Math.abs(lz) <= 1 || Math.abs(Math.abs(lx) - Math.abs(lz)) == 0);
+                BlockState floorSt;
+                if (r <= 6.2) {
+                    floorSt = templeFloor;
+                } else if (r >= 12.6) {
+                    floorSt = ((lx + lz) & 3) == 0 ? mossySb : sb;
+                } else if (cardinalRib) {
+                    floorSt = sb;
+                } else if (Math.abs(r - 9.4) < 0.7) {
+                    floorSt = goldRune;
+                } else {
+                    floorSt = templeFloor;
+                }
+                put(level, box, lx, 0, lz, floorSt);
             }
         }
 
-        // 2) Raised Circular Ritual Seal Dais (dy = +1) at the center — ready for full Spatial Breach opening!
+        // 2) Raised Central Ritual Seal Dais (dy = +1) with Concentric Gold Runes & Stepped Rim
         for (int lx = -6; lx <= 6; ++lx) {
             for (int lz = -6; lz <= 6; ++lz) {
                 double r = Math.hypot(lx, lz);
-                if (r <= 4.6) {
-                    BlockState daisBlock;
+                if (r <= 4.5) {
+                    BlockState st;
                     if (lx == 0 && lz == 0) {
-                        daisBlock = mosaicCore;
+                        st = mosaicCore;
                     } else if (Math.abs(lx) <= 1 && Math.abs(lz) <= 1) {
-                        daisBlock = goldRune;
+                        st = goldRune;
                     } else if (Math.abs(lx) <= 2 && Math.abs(lz) <= 2) {
-                        daisBlock = mosaic;
-                    } else if (r >= 3.3 && r <= 4.3 && ((Math.abs(lx) + Math.abs(lz)) % 2 == 0)) {
-                        daisBlock = goldRune;
+                        st = mosaic;
+                    } else if (r >= 3.2 && r <= 4.3 && ((Math.abs(lx) + Math.abs(lz)) % 2 == 0)) {
+                        st = goldRune;
                     } else {
-                        daisBlock = templeFloor;
+                        st = templeFloor;
                     }
-                    put(level, box, lx, 1, lz, daisBlock);
-                } else if (r <= 5.7) {
-                    // Gently stepped circular stone-brick rim around the dais
-                    Direction outDir = Math.abs(lx) >= Math.abs(lz)
+                    put(level, box, lx, 1, lz, st);
+                } else if (r <= 5.5) {
+                    Direction inDir = Math.abs(lx) >= Math.abs(lz)
                             ? (lx > 0 ? Direction.WEST : Direction.EAST)
                             : (lz > 0 ? Direction.NORTH : Direction.SOUTH);
-                    put(level, box, lx, 1, lz, TempleBlocks.STAIRS.get().defaultBlockState().setValue(StairBlock.FACING, outDir));
+                    put(level, box, lx, 1, lz, TempleBlocks.STAIRS.get().defaultBlockState().setValue(StairBlock.FACING, inDir));
                 }
             }
         }
 
-        // 3) Connected Woven Entrance Rug Runner (3x7 seamless connected rug from South Porch to Dais!)
+        // 3) Seamless Connected Woven Entrance Rug (T-shaped 25-block runner from South Portico to Seal Dais!)
         for (int lz = 6; lz <= 12; ++lz) {
             for (int lx = -1; lx <= 1; ++lx) {
                 put(level, box, lx, 1, lz, rug);
             }
         }
-        // Cross-wings at entrance forming a T-shaped connected rug!
-        put(level, box, -2, 1, 11, rug);
-        put(level, box,  2, 1, 11, rug);
-        put(level, box, -2, 1, 12, rug);
-        put(level, box,  2, 1, 12, rug);
-
-        // 4) 8 Carved Stone Pedestals with Ritual Candles around the Seal (for candle-ritual path!)
-        int[][] candleOffsets = {
-                {-5, -2}, {-5, 2}, {5, -2}, {5, 2},
-                {-2, -5}, {2, -5}, {-2, 5}, {2, 5}
-        };
-        for (int[] co : candleOffsets) {
-            put(level, box, co[0], 1, co[1], chiseled);
-            put(level, box, co[0], 2, co[1], TempleBlocks.RITUAL_CANDLE.get().defaultBlockState());
+        for (int lz = 11; lz <= 12; ++lz) {
+            put(level, box, -2, 1, lz, rug);
+            put(level, box,  2, 1, lz, rug);
         }
 
-        // 5) 4 Towering Inner Rune Columns framing the Skylight Oculus
-        int[][] innerCols = {{-5, -5}, {5, -5}, {-5, 5}, {5, 5}};
-        for (int[] ic : innerCols) {
-            put(level, box, ic[0], 1, ic[1], goldRune);
-            for (int dy = 2; dy <= 11; ++dy) {
-                put(level, box, ic[0], dy, ic[1], dy == 7 ? Blocks.OXIDIZED_CUT_COPPER.defaultBlockState() : grandCol);
-            }
-            put(level, box, ic[0], 12, ic[1], TempleBlocks.GOLD.get().defaultBlockState());
+        // 4) 8 Symmetrical Carved Stone Pedestals with Ritual Candles around the Seal
+        int[][] candleSpots = {
+                {-6, -2}, {-6, 2}, {6, -2}, {6, 2},
+                {-2, -6}, {2, -6}, {-2, 6}, {2, 6}
+        };
+        for (int[] cs : candleSpots) {
+            put(level, box, cs[0], 1, cs[1], chiseledSb);
+            put(level, box, cs[0], 2, cs[1], TempleBlocks.RITUAL_CANDLE.get().defaultBlockState());
         }
 
-        // 6) Octagonal Perimeter Arched Colonnade, Semi-Ruined Walls, Rose Windows & Faded Banners
-        int[][] outerPiers = {
-                {-13, -6}, {-13, 6}, {13, -6}, {13, 6},
-                {-6, -13}, {6, -13}, {-6, 13}, {6, 13}
+        // 5) 8 Solid 2x2 Buttressed Classical Piers & True Stepped Stone Arches around the Rotunda!
+        //    Placed at octagonal vertices (±12, ±5) and (±5, ±12) -> solid monumental proportions, 0 skinny sticks!
+        int[][] piers = {
+                {-12, -5}, {-12, 4}, {11, -5}, {11, 4},
+                {-5, -12}, {4, -12}, {-5, 11}, {4, 11}
         };
-        for (int[] op : outerPiers) {
-            for (int dx = -1; dx <= 1; ++dx) {
-                for (int dz = -1; dz <= 1; ++dz) {
-                    if (Math.abs(dx) == 1 && Math.abs(dz) == 1) continue;
-                    for (int dy = 1; dy <= 11; ++dy) {
-                        put(level, box, op[0] + dx, dy, op[1] + dz,
-                                (dx == 0 && dz == 0) ? grandCol : weatheredWall(op[0] + dx, dy, op[1] + dz));
+        for (int[] p : piers) {
+            for (int dx = 0; dx <= 1; ++dx) {
+                for (int dz = 0; dz <= 1; ++dz) {
+                    int px = p[0] + dx, pz = p[1] + dz;
+                    // Molded plinth (dy = 1..2), fluted marble/stone shaft (dy = 3..9), classical capital (dy = 10)
+                    put(level, box, px, 1, pz, chiseledSb);
+                    put(level, box, px, 2, pz, sb);
+                    boolean innerFlute = (Math.abs(px) <= 11 && Math.abs(pz) <= 11);
+                    for (int dy = 3; dy <= 9; ++dy) {
+                        put(level, box, px, dy, pz, innerFlute ? grandCol : (dy == 6 ? chiseledSb : templeBrick));
                     }
+                    put(level, box, px, 10, pz, chiseledSb);
                 }
             }
         }
 
-        // Perimeter arched curtain walls (open grand South archway + semi-ruined upper courses + rose windows)
+        // Perimeter Ashlar Drum & Arched Window Bays (r = 12.6..14.1, dy = 1..11)
         for (int lx = -14; lx <= 14; ++lx) {
             for (int lz = -14; lz <= 14; ++lz) {
-                double oct = Math.max(Math.abs(lx), Math.abs(lz)) + 0.42 * Math.min(Math.abs(lx), Math.abs(lz));
-                if (oct < 13.6 || oct > 15.1) continue;
+                double oct = Math.max(Math.abs(lx), Math.abs(lz)) + 0.414 * Math.min(Math.abs(lx), Math.abs(lz));
+                if (oct < 13.0 || oct > 14.3) continue;
 
-                // Keep South Entrance Archway open (|lx| <= 2, lz > 10, dy = 1..7)
-                boolean southGate = (lz > 10 && Math.abs(lx) <= 2);
-                // Tall arched window bays on N, W, E and flanking S bays
-                boolean northBay = (lz < -10 && Math.abs(lx) <= 2);
-                boolean sideBay = (Math.abs(lx) > 10 && Math.abs(lz) <= 2);
+                boolean southArch = (lz > 10 && Math.abs(lx) <= 3);
+                boolean northWindow = (lz < -10 && Math.abs(lx) <= 2);
+                boolean westAlcoveBack = (lx < -11 && Math.abs(lz) <= 2);
+                boolean eastAlcoveBack = (lx > 11 && Math.abs(lz) <= 2);
 
-                int ruinTop = 10 - (int) (detHash(lx, 17, lz) * 2.4);
-                for (int dy = 1; dy <= ruinTop; ++dy) {
-                    if (southGate && dy <= 7) continue;
-                    if ((northBay || sideBay) && dy >= 3 && dy <= 7) {
-                        if (dy == 7 && (lx == 0 || lz == 0)) {
-                            put(level, box, lx, dy, lz, TempleBlocks.ROSE_WINDOW.get().defaultBlockState());
-                        } else if (dy == 3) {
-                            put(level, box, lx, dy, lz, Blocks.IRON_BARS.defaultBlockState());
+                for (int dy = 1; dy <= 11; ++dy) {
+                    if (southArch) {
+                        // Grand 7-wide Stepped Classical Entrance Archway (open up to dy = 8 at center!)
+                        int archClear = 8 - (Math.abs(lx) * Math.abs(lx)) / 3;
+                        if (dy <= archClear) {
+                            if (dy == archClear && Math.abs(lx) >= 2) {
+                                put(level, box, lx, dy, lz, sbStair(lx < 0 ? Direction.EAST : Direction.WEST, Half.TOP));
+                            }
+                            continue;
                         }
-                        continue;
                     }
-                    put(level, box, lx, dy, lz, weatheredWall(lx, dy, lz));
-                }
-
-                // Exterior hanging ivy / vines on weathered stone piers
-                if (detHash(lx, 99, lz) < 0.20 && Math.abs(lx) == 14) {
-                    Direction vineFace = lx < 0 ? Direction.EAST : Direction.WEST;
-                    BlockState vine = Blocks.VINE.defaultBlockState().setValue(VineBlock.getPropertyForFace(vineFace), true);
-                    for (int dy = 5; dy <= 9; ++dy) {
-                        put(level, box, lx + (lx < 0 ? -1 : 1), dy, lz, vine);
+                    if (northWindow && dy >= 4 && dy <= 8) {
+                        if (dy == 8 && lx == 0) {
+                            put(level, box, lx, dy, lz, TempleBlocks.ROSE_WINDOW.get().defaultBlockState());
+                        } else if (Math.abs(lx) <= 1 && dy <= 7) {
+                            continue; // Clean tall arched lancet opening without floating clutter!
+                        }
                     }
+                    // Ordered horizontal masonry courses: mossy base -> crisp stone brick body -> chiseled frieze -> entablature!
+                    BlockState course = (dy == 1) ? mossySb
+                            : (dy == 2 || dy == 10) ? chiseledSb
+                            : (dy == 11) ? smoothStone
+                            : ((westAlcoveBack || eastAlcoveBack) && dy <= 7 ? templeBrick : sb);
+                    put(level, box, lx, dy, lz, course);
                 }
             }
         }
 
-        // Whispering sleeping TempleSpirit relief above the North Sanctum Arch
-        put(level, box, 0, 8, -13, TempleBlocks.SPIRIT.get().defaultBlockState());
+        // Classical Triangular Pediment crowning the South Entrance Portico (lz = 13..15, lx = -5..5, dy = 10..14)
+        for (int lz = 13; lz <= 15; ++lz) {
+            for (int lx = -5; lx <= 5; ++lx) {
+                put(level, box, lx, 10, lz, chiseledSb);
+                int pedTop = 13 - Math.abs(lx) / 2;
+                for (int dy = 11; dy <= pedTop; ++dy) {
+                    put(level, box, lx, dy, lz, (lz == 15 && dy < pedTop) ? templeBrick : sb);
+                }
+                if (Math.abs(lx) >= 1 && Math.abs(lx) % 2 == 1) {
+                    put(level, box, lx, pedTop + 1, lz, sbStair(lx < 0 ? Direction.EAST : Direction.WEST, Half.BOTTOM));
+                }
+            }
+            put(level, box, 0, 14, lz, sbSlab(SlabType.BOTTOM));
+        }
 
-        // Faded cyan/white banners hanging inward from the 4 inner piers
-        put(level, box, -5, 8, -4, Blocks.WHITE_WALL_BANNER.defaultBlockState().setValue(WallBannerBlock.FACING, Direction.SOUTH));
-        put(level, box,  5, 8, -4, Blocks.WHITE_WALL_BANNER.defaultBlockState().setValue(WallBannerBlock.FACING, Direction.SOUTH));
-        put(level, box, -5, 8,  4, Blocks.LIGHT_BLUE_WALL_BANNER.defaultBlockState().setValue(WallBannerBlock.FACING, Direction.NORTH));
-        put(level, box,  5, 8,  4, Blocks.LIGHT_BLUE_WALL_BANNER.defaultBlockState().setValue(WallBannerBlock.FACING, Direction.NORTH));
-
-        // 7) Oxidized-Copper & Dark-Oak Timber Vaulted Dome (dy = 11..19) with Open Central Skylight Oculus (r < 4.8)!
+        // 6) Ribbed Patinated-Copper & Stone Pantheon Dome (dy = 11..18) with Sculpted Open Oculus Collar (r = 4.6)!
         for (int lx = -14; lx <= 14; ++lx) {
             for (int lz = -14; lz <= 14; ++lz) {
                 double r = Math.hypot(lx, lz);
-                if (r < 4.8 || r > 14.8) continue;
+                if (r < 4.5 || r > 14.2) continue;
 
-                // Semi-ruined jagged edges near the skylight oculus & outer eaves (ref_abandoned_overworld.png!)
-                double gapNoise = detHash(lx + 7, 41, lz - 13);
-                if (r < 5.7 && gapNoise < 0.35) continue;
+                double u = (14.2 - r) / (14.2 - 4.5); // 0 at cornice -> 1 at oculus collar
+                double exactH = 11.2 + Math.sin(u * Math.PI * 0.5) * 6.4;
+                int domeY = (int) Math.floor(exactH);
+                boolean upperHalf = (exactH - domeY) >= 0.52;
 
-                double u = (14.8 - r) / (14.8 - 4.8); // 0 at outer eaves -> 1 at oculus collar
-                int domeY = 11 + (int) Math.round(Math.sin(u * Math.PI * 0.5) * 6.5);
-                boolean rib = (Math.abs(lx) <= 1 || Math.abs(lz) <= 1 || Math.abs(Math.abs(lx) - Math.abs(lz)) <= 1);
-                if (rib) {
-                    put(level, box, lx, domeY, lz, Blocks.STONE_BRICKS.defaultBlockState());
-                    put(level, box, lx, domeY + 1, lz, oxidizedSlab(lx, domeY + 1, lz, SlabType.BOTTOM));
+                boolean oculusCollar = (r <= 5.3);
+                boolean meridianRib = (Math.abs(lx) <= 1 || Math.abs(lz) <= 1 || Math.abs(Math.abs(lx) - Math.abs(lz)) <= 1);
+
+                if (oculusCollar) {
+                    put(level, box, lx, domeY, lz, chiseledSb);
+                    put(level, box, lx, domeY + 1, lz, sbSlab(SlabType.BOTTOM));
+                } else if (meridianRib) {
+                    put(level, box, lx, domeY, lz, sb);
+                    if (upperHalf) {
+                        put(level, box, lx, domeY + 1, lz, sbSlab(SlabType.BOTTOM));
+                    }
                 } else {
-                    put(level, box, lx, domeY, lz, oxidizedRoof(lx, domeY, lz));
-                    // Dark-oak timber rafter purlins underneath the copper vault
-                    if (domeY >= 12 && ((lx + lz) & 3) == 0) {
-                        put(level, box, lx, domeY - 1, lz, Math.abs(lx) > Math.abs(lz) ? darkBeamZ : darkBeamX);
+                    // Clean horizontal copper patina gradient (weathered lower eaves -> oxidized upper dome, 0 checkerboard!)
+                    BlockState cop = (domeY <= 13) ? weathCopper : oxCopper;
+                    put(level, box, lx, domeY, lz, cop);
+                    put(level, box, lx, domeY - 1, lz, sbSlab(SlabType.TOP));
+                    if (upperHalf) {
+                        put(level, box, lx, domeY + 1, lz, oxSlabBot);
                     }
                 }
             }
         }
 
-        // Skylight Oculus Stone Collar + Hanging Wrought-Iron Chains & Lanterns!
-        int[][] chainSpots = {{-5, 0}, {5, 0}, {0, -5}, {0, 5}, {-7, -7}, {7, -7}, {-7, 7}, {7, 7}};
-        for (int[] cs : chainSpots) {
-            int topY = (Math.abs(cs[0]) == 7) ? 14 : 16;
-            int chainLen = (Math.abs(cs[0]) == 7) ? 4 : 5;
-            for (int k = 1; k <= chainLen; ++k) {
-                put(level, box, cs[0], topY - k, cs[1], Blocks.CHAIN.defaultBlockState());
+        // 8 Symmetrical Hanging Sanctuary Lanterns suspended from the Oculus Collar & Dome Ribs
+        int[][] lanternSpots = {{-5, 0}, {5, 0}, {0, -5}, {0, 5}, {-8, -8}, {8, -8}, {-8, 8}, {8, 8}};
+        for (int[] ls : lanternSpots) {
+            boolean inner = Math.abs(ls[0]) <= 5 && Math.abs(ls[1]) <= 5;
+            int attachY = inner ? 17 : 14;
+            int len = inner ? 4 : 3;
+            for (int k = 1; k <= len; ++k) {
+                put(level, box, ls[0], attachY - k, ls[1], Blocks.CHAIN.defaultBlockState());
             }
-            put(level, box, cs[0], topY - chainLen - 1, cs[1],
+            put(level, box, ls[0], attachY - len - 1, ls[1],
                     Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING, true));
         }
 
-        // 8) COMPLETE PORTAL-OPENING RELIQUARY & KEEPER'S SCRIPTORIUM ALCOVES!
-        // West Reliquary Alcove (lx = -10, lz = -2..+2): Altar Table + Chest #1 (Resonance Stones + Flint & Steel + Offerings!) + Lit Candles
+        // 7) Symmetrical Recessed West Reliquary & East Scriptorium Alcoves (Everything for Full Breach Awakening!)
+        // West Reliquary Altar (lx = -11, lz = -2..2): Stepped Stone Table + Chest #1 + Lit Candle Stands
         for (int lz = -2; lz <= 2; ++lz) {
-            put(level, box, -10, 1, lz, TempleBlocks.BRICKS.get().defaultBlockState());
+            put(level, box, -11, 1, lz, Math.abs(lz) == 2 ? chiseledSb : templeBrick);
         }
-        put(level, box, -10, 2, -2, ModBlocks.MODELS.get(ModelKind.CANDLE_STAND).get().defaultBlockState()
+        put(level, box, -11, 2, -2, ModBlocks.MODELS.get(ModelKind.CANDLE_STAND).get().defaultBlockState()
                 .setValue(ModelBlock.FACING, Direction.EAST).setValue(ModelBlock.POWERED, true));
-        put(level, box, -10, 2,  2, ModBlocks.MODELS.get(ModelKind.CANDLE_STAND).get().defaultBlockState()
+        put(level, box, -11, 2,  2, ModBlocks.MODELS.get(ModelKind.CANDLE_STAND).get().defaultBlockState()
                 .setValue(ModelBlock.FACING, Direction.EAST).setValue(ModelBlock.POWERED, true));
-        placeObservatoryChest(level, box, -10, 2, 0, Direction.EAST, 101L);
+        placeObservatoryChest(level, box, -11, 2, 0, Direction.EAST, 101L);
 
-        // East Scriptorium Alcove (lx = +10, lz = -2..+2): Keeper's Lectern with Ritual Journal + Chest #2 + Bookshelves
-        put(level, box, 11, 1, -2, Blocks.BOOKSHELF.defaultBlockState());
-        put(level, box, 11, 2, -2, Blocks.BOOKSHELF.defaultBlockState());
-        put(level, box, 11, 1,  2, Blocks.BOOKSHELF.defaultBlockState());
-        put(level, box, 11, 2,  2, Blocks.CHISELED_BOOKSHELF.defaultBlockState());
+        // East Scriptorium (lx = 11, lz = -2..2): Framed Bookshelf Niche + Chest #2 + Keeper's Lectern Tome
+        for (int lz : new int[]{-2, 2}) {
+            put(level, box, 11, 1, lz, Blocks.BOOKSHELF.defaultBlockState());
+            put(level, box, 11, 2, lz, Blocks.BOOKSHELF.defaultBlockState());
+            put(level, box, 11, 3, lz, sbStair(Direction.WEST, Half.BOTTOM));
+        }
+        put(level, box, 11, 1, 0, Blocks.CHISELED_BOOKSHELF.defaultBlockState());
+        put(level, box, 11, 2, 0, chiseledSb);
         placeObservatoryChest(level, box, 10, 1, -1, Direction.WEST, 202L);
         placeKeeperLectern(level, box, 10, 1, 1, Direction.WEST);
     }
@@ -428,14 +434,14 @@ public class OvergrownTemplePiece extends StructurePiece {
         ListTag pages = new ListTag();
         pages.add(StringTag.valueOf(Component.Serializer.toJson(Component.literal(
                 "§lПечать Белого Города§r\n\n"
-                        + "Под куполом этой забытой обсерватории покоится древняя мозаичная печать, "
+                        + "Под куполом этой ротонды покоится древняя мозаичная печать, "
                         + "связывающая Обычный мир с парящими островами Элисара.\n\n"
-                        + "В ковчегах у западной и восточной стен оставлено всё необходимое для полного пробуждения Пролома."))));
+                        + "В ковчегах у западной и восточной ниш оставлено всё необходимое для полного пробуждения Пролома."))));
         pages.add(StringTag.valueOf(Component.Serializer.toJson(Component.literal(
                 "§lДва пути Открытия§r\n\n"
                         + "1. Возьми §6Камень Резонанса§r из сундука и приложи его к центральной печати (или брось подношение на золотые руны).\n\n"
                         + "2. Или зажги огнивом все §68 ритуальных свечей§r вокруг помоста и встань в центр печати.\n\n"
-                        + "Когда мир побелеет и вырастет Белый Пролом — шагните внутрь!"))));
+                        + "Когда вокруг на 50 шагов разольётся белизна и вырастет Белый Пролом — шагните внутрь!"))));
         tag.put("pages", pages);
         return book;
     }
