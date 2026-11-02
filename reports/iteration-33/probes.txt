@@ -1,0 +1,316 @@
+  /riftsea raw: riftsea floor=10 water=51 sea=62 min=1 max=15 cols=9409 caves=8497 wet=202732 air=11560 reef=1981 plants=1773 corals=64 float=916 ceilair=6121 bottom=-62 caveat=625,5,570 
+  /riftsea raw: riftsea floor=10 water=51 sea=62 min=1 max=15 cols=9409 caves=8497 wet=202732 air=11560 reef=1981 plants=1773 corals=64 float=916 ceilair=6121 bottom=-62 caveat=625,5,570 
+  OK   вода на глубине (696,56,696) = elisar_water
+  /riftsea raw: riftsea floor=5 water=56 sea=62 min=-8 max=14 cols=9409 caves=8497 wet=164874 air=13311 reef=2239 plants=1402 corals=86 float=1040 ceilair=7498 bottom=-62 caveat=650,3,600 
+  OK   донный блок: elisar_seabed на 696,5,696
+  OK   кромка дна из /riftsea: y=10
+  OK   толщина воды под рифом: 51 блоков (нужно >=44)
+  OK   колонок с пещерами в радиусе проб: 8497
+  OK   пещеры ЗАТОПЛЕНЫ: воды 94% объёма полостей (остальное — воздушные карманы)
+  OK   воздух в пещерах прижат к своду: висячих пузырей 7% (нужно <=12%)
+  OK   воздух под сводами (под камнем): 52% всего воздуха пещер
+  OK   вода внутри пещеры (625,5,570) = elisar_water
+  OK   пещера найдена на y=5 (в 57 блоках под уровнем моря)
+  OK   рифовый сад: coral_brain at 600,11,665
+  OK   вода над рифом (600,14,666) = elisar_water
+  /riftcoral raw: riftcoral at=597,11,709 h=8 blocks=240 cols=109 tips=224 floor=10 sea=62 cam=591,22,715 camlow=597,12,700 
+  коралл: at=597,11,709 h=8 блоков=240 колонок=109 украшений=224
+  OK   коралл — ВЫСОКОЕ растение: 8 блоков в высоту
+  OK   коралл из МНОГИХ блоков: 240 блоков, 109 колонок
+  OK   у растения есть ветви/плита: 109 колонок
+  OK   на ветвях есть кораллы-украшения: 224
+  камера коралла: cam=591,22,715 camlow=597,12,700
+  воды в колонке: 57 блоков
+  OK   рыбы заспавнились сами (SeaLifeKeeper)
+  summon ^-2 ^0 ^4 {NoAI:1b,Silent:1b,sf_variant:0} -> Summoned new Elisar Sea Fish
+  summon ^-0.6 ^0.6 ^5 {NoAI:1b,Silent:1b,sf_variant:0} -> Summoned new Elisar Sea Fish
+  summon ^0.8 ^-0.6 ^6 {NoAI:1b,Silent:1b,sf_variant:1} -> Summoned new Elisar Sea Fish
+  summon ^2.2 ^0.2 ^7 {NoAI:1b,Silent:1b,sf_variant:2} -> Summoned new Elisar Sea Fish
+  summon ^-3.2 ^1.2 ^8 {NoAI:1b,Silent:1b,sf_variant:3} -> Summoned new Elisar Sea Fish
+  summon ^3.4 ^1.6 ^9 {NoAI:1b,Silent:1b,sf_variant:4} -> Summoned new Elisar Sea Fish
+  summon ^0 ^0 ^2.6 {NoAI:1b,Silent:1b,sf_variant:5} -> Summoned new Elisar Sea Fish
+  summon ^1.1 ^0.2 ^3 {NoAI:1b,Silent:1b,sf_variant:6} -> Summoned new Elisar Sea Fish
+  summon ^-1.2 ^0.1 ^2.4 {NoAI:1b,Silent:1b,sf_variant:5} -> Summoned new Elisar Sea Fish
+  OK   рыбы в мире есть и тикают
+  summon ^0 ^0 ^3 {NoAI:1b,Silent:1b,sf_variant:0} -> Summoned new Elisar Sea Fish
+  summon ^0.8 ^0.7 ^3.4 {NoAI:1b,Silent:1b,sf_variant:1} -> Summoned new Elisar Sea Fish
+  summon ^-0.9 ^-0.3 ^4.2 {NoAI:1b,Silent:1b,sf_variant:2} -> Summoned new Elisar Sea Fish
+  summon ^0.4 ^0.9 ^4.8 {NoAI:1b,Silent:1b,sf_variant:3} -> Summoned new Elisar Sea Fish
+  summon ^0 ^0 ^3 {NoAI:1b,Silent:1b,sf_variant:7} -> Summoned new Elisar Sea Fish
+  summon ^1.0 ^0.9 ^3.6 {NoAI:1b,Silent:1b,sf_variant:8} -> Summoned new Elisar Sea Fish
+  summon ^-0.9 ^-0.5 ^4.4 {NoAI:1b,Silent:1b,sf_variant:0} -> Summoned new Elisar Sea Fish
+  summon ^0 ^0 ^2.8 {NoAI:1b,Silent:1b,sf_variant:9} -> Summoned new Elisar Sea Fish
+  summon ^1.1 ^0.6 ^3.4 {NoAI:1b,Silent:1b,sf_variant:10} -> Summoned new Elisar Sea Fish
+  summon ^-1.0 ^-0.4 ^4.0 {NoAI:1b,Silent:1b,sf_variant:5} -> Summoned new Elisar Sea Fish
+  summon ^0 ^0 ^3 {NoAI:1b,Silent:1b,sf_variant:0} -> Summoned new Elisar Sea Fish
+  summon ^0.7 ^0.9 ^3.6 {NoAI:1b,Silent:1b,sf_variant:1} -> Summoned new Elisar Sea Fish
+  summon ^-0.9 ^-0.5 ^4.4 {NoAI:1b,Silent:1b,sf_variant:4} -> Summoned new Elisar Sea Fish
+  OK   у всех 11 видов есть JSON-модель и текстура
+  summon ^0 ^0 ^2.6 {NoAI:1b,Silent:1b,NoGravity:1b,Rotation:[90f,0f],sf_variant:0} -> Summoned new Elisar Sea Fish
+  рыба silver: Elisar Sea Fish has the following entity data: [696.4806291240423d, 39.91497949801478d, 693.92102680926d]
+  summon ^0 ^0 ^2.6 {NoAI:1b,Silent:1b,NoGravity:1b,Rotation:[90f,0f],sf_variant:1} -> Summoned new Elisar Sea Fish
+  рыба gold: Elisar Sea Fish has the following entity data: [696.4903145620211d, 39.90928345322609d, 693.9113092637284d]
+  summon ^0 ^0 ^2.6 {NoAI:1b,Silent:1b,NoGravity:1b,Rotation:[90f,0f],sf_variant:2} -> Summoned new Elisar Sea Fish
+  рыба striped: Elisar Sea Fish has the following entity data: [696.4903145620211d, 39.90928345322609d, 693.9113092637284d]
+  summon ^0 ^0 ^2.6 {NoAI:1b,Silent:1b,NoGravity:1b,Rotation:[45f,0f],sf_variant:3} -> Summoned new Elisar Sea Fish
+  рыба jelly: Elisar Sea Fish has the following entity data: [696.4903145620211d, 39.90928345322609d, 693.9113092637284d]
+  summon ^0 ^0 ^2.6 {NoAI:1b,Silent:1b,NoGravity:1b,Rotation:[45f,0f],sf_variant:4} -> Summoned new Elisar Sea Fish
+  рыба ray: Elisar Sea Fish has the following entity data: [696.4806291240423d, 39.91505675198468d, 693.92102680926d]
+  summon ^0 ^0 ^2.6 {NoAI:1b,Silent:1b,NoGravity:1b,Rotation:[90f,0f],sf_variant:5} -> Summoned new Elisar Sea Fish
+  рыба angler: Elisar Sea Fish has the following entity data: [696.4903145620211d, 39.90928345322609d, 693.9113092637284d]
+  summon ^0 ^0 ^2.6 {NoAI:1b,Silent:1b,NoGravity:1b,Rotation:[90f,0f],sf_variant:6} -> Summoned new Elisar Sea Fish
+  рыба eel: Elisar Sea Fish has the following entity data: [696.4903145620211d, 39.90928345322609d, 693.9113092637284d]
+  summon ^0 ^0 ^2.6 {NoAI:1b,Silent:1b,NoGravity:1b,Rotation:[90f,0f],sf_variant:7} -> Summoned new Elisar Sea Fish
+  рыба surgeon: Elisar Sea Fish has the following entity data: [696.4806291240423d, 39.91505675198468d, 693.92102680926d]
+  summon ^0 ^0 ^2.6 {NoAI:1b,Silent:1b,NoGravity:1b,Rotation:[90f,0f],sf_variant:8} -> Summoned new Elisar Sea Fish
+  рыба turtle: Elisar Sea Fish has the following entity data: [696.4806291240423d, 39.91497949801478d, 693.92102680926d]
+  summon ^0 ^0 ^2.6 {NoAI:1b,Silent:1b,NoGravity:1b,Rotation:[90f,0f],sf_variant:9} -> Summoned new Elisar Sea Fish
+  рыба gloom: Elisar Sea Fish has the following entity data: [696.4903145620211d, 39.90928345322609d, 693.9113092637284d]
+  summon ^0 ^0 ^2.6 {NoAI:1b,Silent:1b,NoGravity:1b,Rotation:[90f,0f],sf_variant:10} -> Summoned new Elisar Sea Fish
+  рыба sting: Elisar Sea Fish has the following entity data: [696.4806291240423d, 39.91497949801478d, 693.92102680926d]
+  OK   клиент не жаловался на geo-модели
+  /rifttree raw: rifttree at=-76,104,6 kind=ambra h=7 logs=16 branches=0 leaves=0 dist=69 loaded=true cam=-65,117,6 camtop=-65,127,6
+  OK   дерево найдено: -76,104,6 (ветвей: 0)
+  OK   обычных деревьев генератора в плане нет (активен аддон DT)
+  /rifttree повтор: rifttree at=85,103,-13 kind=ambra h=6 logs=23 branches=15 leaves=123 dist=80 loaded=true cam=96,115,-13 camtop=96,125,-13
+  OK   дерево с ветками и кроной: ветвей 15, листвы 123
+  камера дерева: cam=96,115,-13 camtop=96,125,-13
+  give riftworlddt:sizo_seed -> Gave 1 [Sizo Seed] to TestPlayer
+  OK   DT видит семена аддона (riftworlddt:sizo_seed)
+  OK   DT видит семена лилового хлыста (riftworlddt:lilac_seed)
+  OK   DT видит жёлудь садового дуба (riftworlddt:garden_oak_seed)
+  упоминаний riftworlddt:sizo в логе: 0
+0
+  /dynamictrees registry family list -> dynamictrees:null dynamictrees:warped dynamictrees:spruce dynamictrees:oak dynamictrees:mangrove dynamictrees:jungle dynamictrees:dark_oak dynamictrees:crimson dynamictrees:cherry dynamictrees:birch dynamictrees:acacia r
+  /dynamictrees registry species list -> dynamictrees:null dynamictrees:red_mushroom dynamictrees:brown_mushroom dynamictrees:warped dynamictrees:tall_birch dynamictrees:swamp_oak dynamictrees:spruce dynamictrees:oak_undergrowth dynamictrees:oak dynamictrees:me
+  OK   у DT есть семья riftworlddt:sizo
+  OK   у DT есть семья riftworlddt:ambra
+  OK   у DT есть семья riftworlddt:lilac
+  OK   у DT есть семья riftworlddt:garden_oak
+  OK   у DT есть вид riftworlddt:sizo
+  OK   у DT есть вид riftworlddt:ambra
+  OK   у DT есть вид riftworlddt:lilac
+  OK   у DT есть вид riftworlddt:giant_sizo
+  OK   у DT есть вид riftworlddt:garden_oak
+  [DT] секция дерева
+  /riftdt diag -> crystal_birch[sp=1 fam=1 br=riftworlddt:crystal_birch_branch brf=true lv=1 dyn=riftworlddt:crystal_birch_leaves] sizo[sp=1 fam=1 br=riftworlddt:sizo_branch brf=true lv=1 dyn=riftworlddt:sizo_leaves] ambra[sp=1 fam=1 br=riftworlddt:ambra_branch brf=true lv=1 dyn=riftworlddt:ambra_leaves] garden_oak[sp=1 fam=1 br=riftworlddt:garden_oak_branch brf=true lv=1 dyn=riftworlddt:garden_oak_leaves] lilac[sp=1 fam=1 br=riftworl
+  dynamictrees settree 9,104,9 riftworlddt:sizo -> Successfully set tree at position 9, 104, 9 to species Sizo Tree with JoCode JJJ0JP1JJ+ZJOOPvnRJOOPvn. 
+  /riftdtat у посадки дерева -> riftdtat at=9,104,9 dt=120 dy=0 lv=86 air=853 water=0 top=116:riftworlddt:sizo_leaves col=rooty_elisar_soil,sizo_branchx6,airx4,sizo_leavesx4,air blocks=rooty_elisar_soil=1 sizo_branch=33 sizo_leaves=86 near=ivory_marble_bricks=71 temple_bricks=57 elisar_crust=38 elisar_stone=35 ivory_marble_tiles=1
+  /dynamictrees gettree -> Species: Sizo Tree JoCode: JJJzJJxx98+RJOOPvn1JJ8JP 
+  контрольный дуб: Successfully set tree at position -9, 104, 19 to species Oak with JoCode JJJ0JR7Jxx+nXv. 
+  /riftdtat у контрольного дуба -> riftdtat at=-9,104,19 dt=1 dy=153 lv=134 air=819 water=0 top=116:dynamictrees:oak_leaves col=rooty_elisar_soil,oak_branchx6,airx2,oak_branch,oak_leavesx3,airx3 blocks=rooty_elisar_soil=1 near=elisar_crust=81 elisar_grass
+  саженец + костная мука -> riftgrow at=25,105,1 block=riftworlddt:sizo_sapling grew=8 after=riftworlddt:sizo_branch 
+  /riftdtat у саженца -> riftdtat at=25,104,1 dt=46 dy=0 lv=38 air=927 water=0 top=112:riftworlddt:sizo_leaves col=rooty_elisar_soil,sizo_branchx6,sizo_leaves,airx8 blocks=rooty_elisar_soil=1 sizo_branch=7 sizo_leaves=38 near=elisar_crust=81 eli
+  OK   саженец аддона вырос в дерево DT: блоков 46 (листвы 38)
+  OK   DT вырастил дерево аддона: блоков 120 (ветвей 33, листвы 86)
+  [БИОМ] секция садов и рощи
+  режим игрока -> Set TestPlayer's game mode to Spectator Mode 
+  /riftbiome gardens (поиск) -> riftbiome name=gardens at=406,-650 bio=riftworld:waterfall_gardens r=82 top=-2147483648 water=0 garden_grass=0 garden_leaves=0 garden_logs=0 ivy=0 planks=0 lantern=0 struct=- fall=399,-675 wall=411,86
+  /riftbiome gardens (счёт) -> riftbiome name=gardens at=406,-650 bio=riftworld:waterfall_gardens r=82 top=104 water=7687 garden_grass=8139 garden_leaves=0 garden_logs=0 ivy=2789 planks=0 lantern=0 struct=- fall=399,-675 wall=411,86,-628:411,87,-639 river=287,92,-677:243,68,-650 isles=5 isl_r=37..82 sea=62 falls_water=1195 falls_src=81 garden_oak=11049 sizo_blocks=0 below_sea_cols=985 submerged_air=0 blocks=garden_limestone=114976 elisar_stone=48416 garden_limestone_mossy=20547 elisar_stone_mossy=12080 elisar_soil=11241 garden_oak_leaves=9612 
+  OK   сады: биом острова riftworld:waterfall_gardens (биом-сурс совпадает с рельефом)
+  /locate biome waterfall_gardens -> The nearest riftworld:waterfall_gardens is at [407, 90, -651] (40 blocks away) 
+  /riftwhere у найденного биома -> riftwhere at=407,-651 biome=riftworld:waterfall_gardens top=104:riftworlddt:garden_oak_leaves ground=104:riftworlddt:garden_oak_leaves sea=62 garden=true 
+  OK   /locate biome waterfall_gardens привёл на землю садов (407,90,-651, верх: riftworlddt:garden_oak_leaves, земля 104:riftworlddt:garden_oak_leaves)
+  /riftaround у точки /locate -> riftaround at=407,106,-651 r=24 cols=2401 land=2108 garden_limestone=27037 garden_grass=1469 lavender=0 elisar_stone=13069 holes=0 gaps=0 
+  OK   /locate привёл на настоящий садовый остров: известняка полок 27037 блоков в r=24
+  OK   под островом садов нет дыр до бедрока (holes=0, трава садов 1469)
+  OK   сады: зелёной травы 8139 блоков
+  OK   сады: воды 7687 блоков (пруды и водопады, без затопления)
+  OK   сады: плюща на стенах 2789 блоков
+  OK   сады: рукотворного нет (досок 0, фонарей 0)
+  OK   сады: островов 5 (увеличенный архипелаг 5–8 больших островов)
+  OK   сады: разброс радиусов увеличенных островов 37..82
+  OK   сады: садового дуба аддона DT 11049 блоков
+  OK   сады: сизоствола нет (sizo_blocks=0)
+  OK   сады: водопады текут — 1195 блоков струй, у 81 есть исток на кромке
+  OK   сады: подводные каменные ярусы есть (985 колонок) и вода над ними не удалена (submerged_air=0)
+  OK   сады: разбросанной листвы на земле нет (garden_leaves=0)
+  кадр обрыва: камера 411 86 -628 -> взгляд 411 87 -639
+  игрок после кадра обрыва -> TestPlayer has the following entity data: [411.5d, 86.0d, -627.5d] 
+  /locate biome waterfall_gardens -> The nearest riftworld:waterfall_gardens is at [407, 90, -651] (23 blocks away) 
+  /riftwhere у waterfall_gardens -> riftwhere at=407,-651 biome=riftworld:waterfall_gardens top=104:riftworlddt:garden_oak_leaves ground=104:riftworlddt:garden_oak_leaves sea=62 garden=true 
+  OK   /locate biome waterfall_gardens привёл на землю биома (104:riftworlddt:garden_oak_leaves)
+  /locate biome ashen_lands -> The nearest riftworld:ashen_lands is at [1089, 66, -889] (726 blocks away) 
+  /riftbiome ashen -> riftbiome name=ashen at=-431,916 bio=riftworld:ashen_lands r=430 combo=7 top=104 castle=-469,882 
+  OK   /locate biome ashen_lands нашёл случайный биом адского острова с замком (-431, 916)
+  /riftbiome sizo (поиск) -> riftbiome name=sizo at=-342,2413 bio=riftworld:sizo_grove r=166 top=-2147483648 water=0 garden_grass=0 garden_leaves=0 garden_logs=0 ivy=0 planks=0 lantern=0 struct=carts=1 shrines=0 temples=1 pillar_
+  /riftbiome sizo (счёт) -> riftbiome name=sizo at=-342,2413 bio=riftworld:sizo_grove r=166 top=128 water=35229 garden_grass=0 garden_leaves=0 garden_logs=0 ivy=0 planks=92 lantern=2 struct=carts=1 shrines=0 temples=1 pillar_pairs=2 fall=- wall=- river=- sizo_trail=1260 sizo_flowers=640 sizo_pillars=34 sview1=-426,112,2377:-305,113,2423 sview2=-402,111,2396:-286,111,2440 sview3=-360,113,2402:-282,114,2444 falls_water=0 falls_src=0 garden_oak=0 sizo_blocks=0 below_sea_cols=0 submerged_air=0 blocks=elisar_stone=405073 elisar_stone_mossy=42066 sizo_leaves=22264 elisar_crust=11121 elis
+  /riftbiome sizo: структуры -> carts=1 shrines=0 temples=1 pillar_pairs=2 fall= trail=1260 flowers=640 pillars=34
+  OK   роща сизо: мощёная тропа (1260), парные столбы с янтарём (34) и васильковые цветы (640)
+  /riftdtwild (роща сизо) -> riftdtwild at=-342,2413 r=44 dt=16519 rooty=32 branch=1664 leaves=14823 blocks=sizo_leaves=14823 sizo_branch=1664 rooty_elisar_grass=27 rooty_elisar_moss=5 
+  OK   роща сизо: гигантские динамические деревья сизо выросли (16519 блоков DT, кроны 14823)
+  /riftbiome violet (поиск) -> riftbiome name=violet at=-989,-1202 bio=riftworld:violet_hills r=131 top=-2147483648 water=0 garden_grass=0 garden_leaves=0 garden_logs=0 ivy=0 planks=0 lantern=0 struct=- fall=- wall=- river=- vislan
+  /riftbiome violet (счёт) -> riftbiome name=violet at=-989,-1202 bio=riftworld:violet_hills r=131 top=110 water=37677 garden_grass=0 garden_leaves=0 garden_logs=0 ivy=0 planks=23 lantern=9 struct=- fall=- wall=- river=- vislands=6 visl_r=82..132 violet_blooms=2083 violet_leaves=0 lavender=3893 accent_flowers=643 walls=98 fences=115 lamps=35 vground=82 road=-1077,88,-1223:-947,85,-1179 varch=-953,116,-1213:-796,86,-1109 vfields=-1031,99,-1216:-951,84,-1182 vpath=-994,84,-1197:-819,85,-1124 vtrees=-980,86,-1194:-972,86,-1186 falls_water=0 falls_src=0 garden_oak=0 sizo_blocks=0 below_s
+  OK   холмы: увеличенный архипелаг из 6 огромных парящих островов
+  OK   холмы: сизоствола нет (sizo_blocks=0)
+  OK   холмы: воздушных цветов всего 5976 блоков (лаванда 3893 + соцветия 2083)
+  OK   холмы: гряд лаванды 3893 блоков (воздушные ряды)
+  OK   холмы: вдоль дороги каменные стенки (98), деревянные заборы (115) и столбы с факелами (35)
+  OK   холмы: других цветов в малом количестве (643 на фоне 5976 фиолетовых)
+  /riftdtwild (холмы, лиловый ветвецвет) -> riftdtwild at=-989,-1202 r=40 dt=1963 rooty=0 branch=260 leaves=1703 blocks=lilac_leaves=1703 lilac_branch=260 
+  OK   холмы: динамических деревьев аддона 1963 блоков (лиловый ветвецвет)
+  OK   роща: биом острова riftworld:sizo_grove
+  /locate biome sizo_grove -> The nearest riftworld:sizo_grove is at [787, 103, -2247] (2060 blocks away) 
+  /riftwhere у sizo_grove -> riftwhere at=787,-2247 biome=riftworld:sizo_grove top=101:riftworld:elisar_moss ground=101:riftworld:elisar_moss sea=62 garden=false 
+  OK   /locate biome sizo_grove привёл на землю биома (101:riftworld:elisar_moss)
+  OK   Фиолетовые холмы: биом луга riftworld:violet_hills
+  /locate biome violet_hills -> The nearest riftworld:violet_hills is at [-989, 86, -1202] (0 blocks away) 
+  /riftwhere у violet_hills -> riftwhere at=-989,-1202 biome=riftworld:violet_hills top=83:minecraft:grass ground=83:minecraft:grass sea=62 garden=false 
+  OK   /locate biome violet_hills привёл на землю биома (83:minecraft:grass)
+  /riftdtwhy (холмы) -> riftdtwhy at=-989,86,-1202 biome_surface=riftworld:violet_hills biome_top=riftworld:violet_hills biome_y0=riftworld:violet_hills dt_features=2 has_dt=true dt_species=handled:Species{registryName=riftworlddt:lilac} db_entries=7 db_populated=true plains_? sel=StaticSpeciesSelector 
+  OK   DT/холмы: грунт найден
+  OK   DT/холмы: почва приемлема для DT
+  OK   DT/холмы: база DT ответила по виду
+  /riftdtwild (холмы) -> riftdtwild at=-989,-1202 r=32 dt=973 rooty=0 branch=121 leaves=852 blocks=lilac_leaves=852 lilac_branch=121 
+  /riftdtdbg (холмы) -> riftdtdbg at=-989,86,-1202 discs=1 disc0_r=8 real=true ground=82:Block{minecraft:grass_block} handled=true sp=Species{registryName=riftworlddt:lilac} codes=7[2:12 3:12 4:12 5:12 6:12 7:12 8:12 ] code_for_r8=ok gen=true 
+  OK   DT растёт в мире сам: 973 блоков аддона вокруг точки
+  /locate biome crystal_rifts -> The nearest riftworld:crystal_rifts is at [-2441, 89, -2825] (2177 blocks away) 
+  /riftwhere у crystal_rifts -> riftwhere at=-2441,-2825 biome=riftworld:crystal_rifts top=87:riftworld:crystal_block ground=87:riftworld:crystal_block sea=62 garden=false 
+  OK   /locate biome crystal_rifts привёл на землю биома (87:riftworld:crystal_block)
+  /riftbiome crystal -> riftbiome name=crystal at=1181,-2622 isl1=1078,-2473 bio=riftworld:crystal_rifts cislands=6 cbridges=5 bridge_walkable=1 crystal_blocks=3175 marble_blocks=488141 rift_turf=9310 rift_grass=1992 vanilla_grass=0 isl1_trees=0 crystal_flora=2579 water=531 ivy=19 sizo_blocks=0 cview1=1183,90,-2673:1180,90,-2595 cview2=1142,91,-2571:1135,92,-2554 cview3=1101,99,-25
+  OK   Хрустальные разломы: биом святилища riftworld:crystal_rifts
+  OK   Хрустальные разломы: архипелаг из 6 островов и 5 арочных мостов
+  OK   Хрустальные разломы: каменный арочный мост непрерывен и полностью проходим пешком
+  OK   Хрустальные разломы: многоблочные кристаллы на всех островах (3175), мрамор/сланец (488141), чаши/водопады (531)
+  OK   Хрустальные разломы: собственный шалфейный дёрн (9310) и трава разлома (1992), ванильной травы=0, деревьев на кристальном острове=0
+  OK   Хрустальные разломы: чужих деревьев сизо нет (sizo_blocks=0)
+  /riftdtwild (хрустальные разломы, мини-бонсай серебрица) -> riftdtwild at=1181,-2622 r=44 dt=45 rooty=4 branch=26 leaves=15 blocks=crystal_birch_branch=26 crystal_birch_leaves=15 rooty_rift_turf=4 
+  OK   Хрустальные разломы: миниатюрные редкие деревца DT вдоль аллеи (45 блоков, без лесов и без ambra)
+  /riftstruct crashed_ship -> riftstruct kind=crashed_ship at=937,66,155 variant=0 blocks=1393 rock=617 sub_air=0 cam=920,74,138:934,71,161 
+  OK   структура crashed_ship построена: blocks=1393, sub_air=0
+  /riftstruct sunken_ship -> riftstruct kind=sunken_ship at=819,14,221 variant=0 blocks=1185 sub_air=0 cam=817,20,235:821,15,221 
+  OK   структура sunken_ship построена: blocks=1185, sub_air=0
+  /riftstruct ocean_building -> riftstruct kind=ocean_building at=-474,15,-778 variant=3 blocks=323 sub_air=0 cam=-462,21,-766:-474,16,-778 
+  OK   структура ocean_building построена: blocks=323, sub_air=0
+  /riftstruct white_village -> riftstruct kind=white_village at=-810,97,-365 variant=0 houses=5 blocks=637 sub_air=0 cam=-802,108,-341:-810,100,-369 
+  OK   структура white_village построена: blocks=637, sub_air=0
+  OK   деревня white_village содержит ровно 5 небольших домов (лимит <= 6 соблюдён)
+  /riftstruct burned_village -> riftstruct kind=burned_village at=-339,64,1091 bio=riftworld:ashen_lands variant=1 houses=5 blocks=704 fires=3 sub_air=0 cam=-332,74,1114:-339,67,1088 
+  OK   структура burned_village построена: blocks=704, sub_air=0
+  OK   деревня burned_village содержит ровно 5 небольших домов (лимит <= 6 соблюдён)
+  /riftstruct stilt_village -> riftstruct kind=stilt_village at=382,65,-567 variant=0 houses=6 blocks=3732 sub_air=0 cam=368,78,-542:383,68,-573 
+  OK   структура stilt_village построена: blocks=3732, sub_air=0
+  OK   деревня stilt_village содержит ровно 6 небольших домов (лимит <= 6 соблюдён)
+  /riftstruct city_castle_front -> riftstruct kind=city_castle_front at=0,112,36 main_plots=48 north_plots=11 blocks=2007 sub_air=0 cam=14,122,58:0,121,6 
+  OK   структура city_castle_front построена: blocks=2007, sub_air=0
+  /riftstruct city_castle_aerial -> riftstruct kind=city_castle_aerial at=0,112,0 main_plots=48 north_plots=11 blocks=2007 sub_air=0 cam=48,154,54:0,118,-6 
+  OK   структура city_castle_aerial построена: blocks=2007, sub_air=0
+  /riftstruct city_castle_north -> riftstruct kind=city_castle_north at=0,112,-54 main_plots=48 north_plots=11 blocks=2007 sub_air=0 cam=-18,132,-78:2,112,-30 
+  OK   структура city_castle_north построена: blocks=2007, sub_air=0
+  /riftstruct colonnade_boss -> riftstruct kind=colonnade_boss at=1180,86,-2607 bosses=1 minions=2 attack_ok=0 blocks=120 sub_air=0 cam=1181,90,-2618:1180,92,-2607 
+  OK   структура colonnade_boss построена: blocks=120, sub_air=0
+  /riftstruct colonnade_boss_minion -> riftstruct kind=colonnade_boss_minion at=1180,86,-2607 bosses=1 minions=2 attack_ok=0 blocks=120 sub_air=0 cam=1184,88,-2614:1184,89,-2611 
+  OK   структура colonnade_boss_minion построена: blocks=120, sub_air=0
+  OK   3D-оружие Колоннады (crystal_katar, crystal_barrage, crystal_aegis, astral_prism) выдано и отснято
+  /riftstruct ocean_island_waves -> riftstruct kind=ocean_island_waves at=-405,63,-118 wake_islands=176 blocks=1080 sub_air=0 cam=-323,92,-94:-405,65,-118 
+  OK   структура ocean_island_waves построена: blocks=1080, sub_air=0
+  /riftstruct waterfall_ocean_waves -> riftstruct kind=waterfall_ocean_waves at=1116,63,-2564 blocks=200 sub_air=0 cam=1134,76,-2580:1117,64,-2567 
+  OK   структура waterfall_ocean_waves построена: blocks=200, sub_air=0
+  /riftstruct harbor_port -> riftstruct kind=harbor_port at=-362,64,-544 island_top=68 blocks=42489 sub_air=0 cam=-336,81,-516:-364,68,-554 
+  OK   структура harbor_port построена: blocks=42489, sub_air=0
+  /riftstruct grand_theater -> riftstruct kind=grand_theater at=349,97,625 blocks=8059 sub_air=0 cam=359,113,647:349,101,619 
+  OK   структура grand_theater построена: blocks=8059, sub_air=0
+  /riftstruct sea_lighthouse -> riftstruct kind=sea_lighthouse at=172,69,621 blocks=37936 sub_air=0 cam=196,78,647:172,85,621 
+  OK   структура sea_lighthouse построена: blocks=37936, sub_air=0
+  /riftstruct ancient_tree_altar -> riftstruct kind=ancient_tree_altar at=821,102,-2292 blocks=2925 sub_air=0 cam=836,109,-2277:821,108,-2292 
+  OK   структура ancient_tree_altar построена: blocks=2925, sub_air=0
+  /riftstruct ashen_belfry_barrow -> riftstruct kind=ashen_belfry_barrow at=-338,64,1081 blocks=1428 sub_air=0 cam=-342,75,1107:-336,74,1081 
+  OK   структура ashen_belfry_barrow построена: blocks=1428, sub_air=0
+  /riftstruct shattered_shard_forge -> riftstruct kind=shattered_shard_forge at=1295,91,-2467 blocks=3970 sub_air=0 cam=1299,99,-2451:1295,96,-2467 
+  OK   структура shattered_shard_forge построена: blocks=3970, sub_air=0
+  /riftstruct violet_wind_observatory -> riftstruct kind=violet_wind_observatory at=-993,98,-880 blocks=2587 sub_air=0 cam=-977,108,-861:-994,104,-874 
+  OK   структура violet_wind_observatory построена: blocks=2587, sub_air=0
+  /riftstruct elisar_eye_occlusion -> riftstruct kind=elisar_eye_occlusion at=170,73,605 blocks=250 sub_air=0 cam=170,73,605:179,93,629 
+  OK   структура elisar_eye_occlusion построена: blocks=250, sub_air=0
+  /riftstruct colonnade_boss_pillars -> riftstruct kind=colonnade_boss_pillars at=1180,86,-2607 bosses=1 minions=2 attack_ok=1 blocks=170 sub_air=0 cam=1176,95,-2634:1181,90,-2616 
+  OK   структура colonnade_boss_pillars построена: blocks=170, sub_air=0
+  /riftstruct colonnade_boss_hail -> riftstruct kind=colonnade_boss_hail at=1180,86,-2607 bosses=1 minions=2 attack_ok=1 blocks=170 sub_air=0 cam=1176,95,-2638:1181,96,-2617 
+  OK   структура colonnade_boss_hail построена: blocks=170, sub_air=0
+  /riftstruct origami_dragon_closeup -> riftstruct kind=origami_dragon_closeup at=-971,127,-29 city_safe=true dragons=1 blocks=220 sub_air=0 cam=-959,131,-13:-964,127,-37 
+  OK   структура origami_dragon_closeup построена: blocks=220, sub_air=0
+  /riftstruct origami_dragon_under_release -> riftstruct kind=origami_dragon_under_release at=-1002,78,-57 city_safe=true dragons=1 blocks=220 sub_air=0 cam=-986,73,-24:-999,79,-60 
+  OK   структура origami_dragon_under_release построена: blocks=220, sub_air=0
+  /riftstruct origami_dragon_over_release -> riftstruct kind=origami_dragon_over_release at=-974,131,-32 city_safe=true dragons=1 blocks=220 sub_air=0 cam=-960,139,-1:-970,129,-35 
+  OK   структура origami_dragon_over_release построена: blocks=220, sub_air=0
+  /riftstruct blacktide_bridge_shore -> riftstruct kind=blacktide_bridge_shore at=-431,88,1257 bridge_land=true castle_sea=true water_ring=6 land_blocks=10026 blocks=149939 sub_air=0 cam=-443,94,1178:-431,100,1274 
+  OK   структура blacktide_bridge_shore построена: blocks=149939, sub_air=0
+  /riftstruct blacktide_bay_aerial -> riftstruct kind=blacktide_bay_aerial at=-431,96,1196 bridge_land=true castle_sea=true water_ring=6 land_blocks=10026 blocks=149939 sub_air=0 cam=-377,114,1184:-431,94,1248 
+  OK   структура blacktide_bay_aerial построена: blocks=149939, sub_air=0
+  /riftstruct blacktide_cathedral_hall -> riftstruct kind=blacktide_cathedral_hall at=-431,101,1291 carpets=587 thrones=1 chandeliers=14 pillars=1835 gilded=0 blocks=2752 sub_air=0 cam=-431,101,1291:-431,102,1328 
+  OK   структура blacktide_cathedral_hall построена: blocks=2752, sub_air=0
+  /riftstruct blacktide_second_floor -> riftstruct kind=blacktide_second_floor at=-431,111,1293 floor2_blocks=1318 warm_lights=496 floor2_books=144 blocks=4022 sub_air=0 cam=-431,111,1293:-431,105,1326 
+  OK   структура blacktide_second_floor построена: blocks=4022, sub_air=0
+  /riftstruct blacktide_rotunda_sanctum -> riftstruct kind=blacktide_rotunda_sanctum at=-431,101,1340 carpets=154 altars=1 books=488 gilded=0 blocks=1652 sub_air=0 cam=-431,101,1340:-431,99,1357 
+  OK   структура blacktide_rotunda_sanctum построена: blocks=1652, sub_air=0
+  /riftstruct blacktide_tower_walkability -> riftstruct kind=blacktide_tower_walkability at=-431,100,1264 climbed_towers=22 total_stairs=844 blocks=844 sub_air=0 cam=-431,100,1264:-431,116,1302 
+  OK   структура blacktide_tower_walkability построена: blocks=844, sub_air=0
+  /riftstruct blacktide_citadel -> riftstruct kind=blacktide_citadel at=-431,94,1292 bridge_land=true castle_sea=true water_ring=6 land_blocks=10026 blocks=149939 sub_air=0 cam=-499,124,1210:-431,104,1286 
+  OK   структура blacktide_citadel построена: blocks=149939, sub_air=0
+  /riftstruct ashen_burned_church -> riftstruct kind=ashen_burned_church at=-413,64,706 blocks=2307 sub_air=0 cam=-438,75,724:-415,72,706 
+  OK   структура ashen_burned_church построена: blocks=2307, sub_air=0
+  /riftstruct ashen_combo_matrix -> riftstruct kind=ashen_combo_matrix at=2938,64,829 empty=7 partial=29 all_three=5 ash_r=408 blocks=995 sub_air=0 cam=2890,88,877:2980,66,787 
+  OK   структура ashen_combo_matrix построена: blocks=995, sub_air=0
+  /riftstruct enlarged_biomes_audit -> riftstruct kind=enlarged_biomes_audit at=-989,84,-1202 ash_r=434 violet_r=146 crystal_r=83 sizo_r=176 gardens_r=82 mist_r=99 blocks=600 sub_air=0 cam=-1031,111,-1160:-965,96,-1226 
+  OK   структура enlarged_biomes_audit построена: blocks=600, sub_air=0
+  /riftstruct connected_carpets_showcase -> riftstruct kind=connected_carpets_showcase at=768,137,768 carpets=68 blocks=340 sub_air=0 cam=768,147,778:768,137,768 
+  OK   структура connected_carpets_showcase построена: blocks=340, sub_air=0
+  /riftstruct city_sanctuary_garden -> riftstruct kind=city_sanctuary_garden at=0,110,18 sanctuary=1749 white_plaza=5310 copper_dome=753 dt_branches=414 plants=3648 blocks=10707 sub_air=0 cam=4,113,34:0,111,-3 
+  OK   структура city_sanctuary_garden построена: blocks=10707, sub_air=0
+  /riftstruct city_sanctuary_plaza_aerial -> riftstruct kind=city_sanctuary_plaza_aerial at=0,110,18 sanctuary=1749 white_plaza=5310 copper_dome=753 dt_branches=414 plants=3648 blocks=10707 sub_air=0 cam=26,144,36:0,108,-4 
+  OK   структура city_sanctuary_plaza_aerial построена: blocks=10707, sub_air=0
+  /riftstruct city_ornate_bridge -> riftstruct kind=city_ornate_bridge at=157,107,-33 viaduct_stone=895 columns=21 lanterns=19 blocks=1495 sub_air=0 cam=135,117,-39:157,107,-33 
+  OK   структура city_ornate_bridge построена: blocks=1495, sub_air=0
+  /riftstruct wild_inverted_tower_dragon -> riftstruct kind=wild_inverted_tower_dragon at=969,218,-127 coiled=true gilded_whiskers=true beyond_sim_saved=true blocks=5583 sub_air=0 cam=988,226,-108:969,217,-127 
+  OK   структура wild_inverted_tower_dragon построена: blocks=5583, sub_air=0
+  /riftstruct dragon_horn_beyond_sim -> riftstruct kind=dragon_horn_beyond_sim at=-620,148,-420 horn_summon=true tamed_in_sky=1 blocks=450 sub_air=0 cam=-620,148,-420:-620,166,-386 
+  OK   структура dragon_horn_beyond_sim построена: blocks=450, sub_air=0
+  /riftstruct astral_prism_epic -> riftstruct kind=astral_prism_epic at=768,138,736 cataclysm_entities=12 blocks=360 sub_air=0 cam=768,145,752:768,141,736 
+  OK   структура astral_prism_epic построена: blocks=360, sub_air=0
+  /riftstruct v27_new_blocks_gallery -> riftstruct kind=v27_new_blocks_gallery at=768,138,704 new_blocks=30/30 blocks=600 sub_air=0 cam=768,143,715:768,138,703 
+  OK   структура v27_new_blocks_gallery построена: blocks=600, sub_air=0
+  /riftstruct peaceful_sky_dart_fish -> riftstruct kind=peaceful_sky_dart_fish at=880,138,620 spawned=5 blocks=600 sub_air=0 cam=880,138,623:880,139,620 
+  OK   структура peaceful_sky_dart_fish построена: blocks=600, sub_air=0
+  /riftstruct peaceful_blossom_stag -> riftstruct kind=peaceful_blossom_stag at=960,138,700 spawned=4 blocks=480 sub_air=0 cam=960,137,703:960,138,700 
+  OK   структура peaceful_blossom_stag построена: blocks=480, sub_air=0
+  /riftstruct v28_wood_and_stone_gallery -> riftstruct kind=v28_wood_and_stone_gallery at=1040,138,780 placed=106/106 items=106/106 axe_strip=7/7 blocks=900 sub_air=0 cam=1040,147,796:1040,137,779 
+  OK   структура v28_wood_and_stone_gallery построена: blocks=900, sub_air=0
+  /riftstruct v28_elisar_perf_2chunks -> riftstruct kind=v28_elisar_perf_2chunks at=0,64,160 effR2=76.0 wake2ms=0.050 wake12ms=0.150 island10kMs=8.06 biome10kMs=30.13 hits=2309 blocks=0 sub_air=0 cam=0,88,218:0,66,135 
+  FAIL структура v28_elisar_perf_2chunks: blocks=0 (ожидалось >=600), sub_air=0
+  /riftstruct sea_cave_exit -> riftstruct kind=sea_cave_exit at=-15,14,36 mouth_cols=41 cave_water=622 blocks=1032 sub_air=0 cam=-10,20,38:-14,7,37 
+  OK   структура sea_cave_exit построена: blocks=1032, sub_air=0
+  /riftstruct locate_all_audit -> riftstruct kind=locate_all_audit at=0,112,0 structs_found=26/26 biomes_found=9/9 wild_tower_locate=true blocks=700 sub_air=0 cam=24,154,68:0,116,0 
+  OK   аналитический /locate нашёл ВСЕ 26 структур (26/26, включая inverted_tower и city_sanctuary) и ВСЕ 9 биомов (9/9) с небесной высоты!
+  /locate structure riftworld:blacktide_citadel -> The nearest riftworld:blacktide_citadel is at [1391, ~, -889] (1475 blocks away) 
+  OK   ванильная команда /locate structure riftworld:blacktide_citadel мгновенно вернула координаты
+  /locate structure riftworld:city_sanctuary -> The nearest riftworld:city_sanctuary is at [0, ~, -4] (181 blocks away) 
+  OK   ванильная команда /locate structure riftworld:city_sanctuary мгновенно вернула координаты
+  /locate structure riftworld:inverted_tower -> The nearest riftworld:inverted_tower is at [-104, ~, 22] (276 blocks away) 
+  OK   ванильная команда /locate structure riftworld:inverted_tower мгновенно вернула координаты
+  /locate structure riftworld:grand_theater -> The nearest riftworld:grand_theater is at [349, ~, 625] (798 blocks away) 
+  OK   ванильная команда /locate structure riftworld:grand_theater мгновенно вернула координаты
+  /locate structure riftworld:sea_cave_exit -> The nearest riftworld:sea_cave_exit is at [260, ~, -139] (140 blocks away) 
+  OK   ванильная команда /locate structure riftworld:sea_cave_exit мгновенно вернула координаты
+  /locate biome riftworld:shallow_reef -> The nearest riftworld:shallow_reef is at [72, 58, -188] (144 blocks away) 
+  OK   ванильная команда /locate biome riftworld:shallow_reef мгновенно вернула координаты
+  /locate biome riftworld:abyss -> The nearest riftworld:abyss is at [120, 58, -140] (127 blocks away) 
+  OK   ванильная команда /locate biome riftworld:abyss мгновенно вернула координаты
+  /locate biome riftworld:violet_hills -> The nearest riftworld:violet_hills is at [-989, 86, -1202] (1538 blocks away) 
+  OK   ванильная команда /locate biome riftworld:violet_hills мгновенно вернула координаты
+  /locate biome riftworld:crystal_rifts -> The nearest riftworld:crystal_rifts is at [1180, 88, -2607] (2686 blocks away) 
+  OK   ванильная команда /locate biome riftworld:crystal_rifts мгновенно вернула координаты
+  [Overworld] /locate structure riftworld:overgrown_temple -> The nearest riftworld:overgrown_temple is at [96, ~, 128] (160 blocks away) 
+  OK   ванильная команда /locate structure riftworld:overgrown_temple работает в Обычном мире
+  /riftstruct spawn_eggs_audit -> riftstruct kind=spawn_eggs_audit at=540,98,-420 eggs_ok=18/18 dragon_egg_spawn=1 blocks=450 sub_air=0 cam=514,106,-394:540,102,-420 
+  OK   все 18/18 яиц призыва мобов зарегистрированы (включая рыбку-стрекозу, цветущего оленя и Дракона)!
+  /riftportal observatory_find -> riftportal observatory_find natural=true at=96,-48,128 
+  /riftportal observatory_verify -> riftportal observatory_verify seal=104,-59,136 candles=8 chests=2 lecterns=1 rugs=25 cam=106,-55,148:104,-56,134 
+  OK   Обсерватория Обычного мира построена со всем ритуальным набором: candles=8, chests=2
+  /riftportal observatory_awaken -> riftportal observatory_awaken rift=true lit_candles=8 lit_runes=72 cam=103,-55,146:104,-52,136 
+  OK   Обсерватория пробудила все руны, свечи и Белый 3D-Пролом в Элисар!
+  /riftportal setup -> riftportal setup center=24,-60,0 snapshot=2435 cam=28,-57,24:24,-49,0 
+  /riftportal trigger -> riftportal trigger started=true 
+  /riftportal walkin -> riftportal walkin started=true 
+  после захода в белый пролом и катсцены: Dimension=TestPlayer has the following entity data: "riftworld:elisar"  | riftportal verify mutated=0 total=2435 
+  OK   белый 3D-Пролом при входе бесшовно перенёс в Белый Город с катсценой, изменённых блоков: 0
+  игрок: TestPlayer has the following entity data: [0.5d, 105.0d, 22.5d]
+  рыбы:  Elisar Sea Fish has the following entity data: [605.7392388776154d, 36.97023902924952d, 832.0260906373267d]
