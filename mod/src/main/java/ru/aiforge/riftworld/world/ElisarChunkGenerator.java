@@ -40,8 +40,10 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import ru.aiforge.riftworld.block.ModelBlock;
 import ru.aiforge.riftworld.block.ModelKind;
+import ru.aiforge.riftworld.registry.CastleBlocks;
 import ru.aiforge.riftworld.registry.ElisarBlocks;
 import ru.aiforge.riftworld.registry.ModBlocks;
+import ru.aiforge.riftworld.registry.TempleBlocks;
 
 /**
  * Planet Elisar: floating sky islands over a deep open ocean (40-50 blocks, currents, sea mist). Everything is analytic and deterministic
@@ -90,6 +92,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         // bridge
         int deckY = Integer.MIN_VALUE;
         boolean rail, post, railX;
+        boolean cityViaduct, viaductCenter, viaductMosaic, viaductGateway, viaductKeystone;
+        int viaductBot = Integer.MIN_VALUE;
         boolean fence;            // rim fence of the city terraces
         boolean garden;           // biome 07 zone (terraced hub or its sea fringe)
         boolean pond, pondRim, springy;   // biome 07 / 10 terrace pools and mineral cores
@@ -132,10 +136,11 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         int lx = Math.floorMod(x, 3) - (int) (hash(gx, gz, 94) * (big ? 2 : 3)), lz = Math.floorMod(z, 3) - (int) (hash(gx, gz, 95) * (big ? 2 : 3));
         if (lx < 0 || lz < 0 || lx > (big ? 1 : 0) || lz > (big ? 1 : 0)) return;
         double cx = gx * 3 + 1.5, cz = gz * 3 + 1.5;
-        double towerD = Math.hypot(cx - TOWER_X, cz - TOWER_Z);
+        InvertedTowers.Site nearTower = InvertedTowers.nearAt(cx, cz, 34.0);
+        double towerD = nearTower == null ? 999.0 : Math.hypot(cx - nearTower.cx(), cz - nearTower.cz());
         int y0;
-        if (towerD < 34 && towerD > 8 && pick < 0.10) {
-            y0 = (int) (TOWER_Y0 + hash(gx, gz, 92) * 95);
+        if (nearTower != null && towerD < 34 && towerD > 8 && pick < 0.10) {
+            y0 = (int) (nearTower.y0() + hash(gx, gz, 92) * 95);
         } else {
             CityPlan.Island n = plan.nearest(cx, cz);
             if (n == null) return;
@@ -190,21 +195,25 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         {"wall_sconce",    "0",  "74", "-3", "south", "true"},
     };
 
-    private static void tower(ChunkAccess chunk, BlockPos.MutableBlockPos mp, int x, int z) {
-        int ix = x - TOWER_X, iz = z - TOWER_Z;
+    private static void tower(ChunkAccess chunk, BlockPos.MutableBlockPos mp, InvertedTowers.Site site, int x, int z) {
+        if (site == null) return;
+        int ix = x - site.cx(), iz = z - site.cz();
         if (Math.abs(ix) > 10 || Math.abs(iz) > 10) return;
         double dx = ix + 0.5, dz = iz + 0.5;
         double d = oct(dx, dz);
         BlockState br = st(ElisarBlocks.TOWER_BRICKS), cr = st(ElisarBlocks.TOWER_BRICKS_CRACKED);
+        BlockState moss = st(ElisarBlocks.STONE_MOSSY);
         BlockState lant = st(ElisarBlocks.LANTERN);
-        int y0 = TOWER_Y0;
+        int y0 = site.y0();
+        boolean wildRoost = !site.cityOrigin();
         // ladder wells: EAST well (cell ix 2, iz 0) pierces every landing and the roof and climbs the shaft on the spine
         // rib (ix 3); SOUTH drop links the deck hall with the spike reliquary (cells ix 0, iz 1..3, ladder on the rib ix 0, iz 4).
         boolean eastOpen = ix == 2 && iz == 0;
         boolean southOpen = ix == 0 && (iz == 2 || iz == 3);
         boolean southChute = ix == 0 && iz >= 1 && iz <= 3;
         boolean ribE = ix == 3 && iz == 0, ribS = ix == 0 && iz == 4;
-        for (int y = y0; y <= y0 + 101 && y < MIN_Y + HEIGHT; ++y) {
+        int lyMax = wildRoost ? 90 : 101;
+        for (int y = y0; y <= y0 + lyMax && y < MIN_Y + HEIGHT; ++y) {
             int ly = y - y0;
             boolean solid = false;
             if (ly <= 5) {                                         // spike tip
@@ -237,13 +246,23 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 if (ly % 13 == 8 && d <= 5.9 && d > 4.6) solid = true;   // string course
                 if ((ly == 40 || ly == 56 || ly == 72) && d <= 3.4) solid = true;   // the three landings
                 if ((ly == 40 || ly == 56 || ly == 72) && eastOpen) solid = false;  // hatch in every landing
-                if (ly >= 82) solid = d <= 6.6 && d > 3.4;         // upper ring
-            } else if (ly == 86) {                                 // roof disc with the entry hatch
-                solid = d <= 6.6;
+                if (ly >= 82) {
+                    double flare = wildRoost ? (6.6 + (ly - 82) * 0.35) : 6.6;
+                    solid = d <= flare && d > 3.4;                 // upper corbeled ring
+                }
+            } else if (ly == 86) {                                 // roof disc / Dragon Roost Crown platform
+                solid = d <= (wildRoost ? 7.8 : 6.6);
                 if (eastOpen) solid = false;
+            } else if (wildRoost) {                                // ancient open-sky Dragon Roost Crown on wild towers
+                boolean cornerMonolith = (Math.abs(ix) >= 5 && Math.abs(iz) <= 1) || (Math.abs(iz) >= 5 && Math.abs(ix) <= 1);
+                if (ly == 87) {
+                    solid = d <= 7.8 && d > 6.65 && (cornerMonolith || ((ix + 3 * iz) & 3) == 0);
+                } else if (ly == 88) {
+                    solid = d <= 7.7 && d > 6.75 && cornerMonolith && (Math.abs(ix) == 7 || Math.abs(iz) == 7);
+                }
             } else if (ly == 87) {                                 // torn root crown: jagged ring
                 solid = d <= 6.6 && d > 5.4 && ((ix + 3 * iz) % 5 != 0);
-            } else {                                               // root spire shell
+            } else {                                               // root spire shell (city tower)
                 double r = 6.6 * (1 - (ly - 87) / 15.0);
                 if (r > 0.2) solid = d <= r && d > r - 1.7;
             }
@@ -252,6 +271,12 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 if ((ix == 2 && iz == 0 && ly >= 23 && ly <= 85) || (ix == 0 && iz == 3 && ly >= 10 && ly <= 21)) {
                     chunk.setBlockState(mp.set(x, y, z), net.minecraft.world.level.block.Blocks.LADDER.defaultBlockState()
                             .setValue(net.minecraft.world.level.block.LadderBlock.FACING, ix == 2 ? net.minecraft.core.Direction.WEST : net.minecraft.core.Direction.NORTH), false);
+                } else if (wildRoost && eastOpen && ly == 86) {
+                    chunk.setBlockState(mp.set(x, y, z), Blocks.SPRUCE_TRAPDOOR.defaultBlockState()
+                            .setValue(net.minecraft.world.level.block.TrapDoorBlock.HALF, net.minecraft.world.level.block.state.properties.Half.TOP)
+                            .setValue(net.minecraft.world.level.block.TrapDoorBlock.FACING, Direction.WEST), false);
+                } else if (wildRoost && ly == 89 && ((Math.abs(ix) == 7 && iz == 0) || (ix == 0 && Math.abs(iz) == 7))) {
+                    chunk.setBlockState(mp.set(x, y, z), lant, false);   // warm beacon lanterns on the 4 compass crown monoliths
                 } else if (ix == 0 && iz == 0 && (ly == 41 || ly == 57 || ly == 73)) {
                     chunk.setBlockState(mp.set(x, y, z), lant, false);   // sitting lanterns on each landing
                 } else if (ix == 0 && iz == 0 && ly == 26 || ix == -1 && iz == 1 && ly == 21) {
@@ -259,7 +284,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 }
                 continue;
             }
-            chunk.setBlockState(mp.set(x, y, z), hash(x * 7 + y, z, 31) < 0.18 ? cr : br, false);
+            BlockState blk = (wildRoost && ly == 86 && hash(x, z, 37) < 0.28) ? moss : (hash(x * 7 + y, z, 31) < 0.18 ? cr : br);
+            chunk.setBlockState(mp.set(x, y, z), blk, false);
         }
     }
 
@@ -533,25 +559,48 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 c.fence = tm < 0.05;
             }
         }
-        // bridges
+        // v0.26.0: Monumental White-Marble & Gilded Stone Arch Viaducts between White City islands
         for (CityPlan.Bridge b : bk.bridges) {
             double d = CityPlan.segDist(px, pz, b.ax(), b.az(), b.bx(), b.bz(), tt);
-            if (d > b.hw() + 1.05 || tt[0] <= 0 && d > b.hw() || tt[0] >= 1 && d > b.hw()) continue;
-            int y = b.deckY(tt[0]);
-            if (d <= b.hw()) {
+            double u = tt[0];
+            double balc = Math.max(0.0, 1.0 - Math.abs(u - 0.5) / 0.13);
+            double walkHw = b.hw() + 0.85 + 1.15 * smooth(balc);
+            double railMax = walkHw + 0.98;
+            if (d > railMax || (u <= 0 && d > walkHw) || (u >= 1 && d > walkHw)) continue;
+
+            double archRise = Math.min(2.6, 0.85 + b.length() * 0.042) * Math.sin(Math.PI * Math.max(0.0, Math.min(1.0, u)));
+            int y = (int) Math.round(b.ya() + (b.yb() - b.ya()) * smooth(u) + archRise);
+            double spanT = Math.abs(2.0 * Math.max(0.0, Math.min(1.0, u)) - 1.0);
+            int lenSteps = Math.max(4, (int) Math.round(b.length()));
+            int step = Math.max(0, Math.min(lenSteps, (int) Math.round(u * lenSteps)));
+            int corbelDrop = (d > walkHw - 0.7 && step % 4 == 0) ? 1 : 0;
+            int archDepth = 2 + (int) Math.round(9.5 * Math.pow(spanT, 1.85)) + corbelDrop;
+            int vBot = y - archDepth;
+
+            if (d <= walkHw) {
                 c.deckY = y;
                 c.rail = false;
-            } else if (c.deckY == Integer.MIN_VALUE) {
+                c.cityViaduct = true;
+                c.viaductBot = vBot;
+                c.viaductCenter = d <= 1.25;
+                c.viaductMosaic = d <= 0.68 && (step % 4 == 0);
+                c.viaductKeystone = false;
+            } else if (c.deckY == Integer.MIN_VALUE || (c.cityViaduct && c.rail)) {
                 c.deckY = y;
                 c.rail = true;
-                int step = (int) Math.floor(tt[0] * b.length());
-                c.post = step <= 0 || step >= (int) Math.floor(b.length()) - 1;
+                c.cityViaduct = true;
+                c.viaductBot = vBot;
+                boolean portalEnd = (step == 1 || step == lenSteps - 1);
+                boolean balconyPost = Math.abs(step - lenSteps / 2) == 2;
+                c.viaductGateway = portalEnd;
+                c.post = portalEnd || balconyPost || (step > 2 && step < lenSteps - 2 && step % 5 == 0);
+                c.viaductKeystone = Math.abs(step - lenSteps / 2) <= 1;
                 c.railX = Math.abs(b.bx() - b.ax()) >= Math.abs(b.bz() - b.az());
             }
             if (isl != null && c.top >= y) {
                 c.top = y;
-                c.surface = S_PLANK;
-                c.bottom = Math.min(c.bottom, y - 2);
+                c.surface = S_COBBLE;
+                c.bottom = Math.min(c.bottom, vBot);
             }
         }
         // Рев 14: на референсе Висячих садов НЕТ ни мостов, ни настилов, ни лестниц — убрано
@@ -956,6 +1005,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         for (int dx = -1; dx <= 16; ++dx)
             for (int dz = -1; dz <= 16; ++dz)
                 cols[dx + 1][dz + 1] = column(plan, x0 + dx, z0 + dz);
+        InvertedTowers.Site chunkTower = InvertedTowers.nearAt(x0 + 8.0, z0 + 8.0, 26.0);
         for (int dx = 0; dx < 16; ++dx) {
             for (int dz = 0; dz < 16; ++dz) {
                 int x = x0 + dx, z = z0 + dz;
@@ -993,7 +1043,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 if (!ashen && c.isl == null && c.fallTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE && c.spanTop == Integer.MIN_VALUE) debris(plan, chunk, mp, x, z);
                 if (dx == 15 && dz == 15) mistKeepDressing(plan, chunk, mp, x0, z0);
 
-                tower(chunk, mp, x, z);
+                tower(chunk, mp, chunkTower, x, z);
                 if (c.isl != null) {
                     if (c.isl.kind == 5 || c.isl.kind == 6 || c.isl.kind == WorldStructures.BURNED_VILLAGE_KIND
                             || ashen && c.isl.kind != 0) {
@@ -1389,7 +1439,61 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                     }
                 }
                 if (c.deckY != Integer.MIN_VALUE) {
-                    if (!c.rail) {
+                    if (c.cityViaduct) {
+                        BlockState ashlar = st(CastleBlocks.ASHLAR);
+                        BlockState ashlarSlab = st(CastleBlocks.ASHLAR_SLAB);
+                        BlockState tFloor = st(TempleBlocks.FLOOR);
+                        BlockState tMosaic = st(TempleBlocks.MOSAIC);
+                        BlockState tBricks = st(TempleBlocks.BRICKS);
+                        BlockState tCol = st(TempleBlocks.GRAND_COLUMN);
+                        BlockState tGold = st(TempleBlocks.GOLD);
+                        BlockState wall = st(ElisarBlocks.STONE_WALL);
+
+                        int botY = Math.max(MIN_Y + 4, c.viaductBot);
+                        for (int y = botY; y <= c.deckY; ++y) {
+                            BlockState vb;
+                            if (y == c.deckY) {
+                                if (!c.rail) {
+                                    vb = c.viaductMosaic ? tMosaic
+                                            : (c.viaductCenter ? tFloor : (hash(x, z, 611) < 0.78 ? ashlar : tBricks));
+                                } else {
+                                    vb = c.viaductKeystone ? tGold : ashlar;
+                                }
+                            } else if (y == botY) {
+                                vb = c.viaductKeystone ? tGold : st(ElisarBlocks.BRICKS);
+                            } else {
+                                vb = hash(x, y, z) < 0.65 ? tBricks : ashlar;
+                            }
+                            chunk.setBlockState(mp.set(x, y, z), vb, false);
+                        }
+                        for (int y = c.deckY + 1; y <= c.deckY + 4; ++y) {
+                            chunk.setBlockState(mp.set(x, y, z), Blocks.AIR.defaultBlockState(), false);
+                        }
+                        if (!c.rail) {
+                            for (Direction d : Direction.Plane.HORIZONTAL) {
+                                Col n = cols[dx + 1 + d.getStepX()][dz + 1 + d.getStepZ()];
+                                int nWalk = (!n.rail && n.deckY != Integer.MIN_VALUE) ? n.deckY
+                                        : (n.isl != null ? n.top : Integer.MIN_VALUE);
+                                if (nWalk == c.deckY + 1) {
+                                    chunk.setBlockState(mp.set(x, c.deckY + 1, z), ashlarSlab, false);
+                                    break;
+                                }
+                            }
+                        } else if (c.isl == null || c.top <= c.deckY) {
+                            if (c.viaductGateway) {
+                                chunk.setBlockState(mp.set(x, c.deckY + 1, z), tCol, false);
+                                chunk.setBlockState(mp.set(x, c.deckY + 2, z), tCol, false);
+                                chunk.setBlockState(mp.set(x, c.deckY + 3, z), tGold, false);
+                                chunk.setBlockState(mp.set(x, c.deckY + 4, z), st(ElisarBlocks.LANTERN), false);
+                            } else if (c.post) {
+                                chunk.setBlockState(mp.set(x, c.deckY + 1, z), tCol, false);
+                                chunk.setBlockState(mp.set(x, c.deckY + 2, z), Blocks.CHISELED_STONE_BRICKS.defaultBlockState(), false);
+                                chunk.setBlockState(mp.set(x, c.deckY + 3, z), st(ElisarBlocks.LANTERN), false);
+                            } else {
+                                chunk.setBlockState(mp.set(x, c.deckY + 1, z), wall, false);
+                            }
+                        }
+                    } else if (!c.rail) {
                         chunk.setBlockState(mp.set(x, c.deckY, z), plank, false);
                         BlockState above = Blocks.AIR.defaultBlockState();
                         for (Direction d : Direction.Plane.HORIZONTAL) {     // half step where the sagging deck rises
@@ -1896,12 +2000,16 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         if (btSite != null) {
             BlacktideCitadel.buildInChunk(chunk, plan, btSite, x0, z0);
         }
-        // Inverted Tower interior dressing (reliquary, deck hall, landings)
-        if (x0 + 15 >= TOWER_X - 12 && x0 <= TOWER_X + 12 && z0 + 15 >= TOWER_Z - 12 && z0 <= TOWER_Z + 12) {
+        // Inverted Tower interior dressing (reliquary, deck hall, landings) — both City & Wild Inverted Towers
+        InvertedTowers.Site decTower = InvertedTowers.nearAt(x0 + 8.0, z0 + 8.0, 26.0);
+        if (decTower != null && x0 + 15 >= decTower.cx() - 12 && x0 <= decTower.cx() + 12
+                && z0 + 15 >= decTower.cz() - 12 && z0 <= decTower.cz() + 12) {
             for (String[] dec : TOWER_DECOR) {
                 ModelKind k = kind(dec[0]);
                 if (k == null) continue;
-                BlockPos at = new BlockPos(TOWER_X + Integer.parseInt(dec[1]), TOWER_Y0 + Integer.parseInt(dec[2]), TOWER_Z + Integer.parseInt(dec[3]));
+                BlockPos at = new BlockPos(decTower.cx() + Integer.parseInt(dec[1]),
+                        decTower.y0() + Integer.parseInt(dec[2]),
+                        decTower.cz() + Integer.parseInt(dec[3]));
                 if (!box.isInside(at)) continue;
                 Direction f = switch (dec[4]) {
                     case "north" -> Direction.NORTH; case "east" -> Direction.EAST; case "west" -> Direction.WEST; default -> Direction.SOUTH;

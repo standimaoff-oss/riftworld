@@ -31,6 +31,14 @@ public final class ModTabs {
                 out.accept(ModItems.ASTRAL_PRISM.get());
                 out.accept(ModItems.ELISAR_DUCAT.get());
                 out.accept(ModItems.BRIDGE_ROPE.get());
+                out.accept(ModItems.GILDED_PAPER.get());
+                out.accept(ModItems.EMERALD_PAPER.get());
+                out.accept(ModItems.DIAMOND_PAPER.get());
+                out.accept(ModItems.AMETHYST_PAPER.get());
+                out.accept(ModItems.CRIMSON_PAPER.get());
+                out.accept(ModItems.LAPIS_PAPER.get());
+                out.accept(ModItems.DRAGON_SADDLE.get());
+                out.accept(ModItems.DRAGON_WHISTLE.get());
 
                 // Все 16 яиц призыва мобов мода (включая Бумажного дракона и все 11 морских видов!)
                 acceptAllSpawnEggs(out);

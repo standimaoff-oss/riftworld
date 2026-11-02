@@ -22,6 +22,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import ru.aiforge.riftworld.RiftWorld;
 import ru.aiforge.riftworld.client.geo.GeoModel;
+import ru.aiforge.riftworld.item.AstralPrismItem;
 import ru.aiforge.riftworld.item.CrystalAegisItem;
 import ru.aiforge.riftworld.item.CrystalBarrageItem;
 import ru.aiforge.riftworld.net.CrystalActionMsg;
@@ -51,7 +52,9 @@ public final class CrystalClientHandler {
         if (p == null || mc.level == null || p.isSpectator() || p.isUsingItem()) return;
 
         ItemStack st = p.getMainHandItem();
-        if (st.getItem() instanceof CrystalBarrageItem || st.getItem() instanceof CrystalAegisItem) {
+        if (st.getItem() instanceof CrystalBarrageItem
+                || st.getItem() instanceof CrystalAegisItem
+                || st.getItem() instanceof AstralPrismItem) {
             e.setCanceled(true);
             e.setSwingHand(true);
             if (!p.getCooldowns().isOnCooldown(st.getItem())) {

@@ -50,6 +50,27 @@ public final class PaperDragonKeeper {
             // Игрок внутри центра Белого Города — драконы в Город НЕ залетают и там не спавнятся!
             if (PaperDragonEntity.isInsideCityNoFlyZone(plan, player.getX(), player.getZ(), -40.0)) continue;
 
+            // v0.26.0: Если поблизости есть Дикая Летающая Перевёрнутая Башня, заселяем её вершину спящим диким драконом!
+            InvertedTowers.Site nearWildTower = InvertedTowers.nearest(player.getX(), player.getZ(), false, 1);
+            if (nearWildTower != null && !nearWildTower.cityOrigin()
+                    && Math.hypot(nearWildTower.cx() - player.getX(), nearWildTower.cz() - player.getZ()) <= 240.0
+                    && level.hasChunk(nearWildTower.cx() >> 4, nearWildTower.cz() >> 4)) {
+                AABB roostBox = new AABB(nearWildTower.cx() - 28, nearWildTower.roostY() - 24, nearWildTower.cz() - 28,
+                        nearWildTower.cx() + 28, nearWildTower.roostY() + 32, nearWildTower.cz() + 28);
+                if (level.getEntitiesOfClass(PaperDragonEntity.class, roostBox).isEmpty()) {
+                    PaperDragonEntity sleeper = ModEntities.PAPER_DRAGON.get().create(level);
+                    if (sleeper != null) {
+                        BlockPos rp = new BlockPos(nearWildTower.cx(), nearWildTower.roostY() + 1, nearWildTower.cz());
+                        sleeper.moveTo(nearWildTower.cx() + 0.5, nearWildTower.roostY() + 1.05, nearWildTower.cz() + 0.5,
+                                level.random.nextFloat() * 360.0F, 0.0F);
+                        sleeper.finalizeSpawn(level, level.getCurrentDifficultyAt(rp), MobSpawnType.NATURAL, null, null);
+                        sleeper.placeCoiledOnWildTower(nearWildTower);
+                        level.addFreshEntity(sleeper);
+                        continue;
+                    }
+                }
+            }
+
             AABB box = player.getBoundingBox().inflate(RADIUS, 160, RADIUS);
             int present = level.getEntitiesOfClass(PaperDragonEntity.class, box).size();
             if (present >= WANT) continue;

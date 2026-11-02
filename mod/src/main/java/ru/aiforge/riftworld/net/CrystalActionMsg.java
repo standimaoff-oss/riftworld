@@ -6,6 +6,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.network.NetworkEvent;
+import ru.aiforge.riftworld.item.AstralPrismItem;
 import ru.aiforge.riftworld.item.CrystalAegisItem;
 import ru.aiforge.riftworld.item.CrystalBarrageItem;
 
@@ -34,6 +35,8 @@ public record CrystalActionMsg(int action) {
                 barrage.fireSingleLeftClick(sp, st);
             } else if (st.getItem() instanceof CrystalAegisItem aegis) {
                 aegis.launchRamLeftClick(sp, st);
+            } else if (st.getItem() instanceof AstralPrismItem prism) {
+                prism.fireSingularityLance(sp);
             }
         }
         ctx.setPacketHandled(true);

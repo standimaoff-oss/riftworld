@@ -88,6 +88,10 @@ public class PaperDragonRenderer extends EntityRenderer<PaperDragonEntity> {
         float phase = e.wavePhase();
         float headRollDeg = Mth.lerp(pt, e.bankRollPrev, e.bankRoll);
         float jawOpen = Mth.lerp(pt, e.jawAnimPrev, e.jawAnim);
+        float dive = Mth.lerp(pt, e.diveBlendPrev, e.diveBlend);
+        float coil = Mth.lerp(pt, e.coilBlendPrev, e.coilBlend);
+        int whiskerRgb = e.whiskerColorRgb();
+        int saddleTier = e.saddleTier();
 
         double headWx = Mth.lerp(pt, e.xo, e.getX());
         double headWy = Mth.lerp(pt, e.yo, e.getY());
@@ -159,22 +163,26 @@ public class PaperDragonRenderer extends EntityRenderer<PaperDragonEntity> {
 
         renderInnerPaperTube(vc, pose, normMat, spine, normals, binormals, warmLight, ov);
         renderModularOrigamiScales(vc, pose, normMat, spine, tangents, normals, binormals, time, phase, warmLight, ov);
-        renderDorsalOrigamiCrest(vc, pose, normMat, spine, tangents, normals, binormals, time, phase, warmLight, ov);
+        renderDorsalOrigamiCrest(vc, pose, normMat, spine, tangents, normals, binormals, time, phase, dive, warmLight, ov);
+
+        if (saddleTier > 0) {
+            renderOrigamiDragonSaddle(vc, pose, normMat, spine, tangents, normals, binormals, saddleTier, warmLight, ov);
+        }
 
         renderOrigamiDragonHead(vc, pose, normMat,
                 spine[0], tangents[0], normals[0], binormals[0],
-                jawOpen, time, phase, warmLight, ov);
+                jawOpen, time, phase, dive, coil, whiskerRgb, warmLight, ov);
 
         renderArticulatedOrigamiPairOfLegs(vc, pose, normMat,
                 spine[FORELEG_SEG], tangents[FORELEG_SEG], normals[FORELEG_SEG], binormals[FORELEG_SEG],
-                bodyRadius(FORELEG_SEG), true, time, phase, segRoll[FORELEG_SEG], warmLight, ov);
+                bodyRadius(FORELEG_SEG), true, time, phase, segRoll[FORELEG_SEG], dive, coil, warmLight, ov);
         renderArticulatedOrigamiPairOfLegs(vc, pose, normMat,
                 spine[HINDLEG_SEG], tangents[HINDLEG_SEG], normals[HINDLEG_SEG], binormals[HINDLEG_SEG],
-                bodyRadius(HINDLEG_SEG), false, time, phase + 1.8F, segRoll[HINDLEG_SEG], warmLight, ov);
+                bodyRadius(HINDLEG_SEG), false, time, phase + 1.8F, segRoll[HINDLEG_SEG], dive, coil, warmLight, ov);
 
         renderImperialOrigamiTailFan(vc, pose, normMat,
                 spine[SEGS - 1], tangents[SEGS - 1], normals[SEGS - 1], binormals[SEGS - 1],
-                time, phase, warmLight, ov);
+                time, phase, dive, warmLight, ov);
 
         ps.popPose();
         super.render(e, entityYaw, pt, ps, buf, packedLight);
@@ -305,12 +313,16 @@ public class PaperDragonRenderer extends EntityRenderer<PaperDragonEntity> {
 
     private static void renderDorsalOrigamiCrest(VertexConsumer vc, Matrix4f pose, Matrix3f normMat,
                                                  Vec3[] spine, Vec3[] tangents, Vec3[] normals, Vec3[] binormals,
-                                                 float time, float phase, int light, int ov) {
+                                                 float time, float phase, float dive, int light, int ov) {
         for (int i = 1; i < SEGS - 2; ++i) {
+            if (i >= 3 && i <= 6) continue; // место под седло остаётся аккуратным
             float r = bodyRadius(i);
             float u = (float) i / (float) (SEGS - 1);
+            float ripple = 0.90F + 0.14F * Mth.sin(time * 0.16F - i * 0.34F + phase) * (1.0F - 0.6F * dive);
+            float diveSweep = 1.0F - 0.32F * dive;
             float crestH = SCALE * (0.32F + 0.56F * Mth.sin(Mth.clamp(u * 1.15F, 0.05F, 1.0F) * Mth.PI * 0.88F))
-                    * (0.95F + 0.05F * Mth.sin(time * 0.10F - i * 0.30F + phase));
+                    * ripple * diveSweep;
+            float lateralSway = 0.08F * SCALE * Mth.cos(time * 0.16F - i * 0.34F + phase) * (1.0F - dive);
 
             Vec3 c = spine[i];
             Vec3 fw = tangents[i];
@@ -321,7 +333,9 @@ public class PaperDragonRenderer extends EntityRenderer<PaperDragonEntity> {
             Vec3 rootBack = c.add(up.scale(r * 0.92)).subtract(fw.scale(0.24 * SCALE));
             Vec3 sideL = c.add(up.scale(r * 0.98)).subtract(sd.scale(0.11 * SCALE));
             Vec3 sideR = c.add(up.scale(r * 0.98)).add(sd.scale(0.11 * SCALE));
-            Vec3 crestTip = c.add(up.scale(r + crestH)).subtract(fw.scale(0.34 * SCALE));
+            Vec3 crestTip = c.add(up.scale(r + crestH))
+                    .subtract(fw.scale((0.34F + 0.28F * dive) * SCALE))
+                    .add(sd.scale(lateralSway));
 
             paperTriSingle(vc, pose, normMat, rootFront, sideL, crestTip,
                     0.1F, 0.5F, 0.2F, 0.1F, 0.98F, 0.5F, CR_R, CR_G, CR_B, FL_R, FL_G, FL_B, CR_R, CR_G, CR_B, light, ov);
@@ -334,9 +348,61 @@ public class PaperDragonRenderer extends EntityRenderer<PaperDragonEntity> {
         }
     }
 
+    private static void renderOrigamiDragonSaddle(VertexConsumer vc, Matrix4f pose, Matrix3f normMat,
+                                                  Vec3[] spine, Vec3[] tangents, Vec3[] normals, Vec3[] binormals,
+                                                  int tier, int light, int ov) {
+        boolean custom = tier >= 2;
+        int mainR = custom ? 186 : 138, mainG = custom ? 38 : 82, mainB = custom ? 44 : 44;
+        int darkR = custom ? 128 : 98,  darkG = custom ? 24 : 56, darkB = custom ? 30 : 30;
+        int trimR = custom ? 250 : 212, trimG = custom ? 206 : 168, trimB = custom ? 76 : 68;
+
+        for (int i = 3; i <= 6; ++i) {
+            float r0 = bodyRadius(i) * 1.04F;
+            float r1 = bodyRadius(i + 1) * 1.04F;
+            Vec3 c0 = spine[i], c1 = spine[i + 1];
+            Vec3 u0 = normals[i], s0 = binormals[i];
+            Vec3 u1 = normals[i + 1], s1 = binormals[i + 1];
+
+            for (int side = -1; side <= 1; side += 2) {
+                float aTop = 0.0F;
+                float aMid = side * 0.58F;
+                float aFlap = side * 1.12F;
+                Vec3 p00 = ringPt(c0, u0, s0, aTop, r0);
+                Vec3 p01 = ringPt(c0, u0, s0, aMid, r0);
+                Vec3 p11 = ringPt(c1, u1, s1, aMid, r1);
+                Vec3 p10 = ringPt(c1, u1, s1, aTop, r1);
+                paperQuadSingle(vc, pose, normMat, p00, p01, p11, p10, mainR, mainG, mainB, light, ov);
+
+                Vec3 f00 = p01;
+                Vec3 f01 = ringPt(c0, u0, s0, aFlap, r0 * 1.02F);
+                Vec3 f11 = ringPt(c1, u1, s1, aFlap, r1 * 1.02F);
+                Vec3 f10 = p11;
+                paperQuadSingle(vc, pose, normMat, f00, f01, f11, f10, darkR, darkG, darkB, light, ov);
+            }
+        }
+        // Передняя лука и высокая задняя спинка седла + стремена
+        Vec3 pommelBase = spine[3].add(normals[3].scale(bodyRadius(3) * 1.02));
+        Vec3 pommelTip = pommelBase.add(normals[3].scale(0.32 * SCALE)).add(tangents[3].scale(0.14 * SCALE));
+        renderTintedPrismSegment(vc, pose, normMat, pommelBase, pommelTip, normals[3], binormals[3],
+                0.18F * SCALE, 0.08F * SCALE, trimR, trimG, trimB, light, ov);
+
+        Vec3 cantleBase = spine[6].add(normals[6].scale(bodyRadius(6) * 1.02));
+        Vec3 cantleTip = cantleBase.add(normals[6].scale((custom ? 0.44 : 0.30) * SCALE)).subtract(tangents[6].scale(0.18 * SCALE));
+        renderTintedPrismSegment(vc, pose, normMat, cantleBase, cantleTip, normals[6], binormals[6],
+                0.24F * SCALE, 0.11F * SCALE, trimR, trimG, trimB, light, ov);
+
+        for (int side = -1; side <= 1; side += 2) {
+            Vec3 strapTop = ringPt(spine[4], normals[4], binormals[4], side * 1.05F, bodyRadius(4) * 1.03F);
+            Vec3 stirrup = strapTop.subtract(normals[4].scale(0.52 * SCALE)).add(binormals[4].scale(side * 0.08 * SCALE));
+            renderTintedPrismSegment(vc, pose, normMat, strapTop, stirrup, normals[4], binormals[4],
+                    0.045F * SCALE, 0.065F * SCALE, trimR, trimG, trimB, light, ov);
+        }
+    }
+
     private static void renderOrigamiDragonHead(VertexConsumer vc, Matrix4f pose, Matrix3f normMat,
                                                 Vec3 neck, Vec3 fw, Vec3 up, Vec3 sd,
-                                                float jawOpen, float time, float phase, int light, int ov) {
+                                                float jawOpen, float time, float phase,
+                                                float dive, float coil, int whiskerRgb, int light, int ov) {
         int snoutSteps = 6;
         for (int s = 0; s < snoutSteps; ++s) {
             float u0 = (float) s / snoutSteps;
@@ -449,19 +515,26 @@ public class PaperDragonRenderer extends EntityRenderer<PaperDragonEntity> {
             paperTriSingle(vc, pose, normMat, mRidge, mRight, mTip, 0.4F, 0.5F, 0.1F, 0.9F, 0.98F, 0.5F, CR_R, CR_G, CR_B, SH_R, SH_G, SH_B, FL_R, FL_G, FL_B, light, ov);
         }
 
+        int wR = (whiskerRgb >> 16) & 0xFF;
+        int wG = (whiskerRgb >> 8) & 0xFF;
+        int wB = whiskerRgb & 0xFF;
+        int whiskerLight = (whiskerRgb != 0xF5EFE2) ? LightTexture.pack(15, 15) : light;
+        float waveScale = (1.0F - 0.82F * dive) * (1.0F - 0.65F * coil);
         for (int side = -1; side <= 1; side += 2) {
             float sg = (float) side;
             Vec3 wPrev = headPtScaled(neck, fw, up, sd, 2.05F, 0.14F, sg * 0.25F);
             for (int ws = 1; ws <= 7; ++ws) {
                 float wu = ws / 7.0F;
-                float flutter = Mth.sin(time * 0.11F - ws * 0.55F + phase + side) * (0.12F + 0.22F * wu) * SCALE;
-                float liftW = Mth.cos(time * 0.085F - ws * 0.45F + phase) * 0.11F * wu * SCALE;
+                float flutter = Mth.sin(time * 0.16F - ws * 0.62F + phase + side) * (0.16F + 0.28F * wu) * SCALE * waveScale;
+                float liftW = Mth.cos(time * 0.13F - ws * 0.50F + phase) * 0.14F * wu * SCALE * waveScale;
+                float outward = (0.24F + 0.08F * (1.0F - wu)) * (1.0F - 0.68F * dive);
                 Vec3 wNext = wPrev
-                        .subtract(fw.scale(0.42 * SCALE))
-                        .add(sd.scale(sg * (0.24 + 0.08 * (1.0F - wu)) * SCALE + flutter))
-                        .add(up.scale(0.05 * SCALE + liftW));
-                float wThick = Mth.lerp(wu, 0.078F, 0.018F) * SCALE;
-                renderOrigamiPrismSegment(vc, pose, normMat, wPrev, wNext, up, sd, wThick, wThick * 0.72F, light, ov);
+                        .subtract(fw.scale((0.42F + 0.12F * dive) * SCALE))
+                        .add(sd.scale(sg * outward * SCALE + flutter))
+                        .add(up.scale((0.05F * (1.0F - dive)) * SCALE + liftW));
+                float wThick = Mth.lerp(wu, 0.086F, 0.022F) * SCALE;
+                renderTintedPrismSegment(vc, pose, normMat, wPrev, wNext, up, sd, wThick, wThick * 0.72F,
+                        wR, wG, wB, whiskerLight, ov);
                 wPrev = wNext;
             }
         }
@@ -470,17 +543,23 @@ public class PaperDragonRenderer extends EntityRenderer<PaperDragonEntity> {
     private static void renderArticulatedOrigamiPairOfLegs(VertexConsumer vc, Matrix4f pose, Matrix3f normMat,
                                                            Vec3 bodyCenter, Vec3 fw, Vec3 up, Vec3 sd,
                                                            float bodyRad, boolean forelegs,
-                                                           float time, float phase, float bankDeg, int light, int ov) {
+                                                           float time, float phase, float bankDeg,
+                                                           float dive, float coil, int light, int ov) {
         for (int side = -1; side <= 1; side += 2) {
             float sg = (float) side;
-            float stride = Mth.sin(time * 0.075F + phase + (side > 0 ? 0.0F : Mth.PI));
+            float legPhase = time * 0.185F + phase + (side > 0 ? 0.0F : Mth.PI);
+            float stride = Mth.sin(legPhase) * (1.0F - dive) * (1.0F - 0.85F * coil);
+            float kneeLift = Mth.cos(legPhase) * (1.0F - dive) * (1.0F - 0.85F * coil);
+            float clawFlex = (0.5F + 0.5F * Mth.sin(legPhase - 0.7F)) * (1.0F - dive) * (1.0F - coil);
             float bankTuck = Mth.clamp(bankDeg * sg * 0.008F, -0.20F, 0.20F);
 
             Vec3 shoulder = bodyCenter
-                    .add(sd.scale(sg * bodyRad * 0.86))
-                    .subtract(up.scale(bodyRad * 0.42));
+                    .add(sd.scale(sg * bodyRad * (0.86 - 0.24 * dive)))
+                    .subtract(up.scale(bodyRad * (0.42 + 0.10 * dive)));
 
-            Vec3 shShieldTip = shoulder.add(sd.scale(sg * 0.42 * SCALE)).subtract(fw.scale(0.48 * SCALE)).subtract(up.scale(0.18 * SCALE));
+            Vec3 shShieldTip = shoulder.add(sd.scale(sg * (0.42 - 0.18 * dive) * SCALE))
+                    .subtract(fw.scale((0.48 + 0.22 * dive) * SCALE))
+                    .subtract(up.scale(0.18 * SCALE));
             paperTriSingle(vc, pose, normMat,
                     shoulder.add(fw.scale(0.24 * SCALE)), shoulder.add(up.scale(0.28 * SCALE)), shShieldTip,
                     0.1F, 0.2F, 0.4F, 0.5F, 0.98F, 0.5F, FL_R, FL_G, FL_B, CR_R, CR_G, CR_B, CR_R, CR_G, CR_B, light, ov);
@@ -488,32 +567,45 @@ public class PaperDragonRenderer extends EntityRenderer<PaperDragonEntity> {
                     shoulder.add(up.scale(0.28 * SCALE)), shoulder.subtract(fw.scale(0.22 * SCALE)), shShieldTip,
                     0.4F, 0.5F, 0.1F, 0.8F, 0.98F, 0.5F, CR_R, CR_G, CR_B, SH_R, SH_G, SH_B, FL_R, FL_G, FL_B, light, ov);
 
-            Vec3 upperDir = sd.scale(sg * 0.52)
-                    .subtract(up.scale(0.74 - bankTuck))
-                    .add(fw.scale((forelegs ? -0.24 : -0.36) + stride * 0.14))
+            // Плечо/бедро: активный мах в полёте, плотное прижатие назад к брюху в пикировании, спокойный сгиб во сне
+            Vec3 flightUpper = sd.scale(sg * (0.50 - 0.12 * coil))
+                    .subtract(up.scale((0.70 - 0.26 * coil) - bankTuck - kneeLift * 0.24))
+                    .add(fw.scale((forelegs ? -0.18 : -0.30) + stride * 0.46))
                     .normalize();
+            Vec3 diveUpper = fw.scale(-0.94).subtract(up.scale(0.22)).add(sd.scale(sg * 0.14)).normalize();
+            Vec3 upperDir = flightUpper.lerp(diveUpper, dive).normalize();
+
             Vec3 elbow = renderStackedOrigamiChain(vc, pose, normMat, shoulder, upperDir, up, sd, 3,
                     0.37F * SCALE, 0.26F * SCALE, 0.185F * SCALE, light, ov);
 
-            Vec3 lowerDir = fw.scale(0.54 + stride * 0.12)
-                    .subtract(up.scale(0.72))
-                    .add(sd.scale(sg * 0.22))
+            // Предплечье/голень: выразительное сгибание-разгибание локтя и колена!
+            Vec3 flightLower = fw.scale((0.52 + 0.20 * coil) + stride * 0.52)
+                    .subtract(up.scale((0.68 - 0.36 * coil) + kneeLift * 0.28))
+                    .add(sd.scale(sg * 0.20))
                     .normalize();
+            Vec3 diveLower = fw.scale(-0.96).subtract(up.scale(0.14)).add(sd.scale(sg * 0.08)).normalize();
+            Vec3 lowerDir = flightLower.lerp(diveLower, dive).normalize();
+
             Vec3 wrist = renderStackedOrigamiChain(vc, pose, normMat, elbow, lowerDir, up, sd, 3,
                     0.34F * SCALE, 0.195F * SCALE, 0.135F * SCALE, light, ov);
 
+            // Пальцы и когти: живое раскрытие и схватывание в такт маху (а в пикировании — сжаты в обтекаемый пучок!)
             for (int c = 0; c < 4; ++c) {
                 Vec3 clawDir;
                 float clawLen;
                 if (c < 3) {
-                    float spread = (c - 1) * 0.36F;
-                    clawDir = fw.scale(0.74)
-                            .subtract(up.scale(0.46 + 0.08 * Math.abs(c - 1)))
+                    float spread = (c - 1) * 0.38F * (1.0F - 0.78F * dive) * (0.75F + 0.40F * clawFlex);
+                    Vec3 flClaw = fw.scale(0.72 - 0.34 * clawFlex)
+                            .subtract(up.scale(0.44 + 0.34 * clawFlex + 0.08 * Math.abs(c - 1)))
                             .add(sd.scale(spread + sg * 0.10))
                             .normalize();
+                    Vec3 dvClaw = fw.scale(-0.96).subtract(up.scale(0.18)).add(sd.scale(spread * 0.3)).normalize();
+                    clawDir = flClaw.lerp(dvClaw, dive).normalize();
                     clawLen = ((c == 1) ? 0.58F : 0.47F) * SCALE;
                 } else {
-                    clawDir = fw.scale(-0.48).subtract(up.scale(0.68)).subtract(sd.scale(sg * 0.25)).normalize();
+                    Vec3 flDew = fw.scale(-0.48).subtract(up.scale(0.68)).subtract(sd.scale(sg * 0.25)).normalize();
+                    Vec3 dvDew = fw.scale(-0.95).subtract(up.scale(0.22)).normalize();
+                    clawDir = flDew.lerp(dvDew, dive).normalize();
                     clawLen = 0.37F * SCALE;
                 }
                 renderOrigamiPrismSegment(vc, pose, normMat, wrist, wrist.add(clawDir.scale(clawLen)),
@@ -524,13 +616,13 @@ public class PaperDragonRenderer extends EntityRenderer<PaperDragonEntity> {
 
     private static void renderImperialOrigamiTailFan(VertexConsumer vc, Matrix4f pose, Matrix3f normMat,
                                                      Vec3 tailTip, Vec3 fw, Vec3 up, Vec3 sd,
-                                                     float time, float phase, int light, int ov) {
+                                                     float time, float phase, float dive, int light, int ov) {
         Vec3 back = fw.scale(-1.0);
         for (int p = -3; p <= 3; ++p) {
             float normP = p / 3.0F;
-            float fanSpread = normP * 0.72F;
-            float wave = Mth.sin(time * 0.10F + p * 0.55F + phase) * 0.10F;
-            float plumeLen = (2.75F - Math.abs(normP) * 0.80F) * SCALE;
+            float fanSpread = normP * 0.74F * (1.0F - 0.62F * dive);
+            float wave = Mth.sin(time * 0.15F + p * 0.58F + phase) * 0.16F * (1.0F - 0.75F * dive);
+            float plumeLen = (2.75F - Math.abs(normP) * 0.80F + 0.45F * dive) * SCALE;
             float plumeW = (0.25F - Math.abs(normP) * 0.04F) * SCALE;
 
             Vec3 plumeDir = back.scale(Math.cos(fanSpread))
@@ -583,6 +675,12 @@ public class PaperDragonRenderer extends EntityRenderer<PaperDragonEntity> {
     private static void renderOrigamiPrismSegment(VertexConsumer vc, Matrix4f pose, Matrix3f normMat,
                                                   Vec3 a, Vec3 b, Vec3 hintUp, Vec3 hintSide,
                                                   float rA, float rB, int light, int ov) {
+        renderTintedPrismSegment(vc, pose, normMat, a, b, hintUp, hintSide, rA, rB, CR_R, CR_G, CR_B, light, ov);
+    }
+
+    private static void renderTintedPrismSegment(VertexConsumer vc, Matrix4f pose, Matrix3f normMat,
+                                                 Vec3 a, Vec3 b, Vec3 hintUp, Vec3 hintSide,
+                                                 float rA, float rB, int colR, int colG, int colB, int light, int ov) {
         Vec3 axis = b.subtract(a);
         if (axis.lengthSqr() < 1.0E-6) return;
         axis = axis.normalize();
@@ -604,11 +702,14 @@ public class PaperDragonRenderer extends EntityRenderer<PaperDragonEntity> {
                 b.subtract(yAx.scale(rB)),
                 b.subtract(xAx.scale(rB))
         };
+        int shR = Math.max(0, (colR * 214) / 255);
+        int shG = Math.max(0, (colG * 210) / 255);
+        int shB = Math.max(0, (colB * 204) / 255);
         for (int k = 0; k < 4; ++k) {
             int kn = (k + 1) & 3;
             boolean sun = (k == 0 || k == 3);
             paperQuadSingle(vc, pose, normMat, pa[k], pa[kn], pb[kn], pb[k],
-                    sun ? CR_R : SH_R, sun ? CR_G : SH_G, sun ? CR_B : SH_B, light, ov);
+                    sun ? colR : shR, sun ? colG : shG, sun ? colB : shB, light, ov);
         }
     }
 

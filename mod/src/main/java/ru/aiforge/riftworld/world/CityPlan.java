@@ -227,7 +227,7 @@ public final class CityPlan {
             Bridge br = new Bridge(a.get(0).getAsDouble(), a.get(1).getAsDouble(), b.get(0).getAsDouble(), b.get(1).getAsDouble(),
                     r.get("ya").getAsInt(), r.get("yb").getAsInt(), r.get("sag").getAsDouble(), r.get("hw").getAsDouble());
             bridges.add(br);
-            index(Math.min(br.ax, br.bx) - 4, Math.min(br.az, br.bz) - 4, Math.max(br.ax, br.bx) + 4, Math.max(br.az, br.bz) + 4, bk -> bk.bridges.add(br));
+            index(Math.min(br.ax, br.bx) - 8, Math.min(br.az, br.bz) - 8, Math.max(br.ax, br.bx) + 8, Math.max(br.az, br.bz) + 8, bk -> bk.bridges.add(br));
         }
         JsonObject rv = o.getAsJsonObject("river");
         if (rv != null && rv.has("pts")) {

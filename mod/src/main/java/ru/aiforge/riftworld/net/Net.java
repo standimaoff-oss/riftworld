@@ -23,6 +23,8 @@ public final class Net {
                 .encoder(CrystalActionMsg::encode).decoder(CrystalActionMsg::decode).consumerMainThread(CrystalActionMsg::handle).add();
         CH.messageBuilder(PortalRitualMsg.class, 3, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(PortalRitualMsg::encode).decoder(PortalRitualMsg::decode).consumerMainThread(PortalRitualMsg::handle).add();
+        CH.messageBuilder(DragonControlMsg.class, 4, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(DragonControlMsg::encode).decoder(DragonControlMsg::decode).consumerMainThread(DragonControlMsg::handle).add();
     }
 
     public static void send(ServerPlayer p, Object msg) {

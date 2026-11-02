@@ -64,7 +64,7 @@ public final class CrystalCombatHandler {
         final ServerLevel level;
         final UUID ownerId;
         final Vec3 pos;
-        int ticksLeft = 100; // 5 секунд
+        int ticksLeft = 160; // 8 секунд мощной Астролябии Сингулярности!
 
         PrismBeacon(ServerLevel level, UUID ownerId, Vec3 pos) {
             this.level = level;
@@ -166,24 +166,75 @@ public final class CrystalCombatHandler {
             PrismBeacon b = it.next();
             if (b.level != sl) continue;
             --b.ticksLeft;
-            if ((b.ticksLeft % 5) == 0) {
-                double a = b.ticksLeft * 0.35;
-                sl.sendParticles(ParticleTypes.GLOW,
-                        b.pos.x + Math.cos(a) * 1.4, b.pos.y + 0.4, b.pos.z + Math.sin(a) * 1.4,
-                        2, 0.05, 0.1, 0.05, 0.01);
+            if ((b.ticksLeft % 3) == 0) {
+                double a = b.ticksLeft * 0.28;
+                for (int k = 0; k < 4; ++k) {
+                    double rk = a + k * (Math.PI * 0.5);
+                    sl.sendParticles(ParticleTypes.END_ROD,
+                            b.pos.x + Math.cos(rk) * 3.8, b.pos.y + 0.35, b.pos.z + Math.sin(rk) * 3.8,
+                            1, 0.02, 0.05, 0.02, 0.005);
+                    double rk2 = -a * 1.4 + k * (Math.PI * 0.5);
+                    sl.sendParticles(ParticleTypes.SOUL_FIRE_FLAME,
+                            b.pos.x + Math.cos(rk2) * 1.9, b.pos.y + 1.8, b.pos.z + Math.sin(rk2) * 1.9,
+                            1, 0.02, 0.04, 0.02, 0.005);
+                }
             }
-            if (b.ticksLeft % 20 == 0) {
-                sl.playSound(null, BlockPos.containing(b.pos), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 0.85F, 1.3F);
-                sl.sendParticles(ParticleTypes.END_ROD, b.pos.x, b.pos.y + 0.3, b.pos.z, 12, 1.2, 0.3, 1.2, 0.03);
+            if (b.ticksLeft % 20 == 0 && b.ticksLeft > 0) {
+                sl.playSound(null, BlockPos.containing(b.pos), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 1.2F, 1.25F);
+                sl.sendParticles(ParticleTypes.GLOW, b.pos.x, b.pos.y + 1.2, b.pos.z, 24, 2.6, 0.6, 2.6, 0.04);
                 Player owner = sl.getPlayerByUUID(b.ownerId);
-                AABB area = new AABB(b.pos.x - 4.5, b.pos.y - 2.0, b.pos.z - 4.5, b.pos.x + 4.5, b.pos.y + 3.0, b.pos.z + 4.5);
+                AABB area = new AABB(b.pos.x - 7.5, b.pos.y - 3.0, b.pos.z - 7.5, b.pos.x + 7.5, b.pos.y + 5.0, b.pos.z + 7.5);
+                LivingEntity nearestHostile = null;
+                double bestD2 = Double.MAX_VALUE;
                 for (LivingEntity le : sl.getEntitiesOfClass(LivingEntity.class, area, e2 -> e2.isAlive())) {
                     if (le.getUUID().equals(b.ownerId) || le instanceof Player) continue;
-                    le.hurt(owner != null ? sl.damageSources().indirectMagic(owner, owner) : sl.damageSources().magic(), 3.0F);
-                    le.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 35, 0));
+                    // Гравитационное стягивание к ядру Астролябии + 9 ед. урона Разлома!
+                    Vec3 pull = b.pos.subtract(le.position());
+                    if (pull.lengthSqr() > 0.6) {
+                        Vec3 pn = pull.normalize().scale(0.32);
+                        le.setDeltaMovement(le.getDeltaMovement().add(pn.x, 0.08, pn.z));
+                    }
+                    le.hurt(owner != null ? sl.damageSources().indirectMagic(owner, owner) : sl.damageSources().magic(), 9.0F);
+                    le.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, 1));
+                    le.addEffect(new MobEffectInstance(MobEffects.GLOWING, 50, 0));
+                    double d2 = le.distanceToSqr(b.pos);
+                    if (d2 < bestD2) {
+                        bestD2 = d2;
+                        nearestHostile = le;
+                    }
+                }
+                // Астролябия выпускает наводящиеся кристаллы Разлома сверху по ближайшим целям!
+                if (nearestHostile != null && owner != null) {
+                    Vec3 crown = b.pos.add(0.0, 2.6, 0.0);
+                    Vec3 dir = nearestHostile.getEyePosition().subtract(crown).normalize();
+                    CrystalShardEntity bolt = new CrystalShardEntity(ModEntities.CRYSTAL_SHARD.get(), sl, owner, 9.5F);
+                    bolt.setPos(crown.x, crown.y, crown.z);
+                    bolt.setDeltaMovement(dir.scale(1.95));
+                    sl.addFreshEntity(bolt);
                 }
             }
             if (b.ticksLeft <= 0) {
+                // Финальная Астральная Сверхновая Астролябии + круговой веер из 8 осколков!
+                Player owner = sl.getPlayerByUUID(b.ownerId);
+                sl.playSound(null, BlockPos.containing(b.pos), SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 0.9F, 1.35F);
+                sl.playSound(null, BlockPos.containing(b.pos), SoundEvents.BEACON_DEACTIVATE, SoundSource.PLAYERS, 1.2F, 1.3F);
+                sl.sendParticles(ParticleTypes.FLASH, b.pos.x, b.pos.y + 0.8, b.pos.z, 2, 0.1, 0.1, 0.1, 0.0);
+                sl.sendParticles(ParticleTypes.END_ROD, b.pos.x, b.pos.y + 0.8, b.pos.z, 55, 1.5, 0.8, 1.5, 0.22);
+                AABB novaBox = new AABB(b.pos.x - 8.0, b.pos.y - 3.0, b.pos.z - 8.0, b.pos.x + 8.0, b.pos.y + 5.0, b.pos.z + 8.0);
+                for (LivingEntity le : sl.getEntitiesOfClass(LivingEntity.class, novaBox, e2 -> e2.isAlive())) {
+                    if (le.getUUID().equals(b.ownerId) || le instanceof Player) continue;
+                    le.hurt(owner != null ? sl.damageSources().indirectMagic(owner, owner) : sl.damageSources().magic(), 16.0F);
+                }
+                if (owner != null) {
+                    for (int k = 0; k < 8; ++k) {
+                        double ang = (Math.PI * 2.0 * k) / 8.0;
+                        Vec3 dir = new Vec3(Math.cos(ang), 0.08, Math.sin(ang)).normalize();
+                        CrystalShardEntity burst = new CrystalShardEntity(ModEntities.CRYSTAL_SHARD.get(), sl, owner, 8.5F);
+                        burst.setPos(b.pos.x + dir.x * 0.8, b.pos.y + 0.9, b.pos.z + dir.z * 0.8);
+                        burst.setDeltaMovement(dir.scale(1.65));
+                        sl.addFreshEntity(burst);
+                    }
+                }
                 it.remove();
             }
         }

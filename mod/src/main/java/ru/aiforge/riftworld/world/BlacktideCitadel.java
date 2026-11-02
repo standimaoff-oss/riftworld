@@ -105,46 +105,47 @@ public final class BlacktideCitadel {
             if (x >= minX - margin && x <= maxX + margin && z >= minZ - margin && z <= maxZ + margin) {
                 return true;
             }
-            // Подходная дорога-мыс на суше Пепельного биома к началу моста
+            // Широкая подходная дорога-мыс вглубь суши Пепельного биома к началу моста
             double dx = x - landX, dz = z - landZ;
             double along = -(dx * outUx + dz * outUz); // положительно вглубь суши Пепельного биома
             double perp = Math.abs(-dx * outUz + dz * outUx);
-            return along >= -8.0 && along <= 52.0 && perp <= 24.0 + margin;
+            return along >= -12.0 && along <= 94.0 && perp <= 34.0 + margin;
         }
 
         /**
-         * Высота пологого вулканического мыса на суше Пепельного биома, поднимающегося от равнины (ocean+1)
-         * прямо к отметке берегового устоя моста ({@code baseY + 40 = 78}), чтобы на мост заходили пешком с земли биома!
+         * Высота широкого пологого вулканического мыса на суше Пепельного биома, поднимающегося прямо с равнины биома (ocean+1)
+         * к отметке берегового устоя моста ({@code baseY + 41 = 79}), чтобы мост начинался строго на высоком берегу Пепельного биома,
+         * а сам замок стоял в открытом море!
          */
         public int headlandTop(int wx, int wz, int ocean) {
             double dx = (wx + 0.5) - landX;
             double dz = (wz + 0.5) - landZ;
-            double inland = -(dx * outUx + dz * outUz); // 0 у начала моста, >0 вглубь Пепельного биома
+            double inland = -(dx * outUx + dz * outUz); // 0 у начала моста, >0 глубоко внутри Пепельного биома, <0 к берегу моря
             double perp = Math.abs(-dx * outUz + dz * outUx);
-            if (inland < -12.0 || inland > 62.0 || perp > 64.0) return Integer.MIN_VALUE;
+            if (inland < -22.0 || inland > 96.0 || perp > 84.0) return Integer.MIN_VALUE;
 
-            // Широкий скалистый береговой обрыв Пепельного биома по обе стороны от начала моста (ocean+3..ocean+8)
-            double coastAlong = inland < -12.0 ? 0.0 : (inland <= 18.0 ? Math.min(1.0, (inland + 12.0) / 10.0)
-                    : Math.max(0.0, 1.0 - (inland - 18.0) / 44.0));
-            double coastSide = perp <= 42.0 ? 1.0 : Math.max(0.0, 1.0 - (perp - 42.0) / 22.0);
-            double crag = 3.5 + 4.5 * ElisarChunkGenerator.vnoise(wx * 0.06, wz * 0.06, 913);
+            // Широкий скалистый береговой клиф Пепельного биома по обе стороны от устоя моста (ocean+4..ocean+11)
+            double coastAlong = inland < -22.0 ? 0.0 : (inland <= 24.0 ? Math.min(1.0, (inland + 22.0) / 10.0)
+                    : Math.max(0.0, 1.0 - (inland - 24.0) / 72.0));
+            double coastSide = perp <= 56.0 ? 1.0 : Math.max(0.0, 1.0 - (perp - 56.0) / 28.0);
+            double crag = 4.5 + 5.5 * ElisarChunkGenerator.vnoise(wx * 0.055, wz * 0.055, 913);
             double bluffH = (ocean + 1.0) + crag * coastAlong * coastSide;
 
-            // Центральный плавный пандус-мыс прямо к настилу берегового устоя моста (baseY + 40 = 78)
+            // Центральный широкий пандус-мыс прямо к настилу берегового устоя моста (baseY + 41 = 79)
             double rampH = Integer.MIN_VALUE;
-            if (inland >= -6.0 && inland <= 54.0 && perp <= 26.0) {
-                double targetY = baseY + 40.0;
-                double uAlong = inland <= 6.0 ? 1.0 : Math.max(0.0, 1.0 - (inland - 6.0) / 46.0);
+            if (inland >= -14.0 && inland <= 88.0 && perp <= 38.0) {
+                double targetY = baseY + 41.0;
+                double uAlong = inland <= 8.0 ? 1.0 : Math.max(0.0, 1.0 - (inland - 8.0) / 78.0);
                 double sAlong = uAlong * uAlong * (3.0 - 2.0 * uAlong);
-                double halfW = 10.5 + (1.0 - sAlong) * 12.0;
+                double halfW = 14.0 + (1.0 - sAlong) * 20.0;
                 if (perp < halfW) {
-                    double uSide = perp <= 4.5 ? 1.0 : Math.max(0.0, 1.0 - (perp - 4.5) / Math.max(1.0, halfW - 4.5));
+                    double uSide = perp <= 6.5 ? 1.0 : Math.max(0.0, 1.0 - (perp - 6.5) / Math.max(1.0, halfW - 6.5));
                     double sSide = uSide * uSide * (3.0 - 2.0 * uSide);
                     rampH = (ocean + 1.0) + (targetY - (ocean + 1.0)) * sAlong * sSide;
                 }
             }
             double h = Math.max(bluffH, rampH);
-            if (h <= ocean + 1.4) return Integer.MIN_VALUE;
+            if (h <= ocean + 1.3) return Integer.MIN_VALUE;
             return (int) Math.round(h);
         }
     }
@@ -154,8 +155,10 @@ public final class BlacktideCitadel {
         int r = rot & 3;
         double ux = rotDx(U0_X, U0_Z, r);
         double uz = rotDz(U0_X, U0_Z, r);
-        // Береговой устой моста стоит на 36 блоков ВНУТРИ суши Пепельного биома, мост перешагивает берег, а сам замок — в открытом море!
-        double landDist = ashR - 36.0;
+        // Береговой устой моста (LAND_LZ=96) стоит на 82 блока ГЛУБОКО ВНУТРИ твёрдой суши Пепельного биома!
+        // Первая арка перешагивает скалистый берег (seaward ~ 24..28), 3 морские арки летят высоко над волнами (by=48),
+        // а вся огромная Цитадель Чёрного утёса (lz=35..-92) стоит в открытом море прямо у берега биома!
+        double landDist = ashR - 82.0;
         double landWx = ashCx + ux * landDist;
         double landWz = ashCz + uz * landDist;
         int siteCx = (int) Math.round(landWx - rotX(LAND_LX, LAND_LZ, r));
@@ -518,11 +521,13 @@ public final class BlacktideCitadel {
             }
         }
 
-        // 3) Строго симметрично расставленные скромные сундуки с припасами в нефах Собора и Ротонде Цитадели!
+        // 3) Строго симметрично расставленные скромные сундуки с припасами на 1-м и 2-м этажах Собора и Ротонды!
         placeCitadelChest(chunk, site, x0, z0, -22, 57, -8, Direction.EAST, LandmarkStructures.LOOT_MODEST_WAYFARER);
         placeCitadelChest(chunk, site, x0, z0,  22, 57, -8, Direction.WEST, LandmarkStructures.LOOT_MODEST_WAYFARER);
         placeCitadelChest(chunk, site, x0, z0, -22, 57, -32, Direction.EAST, LandmarkStructures.LOOT_MODEST_WAYFARER);
         placeCitadelChest(chunk, site, x0, z0,  22, 57, -32, Direction.WEST, LandmarkStructures.LOOT_MODEST_WAYFARER);
+        placeCitadelChest(chunk, site, x0, z0, -21, 71, -22, Direction.EAST, LandmarkStructures.LOOT_MODEST_WAYFARER);
+        placeCitadelChest(chunk, site, x0, z0,  21, 71, -22, Direction.WEST, LandmarkStructures.LOOT_MODEST_WAYFARER);
         placeCitadelChest(chunk, site, x0, z0, -14, 57, -58, Direction.EAST, LandmarkStructures.LOOT_MODEST_MARITIME);
         placeCitadelChest(chunk, site, x0, z0,  14, 57, -58, Direction.WEST, LandmarkStructures.LOOT_MODEST_MARITIME);
     }

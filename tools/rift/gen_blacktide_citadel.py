@@ -512,7 +512,7 @@ def build_viaduct_bridge():
             else:
                 put_sym(lx, dy, lz, PBB if rib else PDS)
 
-        # Parapet wall (`lx = 5`) + corbelled outer cornice
+        # Parapet wall (`lx = 5`) + corbelled outer cornice + abundant warm bridge lighting!
         base_p = dy + (1 if half_slab else 0)
         put_sym(5, dy - 1, lz, PBB)
         put_sym(5, dy, lz, PBB)
@@ -524,6 +524,9 @@ def build_viaduct_bridge():
                 put_sym(6, dy, lz, CPB)
             put_sym(5, base_p + 2, lz, CPB)
             put_sym(5, base_p + 3, lz, BRAZIER_N)
+        elif lz % 6 == 0:
+            put_sym(5, base_p + 2, lz, PBB_WALL_POST)
+            put_sym(5, base_p + 3, lz, LANTERN_STAND)
         elif lz % 2 == 0:
             put_sym(5, base_p + 2, lz, PBB_SLAB_BOT)
 
@@ -679,8 +682,9 @@ def build_sym_tower(
     # Note: corners `(±2, ±2)` are flat `PBB` landings (no elevation jump!), straight runs climb 1 block per step!
     for by in range(y_base + 1, y_top + 1):
         put_sym(cx, by, cz, BASALT_Y)
-        if by % 6 == 0 and by < y_top - 1:
+        if by % 4 == 0 and by < y_top - 1:
             put_sym(cx, by, cz - 1, LANTERN_HANG)
+            put_sym(cx, by, cz + 1, LANTERN_HANG)
 
     cur_y = y_base + 2
     idx = 0
@@ -783,8 +787,11 @@ def build_curtain_walls_and_gatehouse():
                 if lx % 2 == 0 and side_dz == out_sgn * 2:
                     put_sym(lx, 64, wall_z + side_dz, CPB if lx % 8 == 0 else PBB)
                     put_sym(lx, 65, wall_z + side_dz, PBB_SLAB_BOT)
-            if lx % 16 == 8 and not (wall_z == 34 and lx <= 16):
+            if lx % 8 == 4 and not (wall_z == 34 and lx <= 16):
                 put_sym(lx, 63, wall_z, CANDLE_S)
+                # Courtyard inner wall lantern sconces every 8 blocks!
+                put_sym(lx, 53, wall_z - out_sgn * 3, PBB_WALL_POST)
+                put_sym(lx, 52, wall_z - out_sgn * 3, LANTERN_HANG)
 
     # C) Unbroken East & West Flank Curtain Walls (`lx = ±54`, `lz = -78..+34`, `by = 47..64`)
     for lz in range(-78, 35):
@@ -825,8 +832,20 @@ def build_curtain_walls_and_gatehouse():
             if lz % 2 == 0 and side_dx == 2:
                 put_sym(54 + side_dx, 64, lz, CPB if is_buttress else PBB)
                 put_sym(54 + side_dx, 65, lz, PBB_SLAB_BOT)
-        if (lz + 80) % 16 == 8:
+        if (lz + 80) % 8 == 4:
             put_sym(54, 63, lz, CANDLE_S)
+            if -72 <= lz <= 28:
+                put_sym(51, 53, lz, PBB_WALL_POST)
+                put_sym(51, 52, lz, LANTERN_HANG)
+
+    # Courtyard Grand Lantern & Brazier Processional Avenue (`lz = 8..28` & side courts!)
+    for lz_b in (26, 18, 10, -8, -28, -48, -66):
+        if lz_b >= 10:
+            put_sym(8, 48, lz_b, CPB)
+            put_sym(8, 49, lz_b, BRAZIER_S)
+        put_sym(38, 48, lz_b, CPB)
+        put_sym(38, 49, lz_b, PBB_WALL_POST)
+        put_sym(38, 50, lz_b, LANTERN_STAND)
 
     # D) Monumental Barbican Gatehouse Bridgehead (`lx = 0..10, lz = 31..38, by = 47..72`)
     for lz in range(31, 39):
@@ -1053,8 +1072,14 @@ def build_cathedral_keep_and_throne_hall():
                     elif by < 69 or (dx_p == -1 and dz_p == 0):
                         put_sym(px, by, pz, ASHLAR_PILLAR_Y if dx_p == -1 else BASALT_Y)
                 put_sym(11, 69, lz, CPB)
-            # Royal crimson horn banner hanging on nave face of every pier!
+            # Royal crimson horn banner + warm lantern sconces on nave & aisle faces of every pier!
             put_sym(10, 65, lz, BANNER_W)
+            put_sym(10, 62, lz, PBB_WALL_POST)
+            put_sym(10, 61, lz, LANTERN_HANG)
+            put_sym(10, 76, lz, PBB_WALL_POST)
+            put_sym(10, 75, lz, LANTERN_HANG)
+            put_sym(14, 63, lz, PBB_WALL_POST)
+            put_sym(14, 62, lz, LANTERN_HANG)
 
         # Soaring Pointed Gothic Ribbed Vault & Pitched Roof (`lx = 0..13, by = 88..98`)
         # Keep Central Crossing (`lz = -28..-12`) open up into the monumental Central Crown Donjon!
@@ -1174,15 +1199,80 @@ def build_cathedral_keep_and_throne_hall():
     put_sym(8, 61, -35, BRAZIER_S)
     put_sym(8, 58, -31, BRAZIER_S)
 
-    # Wrought Chandeliers down Central Nave (`lx = 0`) + Side Aisles (`lx = ±18`) -> 9 Chandeliers!
+    # Wrought Chandeliers down Central Nave (`lx = 0`) + Side Aisles (`lx = ±18`) + 2nd-Floor Galleries -> 17 Chandeliers!
     for lz, top_y, drop_y in ((-6, 96, 76), (-14, 117, 78), (-20, 117, 78), (-26, 117, 78), (-33, 96, 76)):
         for cy in range(drop_y + 1, top_y):
             put_sym(0, cy, lz, CHAIN_Y)
         set_raw(0, drop_y, lz, CHANDELIER)
-    for lz in (-10, -26):
-        for cy in range(66, 70):
+    for lz in (-8, -16, -24, -32):
+        for cy in range(65, 70):
             put_sym(18, cy, lz, CHAIN_Y)
-        put_sym(18, 65, lz, CHANDELIER)
+        put_sym(18, 64, lz, CHANDELIER)
+        # 2nd-Floor Triforium Gallery Chandeliers (`by = 76` under `by = 80` roof)
+        for cy in range(77, 79):
+            put_sym(18, cy, lz, CHAIN_Y)
+        put_sym(18, 76, lz, LANTERN_HANG)
+
+    # 8) FULL WALKABLE 2ND FLOOR (`2 ЭТАЖ`, `by = 70`):
+    #    - Grand South Choir & Rose-Window Mezzanine Hall (`lx = 0..23, lz = -3..+3, by = 70`)
+    #    - Twin Wide Interior Grand Staircases (`lx = ±19..±21, lz = -16 -> -4, by = 57 -> 70`)
+    #    - Furnished 2nd-Floor Galleries (`lx = ±14..±22, lz = -38..+3`) with carpets, bookshelves, lecterns & lighting!
+    for lz in range(-3, 4):
+        for lx in range(0, 13):
+            put_sym(lx, 70, lz, ASHLAR if (lz == -3 or lx == 0) else DST)
+            put_sym(lx, 69, lz, PBB if (lz == -3 or lx % 4 == 0) else DSB)
+            # Clear headroom on 2nd-floor Choir Hall (`by = 71..84`)
+            for hy in range(71, 82):
+                if lz < 4:
+                    put_sym(lx, hy, lz, 0)
+        # Carved 2nd-floor Choir Balustrade overlooking the Throne Nave (`lz = -3, by = 71`)
+        for lx in range(0, 12):
+            put_sym(lx, 71, -3, PBB_WALL_EW if lx % 3 != 0 else CPB)
+            if lx in (0, 6):
+                put_sym(lx, 72, -3, CANDLE_N)
+    # Choir Mezzanine central carpet, lectern & chandelier
+    for lz in range(-2, 3):
+        for lx in range(0, 10):
+            if lz in (-1, 0, 1) or lx <= 2:
+                put_sym(lx, 71, lz, CARPET)
+    set_raw(0, 71, -2, LECTERN_S)
+    for cy in range(81, 95):
+        put_sym(0, cy, 0, CHAIN_Y)
+    set_raw(0, 80, 0, CHANDELIER)
+
+    # Twin Wide Interior Grand Staircases (`lx = ±19..±21`, climbing `lz = -17 -> -5`, `by = 57 -> 69` onto `by = 70`!)
+    for step_i in range(0, 13):
+        sz = -17 + step_i
+        sy = 58 + step_i
+        for lx in (19, 20, 21):
+            for fy in range(57, sy):
+                put_sym(lx, fy, sz, PBB if lx == 19 else DSB)
+            if sy == 70:
+                put_sym(lx, 70, sz, DST)
+            else:
+                put_sym(lx, sy, sz, pbb_stair("south"))
+            # Clear 5-block stair headroom punching cleanly onto the 2nd floor!
+            for hy in range(sy + 1, min(76, sy + 6)):
+                put_sym(lx, hy, sz, 0)
+        put_sym(19, min(71, sy + 1), sz, PBB_WALL_NS)
+        if step_i in (0, 6, 12):
+            put_sym(19, min(72, sy + 2), sz, LANTERN_STAND)
+
+    # 2nd-Floor Triforium Gallery Carpets, Bookshelves & Warm Sconce Lanterns (`lz = -38..-6` & `-4..+2`)
+    for lz in range(-37, 3):
+        if -17 <= lz <= -5:
+            # Leave stair well open on `lx = 19..21`, carpet along inner gallery walk `lx = 15..17`
+            for lx in (15, 16):
+                put_sym(lx, 71, lz, CARPET)
+        else:
+            for lx in (16, 17, 18):
+                put_sym(lx, 71, lz, CARPET)
+        # 2nd-Floor recessed library bookshelves between outer aisle windows (`lx = 23, by = 71..74`)
+        if ((lz + 4) % 8 in (1, 2, 6, 7)) and -36 <= lz <= 0:
+            for by in range(71, 75):
+                put_sym(23, by, lz, BOOKSHELF)
+        if ((lz + 4) % 8 == 0) and -36 <= lz <= 0:
+            put_sym(22, 74, lz, LANTERN_HANG)
 
     # Seamless 8-neighbor Connected Crimson Royal Carpet (`riftworld:castle_carpet`)
     for lz in range(-30, 3):
@@ -1211,18 +1301,34 @@ def build_rotunda_sanctum():
     R_wall_in = 16.0
     R_gal_in = 12.6
 
-    # 1) Twin Symmetrical Vaulted Ambulatory Passages (`lx = ±15, lz = -43..-39`) from Cathedral to Rotunda!
+    # 1) Twin Symmetrical Two-Story Vaulted Ambulatory Passages (`lx = ±15, lz = -44..-39`)
+    #    - 1st Floor (`by = 57`) + 2nd Floor Upper Gallery Link (`by = 66..70`) from Cathedral 2nd Floor into Rotunda 2nd Floor!
     for lz in range(-44, -38):
+        step_down = max(0, min(4, -39 - lz))  # lz=-39 -> 70, lz=-43 -> 66 (smooth 4-step descent onto Rotunda 2nd floor!)
+        up_y = 70 - step_down
         for lx in range(12, 19):
             is_amb_wall = lx in (12, 18)
             put_sym(lx, 56, lz, PBB if is_amb_wall else PDS)
-            for by in range(57, 67):
-                if by == 66:
+            for by in range(57, 76):
+                if by == 75:
                     put_sym(lx, by, lz, PBB)
                 elif is_amb_wall:
                     put_sym(lx, by, lz, BASALT_Y if lz % 3 == 0 else DSB)
+                elif by == 65:
+                    put_sym(lx, by, lz, PBB)
+                elif 66 <= by <= up_y:
+                    if by == up_y and -43 <= lz <= -40:
+                        put_sym(lx, by, lz, pbb_stair("south"))
+                    else:
+                        put_sym(lx, by, lz, DST)
+                elif by == 57 and 14 <= lx <= 16:
+                    put_sym(lx, by, lz, CARPET)
+                elif by == 64 and lx == 15 and lz in (-42, -40):
+                    put_sym(lx, by, lz, LANTERN_HANG)
+                elif by == 74 and lx == 15 and lz in (-42, -40):
+                    put_sym(lx, by, lz, LANTERN_HANG)
                 else:
-                    put_sym(lx, by, lz, CARPET if (by == 57 and 14 <= lx <= 16) else 0)
+                    put_sym(lx, by, lz, 0)
 
     # 2) Circular Drum, Two-Tier Radial Arcades & Watertight Vertical-Filled Ribbed Dome!
     for dz in range(-19, 20):
@@ -1251,11 +1357,15 @@ def build_rotunda_sanctum():
 
             # Outer Cylindrical Masonry Wall (`R_wall_in <= d <= R_out`, `by = 57..76`)
             if d >= R_wall_in:
-                amb_open = (-44 <= lz <= -39 and 13 <= lx <= 17)
-                in_rot_win = (not on_radial_rib) and (d >= R_out - 1.3) and not (-43 <= lz <= -38)
+                amb_open_low = (-44 <= lz <= -39 and 13 <= lx <= 17)
+                amb_open_high = (-45 <= lz <= -39 and 13 <= lx <= 17)
+                in_rot_win = (not on_radial_rib) and (d >= R_out - 1.3) and not (-44 <= lz <= -38)
                 for by in range(57, 77):
-                    if amb_open and by <= 64:
+                    if amb_open_low and by <= 63:
                         put_sym(lx, by, lz, CARPET if (by == 57 and 14 <= lx <= 16) else 0)
+                        continue
+                    if amb_open_high and 67 <= by <= 73:
+                        put_sym(lx, by, lz, 0)
                         continue
                     if by in (65, 75):
                         blk = DARK_OAK_PLANKS
@@ -1267,8 +1377,8 @@ def build_rotunda_sanctum():
                         blk = GLASS_EW if abs(dz) >= lx else GLASS_NS
                     elif in_rot_win and by in (68, 74):
                         blk = CPB
-                    elif 58 <= by <= 62 and d < R_wall_in + 1.05 and not on_radial_rib and abs(dz) >= 4:
-                        # Recessed `castle_bookshelf` grand library alcoves around lower drum!
+                    elif (58 <= by <= 62 or 67 <= by <= 68) and d < R_wall_in + 1.05 and not on_radial_rib and abs(dz) >= 4:
+                        # Recessed `castle_bookshelf` grand library alcoves on BOTH 1st & 2nd drum tiers!
                         blk = BOOKSHELF
                     else:
                         blk = DSB
@@ -1350,12 +1460,14 @@ def build_rotunda_sanctum():
     put_sym(3, 57, -60, LECTERN_S)
     put_sym(2, 63, -73, BANNER_S)
 
-    # 5 Hanging Wrought Chandeliers (1 central under oculus + 4 symmetric cardinal satellites!)
+    # 9 Hanging Wrought Chandeliers + Warm Gallery Ring Lanterns in Rotunda!
     for cx_c, cz_c, top_c, drop_c in (
         (0, -58, 93, 73),
         (6, -58, 86, 72),
         (0, -52, 86, 72),
         (0, -64, 86, 72),
+        (5, -53, 86, 72),
+        (5, -63, 86, 72),
     ):
         for cy in range(drop_c + 1, top_c):
             put_sym(cx_c, cy, cz_c, CHAIN_Y)
@@ -1363,6 +1475,10 @@ def build_rotunda_sanctum():
             set_raw(0, drop_c, cz_c, CHANDELIER)
         else:
             put_sym(cx_c, drop_c, cz_c, CHANDELIER)
+    # Warm lanterns on the 2nd-floor Rotunda gallery ceiling (`R ~ 14.2`)
+    for lx_l, lz_l in ((14, -58), (10, -48), (10, -68), (0, -72)):
+        put_sym(lx_l, 74, lz_l, LANTERN_HANG)
+        put_sym(lx_l, 64, lz_l, LANTERN_HANG)
 
     # Connected `castle_carpet` octagonal cross & center mandala (`by = 57`)
     for dz in range(-12, 15):

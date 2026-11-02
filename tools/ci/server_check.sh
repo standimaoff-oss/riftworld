@@ -110,7 +110,7 @@ server-ip=
 # Рев 12.2: superflat — убираем ванильные биомы (deep_dark), в которых DT создаёт
 # feature order cycle. Elisar — кастомная размерность, работает независимо от overworld.
 level-type=minecraft\:flat
-generator-settings={"biome":"minecraft:plains","layers":[{"block":"minecraft:bedrock","height":1},{"block":"minecraft:dirt","height":2},{"block":"minecraft:grass_block","height":1}],"lakes":false,"features":false,"structure_overrides":[]}
+generator-settings={"biome":"minecraft:plains","layers":[{"block":"minecraft:bedrock","height":1},{"block":"minecraft:dirt","height":2},{"block":"minecraft:grass_block","height":1}],"lakes":false,"features":false,"structure_overrides":["riftworld:overgrown_temple"]}
 level-seed=21122
 view-distance=12
 simulation-distance=8

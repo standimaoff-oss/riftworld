@@ -55,6 +55,31 @@ public final class ModItems {
     public static final RegistryObject<Item> ELISAR_DUCAT = ITEMS.register("elisar_ducat",
             () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)));
 
+    // v0.26.0: Крафтовая особая бумага для приручения Бумажного Дракона (окрашивает его 2 уса!),
+    // кастомное Драконье седло Элисара и Горн Дракона (призыв с небес даже вне зоны симуляции)
+    public static final RegistryObject<Item> GILDED_PAPER = ITEMS.register("gilded_paper",
+            () -> new ru.aiforge.riftworld.item.DragonPaperItem(ru.aiforge.riftworld.item.DragonPaperItem.WHISKER_GILDED,
+                    new Item.Properties().stacksTo(64).rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> EMERALD_PAPER = ITEMS.register("emerald_paper",
+            () -> new ru.aiforge.riftworld.item.DragonPaperItem(ru.aiforge.riftworld.item.DragonPaperItem.WHISKER_EMERALD,
+                    new Item.Properties().stacksTo(64).rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> DIAMOND_PAPER = ITEMS.register("diamond_paper",
+            () -> new ru.aiforge.riftworld.item.DragonPaperItem(ru.aiforge.riftworld.item.DragonPaperItem.WHISKER_DIAMOND,
+                    new Item.Properties().stacksTo(64).rarity(Rarity.RARE)));
+    public static final RegistryObject<Item> AMETHYST_PAPER = ITEMS.register("amethyst_paper",
+            () -> new ru.aiforge.riftworld.item.DragonPaperItem(ru.aiforge.riftworld.item.DragonPaperItem.WHISKER_AMETHYST,
+                    new Item.Properties().stacksTo(64).rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> CRIMSON_PAPER = ITEMS.register("crimson_paper",
+            () -> new ru.aiforge.riftworld.item.DragonPaperItem(ru.aiforge.riftworld.item.DragonPaperItem.WHISKER_CRIMSON,
+                    new Item.Properties().stacksTo(64).rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> LAPIS_PAPER = ITEMS.register("lapis_paper",
+            () -> new ru.aiforge.riftworld.item.DragonPaperItem(ru.aiforge.riftworld.item.DragonPaperItem.WHISKER_LAPIS,
+                    new Item.Properties().stacksTo(64).rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> DRAGON_SADDLE = ITEMS.register("dragon_saddle",
+            () -> new ru.aiforge.riftworld.item.DragonSaddleItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE)));
+    public static final RegistryObject<Item> DRAGON_WHISTLE = ITEMS.register("dragon_whistle",
+            () -> new ru.aiforge.riftworld.item.DragonWhistleItem(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC)));
+
     public static final RegistryObject<Item> MORGRATH_SCYTHE = ITEMS.register("morgrath_scythe",
             () -> new ru.aiforge.riftworld.item.ScytheItem(new Item.Properties().rarity(Rarity.EPIC).fireResistant()));
     public static final RegistryObject<Item> GUARD_SICKLE = ITEMS.register("guard_sickle",

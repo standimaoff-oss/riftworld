@@ -1,21 +1,38 @@
 package ru.aiforge.riftworld.entity;
 
+import java.util.Optional;
+import java.util.UUID;
 import javax.annotation.Nullable;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.FlyingMob;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -25,45 +42,69 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import ru.aiforge.riftworld.flight.Flight;
+import ru.aiforge.riftworld.item.DragonPaperItem;
+import ru.aiforge.riftworld.item.DragonWhistleItem;
+import ru.aiforge.riftworld.registry.ModItems;
 import ru.aiforge.riftworld.world.CityPlan;
 import ru.aiforge.riftworld.world.FloatingIslands;
+import ru.aiforge.riftworld.world.InvertedTowers;
+import ru.aiforge.riftworld.world.TamedDragonSavedData;
 
 /**
- * v0.24.0: Enlarged (~47.7m), ultra-smooth Modular 3D Origami Dragon.
- * <ul>
- *   <li><b>Strict White City Exclusion</b>: never enters the White City ({@link #isInsideCityNoFlyZone});</li>
- *   <li><b>Natural Island-Perimeter &amp; Vault Flight</b>: glides gracefully along the outer cliff rims of wild
- *       floating islands, beneath high island vaults, and across open sky/sea — NEVER threading between spires;</li>
- *   <li><b>Curvature-Limited C2 Motion &amp; Persistent Spine Chain</b>: 6-step client interpolation + arc-length-locked,
- *       joint-angle-clamped 72-node spine chain eliminates jerky turns and guarantees zero vanishing points/head!</li>
- * </ul>
+ * v0.26.0: Гигантский (~47.7 м) модульный оригами Бумажный Дракон с полной анимацией конечностей,
+ * гнездованием диких особей строго на Летающих Перевёрнутых Башнях, приручением крафтовой бумагой
+ * (окрашивающей 2 уса), ванильным и кастомным седлом, управляемым полётом (0 .. 2x Элитр с фейерверками,
+ * мышь + W/S + A/D по градусам, пикирование и предел тяги подъёма), режимами питомца и призывом Горном вне симуляции!
  */
 public class PaperDragonEntity extends FlyingMob {
     /** 72 spine nodes × 0.54m = 38.9m modular body + 4.3m Imperial Head + 4.5m Tail Fan ≈ 47.7m total length! */
     public static final int SEGS = 72;
     public static final float STEP = 0.54F;
-    /** Maximum bend angle per spine link (6.5°) — guarantees zero kinking, folding, or inverted head/rings! */
-    private static final float MAX_JOINT_COS = 0.9935F; // cos(6.5 deg)
-    private static final float MAX_JOINT_SIN = 0.1132F; // sin(6.5 deg)
+    private static final float MAX_JOINT_COS = 0.9903F; // cos(8.0 deg) — allows smooth coiled spiral AND ribbon flight!
+    private static final float MAX_JOINT_SIN = 0.1392F;
 
     private static final double BASE_SPEED = 0.42;
+    /** 2x Vanilla Elytra boosted with Firework Rockets (1.675 * 2.0 = 3.35 blocks/tick = 67.0 m/s)! */
+    public static final double MAX_MOUNTED_SPEED = 3.35;
+    public static final double MIN_MOUNTED_SPEED = 0.0;
+
     private static final float MAX_YAW_STEP_DEG = 1.50F;
     private static final float MAX_PITCH_STEP_DEG = 1.05F;
 
-    /** Flight modes strictly outside island building interiors and outside the White City. */
     public static final int FLIGHT_ALONG_ISLAND_RIM = 0;
     public static final int FLIGHT_UNDER_ISLAND     = 1;
     public static final int FLIGHT_OPEN_SKY_SEA     = 2;
     public static final int FLIGHT_OVER_ISLAND      = FLIGHT_ALONG_ISLAND_RIM;
+    public static final int FLIGHT_SEEK_TOWER_ROOST = 3;
 
-    /** Minimum safe distance from (0,0) and around each White City island. */
+    public static final int PET_ORBIT_OWNER = 0;
+    public static final int PET_SLEEP       = 1;
+
     public static final double CITY_CENTER_EXCLUSION_R = 335.0;
     public static final double CITY_ISLAND_BUFFER      = 95.0;
 
     private static final EntityDataAccessor<Float> DATA_PHASE =
             SynchedEntityData.defineId(PaperDragonEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Boolean> DATA_TAMED =
+            SynchedEntityData.defineId(PaperDragonEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Optional<UUID>> DATA_OWNER =
+            SynchedEntityData.defineId(PaperDragonEntity.class, EntityDataSerializers.OPTIONAL_UUID);
+    private static final EntityDataAccessor<Integer> DATA_WHISKER_TYPE =
+            SynchedEntityData.defineId(PaperDragonEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DATA_SADDLE_TIER =
+            SynchedEntityData.defineId(PaperDragonEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Boolean> DATA_COILED =
+            SynchedEntityData.defineId(PaperDragonEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> DATA_DIVING =
+            SynchedEntityData.defineId(PaperDragonEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Integer> DATA_PET_MODE =
+            SynchedEntityData.defineId(PaperDragonEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Float> DATA_THRUST =
+            SynchedEntityData.defineId(PaperDragonEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Float> DATA_SPEED_RATIO =
+            SynchedEntityData.defineId(PaperDragonEntity.class, EntityDataSerializers.FLOAT);
 
-    // Server flight state (smooth tangential orbit + low-pass steering)
+    // Server flight & roost state
     private Vec3 targetPoint;
     private Vec3 smoothAimDir;
     private int waypointTimer;
@@ -72,7 +113,23 @@ public class PaperDragonEntity extends FlyingMob {
     private double orbitAngle;
     private int orbitSign = 1;
 
-    // Client-side persistent arc-length-locked spine chain (interpolated cleanly at any FPS!)
+    // Wild Inverted-Tower roosting state
+    @Nullable
+    private InvertedTowers.Site roostTower;
+    private int wildRoostTimer = 0;
+    private int wildNextRoostCooldown = 500;
+
+    // Tamed & mounted flight state
+    private int recallGen = 0;
+    private int hornApproachTicks = 0;
+    private double mountedSpeed = 0.0;
+    private byte riderThrottle = 0;
+    private byte riderYawStep = 0;
+    private float riderAimYaw = 0.0F;
+    private float riderAimPitch = 0.0F;
+    private int riderInputGrace = 0;
+
+    // Client-side persistent arc-length-locked spine chain
     public boolean chainInit;
     public final double[] chainX     = new double[SEGS];
     public final double[] chainY     = new double[SEGS];
@@ -83,27 +140,28 @@ public class PaperDragonEntity extends FlyingMob {
     public final float[]  chainRoll     = new float[SEGS];
     public final float[]  prevChainRoll = new float[SEGS];
 
-    // Smooth unit head forward vector on client (never flips or collapses!)
     public double headFx = 0.0, headFy = 0.0, headFz = 1.0;
     public double prevHeadFx = 0.0, prevHeadFy = 0.0, prevHeadFz = 1.0;
     public float bankRoll, bankRollPrev;
     public float jawAnim, jawAnimPrev;
+    public float diveBlend, diveBlendPrev;
+    public float coilBlend, coilBlendPrev;
     private float prevSmoothYaw;
 
     public PaperDragonEntity(EntityType<? extends PaperDragonEntity> type, Level level) {
         super(type, level);
         this.noCulling = true;
         this.xpReward = 0;
+        this.setMaxUpStep(1.5F);
     }
 
     public static AttributeSupplier.Builder attributes() {
         return Mob.createMobAttributes()
-                .add(Attributes.MAX_HEALTH, 60.0)
+                .add(Attributes.MAX_HEALTH, 80.0)
                 .add(Attributes.MOVEMENT_SPEED, BASE_SPEED)
                 .add(Attributes.FLYING_SPEED, BASE_SPEED);
     }
 
-    /** Returns true if (x, z) lies inside or near the White City no-fly zone. */
     public static boolean isInsideCityNoFlyZone(CityPlan plan, double x, double z, double extraBuffer) {
         double r0 = CITY_CENTER_EXCLUSION_R + extraBuffer;
         if (x * x + z * z < r0 * r0) return true;
@@ -122,10 +180,338 @@ public class PaperDragonEntity extends FlyingMob {
     protected void defineSynchedData() {
         super.defineSynchedData();
         this.entityData.define(DATA_PHASE, 0.0F);
+        this.entityData.define(DATA_TAMED, false);
+        this.entityData.define(DATA_OWNER, Optional.empty());
+        this.entityData.define(DATA_WHISKER_TYPE, DragonPaperItem.WHISKER_IVORY);
+        this.entityData.define(DATA_SADDLE_TIER, 0);
+        this.entityData.define(DATA_COILED, false);
+        this.entityData.define(DATA_DIVING, false);
+        this.entityData.define(DATA_PET_MODE, PET_ORBIT_OWNER);
+        this.entityData.define(DATA_THRUST, 1.0F);
+        this.entityData.define(DATA_SPEED_RATIO, 0.0F);
     }
 
     public float wavePhase() {
         return this.entityData.get(DATA_PHASE);
+    }
+
+    public boolean isTamed() {
+        return this.entityData.get(DATA_TAMED);
+    }
+
+    @Nullable
+    public UUID getOwnerUUID() {
+        return this.entityData.get(DATA_OWNER).orElse(null);
+    }
+
+    public boolean isOwnedBy(LivingEntity entity) {
+        UUID owner = getOwnerUUID();
+        return isTamed() && owner != null && owner.equals(entity.getUUID());
+    }
+
+    public int whiskerType() {
+        return this.entityData.get(DATA_WHISKER_TYPE);
+    }
+
+    public int whiskerColorRgb() {
+        return DragonPaperItem.colorForWhiskerType(whiskerType());
+    }
+
+    public int saddleTier() {
+        return this.entityData.get(DATA_SADDLE_TIER);
+    }
+
+    public boolean isCoiled() {
+        return this.entityData.get(DATA_COILED);
+    }
+
+    public void setCoiled(boolean coiled) {
+        this.entityData.set(DATA_COILED, coiled);
+    }
+
+    public boolean isDiving() {
+        return this.entityData.get(DATA_DIVING);
+    }
+
+    public int petMode() {
+        return this.entityData.get(DATA_PET_MODE);
+    }
+
+    public float upwardThrust() {
+        return this.entityData.get(DATA_THRUST);
+    }
+
+    public float syncedSpeedRatio() {
+        return this.entityData.get(DATA_SPEED_RATIO);
+    }
+
+    /** Помещает дикого дракона свернувшимся кольцом прямо на вершину Летающей Перевёрнутой Башни! */
+    public void placeCoiledOnWildTower(InvertedTowers.Site site) {
+        this.roostTower = site;
+        this.wildRoostTimer = 1400 + this.random.nextInt(900);
+        this.moveTo(site.cx() + 0.5, site.roostY() + 1.05, site.cz() + 0.5, this.random.nextFloat() * 360.0F, 0.0F);
+        this.setDeltaMovement(Vec3.ZERO);
+        this.setCoiled(true);
+    }
+
+    public void tameForPlayer(Player player, int whiskerColorType) {
+        this.entityData.set(DATA_TAMED, true);
+        this.entityData.set(DATA_OWNER, Optional.of(player.getUUID()));
+        this.entityData.set(DATA_WHISKER_TYPE, whiskerColorType);
+        this.entityData.set(DATA_PET_MODE, PET_SLEEP);
+        this.setCoiled(true);
+        this.setPersistenceRequired();
+        syncToSavedData();
+    }
+
+    public void equipSaddleTier(int tier) {
+        this.entityData.set(DATA_SADDLE_TIER, Mth.clamp(tier, 0, 2));
+        syncToSavedData();
+    }
+
+    public void restoreFromSavedEntry(TamedDragonSavedData.Entry e) {
+        this.entityData.set(DATA_PHASE, this.random.nextFloat() * Mth.TWO_PI);
+        this.entityData.set(DATA_TAMED, true);
+        this.entityData.set(DATA_OWNER, Optional.of(e.ownerId));
+        this.entityData.set(DATA_WHISKER_TYPE, e.whiskerType);
+        this.entityData.set(DATA_SADDLE_TIER, e.saddleTier);
+        this.entityData.set(DATA_PET_MODE, PET_ORBIT_OWNER);
+        this.setCoiled(false);
+        this.entityData.set(DATA_DIVING, false);
+        this.entityData.set(DATA_THRUST, 1.0F);
+        this.recallGen = e.recallGen;
+        this.setHealth(Mth.clamp(e.health, 10.0F, this.getMaxHealth()));
+        if (e.customNameJson != null && !e.customNameJson.isEmpty()) {
+            try {
+                Component c = Component.Serializer.fromJson(e.customNameJson);
+                if (c != null) this.setCustomName(c);
+            } catch (Exception ignored) {
+            }
+        }
+        this.setPersistenceRequired();
+    }
+
+    public void beginHornSummonToOwner(ServerPlayer owner) {
+        this.entityData.set(DATA_PET_MODE, PET_ORBIT_OWNER);
+        this.setCoiled(false);
+        this.entityData.set(DATA_DIVING, false);
+        this.hornApproachTicks = 180;
+        this.targetPoint = owner.position().add(0.0, 5.5, 0.0);
+        this.smoothAimDir = null;
+        syncToSavedData();
+    }
+
+    public void applyRiderInput(byte throttle, byte yawDegStep, float aimYaw, float aimPitch) {
+        this.riderThrottle = throttle;
+        this.riderYawStep = yawDegStep;
+        this.riderAimYaw = aimYaw;
+        this.riderAimPitch = Mth.clamp(aimPitch, -88.0F, 88.0F);
+        this.riderInputGrace = 6;
+    }
+
+    @Override
+    public void addAdditionalSaveData(CompoundTag tag) {
+        super.addAdditionalSaveData(tag);
+        tag.putBoolean("Tamed", isTamed());
+        UUID owner = getOwnerUUID();
+        if (owner != null) tag.putUUID("Owner", owner);
+        tag.putInt("WhiskerType", whiskerType());
+        tag.putInt("SaddleTier", saddleTier());
+        tag.putBoolean("Coiled", isCoiled());
+        tag.putInt("PetMode", petMode());
+        tag.putFloat("UpwardThrust", upwardThrust());
+        tag.putInt("RecallGen", recallGen);
+    }
+
+    @Override
+    public void readAdditionalSaveData(CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
+        if (tag.contains("Tamed")) this.entityData.set(DATA_TAMED, tag.getBoolean("Tamed"));
+        if (tag.hasUUID("Owner")) this.entityData.set(DATA_OWNER, Optional.of(tag.getUUID("Owner")));
+        if (tag.contains("WhiskerType")) this.entityData.set(DATA_WHISKER_TYPE, tag.getInt("WhiskerType"));
+        if (tag.contains("SaddleTier")) this.entityData.set(DATA_SADDLE_TIER, tag.getInt("SaddleTier"));
+        if (tag.contains("Coiled")) this.entityData.set(DATA_COILED, tag.getBoolean("Coiled"));
+        if (tag.contains("PetMode")) this.entityData.set(DATA_PET_MODE, tag.getInt("PetMode"));
+        if (tag.contains("UpwardThrust")) this.entityData.set(DATA_THRUST, Mth.clamp(tag.getFloat("UpwardThrust"), 0.0F, 1.0F));
+        this.recallGen = tag.getInt("RecallGen");
+    }
+
+    private void syncToSavedData() {
+        if (this.level().isClientSide || !(this.level() instanceof ServerLevel sl)) return;
+        UUID owner = getOwnerUUID();
+        if (!isTamed() || owner == null) return;
+        String nameJson = this.hasCustomName() && this.getCustomName() != null
+                ? Component.Serializer.toJson(this.getCustomName()) : "";
+        TamedDragonSavedData.get(sl.getServer()).update(
+                this.getUUID(), owner, whiskerType(), saddleTier(), this.getHealth(), nameJson, recallGen);
+    }
+
+    @Override
+    public InteractionResult mobInteract(Player player, InteractionHand hand) {
+        ItemStack stack = player.getItemInHand(hand);
+
+        // 1) Приручение дикого Бумажного Дракона ОСОБОЙ БУМАГОЙ — строго когда он спит на Перевёрнутой Башне!
+        if (!isTamed()) {
+            if (stack.getItem() instanceof DragonPaperItem paper) {
+                if (!isCoiled()) {
+                    if (!this.level().isClientSide) {
+                        player.displayClientMessage(Component.translatable("msg.riftworld.dragon_must_rest")
+                                .withStyle(ChatFormatting.YELLOW), true);
+                    }
+                    return InteractionResult.sidedSuccess(this.level().isClientSide);
+                }
+                if (!this.level().isClientSide && this.level() instanceof ServerLevel sl) {
+                    if (!player.getAbilities().instabuild) {
+                        stack.shrink(1);
+                    }
+                    boolean success = player.getAbilities().instabuild || this.random.nextFloat() < 0.55F;
+                    if (success) {
+                        tameForPlayer(player, paper.whiskerType());
+                        sl.sendParticles(ParticleTypes.HEART, this.getX(), this.getY() + 1.8, this.getZ(), 14, 1.4, 0.7, 1.4, 0.04);
+                        sl.sendParticles(ParticleTypes.END_ROD, this.getX(), this.getY() + 1.5, this.getZ(), 22, 1.8, 0.8, 1.8, 0.05);
+                        this.level().playSound(null, this.blockPosition(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.NEUTRAL, 2.0F, 1.15F);
+
+                        // Выдаём личный Горн Бумажного Дракона (призыв даже вне симуляции!)
+                        ItemStack whistle = new ItemStack(ModItems.DRAGON_WHISTLE.get());
+                        DragonWhistleItem.bindToDragon(whistle, this);
+                        if (!player.getInventory().add(whistle)) {
+                            player.drop(whistle, false);
+                        }
+                        player.displayClientMessage(Component.translatable("msg.riftworld.dragon_tamed")
+                                .withStyle(ChatFormatting.GOLD), true);
+                    } else {
+                        sl.sendParticles(ParticleTypes.SMOKE, this.getX(), this.getY() + 1.5, this.getZ(), 8, 1.0, 0.5, 1.0, 0.02);
+                        this.level().playSound(null, this.blockPosition(), SoundEvents.BOOK_PAGE_TURN, SoundSource.NEUTRAL, 1.4F, 1.0F);
+                    }
+                }
+                return InteractionResult.sidedSuccess(this.level().isClientSide);
+            }
+            return super.mobInteract(player, hand);
+        }
+
+        // 2) Взаимодействие с приручённым драконом его владельца
+        if (!isOwnedBy(player)) {
+            return super.mobInteract(player, hand);
+        }
+
+        // Смена окраса 2 усов другой крафтовой особой бумагой
+        if (stack.getItem() instanceof DragonPaperItem paper && paper.whiskerType() != whiskerType()) {
+            if (!this.level().isClientSide && this.level() instanceof ServerLevel sl) {
+                if (!player.getAbilities().instabuild) stack.shrink(1);
+                this.entityData.set(DATA_WHISKER_TYPE, paper.whiskerType());
+                syncToSavedData();
+                sl.sendParticles(ParticleTypes.HAPPY_VILLAGER, this.getX(), this.getY() + 1.6, this.getZ(), 12, 1.2, 0.6, 1.2, 0.03);
+                this.level().playSound(null, this.blockPosition(), SoundEvents.BOOK_PAGE_TURN, SoundSource.NEUTRAL, 1.6F, 1.2F);
+            }
+            return InteractionResult.sidedSuccess(this.level().isClientSide);
+        }
+
+        // Экипировка кастомного Драконьего седла (уровень 2) или ванильного седла (уровень 1)
+        if (stack.is(ModItems.DRAGON_SADDLE.get()) && saddleTier() < 2) {
+            if (!this.level().isClientSide) {
+                int oldTier = saddleTier();
+                if (!player.getAbilities().instabuild) stack.shrink(1);
+                if (oldTier == 1) {
+                    ItemStack oldVanilla = new ItemStack(Items.SADDLE);
+                    if (!player.getInventory().add(oldVanilla)) player.drop(oldVanilla, false);
+                }
+                equipSaddleTier(2);
+                this.level().playSound(null, this.blockPosition(), SoundEvents.HORSE_SADDLE, SoundSource.NEUTRAL, 1.5F, 1.1F);
+                player.displayClientMessage(Component.translatable("msg.riftworld.dragon_saddle_custom")
+                        .withStyle(ChatFormatting.AQUA), true);
+            }
+            return InteractionResult.sidedSuccess(this.level().isClientSide);
+        }
+        if (stack.is(Items.SADDLE) && saddleTier() == 0) {
+            if (!this.level().isClientSide) {
+                if (!player.getAbilities().instabuild) stack.shrink(1);
+                equipSaddleTier(1);
+                this.level().playSound(null, this.blockPosition(), SoundEvents.HORSE_SADDLE, SoundSource.NEUTRAL, 1.5F, 1.0F);
+                player.displayClientMessage(Component.translatable("msg.riftworld.dragon_saddle_vanilla")
+                        .withStyle(ChatFormatting.GREEN), true);
+            }
+            return InteractionResult.sidedSuccess(this.level().isClientSide);
+        }
+
+        // Shift + ПКМ: переключение режима питомца (спать кольцом <-> летать рядом с хозяином!)
+        if (player.isSecondaryUseActive()) {
+            if (!this.level().isClientSide) {
+                int nextMode = petMode() == PET_SLEEP ? PET_ORBIT_OWNER : PET_SLEEP;
+                this.entityData.set(DATA_PET_MODE, nextMode);
+                if (nextMode == PET_SLEEP) {
+                    this.setCoiled(true);
+                    this.setDeltaMovement(Vec3.ZERO);
+                    player.displayClientMessage(Component.translatable("msg.riftworld.dragon_pet_sleep")
+                            .withStyle(ChatFormatting.AQUA), true);
+                } else {
+                    this.setCoiled(false);
+                    player.displayClientMessage(Component.translatable("msg.riftworld.dragon_pet_follow")
+                            .withStyle(ChatFormatting.GREEN), true);
+                }
+                syncToSavedData();
+            }
+            return InteractionResult.sidedSuccess(this.level().isClientSide);
+        }
+
+        // Обычный ПКМ: оседлать дракона (если надето седло!)
+        if (saddleTier() <= 0) {
+            if (!this.level().isClientSide) {
+                player.displayClientMessage(Component.translatable("msg.riftworld.dragon_need_saddle")
+                        .withStyle(ChatFormatting.YELLOW), true);
+            }
+            return InteractionResult.sidedSuccess(this.level().isClientSide);
+        }
+
+        if (!this.level().isClientSide && !this.isVehicle()) {
+            this.setCoiled(false);
+            this.entityData.set(DATA_PET_MODE, PET_ORBIT_OWNER);
+            this.mountedSpeed = 0.45;
+            this.riderAimYaw = player.getYRot();
+            this.riderAimPitch = player.getXRot();
+            player.setYRot(this.getYRot());
+            player.startRiding(this);
+        }
+        return InteractionResult.sidedSuccess(this.level().isClientSide);
+    }
+
+    @Nullable
+    @Override
+    public LivingEntity getControllingPassenger() {
+        Entity first = this.getFirstPassenger();
+        return (first instanceof Player p && isOwnedBy(p)) ? p : null;
+    }
+
+    @Override
+    protected void positionRider(Entity passenger, MoveFunction moveFunc) {
+        if (!this.hasPassenger(passenger)) return;
+        float yawRad = this.getYRot() * Mth.DEG_TO_RAD;
+        float pitchRad = this.getXRot() * Mth.DEG_TO_RAD;
+        double fx = -Mth.sin(yawRad) * Mth.cos(pitchRad);
+        double fy = -Mth.sin(pitchRad);
+        double fz =  Mth.cos(yawRad) * Mth.cos(pitchRad);
+        // Посадка всадника на седле за шеей дракона (~1.35 м позади головы и +1.42 м сверху)
+        double rx = this.getX() - fx * 1.35;
+        double ry = this.getY() - fy * 1.35 + 1.42 + passenger.getMyRidingOffset();
+        double rz = this.getZ() - fz * 1.35;
+        moveFunc.accept(passenger, rx, ry, rz);
+    }
+
+    @Override
+    protected void dropEquipment() {
+        super.dropEquipment();
+        if (saddleTier() == 2) {
+            this.spawnAtLocation(ModItems.DRAGON_SADDLE.get());
+        } else if (saddleTier() == 1) {
+            this.spawnAtLocation(Items.SADDLE);
+        }
+    }
+
+    @Override
+    public void die(DamageSource src) {
+        super.die(src);
+        if (!this.level().isClientSide && this.level() instanceof ServerLevel sl && isTamed()) {
+            TamedDragonSavedData.get(sl.getServer()).remove(this.getUUID());
+        }
     }
 
     @Nullable
@@ -146,8 +532,8 @@ public class PaperDragonEntity extends FlyingMob {
 
     @Override
     public void lerpTo(double x, double y, double z, float yRot, float xRot, int steps, boolean teleport) {
-        // 6-step client glide completely eliminates server-packet sawtooth jitter!
-        super.lerpTo(x, y, z, yRot, xRot, teleport ? 1 : Math.max(steps, 6), teleport);
+        int s = this.isVehicle() ? Math.max(steps, 3) : Math.max(steps, 6);
+        super.lerpTo(x, y, z, yRot, xRot, teleport ? 1 : s, teleport);
     }
 
     @Override
@@ -166,12 +552,12 @@ public class PaperDragonEntity extends FlyingMob {
     }
 
     @Override
-    protected void doPush(net.minecraft.world.entity.Entity other) {
+    protected void doPush(Entity other) {
     }
 
     @Override
     public boolean removeWhenFarAway(double distSq) {
-        return distSq > 360.0 * 360.0;
+        return !isTamed() && distSq > 360.0 * 360.0;
     }
 
     @Override
@@ -181,7 +567,6 @@ public class PaperDragonEntity extends FlyingMob {
 
     @Override
     public AABB getBoundingBoxForCulling() {
-        // Covers the entire ~48m dragon + tail fan from any camera angle so zero segments ever cull!
         return super.getBoundingBoxForCulling().inflate(96.0, 64.0, 96.0);
     }
 
@@ -191,17 +576,34 @@ public class PaperDragonEntity extends FlyingMob {
         if (this.level().isClientSide) {
             clientSpineTick();
         } else {
+            if (isTamed() && this.level() instanceof ServerLevel sl) {
+                TamedDragonSavedData saved = TamedDragonSavedData.get(sl.getServer());
+                TamedDragonSavedData.Entry rec = saved.getEntry(this.getUUID());
+                // Если эта копия была выгружена и уже отозвана Горном с новым UUID/поколением — тихо удаляем старый дубликат!
+                if (rec == null && recallGen > 0) {
+                    this.discard();
+                    return;
+                }
+                if (rec != null && rec.recallGen > this.recallGen) {
+                    this.discard();
+                    return;
+                }
+                if (this.tickCount % 60 == 0) {
+                    syncToSavedData();
+                }
+            }
             serverFlightTick();
         }
     }
 
     // =========================================================================
-    // CLIENT: PERSISTENT, ARC-LENGTH-LOCKED, JOINT-CLAMPED 72-NODE SPINE CHAIN
+    // CLIENT: PERSISTENT 72-NODE SPINE CHAIN (FLIGHT + COILED SLEEP + DIVE)
     // =========================================================================
 
     private void clientSpineTick() {
         float curYaw = this.getYRot();
-        float curPitch = Mth.clamp(this.getXRot(), -34.0F, 34.0F);
+        float pitchLim = isDiving() ? 88.0F : 52.0F;
+        float curPitch = Mth.clamp(this.getXRot(), -pitchLim, pitchLim);
         float yawRad = curYaw * Mth.DEG_TO_RAD;
         float pitchRad = curPitch * Mth.DEG_TO_RAD;
         double rawFx = -Mth.sin(yawRad) * Mth.cos(pitchRad);
@@ -214,20 +616,27 @@ public class PaperDragonEntity extends FlyingMob {
             headFx = prevHeadFx = rawFx;
             headFy = prevHeadFy = rawFy;
             headFz = prevHeadFz = rawFz;
-            for (int i = 0; i < SEGS; ++i) {
-                double d = i * STEP;
-                double px = this.getX() - rawFx * d;
-                double py = this.getY() - rawFy * d;
-                double pz = this.getZ() - rawFz * d;
-                chainX[i] = prevChainX[i] = px;
-                chainY[i] = prevChainY[i] = py;
-                chainZ[i] = prevChainZ[i] = pz;
-                chainRoll[i] = prevChainRoll[i] = 0.0F;
+            coilBlend = coilBlendPrev = isCoiled() ? 1.0F : 0.0F;
+            diveBlend = diveBlendPrev = isDiving() ? 1.0F : 0.0F;
+            if (isCoiled()) {
+                fillCoiledSpiral(chainX, chainY, chainZ, this.getX(), this.getY(), this.getZ(), yawRad, this.tickCount);
+                System.arraycopy(chainX, 0, prevChainX, 0, SEGS);
+                System.arraycopy(chainY, 0, prevChainY, 0, SEGS);
+                System.arraycopy(chainZ, 0, prevChainZ, 0, SEGS);
+            } else {
+                for (int i = 0; i < SEGS; ++i) {
+                    double d = i * STEP;
+                    double px = this.getX() - rawFx * d;
+                    double py = this.getY() - rawFy * d;
+                    double pz = this.getZ() - rawFz * d;
+                    chainX[i] = prevChainX[i] = px;
+                    chainY[i] = prevChainY[i] = py;
+                    chainZ[i] = prevChainZ[i] = pz;
+                }
             }
             return;
         }
 
-        // 1) Snapshot previous tick state for butter-smooth partialTick interpolation
         System.arraycopy(chainX, 0, prevChainX, 0, SEGS);
         System.arraycopy(chainY, 0, prevChainY, 0, SEGS);
         System.arraycopy(chainZ, 0, prevChainZ, 0, SEGS);
@@ -237,8 +646,41 @@ public class PaperDragonEntity extends FlyingMob {
         prevHeadFz = headFz;
         bankRollPrev = bankRoll;
         jawAnimPrev = jawAnim;
+        diveBlendPrev = diveBlend;
+        coilBlendPrev = coilBlend;
 
-        // 2) Smooth head forward vector blended with actual motion + gentle slow serpentine sway
+        diveBlend = Mth.lerp(0.18F, diveBlend, isDiving() ? 1.0F : 0.0F);
+        coilBlend = Mth.lerp(0.10F, coilBlend, isCoiled() ? 1.0F : 0.0F);
+
+        float phase = wavePhase();
+        float t = this.tickCount;
+
+        // Режим сна кольцом (на Перевёрнутой башне или в режиме питомца PET_SLEEP):
+        // плавно сворачиваем все 72 сегмента в величественную спираль радиуса 2.7..5.8 м!
+        if (isCoiled() && coilBlend > 0.15F) {
+            double[] goalX = new double[SEGS];
+            double[] goalY = new double[SEGS];
+            double[] goalZ = new double[SEGS];
+            fillCoiledSpiral(goalX, goalY, goalZ, this.getX(), this.getY(), this.getZ(), yawRad, t);
+            for (int i = 0; i < SEGS; ++i) {
+                chainX[i] = Mth.lerp(0.16, chainX[i], goalX[i]);
+                chainY[i] = Mth.lerp(0.16, chainY[i], goalY[i]);
+                chainZ[i] = Mth.lerp(0.16, chainZ[i], goalZ[i]);
+                chainRoll[i] = Mth.lerp(0.16F, chainRoll[i], 0.0F);
+            }
+            Vec3 coilTangent = new Vec3(goalX[0] - goalX[1], (goalY[0] - goalY[1]) + 0.06, goalZ[0] - goalZ[1]);
+            if (coilTangent.lengthSqr() > 1.0E-5) {
+                coilTangent = coilTangent.normalize();
+                headFx = Mth.lerp(0.16, headFx, coilTangent.x);
+                headFy = Mth.lerp(0.16, headFy, coilTangent.y);
+                headFz = Mth.lerp(0.16, headFz, coilTangent.z);
+            }
+            bankRoll = Mth.lerp(0.15F, bankRoll, 0.0F);
+            // Тихое спокойное дыхание во сне
+            jawAnim = Mth.lerp(0.12F, jawAnim, 0.025F + 0.02F * Mth.sin(t * 0.04F + phase));
+            return;
+        }
+
         double vx = this.getX() - this.xo;
         double vy = this.getY() - this.yo;
         double vz = this.getZ() - this.zo;
@@ -246,24 +688,24 @@ public class PaperDragonEntity extends FlyingMob {
 
         double desFx = rawFx, desFy = rawFy, desFz = rawFz;
         if (vLen > 0.035) {
-            double mvx = vx / vLen, mvy = Mth.clamp(vy / vLen, -0.52, 0.52), mvz = vz / vLen;
-            desFx = Mth.lerp(0.55, rawFx, mvx);
-            desFy = Mth.lerp(0.55, rawFy, mvy);
-            desFz = Mth.lerp(0.55, rawFz, mvz);
+            double maxVy = isDiving() ? 0.98 : 0.72;
+            double mvx = vx / vLen, mvy = Mth.clamp(vy / vLen, -maxVy, maxVy), mvz = vz / vLen;
+            desFx = Mth.lerp(0.58, rawFx, mvx);
+            desFy = Mth.lerp(0.58, rawFy, mvy);
+            desFz = Mth.lerp(0.58, rawFz, mvz);
         }
-        float phase = wavePhase();
-        float t = this.tickCount;
-        // Subtle slow imperial head undulation
+
+        float swayAtten = 1.0F - 0.85F * diveBlend;
         double sideHx = desFz, sideHz = -desFx;
         double sideHLen = Math.hypot(sideHx, sideHz);
         if (sideHLen > 1.0E-4) {
             sideHx /= sideHLen;
             sideHz /= sideHLen;
-            double headSway = Math.sin(t * 0.042F + phase) * 0.075;
+            double headSway = Math.sin(t * 0.042F + phase) * 0.065 * swayAtten;
             desFx += sideHx * headSway;
             desFz += sideHz * headSway;
         }
-        desFy += Math.cos(t * 0.034F + phase * 0.7F) * 0.035;
+        desFy += Math.cos(t * 0.034F + phase * 0.7F) * 0.030 * swayAtten;
         double dLen = Math.sqrt(desFx * desFx + desFy * desFy + desFz * desFz);
         if (dLen > 1.0E-5) {
             desFx /= dLen;
@@ -271,10 +713,10 @@ public class PaperDragonEntity extends FlyingMob {
             desFz /= dLen;
         }
 
-        // Low-pass filter head forward vector (max ~2.8 deg/tick -> zero head snapping!)
-        headFx = Mth.lerp(0.14, headFx, desFx);
-        headFy = Mth.lerp(0.14, headFy, desFy);
-        headFz = Mth.lerp(0.14, headFz, desFz);
+        double headLerp = this.isVehicle() ? 0.30 : 0.16;
+        headFx = Mth.lerp(headLerp, headFx, desFx);
+        headFy = Mth.lerp(headLerp, headFy, desFy);
+        headFz = Mth.lerp(headLerp, headFz, desFz);
         double hLen = Math.sqrt(headFx * headFx + headFy * headFy + headFz * headFz);
         if (hLen > 1.0E-6) {
             headFx /= hLen;
@@ -286,18 +728,18 @@ public class PaperDragonEntity extends FlyingMob {
             headFz = 1.0;
         }
 
-        // Smooth banking roll & subtle breathing jaw
-        float smoothYaw = Mth.rotLerp(0.12F, prevSmoothYaw, curYaw);
+        float smoothYaw = Mth.rotLerp(this.isVehicle() ? 0.24F : 0.12F, prevSmoothYaw, curYaw);
         float yawRate = Mth.wrapDegrees(smoothYaw - prevSmoothYaw);
         prevSmoothYaw = smoothYaw;
-        float targetRoll = Mth.clamp(-yawRate * 11.0F, -24.0F, 24.0F);
-        bankRoll = Mth.lerp(0.08F, bankRoll, targetRoll);
+        float targetRoll = Mth.clamp(-yawRate * (this.isVehicle() ? 6.5F : 11.0F), -28.0F, 28.0F);
+        bankRoll = Mth.lerp(0.12F, bankRoll, targetRoll);
 
-        float targetJaw = 0.05F + 0.05F * Mth.sin(t * 0.048F + phase)
-                + (Mth.sin(t * 0.017F + phase * 1.9F) > 0.90F ? 0.14F : 0.0F);
-        jawAnim = Mth.lerp(0.10F, jawAnim, targetJaw);
+        // В пикировании дракон плотно закрывает пасть!
+        float normalJaw = 0.055F + 0.055F * Mth.sin(t * 0.058F + phase)
+                + (Mth.sin(t * 0.019F + phase * 1.9F) > 0.88F ? 0.15F : 0.0F);
+        float targetJaw = Mth.lerp(diveBlend, normalJaw, 0.010F);
+        jawAnim = Mth.lerp(0.16F, jawAnim, targetJaw);
 
-        // 3) Advance node 0 and solve follow-the-leader + gentle traveling wave + 6.5° max joint angle!
         chainX[0] = this.getX();
         chainY[0] = this.getY();
         chainZ[0] = this.getZ();
@@ -309,9 +751,8 @@ public class PaperDragonEntity extends FlyingMob {
 
         for (int i = 1; i < SEGS; ++i) {
             float u = (float) i / (float) (SEGS - 1);
-            float env = Mth.clamp(u * 2.2F, 0.0F, 1.0F) * (0.35F + 0.65F * u);
+            float env = Mth.clamp(u * 2.2F, 0.0F, 1.0F) * (0.35F + 0.65F * u) * swayAtten;
 
-            // Gentle traveling aerial wave nudges each link smoothly before distance & angle locking
             double latSX = -refBz, latSZ = refBx;
             double latSL = Math.hypot(latSX, latSZ);
             if (latSL > 1.0E-4) {
@@ -338,7 +779,6 @@ public class PaperDragonEntity extends FlyingMob {
                 dz /= dist;
             }
 
-            // Clamp joint bend angle relative to refB to <= 6.5° so spine is ALWAYS a smooth ribbon!
             double dot = dx * refBx + dy * refBy + dz * refBz;
             if (dot < MAX_JOINT_COS) {
                 double px = dx - dot * refBx;
@@ -371,43 +811,253 @@ public class PaperDragonEntity extends FlyingMob {
         }
     }
 
+    /** Генерирует ровную 1.45-витковую спираль сна (длина каждого звена ровно STEP = 0.54 м!) на площадке башни. */
+    private static void fillCoiledSpiral(double[] outX, double[] outY, double[] outZ,
+                                         double anchorX, double anchorY, double anchorZ,
+                                         float baseAng, float tickTime) {
+        double r0 = 2.65;
+        double cx = anchorX - Math.cos(baseAng) * r0;
+        double cz = anchorZ - Math.sin(baseAng) * r0;
+        double theta = baseAng;
+        for (int i = 0; i < SEGS; ++i) {
+            double u = (double) i / (SEGS - 1);
+            double r = Mth.lerp(u, 2.65, 5.75);
+            double breathLift = 0.05 * Math.sin(tickTime * 0.05 - i * 0.12) * (1.0 - 0.5 * u);
+            double headChin = i < 8 ? (8 - i) * 0.045 : 0.0;
+            outX[i] = cx + Math.cos(theta) * r;
+            outY[i] = anchorY + headChin + breathLift;
+            outZ[i] = cz + Math.sin(theta) * r;
+            theta += STEP / r;
+        }
+    }
+
     // =========================================================================
-    // SERVER: SMOOTH ISLAND-PERIMETER, UNDER-VAULT & OPEN-SEA FLIGHT (0 CITY!)
+    // SERVER: MOUNTED FLIGHT, PET AI, AND WILD INVERTED-TOWER-ONLY ROOSTING
     // =========================================================================
 
     private void serverFlightTick() {
+        // A) Управляемый полёт верхом (0 .. 2x Элитр с фейерверками, мышь + W/S + A/D, пикирование, предел тяги!)
+        LivingEntity rider = getControllingPassenger();
+        if (rider instanceof Player player) {
+            tickMountedFlight(player);
+            return;
+        }
+        this.entityData.set(DATA_DIVING, false);
+        if (upwardThrust() < 1.0F) {
+            this.entityData.set(DATA_THRUST, Math.min(1.0F, upwardThrust() + 0.008F));
+        }
+
+        // B) Приручённый дракон без всадника (питомец: сон кольцом ИЛИ сопровождение хозяина / призыв Горном!)
+        if (isTamed()) {
+            tickTamedPetFlight();
+            return;
+        }
+
+        // C) Дикий неприручённый дракон: садится отдыхать ТОЛЬКО на Летающие Перевёрнутые Башни!
+        tickWildDragonFlight();
+    }
+
+    private void tickMountedFlight(Player rider) {
+        this.setCoiled(false);
+        boolean customSaddle = saddleTier() >= 2;
+        float turnAgility = customSaddle ? 1.55F : 1.0F;
+
+        float wantYaw = riderInputGrace > 0 ? riderAimYaw : rider.getYRot();
+        float wantPitch = riderInputGrace > 0 ? riderAimPitch : rider.getXRot();
+        if (riderInputGrace > 0) --riderInputGrace;
+
+        // Точный доворот курса A/D по градусам + плавное наведение мышью (как на элитрах)
+        float maxYawStep = 5.2F * turnAgility;
+        float maxPitchStep = 4.4F * turnAgility;
+        float dYaw = Mth.clamp(Mth.wrapDegrees(wantYaw - this.getYRot()), -maxYawStep, maxYawStep);
+        float nextYaw = this.getYRot() + dYaw;
+
+        float thrust = upwardThrust();
+        // Если тяга подъёма иссякла (thrust <= 0.001), нос плавно опускается — взлетать выше нельзя!
+        if (thrust <= 0.005F && wantPitch < 8.0F) {
+            wantPitch = Math.max(wantPitch, 9.0F);
+        }
+        float dPitch = Mth.clamp(wantPitch - this.getXRot(), -maxPitchStep, maxPitchStep);
+        float nextPitch = Mth.clamp(this.getXRot() + dPitch, -86.0F, 88.0F);
+
+        // Режим пикирования (полёт круто вниз: закрытая пасть, поджатые лапы, стремительный набор скорости!)
+        boolean divingNow = nextPitch >= 48.0F && mountedSpeed >= 0.20;
+        this.entityData.set(DATA_DIVING, divingNow);
+
+        // Управление скоростью W / S: от полной остановки (0.0) до 2x скорости элитр с фейерверками (3.35 бл/тик)!
+        double accel = customSaddle ? 0.085 : 0.062;
+        if (riderThrottle > 0) {
+            mountedSpeed = Math.min(MAX_MOUNTED_SPEED, mountedSpeed + accel);
+        } else if (riderThrottle < 0) {
+            mountedSpeed = Math.max(MIN_MOUNTED_SPEED, mountedSpeed - accel * 1.35);
+        } else if (divingNow) {
+            double diveBoost = 0.055 * Mth.sin(nextPitch * Mth.DEG_TO_RAD);
+            mountedSpeed = Math.min(MAX_MOUNTED_SPEED, mountedSpeed + diveBoost);
+        } else {
+            // Мягкое аэродинамическое поддержание крейсерского парения (с сохранением 0 при полной остановке!)
+            if (mountedSpeed < 0.02) mountedSpeed = 0.0;
+            else mountedSpeed *= 0.996;
+        }
+
+        // Расход и восстановление тяги подъёма (вверх тяга постепенно заканчивается!)
+        if (nextPitch < -8.0F && mountedSpeed > 0.06) {
+            float climbFactor = (-nextPitch / 86.0F) * (0.45F + 0.55F * (float) (mountedSpeed / MAX_MOUNTED_SPEED));
+            float drain = climbFactor * (customSaddle ? 0.0048F : 0.0072F);
+            thrust = Math.max(0.0F, thrust - drain);
+        } else {
+            float recov = divingNow ? 0.018F : (nextPitch >= 2.0F ? 0.0085F : 0.0045F);
+            if (customSaddle) recov *= 1.25F;
+            thrust = Math.min(1.0F, thrust + recov);
+        }
+        this.entityData.set(DATA_THRUST, thrust);
+        this.entityData.set(DATA_SPEED_RATIO, (float) (mountedSpeed / MAX_MOUNTED_SPEED));
+
+        this.setYRot(nextYaw);
+        this.yBodyRot = nextYaw;
+        this.yHeadRot = nextYaw;
+        this.setXRot(nextPitch);
+
+        if (mountedSpeed <= 0.001) {
+            this.setDeltaMovement(Vec3.ZERO);
+        } else {
+            Vec3 forward = Vec3.directionFromRotation(nextPitch, nextYaw);
+            Vec3 vel = forward.scale(mountedSpeed);
+            int maxSkyY = this.level().getMaxBuildHeight() - 18;
+            if (this.getY() > maxSkyY && vel.y > 0.0) {
+                vel = new Vec3(vel.x, 0.0, vel.z);
+            }
+            this.setDeltaMovement(vel);
+            this.move(MoverType.SELF, vel);
+        }
+
+        if (divingNow && this.tickCount % 2 == 0 && this.level() instanceof ServerLevel sl) {
+            sl.sendParticles(ParticleTypes.CLOUD, this.getX(), this.getY(), this.getZ(), 2, 0.6, 0.6, 0.6, 0.02);
+        }
+    }
+
+    private void tickTamedPetFlight() {
+        this.entityData.set(DATA_SPEED_RATIO, 0.0F);
+        UUID ownerId = getOwnerUUID();
+        Player owner = (ownerId != null && this.level() instanceof ServerLevel sl) ? sl.getPlayerByUUID(ownerId) : null;
+
+        if (hornApproachTicks > 0) {
+            --hornApproachTicks;
+            this.setCoiled(false);
+            if (owner != null) {
+                targetPoint = owner.position().add(0.0, 5.0, 0.0);
+                if (this.distanceToSqr(owner) < 16.0 * 16.0) {
+                    hornApproachTicks = 0;
+                }
+            }
+            steerSmoothlyTowardTarget(BASE_SPEED * 1.65, 2.6F, 2.2F);
+            return;
+        }
+
+        if (petMode() == PET_SLEEP) {
+            this.setCoiled(true);
+            this.setDeltaMovement(Vec3.ZERO);
+            return;
+        }
+
+        // PET_ORBIT_OWNER: плавный грациозный полёт кругами рядом с хозяином
+        this.setCoiled(false);
+        if (owner != null) {
+            orbitCenterX = owner.getX();
+            orbitCenterZ = owner.getZ();
+            orbitAltY = Mth.clamp(owner.getY() + 18.0, this.level().getMinBuildHeight() + 24.0, this.level().getMaxBuildHeight() - 32.0);
+            if (targetPoint == null || --waypointTimer <= 0 || this.position().distanceToSqr(targetPoint) < 100.0) {
+                double curAng = Math.atan2(this.getZ() - orbitCenterZ, this.getX() - orbitCenterX);
+                orbitAngle = curAng + orbitSign * 0.65;
+                double rad = 26.0 + (this.random.nextDouble() * 10.0);
+                targetPoint = new Vec3(
+                        orbitCenterX + Math.cos(orbitAngle) * rad,
+                        orbitAltY + (this.random.nextDouble() - 0.5) * 6.0,
+                        orbitCenterZ + Math.sin(orbitAngle) * rad);
+                waypointTimer = 50;
+            }
+            double distOwner = this.distanceTo(owner);
+            double petSpd = distOwner > 65.0 ? BASE_SPEED * 1.85 : BASE_SPEED * 0.95;
+            steerSmoothlyTowardTarget(petSpd, 2.1F, 1.5F);
+        } else {
+            this.setDeltaMovement(Vec3.ZERO);
+        }
+    }
+
+    private void tickWildDragonFlight() {
+        this.entityData.set(DATA_SPEED_RATIO, 0.0F);
         boolean isElisar = this.level().dimension().equals(Flight.ELISAR_DIM);
         CityPlan plan = isElisar ? CityPlan.get() : null;
         int ocean = plan != null ? plan.ocean : this.level().getSeaLevel();
 
-        // 1) Strict White City exclusion: if anywhere near the White City, glide smoothly outward to open sea!
-        if (isElisar && isInsideCityNoFlyZone(plan, this.getX(), this.getZ(), 15.0)) {
-            double rx = this.getX();
-            double rz = this.getZ();
-            double rLen = Math.hypot(rx, rz);
-            if (rLen < 1.0) {
-                rx = 1.0;
-                rz = 0.0;
-                rLen = 1.0;
+        // 1) Сон дикого дракона строго на вершине Летающей Перевёрнутой Башни!
+        if (isCoiled()) {
+            this.setDeltaMovement(Vec3.ZERO);
+            // Пока рядом на башне есть игрок (например, крадущийся с бумагой для приручения), дракон спокойно спит!
+            Player nearPlayer = this.level().getNearestPlayer(this, 24.0);
+            if (nearPlayer != null && !nearPlayer.isSpectator()) {
+                wildRoostTimer = Math.max(wildRoostTimer, 200);
+                return;
             }
-            rx /= rLen;
-            rz /= rLen;
-            targetPoint = new Vec3(
-                    this.getX() + rx * 95.0,
-                    Math.max(this.getY(), ocean + 44.0),
-                    this.getZ() + rz * 95.0);
+            if (--wildRoostTimer <= 0) {
+                this.setCoiled(false);
+                this.roostTower = null;
+                this.wildNextRoostCooldown = 900 + this.random.nextInt(700);
+                this.flightMode = FLIGHT_OPEN_SKY_SEA;
+                this.waypointTimer = 0;
+            }
+            return;
+        }
+
+        // 2) Периодический поиск ближайшей Дикой Летающей Перевёрнутой Башни для отдыха!
+        if (isElisar && --wildNextRoostCooldown <= 0 && flightMode != FLIGHT_SEEK_TOWER_ROOST) {
+            InvertedTowers.Site wildTow = InvertedTowers.nearest(this.getX(), this.getZ(), false, 2);
+            if (wildTow != null && Math.hypot(wildTow.cx() - this.getX(), wildTow.cz() - this.getZ()) < 340.0) {
+                AABB check = new AABB(wildTow.cx() - 14, wildTow.roostY() - 6, wildTow.cz() - 14,
+                        wildTow.cx() + 14, wildTow.roostY() + 14, wildTow.cz() + 14);
+                boolean occupied = !this.level().getEntitiesOfClass(PaperDragonEntity.class, check, d -> d != this && d.isCoiled()).isEmpty();
+                if (!occupied) {
+                    this.roostTower = wildTow;
+                    this.flightMode = FLIGHT_SEEK_TOWER_ROOST;
+                    this.targetPoint = new Vec3(wildTow.cx() + 0.5, wildTow.roostY() + 2.2, wildTow.cz() + 0.5);
+                    this.waypointTimer = 420;
+                }
+            }
+            wildNextRoostCooldown = 500 + this.random.nextInt(400);
+        }
+
+        if (flightMode == FLIGHT_SEEK_TOWER_ROOST && roostTower != null) {
+            targetPoint = new Vec3(roostTower.cx() + 0.5, roostTower.roostY() + 1.2, roostTower.cz() + 0.5);
+            double dRoost = this.position().distanceTo(targetPoint);
+            if (dRoost < 5.2) {
+                placeCoiledOnWildTower(roostTower);
+                return;
+            }
+            if (--waypointTimer <= 0) {
+                flightMode = FLIGHT_OPEN_SKY_SEA;
+                roostTower = null;
+            } else {
+                steerSmoothlyTowardTarget(BASE_SPEED * 0.90, 2.0F, 1.5F);
+                return;
+            }
+        }
+
+        // 3) Строгий запрет залёта диких драконов в Белый Город
+        if (isElisar && isInsideCityNoFlyZone(plan, this.getX(), this.getZ(), 15.0)) {
+            double rx = this.getX(), rz = this.getZ();
+            double rLen = Math.hypot(rx, rz);
+            if (rLen < 1.0) { rx = 1.0; rz = 0.0; rLen = 1.0; }
+            rx /= rLen; rz /= rLen;
+            targetPoint = new Vec3(this.getX() + rx * 95.0, Math.max(this.getY(), ocean + 44.0), this.getZ() + rz * 95.0);
             waypointTimer = 40;
             flightMode = FLIGHT_OPEN_SKY_SEA;
         } else if (targetPoint == null || --waypointTimer <= 0 || this.position().distanceToSqr(targetPoint) < 196.0) {
             advanceSmoothFlightTarget(plan, ocean, isElisar);
         }
 
-        // 2) Smooth low-pass desired direction + gentle 5-ray lookahead terrain clearance
         Vec3 toTarget = targetPoint.subtract(this.position());
         double dist = toTarget.length();
         Vec3 rawDir = dist > 0.01 ? toTarget.scale(1.0 / dist) : Vec3.directionFromRotation(this.getXRot(), this.getYRot());
 
-        // Gentle slow breathing wave along macro trajectory (unhurried, majestic)
         float phase = wavePhase();
         float slowT = this.tickCount * 0.028F + phase;
         Vec3 right = new Vec3(-rawDir.z, 0.0, rawDir.x);
@@ -426,7 +1076,6 @@ public class PaperDragonEntity extends FlyingMob {
             if (smoothAimDir.lengthSqr() > 1.0E-6) smoothAimDir = smoothAimDir.normalize();
         }
 
-        // 3) Curvature-clamped yaw & pitch integration (<= 1.50°/tick yaw, <= 1.05°/tick pitch)
         double horiz = Math.hypot(smoothAimDir.x, smoothAimDir.z);
         float wantYaw = (float) (Mth.atan2(smoothAimDir.z, smoothAimDir.x) * (180.0 / Math.PI)) - 90.0F;
         float wantPitch = Mth.clamp((float) -(Mth.atan2(smoothAimDir.y, Math.max(0.05, horiz)) * (180.0 / Math.PI)), -26.0F, 26.0F);
@@ -440,7 +1089,6 @@ public class PaperDragonEntity extends FlyingMob {
         this.yHeadRot = nextYaw;
         this.setXRot(nextPitch);
 
-        // 4) Move purely along the dragon's smooth forward tangent (zero sideways crabbing or snaps!)
         Vec3 forward = Vec3.directionFromRotation(nextPitch, nextYaw);
         double targetSpeed = BASE_SPEED * (1.0 - 0.10 * (Math.abs(dYaw) / MAX_YAW_STEP_DEG));
         Vec3 prevVel = this.getDeltaMovement();
@@ -449,7 +1097,6 @@ public class PaperDragonEntity extends FlyingMob {
             nextVel = forward.scale(BASE_SPEED * 0.72);
         }
 
-        // Soft sea-surface floor cushion
         if (this.getY() < ocean + 11.0 && nextVel.y < 0.05) {
             nextVel = new Vec3(nextVel.x, Mth.lerp(0.10, nextVel.y, 0.09), nextVel.z);
         }
@@ -459,19 +1106,33 @@ public class PaperDragonEntity extends FlyingMob {
         }
 
         this.setDeltaMovement(nextVel);
-        this.move(net.minecraft.world.entity.MoverType.SELF, nextVel);
+        this.move(MoverType.SELF, nextVel);
 
         if (this.horizontalCollision || this.verticalCollision) {
-            // Gentle tangential deflection without resetting timer abruptly
             orbitSign = -orbitSign;
             orbitAngle += orbitSign * 0.45;
         }
     }
 
-    /**
-     * Advances a smooth tangential waypoint along wild island perimeters, beneath high island vaults,
-     * or across open sea/sky — NEVER over island building centers and NEVER near the White City!
-     */
+    private void steerSmoothlyTowardTarget(double speed, float yawLimit, float pitchLimit) {
+        if (targetPoint == null) return;
+        Vec3 to = targetPoint.subtract(this.position());
+        double d = to.length();
+        Vec3 dir = d > 0.01 ? to.scale(1.0 / d) : Vec3.directionFromRotation(this.getXRot(), this.getYRot());
+        double horiz = Math.hypot(dir.x, dir.z);
+        float wantYaw = (float) (Mth.atan2(dir.z, dir.x) * (180.0 / Math.PI)) - 90.0F;
+        float wantPitch = Mth.clamp((float) -(Mth.atan2(dir.y, Math.max(0.05, horiz)) * (180.0 / Math.PI)), -32.0F, 32.0F);
+        float nextYaw = this.getYRot() + Mth.clamp(Mth.wrapDegrees(wantYaw - this.getYRot()), -yawLimit, yawLimit);
+        float nextPitch = Mth.clamp(this.getXRot() + Mth.clamp(wantPitch - this.getXRot(), -pitchLimit, pitchLimit), -32.0F, 32.0F);
+        this.setYRot(nextYaw);
+        this.yBodyRot = nextYaw;
+        this.yHeadRot = nextYaw;
+        this.setXRot(nextPitch);
+        Vec3 vel = Vec3.directionFromRotation(nextPitch, nextYaw).scale(speed);
+        this.setDeltaMovement(vel);
+        this.move(MoverType.SELF, vel);
+    }
+
     private void advanceSmoothFlightTarget(@Nullable CityPlan plan, int ocean, boolean isElisar) {
         CityPlan.Island wildIsl = isElisar ? findWildFloatingIsland(plan, this.getX(), this.getZ()) : null;
 
@@ -496,19 +1157,15 @@ public class PaperDragonEntity extends FlyingMob {
             orbitCenterX = wildIsl.cx;
             orbitCenterZ = wildIsl.cz;
             double curAng = Math.atan2(this.getZ() - orbitCenterZ, this.getX() - orbitCenterX);
-            // Advance 32°..48° tangentially along the perimeter arc
             orbitAngle = curAng + orbitSign * (0.56 + this.random.nextDouble() * 0.28);
 
             if (flightMode == FLIGHT_UNDER_ISLAND) {
-                // Wide arc deep beneath the floating island's stone vault
                 orbitRadius = wildIsl.R * (0.45 + this.random.nextDouble() * 0.45);
                 orbitAltY = Mth.lerp(0.46 + this.random.nextDouble() * 0.20, ocean + 12.0, vaultBottom - 11.0);
             } else if (flightMode == FLIGHT_ALONG_ISLAND_RIM) {
-                // Strictly OUTSIDE the island's outer cliff reach (+28..52m) so it NEVER threads between buildings/spires!
                 orbitRadius = wildIsl.maxReach() + 28.0 + this.random.nextDouble() * 24.0;
                 orbitAltY = wildIsl.base - 4.0 + this.random.nextDouble() * 24.0;
             } else {
-                // High open sky well above all peaks/spires, or wide sea crossing
                 orbitRadius = wildIsl.maxReach() + 45.0 + this.random.nextDouble() * 45.0;
                 orbitAltY = wildIsl.base + 38.0 + this.random.nextDouble() * 24.0;
             }
@@ -527,7 +1184,6 @@ public class PaperDragonEntity extends FlyingMob {
             return;
         }
 
-        // Open sea / Overworld high-sky sweeping arc
         float curYawRad = this.getYRot() * Mth.DEG_TO_RAD;
         double baseAng = Math.atan2(Mth.cos(curYawRad), -Mth.sin(curYawRad));
         double nextAng = baseAng + (this.random.nextDouble() - 0.5) * 0.85;
@@ -545,14 +1201,12 @@ public class PaperDragonEntity extends FlyingMob {
         int ground = this.level().hasChunk(ix >> 4, iz >> 4)
                 ? this.level().getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, ix, iz)
                 : ocean;
-        // Stay >= 34m above any ground/structures so the dragon glides freely in open sky!
         double wy = Math.max(ground, ocean) + 34.0 + this.random.nextDouble() * 28.0;
         wy = Mth.clamp(wy, ocean + 16.0, this.level().getMaxBuildHeight() - 34.0);
         targetPoint = new Vec3(wx, wy, wz);
         waypointTimer = 150 + this.random.nextInt(90);
     }
 
-    /** Multi-ray fan clearance: gently steers around cliffs/spires 30m ahead without any sharp spikes. */
     private Vec3 blendMultiRayClearance(Vec3 desired, int ocean) {
         Vec3 start = this.position();
         Vec3 d = desired.lengthSqr() > 1.0E-5 ? desired.normalize() : new Vec3(0, 0, 1);
@@ -580,18 +1234,15 @@ public class PaperDragonEntity extends FlyingMob {
             }
         }
 
-        // Ground clearance directly below when not intentionally flying deep under a high vault
         if (flightMode != FLIGHT_UNDER_ISLAND) {
             int gx = this.getBlockX(), gz = this.getBlockZ();
             if (this.level().hasChunk(gx >> 4, gz >> 4)) {
                 int topY = this.level().getHeight(Heightmap.Types.MOTION_BLOCKING, gx, gz);
                 if (topY > ocean + 4 && this.getY() < topY + 22.0 && this.getY() > topY - 4.0) {
-                    // Gently lift well above rooftops/trees if ever passing near terrain
                     pushUp += Mth.clamp((topY + 24.0 - this.getY()) * 0.025, 0.0, 0.35);
                 }
             }
         } else {
-            // Under-island ceiling cushion
             var ceilHit = this.level().clip(new ClipContext(
                     start, start.add(0.0, 13.0, 0.0),
                     ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
@@ -630,7 +1281,6 @@ public class PaperDragonEntity extends FlyingMob {
     private static CityPlan.Island findWildFloatingIsland(@Nullable CityPlan plan, double x, double z) {
         CityPlan.Island best = null;
         double bestScore = Double.MAX_VALUE;
-        // includeCity = false -> NEVER considers White City islands!
         for (CityPlan.Island isl : FloatingIslands.gather(x, z, 280.0, false)) {
             if (isl.kind == 0 || isl.R < 22.0) continue;
             if (isInsideCityNoFlyZone(plan, isl.cx, isl.cz, 55.0)) continue;

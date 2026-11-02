@@ -60,7 +60,13 @@ public final class ElisarStructureLocator {
     public static BlockPos locateSingleKind(String kind, int ox, int oz, int ocean, int maxDist) {
         return switch (kind) {
             case "white_city" -> new BlockPos(0, 108, 0);
-            case "city_royal_castle" -> new BlockPos(0, 114, 18);
+            case "city_sanctuary", "city_royal_castle" -> new BlockPos(0, 109, -4);
+
+            case "inverted_tower" -> {
+                int rMax = Math.max(5, (maxDist / InvertedTowers.SUPER) + 3);
+                InvertedTowers.Site ts = InvertedTowers.nearest(ox, oz, true, rMax);
+                yield ts == null ? null : new BlockPos(ts.cx(), ts.roostY(), ts.cz());
+            }
 
             case "blacktide_citadel" -> {
                 int sx0 = Math.floorDiv(ox, AshenLands.SUPER), sz0 = Math.floorDiv(oz, AshenLands.SUPER);

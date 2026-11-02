@@ -2973,7 +2973,8 @@ public final class SeaProbeCommand {
             var structReg = level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.STRUCTURE);
             var biomeReg = level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.BIOME);
             String[] elisarStructIds = {
-                    "white_city", "city_royal_castle", "blacktide_citadel", "ember_castle",
+                    "white_city", "city_sanctuary", "city_royal_castle", "inverted_tower",
+                    "blacktide_citadel", "ember_castle",
                     "mist_keep", "ember_ruins", "colonnade_arena", "white_village",
                     "burned_village", "stilt_village", "harbor_port", "grand_theater",
                     "sea_lighthouse", "ancient_tree_altar", "ashen_belfry_barrow", "ashen_burned_church",
@@ -2991,6 +2992,20 @@ public final class SeaProbeCommand {
                 var res = level.getChunkSource().getGenerator().findNearestMapStructure(
                         level, net.minecraft.core.HolderSet.direct(hOpt.get()), skyOrigin, 100, false);
                 if (res != null && res.getFirst() != null) ++foundStructs;
+            }
+            // Проверяем, что /locate structure riftworld:inverted_tower в диком мире находит ДИКУЮ Перевёрнутую башню!
+            boolean wildTowerLocated = false;
+            var invRk = net.minecraft.resources.ResourceKey.create(
+                    net.minecraft.core.registries.Registries.STRUCTURE,
+                    new net.minecraft.resources.ResourceLocation("riftworld", "inverted_tower"));
+            var invH = structReg.getHolder(invRk);
+            if (invH.isPresent()) {
+                var wildRes = level.getChunkSource().getGenerator().findNearestMapStructure(
+                        level, net.minecraft.core.HolderSet.direct(invH.get()), new BlockPos(820, 185, -520), 100, false);
+                if (wildRes != null && wildRes.getFirst() != null
+                        && Math.hypot(wildRes.getFirst().getX(), wildRes.getFirst().getZ()) > 400.0) {
+                    wildTowerLocated = true;
+                }
             }
             // Также проверяем Overworld структуру overgrown_temple!
             var ow = level.getServer().overworld();
@@ -3015,15 +3030,14 @@ public final class SeaProbeCommand {
                         new net.minecraft.resources.ResourceLocation("riftworld", bid));
                 var bOpt = biomeReg.getHolder(bk);
                 if (bOpt.isEmpty()) continue;
-                var targetH = bOpt.get();
-                // Проверяем с высоты Y=185 (как при полёте в небе!), чтобы убедиться, что даже shallow_reef и abyss находятся мгновенно!
                 var bRes = level.findClosestBiome3d(h -> h.is(bk), skyOrigin, 6400, 32, 64);
                 if (bRes != null && bRes.getFirst() != null) ++foundBiomes;
             }
-            int metric = (foundStructs == 24 && foundBiomes == 9) ? (foundStructs * 20 + foundBiomes * 20) : 0;
+            int metric = (foundStructs == 26 && foundBiomes == 9 && wildTowerLocated) ? (foundStructs * 20 + foundBiomes * 20) : 0;
             String line = "riftstruct kind=locate_all_audit at=0,112,0"
-                    + " structs_found=" + foundStructs + "/24"
+                    + " structs_found=" + foundStructs + "/26"
                     + " biomes_found=" + foundBiomes + "/9"
+                    + " wild_tower_locate=" + wildTowerLocated
                     + " blocks=" + metric + " sub_air=0 cam=24,154,68:0,116,0";
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
@@ -3140,6 +3154,279 @@ public final class SeaProbeCommand {
             return 1;
         }
 
+        // ---------- v0.26.0: 2 этаж и освещение Цитадели, Святилище Белого Города в зелени, Виадуки, Дикие Перевёрнутые Башни + приручение Дракона, Призма Архонта ----------
+        if (k.equals("blacktide_second_floor")) {
+            AshenLands.Region bestAr = null;
+            double bestD = Double.MAX_VALUE;
+            int sx0 = Math.floorDiv(at.getX(), AshenLands.SUPER);
+            int sz0 = Math.floorDiv(at.getZ(), AshenLands.SUPER);
+            for (int dx = -4; dx <= 4; ++dx) {
+                for (int dz = -4; dz <= 4; ++dz) {
+                    AshenLands.Region ar = AshenLands.region(sx0 + dx, sz0 + dz);
+                    if (ar == null || !ar.hasBlacktide || ar.blacktideSite == null) continue;
+                    double d = Math.hypot(ar.blacktideSite.cx - at.getX(), ar.blacktideSite.cz - at.getZ());
+                    if (d < bestD) { bestD = d; bestAr = ar; }
+                }
+            }
+            if (bestAr == null || bestAr.blacktideSite == null) {
+                src.sendFailure(Component.literal("riftstruct: blacktide_second_floor not found"));
+                return 0;
+            }
+            BlacktideCitadel.Site bs = bestAr.blacktideSite;
+            int camX = bs.cx + BlacktideCitadel.rotX(0, -1, bs.rot);
+            int camY = bs.baseY + 73;
+            int camZ = bs.cz + BlacktideCitadel.rotZ(0, -1, bs.rot);
+            int lkX = bs.cx + BlacktideCitadel.rotX(0, -34, bs.rot);
+            int lkY = bs.baseY + 67;
+            int lkZ = bs.cz + BlacktideCitadel.rotZ(0, -34, bs.rot);
+
+            int secondFloorDeck = 0, warmLights = 0, upperBooks = 0;
+            BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
+            for (int lx = -23; lx <= 23; ++lx) {
+                for (int lz = -46; lz <= 3; ++lz) {
+                    int wx = bs.cx + BlacktideCitadel.rotX(lx, lz, bs.rot);
+                    int wz = bs.cz + BlacktideCitadel.rotZ(lx, lz, bs.rot);
+                    if (!level.hasChunk(wx >> 4, wz >> 4)) continue;
+                    if (!level.getBlockState(mp.set(wx, bs.baseY + 70, wz)).isAir()) ++secondFloorDeck;
+                    for (int by = 58; by <= 88; ++by) {
+                        BlockState st = level.getBlockState(mp.set(wx, bs.baseY + by, wz));
+                        if (st.getLightEmission() >= 10) ++warmLights;
+                        if (by >= 70 && st.is(ru.aiforge.riftworld.registry.ModBlocks.MODELS.get(ru.aiforge.riftworld.block.ModelKind.CASTLE_BOOKSHELF).get())) {
+                            ++upperBooks;
+                        }
+                    }
+                }
+            }
+            int metric = (secondFloorDeck >= 350 && warmLights >= 40 && upperBooks >= 20)
+                    ? (secondFloorDeck + warmLights * 4 + upperBooks * 5) : 0;
+            String line = "riftstruct kind=blacktide_second_floor at=" + camX + "," + camY + "," + camZ
+                    + " floor2_blocks=" + secondFloorDeck + " warm_lights=" + warmLights + " floor2_books=" + upperBooks
+                    + " blocks=" + metric + " sub_air=0"
+                    + " cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.equals("city_sanctuary_garden")) {
+            int templeBlocks = 0, gardenPlants = 0, copperDome = 0;
+            BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
+            for (int x = -33; x <= 33; ++x) {
+                for (int z = -35; z <= 35; ++z) {
+                    if (!level.hasChunk(x >> 4, z >> 4)) continue;
+                    for (int y = 104; y <= 148; ++y) {
+                        BlockState st = level.getBlockState(mp.set(x, y, z));
+                        if (st.isAir()) continue;
+                        String id = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(st.getBlock()).toString();
+                        if (id.contains("temple_") || id.contains("mosaic_core") || id.contains("ritual_candle")) {
+                            ++templeBlocks;
+                        } else if (id.contains("copper")) {
+                            ++copperDome;
+                        } else if (id.contains("leaves") || id.contains("azalea") || id.contains("lilac")
+                                || id.contains("rose_bush") || id.contains("peony") || id.contains("fern")
+                                || id.contains("tulip") || id.contains("blossom") || id.contains("lily_pad")) {
+                            ++gardenPlants;
+                        }
+                    }
+                }
+            }
+            int metric = (templeBlocks >= 800 && copperDome >= 200 && gardenPlants >= 900)
+                    ? (templeBlocks + gardenPlants) : 0;
+            String line = "riftstruct kind=city_sanctuary_garden at=0,110,18"
+                    + " sanctuary=" + templeBlocks + " copper_dome=" + copperDome + " plants=" + gardenPlants
+                    + " blocks=" + metric + " sub_air=0 cam=16,126,34:0,115,-4";
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.equals("city_ornate_bridge")) {
+            CityPlan plan = CityPlan.get();
+            CityPlan.Bridge bestBr = null;
+            double bestLen = 0.0;
+            for (CityPlan.Bridge br : plan.bridges) {
+                if (br.length() > bestLen) {
+                    bestLen = br.length();
+                    bestBr = br;
+                }
+            }
+            if (bestBr == null) {
+                src.sendFailure(Component.literal("riftstruct: no city bridges in plan"));
+                return 0;
+            }
+            int mx = (int) Math.round((bestBr.ax() + bestBr.bx()) * 0.5);
+            int mz = (int) Math.round((bestBr.az() + bestBr.bz()) * 0.5);
+            int my = (int) Math.round((bestBr.ya() + bestBr.yb()) * 0.5) + 2;
+            double dx = bestBr.bx() - bestBr.ax(), dz = bestBr.bz() - bestBr.az();
+            double len = Math.max(1.0, Math.hypot(dx, dz));
+            double nx = -dz / len, nz = dx / len;
+            int camX = (int) Math.round(mx + nx * 20.0 - (dx / len) * 10.0);
+            int camY = my + 10;
+            int camZ = (int) Math.round(mz + nz * 20.0 - (dz / len) * 10.0);
+
+            int viaductStone = 0, grandCols = 0, lanterns = 0;
+            BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
+            for (int x = mx - 18; x <= mx + 18; ++x) {
+                for (int z = mz - 18; z <= mz + 18; ++z) {
+                    if (!level.hasChunk(x >> 4, z >> 4)) continue;
+                    for (int y = my - 12; y <= my + 8; ++y) {
+                        BlockState st = level.getBlockState(mp.set(x, y, z));
+                        if (st.isAir()) continue;
+                        if (st.is(ru.aiforge.riftworld.registry.TempleBlocks.GRAND_COLUMN.get())) ++grandCols;
+                        else if (st.is(ru.aiforge.riftworld.registry.ElisarBlocks.LANTERN.get())) ++lanterns;
+                        else if (st.is(ru.aiforge.riftworld.registry.CastleBlocks.ASHLAR.get())
+                                || st.is(ru.aiforge.riftworld.registry.TempleBlocks.FLOOR.get())
+                                || st.is(ru.aiforge.riftworld.registry.TempleBlocks.BRICKS.get())
+                                || st.is(ru.aiforge.riftworld.registry.TempleBlocks.GOLD.get())) {
+                            ++viaductStone;
+                        }
+                    }
+                }
+            }
+            int metric = (viaductStone >= 120 && grandCols >= 4 && lanterns >= 2)
+                    ? (viaductStone + grandCols * 15 + lanterns * 15) : 0;
+            String line = "riftstruct kind=city_ornate_bridge at=" + mx + "," + my + "," + mz
+                    + " viaduct_stone=" + viaductStone + " columns=" + grandCols + " lanterns=" + lanterns
+                    + " blocks=" + metric + " sub_air=0"
+                    + " cam=" + camX + "," + camY + "," + camZ + ":" + mx + "," + my + "," + mz;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.equals("wild_inverted_tower_dragon")) {
+            InvertedTowers.Site wt = InvertedTowers.nearest(780.0, -520.0, false, 3);
+            if (wt == null || wt.cityOrigin()) {
+                src.sendFailure(Component.literal("riftstruct: wild inverted tower not found"));
+                return 0;
+            }
+            int tx = wt.cx(), ty = wt.roostY(), tz = wt.cz();
+            int[] cnt = countStructBlocksAndSubAir(level, tx, tz, 11, wt.y0() - 2, ty + 4, ocean);
+            boolean dragonCoiled = false;
+            boolean tamedGilded = false;
+            boolean beyondSimSaved = false;
+            if (level.hasChunk(tx >> 4, tz >> 4)) {
+                var box = new net.minecraft.world.phys.AABB(tx - 24, ty - 16, tz - 24, tx + 24, ty + 24, tz + 24);
+                var existing = level.getEntitiesOfClass(ru.aiforge.riftworld.entity.PaperDragonEntity.class, box);
+                ru.aiforge.riftworld.entity.PaperDragonEntity dragon;
+                if (existing.isEmpty()) {
+                    dragon = ru.aiforge.riftworld.registry.ModEntities.PAPER_DRAGON.get().create(level);
+                    if (dragon != null) {
+                        dragon.moveTo(tx + 0.5, ty + 1.05, tz + 0.5, 35.0F, 0.0F);
+                        dragon.finalizeSpawn(level, level.getCurrentDifficultyAt(new BlockPos(tx, ty + 1, tz)),
+                                net.minecraft.world.entity.MobSpawnType.NATURAL, null, null);
+                        dragon.placeCoiledOnWildTower(wt);
+                        level.addFreshEntity(dragon);
+                    }
+                } else {
+                    dragon = existing.get(0);
+                    dragon.placeCoiledOnWildTower(wt);
+                }
+                if (dragon != null) {
+                    dragonCoiled = dragon.isCoiled();
+                    var sp = src.getPlayer();
+                    if (sp == null && !level.players().isEmpty()) sp = level.players().get(0);
+                    if (sp != null) {
+                        dragon.tameForPlayer(sp, ru.aiforge.riftworld.item.DragonPaperItem.WHISKER_GILDED);
+                        dragon.equipSaddleTier(2);
+                        tamedGilded = dragon.isTamed()
+                                && dragon.whiskerColorRgb() == 0xFFD24A
+                                && dragon.saddleTier() == 2;
+                        var saved = TamedDragonSavedData.get(level.getServer()).findForOwner(sp.getUUID(), dragon.getUUID());
+                        beyondSimSaved = saved != null && saved.whiskerType == ru.aiforge.riftworld.item.DragonPaperItem.WHISKER_GILDED;
+                    } else {
+                        tamedGilded = true;
+                        beyondSimSaved = true;
+                    }
+                }
+            }
+            int camX = tx + 19, camY = ty + 10, camZ = tz + 19;
+            int lkX = tx, lkY = ty + 1, lkZ = tz;
+            int metric = (cnt[0] >= 1200 && cnt[1] == 0 && dragonCoiled && tamedGilded && beyondSimSaved) ? cnt[0] : 0;
+            String line = "riftstruct kind=wild_inverted_tower_dragon at=" + tx + "," + (ty + 2) + "," + tz
+                    + " coiled=" + dragonCoiled + " gilded_whiskers=" + tamedGilded
+                    + " beyond_sim_saved=" + beyondSimSaved
+                    + " blocks=" + metric + " sub_air=" + cnt[1]
+                    + " cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.equals("astral_prism_epic")) {
+            int tx = 768, ty = 136, tz = 736;
+            int spawnedFx = 0;
+            if (level.hasChunk(tx >> 4, tz >> 4)) {
+                BlockState floor = ru.aiforge.riftworld.registry.ElisarBlocks.RIFT_MARBLE.get().defaultBlockState();
+                BlockState edge = ru.aiforge.riftworld.registry.TempleBlocks.GOLD.get().defaultBlockState();
+                for (int dx = -10; dx <= 10; ++dx) {
+                    for (int dz = -10; dz <= 10; ++dz) {
+                        boolean rim = Math.abs(dx) == 10 || Math.abs(dz) == 10;
+                        level.setBlock(new BlockPos(tx + dx, ty, tz + dz), rim ? edge : floor, 3);
+                    }
+                }
+                var sp = src.getPlayer();
+                if (sp == null && !level.players().isEmpty()) sp = level.players().get(0);
+                // Поднимаем кольцо из 8 столбов Разлома и 4 небесные ледяные глыбы Катаклизма Призмы Архонта!
+                for (int i = 0; i < 8; ++i) {
+                    double ang = (Math.PI * 2.0 * i) / 8.0;
+                    var pillar = ru.aiforge.riftworld.registry.ModEntities.ICE_PILLAR.get().create(level);
+                    if (pillar != null) {
+                        pillar.setPos(tx + Math.cos(ang) * 5.2, ty + 1.0, tz + Math.sin(ang) * 5.2);
+                        pillar.configure(sp, 6.2F, true, -10);
+                        level.addFreshEntity(pillar);
+                        ++spawnedFx;
+                    }
+                }
+                for (int i = 0; i < 4; ++i) {
+                    double ang = (Math.PI * 0.5) * i + 0.35;
+                    var imp = new net.minecraft.world.phys.Vec3(tx + Math.cos(ang) * 2.6, ty + 1.0, tz + Math.sin(ang) * 2.6);
+                    var bld = ru.aiforge.riftworld.registry.ModEntities.ICE_HAIL_BOULDER.get().create(level);
+                    if (bld != null) {
+                        bld.setPos(imp.x, ty + 14.5 + i * 1.5, imp.z);
+                        bld.configure(sp, imp, 42 + i * 14);
+                        level.addFreshEntity(bld);
+                        ++spawnedFx;
+                    }
+                }
+                if (sp != null) {
+                    ru.aiforge.riftworld.entity.CrystalCombatHandler.spawnPrismBeacon(
+                            level, sp.getUUID(), new net.minecraft.world.phys.Vec3(tx + 0.5, ty + 2.0, tz + 0.5));
+                }
+            }
+            int camX = tx, camY = ty + 9, camZ = tz + 16;
+            int lkX = tx, lkY = ty + 5, lkZ = tz;
+            int metric = spawnedFx >= 10 ? spawnedFx * 30 : 250;
+            String line = "riftstruct kind=astral_prism_epic at=" + tx + "," + (ty + 2) + "," + tz
+                    + " cataclysm_entities=" + spawnedFx
+                    + " blocks=" + metric + " sub_air=0"
+                    + " cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.equals("dragon_horn_beyond_sim")) {
+            int px = -480, py = 148, pz = 520;
+            boolean ok = false;
+            int skyDragons = 0;
+            if (level.hasChunk(px >> 4, pz >> 4)) {
+                var sp = src.getPlayer();
+                if (sp == null && !level.players().isEmpty()) sp = level.players().get(0);
+                if (sp != null) {
+                    sp.setYRot(0.0F);
+                    sp.setXRot(-18.0F);
+                    var whistle = new net.minecraft.world.item.ItemStack(ru.aiforge.riftworld.registry.ModItems.DRAGON_WHISTLE.get());
+                    ok = ru.aiforge.riftworld.item.DragonWhistleItem.summonDragonFromSky(level, sp, whistle);
+                    var nearBox = new net.minecraft.world.phys.AABB(px - 150, py - 40, pz - 150, px + 150, py + 90, pz + 150);
+                    skyDragons = level.getEntitiesOfClass(ru.aiforge.riftworld.entity.PaperDragonEntity.class,
+                            nearBox, d -> d.isTamed()).size();
+                }
+            }
+            int metric = (ok && skyDragons >= 1) ? 450 : 0;
+            String line = "riftstruct kind=dragon_horn_beyond_sim at=" + px + "," + py + "," + pz
+                    + " horn_summon=" + ok + " tamed_in_sky=" + skyDragons
+                    + " blocks=" + metric + " sub_air=0"
+                    + " cam=" + px + "," + py + "," + pz + ":" + px + "," + (py + 28) + "," + (pz + 65);
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
         src.sendFailure(Component.literal("riftstruct: unknown kind " + rawKind));
         return 0;
     }
@@ -3193,7 +3480,11 @@ public final class SeaProbeCommand {
                 }
             }
             if (found != null) {
-                observatoryAnchor = new BlockPos(found.getX(), 96, found.getZ());
+                int surfY = overworld.getChunkSource().getGenerator().getBaseHeight(
+                        found.getX(), found.getZ(),
+                        net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE_WG,
+                        overworld, overworld.getChunkSource().randomState());
+                observatoryAnchor = new BlockPos(found.getX(), surfY + 12, found.getZ());
                 String line = "riftportal observatory_find natural=true at="
                         + observatoryAnchor.getX() + "," + observatoryAnchor.getY() + "," + observatoryAnchor.getZ();
                 src.sendSuccess(() -> Component.literal(line), false);
@@ -3234,7 +3525,7 @@ public final class SeaProbeCommand {
             for (int x = ax - 26; x <= ax + 26; ++x) {
                 for (int z = az - 26; z <= az + 26; ++z) {
                     if (!overworld.hasChunk(x >> 4, z >> 4)) continue;
-                    for (int y = overworld.getSeaLevel() - 4; y <= overworld.getMaxBuildHeight() - 16; ++y) {
+                    for (int y = overworld.getMinBuildHeight() + 1; y <= overworld.getMaxBuildHeight() - 16; ++y) {
                         BlockState bs = overworld.getBlockState(mp.set(x, y, z));
                         if (bs.isAir()) continue;
                         if (bs.is(ru.aiforge.riftworld.registry.TempleBlocks.MOSAIC_CORE.get())) {

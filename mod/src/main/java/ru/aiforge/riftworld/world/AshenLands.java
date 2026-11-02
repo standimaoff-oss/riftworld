@@ -375,25 +375,25 @@ public final class AshenLands {
                 Region rg = region(sx + dx, sz + dz);
                 if (rg == null) continue;
                 double ox = x - rg.cx, oz = z - rg.cz;
-                if (Math.abs(ox) > rg.R + 75 || Math.abs(oz) > rg.R + 75) continue;
+                if (Math.abs(ox) > rg.R + 220 || Math.abs(oz) > rg.R + 220) continue;
                 double d = Math.hypot(ox, oz) + (ElisarChunkGenerator.vnoise(x * 0.015, z * 0.015, 81) - 0.5) * 42;
                 double w = Math.max(0, Math.min(1, (rg.R - d) / 34.0));
 
                 if (rg.blacktideSite != null) {
                     BlacktideCitadel.Site bt = rg.blacktideSite;
                     double bdx = x - bt.landX, bdz = z - bt.landZ;
-                    double seaward = bdx * bt.outUx + bdz * bt.outUz; // <=0 на суше биома, >0 вдоль моста в море
+                    double seaward = bdx * bt.outUx + bdz * bt.outUz; // <=0 вглубь Пепельного биома, >0 вдоль моста в море
                     double perp = Math.abs(-bdx * bt.outUz + bdz * bt.outUx);
-                    if (seaward >= -72.0 && seaward <= 16.0 && perp <= 72.0) {
-                        // Начало моста и широкий вулканический берег Пепельного биома стоят на твёрдой суше!
-                        double sideFade = perp <= 48.0 ? 1.0 : Math.max(0.0, 1.0 - (perp - 48.0) / 24.0);
+                    if (seaward >= -120.0 && seaward <= 24.0 && perp <= 96.0) {
+                        // Монолитный сухопутный мыс Пепельного биома, без единой лужи/разрыва соединяющий равнину биома и начало моста!
+                        double sideFade = perp <= 68.0 ? 1.0 : Math.max(0.0, 1.0 - (perp - 68.0) / 28.0);
                         w = Math.max(w, sideFade);
-                    } else if (seaward > 16.0 && seaward < 28.0 && perp <= 135.0) {
-                        // Плавный уход береговой черты под первыми арками моста в открытое море
-                        double seaClamp = 1.0 - (seaward - 16.0) / 12.0;
+                    } else if (seaward > 24.0 && seaward < 29.0 && perp <= 145.0) {
+                        // Чёткий скалистый береговой уступ под первой аркой моста (без шахматных пятен на воде)
+                        double seaClamp = 1.0 - (seaward - 24.0) / 5.0;
                         w = Math.min(w, seaClamp);
-                    } else if (seaward >= 28.0 && perp <= 145.0) {
-                        // Весь остров и замок Цитадели Чёрного утёса стоят в открытом море!
+                    } else if (seaward >= 29.0 && perp <= 155.0) {
+                        // Три морские арки моста и вся Цитадель Чёрного утёса стоят в чистом открытом море прямо у берега биома!
                         w = 0.0;
                     }
                 }
@@ -491,7 +491,10 @@ public final class AshenLands {
         BlockState sst = CastleBlocks.SCORCHED_STONE.get().defaultBlockState(), stone = ElisarBlocks.STONE.get().defaultBlockState();
         BlockState lava = ru.aiforge.riftworld.registry.ModBlocks.MAGMA_MEANDER.get().defaultBlockState();
         int top = moundTop(x, z);
-        chunk.setBlockState(mp.set(x, o - 2, z), sst, false);
+        int floor = Math.max(-56, ElisarSea.floor(x, z, o));
+        for (int y = floor; y <= o - 2; ++y) {
+            chunk.setBlockState(mp.set(x, y, z), y <= floor + 2 ? stone : sst, false);
+        }
         if (top != Integer.MIN_VALUE) {
             double n = ElisarChunkGenerator.vnoise(x * 0.09, z * 0.09, 51);
             for (int y = o - 1; y <= top; ++y) {

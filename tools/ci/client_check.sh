@@ -1606,6 +1606,7 @@ biome_section() {
   probe_and_shot_struct "blacktide_bridge_shore"  6000 "115_blacktide_bridge_from_ashen_land"  0 0 22
   probe_and_shot_struct "blacktide_citadel"       6000 "114_blacktide_citadel_sea_and_shore"   0 0 24
   probe_and_shot_struct "blacktide_cathedral_hall"   250 "119_blacktide_cathedral_throne_hall" 0 0 14
+  probe_and_shot_struct "blacktide_second_floor"     400 "128_blacktide_second_floor_gallery"  0 0 12
   probe_and_shot_struct "blacktide_rotunda_sanctum"  180 "120_blacktide_rotunda_sanctum"       0 0 12
   probe_and_shot_struct "blacktide_tower_walkability" 350 "121_blacktide_tower_stairs_panorama" 0 0 12
   probe_and_shot_struct "ashen_burned_church"      900 "116_ashen_burned_church"               0 0 16
@@ -1613,16 +1614,24 @@ biome_section() {
   probe_and_shot_struct "enlarged_biomes_audit"    500 "118_enlarged_violet_hills_panorama"    0 0 18
   probe_and_shot_struct "connected_carpets_showcase" 200 "122_connected_carpets_shapes"        0 0 10
 
-  # ---------- v0.26.0: редкие выходы подводных пещер в море, /locate всех 24 структур и 9 биомов, все 16 яиц призыва ----------
-  echo "== v0.26.0: редкие выходы пещер в море, /locate всех структур и биомов, яйца призыва всех 16 мобов (включая Дракона) =="
+  # ---------- v0.26.0: Святилище Белого Города в зелени, Виадуки, Дикие Перевёрнутые Башни + Дракон и Горн вне симуляции, Призма Архонта ----------
+  echo "== v0.26.0: Святилище Белого Города в пышных садах, арочные виадуки, дикие Перевёрнутые башни, приручение Дракона, Горн вне симуляции и Призма Архонта =="
+  probe_and_shot_struct "city_sanctuary_garden"     1500 "129_city_sanctuary_lush_gardens"      0 0 14
+  probe_and_shot_struct "city_ornate_bridge"         150 "130_city_ornate_viaduct_bridge"       0 0 12
+  probe_and_shot_struct "wild_inverted_tower_dragon" 1200 "131_wild_inverted_tower_coiled_dragon" 0 0 14
+  probe_and_shot_struct "dragon_horn_beyond_sim"     350 "133_dragon_horn_beyond_sim_summon"    0 0 4
+  probe_and_shot_struct "astral_prism_epic"          200 "132_astral_prism_cataclysm"           0 0 2
+
+  # ---------- v0.26.0: редкие выходы подводных пещер в море, /locate всех 26 структур и 9 биомов, все 16 яиц призыва ----------
+  echo "== v0.26.0: редкие выходы пещер в море, /locate всех 26 структур и 9 биомов, яйца призыва всех 16 мобов (включая Дракона) =="
   probe_and_shot_struct "sea_cave_exit"            120 "126_underwater_cave_sea_exit"          1 0 14
 
-  # Полный аудит всех 24 структур и всех 9 биомов через генератор и реальные команды /locate с высоты Y=185!
+  # Полный аудит всех 26 структур и всех 9 биомов через генератор и реальные команды /locate с высоты Y=185!
   LOC_AUD=$(EL execute at TestPlayer in riftworld:elisar run riftstruct locate_all_audit 2>&1 | tr '\r\n' '  ')
   log "  /riftstruct locate_all_audit -> ${LOC_AUD:0:260}"
   LOC_BLK=$(printf '%s' "$LOC_AUD" | sed -n 's/.* blocks=\([0-9]*\).*/\1/p' | tail -1)
-  if [ "${LOC_BLK:-0}" -ge 660 ]; then
-    log "  OK   аналитический /locate нашёл ВСЕ 24 структуры (24/24) и ВСЕ 9 биомов (9/9) с небесной высоты!"
+  if [ "${LOC_BLK:-0}" -ge 700 ]; then
+    log "  OK   аналитический /locate нашёл ВСЕ 26 структур (26/26, включая inverted_tower и city_sanctuary) и ВСЕ 9 биомов (9/9) с небесной высоты!"
   else
     log "  FAIL locate_all_audit: ${LOC_AUD:0:200}"; FAILS=$((FAILS + 1))
   fi
@@ -1630,6 +1639,8 @@ biome_section() {
   sleep 1
   for LCMD in \
     "structure riftworld:blacktide_citadel" \
+    "structure riftworld:city_sanctuary" \
+    "structure riftworld:inverted_tower" \
     "structure riftworld:grand_theater" \
     "structure riftworld:sea_cave_exit" \
     "biome riftworld:shallow_reef" \

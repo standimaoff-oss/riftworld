@@ -28,6 +28,7 @@ public class OvergrownTempleStructure extends Structure {
     public Optional<GenerationStub> findGenerationPoint(GenerationContext ctx) {
         ChunkPos cp = ctx.chunkPos();
         int x = cp.getMiddleBlockX(), z = cp.getMiddleBlockZ();
+        boolean isFlat = ctx.chunkGenerator() instanceof net.minecraft.world.level.levelgen.FlatLevelSource;
         int sea = ctx.chunkGenerator().getSeaLevel();
         int min = Integer.MAX_VALUE, max = Integer.MIN_VALUE;
 
@@ -37,15 +38,14 @@ public class OvergrownTempleStructure extends Structure {
                         ctx.heightAccessor(), ctx.randomState());
                 int of = ctx.chunkGenerator().getBaseHeight(x + dx, z + dz, Heightmap.Types.OCEAN_FLOOR_WG,
                         ctx.heightAccessor(), ctx.randomState());
-                // Reject any water column (oceans, lakes, rivers)
-                if (ws <= sea + 1 || of < ws) {
+                if (!isFlat && (ws <= sea + 1 || of < ws)) {
                     return Optional.empty();
                 }
                 min = Math.min(min, ws);
                 max = Math.max(max, ws);
             }
         }
-        if (max - min > 9) return Optional.empty();
+        if (max - min > 13) return Optional.empty();
 
         int centerH = ctx.chunkGenerator().getBaseHeight(x, z, Heightmap.Types.WORLD_SURFACE_WG,
                 ctx.heightAccessor(), ctx.randomState());
