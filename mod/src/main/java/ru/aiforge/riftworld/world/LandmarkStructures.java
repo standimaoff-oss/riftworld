@@ -1062,14 +1062,15 @@ public final class LandmarkStructures {
                             }
                             put(chunk, mp, x0, z0, x, mastTop + 1, z, redTrim);
                         }
-                    } else if (lz == 4 || lz == 10) {
-                        // Изогнутые белые паруса на реях (lx = -16..-10)
-                        int sLow = qy + 4, sHigh = (lz == 4) ? qy + 10 : qy + 9;
-                        if (Math.abs(shipX) <= 3.1) {
-                            int bellyZ = (Math.abs(shipX) <= 1.2) ? lz + 1 : lz;
-                            for (int y = sLow; y <= sHigh; ++y) {
-                                put(chunk, mp, x0, z0, x, y, bellyZ, whiteSail);
-                            }
+                    }
+                    // Наполненные ветром белые паруса на обеих мачтах (без затирания соседней колонкой z!)
+                    boolean belly = Math.abs(shipX) <= 1.2;
+                    boolean onForeSail = (belly && lz == 5) || (!belly && lz == 4);
+                    boolean onMainSail = (belly && lz == 11) || (!belly && lz == 10);
+                    if ((onForeSail || onMainSail) && Math.abs(shipX) <= 3.1 && !(lx == -13 && (lz == 4 || lz == 10))) {
+                        int sLow = qy + 4, sHigh = onForeSail ? qy + 10 : qy + 9;
+                        for (int y = sLow; y <= sHigh; ++y) {
+                            put(chunk, mp, x0, z0, x, y, z, whiteSail);
                         }
                     }
                 }
@@ -1339,9 +1340,15 @@ public final class LandmarkStructures {
                 put(chunk, mp, x0, z0, p1x, by + dy, p1z, dy == 0 ? ivyBrick : pillarY);
                 put(chunk, mp, x0, z0, p2x, by + dy, p2z, dy == 0 ? ivyBrick : pillarY);
             }
-            put(chunk, mp, x0, z0, p1x, by + 5, p1z, marble);
-            put(chunk, mp, x0, z0, p2x, by + 5, p2z, marble);
-            put(chunk, mp, x0, z0, midX, by + 5, midZ, marble);
+            for (int st = 0; st <= 6; ++st) {
+                double u = st / 6.0;
+                int lx = (int) Math.round(Mth.lerp(u, p1x, p2x));
+                int lz = (int) Math.round(Mth.lerp(u, p1z, p2z));
+                put(chunk, mp, x0, z0, lx, by + 5, lz, marble);
+                if (st >= 1 && st <= 5) {
+                    put(chunk, mp, x0, z0, lx, by + 6, lz, slabBot(tSlab));
+                }
+            }
             put(chunk, mp, x0, z0, midX, by + 6, midZ, slabBot(tSlab));
         }
 
@@ -1995,18 +2002,24 @@ public final class LandmarkStructures {
                             // Галерея второго этажа внутри обсерватории
                             put(chunk, mp, x0, z0, x, by + 4, z, darkPlank);
                         }
-                        double domeH = Math.sqrt(Math.max(0.0, 65.6 - r * r)) * 0.82; // 0..6.6
+                        double domeH = Math.sqrt(Math.max(0.0, 66.0 - r * r)) * 0.80;
                         int domeY = by + 10 + (int) Math.floor(domeH);
+                        double outerH = Math.sqrt(Math.max(0.0, 66.0 - (r + 0.9) * (r + 0.9))) * 0.80;
+                        int lowY = Math.max(by + 10, by + 10 + (int) Math.floor(outerH));
                         boolean inSlit = (sProj > 0.0 && Math.abs(wProj) <= 1.15);
-                        if (!inSlit && r <= 7.9) {
-                            boolean rib = (Math.abs(dx) <= 0 || Math.abs(dz) <= 0);
-                            put(chunk, mp, x0, z0, x, domeY, z, rib ? marble : purpur);
+                        if (!inSlit && r <= 8.0) {
+                            boolean rib = (dx == 0 || dz == 0);
+                            for (int y = lowY; y <= domeY; ++y) {
+                                put(chunk, mp, x0, z0, x, y, z, rib ? marble : purpur);
+                            }
                             if (domeH - Math.floor(domeH) > 0.5 && !rib) {
                                 put(chunk, mp, x0, z0, x, domeY + 1, z, purpurSlab);
                             }
-                        } else if (inSlit && Math.abs(wProj) >= 0.75 && r <= 7.8) {
+                        } else if (inSlit && Math.abs(wProj) >= 0.75 && r <= 7.9) {
                             // Обрамление открытой створки купола
-                            put(chunk, mp, x0, z0, x, domeY, z, marble);
+                            for (int y = lowY; y <= domeY; ++y) {
+                                put(chunk, mp, x0, z0, x, y, z, marble);
+                            }
                         }
                     }
                 }

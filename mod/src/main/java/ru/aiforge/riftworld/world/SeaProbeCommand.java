@@ -2716,7 +2716,7 @@ public final class SeaProbeCommand {
             LandmarkStructures.BiomeLandmark lm = LandmarkStructures.shatteredShardForge(bestCr);
             if (lm == null) { src.sendFailure(Component.literal("riftstruct: shattered_shard_forge not found")); return 0; }
             int[] cnt = countStructBlocksAndSubAir(level, lm.cx, lm.cz, 13, lm.baseY - 2, lm.baseY + 15, ocean);
-            int camX = lm.cx + 15, camY = lm.baseY + 9, camZ = lm.cz + 16;
+            int camX = lm.cx + 4, camY = lm.baseY + 8, camZ = lm.cz + 16;
             int lkX = lm.cx, lkY = lm.baseY + 5, lkZ = lm.cz;
             String line = "riftstruct kind=shattered_shard_forge at=" + lm.cx + "," + lm.baseY + "," + lm.cz
                     + " blocks=" + cnt[0] + " sub_air=" + cnt[1]
@@ -3134,7 +3134,7 @@ public final class SeaProbeCommand {
                     }
                 }
             }
-            int camX = observatorySealPos.getX() - 3, camY = observatorySealPos.getY() + 4, camZ = observatorySealPos.getZ() + 13;
+            int camX = observatorySealPos.getX() - 1, camY = observatorySealPos.getY() + 4, camZ = observatorySealPos.getZ() + 10;
             int lkX = observatorySealPos.getX(), lkY = observatorySealPos.getY() + 7, lkZ = observatorySealPos.getZ();
             String line = "riftportal observatory_awaken rift=" + (rift != null)
                     + " lit_candles=" + litCandles + " lit_runes=" + litRunes
