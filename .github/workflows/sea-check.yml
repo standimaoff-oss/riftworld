@@ -69,11 +69,19 @@ jobs:
           # Dynamic Trees теперь ставится на сервер обычным curl-ом (tools/ci/server_check.sh),
           # так что от maven-артефакта сборка больше не зависит.
           ok=0
+          EXTRA_ARGS=""
           for attempt in 1 2 3; do
-            if ./gradlew jar dtJar --no-daemon --console=plain -PdtMaven="$GITHUB_WORKSPACE/ci/maven" 2>&1 | tee ../ci-out/build.log; then
+            if ./gradlew jar dtJar --no-daemon --console=plain $EXTRA_ARGS -PdtMaven="$GITHUB_WORKSPACE/ci/maven" 2>&1 | tee ../ci-out/build.log; then
               ok=1; break
             fi
             grep -q "Task :compileJava FAILED" ../ci-out/build.log && break
+            if grep -q "Invalid patcher dependency" ../ci-out/build.log; then
+              echo "== очистка битого кеша forge userdev перед повтором =="
+              rm -rf ~/.gradle/caches/forge_gradle/maven_downloader/net/minecraftforge/forge \
+                     ~/.gradle/caches/modules-2/files-2.1/net.minecraftforge/forge \
+                     ~/.gradle/caches/modules-2/metadata-*/descriptors/net.minecraftforge/forge || true
+              EXTRA_ARGS="--refresh-dependencies --stacktrace"
+            fi
             echo "== gradle попытка $attempt упала (сеть/Maven), повтор через 20 c"
             sleep 20
           done

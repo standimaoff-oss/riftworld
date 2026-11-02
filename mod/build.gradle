@@ -156,16 +156,19 @@ repositories {
     // в Maven Central — пробуем её раньше Forge-зеркала.
     mavenCentral()
     maven {
-        name = 'HarleyOConnor'      // публичный maven Dynamic Trees (com.ferreusveritas.dynamictrees)
-        url = 'https://harleyoconnor.com/maven'
-    }
-    maven {
         name = 'MinecraftForge'
         url = 'https://maven.minecraftforge.net'
     }
     maven {
         name = 'MojangLibraries'
         url = 'https://libraries.minecraft.net'
+    }
+    maven {
+        name = 'HarleyOConnor'      // публичный maven Dynamic Trees (com.ferreusveritas.dynamictrees)
+        url = 'https://harleyoconnor.com/maven'
+        content {
+            includeGroup 'com.ferreusveritas.dynamictrees'
+        }
     }
     mavenCentral()
 }
