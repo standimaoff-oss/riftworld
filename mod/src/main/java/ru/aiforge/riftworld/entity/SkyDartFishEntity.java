@@ -103,7 +103,7 @@ public class SkyDartFishEntity extends PathfinderMob {
         float oldYaw = this.getYRot();
         super.tick();
 
-        if (!this.level().isClientSide) {
+        if (!this.level().isClientSide && !this.isNoAi()) {
             if (Double.isNaN(this.anchorY)) {
                 this.anchorX = this.getX();
                 this.anchorY = this.getY();

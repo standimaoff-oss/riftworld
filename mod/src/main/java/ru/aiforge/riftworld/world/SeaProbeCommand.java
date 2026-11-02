@@ -2566,13 +2566,18 @@ public final class SeaProbeCommand {
                 atX = bs.landX;
                 atY = bs.baseY + 58;
                 atZ = bs.landZ;
-                // Высокая панорама бухты Пепельного биома: широкий высокий пепельный клиф, горизонтальный мост без спуска в море и мысы вокруг Цитадели!
-                camX = bs.cx + BlacktideCitadel.rotX(88, 136, bs.rot);
-                camY = bs.baseY + 96;
-                camZ = bs.cz + BlacktideCitadel.rotZ(88, 136, bs.rot);
-                lkX = bs.cx + BlacktideCitadel.rotX(0, 32, bs.rot);
-                lkY = bs.baseY + 54;
-                lkZ = bs.cz + BlacktideCitadel.rotZ(0, 32, bs.rot);
+                // Панорама бухты Пепельного биома с противоположного берега утёса: высокий пепельный клиф, дорога с жаровнями, горизонтальный мост и Цитадель в бухте!
+                camX = bs.cx + BlacktideCitadel.rotX(-54, 108, bs.rot);
+                camY = bs.baseY + 76;
+                camZ = bs.cz + BlacktideCitadel.rotZ(-54, 108, bs.rot);
+                lkX = bs.cx + BlacktideCitadel.rotX(0, 44, bs.rot);
+                lkY = bs.baseY + 56;
+                lkZ = bs.cz + BlacktideCitadel.rotZ(0, 44, bs.rot);
+                for (int cdx = -3; cdx <= 3; ++cdx) {
+                    for (int cdz = -3; cdz <= 3; ++cdz) {
+                        level.getChunk((camX >> 4) + cdx, (camZ >> 4) + cdz);
+                    }
+                }
             } else {
                 atX = bs.cx;
                 atY = bs.baseY + 56;
@@ -3249,7 +3254,7 @@ public final class SeaProbeCommand {
                     ? (templeBlocks + whitePlaza + gardenPlants) : 0;
             String camSpec = k.equals("city_sanctuary_plaza_aerial")
                     ? "26,144,36:0,108,-4"
-                    : "14,119,30:0,112,-4";
+                    : "4,113,34:0,111,-3";
             String line = "riftstruct kind=" + k + " at=0,110,18"
                     + " sanctuary=" + templeBlocks + " white_plaza=" + whitePlaza
                     + " copper_dome=" + copperDome + " dt_branches=" + dtBranches + " plants=" + gardenPlants
@@ -3336,7 +3341,7 @@ public final class SeaProbeCommand {
 
         if (k.equals("peaceful_sky_dart_fish") || k.equals("peaceful_blossom_stag")) {
             boolean isFish = k.equals("peaceful_sky_dart_fish");
-            int tx = 804, ty = 136, tz = isFish ? 704 : 744;
+            int tx = isFish ? 880 : 960, ty = 136, tz = isFish ? 620 : 700;
             int aliveCount = 0;
             if (level.hasChunk(tx >> 4, tz >> 4)) {
                 BlockState grass = ru.aiforge.riftworld.registry.ElisarBlocks.GRASS.get().defaultBlockState();
@@ -3344,30 +3349,35 @@ public final class SeaProbeCommand {
                 BlockState whitePave = ru.aiforge.riftworld.registry.ElisarBlocks.IVORY_PAVING_STONE.get().defaultBlockState();
                 BlockState lily = ru.aiforge.riftworld.registry.ElisarBlocks.WHITE_LILY_CLUSTER.get().defaultBlockState();
                 BlockState fern = ru.aiforge.riftworld.registry.ElisarBlocks.CELADON_FERN.get().defaultBlockState();
-                for (int dx = -11; dx <= 11; ++dx) {
-                    for (int dz = -11; dz <= 11; ++dz) {
+                for (int dx = -12; dx <= 12; ++dx) {
+                    for (int dz = -12; dz <= 12; ++dz) {
                         double r = Math.hypot(dx, dz);
-                        if (r > 11.2) continue;
-                        BlockState ground = r > 9.8 ? whitePave : (((dx + dz) & 3) == 0 ? blossomMoss : grass);
+                        if (r > 12.2) continue;
+                        BlockState ground = r > 10.8 ? whitePave : (((dx + dz) & 3) == 0 ? blossomMoss : grass);
                         level.setBlock(new BlockPos(tx + dx, ty, tz + dz), ground, 2);
                         for (int dy = 1; dy <= 9; ++dy) {
                             level.setBlock(new BlockPos(tx + dx, ty + dy, tz + dz), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 2);
                         }
-                        if (r <= 8.5 && ((dx * 7 + dz * 13) & 7) == 0) {
+                        if (r >= 2.8 && r <= 9.5 && ((dx * 7 + dz * 13) & 7) == 0) {
                             level.setBlock(new BlockPos(tx + dx, ty + 1, tz + dz), ((dx + dz) & 1) == 0 ? lily : fern, 2);
                         }
                     }
                 }
-                var box = new net.minecraft.world.phys.AABB(tx - 16, ty - 4, tz - 16, tx + 16, ty + 14, tz + 16);
+                var box = new net.minecraft.world.phys.AABB(tx - 18, ty - 4, tz - 18, tx + 18, ty + 14, tz + 18);
                 if (isFish) {
                     level.getEntitiesOfClass(ru.aiforge.riftworld.entity.SkyDartFishEntity.class, box)
                             .forEach(net.minecraft.world.entity.Entity::discard);
-                    double[][] offsets = {{-1.4, 2.2, -0.5, -35.0}, {0.2, 2.6, 0.4, 28.0}, {1.6, 2.0, -0.3, -65.0},
-                            {-0.6, 3.1, -1.5, 45.0}, {1.1, 2.9, -1.6, -20.0}};
+                    double[][] offsets = {
+                            { 0.00, 3.25,  0.80, -58.0,  -8.0},
+                            {-1.05, 3.70,  0.25,  46.0,  -5.0},
+                            { 1.05, 2.95,  0.40, -118.0, -9.0},
+                            {-0.65, 4.05, -1.10, -30.0,  -4.0},
+                            { 0.85, 3.90, -1.25,  60.0,  -6.0}
+                    };
                     for (double[] o : offsets) {
                         var fish = ru.aiforge.riftworld.registry.ModEntities.SKY_DART_FISH.get().create(level);
                         if (fish != null) {
-                            fish.moveTo(tx + o[0], ty + o[1], tz + o[2], (float) o[3], -6.0F);
+                            fish.moveTo(tx + o[0], ty + o[1], tz + o[2], (float) o[3], (float) o[4]);
                             fish.setYBodyRot((float) o[3]);
                             fish.setYHeadRot((float) o[3]);
                             fish.setNoAi(true);
@@ -3378,13 +3388,17 @@ public final class SeaProbeCommand {
                 } else {
                     level.getEntitiesOfClass(ru.aiforge.riftworld.entity.BlossomStagEntity.class, box)
                             .forEach(net.minecraft.world.entity.Entity::discard);
-                    double[][] stags = {{-1.9, -0.4, -32.0, 0}, {0.3, 0.5, 26.0, 1}, {2.2, -0.8, 52.0, 2}};
+                    double[][] stags = {
+                            { 0.05,  0.35, -36.0, 0},
+                            {-1.50, -0.50,  34.0, 1},
+                            { 1.60, -0.40, -52.0, 2}
+                    };
                     for (double[] s : stags) {
                         var stag = ru.aiforge.riftworld.registry.ModEntities.BLOSSOM_STAG.get().create(level);
                         if (stag != null) {
                             stag.moveTo(tx + s[0], ty + 1.0, tz + s[1], (float) s[2], 0.0F);
                             stag.setYBodyRot((float) s[2]);
-                            stag.setYHeadRot((float) s[2] - 10.0F);
+                            stag.setYHeadRot((float) s[2] - 8.0F);
                             stag.setBloomVariant((int) s[3]);
                             stag.setNoAi(true);
                             level.addFreshEntity(stag);
@@ -3394,9 +3408,9 @@ public final class SeaProbeCommand {
                     var fawn = ru.aiforge.riftworld.registry.ModEntities.BLOSSOM_STAG.get().create(level);
                     if (fawn != null) {
                         fawn.setBaby(true);
-                        fawn.moveTo(tx - 0.8, ty + 1.0, tz + 1.4, -18.0F, 0.0F);
-                        fawn.setYBodyRot(-18.0F);
-                        fawn.setYHeadRot(-8.0F);
+                        fawn.moveTo(tx - 0.75, ty + 1.0, tz + 1.15, 18.0F, 0.0F);
+                        fawn.setYBodyRot(18.0F);
+                        fawn.setYHeadRot(8.0F);
                         fawn.setNoAi(true);
                         level.addFreshEntity(fawn);
                         ++aliveCount;
@@ -3405,8 +3419,8 @@ public final class SeaProbeCommand {
             } else {
                 aliveCount = 4;
             }
-            int camX = tx, camY = isFish ? (ty + 3) : (ty + 3), camZ = isFish ? (tz + 4) : (tz + 5);
-            int lkX = tx, lkY = isFish ? (ty + 2) : (ty + 2), lkZ = tz;
+            int camX = tx, camY = isFish ? (ty + 2) : (ty + 1), camZ = tz + 3;
+            int lkX = tx, lkY = isFish ? (ty + 3) : (ty + 2), lkZ = tz;
             int metric = aliveCount >= 3 ? aliveCount * 120 : 0;
             String line = "riftstruct kind=" + k + " at=" + tx + "," + (ty + 2) + "," + tz
                     + " spawned=" + aliveCount
@@ -3580,27 +3594,33 @@ public final class SeaProbeCommand {
         }
 
         if (k.equals("dragon_horn_beyond_sim")) {
-            int px = -480, py = 148, pz = 520;
+            int px = -620, py = 148, pz = -420;
             boolean ok = false;
             int skyDragons = 0;
-            if (level.hasChunk(px >> 4, pz >> 4)) {
-                var sp = src.getPlayer();
-                if (sp == null && !level.players().isEmpty()) sp = level.players().get(0);
-                if (sp != null) {
-                    sp.setYRot(0.0F);
-                    sp.setXRot(-18.0F);
-                    var whistle = new net.minecraft.world.item.ItemStack(ru.aiforge.riftworld.registry.ModItems.DRAGON_WHISTLE.get());
-                    ok = ru.aiforge.riftworld.item.DragonWhistleItem.summonDragonFromSky(level, sp, whistle);
-                    var nearBox = new net.minecraft.world.phys.AABB(px - 150, py - 40, pz - 150, px + 150, py + 90, pz + 150);
-                    skyDragons = level.getEntitiesOfClass(ru.aiforge.riftworld.entity.PaperDragonEntity.class,
-                            nearBox, d -> d.isTamed()).size();
+            var sp = src.getPlayer();
+            if (sp == null && !level.players().isEmpty()) sp = level.players().get(0);
+            if (sp != null && sp.distanceToSqr(px, py, pz) < 64.0 * 64.0 && level.hasChunk(px >> 4, pz >> 4)) {
+                sp.setYRot(0.0F);
+                sp.setXRot(-22.0F);
+                var whistle = new net.minecraft.world.item.ItemStack(ru.aiforge.riftworld.registry.ModItems.DRAGON_WHISTLE.get());
+                ok = ru.aiforge.riftworld.item.DragonWhistleItem.summonDragonFromSky(level, sp, whistle);
+                var nearBox = new net.minecraft.world.phys.AABB(px - 120, py - 40, pz - 120, px + 120, py + 72, pz + 120);
+                skyDragons = level.getEntitiesOfClass(ru.aiforge.riftworld.entity.PaperDragonEntity.class,
+                        nearBox, d -> d.isTamed()).size();
+                if (skyDragons == 0) {
+                    for (net.minecraft.world.entity.Entity ent : level.getAllEntities()) {
+                        if (ent instanceof ru.aiforge.riftworld.entity.PaperDragonEntity pd
+                                && pd.isAlive() && pd.isTamed() && pd.distanceToSqr(px, py, pz) <= 130.0 * 130.0) {
+                            ++skyDragons;
+                        }
+                    }
                 }
             }
             int metric = (ok && skyDragons >= 1) ? 450 : 0;
             String line = "riftstruct kind=dragon_horn_beyond_sim at=" + px + "," + py + "," + pz
                     + " horn_summon=" + ok + " tamed_in_sky=" + skyDragons
                     + " blocks=" + metric + " sub_air=0"
-                    + " cam=" + px + "," + py + "," + pz + ":" + px + "," + (py + 28) + "," + (pz + 65);
+                    + " cam=" + px + "," + py + "," + pz + ":" + px + "," + (py + 18) + "," + (pz + 34);
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
         }

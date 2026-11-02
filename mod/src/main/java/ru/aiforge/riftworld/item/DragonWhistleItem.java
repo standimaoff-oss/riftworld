@@ -101,20 +101,29 @@ public class DragonWhistleItem extends Item {
             }
         }
 
-        // Вычисляем эффектную точку появления высоко в небе в поле зрения игрока (~96 м по взгляду и +44 м вверх),
-        // чтобы дракон КРАСИВО ОТРИСОВАЛСЯ В НЕБЕ и плавно спустился прямо к хозяину!
+        // Вычисляем эффектную точку появления высоко в небе в поле зрения игрока (~48 м по взгляду и +22 м вверх —
+        // гарантированно внутри ENTITY_TICKING чанков симуляции и перед стеной биомного тумана!),
+        // чтобы дракон МГНОВЕННО ОТРИСОВАЛСЯ В НЕБЕ и плавно спустился прямо к хозяину!
         Vec3 lookHoriz = new Vec3(-Mth.sin(player.getYRot() * Mth.DEG_TO_RAD), 0.0, Mth.cos(player.getYRot() * Mth.DEG_TO_RAD));
         if (lookHoriz.lengthSqr() < 1.0E-4) lookHoriz = new Vec3(0.0, 0.0, 1.0);
         else lookHoriz = lookHoriz.normalize();
 
-        double skyDist = 96.0;
+        double skyDist = 34.0;
         double skyX = player.getX() + lookHoriz.x * skyDist;
         double skyZ = player.getZ() + lookHoriz.z * skyDist;
-        double skyY = Mth.clamp(player.getY() + 44.0, sl.getMinBuildHeight() + 48.0, sl.getMaxBuildHeight() - 36.0);
+        double skyY = Mth.clamp(player.getY() + 18.0, sl.getMinBuildHeight() + 48.0, sl.getMaxBuildHeight() - 36.0);
         float towardsPlayerYaw = (float) (Mth.atan2(player.getZ() - skyZ, player.getX() - skyX) * (180.0 / Math.PI)) - 90.0F;
+        sl.getChunk(Mth.floor(skyX) >> 4, Mth.floor(skyZ) >> 4);
+
+        if (loaded != null && !sl.isPositionEntityTicking(loaded.blockPosition())) {
+            // Если старый экземпляр застрял в полувыгруженном пограничном чанке — переспавним свежего из сохранённых данных!
+            loaded.ejectPassengers();
+            loaded.discard();
+            loaded = null;
+        }
 
         if (loaded != null) {
-            if (loaded.distanceToSqr(player) > 105.0 * 105.0) {
+            if (loaded.distanceToSqr(player) > 72.0 * 72.0) {
                 loaded.stopRiding();
                 loaded.ejectPassengers();
                 loaded.moveTo(skyX, skyY, skyZ, towardsPlayerYaw, 14.0F);

@@ -1604,7 +1604,7 @@ biome_section() {
     sleep 10
   fi
   probe_and_shot_struct "blacktide_bridge_shore"  6000 "115_blacktide_bridge_from_ashen_land"  0 0 22
-  probe_and_shot_struct "blacktide_bay_aerial"    6000 "134_blacktide_ashen_bay_overview"      0 0 18
+  probe_and_shot_struct "blacktide_bay_aerial"    6000 "134_blacktide_ashen_bay_overview"      0 0 26
   probe_and_shot_struct "blacktide_cathedral_hall"   250 "119_blacktide_cathedral_throne_hall" 0 0 14
   probe_and_shot_struct "blacktide_second_floor"     400 "128_blacktide_second_floor_gallery"  0 0 12
   probe_and_shot_struct "blacktide_rotunda_sanctum"  180 "120_blacktide_rotunda_sanctum"       0 0 12
