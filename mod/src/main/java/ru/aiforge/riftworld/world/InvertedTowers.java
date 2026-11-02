@@ -60,11 +60,13 @@ public final class InvertedTowers {
             if (Math.hypot(cx - 648.0, cz - 693.0) < 220.0) continue; // не задеваем морские пробы spots.json
 
             if (AshenLands.blocks(cx, cz, 48.0)) continue;
-            if (VioletHills.blocks(cx, cz, 48.0)) continue;
-            if (SizoGrove.blocks(cx, cz, 48.0)) continue;
-            if (WaterfallGardens.blocks(cx, cz, 52.0)) continue;
+            if (VioletHills.nearAny(cx, cz, 12.0, 48.0)) continue;
+            SizoGrove.Region sr = SizoGrove.regionAt(cx, cz);
+            if (sr != null && Math.hypot(cx - sr.hub.cx, cz - sr.hub.cz) < sr.hub.maxReach() + 48.0) continue;
+            if (WaterfallGardens.nearAny(cx, cz, 12.0, 56.0)) continue;
             if (CrystalRifts.nearAny(cx, cz, 12.0, 48.0)) continue;
-            if (MistKeep.inside(cx, cz)) continue;
+            MistKeep.Region mk = MistKeep.regionAt(cx, cz);
+            if (mk != null && Math.hypot(cx - mk.cx, cz - mk.cz) < mk.Rr + 48.0) continue;
 
             // Проверяем, что башня парит в чистом небе между дикими островами (не врезаясь в сушу!)
             boolean hitIsland = false;

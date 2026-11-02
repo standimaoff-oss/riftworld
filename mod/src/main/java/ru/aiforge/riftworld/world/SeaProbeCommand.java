@@ -3190,7 +3190,7 @@ public final class SeaProbeCommand {
                     if (!level.getBlockState(mp.set(wx, bs.baseY + 70, wz)).isAir()) ++secondFloorDeck;
                     for (int by = 58; by <= 88; ++by) {
                         BlockState st = level.getBlockState(mp.set(wx, bs.baseY + by, wz));
-                        if (st.getLightEmission() >= 10) ++warmLights;
+                        if (st.getLightEmission(level, mp) >= 10) ++warmLights;
                         if (by >= 70 && st.is(ru.aiforge.riftworld.registry.ModBlocks.MODELS.get(ru.aiforge.riftworld.block.ModelKind.CASTLE_BOOKSHELF).get())) {
                             ++upperBooks;
                         }
