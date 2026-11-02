@@ -187,13 +187,13 @@ public final class ElisarSea {
      * чем ход дошёл до верха зоны пещер, — полость запечатана.
      */
     static boolean openAbove(int x, int y, int z, int floor) {
-        int top = floor - 6;                       // выше этой линии полостей не бывает
+        int top = floor - 6;                       // выше этой линии обычных полостей не бывает
         for (int yy = y + 1; yy <= top; ++yy) {
-            if (blueHole(x, yy, z, floor)) return true;
+            if (blueHole(x, yy, z, floor) || seaCaveExit(x, yy, z, floor)) return true;
             if (!cave(x, yy, z, floor)) return false;   // камень над головой — полость запечатана
         }
-        // ход непрерывен до самого верха зоны пещер: вода придёт, только если дно здесь пробито
-        return roofOpen(x, z, floor) || blueHole(x, top + 1, z, floor);
+        // ход непрерывен до самого верха зоны пещер: вода придёт, только если дно здесь пробито или есть редкий выход в море
+        return roofOpen(x, z, floor) || blueHole(x, top + 1, z, floor) || seaCaveExit(x, top + 1, z, floor);
     }
 
     /** Пробито ли дно этой колонки (тот же хеш, что и у заливки свода в {@link #column}). */
@@ -238,6 +238,111 @@ public final class ElisarSea {
         if (d <= r) return true;
         // зал у основания колодца
         return y < floor - depth && d <= r + 3.8 && y > floor - depth - 6;
+    }
+
+    // ------------------------------------------------------------------ v0.26.0: редкие выходы подводных пещер прямо в море
+    public static final int EXIT_CELL = 92;
+
+    public record SeaExit(int cx, int cz, int floorY, double lipR, double dx, double dz) {
+    }
+
+    private static final java.util.concurrent.ConcurrentHashMap<Long, java.util.Optional<SeaExit>> EXIT_CACHE =
+            new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** Возвращает редкий естественный выход подводной пещеры в открытое море в ячейке 92x92 (или null). */
+    public static SeaExit seaExitInCell(int gx, int gz, int sea) {
+        long key = ((long) gx << 32) ^ (gz & 0xffffffffL);
+        return EXIT_CACHE.computeIfAbsent(key, k -> java.util.Optional.ofNullable(computeSeaExitInCell(gx, gz, sea))).orElse(null);
+    }
+
+    private static SeaExit computeSeaExitInCell(int gx, int gz, int sea) {
+        // Редкий устьевой пролом (~28% ячеек 92x92 -> ~1 раз на 170 блоков моря)
+        if (hash(gx, gz, 461) >= 0.28) return null;
+        int baseX = gx * EXIT_CELL + 18 + (int) (hash(gx, gz, 462) * (EXIT_CELL - 36));
+        int baseZ = gz * EXIT_CELL + 18 + (int) (hash(gx, gz, 463) * (EXIT_CELL - 36));
+
+        // Не трогаем эталонный квадрат старых морских проб spots.json и сушу биомов
+        if (baseX >= 580 && baseX <= 720 && baseZ >= 580 && baseZ <= 800) return null;
+        if (AshenLands.inside(baseX, baseZ) || MistKeep.inside(baseX, baseZ)
+                || WaterfallGardens.landAt(baseX, baseZ) != null) {
+            return null;
+        }
+
+        // Ищем ближайшую точку в радиусе 18 блоков, под которой РЕАЛЬНО проходит подземная пещера (y = floor - 9 .. floor - 14)
+        int chosenX = Integer.MIN_VALUE, chosenZ = Integer.MIN_VALUE, chosenFloor = 0;
+        for (int step = 0; step <= 16; ++step) {
+            double ang = step * 2.3999632;
+            double rad = step == 0 ? 0.0 : 3.5 * Math.sqrt(step);
+            int tx = baseX + (int) Math.round(Math.cos(ang) * rad);
+            int tz = baseZ + (int) Math.round(Math.sin(ang) * rad);
+            int fl = floor(tx, tz, sea);
+            if (fl <= BOTTOM + 18) continue;
+            if (cave(tx, fl - 8, tz, fl) || cave(tx, fl - 11, tz, fl) || cave(tx, fl - 14, tz, fl)) {
+                chosenX = tx;
+                chosenZ = tz;
+                chosenFloor = fl;
+                break;
+            }
+        }
+        if (chosenX == Integer.MIN_VALUE) return null;
+
+        double lipR = 3.8 + hash(gx, gz, 464) * 1.6;
+        double dirAng = hash(gx, gz, 465) * (Math.PI * 2.0);
+        return new SeaExit(chosenX, chosenZ, chosenFloor, lipR, Math.cos(dirAng) * 0.28, Math.sin(dirAng) * 0.28);
+    }
+
+    /** Ищет ближайший редкий выход подводных пещер в море для /locate и проверочных проб. */
+    public static SeaExit nearestSeaCaveExit(int ox, int oz, int sea, int maxCellRadius) {
+        int gx0 = Math.floorDiv(ox, EXIT_CELL), gz0 = Math.floorDiv(oz, EXIT_CELL);
+        SeaExit best = null;
+        double bestD2 = Double.MAX_VALUE;
+        for (int r = 0; r <= maxCellRadius; ++r) {
+            for (int dx = -r; dx <= r; ++dx) {
+                for (int dz = -r; dz <= r; ++dz) {
+                    if (Math.max(Math.abs(dx), Math.abs(dz)) != r) continue;
+                    SeaExit ex = seaExitInCell(gx0 + dx, gz0 + dz, sea);
+                    if (ex == null) continue;
+                    double d2 = (double) (ex.cx - ox) * (ex.cx - ox) + (double) (ex.cz - oz) * (ex.cz - oz);
+                    if (d2 < bestD2) {
+                        bestD2 = d2;
+                        best = ex;
+                    }
+                }
+            }
+            if (best != null && r >= 2) break;
+        }
+        return best;
+    }
+
+    /** Проверяет, попадает ли блок (x, y, z) в наклонное затопленное устье редкого выхода пещеры в море. */
+    static boolean seaCaveExit(int x, int y, int z, int floor) {
+        if (y > floor || y < floor - 16) return false;
+        int gx = Math.floorDiv(x, EXIT_CELL), gz = Math.floorDiv(z, EXIT_CELL);
+        int seaApprox = CityPlan.get().ocean;
+        for (int ox = -1; ox <= 1; ++ox) {
+            for (int oz = -1; oz <= 1; ++oz) {
+                SeaExit ex = seaExitInCell(gx + ox, gz + oz, seaApprox);
+                if (ex == null) continue;
+                if (Math.abs(x - ex.cx) > 12 || Math.abs(z - ex.cz) > 12) continue;
+                int depth = Math.max(0, floor - y);
+                double throatX = ex.cx + ex.dx * depth;
+                double throatZ = ex.cz + ex.dz * depth;
+                double wob = 0.55 * Math.sin(x * 0.45 + z * 0.35 + y * 0.30);
+                // Воронкообразный грот у кромки дна, переходящий в широкий сводчатый зал на глубине 7..15 блоков!
+                double rAllow;
+                if (depth <= 2) {
+                    rAllow = ex.lipR + (2 - depth) * 0.75;
+                } else if (depth <= 7) {
+                    rAllow = Math.max(2.6, ex.lipR - 0.22 * (depth - 2));
+                } else {
+                    rAllow = ex.lipR + 1.15;
+                }
+                if (Math.hypot((x + 0.5) - throatX, (z + 0.5) - throatZ) <= rAllow + wob) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     // ------------------------------------------------------------------ материалы
@@ -294,11 +399,19 @@ public final class ElisarSea {
         BlockState water = st(ElisarBlocks.WATER);
         boolean holeColumn = false;
         for (int y = BOTTOM; y <= floor - 6; ++y) {
-            boolean shaft = blueHole(x, y, z, floor);
+            boolean shaft = blueHole(x, y, z, floor) || seaCaveExit(x, y, z, floor);
             if (!shaft && !cave(x, y, z, floor)) continue;
             if (shaft) holeColumn = true;
             boolean pocket = !shaft && dryPocket(x, y, z, floor);
             chunk.setBlockState(mp.set(x, y, z), pocket ? Blocks.AIR.defaultBlockState() : water, false);
+        }
+
+        // v0.26.0: редкие затопленные выходы подводных пещер прорезают кровлю дна (floor-5 .. floor) прямо в открытое море!
+        for (int y = Math.max(BOTTOM, floor - 5); y <= floor; ++y) {
+            if (seaCaveExit(x, y, z, floor)) {
+                chunk.setBlockState(mp.set(x, y, z), water, false);
+                holeColumn = true;
+            }
         }
 
         // свод над полостью: «синяя дыра» всегда пробивает дно, обычная пещера — примерно в половине мест

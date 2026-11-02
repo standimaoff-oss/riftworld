@@ -1613,6 +1613,61 @@ biome_section() {
   probe_and_shot_struct "enlarged_biomes_audit"    500 "118_enlarged_violet_hills_panorama"    0 0 18
   probe_and_shot_struct "connected_carpets_showcase" 200 "122_connected_carpets_shapes"        0 0 10
 
+  # ---------- v0.26.0: редкие выходы подводных пещер в море, /locate всех 24 структур и 9 биомов, все 16 яиц призыва ----------
+  echo "== v0.26.0: редкие выходы пещер в море, /locate всех структур и биомов, яйца призыва всех 16 мобов (включая Дракона) =="
+  probe_and_shot_struct "sea_cave_exit"            120 "126_underwater_cave_sea_exit"          1 0 14
+
+  # Полный аудит всех 24 структур и всех 9 биомов через генератор и реальные команды /locate с высоты Y=185!
+  LOC_AUD=$(EL execute at TestPlayer in riftworld:elisar run riftstruct locate_all_audit 2>&1 | tr '\r\n' '  ')
+  log "  /riftstruct locate_all_audit -> ${LOC_AUD:0:260}"
+  LOC_BLK=$(printf '%s' "$LOC_AUD" | sed -n 's/.* blocks=\([0-9]*\).*/\1/p' | tail -1)
+  if [ "${LOC_BLK:-0}" -ge 660 ]; then
+    log "  OK   аналитический /locate нашёл ВСЕ 24 структуры (24/24) и ВСЕ 9 биомов (9/9) с небесной высоты!"
+  else
+    log "  FAIL locate_all_audit: ${LOC_AUD:0:200}"; FAILS=$((FAILS + 1))
+  fi
+  EL tp TestPlayer 120 185 -140 >/dev/null 2>&1 || true
+  sleep 1
+  for LCMD in \
+    "structure riftworld:blacktide_citadel" \
+    "structure riftworld:grand_theater" \
+    "structure riftworld:sea_cave_exit" \
+    "biome riftworld:shallow_reef" \
+    "biome riftworld:abyss" \
+    "biome riftworld:violet_hills" \
+    "biome riftworld:crystal_rifts"; do
+    LOUT=$(EL execute as TestPlayer at @s in riftworld:elisar run locate $LCMD 2>&1 | tr '\r\n' '  ')
+    log "  /locate $LCMD -> ${LOUT:0:180}"
+    if printf '%s' "$LOUT" | grep -q '\[[-0-9]'; then
+      log "  OK   ванильная команда /locate $LCMD мгновенно вернула координаты"
+    else
+      log "  FAIL ванильная команда /locate $LCMD не нашла цель: ${LOUT:0:140}"; FAILS=$((FAILS + 1))
+    fi
+  done
+  OW_LOC=$(RCON execute in minecraft:overworld positioned 0 120 0 run locate structure riftworld:overgrown_temple 2>&1 | tr '\r\n' '  ')
+  log "  [Overworld] /locate structure riftworld:overgrown_temple -> ${OW_LOC:0:180}"
+  if printf '%s' "$OW_LOC" | grep -q '\[[-0-9]'; then
+    log "  OK   ванильная команда /locate structure riftworld:overgrown_temple работает в Обычном мире"
+  else
+    log "  FAIL /locate structure riftworld:overgrown_temple: ${OW_LOC:0:140}"; FAILS=$((FAILS + 1))
+  fi
+
+  # Аудит всех 16 яиц призыва мобов + живой спавн Бумажного Дракона режимом SPAWN_EGG!
+  EL tp TestPlayer 540 108 -420 >/dev/null 2>&1 || true
+  sleep 6
+  EGG_AUD=$(EL execute at TestPlayer in riftworld:elisar run riftstruct spawn_eggs_audit 2>&1 | tr '\r\n' '  ')
+  log "  /riftstruct spawn_eggs_audit -> ${EGG_AUD:0:260}"
+  EGG_BLK=$(printf '%s' "$EGG_AUD" | sed -n 's/.* blocks=\([0-9]*\).*/\1/p' | tail -1)
+  if [ "${EGG_BLK:-0}" -ge 400 ]; then
+    log "  OK   все 16/16 яиц призыва мобов зарегистрированы, Бумажный Дракон успешно призван яйцом (SPAWN_EGG)!"
+  else
+    log "  FAIL spawn_eggs_audit: ${EGG_AUD:0:200}"; FAILS=$((FAILS + 1))
+  fi
+  sleep 4
+  EL execute in riftworld:elisar as @e[type=riftworld:paper_dragon,sort=nearest,limit=1] at @s run tp TestPlayer ~28 ~7 ~28 facing entity @s eyes >/dev/null 2>&1 || true
+  sleep 1
+  shot "127_paper_dragon_spawn_egg_test"
+
   # Прогреваем серверные чанки Белого Города перед переносом через пролом, чтобы на катсцене весь город и замок сияли с 1-й секунды!
   EL tp TestPlayer 24 162 88 195 12 >/dev/null 2>&1 || true
   sleep 4

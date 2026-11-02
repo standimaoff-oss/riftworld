@@ -392,5 +392,7 @@
   "entity.riftworld.ice_pillar": "Ледяной Столб Разлома",
   "entity.riftworld.ice_hail_boulder": "Ледяная Глыба Небесного Града",
   "cutscene.riftworld.elisar.dim": "Э Л И С А Р",
-  "cutscene.riftworld.elisar.city": "Белый Город Святилища"
+  "cutscene.riftworld.elisar.city": "Белый Город Святилища",
+  "item.riftworld.striped_fish_spawn_egg": "Яйцо полосатой рыбы",
+  "item.riftworld.eel_fish_spawn_egg": "Яйцо бледного пещерного угря"
 }

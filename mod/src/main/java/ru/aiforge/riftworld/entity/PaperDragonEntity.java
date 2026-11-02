@@ -135,6 +135,12 @@ public class PaperDragonEntity extends FlyingMob {
         this.entityData.set(DATA_PHASE, this.random.nextFloat() * Mth.TWO_PI);
         this.orbitSign = this.random.nextBoolean() ? 1 : -1;
         this.orbitAngle = this.random.nextDouble() * Mth.TWO_PI;
+        if (reason == MobSpawnType.SPAWN_EGG || reason == MobSpawnType.COMMAND) {
+            this.setPersistenceRequired();
+            if (reason == MobSpawnType.SPAWN_EGG) {
+                this.setPos(this.getX(), this.getY() + 4.5, this.getZ());
+            }
+        }
         return super.finalizeSpawn(level, diff, reason, data, tag);
     }
 

@@ -394,5 +394,7 @@
   "entity.riftworld.ice_pillar": "Glacial Rift Pillar",
   "entity.riftworld.ice_hail_boulder": "Sky Ice Boulder",
   "cutscene.riftworld.elisar.dim": "E L I S A R",
-  "cutscene.riftworld.elisar.city": "The White City of the Sanctuary"
+  "cutscene.riftworld.elisar.city": "The White City of the Sanctuary",
+  "item.riftworld.striped_fish_spawn_egg": "Striped Reef Fish Spawn Egg",
+  "item.riftworld.eel_fish_spawn_egg": "Pale Cave Eel Spawn Egg"
 }

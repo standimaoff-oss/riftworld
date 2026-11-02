@@ -14,9 +14,35 @@ import ru.aiforge.riftworld.item.ResonanceStoneItem;
 public final class ModItems {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, RiftWorld.MODID);
 
-    /** Biome 01: creative spawn egg of the paper dragon. */
+    /** Biome 01: creative spawn egg of the paper dragon (works on ground, water, AND right-clicking mid-air!). */
     public static final RegistryObject<Item> PAPER_DRAGON_EGG = ITEMS.register("paper_dragon_spawn_egg",
-            () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.PAPER_DRAGON, 0xF3EFE4, 0xD22E28, new Item.Properties()));
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.PAPER_DRAGON, 0xF3EFE4, 0xD22E28, new Item.Properties()) {
+                @Override
+                public net.minecraft.world.InteractionResultHolder<net.minecraft.world.item.ItemStack> use(
+                        net.minecraft.world.level.Level level,
+                        net.minecraft.world.entity.player.Player player,
+                        net.minecraft.world.InteractionHand hand) {
+                    var res = super.use(level, player, hand);
+                    if (res.getResult().consumesAction()) return res;
+                    net.minecraft.world.item.ItemStack stack = player.getItemInHand(hand);
+                    var hit = getPlayerPOVHitResult(level, player, net.minecraft.world.level.ClipContext.Fluid.ANY);
+                    if (hit.getType() == net.minecraft.world.phys.HitResult.Type.MISS) {
+                        if (!level.isClientSide && level instanceof net.minecraft.server.level.ServerLevel sl) {
+                            net.minecraft.world.phys.Vec3 spawnPos = player.getEyePosition().add(player.getLookAngle().scale(14.0));
+                            var ent = ModEntities.PAPER_DRAGON.get().spawn(
+                                    sl, stack, player, net.minecraft.core.BlockPos.containing(spawnPos),
+                                    net.minecraft.world.entity.MobSpawnType.SPAWN_EGG, false, false);
+                            if (ent != null) {
+                                ent.moveTo(spawnPos.x, spawnPos.y, spawnPos.z, player.getYRot(), 0.0F);
+                                if (!player.getAbilities().instabuild) stack.shrink(1);
+                                player.awardStat(net.minecraft.stats.Stats.ITEM_USED.get(this));
+                            }
+                        }
+                        return net.minecraft.world.InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
+                    }
+                    return res;
+                }
+            });
 
     /** Rev 4 item 13: rope for self-assembling bridges (craft: 3 string in a column). */
     public static final RegistryObject<Item> BRIDGE_ROPE = ITEMS.register("bridge_rope",
@@ -52,12 +78,14 @@ public final class ModItems {
     public static final RegistryObject<Item> CRYSTAL_MINION_EGG = ITEMS.register("crystal_minion_spawn_egg",
             () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.CRYSTAL_MINION, 0xCFD8E8, 0x32C4E8, new Item.Properties()));
 
-    // Рев 8: яйца призыва морской живности (по одному на характерный вид)
+    // Рев 8 + v0.26.0: яйца призыва ВСЕХ 11 видов морской живности Элисара!
     public static final RegistryObject<Item> EGG_SILVER = egg("silver_fish_spawn_egg", ru.aiforge.riftworld.entity.SeaFishEntity.SILVER, 0xC6D3DC, 0x2B3440);
     public static final RegistryObject<Item> EGG_GOLD = egg("gold_fish_spawn_egg", ru.aiforge.riftworld.entity.SeaFishEntity.GOLD, 0xE9C25A, 0xC29A38);
+    public static final RegistryObject<Item> EGG_STRIPED = egg("striped_fish_spawn_egg", ru.aiforge.riftworld.entity.SeaFishEntity.STRIPED, 0x4DB8C4, 0xF6E58D);
     public static final RegistryObject<Item> EGG_JELLY = egg("jelly_fish_spawn_egg", ru.aiforge.riftworld.entity.SeaFishEntity.JELLY, 0x9FE6FF, 0xD8F7FF);
     public static final RegistryObject<Item> EGG_RAY = egg("ray_fish_spawn_egg", ru.aiforge.riftworld.entity.SeaFishEntity.RAY, 0x68798C, 0xDCE6EC);
     public static final RegistryObject<Item> EGG_ANGLER = egg("angler_fish_spawn_egg", ru.aiforge.riftworld.entity.SeaFishEntity.ANGLER, 0x2C3947, 0xDFFFA8);
+    public static final RegistryObject<Item> EGG_EEL = egg("eel_fish_spawn_egg", ru.aiforge.riftworld.entity.SeaFishEntity.EEL, 0x394854, 0xA8D8CE);
     // Рев 10 «Живое море 2»: тропические мирные (хирург, черепаха) и редкие пещерные (глот, жгучая медуза)
     public static final RegistryObject<Item> EGG_SURGEON = egg("surgeon_fish_spawn_egg", ru.aiforge.riftworld.entity.SeaFishEntity.SURGEON, 0x2F6FD0, 0xF2D24C);
     public static final RegistryObject<Item> EGG_TURTLE = egg("turtle_spawn_egg", ru.aiforge.riftworld.entity.SeaFishEntity.TURTLE, 0x4E7A4A, 0xE3DCC0);

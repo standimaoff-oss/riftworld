@@ -113,6 +113,29 @@ public final class CoralGrove {
         return new Site(sx, sz, floor, kind, h, seed);
     }
 
+    /** Ищет ближайшую подводную рощу крупных коралловых деревьев для команды /locate structure riftworld:coral_grove. */
+    public static net.minecraft.core.BlockPos nearestGrove(int ox, int oz) {
+        int gx0 = Math.floorDiv(ox, CELL), gz0 = Math.floorDiv(oz, CELL);
+        Site best = null;
+        double bestD2 = Double.MAX_VALUE;
+        for (int r = 0; r <= 75; ++r) {
+            for (int dx = -r; dx <= r; ++dx) {
+                for (int dz = -r; dz <= r; ++dz) {
+                    if (Math.max(Math.abs(dx), Math.abs(dz)) != r) continue;
+                    Site s = siteIn(gx0 + dx, gz0 + dz);
+                    if (s == null) continue;
+                    double d2 = (double) (s.x - ox) * (s.x - ox) + (double) (s.z - oz) * (s.z - oz);
+                    if (d2 < bestD2) {
+                        bestD2 = d2;
+                        best = s;
+                    }
+                }
+            }
+            if (best != null && r >= 4) break;
+        }
+        return best == null ? null : new net.minecraft.core.BlockPos(best.x, best.floor + 4, best.z);
+    }
+
     // ------------------------------------------------------------------ построение чертежа
     private static void put(Map<Long, List<int[]>> cols, int dx, int y, int dz, int type) {
         if (y <= 0) return;

@@ -41,22 +41,15 @@ public final class BlacktideCitadel {
     public static final int OZ = -100;
     public static final int SEA_BY = 24;
 
-    // Локальные координаты берегового устоя моста (на суше биома), ворот и донжона (в открытом море)
-    public static final int LAND_LX = -109, LAND_LZ = 94, LAND_BY = 41;
-    public static final int BRIDGE_START_LX = -108, BRIDGE_START_LZ = 94;
-    public static final int GATE_LX = -65, GATE_LZ = 35, GATE_BY = 48;
-    public static final int KEEP_LX = 12, KEEP_LZ = -25, KEEP_BY = 63;
+    // Локальные координаты берегового устоя моста (на суше биома), ворот и донжона (в открытом море) — строго по оси симметрии lx = 0!
+    public static final int LAND_LX = 0, LAND_LZ = 96, LAND_BY = 41;
+    public static final int BRIDGE_START_LX = 0, BRIDGE_START_LZ = 96;
+    public static final int GATE_LX = 0, GATE_LZ = 35, GATE_BY = 48;
+    public static final int KEEP_LX = 0, KEEP_LZ = -20, KEEP_BY = 57;
 
-    // Единичный вектор от берегового устоя (-109, 94) к морской цитадели (+5, -2) в локальных координатах rot=0
-    private static final double U0_X;
-    private static final double U0_Z;
-    static {
-        double vx = 5.0 - LAND_LX;
-        double vz = -2.0 - LAND_LZ;
-        double len = Math.hypot(vx, vz);
-        U0_X = vx / len;
-        U0_Z = vz / len;
-    }
+    // Единичный вектор от берегового устоя (0, 96) к морской цитадели (0, -20) в локальных координатах rot=0
+    private static final double U0_X = 0.0;
+    private static final double U0_Z = -1.0;
 
     /** Экземпляр Цитадели Чёрного утёса на побережье конкретного региона {@link AshenLands}. */
     public static final class Site {
@@ -486,8 +479,8 @@ public final class BlacktideCitadel {
                     }
                 }
 
-                boolean onShoreLanding = (lx <= -86 && lz >= 70);
-                boolean bridgeApproachDeck = (lx >= -120 && lx <= -98 && lz >= 88 && lz <= 102);
+                boolean onShoreLanding = (Math.abs(lx) <= 22 && lz >= 88);
+                boolean bridgeApproachDeck = (Math.abs(lx) <= 7 && lz >= 92 && lz <= 108);
 
                 int maxBy = Math.min(H - 1, maxBuildY - baseY);
                 for (int by = 0; by <= maxBy; ++by) {
@@ -525,13 +518,13 @@ public final class BlacktideCitadel {
             }
         }
 
-        // 3) Симметрично расставленные скромные сундуки с припасами в залах и капелле Цитадели!
-        placeCitadelChest(chunk, site, x0, z0,  3, 64, -42, Direction.SOUTH, LandmarkStructures.LOOT_MODEST_WAYFARER);
-        placeCitadelChest(chunk, site, x0, z0, 21, 64, -42, Direction.SOUTH, LandmarkStructures.LOOT_MODEST_WAYFARER);
-        placeCitadelChest(chunk, site, x0, z0, 42, 64, -32, Direction.SOUTH, LandmarkStructures.LOOT_MODEST_WAYFARER);
-        placeCitadelChest(chunk, site, x0, z0, 42, 64, -10, Direction.NORTH, LandmarkStructures.LOOT_MODEST_WAYFARER);
-        placeCitadelChest(chunk, site, x0, z0, -34, 64, -36, Direction.SOUTH, LandmarkStructures.LOOT_MODEST_MARITIME);
-        placeCitadelChest(chunk, site, x0, z0, -34, 64, -14, Direction.NORTH, LandmarkStructures.LOOT_MODEST_MARITIME);
+        // 3) Строго симметрично расставленные скромные сундуки с припасами в нефах Собора и Ротонде Цитадели!
+        placeCitadelChest(chunk, site, x0, z0, -22, 57, -8, Direction.EAST, LandmarkStructures.LOOT_MODEST_WAYFARER);
+        placeCitadelChest(chunk, site, x0, z0,  22, 57, -8, Direction.WEST, LandmarkStructures.LOOT_MODEST_WAYFARER);
+        placeCitadelChest(chunk, site, x0, z0, -22, 57, -32, Direction.EAST, LandmarkStructures.LOOT_MODEST_WAYFARER);
+        placeCitadelChest(chunk, site, x0, z0,  22, 57, -32, Direction.WEST, LandmarkStructures.LOOT_MODEST_WAYFARER);
+        placeCitadelChest(chunk, site, x0, z0, -14, 57, -58, Direction.EAST, LandmarkStructures.LOOT_MODEST_MARITIME);
+        placeCitadelChest(chunk, site, x0, z0,  14, 57, -58, Direction.WEST, LandmarkStructures.LOOT_MODEST_MARITIME);
     }
 
     private static void placeCitadelChest(ChunkAccess chunk, Site site, int x0, int z0,

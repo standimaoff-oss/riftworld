@@ -1622,6 +1622,7 @@ public final class LandmarkStructures {
         BlockState chiseledPb = Blocks.CHISELED_POLISHED_BLACKSTONE.defaultBlockState();
         BlockState dsStair = Blocks.DEEPSLATE_BRICK_STAIRS.defaultBlockState();
         BlockState dsSlab = Blocks.DEEPSLATE_BRICK_SLAB.defaultBlockState();
+        BlockState dsWall = Blocks.DEEPSLATE_BRICK_WALL.defaultBlockState();
         BlockState basaltY = Blocks.POLISHED_BASALT.defaultBlockState().setValue(RotatedPillarBlock.AXIS, Direction.Axis.Y);
         BlockState darkBeamX = CastleBlocks.DARK_BEAM.get().defaultBlockState().setValue(RotatedPillarBlock.AXIS, Direction.Axis.X);
         BlockState darkPlank = CastleBlocks.DARK_PLANKS.get().defaultBlockState();
@@ -1647,31 +1648,34 @@ public final class LandmarkStructures {
 
                 // Парадное западное крыльцо (dx = -17..-15, |dz| <= 3), обращённое прямо к ЮЗ камере!
                 if (dx >= -17 && dx <= -15 && Math.abs(dz) <= 3) {
-                    int stepY = by - 1 - (-15 - dx);
+                    int stepY = by - 1 - (-16 - dx);
                     for (int y = gBot; y <= stepY; ++y) {
                         if (y > plan.ocean) put(chunk, mp, x0, z0, x, y, z, pbBrick);
                     }
-                    if (dx < -15) {
+                    if (dx < -15 && Math.abs(dz) <= 4) {
                         put(chunk, mp, x0, z0, x, stepY + 1, z, stair(dsStair, Direction.EAST, Half.BOTTOM));
                     }
                 }
 
-                // 1) Монументальный Западный Готический Фасад с Окном-Розой и двумя угловыми башенками-пинаклями (dx = -14..-13, |dz| <= 8)
-                if (dx >= -14 && dx <= -13 && Math.abs(dz) <= 8) {
+                // 1) Монументальный Западный Готический Фасад с Окном-Розой и двумя квадратными 3x3 башенками-пинаклями (dx = -15..-13, |dz| <= 8)
+                if (dx >= -15 && dx <= -13 && Math.abs(dz) <= 8) {
                     boolean inTurret = (Math.abs(dz) >= 6);
                     if (inTurret) {
                         for (int y = by; y <= by + 17; ++y) {
-                            boolean edge = (dx == -14 || Math.abs(dz) == 8);
+                            boolean edge = (dx == -15 || dx == -13 || Math.abs(dz) == 8 || Math.abs(dz) == 6);
                             put(chunk, mp, x0, z0, x, y, z, (y == by + 11 || y == by + 16) ? chiseledPb : (edge ? pbBrick : dsBrick));
                         }
-                        // Остроконечные шпили западных башенок (by + 18 .. by + 21)
-                        if (Math.abs(dz) == 7) {
-                            for (int sy = 18; sy <= 21; ++sy) {
-                                put(chunk, mp, x0, z0, x, by + sy, z, sy == 21 ? slabBot(dsSlab) : dsTile);
-                            }
+                        // Ступенчатые готические пирамидальные шпили 3x3 -> 1x1 (by + 18 .. by + 22)
+                        put(chunk, mp, x0, z0, x, by + 18, z, (dx == -14 && Math.abs(dz) == 7) ? pbBrick : dsSlab);
+                        if (dx == -14 && Math.abs(dz) == 7) {
+                            put(chunk, mp, x0, z0, x, by + 19, z, dsTile);
+                            put(chunk, mp, x0, z0, x, by + 20, z, dsTile);
+                            put(chunk, mp, x0, z0, x, by + 21, z, dsWall);
+                            put(chunk, mp, x0, z0, x, by + 22, z, dsWall);
                         }
                         continue;
                     }
+                    if (dx == -15) continue;
                     // Центральный щипец Западного фасада с глубоким стрельчатым порталом и круглой Готической Розой!
                     int gableTop = by + 18 - Math.abs(dz);
                     for (int y = by; y <= gableTop; ++y) {

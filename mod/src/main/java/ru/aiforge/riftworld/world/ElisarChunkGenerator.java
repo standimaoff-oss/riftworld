@@ -62,6 +62,19 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         return CODEC;
     }
 
+    @javax.annotation.Nullable
+    @Override
+    public com.mojang.datafixers.util.Pair<BlockPos, net.minecraft.core.Holder<net.minecraft.world.level.levelgen.structure.Structure>> findNearestMapStructure(
+            net.minecraft.server.level.ServerLevel level,
+            net.minecraft.core.HolderSet<net.minecraft.world.level.levelgen.structure.Structure> targets,
+            BlockPos origin, int searchRadius, boolean skipKnownStructures) {
+        var analytical = ElisarStructureLocator.findNearest(level, targets, origin, searchRadius);
+        if (analytical != null) {
+            return analytical;
+        }
+        return super.findNearestMapStructure(level, targets, origin, searchRadius, skipKnownStructures);
+    }
+
     // ================================================================== column model
     /** Surface kinds. */
     static final int S_GRASS = 0, S_COBBLE = 1, S_PATH = 2, S_PLANK = 3, S_PLOT = 4, S_BARE = 5;

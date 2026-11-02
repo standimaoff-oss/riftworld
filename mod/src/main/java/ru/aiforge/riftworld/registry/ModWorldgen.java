@@ -25,6 +25,11 @@ public final class ModWorldgen {
     public static final RegistryObject<net.minecraft.world.level.levelgen.structure.StructureType<ru.aiforge.riftworld.world.OvergrownTempleStructure>> OVERGROWN_TEMPLE =
             STRUCTURE_TYPES.register("overgrown_temple", () -> OGT_TYPE);
 
+    private static final net.minecraft.world.level.levelgen.structure.StructureType<ru.aiforge.riftworld.world.ElisarAnalyticalStructure> ELISAR_ANALYTICAL_TYPE =
+            () -> ru.aiforge.riftworld.world.ElisarAnalyticalStructure.CODEC;
+    public static final RegistryObject<net.minecraft.world.level.levelgen.structure.StructureType<ru.aiforge.riftworld.world.ElisarAnalyticalStructure>> ELISAR_ANALYTICAL =
+            STRUCTURE_TYPES.register("elisar_analytical", () -> ELISAR_ANALYTICAL_TYPE);
+
     public static final DeferredRegister<net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType> PIECES =
             DeferredRegister.create(Registries.STRUCTURE_PIECE, RiftWorld.MODID);
     public static final RegistryObject<net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType> OVERGROWN_TEMPLE_PIECE =
