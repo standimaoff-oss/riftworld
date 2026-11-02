@@ -988,10 +988,10 @@ def build_cathedral_keep_and_throne_hall():
                 fly_y2 = 81 + (23 - lx) // 2
                 put_sym(lx, fly_y2, lz, PBB)
 
-    # 3) Front (South, `lz = +4`) & Rear (North, `lz = -40`) Monumental Gable Walls (`by = 57..98`)
+    # 3) Front (South, `lz = +4`) & Rear (North, `lz = -40`) Monumental Gable Walls (`by = 57..99`)
     for wall_z, is_front in ((4, True), (-40, False)):
         for lx in range(0, 25):
-            gable_top = (98 - lx) if lx <= 13 else 78
+            gable_top = (99 - (lx * 9) // 13) if lx <= 13 else 83
             for by in range(57, gable_top + 1):
                 if by == gable_top:
                     blk = CPB if lx == 0 else PBB

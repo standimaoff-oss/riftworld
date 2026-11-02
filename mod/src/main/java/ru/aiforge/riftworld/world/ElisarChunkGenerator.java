@@ -1457,10 +1457,10 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                     vb = c.viaductMosaic ? tMosaic
                                             : (c.viaductCenter ? tFloor : (hash(x, z, 611) < 0.78 ? ashlar : tBricks));
                                 } else {
-                                    vb = c.viaductKeystone ? tGold : ashlar;
+                                    vb = c.viaductKeystone ? tMosaic : ashlar;
                                 }
                             } else if (y == botY) {
-                                vb = c.viaductKeystone ? tGold : st(ElisarBlocks.BRICKS);
+                                vb = c.viaductKeystone ? tMosaic : st(ElisarBlocks.BRICKS);
                             } else {
                                 vb = hash(x, y, z) < 0.65 ? tBricks : ashlar;
                             }

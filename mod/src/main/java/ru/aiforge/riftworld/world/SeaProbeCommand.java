@@ -2837,12 +2837,12 @@ public final class SeaProbeCommand {
             }
 
             if (k.equals("blacktide_rotunda_sanctum")) {
-                // Строго по главной оси симметрии купольной круглой Ротонды-Святилища (lx = 0, центр cz = -58!)
-                int camX = bs.cx + BlacktideCitadel.rotX(0, -44, bs.rot);
-                int camY = bs.baseY + 64;
-                int camZ = bs.cz + BlacktideCitadel.rotZ(0, -44, bs.rot);
+                // Строго по главной оси симметрии внутри открытого атриума купольной Ротонды (lx = 0, lz = -48, d = 10 < R_gal_in!)
+                int camX = bs.cx + BlacktideCitadel.rotX(0, -48, bs.rot);
+                int camY = bs.baseY + 63;
+                int camZ = bs.cz + BlacktideCitadel.rotZ(0, -48, bs.rot);
                 int lkX = bs.cx + BlacktideCitadel.rotX(0, -65, bs.rot);
-                int lkY = bs.baseY + 62;
+                int lkY = bs.baseY + 61;
                 int lkZ = bs.cz + BlacktideCitadel.rotZ(0, -65, bs.rot);
 
                 int carpets = 0, altars = 0, books = 0, gilded = 0;
