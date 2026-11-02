@@ -537,7 +537,7 @@ public final class BlacktideCitadel {
                             } else {
                                 // Во дворах морской цитадели — ровная архитектурная кладка из тёмносланцевой плитки и чёрного кирпича без пятен!
                                 boolean courtRib = (Math.floorMod(lx, 6) == 0 || Math.floorMod(lz, 6) == 0);
-                                st = courtRib ? roadBrick : Blocks.DEEPSLATE_TILES.defaultBlockState();
+                                st = courtRib ? obsBricks : Blocks.DEEPSLATE_TILES.defaultBlockState();
                             }
                         } else if (v == tpl.dirtId) {
                             st = onShoreLanding ? scorched : Blocks.DEEPSLATE_BRICKS.defaultBlockState();
