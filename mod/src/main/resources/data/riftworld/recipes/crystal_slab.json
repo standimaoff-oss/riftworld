@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "wooden_slab",
+  "pattern": [
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "riftworld:crystal_planks"
+    }
+  },
+  "result": {
+    "item": "riftworld:crystal_slab",
+    "count": 6
+  }
+}

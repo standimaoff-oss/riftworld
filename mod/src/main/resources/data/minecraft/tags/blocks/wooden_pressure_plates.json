@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    "riftworld:sizo_pressure_plate",
+    "riftworld:ambra_pressure_plate",
+    "riftworld:garden_pressure_plate",
+    "riftworld:lilac_pressure_plate",
+    "riftworld:crystal_pressure_plate",
+    "riftworld:charred_pressure_plate",
+    "riftworld:dark_pressure_plate"
+  ]
+}

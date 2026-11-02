@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "riftworld:block/elisar_stone_slab"
+    },
+    "type=double": {
+      "model": "riftworld:block/elisar_stone"
+    },
+    "type=top": {
+      "model": "riftworld:block/elisar_stone_slab_top"
+    }
+  }
+}

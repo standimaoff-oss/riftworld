@@ -3,6 +3,12 @@
   "values": [
     "riftworld:elisar_fence",
     "riftworld:rope_post",
-    "riftworld:dark_fence"
+    "riftworld:dark_fence",
+    "riftworld:sizo_fence",
+    "riftworld:ambra_fence",
+    "riftworld:garden_fence",
+    "riftworld:lilac_fence",
+    "riftworld:crystal_fence",
+    "riftworld:charred_fence"
   ]
 }

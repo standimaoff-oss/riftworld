@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/slab",
+  "textures": {
+    "bottom": "riftworld:block/rift_slate",
+    "top": "riftworld:block/rift_slate",
+    "side": "riftworld:block/rift_slate"
+  }
+}

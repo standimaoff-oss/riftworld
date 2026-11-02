@@ -28,6 +28,10 @@ public final class WildIslands {
     }
 
     private static final ConcurrentHashMap<Long, Cell> CACHE = new ConcurrentHashMap<>();
+    private static final int TILE = 64;
+    private static final CityPlan.Island[] EMPTY_ISLANDS = new CityPlan.Island[0];
+    private static final ConcurrentHashMap<Long, CityPlan.Island[]> TILE_CACHE = new ConcurrentHashMap<>(512);
+    private static final ThreadLocal<Boolean> BUILDING_TILE = ThreadLocal.withInitial(() -> Boolean.FALSE);
 
     private WildIslands() {
     }
@@ -37,11 +41,144 @@ public final class WildIslands {
     }
 
     public static Cell cell(int cx, int cz) {
-        return CACHE.computeIfAbsent(key(cx, cz), k -> gen(cx, cz));
+        Cell c = CACHE.get(key(cx, cz));
+        if (c == null) {
+            c = gen(cx, cz);
+            CACHE.putIfAbsent(key(cx, cz), c);
+        }
+        return c;
+    }
+
+    /** Возвращает кэшированный массив всех диких/региональных островов, способных затронуть тайл 64x64 вокруг (x, z). */
+    public static CityPlan.Island[] tileCandidates(double x, double z) {
+        if (x * x + z * z < (CITY_CLEAR - 120.0) * (CITY_CLEAR - 120.0)) return EMPTY_ISLANDS;
+        int tx = Math.floorDiv((int) Math.floor(x), TILE);
+        int tz = Math.floorDiv((int) Math.floor(z), TILE);
+        long tk = key(tx, tz);
+        CityPlan.Island[] cached = TILE_CACHE.get(tk);
+        if (cached != null) return cached;
+        if (Boolean.TRUE.equals(BUILDING_TILE.get())) {
+            return scanDirect(x, z);
+        }
+        BUILDING_TILE.set(Boolean.TRUE);
+        try {
+            CityPlan.Island[] built = buildTile(tx, tz);
+            if (TILE_CACHE.size() > 8192) {
+                TILE_CACHE.clear();
+            }
+            TILE_CACHE.put(tk, built);
+            return built;
+        } finally {
+            BUILDING_TILE.set(Boolean.FALSE);
+        }
+    }
+
+    public static CityPlan.Island islandAt(double x, double z) {
+        if (x * x + z * z < (CITY_CLEAR - 120.0) * (CITY_CLEAR - 120.0)) return null;
+        CityPlan.Island[] cand = tileCandidates(x, z);
+        for (int k = 0, n = cand.length; k < n; ++k) {
+            CityPlan.Island isl = cand[k];
+            if (isl.contains(x, z)) return isl;
+        }
+        return null;
+    }
+
+    private static void addTileCandidate(List<CityPlan.Island> list, CityPlan.Island isl,
+                                         double mx, double mz) {
+        if (isl == null) return;
+        double lim = (TILE * 0.5) + isl.maxReach() * 1.65 + 12.0;
+        if (Math.abs(mx - isl.cx) <= lim && Math.abs(mz - isl.cz) <= lim) {
+            for (int i = 0, n = list.size(); i < n; ++i) {
+                if (list.get(i) == isl) return;
+            }
+            list.add(isl);
+        }
+    }
+
+    private static CityPlan.Island[] buildTile(int tx, int tz) {
+        int x0 = tx * TILE, x1 = x0 + TILE - 1;
+        int z0 = tz * TILE, z1 = z0 + TILE - 1;
+        double mx = x0 + TILE * 0.5;
+        double mz = z0 + TILE * 0.5;
+        List<CityPlan.Island> out = new ArrayList<>(8);
+
+        for (int sx = Math.floorDiv(x0, AshenLands.SUPER) - 1; sx <= Math.floorDiv(x1, AshenLands.SUPER) + 1; ++sx)
+            for (int sz = Math.floorDiv(z0, AshenLands.SUPER) - 1; sz <= Math.floorDiv(z1, AshenLands.SUPER) + 1; ++sz) {
+                AshenLands.Region ar = AshenLands.region(sx, sz);
+                if (ar != null && ar.island != null) addTileCandidate(out, ar.island, mx, mz);
+            }
+        for (int sx = Math.floorDiv(x0, EmberRuins.SUPER) - 1; sx <= Math.floorDiv(x1, EmberRuins.SUPER) + 1; ++sx)
+            for (int sz = Math.floorDiv(z0, EmberRuins.SUPER) - 1; sz <= Math.floorDiv(z1, EmberRuins.SUPER) + 1; ++sz) {
+                EmberRuins.Site es = EmberRuins.site(sx, sz);
+                if (es != null) addTileCandidate(out, es.island, mx, mz);
+            }
+        for (int sx = Math.floorDiv(x0, VioletHills.SUPER) - 1; sx <= Math.floorDiv(x1, VioletHills.SUPER) + 1; ++sx)
+            for (int sz = Math.floorDiv(z0, VioletHills.SUPER) - 1; sz <= Math.floorDiv(z1, VioletHills.SUPER) + 1; ++sz) {
+                VioletHills.Region vr = VioletHills.region(sx, sz);
+                if (vr != null) for (CityPlan.Island vi : vr.isles) addTileCandidate(out, vi, mx, mz);
+            }
+        for (int sx = Math.floorDiv(x0, CrystalRifts.SUPER) - 1; sx <= Math.floorDiv(x1, CrystalRifts.SUPER) + 1; ++sx)
+            for (int sz = Math.floorDiv(z0, CrystalRifts.SUPER) - 1; sz <= Math.floorDiv(z1, CrystalRifts.SUPER) + 1; ++sz) {
+                CrystalRifts.Region cr = CrystalRifts.region(sx, sz);
+                if (cr != null) for (CityPlan.Island ci : cr.isles) addTileCandidate(out, ci, mx, mz);
+            }
+        for (int sx = Math.floorDiv(x0, SizoGrove.SUPER) - 1; sx <= Math.floorDiv(x1, SizoGrove.SUPER) + 1; ++sx)
+            for (int sz = Math.floorDiv(z0, SizoGrove.SUPER) - 1; sz <= Math.floorDiv(z1, SizoGrove.SUPER) + 1; ++sz) {
+                SizoGrove.Region sr = SizoGrove.region(sx, sz);
+                if (sr != null) addTileCandidate(out, sr.hub, mx, mz);
+            }
+        for (int sx = Math.floorDiv(x0, WaterfallGardens.SUPER) - 1; sx <= Math.floorDiv(x1, WaterfallGardens.SUPER) + 1; ++sx)
+            for (int sz = Math.floorDiv(z0, WaterfallGardens.SUPER) - 1; sz <= Math.floorDiv(z1, WaterfallGardens.SUPER) + 1; ++sz) {
+                WaterfallGardens.Region gr = WaterfallGardens.region(sx, sz);
+                if (gr != null) for (CityPlan.Island gi : gr.isles) addTileCandidate(out, gi, mx, mz);
+            }
+        for (int sx = Math.floorDiv(x0, WorldStructures.SUPER_VILLAGE) - 1; sx <= Math.floorDiv(x1, WorldStructures.SUPER_VILLAGE) + 1; ++sx)
+            for (int sz = Math.floorDiv(z0, WorldStructures.SUPER_VILLAGE) - 1; sz <= Math.floorDiv(z1, WorldStructures.SUPER_VILLAGE) + 1; ++sz) {
+                WorldStructures.Village wv = WorldStructures.whiteVillage(sx, sz);
+                if (wv != null) addTileCandidate(out, wv.island, mx, mz);
+            }
+        for (int sx = Math.floorDiv(x0, WorldStructures.SUPER_BURNED) - 1; sx <= Math.floorDiv(x1, WorldStructures.SUPER_BURNED) + 1; ++sx)
+            for (int sz = Math.floorDiv(z0, WorldStructures.SUPER_BURNED) - 1; sz <= Math.floorDiv(z1, WorldStructures.SUPER_BURNED) + 1; ++sz) {
+                WorldStructures.Village bv = WorldStructures.burnedIslandVillage(sx, sz);
+                if (bv != null) addTileCandidate(out, bv.island, mx, mz);
+            }
+        for (int sx = Math.floorDiv(x0, LandmarkStructures.SUPER_THEATER) - 1; sx <= Math.floorDiv(x1, LandmarkStructures.SUPER_THEATER) + 1; ++sx)
+            for (int sz = Math.floorDiv(z0, LandmarkStructures.SUPER_THEATER) - 1; sz <= Math.floorDiv(z1, LandmarkStructures.SUPER_THEATER) + 1; ++sz) {
+                LandmarkStructures.GrandTheater gt = LandmarkStructures.grandTheater(sx, sz);
+                if (gt != null) addTileCandidate(out, gt.island, mx, mz);
+            }
+        for (int sx = Math.floorDiv(x0, LandmarkStructures.SUPER_HARBOR) - 1; sx <= Math.floorDiv(x1, LandmarkStructures.SUPER_HARBOR) + 1; ++sx)
+            for (int sz = Math.floorDiv(z0, LandmarkStructures.SUPER_HARBOR) - 1; sz <= Math.floorDiv(z1, LandmarkStructures.SUPER_HARBOR) + 1; ++sz) {
+                LandmarkStructures.HarborPort hp = LandmarkStructures.harborPort(sx, sz);
+                if (hp != null) addTileCandidate(out, hp.island, mx, mz);
+            }
+        for (int cx = Math.floorDiv(x0, CELL) - 1; cx <= Math.floorDiv(x1, CELL) + 1; ++cx)
+            for (int cz = Math.floorDiv(z0, CELL) - 1; cz <= Math.floorDiv(z1, CELL) + 1; ++cz) {
+                for (CityPlan.Island wi : cell(cx, cz).islands) addTileCandidate(out, wi, mx, mz);
+            }
+        return out.isEmpty() ? EMPTY_ISLANDS : out.toArray(EMPTY_ISLANDS);
+    }
+
+    private static CityPlan.Island[] scanDirect(double x, double z) {
+        List<CityPlan.Island> list = scanNearUncached(x, z);
+        return list.isEmpty() ? EMPTY_ISLANDS : list.toArray(EMPTY_ISLANDS);
     }
 
     /** Islands whose shape can reach (x, z): own cell + the 8 neighbours. */
     public static List<CityPlan.Island> near(double x, double z) {
+        CityPlan.Island[] cand = tileCandidates(x, z);
+        if (cand.length == 0) return Collections.emptyList();
+        List<CityPlan.Island> out = new ArrayList<>(cand.length);
+        for (CityPlan.Island isl : cand) {
+            double r = isl.maxReach();
+            if (Math.abs(x - isl.cx) < r && Math.abs(z - isl.cz) < r) {
+                out.add(isl);
+            }
+        }
+        return out;
+    }
+
+    private static List<CityPlan.Island> scanNearUncached(double x, double z) {
         int cx = Math.floorDiv((int) Math.floor(x), CELL), cz = Math.floorDiv((int) Math.floor(z), CELL);
         if (Math.hypot(x, z) < CITY_CLEAR - 120) return Collections.emptyList();
         List<CityPlan.Island> out = new ArrayList<>(8);

@@ -54,16 +54,16 @@ public final class SeaLifeKeeper {
     }
 
     private static void tick(ServerLevel sl) {
-        List<net.minecraft.world.entity.Entity> ents = new ArrayList<>();
-        for (var ent : sl.getEntities().getAll()) ents.add(ent);
-        int total = 0;
-        for (var ent : ents) if (ent instanceof SeaFishEntity) ++total;
-        if (total >= WORLD_CAP) return;
+        List<ServerPlayer> players = sl.players();
+        if (players.isEmpty()) return;
 
-        for (ServerPlayer sp : new ArrayList<>(sl.players())) {
+        // v0.28.0: Вместо копирования ВСЕХ сущностей измерения в ArrayList используем локальный AABB-запрос вокруг игроков!
+        for (ServerPlayer sp : new ArrayList<>(players)) {
+            if (sp.isSpectator()) continue;
+            List<SeaFishEntity> nearby = sl.getEntitiesOfClass(SeaFishEntity.class, sp.getBoundingBox().inflate(80.0));
+            if (nearby.size() >= WORLD_CAP / Math.max(1, players.size())) continue;
             int peaceful = 0, jelly = 0, ray = 0, turtle = 0, hostile = 0;
-            for (var ent : ents) {
-                if (!(ent instanceof SeaFishEntity f)) continue;
+            for (SeaFishEntity f : nearby) {
                 if (f.distanceToSqr(sp) > 80 * 80) continue;
                 int v = f.variant();
                 if (v == SeaFishEntity.JELLY) ++jelly;

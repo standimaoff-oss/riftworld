@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "riftworld:block/stripped_ambra_log",
+    "side": "riftworld:block/stripped_ambra_log"
+  }
+}

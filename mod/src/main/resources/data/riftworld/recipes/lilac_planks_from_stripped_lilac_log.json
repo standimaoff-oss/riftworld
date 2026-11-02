@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "group": "planks",
+  "ingredients": [
+    {
+      "item": "riftworld:stripped_lilac_log"
+    }
+  ],
+  "result": {
+    "item": "riftworld:lilac_planks",
+    "count": 4
+  }
+}

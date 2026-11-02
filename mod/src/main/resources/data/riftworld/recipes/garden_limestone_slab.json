@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "riftworld:garden_limestone"
+    }
+  },
+  "result": {
+    "item": "riftworld:garden_limestone_slab",
+    "count": 6
+  }
+}

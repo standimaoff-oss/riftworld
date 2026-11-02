@@ -352,10 +352,14 @@ public final class PortalRitual {
     }
 
     private static void prewarmCityCutsceneChunks(ServerLevel dest, BlockPos arrival) {
+        int vd = dest.getServer() != null ? dest.getServer().getPlayerList().getViewDistance() : 2;
+        int rx = Math.min(2, Math.max(1, vd));
+        int rzMin = Math.min(3, Math.max(1, vd));
+        int rzMax = Math.min(4, Math.max(2, vd));
         int baseCx = arrival.getX() >> 4;
         int baseCz = arrival.getZ() >> 4;
-        for (int dx = -3; dx <= 3; ++dx) {
-            for (int dz = -5; dz <= 6; ++dz) {
+        for (int dx = -rx; dx <= rx; ++dx) {
+            for (int dz = -rzMin; dz <= rzMax; ++dz) {
                 ChunkPos cp = new ChunkPos(baseCx + dx, baseCz + dz);
                 dest.getChunk(cp.x, cp.z);
             }

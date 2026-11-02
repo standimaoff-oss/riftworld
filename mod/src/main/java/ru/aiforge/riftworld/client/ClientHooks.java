@@ -78,6 +78,23 @@ public final class ClientHooks {
             var plantCutout = net.minecraft.client.renderer.RenderType.cutout();
             net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(ru.aiforge.riftworld.registry.ElisarBlocks.WHITE_LILY_CLUSTER.get(), plantCutout);
             net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(ru.aiforge.riftworld.registry.ElisarBlocks.CELADON_FERN.get(), plantCutout);
+            for (var ro : java.util.List.of(
+                    ru.aiforge.riftworld.registry.ElisarBlocks.SIZO_DOOR,
+                    ru.aiforge.riftworld.registry.ElisarBlocks.SIZO_TRAPDOOR,
+                    ru.aiforge.riftworld.registry.ElisarBlocks.AMBRA_DOOR,
+                    ru.aiforge.riftworld.registry.ElisarBlocks.AMBRA_TRAPDOOR,
+                    ru.aiforge.riftworld.registry.ElisarBlocks.GARDEN_DOOR,
+                    ru.aiforge.riftworld.registry.ElisarBlocks.GARDEN_TRAPDOOR,
+                    ru.aiforge.riftworld.registry.ElisarBlocks.LILAC_DOOR,
+                    ru.aiforge.riftworld.registry.ElisarBlocks.LILAC_TRAPDOOR,
+                    ru.aiforge.riftworld.registry.ElisarBlocks.CRYSTAL_DOOR,
+                    ru.aiforge.riftworld.registry.ElisarBlocks.CRYSTAL_TRAPDOOR,
+                    ru.aiforge.riftworld.registry.CastleBlocks.DARK_DOOR,
+                    ru.aiforge.riftworld.registry.CastleBlocks.DARK_TRAPDOOR,
+                    ru.aiforge.riftworld.registry.CastleBlocks.CHARRED_DOOR,
+                    ru.aiforge.riftworld.registry.CastleBlocks.CHARRED_TRAPDOOR)) {
+                net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(ro.get(), plantCutout);
+            }
             for (String dtId : new String[]{"lilac_leaves", "garden_oak_leaves", "crystal_birch_leaves", "sizo_leaves"}) {
                 var dtBlock = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getValue(new net.minecraft.resources.ResourceLocation("riftworlddt", dtId));
                 if (dtBlock != null && dtBlock != net.minecraft.world.level.block.Blocks.AIR) {

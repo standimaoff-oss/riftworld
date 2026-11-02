@@ -1626,6 +1626,8 @@ biome_section() {
   probe_and_shot_struct "v27_new_blocks_gallery"       500 "136_v27_thirty_new_blocks_gallery"       0 0 4
   probe_and_shot_struct "peaceful_sky_dart_fish"       300 "137_peaceful_sky_dart_dragonfly_fish"    0 0 4
   probe_and_shot_struct "peaceful_blossom_stag"        300 "138_peaceful_snow_white_blossom_stags"   0 0 4
+  probe_and_shot_struct "v28_wood_and_stone_gallery"   700 "139_v28_all_wood_and_stone_sets_gallery" 0 0 6
+  probe_and_shot_struct "v28_elisar_perf_2chunks"      600 "140_v28_elisar_lag_free_perf_2chunks"    0 0 8
 
   # ---------- v0.26.0: редкие выходы подводных пещер в море, /locate всех 26 структур и 9 биомов, все 16 яиц призыва ----------
   echo "== v0.26.0: редкие выходы пещер в море, /locate всех 26 структур и 9 биомов, яйца призыва всех 16 мобов (включая Дракона) =="

@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "riftworld:block/charred_slab"
+    },
+    "type=double": {
+      "model": "riftworld:block/charred_planks"
+    },
+    "type=top": {
+      "model": "riftworld:block/charred_slab_top"
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "group": "planks",
+  "ingredients": [
+    {
+      "item": "riftworld:crystal_log"
+    }
+  ],
+  "result": {
+    "item": "riftworld:crystal_planks",
+    "count": 4
+  }
+}

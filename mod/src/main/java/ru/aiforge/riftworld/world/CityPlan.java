@@ -33,6 +33,7 @@ public final class CityPlan {
     public final Map<String, int[]> templates = new HashMap<>();
     public final int spawnX, spawnZ;
     private final Map<Long, Bucket> grid = new HashMap<>();
+    private final double cityBoundSq;
 
     public static synchronized CityPlan get() {
         if (instance == null) {
@@ -90,6 +91,12 @@ public final class CityPlan {
         /** Максимальный габарит острова по осям X/Z с учётом вытянутости, изгиба и лопастей. */
         public double maxReach() {
             return R * (1 + elong) * (1.16 + Math.abs(lobe2) + Math.abs(lobe3) + Math.abs(bend) * 0.55) + 4.0;
+        }
+
+        /** Быстрая проверка вхождения точки внутрь острова с предварительным AABB-отсечением за 2 операции. */
+        public boolean contains(double x, double z) {
+            double r = maxReach();
+            return Math.abs(x - cx) <= r && Math.abs(z - cz) <= r && t(x, z) > 0.0;
         }
 
         /** Точное расстояние от (cx, cz) до кромки острова (t == 0) вдоль луча (cosA, sinA). */
@@ -259,6 +266,12 @@ public final class CityPlan {
         JsonArray sp = o.getAsJsonArray("spawn");
         spawnX = sp.get(0).getAsInt();
         spawnZ = sp.get(1).getAsInt();
+        double maxCityR = 320.0;
+        for (Island isl : islands) {
+            double r = Math.hypot(isl.cx, isl.cz) + isl.maxReach() + 16.0;
+            if (r > maxCityR) maxCityR = r;
+        }
+        cityBoundSq = maxCityR * maxCityR;
     }
 
     private void addChannel(Channel c) {
@@ -288,11 +301,19 @@ public final class CityPlan {
     public Island nearest(double x, double z) {
         Island best = null;
         double bt = -1e9;
-        for (Island i : islands) {
-            double t = i.t(x, z);
-            if (t > bt) { bt = t; best = i; }
+        double dCitySq = x * x + z * z;
+        if (dCitySq <= cityBoundSq * 2.25) {
+            for (int k = 0, n = islands.size(); k < n; ++k) {
+                Island i = islands.get(k);
+                double lim = i.maxReach() * 1.65 + 12.0;
+                if (Math.abs(x - i.cx) > lim || Math.abs(z - i.cz) > lim) continue;
+                double t = i.t(x, z);
+                if (t > bt) { bt = t; best = i; }
+            }
         }
-        for (Island i : WildIslands.near(x, z)) {
+        Island[] wild = WildIslands.tileCandidates(x, z);
+        for (int k = 0, n = wild.length; k < n; ++k) {
+            Island i = wild[k];
             double t = i.t(x, z);
             if (t > bt) { bt = t; best = i; }
         }
@@ -300,13 +321,13 @@ public final class CityPlan {
     }
 
     public Island islandAt(double x, double z) {
-        for (Island i : islands) {
-            if (i.t(x, z) > 0) return i;
+        if (x * x + z * z <= cityBoundSq) {
+            for (int k = 0, n = islands.size(); k < n; ++k) {
+                Island i = islands.get(k);
+                if (i.contains(x, z)) return i;
+            }
         }
-        for (Island i : WildIslands.near(x, z)) {
-            if (i.t(x, z) > 0) return i;
-        }
-        return null;
+        return WildIslands.islandAt(x, z);
     }
 
     public List<Prop> propsNear(int x, int z) {

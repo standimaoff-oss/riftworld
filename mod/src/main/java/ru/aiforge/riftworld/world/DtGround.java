@@ -101,12 +101,17 @@ public final class DtGround {
                 if (creg0 != null && creg0.nearCrystalOrStructure(px0, pz0, 0.8)) return null;
             }
         }
+        int ocean = CityPlan.get().ocean;
+        int startY = Math.min(level.getMaxBuildHeight() - 1, sea ? ocean + 2 : 232);
+        int stopY = sea ? level.getMinBuildHeight() : Math.max(level.getMinBuildHeight(), ocean - 2);
         BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos(start.getX(), 0, start.getZ());
-        for (int y = level.getMaxBuildHeight() - 1; y > level.getMinBuildHeight(); --y) {
+        for (int y = startY; y > stopY; --y) {
             p.setY(y);
             BlockState s = level.getBlockState(p);
             if (s.isAir() || !s.getFluidState().isEmpty()) continue;
             if (!s.isCollisionShapeFullBlock(level, p)) continue;
+            if (s.getBlock() instanceof net.minecraft.world.level.block.LeavesBlock
+                    || s.getBlock() instanceof net.minecraft.world.level.block.BushBlock) continue;
             var id = ForgeRegistries.BLOCKS.getKey(s.getBlock());
             if (id != null) {
                 String path = id.getPath();

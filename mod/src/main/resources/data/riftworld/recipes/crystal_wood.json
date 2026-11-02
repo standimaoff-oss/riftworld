@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "bark",
+  "pattern": [
+    "##",
+    "##"
+  ],
+  "key": {
+    "#": {
+      "item": "riftworld:crystal_log"
+    }
+  },
+  "result": {
+    "item": "riftworld:crystal_wood",
+    "count": 3
+  }
+}

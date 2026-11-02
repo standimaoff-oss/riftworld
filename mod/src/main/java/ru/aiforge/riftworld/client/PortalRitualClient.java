@@ -393,9 +393,10 @@ public final class PortalRitualClient {
             }
 
             BlockPos bleachTarget = activeBleachCenter();
-            if (bleachTarget != null && (capturedFor == null || capturedFor.distSqr(bleachTarget) > 4.0)) {
+            boolean inElisar = mc.level.dimension().equals(ru.aiforge.riftworld.flight.Flight.ELISAR_DIM);
+            if (!inElisar && bleachTarget != null && (capturedFor == null || capturedFor.distSqr(bleachTarget) > 4.0)) {
                 captureBleachFaces(mc.level, bleachTarget);
-            } else if (bleachTarget == null && phase == PortalRitual.NONE && capturedFor != null) {
+            } else if ((inElisar || (bleachTarget == null && phase == PortalRitual.NONE)) && capturedFor != null) {
                 capturedFor = null;
                 faceCount = 0;
             }

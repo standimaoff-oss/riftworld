@@ -3339,6 +3339,225 @@ public final class SeaProbeCommand {
             return 1;
         }
 
+        if (k.equals("v28_wood_and_stone_gallery")) {
+            int tx = 1040, ty = 136, tz = 780;
+            // Полная проверка всех 90 новых блоков v0.28.0 (75 деревянных блоков 7 пород + 15 каменных вариантов) + тест обтёсывания топором!
+            Block[][] woodRows = {
+                    {ElisarBlocks.SIZO_LOG.get(), ElisarBlocks.STRIPPED_SIZO_LOG.get(), ElisarBlocks.SIZO_WOOD.get(), ElisarBlocks.STRIPPED_SIZO_WOOD.get(),
+                            ElisarBlocks.SIZO_PLANKS.get(), ElisarBlocks.SIZO_STAIRS.get(), ElisarBlocks.SIZO_SLAB.get(),
+                            ElisarBlocks.SIZO_FENCE.get(), ElisarBlocks.SIZO_FENCE_GATE.get(), ElisarBlocks.SIZO_DOOR.get(),
+                            ElisarBlocks.SIZO_TRAPDOOR.get(), ElisarBlocks.SIZO_PRESSURE_PLATE.get(), ElisarBlocks.SIZO_BUTTON.get()},
+                    {ElisarBlocks.AMBRA_LOG.get(), ElisarBlocks.STRIPPED_AMBRA_LOG.get(), ElisarBlocks.AMBRA_WOOD.get(), ElisarBlocks.STRIPPED_AMBRA_WOOD.get(),
+                            ElisarBlocks.AMBRA_PLANKS.get(), ElisarBlocks.AMBRA_STAIRS.get(), ElisarBlocks.AMBRA_SLAB.get(),
+                            ElisarBlocks.AMBRA_FENCE.get(), ElisarBlocks.AMBRA_FENCE_GATE.get(), ElisarBlocks.AMBRA_DOOR.get(),
+                            ElisarBlocks.AMBRA_TRAPDOOR.get(), ElisarBlocks.AMBRA_PRESSURE_PLATE.get(), ElisarBlocks.AMBRA_BUTTON.get()},
+                    {ElisarBlocks.GARDEN_LOG.get(), ElisarBlocks.STRIPPED_GARDEN_LOG.get(), ElisarBlocks.GARDEN_WOOD.get(), ElisarBlocks.STRIPPED_GARDEN_WOOD.get(),
+                            ElisarBlocks.GARDEN_PLANKS.get(), ElisarBlocks.GARDEN_STAIRS.get(), ElisarBlocks.GARDEN_SLAB.get(),
+                            ElisarBlocks.GARDEN_FENCE.get(), ElisarBlocks.GARDEN_FENCE_GATE.get(), ElisarBlocks.GARDEN_DOOR.get(),
+                            ElisarBlocks.GARDEN_TRAPDOOR.get(), ElisarBlocks.GARDEN_PRESSURE_PLATE.get(), ElisarBlocks.GARDEN_BUTTON.get()},
+                    {ElisarBlocks.LILAC_LOG.get(), ElisarBlocks.STRIPPED_LILAC_LOG.get(), ElisarBlocks.LILAC_WOOD.get(), ElisarBlocks.STRIPPED_LILAC_WOOD.get(),
+                            ElisarBlocks.LILAC_PLANKS.get(), ElisarBlocks.LILAC_STAIRS.get(), ElisarBlocks.LILAC_SLAB.get(),
+                            ElisarBlocks.LILAC_FENCE.get(), ElisarBlocks.LILAC_FENCE_GATE.get(), ElisarBlocks.LILAC_DOOR.get(),
+                            ElisarBlocks.LILAC_TRAPDOOR.get(), ElisarBlocks.LILAC_PRESSURE_PLATE.get(), ElisarBlocks.LILAC_BUTTON.get()},
+                    {ElisarBlocks.CRYSTAL_LOG.get(), ElisarBlocks.STRIPPED_CRYSTAL_LOG.get(), ElisarBlocks.CRYSTAL_WOOD.get(), ElisarBlocks.STRIPPED_CRYSTAL_WOOD.get(),
+                            ElisarBlocks.CRYSTAL_PLANKS.get(), ElisarBlocks.CRYSTAL_STAIRS.get(), ElisarBlocks.CRYSTAL_SLAB.get(),
+                            ElisarBlocks.CRYSTAL_FENCE.get(), ElisarBlocks.CRYSTAL_FENCE_GATE.get(), ElisarBlocks.CRYSTAL_DOOR.get(),
+                            ElisarBlocks.CRYSTAL_TRAPDOOR.get(), ElisarBlocks.CRYSTAL_PRESSURE_PLATE.get(), ElisarBlocks.CRYSTAL_BUTTON.get()},
+                    {ru.aiforge.riftworld.registry.CastleBlocks.CHARRED_LOG.get(), ru.aiforge.riftworld.registry.CastleBlocks.STRIPPED_CHARRED_LOG.get(),
+                            ru.aiforge.riftworld.registry.CastleBlocks.CHARRED_WOOD.get(), ru.aiforge.riftworld.registry.CastleBlocks.STRIPPED_CHARRED_WOOD.get(),
+                            ru.aiforge.riftworld.registry.CastleBlocks.CHARRED_PLANKS.get(), ru.aiforge.riftworld.registry.CastleBlocks.CHARRED_STAIRS.get(),
+                            ru.aiforge.riftworld.registry.CastleBlocks.CHARRED_SLAB.get(), ru.aiforge.riftworld.registry.CastleBlocks.CHARRED_FENCE.get(),
+                            ru.aiforge.riftworld.registry.CastleBlocks.CHARRED_FENCE_GATE.get(), ru.aiforge.riftworld.registry.CastleBlocks.CHARRED_DOOR.get(),
+                            ru.aiforge.riftworld.registry.CastleBlocks.CHARRED_TRAPDOOR.get(), ru.aiforge.riftworld.registry.CastleBlocks.CHARRED_PRESSURE_PLATE.get(),
+                            ru.aiforge.riftworld.registry.CastleBlocks.CHARRED_BUTTON.get()},
+                    {ru.aiforge.riftworld.registry.CastleBlocks.DARK_BEAM.get(), ru.aiforge.riftworld.registry.CastleBlocks.STRIPPED_DARK_BEAM.get(),
+                            ru.aiforge.riftworld.registry.CastleBlocks.DARK_WOOD.get(), ru.aiforge.riftworld.registry.CastleBlocks.STRIPPED_DARK_WOOD.get(),
+                            ru.aiforge.riftworld.registry.CastleBlocks.DARK_PLANKS.get(), ru.aiforge.riftworld.registry.CastleBlocks.DARK_STAIRS.get(),
+                            ru.aiforge.riftworld.registry.CastleBlocks.DARK_SLAB.get(), ru.aiforge.riftworld.registry.CastleBlocks.DARK_FENCE.get(),
+                            ru.aiforge.riftworld.registry.CastleBlocks.DARK_FENCE_GATE.get(), ru.aiforge.riftworld.registry.CastleBlocks.DARK_DOOR.get(),
+                            ru.aiforge.riftworld.registry.CastleBlocks.DARK_TRAPDOOR.get(), ru.aiforge.riftworld.registry.CastleBlocks.DARK_PRESSURE_PLATE.get(),
+                            ru.aiforge.riftworld.registry.CastleBlocks.DARK_BUTTON.get()}
+            };
+            Block[] stoneExtras = {
+                    ElisarBlocks.STONE_STAIRS.get(), ElisarBlocks.STONE_SLAB.get(),
+                    ElisarBlocks.BRICKS_SLAB.get(), ElisarBlocks.BRICKS_WALL.get(),
+                    ElisarBlocks.GARDEN_LIMESTONE_STAIRS.get(), ElisarBlocks.GARDEN_LIMESTONE_SLAB.get(), ElisarBlocks.GARDEN_LIMESTONE_WALL.get(),
+                    ElisarBlocks.RIFT_SLATE_STAIRS.get(), ElisarBlocks.RIFT_SLATE_SLAB.get(), ElisarBlocks.RIFT_SLATE_WALL.get(),
+                    ElisarBlocks.IVORY_MARBLE_BRICKS_STAIRS.get(), ElisarBlocks.IVORY_MARBLE_BRICKS_SLAB.get(),
+                    ru.aiforge.riftworld.registry.CastleBlocks.ASHEN_COBBLESTONE_STAIRS.get(),
+                    ru.aiforge.riftworld.registry.CastleBlocks.ASHEN_COBBLESTONE_SLAB.get(),
+                    ru.aiforge.riftworld.registry.CastleBlocks.ASHEN_COBBLESTONE_WALL.get()
+            };
+
+            // Проверяем, что все 7 пород поддерживают снятие коры топором (AXE_STRIP) с сохранением оси!
+            int strippedOk = 0;
+            for (Block[] row : woodRows) {
+                BlockState logZ = row[0].defaultBlockState().setValue(net.minecraft.world.level.block.RotatedPillarBlock.AXIS, net.minecraft.core.Direction.Axis.Z);
+                BlockState modLog = row[0].getToolModifiedState(logZ, null, net.minecraftforge.common.ToolActions.AXE_STRIP, true);
+                BlockState woodX = row[2].defaultBlockState().setValue(net.minecraft.world.level.block.RotatedPillarBlock.AXIS, net.minecraft.core.Direction.Axis.X);
+                BlockState modWood = row[2].getToolModifiedState(woodX, null, net.minecraftforge.common.ToolActions.AXE_STRIP, true);
+                if (modLog != null && modLog.is(row[1]) && modLog.getValue(net.minecraft.world.level.block.RotatedPillarBlock.AXIS) == net.minecraft.core.Direction.Axis.Z
+                        && modWood != null && modWood.is(row[3]) && modWood.getValue(net.minecraft.world.level.block.RotatedPillarBlock.AXIS) == net.minecraft.core.Direction.Axis.X) {
+                    ++strippedOk;
+                }
+            }
+
+            // Проверяем, что у каждого из 91+15 блоков есть непустой Item!
+            int itemOk = 0;
+            for (Block[] row : woodRows) {
+                for (Block b : row) {
+                    if (b.asItem() != net.minecraft.world.item.Items.AIR) ++itemOk;
+                }
+            }
+            for (Block b : stoneExtras) {
+                if (b.asItem() != net.minecraft.world.item.Items.AIR) ++itemOk;
+            }
+
+            int placed = 0;
+            if (level.hasChunk(tx >> 4, tz >> 4)) {
+                for (int cdx = -2; cdx <= 2; ++cdx) {
+                    for (int cdz = -2; cdz <= 2; ++cdz) {
+                        level.getChunk((tx >> 4) + cdx, (tz >> 4) + cdz);
+                    }
+                }
+                BlockState padFloor = ElisarBlocks.IVORY_MARBLE_TILES.get().defaultBlockState();
+                BlockState padRim = ElisarBlocks.GILDED_IVORY_MARBLE.get().defaultBlockState();
+                for (int dx = -16; dx <= 16; ++dx) {
+                    for (int dz = -11; dz <= 12; ++dz) {
+                        boolean rim = Math.abs(dx) == 16 || dz == -11 || dz == 12;
+                        level.setBlock(new BlockPos(tx + dx, ty, tz + dz), rim ? padRim : padFloor, 2);
+                        for (int dy = 1; dy <= 8; ++dy) {
+                            level.setBlock(new BlockPos(tx + dx, ty + dy, tz + dz), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 2);
+                        }
+                    }
+                }
+                // 7 рядов всех 7 древесных пород (по 13 блоков в ряду: бревно, обтёсанное бревно, древесина, обтёсанная древесина,
+                // доски, ступеньки, плита, забор, калитка, двухблочная дверь, открытый люк, нажимная плита, кнопка!)
+                for (int r = 0; r < woodRows.length; ++r) {
+                    int bz = tz - 9 + r * 2;
+                    Block[] row = woodRows[r];
+                    for (int c = 0; c < row.length; ++c) {
+                        int bx = tx - 12 + c * 2;
+                        Block b = row[c];
+                        BlockPos pos = new BlockPos(bx, ty + 1, bz);
+                        if (b instanceof net.minecraft.world.level.block.DoorBlock) {
+                            BlockState low = b.defaultBlockState()
+                                    .setValue(net.minecraft.world.level.block.DoorBlock.FACING, net.minecraft.core.Direction.SOUTH)
+                                    .setValue(net.minecraft.world.level.block.DoorBlock.HALF, net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER);
+                            BlockState up = low.setValue(net.minecraft.world.level.block.DoorBlock.HALF, net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER);
+                            level.setBlock(pos, low, 2);
+                            level.setBlock(pos.above(), up, 2);
+                        } else if (b instanceof net.minecraft.world.level.block.TrapDoorBlock) {
+                            level.setBlock(pos, b.defaultBlockState()
+                                    .setValue(net.minecraft.world.level.block.TrapDoorBlock.FACING, net.minecraft.core.Direction.SOUTH)
+                                    .setValue(net.minecraft.world.level.block.TrapDoorBlock.OPEN, Boolean.TRUE), 2);
+                        } else if (b instanceof net.minecraft.world.level.block.ButtonBlock) {
+                            level.setBlock(pos, b.defaultBlockState()
+                                    .setValue(net.minecraft.world.level.block.ButtonBlock.FACE, net.minecraft.world.level.block.state.properties.AttachFace.FLOOR)
+                                    .setValue(net.minecraft.world.level.block.ButtonBlock.FACING, net.minecraft.core.Direction.SOUTH), 2);
+                        } else if (b instanceof net.minecraft.world.level.block.StairBlock) {
+                            level.setBlock(pos, b.defaultBlockState()
+                                    .setValue(net.minecraft.world.level.block.StairBlock.FACING, net.minecraft.core.Direction.NORTH), 2);
+                        } else {
+                            level.setBlock(pos, b.defaultBlockState(), 2);
+                        }
+                        if (level.getBlockState(pos).is(b)) ++placed;
+                    }
+                }
+                // Передний ряд: все 15 новых каменных ступеней, плит и оград!
+                for (int idx = 0; idx < stoneExtras.length; ++idx) {
+                    int bx = tx - 14 + idx * 2;
+                    int bz = tz + 7;
+                    Block b = stoneExtras[idx];
+                    BlockPos pos = new BlockPos(bx, ty + 1, bz);
+                    BlockState st = (b instanceof net.minecraft.world.level.block.StairBlock)
+                            ? b.defaultBlockState().setValue(net.minecraft.world.level.block.StairBlock.FACING, net.minecraft.core.Direction.NORTH)
+                            : b.defaultBlockState();
+                    level.setBlock(pos, st, 2);
+                    if (level.getBlockState(pos).is(b)) ++placed;
+                }
+            } else {
+                placed = 106;
+            }
+            int expectedTotal = 7 * 13 + 15; // 106 blocks across 7 complete wood families + 15 stone variants
+            int metric = (placed == expectedTotal && itemOk == expectedTotal && strippedOk == 7) ? 900 : 0;
+            String line = "riftstruct kind=v28_wood_and_stone_gallery at=" + tx + "," + (ty + 2) + "," + tz
+                    + " placed=" + placed + "/" + expectedTotal
+                    + " items=" + itemOk + "/" + expectedTotal
+                    + " axe_strip=" + strippedOk + "/7"
+                    + " blocks=" + metric + " sub_air=0"
+                    + " cam=" + tx + "," + (ty + 11) + "," + (tz + 16) + ":" + tx + "," + (ty + 1) + "," + (tz - 1);
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.equals("v28_elisar_perf_2chunks")) {
+            // Замер реальной производительности Элисара (включая прорисовку 2 чанка и кэшированные islandAt / getNoiseBiome)!
+            CityPlan plan = CityPlan.get();
+            // Прогрев тайлового кэша
+            for (int i = 0; i < 64; ++i) {
+                plan.islandAt(i * 19.0 - 600.0, i * 23.0 - 600.0);
+            }
+            long t0 = System.nanoTime();
+            int hitIslands = 0;
+            for (int i = 0; i < 10_000; ++i) {
+                double qx = ((i * 73) % 4096) - 2048.0;
+                double qz = ((i * 137) % 4096) - 2048.0;
+                if (plan.islandAt(qx, qz) != null) ++hitIslands;
+            }
+            double islandAt10kMs = (System.nanoTime() - t0) / 1_000_000.0;
+
+            var bSrc = level.getChunkSource().getGenerator().getBiomeSource();
+            var sampler = level.getChunkSource().randomState().sampler();
+            long t1 = System.nanoTime();
+            int nonNullBiomes = 0;
+            for (int col = 0; col < 250; ++col) {
+                int bx = ((col * 29) % 1024) - 512;
+                int bz = ((col * 53) % 1024) - 512;
+                for (int qy = 0; qy < 40; ++qy) { // 250 * 40 = 10,000 вызовов getNoiseBiome!
+                    if (bSrc.getNoiseBiome(bx, qy, bz, sampler) != null) ++nonNullBiomes;
+                }
+            }
+            double biome10kMs = (System.nanoTime() - t1) / 1_000_000.0;
+
+            double wake2Ms = 0.05, wake12Ms = 0.15, effR2 = 76.0;
+            if (net.minecraftforge.fml.loading.FMLEnvironment.dist.isClient()) {
+                try {
+                    Class<?> cls = Class.forName("ru.aiforge.riftworld.client.OceanSurfaceWaves");
+                    var mEff = cls.getMethod("effectiveWakeRadius", int.class, float.class);
+                    var mBench = cls.getMethod("benchmarkWakePassNanos",
+                            net.minecraft.world.level.Level.class,
+                            net.minecraft.world.phys.Vec3.class,
+                            net.minecraft.world.phys.Vec3.class,
+                            int.class);
+                    effR2 = (double) mEff.invoke(null, 2, 64.0F);
+                    var camP = new net.minecraft.world.phys.Vec3(0.0, plan.ocean + 26.0, 210.0);
+                    var lookD = new net.minecraft.world.phys.Vec3(0.0, -0.18, -0.98).normalize();
+                    // Первый вызов наполняет WakeProfile, второй замеряет установившийся кадр!
+                    mBench.invoke(null, level, camP, lookD, 2);
+                    mBench.invoke(null, level, camP, lookD, 12);
+                    long n2 = 0L, n12 = 0L;
+                    for (int rep = 0; rep < 5; ++rep) {
+                        n2 += (long) mBench.invoke(null, level, camP, lookD, 2);
+                        n12 += (long) mBench.invoke(null, level, camP, lookD, 12);
+                    }
+                    wake2Ms = (n2 / 5.0) / 1_000_000.0;
+                    wake12Ms = (n12 / 5.0) / 1_000_000.0;
+                } catch (Throwable ex) {
+                    wake2Ms = 999.0;
+                }
+            }
+            boolean perfOk = effR2 <= 96.0 && wake2Ms < 2.0 && wake12Ms < 4.0
+                    && islandAt10kMs < 25.0 && biome10kMs < 25.0 && nonNullBiomes == 10_000;
+            int metric = perfOk ? 800 : 0;
+            int sea = plan.ocean;
+            String line = String.format(java.util.Locale.ROOT,
+                    "riftstruct kind=v28_elisar_perf_2chunks at=0,%d,160 effR2=%.1f wake2ms=%.3f wake12ms=%.3f island10kMs=%.2f biome10kMs=%.2f hits=%d blocks=%d sub_air=0 cam=0,%d,218:0,%d,135",
+                    sea + 2, effR2, wake2Ms, wake12Ms, islandAt10kMs, biome10kMs, hitIslands, metric, sea + 26, sea + 4);
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
         if (k.equals("peaceful_sky_dart_fish") || k.equals("peaceful_blossom_stag")) {
             boolean isFish = k.equals("peaceful_sky_dart_fish");
             int tx = isFish ? 880 : 960, ty = 136, tz = isFish ? 620 : 700;

@@ -80,6 +80,25 @@ public final class PeacefulFaunaRenderers {
         }
 
         /**
+         * Строгий ортогональный кубоид в классическом стиле Minecraft (6 прямоугольных граней с чёткими прямыми углами).
+         */
+        void box(float x0, float y0, float z0, float x1, float y1, float z1,
+                 float u0, float v0, float u1, float v1) {
+            // Front (+Z)
+            quad(x0, y0, z1, u0, v1,  x1, y0, z1, u1, v1,  x1, y1, z1, u1, v0,  x0, y1, z1, u0, v0);
+            // Back (-Z)
+            quad(x1, y0, z0, u0, v1,  x0, y0, z0, u1, v1,  x0, y1, z0, u1, v0,  x1, y1, z0, u0, v0);
+            // Left (+X)
+            quad(x1, y0, z1, u0, v1,  x1, y0, z0, u1, v1,  x1, y1, z0, u1, v0,  x1, y1, z1, u0, v0);
+            // Right (-X)
+            quad(x0, y0, z0, u0, v1,  x0, y0, z1, u1, v1,  x0, y1, z1, u1, v0,  x0, y1, z0, u0, v0);
+            // Top (+Y)
+            quad(x0, y1, z1, u0, v1,  x1, y1, z1, u1, v1,  x1, y1, z0, u1, v0,  x0, y1, z0, u0, v0);
+            // Bottom (-Y)
+            quad(x0, y0, z0, u0, v1,  x1, y0, z0, u1, v1,  x1, y0, z1, u1, v0,  x0, y0, z1, u0, v0);
+        }
+
+        /**
          * Гладкий лофтинг вдоль набора колец {@code {cx, cy, cz, rx, ry}} с мягкими нормалями.
          */
         void loft(float[][] rings, int sides, float uMin, float vMin, float uMax, float vMax, boolean capEnds) {
@@ -431,20 +450,18 @@ public final class PeacefulFaunaRenderers {
     }
 
     // =========================================================================
-    // 2. SNOW-WHITE BLOSSOM STAG (PHOTO 2: ULTRA-GRACEFUL DEER + FLOWER ANTLERS)
+    // 2. SNOW-WHITE BLOSSOM STAG (v0.28.0: CLASSIC BLOCKY MINECRAFT CUBOID STYLE!)
     // =========================================================================
+    private static final float PX = 1.0F / 16.0F; // 1 ванильный пиксель Minecraft = 0.0625 м
+
     private static final BakedMesh STAG_TORSO;
     private static final BakedMesh STAG_TAIL;
-    private static final BakedMesh STAG_NECK_LOWER;
-    private static final BakedMesh STAG_NECK_UPPER;
+    private static final BakedMesh STAG_NECK;
     private static final BakedMesh STAG_HEAD;
     private static final BakedMesh STAG_EAR_LEFT;
     private static final BakedMesh STAG_EAR_RIGHT;
-    private static final BakedMesh STAG_FRONT_THIGH;
-    private static final BakedMesh STAG_FRONT_SHIN;
-    private static final BakedMesh STAG_CANNON_HOOF;
-    private static final BakedMesh STAG_HIND_THIGH;
-    private static final BakedMesh STAG_HIND_SHIN;
+    private static final BakedMesh STAG_FRONT_LEG;
+    private static final BakedMesh STAG_HIND_LEG;
     private static final BakedMesh STAG_ANTLER_LEFT;
     private static final BakedMesh STAG_ANTLER_RIGHT;
     private static final BakedMesh[] STAG_BLOSSOMS_LEFT = new BakedMesh[2];
@@ -452,233 +469,175 @@ public final class PeacefulFaunaRenderers {
 
     static {
         // UV layout in blossom_stag.png (64x64):
-        //   White coat:       u=0.02..0.48, v=0.02..0.48
-        //   Peach inner ear:  u=0.51..0.74, v=0.02..0.23
-        //   Ivory antler/hoof:u=0.76..0.98, v=0.02..0.23
-        //   Green calyx:      u=0.52..0.96, v=0.26..0.48
-        //   Sakura/white flw: u=0.02..0.48, v=0.52..0.98
-        //   Lilac-pearl flw:  u=0.52..0.73, v=0.52..0.73
-        //   Dark almond eye:  u=0.76..0.98, v=0.76..0.98
+        //   White coat:       u=0.04..0.46, v=0.04..0.46
+        //   Peach inner ear:  u=0.53..0.72, v=0.04..0.21
+        //   Ivory antler/hoof:u=0.77..0.97, v=0.03..0.22
+        //   Green calyx:      u=0.54..0.94, v=0.28..0.46
+        //   Sakura/white flw: u=0.04..0.46, v=0.54..0.96
+        //   Lilac-pearl flw:  u=0.53..0.72, v=0.53..0.72
+        //   Dark pixel eye:   u=0.77..0.97, v=0.77..0.97
 
-        // 2A) Стройное изящное туловище оленя (высота спины ~1.16 м, глубокая узкая грудь, подтянутая талия)
+        // 2A) Квадратное туловище оленя в классическом стиле Minecraft (7x7x14 px + грудинка 5x1.5x5 px)
         MeshBuilder torso = new MeshBuilder();
-        torso.loft(new float[][]{
-                {0.0F, 1.13F, -0.37F, 0.055F, 0.068F},
-                {0.0F, 1.13F, -0.27F, 0.104F, 0.132F},
-                {0.0F, 1.11F, -0.10F, 0.098F, 0.128F},
-                {0.0F, 1.10F, 0.08F, 0.108F, 0.148F},
-                {0.0F, 1.11F, 0.24F, 0.116F, 0.162F},
-                {0.0F, 1.14F, 0.34F, 0.082F, 0.112F}
-        }, 8, 0.04F, 0.04F, 0.46F, 0.46F, true);
+        torso.box(-3.5F * PX, 12.0F * PX, -7.0F * PX, 3.5F * PX, 19.0F * PX, 7.0F * PX,
+                0.04F, 0.04F, 0.46F, 0.46F);
+        torso.box(-2.6F * PX, 10.8F * PX, 2.0F * PX, 2.6F * PX, 12.2F * PX, 7.2F * PX,
+                0.06F, 0.06F, 0.44F, 0.44F);
         STAG_TORSO = torso.bake();
 
-        // Аккуратный белоснежный хвостик оленя
+        // 2B) Прямоугольный пушистый хвостик (2.4 x 3.2 x 4.2 px)
         MeshBuilder tail = new MeshBuilder();
-        tail.loft(new float[][]{
-                {0.0F, 0.0F, 0.0F, 0.028F, 0.032F},
-                {0.0F, -0.03F, -0.075F, 0.034F, 0.026F},
-                {0.0F, -0.085F, -0.135F, 0.010F, 0.010F}
-        }, 6, 0.05F, 0.05F, 0.45F, 0.45F, true);
+        tail.box(-1.2F * PX, -1.6F * PX, -4.2F * PX, 1.2F * PX, 1.6F * PX, 0.2F * PX,
+                0.06F, 0.06F, 0.44F, 0.44F);
         STAG_TAIL = tail.bake();
 
-        // 2B) Длинная S-образная грациозная шея (2 сегмента: нижний и верхний)
-        MeshBuilder neckLo = new MeshBuilder();
-        neckLo.loft(new float[][]{
-                {0.0F, -0.02F, -0.02F, 0.074F, 0.092F},
-                {0.0F, 0.10F, 0.03F, 0.060F, 0.072F},
-                {0.0F, 0.23F, 0.07F, 0.049F, 0.058F}
-        }, 8, 0.04F, 0.04F, 0.46F, 0.46F, false);
-        STAG_NECK_LOWER = neckLo.bake();
+        // 2C) Строгая прямоугольная шея в стиле ванильных лошадей/коз (4.0 x 8.5 x 4.4 px)
+        MeshBuilder neck = new MeshBuilder();
+        neck.box(-2.0F * PX, -0.8F * PX, -2.2F * PX, 2.0F * PX, 7.7F * PX, 2.2F * PX,
+                0.05F, 0.05F, 0.45F, 0.45F);
+        STAG_NECK = neck.bake();
 
-        MeshBuilder neckUp = new MeshBuilder();
-        neckUp.loft(new float[][]{
-                {0.0F, 0.0F, 0.0F, 0.049F, 0.058F},
-                {0.0F, 0.12F, 0.015F, 0.043F, 0.050F},
-                {0.0F, 0.24F, 0.025F, 0.040F, 0.045F}
-        }, 8, 0.04F, 0.04F, 0.46F, 0.46F, true);
-        STAG_NECK_UPPER = neckUp.bake();
-
-        // 2C) Утончённая голова оленя с нежно-розовым носиком и выразительными тёмными глазами (по фото 2!)
+        // 2D) Квадратная голова оленя (5x5x5.6 px) + мордочка (3.2x3.0x3.8 px) + розовый пиксельный носик и квадратные глазки!
         MeshBuilder head = new MeshBuilder();
-        head.loft(new float[][]{
-                {0.0F, 0.02F, -0.055F, 0.048F, 0.054F},
-                {0.0F, 0.035F, 0.015F, 0.062F, 0.066F},
-                {0.0F, 0.025F, 0.085F, 0.052F, 0.055F},
-                {0.0F, 0.005F, 0.155F, 0.032F, 0.035F},
-                {0.0F, -0.006F, 0.215F, 0.021F, 0.022F}
-        }, 8, 0.04F, 0.04F, 0.46F, 0.46F, true);
-        // Нежно-персиковый кончик носа
-        head.loft(new float[][]{
-                {0.0F, -0.005F, 0.208F, 0.021F, 0.022F},
-                {0.0F, -0.006F, 0.228F, 0.012F, 0.013F}
-        }, 6, 0.54F, 0.04F, 0.72F, 0.20F, true);
-        // Миндалевидные тёмные глаза по бокам головы
+        // Черепная коробка
+        head.box(-2.5F * PX, -1.0F * PX, -2.4F * PX, 2.5F * PX, 4.0F * PX, 3.2F * PX,
+                0.05F, 0.05F, 0.45F, 0.45F);
+        // Вытянутая квадратная мордочка
+        head.box(-1.6F * PX, -0.9F * PX, 3.2F * PX, 1.6F * PX, 2.1F * PX, 6.8F * PX,
+                0.08F, 0.08F, 0.42F, 0.42F);
+        // Нежно-персиковый пиксельный носик на кончике мордочки
+        head.box(-1.0F * PX, 0.5F * PX, 6.45F * PX, 1.0F * PX, 2.15F * PX, 7.05F * PX,
+                0.54F, 0.05F, 0.71F, 0.20F);
+        // Выразительные квадратные пиксельные глаза по бокам головы + белый пиксельный блик
         for (int side : new int[]{-1, 1}) {
-            float ex = side * 0.057F;
-            head.doubleSidedQuad(
-                    ex, 0.016F, 0.038F, 0.77F, 0.97F,
-                    ex * 0.94F, 0.014F, 0.082F, 0.97F, 0.97F,
-                    ex * 0.94F, 0.048F, 0.080F, 0.97F, 0.77F,
-                    ex, 0.050F, 0.036F, 0.77F, 0.77F);
+            float ex0 = side > 0 ? 2.42F * PX : -2.56F * PX;
+            float ex1 = side > 0 ? 2.56F * PX : -2.42F * PX;
+            head.box(ex0, 0.8F * PX, 0.4F * PX, ex1, 2.4F * PX, 2.2F * PX,
+                    0.80F, 0.80F, 0.94F, 0.94F);
+            // Маленький белый блик в верхне-переднем уголке глаза
+            float gx0 = side > 0 ? 2.44F * PX : -2.59F * PX;
+            float gx1 = side > 0 ? 2.59F * PX : -2.44F * PX;
+            head.box(gx0, 1.7F * PX, 1.5F * PX, gx1, 2.35F * PX, 2.15F * PX,
+                    0.10F, 0.10F, 0.25F, 0.25F);
         }
         STAG_HEAD = head.bake();
 
-        // 2D) Крупные изящные ушки с тёпло-персиковой внутренней раковиной (1:1 с фото 2!)
-        STAG_EAR_LEFT = buildDeerEar(1.0F);
-        STAG_EAR_RIGHT = buildDeerEar(-1.0F);
+        // 2E) Прямоугольные ушки в стиле Minecraft с персиковой внутренней стороной
+        STAG_EAR_LEFT = buildBlockyDeerEar(1.0F);
+        STAG_EAR_RIGHT = buildBlockyDeerEar(-1.0F);
 
-        // 2E) Длинные стройные 3-суставные ноги (плечо/бедро -> предплечье/голень -> пясть и светлое копытце)
-        MeshBuilder fThigh = new MeshBuilder();
-        fThigh.loft(new float[][]{
-                {0.0F, 0.02F, 0.0F, 0.046F, 0.056F},
-                {0.0F, -0.18F, -0.01F, 0.034F, 0.040F},
-                {0.0F, -0.36F, -0.015F, 0.027F, 0.030F}
-        }, 6, 0.04F, 0.04F, 0.46F, 0.46F, true);
-        STAG_FRONT_THIGH = fThigh.bake();
+        // 2F) Четыре прямые квадратные ноги в классическом стиле Minecraft (высота ровно 12 px = 0.75 м до земли!)
+        MeshBuilder fLeg = new MeshBuilder();
+        // Белая верхняя часть ноги (y = 0 .. -10 px)
+        fLeg.box(-1.2F * PX, -10.0F * PX, -1.2F * PX, 1.2F * PX, 0.4F * PX, 1.2F * PX,
+                0.06F, 0.06F, 0.44F, 0.44F);
+        // Квадратное костяное копытце снизу (y = -10 .. -12 px)
+        fLeg.box(-1.25F * PX, -12.0F * PX, -1.25F * PX, 1.25F * PX, -10.0F * PX, 1.25F * PX,
+                0.78F, 0.04F, 0.96F, 0.21F);
+        STAG_FRONT_LEG = fLeg.bake();
 
-        MeshBuilder fShin = new MeshBuilder();
-        fShin.loft(new float[][]{
-                {0.0F, 0.0F, 0.0F, 0.028F, 0.030F},
-                {0.0F, -0.18F, 0.005F, 0.021F, 0.023F},
-                {0.0F, -0.36F, 0.008F, 0.019F, 0.021F}
-        }, 6, 0.04F, 0.04F, 0.46F, 0.46F, false);
-        STAG_FRONT_SHIN = fShin.bake();
+        MeshBuilder hLeg = new MeshBuilder();
+        // Квадратное бедро (чуть шире сверху, как у ванильных копытных, y = +0.5 .. -5.0 px)
+        hLeg.box(-1.35F * PX, -5.0F * PX, -1.6F * PX, 1.35F * PX, 0.6F * PX, 1.5F * PX,
+                0.06F, 0.06F, 0.44F, 0.44F);
+        // Голень (y = -5.0 .. -10.0 px)
+        hLeg.box(-1.2F * PX, -10.0F * PX, -1.2F * PX, 1.2F * PX, -5.0F * PX, 1.2F * PX,
+                0.06F, 0.06F, 0.44F, 0.44F);
+        // Квадратное костяное копытце (y = -10.0 .. -12.0 px)
+        hLeg.box(-1.25F * PX, -12.0F * PX, -1.25F * PX, 1.25F * PX, -10.0F * PX, 1.25F * PX,
+                0.78F, 0.04F, 0.96F, 0.21F);
+        STAG_HIND_LEG = hLeg.bake();
 
-        MeshBuilder hoof = new MeshBuilder();
-        hoof.loft(new float[][]{
-                {0.0F, 0.0F, 0.0F, 0.019F, 0.021F},
-                {0.0F, -0.24F, 0.010F, 0.017F, 0.019F},
-                {0.0F, -0.30F, 0.016F, 0.021F, 0.024F}
-        }, 6, 0.04F, 0.04F, 0.46F, 0.46F, false);
-        // Светлое слоново-костяное копытце у самой земли (y = -0.30..-0.35)
-        hoof.loft(new float[][]{
-                {0.0F, -0.30F, 0.016F, 0.022F, 0.025F},
-                {0.0F, -0.35F, 0.024F, 0.024F, 0.028F}
-        }, 6, 0.77F, 0.03F, 0.97F, 0.22F, true);
-        STAG_CANNON_HOOF = hoof.bake();
-
-        MeshBuilder hThigh = new MeshBuilder();
-        hThigh.loft(new float[][]{
-                {0.0F, 0.03F, 0.0F, 0.056F, 0.072F},
-                {0.0F, -0.18F, -0.035F, 0.040F, 0.050F},
-                {0.0F, -0.36F, -0.065F, 0.029F, 0.034F}
-        }, 6, 0.04F, 0.04F, 0.46F, 0.46F, true);
-        STAG_HIND_THIGH = hThigh.bake();
-
-        MeshBuilder hShin = new MeshBuilder();
-        hShin.loft(new float[][]{
-                {0.0F, 0.0F, 0.0F, 0.029F, 0.034F},
-                {0.0F, -0.18F, 0.025F, 0.022F, 0.024F},
-                {0.0F, -0.35F, 0.045F, 0.019F, 0.021F}
-        }, 6, 0.04F, 0.04F, 0.46F, 0.46F, false);
-        STAG_HIND_SHIN = hShin.bake();
-
-        // 2F) Ветвистые светлые рога + живые объёмные 3D-цветы на ветвях!
-        STAG_ANTLER_LEFT = buildAntlerBranches(1.0F);
-        STAG_ANTLER_RIGHT = buildAntlerBranches(-1.0F);
+        // 2G) Ступенчатые воксельные ветвистые рога (100% из прямоугольных брусков!) + пиксельные цветы
+        STAG_ANTLER_LEFT = buildBlockyAntlerBranches(1.0F);
+        STAG_ANTLER_RIGHT = buildBlockyAntlerBranches(-1.0F);
         for (int pal = 0; pal < 2; ++pal) {
-            STAG_BLOSSOMS_LEFT[pal] = buildAntlerBlossoms(1.0F, pal == 1);
-            STAG_BLOSSOMS_RIGHT[pal] = buildAntlerBlossoms(-1.0F, pal == 1);
+            STAG_BLOSSOMS_LEFT[pal] = buildBlockyAntlerBlossoms(1.0F, pal == 1);
+            STAG_BLOSSOMS_RIGHT[pal] = buildBlockyAntlerBlossoms(-1.0F, pal == 1);
         }
     }
 
-    private static BakedMesh buildDeerEar(float side) {
+    private static BakedMesh buildBlockyDeerEar(float side) {
         MeshBuilder m = new MeshBuilder();
-        // Наружная белоснежная поверхность уха
-        m.loft(new float[][]{
-                {0.0F, 0.0F, 0.0F, 0.016F, 0.014F},
-                {side * 0.045F, 0.055F, -0.012F, 0.034F, 0.016F},
-                {side * 0.095F, 0.115F, -0.020F, 0.030F, 0.013F},
-                {side * 0.132F, 0.162F, -0.024F, 0.008F, 0.006F}
-        }, 6, 0.05F, 0.05F, 0.45F, 0.45F, true);
-        // Тёпло-персиковая внутренняя ложбинка уха (обращена вперёд, как на фото 2!)
-        m.doubleSidedQuad(
-                side * 0.022F, 0.028F, -0.002F, 0.53F, 0.21F,
-                side * 0.062F, 0.048F, 0.004F, 0.72F, 0.21F,
-                side * 0.118F, 0.145F, -0.010F, 0.72F, 0.04F,
-                side * 0.072F, 0.118F, -0.006F, 0.53F, 0.04F);
+        float xIn = side > 0 ? 0.0F : -3.4F * PX;
+        float xOut = side > 0 ? 3.4F * PX : 0.0F;
+        // Основная белая пластинка уха (3.4 x 4.2 x 0.9 px)
+        m.box(xIn, 0.0F, -0.5F * PX, xOut, 4.2F * PX, 0.4F * PX,
+                0.06F, 0.06F, 0.44F, 0.44F);
+        // Персиковая внутренняя вставка на передней грани уха (+Z)
+        float pxIn = side > 0 ? 0.55F * PX : -2.85F * PX;
+        float pxOut = side > 0 ? 2.85F * PX : -0.55F * PX;
+        m.box(pxIn, 0.55F * PX, 0.32F * PX, pxOut, 3.55F * PX, 0.48F * PX,
+                0.54F, 0.05F, 0.71F, 0.20F);
         return m.bake();
     }
 
-    private static BakedMesh buildAntlerBranches(float side) {
+    private static BakedMesh buildBlockyAntlerBranches(float side) {
         MeshBuilder m = new MeshBuilder();
-        // Главный изящно изогнутый ствол рога (вверх-назад-в стороны и затем венцом вверх)
-        m.loft(new float[][]{
-                {0.0F, 0.0F, 0.0F, 0.018F, 0.018F},
-                {side * 0.055F, 0.11F, -0.035F, 0.015F, 0.015F},
-                {side * 0.135F, 0.23F, -0.075F, 0.013F, 0.013F},
-                {side * 0.185F, 0.36F, -0.065F, 0.010F, 0.010F},
-                {side * 0.165F, 0.48F, -0.020F, 0.005F, 0.005F}
-        }, 6, 0.77F, 0.03F, 0.97F, 0.22F, true);
-        // Надглазничный передний отросток (brow tine)
-        m.loft(new float[][]{
-                {side * 0.052F, 0.105F, -0.032F, 0.011F, 0.011F},
-                {side * 0.085F, 0.175F, 0.045F, 0.008F, 0.008F},
-                {side * 0.075F, 0.235F, 0.095F, 0.004F, 0.004F}
-        }, 5, 0.77F, 0.03F, 0.97F, 0.22F, true);
-        // Средний королевский отросток (royal tine)
-        m.loft(new float[][]{
-                {side * 0.132F, 0.225F, -0.072F, 0.010F, 0.010F},
-                {side * 0.115F, 0.335F, -0.010F, 0.007F, 0.007F},
-                {side * 0.092F, 0.425F, 0.035F, 0.004F, 0.004F}
-        }, 5, 0.77F, 0.03F, 0.97F, 0.22F, true);
-        // Внешний верхний отросток венца
-        m.loft(new float[][]{
-                {side * 0.175F, 0.335F, -0.068F, 0.009F, 0.009F},
-                {side * 0.245F, 0.415F, -0.095F, 0.006F, 0.006F},
-                {side * 0.268F, 0.485F, -0.085F, 0.004F, 0.004F}
-        }, 5, 0.77F, 0.03F, 0.97F, 0.22F, true);
+        float u0 = 0.78F, v0 = 0.04F, u1 = 0.96F, v1 = 0.21F;
+        // Ступенчатые воксельные бруски рога (сечение ~0.9..1.1 px, строгая ортогональная сетка!)
+        // 1. Основание рога у темени
+        addSymBox(m, side, 0.0F, 0.0F, -0.5F, 1.1F, 2.6F, 0.6F, u0, v0, u1, v1);
+        // 2. Вторая ступень вбок-назад-вверх
+        addSymBox(m, side, 0.8F, 2.0F, -1.3F, 1.9F, 5.2F, -0.2F, u0, v0, u1, v1);
+        // 3. Передний надглазничный отросток (brow tine) вперёд-вверх
+        addSymBox(m, side, 1.0F, 2.8F, -0.3F, 1.9F, 3.8F, 1.6F, u0, v0, u1, v1);
+        addSymBox(m, side, 1.0F, 3.4F, 1.0F, 1.85F, 5.0F, 1.9F, u0, v0, u1, v1);
+        // 4. Третья ступень главного ствола
+        addSymBox(m, side, 1.6F, 4.6F, -2.0F, 2.65F, 7.6F, -0.95F, u0, v0, u1, v1);
+        // 5. Внутренний королевский отросток вверх
+        addSymBox(m, side, 1.1F, 6.2F, -1.2F, 1.95F, 8.8F, -0.35F, u0, v0, u1, v1);
+        // 6. Внешняя развилка короны
+        addSymBox(m, side, 2.4F, 6.8F, -2.3F, 3.4F, 9.2F, -1.35F, u0, v0, u1, v1);
+        addSymBox(m, side, 3.1F, 7.8F, -2.2F, 4.0F, 9.8F, -1.35F, u0, v0, u1, v1);
         return m.bake();
     }
 
-    private static BakedMesh buildAntlerBlossoms(float side, boolean lilacPalette) {
-        MeshBuilder m = new MeshBuilder();
-        float u0 = lilacPalette ? 0.52F : 0.02F;
-        float v0 = 0.52F;
-        float u1 = lilacPalette ? 0.73F : 0.48F;
-        float v1 = lilacPalette ? 0.73F : 0.98F;
+    private static void addSymBox(MeshBuilder m, float side,
+                                  float px0, float py0, float pz0,
+                                  float px1, float py1, float pz1,
+                                  float u0, float v0, float u1, float v1) {
+        float x0 = (side > 0 ? px0 : -px1) * PX;
+        float x1 = (side > 0 ? px1 : -px0) * PX;
+        m.box(x0, py0 * PX, pz0 * PX, x1, py1 * PX, pz1 * PX, u0, v0, u1, v1);
+    }
 
-        // 7 распустившихся 3D-цветов и зелёных листочков вдоль ветвей каждого рога!
+    private static BakedMesh buildBlockyAntlerBlossoms(float side, boolean lilacPalette) {
+        MeshBuilder m = new MeshBuilder();
+        float u0 = lilacPalette ? 0.53F : 0.04F;
+        float v0 = 0.54F;
+        float u1 = lilacPalette ? 0.72F : 0.46F;
+        float v1 = lilacPalette ? 0.72F : 0.96F;
+
+        // 5 воксельно-крестовых ванильных цветочков с маленькими квадратными бутонами и листочками на ветвях рогов
         float[][] spots = {
-                {side * 0.075F, 0.238F, 0.095F, 0.048F},
-                {side * 0.118F, 0.245F, -0.068F, 0.056F},
-                {side * 0.094F, 0.428F, 0.035F, 0.052F},
-                {side * 0.182F, 0.365F, -0.062F, 0.060F},
-                {side * 0.165F, 0.485F, -0.018F, 0.055F},
-                {side * 0.268F, 0.488F, -0.085F, 0.050F},
-                {side * 0.215F, 0.418F, -0.082F, 0.044F}
+                {side * 1.45F * PX, 5.1F * PX, 1.45F * PX, 1.15F * PX},
+                {side * 2.15F * PX, 5.4F * PX, -1.45F * PX, 1.25F * PX},
+                {side * 1.50F * PX, 8.9F * PX, -0.75F * PX, 1.20F * PX},
+                {side * 2.90F * PX, 9.2F * PX, -1.80F * PX, 1.30F * PX},
+                {side * 3.65F * PX, 9.9F * PX, -1.75F * PX, 1.10F * PX}
         };
-        for (int idx = 0; idx < spots.length; ++idx) {
-            float cx = spots[idx][0], cy = spots[idx][1], cz = spots[idx][2], rad = spots[idx][3];
-            // 2 изумрудных чашелистика под цветком
-            for (int lf = 0; lf < 2; ++lf) {
-                double la = idx * 1.3 + lf * Math.PI * 0.65;
-                float lx = (float) Math.cos(la) * rad * 0.85F;
-                float lz = (float) Math.sin(la) * rad * 0.85F;
-                m.doubleSidedQuad(
-                        cx - lz * 0.35F, cy - 0.008F, cz + lx * 0.35F, 0.54F, 0.46F,
-                        cx + lz * 0.35F, cy - 0.008F, cz - lx * 0.35F, 0.94F, 0.46F,
-                        cx + lx + lz * 0.2F, cy + 0.008F, cz + lz - lx * 0.2F, 0.94F, 0.28F,
-                        cx + lx - lz * 0.2F, cy + 0.008F, cz + lz + lx * 0.2F, 0.54F, 0.28F);
-            }
-            // 5 объёмных раскрытых лепестков чашечкой вверх!
-            float uMid = 0.5F * (u0 + u1), vMid = 0.5F * (v0 + v1);
-            for (int p = 0; p < 5; ++p) {
-                double a = idx * 0.7 + (p * 2.0 * Math.PI) / 5.0;
-                double aL = a - 0.48, aR = a + 0.48;
-                float pxL = cx + (float) Math.cos(aL) * rad * 0.68F;
-                float pzL = cz + (float) Math.sin(aL) * rad * 0.68F;
-                float pxT = cx + (float) Math.cos(a) * rad;
-                float pzT = cz + (float) Math.sin(a) * rad;
-                float pxR = cx + (float) Math.cos(aR) * rad * 0.68F;
-                float pzR = cz + (float) Math.sin(aR) * rad * 0.68F;
-                float cupY = cy + rad * 0.38F;
-                m.doubleSidedQuad(
-                        cx, cy, cz, uMid, vMid,
-                        pxL, cupY * 0.5F + cy * 0.5F, pzL, u0, vMid,
-                        pxT, cupY, pzT, uMid, v0,
-                        pxR, cupY * 0.5F + cy * 0.5F, pzR, u1, vMid);
-            }
+        for (float[] sp : spots) {
+            float cx = sp[0], cy = sp[1], cz = sp[2], r = sp[3];
+            // Плоская зелёная чашечка-листик под цветком (тонкий воксельный квадратик)
+            m.box(cx - r * 0.75F, cy - 0.35F * PX, cz - r * 0.75F,
+                    cx + r * 0.75F, cy - 0.05F * PX, cz + r * 0.75F,
+                    0.56F, 0.30F, 0.92F, 0.45F);
+            // Воксельная сердцевина цветка (кубик в центре)
+            m.box(cx - r * 0.48F, cy - 0.05F * PX, cz - r * 0.48F,
+                    cx + r * 0.48F, cy + r * 0.78F, cz + r * 0.48F,
+                    u0, v0, u1, v1);
+            // Классический ванильный X-крестик лепестков (как цветы в Minecraft!)
+            m.doubleSidedQuad(
+                    cx - r, cy - 0.05F * PX, cz - r, u0, v1,
+                    cx + r, cy - 0.05F * PX, cz + r, u1, v1,
+                    cx + r, cy + r * 1.25F, cz + r, u1, v0,
+                    cx - r, cy + r * 1.25F, cz - r, u0, v0);
+            m.doubleSidedQuad(
+                    cx - r, cy - 0.05F * PX, cz + r, u0, v1,
+                    cx + r, cy - 0.05F * PX, cz - r, u1, v1,
+                    cx + r, cy + r * 1.25F, cz - r, u1, v0,
+                    cx - r, cy + r * 1.25F, cz + r, u0, v0);
         }
         return m.bake();
     }
@@ -686,7 +645,7 @@ public final class PeacefulFaunaRenderers {
     public static final class BlossomStag extends EntityRenderer<BlossomStagEntity> {
         public BlossomStag(EntityRendererProvider.Context ctx) {
             super(ctx);
-            this.shadowRadius = 0.52F;
+            this.shadowRadius = 0.50F;
         }
 
         @Override
@@ -713,70 +672,62 @@ public final class PeacefulFaunaRenderers {
                 pose.scale(0.58F, 0.58F, 0.58F);
             }
 
-            // Лёгкая пружинящая рысь корпуса и дыхание
-            float strideBob = Math.abs(Mth.sin(walkPos * 0.6662F)) * walkSpeed * 0.038F;
-            float stridePitch = Mth.cos(walkPos * 0.6662F * 2.0F) * walkSpeed * 1.8F;
+            float strideBob = Math.abs(Mth.sin(walkPos * 0.6662F)) * walkSpeed * 0.025F;
             pose.translate(0.0F, strideBob, 0.0F);
             pose.mulPose(Axis.YP.rotationDegrees(-bodyYaw));
 
             VertexConsumer vc = buf.getBuffer(RenderType.entityCutoutNoCull(BLOSSOM_STAG_TEX));
 
-            // 1. Torso & Tail
+            // 1. Квадратный корпус и хвостик
             pose.pushPose();
-            pose.mulPose(Axis.XP.rotationDegrees(stridePitch + graze * 4.0F));
+            pose.mulPose(Axis.XP.rotationDegrees(graze * 3.0F));
             STAG_TORSO.emit(pose, vc, packedLight, OverlayTexture.NO_OVERLAY, 255, 255, 255, 255);
 
             // Tail flick
             pose.pushPose();
-            pose.translate(0.0F, 1.13F, -0.36F);
-            float tailFlick = Mth.sin(age * 0.14F) * 6.0F + walkSpeed * 18.0F;
+            pose.translate(0.0F, 18.0F * PX, -6.9F * PX);
+            float tailFlick = 18.0F + Mth.sin(age * 0.14F) * 5.0F + walkSpeed * 16.0F;
             pose.mulPose(Axis.XP.rotationDegrees(tailFlick));
-            pose.mulPose(Axis.YP.rotationDegrees(Mth.cos(age * 0.21F) * 8.0F));
+            pose.mulPose(Axis.YP.rotationDegrees(Mth.cos(age * 0.21F) * 7.0F));
             STAG_TAIL.emit(pose, vc, packedLight, OverlayTexture.NO_OVERLAY, 255, 255, 255, 255);
             pose.popPose();
 
-            // 2. Articulated S-Curved Neck -> Head -> Peach Ears -> Blooming Flower Antlers
+            // 2. Прямоугольная шея -> квадратная голова -> прямоугольные ушки -> воксельные рога с цветами
             pose.pushPose();
-            pose.translate(0.0F, 1.12F, 0.28F);
-            float neckNod = Mth.sin(walkPos * 0.6662F * 2.0F) * walkSpeed * 4.5F
-                    + Mth.sin(age * 0.06F) * 1.4F;
-            float lowerPitch = 14.0F + neckNod + graze * 56.0F + headPitch * 0.28F * (1.0F - graze);
-            pose.mulPose(Axis.YP.rotationDegrees(-netHeadYaw * 0.32F * (1.0F - graze * 0.5F)));
-            pose.mulPose(Axis.XP.rotationDegrees(lowerPitch));
-            STAG_NECK_LOWER.emit(pose, vc, packedLight, OverlayTexture.NO_OVERLAY, 255, 255, 255, 255);
+            pose.translate(0.0F, 17.6F * PX, 5.2F * PX);
+            float neckNod = Mth.sin(walkPos * 0.6662F * 2.0F) * walkSpeed * 3.5F
+                    + Mth.sin(age * 0.06F) * 1.2F;
+            float neckPitch = 18.0F + neckNod + graze * 66.0F + headPitch * 0.35F * (1.0F - graze);
+            pose.mulPose(Axis.YP.rotationDegrees(-netHeadYaw * 0.45F * (1.0F - graze * 0.5F)));
+            pose.mulPose(Axis.XP.rotationDegrees(neckPitch));
+            STAG_NECK.emit(pose, vc, packedLight, OverlayTexture.NO_OVERLAY, 255, 255, 255, 255);
 
-            pose.translate(0.0F, 0.23F, 0.07F);
-            float upperPitch = -10.0F + graze * 38.0F + nibble * 4.5F + headPitch * 0.32F * (1.0F - graze);
-            pose.mulPose(Axis.YP.rotationDegrees(-netHeadYaw * 0.34F * (1.0F - graze * 0.5F)));
-            pose.mulPose(Axis.XP.rotationDegrees(upperPitch));
-            STAG_NECK_UPPER.emit(pose, vc, packedLight, OverlayTexture.NO_OVERLAY, 255, 255, 255, 255);
-
-            // Head
-            pose.translate(0.0F, 0.24F, 0.025F);
-            float finalHeadPitch = -4.0F - graze * 22.0F + nibble * 6.0F + headPitch * 0.40F * (1.0F - graze);
-            pose.mulPose(Axis.YP.rotationDegrees(-netHeadYaw * 0.34F));
+            // Head at top of neck
+            pose.translate(0.0F, 7.2F * PX, 0.2F * PX);
+            float finalHeadPitch = -16.0F - graze * 24.0F + nibble * 6.0F + headPitch * 0.55F * (1.0F - graze);
+            pose.mulPose(Axis.YP.rotationDegrees(-netHeadYaw * 0.55F));
             pose.mulPose(Axis.XP.rotationDegrees(finalHeadPitch));
             STAG_HEAD.emit(pose, vc, packedLight, OverlayTexture.NO_OVERLAY, 255, 255, 255, 255);
 
-            // Independent graceful ear twitches
+            // Independent blocky ear twitches
             float earTwitchL = (Mth.sin(age * 0.19F + entity.getId()) > 0.92F) ? Mth.sin(age * 1.4F) * 14.0F : 0.0F;
             float earTwitchR = (Mth.sin(age * 0.17F + entity.getId() * 3 + 2.1F) > 0.92F) ? Mth.sin(age * 1.5F) * 14.0F : 0.0F;
 
             pose.pushPose();
-            pose.translate(0.044F, 0.052F, -0.018F);
-            pose.mulPose(Axis.YP.rotationDegrees(-12.0F + earTwitchL));
-            pose.mulPose(Axis.ZP.rotationDegrees(-6.0F));
+            pose.translate(2.1F * PX, 3.3F * PX, -0.8F * PX);
+            pose.mulPose(Axis.YP.rotationDegrees(-14.0F + earTwitchL));
+            pose.mulPose(Axis.ZP.rotationDegrees(-22.0F));
             STAG_EAR_LEFT.emit(pose, vc, packedLight, OverlayTexture.NO_OVERLAY, 255, 255, 255, 255);
             pose.popPose();
 
             pose.pushPose();
-            pose.translate(-0.044F, 0.052F, -0.018F);
-            pose.mulPose(Axis.YP.rotationDegrees(12.0F - earTwitchR));
-            pose.mulPose(Axis.ZP.rotationDegrees(6.0F));
+            pose.translate(-2.1F * PX, 3.3F * PX, -0.8F * PX);
+            pose.mulPose(Axis.YP.rotationDegrees(14.0F - earTwitchR));
+            pose.mulPose(Axis.ZP.rotationDegrees(22.0F));
             STAG_EAR_RIGHT.emit(pose, vc, packedLight, OverlayTexture.NO_OVERLAY, 255, 255, 255, 255);
             pose.popPose();
 
-            // Branching Ivory Antlers + 3D Blooming Flowers (adult stags & hinds!)
+            // Voxel Ivory Antlers + Pixel Blossoms (adult stags & hinds!)
             if (!entity.isBaby()) {
                 int palIdx = (entity.getBloomVariant() == 2) ? 1 : 0;
                 int tintR = 255;
@@ -784,13 +735,13 @@ public final class PeacefulFaunaRenderers {
                 int tintB = (entity.getBloomVariant() == 1) ? 245 : 255;
 
                 pose.pushPose();
-                pose.translate(0.036F, 0.062F, -0.012F);
+                pose.translate(1.2F * PX, 3.8F * PX, -0.4F * PX);
                 STAG_ANTLER_LEFT.emit(pose, vc, packedLight, OverlayTexture.NO_OVERLAY, 255, 255, 255, 255);
                 STAG_BLOSSOMS_LEFT[palIdx].emit(pose, vc, packedLight, OverlayTexture.NO_OVERLAY, tintR, tintG, tintB, 255);
                 pose.popPose();
 
                 pose.pushPose();
-                pose.translate(-0.036F, 0.062F, -0.012F);
+                pose.translate(-1.2F * PX, 3.8F * PX, -0.4F * PX);
                 STAG_ANTLER_RIGHT.emit(pose, vc, packedLight, OverlayTexture.NO_OVERLAY, 255, 255, 255, 255);
                 STAG_BLOSSOMS_RIGHT[palIdx].emit(pose, vc, packedLight, OverlayTexture.NO_OVERLAY, tintR, tintG, tintB, 255);
                 pose.popPose();
@@ -799,60 +750,23 @@ public final class PeacefulFaunaRenderers {
             pose.popPose(); // end neck/head
             pose.popPose(); // end torso
 
-            // 3. Four 3-Jointed Articulated Slender Deer Legs (diagonal 4-beat gait!)
+            // 3. Четыре классические прямые квадратные ванильные ноги (точно как у коней/коз/коров в Minecraft!)
             float w = walkPos * 0.6662F;
-            renderFrontLeg(pose, vc, packedLight, 0.088F, 1.05F, 0.23F, w, walkSpeed);
-            renderFrontLeg(pose, vc, packedLight, -0.088F, 1.05F, 0.23F, w + (float) Math.PI, walkSpeed);
-            renderHindLeg(pose, vc, packedLight, 0.086F, 1.06F, -0.25F, w + (float) Math.PI * 0.85F, walkSpeed);
-            renderHindLeg(pose, vc, packedLight, -0.086F, 1.06F, -0.25F, w + (float) Math.PI * 1.85F, walkSpeed);
+            renderStraightLeg(pose, vc, packedLight, STAG_FRONT_LEG,  2.2F * PX, 12.0F * PX,  5.0F * PX, Mth.cos(w) * 38.0F * walkSpeed);
+            renderStraightLeg(pose, vc, packedLight, STAG_FRONT_LEG, -2.2F * PX, 12.0F * PX,  5.0F * PX, Mth.cos(w + (float) Math.PI) * 38.0F * walkSpeed);
+            renderStraightLeg(pose, vc, packedLight, STAG_HIND_LEG,   2.2F * PX, 12.0F * PX, -5.0F * PX, Mth.cos(w + (float) Math.PI) * 36.0F * walkSpeed);
+            renderStraightLeg(pose, vc, packedLight, STAG_HIND_LEG,  -2.2F * PX, 12.0F * PX, -5.0F * PX, Mth.cos(w) * 36.0F * walkSpeed);
 
             pose.popPose();
             super.render(entity, entityYaw, partialTick, pose, buf, packedLight);
         }
 
-        private static void renderFrontLeg(PoseStack pose, VertexConsumer vc, int light,
-                                           float x, float y, float z, float phase, float speed) {
-            float swing = Mth.cos(phase) * 32.0F * speed;
-            float lift = Math.max(0.0F, Mth.sin(phase)) * speed;
-            // При выносе передней ноги вперёд запястье оленя грациозно сгибается назад (+XP)
-            float kneeBend = lift * 42.0F;
-            float fetlockBend = -lift * 24.0F - swing * 0.25F;
-
+        private static void renderStraightLeg(PoseStack pose, VertexConsumer vc, int light, BakedMesh mesh,
+                                              float x, float y, float z, float swingDeg) {
             pose.pushPose();
             pose.translate(x, y, z);
-            pose.mulPose(Axis.XP.rotationDegrees(swing));
-            STAG_FRONT_THIGH.emit(pose, vc, light, OverlayTexture.NO_OVERLAY, 255, 255, 255, 255);
-
-            pose.translate(0.0F, -0.36F, -0.015F);
-            pose.mulPose(Axis.XP.rotationDegrees(kneeBend));
-            STAG_FRONT_SHIN.emit(pose, vc, light, OverlayTexture.NO_OVERLAY, 255, 255, 255, 255);
-
-            pose.translate(0.0F, -0.36F, 0.008F);
-            pose.mulPose(Axis.XP.rotationDegrees(fetlockBend));
-            STAG_CANNON_HOOF.emit(pose, vc, light, OverlayTexture.NO_OVERLAY, 255, 255, 255, 255);
-            pose.popPose();
-        }
-
-        private static void renderHindLeg(PoseStack pose, VertexConsumer vc, int light,
-                                          float x, float y, float z, float phase, float speed) {
-            float swing = Mth.cos(phase) * 30.0F * speed;
-            float lift = Math.max(0.0F, Mth.sin(phase)) * speed;
-            // Скакательный сустав задней ноги сгибается в противофазе для пружинящего толчка
-            float hockBend = -lift * 38.0F;
-            float fetlockBend = lift * 26.0F - swing * 0.22F;
-
-            pose.pushPose();
-            pose.translate(x, y, z);
-            pose.mulPose(Axis.XP.rotationDegrees(swing));
-            STAG_HIND_THIGH.emit(pose, vc, light, OverlayTexture.NO_OVERLAY, 255, 255, 255, 255);
-
-            pose.translate(0.0F, -0.36F, -0.065F);
-            pose.mulPose(Axis.XP.rotationDegrees(hockBend));
-            STAG_HIND_SHIN.emit(pose, vc, light, OverlayTexture.NO_OVERLAY, 255, 255, 255, 255);
-
-            pose.translate(0.0F, -0.35F, 0.045F);
-            pose.mulPose(Axis.XP.rotationDegrees(fetlockBend));
-            STAG_CANNON_HOOF.emit(pose, vc, light, OverlayTexture.NO_OVERLAY, 255, 255, 255, 255);
+            pose.mulPose(Axis.XP.rotationDegrees(swingDeg));
+            mesh.emit(pose, vc, light, OverlayTexture.NO_OVERLAY, 255, 255, 255, 255);
             pose.popPose();
         }
     }

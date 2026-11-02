@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "group": "wooden_button",
+  "ingredients": [
+    {
+      "item": "riftworld:charred_planks"
+    }
+  ],
+  "result": {
+    "item": "riftworld:charred_button",
+    "count": 1
+  }
+}

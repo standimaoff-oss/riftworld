@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "wooden_stairs",
+  "pattern": [
+    "#  ",
+    "## ",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "riftworld:dark_planks"
+    }
+  },
+  "result": {
+    "item": "riftworld:dark_planks_stairs",
+    "count": 4
+  }
+}

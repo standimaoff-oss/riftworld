@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "wooden_slab",
+  "pattern": [
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "riftworld:ambra_planks"
+    }
+  },
+  "result": {
+    "item": "riftworld:ambra_planks_slab",
+    "count": 6
+  }
+}

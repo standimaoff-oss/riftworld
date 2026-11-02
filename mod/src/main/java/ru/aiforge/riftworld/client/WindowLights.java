@@ -229,13 +229,22 @@ public final class WindowLights {
         float strength = day ? (float) Mth.clamp(sun.y * 4.0, 0.0, 1.0) * (1.0F - lvl.getRainLevel(pt) * 0.7F)
                 : (float) Mth.clamp(-sun.y * 4.0, 0.0, 1.0) * 0.32F;
         long key = (long) Math.floor(lvl.getDayTime() / 100.0) * 2 + (day ? 1 : 0);
+        double maxDist = Math.min(RANGE, Math.max(24.0, mc.options.renderDistance().get() * 16.0));
+        double maxDistSq = maxDist * maxDist;
+        int chunkRad = Mth.ceil(maxDist / 16.0);
+        int camCx = Mth.floor(cam.x) >> 4;
+        int camCz = Mth.floor(cam.z) >> 4;
         List<Col> vis = new ArrayList<>();
-        int budget = 12;
-        for (List<Col> l : CHUNKS.values()) {
-            for (Col c : l) {
-                if (c.base.distToCenterSqr(cam) > RANGE * RANGE) continue;
-                if (c.geomKey != key && budget-- > 0) update(lvl, c, light, strength, key);
-                if (c.power > 0.01F && c.dir != null) vis.add(c);
+        int budget = 8;
+        for (int dx = -chunkRad; dx <= chunkRad; ++dx) {
+            for (int dz = -chunkRad; dz <= chunkRad; ++dz) {
+                List<Col> l = CHUNKS.get(ChunkPos.asLong(camCx + dx, camCz + dz));
+                if (l == null) continue;
+                for (Col c : l) {
+                    if (c.base.distToCenterSqr(cam) > maxDistSq) continue;
+                    if (c.geomKey != key && budget-- > 0) update(lvl, c, light, strength, key);
+                    if (c.power > 0.01F && c.dir != null) vis.add(c);
+                }
             }
         }
         if (vis.isEmpty()) return;
@@ -350,15 +359,21 @@ public final class WindowLights {
         if (mc.level == null || mc.player == null || mc.isPaused() || ++motesClock % 2 != 0) return;
         Vec3 eye = mc.player.getEyePosition();
         var rnd = mc.level.random;
-        for (List<Col> l : CHUNKS.values()) {
-            for (Col c : l) {
-                if (c.power < 0.15F || c.dir == null || c.base.distToCenterSqr(eye) > 28 * 28 || rnd.nextInt(14) != 0) continue;
-                double t = 0.15 + rnd.nextDouble() * 0.8, k = rnd.nextDouble();
-                Vec3 o = Vec3.atBottomCenterOf(c.base).add(along(c).scale(rnd.nextDouble() - 0.5)).add(0, k * c.h, 0);
-                Vec3 p = o.add(c.dir.scale((c.lenB + (c.lenT - c.lenB) * k) * t));
-                int[] col = tint(c, 0);
-                mc.level.addParticle(new DustParticleOptions(new Vector3f(col[0] / 255F, col[1] / 255F, col[2] / 255F), 0.55F),
-                        p.x, p.y, p.z, 0, 0.002, 0);
+        int eyeCx = Mth.floor(eye.x) >> 4;
+        int eyeCz = Mth.floor(eye.z) >> 4;
+        for (int dx = -2; dx <= 2; ++dx) {
+            for (int dz = -2; dz <= 2; ++dz) {
+                List<Col> l = CHUNKS.get(ChunkPos.asLong(eyeCx + dx, eyeCz + dz));
+                if (l == null) continue;
+                for (Col c : l) {
+                    if (c.power < 0.15F || c.dir == null || c.base.distToCenterSqr(eye) > 28 * 28 || rnd.nextInt(14) != 0) continue;
+                    double t = 0.15 + rnd.nextDouble() * 0.8, k = rnd.nextDouble();
+                    Vec3 o = Vec3.atBottomCenterOf(c.base).add(along(c).scale(rnd.nextDouble() - 0.5)).add(0, k * c.h, 0);
+                    Vec3 p = o.add(c.dir.scale((c.lenB + (c.lenT - c.lenB) * k) * t));
+                    int[] col = tint(c, 0);
+                    mc.level.addParticle(new DustParticleOptions(new Vector3f(col[0] / 255F, col[1] / 255F, col[2] / 255F), 0.55F),
+                            p.x, p.y, p.z, 0, 0.002, 0);
+                }
             }
         }
     }

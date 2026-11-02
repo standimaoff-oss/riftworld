@@ -33,7 +33,7 @@ public final class FloatingIslands {
             addIfMatch(isl, x, z, range, ocean, onlyHighFloating, seen, out);
         }
 
-        double pad = 128.0;
+        double pad = 280.0;
         int minX = (int) Math.floor(x - range - pad);
         int maxX = (int) Math.ceil(x + range + pad);
         int minZ = (int) Math.floor(z - range - pad);

@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    "riftworld:sizo_button",
+    "riftworld:ambra_button",
+    "riftworld:garden_button",
+    "riftworld:lilac_button",
+    "riftworld:crystal_button",
+    "riftworld:charred_button",
+    "riftworld:dark_button"
+  ]
+}

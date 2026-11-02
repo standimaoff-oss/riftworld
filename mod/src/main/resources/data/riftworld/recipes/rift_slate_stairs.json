@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "#  ",
+    "## ",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "riftworld:rift_slate"
+    }
+  },
+  "result": {
+    "item": "riftworld:rift_slate_stairs",
+    "count": 4
+  }
+}

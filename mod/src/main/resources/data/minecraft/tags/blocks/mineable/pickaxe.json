@@ -27,6 +27,21 @@
     "riftworld:obsidian_bricks_wall",
     "riftworld:carved_basalt_runes",
     "riftworld:ember_brazier_block",
-    "riftworld:ashen_cobblestone"
+    "riftworld:ashen_cobblestone",
+    "riftworld:elisar_stone_stairs",
+    "riftworld:elisar_stone_slab",
+    "riftworld:elisar_bricks_slab",
+    "riftworld:elisar_bricks_wall",
+    "riftworld:garden_limestone_stairs",
+    "riftworld:garden_limestone_slab",
+    "riftworld:garden_limestone_wall",
+    "riftworld:rift_slate_stairs",
+    "riftworld:rift_slate_slab",
+    "riftworld:rift_slate_wall",
+    "riftworld:ivory_marble_bricks_stairs",
+    "riftworld:ivory_marble_bricks_slab",
+    "riftworld:ashen_cobblestone_stairs",
+    "riftworld:ashen_cobblestone_slab",
+    "riftworld:ashen_cobblestone_wall"
   ]
 }

@@ -4,24 +4,31 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.BushBlock;
+import net.minecraft.world.level.block.ButtonBlock;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.FenceBlock;
+import net.minecraft.world.level.block.FenceGateBlock;
 import net.minecraft.world.level.block.IronBarsBlock;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.LiquidBlock;
+import net.minecraft.world.level.block.PressurePlateBlock;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.StairBlock;
+import net.minecraft.world.level.block.TrapDoorBlock;
 import net.minecraft.world.level.block.VineBlock;
+import net.minecraft.world.level.block.WallBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockSetType;
+import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.registries.RegistryObject;
+import ru.aiforge.riftworld.block.StrippablePillarBlock;
 
 /** Blocks of planet Elisar (all custom 16x16 textures). */
 public final class ElisarBlocks {
@@ -56,8 +63,10 @@ public final class ElisarBlocks {
     public static final RegistryObject<Block> ROOF_RED = cube("roof_red", MapColor.COLOR_RED, 1.5F, SoundType.STONE);
     public static final RegistryObject<Block> ROOF_BLUE = cube("roof_blue", MapColor.COLOR_BLUE, 1.5F, SoundType.STONE);
     // trees
-    public static final RegistryObject<RotatedPillarBlock> SIZO_LOG = ModBlocks.reg("sizo_log", () -> new RotatedPillarBlock(p(MapColor.COLOR_LIGHT_GRAY, 2.0F, SoundType.WOOD)));
-    public static final RegistryObject<RotatedPillarBlock> AMBRA_LOG = ModBlocks.reg("ambra_log", () -> new RotatedPillarBlock(p(MapColor.COLOR_LIGHT_GRAY, 2.0F, SoundType.WOOD)));
+    public static final RegistryObject<RotatedPillarBlock> SIZO_LOG = ModBlocks.reg("sizo_log",
+            () -> new StrippablePillarBlock(p(MapColor.COLOR_LIGHT_GRAY, 2.0F, SoundType.WOOD), () -> STRIPPED_SIZO_LOG.get()));
+    public static final RegistryObject<RotatedPillarBlock> AMBRA_LOG = ModBlocks.reg("ambra_log",
+            () -> new StrippablePillarBlock(p(MapColor.COLOR_LIGHT_GRAY, 2.0F, SoundType.WOOD), () -> STRIPPED_AMBRA_LOG.get()));
     // Рев 12: листва снова белая/холодная — на карте и в палитре мира цвет должен совпадать
     public static final RegistryObject<LeavesBlock> SIZO_LEAVES = ModBlocks.reg("sizo_leaves", () -> new LeavesBlock(leaves(MapColor.SNOW)));
     public static final RegistryObject<LeavesBlock> AMBRA_LEAVES = ModBlocks.reg("ambra_leaves", () -> new LeavesBlock(leaves(MapColor.QUARTZ)));
@@ -117,14 +126,14 @@ public final class ElisarBlocks {
     // садам нужны собственные блоки, иначе биом не совпадает с фотографией.
     public static final RegistryObject<Block> GARDEN_GRASS = cube("garden_grass", MapColor.GRASS, 0.6F, SoundType.GRASS);
     public static final RegistryObject<RotatedPillarBlock> GARDEN_LOG =
-            ModBlocks.reg("garden_log", () -> new RotatedPillarBlock(p(MapColor.WOOD, 2.0F, SoundType.WOOD)));
+            ModBlocks.reg("garden_log", () -> new StrippablePillarBlock(p(MapColor.WOOD, 2.0F, SoundType.WOOD), () -> STRIPPED_GARDEN_LOG.get()));
     public static final RegistryObject<LeavesBlock> GARDEN_LEAVES =
             ModBlocks.reg("garden_leaves", () -> new LeavesBlock(leaves(MapColor.PLANT)));
     // ----- Рев 14.29 «Фиолетовые холмы по референсу»: на фото деревья с СИРЕНЕВОЙ кроной
     // (лиловые шапки над полями лаванды). У Элисара деревья белые, поэтому биому 04 нужна
     // собственная листва — иначе поля фиолетовые, а деревья чужие.
     public static final RegistryObject<RotatedPillarBlock> LILAC_LOG =
-            ModBlocks.reg("lilac_log", () -> new RotatedPillarBlock(p(MapColor.COLOR_PURPLE, 2.0F, SoundType.WOOD)));
+            ModBlocks.reg("lilac_log", () -> new StrippablePillarBlock(p(MapColor.COLOR_PURPLE, 2.0F, SoundType.WOOD), () -> STRIPPED_LILAC_LOG.get()));
     public static final RegistryObject<LeavesBlock> VIOLET_LEAVES =
             ModBlocks.reg("violet_leaves", () -> new LeavesBlock(leaves(MapColor.COLOR_PURPLE)));
     // ----- Рев 14.36 «Фиолетовые холмы по референсу 04»: на фото террасы — это НЕ редкие цветы
@@ -154,7 +163,7 @@ public final class ElisarBlocks {
     public static final RegistryObject<SlabBlock> RIFT_MARBLE_SLAB = slab("rift_marble_slab", MapColor.QUARTZ, SoundType.STONE);
     public static final RegistryObject<StairBlock> RIFT_MARBLE_STAIRS = stairs("rift_marble_stairs", RIFT_MARBLE);
     public static final RegistryObject<RotatedPillarBlock> CRYSTAL_LOG =
-            ModBlocks.reg("crystal_log", () -> new RotatedPillarBlock(p(MapColor.QUARTZ, 2.0F, SoundType.WOOD)));
+            ModBlocks.reg("crystal_log", () -> new StrippablePillarBlock(p(MapColor.QUARTZ, 2.0F, SoundType.WOOD), () -> STRIPPED_CRYSTAL_LOG.get()));
     public static final RegistryObject<LeavesBlock> CRYSTAL_LEAVES =
             ModBlocks.reg("crystal_leaves", () -> new LeavesBlock(leaves(MapColor.ICE)));
     public static final RegistryObject<PlantBlock> CRYSTAL_CLUSTER =
@@ -280,6 +289,124 @@ public final class ElisarBlocks {
     private static RegistryObject<SlabBlock> slab(String id, MapColor c, SoundType s) {
         return ModBlocks.reg(id, () -> new SlabBlock(p(c, 1.5F, s)));
     }
+
+    private static RegistryObject<RotatedPillarBlock> woodPillar(String id, MapColor c) {
+        return ModBlocks.reg(id, () -> new RotatedPillarBlock(p(c, 2.0F, SoundType.WOOD)));
+    }
+
+    private static RegistryObject<RotatedPillarBlock> strippableWood(String id, MapColor c, java.util.function.Supplier<? extends Block> stripped) {
+        return ModBlocks.reg(id, () -> new StrippablePillarBlock(p(c, 2.0F, SoundType.WOOD), stripped));
+    }
+
+    private static RegistryObject<FenceBlock> woodFence(String id, MapColor c) {
+        return ModBlocks.reg(id, () -> new FenceBlock(p(c, 2.0F, SoundType.WOOD)));
+    }
+
+    private static RegistryObject<FenceGateBlock> woodGate(String id, MapColor c) {
+        return ModBlocks.reg(id, () -> new FenceGateBlock(p(c, 2.0F, SoundType.WOOD), WoodType.OAK));
+    }
+
+    private static RegistryObject<DoorBlock> woodDoor(String id, MapColor c) {
+        return ModBlocks.reg(id, () -> new DoorBlock(p(c, 3.0F, SoundType.WOOD).noOcclusion().pushReaction(PushReaction.DESTROY), BlockSetType.OAK));
+    }
+
+    private static RegistryObject<TrapDoorBlock> woodTrapdoor(String id, MapColor c) {
+        return ModBlocks.reg(id, () -> new TrapDoorBlock(p(c, 3.0F, SoundType.WOOD).noOcclusion(), BlockSetType.OAK));
+    }
+
+    private static RegistryObject<PressurePlateBlock> woodPlate(String id, MapColor c) {
+        return ModBlocks.reg(id, () -> new PressurePlateBlock(PressurePlateBlock.Sensitivity.EVERYTHING,
+                p(c, 0.5F, SoundType.WOOD).noCollission().pushReaction(PushReaction.DESTROY), BlockSetType.OAK));
+    }
+
+    private static RegistryObject<ButtonBlock> woodButton(String id, MapColor c) {
+        return ModBlocks.reg(id, () -> new ButtonBlock(p(c, 0.5F, SoundType.WOOD).noCollission().pushReaction(PushReaction.DESTROY),
+                BlockSetType.OAK, 30, true));
+    }
+
+    private static RegistryObject<WallBlock> stoneWall(String id, MapColor c, SoundType s) {
+        return ModBlocks.reg(id, () -> new WallBlock(p(c, 2.0F, s)));
+    }
+
+    // ===== v0.28.0: Полные ванильные наборы древесины для 5 лесных пород Элисара (+55) и каменные варианты (+12) =====
+    // 1) Сизоствол (sizo): +9 блоков
+    public static final RegistryObject<RotatedPillarBlock> STRIPPED_SIZO_LOG = woodPillar("stripped_sizo_log", MapColor.SAND);
+    public static final RegistryObject<RotatedPillarBlock> SIZO_WOOD = strippableWood("sizo_wood", MapColor.COLOR_LIGHT_GRAY, () -> STRIPPED_SIZO_WOOD.get());
+    public static final RegistryObject<RotatedPillarBlock> STRIPPED_SIZO_WOOD = woodPillar("stripped_sizo_wood", MapColor.SAND);
+    public static final RegistryObject<FenceBlock> SIZO_FENCE = woodFence("sizo_fence", MapColor.SAND);
+    public static final RegistryObject<FenceGateBlock> SIZO_FENCE_GATE = woodGate("sizo_fence_gate", MapColor.SAND);
+    public static final RegistryObject<DoorBlock> SIZO_DOOR = woodDoor("sizo_door", MapColor.SAND);
+    public static final RegistryObject<TrapDoorBlock> SIZO_TRAPDOOR = woodTrapdoor("sizo_trapdoor", MapColor.SAND);
+    public static final RegistryObject<PressurePlateBlock> SIZO_PRESSURE_PLATE = woodPlate("sizo_pressure_plate", MapColor.SAND);
+    public static final RegistryObject<ButtonBlock> SIZO_BUTTON = woodButton("sizo_button", MapColor.SAND);
+
+    // 2) Янтарник (ambra): +10 блоков
+    public static final RegistryObject<RotatedPillarBlock> STRIPPED_AMBRA_LOG = woodPillar("stripped_ambra_log", MapColor.SAND);
+    public static final RegistryObject<RotatedPillarBlock> AMBRA_WOOD = strippableWood("ambra_wood", MapColor.SAND, () -> STRIPPED_AMBRA_WOOD.get());
+    public static final RegistryObject<RotatedPillarBlock> STRIPPED_AMBRA_WOOD = woodPillar("stripped_ambra_wood", MapColor.SAND);
+    public static final RegistryObject<StairBlock> AMBRA_STAIRS = stairs("ambra_planks_stairs", AMBRA_PLANKS);
+    public static final RegistryObject<FenceBlock> AMBRA_FENCE = woodFence("ambra_fence", MapColor.SAND);
+    public static final RegistryObject<FenceGateBlock> AMBRA_FENCE_GATE = woodGate("ambra_fence_gate", MapColor.SAND);
+    public static final RegistryObject<DoorBlock> AMBRA_DOOR = woodDoor("ambra_door", MapColor.SAND);
+    public static final RegistryObject<TrapDoorBlock> AMBRA_TRAPDOOR = woodTrapdoor("ambra_trapdoor", MapColor.SAND);
+    public static final RegistryObject<PressurePlateBlock> AMBRA_PRESSURE_PLATE = woodPlate("ambra_pressure_plate", MapColor.SAND);
+    public static final RegistryObject<ButtonBlock> AMBRA_BUTTON = woodButton("ambra_button", MapColor.SAND);
+
+    // 3) Садовый дуб (garden): +12 блоков
+    public static final RegistryObject<RotatedPillarBlock> STRIPPED_GARDEN_LOG = woodPillar("stripped_garden_log", MapColor.WOOD);
+    public static final RegistryObject<RotatedPillarBlock> GARDEN_WOOD = strippableWood("garden_wood", MapColor.WOOD, () -> STRIPPED_GARDEN_WOOD.get());
+    public static final RegistryObject<RotatedPillarBlock> STRIPPED_GARDEN_WOOD = woodPillar("stripped_garden_wood", MapColor.WOOD);
+    public static final RegistryObject<Block> GARDEN_PLANKS = cube("garden_planks", MapColor.WOOD, 2.0F, SoundType.WOOD);
+    public static final RegistryObject<StairBlock> GARDEN_STAIRS = stairs("garden_stairs", GARDEN_PLANKS);
+    public static final RegistryObject<SlabBlock> GARDEN_SLAB = slab("garden_slab", MapColor.WOOD, SoundType.WOOD);
+    public static final RegistryObject<FenceBlock> GARDEN_FENCE = woodFence("garden_fence", MapColor.WOOD);
+    public static final RegistryObject<FenceGateBlock> GARDEN_FENCE_GATE = woodGate("garden_fence_gate", MapColor.WOOD);
+    public static final RegistryObject<DoorBlock> GARDEN_DOOR = woodDoor("garden_door", MapColor.WOOD);
+    public static final RegistryObject<TrapDoorBlock> GARDEN_TRAPDOOR = woodTrapdoor("garden_trapdoor", MapColor.WOOD);
+    public static final RegistryObject<PressurePlateBlock> GARDEN_PRESSURE_PLATE = woodPlate("garden_pressure_plate", MapColor.WOOD);
+    public static final RegistryObject<ButtonBlock> GARDEN_BUTTON = woodButton("garden_button", MapColor.WOOD);
+
+    // 4) Сиреневое дерево (lilac): +12 блоков
+    public static final RegistryObject<RotatedPillarBlock> STRIPPED_LILAC_LOG = woodPillar("stripped_lilac_log", MapColor.COLOR_PURPLE);
+    public static final RegistryObject<RotatedPillarBlock> LILAC_WOOD = strippableWood("lilac_wood", MapColor.COLOR_PURPLE, () -> STRIPPED_LILAC_WOOD.get());
+    public static final RegistryObject<RotatedPillarBlock> STRIPPED_LILAC_WOOD = woodPillar("stripped_lilac_wood", MapColor.COLOR_PURPLE);
+    public static final RegistryObject<Block> LILAC_PLANKS = cube("lilac_planks", MapColor.COLOR_PURPLE, 2.0F, SoundType.WOOD);
+    public static final RegistryObject<StairBlock> LILAC_STAIRS = stairs("lilac_stairs", LILAC_PLANKS);
+    public static final RegistryObject<SlabBlock> LILAC_SLAB = slab("lilac_slab", MapColor.COLOR_PURPLE, SoundType.WOOD);
+    public static final RegistryObject<FenceBlock> LILAC_FENCE = woodFence("lilac_fence", MapColor.COLOR_PURPLE);
+    public static final RegistryObject<FenceGateBlock> LILAC_FENCE_GATE = woodGate("lilac_fence_gate", MapColor.COLOR_PURPLE);
+    public static final RegistryObject<DoorBlock> LILAC_DOOR = woodDoor("lilac_door", MapColor.COLOR_PURPLE);
+    public static final RegistryObject<TrapDoorBlock> LILAC_TRAPDOOR = woodTrapdoor("lilac_trapdoor", MapColor.COLOR_PURPLE);
+    public static final RegistryObject<PressurePlateBlock> LILAC_PRESSURE_PLATE = woodPlate("lilac_pressure_plate", MapColor.COLOR_PURPLE);
+    public static final RegistryObject<ButtonBlock> LILAC_BUTTON = woodButton("lilac_button", MapColor.COLOR_PURPLE);
+
+    // 5) Хрустальная берёза (crystal): +12 блоков
+    public static final RegistryObject<RotatedPillarBlock> STRIPPED_CRYSTAL_LOG = woodPillar("stripped_crystal_log", MapColor.QUARTZ);
+    public static final RegistryObject<RotatedPillarBlock> CRYSTAL_WOOD = strippableWood("crystal_wood", MapColor.QUARTZ, () -> STRIPPED_CRYSTAL_WOOD.get());
+    public static final RegistryObject<RotatedPillarBlock> STRIPPED_CRYSTAL_WOOD = woodPillar("stripped_crystal_wood", MapColor.QUARTZ);
+    public static final RegistryObject<Block> CRYSTAL_PLANKS = cube("crystal_planks", MapColor.QUARTZ, 2.0F, SoundType.WOOD);
+    public static final RegistryObject<StairBlock> CRYSTAL_STAIRS = stairs("crystal_stairs", CRYSTAL_PLANKS);
+    public static final RegistryObject<SlabBlock> CRYSTAL_SLAB = slab("crystal_slab", MapColor.QUARTZ, SoundType.WOOD);
+    public static final RegistryObject<FenceBlock> CRYSTAL_FENCE = woodFence("crystal_fence", MapColor.QUARTZ);
+    public static final RegistryObject<FenceGateBlock> CRYSTAL_FENCE_GATE = woodGate("crystal_fence_gate", MapColor.QUARTZ);
+    public static final RegistryObject<DoorBlock> CRYSTAL_DOOR = woodDoor("crystal_door", MapColor.QUARTZ);
+    public static final RegistryObject<TrapDoorBlock> CRYSTAL_TRAPDOOR = woodTrapdoor("crystal_trapdoor", MapColor.QUARTZ);
+    public static final RegistryObject<PressurePlateBlock> CRYSTAL_PRESSURE_PLATE = woodPlate("crystal_pressure_plate", MapColor.QUARTZ);
+    public static final RegistryObject<ButtonBlock> CRYSTAL_BUTTON = woodButton("crystal_button", MapColor.QUARTZ);
+
+    // 6) Каменные ступени, плиты и ограды Элисара (+12 блоков)
+    public static final RegistryObject<StairBlock> STONE_STAIRS = stairs("elisar_stone_stairs", STONE);
+    public static final RegistryObject<SlabBlock> STONE_SLAB = slab("elisar_stone_slab", MapColor.TERRACOTTA_PURPLE, SoundType.STONE);
+    public static final RegistryObject<SlabBlock> BRICKS_SLAB = slab("elisar_bricks_slab", MapColor.TERRACOTTA_LIGHT_GRAY, SoundType.STONE);
+    public static final RegistryObject<WallBlock> BRICKS_WALL = stoneWall("elisar_bricks_wall", MapColor.TERRACOTTA_LIGHT_GRAY, SoundType.STONE);
+    public static final RegistryObject<StairBlock> GARDEN_LIMESTONE_STAIRS = stairs("garden_limestone_stairs", GARDEN_LIMESTONE);
+    public static final RegistryObject<SlabBlock> GARDEN_LIMESTONE_SLAB = slab("garden_limestone_slab", MapColor.QUARTZ, SoundType.STONE);
+    public static final RegistryObject<WallBlock> GARDEN_LIMESTONE_WALL = stoneWall("garden_limestone_wall", MapColor.QUARTZ, SoundType.STONE);
+    public static final RegistryObject<StairBlock> RIFT_SLATE_STAIRS = stairs("rift_slate_stairs", RIFT_SLATE);
+    public static final RegistryObject<SlabBlock> RIFT_SLATE_SLAB = slab("rift_slate_slab", MapColor.COLOR_LIGHT_BLUE, SoundType.DEEPSLATE);
+    public static final RegistryObject<WallBlock> RIFT_SLATE_WALL = stoneWall("rift_slate_wall", MapColor.COLOR_LIGHT_BLUE, SoundType.DEEPSLATE);
+    public static final RegistryObject<StairBlock> IVORY_MARBLE_BRICKS_STAIRS = stairs("ivory_marble_bricks_stairs", IVORY_MARBLE_BRICKS);
+    public static final RegistryObject<SlabBlock> IVORY_MARBLE_BRICKS_SLAB = slab("ivory_marble_bricks_slab", MapColor.QUARTZ, SoundType.STONE);
 
     public static void init() {
     }

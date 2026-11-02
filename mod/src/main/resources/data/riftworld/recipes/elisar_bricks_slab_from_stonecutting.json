@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "riftworld:elisar_bricks"
+  },
+  "result": "riftworld:elisar_bricks_slab",
+  "count": 2
+}

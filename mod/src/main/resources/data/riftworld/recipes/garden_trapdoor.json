@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "group": "wooden_trapdoor",
+  "pattern": [
+    "###",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "riftworld:garden_planks"
+    }
+  },
+  "result": {
+    "item": "riftworld:garden_trapdoor",
+    "count": 2
+  }
+}
