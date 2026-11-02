@@ -3550,10 +3550,10 @@ public final class SeaProbeCommand {
             boolean perfOk = effR2 <= 96.0 && wake2Ms < 2.0 && wake12Ms < 4.0
                     && islandAt10kMs < 25.0 && biome10kMs < 25.0 && nonNullBiomes == 10_000;
             int metric = perfOk ? 800 : 0;
-            int sea = plan.ocean;
+            int seaLvl = plan.ocean;
             String line = String.format(java.util.Locale.ROOT,
                     "riftstruct kind=v28_elisar_perf_2chunks at=0,%d,160 effR2=%.1f wake2ms=%.3f wake12ms=%.3f island10kMs=%.2f biome10kMs=%.2f hits=%d blocks=%d sub_air=0 cam=0,%d,218:0,%d,135",
-                    sea + 2, effR2, wake2Ms, wake12Ms, islandAt10kMs, biome10kMs, hitIslands, metric, sea + 26, sea + 4);
+                    seaLvl + 2, effR2, wake2Ms, wake12Ms, islandAt10kMs, biome10kMs, hitIslands, metric, seaLvl + 26, seaLvl + 4);
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
         }
