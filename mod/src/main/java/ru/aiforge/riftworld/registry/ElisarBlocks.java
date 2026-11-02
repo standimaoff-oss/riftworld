@@ -64,9 +64,9 @@ public final class ElisarBlocks {
     public static final RegistryObject<Block> ROOF_BLUE = cube("roof_blue", MapColor.COLOR_BLUE, 1.5F, SoundType.STONE);
     // trees
     public static final RegistryObject<RotatedPillarBlock> SIZO_LOG = ModBlocks.reg("sizo_log",
-            () -> new StrippablePillarBlock(p(MapColor.COLOR_LIGHT_GRAY, 2.0F, SoundType.WOOD), () -> STRIPPED_SIZO_LOG.get()));
+            () -> new StrippablePillarBlock(p(MapColor.COLOR_LIGHT_GRAY, 2.0F, SoundType.WOOD), () -> ElisarBlocks.STRIPPED_SIZO_LOG.get()));
     public static final RegistryObject<RotatedPillarBlock> AMBRA_LOG = ModBlocks.reg("ambra_log",
-            () -> new StrippablePillarBlock(p(MapColor.COLOR_LIGHT_GRAY, 2.0F, SoundType.WOOD), () -> STRIPPED_AMBRA_LOG.get()));
+            () -> new StrippablePillarBlock(p(MapColor.COLOR_LIGHT_GRAY, 2.0F, SoundType.WOOD), () -> ElisarBlocks.STRIPPED_AMBRA_LOG.get()));
     // Рев 12: листва снова белая/холодная — на карте и в палитре мира цвет должен совпадать
     public static final RegistryObject<LeavesBlock> SIZO_LEAVES = ModBlocks.reg("sizo_leaves", () -> new LeavesBlock(leaves(MapColor.SNOW)));
     public static final RegistryObject<LeavesBlock> AMBRA_LEAVES = ModBlocks.reg("ambra_leaves", () -> new LeavesBlock(leaves(MapColor.QUARTZ)));
@@ -126,14 +126,14 @@ public final class ElisarBlocks {
     // садам нужны собственные блоки, иначе биом не совпадает с фотографией.
     public static final RegistryObject<Block> GARDEN_GRASS = cube("garden_grass", MapColor.GRASS, 0.6F, SoundType.GRASS);
     public static final RegistryObject<RotatedPillarBlock> GARDEN_LOG =
-            ModBlocks.reg("garden_log", () -> new StrippablePillarBlock(p(MapColor.WOOD, 2.0F, SoundType.WOOD), () -> STRIPPED_GARDEN_LOG.get()));
+            ModBlocks.reg("garden_log", () -> new StrippablePillarBlock(p(MapColor.WOOD, 2.0F, SoundType.WOOD), () -> ElisarBlocks.STRIPPED_GARDEN_LOG.get()));
     public static final RegistryObject<LeavesBlock> GARDEN_LEAVES =
             ModBlocks.reg("garden_leaves", () -> new LeavesBlock(leaves(MapColor.PLANT)));
     // ----- Рев 14.29 «Фиолетовые холмы по референсу»: на фото деревья с СИРЕНЕВОЙ кроной
     // (лиловые шапки над полями лаванды). У Элисара деревья белые, поэтому биому 04 нужна
     // собственная листва — иначе поля фиолетовые, а деревья чужие.
     public static final RegistryObject<RotatedPillarBlock> LILAC_LOG =
-            ModBlocks.reg("lilac_log", () -> new StrippablePillarBlock(p(MapColor.COLOR_PURPLE, 2.0F, SoundType.WOOD), () -> STRIPPED_LILAC_LOG.get()));
+            ModBlocks.reg("lilac_log", () -> new StrippablePillarBlock(p(MapColor.COLOR_PURPLE, 2.0F, SoundType.WOOD), () -> ElisarBlocks.STRIPPED_LILAC_LOG.get()));
     public static final RegistryObject<LeavesBlock> VIOLET_LEAVES =
             ModBlocks.reg("violet_leaves", () -> new LeavesBlock(leaves(MapColor.COLOR_PURPLE)));
     // ----- Рев 14.36 «Фиолетовые холмы по референсу 04»: на фото террасы — это НЕ редкие цветы
@@ -163,7 +163,7 @@ public final class ElisarBlocks {
     public static final RegistryObject<SlabBlock> RIFT_MARBLE_SLAB = slab("rift_marble_slab", MapColor.QUARTZ, SoundType.STONE);
     public static final RegistryObject<StairBlock> RIFT_MARBLE_STAIRS = stairs("rift_marble_stairs", RIFT_MARBLE);
     public static final RegistryObject<RotatedPillarBlock> CRYSTAL_LOG =
-            ModBlocks.reg("crystal_log", () -> new StrippablePillarBlock(p(MapColor.QUARTZ, 2.0F, SoundType.WOOD), () -> STRIPPED_CRYSTAL_LOG.get()));
+            ModBlocks.reg("crystal_log", () -> new StrippablePillarBlock(p(MapColor.QUARTZ, 2.0F, SoundType.WOOD), () -> ElisarBlocks.STRIPPED_CRYSTAL_LOG.get()));
     public static final RegistryObject<LeavesBlock> CRYSTAL_LEAVES =
             ModBlocks.reg("crystal_leaves", () -> new LeavesBlock(leaves(MapColor.ICE)));
     public static final RegistryObject<PlantBlock> CRYSTAL_CLUSTER =
@@ -331,8 +331,8 @@ public final class ElisarBlocks {
     // ===== v0.28.0: Полные ванильные наборы древесины для 5 лесных пород Элисара (+55) и каменные варианты (+12) =====
     // 1) Сизоствол (sizo): +9 блоков
     public static final RegistryObject<RotatedPillarBlock> STRIPPED_SIZO_LOG = woodPillar("stripped_sizo_log", MapColor.SAND);
-    public static final RegistryObject<RotatedPillarBlock> SIZO_WOOD = strippableWood("sizo_wood", MapColor.COLOR_LIGHT_GRAY, () -> STRIPPED_SIZO_WOOD.get());
     public static final RegistryObject<RotatedPillarBlock> STRIPPED_SIZO_WOOD = woodPillar("stripped_sizo_wood", MapColor.SAND);
+    public static final RegistryObject<RotatedPillarBlock> SIZO_WOOD = strippableWood("sizo_wood", MapColor.COLOR_LIGHT_GRAY, STRIPPED_SIZO_WOOD);
     public static final RegistryObject<FenceBlock> SIZO_FENCE = woodFence("sizo_fence", MapColor.SAND);
     public static final RegistryObject<FenceGateBlock> SIZO_FENCE_GATE = woodGate("sizo_fence_gate", MapColor.SAND);
     public static final RegistryObject<DoorBlock> SIZO_DOOR = woodDoor("sizo_door", MapColor.SAND);
@@ -342,8 +342,8 @@ public final class ElisarBlocks {
 
     // 2) Янтарник (ambra): +10 блоков
     public static final RegistryObject<RotatedPillarBlock> STRIPPED_AMBRA_LOG = woodPillar("stripped_ambra_log", MapColor.SAND);
-    public static final RegistryObject<RotatedPillarBlock> AMBRA_WOOD = strippableWood("ambra_wood", MapColor.SAND, () -> STRIPPED_AMBRA_WOOD.get());
     public static final RegistryObject<RotatedPillarBlock> STRIPPED_AMBRA_WOOD = woodPillar("stripped_ambra_wood", MapColor.SAND);
+    public static final RegistryObject<RotatedPillarBlock> AMBRA_WOOD = strippableWood("ambra_wood", MapColor.SAND, STRIPPED_AMBRA_WOOD);
     public static final RegistryObject<StairBlock> AMBRA_STAIRS = stairs("ambra_planks_stairs", AMBRA_PLANKS);
     public static final RegistryObject<FenceBlock> AMBRA_FENCE = woodFence("ambra_fence", MapColor.SAND);
     public static final RegistryObject<FenceGateBlock> AMBRA_FENCE_GATE = woodGate("ambra_fence_gate", MapColor.SAND);
@@ -354,8 +354,8 @@ public final class ElisarBlocks {
 
     // 3) Садовый дуб (garden): +12 блоков
     public static final RegistryObject<RotatedPillarBlock> STRIPPED_GARDEN_LOG = woodPillar("stripped_garden_log", MapColor.WOOD);
-    public static final RegistryObject<RotatedPillarBlock> GARDEN_WOOD = strippableWood("garden_wood", MapColor.WOOD, () -> STRIPPED_GARDEN_WOOD.get());
     public static final RegistryObject<RotatedPillarBlock> STRIPPED_GARDEN_WOOD = woodPillar("stripped_garden_wood", MapColor.WOOD);
+    public static final RegistryObject<RotatedPillarBlock> GARDEN_WOOD = strippableWood("garden_wood", MapColor.WOOD, STRIPPED_GARDEN_WOOD);
     public static final RegistryObject<Block> GARDEN_PLANKS = cube("garden_planks", MapColor.WOOD, 2.0F, SoundType.WOOD);
     public static final RegistryObject<StairBlock> GARDEN_STAIRS = stairs("garden_stairs", GARDEN_PLANKS);
     public static final RegistryObject<SlabBlock> GARDEN_SLAB = slab("garden_slab", MapColor.WOOD, SoundType.WOOD);
@@ -368,8 +368,8 @@ public final class ElisarBlocks {
 
     // 4) Сиреневое дерево (lilac): +12 блоков
     public static final RegistryObject<RotatedPillarBlock> STRIPPED_LILAC_LOG = woodPillar("stripped_lilac_log", MapColor.COLOR_PURPLE);
-    public static final RegistryObject<RotatedPillarBlock> LILAC_WOOD = strippableWood("lilac_wood", MapColor.COLOR_PURPLE, () -> STRIPPED_LILAC_WOOD.get());
     public static final RegistryObject<RotatedPillarBlock> STRIPPED_LILAC_WOOD = woodPillar("stripped_lilac_wood", MapColor.COLOR_PURPLE);
+    public static final RegistryObject<RotatedPillarBlock> LILAC_WOOD = strippableWood("lilac_wood", MapColor.COLOR_PURPLE, STRIPPED_LILAC_WOOD);
     public static final RegistryObject<Block> LILAC_PLANKS = cube("lilac_planks", MapColor.COLOR_PURPLE, 2.0F, SoundType.WOOD);
     public static final RegistryObject<StairBlock> LILAC_STAIRS = stairs("lilac_stairs", LILAC_PLANKS);
     public static final RegistryObject<SlabBlock> LILAC_SLAB = slab("lilac_slab", MapColor.COLOR_PURPLE, SoundType.WOOD);
@@ -382,8 +382,8 @@ public final class ElisarBlocks {
 
     // 5) Хрустальная берёза (crystal): +12 блоков
     public static final RegistryObject<RotatedPillarBlock> STRIPPED_CRYSTAL_LOG = woodPillar("stripped_crystal_log", MapColor.QUARTZ);
-    public static final RegistryObject<RotatedPillarBlock> CRYSTAL_WOOD = strippableWood("crystal_wood", MapColor.QUARTZ, () -> STRIPPED_CRYSTAL_WOOD.get());
     public static final RegistryObject<RotatedPillarBlock> STRIPPED_CRYSTAL_WOOD = woodPillar("stripped_crystal_wood", MapColor.QUARTZ);
+    public static final RegistryObject<RotatedPillarBlock> CRYSTAL_WOOD = strippableWood("crystal_wood", MapColor.QUARTZ, STRIPPED_CRYSTAL_WOOD);
     public static final RegistryObject<Block> CRYSTAL_PLANKS = cube("crystal_planks", MapColor.QUARTZ, 2.0F, SoundType.WOOD);
     public static final RegistryObject<StairBlock> CRYSTAL_STAIRS = stairs("crystal_stairs", CRYSTAL_PLANKS);
     public static final RegistryObject<SlabBlock> CRYSTAL_SLAB = slab("crystal_slab", MapColor.QUARTZ, SoundType.WOOD);

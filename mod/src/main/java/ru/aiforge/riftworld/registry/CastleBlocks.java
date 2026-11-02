@@ -65,7 +65,7 @@ public final class CastleBlocks {
     public static final RegistryObject<StairBlock> DARK_STAIRS = stairs("dark_planks_stairs", DARK_PLANKS);
     public static final RegistryObject<SlabBlock> DARK_SLAB = slab("dark_planks_slab", DARK_PLANKS);
     public static final RegistryObject<RotatedPillarBlock> DARK_BEAM = ModBlocks.reg("dark_beam",
-            () -> new StrippablePillarBlock(p(MapColor.COLOR_BROWN, 2.0F, SoundType.WOOD), () -> STRIPPED_DARK_BEAM.get()));
+            () -> new StrippablePillarBlock(p(MapColor.COLOR_BROWN, 2.0F, SoundType.WOOD), () -> CastleBlocks.STRIPPED_DARK_BEAM.get()));
     public static final RegistryObject<FenceBlock> DARK_FENCE = ModBlocks.reg("dark_fence",
             () -> new FenceBlock(p(MapColor.COLOR_BROWN, 2.0F, SoundType.WOOD)));
     // accents
@@ -82,7 +82,7 @@ public final class CastleBlocks {
     public static final RegistryObject<Block> BURNT_SOIL = cube("burnt_soil", p(MapColor.COLOR_BLACK, 0.6F, SoundType.GRAVEL));
     public static final RegistryObject<Block> SCORCHED_STONE = cube("scorched_stone", p(MapColor.COLOR_GRAY, 2.0F, SoundType.BASALT));
     public static final RegistryObject<RotatedPillarBlock> CHARRED_LOG = ModBlocks.reg("charred_log",
-            () -> new StrippablePillarBlock(p(MapColor.COLOR_BLACK, 1.5F, SoundType.WOOD), () -> STRIPPED_CHARRED_LOG.get()));
+            () -> new StrippablePillarBlock(p(MapColor.COLOR_BLACK, 1.5F, SoundType.WOOD), () -> CastleBlocks.STRIPPED_CHARRED_LOG.get()));
 
     // C-2: room furnishing
     public static final RegistryObject<RotatedPillarBlock> BOOKSHELF = ModBlocks.reg("castle_bookshelf",
@@ -110,10 +110,10 @@ public final class CastleBlocks {
     // v0.28.0: Полные ванильные наборы Тёмного дуба замка (+8), Обугленного дерева (+12) и Пепельного булыжника (+3)
     public static final RegistryObject<RotatedPillarBlock> STRIPPED_DARK_BEAM = ModBlocks.reg("stripped_dark_beam",
             () -> new RotatedPillarBlock(p(MapColor.COLOR_BROWN, 2.0F, SoundType.WOOD)));
-    public static final RegistryObject<RotatedPillarBlock> DARK_WOOD = ModBlocks.reg("dark_wood",
-            () -> new StrippablePillarBlock(p(MapColor.COLOR_BROWN, 2.0F, SoundType.WOOD), () -> STRIPPED_DARK_WOOD.get()));
     public static final RegistryObject<RotatedPillarBlock> STRIPPED_DARK_WOOD = ModBlocks.reg("stripped_dark_wood",
             () -> new RotatedPillarBlock(p(MapColor.COLOR_BROWN, 2.0F, SoundType.WOOD)));
+    public static final RegistryObject<RotatedPillarBlock> DARK_WOOD = ModBlocks.reg("dark_wood",
+            () -> new StrippablePillarBlock(p(MapColor.COLOR_BROWN, 2.0F, SoundType.WOOD), STRIPPED_DARK_WOOD));
     public static final RegistryObject<FenceGateBlock> DARK_FENCE_GATE = ModBlocks.reg("dark_fence_gate",
             () -> new FenceGateBlock(p(MapColor.COLOR_BROWN, 2.0F, SoundType.WOOD), WoodType.DARK_OAK));
     public static final RegistryObject<DoorBlock> DARK_DOOR = ModBlocks.reg("dark_door",
@@ -129,10 +129,10 @@ public final class CastleBlocks {
 
     public static final RegistryObject<RotatedPillarBlock> STRIPPED_CHARRED_LOG = ModBlocks.reg("stripped_charred_log",
             () -> new RotatedPillarBlock(p(MapColor.COLOR_BLACK, 1.5F, SoundType.WOOD)));
-    public static final RegistryObject<RotatedPillarBlock> CHARRED_WOOD = ModBlocks.reg("charred_wood",
-            () -> new StrippablePillarBlock(p(MapColor.COLOR_BLACK, 1.5F, SoundType.WOOD), () -> STRIPPED_CHARRED_WOOD.get()));
     public static final RegistryObject<RotatedPillarBlock> STRIPPED_CHARRED_WOOD = ModBlocks.reg("stripped_charred_wood",
             () -> new RotatedPillarBlock(p(MapColor.COLOR_BLACK, 1.5F, SoundType.WOOD)));
+    public static final RegistryObject<RotatedPillarBlock> CHARRED_WOOD = ModBlocks.reg("charred_wood",
+            () -> new StrippablePillarBlock(p(MapColor.COLOR_BLACK, 1.5F, SoundType.WOOD), STRIPPED_CHARRED_WOOD));
     public static final RegistryObject<Block> CHARRED_PLANKS = cube("charred_planks", p(MapColor.COLOR_BLACK, 2.0F, SoundType.WOOD));
     public static final RegistryObject<StairBlock> CHARRED_STAIRS = stairs("charred_stairs", CHARRED_PLANKS);
     public static final RegistryObject<SlabBlock> CHARRED_SLAB = slab("charred_slab", CHARRED_PLANKS);
