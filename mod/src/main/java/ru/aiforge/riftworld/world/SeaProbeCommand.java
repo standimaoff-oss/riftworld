@@ -3867,7 +3867,7 @@ public final class SeaProbeCommand {
             boolean clampedToRd = (r2 <= 32.0 && r6 <= 96.0 && r12 <= 192.0);
             int metric = (clampedToRd && fishDespawns) ? 900 : 0;
 
-            int seaLvl = plan.ocean;
+            int seaLvl = CityPlan.forSeed(seed).ocean;
             int camX = 310, camY = seaLvl + 26, camZ = 310;
             int lkX = 365, lkY = seaLvl + 2, lkZ = 365;
             String line = String.format(java.util.Locale.ROOT,

@@ -175,7 +175,7 @@ public class MosaicCoreBE extends BlockEntity {
         }
     }
 
-    static void tick(Level level, BlockPos pos, BlockState state, MosaicCoreBE be) {
+    public static void tick(Level level, BlockPos pos, BlockState state, MosaicCoreBE be) {
         if (!(level instanceof ServerLevel sl)) return;
         boolean inElisar = sl.dimension().equals(Flight.ELISAR_DIM);
 
