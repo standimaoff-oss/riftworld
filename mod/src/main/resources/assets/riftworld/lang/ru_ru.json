@@ -542,5 +542,7 @@
   "block.riftworld.ivory_marble_bricks_slab": "Плита из белокаменного кирпича",
   "block.riftworld.ashen_cobblestone_stairs": "Ступеньки из пепельного булыжника",
   "block.riftworld.ashen_cobblestone_slab": "Плита из пепельного булыжника",
-  "block.riftworld.ashen_cobblestone_wall": "Ограда из пепельного булыжника"
+  "block.riftworld.ashen_cobblestone_wall": "Ограда из пепельного булыжника",
+  "block.riftworld.ducat_ore": "Монетная руда",
+  "block.riftworld.deepslate_ducat_ore": "Глубинносланцевая монетная руда"
 }

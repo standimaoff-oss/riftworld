@@ -76,8 +76,6 @@ public class SeaFishEntity extends Mob {
     public SeaFishEntity(EntityType<? extends SeaFishEntity> type, Level level) {
         super(type, level);
         setNoGravity(true);
-        setPersistenceRequired();
-        noCulling = true;
     }
 
     public static AttributeSupplier.Builder attributes() {
@@ -375,7 +373,7 @@ public class SeaFishEntity extends Mob {
     }
 
     @Override
-    public boolean removeWhenFarAway(double d) {
-        return false;
+    public boolean removeWhenFarAway(double distSq) {
+        return !this.isNoAi() && !this.hasCustomName() && distSq > 96.0D * 96.0D;
     }
 }

@@ -149,8 +149,10 @@ public final class PaperDragonKeeper {
         BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
         for (int dx = -rHoriz; dx <= rHoriz; dx += 2) {
             for (int dz = -rHoriz; dz <= rHoriz; dz += 2) {
+                int wx = center.getX() + dx, wz = center.getZ() + dz;
+                if (!level.hasChunk(wx >> 4, wz >> 4)) return false;
                 for (int dy = -rVert; dy <= rVert; ++dy) {
-                    mp.set(center.getX() + dx, center.getY() + dy, center.getZ() + dz);
+                    mp.set(wx, center.getY() + dy, wz);
                     if (!level.getBlockState(mp).isAir() || !level.getFluidState(mp).isEmpty()) {
                         return false;
                     }

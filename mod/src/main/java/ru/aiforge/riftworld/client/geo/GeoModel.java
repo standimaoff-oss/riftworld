@@ -47,6 +47,7 @@ public final class GeoModel {
     public final float renderScale;
     public final boolean translucent;
     private final List<Bone> bones;
+    private final ModelPart[] allParts;
 
     private GeoModel(ModelPart root, int texWidth, int texHeight, float renderScale, boolean translucent, List<Bone> bones) {
         this.root = root;
@@ -55,6 +56,7 @@ public final class GeoModel {
         this.renderScale = renderScale;
         this.translucent = translucent;
         this.bones = bones;
+        this.allParts = root.getAllParts().toArray(ModelPart[]::new);
     }
 
     /** Покадровая анимация: сбрасываем позы костей и заново считаем синус. */
@@ -78,8 +80,8 @@ public final class GeoModel {
      * к детям — из-за этого раньше выходил один серый ящик вместо рыбы.
      */
     public void render(PoseStack pose, VertexConsumer vc, int light, int overlay) {
-        for (ModelPart part : this.root.getAllParts().toList()) {
-            part.render(pose, vc, light, overlay, 1.0F, 1.0F, 1.0F, 1.0F);
+        for (int i = 0, n = this.allParts.length; i < n; ++i) {
+            this.allParts[i].render(pose, vc, light, overlay, 1.0F, 1.0F, 1.0F, 1.0F);
         }
     }
 

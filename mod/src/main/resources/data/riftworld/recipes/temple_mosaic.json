@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GLG",
+    "LTL",
+    "GLG"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:gold_nugget"
+    },
+    "L": {
+      "item": "minecraft:lapis_lazuli"
+    },
+    "T": {
+      "item": "riftworld:temple_floor"
+    }
+  },
+  "result": {
+    "item": "riftworld:temple_mosaic",
+    "count": 4
+  }
+}

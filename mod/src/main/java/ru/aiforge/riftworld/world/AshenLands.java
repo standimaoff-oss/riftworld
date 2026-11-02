@@ -47,15 +47,12 @@ public final class AshenLands {
         public final int comboMode;
         public final boolean hasRedCastle;
         public final boolean hasBurnedChurch;
-        public final boolean hasBlacktide;
         public final boolean hasBelfry;
         public final boolean hasVillage;
 
         public final int x0, z0;
         @Nullable
         public final CityPlan.Island island;
-        @Nullable
-        public final BlacktideCitadel.Site blacktideSite;
         public final int churchX, churchZ, churchY;
         public final double churchDirX, churchDirZ;
 
@@ -70,19 +67,15 @@ public final class AshenLands {
             this.R = R;
             this.comboMode = comboMode;
 
-            // Режимы комбинаций структур в Пепельном биоме:
-            // 0 = полностью пустой биом;
-            // 1 = только морская Цитадель Чёрного утёса;
-            // 2 = только Сгоревшая церковь (+ сгоревшая деревня);
-            // 3 = только Красный замок 1-го босса;
-            // 4 = Красный замок + Сгоревшая церковь (+ колокольня);
-            // 5 = Сгоревшая церковь + Цитадель Чёрного утёса (+ деревня);
-            // 6 = Красный замок + Цитадель Чёрного утёса;
-            // 7 = ВСЕ ВМЕСТЕ (Красный замок + Сгоревшая церковь + Цитадель Чёрного утёса + колокольня + деревня)!
+            // v0.29.0: Цитадель Чёрного утёса спавнится ТОЛЬКО В ОТКРЫТОМ ОКЕАНЕ (BlacktideCitadel.java),
+            // а 8 комбинаций сухопутного Пепельного биома (0..7) покрывают все 2^3 сочетания его сухопутных построек:
+            //   bit 2 (4) -> Красный замок 1-го босса;
+            //   bit 1 (2) -> Сгоревшая готическая церковь;
+            //   bit 0 (1) -> Осадная колокольня;
+            //   0 = полностью пустой биом, 7 = ВСЕ ТРИ сухопутные доминанты + сгоревшая деревня!
             this.hasRedCastle = (comboMode == 3 || comboMode == 4 || comboMode == 6 || comboMode == 7);
             this.hasBurnedChurch = (comboMode == 2 || comboMode == 4 || comboMode == 5 || comboMode == 7);
-            this.hasBlacktide = (comboMode == 1 || comboMode == 5 || comboMode == 6 || comboMode == 7);
-            this.hasBelfry = (comboMode == 4 || comboMode == 7);
+            this.hasBelfry = (comboMode == 1 || comboMode == 5 || comboMode == 6 || comboMode == 7);
             this.hasVillage = (comboMode == 2 || comboMode == 5 || comboMode == 7);
 
             this.x0 = cx - 38;
@@ -112,33 +105,7 @@ public final class AshenLands {
                 this.island = null;
             }
 
-            // Выбираем прибрежное направление для Цитадели Чёрного утёса (мост на суше биома -> замок в открытом море!)
-            if (this.hasBlacktide) {
-                int startRot = rnd.nextInt(4);
-                BlacktideCitadel.Site chosen = null;
-                double bestScore = -1e18;
-                for (int i = 0; i < 4; ++i) {
-                    int testRot = (startRot + i) & 3;
-                    BlacktideCitadel.Site cand = BlacktideCitadel.createForCoast(cx, cz, R, OCEAN_Y, testRot);
-                    double distOrigin = Math.hypot(cand.cx, cand.cz);
-                    double distSpots = Math.hypot(cand.cx - 648.0, cand.cz - 693.0);
-                    if (distOrigin < 740.0 || distSpots < 440.0) continue;
-                    // Предпочитаем поворот, уходящий дальше от центра мира в открытый океан
-                    double score = distOrigin + Math.min(600.0, distSpots);
-                    if (score > bestScore) {
-                        bestScore = score;
-                        chosen = cand;
-                    }
-                }
-                if (chosen == null) {
-                    chosen = BlacktideCitadel.createForCoast(cx, cz, R, OCEAN_Y, 2);
-                }
-                this.blacktideSite = chosen;
-            } else {
-                this.blacktideSite = null;
-            }
-
-            // Крупные обрушившиеся вулканические курганы на расширенной равнине (не перекрывают подход к мосту Blacktide)
+            // Крупные обрушившиеся вулканические курганы на расширенной пепельной равнине
             List<Mound> mList = new ArrayList<>();
             double[][] moundOffsets = {
                     {-185, 138, 54, 32, 0.45, -0.25, 1},
@@ -149,14 +116,11 @@ public final class AshenLands {
             };
             for (double[] mo : moundOffsets) {
                 double mx = cx + mo[0], mz = cz + mo[1];
-                if (this.blacktideSite != null && this.blacktideSite.inFootprint(mx, mz, mo[2] + 18.0)) {
-                    continue;
-                }
                 mList.add(new Mound(mx, mz, mo[2], mo[3], mo[4], mo[5], (int) mo[6]));
             }
             this.mounds = List.copyOf(mList);
 
-            // Позиция Сгоревшей готической церкви на пепельной равнине (свободный сектор вдали от курганов, деревни и моста)
+            // Позиция Сгоревшей готической церкви на пепельной равнине (свободный сектор вдали от курганов и деревни)
             if (this.hasBurnedChurch) {
                 int bestChX = cx + 18, bestChZ = cz - 210;
                 double[][] cands = {
@@ -165,7 +129,6 @@ public final class AshenLands {
                 for (double[] cd : cands) {
                     int tx = cx + (int) cd[0];
                     int tz = cz + (int) cd[1];
-                    if (this.blacktideSite != null && this.blacktideSite.inFootprint(tx, tz, 46.0)) continue;
                     boolean hitMound = false;
                     for (Mound m : this.mounds) {
                         if (Math.hypot(tx - m.x, tz - m.z) < m.r + 34.0) {
@@ -217,36 +180,10 @@ public final class AshenLands {
                     ++k;
                 }
             }
-            // Обугленные сухие деревья Пепельного биома вдоль высокого скалистого берега и мысов бухты у Цитадели!
-            if (this.blacktideSite != null) {
-                BlacktideCitadel.Site bt = this.blacktideSite;
-                for (int k = 0, tries = 0; k < 28 && tries < 320; ++tries) {
-                    boolean onCape = (tries % 3 == 0);
-                    double inland = onCape ? (-8.0 - mr.nextDouble() * 58.0) : (6.0 + mr.nextDouble() * 54.0);
-                    double sideSign = mr.nextBoolean() ? 1.0 : -1.0;
-                    double perp = onCape ? (114.0 + mr.nextDouble() * 44.0) : (14.0 + mr.nextDouble() * 128.0);
-                    int tx = (int) Math.round(bt.landX - bt.outUx * inland - bt.outUz * (perp * sideSign));
-                    int tz = (int) Math.round(bt.landZ - bt.outUz * inland + bt.outUx * (perp * sideSign));
-                    int ht = bt.headlandTop(tx, tz, OCEAN_Y);
-                    if (ht <= OCEAN_Y + 4) continue;
-                    boolean ok = true;
-                    for (CityPlan.Tree t : moundTrees) {
-                        if (Math.abs(t.x - tx) < 7 && Math.abs(t.z - tz) < 7) {
-                            ok = false;
-                            break;
-                        }
-                    }
-                    if (!ok) continue;
-                    CityPlan.Tree ct = new CityPlan.Tree(tx, tz, 2, 6 + mr.nextInt(5), mr.nextInt(1 << 30));
-                    ct.baseY = ht + 1;
-                    moundTrees.add(ct);
-                    ++k;
-                }
-            }
         }
 
         public boolean isEmptyBiome() {
-            return !hasRedCastle && !hasBurnedChurch && !hasBlacktide && !hasBelfry && !hasVillage;
+            return !hasRedCastle && !hasBurnedChurch && !hasBelfry && !hasVillage;
         }
 
         public boolean inCastleFootprint(double x, double z, double margin) {
@@ -344,21 +281,6 @@ public final class AshenLands {
         return best;
     }
 
-    /** Находит прибрежно-морскую Цитадель Чёрного утёса, пересекающую чанк (x0, z0) — включая морскую часть в 220 блоках от берега! */
-    @Nullable
-    public static BlacktideCitadel.Site blacktideForChunk(int x0, int z0) {
-        int sx = Math.floorDiv(x0 + 8, SUPER), sz = Math.floorDiv(z0 + 8, SUPER);
-        for (int dx = -1; dx <= 1; ++dx) {
-            for (int dz = -1; dz <= 1; ++dz) {
-                Region rg = region(sx + dx, sz + dz);
-                if (rg != null && rg.blacktideSite != null && rg.blacktideSite.intersectsChunk(x0, z0, 48)) {
-                    return rg.blacktideSite;
-                }
-            }
-        }
-        return null;
-    }
-
     /** Ближайший любой регион адских угодий (включая пустые и частичные). */
     public static Region nearest(double x, double z) {
         return nearestMatching(x, z, false);
@@ -392,7 +314,7 @@ public final class AshenLands {
         return best;
     }
 
-    /** 0 вне региона .. 1 в центре; у мыса Цитадели Чёрного утёса берег выверен так, что мост стоит на земле, а замок — строго в море! */
+    /** 0 вне региона .. 1 в центре сухопутного Пепельного биома. */
     public static double weight(double x, double z) {
         int sx = Math.floorDiv((int) Math.floor(x), SUPER), sz = Math.floorDiv((int) Math.floor(z), SUPER);
         double best = EmberRuins.weight(x, z);
@@ -401,44 +323,9 @@ public final class AshenLands {
                 Region rg = region(sx + dx, sz + dz);
                 if (rg == null) continue;
                 double ox = x - rg.cx, oz = z - rg.cz;
-                if (Math.abs(ox) > rg.R + 220 || Math.abs(oz) > rg.R + 220) continue;
+                if (Math.abs(ox) > rg.R + 90 || Math.abs(oz) > rg.R + 90) continue;
                 double d = Math.hypot(ox, oz) + (ElisarChunkGenerator.vnoise(x * 0.015, z * 0.015, 81) - 0.5) * 42;
                 double w = Math.max(0, Math.min(1, (rg.R - d) / 34.0));
-
-                if (rg.blacktideSite != null) {
-                    BlacktideCitadel.Site bt = rg.blacktideSite;
-                    double bdx = x - bt.landX, bdz = z - bt.landZ;
-                    double seaward = bdx * bt.outUx + bdz * bt.outUz; // <=0 вглубь Пепельного биома, >0 вдоль моста в морскую бухту
-                    double inland = -seaward;
-                    double perp = Math.abs(-bdx * bt.outUz + bdz * bt.outUx);
-                    double crag = (ElisarChunkGenerator.vnoise(x * 0.045, z * 0.045, 913) - 0.5) * 4.0;
-                    double sideEnv = perp <= 165.0 ? 1.0 : Math.max(0.0, 1.0 - (perp - 165.0) / 42.0);
-
-                    // 1) Сплошной широкий высокий берег Пепельного биома позади и по бокам моста (400+ м шириной, 0 луж!)
-                    double cliffSeawardLimit = 8.0 - (perp > 12.0 ? crag * 0.9 : 0.0);
-                    if (inland >= -cliffSeawardLimit && inland <= 110.0 && sideEnv > 0.0) {
-                        w = Math.max(w, sideEnv);
-                    }
-
-                    // 2) Парные скалистые мысы Пепельного биома, обнимающие бухту Цитадели с обеих сторон!
-                    double bayW = BlacktideCitadel.Site.bayHalfWidth(Math.max(0.0, seaward));
-                    if (seaward > 4.0 && seaward <= 135.0 && perp >= bayW + 4.5 + crag && sideEnv > 0.0) {
-                        double capeFade = seaward <= 75.0 ? 1.0 : Math.max(0.0, 1.0 - (seaward - 75.0) / 60.0);
-                        w = Math.max(w, sideEnv * capeFade);
-                    }
-
-                    // 3) Внутри полукруглой бухты вокруг самого замка и 4 арок моста — чистое открытое море (w = 0.0)!
-                    if (seaward > cliffSeawardLimit && perp < bayW + 3.5 + crag) {
-                        double edgeBlend = Math.min(
-                                (seaward - cliffSeawardLimit) / 3.5,
-                                ((bayW + 3.5 + crag) - perp) / 3.5);
-                        if (edgeBlend >= 1.0) {
-                            w = 0.0;
-                        } else if (edgeBlend > 0.0) {
-                            w = Math.min(w, 1.0 - edgeBlend);
-                        }
-                    }
-                }
                 if (w > best) best = w;
             }
         }
@@ -452,7 +339,6 @@ public final class AshenLands {
                 Region rg = region(sx + dx, sz + dz);
                 if (rg == null) continue;
                 if (Math.hypot(x - rg.cx, z - rg.cz) < rg.R + margin) return true;
-                if (rg.blacktideSite != null && rg.blacktideSite.inFootprint(x, z, margin + 28.0)) return true;
             }
         }
         return false;
@@ -466,7 +352,6 @@ public final class AshenLands {
                 if (rg == null) continue;
                 if (rg.inCastleFootprint(x, z, margin)) return true;
                 if (rg.hasBurnedChurch && Math.hypot(x - rg.churchX, z - rg.churchZ) <= 26.0 + margin) return true;
-                if (rg.blacktideSite != null && rg.blacktideSite.inFootprint(x, z, margin)) return true;
             }
         }
         return false;
@@ -505,16 +390,11 @@ public final class AshenLands {
         return best < 1.5 ? Integer.MIN_VALUE : OCEAN_Y + (int) Math.floor(best);
     }
 
-    /** Top Y of the fallen islands and Blacktide coastal headland at (x, z), or Integer.MIN_VALUE where there is none. */
+    /** Top Y of the fallen volcanic mounds at (x, z), or Integer.MIN_VALUE where there is none. */
     public static int moundTop(int x, int z) {
         Region rg = regionAt(x + 0.5, z + 0.5);
         if (rg == null) return Integer.MIN_VALUE;
-        int mt = moundTopIn(rg.mounds, x, z);
-        if (rg.blacktideSite != null) {
-            int ht = rg.blacktideSite.headlandTop(x, z, OCEAN_Y);
-            if (ht > mt) mt = ht;
-        }
-        return mt;
+        return moundTopIn(rg.mounds, x, z);
     }
 
     /** Lava meander under (x, z)? Contour lines of a warped noise field = winding channels ~3 blocks wide. */

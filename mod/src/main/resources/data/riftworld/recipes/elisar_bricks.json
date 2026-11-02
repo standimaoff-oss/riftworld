@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "##",
+    "##"
+  ],
+  "key": {
+    "#": {
+      "item": "riftworld:elisar_stone"
+    }
+  },
+  "result": {
+    "item": "riftworld:elisar_bricks",
+    "count": 4
+  }
+}

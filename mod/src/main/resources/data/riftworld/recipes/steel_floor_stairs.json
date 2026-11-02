@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "#  ",
+    "## ",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "riftworld:steel_floor"
+    }
+  },
+  "result": {
+    "item": "riftworld:steel_floor_stairs",
+    "count": 4
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "TRT",
+    "SSS"
+  ],
+  "key": {
+    "T": {
+      "item": "minecraft:redstone_torch"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "S": {
+      "tag": "riftworld:mod_smooth_stone"
+    }
+  },
+  "result": {
+    "item": "minecraft:repeater",
+    "count": 1
+  }
+}

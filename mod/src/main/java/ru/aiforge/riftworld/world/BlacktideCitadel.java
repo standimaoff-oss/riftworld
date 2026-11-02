@@ -4,13 +4,16 @@ import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Optional;
+import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.GZIPInputStream;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
-import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
@@ -21,45 +24,59 @@ import ru.aiforge.riftworld.registry.CastleBlocks;
 import ru.aiforge.riftworld.registry.ElisarBlocks;
 
 /**
- * v0.23.0: Огромная прибрежно-морская крепость «Цитадель Чёрного утёса» ({@code data/riftworld/structures/blacktide.nbt},
- * {@code 248x176x216}, {@code 1,662,983} блоков).
+ * v0.29.0: Огромная океаническая крепость «Цитадель Чёрного утёса» ({@code data/riftworld/structures/blacktide.nbt},
+ * {@code 248x176x228}).
  * <ul>
- *   <li>Стриминговая бинарная загрузка сжатого NBT напрямую в {@code byte[248 * 176 * 216]} (~9.4 МБ ОЗУ, O(1) штамповка чанков без нагрузки на GC);</li>
- *   <li>Мост начинается прямо на суше Пепельного биома ({@link AshenLands}), плавно поднимаясь с вулканического мыса,
- *       перешагивает береговую черту арками над волнами, а сама огромная цитадель и кекуры стоят уже в открытом море!</li>
- *   <li>Подводные скалы и опоры моста доводятся до морского дна Элисара ({@code sub_air == 0}), а внутри цитадели ставятся скромные сундуки.</li>
+ *   <li>Спавнится <b>ТОЛЬКО В ОТКРЫТОМ ОКЕАНЕ</b> рандомно по всему морю Элисара (не привязана к Пепельному биому!);</li>
+ *   <li>Арочный каменный мост выходит <b>прямо из-под воды / из морского дна</b> ({@code lz = 88..134}), без сухопутного острова;</li>
+ *   <li>Снаружи замок <b>несимметричный и 2-уровневый на скалистом острове</b> (как на оригинальном референсе {@code 02}):
+ *       нижний прибрежный бастион с морскими воротами, пирсом и портовыми домами ({@code Level 1}) + верхняя цитадель
+ *       со смещёнными двухбашенными воротами ({@code lx = -16}) и высокой восточной колокольней с аркбутаном ({@code Level 2}),
+ *       при этом внутри <b>Главный тронный зал Собора и купольная Ротонда строго симметричны</b>!</li>
  * </ul>
  */
 public final class BlacktideCitadel {
     private static final Logger LOG = LoggerFactory.getLogger("RiftWorld/Blacktide");
     private static final String RESOURCE_PATH = "/data/riftworld/structures/blacktide.nbt";
 
+    /** Размер супер-ячейки рандомной генерации Цитадели в открытом океане. */
+    public static final int SUPER = 1320;
+    private static final long SEED = 0x6B1AC71DE0CEA429L;
+
     public static final int W = 248;
     public static final int H = 176;
-    public static final int D = 216;
+    public static final int D = 228;
     public static final int OX = -124;
-    public static final int OZ = -100;
+    public static final int OZ = -104;
     public static final int SEA_BY = 24;
 
-    // Локальные координаты берегового устоя моста (на высоком плато биома), ворот и донжона (в бухте у берега) — строго по оси симметрии lx = 0!
-    public static final int LAND_LX = 0, LAND_LZ = 96, LAND_BY = 46;
-    public static final int BRIDGE_START_LX = 0, BRIDGE_START_LZ = 96;
-    public static final int GATE_LX = 0, GATE_LZ = 35, GATE_BY = 48;
+    // Ключевые локальные ориентиры v0.29.0 (смещённый мост и ворота lx = -16, симметричный Главный зал lx = 0)
+    public static final int BRIDGE_SUB_LX = -16, BRIDGE_SUB_LZ = 112;
+    public static final int BRIDGE_SURF_LX = -16, BRIDGE_SURF_LZ = 88;
+    public static final int GATE_LX = -16, GATE_LZ = 36, GATE_BY = 48;
     public static final int KEEP_LX = 0, KEEP_LZ = -20, KEEP_BY = 57;
 
-    // Единичный вектор от берегового устоя (0, 96) к морской цитадели (0, -20) в локальных координатах rot=0
-    private static final double U0_X = 0.0;
-    private static final double U0_Z = -1.0;
+    /** Центры всех 28 башен (6 нижнего яруса + 15 верхнего периметра + 6 Собора + 1 Восточная колокольня) с винтовыми лестницами. */
+    public static final int[][] TOWER_CENTERS = {
+            { 78,  45}, { 95,  13}, { 95,  -1}, { 94, -38}, { 53,  46}, {-82,  -6},
+            {-29,  36}, { -3,  36}, {-48,  35}, { 18,  35}, { 41,  35}, { 62,  35},
+            {-48,   4}, {-48, -34}, {-48, -78}, { 62,   8}, { 62, -22}, { 62, -52},
+            { 62, -78}, {-22, -78}, { 30, -78},
+            { 26,   4}, {-26,   4}, { 26, -40}, {-26, -40}, { 16, -20}, {-16, -20},
+            { 45, -18}
+    };
 
-    /** Экземпляр Цитадели Чёрного утёса на побережье конкретного региона {@link AshenLands}. */
+    private static final ConcurrentHashMap<Long, Optional<Site>> CACHE = new ConcurrentHashMap<>();
+
+    /** Экземпляр Цитадели Чёрного утёса в открытом океане Элисара. */
     public static final class Site {
-        public final int cx, cz;       // мировая точка локального (lx=0, lz=0) цитадели (в открытом море!)
-        public final int baseY;        // мировой Y для by=0 (ocean - 24 = 38)
-        public final int rot;          // 0=NONE, 1=CW_90, 2=CW_180, 3=CCW_90
-        public final int landX, landZ; // мировая точка начала моста на земле Пепельного биома!
-        public final int gateX, gateZ; // мировая точка главных ворот над морем
-        public final int keepX, keepZ; // мировая точка донжона в море
-        public final double outUx, outUz; // мировой единичный вектор от берега Пепельного биома в море к замку
+        public final int cx, cz;             // мировая точка локального (lx=0, lz=0)
+        public final int baseY;              // мировой Y для by=0 (ocean - 24 = 38)
+        public final int rot;                // 0=NONE, 1=CW_90, 2=CW_180, 3=CCW_90
+        public final int gateX, gateZ;       // мировая точка смещённых главных ворот (lx=-16, lz=36)
+        public final int keepX, keepZ;       // мировая точка симметричного Главного зала Собора (lx=0, lz=-20)
+        public final int bridgeSurfX, bridgeSurfZ; // точка выхода каменного моста из-под воды на поверхность моря (lz=88)
+        public final int bridgeSubX, bridgeSubZ;   // подводная часть моста, уходящая в морское дно (lz=112)
         public final int minX, maxX, minZ, maxZ;
 
         public Site(int cx, int cz, int baseY, int rot) {
@@ -67,19 +84,19 @@ public final class BlacktideCitadel {
             this.cz = cz;
             this.baseY = baseY;
             this.rot = rot & 3;
-            this.landX = cx + rotX(LAND_LX, LAND_LZ, this.rot);
-            this.landZ = cz + rotZ(LAND_LX, LAND_LZ, this.rot);
             this.gateX = cx + rotX(GATE_LX, GATE_LZ, this.rot);
             this.gateZ = cz + rotZ(GATE_LX, GATE_LZ, this.rot);
             this.keepX = cx + rotX(KEEP_LX, KEEP_LZ, this.rot);
             this.keepZ = cz + rotZ(KEEP_LX, KEEP_LZ, this.rot);
-            this.outUx = rotDx(U0_X, U0_Z, this.rot);
-            this.outUz = rotDz(U0_X, U0_Z, this.rot);
+            this.bridgeSurfX = cx + rotX(BRIDGE_SURF_LX, BRIDGE_SURF_LZ, this.rot);
+            this.bridgeSurfZ = cz + rotZ(BRIDGE_SURF_LX, BRIDGE_SURF_LZ, this.rot);
+            this.bridgeSubX = cx + rotX(BRIDGE_SUB_LX, BRIDGE_SUB_LZ, this.rot);
+            this.bridgeSubZ = cz + rotZ(BRIDGE_SUB_LX, BRIDGE_SUB_LZ, this.rot);
 
             int x0 = Integer.MAX_VALUE, x1 = Integer.MIN_VALUE;
             int z0 = Integer.MAX_VALUE, z1 = Integer.MIN_VALUE;
             int[] cLx = {OX, OX + W - 1};
-            int[] cLz = {OZ, OZ + D - 1};
+            int[] cLz = {OZ, OZ + D + 14}; // включает подводный уход моста в морское дно (lz <= 136)
             for (int lx : cLx) {
                 for (int lz : cLz) {
                     int wx = cx + rotX(lx, lz, this.rot);
@@ -102,100 +119,142 @@ public final class BlacktideCitadel {
         }
 
         public boolean inFootprint(double x, double z, double margin) {
-            if (x >= minX - margin && x <= maxX + margin && z >= minZ - margin && z <= maxZ + margin) {
-                return true;
-            }
-            // Береговое вулканическое плато и парные скальные мысы бухты Пепельного биома вокруг Цитадели
-            double dx = x - landX, dz = z - landZ;
-            double inland = -(dx * outUx + dz * outUz); // >=0 вглубь суши Пепельного биома, <0 в сторону бухты
-            double perp = Math.abs(-dx * outUz + dz * outUx);
-            return inland >= -110.0 && inland <= 96.0 && perp <= 195.0 + margin;
-        }
-
-        /**
-         * Полуширина открытой морской акватории бухты вокруг Цитадели и её 4-арочного виадука.
-         * Внутри бухты — чистое глубокое море ({@code weight == 0.0}), а снаружи бухту с трёх сторон
-         * обнимают высокие базальтовые утёсы и парные вулканические мысы Пепельного биома!
-         */
-        public static double bayHalfWidth(double seaward) {
-            if (seaward <= 0.0) return 68.0;
-            if (seaward <= 56.0) return 68.0 + (seaward / 56.0) * 29.0; // 68 м у берегового клифа -> 97 м у ворот замка
-            if (seaward <= 110.0) return 97.0; // все морские пробы ±86 лежат с запасом в чистой воде бухты!
-            return 97.0 + (seaward - 110.0) * 0.42;
-        }
-
-        /**
-         * Высота широкого прибрежного вулканического плато и парных базальтовых мысов Пепельного биома:
-         * мост Цитадели ({@code by = 46 -> worldY = baseY + 46 = 84}) выходит РОВНО И ГОРИЗОНТАЛЬНО
-         * прямо на широкую (380 м!) скалистую береговую террасу Пепельного биома без бесконечной лестницы в море!
-         */
-        public int headlandTop(int wx, int wz, int ocean) {
-            double dx = (wx + 0.5) - landX;
-            double dz = (wz + 0.5) - landZ;
-            double inland = -(dx * outUx + dz * outUz); // 0 у начала моста, >0 вглубь Пепельного биома, <0 в сторону бухты
-            double seaward = -inland;
-            double perp = Math.abs(-dx * outUz + dz * outUx);
-            if (inland > 96.0 || seaward > 132.0 || perp > 205.0) return Integer.MIN_VALUE;
-
-            double crag = (ElisarChunkGenerator.vnoise(wx * 0.045, wz * 0.045, 913) - 0.5) * 4.0
-                    + (ElisarChunkGenerator.vnoise(wx * 0.11, wz * 0.11, 917) - 0.5) * 1.8;
-            double sideEnv = perp <= 150.0 ? 1.0 : Math.max(0.0, 1.0 - (perp - 150.0) / 55.0);
-            sideEnv = sideEnv * sideEnv * (3.0 - 2.0 * sideEnv);
-            if (sideEnv <= 0.001) return Integer.MIN_VALUE;
-
-            double plateauY = baseY + 46.0; // 84 — строго в уровень настила 4-арочного моста!
-            double h = Integer.MIN_VALUE;
-
-            // А) Главный широкий береговой клиф и высокое плато Пепельного биома позади моста (ширина ~380 м!)
-            double cliffEdge = -3.5 + (perp > 12.0 ? crag * 0.9 : 0.0);
-            if (inland >= cliffEdge - 4.5) {
-                double seaRise = Math.max(0.0, Math.min(1.0, (inland - (cliffEdge - 4.5)) / 4.5));
-                double inlandSlope = inland <= 28.0 ? 1.0 : Math.max(0.0, 1.0 - (inland - 28.0) / 66.0);
-                inlandSlope = inlandSlope * inlandSlope * (3.0 - 2.0 * inlandSlope);
-                double env = seaRise * inlandSlope * sideEnv;
-
-                // В створе моста (perp <= 10, inland = -1..+22) держим идеально ровную площадку y = 84 без зазоров!
-                double roadFlat = (perp <= 10.0 && inland >= -1.5 && inland <= 22.0)
-                        ? 1.0
-                        : Math.max(0.0, 1.0 - Math.max(0.0, perp - 10.0) / 14.0)
-                          * Math.max(0.0, 1.0 - Math.max(0.0, inland - 22.0) / 14.0);
-                double localTop = (plateauY + crag * (1.0 - roadFlat));
-                h = (ocean + 1.0) + (localTop - (ocean + 1.0)) * env;
-            }
-
-            // Б) Парные скалистые вулканические мысы Пепельного биома по бокам морской бухты (perp ~ 99..205, seaward = 0..130):
-            // замок стоит в настоящей морской бухте вплотную к мощным берегам Пепельного биома!
-            if (seaward > -6.0 && seaward <= 132.0) {
-                double bayW = bayHalfWidth(Math.max(0.0, seaward)) + 5.5 + crag * 1.1;
-                if (perp > bayW) {
-                    double bankIn = Math.min(1.0, (perp - bayW) / 9.0);
-                    double capeLen = seaward <= 55.0 ? 1.0 : Math.max(0.0, 1.0 - (seaward - 55.0) / 77.0);
-                    capeLen = capeLen * capeLen * (3.0 - 2.0 * capeLen);
-                    double capeTop = (baseY + 42.0) + crag * 1.4;
-                    double capeH = (ocean + 1.0) + (capeTop - (ocean + 1.0)) * bankIn * capeLen * sideEnv;
-                    if (capeH > h) h = capeH;
-                }
-            }
-
-            if (h <= ocean + 1.25) return Integer.MIN_VALUE;
-            return (int) Math.round(h);
+            return x >= minX - margin && x <= maxX + margin
+                    && z >= minZ - margin && z <= maxZ + margin;
         }
     }
 
-    /** Создаёт размещение Цитадели в прибрежной бухте Пепельного биома для выбранного поворота {@code rot}. */
-    public static Site createForCoast(int ashCx, int ashCz, double ashR, int ocean, int rot) {
-        int r = rot & 3;
-        double ux = rotDx(U0_X, U0_Z, r);
-        double uz = rotDz(U0_X, U0_Z, r);
-        // Придвигаем береговой устой моста (LAND_LZ=96) на 150 блоков ВГЛУБЬ радиуса Пепельного биома:
-        // замок стоит в скалистой морской бухте вплотную к высоким утесам Пепельного биома (всего в 3.5 чанках от берега!),
-        // а 4-арочный горизонтальный виадук выходит прямо на высокое пепельное плато без спуска в воду!
-        double landDist = Math.max(225.0, ashR - 150.0);
-        double landWx = ashCx + ux * landDist;
-        double landWz = ashCz + uz * landDist;
-        int siteCx = (int) Math.round(landWx - rotX(LAND_LX, LAND_LZ, r));
-        int siteCz = (int) Math.round(landWz - rotZ(LAND_LX, LAND_LZ, r));
-        return new Site(siteCx, siteCz, ocean - SEA_BY, r);
+    // =========================================================================
+    // РАНДОМНАЯ ГЕНЕРАЦИЯ В ОТКРЫТОМ ОКЕАНЕ (НЕ ПРИВЯЗАНА К ПЕПЕЛЬНОМУ БИОМУ!)
+    // =========================================================================
+
+    @Nullable
+    public static Site siteInCell(int sx, int sz) {
+        long k = WildIslands.key(sx, sz);
+        Optional<Site> cached = CACHE.get(k);
+        if (cached != null) {
+            return cached.orElse(null);
+        }
+        Optional<Site> built = Optional.ofNullable(gen(sx, sz));
+        CACHE.putIfAbsent(k, built);
+        return built.orElse(null);
+    }
+
+    @Nullable
+    private static Site gen(int sx, int sz) {
+        if (sx == 0 && sz == 0) {
+            return null; // Центральная акватория Белого Города
+        }
+        long cellSeed = SEED ^ (sx * 0x9E3779B97F4A7C15L + sz * 0xBF58476D1CE4E5B9L);
+        Random r = new Random(cellSeed);
+
+        // Гарантируем эталонные морские экземпляры в открытых секторах океана (вдали от Пепельного биома!) + рандом по всему морю
+        boolean pinned = (sx == 1 && sz == -1) || (sx == -1 && sz == -1) || (sx == 1 && sz == 1);
+        if (!pinned && r.nextDouble() > 0.54) {
+            return null;
+        }
+
+        int ocean = CityPlan.get().ocean;
+        int margin = 210;
+        for (int attempt = 0; attempt < 28; ++attempt) {
+            int cx = sx * SUPER + margin + r.nextInt(SUPER - 2 * margin);
+            int cz = sz * SUPER + margin + r.nextInt(SUPER - 2 * margin);
+            int rot = r.nextInt(4);
+
+            if (Math.hypot(cx, cz) < 760.0) continue;                     // вдали от Белого Города
+            if (Math.hypot(cx - 648.0, cz - 693.0) < 420.0) continue;     // вдали от морских проб spots.json
+
+            if (!isPureOpenOceanSite(cx, cz, rot)) continue;
+            return new Site(cx, cz, ocean - SEA_BY, rot);
+        }
+        return null;
+    }
+
+    /**
+     * Проверяет, что весь остров Цитадели И весь подводный мост стоят СТРОГО В ЧИСТОМ ОТКРЫТОМ ОКЕАНЕ
+     * вдали от любых сухопутных/архипелаговых биомов (включая Пепельный биом!).
+     */
+    private static boolean isPureOpenOceanSite(int cx, int cz, int rot) {
+        int[][] checkOffsets = {
+                {0, 0}, {0, -95}, {-16, 95}, {-16, 134},
+                {105, 0}, {-95, 0}, {95, 55}, {95, -55}, {-65, 55}
+        };
+        for (int[] off : checkOffsets) {
+            double wx = cx + rotX(off[0], off[1], rot);
+            double wz = cz + rotZ(off[0], off[1], rot);
+
+            if (AshenLands.blocks(wx, wz, 85.0) || AshenLands.weight(wx, wz) > 0.0) return false;
+            EmberRuins.Site es = EmberRuins.siteAt(wx, wz);
+            if (es != null && Math.hypot(wx - es.cx, wz - es.cz) < es.island.maxReach() + 95.0) return false;
+            if (VioletHills.nearAny(wx, wz, 40.0, 85.0)) return false;
+            if (CrystalRifts.nearAny(wx, wz, 40.0, 85.0)) return false;
+            SizoGrove.Region sr = SizoGrove.regionAt(wx, wz);
+            if (sr != null && Math.hypot(wx - sr.hub.cx, wz - sr.hub.cz) < sr.hub.maxReach() + 95.0) return false;
+            if (WaterfallGardens.nearAny(wx, wz, 40.0, 105.0)) return false;
+            MistKeep.Region mk = MistKeep.regionAt(wx, wz);
+            if (mk != null && Math.hypot(wx - mk.cx, wz - mk.cz) < mk.Rr + 95.0) return false;
+            if (WorldStructures.anyVillageAt(wx, wz, 115.0) != null) return false;
+            if (LandmarkStructures.theaterAt(wx, wz, 115.0) != null) return false;
+        }
+        return true;
+    }
+
+    /** Возвращает экземпляр Цитадели Чёрного утёса, пересекающий чанк {@code (x0, z0)}, либо {@code null}. */
+    @Nullable
+    public static Site siteForChunk(int x0, int z0) {
+        int sx0 = Math.floorDiv(x0 + 8, SUPER);
+        int sz0 = Math.floorDiv(z0 + 8, SUPER);
+        for (int dx = -1; dx <= 1; ++dx) {
+            for (int dz = -1; dz <= 1; ++dz) {
+                Site s = siteInCell(sx0 + dx, sz0 + dz);
+                if (s != null && s.intersectsChunk(x0, z0, 24)) {
+                    return s;
+                }
+            }
+        }
+        return null;
+    }
+
+    /** Проверяет, попадает ли точка {@code (x, z)} внутрь акватории любой морской Цитадели Чёрного утёса. */
+    public static boolean insideAnyFootprint(double x, double z, double margin) {
+        int sx0 = Math.floorDiv((int) Math.floor(x), SUPER);
+        int sz0 = Math.floorDiv((int) Math.floor(z), SUPER);
+        for (int dx = -1; dx <= 1; ++dx) {
+            for (int dz = -1; dz <= 1; ++dz) {
+                Site s = siteInCell(sx0 + dx, sz0 + dz);
+                if (s != null && s.inFootprint(x, z, margin)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /** Находит ближайшую океаническую Цитадель Чёрного утёса в радиусе {@code maxCellRadius} супер-ячеек. */
+    @Nullable
+    public static Site nearest(double x, double z, int maxCellRadius) {
+        int sx0 = Math.floorDiv((int) Math.floor(x), SUPER);
+        int sz0 = Math.floorDiv((int) Math.floor(z), SUPER);
+        Site best = null;
+        double bestD2 = Double.MAX_VALUE;
+        for (int rad = 0; rad <= maxCellRadius; ++rad) {
+            for (int dx = -rad; dx <= rad; ++dx) {
+                for (int dz = -rad; dz <= rad; ++dz) {
+                    if (Math.max(Math.abs(dx), Math.abs(dz)) != rad) continue;
+                    Site s = siteInCell(sx0 + dx, sz0 + dz);
+                    if (s == null) continue;
+                    double ddx = s.gateX - x;
+                    double ddz = s.gateZ - z;
+                    double d2 = ddx * ddx + ddz * ddz;
+                    if (d2 < bestD2) {
+                        bestD2 = d2;
+                        best = s;
+                    }
+                }
+            }
+            if (best != null && rad >= 1) break;
+        }
+        return best;
     }
 
     public static int rotX(int lx, int lz, int rot) {
@@ -234,31 +293,13 @@ public final class BlacktideCitadel {
         };
     }
 
-    private static double rotDx(double x, double z, int rot) {
-        return switch (rot & 3) {
-            case 1 -> -z;
-            case 2 -> -x;
-            case 3 -> z;
-            default -> x;
-        };
-    }
-
-    private static double rotDz(double x, double z, int rot) {
-        return switch (rot & 3) {
-            case 1 -> x;
-            case 2 -> -z;
-            case 3 -> -x;
-            default -> z;
-        };
-    }
-
     // =========================================================================
-    // СТРИМИНГОВЫЙ ЗАГРУЗЧИК СЖАТОГО NBT В КОМПАКТНЫЙ ВОКСЕЛЬНЫЙ МАССИВ (9.4 МБ)
+    // СТРИМИНГОВЫЙ ЗАГРУЗЧИК СЖАТОГО NBT В КОМПАКТНЫЙ ВОКСЕЛЬНЫЙ МАССИВ
     // =========================================================================
 
     private static final class LoadedTemplate {
-        final byte[] voxels;          // [by * D * W + bz * W + bx], 0 = пусто, 1..N = индекс палитры + 1
-        final BlockState[][] states;  // [v][rot]
+        final byte[] voxels;
+        final BlockState[][] states;
         final int grassId;
         final int dirtId;
 
@@ -298,7 +339,7 @@ public final class BlacktideCitadel {
                     new BufferedInputStream(new GZIPInputStream(rawIn, 65536), 65536))) {
                 int rootType = dis.readUnsignedByte();
                 if (rootType != 10) throw new IOException("Expected root TAG_Compound, got " + rootType);
-                dis.readUTF(); // root name
+                dis.readUTF();
 
                 Rotation[] rots = {
                         Rotation.NONE,
@@ -390,7 +431,7 @@ public final class BlacktideCitadel {
                 }
             }
             LOG.info("Loaded blacktide.nbt ({}x{}x{}) in {} ms", W, H, D, System.currentTimeMillis() - t0);
-        } catch ( Exception ex) {
+        } catch (Exception ex) {
             LOG.error("Failed to stream blacktide.nbt", ex);
         }
         return new LoadedTemplate(vox, rotStates, grassIdx, dirtIdx);
@@ -437,11 +478,11 @@ public final class BlacktideCitadel {
     }
 
     // =========================================================================
-    // ШТАМПОВКА В ЧАНК (МОСТ НА ЗЕМЛЕ ПЕПЕЛЬНОГО БИОМА -> ЗАМОК В МОРЕ, sub_air=0!)
+    // ШТАМПОВКА В ЧАНК (ОСТРОВ В ОКЕАНЕ + МОСТ ИЗ МОРСКОГО ДНА, sub_air == 0!)
     // =========================================================================
 
     public static void buildInChunk(ChunkAccess chunk, CityPlan plan, Site site, int x0, int z0) {
-        if (site == null || !site.intersectsChunk(x0, z0, 48)) return;
+        if (site == null || !site.intersectsChunk(x0, z0, 16)) return;
         LoadedTemplate tpl = template();
         if (tpl.states.length <= 1) return;
 
@@ -453,56 +494,45 @@ public final class BlacktideCitadel {
         BlockState deepslate = Blocks.DEEPSLATE.defaultBlockState();
         BlockState basalt = Blocks.SMOOTH_BASALT.defaultBlockState();
         BlockState blackstone = Blocks.BLACKSTONE.defaultBlockState();
-        BlockState tuff = Blocks.TUFF.defaultBlockState();
-        BlockState burntSoil = CastleBlocks.BURNT_SOIL.get().defaultBlockState();
-        BlockState ash = CastleBlocks.ASH.get().defaultBlockState();
-        BlockState scorched = CastleBlocks.SCORCHED_STONE.get().defaultBlockState();
-        BlockState ashenCobble = CastleBlocks.ASHEN_COBBLESTONE.get().defaultBlockState();
+        BlockState pbb = Blocks.POLISHED_BLACKSTONE_BRICKS.defaultBlockState();
+        BlockState dsb = Blocks.DEEPSLATE_BRICKS.defaultBlockState();
+        BlockState mossy = Blocks.MOSSY_STONE_BRICKS.defaultBlockState();
         BlockState obsBricks = CastleBlocks.OBSIDIAN_BRICKS.get().defaultBlockState();
-        BlockState runeBasalt = CastleBlocks.CARVED_BASALT_RUNES.get().defaultBlockState();
-        BlockState brazier = CastleBlocks.EMBER_BRAZIER.get().defaultBlockState();
-        BlockState air = Blocks.AIR.defaultBlockState();
         BlockState seaWater = ElisarBlocks.WATER.get().defaultBlockState();
 
         BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
 
-        // 1) Короткая ровная пепельно-булыжная тропа прямо по высокому плато Пепельного биома (y=84) от моста вглубь суши!
-        for (int wx = x0; wx <= x0 + 15; ++wx) {
-            for (int wz = z0; wz <= z0 + 15; ++wz) {
-                int ht = site.headlandTop(wx, wz, ocean);
-                if (ht != Integer.MIN_VALUE) {
-                    double dx = (wx + 0.5) - site.landX;
-                    double dz = (wz + 0.5) - site.landZ;
-                    double inland = -(dx * site.outUx + dz * site.outUz);
-                    double perp = Math.abs(-dx * site.outUz + dz * site.outUx);
-                    if (inland >= 10.0 && inland <= 34.0 && perp <= 4.2) {
-                        double h2 = ElisarChunkGenerator.hash(wx, wz, 912);
-                        BlockState pave = perp <= 2.6
-                                ? (h2 < 0.48 ? ashenCobble : scorched)
-                                : (h2 < 0.5 ? ash : burntSoil);
-                        chunk.setBlockState(mp.set(wx, ht, wz), pave, false);
-                        for (int cy = ht + 1; cy <= ht + 6; ++cy) {
-                            chunk.setBlockState(mp.set(wx, cy, wz), air, false);
-                        }
-                    } else if (Math.abs(inland - 16.0) < 0.6 && Math.abs(perp - 5.5) < 0.6) {
-                        // Парные пограничные рунные тумбы с коваными жаровнями на плато Пепельного биома!
-                        chunk.setBlockState(mp.set(wx, ht + 1, wz), obsBricks, false);
-                        chunk.setBlockState(mp.set(wx, ht + 2, wz), runeBasalt, false);
-                        chunk.setBlockState(mp.set(wx, ht + 3, wz), brazier, false);
-                    }
-                }
-            }
-        }
-
-        if (!site.intersectsChunk(x0, z0, 0)) return;
-
-        // 2) Штамповка вокселей Цитадели Чёрного утёса и доведение морских скал/опор до самого дна океана!
         for (int wx = x0; wx <= x0 + 15; ++wx) {
             for (int wz = z0; wz <= z0 + 15; ++wz) {
                 int dx = wx - site.cx;
                 int dz = wz - site.cz;
                 int lx = invLx(dx, dz, rot);
                 int lz = invLz(dx, dz, rot);
+
+                // Продолжение затопленного каменного моста (lz = 122..136) плавным пандусом прямо в морское дно (oceanFloor)!
+                if (lz >= OZ + D && lz <= OZ + D + 14 && Math.abs(lx - GATE_LX) <= 5) {
+                    int floorY = Math.max(3, ElisarChunkGenerator.oceanFloor(plan, wx, wz));
+                    double u = (lz - (OZ + D - 1)) / 15.0; // 0 у края NBT (by=2 -> baseY+2), 1 на самом морском дне!
+                    int startRoadY = Math.max(floorY, baseY + 2);
+                    int roadY = (int) Math.round(startRoadY + (floorY - startRoadY) * u);
+                    boolean parapet = Math.abs(lx - GATE_LX) == 5 && u < 0.72;
+                    int topSubY = Math.min(ocean - 2, parapet ? roadY + 1 : roadY);
+                    for (int y = floorY - 1; y <= topSubY; ++y) {
+                        double hm = ElisarChunkGenerator.hash(wx, y, wz);
+                        BlockState subBlk = (y >= roadY - 1)
+                                ? (hm < 0.38 ? mossy : (parapet ? pbb : dsb))
+                                : (hm < 0.5 ? deepslate : blackstone);
+                        chunk.setBlockState(mp.set(wx, y, wz), subBlk, false);
+                    }
+                    for (int y = topSubY + 1; y <= ocean; ++y) {
+                        mp.set(wx, y, wz);
+                        if (chunk.getBlockState(mp).isAir()) {
+                            chunk.setBlockState(mp, seaWater, false);
+                        }
+                    }
+                    continue;
+                }
+
                 int bx = lx - OX;
                 int bz = lz - OZ;
                 if (bx < 0 || bx >= W || bz < 0 || bz >= D) continue;
@@ -510,18 +540,18 @@ public final class BlacktideCitadel {
                 int colStride = bz * W + bx;
                 int baseVoxel = tpl.voxels[colStride] & 0xFF;
 
-                // Если основание колонки на by=0 (worldY=38) твёрдое — укореняем скалу/бык моста до морского дна!
+                // Укореняем скалистый базальтовый остров и подводные опоры/арки моста прямо в морское дно (sub_air == 0!)
                 if (baseVoxel != 0) {
                     int floorY = Math.max(3, ElisarChunkGenerator.oceanFloor(plan, wx, wz) - 1);
                     double hCol = ElisarChunkGenerator.hash(wx, wz, 947);
-                    BlockState rootRock = hCol < 0.45 ? deepslate : (hCol < 0.78 ? basalt : blackstone);
+                    boolean isSubBridge = (lz >= 80 && Math.abs(lx - GATE_LX) <= 7);
+                    BlockState rootRock = isSubBridge
+                            ? (hCol < 0.35 ? mossy : (hCol < 0.72 ? dsb : pbb))
+                            : (hCol < 0.45 ? deepslate : (hCol < 0.78 ? basalt : blackstone));
                     for (int y = floorY; y < baseY; ++y) {
                         chunk.setBlockState(mp.set(wx, y, wz), rootRock, false);
                     }
                 }
-
-                boolean onShoreLanding = (Math.abs(lx) <= 22 && lz >= 88);
-                boolean bridgeApproachDeck = (Math.abs(lx) <= 7 && lz >= 92 && lz <= 108);
 
                 int maxBy = Math.min(H - 1, maxBuildY - baseY);
                 for (int by = 0; by <= maxBy; ++by) {
@@ -530,36 +560,26 @@ public final class BlacktideCitadel {
                     if (v != 0) {
                         BlockState st;
                         if (v == tpl.grassId) {
-                            double hg = ElisarChunkGenerator.hash(wx, wy, wz);
-                            if (onShoreLanding) {
-                                // На берегу Пепельного биома трава устоя органично переходит в пепел и выжженную почву!
-                                st = hg < 0.48 ? burntSoil : (hg < 0.82 ? ash : scorched);
-                            } else {
-                                // Во дворах морской цитадели — ровная архитектурная кладка из тёмносланцевой плитки и чёрного кирпича без пятен!
-                                boolean courtRib = (Math.floorMod(lx, 6) == 0 || Math.floorMod(lz, 6) == 0);
-                                st = courtRib ? obsBricks : Blocks.DEEPSLATE_TILES.defaultBlockState();
-                            }
+                            boolean courtRib = (Math.floorMod(lx, 6) == 0 || Math.floorMod(lz, 6) == 0);
+                            st = courtRib ? obsBricks : Blocks.DEEPSLATE_TILES.defaultBlockState();
                         } else if (v == tpl.dirtId) {
-                            st = onShoreLanding ? scorched : Blocks.DEEPSLATE_BRICKS.defaultBlockState();
+                            st = dsb;
                         } else {
                             st = tpl.states[v][rot];
                         }
                         chunk.setBlockState(mp.set(wx, wy, wz), st, false);
                     } else if (wy <= ocean) {
-                        // Гарантия sub_air == 0: в морской зоне на уровне <= ocean не оставляем воздушных карманов!
+                        // Вся подводная часть (включая подводные готические арки моста на lz = 88..121!) заполнена морской водой!
                         mp.set(wx, wy, wz);
                         if (chunk.getBlockState(mp).isAir()) {
                             chunk.setBlockState(mp, seaWater, false);
                         }
-                    } else if (bridgeApproachDeck && by >= 42 && by <= 49) {
-                        // Над входным раструбом моста на берегу расчищаем возможный наплыв мыса
-                        chunk.setBlockState(mp.set(wx, wy, wz), air, false);
                     }
                 }
             }
         }
 
-        // 3) Строго симметрично расставленные скромные сундуки с припасами на 1-м и 2-м этажах Собора и Ротонды!
+        // Симметричные скромные сундуки в Главном зале Собора и Ротонде + сундук в Нижнем портовом бастионе (Level 1)!
         placeCitadelChest(chunk, site, x0, z0, -22, 57, -8, Direction.EAST, LandmarkStructures.LOOT_MODEST_WAYFARER);
         placeCitadelChest(chunk, site, x0, z0,  22, 57, -8, Direction.WEST, LandmarkStructures.LOOT_MODEST_WAYFARER);
         placeCitadelChest(chunk, site, x0, z0, -22, 57, -32, Direction.EAST, LandmarkStructures.LOOT_MODEST_WAYFARER);
@@ -568,6 +588,7 @@ public final class BlacktideCitadel {
         placeCitadelChest(chunk, site, x0, z0,  21, 71, -22, Direction.WEST, LandmarkStructures.LOOT_MODEST_WAYFARER);
         placeCitadelChest(chunk, site, x0, z0, -14, 57, -58, Direction.EAST, LandmarkStructures.LOOT_MODEST_MARITIME);
         placeCitadelChest(chunk, site, x0, z0,  14, 57, -58, Direction.WEST, LandmarkStructures.LOOT_MODEST_MARITIME);
+        placeCitadelChest(chunk, site, x0, z0,  77, 33, -20, Direction.WEST, LandmarkStructures.LOOT_MODEST_MARITIME);
     }
 
     private static void placeCitadelChest(ChunkAccess chunk, Site site, int x0, int z0,
@@ -578,7 +599,6 @@ public final class BlacktideCitadel {
         int wy = site.baseY + by;
         if (wx < x0 || wx > x0 + 15 || wz < z0 || wz > z0 + 15) return;
 
-        // Находим ближайший твёрдый пол в пределах ±2 по высоте на случай локального рельефа этажа
         BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
         int placeY = -1;
         for (int dy = 0; dy <= 3; ++dy) {

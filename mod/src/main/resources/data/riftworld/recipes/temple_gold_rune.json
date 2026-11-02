@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " R ",
+    "GTG",
+    " R "
+  ],
+  "key": {
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "G": {
+      "item": "minecraft:gold_ingot"
+    },
+    "T": {
+      "item": "riftworld:temple_gold"
+    }
+  },
+  "result": {
+    "item": "riftworld:temple_gold_rune",
+    "count": 1
+  }
+}

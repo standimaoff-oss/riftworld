@@ -56,7 +56,11 @@ public class PaperDragonRenderer extends EntityRenderer<PaperDragonEntity> {
 
     @Override
     public boolean shouldRender(PaperDragonEntity e, Frustum frustum, double camX, double camY, double camZ) {
-        return e.distanceToSqr(camX, camY, camZ) < 384.0 * 384.0;
+        var mc = net.minecraft.client.Minecraft.getInstance();
+        int rd = mc.options != null ? Math.max(2, mc.options.renderDistance().get()) : 12;
+        double maxD = Math.min(340.0, Math.max(56.0, rd * 16.0 + 36.0));
+        if (e.distanceToSqr(camX, camY, camZ) > maxD * maxD) return false;
+        return frustum.isVisible(e.getBoundingBoxForCulling().inflate(38.0));
     }
 
     private static float bodyRadius(int seg) {

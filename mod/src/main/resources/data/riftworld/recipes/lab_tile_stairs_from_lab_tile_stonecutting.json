@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "riftworld:lab_tile"
+  },
+  "result": "riftworld:lab_tile_stairs",
+  "count": 1
+}

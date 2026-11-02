@@ -1,16 +1,14 @@
 {
   "type": "minecraft:crafting_shaped",
-  "category": "misc",
-  "group": "wooden_fence",
   "pattern": [
-    "W#W",
-    "W#W"
+    "PSP",
+    "PSP"
   ],
   "key": {
-    "W": {
+    "P": {
       "item": "riftworld:dark_planks"
     },
-    "#": {
+    "S": {
       "item": "minecraft:stick"
     }
   },

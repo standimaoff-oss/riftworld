@@ -370,7 +370,6 @@ public final class LandmarkStructures {
                 int ax = (int) Math.round(rg.cx + Math.cos(a) * (rg.R * 0.44));
                 int az = (int) Math.round(rg.cz + Math.sin(a) * (rg.R * 0.44));
                 if (rg.hasBurnedChurch && Math.hypot(ax - rg.churchX, az - rg.churchZ) < 95.0) continue;
-                if (rg.blacktideSite != null && rg.blacktideSite.inFootprint(ax, az, 54.0)) continue;
                 boolean hitMound = false;
                 for (AshenLands.Mound m : rg.mounds) {
                     if (Math.hypot(ax - m.x(), az - m.z()) < m.r() + 26.0) { hitMound = true; break; }

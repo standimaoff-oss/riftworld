@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "riftworld:steel_floor"
+    }
+  },
+  "result": {
+    "item": "riftworld:steel_floor_slab",
+    "count": 6
+  }
+}

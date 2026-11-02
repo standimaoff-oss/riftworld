@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "III",
+    "GRG",
+    "III"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_nugget"
+    },
+    "G": {
+      "item": "minecraft:redstone"
+    },
+    "R": {
+      "item": "minecraft:red_stained_glass"
+    }
+  },
+  "result": {
+    "item": "riftworld:emergency_lamp",
+    "count": 2
+  }
+}

@@ -2508,35 +2508,22 @@ public final class SeaProbeCommand {
             return 1;
         }
 
-        // ---------- v0.23.0: «Цитадель Чёрного утёса» (blacktide.nbt), Сгоревшая Церковь, комбинации Пепельного биома и увеличенные биомы ----------
+        // ---------- v0.29.0: Океаническая «Цитадель Чёрного утёса» (blacktide.nbt: ТОЛЬКО в открытом океане, мост из морского дна, снаружи 2-уровневый несимметричный остров!) ----------
         if (k.equals("blacktide_citadel") || k.equals("blacktide_bridge_shore") || k.equals("blacktide_bay_aerial")) {
-            AshenLands.Region bestAr = null;
-            double bestD = Double.MAX_VALUE;
-            for (int sx = -3; sx <= 3; ++sx) {
-                for (int sz = -3; sz <= 3; ++sz) {
-                    AshenLands.Region ar = AshenLands.region(sx, sz);
-                    if (ar == null || !ar.hasBlacktide || ar.blacktideSite == null) continue;
-                    double d = Math.hypot(ar.blacktideSite.cx - at.getX(), ar.blacktideSite.cz - at.getZ());
-                    if (d < bestD) { bestD = d; bestAr = ar; }
-                }
-            }
-            if (bestAr == null || bestAr.blacktideSite == null) {
+            BlacktideCitadel.Site bs = BlacktideCitadel.nearest(at.getX(), at.getZ(), 5);
+            if (bs == null) {
                 src.sendFailure(Component.literal("riftstruct: blacktide_citadel not found"));
                 return 0;
             }
-            BlacktideCitadel.Site bs = bestAr.blacktideSite;
-            // НИКОГДА не вызываем синхронный level.getChunk(...) по 300 чанкам на первом шаге S0:
-            // возвращаем at=... мгновенно (<1 мс), после чего TestPlayer телепортируется в (cx, cz),
-            // пул потоков сервера сам генерирует все чанки в радиусе 12 чанков (192 м), и на S1 все чанки уже в памяти!
-            // 1) Проверяем, что начало моста (landX, landZ) стоит НА СУШЕ Пепельного биома!
-            boolean bridgeOnAshenLand = AshenLands.inside(bs.landX, bs.landZ)
-                    && AshenLands.weight(bs.landX + 0.5, bs.landZ + 0.5) >= 0.85;
-            int[] landCnt = countStructBlocksAndSubAir(level, bs.landX, bs.landZ, 12, ocean + 2, bs.baseY + 62, ocean);
-            // 2) Проверяем, что сам замок (cx, cz / keepX, keepZ) стоит В ОТКРЫТОМ МОРЕ (weight == 0.0, вокруг elisar_water ниже ряби волн, 0 sub_air)!
-            boolean castleInSea = AshenLands.weight(bs.cx + 0.5, bs.cz + 0.5) == 0.0
-                    && AshenLands.weight(bs.keepX + 0.5, bs.keepZ + 0.5) == 0.0;
+            // 1) Проверяем, что И замок, И дальний конец моста стоят СТРОГО В ОТКРЫТОМ ОКЕАНЕ (AshenLands.weight == 0.0, 0 сухопутного острова у моста!)
+            int farBridgeX = bs.cx + BlacktideCitadel.rotX(BlacktideCitadel.GATE_LX, 118, bs.rot);
+            int farBridgeZ = bs.cz + BlacktideCitadel.rotZ(BlacktideCitadel.GATE_LX, 118, bs.rot);
+            boolean pureOceanSite = AshenLands.weight(bs.cx + 0.5, bs.cz + 0.5) == 0.0
+                    && AshenLands.weight(bs.keepX + 0.5, bs.keepZ + 0.5) == 0.0
+                    && AshenLands.weight(farBridgeX + 0.5, farBridgeZ + 0.5) == 0.0;
+
             int[][] seaProbes = {
-                    {0, -102}, {86, 0}, {-86, 0}, {86, -64}, {-86, -64}, {0, -96}
+                    {0, -102}, {108, 0}, {-102, 0}, {104, -56}, {-86, -64}, {-16, 128}
             };
             int seaWaterAround = 0;
             for (int[] sp : seaProbes) {
@@ -2547,32 +2534,64 @@ public final class SeaProbeCommand {
                     ++seaWaterAround;
                 }
             }
+
+            // 2) Проверяем, что мост УХОДИТ ПОД ВОДУ И В МОРСКОЕ ДНО (на lz=96..118 над водой 0 суши, а под водой < ocean — каменный мост!)
+            int subBridgeBlocks = 0, aboveSeaFar = 0;
+            BlockPos.MutableBlockPos mpSub = new BlockPos.MutableBlockPos();
+            for (int lz = 94; lz <= 118; lz += 2) {
+                for (int dx = -4; dx <= 4; dx += 2) {
+                    int wx = bs.cx + BlacktideCitadel.rotX(BlacktideCitadel.GATE_LX + dx, lz, bs.rot);
+                    int wz = bs.cz + BlacktideCitadel.rotZ(BlacktideCitadel.GATE_LX + dx, lz, bs.rot);
+                    if (!level.hasChunk(wx >> 4, wz >> 4)) continue;
+                    for (int wy = ocean - 20; wy <= ocean - 2; wy += 2) {
+                        BlockState st = level.getBlockState(mpSub.set(wx, wy, wz));
+                        if (!st.isAir() && !st.is(ElisarBlocks.WATER.get())) ++subBridgeBlocks;
+                    }
+                    for (int wy = ocean + 5; wy <= ocean + 30; wy += 3) {
+                        if (!level.getBlockState(mpSub.set(wx, wy, wz)).isAir()) ++aboveSeaFar;
+                    }
+                }
+            }
+            // 3) Проверяем 2-уровневую несимметричную архитектуру острова (Level-1 восточный бастион lx=+80 vs открытая вода на lx=-80, lz=+22)
+            int lvl1EastBlocks = 0;
+            for (int lx = 70; lx <= 94; lx += 3) {
+                for (int lz = -24; lz <= 32; lz += 4) {
+                    int wx = bs.cx + BlacktideCitadel.rotX(lx, lz, bs.rot);
+                    int wz = bs.cz + BlacktideCitadel.rotZ(lx, lz, bs.rot);
+                    if (!level.hasChunk(wx >> 4, wz >> 4)) continue;
+                    for (int by = 32; by <= 41; by += 2) {
+                        if (!level.getBlockState(mpSub.set(wx, bs.baseY + by, wz)).isAir()) ++lvl1EastBlocks;
+                    }
+                }
+            }
+
             int[] seaCnt = countStructBlocksAndSubAir(level, bs.keepX, bs.keepZ, 26, ocean - 8, bs.baseY + 154, ocean);
-            int totalBlocks = (bridgeOnAshenLand && castleInSea && landCnt[0] >= 80 && seaWaterAround >= 3) ? seaCnt[0] : 0;
+            boolean bridgeFromSeabed = (aboveSeaFar == 0 && subBridgeBlocks >= 20);
+            int totalBlocks = (pureOceanSite && bridgeFromSeabed && lvl1EastBlocks >= 25 && seaWaterAround >= 3) ? seaCnt[0] : 0;
 
             int atX, atY, atZ, camX, camY, camZ, lkX, lkY, lkZ;
             if (k.equals("blacktide_bridge_shore")) {
-                atX = bs.gateX;
-                atY = bs.baseY + 50;
-                atZ = bs.gateZ;
-                // Ракурс прямо с высокого вулканического плато Пепельного биома (y=84) вдоль горизонтального 4-арочного виадука к воротам Цитадели!
-                camX = bs.cx + BlacktideCitadel.rotX(12, 114, bs.rot);
-                camY = bs.baseY + 56;
-                camZ = bs.cz + BlacktideCitadel.rotZ(12, 114, bs.rot);
-                lkX = bs.cx + BlacktideCitadel.rotX(0, 18, bs.rot);
-                lkY = bs.baseY + 62;
-                lkZ = bs.cz + BlacktideCitadel.rotZ(0, 18, bs.rot);
+                atX = bs.bridgeSurfX;
+                atY = ocean + 12;
+                atZ = bs.bridgeSurfZ;
+                // Ракурс прямо над волнами открытого океана: видно, как арочный каменный мост выходит ИЗ-ПОД ВОДЫ и поднимается к смещённым двухбашенным воротам!
+                camX = bs.cx + BlacktideCitadel.rotX(-32, 118, bs.rot);
+                camY = ocean + 14;
+                camZ = bs.cz + BlacktideCitadel.rotZ(-32, 118, bs.rot);
+                lkX = bs.cx + BlacktideCitadel.rotX(-14, 38, bs.rot);
+                lkY = bs.baseY + 52;
+                lkZ = bs.cz + BlacktideCitadel.rotZ(-14, 38, bs.rot);
             } else if (k.equals("blacktide_bay_aerial")) {
-                atX = bs.landX;
-                atY = bs.baseY + 58;
-                atZ = bs.landZ;
-                // Панорама бухты Пепельного биома с противоположного берега утёса: высокий пепельный клиф, дорога с жаровнями, горизонтальный мост и Цитадель в бухте!
-                camX = bs.cx + BlacktideCitadel.rotX(-54, 108, bs.rot);
-                camY = bs.baseY + 76;
-                camZ = bs.cz + BlacktideCitadel.rotZ(-54, 108, bs.rot);
-                lkX = bs.cx + BlacktideCitadel.rotX(0, 44, bs.rot);
-                lkY = bs.baseY + 56;
-                lkZ = bs.cz + BlacktideCitadel.rotZ(0, 44, bs.rot);
+                atX = bs.cx;
+                atY = bs.baseY + 62;
+                atZ = bs.cz;
+                // Высокая морская панорама: весь 2-уровневый скалистый остров на 360° окружён чистым океаном, мост ныряет под воду в дно!
+                camX = bs.cx + BlacktideCitadel.rotX(-92, 108, bs.rot);
+                camY = bs.baseY + 86;
+                camZ = bs.cz + BlacktideCitadel.rotZ(-92, 108, bs.rot);
+                lkX = bs.cx + BlacktideCitadel.rotX(10, 6, bs.rot);
+                lkY = bs.baseY + 54;
+                lkZ = bs.cz + BlacktideCitadel.rotZ(10, 6, bs.rot);
                 for (int cdx = -3; cdx <= 3; ++cdx) {
                     for (int cdz = -3; cdz <= 3; ++cdz) {
                         level.getChunk((camX >> 4) + cdx, (camZ >> 4) + cdz);
@@ -2582,18 +2601,19 @@ public final class SeaProbeCommand {
                 atX = bs.cx;
                 atY = bs.baseY + 56;
                 atZ = bs.cz;
-                // Парадный трёхчетвертной ракурс: одновременно виден высокий берег Пепельного биома, ровный 4-арочный мост и Цитадель в бухте!
-                camX = bs.cx + BlacktideCitadel.rotX(68, 82, bs.rot);
-                camY = bs.baseY + 86;
-                camZ = bs.cz + BlacktideCitadel.rotZ(68, 82, bs.rot);
-                lkX = bs.cx + BlacktideCitadel.rotX(0, 6, bs.rot);
-                lkY = bs.baseY + 66;
-                lkZ = bs.cz + BlacktideCitadel.rotZ(0, 6, bs.rot);
+                // Парадный ракурс в точности по референсу 02: справа внизу 1-й уровень (портовый бастион и башни у воды), выше 2-й уровень, колокольня с аркбутаном и мост в море!
+                camX = bs.cx + BlacktideCitadel.rotX(104, 88, bs.rot);
+                camY = bs.baseY + 76;
+                camZ = bs.cz + BlacktideCitadel.rotZ(104, 88, bs.rot);
+                lkX = bs.cx + BlacktideCitadel.rotX(12, 2, bs.rot);
+                lkY = bs.baseY + 56;
+                lkZ = bs.cz + BlacktideCitadel.rotZ(12, 2, bs.rot);
             }
             String line = "riftstruct kind=" + k + " at=" + atX + "," + atY + "," + atZ
-                    + " bridge_land=" + bridgeOnAshenLand + " castle_sea=" + castleInSea
-                    + " water_ring=" + seaWaterAround + " land_blocks=" + landCnt[0]
-                    + " blocks=" + totalBlocks + " sub_air=" + (landCnt[1] + seaCnt[1])
+                    + " ocean_only=" + pureOceanSite + " bridge_seabed=" + bridgeFromSeabed
+                    + " sub_bridge=" + subBridgeBlocks + " lvl1_east=" + lvl1EastBlocks
+                    + " water_ring=" + seaWaterAround
+                    + " blocks=" + totalBlocks + " sub_air=" + seaCnt[1]
                     + " cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
@@ -2629,7 +2649,7 @@ public final class SeaProbeCommand {
                 for (int sz = -4; sz <= 4; ++sz) {
                     AshenLands.Region ar = AshenLands.region(sx, sz);
                     if (ar == null) continue;
-                    int majors = (ar.hasRedCastle ? 1 : 0) + (ar.hasBurnedChurch ? 1 : 0) + (ar.hasBlacktide ? 1 : 0);
+                    int majors = (ar.hasRedCastle ? 1 : 0) + (ar.hasBurnedChurch ? 1 : 0) + (ar.hasBelfry ? 1 : 0);
                     if (majors == 0 && ar.isEmptyBiome()) {
                         ++emptyCnt;
                         if (emptySample == null || Math.hypot(ar.cx, ar.cz) < Math.hypot(emptySample.cx, emptySample.cz)) {
@@ -2797,21 +2817,11 @@ public final class SeaProbeCommand {
 
         // ---------- v0.24.0: Полный интерьер и лестницы Чёрного Замка (Blacktide), соединённые ковры и Обсерватория Обычного мира ----------
         if (k.equals("blacktide_cathedral_hall") || k.equals("blacktide_rotunda_sanctum") || k.equals("blacktide_tower_walkability")) {
-            AshenLands.Region bestAr = null;
-            double bestD = Double.MAX_VALUE;
-            for (int sx = -3; sx <= 3; ++sx) {
-                for (int sz = -3; sz <= 3; ++sz) {
-                    AshenLands.Region ar = AshenLands.region(sx, sz);
-                    if (ar == null || !ar.hasBlacktide || ar.blacktideSite == null) continue;
-                    double d = Math.hypot(ar.blacktideSite.cx - at.getX(), ar.blacktideSite.cz - at.getZ());
-                    if (d < bestD) { bestD = d; bestAr = ar; }
-                }
-            }
-            if (bestAr == null || bestAr.blacktideSite == null) {
+            BlacktideCitadel.Site bs = BlacktideCitadel.nearest(at.getX(), at.getZ(), 5);
+            if (bs == null) {
                 src.sendFailure(Component.literal("riftstruct: blacktide site not found for " + k));
                 return 0;
             }
-            BlacktideCitadel.Site bs = bestAr.blacktideSite;
 
             if (k.equals("blacktide_cathedral_hall")) {
                 // Строго по главной оси симметрии Собора (lx = 0, от Южного портала lz = +1 к Трону lz = -36!)
@@ -2888,25 +2898,21 @@ public final class SeaProbeCommand {
                 return 1;
             }
 
-            // blacktide_tower_walkability: проверяем лестницы во ВСЕХ 22 симметричных башнях замка и снимаем парадный симметричный фасад Собора!
-            int[][] towerCenters = {
-                    { 13,  35}, {-13,  35}, { 35,  34}, {-35,  34},
-                    { 54,  34}, {-54,  34}, { 54,   6}, {-54,   6},
-                    { 54, -22}, {-54, -22}, { 54, -50}, {-54, -50},
-                    { 54, -78}, {-54, -78}, { 24, -78}, {-24, -78},
-                    { 26,   4}, {-26,   4}, { 26, -40}, {-26, -40},
-                    { 16, -20}, {-16, -20}
-            };
+            // blacktide_tower_walkability: проверяем лестницы во ВСЕХ 28 башнях (1-й уровень + 2-й уровень + Собор + Колокольня)!
+            int[][] towerCenters = BlacktideCitadel.TOWER_CENTERS;
             int climbedTowers = 0, totalStairs = 0;
             BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
             for (int[] tc : towerCenters) {
                 int stairsInTower = 0;
+                int tWx = bs.cx + BlacktideCitadel.rotX(tc[0], tc[1], bs.rot);
+                int tWz = bs.cz + BlacktideCitadel.rotZ(tc[0], tc[1], bs.rot);
+                if (!level.hasChunk(tWx >> 4, tWz >> 4)) continue;
                 for (int dx = -2; dx <= 2; ++dx) {
                     for (int dz = -2; dz <= 2; ++dz) {
                         int wx = bs.cx + BlacktideCitadel.rotX(tc[0] + dx, tc[1] + dz, bs.rot);
                         int wz = bs.cz + BlacktideCitadel.rotZ(tc[0] + dx, tc[1] + dz, bs.rot);
                         if (!level.hasChunk(wx >> 4, wz >> 4)) continue;
-                        for (int by = 46; by <= 148; ++by) {
+                        for (int by = 30; by <= 148; ++by) {
                             if (level.getBlockState(mp.set(wx, bs.baseY + by, wz))
                                     .is(net.minecraft.world.level.block.Blocks.POLISHED_BLACKSTONE_BRICK_STAIRS)) {
                                 ++stairsInTower;
@@ -2917,13 +2923,13 @@ public final class SeaProbeCommand {
                 if (stairsInTower >= 16) ++climbedTowers;
                 totalStairs += stairsInTower;
             }
-            int camX = bs.cx + BlacktideCitadel.rotX(0, 28, bs.rot);
+            int camX = bs.cx + BlacktideCitadel.rotX(18, 28, bs.rot);
             int camY = bs.baseY + 62;
-            int camZ = bs.cz + BlacktideCitadel.rotZ(0, 28, bs.rot);
-            int lkX = bs.cx + BlacktideCitadel.rotX(0, -10, bs.rot);
-            int lkY = bs.baseY + 78;
-            int lkZ = bs.cz + BlacktideCitadel.rotZ(0, -10, bs.rot);
-            int metric = (climbedTowers == 22 && totalStairs >= 700) ? totalStairs : 0;
+            int camZ = bs.cz + BlacktideCitadel.rotZ(18, 28, bs.rot);
+            int lkX = bs.cx + BlacktideCitadel.rotX(12, -14, bs.rot);
+            int lkY = bs.baseY + 80;
+            int lkZ = bs.cz + BlacktideCitadel.rotZ(12, -14, bs.rot);
+            int metric = (climbedTowers >= 24 && totalStairs >= 800) ? totalStairs : 0;
             String line = "riftstruct kind=blacktide_tower_walkability at=" + camX + "," + camY + "," + camZ
                     + " climbed_towers=" + climbedTowers + " total_stairs=" + totalStairs
                     + " blocks=" + metric + " sub_air=0"
@@ -3173,23 +3179,11 @@ public final class SeaProbeCommand {
 
         // ---------- v0.26.0: 2 этаж и освещение Цитадели, Святилище Белого Города в зелени, Виадуки, Дикие Перевёрнутые Башни + приручение Дракона, Призма Архонта ----------
         if (k.equals("blacktide_second_floor")) {
-            AshenLands.Region bestAr = null;
-            double bestD = Double.MAX_VALUE;
-            int sx0 = Math.floorDiv(at.getX(), AshenLands.SUPER);
-            int sz0 = Math.floorDiv(at.getZ(), AshenLands.SUPER);
-            for (int dx = -4; dx <= 4; ++dx) {
-                for (int dz = -4; dz <= 4; ++dz) {
-                    AshenLands.Region ar = AshenLands.region(sx0 + dx, sz0 + dz);
-                    if (ar == null || !ar.hasBlacktide || ar.blacktideSite == null) continue;
-                    double d = Math.hypot(ar.blacktideSite.cx - at.getX(), ar.blacktideSite.cz - at.getZ());
-                    if (d < bestD) { bestD = d; bestAr = ar; }
-                }
-            }
-            if (bestAr == null || bestAr.blacktideSite == null) {
+            BlacktideCitadel.Site bs = BlacktideCitadel.nearest(at.getX(), at.getZ(), 5);
+            if (bs == null) {
                 src.sendFailure(Component.literal("riftstruct: blacktide_second_floor not found"));
                 return 0;
             }
-            BlacktideCitadel.Site bs = bestAr.blacktideSite;
             int camX = bs.cx + BlacktideCitadel.rotX(0, -1, bs.rot);
             int camY = bs.baseY + 73;
             int camZ = bs.cz + BlacktideCitadel.rotZ(0, -1, bs.rot);
@@ -3587,6 +3581,298 @@ public final class SeaProbeCommand {
                     "riftstruct kind=v28_elisar_perf_2chunks at=%d,%d,%d effR2=%.1f wake2ms=%.3f wake12ms=%.3f island10kMs=%.2f biome10kMs=%.2f hits=%d blocks=%d sub_air=0 cam=%d,%d,%d:%d,%d,%d",
                     lkX, seaLvl + 1, lkZ, effR2, wake2Ms, wake12Ms, islandAt10kMs, biome10kMs, hitIslands, metric,
                     camX, camY, camZ, lkX, lkY, lkZ);
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        // ==================== v0.29.0: ПРОБЫ СВЕЧЕЙ ПОРТАЛА, ПОДВОДНОГО МОСТА BLACKTIDE, КРАФТОВ + МОНЕТНОЙ РУДЫ И СИНХРОННЫХ ВОЛН ====================
+        if (k.equals("v29_candle_portal_open")) {
+            int tx = 820, ty = 144, tz = 760;
+            int litCandles = 0, stage3Tiles = 0, bridgeBlocks = 0;
+            if (level.hasChunk(tx >> 4, tz >> 4)) {
+                BlockState floor = ru.aiforge.riftworld.registry.TempleBlocks.FLOOR.get().defaultBlockState();
+                BlockState mosaic0 = ru.aiforge.riftworld.registry.TempleBlocks.MOSAIC.get().defaultBlockState()
+                        .setValue(ru.aiforge.riftworld.block.MosaicBlock.STAGE, 0);
+                BlockState coreSt = ru.aiforge.riftworld.registry.TempleBlocks.MOSAIC_CORE.get().defaultBlockState();
+                BlockState pillar = ru.aiforge.riftworld.registry.TempleBlocks.PILLAR.get().defaultBlockState();
+                BlockState unlitCandle = ru.aiforge.riftworld.registry.TempleBlocks.RITUAL_CANDLE.get().defaultBlockState()
+                        .setValue(ru.aiforge.riftworld.block.RitualCandleBlock.LIT, false);
+                BlockState air = net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
+
+                for (int dx = -10; dx <= 10; ++dx) {
+                    for (int dz = -10; dz <= 18; ++dz) {
+                        for (int dy = -1; dy <= 10; ++dy) {
+                            level.setBlock(new BlockPos(tx + dx, ty + dy, tz + dz), air, 2);
+                        }
+                        if (dz <= 10 && Math.hypot(dx, dz) <= 9.2) {
+                            boolean inRing = Math.hypot(dx, dz) <= 5.2;
+                            level.setBlock(new BlockPos(tx + dx, ty, tz + dz),
+                                    (dx == 0 && dz == 0) ? coreSt : (inRing ? mosaic0 : floor), 2);
+                        }
+                    }
+                }
+                int[][] candleOffsets = {
+                        {-6, -2}, {-6, 2}, {6, -2}, {6, 2},
+                        {-2, -6}, {2, -6}, {-2, 6}, {2, 6}
+                };
+                for (int[] co : candleOffsets) {
+                    BlockPos pBase = new BlockPos(tx + co[0], ty + 1, tz + co[1]);
+                    level.setBlock(pBase, pillar, 2);
+                    level.setBlock(pBase.above(), unlitCandle, 2);
+                }
+
+                // Зажигаем ритуальные свечи БЕЗ стояния игрока в центре печати 40 секунд!
+                for (int[] co : candleOffsets) {
+                    BlockPos cPos = new BlockPos(tx + co[0], ty + 2, tz + co[1]);
+                    level.setBlock(cPos, unlitCandle.setValue(ru.aiforge.riftworld.block.RitualCandleBlock.LIT, true), 3);
+                    ru.aiforge.riftworld.block.MosaicCoreBE.notifyCandleLit(level, cPos, null);
+                }
+                BlockPos corePos = new BlockPos(tx, ty, tz);
+                if (level.getBlockEntity(corePos) instanceof ru.aiforge.riftworld.block.MosaicCoreBE coreBe) {
+                    for (int step = 0; step < 26; ++step) {
+                        ru.aiforge.riftworld.block.MosaicCoreBE.tick(level, corePos, level.getBlockState(corePos), coreBe);
+                    }
+                }
+
+                for (int[] co : candleOffsets) {
+                    BlockState cs = level.getBlockState(new BlockPos(tx + co[0], ty + 2, tz + co[1]));
+                    if (cs.is(ru.aiforge.riftworld.registry.TempleBlocks.RITUAL_CANDLE.get())
+                            && cs.getValue(ru.aiforge.riftworld.block.RitualCandleBlock.LIT)) {
+                        ++litCandles;
+                    }
+                }
+                for (int dx = -6; dx <= 6; ++dx) {
+                    for (int dz = -6; dz <= 6; ++dz) {
+                        BlockState ms = level.getBlockState(new BlockPos(tx + dx, ty, tz + dz));
+                        if (ms.is(ru.aiforge.riftworld.registry.TempleBlocks.MOSAIC.get())
+                                && ms.getValue(ru.aiforge.riftworld.block.MosaicBlock.STAGE) == 3) {
+                            ++stage3Tiles;
+                        }
+                    }
+                }
+                for (int dx = -5; dx <= 5; ++dx) {
+                    for (int dz = 6; dz <= 18; ++dz) {
+                        for (int dy = -1; dy <= 2; ++dy) {
+                            if (level.getBlockState(new BlockPos(tx + dx, ty + dy, tz + dz))
+                                    .is(ru.aiforge.riftworld.registry.TempleBlocks.LIGHT_BRIDGE.get())) {
+                                ++bridgeBlocks;
+                            }
+                        }
+                    }
+                }
+            }
+            int metric = (litCandles == 8 && stage3Tiles >= 20 && bridgeBlocks >= 8)
+                    ? (litCandles * 50 + stage3Tiles * 5 + bridgeBlocks * 10) : 0;
+            int camX = tx - 9, camY = ty + 7, camZ = tz - 10;
+            int lkX = tx + 1, lkY = ty + 1, lkZ = tz + 5;
+            String line = "riftstruct kind=v29_candle_portal_open at=" + tx + "," + (ty + 2) + "," + tz
+                    + " lit_candles=" + litCandles + " stage3_mosaic=" + stage3Tiles + " portal_bridge=" + bridgeBlocks
+                    + " blocks=" + metric + " sub_air=0"
+                    + " cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.equals("v29_blacktide_seabed_bridge")) {
+            BlacktideCitadel.Site bs = BlacktideCitadel.nearest(at.getX(), at.getZ(), 5);
+            if (bs == null) {
+                src.sendFailure(Component.literal("riftstruct: v29_blacktide_seabed_bridge not found"));
+                return 0;
+            }
+            int subBlocks = 0, aboveFar = 0, waterAboveSub = 0, subAir = 0;
+            BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
+            for (int lz = 90; lz <= 128; ++lz) {
+                for (int dx = -4; dx <= 4; ++dx) {
+                    int wx = bs.cx + BlacktideCitadel.rotX(BlacktideCitadel.GATE_LX + dx, lz, bs.rot);
+                    int wz = bs.cz + BlacktideCitadel.rotZ(BlacktideCitadel.GATE_LX + dx, lz, bs.rot);
+                    if (!level.hasChunk(wx >> 4, wz >> 4)) continue;
+                    if (lz >= 96 && level.getBlockState(mp.set(wx, ocean, wz)).is(ElisarBlocks.WATER.get())) {
+                        ++waterAboveSub;
+                    }
+                    for (int wy = ocean - 22; wy <= ocean - 1; ++wy) {
+                        BlockState st = level.getBlockState(mp.set(wx, wy, wz));
+                        if (st.isAir()) ++subAir;
+                        else if (!st.is(ElisarBlocks.WATER.get())) ++subBlocks;
+                    }
+                    if (lz >= 94) {
+                        for (int wy = ocean + 5; wy <= ocean + 35; wy += 2) {
+                            if (!level.getBlockState(mp.set(wx, wy, wz)).isAir()) ++aboveFar;
+                        }
+                    }
+                }
+            }
+            boolean pureOcean = AshenLands.weight(bs.bridgeSubX + 0.5, bs.bridgeSubZ + 0.5) == 0.0
+                    && AshenLands.weight(bs.cx + 0.5, bs.cz + 0.5) == 0.0;
+            int metric = (pureOcean && aboveFar == 0 && subBlocks >= 300 && waterAboveSub >= 60) ? subBlocks : 0;
+
+            int camX = bs.cx + BlacktideCitadel.rotX(16, 114, bs.rot);
+            int camY = ocean + 11;
+            int camZ = bs.cz + BlacktideCitadel.rotZ(16, 114, bs.rot);
+            int lkX = bs.cx + BlacktideCitadel.rotX(-16, 62, bs.rot);
+            int lkY = ocean + 8;
+            int lkZ = bs.cz + BlacktideCitadel.rotZ(-16, 62, bs.rot);
+            String line = "riftstruct kind=v29_blacktide_seabed_bridge at=" + bs.bridgeSurfX + "," + (ocean + 6) + "," + bs.bridgeSurfZ
+                    + " pure_ocean=" + pureOcean + " sub_bridge=" + subBlocks
+                    + " water_above=" + waterAboveSub + " above_far_island=" + aboveFar
+                    + " blocks=" + metric + " sub_air=" + subAir
+                    + " cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.equals("v29_crafting_and_coin_ore")) {
+            var rm = level.getRecipeManager();
+            var regAcc = level.registryAccess();
+            var dummyMenu = new net.minecraft.world.inventory.AbstractContainerMenu(null, -1) {
+                @Override
+                public net.minecraft.world.item.ItemStack quickMoveStack(net.minecraft.world.entity.player.Player p, int idx) {
+                    return net.minecraft.world.item.ItemStack.EMPTY;
+                }
+                @Override
+                public boolean stillValid(net.minecraft.world.entity.player.Player p) {
+                    return true;
+                }
+            };
+
+            java.util.function.Function<net.minecraft.world.item.Item[], net.minecraft.world.item.ItemStack> eval3x3 = (gridItems) -> {
+                var cc = new net.minecraft.world.inventory.TransientCraftingContainer(dummyMenu, 3, 3);
+                for (int i = 0; i < Math.min(9, gridItems.length); ++i) {
+                    if (gridItems[i] != null) {
+                        cc.setItem(i, new net.minecraft.world.item.ItemStack(gridItems[i]));
+                    }
+                }
+                return rm.getRecipeFor(net.minecraft.world.item.crafting.RecipeType.CRAFTING, cc, level)
+                        .map(r -> r.assemble(cc, regAcc))
+                        .orElse(net.minecraft.world.item.ItemStack.EMPTY);
+            };
+
+            int passedCrafts = 0;
+            // 1) 1 бревно = 4 доски (sizo_log -> 4 sizo_planks)
+            var rPlanks = eval3x3.apply(new net.minecraft.world.item.Item[]{
+                    ElisarBlocks.SIZO_LOG.get().asItem(), null, null, null, null, null, null, null, null
+            });
+            if (rPlanks.is(ElisarBlocks.SIZO_PLANKS.get().asItem()) && rPlanks.getCount() == 4) ++passedCrafts;
+
+            // 2) 6 досок = 3 двери (garden_planks -> 3 garden_door)
+            var gp = ElisarBlocks.GARDEN_PLANKS.get().asItem();
+            var rDoor = eval3x3.apply(new net.minecraft.world.item.Item[]{
+                    gp, gp, null, gp, gp, null, gp, gp, null
+            });
+            if (rDoor.is(ElisarBlocks.GARDEN_DOOR.get().asItem()) && rDoor.getCount() == 3) ++passedCrafts;
+
+            // 3) Ванильная печь из камня мода (8 elisar_cobble -> minecraft:furnace)
+            var ec = ElisarBlocks.COBBLE.get().asItem();
+            var rFurnace = eval3x3.apply(new net.minecraft.world.item.Item[]{
+                    ec, ec, ec, ec, null, ec, ec, ec, ec
+            });
+            if (rFurnace.is(net.minecraft.world.item.Items.FURNACE)) ++passedCrafts;
+
+            // 4) Ванильная каменная кирка из пепельного булыжника мода (3 ashen_cobblestone + 2 stick -> stone_pickaxe)
+            var ac = ru.aiforge.riftworld.registry.CastleBlocks.ASHEN_COBBLESTONE.get().asItem();
+            var stItem = net.minecraft.world.item.Items.STICK;
+            var rPick = eval3x3.apply(new net.minecraft.world.item.Item[]{
+                    ac, ac, ac, null, stItem, null, null, stItem, null
+            });
+            if (rPick.is(net.minecraft.world.item.Items.STONE_PICKAXE)) ++passedCrafts;
+
+            // 5) Ванильная лодка из досок мода (5 sizo_planks -> minecraft:oak_boat)
+            var spItem = ElisarBlocks.SIZO_PLANKS.get().asItem();
+            var rBoat = eval3x3.apply(new net.minecraft.world.item.Item[]{
+                    spItem, null, spItem, spItem, spItem, spItem, null, null, null
+            });
+            if (rBoat.is(net.minecraft.world.item.Items.OAK_BOAT)) ++passedCrafts;
+
+            // 6) Озолоченная бумага: 1 ванильная бумага в центре + 8 слитков золота по краям -> 1 gilded_paper!
+            var gIng = net.minecraft.world.item.Items.GOLD_INGOT;
+            var rGilded = eval3x3.apply(new net.minecraft.world.item.Item[]{
+                    gIng, gIng, gIng,
+                    gIng, net.minecraft.world.item.Items.PAPER, gIng,
+                    gIng, gIng, gIng
+            });
+            if (rGilded.is(ru.aiforge.riftworld.registry.ModItems.GILDED_PAPER.get()) && rGilded.getCount() == 1) ++passedCrafts;
+
+            // 7) Монетная руда (ducat_ore и deepslate_ducat_ore) -> выплавляется в печи И плавильне в elisar_ducat!
+            var smelt1 = rm.getRecipeFor(net.minecraft.world.item.crafting.RecipeType.SMELTING,
+                    new net.minecraft.world.SimpleContainer(new net.minecraft.world.item.ItemStack(ElisarBlocks.DUCAT_ORE.get())), level)
+                    .map(r -> r.assemble(new net.minecraft.world.SimpleContainer(1), regAcc))
+                    .orElse(net.minecraft.world.item.ItemStack.EMPTY);
+            var blast1 = rm.getRecipeFor(net.minecraft.world.item.crafting.RecipeType.BLASTING,
+                    new net.minecraft.world.SimpleContainer(new net.minecraft.world.item.ItemStack(ElisarBlocks.DEEPSLATE_DUCAT_ORE.get())), level)
+                    .map(r -> r.assemble(new net.minecraft.world.SimpleContainer(1), regAcc))
+                    .orElse(net.minecraft.world.item.ItemStack.EMPTY);
+            if (smelt1.is(ru.aiforge.riftworld.registry.ModItems.ELISAR_DUCAT.get())) ++passedCrafts;
+            if (blast1.is(ru.aiforge.riftworld.registry.ModItems.ELISAR_DUCAT.get())) ++passedCrafts;
+
+            // Витрина Монетной руды (ducat_ore, deepslate_ducat_ore, aurite_ore), печей, верстака и блоков крафта для кадра 143!
+            int gx = 890, gy = 144, gz = 760;
+            if (level.hasChunk(gx >> 4, gz >> 4)) {
+                BlockState marble = ElisarBlocks.IVORY_MARBLE_BRICKS.get().defaultBlockState();
+                BlockState air = net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
+                for (int dx = -8; dx <= 8; ++dx) {
+                    for (int dz = -6; dz <= 6; ++dz) {
+                        level.setBlock(new BlockPos(gx + dx, gy, gz + dz), marble, 2);
+                        for (int dy = 1; dy <= 7; ++dy) {
+                            level.setBlock(new BlockPos(gx + dx, gy + dy, gz + dz), air, 2);
+                        }
+                    }
+                }
+                // Жила Монетной руды и Глубинносланцевой монетной руды рядом с плавильней, печью и верстаком!
+                level.setBlock(new BlockPos(gx - 4, gy + 1, gz), ElisarBlocks.DUCAT_ORE.get().defaultBlockState(), 2);
+                level.setBlock(new BlockPos(gx - 3, gy + 1, gz), ElisarBlocks.DUCAT_ORE.get().defaultBlockState(), 2);
+                level.setBlock(new BlockPos(gx - 4, gy + 2, gz), ElisarBlocks.DUCAT_ORE.get().defaultBlockState(), 2);
+                level.setBlock(new BlockPos(gx - 2, gy + 1, gz), ElisarBlocks.DEEPSLATE_DUCAT_ORE.get().defaultBlockState(), 2);
+                level.setBlock(new BlockPos(gx - 1, gy + 1, gz), ElisarBlocks.DEEPSLATE_DUCAT_ORE.get().defaultBlockState(), 2);
+                level.setBlock(new BlockPos(gx - 2, gy + 2, gz), ElisarBlocks.AURITE_ORE.get().defaultBlockState(), 2);
+                level.setBlock(new BlockPos(gx + 1, gy + 1, gz), net.minecraft.world.level.block.Blocks.FURNACE.defaultBlockState(), 2);
+                level.setBlock(new BlockPos(gx + 2, gy + 1, gz), net.minecraft.world.level.block.Blocks.BLAST_FURNACE.defaultBlockState(), 2);
+                level.setBlock(new BlockPos(gx + 3, gy + 1, gz), net.minecraft.world.level.block.Blocks.CRAFTING_TABLE.defaultBlockState(), 2);
+                level.setBlock(new BlockPos(gx + 4, gy + 1, gz), ElisarBlocks.SIZO_PLANKS.get().defaultBlockState(), 2);
+                level.setBlock(new BlockPos(gx + 4, gy + 2, gz), ElisarBlocks.LANTERN.get().defaultBlockState(), 2);
+                level.setBlock(new BlockPos(gx - 5, gy + 1, gz), ElisarBlocks.GARDEN_FENCE.get().defaultBlockState(), 2);
+                level.setBlock(new BlockPos(gx - 5, gy + 2, gz), ElisarBlocks.LANTERN.get().defaultBlockState(), 2);
+            }
+
+            int metric = (passedCrafts == 8) ? 800 : 0;
+            int camX = gx, camY = gy + 4, camZ = gz + 7;
+            int lkX = gx, lkY = gy + 1, lkZ = gz;
+            String line = "riftstruct kind=v29_crafting_and_coin_ore at=" + gx + "," + (gy + 2) + "," + gz
+                    + " passed_crafts=" + passedCrafts + "/8"
+                    + " gilded_3x3=" + rGilded.is(ru.aiforge.riftworld.registry.ModItems.GILDED_PAPER.get())
+                    + " ducat_smelt=" + smelt1.is(ru.aiforge.riftworld.registry.ModItems.ELISAR_DUCAT.get())
+                    + " blocks=" + metric + " sub_air=0"
+                    + " cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.equals("v29_sync_ocean_waves_perf")) {
+            // Проверяем: 1) радиус волн строго зажат <= rd * 16 - 4 (не светится за дальностью прорисовки!);
+            //            2) дикие морские рыбы деспавнятся за >96 блоками (!requiresCustomPersistence());
+            //            3) синхронная глобальная фаза волн рендерится мгновенно!
+            double r2 = 28.0, r6 = 92.0, r12 = 188.0;
+            if (net.minecraftforge.fml.loading.FMLEnvironment.dist.isClient()) {
+                try {
+                    Class<?> cls = Class.forName("ru.aiforge.riftworld.client.OceanSurfaceWaves");
+                    var mEff = cls.getMethod("effectiveWakeRadius", int.class, float.class);
+                    r2 = (double) mEff.invoke(null, 2, 512.0F);
+                    r6 = (double) mEff.invoke(null, 6, 512.0F);
+                    r12 = (double) mEff.invoke(null, 12, 512.0F);
+                } catch (Throwable ex) {
+                    r2 = 999.0;
+                }
+            }
+            var testFish = new ru.aiforge.riftworld.entity.SeaFishEntity(
+                    ru.aiforge.riftworld.registry.ModEntities.SEA_FISH.get(), level);
+            boolean fishDespawns = !testFish.requiresCustomPersistence() && testFish.removeWhenFarAway(120.0 * 120.0);
+            boolean clampedToRd = (r2 <= 32.0 && r6 <= 96.0 && r12 <= 192.0);
+            int metric = (clampedToRd && fishDespawns) ? 900 : 0;
+
+            int seaLvl = plan.ocean;
+            int camX = 310, camY = seaLvl + 26, camZ = 310;
+            int lkX = 365, lkY = seaLvl + 2, lkZ = 365;
+            String line = String.format(java.util.Locale.ROOT,
+                    "riftstruct kind=v29_sync_ocean_waves_perf at=%d,%d,%d r2=%.1f r6=%.1f r12=%.1f fish_despawn=%s blocks=%d sub_air=0 cam=%d,%d,%d:%d,%d,%d",
+                    camX, seaLvl + 14, camZ, r2, r6, r12, fishDespawns, metric, camX, camY, camZ, lkX, lkY, lkZ);
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
         }

@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GGG",
+    "GDG",
+    "GGG"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:glass"
+    },
+    "D": {
+      "item": "minecraft:orange_dye"
+    }
+  },
+  "result": {
+    "item": "riftworld:temple_rose_window",
+    "count": 4
+  }
+}

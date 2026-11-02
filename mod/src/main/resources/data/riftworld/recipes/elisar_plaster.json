@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SC",
+    "CS"
+  ],
+  "key": {
+    "S": {
+      "item": "riftworld:elisar_seabed"
+    },
+    "C": {
+      "tag": "minecraft:stone_crafting_materials"
+    }
+  },
+  "result": {
+    "item": "riftworld:elisar_plaster",
+    "count": 4
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "riftworld:rift_marble"
+    },
+    {
+      "tag": "riftworld:mod_vines"
+    }
+  ],
+  "result": {
+    "item": "riftworld:rift_marble_mossy",
+    "count": 1
+  }
+}

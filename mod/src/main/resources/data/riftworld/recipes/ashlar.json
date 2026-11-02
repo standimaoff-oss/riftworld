@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "##",
+    "##"
+  ],
+  "key": {
+    "#": {
+      "item": "riftworld:scorched_stone"
+    }
+  },
+  "result": {
+    "item": "riftworld:ashlar",
+    "count": 4
+  }
+}

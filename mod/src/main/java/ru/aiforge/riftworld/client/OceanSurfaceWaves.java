@@ -17,8 +17,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -40,62 +40,82 @@ import ru.aiforge.riftworld.world.MistKeep;
 import ru.aiforge.riftworld.world.WaterfallGardens;
 
 /**
- * Живая морская гладь Элисара (v0.28.0 — полная оптимизация под любую дальность прорисовки, включая 2 чанка!):
- * <ol>
- *   <li>Радиус волновых контуров строго адаптируется к {@code options.renderDistance} и {@code depthFar}:
- *       при 2 чанках прорисовки рендерятся только видимые волны вблизи камеры (0 невидимых островов за стеной тумана!),
- *       при 12+ чанках — вся широкая панорама архипелага до {@link #MAX_ISLAND_DIST}.</li>
- *   <li>Профиль береговой кромки ({@code rimDist}, {@code cos/sin}) и аналитическая проверка открытого моря
- *       кэшируются ОДИН РАЗ на каждый остров в {@link #WAKE_CACHE} (0 вызовов генератора регионов и 0 аллокаций
- *       массивов в рендер-цикле!).</li>
- *   <li>Острова позади камеры отсекаются за O(1), а поиск струй водопадов ограничен реальным радиусом чанков.</li>
- * </ol>
+ * v0.29.0: Строго ограниченные дальностью прорисовки ({@code <= renderDistance * 16 - 4})
+ * и 100% синхронные поверхностные волны у островов и водопадов океана Элисара:
+ * <ul>
+ *   <li>Круги и волны НИКОГДА не рендерятся и не светятся за пределами дальности прорисовки
+ *       или в незагруженных чанках ({@code ch == null -> false}), плавно уходя в 0 внутри тумана;</li>
+ *   <li>Все острова используют ЕДИНУЮ синхронную глобальную фазу волн (1 расчёт {@code sin} на кольцо за кадр,
+ *       предвычисленные нормали берега в {@link WakeProfile}, 0 вызовов {@code sin/cos/hypot} на вершину!).</li>
+ * </ul>
  */
-@Mod.EventBusSubscriber(modid = RiftWorld.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = RiftWorld.MODID, value = Dist.CLIENT)
 public final class OceanSurfaceWaves {
+    /** Абсолютный верхний предел аналитического радиуса поиска островов (compile-time константа). */
+    public static final double MAX_ISLAND_DIST = 520.0;
+    private static final double MAX_PLUNGE_DIST = 192.0;
     private static final int MAX_ISLAND_SEGS = 40;
     private static final int RING_COUNT = 3;
-    public static final double MAX_ISLAND_DIST = 520.0;
-    private static final double MAX_PLUNGE_DIST = 260.0;
-    private static final int PLUNGE_CHUNK_RADIUS = 12;
+    private static final int PLUNGE_CHUNK_RADIUS = 10;
 
     /** Статические scratch-буферы рендер-потока — 0 аллокаций массивов на кадр! */
-    private static final double[] SCRATCH_PX = new double[MAX_ISLAND_SEGS + 1];
-    private static final double[] SCRATCH_PZ = new double[MAX_ISLAND_SEGS + 1];
+    private static final float[] SCRATCH_PX = new float[MAX_ISLAND_SEGS + 1];
+    private static final float[] SCRATCH_PZ = new float[MAX_ISLAND_SEGS + 1];
     private static final boolean[] SCRATCH_OK = new boolean[MAX_ISLAND_SEGS + 1];
 
-    /** Предвычисленный геометрический профиль волнового следа одного острова. */
+    /** Предвычисленные тригонометрические таблицы для кругов водопадов (24 сегмента). */
+    private static final int PLUNGE_SEGS = 24;
+    private static final float[] PLUNGE_COS = new float[PLUNGE_SEGS + 1];
+    private static final float[] PLUNGE_SIN = new float[PLUNGE_SEGS + 1];
+
+    static {
+        for (int s = 0; s <= PLUNGE_SEGS; ++s) {
+            double a = ((s % PLUNGE_SEGS) / (double) PLUNGE_SEGS) * (Math.PI * 2.0);
+            PLUNGE_COS[s] = (float) Math.cos(a);
+            PLUNGE_SIN[s] = (float) Math.sin(a);
+        }
+    }
+
+    /** Предвычисленный геометрический профиль синхронного волнового следа одного острова. */
     private static final class WakeProfile {
         final int segs;
-        final double reach;
-        final double ringGap;
-        final double baseWidth;
-        final float seed;
+        final float reach;
+        final float ringGap;
+        final float baseWidth;
         final float[] cosA;
         final float[] sinA;
         final float[] rim;
+        /** Предвычисленные единичные внешние нормали контура берега (0 hypot/делений в рендере!). */
+        final float[] outNx;
+        final float[] outNz;
         final boolean[][] openOcean;
 
         WakeProfile(CityPlan.Island isl) {
-            this.segs = isl.R > 34.0 ? 40 : (isl.R > 14.0 ? 32 : 24);
-            this.reach = isl.maxReach();
-            this.ringGap = Mth.clamp(isl.R * 0.14, 2.2, 6.2);
-            this.baseWidth = Mth.clamp(isl.R * 0.048, 0.90, 2.15);
-            this.seed = (float) ((isl.cx * 0.017 + isl.cz * 0.023) % 6.283);
+            this.segs = isl.R > 34.0 ? 36 : (isl.R > 14.0 ? 28 : 20);
+            this.reach = (float) isl.maxReach();
+            this.ringGap = (float) Mth.clamp(isl.R * 0.14, 2.2, 6.0);
+            this.baseWidth = (float) Mth.clamp(isl.R * 0.048, 0.90, 2.10);
             this.cosA = new float[segs];
             this.sinA = new float[segs];
             this.rim = new float[segs];
+            this.outNx = new float[segs + 1];
+            this.outNz = new float[segs + 1];
             this.openOcean = new boolean[RING_COUNT][segs];
 
             CityPlan plan = CityPlan.get();
+            double[] bx = new double[segs];
+            double[] bz = new double[segs];
             for (int s = 0; s < segs; ++s) {
                 double a = (s / (double) segs) * (Math.PI * 2.0);
                 double ca = Math.cos(a);
                 double sa = Math.sin(a);
                 this.cosA[s] = (float) ca;
                 this.sinA[s] = (float) sa;
-                double rDist = isl.rimDist(ca, sa);
+                // Лёгкая статическая микро-волнистость запечена 1 раз в профиль — 0 sin/cos на кадр!
+                double rDist = isl.rimDist(ca, sa) + 0.35 * Math.sin(a * 4.0) + 0.20 * Math.cos(a * 7.0);
                 this.rim[s] = (float) rDist;
+                bx[s] = ca * (rDist + 2.5);
+                bz[s] = sa * (rDist + 2.5);
                 for (int ring = 0; ring < RING_COUNT; ++ring) {
                     double out = 1.6 + ring * ringGap + ringGap * 0.45;
                     double wx = isl.cx + ca * (rDist + out);
@@ -103,6 +123,29 @@ public final class OceanSurfaceWaves {
                     this.openOcean[ring][s] = isAnalyticalOpenOcean(plan, wx, wz);
                 }
             }
+            for (int s = 0; s < segs; ++s) {
+                int prev = (s - 1 + segs) % segs;
+                int next = (s + 1) % segs;
+                double tx = bx[next] - bx[prev];
+                double tz = bz[next] - bz[prev];
+                double len = Math.hypot(tx, tz);
+                if (len > 1.0E-4) {
+                    // Внешняя нормаль к обходу против часовой стрелки в плоскости (X, Z)
+                    double nx = tz / len;
+                    double nz = -tx / len;
+                    if (nx * this.cosA[s] + nz * this.sinA[s] < 0.0) {
+                        nx = -nx;
+                        nz = -nz;
+                    }
+                    this.outNx[s] = (float) nx;
+                    this.outNz[s] = (float) nz;
+                } else {
+                    this.outNx[s] = this.cosA[s];
+                    this.outNz[s] = this.sinA[s];
+                }
+            }
+            this.outNx[segs] = this.outNx[0];
+            this.outNz[segs] = this.outNz[0];
         }
     }
 
@@ -120,15 +163,26 @@ public final class OceanSurfaceWaves {
     private static int lastPlungeRadius = -1;
     private static List<Vec3> cachedPlunges = Collections.emptyList();
 
+    /** Глобальные синхронные параметры колец за текущий кадр (общие для ВСЕХ островов!). */
+    private static final float[] SYNC_CYC = new float[RING_COUNT];
+    private static final float[] SYNC_ENV = new float[RING_COUNT];
+
     private OceanSurfaceWaves() {
     }
 
-    /** Эффективный радиус волн по настройке дальности прорисовки игрока (в чанках) и дальней плоскости отсечения. */
+    /**
+     * Строгий радиус волн по дальности прорисовки игрока в чанках:
+     * НИКОГДА не превышает {@code renderDistChunks * 16 - 4}, чтобы круги не светились за прорисовкой!
+     */
     public static double effectiveWakeRadius(int renderDistChunks, double depthFar) {
         int rd = Math.max(2, renderDistChunks);
-        double byChunks = rd <= 4 ? (rd * 24.0 + 28.0) : (rd * 36.0 + 40.0);
-        double byFog = Math.max(76.0, depthFar * 0.96);
-        return Math.min(MAX_ISLAND_DIST, Math.min(byChunks, byFog));
+        double maxByLoadedChunks = Math.max(28.0, rd * 16.0 - 4.0);
+        double maxByFog = depthFar > 16.0 ? Math.max(28.0, depthFar * 0.90) : maxByLoadedChunks;
+        return Math.min(MAX_ISLAND_DIST, Math.min(maxByLoadedChunks, maxByFog));
+    }
+
+    public static double effectiveWakeRadius(int renderDistChunks, float depthFar) {
+        return effectiveWakeRadius(renderDistChunks, (double) depthFar);
     }
 
     private static WakeProfile profileOf(CityPlan.Island isl) {
@@ -157,14 +211,14 @@ public final class OceanSurfaceWaves {
         int ocean = CityPlan.get().ocean;
         double oceanSurfaceY = ocean + 0.915;
 
-        if (cam.y < ocean - 8.0 || cam.y > ocean + 230.0) return;
+        if (cam.y < ocean - 8.0 || cam.y > ocean + 210.0) return;
 
         int rdChunks = Math.max(2, mc.options.renderDistance().get());
         double wakeRadius = effectiveWakeRadius(rdChunks, mc.gameRenderer.getDepthFar());
 
         // Обновляем список островов только при смещении камеры > 16 блоков или изменении дальности прорисовки
         if (Double.isNaN(cachedCamX)
-                || Math.abs(wakeRadius - cachedRadius) > 4.0
+                || Math.abs(wakeRadius - cachedRadius) > 3.0
                 || (cam.x - cachedCamX) * (cam.x - cachedCamX) + (cam.z - cachedCamZ) * (cam.z - cachedCamZ) > 16.0 * 16.0) {
             cachedCamX = cam.x;
             cachedCamZ = cam.z;
@@ -172,8 +226,8 @@ public final class OceanSurfaceWaves {
             cachedIslands = FloatingIslands.gather(cam.x, cam.z, wakeRadius, false);
         }
 
-        // Кэш точек падения водопадов строго в пределах реальной прорисовки чанков!
-        int plungeChunkR = Math.min(PLUNGE_CHUNK_RADIUS, rdChunks);
+        // Кэш точек падения водопадов строго внутри загруженных чанков!
+        int plungeChunkR = Math.min(PLUNGE_CHUNK_RADIUS, Math.max(2, rdChunks - 1));
         long gt = level.getGameTime();
         int pcx = Mth.floor(cam.x) >> 4;
         int pcz = Mth.floor(cam.z) >> 4;
@@ -191,15 +245,23 @@ public final class OceanSurfaceWaves {
         if (cachedIslands.isEmpty() && cachedPlunges.isEmpty()) return;
 
         float time = (gt + e.getPartialTick()) * 0.05F;
-        float heightFade = (float) Mth.clamp(1.0 - Math.max(0.0, cam.y - (ocean + 120.0)) / 110.0, 0.0, 1.0);
+        float heightFade = (float) Mth.clamp(1.0 - Math.max(0.0, cam.y - (ocean + 115.0)) / 95.0, 0.0, 1.0);
         if (heightFade <= 0.01F) return;
         if (ShaderCompat.isShaderPackActive()) {
             heightFade *= 0.82F;
         }
 
+        // ЕДИНАЯ синхронная фаза и огибающая для ВСЕХ островов в мире — всего 3 вызова sin за весь кадр!
+        float basePhase = time * 0.22F;
+        for (int ring = 0; ring < RING_COUNT; ++ring) {
+            float cyc = (basePhase + ring * (1.0F / RING_COUNT)) % 1.0F;
+            if (cyc < 0.0F) cyc += 1.0F;
+            SYNC_CYC[ring] = cyc;
+            SYNC_ENV[ring] = Mth.sin(cyc * (float) Math.PI) * (1.0F - 0.22F * cyc);
+        }
+
         Vector3f look = camera.getLookVector();
         double lookHzLen = Math.hypot(look.x(), look.z());
-        // Если игрок смотрит почти вертикально вниз/вверх — отсечение по азимуту не применяем
         boolean cullBehind = lookHzLen > 0.32;
         double lookX = cullBehind ? (look.x() / lookHzLen) : 0.0;
         double lookZ = cullBehind ? (look.z() / lookHzLen) : 0.0;
@@ -224,20 +286,21 @@ public final class OceanSurfaceWaves {
         BufferBuilder bb = Tesselator.getInstance().getBuilder();
         bb.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
 
-        double loadedCheckDist = rdChunks * 16.0;
+        double maxWakeSq = wakeRadius * wakeRadius;
         for (int idx = 0, n = cachedIslands.size(); idx < n; ++idx) {
             CityPlan.Island isl = cachedIslands.get(idx);
             double dx = isl.cx - cam.x;
             double dz = isl.cz - cam.z;
             double dist = Math.hypot(dx, dz);
             double reach = isl.maxReach();
-            double maxExtent = reach + 24.0;
-            if (dist - maxExtent > wakeRadius) continue;
+            double maxExtent = reach + 20.0;
+            // Строго отсекаем любые острова, чей ближайший край уже за границей дальности прорисовки!
+            if (dist - maxExtent >= wakeRadius) continue;
             if (cullBehind && dist > maxExtent + 12.0 && (dx * lookX + dz * lookZ) < -(maxExtent + 8.0)) {
                 continue;
             }
-            drawIslandWake(bb, mat, level, isl, cam, ocean, oceanSurfaceY, time, heightFade,
-                    dist, wakeRadius, dist - maxExtent <= loadedCheckDist);
+            drawIslandWakeSync(bb, mat, level, isl, cam, ocean, oceanSurfaceY, time, heightFade,
+                    dist, wakeRadius, maxWakeSq);
         }
 
         double maxPlunge = Math.min(MAX_PLUNGE_DIST, wakeRadius);
@@ -246,9 +309,9 @@ public final class OceanSurfaceWaves {
             double dx = p.x - cam.x;
             double dz = p.z - cam.z;
             double dist = Math.hypot(dx, dz);
-            if (dist > maxPlunge) continue;
+            if (dist >= maxPlunge) continue;
             if (cullBehind && dist > 20.0 && (dx * lookX + dz * lookZ) < -16.0) continue;
-            drawWaterfallRipples(bb, mat, p, cam, oceanSurfaceY, time, heightFade, dist, maxPlunge);
+            drawWaterfallRipplesSync(bb, mat, p, cam, oceanSurfaceY, time, heightFade, dist, maxPlunge);
         }
 
         Tesselator.getInstance().end();
@@ -263,7 +326,7 @@ public final class OceanSurfaceWaves {
 
     /** Микробенчмарк расчёта волнового следа для автоматической CI-пробы производительности. */
     public static long benchmarkWakePassNanos(double camX, double camZ, int renderDistChunks) {
-        double wakeRadius = effectiveWakeRadius(renderDistChunks, renderDistChunks * 16.0 * 4.0);
+        double wakeRadius = effectiveWakeRadius(renderDistChunks, renderDistChunks * 16.0);
         long t0 = System.nanoTime();
         List<CityPlan.Island> list = FloatingIslands.gather(camX, camZ, wakeRadius, false);
         int active = 0;
@@ -275,158 +338,151 @@ public final class OceanSurfaceWaves {
         return Math.max(1L, elapsed + (active & 0));
     }
 
-    private static void drawIslandWake(BufferBuilder bb, Matrix4f mat, ClientLevel level, CityPlan.Island isl,
-                                       Vec3 cam, int ocean, double surfY, float time, float heightFade,
-                                       double dist, double wakeRadius, boolean checkLoadedChunks) {
+    public static long benchmarkWakePassNanos(Level level, Vec3 cam, Vec3 look, int renderDistChunks) {
+        return benchmarkWakePassNanos(cam.x, cam.z, renderDistChunks);
+    }
+
+    private static void drawIslandWakeSync(BufferBuilder bb, Matrix4f mat, ClientLevel level, CityPlan.Island isl,
+                                           Vec3 cam, int ocean, double surfY, float time, float heightFade,
+                                           double centerDist, double wakeRadius, double maxWakeSq) {
         WakeProfile wp = profileOf(isl);
-        double fadeStart = wakeRadius * 0.65;
-        double fadeSpan = Math.max(18.0, wakeRadius - fadeStart + wp.reach);
-        float distFade = (float) Mth.clamp(1.0 - Math.max(0.0, dist - fadeStart) / fadeSpan, 0.0, 1.0);
-        if (distFade <= 0.01F) return;
+        double nearestEdge = Math.max(0.0, centerDist - wp.reach - 18.0);
+        if (nearestEdge >= wakeRadius) return;
+
+        // Плавное затухание в 0 ДО границы прорисовки чанков/тумана — 0 светящихся колец в тумане!
+        double fadeStart = wakeRadius * 0.62;
+        double fadeSpan = Math.max(12.0, wakeRadius - fadeStart);
+        float baseDistFade = (float) Mth.clamp(1.0 - Math.max(0.0, nearestEdge - fadeStart) / fadeSpan, 0.0, 1.0);
+        if (baseDistFade <= 0.01F) return;
 
         boolean highFloating = (isl.base - isl.depth) > ocean + 3.0;
-        float kindBoost = highFloating ? 0.88F : 1.0F;
+        float kindBoost = (highFloating ? 0.88F : 1.0F) * heightFade * baseDistFade * 0.72F;
         int segs = wp.segs;
+        float camX = (float) cam.x;
+        float camZ = (float) cam.z;
+        float islCx = (float) isl.cx;
+        float islCz = (float) isl.cz;
 
         for (int ring = 0; ring < RING_COUNT; ++ring) {
-            float cyc = (time * 0.24F + wp.seed * 0.15F + ring / (float) RING_COUNT) % 1.0F;
-            if (cyc < 0.0F) cyc += 1.0F;
-
-            float env = Mth.sin(cyc * (float) Math.PI);
-            float alphaF = env * (1.0F - 0.22F * cyc) * distFade * heightFade * kindBoost * 0.72F;
-            int alpha = Mth.clamp(Math.round(alphaF * 255.0F), 0, 228);
+            float alphaF = SYNC_ENV[ring] * kindBoost;
+            int alpha = Mth.clamp(Math.round(alphaF * 255.0F), 0, 224);
             if (alpha <= 4) continue;
 
-            double outOffset = 1.6 + (ring + cyc) * wp.ringGap;
-            double halfW = (wp.baseWidth * (1.05 - 0.16 * ring)) * 0.5;
+            float outOffset = 1.6F + (ring + SYNC_CYC[ring]) * wp.ringGap;
+            float halfW = (wp.baseWidth * (1.05F - 0.16F * ring)) * 0.5F;
             boolean[] ringOpen = wp.openOcean[ring];
 
             boolean anyOk = false;
-            for (int s = 0; s <= segs; ++s) {
-                int idx = s % segs;
-                if (s == segs) {
-                    SCRATCH_PX[s] = SCRATCH_PX[0];
-                    SCRATCH_PZ[s] = SCRATCH_PZ[0];
-                    SCRATCH_OK[s] = SCRATCH_OK[0];
-                    continue;
-                }
-                double ca = wp.cosA[idx];
-                double sa = wp.sinA[idx];
-                double a = (idx / (double) segs) * (Math.PI * 2.0);
-                double wobble = 0.65 * Math.sin(a * 4.0 + time * 0.85 + wp.seed)
-                        + 0.38 * Math.cos(a * 7.0 - time * 0.62 + ring * 1.4);
-                double r = wp.rim[idx] + outOffset + wobble;
-                double wx = isl.cx + ca * r;
-                double wz = isl.cz + sa * r;
-                SCRATCH_PX[s] = wx;
-                SCRATCH_PZ[s] = wz;
-                boolean ok = ringOpen[idx] && (!checkLoadedChunks || isLoadedWaterFast(level, ocean, wx, wz));
+            for (int s = 0; s < segs; ++s) {
+                float r = wp.rim[s] + outOffset;
+                float wx = islCx + wp.cosA[s] * r;
+                float wz = islCz + wp.sinA[s] * r;
+                float rx = wx - camX;
+                float rz = wz - camZ;
+                SCRATCH_PX[s] = rx;
+                SCRATCH_PZ[s] = rz;
+                double dSq = (double) rx * rx + (double) rz * rz;
+                // Жёсткий по-вершинный отсев за радиусом прорисовки И проверка реально загруженного чанка!
+                boolean ok = dSq < maxWakeSq && ringOpen[s] && isLoadedWaterFast(level, ocean, wx, wz);
                 SCRATCH_OK[s] = ok;
                 if (ok) anyOk = true;
             }
             if (!anyOk) continue;
 
-            emitRibbonLoop(bb, mat, cam, surfY - 0.012 + ring * 0.002, SCRATCH_PX, SCRATCH_PZ, SCRATCH_OK, segs,
-                    halfW * 2.15, 168, 224, 240, Math.max(4, Math.round(alpha * 0.34F)), time * 0.10F + ring * 0.33F);
-            emitRibbonLoop(bb, mat, cam, surfY + ring * 0.002, SCRATCH_PX, SCRATCH_PZ, SCRATCH_OK, segs,
+            SCRATCH_PX[segs] = SCRATCH_PX[0];
+            SCRATCH_PZ[segs] = SCRATCH_PZ[0];
+            SCRATCH_OK[segs] = SCRATCH_OK[0];
+
+            emitPrecomputedRibbon(bb, mat, (float) (surfY - 0.012 + ring * 0.002 - cam.y),
+                    SCRATCH_PX, SCRATCH_PZ, wp.outNx, wp.outNz, SCRATCH_OK, segs,
+                    halfW * 2.10F, 168, 224, 240, Math.max(4, Math.round(alpha * 0.34F)), time * 0.10F + ring * 0.33F);
+            emitPrecomputedRibbon(bb, mat, (float) (surfY + ring * 0.002 - cam.y),
+                    SCRATCH_PX, SCRATCH_PZ, wp.outNx, wp.outNz, SCRATCH_OK, segs,
                     halfW, 246, 253, 255, alpha, time * 0.14F + ring * 0.33F);
         }
     }
 
-    private static void drawWaterfallRipples(BufferBuilder bb, Matrix4f mat, Vec3 center, Vec3 cam,
-                                             double surfY, float time, float heightFade, double dist, double maxPlunge) {
-        float distFade = (float) Mth.clamp(1.0 - Math.max(0.0, dist - maxPlunge * 0.65) / Math.max(16.0, maxPlunge * 0.35), 0.0, 1.0);
+    private static void drawWaterfallRipplesSync(BufferBuilder bb, Matrix4f mat, Vec3 center, Vec3 cam,
+                                                 double surfY, float time, float heightFade, double dist, double maxPlunge) {
+        float distFade = (float) Mth.clamp(1.0 - Math.max(0.0, dist - maxPlunge * 0.62) / Math.max(12.0, maxPlunge * 0.38), 0.0, 1.0);
         if (distFade <= 0.01F) return;
 
-        int segs = 24;
-        float seed = (float) ((center.x * 0.13 + center.z * 0.19) % 6.283);
+        float relCx = (float) (center.x - cam.x);
+        float relCz = (float) (center.z - cam.z);
+        float basePhase = time * 0.52F;
 
         for (int ring = 0; ring < 4; ++ring) {
-            float cyc = (time * 0.58F + seed * 0.2F + ring * 0.25F) % 1.0F;
+            float cyc = (basePhase + ring * 0.25F) % 1.0F;
             if (cyc < 0.0F) cyc += 1.0F;
 
             float env = Mth.sin(cyc * (float) Math.PI);
-            int alpha = Mth.clamp(Math.round(env * (1.0F - 0.28F * cyc) * distFade * heightFade * 238.0F), 0, 242);
+            int alpha = Mth.clamp(Math.round(env * (1.0F - 0.28F * cyc) * distFade * heightFade * 234.0F), 0, 238);
             if (alpha <= 4) continue;
 
-            double rBase = 0.75 + (ring + cyc) * 2.55;
-            double halfW = (ring == 0 ? 0.62 : 0.44) * (1.05 - 0.12 * ring);
+            float rBase = 0.75F + (ring + cyc) * 2.50F;
+            float halfW = (ring == 0 ? 0.60F : 0.42F) * (1.05F - 0.12F * ring);
 
-            for (int s = 0; s <= segs; ++s) {
-                double a = (s % segs) / (double) segs * Math.PI * 2.0;
-                double wob = 0.22 * Math.sin(a * 5.0 + time * 1.6 + seed);
-                double rr = rBase + wob;
-                SCRATCH_PX[s] = center.x + Math.cos(a) * rr;
-                SCRATCH_PZ[s] = center.z + Math.sin(a) * rr;
+            for (int s = 0; s <= PLUNGE_SEGS; ++s) {
+                SCRATCH_PX[s] = relCx + PLUNGE_COS[s] * rBase;
+                SCRATCH_PZ[s] = relCz + PLUNGE_SIN[s] * rBase;
                 SCRATCH_OK[s] = true;
             }
 
-            emitRibbonLoop(bb, mat, cam, surfY + 0.008 + ring * 0.002, SCRATCH_PX, SCRATCH_PZ, SCRATCH_OK, segs,
-                    halfW * 1.9, 175, 232, 245, Math.max(4, Math.round(alpha * 0.40F)), time * 0.22F);
-            emitRibbonLoop(bb, mat, cam, surfY + 0.016 + ring * 0.002, SCRATCH_PX, SCRATCH_PZ, SCRATCH_OK, segs,
-                    halfW, 250, 254, 255, alpha, time * 0.28F);
+            emitPrecomputedRibbon(bb, mat, (float) (surfY + 0.008 + ring * 0.002 - cam.y),
+                    SCRATCH_PX, SCRATCH_PZ, PLUNGE_COS, PLUNGE_SIN, SCRATCH_OK, PLUNGE_SEGS,
+                    halfW * 1.85F, 175, 232, 245, Math.max(4, Math.round(alpha * 0.40F)), time * 0.20F);
+            emitPrecomputedRibbon(bb, mat, (float) (surfY + 0.016 + ring * 0.002 - cam.y),
+                    SCRATCH_PX, SCRATCH_PZ, PLUNGE_COS, PLUNGE_SIN, SCRATCH_OK, PLUNGE_SEGS,
+                    halfW, 250, 254, 255, alpha, time * 0.26F);
         }
     }
 
-    private static void emitRibbonLoop(BufferBuilder bb, Matrix4f mat, Vec3 cam, double worldY,
-                                       double[] px, double[] pz, boolean[] ok, int segs, double halfW,
-                                       int r, int g, int b, int maxAlpha, float uScroll) {
-        float y = (float) (worldY - cam.y);
+    /** Мгновенная генерация квадов по предвычисленным нормалям — 0 hypot/делений/аллокаций на вершину! */
+    private static void emitPrecomputedRibbon(BufferBuilder bb, Matrix4f mat, float relY,
+                                              float[] rx, float[] rz, float[] nx, float[] nz,
+                                              boolean[] ok, int segs, float halfW,
+                                              int r, int g, int b, int maxAlpha, float uScroll) {
         for (int s = 0; s < segs; ++s) {
             if (!ok[s] || !ok[s + 1]) continue;
 
-            int prev = (s - 1 + segs) % segs;
-            int next = (s + 2) % segs;
-            float a0 = ok[prev] ? 1.0F : 0.18F;
-            float a1 = ok[next] ? 1.0F : 0.18F;
-            int al0 = Math.round(maxAlpha * a0);
-            int al1 = Math.round(maxAlpha * a1);
+            int prev = s == 0 ? segs - 1 : s - 1;
+            int next = (s + 2) >= segs ? (s + 2 - segs) : (s + 2);
+            int al0 = ok[prev] ? maxAlpha : Math.max(2, maxAlpha >> 2);
+            int al1 = ok[next] ? maxAlpha : Math.max(2, maxAlpha >> 2);
             if (al0 <= 3 && al1 <= 3) continue;
 
-            double dx0 = px[s + 1] - px[s];
-            double dz0 = pz[s + 1] - pz[s];
-            double len0 = Math.hypot(dx0, dz0);
-            if (len0 < 1.0E-4 || len0 > 42.0) continue;
+            float x0Mid = rx[s];
+            float z0Mid = rz[s];
+            float x1Mid = rx[s + 1];
+            float z1Mid = rz[s + 1];
 
-            double nx0 = -dz0 / len0;
-            double nz0 = dx0 / len0;
+            float nx0 = nx[s] * halfW;
+            float nz0 = nz[s] * halfW;
+            float nx1 = nx[s + 1] * halfW;
+            float nz1 = nz[s + 1] * halfW;
 
-            double dx1 = px[(s + 2) % (segs + 1)] - px[s + 1];
-            double dz1 = pz[(s + 2) % (segs + 1)] - pz[s + 1];
-            if (s + 1 == segs) {
-                dx1 = px[1] - px[0];
-                dz1 = pz[1] - pz[0];
-            }
-            double len1 = Math.hypot(dx1, dz1);
-            double nx1 = len1 > 1.0E-4 ? -dz1 / len1 : nx0;
-            double nz1 = len1 > 1.0E-4 ? dx1 / len1 : nz0;
+            float x0In = x0Mid - nx0;
+            float z0In = z0Mid - nz0;
+            float x0Out = x0Mid + nx0;
+            float z0Out = z0Mid + nz0;
 
-            float x0In = (float) (px[s] - nx0 * halfW - cam.x);
-            float z0In = (float) (pz[s] - nz0 * halfW - cam.z);
-            float x0Mid = (float) (px[s] - cam.x);
-            float z0Mid = (float) (pz[s] - cam.z);
-            float x0Out = (float) (px[s] + nx0 * halfW - cam.x);
-            float z0Out = (float) (pz[s] + nz0 * halfW - cam.z);
-
-            float x1In = (float) (px[s + 1] - nx1 * halfW - cam.x);
-            float z1In = (float) (pz[s + 1] - nz1 * halfW - cam.z);
-            float x1Mid = (float) (px[s + 1] - cam.x);
-            float z1Mid = (float) (pz[s + 1] - cam.z);
-            float x1Out = (float) (px[s + 1] + nx1 * halfW - cam.x);
-            float z1Out = (float) (pz[s + 1] + nz1 * halfW - cam.z);
+            float x1In = x1Mid - nx1;
+            float z1In = z1Mid - nz1;
+            float x1Out = x1Mid + nx1;
+            float z1Out = z1Mid + nz1;
 
             float u0 = uScroll + s * 0.25F;
             float u1 = uScroll + (s + 1) * 0.25F;
 
-            bb.vertex(mat, x0In, y, z0In).uv(u0, 0.02F).color(r, g, b, 0).endVertex();
-            bb.vertex(mat, x1In, y, z1In).uv(u1, 0.02F).color(r, g, b, 0).endVertex();
-            bb.vertex(mat, x1Mid, y, z1Mid).uv(u1, 0.50F).color(r, g, b, al1).endVertex();
-            bb.vertex(mat, x0Mid, y, z0Mid).uv(u0, 0.50F).color(r, g, b, al0).endVertex();
+            bb.vertex(mat, x0In, relY, z0In).uv(u0, 0.02F).color(r, g, b, 0).endVertex();
+            bb.vertex(mat, x1In, relY, z1In).uv(u1, 0.02F).color(r, g, b, 0).endVertex();
+            bb.vertex(mat, x1Mid, relY, z1Mid).uv(u1, 0.50F).color(r, g, b, al1).endVertex();
+            bb.vertex(mat, x0Mid, relY, z0Mid).uv(u0, 0.50F).color(r, g, b, al0).endVertex();
 
-            bb.vertex(mat, x0Mid, y, z0Mid).uv(u0, 0.50F).color(r, g, b, al0).endVertex();
-            bb.vertex(mat, x1Mid, y, z1Mid).uv(u1, 0.50F).color(r, g, b, al1).endVertex();
-            bb.vertex(mat, x1Out, y, z1Out).uv(u1, 0.98F).color(r, g, b, 0).endVertex();
-            bb.vertex(mat, x0Out, y, z0Out).uv(u0, 0.98F).color(r, g, b, 0).endVertex();
+            bb.vertex(mat, x0Mid, relY, z0Mid).uv(u0, 0.50F).color(r, g, b, al0).endVertex();
+            bb.vertex(mat, x1Mid, relY, z1Mid).uv(u1, 0.50F).color(r, g, b, al1).endVertex();
+            bb.vertex(mat, x1Out, relY, z1Out).uv(u1, 0.98F).color(r, g, b, 0).endVertex();
+            bb.vertex(mat, x0Out, relY, z0Out).uv(u0, 0.98F).color(r, g, b, 0).endVertex();
         }
     }
 
@@ -438,15 +494,19 @@ public final class OceanSurfaceWaves {
         }
         return WaterfallGardens.landAt(wx, wz) == null
                 && !AshenLands.inside(wx, wz)
-                && !MistKeep.inside(wx, wz);
+                && !MistKeep.inside(wx, wz)
+                && !ru.aiforge.riftworld.world.BlacktideCitadel.insideAnyFootprint(wx, wz, 10.0);
     }
 
-    /** Мгновенная проверка воды в уже загруженном чанке (0 аллокаций BlockPos и 0 вызовов генератора!). */
-    private static boolean isLoadedWaterFast(ClientLevel level, int ocean, double wx, double wz) {
+    /**
+     * Мгновенная проверка воды ТОЛЬКО в реально загруженном чанке:
+     * если чанк за дальностью прорисовки ({@code ch == null}) — СТРОГО возвращаем {@code false}!
+     */
+    private static boolean isLoadedWaterFast(ClientLevel level, int ocean, float wx, float wz) {
         int bx = Mth.floor(wx);
         int bz = Mth.floor(wz);
         LevelChunk ch = level.getChunkSource().getChunkNow(bx >> 4, bz >> 4);
-        if (ch == null) return true;
+        if (ch == null) return false;
         int secIdx = ch.getSectionIndex(ocean);
         LevelChunkSection[] secs = ch.getSections();
         if (secIdx < 0 || secIdx >= secs.length) return false;

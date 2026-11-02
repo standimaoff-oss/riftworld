@@ -107,7 +107,8 @@ public final class SeaLifeKeeper {
         int n = Math.min(9, Math.max(4, PEACEFUL_TARGET - havePeaceful));
         for (int i = 0; i < n; i++) {
             Vec3 p = at.add((rnd().nextDouble() - 0.5) * 4.0, (rnd().nextDouble() - 0.5) * 2.0, (rnd().nextDouble() - 0.5) * 4.0);
-            if (SeaFishEntity.elisarWater(sl, BlockPos.containing(p))) SeaFishEntity.spawn(sl, p, variant);
+            BlockPos bp = BlockPos.containing(p);
+            if (sl.hasChunk(bp.getX() >> 4, bp.getZ() >> 4) && SeaFishEntity.elisarWater(sl, bp)) SeaFishEntity.spawn(sl, p, variant);
         }
     }
 

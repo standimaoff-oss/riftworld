@@ -127,11 +127,17 @@ public class ModelBER<T extends BlockEntity> implements BlockEntityRenderer<T> {
 
     @Override
     public boolean shouldRenderOffScreen(T be) {
-        return true;
+        BlockState st = be.getBlockState();
+        if (st.getBlock() instanceof ModelBlock mb) {
+            return mb.kind == ModelKind.LAB_DOOR || mb.kind == ModelKind.PORTAL_HELM;
+        }
+        return false;
     }
 
     @Override
     public int getViewDistance() {
-        return 96;
+        var mc = net.minecraft.client.Minecraft.getInstance();
+        int rd = mc.options != null ? Math.max(2, mc.options.renderDistance().get()) : 8;
+        return Math.min(72, Math.max(28, rd * 16));
     }
 }

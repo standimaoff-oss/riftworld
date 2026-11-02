@@ -252,6 +252,7 @@ public final class WildIslands {
                 double x = ox + m + r.nextDouble() * (CELL - 2 * m), z = oz + m + r.nextDouble() * (CELL - 2 * m);
                 if (Math.hypot(x, z) - R * 1.15 < CITY_CLEAR) continue;
                 if (AshenLands.blocks(x, z, R * 1.15 + 28)) continue;                                               // any AshenLands castle region
+                if (BlacktideCitadel.insideAnyFootprint(x, z, R * 1.15 + 48)) continue;                             // open-ocean Blacktide Citadel + seabed bridge
                 EmberRuins.Site es = EmberRuins.siteAt(x, z);
                 if (es != null && Math.hypot(x - es.cx, z - es.cz) < R * 1.15 + es.island.maxReach() + 10) continue; // ruins island
                 if (VioletHills.nearAny(x, z, R * 1.15, 36)) continue;                                              // violet hills archipelago + chasms

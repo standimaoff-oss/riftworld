@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "III",
+    "CCC"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_nugget"
+    },
+    "C": {
+      "item": "riftworld:lab_concrete"
+    }
+  },
+  "result": {
+    "item": "riftworld:steel_floor",
+    "count": 6
+  }
+}

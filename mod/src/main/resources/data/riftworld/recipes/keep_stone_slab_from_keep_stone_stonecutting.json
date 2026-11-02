@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "riftworld:keep_stone"
+  },
+  "result": "riftworld:keep_stone_slab",
+  "count": 2
+}

@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "riftworld:elisar_ivy",
+    "riftworld:garden_ivy",
+    "riftworld:elisar_moss",
+    "riftworld:blossom_moss_block",
+    "minecraft:vine",
+    "minecraft:moss_block"
+  ]
+}

@@ -370,12 +370,15 @@ public final class ElisarSea {
         }
         if (d <= 5) return hash(x, y, z) < 0.35 ? st(ElisarBlocks.SEABED) : st(ElisarBlocks.STONE);
         double n = vnoise3(x * 0.05, y * 0.09, z * 0.05, 453);
+        double coinVein = vnoise3(x * 0.22, y * 0.24, z * 0.22, 477);
         if (d < 30) {
+            if (coinVein > 0.815 && hash3(x, y, z, 479) < 0.72) return st(ElisarBlocks.DUCAT_ORE);
             if (n > 0.70) return st(ElisarBlocks.REEF_STONE);
             if (n < 0.30) return st(ElisarBlocks.STONE_MOSSY);
             return hash(x, y, z) < 0.10 ? st(ElisarBlocks.COBBLE) : st(ElisarBlocks.STONE);
         }
-        // глубокая порода: тёмные слои с прожилками и редкими карманами ила
+        // глубокая порода: тёмные слои с прожилками и редкими жилами глубинносланцевой монетной руды
+        if (coinVein > 0.805 && hash3(x, y, z, 480) < 0.75) return st(ElisarBlocks.DEEPSLATE_DUCAT_ORE);
         if (n > 0.78) return st(ElisarBlocks.STONE_MOSSY);
         return hash(x, y, z) < 0.08 ? st(ElisarBlocks.COBBLE) : st(ElisarBlocks.STONE);
     }

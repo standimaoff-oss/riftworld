@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "riftworld:garden_limestone"
+    },
+    {
+      "tag": "riftworld:mod_vines"
+    }
+  ],
+  "result": {
+    "item": "riftworld:garden_limestone_mossy",
+    "count": 1
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "CCC",
+    "RRQ",
+    "CCC"
+  ],
+  "key": {
+    "C": {
+      "tag": "riftworld:mod_cobblestone"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "Q": {
+      "item": "minecraft:quartz"
+    }
+  },
+  "result": {
+    "item": "minecraft:observer",
+    "count": 1
+  }
+}

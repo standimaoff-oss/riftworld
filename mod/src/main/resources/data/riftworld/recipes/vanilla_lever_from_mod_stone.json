@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "S",
+    "C"
+  ],
+  "key": {
+    "S": {
+      "item": "minecraft:stick"
+    },
+    "C": {
+      "tag": "riftworld:mod_cobblestone"
+    }
+  },
+  "result": {
+    "item": "minecraft:lever",
+    "count": 1
+  }
+}

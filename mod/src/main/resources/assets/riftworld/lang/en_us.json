@@ -544,5 +544,7 @@
   "block.riftworld.ivory_marble_bricks_slab": "Ivory Marble Brick Slab",
   "block.riftworld.ashen_cobblestone_stairs": "Ashen Cobblestone Stairs",
   "block.riftworld.ashen_cobblestone_slab": "Ashen Cobblestone Slab",
-  "block.riftworld.ashen_cobblestone_wall": "Ashen Cobblestone Wall"
+  "block.riftworld.ashen_cobblestone_wall": "Ashen Cobblestone Wall",
+  "block.riftworld.ducat_ore": "Ducat Coin Ore",
+  "block.riftworld.deepslate_ducat_ore": "Deepslate Ducat Coin Ore"
 }

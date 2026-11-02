@@ -95,6 +95,11 @@ public final class ElisarBlocks {
     // улучшение биомов: монетоносная руда города - змеится прожилками в известняковых ярусах Висячих садов (биом 07)
     public static final RegistryObject<Block> AURITE_ORE = ModBlocks.reg("aurite_ore",
             () -> new Block(p(MapColor.GOLD, 3.0F, SoundType.STONE).requiresCorrectToolForDrops()));
+    // v0.29.0: Монетная руда (выплавляется в печи/плавильне прямо в Монету Элисара elisar_ducat!) — в скалах Элисара и Обычного мира!
+    public static final RegistryObject<Block> DUCAT_ORE = ModBlocks.reg("ducat_ore",
+            () -> new Block(p(MapColor.GOLD, 3.0F, SoundType.STONE).requiresCorrectToolForDrops()));
+    public static final RegistryObject<Block> DEEPSLATE_DUCAT_ORE = ModBlocks.reg("deepslate_ducat_ore",
+            () -> new Block(p(MapColor.GOLD, 4.5F, SoundType.DEEPSLATE).requiresCorrectToolForDrops()));
     // мини-биом «Туманный данж» (рев 5): обломчатый серо-зелёный камень утёсов, частичные блоки для почти сломанной руины
     public static final RegistryObject<Block> KEEP_STONE = cube("keep_stone", MapColor.TERRACOTTA_LIGHT_GRAY, 2.2F, SoundType.STONE);
     public static final RegistryObject<Block> KEEP_STONE_CRACKED = cube("keep_stone_cracked", MapColor.TERRACOTTA_LIGHT_GRAY, 2.2F, SoundType.STONE);

@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GMG",
+    "MDM",
+    "GMG"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:gold_ingot"
+    },
+    "M": {
+      "item": "riftworld:temple_mosaic"
+    },
+    "D": {
+      "item": "riftworld:elisar_ducat"
+    }
+  },
+  "result": {
+    "item": "riftworld:mosaic_core",
+    "count": 1
+  }
+}

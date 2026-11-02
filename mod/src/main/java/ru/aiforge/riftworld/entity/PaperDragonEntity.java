@@ -1207,6 +1207,18 @@ public class PaperDragonEntity extends FlyingMob {
         waypointTimer = 150 + this.random.nextInt(90);
     }
 
+    private double cachedPushRight = 0.0;
+    private double cachedPushUp = 0.0;
+
+    private static boolean isRayLoaded(Level level, Vec3 start, Vec3 end) {
+        int sx = Mth.floor(start.x) >> 4, sz = Mth.floor(start.z) >> 4;
+        int ex = Mth.floor(end.x) >> 4, ez = Mth.floor(end.z) >> 4;
+        if (!level.hasChunk(sx, sz) || !level.hasChunk(ex, ez)) return false;
+        int mx = Mth.floor((start.x + end.x) * 0.5) >> 4;
+        int mz = Mth.floor((start.z + end.z) * 0.5) >> 4;
+        return level.hasChunk(mx, mz);
+    }
+
     private Vec3 blendMultiRayClearance(Vec3 desired, int ocean) {
         Vec3 start = this.position();
         Vec3 d = desired.lengthSqr() > 1.0E-5 ? desired.normalize() : new Vec3(0, 0, 1);
@@ -1214,17 +1226,30 @@ public class PaperDragonEntity extends FlyingMob {
         if (right.lengthSqr() > 1.0E-4) right = right.normalize();
         else right = new Vec3(1, 0, 0);
 
+        // На диких/свободных драконах обновляем лучевые проверки раз в 3 тика И строго по уже загруженным чанкам
+        // (0 синхронных вызовов генерации чанков на ServerLevel!).
+        if ((this.tickCount + this.getId()) % 3 != 0) {
+            return d.add(right.scale(cachedPushRight)).add(0.0, cachedPushUp, 0.0);
+        }
+        if (!this.level().hasChunk(this.getBlockX() >> 4, this.getBlockZ() >> 4)) {
+            cachedPushRight = 0.0;
+            cachedPushUp = 0.0;
+            return d;
+        }
+
         double pushRight = 0.0;
         double pushUp = 0.0;
 
         double[] angles = {-0.48, -0.24, 0.0, 0.24, 0.48};
         for (double a : angles) {
             Vec3 rayDir = d.scale(Math.cos(a)).add(right.scale(Math.sin(a))).normalize();
+            Vec3 end = start.add(rayDir.scale(26.0));
+            if (!isRayLoaded(this.level(), start, end)) continue;
             var hit = this.level().clip(new ClipContext(
-                    start, start.add(rayDir.scale(30.0)),
+                    start, end,
                     ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, this));
             if (hit.getType() != HitResult.Type.MISS) {
-                double frac = 1.0 - Math.min(1.0, Math.sqrt(hit.getLocation().distanceToSqr(start)) / 30.0);
+                double frac = 1.0 - Math.min(1.0, Math.sqrt(hit.getLocation().distanceToSqr(start)) / 26.0);
                 if (a < -0.05) pushRight += frac * 0.32;
                 else if (a > 0.05) pushRight -= frac * 0.32;
                 else {
@@ -1243,16 +1268,20 @@ public class PaperDragonEntity extends FlyingMob {
                 }
             }
         } else {
-            var ceilHit = this.level().clip(new ClipContext(
-                    start, start.add(0.0, 13.0, 0.0),
-                    ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
-            if (ceilHit.getType() != HitResult.Type.MISS) {
-                pushUp -= 0.24;
+            Vec3 ceilEnd = start.add(0.0, 13.0, 0.0);
+            if (isRayLoaded(this.level(), start, ceilEnd)) {
+                var ceilHit = this.level().clip(new ClipContext(
+                        start, ceilEnd,
+                        ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
+                if (ceilHit.getType() != HitResult.Type.MISS) {
+                    pushUp -= 0.24;
+                }
             }
         }
 
-        return d.add(right.scale(Mth.clamp(pushRight, -0.55, 0.55)))
-                .add(0.0, Mth.clamp(pushUp, -0.35, 0.40), 0.0);
+        cachedPushRight = Mth.clamp(pushRight, -0.55, 0.55);
+        cachedPushUp = Mth.clamp(pushUp, -0.35, 0.40);
+        return d.add(right.scale(cachedPushRight)).add(0.0, cachedPushUp, 0.0);
     }
 
     public void setHomeAnchor(Vec3 anchor, int mode) {

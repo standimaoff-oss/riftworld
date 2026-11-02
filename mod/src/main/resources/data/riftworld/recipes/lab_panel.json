@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "II",
+    "CC"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "C": {
+      "item": "riftworld:lab_concrete"
+    }
+  },
+  "result": {
+    "item": "riftworld:lab_panel",
+    "count": 4
+  }
+}

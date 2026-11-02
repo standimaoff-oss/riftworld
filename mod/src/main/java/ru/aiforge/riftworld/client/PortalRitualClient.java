@@ -6,6 +6,7 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.Camera;
 import net.minecraft.client.CameraType;
@@ -29,6 +30,8 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Marker;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.material.FogType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -89,8 +92,9 @@ public final class PortalRitualClient {
 
     // Кэш граней блоков вокруг открывающегося/открытого портала на 50+ блоков (READ-ONLY: 0 изменённых блоков мира!)
     private static final float MAX_BLEACH_RADIUS = 50.0F;
-    private static final int BLEACH_SCAN_R = 52;
-    private static final int MAX_FACES = 150000;
+    private static final int BLEACH_SCAN_R = 51;
+    private static final int MAX_FACES = 42000;
+    private static final int MAX_MANDALA_FACES = 3072;
     private static BlockPos capturedFor = null;
     private static int faceCount = 0;
     private static final float[] fMinX = new float[MAX_FACES];
@@ -101,6 +105,12 @@ public final class PortalRitualClient {
     private static final float[] fMaxZ = new float[MAX_FACES];
     private static final byte[] fDir = new byte[MAX_FACES];
     private static final float[] fDist = new float[MAX_FACES];
+    private static final short[] fFullAlpha = new short[MAX_FACES];
+    private static final int[] mandalaIdx = new int[MAX_MANDALA_FACES];
+    private static int mandalaCount = 0;
+    private static VertexBuffer bleachSidesVbo = null;
+    private static VertexBuffer bleachFloorVbo = null;
+    private static boolean bleachVbosBaked = false;
 
     // Купол 2D-глаз Элисара высоко в небе при открытии портала
     private static final int SKY_EYE_COUNT = 22;
@@ -144,6 +154,21 @@ public final class PortalRitualClient {
                 || phase == PortalRitual.ARRIVE_FLASH;
     }
 
+    private static void resetBleachCapture() {
+        capturedFor = null;
+        faceCount = 0;
+        mandalaCount = 0;
+        bleachVbosBaked = false;
+        if (bleachSidesVbo != null) {
+            bleachSidesVbo.close();
+            bleachSidesVbo = null;
+        }
+        if (bleachFloorVbo != null) {
+            bleachFloorVbo.close();
+            bleachFloorVbo = null;
+        }
+    }
+
     public static void onMsg(PortalRitualMsg m) {
         Minecraft mc = Minecraft.getInstance();
         int prevPhase = phase;
@@ -152,8 +177,7 @@ public final class PortalRitualClient {
         tick = m.elapsed();
 
         if (phase == PortalRitual.AWAKEN && (prevPhase != PortalRitual.AWAKEN || !center.equals(capturedFor))) {
-            capturedFor = null;
-            faceCount = 0;
+            resetBleachCapture();
         } else if (phase == PortalRitual.TRANSIT_VEIL || phase == PortalRitual.CITY_CUTSCENE) {
             enforceLockedFirstPersonAndNoScreen(mc);
             if (phase == PortalRitual.CITY_CUTSCENE) {
@@ -161,8 +185,9 @@ public final class PortalRitualClient {
             }
         } else if (phase == PortalRitual.NONE) {
             releaseCutsceneCamera(mc);
-            capturedFor = null;
-            faceCount = 0;
+            if (openRiftCenter == null) {
+                resetBleachCapture();
+            }
         }
     }
 
@@ -365,10 +390,11 @@ public final class PortalRitualClient {
 
         // Постоянно отслеживаем ближайший открытый SpatialRiftEntity, чтобы белая аура на 50 блоков держалась пока открыт разлом!
         if (mc.level != null && mc.player != null) {
-            if (++openRiftScanCooldown >= 4 || openRiftCenter == null) {
+            if (++openRiftScanCooldown >= 6 || openRiftCenter == null) {
                 openRiftScanCooldown = 0;
+                double maxScan = Math.min(84.0, Math.max(2, mc.options.renderDistance().get()) * 16.0 + 16.0);
                 var rifts = mc.level.getEntitiesOfClass(SpatialRiftEntity.class,
-                        mc.player.getBoundingBox().inflate(88.0), Entity::isAlive);
+                        mc.player.getBoundingBox().inflate(maxScan), Entity::isAlive);
                 SpatialRiftEntity nearest = null;
                 double bestD2 = Double.MAX_VALUE;
                 for (SpatialRiftEntity sr : rifts) {
@@ -397,13 +423,11 @@ public final class PortalRitualClient {
             if (!inElisar && bleachTarget != null && (capturedFor == null || capturedFor.distSqr(bleachTarget) > 4.0)) {
                 captureBleachFaces(mc.level, bleachTarget);
             } else if ((inElisar || (bleachTarget == null && phase == PortalRitual.NONE)) && capturedFor != null) {
-                capturedFor = null;
-                faceCount = 0;
+                resetBleachCapture();
             }
         } else {
             openRiftCenter = null;
-            capturedFor = null;
-            faceCount = 0;
+            resetBleachCapture();
         }
 
         if (phase == PortalRitual.NONE) return;
@@ -766,15 +790,129 @@ public final class PortalRitualClient {
         RenderSystem.disableBlend();
     }
 
+    private static void bakeBleachVbos(BlockPos basePos) {
+        bleachVbosBaked = true;
+        float bx0 = basePos.getX(), by0 = basePos.getY(), bz0 = basePos.getZ();
+        float rcx = bx0 + 0.5F, rcz = bz0 + 0.5F;
+        float eps = 0.004F;
+        BufferBuilder bb = Tesselator.getInstance().getBuilder();
+
+        // 1) Статический VBO всех боковых/нижних белых граней (0 вершин из Java в каждом кадре!)
+        bb.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        int sideQuads = 0;
+        for (int i = 0; i < faceCount; ++i) {
+            if (fDir[i] == 1) continue;
+            int a = fFullAlpha[i];
+            if (a <= 2) continue;
+            int r, g, b;
+            switch (fDir[i]) {
+                case 0 -> { r = 196; g = 190; b = 178; }
+                case 2, 3 -> { r = 236; g = 231; b = 220; }
+                default -> { r = 224; g = 219; b = 207; }
+            }
+            float x0 = fMinX[i] - bx0, y0 = fMinY[i] - by0, z0 = fMinZ[i] - bz0;
+            float x1 = fMaxX[i] - bx0, y1 = fMaxY[i] - by0, z1 = fMaxZ[i] - bz0;
+            emitSideFaceIdentity(bb, fDir[i], x0, y0, z0, x1, y1, z1, eps, r, g, b, a);
+            ++sideQuads;
+        }
+        BufferBuilder.RenderedBuffer renderedSides = bb.end();
+        if (sideQuads > 0) {
+            bleachSidesVbo = new VertexBuffer(VertexBuffer.Usage.STATIC);
+            bleachSidesVbo.bind();
+            bleachSidesVbo.upload(renderedSides);
+            VertexBuffer.unbind();
+        } else {
+            renderedSides.release();
+        }
+
+        // 2) Статический VBO всех верхних плиток пола (0 вершин из Java в каждом кадре!)
+        bb.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        int floorQuads = 0;
+        for (int i = 0; i < faceCount; ++i) {
+            if (fDir[i] != 1) continue;
+            int a = fFullAlpha[i];
+            if (a <= 2) continue;
+            float wx0 = fMinX[i], wz0 = fMinZ[i];
+            float wx1 = fMaxX[i], wz1 = fMaxZ[i];
+            float yp = (fMaxY[i] - by0) + eps;
+            float u0 = (wx0 - rcx + 2.0F) * 0.25F;
+            float u1 = (wx1 - rcx + 2.0F) * 0.25F;
+            float v0 = (wz0 - rcz + 2.0F) * 0.25F;
+            float v1 = (wz1 - rcz + 2.0F) * 0.25F;
+
+            bb.vertex(wx0 - bx0, yp, wz0 - bz0).uv(u0, v0).color(255, 254, 250, a).endVertex();
+            bb.vertex(wx0 - bx0, yp, wz1 - bz0).uv(u0, v1).color(255, 254, 250, a).endVertex();
+            bb.vertex(wx1 - bx0, yp, wz1 - bz0).uv(u1, v1).color(255, 254, 250, a).endVertex();
+            bb.vertex(wx1 - bx0, yp, wz0 - bz0).uv(u1, v0).color(255, 254, 250, a).endVertex();
+            ++floorQuads;
+        }
+        BufferBuilder.RenderedBuffer renderedFloor = bb.end();
+        if (floorQuads > 0) {
+            bleachFloorVbo = new VertexBuffer(VertexBuffer.Usage.STATIC);
+            bleachFloorVbo.bind();
+            bleachFloorVbo.upload(renderedFloor);
+            VertexBuffer.unbind();
+        } else {
+            renderedFloor.release();
+        }
+    }
+
+    private static void emitSideFaceIdentity(BufferBuilder bb, byte dir,
+                                             float x0, float y0, float z0, float x1, float y1, float z1,
+                                             float eps, int r, int g, int b, int a) {
+        switch (dir) {
+            case 0 -> {
+                float yn = y0 - eps;
+                bb.vertex(x0, yn, z1).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                bb.vertex(x0, yn, z0).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                bb.vertex(x1, yn, z0).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                bb.vertex(x1, yn, z1).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+            }
+            case 2 -> {
+                float zn = z0 - eps;
+                bb.vertex(x1, y1, zn).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                bb.vertex(x1, y0, zn).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                bb.vertex(x0, y0, zn).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                bb.vertex(x0, y1, zn).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+            }
+            case 3 -> {
+                float zp = z1 + eps;
+                bb.vertex(x0, y1, zp).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                bb.vertex(x0, y0, zp).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                bb.vertex(x1, y0, zp).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                bb.vertex(x1, y1, zp).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+            }
+            case 4 -> {
+                float xn = x0 - eps;
+                bb.vertex(xn, y1, z0).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                bb.vertex(xn, y0, z0).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                bb.vertex(xn, y0, z1).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                bb.vertex(xn, y1, z1).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+            }
+            case 5 -> {
+                float xp = x1 + eps;
+                bb.vertex(xp, y0, z1).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                bb.vertex(xp, y1, z1).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                bb.vertex(xp, y1, z0).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                bb.vertex(xp, y0, z0).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+            }
+        }
+    }
+
     private static void renderElisarSurfaceAndFloorPatterns(PoseStack ps, Vec3 cam, float pt) {
-        if (faceCount <= 0) return;
+        if (faceCount <= 0 || capturedFor == null) return;
         BlockPos bc = activeBleachCenter();
         if (bc == null) return;
         float rad = bleachRadius(pt);
         if (rad <= 0.2F) return;
 
-        Matrix4f mat = ps.last().pose();
         float camX = (float) cam.x, camY = (float) cam.y, camZ = (float) cam.z;
+        double dxCam = (bc.getX() + 0.5) - cam.x;
+        double dzCam = (bc.getZ() + 0.5) - cam.z;
+        int rdChunks = Math.max(2, Minecraft.getInstance().options.renderDistance().get());
+        double maxViewDist = Math.min(112.0, rdChunks * 16.0 + 42.0);
+        if (dxCam * dxCam + dzCam * dzCam > maxViewDist * maxViewDist) return;
+
         float rcx = bc.getX() + 0.5F;
         float rcz = bc.getZ() + 0.5F;
         float t = activeBleachTime(pt);
@@ -790,133 +928,160 @@ public final class PortalRitualClient {
         RenderSystem.polygonOffset(-1.5F, -2.5F);
         RenderSystem.enablePolygonOffset();
         RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
         BufferBuilder bb = Tesselator.getInstance().getBuilder();
+        boolean fullSteadyState = rad >= MAX_BLEACH_RADIUS - 0.05F;
 
-        RenderSystem.setShaderTexture(0, ShaderCompat.WHITE_TEX);
-        bb.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-        for (int i = 0; i < faceCount; ++i) {
-            if (fDir[i] == 1) continue;
-            float d = fDist[i];
-            if (d > rad) continue;
-            // Волна раскрытия + постоянный градиент на 50 блоков: у разлома густо-белый, к краю 50 м всё скуднее!
-            float wave = Mth.clamp((rad - d) / 6.5F, 0.0F, 1.0F);
-            float radial = Mth.clamp((MAX_BLEACH_RADIUS - d) / (MAX_BLEACH_RADIUS - 7.0F), 0.0F, 1.0F);
-            float w = wave * wave * (3.0F - 2.0F * wave) * (float) Math.pow(radial, 1.50);
-            int a = Mth.clamp(Math.round(w * 224.0F), 0, 255);
-            if (a <= 2) continue;
-
-            int r, g, b;
-            switch (fDir[i]) {
-                case 0 -> { r = 196; g = 190; b = 178; }
-                case 2, 3 -> { r = 236; g = 231; b = 220; }
-                default -> { r = 224; g = 219; b = 207; }
+        if (fullSteadyState) {
+            if (!bleachVbosBaked) {
+                bakeBleachVbos(capturedFor);
             }
+            var shader = GameRenderer.getPositionTexColorShader();
+            if (shader != null) {
+                ps.pushPose();
+                ps.translate(capturedFor.getX() - cam.x, capturedFor.getY() - cam.y, capturedFor.getZ() - cam.z);
+                Matrix4f vboMv = ps.last().pose();
+                Matrix4f proj = RenderSystem.getProjectionMatrix();
+                if (bleachSidesVbo != null) {
+                    RenderSystem.setShaderTexture(0, ShaderCompat.WHITE_TEX);
+                    bleachSidesVbo.bind();
+                    bleachSidesVbo.drawWithShader(vboMv, proj, shader);
+                    VertexBuffer.unbind();
+                }
+                if (bleachFloorVbo != null) {
+                    RenderSystem.setShaderTexture(0, FLOOR_TILE_TEX);
+                    bleachFloorVbo.bind();
+                    bleachFloorVbo.drawWithShader(vboMv, proj, shader);
+                    VertexBuffer.unbind();
+                }
+                ps.popPose();
+            }
+        } else {
+            Matrix4f mat = ps.last().pose();
+            RenderSystem.setShaderTexture(0, ShaderCompat.WHITE_TEX);
+            bb.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+            for (int i = 0; i < faceCount; ++i) {
+                if (fDir[i] == 1) continue;
+                float d = fDist[i];
+                if (d > rad) continue;
+                float wave = Mth.clamp((rad - d) / 6.5F, 0.0F, 1.0F);
+                int a = Math.round(wave * wave * (3.0F - 2.0F * wave) * fFullAlpha[i]);
+                if (a <= 2) continue;
 
-            float x0 = fMinX[i] - camX, y0 = fMinY[i] - camY, z0 = fMinZ[i] - camZ;
-            float x1 = fMaxX[i] - camX, y1 = fMaxY[i] - camY, z1 = fMaxZ[i] - camZ;
-            float eps = 0.004F;
+                int r, g, b;
+                switch (fDir[i]) {
+                    case 0 -> { r = 196; g = 190; b = 178; }
+                    case 2, 3 -> { r = 236; g = 231; b = 220; }
+                    default -> { r = 224; g = 219; b = 207; }
+                }
 
-            switch (fDir[i]) {
-                case 0 -> {
-                    float yn = y0 - eps;
-                    bb.vertex(mat, x0, yn, z1).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x0, yn, z0).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x1, yn, z0).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x1, yn, z1).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
-                }
-                case 2 -> {
-                    float zn = z0 - eps;
-                    bb.vertex(mat, x1, y1, zn).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x1, y0, zn).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x0, y0, zn).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x0, y1, zn).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
-                }
-                case 3 -> {
-                    float zp = z1 + eps;
-                    bb.vertex(mat, x0, y1, zp).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x0, y0, zp).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x1, y0, zp).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, x1, y1, zp).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
-                }
-                case 4 -> {
-                    float xn = x0 - eps;
-                    bb.vertex(mat, xn, y1, z0).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, xn, y0, z0).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, xn, y0, z1).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, xn, y1, z1).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
-                }
-                case 5 -> {
-                    float xp = x1 + eps;
-                    bb.vertex(mat, xp, y0, z1).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, xp, y1, z1).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, xp, y1, z0).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
-                    bb.vertex(mat, xp, y0, z0).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                float x0 = fMinX[i] - camX, y0 = fMinY[i] - camY, z0 = fMinZ[i] - camZ;
+                float x1 = fMaxX[i] - camX, y1 = fMaxY[i] - camY, z1 = fMaxZ[i] - camZ;
+                float eps = 0.004F;
+
+                switch (fDir[i]) {
+                    case 0 -> {
+                        float yn = y0 - eps;
+                        bb.vertex(mat, x0, yn, z1).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                        bb.vertex(mat, x0, yn, z0).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                        bb.vertex(mat, x1, yn, z0).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                        bb.vertex(mat, x1, yn, z1).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                    }
+                    case 2 -> {
+                        float zn = z0 - eps;
+                        bb.vertex(mat, x1, y1, zn).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                        bb.vertex(mat, x1, y0, zn).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                        bb.vertex(mat, x0, y0, zn).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                        bb.vertex(mat, x0, y1, zn).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                    }
+                    case 3 -> {
+                        float zp = z1 + eps;
+                        bb.vertex(mat, x0, y1, zp).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                        bb.vertex(mat, x0, y0, zp).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                        bb.vertex(mat, x1, y0, zp).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                        bb.vertex(mat, x1, y1, zp).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                    }
+                    case 4 -> {
+                        float xn = x0 - eps;
+                        bb.vertex(mat, xn, y1, z0).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                        bb.vertex(mat, xn, y0, z0).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                        bb.vertex(mat, xn, y0, z1).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                        bb.vertex(mat, xn, y1, z1).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                    }
+                    case 5 -> {
+                        float xp = x1 + eps;
+                        bb.vertex(mat, xp, y0, z1).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                        bb.vertex(mat, xp, y1, z1).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                        bb.vertex(mat, xp, y1, z0).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                        bb.vertex(mat, xp, y0, z0).uv(0.5F, 0.5F).color(r, g, b, a).endVertex();
+                    }
                 }
             }
+            Tesselator.getInstance().end();
+
+            RenderSystem.setShaderTexture(0, FLOOR_TILE_TEX);
+            bb.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+            for (int i = 0; i < faceCount; ++i) {
+                if (fDir[i] != 1) continue;
+                float d = fDist[i];
+                if (d > rad) continue;
+                float wave = Mth.clamp((rad - d) / 6.0F, 0.0F, 1.0F);
+                int a = Math.round(wave * wave * (3.0F - 2.0F * wave) * fFullAlpha[i]);
+                if (a <= 2) continue;
+
+                float crest = Mth.clamp(1.0F - Math.abs((rad - d) - 1.2F) / 1.6F, 0.0F, 1.0F);
+                int tg = Mth.clamp(Math.round(Mth.lerp(crest * 0.25F, 254.0F, 240.0F)), 0, 255);
+                int tb = Mth.clamp(Math.round(Mth.lerp(crest * 0.35F, 250.0F, 198.0F)), 0, 255);
+
+                float wx0 = fMinX[i], wz0 = fMinZ[i];
+                float wx1 = fMaxX[i], wz1 = fMaxZ[i];
+                float yp = (fMaxY[i] - camY) + 0.004F;
+
+                float u0 = (wx0 - rcx + 2.0F) * 0.25F;
+                float u1 = (wx1 - rcx + 2.0F) * 0.25F;
+                float v0 = (wz0 - rcz + 2.0F) * 0.25F;
+                float v1 = (wz1 - rcz + 2.0F) * 0.25F;
+
+                bb.vertex(mat, wx0 - camX, yp, wz0 - camZ).uv(u0, v0).color(255, tg, tb, a).endVertex();
+                bb.vertex(mat, wx0 - camX, yp, wz1 - camZ).uv(u0, v1).color(255, tg, tb, a).endVertex();
+                bb.vertex(mat, wx1 - camX, yp, wz1 - camZ).uv(u1, v1).color(255, tg, tb, a).endVertex();
+                bb.vertex(mat, wx1 - camX, yp, wz0 - camZ).uv(u1, v0).color(255, tg, tb, a).endVertex();
+            }
+            Tesselator.getInstance().end();
         }
-        Tesselator.getInstance().end();
 
-        RenderSystem.setShaderTexture(0, FLOOR_TILE_TEX);
-        bb.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-        for (int i = 0; i < faceCount; ++i) {
-            if (fDir[i] != 1) continue;
-            float d = fDist[i];
-            if (d > rad) continue;
-            float wave = Mth.clamp((rad - d) / 6.0F, 0.0F, 1.0F);
-            float radial = Mth.clamp((MAX_BLEACH_RADIUS - d) / (MAX_BLEACH_RADIUS - 7.5F), 0.0F, 1.0F);
-            float w = wave * wave * (3.0F - 2.0F * wave) * (float) Math.pow(radial, 1.42);
-            float crest = Mth.clamp(1.0F - Math.abs((rad - d) - 1.2F) / 1.6F, 0.0F, 1.0F);
-            int tr = 255;
-            int tg = Mth.clamp(Math.round(Mth.lerp(crest * 0.25F, 254.0F, 240.0F)), 0, 255);
-            int tb = Mth.clamp(Math.round(Mth.lerp(crest * 0.35F, 250.0F, 198.0F)), 0, 255);
-            int a = Mth.clamp(Math.round(w * 246.0F), 0, 255);
-            if (a <= 2) continue;
+        if (mandalaCount > 0) {
+            Matrix4f mat = ps.last().pose();
+            RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+            RenderSystem.polygonOffset(-2.5F, -4.0F);
+            RenderSystem.setShaderTexture(0, FLOOR_MANDALA_TEX);
+            bb.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+            float rot = t * 0.0055F;
+            float cosR = Mth.cos(rot), sinR = Mth.sin(rot);
 
-            float wx0 = fMinX[i], wz0 = fMinZ[i];
-            float wx1 = fMaxX[i], wz1 = fMaxZ[i];
-            float yp = (fMaxY[i] - camY) + 0.004F;
+            for (int k = 0; k < mandalaCount; ++k) {
+                int i = mandalaIdx[k];
+                float d = fDist[i];
+                if (d > rad) continue;
 
-            float u0 = (wx0 - rcx + 2.0F) * 0.25F;
-            float u1 = (wx1 - rcx + 2.0F) * 0.25F;
-            float v0 = (wz0 - rcz + 2.0F) * 0.25F;
-            float v1 = (wz1 - rcz + 2.0F) * 0.25F;
+                float uWave = fullSteadyState ? 1.0F : Mth.clamp((rad - d) / 4.2F, 0.0F, 1.0F);
+                float innerFade = Mth.clamp((17.5F - d) / 8.5F, 0.0F, 1.0F);
+                float pulse = 0.90F + 0.10F * Mth.sin(t * 0.14F - d * 0.35F);
+                int a = Mth.clamp(Math.round(uWave * uWave * (3.0F - 2.0F * uWave) * innerFade * 246.0F * pulse), 0, 255);
+                if (a <= 3) continue;
 
-            bb.vertex(mat, wx0 - camX, yp, wz0 - camZ).uv(u0, v0).color(tr, tg, tb, a).endVertex();
-            bb.vertex(mat, wx0 - camX, yp, wz1 - camZ).uv(u0, v1).color(tr, tg, tb, a).endVertex();
-            bb.vertex(mat, wx1 - camX, yp, wz1 - camZ).uv(u1, v1).color(tr, tg, tb, a).endVertex();
-            bb.vertex(mat, wx1 - camX, yp, wz0 - camZ).uv(u1, v0).color(tr, tg, tb, a).endVertex();
+                float wx0 = fMinX[i], wz0 = fMinZ[i];
+                float wx1 = fMaxX[i], wz1 = fMaxZ[i];
+                float yp = (fMaxY[i] - camY) + 0.007F;
+
+                emitMandalaVertex(bb, mat, wx0, wz0, yp, camX, camZ, rcx, rcz, cosR, sinR, a);
+                emitMandalaVertex(bb, mat, wx0, wz1, yp, camX, camZ, rcx, rcz, cosR, sinR, a);
+                emitMandalaVertex(bb, mat, wx1, wz1, yp, camX, camZ, rcx, rcz, cosR, sinR, a);
+                emitMandalaVertex(bb, mat, wx1, wz0, yp, camX, camZ, rcx, rcz, cosR, sinR, a);
+            }
+            Tesselator.getInstance().end();
         }
-        Tesselator.getInstance().end();
-
-        RenderSystem.polygonOffset(-2.5F, -4.0F);
-        RenderSystem.setShaderTexture(0, FLOOR_MANDALA_TEX);
-        bb.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-        float rot = t * 0.0055F;
-        float cosR = Mth.cos(rot), sinR = Mth.sin(rot);
-
-        for (int i = 0; i < faceCount; ++i) {
-            if (fDir[i] != 1) continue;
-            float d = fDist[i];
-            if (d > rad || d > 17.5F) continue;
-            if (fMaxY[i] > bc.getY() + 4.5F) continue;
-
-            float uWave = Mth.clamp((rad - d) / 4.2F, 0.0F, 1.0F);
-            float innerFade = Mth.clamp((17.5F - d) / 8.5F, 0.0F, 1.0F);
-            float pulse = 0.90F + 0.10F * Mth.sin(t * 0.14F - d * 0.35F);
-            int a = Mth.clamp(Math.round(uWave * uWave * (3.0F - 2.0F * uWave) * innerFade * 246.0F * pulse), 0, 255);
-            if (a <= 3) continue;
-
-            float wx0 = fMinX[i], wz0 = fMinZ[i];
-            float wx1 = fMaxX[i], wz1 = fMaxZ[i];
-            float yp = (fMaxY[i] - camY) + 0.007F;
-
-            emitMandalaVertex(bb, mat, wx0, wz0, yp, camX, camZ, rcx, rcz, cosR, sinR, a);
-            emitMandalaVertex(bb, mat, wx0, wz1, yp, camX, camZ, rcx, rcz, cosR, sinR, a);
-            emitMandalaVertex(bb, mat, wx1, wz1, yp, camX, camZ, rcx, rcz, cosR, sinR, a);
-            emitMandalaVertex(bb, mat, wx1, wz0, yp, camX, camZ, rcx, rcz, cosR, sinR, a);
-        }
-        Tesselator.getInstance().end();
 
         RenderSystem.disablePolygonOffset();
         RenderSystem.polygonOffset(0.0F, 0.0F);
@@ -1013,16 +1178,18 @@ public final class PortalRitualClient {
     }
 
     private static void captureBleachFaces(ClientLevel level, BlockPos c) {
+        resetBleachCapture();
         capturedFor = c.immutable();
-        faceCount = 0;
         BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
         BlockPos.MutableBlockPos np = new BlockPos.MutableBlockPos();
         Direction[] dirs = Direction.values();
+        AABB fullBox = new AABB(0, 0, 0, 1, 1, 1);
 
         double cx = c.getX() + 0.5, cy = c.getY() + 0.5, cz = c.getZ() + 0.5;
         int r2Max = BLEACH_SCAN_R * BLEACH_SCAN_R;
+        var chunkSrc = level.getChunkSource();
 
-        // Обходим концентрическими кольцами от центра разлома наружу до 52 блоков, чтобы поле всегда было 100% симметричным!
+        // Обходим концентрическими кольцами от центра разлома наружу через прямые ссылки на LevelChunkSection!
         for (int ring = 0; ring <= BLEACH_SCAN_R && faceCount < MAX_FACES; ++ring) {
             for (int dx = -ring; dx <= ring && faceCount < MAX_FACES; ++dx) {
                 for (int dz = -ring; dz <= ring && faceCount < MAX_FACES; ++dz) {
@@ -1030,33 +1197,65 @@ public final class PortalRitualClient {
                     int h2 = dx * dx + dz * dz;
                     if (h2 > r2Max) continue;
 
-                    for (int dy = -12; dy <= 24 && faceCount < MAX_FACES; ++dy) {
+                    int bx = c.getX() + dx, bz = c.getZ() + dz;
+                    LevelChunk ch = chunkSrc.getChunkNow(bx >> 4, bz >> 4);
+                    if (ch == null) continue;
+                    LevelChunkSection[] secs = ch.getSections();
+                    int lx = bx & 15, lz = bz & 15;
+
+                    for (int dy = -10; dy <= 22 && faceCount < MAX_FACES; ++dy) {
                         if (h2 + dy * dy > r2Max) continue;
 
-                        int bx = c.getX() + dx, by = c.getY() + dy, bz = c.getZ() + dz;
-                        mp.set(bx, by, bz);
-                        if (!level.isLoaded(mp)) continue;
+                        int by = c.getY() + dy;
+                        int secIdx = ch.getSectionIndex(by);
+                        if (secIdx < 0 || secIdx >= secs.length) continue;
+                        LevelChunkSection sec = secs[secIdx];
+                        if (sec == null || sec.hasOnlyAir()) continue;
 
-                        BlockState st = level.getBlockState(mp);
+                        BlockState st = sec.getBlockState(lx, by & 15, lz);
                         if (st.isAir() || !st.getFluidState().isEmpty()) continue;
 
-                        boolean isLeaves = st.getBlock() instanceof LeavesBlock;
-                        VoxelShape colShape = st.getCollisionShape(level, mp);
-                        if (!isLeaves && colShape.isEmpty()) continue;
-
-                        AABB box = isLeaves ? new AABB(0, 0, 0, 1, 1, 1) : colShape.bounds();
                         float jitter = (float) (Math.sin(bx * 0.43 + bz * 0.37 + by * 0.29) * 1.15);
                         float dist = Math.max(0.0F, (float) Math.sqrt(
                                 (bx + 0.5 - cx) * (bx + 0.5 - cx)
                                         + (by + 0.5 - cy) * (by + 0.5 - cy) * 0.45
                                         + (bz + 0.5 - cz) * (bz + 0.5 - cz)) + jitter);
+                        if (dist >= MAX_BLEACH_RADIUS) continue;
+
+                        mp.set(bx, by, bz);
+                        boolean isLeaves = st.getBlock() instanceof LeavesBlock;
+                        AABB box;
+                        if (isLeaves || st.isCollisionShapeFullBlock(level, mp)) {
+                            box = fullBox;
+                        } else {
+                            VoxelShape colShape = st.getCollisionShape(level, mp);
+                            if (colShape.isEmpty()) continue;
+                            box = colShape.bounds();
+                        }
+
+                        float radSide = Mth.clamp((MAX_BLEACH_RADIUS - dist) / (MAX_BLEACH_RADIUS - 7.0F), 0.0F, 1.0F);
+                        short fullSideA = (short) Mth.clamp(Math.round(radSide * Mth.sqrt(radSide) * 224.0F), 0, 255);
+                        float radTop = Mth.clamp((MAX_BLEACH_RADIUS - dist) / (MAX_BLEACH_RADIUS - 7.5F), 0.0F, 1.0F);
+                        short fullTopA = (short) Mth.clamp(Math.round(radTop * Mth.sqrt(radTop) * 246.0F), 0, 255);
+                        if (fullSideA <= 2 && fullTopA <= 2) continue;
 
                         for (int di = 0; di < 6 && faceCount < MAX_FACES; ++di) {
                             Direction d = dirs[di];
                             np.setWithOffset(mp, d);
-                            BlockState nb = level.getBlockState(np);
-                            if (nb.isSolidRender(level, np)) continue;
-                            if (isLeaves && nb.getBlock() instanceof LeavesBlock) continue;
+                            LevelChunk nch = ((np.getX() >> 4) == (bx >> 4) && (np.getZ() >> 4) == (bz >> 4))
+                                    ? ch : chunkSrc.getChunkNow(np.getX() >> 4, np.getZ() >> 4);
+                            if (nch == null) continue;
+                            int nSecIdx = nch.getSectionIndex(np.getY());
+                            BlockState nb = (nSecIdx >= 0 && nSecIdx < nch.getSections().length && nch.getSections()[nSecIdx] != null)
+                                    ? nch.getSections()[nSecIdx].getBlockState(np.getX() & 15, np.getY() & 15, np.getZ() & 15)
+                                    : net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
+                            if (!nb.isAir()) {
+                                if (isLeaves && nb.getBlock() instanceof LeavesBlock) continue;
+                                if (nb.isSolidRender(level, np)) continue;
+                            }
+
+                            short fa = (di == 1) ? fullTopA : fullSideA;
+                            if (fa <= 2) continue;
 
                             int idx = faceCount++;
                             fMinX[idx] = (float) (bx + box.minX);
@@ -1067,6 +1266,11 @@ public final class PortalRitualClient {
                             fMaxZ[idx] = (float) (bz + box.maxZ);
                             fDir[idx] = (byte) di;
                             fDist[idx] = dist;
+                            fFullAlpha[idx] = fa;
+
+                            if (di == 1 && dist <= 17.5F && fMaxY[idx] <= c.getY() + 4.5F && mandalaCount < MAX_MANDALA_FACES) {
+                                mandalaIdx[mandalaCount++] = idx;
+                            }
                         }
                     }
                 }

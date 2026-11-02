@@ -1,20 +1,23 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    " I ",
-    "I#I",
-    " I "
+    "PCP",
+    "CGC",
+    "PCP"
   ],
   "key": {
-    "I": {
-      "item": "riftworld:ivory_marble"
+    "P": {
+      "item": "riftworld:pearl_calcite"
     },
-    "#": {
-      "item": "minecraft:sea_lantern"
+    "C": {
+      "item": "minecraft:amethyst_shard"
+    },
+    "G": {
+      "item": "minecraft:glowstone_dust"
     }
   },
   "result": {
     "item": "riftworld:pearl_prism_lantern",
-    "count": 2
+    "count": 1
   }
 }

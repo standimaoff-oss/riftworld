@@ -25,9 +25,11 @@ import re
 import struct
 import sys
 
-W, H, D = 248, 176, 216
-OX, OZ = -124, -100
+W, H, D = 248, 176, 228
+OX, OZ = -124, -104
 SEA_BY = 24
+GATE_LX = -16
+GATE_LZ = 36
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 OUT_NBT = os.path.join(
@@ -301,6 +303,11 @@ BANNER_N = pid("riftworld:tapestry_horn", facing="north", powered="false", broke
 BANNER_E = pid("riftworld:tapestry_horn", facing="east", powered="false", broken="false")
 BANNER_W = pid("riftworld:tapestry_horn", facing="west", powered="false", broken="false")
 LECTERN_S = pid("minecraft:lectern", facing="south", has_book="true", powered="false")
+MOSSY_SB = pid("minecraft:mossy_stone_bricks")
+BARREL_UP = pid("minecraft:barrel", facing="up", open="false")
+RUNE_BASALT = pid("riftworld:carved_basalt_runes")
+OBS_BRICKS = pid("riftworld:obsidian_bricks")
+EMBER_BRAZIER_BLK = pid("riftworld:ember_brazier_block")
 GRASS_SHORE = pid("minecraft:grass_block", snowy="false")
 DIRT_SHORE = pid("minecraft:dirt")
 
@@ -372,165 +379,384 @@ def strata_rock(lx: int, by: int, lz: int) -> int:
 
 
 # =============================================================================
-# 1. SCULPTED VOLCANIC BASALT SEA-CLIFF ISLAND (`by = 0..46`, `sub_air == 0`)
+# 1. ASYMMETRIC 2-LEVEL VOLCANIC BASALT SEA-CLIFF ISLAND (`by = 0..55`, `sub_air == 0`)
 # =============================================================================
 def build_volcanic_island():
-    print("  [1/7] Sculpting layered dark volcanic basalt sea-cliff island...")
-    # Fortress perimeter sits on (-54..+54, -78..+35). Cliffs flare naturally outward into the sea.
-    for lz in range(-94, 48):
-        for lx in range(0, 74):
-            # Distance outside the rounded fortress rectangle (-53..+53, -77..+34)
-            dx = max(0.0, lx - 53.0)
-            if lz > 34:
-                dz = lz - 34.0
-            elif lz < -77:
-                dz = -77.0 - lz
-            else:
-                dz = 0.0
-            out_d = math.hypot(dx, dz)
+    print("  [1/8] Sculpting ASYMMETRIC 2-level volcanic basalt sea-cliff island (ref 02)...")
+    for lz in range(-100, 68):
+        for lx in range(-106, 114):
+            # A) Upper Fortress Plateau (Level 2: asymmetric `-48 <= lx <= +62, -78 <= lz <= +36`)
+            dx_up = 0.0
+            if lx < -48:
+                dx_up = -48.0 - lx
+            elif lx > 62:
+                dx_up = lx - 62.0
+            dz_up = 0.0
+            if lz < -78:
+                dz_up = -78.0 - lz
+            elif lz > 36:
+                dz_up = lz - 36.0
+            out_up = math.hypot(dx_up, dz_up)
 
-            # Symmetric coastal crag modulation (smooth low-frequency ridges, NOT noisy dots!)
-            ang = math.atan2(lz + 22.0, max(0.5, float(lx)))
-            ridge = (
-                4.2 * math.cos(ang * 5.0 + 0.4)
-                + 2.8 * math.sin(lz * 0.11) * math.cos(lx * 0.10)
+            ang = math.atan2(lz + 18.0, lx - 6.0)
+            ridge_up = (
+                4.4 * math.cos(ang * 5.0 + 0.55)
+                + 2.6 * math.sin(lz * 0.11 + 0.4) * math.cos(lx * 0.09)
             )
-            max_skirt = 15.5 + max(-3.5, ridge)
-            if out_d > max_skirt:
-                continue
+            skirt_up = 16.5 + max(-3.5, ridge_up)
 
-            if out_d <= 0.01:
-                # Inside curtain perimeter: solid bedrock foundation up to courtyard/keep grade
-                in_keep_terrace = (lx <= 30 and -79 <= lz <= 6)
+            top_y = -1
+            if out_up <= 0.01:
+                in_keep_terrace = (-30 <= lx <= 30 and -79 <= lz <= 6)
                 top_y = 55 if in_keep_terrace else 46
-            else:
-                t = out_d / max_skirt
-                # Steep dramatic coastal cliff dropping cleanly beneath sea level (SEA_BY=24) to by=0
-                prof = (1.0 - t * t) ** 1.35
-                top_y = int(round(4.0 + 42.0 * prof))
+            elif out_up <= skirt_up:
+                t = out_up / skirt_up
+                prof = (1.0 - t * t) ** 1.32
+                top_y = max(top_y, int(round(3.0 + 43.0 * prof)))
 
-            for by in range(0, top_y + 1):
-                put_sym(lx, by, lz, strata_rock(lx, by, lz))
+            # B) Lower Harbor Terrace (Level 1 East/Southeast Shelf: `lx = +14..+98, lz = -42..+50`, `by = 31`)
+            dx_lo = 0.0
+            if lx < 14:
+                dx_lo = 14.0 - lx
+            elif lx > 96:
+                dx_lo = lx - 96.0
+            dz_lo = 0.0
+            if lz < -40:
+                dz_lo = -40.0 - lz
+            elif lz > 48:
+                dz_lo = lz - 48.0
+            # Taper front-east corner naturally into a rocky cape
+            corner_cut = max(0.0, (lx - 72.0) * 0.45 + (lz - 30.0) * 0.55 - 10.0)
+            out_lo = math.hypot(dx_lo, dz_lo) + corner_cut
+            skirt_lo = 13.5 + 3.2 * math.sin(lz * 0.12 - lx * 0.08)
+            if out_lo <= 0.01:
+                top_y = max(top_y, 31)
+            elif out_lo <= skirt_lo:
+                t_lo = out_lo / skirt_lo
+                prof_lo = (1.0 - t_lo * t_lo) ** 1.28
+                top_y = max(top_y, int(round(2.0 + 29.0 * prof_lo)))
+
+            # C) Asymmetric Southwest Rocky Sea-Spur (Level 1 West Cape: `lx = -88..-48, lz = -22..+12`, `by = 30`)
+            dx_sp = 0.0
+            if lx < -85:
+                dx_sp = -85.0 - lx
+            elif lx > -46:
+                dx_sp = lx - (-46.0)
+            dz_sp = 0.0
+            if lz < -18:
+                dz_sp = -18.0 - lz
+            elif lz > 8:
+                dz_sp = lz - 8.0
+            out_sp = math.hypot(dx_sp, dz_sp)
+            skirt_sp = 11.5 + 2.5 * math.cos(lx * 0.14 + lz * 0.13)
+            if out_sp <= 0.01:
+                top_y = max(top_y, 30)
+            elif out_sp <= skirt_sp:
+                t_sp = out_sp / skirt_sp
+                prof_sp = (1.0 - t_sp * t_sp) ** 1.30
+                top_y = max(top_y, int(round(2.0 + 28.0 * prof_sp)))
+
+            if top_y >= 0:
+                for by in range(0, top_y + 1):
+                    set_raw(lx, by, lz, strata_rock(lx, by, lz))
 
 
 # =============================================================================
-# 2. SHORE ABUTMENT & UNBROKEN 4-ARCH VIADUCT BRIDGE (`lz = 36..104`, 0 SEA STUBS!)
+# 2. SUBMERGED DROWNED SEABED BRIDGE (`lz = 37..121` at `GATE_LX = -16`, NO LAND ISLAND!)
 # =============================================================================
+def bridge_deck_y(lz: int) -> int:
+    """
+    Monumental stone arched causeway emerging directly from the deep seabed (`by = 2`),
+    breaking through the ocean waves at `lz = 88` (`SEA_BY = 24`), and rising on tall
+    Gothic arches up to the off-center Twin-Towered Gatehouse (`lz = 37`, `by = 46`).
+    """
+    if lz <= 54:
+        return 46
+    if lz <= 88:
+        # Smooth architectural ramp from `by = 46` (`lz = 54`) down to waterline `SEA_BY = 24` (`lz = 88`)
+        u = (lz - 54.0) / 34.0
+        return int(round(46.0 - 22.0 * (u ** 1.08)))
+    # Underwater drowned causeway continuing from `SEA_BY = 24` (`lz = 88`) down into seabed `by = 2` (`lz = 121`)
+    u_sub = min(1.0, (lz - 88.0) / 33.0)
+    return max(2, int(round(24.0 - 22.0 * u_sub)))
+
+
 def build_viaduct_bridge():
-    print("  [2/7] Building shore abutment & horizontal 4-arch Gothic sea viaduct...")
-    # A) Shore Abutment flush on the towering Ashen Lands sea-cliff (`LAND_LX=0, LAND_LZ=96, LAND_BY=46`)
-    for lz in range(92, 108):
-        flare = 6 + max(0, (lz - 93) // 2)
-        for lx in range(0, flare + 1):
-            for by in range(0, 47):
-                put_sym(lx, by, lz, GRASS_SHORE if (by == 46 and lx > 5) else (DIRT_SHORE if (by >= 44 and lx > 5) else strata_rock(lx, by, lz)))
-            if lx <= 5:
-                put_sym(lx, 46, lz, PBB if (lx in (0, 4, 5) or lz % 4 == 0) else PDS)
-                for cy in range(47, 56):
-                    put_sym(lx, cy, lz, 0)
-            elif lx == 6 and lz <= 100:
-                put_sym(lx, 47, lz, PBB)
-                put_sym(lx, 48, lz, PBB_SLAB_BOT)
+    print("  [2/8] Building submerged seabed-emerging Gothic arched bridge at lx = -16...")
+    pier_zs = [38, 52, 66, 80, 94, 108]
 
-    # Twin Shore Entry Pylons at `(±5, 98)` standing directly on the flat Ashen cliff brow!
-    for lx in (5, 6):
-        for lz in (97, 98, 99):
-            for by in range(47, 55):
-                put_sym(lx, by, lz, BASALT_Y if (lx == 5 and lz == 98 and 48 <= by <= 52) else PBB)
-    put_sym(5, 55, 98, CPB)
-    put_sym(5, 56, 98, BRAZIER_S)
-
-    # B) 5 Cutwater Bridge Piers at `lz = 94, 79, 64, 49, 36` + 4 Pointed Gothic Arches (`lz = 36..94`)
-    pier_zs = [94, 79, 64, 49, 36]
-
-    def deck_y_at(lz: int) -> tuple[int, bool]:
-        # Strictly horizontal grand viaduct deck at by=46 (worldY=84), flush with Castle Gate & Ashen Sea-Cliff!
-        return 46, False
-
-    # Solid cutwater piers rooted all the way to `by = 0` (`sub_air == 0`)
+    # A) Solid cutwater piers rooted all the way to `by = 0` (`sub_air == 0`, extended to oceanFloor in Java!)
     for pz in pier_zs:
-        dy, _ = deck_y_at(pz)
+        dy = bridge_deck_y(pz)
         for dz in range(-2, 3):
             lz = pz + dz
-            max_lx = 6 if abs(dz) <= 1 else 5
-            for lx in range(0, max_lx + 1):
+            if lz > 121:
+                continue
+            half_w = 6 if abs(dz) <= 1 else 5
+            for dx in range(-half_w, half_w + 1):
+                lx = GATE_LX + dx
+                adx = abs(dx)
                 for by in range(0, dy + 1):
-                    if by < 16:
+                    if by < 12:
                         blk = strata_rock(lx, by, lz)
-                    elif lx == max_lx and by < dy - 4:
+                    elif by <= SEA_BY and ((lx + by + lz) % 5 == 0):
+                        blk = MOSSY_SB
+                    elif adx == half_w and by < dy - 3:
                         blk = BASALT_Y
-                    elif by in (SEA_BY + 2, dy - 2):
+                    elif by in (SEA_BY + 1, max(4, dy - 2)):
                         blk = CPB
                     else:
-                        blk = PBB if (lx >= 4 or abs(dz) == 2) else DSB
-                    put_sym(lx, by, lz, blk)
-            # Pointed cutwater prow at `lx = 7, dz = 0` near waterline
-            if dz == 0:
-                for by in range(0, SEA_BY + 8):
-                    put_sym(7, by, lz, PBB if by < SEA_BY + 7 else pbb_stair("west"))
+                        blk = PBB if (adx >= 4 or abs(dz) == 2) else DSB
+                    set_raw(lx, by, lz, blk)
+            if dz == 0 and dy >= SEA_BY - 2:
+                prow_top = min(dy, SEA_BY + 7)
+                for sgn, st_dir in ((-1, "east"), (1, "west")):
+                    for by in range(0, prow_top + 1):
+                        set_raw(GATE_LX + sgn * 7, by, lz, PBB if by < prow_top else pbb_stair(st_dir))
 
-    # 4 Gothic pointed-arch spans between consecutive piers (`span = 15` / `13`)
+    # B) Gothic pointed-arch spans between piers (both above water AND submerged underwater arches!)
     for idx in range(len(pier_zs) - 1):
-        z_hi = pier_zs[idx]      # shoreward
-        z_lo = pier_zs[idx + 1]  # castleward
-        z_mid = 0.5 * (z_hi + z_lo)
+        z_lo = pier_zs[idx]
+        z_hi = pier_zs[idx + 1]
+        z_mid = 0.5 * (z_lo + z_hi)
         half_span = 0.5 * (z_hi - z_lo) - 2.0
         for lz in range(z_lo + 3, z_hi - 2):
-            dy, _ = deck_y_at(lz)
-            nd = abs(lz - z_mid) / max(1.0, half_span)  # 0 at crown, 1 at pier face
-            # Pointed Gothic arch curve: high clear crown over the waves, thick solid spandrels above!
-            arch_clear_y = int(round((dy - 3.0) - (nd ** 1.65) * 12.0))
-            for lx in range(0, 6):
-                for by in range(max(SEA_BY + 2, arch_clear_y), dy + 1):
-                    if by == arch_clear_y and lx == 5:
-                        blk = PBB  # clean outer archivolt ring
-                    elif lx == 5:
-                        blk = DSB if (by % 4 != 0) else PBB
+            dy = bridge_deck_y(lz)
+            nd = abs(lz - z_mid) / max(1.0, half_span)
+            arch_drop = 10.0 if dy >= 34 else 6.0
+            arch_clear_y = max(1, int(round((dy - 2.0) - (nd ** 1.65) * arch_drop)))
+            for dx in range(-5, 6):
+                lx = GATE_LX + dx
+                adx = abs(dx)
+                for by in range(arch_clear_y, dy + 1):
+                    if by <= SEA_BY and ((lx + lz + by) % 6 == 0):
+                        blk = MOSSY_SB
+                    elif by == arch_clear_y and adx == 5:
+                        blk = PBB
                     else:
-                        blk = DSB
-                    put_sym(lx, by, lz, blk)
+                        blk = DSB if (adx < 5 or by % 4 != 0) else PBB
+                    set_raw(lx, by, lz, blk)
 
-    # Continuous roadway, crenellated parapets & lantern/brazier piers (`lz = 36..96`)
-    for lz in range(36, 97):
-        dy, half_slab = deck_y_at(lz)
-        # Clear air corridor above roadway
-        for lx in range(0, 6):
-            for cy in range(dy + 1, dy + 12):
-                put_sym(lx, cy, lz, 0)
+    # C) Continuous roadway, stepped stairs, parapets & drowned sea-pylons (`lz = 37..121`)
+    for lz in range(37, 122):
+        dy = bridge_deck_y(lz)
+        next_dy = bridge_deck_y(min(121, lz + 1))
+        stepping_down = next_dy < dy
 
-        # Roadway surface (`lx = 0..4`)
-        for lx in range(0, 5):
-            rib = (lx in (0, 4)) or (lz % 5 == 0)
-            put_sym(lx, dy - 1, lz, DSB)
-            if half_slab:
-                put_sym(lx, dy, lz, PBB)
-                put_sym(lx, dy + 1, lz, PBB_SLAB_BOT if rib else DST_SLAB_BOT)
+        # Clear air corridor only ABOVE sea level (`SEA_BY + 1 ..`) so underwater stays filled with ocean water!
+        clear_lo = max(SEA_BY + 1, dy + 1)
+        for dx in range(-5, 6):
+            for cy in range(clear_lo, max(clear_lo, dy + 11)):
+                set_raw(GATE_LX + dx, cy, lz, 0)
+
+        for dx in range(-4, 5):
+            lx = GATE_LX + dx
+            rib = (abs(dx) == 4) or (lz % 5 == 0)
+            for sub_y in range(max(0, dy - 2), dy):
+                set_raw(lx, sub_y, lz, MOSSY_SB if (sub_y <= SEA_BY and (lx + lz) % 5 == 0) else DSB)
+            if stepping_down:
+                # Smooth walkable stair tread descending seaward (`facing="north"` climbs toward Gatehouse!)
+                set_raw(lx, dy, lz, pbb_stair("north", half="bottom"))
             else:
-                put_sym(lx, dy, lz, PBB if rib else PDS)
+                if dy <= SEA_BY and (lx + lz) % 4 == 0:
+                    set_raw(lx, dy, lz, MOSSY_SB)
+                else:
+                    set_raw(lx, dy, lz, PBB if rib else PDS)
 
-        # Parapet wall (`lx = 5`) + corbelled outer cornice + abundant warm bridge lighting!
-        base_p = dy + (1 if half_slab else 0)
-        put_sym(5, dy - 1, lz, PBB)
-        put_sym(5, dy, lz, PBB)
-        put_sym(5, base_p + 1, lz, PBB)
-        if lz in pier_zs:
-            # Projecting pilaster turret & fiery brazier over every pier (matches ref 02!)
-            for dz_off in (-1, 0, 1):
-                put_sym(6, dy - 1, lz, PBB)
-                put_sym(6, dy, lz, CPB)
-            put_sym(5, base_p + 2, lz, CPB)
-            put_sym(5, base_p + 3, lz, BRAZIER_N)
-        elif lz % 6 == 0:
-            put_sym(5, base_p + 2, lz, PBB_WALL_POST)
-            put_sym(5, base_p + 3, lz, LANTERN_STAND)
-        elif lz % 2 == 0:
-            put_sym(5, base_p + 2, lz, PBB_SLAB_BOT)
+        # Parapet walls (`dx = ±5`) — full above water, weathered/ruined underwater as it meets the seabed!
+        for sgn in (-1, 1):
+            px = GATE_LX + sgn * 5
+            set_raw(px, max(0, dy - 1), lz, PBB)
+            set_raw(px, dy, lz, MOSSY_SB if (dy <= SEA_BY and lz % 3 == 0) else PBB)
+            if lz <= 108 or (lz % 3 != 0):
+                set_raw(px, dy + 1, lz, MOSSY_SB if (dy < SEA_BY and lz % 2 == 0) else PBB)
+            if dy >= SEA_BY + 1:
+                if lz in pier_zs:
+                    set_raw(px, dy + 2, lz, CPB)
+                    set_raw(px, dy + 3, lz, BRAZIER_N)
+                elif lz % 6 == 0:
+                    set_raw(px, dy + 2, lz, PBB_WALL_POST)
+                    set_raw(px, dy + 3, lz, LANTERN_STAND)
+                elif lz % 2 == 0:
+                    set_raw(px, dy + 2, lz, PBB_SLAB_BOT)
+            elif lz in (88, 96, 106):
+                # Glowing drowned rune-pylons marking the submerged road under the sea!
+                set_raw(px, dy + 2, lz, RUNE_BASALT)
+                set_raw(px, dy + 3, lz, SEA_LANTERN if lz > 90 else EMBER_BRAZIER_BLK)
 
 
 # =============================================================================
-# 3. REUSABLE SYMMETRICAL TOWER BUILDER (WITH WALKABLE SPIRAL STAIRS & CROWNS!)
+# 3. REUSABLE SINGLE & MIRRORED TOWER BUILDERS (100% WALKABLE SPIRAL STAIRS!)
 # =============================================================================
 TOWER_REGISTRY = []
+
+
+def build_single_tower(
+    name: str,
+    cx: int,
+    cz: int,
+    radius: int,
+    y_base: int,
+    y_top: int,
+    spire_h: int = 0,
+    door_dirs: tuple = ("south",),
+    wall_walk_y: int = 62,
+    mirror_x: bool = False,
+):
+    """Builds ONE octagonal/cylindrical Gothic tower at `(cx, cz)` with walkable internal stairs."""
+    TOWER_REGISTRY.append((name, cx, cz, y_base, y_top))
+
+    r_sq_outer = (radius + 0.38) ** 2
+    r_sq_inner = max(2.15, radius - 1.55) ** 2
+
+    for dz in range(-radius - 1, radius + 2):
+        for dx in range(-radius - 1, radius + 2):
+            d2 = dx * dx + dz * dz
+            if d2 > r_sq_outer:
+                continue
+            lx = cx + dx
+            lz = cz + dz
+
+            for by in range(0, y_base + 1):
+                set_raw(lx, by, lz, PBB if by >= y_base - 2 else strata_rock(lx, by, lz))
+
+            is_wall = d2 >= r_sq_inner
+            is_pilaster = is_wall and (abs(dx) == radius or abs(dz) == radius) and (abs(dx) <= 2 or abs(dz) <= 2)
+            is_diag_quoin = is_wall and abs(dx) == abs(dz)
+
+            for by in range(y_base + 1, y_top + 1):
+                if by == y_base + 1 or by == y_top:
+                    set_raw(lx, by, lz, DST if d2 < r_sq_inner else PBB)
+                elif not is_wall:
+                    set_raw(lx, by, lz, 0)
+                else:
+                    if by in (y_base + 10, y_top - 4):
+                        blk = TRIM_LOG_Y if is_diag_quoin else DARK_OAK_PLANKS
+                    elif by in (y_base + 11, y_top - 3):
+                        blk = CPB
+                    elif is_diag_quoin:
+                        blk = PBB
+                    elif is_pilaster and abs(dx) != 0 and abs(dz) != 0:
+                        blk = BASALT_Y
+                    else:
+                        blk = DSB
+                    set_raw(lx, by, lz, blk)
+
+    r_crown_sq = (radius + 1.25) ** 2
+    r_crown_in = (radius - 0.35) ** 2
+    for dz in range(-radius - 2, radius + 3):
+        for dx in range(-radius - 2, radius + 3):
+            d2 = dx * dx + dz * dz
+            if d2 > r_crown_sq or d2 < r_crown_in:
+                continue
+            lx = cx + dx
+            lz = cz + dz
+            if d2 <= (radius + 0.95) ** 2:
+                set_raw(lx, y_top - 1, lz, PBB if ((dx + dz) % 2 == 0) else PBB_SLAB_TOP)
+            set_raw(lx, y_top, lz, PBB)
+            if d2 >= (radius + 0.25) ** 2:
+                set_raw(lx, y_top + 1, lz, PBB)
+                if (abs(dx) + abs(dz)) % 2 == 0:
+                    set_raw(lx, y_top + 2, lz, CPB if (dx == 0 or dz == 0) else PBB)
+                    set_raw(lx, y_top + 3, lz, PBB_SLAB_BOT)
+
+    win_heights = [y for y in range(y_base + 6, y_top - 6, 9)]
+    for wy in win_heights:
+        for sgn in (-1, 1):
+            for h_off in range(0, 3):
+                set_raw(cx, wy + h_off, cz + sgn * radius, GLASS_EW)
+                if radius >= 6:
+                    set_raw(cx, wy + h_off, cz + sgn * (radius - 1), 0)
+            set_raw(cx, wy - 1, cz + sgn * radius, CPB)
+            set_raw(cx, wy + 3, cz + sgn * radius, CPB)
+        for sgn in (-1, 1):
+            for h_off in range(0, 3):
+                set_raw(cx + sgn * radius, wy + h_off, cz, GLASS_NS)
+                if radius >= 6:
+                    set_raw(cx + sgn * (radius - 1), wy + h_off, cz, 0)
+            set_raw(cx + sgn * radius, wy - 1, cz, CPB)
+            set_raw(cx + sgn * radius, wy + 3, cz, CPB)
+
+    dir_vecs = {"north": (0, -1), "south": (0, 1), "east": (1, 0), "west": (-1, 0)}
+    for dd in door_dirs:
+        vx, vz = dir_vecs[dd]
+        for step in range(max(1, radius - 2), radius + 2):
+            for w_off in (-1, 0, 1):
+                px = cx + vx * step + (-vz) * w_off
+                pz = cz + vz * step + vx * w_off
+                set_raw(px, y_base + 1, pz, PBB)
+                max_dh = 4 if w_off == 0 else 3
+                for dh in range(1, max_dh + 1):
+                    set_raw(px, y_base + 1 + dh, pz, 0)
+
+    if y_base + 5 <= wall_walk_y <= y_top - 4:
+        for vx, vz in ((0, -1), (0, 1), (-1, 0), (1, 0)):
+            probe_x = cx + vx * (radius + 3)
+            probe_z = cz + vz * (radius + 3)
+            if get_raw(probe_x, wall_walk_y, probe_z) != 0:
+                for step in range(0, radius + 2):
+                    for w_off in (-1, 0, 1):
+                        px = cx + vx * step + (-vz) * w_off
+                        pz = cz + vz * step + vx * w_off
+                        set_raw(px, wall_walk_y, pz, DST if abs(w_off) <= 1 else PBB)
+                        for dh in range(1, 5):
+                            set_raw(px, wall_walk_y + dh, pz, 0)
+
+    ring_path = [
+        (-1, -2, "east"), (0, -2, "east"), (1, -2, "east"), (2, -2, None),
+        (2, -1, "south"), (2, 0, "south"), (2, 1, "south"), (2, 2, None),
+        (1, 2, "west"), (0, 2, "west"), (-1, 2, "west"), (-2, 2, None),
+        (-2, 1, "north"), (-2, 0, "north"), (-2, -1, "north"), (-2, -2, None),
+    ]
+    for by in range(y_base + 1, y_top + 1):
+        set_raw(cx, by, cz, BASALT_Y)
+        if by % 4 == 0 and by < y_top - 1:
+            set_raw(cx, by, cz - 1, LANTERN_HANG)
+            set_raw(cx, by, cz + 1, LANTERN_HANG)
+
+    cur_y = y_base + 2
+    idx = 0
+    while cur_y <= y_top:
+        rx, rz, stair_dir = ring_path[idx % len(ring_path)]
+        if mirror_x:
+            rx = -rx
+            if stair_dir == "east":
+                stair_dir = "west"
+            elif stair_dir == "west":
+                stair_dir = "east"
+        sx, sz = cx + rx, cz + rz
+        for hy in range(cur_y + 1, min(y_top + 4, cur_y + 5)):
+            if hy <= y_top or spire_h > 0 or (abs(rx) <= 2 and abs(rz) <= 2):
+                set_raw(sx, hy, sz, 0)
+        if stair_dir is None:
+            set_raw(sx, cur_y, sz, PBB)
+        else:
+            set_raw(sx, cur_y, sz, pbb_stair(stair_dir, half="bottom"))
+            set_raw(sx, cur_y - 1, sz, DSB)
+            cur_y += 1
+        idx += 1
+
+    if spire_h > 0:
+        for sy in range(1, spire_h + 1):
+            u = 1.0 - (sy / float(spire_h))
+            sr = max(0.45, (radius + 0.2) * (u ** 0.88))
+            sr_in = max(0.0, sr - 1.35)
+            for dz in range(-radius - 1, radius + 2):
+                for dx in range(-radius - 1, radius + 2):
+                    d = math.hypot(dx, dz)
+                    if sr_in <= d <= sr:
+                        set_raw(cx + dx, y_top + sy, cz + dz, DST if (sy % 3 != 0) else PBB)
+        for fy in range(1, 5):
+            set_raw(cx, y_top + spire_h + fy, cz, PBB_WALL_POST if fy <= 2 else CHAIN_Y)
+    else:
+        set_raw(cx, y_top, cz, CPB)
+        set_raw(cx, y_top + 1, cz, BRAZIER_S)
+        mast_x = cx + (radius - 1 if cx >= 0 else -(radius - 1))
+        for fy in range(1, 7):
+            set_raw(mast_x, y_top + 1 + fy, cz, DARK_FENCE)
+        for fz in range(cz + 1, cz + 4):
+            set_raw(mast_x, y_top + 7, fz, PBB_SLAB_TOP)
+            set_raw(mast_x, y_top + 6, fz, PBB_SLAB_BOT)
 
 
 def build_sym_tower(
@@ -544,205 +770,185 @@ def build_sym_tower(
     door_dirs: tuple = ("south",),
     wall_walk_y: int = 62,
 ):
-    """
-    Builds a mirrored pair of octagonal/cylindrical Gothic bastion towers at `(±cx, cz)`
-    with:
-      - Solid stone foundations down to `by = 0`,
-      - Rhythmic `polished_basalt` corner pilasters + warm `stripped_dark_oak_log` frieze bands,
-      - Recessed stained-glass lancets strictly on cardinal axes between floors (0 intersections!),
-      - Full walkable internal square-spiral staircase (`polished_blackstone_brick_stairs`) from
-        `y_base + 1` all the way to `y_top` roof/gallery deck,
-      - Corbelled machicolated battlement crown OR steep Gothic dark-slate spire!
-    """
-    TOWER_REGISTRY.append((name, cx, cz, y_base, y_top))
+    """Builds a mirrored pair of towers for the symmetric Cathedral Keep core."""
+    build_single_tower(name, cx, cz, radius, y_base, y_top, spire_h, door_dirs, wall_walk_y)
     if cx != 0:
-        TOWER_REGISTRY.append((name + "_M", -cx, cz, y_base, y_top))
-
-    r_sq_outer = (radius + 0.38) ** 2
-    r_sq_inner = max(2.2, radius - 1.55) ** 2
-
-    # 1) Foundation & outer masonry shell (`by = 0 .. y_top`)
-    for dz in range(-radius - 1, radius + 2):
-        for dx in range(-radius - 1, radius + 2):
-            d2 = dx * dx + dz * dz
-            if d2 > r_sq_outer:
-                continue
-            lx = cx + dx
-            lz = cz + dz
-
-            # Solid foundation beneath `y_base`
-            for by in range(0, y_base + 1):
-                put_sym(lx, by, lz, PBB if by >= y_base - 2 else strata_rock(lx, by, lz))
-
-            is_wall = d2 >= r_sq_inner
-            is_pilaster = is_wall and (abs(dx) == radius or abs(dz) == radius) and (abs(dx) <= 2 or abs(dz) <= 2)
-            is_diag_quoin = is_wall and abs(dx) == abs(dz)
-
-            for by in range(y_base + 1, y_top + 1):
-                if by == y_base + 1 or by == y_top:
-                    # Solid floor & top roof deck (stairwell hatch carved in step 3)
-                    put_sym(lx, by, lz, DST if d2 < r_sq_inner else PBB)
-                elif not is_wall:
-                    put_sym(lx, by, lz, 0)
-                else:
-                    # Clean horizontal architectural bands (warm dark oak frieze, 0 gilded_blackstone!)
-                    if by in (y_base + 12, y_top - 4):
-                        blk = TRIM_LOG_Y if is_diag_quoin else DARK_OAK_PLANKS
-                    elif by in (y_base + 13, y_top - 3):
-                        blk = CPB
-                    elif is_diag_quoin:
-                        blk = PBB
-                    elif is_pilaster and abs(dx) != 0 and abs(dz) != 0:
-                        blk = BASALT_Y
-                    else:
-                        blk = DSB
-                    put_sym(lx, by, lz, blk)
-
-    # 2) Corbelled Machicolation Crown & Crenellations (`y_top - 1 .. y_top + 3`)
-    r_crown_sq = (radius + 1.25) ** 2
-    r_crown_in = (radius - 0.35) ** 2
-    for dz in range(-radius - 2, radius + 3):
-        for dx in range(-radius - 2, radius + 3):
-            d2 = dx * dx + dz * dz
-            if d2 > r_crown_sq or d2 < r_crown_in:
-                continue
-            lx = cx + dx
-            lz = cz + dz
-            # Corbel support at y_top - 1 & solid overhang rim at y_top
-            if d2 <= (radius + 0.95) ** 2:
-                put_sym(lx, y_top - 1, lz, PBB if ((dx + dz) % 2 == 0) else PBB_SLAB_TOP)
-            put_sym(lx, y_top, lz, PBB)
-            # Outer parapet & rhythmic merlons at y_top + 1 .. y_top + 2
-            if d2 >= (radius + 0.25) ** 2:
-                put_sym(lx, y_top + 1, lz, PBB)
-                merlon = ((abs(dx) + abs(dz)) % 2 == 0)
-                if merlon:
-                    put_sym(lx, y_top + 2, lz, CPB if (dx == 0 or dz == 0) else PBB)
-                    put_sym(lx, y_top + 3, lz, PBB_SLAB_BOT)
-
-    # 3) Recessed Cardinal Lancet Windows (strictly on cardinal faces, 0 intersections!)
-    win_heights = [y for y in range(y_base + 7, y_top - 7, 10)]
-    for wy in win_heights:
-        # North & South cardinal lancets (`dx == 0, dz = ±radius`)
-        for sgn in (-1, 1):
-            for h_off in range(0, 4):
-                put_sym(cx, wy + h_off, cz + sgn * radius, GLASS_EW)
-                if radius >= 6:
-                    put_sym(cx, wy + h_off, cz + sgn * (radius - 1), 0)
-            put_sym(cx, wy - 1, cz + sgn * radius, CPB)
-            put_sym(cx, wy + 4, cz + sgn * radius, CPB)
-        # East & West cardinal lancets (`dz == 0, dx = ±radius`)
-        for sgn in (-1, 1):
-            for h_off in range(0, 4):
-                put_sym(cx + sgn * radius, wy + h_off, cz, GLASS_NS)
-                if radius >= 6:
-                    put_sym(cx + sgn * (radius - 1), wy + h_off, cz, 0)
-            put_sym(cx + sgn * radius, wy - 1, cz, CPB)
-            put_sym(cx + sgn * radius, wy + 4, cz, CPB)
-
-    # 4) Clean Arched Doorways at `y_base + 1` AND Wall-Walk Passages at `wall_walk_y`
-    dir_vecs = {"north": (0, -1), "south": (0, 1), "east": (1, 0), "west": (-1, 0)}
-    for dd in door_dirs:
-        vx, vz = dir_vecs[dd]
-        for step in range(max(1, radius - 2), radius + 2):
-            for w_off in (-1, 0, 1):
-                px = cx + vx * step + (-vz) * w_off
-                pz = cz + vz * step + vx * w_off
-                put_sym(px, y_base + 1, pz, PBB)
-                max_dh = 4 if w_off == 0 else 3
-                for dh in range(1, max_dh + 1):
-                    put_sym(px, y_base + 1 + dh, pz, 0)
-
-    if y_base + 6 <= wall_walk_y <= y_top - 5:
-        # Open N/S/E/W wall-walk portals ONLY where a curtain wall actually meets this tower
-        for vx, vz in ((0, -1), (0, 1), (-1, 0), (1, 0)):
-            probe_x = cx + vx * (radius + 3)
-            probe_z = cz + vz * (radius + 3)
-            if get_raw(probe_x, wall_walk_y, probe_z) != 0:
-                for step in range(0, radius + 2):
-                    for w_off in (-1, 0, 1):
-                        px = cx + vx * step + (-vz) * w_off
-                        pz = cz + vz * step + vx * w_off
-                        put_sym(px, wall_walk_y, pz, DST if abs(w_off) <= 1 else PBB)
-                        for dh in range(1, 5):
-                            put_sym(px, wall_walk_y + dh, pz, 0)
-
-    # 5) Walkable Square-Spiral Staircase around central `polished_basalt` newel column!
-    #    12-step square perimeter ring (`dx, dz` in `-2..+2`, center `0,0` column) -> 100% walkable!
-    ring_path = [
-        (-1, -2, "east"), (0, -2, "east"), (1, -2, "east"), (2, -2, None),
-        (2, -1, "south"), (2, 0, "south"), (2, 1, "south"), (2, 2, None),
-        (1, 2, "west"), (0, 2, "west"), (-1, 2, "west"), (-2, 2, None),
-        (-2, 1, "north"), (-2, 0, "north"), (-2, -1, "north"), (-2, -2, None),
-    ]
-    # Note: corners `(±2, ±2)` are flat `PBB` landings (no elevation jump!), straight runs climb 1 block per step!
-    for by in range(y_base + 1, y_top + 1):
-        put_sym(cx, by, cz, BASALT_Y)
-        if by % 4 == 0 and by < y_top - 1:
-            put_sym(cx, by, cz - 1, LANTERN_HANG)
-            put_sym(cx, by, cz + 1, LANTERN_HANG)
-
-    cur_y = y_base + 2
-    idx = 0
-    while cur_y <= y_top:
-        rx, rz, stair_dir = ring_path[idx % len(ring_path)]
-        sx, sz = cx + rx, cz + rz
-        # Clear 4 blocks of headroom above every step & landing (punches cleanly through `y_top` hatch!)
-        for hy in range(cur_y + 1, min(y_top + 4, cur_y + 5)):
-            if hy <= y_top or spire_h > 0 or (abs(rx) <= 2 and abs(rz) <= 2):
-                put_sym(sx, hy, sz, 0)
-        if stair_dir is None:
-            # Corner landing
-            put_sym(sx, cur_y, sz, PBB)
-        else:
-            put_sym(sx, cur_y, sz, pbb_stair(stair_dir, half="bottom"))
-            put_sym(sx, cur_y - 1, sz, DSB)
-            cur_y += 1
-        idx += 1
-
-    # 6) Steep Gothic Dark-Slate Spire OR Fiery Beacon Crown + Heraldic Flagpole!
-    if spire_h > 0:
-        for sy in range(1, spire_h + 1):
-            u = 1.0 - (sy / float(spire_h))
-            sr = max(0.45, (radius + 0.2) * (u ** 0.88))
-            sr_in = max(0.0, sr - 1.35)
-            for dz in range(-radius - 1, radius + 2):
-                for dx in range(-radius - 1, radius + 2):
-                    d = math.hypot(dx, dz)
-                    if sr_in <= d <= sr:
-                        put_sym(cx + dx, y_top + sy, cz + dz, DST if (sy % 3 != 0) else PBB)
-        for fy in range(1, 5):
-            put_sym(cx, y_top + spire_h + fy, cz, PBB_WALL_POST if fy <= 2 else CHAIN_Y)
-    else:
-        # Open battlement deck with warm central brazier & tall dark banner mast
-        put_sym(cx, y_top, cz, CPB)
-        put_sym(cx, y_top + 1, cz, BRAZIER_S)
-        mast_x = cx + (radius - 1 if cx >= 0 else -(radius - 1))
-        for fy in range(1, 7):
-            put_sym(mast_x, y_top + 1 + fy, cz, DARK_FENCE)
-        for fz in range(cz + 1, cz + 4):
-            put_sym(mast_x, y_top + 7, fz, PBB_SLAB_TOP)
-            put_sym(mast_x, y_top + 6, fz, PBB_SLAB_BOT)
+        mir_doors = tuple("west" if d == "east" else ("east" if d == "west" else d) for d in door_dirs)
+        build_single_tower(name + "_M", -cx, cz, radius, y_base, y_top, spire_h, mir_doors, wall_walk_y, mirror_x=True)
 
 
 # =============================================================================
-# 4. UNBROKEN BUTTRESSED CURTAIN WALLS, GATEHOUSE & OUTER COURTYARD
+# 4A. LEVEL 1 — ASYMMETRIC LOWER HARBOR WARD & WEST SEA-SPUR (`by = 30..44`)
+# =============================================================================
+def build_lower_coastal_ward():
+    print("  [3/8] Building Level 1 asymmetric coastal harbor wall, sea-gate, outbuildings & cliff ramp...")
+    # A) Paved Lower Southeast Harbor Terrace (`lx = 64..94, lz = -38..+46, by = 32`)
+    for lz in range(-38, 47):
+        for lx in range(63, 95):
+            if (lx - 72) * 0.45 + (lz - 30) * 0.55 > 10.5:
+                continue
+            for by in range(0, 32):
+                if get_raw(lx, by, lz) == 0:
+                    set_raw(lx, by, lz, strata_rock(lx, by, lz))
+            rib = (lx % 6 == 0) or (lz % 6 == 0)
+            set_raw(lx, 32, lz, PBB if rib else DST)
+
+    # B) Lower Harbor East Sea-Wall (`lx = 94..96, lz = -38..+38, by = 32..41`)
+    for lz in range(-38, 39):
+        if (95 - 72) * 0.45 + (lz - 30) * 0.55 > 11.0:
+            continue
+        is_butt = (lz % 8 == 0)
+        for dx in (-1, 0, 1):
+            lx = 95 + dx
+            for by in range(22, 41):
+                if by < 32:
+                    set_raw(lx, by, lz, PBB if dx == 1 else DSB)
+                elif by == 40:
+                    set_raw(lx, by, lz, DST if dx == 0 else PBB)
+                else:
+                    set_raw(lx, by, lz, DSB if by < 38 else CPB)
+        if is_butt:
+            for by in range(18, 40):
+                set_raw(97, by, lz, BASALT_Y if 32 <= by <= 38 else PBB)
+        set_raw(96, 41, lz, PBB)
+        if lz % 2 == 0:
+            set_raw(96, 42, lz, CPB if is_butt else PBB)
+            set_raw(96, 43, lz, PBB_SLAB_BOT)
+        set_raw(94, 41, lz, PBB)
+
+    # Lower Sea-Gate Arch at `lx = 94..97, lz = 4..8, by = 32..38` opening onto the ocean!
+    for lz in range(4, 9):
+        arch_h = 38 - abs(lz - 6)
+        for lx in range(93, 99):
+            set_raw(lx, 31, lz, PBB)
+            set_raw(lx, 32, lz, PDS)
+            for by in range(33, arch_h + 1):
+                set_raw(lx, by, lz, 0)
+    # Stone harbor jetty extending into the waves at `lx = 97..106, lz = 2..10, by = SEA_BY + 2 = 26`
+    for lz in range(3, 10):
+        for lx in range(97, 107):
+            for by in range(0, 27):
+                set_raw(lx, by, lz, MOSSY_SB if (by <= SEA_BY and (lx + lz) % 3 == 0) else PBB)
+            if lx < 101:
+                step_y = 27 + (100 - lx)
+                for fy in range(27, step_y):
+                    set_raw(lx, fy, lz, DSB)
+                set_raw(lx, step_y, lz, pbb_stair("west"))
+    set_raw(105, 27, 3, CPB)
+    set_raw(105, 28, 3, EMBER_BRAZIER_BLK)
+    set_raw(105, 27, 9, CPB)
+    set_raw(105, 28, 9, EMBER_BRAZIER_BLK)
+
+    # C) Lower Harbor North & South Return Walls (`lz = +46` for `lx = 52..78`, `lz = -38` for `lx = 60..95`)
+    for lx in range(50, 79):
+        for dz in (-1, 0, 1):
+            lz = 46 + dz
+            for by in range(24, 41):
+                set_raw(lx, by, lz, PBB if (by == 40 and dz != 0) else DSB)
+        set_raw(lx, 41, 47, PBB)
+        if lx % 2 == 0:
+            set_raw(lx, 42, 47, PBB)
+    for lx in range(60, 96):
+        for dz in (-1, 0, 1):
+            lz = -38 + dz
+            for by in range(24, 41):
+                set_raw(lx, by, lz, PBB if (by == 40 and dz != 0) else DSB)
+        set_raw(lx, 41, -39, PBB)
+        if lx % 2 == 0:
+            set_raw(lx, 42, -39, PBB)
+
+    # D) 3 Timber-and-Slate Harbor Outbuildings on Level 1 (`by = 32..41`, matching ref 02 bottom-right!)
+    for (bx0, bx1, bz0, bz1) in ((72, 82, -26, -14), (74, 84, 15, 25), (68, 80, 28, 40)):
+        for lz in range(bz0, bz1 + 1):
+            for lx in range(bx0, bx1 + 1):
+                on_w = lx in (bx0, bx1) or lz in (bz0, bz1)
+                set_raw(lx, 32, lz, SPRUCE_PLANKS if not on_w else PBB)
+                for by in range(33, 38):
+                    if not on_w:
+                        set_raw(lx, by, lz, 0)
+                    elif (lx in (bx0, bx1) and lz in (bz0, bz1)):
+                        set_raw(lx, by, lz, TRIM_LOG_Y)
+                    elif by in (34, 35) and ((lx == bx0 and lz == (bz0 + bz1) // 2) or (lx == bx1 and lz == (bz0 + bz1) // 2)):
+                        set_raw(lx, by, lz, GLASS_NS)
+                    else:
+                        set_raw(lx, by, lz, DARK_OAK_PLANKS if by >= 35 else DSB)
+        # Pitched dark-slate gable roof
+        mid_x = (bx0 + bx1) // 2
+        half_span = (bx1 - bx0) // 2 + 1
+        for dx in range(-half_span, half_span + 1):
+            ry = 38 + (half_span - abs(dx))
+            for lz in range(bz0 - 1, bz1 + 2):
+                for fy in range(38, ry):
+                    if bx0 <= mid_x + dx <= bx1 and bz0 <= lz <= bz1:
+                        set_raw(mid_x + dx, fy, lz, DARK_OAK_PLANKS if lz in (bz0, bz1) else 0)
+                st_blk = CPB if dx == 0 else dst_stair("east" if dx < 0 else "west")
+                set_raw(mid_x + dx, ry, lz, st_blk)
+        # Doorway & warm lantern + barrels
+        door_z = (bz0 + bz1) // 2
+        set_raw(bx0, 33, door_z, 0)
+        set_raw(bx0, 34, door_z, 0)
+        set_raw(bx0 - 1, 35, door_z - 2, LANTERN_HANG)
+        set_raw(bx0 + 1, 33, bz0 + 1, BARREL_UP)
+        set_raw(bx0 + 2, 33, bz0 + 1, BARREL_UP)
+
+    # E) Stepped Fortified Cliffside Rampart Stairway from Level 1 (`lx = 70, by = 32`) up to Level 2 (`lx = 55, by = 47`)!
+    for step_i in range(0, 16):
+        lx = 70 - step_i
+        sy = 33 + step_i
+        for lz in range(-6, -1):
+            for fy in range(31, sy):
+                set_raw(lx, fy, lz, PBB if lz in (-6, -2) else DSB)
+            if lz in (-6, -2):
+                set_raw(lx, sy, lz, PBB)
+                set_raw(lx, sy + 1, lz, CPB if step_i % 4 == 0 else PBB_SLAB_BOT)
+                if step_i % 5 == 0 and lz == -6:
+                    set_raw(lx, sy + 2, lz, LANTERN_STAND)
+            else:
+                set_raw(lx, sy, lz, pbb_stair("west"))
+                for hy in range(sy + 1, sy + 7):
+                    set_raw(lx, hy, lz, 0)
+
+    # F) West Sea-Spur Causeway Wall (`lx = -82..-49, lz = -8..-4, by = 31..39`, matching ref 02 far-left!)
+    for lx in range(-80, -48):
+        ramp_y = 32 + max(0, (lx + 64) * 14 // 16)
+        for lz in (-8, -7, -6, -5, -4):
+            for fy in range(24, ramp_y):
+                set_raw(lx, fy, lz, PBB if lz in (-8, -4) else DSB)
+            if lz in (-8, -4):
+                set_raw(lx, ramp_y, lz, PBB)
+                set_raw(lx, ramp_y + 1, lz, PBB_SLAB_BOT if lx % 2 == 0 else PBB)
+            else:
+                set_raw(lx, ramp_y, lz, pbb_stair("east") if lx > -64 else DST)
+                for hy in range(ramp_y + 1, ramp_y + 6):
+                    set_raw(lx, hy, lz, 0)
+
+    # G) 6 Asymmetric Level-1 Coastal & Sea-Spur Watchtowers (all with walkable spiral staircases!)
+    build_single_tower("Lower_HarborNorth", 78, 45, 5, 31, 56, spire_h=9, door_dirs=("south", "west"), wall_walk_y=40)
+    build_single_tower("Lower_SeaGateN", 95, 13, 5, 31, 54, spire_h=0, door_dirs=("west", "south"), wall_walk_y=40)
+    build_single_tower("Lower_SeaGateS", 95, -1, 5, 31, 58, spire_h=10, door_dirs=("west", "north"), wall_walk_y=40)
+    build_single_tower("Lower_HarborSE", 94, -38, 6, 31, 55, spire_h=0, door_dirs=("north", "west"), wall_walk_y=40)
+    build_single_tower("Lower_CliffLink", 53, 46, 5, 31, 64, spire_h=8, door_dirs=("south", "east"), wall_walk_y=40)
+    build_single_tower("Lower_WestSpur", -82, -6, 5, 30, 54, spire_h=9, door_dirs=("east",), wall_walk_y=39)
+
+
+# =============================================================================
+# 4B. LEVEL 2 — ASYMMETRIC UPPER FORTRESS CURTAIN WALLS & OFF-CENTER GATEHOUSE
 # =============================================================================
 def build_curtain_walls_and_gatehouse():
-    print("  [3/7] Building unbroken Gothic buttressed curtain walls, barbican & 16 perimeter towers...")
-    # A) Paved Outer Courtyard (`lx = 0..52, lz = -76..+33, by = 47`)
-    for lz in range(-76, 34):
-        for lx in range(0, 53):
+    print("  [4/8] Building Level 2 asymmetric Gothic curtain walls (-48..+62) & off-center Gatehouse (-16)...")
+    # A) Paved Upper Courtyard (`lx = -46..+60, lz = -76..+34, by = 47`)
+    for lz in range(-76, 35):
+        for lx in range(-46, 61):
             rib = (lx % 8 == 0) or (lz % 8 == 0)
-            put_sym(lx, 46, lz, DSB)
-            put_sym(lx, 47, lz, PBB if rib else DST)
+            set_raw(lx, 46, lz, DSB)
+            set_raw(lx, 47, lz, PBB if rib else DST)
 
-    # B) Unbroken Front & Rear Curtain Walls (`lz = +34` and `lz = -78`, `lx = 0..54`, `by = 47..64`)
-    for wall_z, out_sgn in ((34, 1), (-78, -1)):
-        for lx in range(0, 55):
-            is_buttress = (lx % 8 == 0) and not (wall_z == 34 and lx <= 16)
-            is_win_bay = (lx % 8 == 4) and not (wall_z == 34 and lx <= 18)
-            # 5-wide solid curtain core (`wall_z - 2 .. wall_z + 2`) supporting 5-wide walkable parapet at `by = 62`!
+    # B) Asymmetric Front (`lz = +35`) & Rear (`lz = -78`) Curtain Walls spanning `lx = -48 .. +62`!
+    for wall_z, out_sgn in ((35, 1), (-78, -1)):
+        for lx in range(-48, 63):
+            near_gate = (wall_z == 35 and abs(lx - GATE_LX) <= 15)
+            is_buttress = (lx % 8 == 0) and not near_gate
+            is_win_bay = (lx % 8 == 4) and not near_gate
             for dz in range(-2, 3):
                 lz = wall_z + dz
                 is_outer_face = (dz == out_sgn * 2)
@@ -758,153 +964,166 @@ def build_curtain_walls_and_gatehouse():
                         elif by == 60:
                             blk = CPB
                         elif is_win_bay and 52 <= by <= 56:
-                            blk = GLASS_EW if dz == out_sgn * 2 else 0
+                            blk = GLASS_EW if is_outer_face else 0
                         else:
                             blk = DSB
                     else:
                         blk = 0 if (is_win_bay and 52 <= by <= 56 and dz != 0) else (GLASS_EW if (is_win_bay and 52 <= by <= 56) else DSB)
-                    put_sym(lx, by, lz, blk)
-
-                # Window frame sill & lintel on outer/inner faces
+                    set_raw(lx, by, lz, blk)
                 if is_win_bay and (is_outer_face or is_inner_face):
-                    put_sym(lx, 51, lz, CPB)
-                    put_sym(lx, 57, lz, CPB)
+                    set_raw(lx, 51, lz, CPB)
+                    set_raw(lx, 57, lz, CPB)
 
-            # Projecting Gothic `polished_basalt` buttress piers on outer face (`wall_z + out_sgn * 3`)
             if is_buttress:
                 bz_butt = wall_z + out_sgn * 3
-                for by in range(20, 62):
-                    put_sym(lx, by, bz_butt, BASALT_Y if 49 <= by <= 59 else PBB)
-                put_sym(lx, 62, bz_butt, pbb_stair("south" if out_sgn < 0 else "north"))
+                for by in range(22, 62):
+                    set_raw(lx, by, bz_butt, BASALT_Y if 49 <= by <= 59 else PBB)
+                set_raw(lx, 62, bz_butt, pbb_stair("south" if out_sgn < 0 else "north"))
 
-            # Continuous crenellated outer & inner parapets on `by = 63..64`
             for side_dz in (out_sgn * 2, -out_sgn * 2):
-                put_sym(lx, 63, wall_z + side_dz, PBB)
+                set_raw(lx, 63, wall_z + side_dz, PBB)
                 if lx % 2 == 0 and side_dz == out_sgn * 2:
-                    put_sym(lx, 64, wall_z + side_dz, CPB if lx % 8 == 0 else PBB)
-                    put_sym(lx, 65, wall_z + side_dz, PBB_SLAB_BOT)
-            if lx % 8 == 4 and not (wall_z == 34 and lx <= 16):
-                put_sym(lx, 63, wall_z, CANDLE_S)
-                # Courtyard inner wall lantern sconces every 8 blocks!
-                put_sym(lx, 53, wall_z - out_sgn * 3, PBB_WALL_POST)
-                put_sym(lx, 52, wall_z - out_sgn * 3, LANTERN_HANG)
+                    set_raw(lx, 64, wall_z + side_dz, CPB if lx % 8 == 0 else PBB)
+                    set_raw(lx, 65, wall_z + side_dz, PBB_SLAB_BOT)
+            if is_win_bay:
+                set_raw(lx, 63, wall_z, CANDLE_S)
+                set_raw(lx, 53, wall_z - out_sgn * 3, PBB_WALL_POST)
+                set_raw(lx, 52, wall_z - out_sgn * 3, LANTERN_HANG)
 
-    # C) Unbroken East & West Flank Curtain Walls (`lx = ±54`, `lz = -78..+34`, `by = 47..64`)
-    for lz in range(-78, 35):
-        is_buttress = ((lz + 80) % 8 == 0)
-        is_win_bay = ((lz + 80) % 8 == 4) and (-72 <= lz <= 28)
-        for dx in range(-2, 3):
-            lx = 54 + dx
-            is_outer_face = (dx == 2)
-            is_inner_face = (dx == -2)
-            for by in range(47, 63):
-                if by == 62:
-                    blk = DST if abs(dx) <= 1 else PBB
-                elif is_outer_face or is_inner_face:
-                    if by in (47, 48):
-                        blk = PBB
-                    elif by == 59:
-                        blk = DARK_OAK_PLANKS
-                    elif by == 60:
-                        blk = CPB
-                    elif is_win_bay and 52 <= by <= 56:
-                        blk = GLASS_NS if is_outer_face else 0
+    # C) Asymmetric West (`lx = -48`) & Wide East (`lx = +62`) Flank Curtain Walls (`lz = -78..+35`)
+    for wall_x, out_sgn in ((-48, -1), (62, 1)):
+        for lz in range(-78, 36):
+            # Leave arched portal opening in East Wall (`lz = -5..-3`) for the Level-1 Cliffside Stairway!
+            if wall_x == 62 and -5 <= lz <= -3:
+                for dx in range(-3, 4):
+                    set_raw(wall_x + dx, 47, lz, DST)
+                    for hy in range(48, 54):
+                        set_raw(wall_x + dx, hy, lz, 0)
+                    for by in range(54, 63):
+                        set_raw(wall_x + dx, by, lz, DSB if by < 62 else PBB)
+                continue
+
+            is_buttress = ((lz + 80) % 8 == 0)
+            is_win_bay = ((lz + 80) % 8 == 4) and (-72 <= lz <= 28)
+            for dx in range(-2, 3):
+                lx = wall_x + dx
+                is_outer_face = (dx == out_sgn * 2)
+                is_inner_face = (dx == -out_sgn * 2)
+                for by in range(47, 63):
+                    if by == 62:
+                        blk = DST if abs(dx) <= 1 else PBB
+                    elif is_outer_face or is_inner_face:
+                        if by in (47, 48):
+                            blk = PBB
+                        elif by == 59:
+                            blk = DARK_OAK_PLANKS
+                        elif by == 60:
+                            blk = CPB
+                        elif is_win_bay and 52 <= by <= 56:
+                            blk = GLASS_NS if is_outer_face else 0
+                        else:
+                            blk = DSB
                     else:
-                        blk = DSB
-                else:
-                    blk = 0 if (is_win_bay and 52 <= by <= 56 and dx != 0) else (GLASS_NS if (is_win_bay and 52 <= by <= 56) else DSB)
-                put_sym(lx, by, lz, blk)
-            if is_win_bay and (is_outer_face or is_inner_face):
-                put_sym(lx, 51, lz, CPB)
-                put_sym(lx, 57, lz, CPB)
+                        blk = 0 if (is_win_bay and 52 <= by <= 56 and dx != 0) else (GLASS_NS if (is_win_bay and 52 <= by <= 56) else DSB)
+                    set_raw(lx, by, lz, blk)
+                if is_win_bay and (is_outer_face or is_inner_face):
+                    set_raw(lx, 51, lz, CPB)
+                    set_raw(lx, 57, lz, CPB)
 
-        if is_buttress:
-            for by in range(20, 62):
-                put_sym(57, by, lz, BASALT_Y if 49 <= by <= 59 else PBB)
-            put_sym(57, 62, lz, pbb_stair("west"))
+            if is_buttress:
+                bx_butt = wall_x + out_sgn * 3
+                for by in range(28, 62):
+                    set_raw(bx_butt, by, lz, BASALT_Y if 49 <= by <= 59 else PBB)
+                set_raw(bx_butt, 62, lz, pbb_stair("west" if out_sgn > 0 else "east"))
 
-        for side_dx in (2, -2):
-            put_sym(54 + side_dx, 63, lz, PBB)
-            if lz % 2 == 0 and side_dx == 2:
-                put_sym(54 + side_dx, 64, lz, CPB if is_buttress else PBB)
-                put_sym(54 + side_dx, 65, lz, PBB_SLAB_BOT)
-        if (lz + 80) % 8 == 4:
-            put_sym(54, 63, lz, CANDLE_S)
-            if -72 <= lz <= 28:
-                put_sym(51, 53, lz, PBB_WALL_POST)
-                put_sym(51, 52, lz, LANTERN_HANG)
+            for side_dx in (out_sgn * 2, -out_sgn * 2):
+                set_raw(wall_x + side_dx, 63, lz, PBB)
+                if lz % 2 == 0 and side_dx == out_sgn * 2:
+                    set_raw(wall_x + side_dx, 64, lz, CPB if is_buttress else PBB)
+                    set_raw(wall_x + side_dx, 65, lz, PBB_SLAB_BOT)
 
-    # Courtyard Grand Lantern & Brazier Processional Avenue (`lz = 8..28` & side courts!)
-    for lz_b in (26, 18, 10, -8, -28, -48, -66):
-        if lz_b >= 10:
-            put_sym(8, 48, lz_b, CPB)
-            put_sym(8, 49, lz_b, BRAZIER_S)
-        put_sym(38, 48, lz_b, CPB)
-        put_sym(38, 49, lz_b, PBB_WALL_POST)
-        put_sym(38, 50, lz_b, LANTERN_STAND)
-
-    # D) Monumental Barbican Gatehouse Bridgehead (`lx = 0..10, lz = 31..38, by = 47..72`)
-    for lz in range(31, 39):
-        for lx in range(0, 10):
+    # D) Off-Center Monumental Twin-Towered Barbican Gatehouse at `GATE_LX = -16, lz = 32..39, by = 47..72`!
+    for lz in range(32, 40):
+        for dx in range(-9, 10):
+            lx = GATE_LX + dx
+            adx = abs(dx)
             for by in range(47, 71):
                 if by == 70:
-                    blk = DST if (32 <= lz <= 37 and lx <= 8) else PBB
-                elif lz in (31, 38) or lx == 9:
+                    blk = DST if (33 <= lz <= 38 and adx <= 8) else PBB
+                elif lz in (32, 39) or adx == 9:
                     if by in (59, 66):
                         blk = DARK_OAK_PLANKS
                     elif by in (60, 67):
                         blk = CPB
-                    elif lx in (3, 6) and lz in (31, 38) and 61 <= by <= 65:
+                    elif adx in (3, 6) and lz in (32, 39) and 61 <= by <= 65:
                         blk = BASALT_Y
                     else:
                         blk = DSB
                 else:
                     blk = PBB if by == 61 else 0
-                put_sym(lx, by, lz, blk)
-        # Gatehouse top crenellations (`by = 71..72`)
-        for lx in range(0, 10):
-            for edge_z in (31, 38):
-                put_sym(lx, 71, edge_z, PBB)
-                if lx % 2 == 0:
-                    put_sym(lx, 72, edge_z, CPB if lx in (0, 6) else PBB)
+                set_raw(lx, by, lz, blk)
+        for dx in range(-9, 10):
+            lx = GATE_LX + dx
+            for edge_z in (32, 39):
+                set_raw(lx, 71, edge_z, PBB)
+                if dx % 2 == 0:
+                    set_raw(lx, 72, edge_z, CPB if abs(dx) in (0, 6) else PBB)
 
-    # Carve Grand Pointed Gothic Gate Arch (`lx = 0..3, lz = 30..39, by = 48..57`) + Raised Portcullis!
-    for lz in range(30, 40):
-        for lx in range(0, 4):
-            put_sym(lx, 47, lz, PBB if lx in (0, 3) else PDS)
-            arch_top = 56 - (lx * lx) // 3
+    # Carve Grand Pointed Gothic Gate Arch at `GATE_LX = -16` (`dx = -3..+3, lz = 31..40, by = 48..57`)!
+    for lz in range(31, 41):
+        for dx in range(-3, 4):
+            lx = GATE_LX + dx
+            adx = abs(dx)
+            set_raw(lx, 47, lz, PBB if adx in (0, 3) else PDS)
+            arch_top = 56 - (adx * adx) // 3
             for by in range(48, arch_top + 1):
-                if lz == 35 and by >= arch_top - 1:
-                    put_sym(lx, by, lz, PORTCULLIS_EW)  # raised iron portcullis teeth overhead!
+                if lz == 36 and by >= arch_top - 1:
+                    set_raw(lx, by, lz, PORTCULLIS_EW)
                 else:
-                    put_sym(lx, by, lz, 0)
-        # Sculpted Gothic archivolt frame around gate mouth (`lz = 38` & `lz = 31`)
-        put_sym(4, 48, lz, BASALT_Y)
-        put_sym(4, 55, lz, CPB)
-    put_sym(0, 58, 38, CPB)
-    put_sym(2, 64, 38, BANNER_S)
+                    set_raw(lx, by, lz, 0)
+        for sgn in (-1, 1):
+            set_raw(GATE_LX + sgn * 4, 48, lz, BASALT_Y)
+            set_raw(GATE_LX + sgn * 4, 55, lz, CPB)
+    set_raw(GATE_LX, 58, 39, CPB)
+    set_raw(GATE_LX - 2, 64, 39, BANNER_S)
+    set_raw(GATE_LX + 2, 64, 39, BANNER_S)
 
-    # E) Courtyard Wall-Walk Ascent Stairs (`lx = ±44, lz = 18..31`, `by = 47 -> 62`)
+    # Processional Brazier Way curving from Off-Center Gatehouse (`lx = -16, lz = 28`) toward Keep Stair (`lx = 0, lz = 15`)
+    for step_z in (28, 22, 16):
+        cx_way = -16 + (28 - step_z)
+        for sgn in (-6, 6):
+            set_raw(cx_way + sgn, 48, step_z, CPB)
+            set_raw(cx_way + sgn, 49, step_z, BRAZIER_S)
+
+    # Courtyard Wall-Walk Ascent Stairs (`lx = -40` & `lx = +52`, `lz = 18..32`)
     for step_i in range(0, 15):
         sy = 48 + step_i
-        sz = 17 + step_i
-        for lx in (44, 45, 46):
-            for fy in range(47, sy):
-                put_sym(lx, fy, sz, DSB if lx < 46 else PBB)
-            put_sym(lx, sy, sz, pbb_stair("south"))
-            for hy in range(sy + 1, sy + 6):
-                put_sym(lx, hy, sz, 0)
-            put_sym(43, sy + 1, sz, PBB_WALL_NS)
+        sz = 18 + step_i
+        for base_x in (-41, 51):
+            for ox in (0, 1, 2):
+                lx = base_x + ox
+                for fy in range(47, sy):
+                    set_raw(lx, fy, sz, DSB)
+                set_raw(lx, sy, sz, pbb_stair("south"))
+                for hy in range(sy + 1, sy + 6):
+                    set_raw(lx, hy, sz, 0)
 
-    # F) 16 Symmetrical Perimeter Bastion & Gatehouse Towers (8 mirrored pairs!)
-    build_sym_tower("Gatehouse_Barbican", 13, 35, 6, 46, 86, spire_h=0, door_dirs=("south", "north"))
-    build_sym_tower("Curtain_FrontWatch", 35, 34, 5, 46, 76, spire_h=10, door_dirs=("north",))
-    build_sym_tower("Bastion_FrontCorner", 54, 34, 6, 46, 82, spire_h=0, door_dirs=("south", "west"))
-    build_sym_tower("Bastion_NorthFlank", 54, 6, 5, 46, 76, spire_h=10, door_dirs=("west",))
-    build_sym_tower("Bastion_MidFlank", 54, -22, 6, 46, 80, spire_h=0, door_dirs=("west",))
-    build_sym_tower("Bastion_SouthFlank", 54, -50, 5, 46, 76, spire_h=10, door_dirs=("west",))
-    build_sym_tower("Bastion_RearCorner", 54, -78, 6, 46, 82, spire_h=0, door_dirs=("north", "west"))
-    build_sym_tower("Bastion_RearApse", 24, -78, 5, 46, 76, spire_h=10, door_dirs=("north",))
+    # E) 15 Asymmetric Upper Fortress Perimeter & Gatehouse Towers (varied positions, heights & spires!)
+    build_single_tower("Gate_WestBarbican", GATE_LX - 13, 36, 6, 46, 86, spire_h=0, door_dirs=("south", "north"))
+    build_single_tower("Gate_EastBarbican", GATE_LX + 13, 36, 6, 46, 86, spire_h=0, door_dirs=("south", "north"))
+    build_single_tower("Upper_WestCornerN", -48, 35, 6, 46, 80, spire_h=0, door_dirs=("south", "east"))
+    build_single_tower("Upper_FrontEast1", 18, 35, 5, 46, 76, spire_h=11, door_dirs=("north",))
+    build_single_tower("Upper_FrontEast2", 41, 35, 5, 46, 74, spire_h=0, door_dirs=("north",))
+    build_single_tower("Upper_EastCornerN", 62, 35, 6, 46, 84, spire_h=0, door_dirs=("south", "west"))
+    build_single_tower("Upper_WestMid1", -48, 4, 5, 46, 75, spire_h=10, door_dirs=("east",))
+    build_single_tower("Upper_WestMid2", -48, -34, 6, 46, 78, spire_h=0, door_dirs=("east",))
+    build_single_tower("Upper_WestCornerS", -48, -78, 6, 46, 82, spire_h=0, door_dirs=("north", "east"))
+    build_single_tower("Upper_EastFlank1", 62, 8, 5, 46, 78, spire_h=12, door_dirs=("west",))
+    build_single_tower("Upper_EastFlank2", 62, -22, 6, 46, 82, spire_h=0, door_dirs=("west",))
+    build_single_tower("Upper_EastFlank3", 62, -52, 5, 46, 76, spire_h=10, door_dirs=("west",))
+    build_single_tower("Upper_EastCornerS", 62, -78, 6, 46, 84, spire_h=0, door_dirs=("north", "west"))
+    build_single_tower("Upper_RearWest", -22, -78, 5, 46, 76, spire_h=10, door_dirs=("north",))
+    build_single_tower("Upper_RearEast", 30, -78, 5, 46, 78, spire_h=12, door_dirs=("north",))
 
 
 # =============================================================================
@@ -1492,36 +1711,159 @@ def build_rotunda_sanctum():
 
 
 # =============================================================================
+# 6B. ASYMMETRIC UPPER EAST BELL-SPIRE + FLYING-BUTTRESS SKYBRIDGE & WEST ANNEX
+# =============================================================================
+def build_asymmetric_upper_annexes():
+    print("  [6/8] Adding asymmetric East Bell-Spire + Gothic flying-buttress skybridge & West Armory...")
+    # 1) Soaring Asymmetric East Bell-Spire at `(45, -18)` (`by = 46..104`, `spire_h = 24` -> `by = 128`!)
+    #    Matches the tall slender spired bell-tower on the right of the Cathedral in ref 02!
+    build_single_tower("East_BellSpire", 45, -18, 6, 46, 104, spire_h=24, door_dirs=("west", "south"), wall_walk_y=62)
+
+    # Gothic Flying-Buttress Skybridge (`lx = 24..39, lz = -20..-16, by = 78..86`)
+    # Strictly outside `lx = 24` so the Main Cathedral Hall interior (`|lx| <= 21`) stays 100.000% symmetric!
+    for lx in range(24, 40):
+        u = (lx - 31.5) / 7.5  # -1..+1 across span
+        arch_bot = 78 + int(round(4.0 * (1.0 - u * u)))
+        for lz in range(-20, -15):
+            on_edge = lz in (-20, -16)
+            for by in range(arch_bot, 86):
+                if by == 85:
+                    set_raw(lx, by, lz, PBB if on_edge else DST)
+                elif on_edge or by == arch_bot:
+                    set_raw(lx, by, lz, PBB if by == arch_bot else DSB)
+            if on_edge:
+                set_raw(lx, 86, lz, PBB)
+                if lx % 2 == 0:
+                    set_raw(lx, 87, lz, CPB if lx in (26, 32, 38) else PBB_SLAB_BOT)
+            else:
+                for hy in range(86, 91):
+                    set_raw(lx, hy, lz, 0)
+        if lx in (28, 35):
+            set_raw(lx, arch_bot - 1, -18, LANTERN_HANG)
+    # Open skybridge portal into East Bell-Spire at `by = 85`
+    for lx in range(38, 43):
+        for lz in (-19, -18, -17):
+            set_raw(lx, 85, lz, DST)
+            for hy in range(86, 90):
+                set_raw(lx, hy, lz, 0)
+
+    # 2) Asymmetric West Garrison Armory Hall (`lx = -43..-33, lz = -34..-12, by = 47..63`)
+    bx0, bx1, bz0, bz1 = -43, -33, -34, -12
+    for lz in range(bz0, bz1 + 1):
+        for lx in range(bx0, bx1 + 1):
+            on_w = lx in (bx0, bx1) or lz in (bz0, bz1)
+            set_raw(lx, 47, lz, PBB if on_w else PDS)
+            for by in range(48, 57):
+                if not on_w:
+                    set_raw(lx, by, lz, 0)
+                elif lx in (bx0, bx1) and lz in (bz0, bz1):
+                    set_raw(lx, by, lz, BASALT_Y)
+                elif by == 55:
+                    set_raw(lx, by, lz, DARK_OAK_PLANKS)
+                elif by == 56:
+                    set_raw(lx, by, lz, CPB)
+                elif 50 <= by <= 53 and lx == bx1 and (lz % 6 == 0):
+                    set_raw(lx, by, lz, GLASS_NS)
+                else:
+                    set_raw(lx, by, lz, DSB)
+    mid_x = (bx0 + bx1) // 2
+    half_span = (bx1 - bx0) // 2 + 1
+    for dx in range(-half_span, half_span + 1):
+        ry = 57 + (half_span - abs(dx))
+        for lz in range(bz0 - 1, bz1 + 2):
+            if bx0 <= mid_x + dx <= bx1 and bz0 <= lz <= bz1:
+                for fy in range(57, ry):
+                    set_raw(mid_x + dx, fy, lz, DSB if lz in (bz0, bz1) else 0)
+            st_blk = CPB if dx == 0 else dst_stair("east" if dx < 0 else "west")
+            set_raw(mid_x + dx, ry, lz, st_blk)
+    for dy_d in range(48, 52):
+        set_raw(bx1, dy_d, -23, 0)
+        set_raw(bx1, dy_d, -22, 0)
+    set_raw(bx1 + 1, 52, -25, LANTERN_HANG)
+    set_raw(bx1 + 1, 52, -20, LANTERN_HANG)
+    set_raw(mid_x, 55, -28, CHANDELIER)
+    set_raw(mid_x, 55, -18, CHANDELIER)
+
+
+# =============================================================================
 # 7. STRICT AUTOMATED INVARIANT VERIFICATION & STREAMING GZIP NBT WRITER
 # =============================================================================
 def verify_invariants():
-    print("  [6/7] Running strict symmetry, palette, window & tower-stair verifications...")
+    print("  [7/8] Running v0.29.0 main-hall symmetry, exterior 2-level asymmetry, seabed bridge & stair checks...")
     verify_registered_blocks()
 
-    # 1) Verify 100.000% exact X-mirror symmetry (`lx <-> -lx`) across the entire volume
-    #    (skipping only 2 multi-block horizontal master props centered at lx=0 whose footprint spans x0=-1..+1:
-    #     `boss_throne` at (0,61,-36) and `chapel_altar` at (0,59,-65) — single-block masters sit cleanly on lx=0!)
-    mismatches = 0
-    for by in range(H):
+    # 1) Verify 100.000% exact X-mirror symmetry INSIDE Main Cathedral Throne Hall (`|lx| <= 21, lz = -39..+2, by = 57..94`)
+    #    AND Rotunda Sanctum (`|lx| <= 18, lz = -76..-44, by = 57..92`)!
+    hall_mismatches = 0
+    for by in range(57, 95):
         y_off = by * STRIDE_Y
-        for lz in range(OZ, OZ + D):
+        for lz in range(-39, 3):
             row_off = y_off + (lz - OZ) * W
-            for lx in range(1, 124):
+            for lx in range(1, 22):
                 v_pos = vox[row_off + (lx - OX)]
                 v_neg = vox[row_off + (-lx - OX)]
                 if v_neg != mirror_val(v_pos):
-                    mismatches += 1
-                    if mismatches <= 5:
-                        print(f"    SYMMETRY MISMATCH at (±{lx}, {by}, {lz}): +{v_pos} vs -{v_neg}")
-    assert mismatches == 0, f"Found {mismatches} X-symmetry mismatches!"
+                    hall_mismatches += 1
+                    if hall_mismatches <= 5:
+                        print(f"    MAIN HALL SYMMETRY MISMATCH at (±{lx}, {by}, {lz}): +{v_pos} vs -{v_neg}")
+    for by in range(57, 93):
+        y_off = by * STRIDE_Y
+        for lz in range(-76, -43):
+            row_off = y_off + (lz - OZ) * W
+            for lx in range(1, 19):
+                v_pos = vox[row_off + (lx - OX)]
+                v_neg = vox[row_off + (-lx - OX)]
+                if v_neg != mirror_val(v_pos):
+                    hall_mismatches += 1
+                    if hall_mismatches <= 5:
+                        print(f"    ROTUNDA SYMMETRY MISMATCH at (±{lx}, {by}, {lz}): +{v_pos} vs -{v_neg}")
+    assert hall_mismatches == 0, f"Found {hall_mismatches} interior Main Hall / Rotunda symmetry mismatches!"
 
-    # 2) Verify 20/20 towers have >= 16 stairs
+    # 2) Verify EXTERIOR IS GENUINELY ASYMMETRIC (`ext_diff >= 80,000` voxels!) and 2-LEVEL (`lower_ward_solid >= 8,000`)!
+    ext_diff = 0
+    for by in range(25, 115):
+        y_off = by * STRIDE_Y
+        for lz in range(OZ, OZ + D):
+            row_off = y_off + (lz - OZ) * W
+            for lx in range(25, 120):
+                if vox[row_off + (lx - OX)] != mirror_val(vox[row_off + (-lx - OX)]):
+                    ext_diff += 1
+    assert ext_diff >= 80000, f"Exterior is too symmetric! Expected >=80,000 asymmetric voxels, got {ext_diff}"
+
+    lower_ward_solid = sum(
+        1
+        for by in range(32, 43)
+        for lz in range(-40, 48)
+        for lx in range(63, 104)
+        if get_raw(lx, by, lz) != 0
+    )
+    assert lower_ward_solid >= 8000, f"Expected substantial Level-1 Lower Harbor Ward masonry (>=8000), got {lower_ward_solid}"
+
+    # 3) Verify SUBMERGED SEABED BRIDGE (`lz = 92..120` is UNDERWATER `by <= SEA_BY` with 0 land island above sea!)
+    above_sea_far_bridge = sum(
+        1
+        for by in range(SEA_BY + 4, H)
+        for lz in range(92, OZ + D)
+        for lx in range(-60, 60)
+        if get_raw(lx, by, lz) != 0
+    )
+    submerged_bridge_solid = sum(
+        1
+        for by in range(1, SEA_BY + 1)
+        for lz in range(90, 121)
+        for lx in range(GATE_LX - 6, GATE_LX + 7)
+        if get_raw(lx, by, lz) != 0
+    )
+    assert above_sea_far_bridge == 0, f"Bridge end must NOT be a land island! Found {above_sea_far_bridge} blocks above sea at lz>=92"
+    assert submerged_bridge_solid >= 2500, f"Expected submerged underwater bridge masonry (>=2500), got {submerged_bridge_solid}"
+
+    # 4) Verify EVERY tower in `TOWER_REGISTRY` (`28` towers: Level 1 + Level 2 + Keep + Bell-Spire) has walkable stairs!
     stair_ids = {
         idx
         for idx, (nm, _) in enumerate(palette, start=1)
         if nm == "minecraft:polished_blackstone_brick_stairs"
     }
-    assert len(TOWER_REGISTRY) == 22, f"Expected 22 symmetrical towers, got {len(TOWER_REGISTRY)}"
+    assert len(TOWER_REGISTRY) >= 26, f"Expected >=26 towers across 2 levels + Keep, got {len(TOWER_REGISTRY)}"
     total_tower_stairs = 0
     for tname, tcx, tcz, yb, yt in TOWER_REGISTRY:
         cnt = 0
@@ -1533,7 +1875,9 @@ def verify_invariants():
         assert cnt >= 16, f"Tower {tname} at ({tcx},{tcz}) has only {cnt} stairs!"
         total_tower_stairs += cnt
 
-    # 3) Verify Cathedral Hall & Rotunda counts
+    # 5) Verify Cathedral Hall & Rotunda counts + 0 gilded_blackstone
+    for nm, _ in palette:
+        assert "gilded_blackstone" not in nm, f"Forbidden gilded_blackstone found in palette: {nm}"
     carpets_cath = sum(
         1
         for by in range(56, 65)
@@ -1559,13 +1903,14 @@ def verify_invariants():
     assert carpets_rot >= 100, f"Expected >=100 Rotunda carpets, got {carpets_rot}"
     assert books_rot >= 40, f"Expected >=40 Rotunda bookshelves, got {books_rot}"
     print(
-        f"    VERIFIED: symmetry_mismatches=0 | towers={len(TOWER_REGISTRY)} (stairs={total_tower_stairs}) "
+        f"    VERIFIED: hall_sym_mismatches=0 | ext_asym_voxels={ext_diff:,} | lvl1_ward={lower_ward_solid:,} "
+        f"| sub_bridge={submerged_bridge_solid:,} (above_sea_far=0) | towers={len(TOWER_REGISTRY)} (stairs={total_tower_stairs}) "
         f"| cath_carpets={carpets_cath} | rot_carpets={carpets_rot} | rot_books={books_rot} | palette={len(palette)}"
     )
 
 
 def write_nbt(path: str):
-    print(f"  [7/7] Writing compressed StructureTemplate NBT to {path}...")
+    print(f"  [8/8] Writing compressed StructureTemplate NBT to {path}...")
 
     def u8(v):
         return struct.pack(">B", v)
@@ -1632,12 +1977,14 @@ def write_nbt(path: str):
 
 
 def main():
-    print("Generating v0.26.0 symmetrical Gothic Basalt Citadel `blacktide.nbt`...")
+    print("Generating v0.29.0 Asymmetric 2-Level Sea-Island Blacktide Citadel + Seabed Bridge `blacktide.nbt`...")
     build_volcanic_island()
     build_viaduct_bridge()
+    build_lower_coastal_ward()
     build_curtain_walls_and_gatehouse()
     build_cathedral_keep_and_throne_hall()
     build_rotunda_sanctum()
+    build_asymmetric_upper_annexes()
     verify_invariants()
     write_nbt(OUT_NBT)
 

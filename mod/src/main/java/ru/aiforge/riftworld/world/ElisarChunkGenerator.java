@@ -1032,6 +1032,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         BlockState tall = st(ElisarBlocks.TALL_GRASS), flowers = st(ElisarBlocks.FLOWERS), log = st(ElisarBlocks.SIZO_LOG);
         BlockState moss = st(ElisarBlocks.MOSS), crust = st(ElisarBlocks.CRUST);
         BlockState aurite = st(ElisarBlocks.AURITE_ORE);
+        BlockState ducatOre = st(ElisarBlocks.DUCAT_ORE);
         // Рев 14: у биома 07 своя зелёная палитра (референс — яркая трава и дубы, а не кремовый Элисар)
         BlockState gardenGrass = st(ElisarBlocks.GARDEN_GRASS);
         // Рев 15.4: газон Фиолетовых холмов — ВАНИЛЬНАЯ короткая трава: она тинтуется цветом
@@ -1245,17 +1246,24 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                     ? (hash(x, y, z) < 0.30 ? limeMossy : lime)
                                     : (hash(x, y, z) < 0.10 ? mossy : stone);
                         } else if (c.garden && y >= c.top - 14) {
-                            // стены полок — светлый известняк пластами (на фото обрыв цельно светлый),
-                            // у подножия — мшистый
-                            s = (y <= c.top - 10 && hash(x, y, z) < 0.45) ? limeMossy : lime;
+                            // стены полок — светлый известняк пластами, а на глубине 2..7 прячутся жилы монетоносной руды!
+                            if (y <= c.top - 2 && y >= c.top - 7
+                                    && vnoise(x * 0.33, z * 0.33, 313) > 0.80 && hash(x, y, z) < 0.85) {
+                                s = hash(x, z, 314) < 0.50 ? ducatOre : aurite;
+                            } else {
+                                s = (y <= c.top - 10 && hash(x, y, z) < 0.45) ? limeMossy : lime;
+                            }
                         } else if (y <= c.bottom + 1 && hash(x, z, y) < 0.5 || hash(x, y, z) < 0.07) {
                             s = mossy;
                         } else {
                             s = stone;
-                            // улучшение биомов: ауритовая руда (монетоносная) змеится вдоль ярусов Висячих садов,
-                            // прячась на глубине 2..6 под поверхностью полки - волно-лентовые прожилки с промывками
-                            if (c.garden && y <= c.top - 2 && y >= c.top - 6
-                                    && vnoise(x * 0.33, z * 0.33, 313) > 0.80 && hash(x, y, z) < 0.88) s = aurite;
+                            // v0.29.0: Жилы монетной руды (ducat_ore -> выплавляется в elisar_ducat!) внутри диких парящих островов Элисара
+                            if (c.isl.kind != 0 && y <= c.top - 3 && y >= c.bottom + 2) {
+                                double dv = vnoise(x * 0.24 + y * 0.07, z * 0.24 - y * 0.05, 519);
+                                if (dv > 0.805 && hash(x, y, z) < 0.68) {
+                                    s = ducatOre;
+                                }
+                            }
                         }
                         chunk.setBlockState(mp.set(x, y, z), s, false);
                     }
@@ -2091,8 +2099,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 tpl.placeInWorld(level, pos, pos, s, rnd, 2);
             });
         }
-        // v0.23.0: Прибрежно-морская «Цитадель Чёрного утёса» (blacktide.nbt): мост начинается на суше Пепельного биома, а сам замок стоит в море!
-        BlacktideCitadel.Site btSite = AshenLands.blacktideForChunk(x0, z0);
+        // v0.29.0: Океаническая «Цитадель Чёрного утёса» (blacktide.nbt): спавнится ТОЛЬКО в открытом море, мост уходит под воду в дно!
+        BlacktideCitadel.Site btSite = BlacktideCitadel.siteForChunk(x0, z0);
         if (btSite != null) {
             BlacktideCitadel.buildInChunk(chunk, plan, btSite, x0, z0);
         }

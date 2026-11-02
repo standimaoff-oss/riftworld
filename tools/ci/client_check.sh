@@ -1629,6 +1629,13 @@ biome_section() {
   probe_and_shot_struct "v28_wood_and_stone_gallery"   700 "139_v28_all_wood_and_stone_sets_gallery" 0 0 8
   probe_and_shot_struct "v28_elisar_perf_2chunks"      600 "140_v28_elisar_lag_free_perf_2chunks"    0 0 14
 
+  # ---------- v0.29.0: Открытие портала свечами, Blacktide в открытом океане с мостом из морского дна и 2 уровнями, крафты + монетная руда, синхронные волны ----------
+  echo "== v0.29.0: Свечи портала, океанический 2-уровневый Blacktide с мостом из дна, крафты + монетная руда и синхронные волны =="
+  probe_and_shot_struct "v29_candle_portal_open"       500 "141_v29_candle_lit_portal_opened"        0 0 6
+  probe_and_shot_struct "v29_blacktide_seabed_bridge"  300 "142_v29_blacktide_seabed_bridge_underwater" 0 0 14
+  probe_and_shot_struct "v29_crafting_and_coin_ore"    700 "143_v29_crafting_and_coin_ore_showcase"  0 0 6
+  probe_and_shot_struct "v29_sync_ocean_waves_perf"    800 "144_v29_sync_clamped_ocean_waves"        0 0 12
+
   # ---------- v0.26.0: редкие выходы подводных пещер в море, /locate всех 26 структур и 9 биомов, все 16 яиц призыва ----------
   echo "== v0.26.0: редкие выходы пещер в море, /locate всех 26 структур и 9 биомов, яйца призыва всех 16 мобов (включая Дракона) =="
   probe_and_shot_struct "sea_cave_exit"            120 "126_underwater_cave_sea_exit"          1 0 14

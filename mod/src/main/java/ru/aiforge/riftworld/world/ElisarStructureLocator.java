@@ -69,27 +69,9 @@ public final class ElisarStructureLocator {
             }
 
             case "blacktide_citadel" -> {
-                int sx0 = Math.floorDiv(ox, AshenLands.SUPER), sz0 = Math.floorDiv(oz, AshenLands.SUPER);
-                int rMax = Math.max(4, (maxDist / AshenLands.SUPER) + 3);
-                BlockPos best = null;
-                double bestD2 = Double.MAX_VALUE;
-                for (int r = 0; r <= rMax; ++r) {
-                    for (int dx = -r; dx <= r; ++dx) {
-                        for (int dz = -r; dz <= r; ++dz) {
-                            if (Math.max(Math.abs(dx), Math.abs(dz)) != r) continue;
-                            AshenLands.Region rg = AshenLands.region(sx0 + dx, sz0 + dz);
-                            if (rg == null || !rg.hasBlacktide || rg.blacktideSite == null) continue;
-                            BlacktideCitadel.Site bs = rg.blacktideSite;
-                            double d2 = distSq(bs.gateX, bs.gateZ, ox, oz);
-                            if (d2 < bestD2) {
-                                bestD2 = d2;
-                                best = new BlockPos(bs.gateX, bs.baseY + 48, bs.gateZ);
-                            }
-                        }
-                    }
-                    if (best != null && r >= 1) break;
-                }
-                yield best;
+                int rMax = Math.max(5, (maxDist / BlacktideCitadel.SUPER) + 3);
+                BlacktideCitadel.Site bs = BlacktideCitadel.nearest(ox, oz, rMax);
+                yield bs == null ? null : new BlockPos(bs.gateX, bs.baseY + 48, bs.gateZ);
             }
 
             case "ember_castle" -> {

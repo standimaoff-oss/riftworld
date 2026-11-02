@@ -326,7 +326,6 @@ public final class WorldStructures {
                 int candX = (int) Math.round(rg.cx + Math.cos(a) * (rg.R * 0.46));
                 int candZ = (int) Math.round(rg.cz + Math.sin(a) * (rg.R * 0.46));
                 if (rg.hasBurnedChurch && Math.hypot(candX - rg.churchX, candZ - rg.churchZ) < 95.0) continue;
-                if (rg.blacktideSite != null && rg.blacktideSite.inFootprint(candX, candZ, 58.0)) continue;
                 boolean hitMound = false;
                 for (AshenLands.Mound m : rg.mounds) {
                     if (Math.hypot(candX - m.x(), candZ - m.z()) < m.r() + 28.0) { hitMound = true; break; }

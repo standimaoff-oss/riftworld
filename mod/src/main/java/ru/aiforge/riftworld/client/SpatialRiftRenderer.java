@@ -37,6 +37,10 @@ public class SpatialRiftRenderer extends EntityRenderer<SpatialRiftEntity> {
     private static final int SIDES = 8; // 4 длинных острых хребта + 4 глубокие вогнутые грани единой звёздчатой призмы
     private static final float TOTAL_HEIGHT = 172.0F;
 
+    private static final float[][] SCRATCH_VX = new float[RINGS + 1][SIDES];
+    private static final float[][] SCRATCH_VY = new float[RINGS + 1][SIDES];
+    private static final float[][] SCRATCH_VZ = new float[RINGS + 1][SIDES];
+
     public SpatialRiftRenderer(EntityRendererProvider.Context ctx) {
         super(ctx);
         this.shadowRadius = 0.0F;
@@ -44,9 +48,13 @@ public class SpatialRiftRenderer extends EntityRenderer<SpatialRiftEntity> {
 
     @Override
     public boolean shouldRender(SpatialRiftEntity entity, Frustum frustum, double camX, double camY, double camZ) {
+        var mc = net.minecraft.client.Minecraft.getInstance();
+        int rd = mc.options != null ? Math.max(2, mc.options.renderDistance().get()) : 12;
+        double maxD = Math.min(320.0, Math.max(52.0, rd * 16.0 + 28.0));
         double dx = entity.getX() - camX;
         double dz = entity.getZ() - camZ;
-        return dx * dx + dz * dz < 420.0 * 420.0;
+        if (dx * dx + dz * dz > maxD * maxD) return false;
+        return frustum.isVisible(entity.getBoundingBox().expandTowards(0.0, 174.0, 0.0).inflate(14.0));
     }
 
     @Override
@@ -69,9 +77,9 @@ public class SpatialRiftRenderer extends EntityRenderer<SpatialRiftEntity> {
 
         float maxH = TOTAL_HEIGHT * (0.28F + 0.72F * unfoldEase);
 
-        float[][] vx = new float[RINGS + 1][SIDES];
-        float[][] vy = new float[RINGS + 1][SIDES];
-        float[][] vz = new float[RINGS + 1][SIDES];
+        float[][] vx = SCRATCH_VX;
+        float[][] vy = SCRATCH_VY;
+        float[][] vz = SCRATCH_VZ;
 
         for (int i = 0; i <= RINGS; ++i) {
             float u = (float) i / (float) RINGS;
