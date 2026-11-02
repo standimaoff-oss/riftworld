@@ -115,8 +115,9 @@ public class DragonWhistleItem extends Item {
         float towardsPlayerYaw = (float) (Mth.atan2(player.getZ() - skyZ, player.getX() - skyX) * (180.0 / Math.PI)) - 90.0F;
         sl.getChunk(Mth.floor(skyX) >> 4, Mth.floor(skyZ) >> 4);
 
-        if (loaded != null && !sl.isPositionEntityTicking(loaded.blockPosition())) {
-            // Если старый экземпляр застрял в полувыгруженном пограничном чанке — переспавним свежего из сохранённых данных!
+        if (loaded != null && entry != null && loaded.distanceToSqr(player) > 72.0 * 72.0) {
+            // Если старый экземпляр далеко в пограничном/полувыгруженном чанке — переспавним свежего из сохранённых данных!
+            loaded.stopRiding();
             loaded.ejectPassengers();
             loaded.discard();
             loaded = null;
