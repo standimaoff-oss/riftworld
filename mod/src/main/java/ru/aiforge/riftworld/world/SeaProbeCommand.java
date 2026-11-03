@@ -3595,7 +3595,7 @@ public final class SeaProbeCommand {
             String line = "riftstruct kind=v32_liopleurodon at=" + px + "," + (py + 3) + "," + pz
                     + " alive=" + alive + " hp=90 drop_tooth=true drop_scale=true"
                     + " blocks=" + metric + " sub_air=0"
-                    + " cam=" + (px - 11) + "," + (py + 3) + "," + (pz - 8) + ":" + px + "," + py + "," + pz;
+                    + " cam=" + (px - 8) + "," + (py + 2) + "," + (pz - 7) + ":" + px + "," + (py + 1) + "," + pz;
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
         }
@@ -3618,11 +3618,20 @@ public final class SeaProbeCommand {
             };
             int placed = 0, itemOk = 0, langOk = 0;
             if (level instanceof ServerLevel) {
+                // постамент: сплошная плита мёрзлой земли под всей витриной (а не парящие кубики)
+                for (int bx = tx - 15; bx <= tx + 17; ++bx) {
+                    for (int bz = tz - 1; bz <= tz + 9; ++bz) {
+                        level.setBlock(new BlockPos(bx, ty, bz), MorokBlocks.FROZEN_SOIL.get().defaultBlockState(), 2);
+                        level.setBlock(new BlockPos(bx, ty - 1, bz), MorokBlocks.RIME_GRASS.get().defaultBlockState(), 2);
+                        if (bz == tz + 9) {
+                            level.setBlock(new BlockPos(bx, ty + 1, bz), MorokBlocks.CRACKED_RIME_BRICKS.get().defaultBlockState(), 2);
+                        }
+                    }
+                }
                 for (int i = 0; i < all.length; ++i) {
                     int row = i / 14, col = i % 14;
                     int bx = tx - 13 + col * 2, bz = tz + row * 4;
                     Block b = all[i];
-                    level.setBlock(new BlockPos(bx, ty, bz), MorokBlocks.FROZEN_SOIL.get().defaultBlockState(), 2);
                     BlockState st = b.defaultBlockState();
                     if (b instanceof net.minecraft.world.level.block.StairBlock) {
                         st = st.setValue(net.minecraft.world.level.block.StairBlock.FACING, net.minecraft.core.Direction.NORTH);
@@ -3651,7 +3660,7 @@ public final class SeaProbeCommand {
                     + " items=" + itemOk + "/" + all.length
                     + " lang=" + langOk + "/" + all.length
                     + " blocks=" + metric + " sub_air=0"
-                    + " cam=" + tx + "," + (ty + 8) + "," + (tz + 16) + ":" + tx + "," + (ty + 1) + "," + tz;
+                    + " cam=" + tx + "," + (ty + 5) + "," + (tz + 15) + ":" + tx + "," + (ty + 1) + "," + (tz + 2);
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
         }
