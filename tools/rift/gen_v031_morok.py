@@ -145,7 +145,7 @@ def rnd(seed):
     return nxt
 
 
-def add_cracks(pixels, seed=7, density=0.16, color="#1B1B1F"):
+def add_cracks(pixels, seed=7, density=0.16, color="#15161A"):
     """Вертикальные «трещины» в коре/кирпиче (как на референсе 03)."""
     h, w = len(pixels), len(pixels[0])
     r = rnd(seed)
@@ -164,7 +164,7 @@ def add_cracks(pixels, seed=7, density=0.16, color="#1B1B1F"):
     return pixels
 
 
-def rime_specks(pixels, seed=11, density=0.10, color="#F2F7F7"):
+def rime_specks(pixels, seed=11, density=0.10, color="#DCE8E6"):
     h, w = len(pixels), len(pixels[0])
     r = rnd(seed)
     c = hx(color)
@@ -178,7 +178,7 @@ def rime_specks(pixels, seed=11, density=0.10, color="#F2F7F7"):
 BARK = [(0.0, "#14151A"), (0.25, "#3A3B3E"), (0.55, "#B9B2A4"), (0.80, "#D9D2C4"), (1.0, "#EFE9DC")]
 BARK_STRIPPED = [(0.0, "#8C8579"), (0.5, "#CFC7B7"), (1.0, "#E8E1D2")]
 PLANKS = [(0.0, "#8E887A"), (0.45, "#BDB5A5"), (0.75, "#D3CBBA"), (1.0, "#E4DDCE")]
-NEEDLES = [(0.0, "#3E5148"), (0.35, "#6B8279"), (0.7, "#9FB0A6"), (1.0, "#DCE8E2")]
+NEEDLES = [(0.0, "#0B120F"), (0.5, "#16211C"), (0.85, "#243430"), (1.0, "#33453F")]
 SOIL = [(0.0, "#14161A"), (0.5, "#22262B"), (0.85, "#333941"), (1.0, "#4A5058")]
 GRASS_TOP = [(0.0, "#4E5A54"), (0.4, "#7E8F86"), (0.8, "#9FAFA6"), (1.0, "#B9C4BC")]
 MOSS = [(0.0, "#5C6A62"), (0.5, "#9FAFA6"), (0.85, "#B7C4BB"), (1.0, "#CBD5CC")]
@@ -225,7 +225,7 @@ def gen_textures():
             continue
         px = recolor(read_png(src), stops)
         if opts.get("cracks"):
-            px = add_cracks(px, seed=hash(dst_name) & 0x7FFF)
+            px = add_cracks(px, seed=hash(dst_name) & 0x7FFF, density=0.45)
         if opts.get("rime"):
             px = rime_specks(px, density=opts.get("rime_density", 0.10), seed=(hash(dst_name) >> 3) & 0x7FFF)
         write_png(TEX / dst_name, px)
