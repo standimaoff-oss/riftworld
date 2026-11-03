@@ -256,17 +256,28 @@ def main():
     zs_all = [c["center"][2] for c in cubes]
     print(f"  габарит: X {min(xs_all):.0f}..{max(xs_all):.0f}  Y {min(ys_all):.0f}..{max(ys_all):.0f}  Z {min(zs_all):.0f}..{max(zs_all):.0f}")
 
+    SHEET = "--sheet" in sys.argv
+
     views = [
         ("сбоку (side)", 90.0, 8.0),
         ("три четверти (3/4)", 128.0, 18.0),
         ("сверху-спереди (top)", 160.0, 34.0),
     ]
-    W, H = TILE_W * SX, TILE_H * SY
+    if SHEET:
+        views = [
+            ("сбоку (side)", 90.0, 4.0),
+            ("три четверти (3/4)", 140.0, 22.0),
+            ("сверху (top)", 90.0, 88.0),
+            ("спереди (front)", 180.0, 8.0),
+        ]
+    cols = 2 if SHEET else SX
+    rows = 2 if SHEET else SY
+    W, H = TILE_W * cols, TILE_H * rows
     img = [[BG] * W for _ in range(H)]
     for idx, (_label, az, el) in enumerate(views):
         tile = render_view(tex, cubes, az, el, SCALE, TILE_W, TILE_H, BG)
-        tx = (idx % SX) * TILE_W
-        ty = (idx // SX) * TILE_H
+        tx = (idx % cols) * TILE_W
+        ty = (idx // cols) * TILE_H
         for y in range(TILE_H):
             row = img[ty + y]
             trow = tile[y]
@@ -278,6 +289,27 @@ def main():
             img[ty + TILE_H - 1][tx + x] = (44, 50, 60)
         for y in range(TILE_H):
             img[ty + y][tx] = (44, 50, 60)
+
+    if SHEET:
+        # 2x2: три ракурса + атлас текстур в четвёртой ячейке
+        W2, H2 = TILE_W * 2, TILE_H * 2
+        sheet = [[(26, 32, 40)] * W2 for _ in range(H2)]
+        order = [0, 1, 2, 3]
+        for idx in order:
+            sx0 = (idx % cols) * TILE_W
+            sy0 = (idx // cols) * TILE_H
+            for y in range(TILE_H):
+                for x in range(TILE_W):
+                    sheet[sy0 + y][sx0 + x] = img[sy0 + y][sx0 + x]
+        for x in range(W2):
+            sheet[TILE_H][x] = (52, 60, 72)
+            sheet[0][x] = (52, 60, 72)
+        for y in range(H2):
+            sheet[y][TILE_W] = (52, 60, 72)
+            sheet[y][0] = (52, 60, 72)
+        out_sheet = ROOT / f"reports/{NAME}_model_sheet.png"
+        write_png(out_sheet, sheet)
+        print(f"model sheet: {out_sheet.relative_to(ROOT)}  (сбоку / 3-4 / сверху / спереди + атлас)")
 
     write_png(OUT, img)
     print(f"preview: {OUT.relative_to(ROOT)}  кубоидов={len(cubes)}  атлас={len(tex[0])}x{len(tex)}")
