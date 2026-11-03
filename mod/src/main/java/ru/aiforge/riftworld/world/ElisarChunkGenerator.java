@@ -2065,7 +2065,6 @@ public class ElisarChunkGenerator extends ChunkGenerator {
     }
 
     // ================================================================== decoration: buildings + props
-    @Override
     /**
      * v0.36.0 — бледный бор «Мороковой Пади»: разреженные «костяные» сосны 9–17 блоков
      * по решётке {@link MorokHollow#treeHere}, редкий подлесок и ледяные клыки.
@@ -2109,6 +2108,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         }
     }
 
+    @Override
     public void applyBiomeDecoration(WorldGenLevel level, ChunkAccess chunk, StructureManager sm) {
         CityPlan plan = CityPlan.get();
         int x0 = chunk.getPos().getMinBlockX(), z0 = chunk.getPos().getMinBlockZ();

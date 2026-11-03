@@ -3660,7 +3660,7 @@ public final class SeaProbeCommand {
             // v0.36.0: биом «Мороковая Падь» — мерзлота, бледный бор, туман (цвет неба/тумана биома).
             int px = 1200, pz = 820;
             int ground = 140;
-            if (level instanceof ServerLevel sl) {
+            if (level instanceof ServerLevel) {
                 for (int dx = -6; dx <= 6; ++dx) {
                     for (int dz = -6; dz <= 6; ++dz) {
                         level.setBlock(new BlockPos(px + dx, ground - 1, pz + dz),
