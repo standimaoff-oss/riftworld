@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SG",
+    "GS"
+  ],
+  "key": {
+    "S": {
+      "item": "riftworld:elisar_soil"
+    },
+    "G": {
+      "item": "minecraft:gravel"
+    }
+  },
+  "result": {
+    "item": "riftworld:elisar_path",
+    "count": 4
+  }
+}

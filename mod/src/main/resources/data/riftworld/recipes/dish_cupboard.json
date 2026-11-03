@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SSS",
+    "GBG",
+    "SSS"
+  ],
+  "key": {
+    "S": {
+      "item": "riftworld:sizo_planks_slab"
+    },
+    "G": {
+      "item": "minecraft:glass_pane"
+    },
+    "B": {
+      "item": "minecraft:bowl"
+    }
+  },
+  "result": {
+    "item": "riftworld:dish_cupboard"
+  }
+}

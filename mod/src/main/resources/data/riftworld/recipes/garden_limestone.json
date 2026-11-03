@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "CS",
+    "SC"
+  ],
+  "key": {
+    "C": {
+      "item": "minecraft:calcite"
+    },
+    "S": {
+      "item": "minecraft:cobblestone"
+    }
+  },
+  "result": {
+    "item": "riftworld:garden_limestone",
+    "count": 4
+  }
+}

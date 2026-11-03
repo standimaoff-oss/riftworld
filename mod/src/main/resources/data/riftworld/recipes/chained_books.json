@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "HBH"
+  ],
+  "key": {
+    "H": {
+      "item": "riftworld:elisar_chain"
+    },
+    "B": {
+      "item": "minecraft:book"
+    }
+  },
+  "result": {
+    "item": "riftworld:chained_books",
+    "count": 2
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SC",
+    "CS"
+  ],
+  "key": {
+    "S": {
+      "item": "minecraft:sand"
+    },
+    "C": {
+      "item": "minecraft:clay_ball"
+    }
+  },
+  "result": {
+    "item": "riftworld:elisar_silt",
+    "count": 4
+  }
+}

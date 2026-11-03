@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "N",
+    "L"
+  ],
+  "key": {
+    "N": {
+      "item": "minecraft:iron_nugget"
+    },
+    "L": {
+      "item": "riftworld:elisar_lantern"
+    }
+  },
+  "result": {
+    "item": "riftworld:lantern_hang"
+  }
+}

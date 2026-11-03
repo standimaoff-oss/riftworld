@@ -767,8 +767,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         if (crag > 3.0) c.surface = S_BARE;
 
         if (cr != null && cr.owns(isl)) {
-            // 1) Площадь астролябии и центральная беломраморная аллея на hub
-            if (isl == cr.hub) {
+            // 1) Площадь астролябии и центральная беломраморная аллея на hub (если выпала колоннада!)
+            if (isl == cr.hub && cr.hasColonnade) {
                 double ad = Math.hypot(px - cr.astroX, pz - cr.astroZ);
                 if (ad < CrystalRifts.Region.ASTRO_R + 7.5) {
                     double k = smooth(Math.max(0.0, (ad - (CrystalRifts.Region.ASTRO_R + 1.8)) / 5.7));
@@ -1246,9 +1246,9 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                     ? (hash(x, y, z) < 0.30 ? limeMossy : lime)
                                     : (hash(x, y, z) < 0.10 ? mossy : stone);
                         } else if (c.garden && y >= c.top - 14) {
-                            // стены полок — светлый известняк пластами, а на глубине 2..7 прячутся жилы монетоносной руды!
-                            if (y <= c.top - 2 && y >= c.top - 7
-                                    && vnoise(x * 0.33, z * 0.33, 313) > 0.80 && hash(x, y, z) < 0.85) {
+                            // стены полок — светлый известняк пластами, а на глубине 3..7 встречаются умеренные жилы монетоносной руды!
+                            if (y <= c.top - 3 && y >= c.top - 7
+                                    && vnoise(x * 0.33, z * 0.33, 313) > 0.89 && hash(x, y, z) < 0.28) {
                                 s = hash(x, z, 314) < 0.50 ? ducatOre : aurite;
                             } else {
                                 s = (y <= c.top - 10 && hash(x, y, z) < 0.45) ? limeMossy : lime;
@@ -1257,10 +1257,10 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                             s = mossy;
                         } else {
                             s = stone;
-                            // v0.29.0: Жилы монетной руды (ducat_ore -> выплавляется в elisar_ducat!) внутри диких парящих островов Элисара
-                            if (c.isl.kind != 0 && y <= c.top - 3 && y >= c.bottom + 2) {
+                            // v0.30.0: Сниженная частота спавна монетной руды внутри диких парящих островов Элисара
+                            if (c.isl.kind != 0 && y <= c.top - 5 && y >= c.bottom + 4) {
                                 double dv = vnoise(x * 0.24 + y * 0.07, z * 0.24 - y * 0.05, 519);
-                                if (dv > 0.805 && hash(x, y, z) < 0.68) {
+                                if (dv > 0.895 && hash(x, y, z) < 0.24) {
                                     s = ducatOre;
                                 }
                             }
@@ -2814,9 +2814,9 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             }
         }
 
-        // 2) Центральная разрушенная каменная колоннада-астролябия на hub (расширена в v0.23.0 под крупного Босса 2.45x и широкий круг кристаллов!)
+        // 2) Центральная разрушенная каменная колоннада-астролябия на hub (если сгенерирована по случайному шансу!)
         int ay = cr.astroY;
-        if (x0 <= cr.astroX + 18 && x0 + 15 >= cr.astroX - 18 && z0 <= cr.astroZ + 18 && z0 + 15 >= cr.astroZ - 18) {
+        if (cr.hasColonnade && x0 <= cr.astroX + 18 && x0 + 15 >= cr.astroX - 18 && z0 <= cr.astroZ + 18 && z0 + 15 >= cr.astroZ - 18) {
             int ax0 = Math.max(x0, (int) Math.floor(cr.astroX - 17));
             int ax1 = Math.min(x0 + 15, (int) Math.ceil(cr.astroX + 17));
             int az0 = Math.max(z0, (int) Math.floor(cr.astroZ - 17));
@@ -2934,8 +2934,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             }
         }
 
-        // 3) Запасные миниатюрные деревца вдоль аллеи (ТОЛЬКО если аддон Dynamic Trees не загружен!)
-        if (!DtGround.dtPresent()) {
+        // 3) Запасные миниатюрные деревца вдоль аллеи (ТОЛЬКО если колоннада выпала и аддон Dynamic Trees не загружен!)
+        if (cr.hasColonnade && !DtGround.dtPresent()) {
             BlockState cLog = st(ElisarBlocks.CRYSTAL_LOG);
             BlockState cLeaf = st(ElisarBlocks.CRYSTAL_LEAVES).setValue(LeavesBlock.PERSISTENT, true);
             double ax = cr.aveAx, az = cr.aveAz, bx = cr.aveBx, bz = cr.aveBz;

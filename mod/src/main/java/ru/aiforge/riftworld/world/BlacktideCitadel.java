@@ -148,9 +148,8 @@ public final class BlacktideCitadel {
         long cellSeed = SEED ^ (sx * 0x9E3779B97F4A7C15L + sz * 0xBF58476D1CE4E5B9L);
         Random r = new Random(cellSeed);
 
-        // Гарантируем эталонные морские экземпляры в открытых секторах океана (вдали от Пепельного биома!) + рандом по всему морю
-        boolean pinned = (sx == 1 && sz == -1) || (sx == -1 && sz == -1) || (sx == 1 && sz == 1);
-        if (!pinned && r.nextDouble() > 0.54) {
+        // v0.30.0: 100% вероятностный спавн в открытом океане (без принудительно закреплённых ячеек!)
+        if (r.nextDouble() > 0.54) {
             return null;
         }
 

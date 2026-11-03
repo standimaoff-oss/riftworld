@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "S S",
+    "ICI",
+    " F "
+  ],
+  "key": {
+    "S": {
+      "item": "minecraft:stick"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "C": {
+      "item": "minecraft:cauldron"
+    },
+    "F": {
+      "item": "minecraft:campfire"
+    }
+  },
+  "result": {
+    "item": "riftworld:cooking_pot"
+  }
+}

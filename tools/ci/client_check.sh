@@ -1612,6 +1612,28 @@ biome_section() {
   probe_and_shot_struct "blacktide_rotunda_sanctum"  180 "120_blacktide_rotunda_sanctum"       0 0 12
   probe_and_shot_struct "blacktide_tower_walkability" 350 "121_blacktide_tower_stairs_panorama" 0 0 12
   probe_and_shot_struct "blacktide_citadel"       6000 "114_blacktide_citadel_sea_and_shore"   0 0 26
+
+  # v0.30.0: защитные стены без дыр, винтовые лестницы всех 28 башен без лишнего блока, вход в круглую Ротонду
+  BTV=$(EL execute at TestPlayer in riftworld:elisar run riftstruct blacktide_citadel 2>&1 | tr '\r\n' '  ')
+  BT_WALL=$(printf '%s' "$BTV" | sed -n 's/.* wall_breaches=\([0-9]*\).*/\1/p' | tail -1)
+  BT_ST=$(printf '%s' "$BTV" | sed -n 's/.* tower_stairs=\([0-9]*\).*/\1/p' | tail -1)
+  BT_JM=$(printf '%s' "$BTV" | sed -n 's/.* stairs_jammed=\([0-9]*\).*/\1/p' | tail -1)
+  BT_RD=$(printf '%s' "$BTV" | sed -n 's/.* rotunda_door=\([0-9]*\).*/\1/p' | tail -1)
+  if [ -n "${BT_WALL:-}" ] && [ "$BT_WALL" -eq 0 ]; then
+    log "  OK   Цитадель: все 4 линии защитных стен герметичны (wall_breaches=0)"
+  else
+    log "  FAIL Цитадель: в защитных стенах остались дыры (wall_breaches=${BT_WALL:-?})"; FAILS=$((FAILS + 1))
+  fi
+  if [ -n "${BT_ST:-}" ] && [ "$BT_ST" -ge 200 ] && [ -n "${BT_JM:-}" ] && [ "$BT_JM" -eq 0 ]; then
+    log "  OK   Цитадель: все винтовые лестницы 28 башен проходимы (ступеней=${BT_ST}, заблокировано=0)"
+  else
+    log "  FAIL Цитадель: лестницы башен заблокированы (ступеней=${BT_ST:-0}, заблокировано=${BT_JM:-?})"; FAILS=$((FAILS + 1))
+  fi
+  if [ -n "${BT_RD:-}" ] && [ "$BT_RD" -ge 8 ]; then
+    log "  OK   Цитадель: у круглой Ротонды есть настоящий сквозной вход (rotunda_door=${BT_RD})"
+  else
+    log "  FAIL Цитадель: у круглой Ротонды нет входа (rotunda_door=${BT_RD:-0})"; FAILS=$((FAILS + 1))
+  fi
   probe_and_shot_struct "ashen_burned_church"      900 "116_ashen_burned_church"               0 0 16
   probe_and_shot_struct "ashen_combo_matrix"       100 "117_ashen_empty_biome_panorama"        0 0 16
   probe_and_shot_struct "enlarged_biomes_audit"    500 "118_enlarged_violet_hills_panorama"    0 0 18

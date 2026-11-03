@@ -300,7 +300,7 @@ public final class DtGround {
         // Миниатюрные редкие деревца вдоль белой мраморной аллеи к колоннаде (референс 02_crystal_sanctum.png:
         // деревца ОЧЕНЬ маленькие, на тонких ветвях и с совсем небольшим количеством морозной листвы!)
         CrystalRifts.Region creg = CrystalRifts.regionAt(pos.getMinBlockX() + 8, pos.getMinBlockZ() + 8);
-        if (creg != null) {
+        if (creg != null && creg.hasColonnade) {
             double ax = creg.aveAx, az = creg.aveAz, bx = creg.aveBx, bz = creg.aveBz;
             double len = Math.max(1.0, Math.hypot(bx - ax, bz - az));
             double ux = (bx - ax) / len, uz = (bz - az) / len;

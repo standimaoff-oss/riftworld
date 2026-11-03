@@ -53,6 +53,8 @@ import ru.aiforge.riftworld.world.WaterfallGardens;
 public final class OceanSurfaceWaves {
     /** Абсолютный верхний предел аналитического радиуса поиска островов (compile-time константа). */
     public static final double MAX_ISLAND_DIST = 520.0;
+    /** Минимальный радиус острова, оставляющего волны на воде (мелкие островки/скалы R < 16 м волн не создают!). */
+    public static final double MIN_WAKE_ISLAND_R = 16.0;
     private static final double MAX_PLUNGE_DIST = 192.0;
     private static final int MAX_ISLAND_SEGS = 40;
     private static final int RING_COUNT = 3;
@@ -185,6 +187,11 @@ public final class OceanSurfaceWaves {
         return effectiveWakeRadius(renderDistChunks, (double) depthFar);
     }
 
+    /** Возвращает {@code true}, если остров достаточно крупный, чтобы оставлять расходящиеся волны на океане. */
+    public static boolean leavesOceanWake(CityPlan.Island isl) {
+        return isl != null && isl.R >= MIN_WAKE_ISLAND_R && isl.maxReach() >= 17.5;
+    }
+
     private static WakeProfile profileOf(CityPlan.Island isl) {
         WakeProfile p = WAKE_CACHE.get(isl);
         if (p == null) {
@@ -223,7 +230,15 @@ public final class OceanSurfaceWaves {
             cachedCamX = cam.x;
             cachedCamZ = cam.z;
             cachedRadius = wakeRadius;
-            cachedIslands = FloatingIslands.gather(cam.x, cam.z, wakeRadius, false);
+            List<CityPlan.Island> rawIslands = FloatingIslands.gather(cam.x, cam.z, wakeRadius, false);
+            List<CityPlan.Island> filtered = new java.util.ArrayList<>(rawIslands.size());
+            for (int i = 0, n = rawIslands.size(); i < n; ++i) {
+                CityPlan.Island isl = rawIslands.get(i);
+                if (leavesOceanWake(isl)) {
+                    filtered.add(isl);
+                }
+            }
+            cachedIslands = filtered;
         }
 
         // Кэш точек падения водопадов строго внутри загруженных чанков!
@@ -289,6 +304,7 @@ public final class OceanSurfaceWaves {
         double maxWakeSq = wakeRadius * wakeRadius;
         for (int idx = 0, n = cachedIslands.size(); idx < n; ++idx) {
             CityPlan.Island isl = cachedIslands.get(idx);
+            if (!leavesOceanWake(isl)) continue;
             double dx = isl.cx - cam.x;
             double dz = isl.cz - cam.z;
             double dist = Math.hypot(dx, dz);
@@ -331,6 +347,7 @@ public final class OceanSurfaceWaves {
         List<CityPlan.Island> list = FloatingIslands.gather(camX, camZ, wakeRadius, false);
         int active = 0;
         for (CityPlan.Island isl : list) {
+            if (!leavesOceanWake(isl)) continue;
             WakeProfile wp = profileOf(isl);
             active += wp.segs;
         }

@@ -2,11 +2,14 @@
   "type": "minecraft:crafting_shaped",
   "pattern": [
     "III",
-    "III"
+    "ICI"
   ],
   "key": {
     "I": {
       "item": "minecraft:iron_ingot"
+    },
+    "C": {
+      "item": "minecraft:charcoal"
     }
   },
   "result": {

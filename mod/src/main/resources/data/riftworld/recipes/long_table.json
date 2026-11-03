@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "DDD",
+    "B B"
+  ],
+  "key": {
+    "D": {
+      "item": "riftworld:dark_planks_slab"
+    },
+    "B": {
+      "item": "riftworld:dark_beam"
+    }
+  },
+  "result": {
+    "item": "riftworld:long_table"
+  }
+}

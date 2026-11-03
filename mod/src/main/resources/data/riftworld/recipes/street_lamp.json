@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " L ",
+    " I ",
+    " B "
+  ],
+  "key": {
+    "L": {
+      "item": "riftworld:elisar_lantern"
+    },
+    "I": {
+      "item": "minecraft:iron_bars"
+    },
+    "B": {
+      "item": "riftworld:elisar_bricks"
+    }
+  },
+  "result": {
+    "item": "riftworld:street_lamp"
+  }
+}

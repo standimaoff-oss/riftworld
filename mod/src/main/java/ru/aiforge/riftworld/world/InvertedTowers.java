@@ -15,7 +15,7 @@ import javax.annotation.Nullable;
  * </ul>
  */
 public final class InvertedTowers {
-    public static final int SUPER = 620;
+    public static final int SUPER = 410;
     private static final long FIXED = 0x51A7E2D94C113B77L;
 
     public static final Site CITY_TOWER = new Site(-104, 148, 22, true);
@@ -45,29 +45,29 @@ public final class InvertedTowers {
         long seed = FIXED ^ (sx * 0x9E3779B97F4A7C15L + sz * 0xC2B2AE3D27D4EB4FL);
         Random r = new Random(seed);
 
-        boolean pinned = (sx == 1 && sz == -1) || (sx == -1 && sz == -1);
-        if (!pinned && r.nextDouble() > 0.62) {
+        // v0.30.0: Увеличенная частота спавна летающих башен (при сохранении честного случайного шанса < 100%!)
+        if (r.nextDouble() > 0.78) {
             return null;
         }
 
         CityPlan plan = CityPlan.get();
-        int margin = 95;
-        for (int attempt = 0; attempt < 18; ++attempt) {
+        int margin = 56;
+        for (int attempt = 0; attempt < 28; ++attempt) {
             int cx = sx * SUPER + margin + r.nextInt(SUPER - 2 * margin);
             int cz = sz * SUPER + margin + r.nextInt(SUPER - 2 * margin);
 
-            if (Math.hypot(cx, cz) < 420.0) continue;
-            if (Math.hypot(cx - 648.0, cz - 693.0) < 220.0) continue; // не задеваем морские пробы spots.json
+            if (Math.hypot(cx, cz) < 380.0) continue;
+            if (Math.hypot(cx - 648.0, cz - 693.0) < 200.0) continue; // не задеваем морские пробы spots.json
 
-            if (AshenLands.blocks(cx, cz, 48.0)) continue;
-            if (BlacktideCitadel.insideAnyFootprint(cx, cz, 96.0)) continue;
-            if (VioletHills.nearAny(cx, cz, 12.0, 48.0)) continue;
+            if (AshenLands.blocks(cx, cz, 40.0)) continue;
+            if (BlacktideCitadel.insideAnyFootprint(cx, cz, 84.0)) continue;
+            if (VioletHills.nearAny(cx, cz, 12.0, 40.0)) continue;
             SizoGrove.Region sr = SizoGrove.regionAt(cx, cz);
-            if (sr != null && Math.hypot(cx - sr.hub.cx, cz - sr.hub.cz) < sr.hub.maxReach() + 48.0) continue;
-            if (WaterfallGardens.nearAny(cx, cz, 12.0, 56.0)) continue;
-            if (CrystalRifts.nearAny(cx, cz, 12.0, 48.0)) continue;
+            if (sr != null && Math.hypot(cx - sr.hub.cx, cz - sr.hub.cz) < sr.hub.maxReach() + 40.0) continue;
+            if (WaterfallGardens.nearAny(cx, cz, 12.0, 46.0)) continue;
+            if (CrystalRifts.nearAny(cx, cz, 12.0, 40.0)) continue;
             MistKeep.Region mk = MistKeep.regionAt(cx, cz);
-            if (mk != null && Math.hypot(cx - mk.cx, cz - mk.cz) < mk.Rr + 48.0) continue;
+            if (mk != null && Math.hypot(cx - mk.cx, cz - mk.cz) < mk.Rr + 40.0) continue;
 
             // Проверяем, что башня парит в чистом небе между дикими островами (не врезаясь в сушу!)
             boolean hitIsland = false;
@@ -76,7 +76,7 @@ public final class InvertedTowers {
             for (int dx = -1; dx <= 1; ++dx) {
                 for (int dz = -1; dz <= 1; ++dz) {
                     for (CityPlan.Island isl : WildIslands.cell(icx0 + dx, icz0 + dz).islands) {
-                        if (Math.hypot(cx - isl.cx, cz - isl.cz) < isl.maxReach() + 26.0) {
+                        if (Math.hypot(cx - isl.cx, cz - isl.cz) < isl.maxReach() + 18.0) {
                             hitIsland = true;
                             break outerIsl;
                         }

@@ -264,7 +264,7 @@ public final class CrystalCombatHandler {
 
     private static void checkColonnadeBossSpawn(ServerLevel sl, ServerPlayer sp) {
         CrystalRifts.Region cr = CrystalRifts.regionAt(sp.getX(), sp.getZ());
-        if (cr == null) return;
+        if (cr == null || !cr.hasColonnade) return;
         double dist = Math.hypot(sp.getX() - cr.astroX, sp.getZ() - cr.astroZ);
         if (dist > 82.0) return;
         BlockPos altar = BlockPos.containing(cr.astroX, cr.astroY + 2.0, cr.astroZ);

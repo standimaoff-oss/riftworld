@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "IS",
+    "SI"
+  ],
+  "key": {
+    "I": {
+      "item": "riftworld:ivory_marble_bricks"
+    },
+    "S": {
+      "item": "riftworld:rift_slate"
+    }
+  },
+  "result": {
+    "item": "riftworld:tower_bricks",
+    "count": 4
+  }
+}

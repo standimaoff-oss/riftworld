@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "FFF",
+    "PBP"
+  ],
+  "key": {
+    "F": {
+      "tag": "minecraft:fishes"
+    },
+    "P": {
+      "item": "riftworld:sizo_planks_slab"
+    },
+    "B": {
+      "item": "minecraft:barrel"
+    }
+  },
+  "result": {
+    "item": "riftworld:fish_barrel"
+  }
+}

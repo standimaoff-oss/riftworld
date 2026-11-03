@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "VV",
+    "LL"
+  ],
+  "key": {
+    "V": {
+      "item": "riftworld:violet_bloom"
+    },
+    "L": {
+      "item": "riftworld:lilac_bloom"
+    }
+  },
+  "result": {
+    "item": "riftworld:lavender_bed",
+    "count": 4
+  }
+}

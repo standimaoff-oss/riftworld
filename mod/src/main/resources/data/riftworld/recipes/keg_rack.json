@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SSS",
+    "B B",
+    "SSS"
+  ],
+  "key": {
+    "S": {
+      "item": "riftworld:ambra_planks_slab"
+    },
+    "B": {
+      "item": "minecraft:barrel"
+    }
+  },
+  "result": {
+    "item": "riftworld:keg_rack"
+  }
+}

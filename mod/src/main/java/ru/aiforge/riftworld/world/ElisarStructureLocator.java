@@ -63,20 +63,20 @@ public final class ElisarStructureLocator {
             case "city_sanctuary", "city_royal_castle" -> new BlockPos(0, 109, -4);
 
             case "inverted_tower" -> {
-                int rMax = Math.max(5, (maxDist / InvertedTowers.SUPER) + 3);
+                int rMax = Math.max(8, (maxDist / InvertedTowers.SUPER) + 3);
                 InvertedTowers.Site ts = InvertedTowers.nearest(ox, oz, true, rMax);
                 yield ts == null ? null : new BlockPos(ts.cx(), ts.roostY(), ts.cz());
             }
 
             case "blacktide_citadel" -> {
-                int rMax = Math.max(5, (maxDist / BlacktideCitadel.SUPER) + 3);
+                int rMax = Math.max(8, (maxDist / BlacktideCitadel.SUPER) + 3);
                 BlacktideCitadel.Site bs = BlacktideCitadel.nearest(ox, oz, rMax);
                 yield bs == null ? null : new BlockPos(bs.gateX, bs.baseY + 48, bs.gateZ);
             }
 
             case "ember_castle" -> {
                 int sx0 = Math.floorDiv(ox, AshenLands.SUPER), sz0 = Math.floorDiv(oz, AshenLands.SUPER);
-                int rMax = Math.max(4, (maxDist / AshenLands.SUPER) + 3);
+                int rMax = Math.max(8, (maxDist / AshenLands.SUPER) + 3);
                 BlockPos best = null;
                 double bestD2 = Double.MAX_VALUE;
                 for (int r = 0; r <= rMax; ++r) {
@@ -145,7 +145,7 @@ public final class ElisarStructureLocator {
 
             case "colonnade_arena" -> {
                 int sx0 = Math.floorDiv(ox, CrystalRifts.SUPER), sz0 = Math.floorDiv(oz, CrystalRifts.SUPER);
-                int rMax = Math.max(4, (maxDist / CrystalRifts.SUPER) + 3);
+                int rMax = Math.max(8, (maxDist / CrystalRifts.SUPER) + 3);
                 BlockPos best = null;
                 double bestD2 = Double.MAX_VALUE;
                 for (int r = 0; r <= rMax; ++r) {
@@ -153,7 +153,7 @@ public final class ElisarStructureLocator {
                         for (int dz = -r; dz <= r; ++dz) {
                             if (Math.max(Math.abs(dx), Math.abs(dz)) != r) continue;
                             CrystalRifts.Region cr = CrystalRifts.region(sx0 + dx, sz0 + dz);
-                            if (cr == null) continue;
+                            if (cr == null || !cr.hasColonnade) continue;
                             int ax = (int) Math.round(cr.astroX), az = (int) Math.round(cr.astroZ);
                             double d2 = distSq(ax, az, ox, oz);
                             if (d2 < bestD2) {
@@ -210,8 +210,8 @@ public final class ElisarStructureLocator {
                     if (best != null && r >= 1) break;
                 }
                 int ax0 = Math.floorDiv(ox, AshenLands.SUPER), az0 = Math.floorDiv(oz, AshenLands.SUPER);
-                for (int dx = -3; dx <= 3; ++dx) {
-                    for (int dz = -3; dz <= 3; ++dz) {
+                for (int dx = -6; dx <= 6; ++dx) {
+                    for (int dz = -6; dz <= 6; ++dz) {
                         AshenLands.Region rg = AshenLands.region(ax0 + dx, az0 + dz);
                         if (rg == null) continue;
                         WorldStructures.Village av = WorldStructures.ashenPlainVillage(rg);
@@ -231,8 +231,8 @@ public final class ElisarStructureLocator {
                 BlockPos best = null;
                 double bestD2 = Double.MAX_VALUE;
                 int gx0 = Math.floorDiv(ox, WaterfallGardens.SUPER), gz0 = Math.floorDiv(oz, WaterfallGardens.SUPER);
-                for (int dx = -3; dx <= 3; ++dx) {
-                    for (int dz = -3; dz <= 3; ++dz) {
+                for (int dx = -6; dx <= 6; ++dx) {
+                    for (int dz = -6; dz <= 6; ++dz) {
                         WaterfallGardens.Region gr = WaterfallGardens.region(gx0 + dx, gz0 + dz);
                         if (gr == null) continue;
                         List<WorldStructures.StiltVillage> list = WorldStructures.gardenStiltVillages(gr);
@@ -331,8 +331,8 @@ public final class ElisarStructureLocator {
                 int sx0 = Math.floorDiv(ox, SizoGrove.SUPER), sz0 = Math.floorDiv(oz, SizoGrove.SUPER);
                 BlockPos best = null;
                 double bestD2 = Double.MAX_VALUE;
-                for (int dx = -4; dx <= 4; ++dx) {
-                    for (int dz = -4; dz <= 4; ++dz) {
+                for (int dx = -8; dx <= 8; ++dx) {
+                    for (int dz = -8; dz <= 8; ++dz) {
                         SizoGrove.Region sg = SizoGrove.region(sx0 + dx, sz0 + dz);
                         LandmarkStructures.BiomeLandmark bl = LandmarkStructures.ancientTreeAltar(sg);
                         if (bl == null) continue;
@@ -350,8 +350,8 @@ public final class ElisarStructureLocator {
                 int sx0 = Math.floorDiv(ox, AshenLands.SUPER), sz0 = Math.floorDiv(oz, AshenLands.SUPER);
                 BlockPos best = null;
                 double bestD2 = Double.MAX_VALUE;
-                for (int dx = -5; dx <= 5; ++dx) {
-                    for (int dz = -5; dz <= 5; ++dz) {
+                for (int dx = -8; dx <= 8; ++dx) {
+                    for (int dz = -8; dz <= 8; ++dz) {
                         AshenLands.Region rg = AshenLands.region(sx0 + dx, sz0 + dz);
                         LandmarkStructures.BiomeLandmark bl = LandmarkStructures.ashenBelfryBarrow(rg);
                         if (bl == null) continue;
@@ -369,8 +369,8 @@ public final class ElisarStructureLocator {
                 int sx0 = Math.floorDiv(ox, AshenLands.SUPER), sz0 = Math.floorDiv(oz, AshenLands.SUPER);
                 BlockPos best = null;
                 double bestD2 = Double.MAX_VALUE;
-                for (int dx = -5; dx <= 5; ++dx) {
-                    for (int dz = -5; dz <= 5; ++dz) {
+                for (int dx = -8; dx <= 8; ++dx) {
+                    for (int dz = -8; dz <= 8; ++dz) {
                         AshenLands.Region rg = AshenLands.region(sx0 + dx, sz0 + dz);
                         LandmarkStructures.BiomeLandmark bl = LandmarkStructures.ashenBurnedChurch(rg);
                         if (bl == null) continue;
@@ -388,8 +388,8 @@ public final class ElisarStructureLocator {
                 int sx0 = Math.floorDiv(ox, CrystalRifts.SUPER), sz0 = Math.floorDiv(oz, CrystalRifts.SUPER);
                 BlockPos best = null;
                 double bestD2 = Double.MAX_VALUE;
-                for (int dx = -4; dx <= 4; ++dx) {
-                    for (int dz = -4; dz <= 4; ++dz) {
+                for (int dx = -8; dx <= 8; ++dx) {
+                    for (int dz = -8; dz <= 8; ++dz) {
                         CrystalRifts.Region cr = CrystalRifts.region(sx0 + dx, sz0 + dz);
                         LandmarkStructures.BiomeLandmark bl = LandmarkStructures.shatteredShardForge(cr);
                         if (bl == null) continue;
@@ -407,8 +407,8 @@ public final class ElisarStructureLocator {
                 int sx0 = Math.floorDiv(ox, VioletHills.SUPER), sz0 = Math.floorDiv(oz, VioletHills.SUPER);
                 BlockPos best = null;
                 double bestD2 = Double.MAX_VALUE;
-                for (int dx = -4; dx <= 4; ++dx) {
-                    for (int dz = -4; dz <= 4; ++dz) {
+                for (int dx = -8; dx <= 8; ++dx) {
+                    for (int dz = -8; dz <= 8; ++dz) {
                         VioletHills.Region vh = VioletHills.region(sx0 + dx, sz0 + dz);
                         LandmarkStructures.BiomeLandmark bl = LandmarkStructures.violetWindObservatory(vh);
                         if (bl == null) continue;

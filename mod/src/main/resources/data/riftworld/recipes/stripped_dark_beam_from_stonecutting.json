@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "riftworld:dark_beam"
+  },
+  "result": "riftworld:stripped_dark_beam",
+  "count": 1
+}

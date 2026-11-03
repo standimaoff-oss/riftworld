@@ -354,10 +354,6 @@ public class PaperDragonEntity extends FlyingMob {
         if (!isTamed()) {
             if (stack.getItem() instanceof DragonPaperItem paper) {
                 if (!isCoiled()) {
-                    if (!this.level().isClientSide) {
-                        player.displayClientMessage(Component.translatable("msg.riftworld.dragon_must_rest")
-                                .withStyle(ChatFormatting.YELLOW), true);
-                    }
                     return InteractionResult.sidedSuccess(this.level().isClientSide);
                 }
                 if (!this.level().isClientSide && this.level() instanceof ServerLevel sl) {
@@ -377,8 +373,6 @@ public class PaperDragonEntity extends FlyingMob {
                         if (!player.getInventory().add(whistle)) {
                             player.drop(whistle, false);
                         }
-                        player.displayClientMessage(Component.translatable("msg.riftworld.dragon_tamed")
-                                .withStyle(ChatFormatting.GOLD), true);
                     } else {
                         sl.sendParticles(ParticleTypes.SMOKE, this.getX(), this.getY() + 1.5, this.getZ(), 8, 1.0, 0.5, 1.0, 0.02);
                         this.level().playSound(null, this.blockPosition(), SoundEvents.BOOK_PAGE_TURN, SoundSource.NEUTRAL, 1.4F, 1.0F);
@@ -417,8 +411,6 @@ public class PaperDragonEntity extends FlyingMob {
                 }
                 equipSaddleTier(2);
                 this.level().playSound(null, this.blockPosition(), SoundEvents.HORSE_SADDLE, SoundSource.NEUTRAL, 1.5F, 1.1F);
-                player.displayClientMessage(Component.translatable("msg.riftworld.dragon_saddle_custom")
-                        .withStyle(ChatFormatting.AQUA), true);
             }
             return InteractionResult.sidedSuccess(this.level().isClientSide);
         }
@@ -427,8 +419,6 @@ public class PaperDragonEntity extends FlyingMob {
                 if (!player.getAbilities().instabuild) stack.shrink(1);
                 equipSaddleTier(1);
                 this.level().playSound(null, this.blockPosition(), SoundEvents.HORSE_SADDLE, SoundSource.NEUTRAL, 1.5F, 1.0F);
-                player.displayClientMessage(Component.translatable("msg.riftworld.dragon_saddle_vanilla")
-                        .withStyle(ChatFormatting.GREEN), true);
             }
             return InteractionResult.sidedSuccess(this.level().isClientSide);
         }
@@ -441,12 +431,8 @@ public class PaperDragonEntity extends FlyingMob {
                 if (nextMode == PET_SLEEP) {
                     this.setCoiled(true);
                     this.setDeltaMovement(Vec3.ZERO);
-                    player.displayClientMessage(Component.translatable("msg.riftworld.dragon_pet_sleep")
-                            .withStyle(ChatFormatting.AQUA), true);
                 } else {
                     this.setCoiled(false);
-                    player.displayClientMessage(Component.translatable("msg.riftworld.dragon_pet_follow")
-                            .withStyle(ChatFormatting.GREEN), true);
                 }
                 syncToSavedData();
             }
@@ -455,10 +441,6 @@ public class PaperDragonEntity extends FlyingMob {
 
         // Обычный ПКМ: оседлать дракона (если надето седло!)
         if (saddleTier() <= 0) {
-            if (!this.level().isClientSide) {
-                player.displayClientMessage(Component.translatable("msg.riftworld.dragon_need_saddle")
-                        .withStyle(ChatFormatting.YELLOW), true);
-            }
             return InteractionResult.sidedSuccess(this.level().isClientSide);
         }
 
@@ -466,9 +448,10 @@ public class PaperDragonEntity extends FlyingMob {
             this.setCoiled(false);
             this.entityData.set(DATA_PET_MODE, PET_ORBIT_OWNER);
             this.mountedSpeed = 0.45;
-            this.riderAimYaw = player.getYRot();
-            this.riderAimPitch = player.getXRot();
+            this.riderAimYaw = this.getYRot();
+            this.riderAimPitch = this.getXRot();
             player.setYRot(this.getYRot());
+            player.setXRot(this.getXRot());
             player.startRiding(this);
         }
         return InteractionResult.sidedSuccess(this.level().isClientSide);
@@ -485,14 +468,50 @@ public class PaperDragonEntity extends FlyingMob {
     protected void positionRider(Entity passenger, MoveFunction moveFunc) {
         if (!this.hasPassenger(passenger)) return;
         float yawRad = this.getYRot() * Mth.DEG_TO_RAD;
-        float pitchRad = this.getXRot() * Mth.DEG_TO_RAD;
+        float pitchRad = Mth.clamp(this.getXRot(), -86.0F, 88.0F) * Mth.DEG_TO_RAD;
         double fx = -Mth.sin(yawRad) * Mth.cos(pitchRad);
         double fy = -Mth.sin(pitchRad);
         double fz =  Mth.cos(yawRad) * Mth.cos(pitchRad);
-        // Посадка всадника на седле за шеей дракона (~1.35 м позади головы и +1.42 м сверху)
-        double rx = this.getX() - fx * 1.35;
-        double ry = this.getY() - fy * 1.35 + 1.42 + passenger.getMyRidingOffset();
-        double rz = this.getZ() - fz * 1.35;
+
+        // Нормаль спины дракона над позвонками седла spine[4..5] (с учётом подъёма модели +bbHeight*0.45 = +1.26 м!)
+        double upX = -Mth.sin(yawRad) * Mth.sin(pitchRad) * 0.84;
+        double upY =  Mth.cos(pitchRad) * 0.84 + 0.16;
+        double upZ =  Mth.cos(yawRad) * Mth.sin(pitchRad) * 0.84;
+        double upLen = Math.sqrt(upX * upX + upY * upY + upZ * upZ);
+        if (upLen > 1.0E-5) {
+            upX /= upLen;
+            upY /= upLen;
+            upZ /= upLen;
+        } else {
+            upX = 0.0;
+            upY = 1.0;
+            upZ = 0.0;
+        }
+
+        double renderLiftY = this.getBbHeight() * 0.45; // +1.26 м в PaperDragonRenderer
+        double seatBackDist = 4.5 * STEP;               // центр седла между передней лукой spine[3] и спинкой spine[6]
+        double spineSeatX = this.getX() - fx * seatBackDist;
+        double spineSeatY = this.getY() + renderLiftY - fy * seatBackDist;
+        double spineSeatZ = this.getZ() - fz * seatBackDist;
+
+        // На клиенте привязываемся напрямую к фактическим узлам позвоночника chain[4..5], чтобы при виражах игрок сидел строго в седле!
+        if (this.level().isClientSide && this.chainInit && !isCoiled()) {
+            double cx = 0.5 * (this.chainX[4] + this.chainX[5]);
+            double cy = 0.5 * (this.chainY[4] + this.chainY[5]) + renderLiftY;
+            double cz = 0.5 * (this.chainZ[4] + this.chainZ[5]);
+            double dx = cx - spineSeatX, dy = cy - spineSeatY, dz = cz - spineSeatZ;
+            if (dx * dx + dy * dy + dz * dz < 9.0) {
+                spineSeatX = cx;
+                spineSeatY = cy;
+                spineSeatZ = cz;
+            }
+        }
+
+        // Верхняя кожаная подушка седла лежит на радиусе ~1.12 м над осью позвоночника
+        double saddleSurfaceOffset = 1.14;
+        double rx = spineSeatX + upX * saddleSurfaceOffset;
+        double ry = spineSeatY + upY * saddleSurfaceOffset + passenger.getMyRidingOffset() + 0.06;
+        double rz = spineSeatZ + upZ * saddleSurfaceOffset;
         moveFunc.accept(passenger, rx, ry, rz);
     }
 
@@ -532,8 +551,29 @@ public class PaperDragonEntity extends FlyingMob {
 
     @Override
     public void lerpTo(double x, double y, double z, float yRot, float xRot, int steps, boolean teleport) {
+        if (this.isControlledByLocalInstance() && this.isVehicle() && !teleport) {
+            return;
+        }
         int s = this.isVehicle() ? Math.max(steps, 3) : Math.max(steps, 6);
         super.lerpTo(x, y, z, yRot, xRot, teleport ? 1 : s, teleport);
+    }
+
+    @Override
+    public void travel(Vec3 travelVector) {
+        if (this.isAlive() && this.isVehicle() && getControllingPassenger() instanceof Player rider) {
+            if (this.isControlledByLocalInstance()) {
+                // Локальный клиент всадника напрямую вращает и ведёт дракона за мышью (0 задержки и 0 rubberbanding!)
+                stepMountedFlight(rider, true);
+                this.calculateEntityAnimation(false);
+            } else if (!this.level().isClientSide) {
+                // Сервер синхронизирует тягу, индикатор скорости и частицы пикирования (а также двигает при серверной симуляции)
+                stepMountedFlight(rider, !(rider instanceof net.minecraft.server.level.ServerPlayer));
+            } else {
+                this.setDeltaMovement(Vec3.ZERO);
+            }
+            return;
+        }
+        super.travel(travelVector);
     }
 
     @Override
@@ -836,12 +876,13 @@ public class PaperDragonEntity extends FlyingMob {
     // =========================================================================
 
     private void serverFlightTick() {
-        // A) Управляемый полёт верхом (0 .. 2x Элитр с фейерверками, мышь + W/S + A/D, пикирование, предел тяги!)
+        // A) Управляемый полёт верхом уже обработан в travel() на стороне ведущего инстанса + серверной синхронизации
         LivingEntity rider = getControllingPassenger();
-        if (rider instanceof Player player) {
-            tickMountedFlight(player);
+        if (rider instanceof Player) {
+            this.setCoiled(false);
             return;
         }
+        this.mountedSpeed = 0.45;
         this.entityData.set(DATA_DIVING, false);
         if (upwardThrust() < 1.0F) {
             this.entityData.set(DATA_THRUST, Math.min(1.0F, upwardThrust() + 0.008F));
@@ -857,80 +898,90 @@ public class PaperDragonEntity extends FlyingMob {
         tickWildDragonFlight();
     }
 
-    private void tickMountedFlight(Player rider) {
-        this.setCoiled(false);
+    private void stepMountedFlight(Player rider, boolean moveEntity) {
+        if (!this.level().isClientSide) {
+            this.setCoiled(false);
+        }
         boolean customSaddle = saddleTier() >= 2;
-        float turnAgility = customSaddle ? 1.55F : 1.0F;
+        float turnAgility = customSaddle ? 1.55F : 1.15F;
 
-        float wantYaw = riderInputGrace > 0 ? riderAimYaw : rider.getYRot();
-        float wantPitch = riderInputGrace > 0 ? riderAimPitch : rider.getXRot();
+        float wantYaw = (!this.level().isClientSide && riderInputGrace > 0) ? riderAimYaw : rider.getYRot();
+        float wantPitch = (!this.level().isClientSide && riderInputGrace > 0) ? riderAimPitch : rider.getXRot();
         if (riderInputGrace > 0) --riderInputGrace;
 
-        // Точный доворот курса A/D по градусам + плавное наведение мышью (как на элитрах)
-        float maxYawStep = 5.2F * turnAgility;
-        float maxPitchStep = 4.4F * turnAgility;
+        // Отзывчивое плавное наведение мышью по курсу и тангажу + точная доводка A/D
+        float maxYawStep = 10.5F * turnAgility;
+        float maxPitchStep = 8.5F * turnAgility;
         float dYaw = Mth.clamp(Mth.wrapDegrees(wantYaw - this.getYRot()), -maxYawStep, maxYawStep);
         float nextYaw = this.getYRot() + dYaw;
 
         float thrust = upwardThrust();
-        // Если тяга подъёма иссякла (thrust <= 0.001), нос плавно опускается — взлетать выше нельзя!
         if (thrust <= 0.005F && wantPitch < 8.0F) {
             wantPitch = Math.max(wantPitch, 9.0F);
         }
         float dPitch = Mth.clamp(wantPitch - this.getXRot(), -maxPitchStep, maxPitchStep);
         float nextPitch = Mth.clamp(this.getXRot() + dPitch, -86.0F, 88.0F);
 
-        // Режим пикирования (полёт круто вниз: закрытая пасть, поджатые лапы, стремительный набор скорости!)
         boolean divingNow = nextPitch >= 48.0F && mountedSpeed >= 0.20;
-        this.entityData.set(DATA_DIVING, divingNow);
+
+        int effThrottle = riderThrottle;
+        if (effThrottle == 0 && Math.abs(rider.zza) > 0.05F) {
+            effThrottle = rider.zza > 0.0F ? 1 : -1;
+        }
 
         // Управление скоростью W / S: от полной остановки (0.0) до 2x скорости элитр с фейерверками (3.35 бл/тик)!
         double accel = customSaddle ? 0.085 : 0.062;
-        if (riderThrottle > 0) {
+        if (effThrottle > 0) {
             mountedSpeed = Math.min(MAX_MOUNTED_SPEED, mountedSpeed + accel);
-        } else if (riderThrottle < 0) {
+        } else if (effThrottle < 0) {
             mountedSpeed = Math.max(MIN_MOUNTED_SPEED, mountedSpeed - accel * 1.35);
         } else if (divingNow) {
             double diveBoost = 0.055 * Mth.sin(nextPitch * Mth.DEG_TO_RAD);
             mountedSpeed = Math.min(MAX_MOUNTED_SPEED, mountedSpeed + diveBoost);
         } else {
-            // Мягкое аэродинамическое поддержание крейсерского парения (с сохранением 0 при полной остановке!)
             if (mountedSpeed < 0.02) mountedSpeed = 0.0;
             else mountedSpeed *= 0.996;
         }
 
-        // Расход и восстановление тяги подъёма (вверх тяга постепенно заканчивается!)
-        if (nextPitch < -8.0F && mountedSpeed > 0.06) {
-            float climbFactor = (-nextPitch / 86.0F) * (0.45F + 0.55F * (float) (mountedSpeed / MAX_MOUNTED_SPEED));
-            float drain = climbFactor * (customSaddle ? 0.0048F : 0.0072F);
-            thrust = Math.max(0.0F, thrust - drain);
-        } else {
-            float recov = divingNow ? 0.018F : (nextPitch >= 2.0F ? 0.0085F : 0.0045F);
-            if (customSaddle) recov *= 1.25F;
-            thrust = Math.min(1.0F, thrust + recov);
-        }
-        this.entityData.set(DATA_THRUST, thrust);
-        this.entityData.set(DATA_SPEED_RATIO, (float) (mountedSpeed / MAX_MOUNTED_SPEED));
-
-        this.setYRot(nextYaw);
-        this.yBodyRot = nextYaw;
-        this.yHeadRot = nextYaw;
-        this.setXRot(nextPitch);
-
-        if (mountedSpeed <= 0.001) {
-            this.setDeltaMovement(Vec3.ZERO);
-        } else {
-            Vec3 forward = Vec3.directionFromRotation(nextPitch, nextYaw);
-            Vec3 vel = forward.scale(mountedSpeed);
-            int maxSkyY = this.level().getMaxBuildHeight() - 18;
-            if (this.getY() > maxSkyY && vel.y > 0.0) {
-                vel = new Vec3(vel.x, 0.0, vel.z);
+        if (!this.level().isClientSide) {
+            this.entityData.set(DATA_DIVING, divingNow);
+            if (nextPitch < -8.0F && mountedSpeed > 0.06) {
+                float climbFactor = (-nextPitch / 86.0F) * (0.45F + 0.55F * (float) (mountedSpeed / MAX_MOUNTED_SPEED));
+                float drain = climbFactor * (customSaddle ? 0.0048F : 0.0072F);
+                thrust = Math.max(0.0F, thrust - drain);
+            } else {
+                float recov = divingNow ? 0.018F : (nextPitch >= 2.0F ? 0.0085F : 0.0045F);
+                if (customSaddle) recov *= 1.25F;
+                thrust = Math.min(1.0F, thrust + recov);
             }
-            this.setDeltaMovement(vel);
-            this.move(MoverType.SELF, vel);
+            this.entityData.set(DATA_THRUST, thrust);
+            this.entityData.set(DATA_SPEED_RATIO, (float) (mountedSpeed / MAX_MOUNTED_SPEED));
         }
 
-        if (divingNow && this.tickCount % 2 == 0 && this.level() instanceof ServerLevel sl) {
+        if (moveEntity) {
+            this.setYRot(nextYaw);
+            this.yBodyRot = nextYaw;
+            this.yHeadRot = nextYaw;
+            this.setXRot(nextPitch);
+
+            if (mountedSpeed <= 0.001) {
+                this.setDeltaMovement(Vec3.ZERO);
+            } else {
+                Vec3 forward = Vec3.directionFromRotation(nextPitch, nextYaw);
+                Vec3 vel = forward.scale(mountedSpeed);
+                int maxSkyY = this.level().getMaxBuildHeight() - 18;
+                if (this.getY() > maxSkyY && vel.y > 0.0) {
+                    vel = new Vec3(vel.x, 0.0, vel.z);
+                }
+                this.setDeltaMovement(vel);
+                this.move(MoverType.SELF, vel);
+            }
+        } else {
+            this.yBodyRot = this.getYRot();
+            this.yHeadRot = this.getYRot();
+        }
+
+        if (!this.level().isClientSide && divingNow && this.tickCount % 2 == 0 && this.level() instanceof ServerLevel sl) {
             sl.sendParticles(ParticleTypes.CLOUD, this.getX(), this.getY(), this.getZ(), 2, 0.6, 0.6, 0.6, 0.02);
         }
     }

@@ -31,7 +31,7 @@ public final class DragonFlightClient {
 
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
+        if (event.phase != TickEvent.Phase.START) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.isPaused()) return;
         LocalPlayer player = mc.player;
@@ -39,12 +39,12 @@ public final class DragonFlightClient {
         if (!dragon.isOwnedBy(player)) return;
 
         byte throttle = 0;
-        if (player.input.up) throttle += 1;
-        if (player.input.down) throttle -= 1;
+        if (mc.options.keyUp.isDown() || (player.input != null && player.input.up)) throttle += 1;
+        if (mc.options.keyDown.isDown() || (player.input != null && player.input.down)) throttle -= 1;
 
         byte yawDegStep = 0;
-        if (player.input.left) yawDegStep -= 1;
-        if (player.input.right) yawDegStep += 1;
+        if (mc.options.keyLeft.isDown() || (player.input != null && player.input.left)) yawDegStep -= 1;
+        if (mc.options.keyRight.isDown() || (player.input != null && player.input.right)) yawDegStep += 1;
 
         // Точная регулировка курса по градусам клавишами A / D (1° за тик без дёрганья камеры!)
         if (yawDegStep != 0) {
@@ -53,6 +53,8 @@ public final class DragonFlightClient {
             player.yRotO = player.getYRot();
         }
 
+        // Применяем управление сразу и локально на ведущем клиентском драконе, и отправляем пакет на сервер
+        dragon.applyRiderInput(throttle, yawDegStep, player.getYRot(), player.getXRot());
         Net.CH.sendToServer(new DragonControlMsg(throttle, yawDegStep, player.getYRot(), player.getXRot()));
     }
 
@@ -75,22 +77,16 @@ public final class DragonFlightClient {
         int x0 = (sw - barW) / 2;
         int y0 = sh - 56;
 
-        // Полоска скорости (0 .. 2x Элитр с фейерверками)
+        // Чистые визуальные полоски скорости и запаса тяги (без каких-либо текстовых надписей!)
         gg.fill(x0 - 1, y0 - 1, x0 + barW + 1, y0 + 5, 0xAA10141C);
         int spW = Math.round(barW * speedFrac);
         int spColor = diving ? 0xFF4CE8FF : 0xFFF5D058;
         if (spW > 0) gg.fill(x0, y0, x0 + spW, y0 + 4, spColor);
 
-        // Полоска тяги подъёма
         int y1 = y0 + 7;
         gg.fill(x0 - 1, y1 - 1, x0 + barW + 1, y1 + 4, 0xAA10141C);
         int thW = Math.round(barW * thrustFrac);
         int thColor = thrustFrac < 0.20F ? 0xFFEE4848 : 0xFF66E29A;
         if (thW > 0) gg.fill(x0, y1, x0 + thW, y1 + 3, thColor);
-
-        String label = diving
-                ? String.format("ПИКИРОВАНИЕ  %.0f%%  |  Курс %d°", speedFrac * 200.0F, Math.floorMod(Math.round(Mth.wrapDegrees(dragon.getYRot())), 360))
-                : String.format("Скорость %.0f%%  |  Тяга %.0f%%  |  %d°", speedFrac * 200.0F, thrustFrac * 100.0F, Math.floorMod(Math.round(Mth.wrapDegrees(dragon.getYRot())), 360));
-        gg.drawCenteredString(mc.font, label, sw / 2, y0 - 10, diving ? 0x80F4FF : 0xF5EFE0);
     }
 }

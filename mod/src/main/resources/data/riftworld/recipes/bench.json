@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SSS",
+    "P P"
+  ],
+  "key": {
+    "S": {
+      "item": "riftworld:sizo_planks_slab"
+    },
+    "P": {
+      "item": "minecraft:stick"
+    }
+  },
+  "result": {
+    "item": "riftworld:bench",
+    "count": 2
+  }
+}

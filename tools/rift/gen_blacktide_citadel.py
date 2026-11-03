@@ -589,6 +589,8 @@ def build_viaduct_bridge():
 # 3. REUSABLE SINGLE & MIRRORED TOWER BUILDERS (100% WALKABLE SPIRAL STAIRS!)
 # =============================================================================
 TOWER_REGISTRY = []
+# v0.30.0: cells of every intentional doorway (towers, portals) — the automatic wall-sealing pass never fills these!
+DOOR_CELLS = set()
 
 
 def build_single_tower(
@@ -678,6 +680,11 @@ def build_single_tower(
             set_raw(cx + sgn * radius, wy + 3, cz, CPB)
 
     dir_vecs = {"north": (0, -1), "south": (0, 1), "east": (1, 0), "west": (-1, 0)}
+    # v0.30.0: every tower door MUST face INWARD (into the courtyard / kingdom) instead of out to the sea!
+    inward_x = "west" if cx > 0 else ("east" if cx < 0 else None)
+    inward_z = "north" if cz > 0 else ("south" if cz < 0 else None)
+    ordered = [d for d in (inward_x, inward_z) if d is not None]
+    door_dirs = tuple(ordered) + tuple(d for d in door_dirs if d not in ordered)
     for dd in door_dirs:
         vx, vz = dir_vecs[dd]
         for step in range(max(1, radius - 2), radius + 2):
@@ -685,6 +692,8 @@ def build_single_tower(
                 px = cx + vx * step + (-vz) * w_off
                 pz = cz + vz * step + vx * w_off
                 set_raw(px, y_base + 1, pz, PBB)
+                for thy in range(y_base + 1, y_base + 6):
+                    DOOR_CELLS.add((px, thy, pz))
                 max_dh = 4 if w_off == 0 else 3
                 for dh in range(1, max_dh + 1):
                     set_raw(px, y_base + 1 + dh, pz, 0)
@@ -898,6 +907,10 @@ def build_lower_coastal_ward():
         for lz in range(-6, -1):
             for fy in range(31, sy):
                 set_raw(lx, fy, lz, PBB if lz in (-6, -2) else DSB)
+            for cy in range(sy, sy + 8):
+                DOOR_CELLS.add((lx, cy, lz))
+                if cy > sy:
+                    set_raw(lx, cy, lz, 0)
             if lz in (-6, -2):
                 set_raw(lx, sy, lz, PBB)
                 set_raw(lx, sy + 1, lz, CPB if step_i % 4 == 0 else PBB_SLAB_BOT)
@@ -912,6 +925,10 @@ def build_lower_coastal_ward():
     for lx in range(-80, -48):
         ramp_y = 32 + max(0, (lx + 64) * 14 // 16)
         for lz in (-8, -7, -6, -5, -4):
+            for cy in range(ramp_y, ramp_y + 8):
+                DOOR_CELLS.add((lx, cy, lz))
+                if cy > ramp_y:
+                    set_raw(lx, cy, lz, 0)
             for fy in range(24, ramp_y):
                 set_raw(lx, fy, lz, PBB if lz in (-8, -4) else DSB)
             if lz in (-8, -4):
@@ -999,6 +1016,7 @@ def build_curtain_walls_and_gatehouse():
                     set_raw(wall_x + dx, 47, lz, DST)
                     for hy in range(48, 54):
                         set_raw(wall_x + dx, hy, lz, 0)
+                        DOOR_CELLS.add((wall_x + dx, hy, lz))
                     for by in range(54, 63):
                         set_raw(wall_x + dx, by, lz, DSB if by < 62 else PBB)
                 continue
@@ -1162,8 +1180,8 @@ def build_cathedral_keep_and_throne_hall():
     # Cathedral Shell (`lx = 0..24, lz = -40..+4, floor by = 56, side aisle eaves by = 78, nave eaves by = 88`)
     bay_pillars_z = [-4, -12, -20, -28, -36]
 
-    # 1) Seamless Geometric Cathedral Floor (`by = 56`)
-    for lz in range(-39, 4):
+    # 1) Seamless Geometric Cathedral Floor (`by = 56`) — including the portal thresholds at `lz = +4` and `-40`!
+    for lz in range(-40, 5):
         for lx in range(0, 24):
             rib = (lx in (0, 5, 11, 17, 23)) or ((lz + 40) % 8 == 0)
             put_sym(lx, 56, lz, PBB if rib else PDS)
@@ -1458,9 +1476,9 @@ def build_cathedral_keep_and_throne_hall():
     # Twin Wide Interior Grand Staircases (`lx = ±19..±21`, climbing `lz = -17 -> -5`, `by = 57 -> 69` onto `by = 70`!)
     for step_i in range(0, 13):
         sz = -17 + step_i
-        sy = 58 + step_i
+        sy = 57 + step_i
         for lx in (19, 20, 21):
-            for fy in range(57, sy):
+            for fy in range(56, sy):
                 put_sym(lx, fy, sz, PBB if lx == 19 else DSB)
             if sy == 70:
                 put_sym(lx, 70, sz, DST)
@@ -1786,6 +1804,209 @@ def build_asymmetric_upper_annexes():
 
 
 # =============================================================================
+# 6C. v0.30.0 DEFECT REPAIR PASS:
+#   (a) seals every breach punched through the defensive curtain walls by the towers,
+#   (b) closes the open corners/holes of the Cathedral shell,
+#   (c) guarantees a real doorway into the circular Domed Rotunda (+ its two ambulatories),
+#   (d) opens the West Sea-Spur causeway gate so its ramp no longer dead-ends in a wall,
+#   (e) clears any stray block that blocks a staircase (extra block in the way).
+# =============================================================================
+GLASS_NS_ID = None
+GLASS_EW_ID = None
+
+
+def _is_stair(v: int) -> bool:
+    return v != 0 and "stairs" in palette[v - 1][0]
+
+
+def _is_air(v: int) -> bool:
+    return v == 0
+
+
+def _is_window(v: int) -> bool:
+    return v != 0 and ("glass" in palette[v - 1][0])
+
+
+def clear_stair_blockers():
+    """Removes any solid block sitting directly over a staircase (the 'extra block' that jams the way)."""
+    cleared = 0
+    for by in range(0, H - 1):
+        y_off = by * STRIDE_Y
+        for bz in range(D):
+            r_off = y_off + bz * W
+            for bx in range(W):
+                v = vox[r_off + bx]
+                if not _is_stair(v):
+                    continue
+                for dy in (1, 2, 3):
+                    yy = by + dy
+                    if yy >= H:
+                        continue
+                    idx = yy * STRIDE_Y + (r_off - y_off) + bx
+                    above = vox[idx]
+                    if above == 0 or _is_stair(above) or _is_window(above):
+                        continue
+                    nm = palette[above - 1][0]
+                    if "slab" in nm or "leaves" in nm or "carpet" in nm:
+                        continue
+                    lx = bx + OX
+                    lz = bz + OZ
+                    if (lx, yy, lz) in DOOR_CELLS:
+                        continue
+                    vox[idx] = 0
+                    cleared += 1
+    return cleared
+
+
+def seal_curtain_walls():
+    """Fills every unintended hole in the 4 defensive curtain-wall lines (tower doors & the gate arch stay open)."""
+    filled = 0
+    spans = []
+    for lz_wall in (35, -78):
+        for lx in range(-48, 63):
+            for dz in range(-2, 3):
+                for by in range(47, 62):
+                    spans.append((lx, by, lz_wall + dz))
+    for lx_wall in (-48, 62):
+        for lz in range(-78, 36):
+            for dx in range(-2, 3):
+                for by in range(47, 62):
+                    spans.append((lx_wall + dx, by, lz))
+    for (lx, by, lz) in spans:
+        if (lx, by, lz) in DOOR_CELLS:
+            continue
+        # Grand pointed gate arch stays fully open
+        if abs(lx - GATE_LX) <= 6 and 30 <= lz <= 41 and by <= 57:
+            continue
+        if get_raw(lx, by, lz) == 0:
+            set_raw(lx, by, lz, DSB)
+            filled += 1
+    return filled
+
+
+def seal_cathedral_shell():
+    """Restores the Cathedral outer shell (side walls lx = ±24 and both gable walls) around its windows & portals."""
+    filled = 0
+    for lz in range(-40, 5):
+        in_win = (abs(((lz + 4) % 8) - 4) <= 1) and (-36 <= lz <= 0)
+        for by in range(57, 79):
+            if by in (69, 77):
+                blk = DARK_OAK_PLANKS
+            elif by in (70, 78):
+                blk = CPB
+            elif in_win and (60 <= by <= 66 or 72 <= by <= 75):
+                blk = GLASS_NS
+            elif in_win and by in (59, 67, 71, 76):
+                blk = CPB
+            else:
+                blk = DSB
+            for sgn in (1, -1):
+                lx = sgn * 24
+                if (lx, by, lz) in DOOR_CELLS:
+                    continue
+                cur = get_raw(lx, by, lz)
+                if cur == 0:
+                    set_raw(lx, by, lz, blk)
+                    filled += 1
+
+    # Front (lz = +4) and Rear (lz = -40) gable walls
+    for wall_z, is_front in ((4, True), (-40, False)):
+        for lx_abs in range(0, 25):
+            gable_top = (99 - (lx_abs * 9) // 13) if lx_abs <= 13 else 83
+            for by in range(57, gable_top + 1):
+                portal = False
+                if is_front and lx_abs <= 3 and by <= 66:
+                    portal = True
+                if (not is_front) and 13 <= lx_abs <= 17 and by <= 65 - ((lx_abs - 15) ** 2):
+                    portal = True
+                if portal:
+                    continue
+                if any((sgn * lx_abs, by, wall_z) in DOOR_CELLS for sgn in (1, -1)):
+                    continue
+                if by == gable_top:
+                    blk = CPB if lx_abs == 0 else PBB
+                elif lx_abs in (0, 6, 13, 24) and by < gable_top - 1:
+                    blk = BASALT_Y if (by % 6 != 0) else CPB
+                elif is_front and lx_abs <= 3 and 73 <= by <= 84 and (lx_abs * lx_abs + ((by - 78) // 2) ** 2 <= 9):
+                    blk = GLASS_EW
+                elif 8 <= lx_abs <= 10 and 62 <= by <= 74:
+                    blk = GLASS_EW if lx_abs == 9 else CPB
+                else:
+                    blk = DSB
+                for sgn in (1, -1):
+                    lx = sgn * lx_abs
+                    if get_raw(lx, by, wall_z) == 0:
+                        set_raw(lx, by, wall_z, blk)
+                        filled += 1
+    return filled
+
+
+def open_rotunda_entrances():
+    """Cuts real walk-in doorways into the circular Domed Rotunda (south ambulatory + north terrace door)."""
+    carved = 0
+    # South doorway: continues the two cathedral ambulatories (`lx = ±13..±17`) straight through the drum wall.
+    for lz in range(-49, -38):
+        for lx_abs in range(13, 18):
+            for by in range(57, 63):
+                for sgn in (1, -1):
+                    lx = sgn * lx_abs
+                    if get_raw(lx, by, lz) != 0:
+                        set_raw(lx, by, lz, 0)
+                        carved += 1
+                    DOOR_CELLS.add((lx, by, lz))
+            floor = 56
+            for sgn in (1, -1):
+                lx = sgn * lx_abs
+                if get_raw(lx, floor, lz) == 0:
+                    set_raw(lx, floor, lz, PDS)
+    # North doorway onto the upper terrace (through the drum wall at `lz = -78..-72`).
+    for lz in range(-79, -71):
+        for lx_abs in range(0, 3):
+            for by in range(57, 62):
+                for sgn in ((1, -1) if lx_abs else (1,)):
+                    lx = sgn * lx_abs
+                    if get_raw(lx, by, lz) != 0:
+                        set_raw(lx, by, lz, 0)
+                        carved += 1
+                    DOOR_CELLS.add((lx, by, lz))
+    return carved
+
+
+def open_west_causeway_gate():
+    """Opens the west curtain-wall gate where the West Sea-Spur causeway ramp arrives (`lz = -7..-3`, `by = 47..52`)."""
+    carved = 0
+    for lz in range(-7, -2):
+        for by in range(47, 53):
+            for dx in range(-3, 4):
+                lx = -48 + dx
+                if get_raw(lx, by, lz) != 0:
+                    set_raw(lx, by, lz, 0)
+                    carved += 1
+                DOOR_CELLS.add((lx, by, lz))
+    # Solid stone threshold under the gate
+    for lz in range(-7, -2):
+        for dx in range(-3, 4):
+            if get_raw(-48 + dx, 46, lz) == 0:
+                set_raw(-48 + dx, 46, lz, DST)
+    return carved
+
+
+def repair_defects():
+    print("  [7/9] Repair pass: sealing wall breaches, drum doorway, west causeway gate & stair blockers...")
+    stair_cleared = clear_stair_blockers()
+    walls = seal_curtain_walls()
+    shell = seal_cathedral_shell()
+    doors = open_rotunda_entrances()
+    west_gate = open_west_causeway_gate()
+    stair_cleared += clear_stair_blockers()
+    print(
+        f"    repaired: wall_breaches_filled={walls} | shell_holes_filled={shell} | "
+        f"rotunda_door_cells={doors} | west_gate_cells={west_gate} | stair_blockers_removed={stair_cleared}"
+    )
+    return walls, shell, doors, west_gate, stair_cleared
+
+
+# =============================================================================
 # 7. STRICT AUTOMATED INVARIANT VERIFICATION & STREAMING GZIP NBT WRITER
 # =============================================================================
 def verify_invariants():
@@ -1985,6 +2206,7 @@ def main():
     build_cathedral_keep_and_throne_hall()
     build_rotunda_sanctum()
     build_asymmetric_upper_annexes()
+    repair_defects()
     verify_invariants()
     write_nbt(OUT_NBT)
 

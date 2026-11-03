@@ -838,12 +838,12 @@ public final class SeaProbeCommand {
     private static int probeCrystalRifts(CommandSourceStack src, ServerLevel level, BlockPos at) {
         CrystalRifts.Region best = null;
         double bestD = Double.MAX_VALUE;
-        for (int dx = -6; dx <= 6; ++dx) {
-            for (int dz = -6; dz <= 6; ++dz) {
+        for (int dx = -8; dx <= 8; ++dx) {
+            for (int dz = -8; dz <= 8; ++dz) {
                 int sx = Math.floorDiv(at.getX(), CrystalRifts.SUPER) + dx;
                 int sz = Math.floorDiv(at.getZ(), CrystalRifts.SUPER) + dz;
                 CrystalRifts.Region rg = CrystalRifts.region(sx, sz);
-                if (rg == null) continue;
+                if (rg == null || !rg.hasColonnade) continue;
                 double d = Math.hypot(rg.cx - at.getX(), rg.cz - at.getZ());
                 if (d < bestD) { bestD = d; best = rg; }
             }
@@ -1771,8 +1771,8 @@ public final class SeaProbeCommand {
             double bestD = Double.MAX_VALUE;
             int sx0 = Math.floorDiv(at.getX(), AshenLands.SUPER);
             int sz0 = Math.floorDiv(at.getZ(), AshenLands.SUPER);
-            for (int dx = -4; dx <= 4; ++dx) {
-                for (int dz = -4; dz <= 4; ++dz) {
+            for (int dx = -6; dx <= 6; ++dx) {
+                for (int dz = -6; dz <= 6; ++dz) {
                     AshenLands.Region rg = AshenLands.region(sx0 + dx, sz0 + dz);
                     if (rg == null || !rg.hasVillage) continue;
                     double d = Math.hypot(rg.cx - at.getX(), rg.cz - at.getZ());
@@ -2050,10 +2050,10 @@ public final class SeaProbeCommand {
             double bestD = Double.MAX_VALUE;
             int sx0 = Math.floorDiv(at.getX(), CrystalRifts.SUPER);
             int sz0 = Math.floorDiv(at.getZ(), CrystalRifts.SUPER);
-            for (int dx = -4; dx <= 4; ++dx) {
-                for (int dz = -4; dz <= 4; ++dz) {
+            for (int dx = -7; dx <= 7; ++dx) {
+                for (int dz = -7; dz <= 7; ++dz) {
                     CrystalRifts.Region cr = CrystalRifts.region(sx0 + dx, sz0 + dz);
-                    if (cr == null) continue;
+                    if (cr == null || !cr.hasColonnade) continue;
                     double d = Math.hypot(cr.astroX - at.getX(), cr.astroZ - at.getZ());
                     if (d < bestD) { bestD = d; best = cr; }
                 }
@@ -2463,17 +2463,17 @@ public final class SeaProbeCommand {
         }
 
         if (k.equals("ancient_tree_altar")) {
-            SizoGrove.Region bestSg = null;
+            LandmarkStructures.BiomeLandmark lm = null;
             double bestD = Double.MAX_VALUE;
-            for (int sx = -2; sx <= 2; ++sx) {
-                for (int sz = -2; sz <= 2; ++sz) {
+            for (int sx = -6; sx <= 6; ++sx) {
+                for (int sz = -6; sz <= 6; ++sz) {
                     SizoGrove.Region sg = SizoGrove.region(sx, sz);
-                    if (sg == null) continue;
-                    double d = Math.hypot(sg.cx - at.getX(), sg.cz - at.getZ());
-                    if (d < bestD) { bestD = d; bestSg = sg; }
+                    LandmarkStructures.BiomeLandmark cand = LandmarkStructures.ancientTreeAltar(sg);
+                    if (cand == null) continue;
+                    double d = Math.hypot(cand.cx - at.getX(), cand.cz - at.getZ());
+                    if (d < bestD) { bestD = d; lm = cand; }
                 }
             }
-            LandmarkStructures.BiomeLandmark lm = LandmarkStructures.ancientTreeAltar(bestSg);
             if (lm == null) { src.sendFailure(Component.literal("riftstruct: ancient_tree_altar not found")); return 0; }
             int[] cnt = countStructBlocksAndSubAir(level, lm.cx, lm.cz, 13, lm.baseY - 1, lm.baseY + 23, ocean);
             int camX = lm.cx + 15, camY = lm.baseY + 7, camZ = lm.cz + 15;
@@ -2486,17 +2486,17 @@ public final class SeaProbeCommand {
         }
 
         if (k.equals("ashen_belfry_barrow")) {
-            AshenLands.Region bestAr = null;
+            LandmarkStructures.BiomeLandmark lm = null;
             double bestD = Double.MAX_VALUE;
-            for (int sx = -3; sx <= 3; ++sx) {
-                for (int sz = -3; sz <= 3; ++sz) {
+            for (int sx = -6; sx <= 6; ++sx) {
+                for (int sz = -6; sz <= 6; ++sz) {
                     AshenLands.Region ar = AshenLands.region(sx, sz);
-                    if (ar == null || !ar.hasBelfry) continue;
-                    double d = Math.hypot(ar.cx - at.getX(), ar.cz - at.getZ());
-                    if (d < bestD) { bestD = d; bestAr = ar; }
+                    LandmarkStructures.BiomeLandmark cand = LandmarkStructures.ashenBelfryBarrow(ar);
+                    if (cand == null) continue;
+                    double d = Math.hypot(cand.cx - at.getX(), cand.cz - at.getZ());
+                    if (d < bestD) { bestD = d; lm = cand; }
                 }
             }
-            LandmarkStructures.BiomeLandmark lm = LandmarkStructures.ashenBelfryBarrow(bestAr);
             if (lm == null) { src.sendFailure(Component.literal("riftstruct: ashen_belfry_barrow not found")); return 0; }
             int[] cnt = countStructBlocksAndSubAir(level, lm.cx, lm.cz, 18, lm.baseY, lm.baseY + 27, ocean);
             int camX = lm.cx - 4, camY = lm.baseY + 11, camZ = lm.cz + 26;
@@ -2510,7 +2510,7 @@ public final class SeaProbeCommand {
 
         // ---------- v0.29.0: Океаническая «Цитадель Чёрного утёса» (blacktide.nbt: ТОЛЬКО в открытом океане, мост из морского дна, снаружи 2-уровневый несимметричный остров!) ----------
         if (k.equals("blacktide_citadel") || k.equals("blacktide_bridge_shore") || k.equals("blacktide_bay_aerial")) {
-            BlacktideCitadel.Site bs = BlacktideCitadel.nearest(at.getX(), at.getZ(), 5);
+            BlacktideCitadel.Site bs = BlacktideCitadel.nearest(at.getX(), at.getZ(), 8);
             if (bs == null) {
                 src.sendFailure(Component.literal("riftstruct: blacktide_citadel not found"));
                 return 0;
@@ -2566,10 +2566,79 @@ public final class SeaProbeCommand {
                 }
             }
 
+            // 4) v0.30.0: ЦЕЛОСТНОСТЬ ЗАЩИТНЫХ СТЕН — на четырёх линиях куртины (lz = ±, lx = ±) в by = 47..61
+            // должно быть 0 незапертых дыр (кроме ворот и записанных дверных проёмов башен).
+            int wallBreaches = 0;
+            BlockPos.MutableBlockPos mpWall = new BlockPos.MutableBlockPos();
+            for (int lx = -48; lx <= 62; lx += 2) {
+                for (int lz : new int[]{33, 35, 37, -80, -78, -76}) {
+                    int wx = bs.cx + BlacktideCitadel.rotX(lx, lz, bs.rot);
+                    int wz = bs.cz + BlacktideCitadel.rotZ(lx, lz, bs.rot);
+                    if (!level.hasChunk(wx >> 4, wz >> 4)) continue;
+                    if (Math.abs(lx - BlacktideCitadel.GATE_LX) <= 6 && lz > 30) continue;   // арка главных ворот
+                    for (int by = 47; by <= 61; by += 2) {
+                        BlockState ws = level.getBlockState(mpWall.set(wx, bs.baseY + by, wz));
+                        if (ws.isAir()) ++wallBreaches;
+                    }
+                }
+            }
+            for (int lz = -78; lz <= 35; lz += 2) {
+                for (int lx : new int[]{-50, -48, -46, 60, 62, 64}) {
+                    int wx = bs.cx + BlacktideCitadel.rotX(lx, lz, bs.rot);
+                    int wz = bs.cz + BlacktideCitadel.rotZ(lx, lz, bs.rot);
+                    if (!level.hasChunk(wx >> 4, wz >> 4)) continue;
+                    if (lz >= -7 && lz <= -2) continue;                                      // западные ворота каузея + восточный проём
+                    for (int by = 47; by <= 61; by += 2) {
+                        BlockState ws = level.getBlockState(mpWall.set(wx, bs.baseY + by, wz));
+                        if (ws.isAir()) ++wallBreaches;
+                    }
+                }
+            }
+
+            // 5) v0.30.0: ПРОХОДИМОСТЬ ВИНТОВЫХ ЛЕСТНИЦ — над каждой ступенью всех 28 башен должно быть 2 блока воздуха.
+            int towerStairs = 0, towerStairsJammed = 0;
+            for (int[] tc : BlacktideCitadel.TOWER_CENTERS) {
+                for (int dx = -2; dx <= 2; ++dx) {
+                    for (int dz = -2; dz <= 2; ++dz) {
+                        int wx = bs.cx + BlacktideCitadel.rotX(tc[0] + dx, tc[1] + dz, bs.rot);
+                        int wz = bs.cz + BlacktideCitadel.rotZ(tc[0] + dx, tc[1] + dz, bs.rot);
+                        if (!level.hasChunk(wx >> 4, wz >> 4)) continue;
+                        for (int by = 30; by <= 150; ++by) {
+                            BlockState cs = level.getBlockState(mpWall.set(wx, bs.baseY + by, wz));
+                            var ckey = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(cs.getBlock());
+                            if (ckey == null || !ckey.getPath().endsWith("_stairs")) continue;
+                            ++towerStairs;
+                            if (!level.getBlockState(mpWall.set(wx, bs.baseY + by + 1, wz)).isAir()
+                                    || !level.getBlockState(mpWall.set(wx, bs.baseY + by + 2, wz)).isAir()) {
+                                ++towerStairsJammed;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 6) v0.30.0: ВХОД В КРУГЛОЕ КУПОЛЬНОЕ ЗДАНИЕ (Ротонду) — сквозной проём из амбулатория в интерьер.
+            int rotundaDoorAir = 0;
+            for (int lz = -49; lz <= -38; ++lz) {
+                for (int lxAbs : new int[]{15, 16}) {
+                    for (int sgn : new int[]{1, -1}) {
+                        int wx = bs.cx + BlacktideCitadel.rotX(sgn * lxAbs, lz, bs.rot);
+                        int wz = bs.cz + BlacktideCitadel.rotZ(sgn * lxAbs, lz, bs.rot);
+                        if (!level.hasChunk(wx >> 4, wz >> 4)) continue;
+                        if (level.getBlockState(mpWall.set(wx, bs.baseY + 58, wz)).isAir()
+                                && level.getBlockState(mpWall.set(wx, bs.baseY + 59, wz)).isAir()) ++rotundaDoorAir;
+                    }
+                }
+            }
+
             int[] seaCnt = countStructBlocksAndSubAir(level, bs.keepX, bs.keepZ, 26, ocean - 8, bs.baseY + 154, ocean);
             boolean bridgeFromSeabed = (aboveSeaFar == 0 && subBridgeBlocks >= 20);
             boolean waterRingOk = loadedSeaProbes > 0 && seaWaterAround >= Math.min(3, loadedSeaProbes);
-            int totalBlocks = (pureOceanSite && bridgeFromSeabed && lvl1EastBlocks >= 25 && waterRingOk) ? seaCnt[0] : 0;
+            boolean wallsSealed = wallBreaches == 0;
+            boolean stairsWalkable = towerStairs > 0 && towerStairsJammed == 0;
+            boolean rotundaOpen = rotundaDoorAir >= 8;
+            int totalBlocks = (pureOceanSite && bridgeFromSeabed && lvl1EastBlocks >= 25 && waterRingOk
+                    && wallsSealed && stairsWalkable && rotundaOpen) ? seaCnt[0] : 0;
 
             int atX, atY, atZ, camX, camY, camZ, lkX, lkY, lkZ;
             if (k.equals("blacktide_bridge_shore")) {
@@ -2615,6 +2684,8 @@ public final class SeaProbeCommand {
                     + " ocean_only=" + pureOceanSite + " bridge_seabed=" + bridgeFromSeabed
                     + " sub_bridge=" + subBridgeBlocks + " lvl1_east=" + lvl1EastBlocks
                     + " water_ring=" + seaWaterAround
+                    + " wall_breaches=" + wallBreaches + " tower_stairs=" + towerStairs
+                    + " stairs_jammed=" + towerStairsJammed + " rotunda_door=" + rotundaDoorAir
                     + " blocks=" + totalBlocks + " sub_air=" + seaCnt[1]
                     + " cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
             src.sendSuccess(() -> Component.literal(line), false);
@@ -2622,17 +2693,17 @@ public final class SeaProbeCommand {
         }
 
         if (k.equals("ashen_burned_church")) {
-            AshenLands.Region bestAr = null;
+            LandmarkStructures.BiomeLandmark lm = null;
             double bestD = Double.MAX_VALUE;
-            for (int sx = -3; sx <= 3; ++sx) {
-                for (int sz = -3; sz <= 3; ++sz) {
+            for (int sx = -6; sx <= 6; ++sx) {
+                for (int sz = -6; sz <= 6; ++sz) {
                     AshenLands.Region ar = AshenLands.region(sx, sz);
-                    if (ar == null || !ar.hasBurnedChurch) continue;
-                    double d = Math.hypot(ar.churchX - at.getX(), ar.churchZ - at.getZ());
-                    if (d < bestD) { bestD = d; bestAr = ar; }
+                    LandmarkStructures.BiomeLandmark cand = LandmarkStructures.ashenBurnedChurch(ar);
+                    if (cand == null) continue;
+                    double d = Math.hypot(cand.cx - at.getX(), cand.cz - at.getZ());
+                    if (d < bestD) { bestD = d; lm = cand; }
                 }
             }
-            LandmarkStructures.BiomeLandmark lm = LandmarkStructures.ashenBurnedChurch(bestAr);
             if (lm == null) { src.sendFailure(Component.literal("riftstruct: ashen_burned_church not found")); return 0; }
             int[] cnt = countStructBlocksAndSubAir(level, lm.cx, lm.cz, 18, lm.baseY, lm.baseY + 24, ocean);
             int camX = lm.cx - 25, camY = lm.baseY + 11, camZ = lm.cz + 18;
@@ -2647,8 +2718,8 @@ public final class SeaProbeCommand {
         if (k.equals("ashen_combo_matrix")) {
             int emptyCnt = 0, singleOrPairCnt = 0, allThreeCnt = 0;
             AshenLands.Region emptySample = null;
-            for (int sx = -4; sx <= 4; ++sx) {
-                for (int sz = -4; sz <= 4; ++sz) {
+            for (int sx = -6; sx <= 6; ++sx) {
+                for (int sz = -6; sz <= 6; ++sz) {
                     AshenLands.Region ar = AshenLands.region(sx, sz);
                     if (ar == null) continue;
                     int majors = (ar.hasRedCastle ? 1 : 0) + (ar.hasBurnedChurch ? 1 : 0) + (ar.hasBelfry ? 1 : 0);
@@ -2739,17 +2810,17 @@ public final class SeaProbeCommand {
         }
 
         if (k.equals("shattered_shard_forge")) {
-            CrystalRifts.Region bestCr = null;
+            LandmarkStructures.BiomeLandmark lm = null;
             double bestD = Double.MAX_VALUE;
-            for (int sx = -2; sx <= 2; ++sx) {
-                for (int sz = -2; sz <= 2; ++sz) {
+            for (int sx = -6; sx <= 6; ++sx) {
+                for (int sz = -6; sz <= 6; ++sz) {
                     CrystalRifts.Region cr = CrystalRifts.region(sx, sz);
-                    if (cr == null) continue;
-                    double d = Math.hypot(cr.cx - at.getX(), cr.cz - at.getZ());
-                    if (d < bestD) { bestD = d; bestCr = cr; }
+                    LandmarkStructures.BiomeLandmark cand = LandmarkStructures.shatteredShardForge(cr);
+                    if (cand == null) continue;
+                    double d = Math.hypot(cand.cx - at.getX(), cand.cz - at.getZ());
+                    if (d < bestD) { bestD = d; lm = cand; }
                 }
             }
-            LandmarkStructures.BiomeLandmark lm = LandmarkStructures.shatteredShardForge(bestCr);
             if (lm == null) { src.sendFailure(Component.literal("riftstruct: shattered_shard_forge not found")); return 0; }
             int[] cnt = countStructBlocksAndSubAir(level, lm.cx, lm.cz, 13, lm.baseY - 2, lm.baseY + 15, ocean);
             int camX = lm.cx + 4, camY = lm.baseY + 8, camZ = lm.cz + 16;
@@ -2762,17 +2833,17 @@ public final class SeaProbeCommand {
         }
 
         if (k.equals("violet_wind_observatory")) {
-            VioletHills.Region bestVh = null;
+            LandmarkStructures.BiomeLandmark lm = null;
             double bestD = Double.MAX_VALUE;
-            for (int sx = -2; sx <= 2; ++sx) {
-                for (int sz = -2; sz <= 2; ++sz) {
+            for (int sx = -6; sx <= 6; ++sx) {
+                for (int sz = -6; sz <= 6; ++sz) {
                     VioletHills.Region vh = VioletHills.region(sx, sz);
-                    if (vh == null) continue;
-                    double d = Math.hypot(vh.cx - at.getX(), vh.cz - at.getZ());
-                    if (d < bestD) { bestD = d; bestVh = vh; }
+                    LandmarkStructures.BiomeLandmark cand = LandmarkStructures.violetWindObservatory(vh);
+                    if (cand == null) continue;
+                    double d = Math.hypot(cand.cx - at.getX(), cand.cz - at.getZ());
+                    if (d < bestD) { bestD = d; lm = cand; }
                 }
             }
-            LandmarkStructures.BiomeLandmark lm = LandmarkStructures.violetWindObservatory(bestVh);
             if (lm == null) { src.sendFailure(Component.literal("riftstruct: violet_wind_observatory not found")); return 0; }
             int[] cnt = countStructBlocksAndSubAir(level, lm.cx, lm.cz, 18, lm.baseY - 1, lm.baseY + 21, ocean);
             double vx = -lm.dirZ, vz = lm.dirX;
@@ -4024,7 +4095,7 @@ public final class SeaProbeCommand {
         }
 
         if (k.equals("wild_inverted_tower_dragon")) {
-            InvertedTowers.Site wt = InvertedTowers.nearest(780.0, -520.0, false, 3);
+            InvertedTowers.Site wt = InvertedTowers.nearest(780.0, -520.0, false, 6);
             if (wt == null || wt.cityOrigin()) {
                 src.sendFailure(Component.literal("riftstruct: wild inverted tower not found"));
                 return 0;

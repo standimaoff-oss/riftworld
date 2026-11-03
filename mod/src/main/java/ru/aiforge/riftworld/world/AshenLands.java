@@ -226,29 +226,9 @@ public final class AshenLands {
         long cellSeed = FIXED ^ (sx * 53982894593057L + sz * 317074912223L) * 0x9E3779B97F4A7C15L;
         Random r = new Random(cellSeed);
 
-        // Гарантируем поблизости эталонные архетипы (все 3 вместе, полностью пустой биом, частичные комбинации),
-        // а во всём остальном мире случайно разыгрываем все 8 комбинаций!
-        boolean pinnedCell = (sx == -1 && sz == 0)
-                || (sx == 1 && sz == 0)
-                || (sx == 0 && sz == -1)
-                || (sx == -1 && sz == 1)
-                || (sx == 0 && sz == 1);
-        if (!pinnedCell && r.nextDouble() > 0.56) return null;
-
-        int mode;
-        if (sx == -1 && sz == 0) {
-            mode = 7; // ВСЕ ВМЕСТЕ (Красный замок + Сгоревшая церковь + морская Цитадель Чёрного утёса)
-        } else if (sx == 1 && sz == 0) {
-            mode = 0; // ПОЛНОСТЬЮ ПУСТОЙ ПЕПЕЛЬНЫЙ БИОМ
-        } else if (sx == 0 && sz == -1) {
-            mode = 5; // Сгоревшая церковь + Цитадель Чёрного утёса (без Красного замка)
-        } else if (sx == -1 && sz == 1) {
-            mode = 1; // Только прибрежно-морская Цитадель Чёрного утёса
-        } else if (sx == 0 && sz == 1) {
-            mode = 3; // Только Красный замок 1-го босса
-        } else {
-            mode = r.nextInt(8);
-        }
+        // v0.30.0: 100% честный вероятностный спавн биома и его структур (без закреплённых 100%-ячеек!)
+        if (r.nextDouble() > 0.56) return null;
+        int mode = r.nextInt(8);
 
         int margin = 430;
         for (int attempt = 0; attempt < 10; ++attempt) {
@@ -295,7 +275,7 @@ public final class AshenLands {
         int sx0 = Math.floorDiv((int) Math.floor(x), SUPER), sz0 = Math.floorDiv((int) Math.floor(z), SUPER);
         Region best = null;
         double bestD = 1e18;
-        for (int rad = 0; rad <= 6; ++rad) {
+        for (int rad = 0; rad <= 10; ++rad) {
             for (int dx = -rad; dx <= rad; ++dx) {
                 for (int dz = -rad; dz <= rad; ++dz) {
                     if (Math.max(Math.abs(dx), Math.abs(dz)) != rad) continue;

@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SSS",
+    "FPF"
+  ],
+  "key": {
+    "S": {
+      "item": "minecraft:stick"
+    },
+    "F": {
+      "item": "riftworld:elisar_flowers"
+    },
+    "P": {
+      "item": "riftworld:pale_bloom"
+    }
+  },
+  "result": {
+    "item": "riftworld:herbs_hanging",
+    "count": 2
+  }
+}

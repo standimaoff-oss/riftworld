@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "RRR",
+    "S S",
+    "CCC"
+  ],
+  "key": {
+    "R": {
+      "item": "riftworld:roof_red_slab"
+    },
+    "S": {
+      "item": "minecraft:stick"
+    },
+    "C": {
+      "item": "riftworld:elisar_cobble"
+    }
+  },
+  "result": {
+    "item": "riftworld:well"
+  }
+}

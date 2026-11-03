@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "FDF",
+    "FIF",
+    "FDF"
+  ],
+  "key": {
+    "F": {
+      "item": "riftworld:dark_fence"
+    },
+    "D": {
+      "item": "riftworld:dark_planks"
+    },
+    "I": {
+      "item": "minecraft:iron_sword"
+    }
+  },
+  "result": {
+    "item": "riftworld:guard_weapon_rack"
+  }
+}

@@ -132,15 +132,11 @@ public class DragonWhistleItem extends Item {
             loaded.beginHornSummonToOwner(player);
             bindToDragon(whistleStack, loaded);
             sl.sendParticles(ParticleTypes.END_ROD, player.getX(), player.getY() + 1.8, player.getZ(), 18, 0.5, 0.5, 0.5, 0.06);
-            player.displayClientMessage(Component.translatable("msg.riftworld.dragon_horn_called")
-                    .withStyle(ChatFormatting.GOLD), true);
             return true;
         }
 
         // 2) Дракон находится ЗА ПРЕДЕЛАМИ СИМУЛЯЦИИ (в выгруженном чанке далеко в мире или другом измерении)!
         if (entry == null) {
-            player.displayClientMessage(Component.translatable("msg.riftworld.dragon_horn_none")
-                    .withStyle(ChatFormatting.RED), true);
             return false;
         }
 
@@ -168,8 +164,6 @@ public class DragonWhistleItem extends Item {
 
         bindToDragon(whistleStack, recalled);
         sl.sendParticles(ParticleTypes.END_ROD, player.getX(), player.getY() + 1.8, player.getZ(), 24, 0.6, 0.6, 0.6, 0.08);
-        player.displayClientMessage(Component.translatable("msg.riftworld.dragon_horn_beyond_sim")
-                .withStyle(ChatFormatting.GOLD), true);
         return true;
     }
 

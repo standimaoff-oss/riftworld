@@ -509,7 +509,9 @@ public final class WorldStructures {
 
     private static List<StiltVillage> genGardenStiltVillages(WaterfallGardens.Region rg) {
         Random rnd = new Random(SEED_STILT ^ (rg.cx * 4827149287L + rg.cz * 9182736451L));
-        int want = rnd.nextDouble() < 0.72 ? 2 : 1; // 1..2 свайные деревни в лагуне у каждого архипелага Висячих садов!
+        double roll = rnd.nextDouble();
+        int want = roll < 0.44 ? 0 : (roll < 0.84 ? 1 : 2); // v0.30.0: случайный шанс (0..2 деревни, НЕ 100% в каждом биоме!)
+        if (want == 0) return Collections.emptyList();
         List<StiltVillage> res = new ArrayList<>(want);
         int ocean = CityPlan.get().ocean;
         double baseAng = rnd.nextDouble() * Math.PI * 2.0;

@@ -181,7 +181,8 @@ public final class CrystalRifts {
         public final List<Fall> falls;
         public final List<IslandPath> paths;
 
-        // Центральная разрушенная каменная колоннада-астролябия и мраморная аллея на hub (расширена в v0.23.0!)
+        // Центральная разрушенная каменная колоннада-астролябия и мраморная аллея на hub (v0.30.0: случайный шанс < 100%!)
+        public final boolean hasColonnade;
         public final double astroX, astroZ;
         public final int astroY;
         public final double aveAx, aveAz, aveBx, aveBz;
@@ -192,6 +193,7 @@ public final class CrystalRifts {
             this.cx = cx;
             this.cz = cz;
             this.seed = r.nextLong();
+            this.hasColonnade = new Random(this.seed ^ 0x4301044AD31177B5L).nextDouble() < 0.58;
             Random rnd = new Random(this.seed);
             int ocean = 62;
             this.phi = rnd.nextDouble() * Math.PI * 2.0;
@@ -522,7 +524,7 @@ public final class CrystalRifts {
 
         public double pathDist(CityPlan.Island isl, double x, double z) {
             double best = 1e9;
-            if (isl == hub) {
+            if (isl == hub && hasColonnade) {
                 best = Math.min(best, avenueDist(x, z) - AVE_HW);
                 best = Math.min(best, Math.hypot(x - astroX, z - astroZ) - (ASTRO_R + 2.2));
             }
@@ -551,8 +553,8 @@ public final class CrystalRifts {
         }
 
         public boolean nearCrystalOrStructure(double x, double z, double pad) {
-            if (Math.hypot(x - astroX, z - astroZ) < ASTRO_R + pad + 2.5) return true;
-            if (avenueDist(x, z) < AVE_HW + pad) return true;
+            if (hasColonnade && Math.hypot(x - astroX, z - astroZ) < ASTRO_R + pad + 2.5) return true;
+            if (hasColonnade && avenueDist(x, z) < AVE_HW + pad) return true;
             for (IslandPath p : paths) {
                 if (CityPlan.segDist(x, z, p.ax, p.az, p.bx, p.bz, null) < p.hw + pad) return true;
             }

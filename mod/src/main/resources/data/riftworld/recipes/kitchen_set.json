@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "B G",
+    "NNN"
+  ],
+  "key": {
+    "B": {
+      "item": "minecraft:bowl"
+    },
+    "G": {
+      "item": "minecraft:glass_bottle"
+    },
+    "N": {
+      "item": "minecraft:iron_nugget"
+    }
+  },
+  "result": {
+    "item": "riftworld:kitchen_set"
+  }
+}

@@ -1,8 +1,0 @@
-{
-  "type": "minecraft:stonecutting",
-  "ingredient": {
-    "item": "riftworld:lab_concrete"
-  },
-  "result": "riftworld:lab_concrete_stairs",
-  "count": 1
-}

@@ -1,16 +1,19 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    "N",
+    "G",
     "I",
     "N"
   ],
   "key": {
-    "N": {
-      "item": "minecraft:iron_nugget"
+    "G": {
+      "item": "minecraft:gold_nugget"
     },
     "I": {
       "item": "minecraft:iron_ingot"
+    },
+    "N": {
+      "item": "minecraft:iron_nugget"
     }
   },
   "result": {

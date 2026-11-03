@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "H H",
+    "I I"
+  ],
+  "key": {
+    "H": {
+      "item": "riftworld:elisar_chain"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "result": {
+    "item": "riftworld:wall_shackles",
+    "count": 2
+  }
+}

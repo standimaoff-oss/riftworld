@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "CS",
+    "SC"
+  ],
+  "key": {
+    "C": {
+      "item": "riftworld:sea_shells"
+    },
+    "S": {
+      "item": "minecraft:cobblestone"
+    }
+  },
+  "result": {
+    "item": "riftworld:reef_stone",
+    "count": 4
+  }
+}

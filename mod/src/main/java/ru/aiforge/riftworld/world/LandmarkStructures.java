@@ -333,6 +333,8 @@ public final class LandmarkStructures {
     }
 
     private static BiomeLandmark genAncientTreeAltar(SizoGrove.Region sg) {
+        Random rnd = new Random(0x5120A17A4L ^ (sg.cx * 0x9E3779B97F4A7C15L + sg.cz * 0xBF58476D1CE4E5B9L));
+        if (rnd.nextDouble() > 0.54) return null; // v0.30.0: случайный шанс < 100% в биоме Рощи Сизо!
         CityPlan plan = CityPlan.get();
         double dxTrail = sg.tbx - sg.tax, dzTrail = sg.tbz - sg.taz;
         double len = Math.max(1.0, Math.hypot(dxTrail, dzTrail));
@@ -401,6 +403,8 @@ public final class LandmarkStructures {
     }
 
     private static BiomeLandmark genShatteredForge(CrystalRifts.Region cr) {
+        Random rnd = new Random(0xC295F026EL ^ (cr.cx * 0x9E3779B97F4A7C15L + cr.cz * 0xBF58476D1CE4E5B9L));
+        if (rnd.nextDouble() > 0.54) return null; // v0.30.0: случайный шанс < 100% в биоме Хрустальных разломов!
         // Остров 0 = Колоннада Босса, Остров 1 = чистый кристальный остров (isl1_trees=0), поэтому ставим на Остров 2!
         CityPlan.Island isl = cr.isles.get(Math.min(2, cr.isles.size() - 1));
         CityPlan plan = CityPlan.get();
@@ -441,6 +445,8 @@ public final class LandmarkStructures {
     }
 
     private static BiomeLandmark genVioletObservatory(VioletHills.Region vh) {
+        Random rnd = new Random(0x7101E70B5L ^ (vh.cx * 0x9E3779B97F4A7C15L + vh.cz * 0xBF58476D1CE4E5B9L));
+        if (rnd.nextDouble() > 0.54) return null; // v0.30.0: случайный шанс < 100% в биоме Фиолетовых холмов!
         CityPlan.Island isl = vh.isles.get(Math.min(2, vh.isles.size() - 1));
         CityPlan plan = CityPlan.get();
         // Направляем воздушную пристань наружу от центра архипелага к открытому небу над морем!
@@ -1476,27 +1482,39 @@ public final class LandmarkStructures {
 
         for (int x = x0; x <= x0 + 15; ++x) {
             for (int z = z0; z <= z0 + 15; ++z) {
-                if (Math.hypot(x - cx, z - cz) > 21.0) continue;
+                int tdx = x - bxCenter, tdz = z - bzCenter;
+                int tCheb = Math.max(Math.abs(tdx), Math.abs(tdz));
+                boolean inTowerFoot = (tCheb <= 4);
+
+                int mdx = x - mxCenter, mdz = z - mzCenter;
+                double mr = Math.hypot(mdx, mdz);
+                boolean inPortalFoot = (mdz >= 6 && mdz <= 8 && Math.abs(mdx) <= 2);
+                boolean inBarrowFoot = (mr <= 8.2) || inPortalFoot;
+
+                // Узкая неровная тропа строго между южными входами башни и кургана (БЕЗ искусственного круга вокруг!)
+                boolean causeway = (Math.abs(z - (cz + 5)) <= 1 && x >= bxCenter - 1 && x <= mxCenter + 1)
+                        || (Math.abs(x - bxCenter) <= 1 && z >= bzCenter + 3 && z <= cz + 6)
+                        || (Math.abs(x - mxCenter) <= 1 && z >= mzCenter + 5 && z <= cz + 9);
+
+                if (!inTowerFoot && !inBarrowFoot && !causeway) {
+                    continue;
+                }
 
                 int gBot = safeGroundY(plan, x, z, by - 3);
                 for (int y = gBot; y <= by - 1; ++y) {
-                    if (y > plan.ocean) put(chunk, mp, x0, z0, x, y, z, y == by - 1 ? dsTile : ashStone);
+                    if (y > plan.ocean) {
+                        BlockState baseBlk = (y == by - 1)
+                                ? (inTowerFoot ? dsTile : (causeway && ((x + z) & 1) == 0 ? pbBrick : ashStone))
+                                : ashStone;
+                        put(chunk, mp, x0, z0, x, y, z, baseBlk);
+                    }
                 }
-                for (int y = by; y <= by + 28; ++y) {
+                int clearTop = inTowerFoot ? (by + 27) : (inBarrowFoot ? (by + 9) : (by + 4));
+                for (int y = by; y <= clearTop; ++y) {
                     if (y > plan.ocean) put(chunk, mp, x0, z0, x, y, z, air);
                 }
 
-                // Мощёная процессионная дорога между колокольней, курганом и южным подходом
-                boolean causeway = (Math.abs(z - cz) <= 2 && x >= bxCenter - 3 && x <= mxCenter + 3)
-                        || (Math.abs(x - mxCenter) <= 2 && z >= cz && z <= cz + 9)
-                        || (Math.abs(x - bxCenter) <= 2 && z >= cz && z <= cz + 8);
-                if (causeway) {
-                    put(chunk, mp, x0, z0, x, by - 1, z, ((x + z) & 3) == 0 ? pbBrick : dsTile);
-                }
-
                 // 1) 4-ярусная готическая Колокольня-Кампанила (bxCenter, bzCenter, высота 27 м)
-                int tdx = x - bxCenter, tdz = z - bzCenter;
-                int tCheb = Math.max(Math.abs(tdx), Math.abs(tdz));
                 if (tCheb <= 5) {
                     for (int dy = 0; dy <= 26; ++dy) {
                         int y = by + dy;
@@ -1560,8 +1578,6 @@ public final class LandmarkStructures {
                 }
 
                 // 2) Каменный Курган Павших Стражей с резным южным порталом склепа (mxCenter, mzCenter)
-                int mdx = x - mxCenter, mdz = z - mzCenter;
-                double mr = Math.hypot(mdx, mdz);
                 if (mr <= 8.2) {
                     boolean entranceCorridor = (mdz >= 3 && Math.abs(mdx) <= 1);
                     boolean innerVault = (mr <= 4.2);
