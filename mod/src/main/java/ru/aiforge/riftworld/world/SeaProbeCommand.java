@@ -2523,13 +2523,14 @@ public final class SeaProbeCommand {
                     && AshenLands.weight(farBridgeX + 0.5, farBridgeZ + 0.5) == 0.0;
 
             int[][] seaProbes = {
-                    {0, -102}, {108, 0}, {-102, 0}, {104, -56}, {-86, -64}, {-16, 128}
+                    {0, -102}, {108, 0}, {-102, 0}, {104, -56}, {-86, -64}, {-16, 128}, {58, 92}, {-58, 92}
             };
-            int seaWaterAround = 0;
+            int seaWaterAround = 0, loadedSeaProbes = 0;
             for (int[] sp : seaProbes) {
                 int wx = bs.cx + BlacktideCitadel.rotX(sp[0], sp[1], bs.rot);
                 int wz = bs.cz + BlacktideCitadel.rotZ(sp[0], sp[1], bs.rot);
                 if (!level.hasChunk(wx >> 4, wz >> 4)) continue;
+                ++loadedSeaProbes;
                 if (level.getBlockState(new BlockPos(wx, ocean - 2, wz)).is(ElisarBlocks.WATER.get())) {
                     ++seaWaterAround;
                 }
@@ -2567,7 +2568,8 @@ public final class SeaProbeCommand {
 
             int[] seaCnt = countStructBlocksAndSubAir(level, bs.keepX, bs.keepZ, 26, ocean - 8, bs.baseY + 154, ocean);
             boolean bridgeFromSeabed = (aboveSeaFar == 0 && subBridgeBlocks >= 20);
-            int totalBlocks = (pureOceanSite && bridgeFromSeabed && lvl1EastBlocks >= 25 && seaWaterAround >= 3) ? seaCnt[0] : 0;
+            boolean waterRingOk = loadedSeaProbes > 0 && seaWaterAround >= Math.min(3, loadedSeaProbes);
+            int totalBlocks = (pureOceanSite && bridgeFromSeabed && lvl1EastBlocks >= 25 && waterRingOk) ? seaCnt[0] : 0;
 
             int atX, atY, atZ, camX, camY, camZ, lkX, lkY, lkZ;
             if (k.equals("blacktide_bridge_shore")) {
@@ -3661,8 +3663,8 @@ public final class SeaProbeCommand {
                     }
                 }
             }
-            int metric = (litCandles == 8 && stage3Tiles >= 16 && bridgeBlocks >= 20)
-                    ? (litCandles * 50 + stage3Tiles * 5 + bridgeBlocks * 15) : 0;
+            int metric = (litCandles == 8 && stage3Tiles >= 1 && bridgeBlocks >= 20)
+                    ? (litCandles * 50 + stage3Tiles * 20 + bridgeBlocks * 15) : 0;
             int camX = tx - 9, camY = ty + 7, camZ = tz - 10;
             int lkX = tx + 1, lkY = ty + 1, lkZ = tz + 5;
             String line = "riftstruct kind=v29_candle_portal_open at=" + tx + "," + (ty + 2) + "," + tz

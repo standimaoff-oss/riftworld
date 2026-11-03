@@ -49,7 +49,6 @@ with open(run + "/client/options.txt", "w", encoding="utf-8") as f:
         f.write(f"{k}:{v}\n")
 with open(run + "/client/config/fml.toml", "w", encoding="utf-8") as f:
     f.write(
-        "splashscreen = true\n"
         "maxThreads = -1\n"
         "versionCheck = false\n"
         "defaultConfigPath = \"defaultconfigs\"\n"
@@ -60,7 +59,7 @@ with open(run + "/client/config/fml.toml", "w", encoding="utf-8") as f:
         "earlyWindowFBScale = 1\n"
         "earlyWindowMaximized = true\n"
         "earlyWindowProvider = \"fmlearlywindow\"\n"
-        "earlyWindowSkipGLVersions = []\n"
+        "earlyWindowSkipGLVersions = [\"4.6\", \"4.5\", \"4.4\", \"4.3\", \"4.2\", \"4.1\", \"4.0\"]\n"
         "earlyWindowLogHelpMessage = false\n"
         "earlyWindowSquir = false\n"
         "earlyWindowShowCPU = false\n"
@@ -90,7 +89,9 @@ geom() {  # найти окно игры и его геометрию (x y w h)
 }
 
 shot() {  # shot <имя>
+  pkill -9 -x xmessage zenity gxmessage kdialog 2>/dev/null || true
   if geom; then
+    xdotool windowraise "$WID" 2>/dev/null || true
     if [ "${WIDTH:-0}" -lt 1800 ] || [ "${HEIGHT:-0}" -lt 1000 ]; then
       xdotool windowsize "$WID" 1920 1080 2>/dev/null || true
       xdotool windowmove "$WID" 0 0 2>/dev/null || true
@@ -183,7 +184,8 @@ echo "== старт клиента через Gradle (runClient) =="
 start_client
 if ! wait_connect; then
   echo "  клиент не поднялся — повторный запуск (капризы early-display под Xvfb)"
-  pkill -f forgeclientuserdev 2>/dev/null || true
+  pkill -9 -f forgeclientuserdev 2>/dev/null || true
+  pkill -9 -x xmessage zenity gxmessage kdialog 2>/dev/null || true
   sleep 8
   mv "$OUT/client.log" "$OUT/client_attempt1.log"
   start_client
