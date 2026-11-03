@@ -317,7 +317,7 @@ public final class SeaProbeCommand {
             }
         }
         if (bestX == Integer.MIN_VALUE) return null;
-        for (int r = 0; r <= 80; r += 8) {
+        for (int r = 0; r <= 120; r += 6) {
             for (int i = 0; i < 16; ++i) {
                 double a = i * Math.PI / 8.0;
                 int x = bestX + (int) Math.round(r * Math.cos(a));
@@ -325,7 +325,7 @@ public final class SeaProbeCommand {
                 if (ru.aiforge.riftworld.world.MorokHollow.weight(x, z) < 0.55) continue;
                 level.getChunk(x >> 4, z >> 4);
                 int y = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
-                if (y > level.getMinBuildHeight() + 8 && y < level.getMaxBuildHeight() - 12) return new int[]{x, y, z};
+                if (y > level.getMinBuildHeight() + 8 && y < level.getMaxBuildHeight() - 16) return new int[]{x, y, z};
             }
         }
         return null;
@@ -3670,7 +3670,7 @@ public final class SeaProbeCommand {
             String where = "spot";
             if (level != null) {
                 ServerLevel sl = level;
-                int[] spot = morokSpot(sl, 1160, 800, 2);
+                int[] spot = morokSpot(level, 1160, 800, 8);
                 if (spot != null) {
                     px = spot[0];
                     py = spot[1] + 1;
@@ -3712,7 +3712,7 @@ public final class SeaProbeCommand {
             int px = 1180, py = 140, pz = 800;
             if (level != null) {
                 ServerLevel sl = level;
-                int[] spot = morokSpot(sl, 1180, 800, 2);
+                int[] spot = morokSpot(level, 1180, 800, 8);
                 if (spot != null) {
                     px = spot[0];
                     py = spot[1] + 1;
@@ -3747,49 +3747,75 @@ public final class SeaProbeCommand {
         }
 
         if (k.equals("v36_morok_biome")) {
-            // v0.36.0: биом «Мороковая Падь» — мерзлота, бледный бор, туман (цвет неба/тумана биома).
+            // v0.37.0: биом Пади НА МЕСТЕ. Ищем настоящий регион (morokSpot), ставим
+            // аккуратную рощу (слоистые кроны, а не кубическая «каша»), мох, клыки и фонарь.
             int px = 1200, pz = 820;
             int ground = 140;
             boolean natural = false;
-            int[] morok = morokSpot(level, 1200, 820, 2);
+            int[] morok = morokSpot(level, 1200, 820, 8);
             if (morok != null) {
                 px = morok[0];
                 ground = morok[1];
                 pz = morok[2];
                 natural = true;
-            }
-            if (level instanceof ServerLevel) {
-                for (int dx = -6; dx <= 6; ++dx) {
-                    for (int dz = -6; dz <= 6; ++dz) {
-                        level.setBlock(new BlockPos(px + dx, ground - 1, pz + dz),
-                                MorokBlocks.FROZEN_SOIL.get().defaultBlockState(), 2);
-                        level.setBlock(new BlockPos(px + dx, ground - 2, pz + dz),
-                                MorokBlocks.FROZEN_SOIL.get().defaultBlockState(), 2);
-                        level.setBlock(new BlockPos(px + dx, ground, pz + dz),
-                                MorokBlocks.RIME_GRASS.get().defaultBlockState(), 2);
+                // зачищаем площадку под сцену от случайных блоков биома
+                for (int dx = -10; dx <= 10; ++dx) {
+                    for (int dz = -10; dz <= 10; ++dz) {
+                        for (int dy = 1; dy <= 14; ++dy) {
+                            level.setBlock(new BlockPos(px + dx, ground + dy, pz + dz),
+                                    net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 2);
+                        }
                     }
                 }
-                for (int i = 0; i < 5; ++i) {
-                    int tx = px - 5 + i * 2, tz = pz - 4 + i;
-                    int h = 7 + (i % 3) * 2;
-                    for (int y = 1; y <= h; ++y) {
-                        level.setBlock(new BlockPos(tx, ground + y, tz), MorokBlocks.MOROK_LOG.get().defaultBlockState(), 2);
-                    }
-                    for (int y = h - 2; y <= h + 1; ++y) {
-                        int r = (y >= h) ? 1 : 2;
-                        for (int lx = -r; lx <= r; ++lx) {
-                            for (int lz = -r; lz <= r; ++lz) {
-                                level.setBlock(new BlockPos(tx + lx, ground + y, tz + lz),
-                                        MorokBlocks.MOROK_LEAVES.get().defaultBlockState(), 2);
+            }
+            for (int dx = -10; dx <= 10; ++dx) {
+                for (int dz = -10; dz <= 10; ++dz) {
+                    level.setBlock(new BlockPos(px + dx, ground - 1, pz + dz),
+                            MorokBlocks.FROZEN_SOIL.get().defaultBlockState(), 2);
+                    level.setBlock(new BlockPos(px + dx, ground, pz + dz),
+                            MorokBlocks.RIME_GRASS.get().defaultBlockState(), 2);
+                }
+            }
+            // роща: три бледные сосны, крона слоями (радиус 2 → 1), ствол 1x1
+            int[][] trees = {{-6, -3, 11}, {5, -5, 9}, {2, 6, 13}};
+            for (int[] t : trees) {
+                int tx = px + t[0], tz = pz + t[1], h = t[2];
+                for (int y = 1; y <= h; ++y) {
+                    level.setBlock(new BlockPos(tx, ground + y, tz),
+                            MorokBlocks.MOROK_LOG.get().defaultBlockState(), 2);
+                }
+                for (int y = h - 4; y <= h + 1; ++y) {
+                    int r = (y <= h - 2) ? 2 : 1;
+                    for (int lx = -r; lx <= r; ++lx) {
+                        for (int lz = -r; lz <= r; ++lz) {
+                            if (Math.abs(lx) == r && Math.abs(lz) == r) continue;   // не «квадрат», а ромб
+                            BlockPos lp = new BlockPos(tx + lx, ground + y, tz + lz);
+                            if (level.getBlockState(lp).isAir()) {
+                                level.setBlock(lp, MorokBlocks.MOROK_LEAVES.get().defaultBlockState(), 2);
                             }
                         }
                     }
                 }
-                level.setBlock(new BlockPos(px + 4, ground + 1, pz + 4),
-                        MorokBlocks.FOG_LANTERN.get().defaultBlockState(), 2);
-                level.setBlock(new BlockPos(px - 4, ground + 1, pz + 3),
-                        MorokBlocks.ICE_FANG.get().defaultBlockState(), 2);
             }
+            // мох, ледяные клыки, фонарь на столбике
+            for (int i = 0; i < 14; ++i) {
+                int mx = px - 8 + (i * 5) % 17;
+                int mz = pz - 8 + (i * 7) % 17;
+                level.setBlock(new BlockPos(mx, ground + 1, mz),
+                        MorokBlocks.PALE_MOSS_CARPET.get().defaultBlockState(), 2);
+            }
+            for (int[] f : new int[][]{{-8, 4}, {7, 2}, {-2, -7}}) {
+                int fx = px + f[0], fz = pz + f[1];
+                level.setBlock(new BlockPos(fx, ground + 1, fz), MorokBlocks.ICE_FANG.get().defaultBlockState(), 2);
+                level.setBlock(new BlockPos(fx, ground + 2, fz), MorokBlocks.ICE_FANG.get().defaultBlockState(), 2);
+            }
+            level.setBlock(new BlockPos(px + 6, ground + 1, pz + 5),
+                    MorokBlocks.CRACKED_RIME_BRICKS.get().defaultBlockState(), 2);
+            level.setBlock(new BlockPos(px + 6, ground + 2, pz + 5),
+                    MorokBlocks.RIME_BRICK_PILLAR.get().defaultBlockState(), 2);
+            level.setBlock(new BlockPos(px + 6, ground + 3, pz + 5),
+                    MorokBlocks.FOG_LANTERN.get().defaultBlockState(), 2);
+
             // v0.37.0: не «fog=true по умолчанию», а настоящая проверка —
             // какой биом реально в точке, каков вес мглы и включён ли туман Пади.
             String biome = "?";
