@@ -1664,6 +1664,12 @@ biome_section() {
   echo "== v0.31.0: блоки Мороковой Пади — витрина всех 27 блоков, предметы =="
   probe_and_shot_struct "v31_morok_gallery"          800 "145_v31_morok_hollow_blocks_gallery"     0 0 6
 
+  # ---------- v0.33–v0.36: новая модель Лиоплевродона, Пегас, Вендиго и биом «Мороковая Падь» ----------
+  echo "== v0.33–v0.36: Лиоплевродон (новая модель), Пегас, Вендиго, биом Мороковая Падь =="
+  probe_and_shot_struct "v34_pegasus"                800 "147_v34_pegasus_winged_steed"            0 0 6
+  probe_and_shot_struct "v35_wendigo"                800 "148_v35_wendigo_antlered_horror"         0 0 6
+  probe_and_shot_struct "v36_morok_biome"            800 "149_v36_morok_hollow_fog_forest"        0 0 6
+
   # ---------- v0.32.0: Лиоплевродон — модель, текстура, поведение в глубокой воде ----------
   echo "== v0.32.0: Лиоплевродон — 12-блочный хищник глубин (модель + текстура + дроп) =="
   probe_and_shot_struct "v32_liopleurodon"           800 "146_v32_liopleurodon_deep_water"         1 0 10

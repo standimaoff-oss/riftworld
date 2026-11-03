@@ -12,7 +12,8 @@
       "mist": "riftworld:mist_keep",
       "reef": "riftworld:shallow_reef",
       "abyss": "riftworld:abyss",
-      "crystal": "riftworld:crystal_rifts"
+      "crystal": "riftworld:crystal_rifts",
+      "morok": "riftworld:morok_hollow"
     }
   }
 }

@@ -25,12 +25,14 @@ public class ElisarBiomeSource extends BiomeSource {
             Biome.CODEC.fieldOf("mist").forGetter(s -> s.mist),
             Biome.CODEC.fieldOf("reef").forGetter(s -> s.reef),
             Biome.CODEC.fieldOf("abyss").forGetter(s -> s.abyss),
-            Biome.CODEC.fieldOf("crystal").forGetter(s -> s.crystal)).apply(i, ElisarBiomeSource::new));
+            Biome.CODEC.fieldOf("crystal").forGetter(s -> s.crystal),
+            Biome.CODEC.fieldOf("morok").forGetter(s -> s.morok)).apply(i, ElisarBiomeSource::new));
 
-    private final Holder<Biome> def, ashen, violet, sizo, gardens, mist, reef, abyss, crystal;
+    private final Holder<Biome> def, ashen, violet, sizo, gardens, mist, reef, abyss, crystal, morok;
 
     public ElisarBiomeSource(Holder<Biome> def, Holder<Biome> ashen, Holder<Biome> violet, Holder<Biome> sizo, Holder<Biome> gardens,
-                             Holder<Biome> mist, Holder<Biome> reef, Holder<Biome> abyss, Holder<Biome> crystal) {
+                             Holder<Biome> mist, Holder<Biome> reef, Holder<Biome> abyss, Holder<Biome> crystal,
+                             Holder<Biome> morok) {
         this.def = def;
         this.ashen = ashen;
         this.violet = prosec(violet);
@@ -40,6 +42,7 @@ public class ElisarBiomeSource extends BiomeSource {
         this.reef = reef;
         this.abyss = abyss;
         this.crystal = crystal;
+        this.morok = morok;
     }
 
     private static Holder<Biome> prosec(Holder<Biome> h) {
@@ -53,7 +56,7 @@ public class ElisarBiomeSource extends BiomeSource {
 
     @Override
     protected Stream<Holder<Biome>> collectPossibleBiomes() {
-        return Stream.of(def, ashen, violet, sizo, gardens, mist, reef, abyss, crystal);
+        return Stream.of(def, ashen, violet, sizo, gardens, mist, reef, abyss, crystal, morok);
     }
 
     /**
@@ -98,6 +101,12 @@ public class ElisarBiomeSource extends BiomeSource {
         double x = qx * 4 + 2, z = qz * 4 + 2;
         CityPlan plan = CityPlan.get();
         CityPlan.Island at = plan.islandAt(x, z);
+        // v0.36.0: «Мороковая Падь» — сухопутный биом поверх диких островов (туман + бледный бор)
+        if (at != null && MorokHollow.inside(x, z)) {
+            cc.skyAbove70[slot] = cc.surf63to70[slot] = cc.mid39to62[slot] = cc.deepLe38[slot] = morok;
+            cc.keys[slot] = key;
+            return;
+        }
         if (at != null) {
             if (at.kind == WaterfallGardens.KIND && WaterfallGardens.landAt(x, z) != null) {
                 cc.skyAbove70[slot] = cc.surf63to70[slot] = cc.mid39to62[slot] = cc.deepLe38[slot] = gardens;

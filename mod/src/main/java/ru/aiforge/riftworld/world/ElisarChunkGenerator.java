@@ -43,6 +43,7 @@ import ru.aiforge.riftworld.block.ModelKind;
 import ru.aiforge.riftworld.registry.CastleBlocks;
 import ru.aiforge.riftworld.registry.ElisarBlocks;
 import ru.aiforge.riftworld.registry.ModBlocks;
+import ru.aiforge.riftworld.registry.MorokBlocks;
 import ru.aiforge.riftworld.registry.TempleBlocks;
 
 /**
@@ -1070,6 +1071,12 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 // ocean plane
                 double aw = AshenLands.weight(x + 0.5, z + 0.5);
                 boolean ashen = aw > 0 && aw > hash(x, z, 88);
+                // v0.36.0: «Мороковая Падь» — сухопутный биом поверх диких островов (мерзлота + бледный бор)
+                double mwk = MorokHollow.weight(x + 0.5, z + 0.5);
+                boolean morok = !ashen && mwk > 0 && mwk > hash(x, z, 87);
+                if (morok && c.isl != null && c.top > plan.ocean + 1) {
+                    MorokHollow.dressSurface(chunk, mp, x, z, c.top);
+                }
                 if (ashen) {
                     if (c.isl == null || c.bottom > plan.ocean + 1) AshenLands.column(chunk, mp, x, z, c.isl != null);
                 } else if (c.isl == null || c.bottom > plan.ocean + 1) {
@@ -2059,10 +2066,54 @@ public class ElisarChunkGenerator extends ChunkGenerator {
 
     // ================================================================== decoration: buildings + props
     @Override
+    /**
+     * v0.36.0 — бледный бор «Мороковой Пади»: разреженные «костяные» сосны 9–17 блоков
+     * по решётке {@link MorokHollow#treeHere}, редкий подлесок и ледяные клыки.
+     */
+    private static void morokTrees(WorldGenLevel level, ChunkAccess chunk, int x0, int z0) {
+        for (int dx = 0; dx < 16; ++dx) {
+            for (int dz = 0; dz < 16; ++dz) {
+                int x = x0 + dx, z = z0 + dz;
+                if (!MorokHollow.treeHere(x, z)) continue;
+                BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos(x, 0, z);
+                int top = Integer.MIN_VALUE;
+                for (int y = 200; y > 60; --y) {
+                    BlockState st = chunk.getBlockState(mp.set(x, y, z));
+                    if (st.is(MorokBlocks.RIME_GRASS.get()) || st.is(MorokBlocks.PALE_MOSS_BLOCK.get())
+                            || st.is(MorokBlocks.FROZEN_SOIL.get())) {
+                        top = y;
+                        break;
+                    }
+                }
+                if (top == Integer.MIN_VALUE) continue;
+                int h = MorokHollow.treeHeight(x, z);
+                BlockState log = MorokBlocks.MOROK_LOG.get().defaultBlockState();
+                BlockState leaves = MorokBlocks.MOROK_LEAVES.get().defaultBlockState();
+                for (int y = 1; y <= h; ++y) chunk.setBlockState(mp.set(x, top + y, z), log, false);
+                // редкая асимметричная крона: 3 яруса, у верхушки уже
+                int base = top + h;
+                for (int layer = 0; layer < 4; ++layer) {
+                    int r = 3 - layer / 2;
+                    int yy = base - layer * 2;
+                    for (int lx = -r; lx <= r; ++lx) {
+                        for (int lz = -r; lz <= r; ++lz) {
+                            if (Math.abs(lx) + Math.abs(lz) > r + 1) continue;
+                            if (hash(x + lx, z + lz, 915 + layer) < 0.22) continue;
+                            BlockPos p = mp.set(x + lx, yy, z + lz);
+                            if (chunk.getBlockState(p).isAir()) chunk.setBlockState(p, leaves, false);
+                        }
+                    }
+                }
+                chunk.setBlockState(mp.set(x, top + h + 1, z), leaves, false);
+            }
+        }
+    }
+
     public void applyBiomeDecoration(WorldGenLevel level, ChunkAccess chunk, StructureManager sm) {
         CityPlan plan = CityPlan.get();
         int x0 = chunk.getPos().getMinBlockX(), z0 = chunk.getPos().getMinBlockZ();
         BoundingBox box = new BoundingBox(x0, MIN_Y, z0, x0 + 15, MIN_Y + HEIGHT - 1, z0 + 15);
+        morokTrees(level, chunk, x0, z0);
         StructureTemplateManager stm = level.getLevel().getServer().getStructureManager();
         RandomSource rnd = RandomSource.create(chunk.getPos().toLong());
         java.util.Set<CityPlan.Plot> plots = new java.util.LinkedHashSet<>();

@@ -89,6 +89,22 @@ public final class ModEntities {
                     .sized(3.0F, 2.4F).updateInterval(2).clientTrackingRange(20)
                     .build("riftworld:liopleurodon"));
 
+    /** v0.34.0: Пегас — крылатый скакун «земля/воздух» (концепт `reports/mob_refs/04_ref_pegasus.png`). */
+    public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.PegasusEntity>> PEGASUS =
+            TYPES.register("pegasus", () -> EntityType.Builder
+                    .<ru.aiforge.riftworld.entity.PegasusEntity>of(ru.aiforge.riftworld.entity.PegasusEntity::new,
+                            MobCategory.CREATURE)
+                    .sized(1.3F, 2.0F).clientTrackingRange(12)
+                    .build("riftworld:pegasus"));
+
+    /** v0.35.0: Вендиго — хозяин «Мороковой Пади» (концепт `02_night_horror_wendigo.jpg`). */
+    public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.WendigoEntity>> WENDIGO =
+            TYPES.register("wendigo", () -> EntityType.Builder
+                    .<ru.aiforge.riftworld.entity.WendigoEntity>of(ru.aiforge.riftworld.entity.WendigoEntity::new,
+                            MobCategory.MONSTER)
+                    .sized(0.9F, 2.7F).clientTrackingRange(10)
+                    .build("riftworld:wendigo"));
+
     private ModEntities() {
     }
 
@@ -103,5 +119,7 @@ public final class ModEntities {
         e.put(SKY_DART_FISH.get(), ru.aiforge.riftworld.entity.SkyDartFishEntity.attributes().build());
         e.put(BLOSSOM_STAG.get(), ru.aiforge.riftworld.entity.BlossomStagEntity.attributes().build());
         e.put(LIOPLEURODON.get(), ru.aiforge.riftworld.entity.LiopleurodonEntity.attributes().build());
+        e.put(PEGASUS.get(), ru.aiforge.riftworld.entity.PegasusEntity.attributes().build());
+        e.put(WENDIGO.get(), ru.aiforge.riftworld.entity.WendigoEntity.attributes().build());
     }
 }

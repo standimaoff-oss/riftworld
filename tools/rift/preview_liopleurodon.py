@@ -10,9 +10,12 @@ import struct
 import zlib
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
-GEO = ROOT / "mod/src/main/resources/assets/riftworld/geo/liopleurodon.json"
-TEX = ROOT / "mod/src/main/resources/assets/riftworld/textures/entity/liopleurodon.png"
-OUT = ROOT / "reports/liopleurodon_model_preview.png"
+import sys  # noqa: E402
+NAME = sys.argv[1] if len(sys.argv) > 1 else "liopleurodon"
+SCALE = float(sys.argv[2]) if len(sys.argv) > 2 else 5.4
+GEO = ROOT / f"mod/src/main/resources/assets/riftworld/geo/{NAME}.json"
+TEX = ROOT / f"mod/src/main/resources/assets/riftworld/textures/entity/{NAME}.png"
+OUT = ROOT / f"reports/{NAME}_model_preview.png"
 
 W, H = 1100, 460
 
@@ -94,7 +97,7 @@ def main():
 
     # камера: изометрия сбоку, длинная ось (z) — горизонтально, нос влево
     cx, cy = W / 2, H / 2 + 30
-    sc = 5.4
+    sc = SCALE
 
     def project(x, y, z):
         # y в модели растёт ВНИЗ; x — поперёк, z — вдоль (нос в отрицательном z)

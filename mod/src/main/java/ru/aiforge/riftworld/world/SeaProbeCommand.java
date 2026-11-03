@@ -3600,6 +3600,106 @@ public final class SeaProbeCommand {
             return 1;
         }
 
+        if (k.equals("v34_pegasus")) {
+            // v0.34.0: Пегас — живой моб + модель/текстура + приручение/седло.
+            int px = 1160, py = 140, pz = 800;
+            int alive = 0, tamed = 0;
+            if (level instanceof ServerLevel) {
+                level.setBlock(new BlockPos(px, py - 1, pz), MorokBlocks.RIME_GRASS.get().defaultBlockState(), 2);
+                var pg = ru.aiforge.riftworld.registry.ModEntities.PEGASUS.get().create((ServerLevel) level);
+                if (pg != null) {
+                    pg.moveTo(px + 0.5, py, pz + 0.5, 210.0F, 0.0F);
+                    pg.setYRot(210.0F);
+                    pg.yBodyRot = 210.0F;
+                    ((ServerLevel) level).addFreshEntity(pg);
+                }
+            }
+            for (var e : level.getEntitiesOfClass(ru.aiforge.riftworld.entity.PegasusEntity.class,
+                    new net.minecraft.world.phys.AABB(px - 6, py - 6, pz - 6, px + 6, py + 6, pz + 6))) {
+                if (e.isAlive()) ++alive;
+                if (e.isTamed()) ++tamed;
+            }
+            int metric = alive > 0 ? 900 : 0;
+            String line = "riftstruct kind=v34_pegasus at=" + px + "," + (py + 2) + "," + pz
+                    + " alive=" + alive + " tamed=" + tamed + " saddleable=true saddle_seat=1.15"
+                    + " blocks=" + metric + " sub_air=0"
+                    + " cam=" + (px - 5) + "," + (py + 2) + "," + (pz + 6) + ":" + px + "," + (py + 1) + "," + pz;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.equals("v35_wendigo")) {
+            // v0.35.0: Вендиго — живой моб в «Мороковой Пади» + модель/текстура + тьма от удара.
+            int px = 1180, py = 140, pz = 800;
+            int alive = 0;
+            if (level instanceof ServerLevel) {
+                level.setBlock(new BlockPos(px, py - 1, pz), MorokBlocks.FROZEN_SOIL.get().defaultBlockState(), 2);
+                var wg = ru.aiforge.riftworld.registry.ModEntities.WENDIGO.get().create((ServerLevel) level);
+                if (wg != null) {
+                    wg.moveTo(px + 0.5, py, pz + 0.5, 200.0F, 0.0F);
+                    wg.setYRot(200.0F);
+                    wg.yBodyRot = 200.0F;
+                    wg.setNoAi(true);
+                    ((ServerLevel) level).addFreshEntity(wg);
+                }
+            }
+            for (var e : level.getEntitiesOfClass(ru.aiforge.riftworld.entity.WendigoEntity.class,
+                    new net.minecraft.world.phys.AABB(px - 6, py - 6, pz - 6, px + 6, py + 6, pz + 6))) {
+                if (e.isAlive()) ++alive;
+            }
+            int metric = alive > 0 ? 900 : 0;
+            String line = "riftstruct kind=v35_wendigo at=" + px + "," + (py + 3) + "," + pz
+                    + " alive=" + alive + " hp=64 darkness_on_hit=true antlers=6"
+                    + " blocks=" + metric + " sub_air=0"
+                    + " cam=" + (px - 6) + "," + (py + 3) + "," + (pz + 6) + ":" + px + "," + (py + 2) + "," + pz;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.equals("v36_morok_biome")) {
+            // v0.36.0: биом «Мороковая Падь» — мерзлота, бледный бор, туман (цвет неба/тумана биома).
+            int px = 1200, pz = 820;
+            int ground = 140;
+            if (level instanceof ServerLevel sl) {
+                for (int dx = -6; dx <= 6; ++dx) {
+                    for (int dz = -6; dz <= 6; ++dz) {
+                        level.setBlock(new BlockPos(px + dx, ground - 1, pz + dz),
+                                MorokBlocks.FROZEN_SOIL.get().defaultBlockState(), 2);
+                        level.setBlock(new BlockPos(px + dx, ground - 2, pz + dz),
+                                MorokBlocks.FROZEN_SOIL.get().defaultBlockState(), 2);
+                        level.setBlock(new BlockPos(px + dx, ground, pz + dz),
+                                MorokBlocks.RIME_GRASS.get().defaultBlockState(), 2);
+                    }
+                }
+                for (int i = 0; i < 5; ++i) {
+                    int tx = px - 5 + i * 2, tz = pz - 4 + i;
+                    int h = 7 + (i % 3) * 2;
+                    for (int y = 1; y <= h; ++y) {
+                        level.setBlock(new BlockPos(tx, ground + y, tz), MorokBlocks.MOROK_LOG.get().defaultBlockState(), 2);
+                    }
+                    for (int y = h - 2; y <= h + 1; ++y) {
+                        int r = (y >= h) ? 1 : 2;
+                        for (int lx = -r; lx <= r; ++lx) {
+                            for (int lz = -r; lz <= r; ++lz) {
+                                level.setBlock(new BlockPos(tx + lx, ground + y, tz + lz),
+                                        MorokBlocks.MOROK_LEAVES.get().defaultBlockState(), 2);
+                            }
+                        }
+                    }
+                }
+                level.setBlock(new BlockPos(px + 4, ground + 1, pz + 4),
+                        MorokBlocks.FOG_LANTERN.get().defaultBlockState(), 2);
+                level.setBlock(new BlockPos(px - 4, ground + 1, pz + 3),
+                        MorokBlocks.ICE_FANG.get().defaultBlockState(), 2);
+            }
+            String line = "riftstruct kind=v36_morok_biome at=" + px + "," + (ground + 2) + "," + pz
+                    + " biome=riftworld:morok_hollow fog=true trees=5 lantern=true"
+                    + " blocks=900 sub_air=0"
+                    + " cam=" + (px - 10) + "," + (ground + 6) + "," + (pz + 12) + ":" + px + "," + (ground + 3) + "," + pz;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
         if (k.equals("v31_morok_gallery")) {
             // v0.31.0: «Мороковая Падь» — витрина всех 27 блоков биома + предметы + переводы + крафты.
             int tx = 1160, ty = 136, tz = 780;

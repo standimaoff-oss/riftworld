@@ -59,6 +59,10 @@ public final class ClientHooks {
         e.registerEntityRenderer(ModEntities.ICE_HAIL_BOULDER.get(), CrystalGeoRenderers.IceHailBoulder::new);
         e.registerEntityRenderer(ModEntities.SKY_DART_FISH.get(), PeacefulFaunaRenderers.SkyDartFish::new);
         e.registerEntityRenderer(ModEntities.BLOSSOM_STAG.get(), PeacefulFaunaRenderers.BlossomStag::new);
+        e.registerEntityRenderer(ModEntities.PEGASUS.get(),
+                ctx -> new GeoMobRenderer<>(ctx, "pegasus", "textures/entity/pegasus.png", 1.1F));
+        e.registerEntityRenderer(ModEntities.WENDIGO.get(),
+                ctx -> new GeoMobRenderer<>(ctx, "wendigo", "textures/entity/wendigo.png", 0.9F));
     }
 
     @SubscribeEvent
