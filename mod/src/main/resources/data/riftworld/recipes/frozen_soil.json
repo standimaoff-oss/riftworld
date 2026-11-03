@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "building",
+  "pattern": [
+    "IS",
+    "SI"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:ice"
+    },
+    "S": {
+      "item": "riftworld:elisar_soil"
+    }
+  },
+  "result": {
+    "item": "riftworld:frozen_soil",
+    "count": 4
+  }
+}

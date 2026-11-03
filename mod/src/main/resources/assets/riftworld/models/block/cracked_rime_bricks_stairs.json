@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/stairs",
+  "textures": {
+    "bottom": "riftworld:block/cracked_rime_bricks",
+    "top": "riftworld:block/cracked_rime_bricks",
+    "side": "riftworld:block/cracked_rime_bricks"
+  }
+}

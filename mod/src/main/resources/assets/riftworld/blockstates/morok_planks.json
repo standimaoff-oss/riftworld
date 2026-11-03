@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "riftworld:block/morok_planks",
+        "y": 0
+      }
+    ]
+  }
+}

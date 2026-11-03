@@ -28,6 +28,10 @@
     "riftworld:dark_beam",
     "riftworld:stripped_dark_beam",
     "riftworld:dark_wood",
-    "riftworld:stripped_dark_wood"
+    "riftworld:stripped_dark_wood",
+    "riftworld:morok_log",
+    "riftworld:morok_wood",
+    "riftworld:stripped_morok_log",
+    "riftworld:stripped_morok_wood"
   ]
 }

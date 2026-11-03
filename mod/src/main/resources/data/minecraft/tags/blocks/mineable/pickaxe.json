@@ -86,6 +86,12 @@
     "riftworld:temple_grand_column",
     "riftworld:temple_floor",
     "riftworld:temple_gold",
-    "riftworld:temple_gold_rune"
+    "riftworld:temple_gold_rune",
+    "riftworld:cracked_rime_bricks",
+    "riftworld:cracked_rime_bricks_stairs",
+    "riftworld:cracked_rime_bricks_slab",
+    "riftworld:cracked_rime_bricks_wall",
+    "riftworld:rime_brick_pillar",
+    "riftworld:ice_fang"
   ]
 }

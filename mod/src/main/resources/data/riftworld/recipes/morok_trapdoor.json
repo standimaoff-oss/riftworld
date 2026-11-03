@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "building",
+  "pattern": [
+    "PPP",
+    "PPP"
+  ],
+  "key": {
+    "P": {
+      "item": "riftworld:morok_planks"
+    }
+  },
+  "result": {
+    "item": "riftworld:morok_trapdoor",
+    "count": 2
+  }
+}

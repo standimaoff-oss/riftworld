@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "riftworld:block/cracked_rime_bricks",
+        "y": 0
+      }
+    ]
+  }
+}

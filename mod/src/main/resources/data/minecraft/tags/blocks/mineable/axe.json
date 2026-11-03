@@ -170,6 +170,21 @@
     "riftworld:dark_door",
     "riftworld:dark_trapdoor",
     "riftworld:dark_pressure_plate",
-    "riftworld:dark_button"
+    "riftworld:dark_button",
+    "riftworld:morok_log",
+    "riftworld:morok_wood",
+    "riftworld:stripped_morok_log",
+    "riftworld:stripped_morok_wood",
+    "riftworld:morok_planks",
+    "riftworld:morok_planks_stairs",
+    "riftworld:morok_planks_slab",
+    "riftworld:morok_fence",
+    "riftworld:morok_fence_gate",
+    "riftworld:morok_door",
+    "riftworld:morok_trapdoor",
+    "riftworld:morok_pressure_plate",
+    "riftworld:morok_button",
+    "riftworld:pale_moss_carpet",
+    "riftworld:fog_lantern"
   ]
 }

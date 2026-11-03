@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "building",
+  "pattern": [
+    "MM"
+  ],
+  "key": {
+    "M": {
+      "item": "riftworld:pale_moss_block"
+    }
+  },
+  "result": {
+    "item": "riftworld:pale_moss_carpet",
+    "count": 3
+  }
+}

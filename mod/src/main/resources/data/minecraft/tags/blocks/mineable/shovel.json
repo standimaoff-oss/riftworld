@@ -6,6 +6,10 @@
     "riftworld:elisar_seabed",
     "riftworld:elisar_path",
     "riftworld:ash_block",
-    "riftworld:burnt_soil"
+    "riftworld:burnt_soil",
+    "riftworld:frozen_soil",
+    "riftworld:rime_grass",
+    "riftworld:pale_moss_block",
+    "riftworld:pale_moss_carpet"
   ]
 }

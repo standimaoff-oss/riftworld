@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "riftworld:block/pale_moss_block",
+        "y": 0
+      }
+    ]
+  }
+}

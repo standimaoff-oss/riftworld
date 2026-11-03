@@ -126,6 +126,7 @@ public final class ModBlocks {
             if (!MODELS.containsKey(k)) model(k);
         }
         ElisarBlocks.init();
+        MorokBlocks.init();    // v0.31.0: биом «Мороковая Падь» — блоки должны грузиться до registry freeze
         CastleBlocks.init();
         ArenaBlocks.init();
         TempleBlocks.init();   // was never class-loaded at startup: late-load after registry freeze would crash the server
