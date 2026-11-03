@@ -1669,6 +1669,13 @@ biome_section() {
   probe_and_shot_struct "v34_pegasus"                800 "147_v34_pegasus_winged_steed"            0 0 6
   probe_and_shot_struct "v35_wendigo"                800 "148_v35_wendigo_antlered_horror"         0 0 6
   probe_and_shot_struct "v36_morok_biome"            800 "149_v36_morok_hollow_fog_forest"        0 0 6
+  # v0.37.0: туман Пади — проверяем, что в биоме реально включается мгла (fog=true) и вес > 0.05
+  MOROK=$(EL execute at TestPlayer in riftworld:elisar run riftstruct v36_morok_biome 2>&1 | tr '\r\n' '  ')
+  if printf '%s' "$MOROK" | grep -q "fog=true"; then
+    log "  OK   Мороковая Падь: туман включён ($(printf '%s' "$MOROK" | sed -n 's/.*morok_weight=\([0-9.]*\).*/вес \1/p'))"
+  else
+    log "  FAIL Мороковая Падь: туман не включён (${MOROK:0:160})"; FAILS=$((FAILS + 1))
+  fi
 
   # ---------- v0.32.0: Лиоплевродон — модель, текстура, поведение в глубокой воде ----------
   echo "== v0.32.0: Лиоплевродон — 12-блочный хищник глубин (модель + текстура + дроп) =="

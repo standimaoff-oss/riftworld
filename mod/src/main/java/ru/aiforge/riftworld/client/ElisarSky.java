@@ -15,6 +15,7 @@ import net.minecraftforge.fml.common.Mod;
 import ru.aiforge.riftworld.RiftWorld;
 import ru.aiforge.riftworld.world.AshenLands;
 import ru.aiforge.riftworld.world.CityPlan;
+import ru.aiforge.riftworld.world.MorokHollow;
 
 /**
  * Небо и туман Элисара с универсальной совместимостью со ВСЕМИ шейдерпаками
@@ -64,12 +65,29 @@ public final class ElisarSky extends DimensionSpecialEffects {
         private static final Vec3 ASH = new Vec3(0.34, 0.235, 0.20);
         private static final Vec3 SEA_MIST = new Vec3(0.965, 0.945, 0.885);
         private static final Vec3 GARDEN_HAZE = new Vec3(0.80, 0.89, 0.96);
+        /** v0.37.0: мгла «Мороковой Пади» — холодный костяной серо-зелёный ({@code #C9D6D8}). */
+        private static final Vec3 MOROK_MIST = new Vec3(0.788, 0.839, 0.847);
         private static final Vec3 SIZO_MIST = new Vec3(0.95, 0.94, 0.90);
         private static final Vec3 CRYSTAL_HAZE = new Vec3(0.84, 0.95, 0.97);
 
         private static Vec3 lastFogCam;
         private static long lastFogNs;
         private static float smoothR = -1.0F, smoothG = -1.0F, smoothB = -1.0F;
+        private static float curMorok = 0.0F;
+
+        /**
+         * v0.37.0: вес мглы Пади со сглаживанием по времени и по камере — на кромке биома
+         * туман подъезжает плавно, без «щелчка» при переходе чанка.
+         */
+        public static float morokWeight(Vec3 cam) {
+            float w = 0.0F;
+            try {
+                w = (float) MorokHollow.weight(cam.x, cam.z);
+            } catch (Throwable ignored) {
+            }
+            curMorok = curMorok < 0 ? w : curMorok + (w - curMorok) * 0.08F;
+            return Mth.clamp(curMorok, 0.0F, 1.0F);
+        }
 
         private static boolean inElisar() {
             Minecraft mc = Minecraft.getInstance();
@@ -111,6 +129,12 @@ public final class ElisarSky extends DimensionSpecialEffects {
                 nearDist = Mth.lerp(wc, nearDist, far * 0.68F);
                 farDist = Mth.lerp(wc, farDist, far * 1.14F);
             }
+            // v0.37.0: «Мороковая Падь» — мгла сжимает обзор до 6–12 блоков, как в концепте
+            float wm = morokWeight(pos);
+            if (wm > 0.001F) {
+                nearDist = Mth.lerp(wm, nearDist, 6.5F);
+                farDist = Mth.lerp(wm, farDist, Math.min(far, 54.0F));
+            }
             e.setNearPlaneDistance(nearDist);
             e.setFarPlaneDistance(farDist);
             e.setCanceled(true);
@@ -148,6 +172,13 @@ public final class ElisarSky extends DimensionSpecialEffects {
                 r = (float) Mth.lerp(m, r, SEA_MIST.x);
                 gr = (float) Mth.lerp(m, gr, SEA_MIST.y);
                 bl = (float) Mth.lerp(m, bl, SEA_MIST.z);
+            }
+            float wm = morokWeight(pos);
+            if (wm > 0.001F) {
+                float km = 0.94F * wm;
+                r = (float) Mth.lerp(km, r, MOROK_MIST.x);
+                gr = (float) Mth.lerp(km, gr, MOROK_MIST.y);
+                bl = (float) Mth.lerp(km, bl, MOROK_MIST.z);
             }
             if (wg > 0.001F) {
                 float kg = 0.92F * wg;

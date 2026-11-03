@@ -86,7 +86,7 @@ public final class ModEntities {
             TYPES.register("liopleurodon", () -> EntityType.Builder
                     .<ru.aiforge.riftworld.entity.LiopleurodonEntity>of(ru.aiforge.riftworld.entity.LiopleurodonEntity::new,
                             MobCategory.WATER_CREATURE)
-                    .sized(3.0F, 2.4F).updateInterval(2).clientTrackingRange(20)
+                    .sized(4.4F, 2.6F).updateInterval(2).clientTrackingRange(24)
                     .build("riftworld:liopleurodon"));
 
     /** v0.34.0: Пегас — крылатый скакун «земля/воздух» (концепт `reports/mob_refs/04_ref_pegasus.png`). */

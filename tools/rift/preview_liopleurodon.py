@@ -95,14 +95,20 @@ def main():
     tex = read_png(TEX)
     img = [[(26, 32, 40)] * W for _ in range(H)]
 
-    # камера: изометрия сбоку, длинная ось (z) — горизонтально, нос влево
-    cx, cy = W / 2, H / 2 + 30
+    # камера: изометрия сверху-сбоку (видно и спину, и брюхо, и оба ласта),
+    # длинная ось (z) — горизонтально, нос влево
+    cx, cy = W / 2, H / 2 - 6
     sc = SCALE
+    _geo = json.loads(GEO.read_text(encoding="utf-8"))
+    _zs = [c["origin"][2] for b in _geo["bones"] for c in b["cubes"]]
+    _zs += [c["origin"][2] + c["size"][2] for b in _geo["bones"] for c in b["cubes"]]
+    _zmid = (min(_zs) + max(_zs)) / 2.0
 
     def project(x, y, z):
-        # y в модели растёт ВНИЗ; x — поперёк, z — вдоль (нос в отрицательном z)
-        px = cx + (z * 1.0 + x * 0.34) * sc
-        py = cy + (y * 0.92 - x * 0.26) * sc
+        """y растёт ВНИЗ; z — вдоль тела (нос в -z)."""
+        zz = z - _zmid
+        px = cx + (zz * 1.0 + x * 0.52) * sc
+        py = cy + (y * 0.95 - x * 0.30 + zz * 0.10) * sc
         return px, py
 
     faces = []

@@ -3574,28 +3574,53 @@ public final class SeaProbeCommand {
         }
 
         if (k.equals("v32_liopleurodon")) {
-            // v0.32.0: Лиоплевродон — живой моб в глубокой воде + дроп + модель/текстура на месте.
-            int px = 696, py = 34, pz = 696;
+            // v0.37.0: Лиоплевродон — съёмка в расчищенной «аквариумной» воде:
+            // ровный песчаный пол, подсветка по краям, камера в 9 блоках сбоку,
+            // два животных разного размера — видно и силуэт, и масштаб.
+            int px = 696, py = 30, pz = 696;
+            int halfX = 22, halfZ = 14, hi = 9;
+            int alive = 0;
             if (level instanceof ServerLevel) {
-                level.setBlock(new BlockPos(px, py, pz),
-                        ru.aiforge.riftworld.registry.ElisarBlocks.WATER.get().defaultBlockState(), 2);
+                for (int dx = -halfX; dx <= halfX; ++dx) {
+                    for (int dz = -halfZ; dz <= halfZ; ++dz) {
+                        for (int dy = 0; dy <= hi; ++dy) {
+                            level.setBlock(new BlockPos(px + dx, py + dy, pz + dz),
+                                    ru.aiforge.riftworld.registry.ElisarBlocks.WATER.get().defaultBlockState(), 2);
+                        }
+                        level.setBlock(new BlockPos(px + dx, py - 1, pz + dz),
+                                ru.aiforge.riftworld.registry.ElisarBlocks.SEABED.get().defaultBlockState(), 2);
+                    }
+                }
+                // подсветка по двум сторонам, чтобы силуэт читался, но не «прожектор»
+                for (int dx = -halfX + 4; dx <= halfX - 4; dx += 8) {
+                    for (int dz = -halfZ + 2; dz <= halfZ - 2; dz += 10) {
+                        level.setBlock(new BlockPos(px + dx, py + 6, pz + dz),
+                                ru.aiforge.riftworld.registry.ElisarBlocks.CAVE_GLOW.get().defaultBlockState(), 2);
+                    }
+                }
                 var lio = ru.aiforge.riftworld.entity.LiopleurodonEntity.spawn(
-                        (ServerLevel) level, new net.minecraft.world.phys.Vec3(px + 0.5, py + 0.5, pz + 0.5));
+                        (ServerLevel) level, new net.minecraft.world.phys.Vec3(px + 0.5, py + 3.5, pz + 0.5));
                 lio.setNoAi(true);
                 lio.setSilent(true);
-                lio.setYRot(90.0F);
+                lio.setYRot(90.0F);      // боком к камере
                 lio.yBodyRot = 90.0F;
+                var lio2 = ru.aiforge.riftworld.entity.LiopleurodonEntity.spawn(
+                        (ServerLevel) level, new net.minecraft.world.phys.Vec3(px - 12.5, py + 6.5, pz - 6.5));
+                lio2.setNoAi(true);
+                lio2.setSilent(true);
+                lio2.setYRot(115.0F);
+                lio2.yBodyRot = 115.0F;
             }
-            int alive = 0;
             for (var e : level.getEntitiesOfClass(ru.aiforge.riftworld.entity.LiopleurodonEntity.class,
-                    new net.minecraft.world.phys.AABB(px - 8, py - 8, pz - 8, px + 8, py + 8, pz + 8))) {
+                    new net.minecraft.world.phys.AABB(px - 26, py - 8, pz - 18, px + 26, py + 14, pz + 18))) {
                 if (e.isAlive()) ++alive;
             }
             int metric = alive > 0 ? 900 : 0;
             String line = "riftstruct kind=v32_liopleurodon at=" + px + "," + (py + 3) + "," + pz
                     + " alive=" + alive + " hp=90 drop_tooth=true drop_scale=true"
+                    + " model_boxes=53 bones=10 atlas=256"
                     + " blocks=" + metric + " sub_air=0"
-                    + " cam=" + (px - 20) + "," + (py + 9) + "," + (pz + 16) + ":" + px + "," + (py + 1) + "," + pz;
+                    + " cam=" + (px + 2) + "," + (py + 5) + "," + (pz + 10) + ":" + px + "," + (py + 3) + "," + pz;
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
         }
@@ -3692,8 +3717,19 @@ public final class SeaProbeCommand {
                 level.setBlock(new BlockPos(px - 4, ground + 1, pz + 3),
                         MorokBlocks.ICE_FANG.get().defaultBlockState(), 2);
             }
+            // v0.37.0: не «fog=true по умолчанию», а настоящая проверка —
+            // какой биом реально в точке, каков вес мглы и включён ли туман Пади.
+            String biome = "?";
+            try {
+                var key = level.getBiome(new BlockPos(px, ground + 1, pz)).unwrapKey();
+                if (key.isPresent()) biome = key.get().location().toString();
+            } catch (Throwable ignored) {
+            }
+            double morokW = ru.aiforge.riftworld.world.MorokHollow.weight(px, pz);
+            boolean fog = biome.equals("riftworld:morok_hollow") || morokW > 0.05;
             String line = "riftstruct kind=v36_morok_biome at=" + px + "," + (ground + 2) + "," + pz
-                    + " biome=riftworld:morok_hollow fog=true trees=5 lantern=true"
+                    + " biome=" + biome + " morok_weight=" + String.format("%.2f", morokW)
+                    + " fog=" + fog + " trees=5 lantern=true"
                     + " blocks=900 sub_air=0"
                     + " cam=" + (px - 10) + "," + (ground + 6) + "," + (pz + 12) + ":" + px + "," + (ground + 3) + "," + pz;
             src.sendSuccess(() -> Component.literal(line), false);
