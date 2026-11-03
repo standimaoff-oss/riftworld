@@ -2582,7 +2582,7 @@ public final class SeaProbeCommand {
                 for (int lz : new int[]{33, 35, 37, -80, -78, -76}) {
                     int wx = bs.cx + BlacktideCitadel.rotX(lx, lz, bs.rot);
                     int wz = bs.cz + BlacktideCitadel.rotZ(lx, lz, bs.rot);
-                    if (!level.hasChunk(wx >> 4, wz >> 4)) continue;
+                    level.getChunk(wx >> 4, wz >> 4);
                     if (Math.abs(lx - BlacktideCitadel.GATE_LX) <= 6 && lz > 30) continue;   // арка главных ворот
                     if (nearTower(lx, lz)) continue;                                          // дверные проёмы башен
                     if (Math.abs(lx) <= 4 && lz <= -74) continue;                             // северный вход в Ротонду
@@ -2596,7 +2596,7 @@ public final class SeaProbeCommand {
                 for (int lx : new int[]{-50, -48, -46, 60, 62, 64}) {
                     int wx = bs.cx + BlacktideCitadel.rotX(lx, lz, bs.rot);
                     int wz = bs.cz + BlacktideCitadel.rotZ(lx, lz, bs.rot);
-                    if (!level.hasChunk(wx >> 4, wz >> 4)) continue;
+                    level.getChunk(wx >> 4, wz >> 4);
                     if (lz >= -8 && lz <= -2) continue;                                      // западные ворота каузея + восточный проём
                     if (nearTower(lx, lz)) continue;                                          // дверные проёмы башен
                     if (Math.abs(lx) <= 4 && lz <= -74) continue;                             // северный вход в Ротонду
@@ -2614,7 +2614,7 @@ public final class SeaProbeCommand {
                     for (int dz = -2; dz <= 2; ++dz) {
                         int wx = bs.cx + BlacktideCitadel.rotX(tc[0] + dx, tc[1] + dz, bs.rot);
                         int wz = bs.cz + BlacktideCitadel.rotZ(tc[0] + dx, tc[1] + dz, bs.rot);
-                        if (!level.hasChunk(wx >> 4, wz >> 4)) continue;
+                        level.getChunk(wx >> 4, wz >> 4);
                         for (int by = 30; by <= 150; ++by) {
                             BlockState cs = level.getBlockState(mpWall.set(wx, bs.baseY + by, wz));
                             var ckey = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(cs.getBlock());
@@ -2637,7 +2637,7 @@ public final class SeaProbeCommand {
                     for (int sgn : new int[]{1, -1}) {
                         int wx = bs.cx + BlacktideCitadel.rotX(sgn * lxAbs, lz, bs.rot);
                         int wz = bs.cz + BlacktideCitadel.rotZ(sgn * lxAbs, lz, bs.rot);
-                        if (!level.hasChunk(wx >> 4, wz >> 4)) continue;
+                        level.getChunk(wx >> 4, wz >> 4);
                         if (level.getBlockState(mpWall.set(wx, bs.baseY + 58, wz)).isAir()
                                 && level.getBlockState(mpWall.set(wx, bs.baseY + 59, wz)).isAir()) ++rotundaDoorAir;
                     }
@@ -2997,7 +2997,7 @@ public final class SeaProbeCommand {
                     for (int dz = -2; dz <= 2; ++dz) {
                         int wx = bs.cx + BlacktideCitadel.rotX(tc[0] + dx, tc[1] + dz, bs.rot);
                         int wz = bs.cz + BlacktideCitadel.rotZ(tc[0] + dx, tc[1] + dz, bs.rot);
-                        if (!level.hasChunk(wx >> 4, wz >> 4)) continue;
+                        level.getChunk(wx >> 4, wz >> 4);
                         for (int by = 30; by <= 148; ++by) {
                             if (level.getBlockState(mp.set(wx, bs.baseY + by, wz))
                                     .is(net.minecraft.world.level.block.Blocks.POLISHED_BLACKSTONE_BRICK_STAIRS)) {
