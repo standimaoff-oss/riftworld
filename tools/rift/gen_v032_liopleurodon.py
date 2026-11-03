@@ -187,10 +187,10 @@ def paint_texture(model):
         fr = face_rects(u, v, w, h, d)
         tag = c.get("_tag", "body")
         seed += 13
-        # спина/верх — самое тёмное
-        rect(*fr["top"], BACK_DARK if tag != "fin" else FLANK, jitter=6, seed=seed)
-        # брюхо — светлое (у ластов тоже)
-        rect(*fr["bottom"], BELLY, jitter=5, seed=seed + 1)
+        # ВАЖНО: у моделей Minecraft ось Y направлена ВНИЗ, поэтому визуальный ВЕРХ кубоида
+        # берёт UV-прямоугольник "bottom". Спина — тёмная, брюхо — светлое.
+        rect(*fr["top"], BELLY, jitter=5, seed=seed)
+        rect(*fr["bottom"], BACK_DARK if tag != "fin" else FLANK, jitter=6, seed=seed + 1)
         # бока: градиент от спины к брюху
         for name in ("east", "north", "west", "south"):
             fx, fy, fw, fh = fr[name]
@@ -206,7 +206,7 @@ def paint_texture(model):
                     rect(fx + i, fy, 1, max(1, fh // 2), TOOTH, jitter=3, seed=seed + i + 5)
                 continue
             for row in range(fh):
-                k = row / max(1, fh - 1)
+                k = 1.0 - row / max(1, fh - 1)     # rect-строка 0 = визуальный низ
                 if tag == "fin" or tag == "fin_tip" or tag == "fin_tail":
                     col = FLANK if k < 0.5 else BELLY_DARK
                 else:

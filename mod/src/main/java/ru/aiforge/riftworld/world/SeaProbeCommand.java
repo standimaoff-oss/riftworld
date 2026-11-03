@@ -3585,8 +3585,6 @@ public final class SeaProbeCommand {
                 lio.setSilent(true);
                 lio.setYRot(90.0F);
                 lio.yBodyRot = 90.0F;
-                level.setBlock(new BlockPos(px, 33, pz - 3),
-                        ru.aiforge.riftworld.registry.ElisarBlocks.SEABED.get().defaultBlockState(), 2);
             }
             int alive = 0;
             for (var e : level.getEntitiesOfClass(ru.aiforge.riftworld.entity.LiopleurodonEntity.class,
@@ -3597,7 +3595,7 @@ public final class SeaProbeCommand {
             String line = "riftstruct kind=v32_liopleurodon at=" + px + "," + (py + 3) + "," + pz
                     + " alive=" + alive + " hp=90 drop_tooth=true drop_scale=true"
                     + " blocks=" + metric + " sub_air=0"
-                    + " cam=" + (px - 14) + "," + (py + 4) + "," + (pz - 10) + ":" + px + "," + py + "," + pz;
+                    + " cam=" + (px - 11) + "," + (py + 3) + "," + (pz - 8) + ":" + px + "," + py + "," + pz;
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
         }
