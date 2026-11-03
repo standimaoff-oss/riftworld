@@ -923,7 +923,7 @@ def build_lower_coastal_ward():
 
     # F) West Sea-Spur Causeway Wall (`lx = -82..-49, lz = -8..-4, by = 31..39`, matching ref 02 far-left!)
     for lx in range(-80, -48):
-        ramp_y = 32 + max(0, (lx + 64) * 14 // 16)
+        ramp_y = min(47, 32 + max(0, lx + 64))
         for lz in (-8, -7, -6, -5, -4):
             for cy in range(ramp_y, ramp_y + 8):
                 DOOR_CELLS.add((lx, cy, lz))
@@ -1991,17 +1991,96 @@ def open_west_causeway_gate():
     return carved
 
 
+def rebuild_outdoor_ramps():
+    """Re-cuts the two outdoor stair flights (east cliff rampart + west sea-spur causeway) AFTER the courtyard
+    paving is laid, so the flights are never buried under the pavement and always lead somewhere."""
+    carved = 0
+    # East cliff rampart stairway: lx = 70 -> 55, by = 33 -> 48, lanes lz = -6..-2
+    for step_i in range(0, 16):
+        lx = 70 - step_i
+        sy = 33 + step_i
+        for lz in range(-6, -1):
+            middle = -5 <= lz <= -3
+            for cy in range(sy + 1, sy + 6):
+                if get_raw(lx, cy, lz) != 0:
+                    set_raw(lx, cy, lz, 0)
+                    carved += 1
+            set_raw(lx, sy, lz, pbb_stair("west") if middle else PBB)
+            for cy in range(31, sy):
+                set_raw(lx, cy, lz, DSB)
+    # West sea-spur causeway stairway: lx = -80 -> -49, ramping up to the west curtain-wall gate
+    for lx in range(-80, -48):
+        ramp_y = min(47, 32 + max(0, lx + 64))
+        for lz in (-8, -7, -6, -5, -4):
+            middle = lz in (-7, -6, -5)
+            for cy in range(ramp_y + 1, ramp_y + 6):
+                if get_raw(lx, cy, lz) != 0:
+                    set_raw(lx, cy, lz, 0)
+                    carved += 1
+            set_raw(lx, ramp_y, lz, pbb_stair("east") if middle else PBB)
+    # Approach landings so the two interior grand staircases are entered from the aisles
+    for lz in range(-19, -15):
+        for lx_abs in (19, 20, 21):
+            for cy in (57, 58):
+                for sgn in (1, -1):
+                    lx = sgn * lx_abs
+                    cur = get_raw(lx, cy, lz)
+                    if cur != 0 and not _is_stair(cur):
+                        set_raw(lx, cy, lz, 0)
+                        carved += 1
+    for lz in range(-46, -42):
+        for lx_abs in (10, 11, 12):
+            for cy in (57, 58):
+                for sgn in (1, -1):
+                    lx = sgn * lx_abs
+                    cur = get_raw(lx, cy, lz)
+                    if cur != 0 and not _is_stair(cur):
+                        set_raw(lx, cy, lz, 0)
+                        carved += 1
+    return carved
+
+
+def open_interior_doors():
+    """Carves the 2nd-floor doors between the triforium galleries and the Choir mezzanine, and keeps the
+    Rotunda upper gallery reachable from its sweeping staircases."""
+    carved = 0
+    for lz in range(-2, 2):
+        for lx_abs in (13, 14):
+            for by in range(71, 74):
+                for sgn in (1, -1):
+                    lx = sgn * lx_abs
+                    if get_raw(lx, by, lz) != 0:
+                        set_raw(lx, by, lz, 0)
+                        carved += 1
+                    DOOR_CELLS.add((lx, by, lz))
+    # Landing bridge from the twin sweeping gallery staircases into the Rotunda upper ring (`by = 66`)
+    for lz in range(-56, -52):
+        for lx_abs in range(10, 14):
+            for by in (66, 67, 68, 69):
+                for sgn in (1, -1):
+                    lx = sgn * lx_abs
+                    if by <= 67 and get_raw(lx, by, lz) != 0:
+                        set_raw(lx, by, lz, 0)
+                        carved += 1
+                    DOOR_CELLS.add((lx, by, lz))
+    return carved
+
+
 def repair_defects():
     print("  [7/9] Repair pass: sealing wall breaches, drum doorway, west causeway gate & stair blockers...")
+    ramp_cells = rebuild_outdoor_ramps()
+    interior_doors = open_interior_doors()
     stair_cleared = clear_stair_blockers()
     walls = seal_curtain_walls()
     shell = seal_cathedral_shell()
     doors = open_rotunda_entrances()
     west_gate = open_west_causeway_gate()
     stair_cleared += clear_stair_blockers()
+    ramp_cells = rebuild_outdoor_ramps()
     print(
         f"    repaired: wall_breaches_filled={walls} | shell_holes_filled={shell} | "
-        f"rotunda_door_cells={doors} | west_gate_cells={west_gate} | stair_blockers_removed={stair_cleared}"
+        f"rotunda_door_cells={doors} | west_gate_cells={west_gate} | stair_blockers_removed={stair_cleared} "
+        f"| ramp_cells_recut={ramp_cells}"
     )
     return walls, shell, doors, west_gate, stair_cleared
 
