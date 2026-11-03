@@ -1660,6 +1660,14 @@ biome_section() {
   probe_and_shot_struct "v29_crafting_and_coin_ore"    700 "143_v29_crafting_and_coin_ore_showcase"  0 0 6
   probe_and_shot_struct "v29_sync_ocean_waves_perf"    800 "144_v29_sync_clamped_ocean_waves"        0 0 12
 
+  # ---------- v0.31.0: «Мороковая Падь» — 27 блоков нового биома (текстуры, модели, лут, крафты) ----------
+  echo "== v0.31.0: блоки Мороковой Пади — витрина всех 27 блоков, предметы =="
+  probe_and_shot_struct "v31_morok_gallery"          800 "145_v31_morok_hollow_blocks_gallery"     0 0 6
+
+  # ---------- v0.32.0: Лиоплевродон — модель, текстура, поведение в глубокой воде ----------
+  echo "== v0.32.0: Лиоплевродон — 12-блочный хищник глубин (модель + текстура + дроп) =="
+  probe_and_shot_struct "v32_liopleurodon"           800 "146_v32_liopleurodon_deep_water"         1 0 10
+
   # ---------- v0.26.0: редкие выходы подводных пещер в море, /locate всех 26 структур и 9 биомов, все 16 яиц призыва ----------
   echo "== v0.26.0: редкие выходы пещер в море, /locate всех 26 структур и 9 биомов, яйца призыва всех 16 мобов (включая Дракона) =="
   probe_and_shot_struct "sea_cave_exit"            120 "126_underwater_cave_sea_exit"          1 0 14

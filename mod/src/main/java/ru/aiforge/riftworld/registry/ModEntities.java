@@ -81,6 +81,14 @@ public final class ModEntities {
             () -> EntityType.Builder.<ru.aiforge.riftworld.entity.BlossomStagEntity>of(ru.aiforge.riftworld.entity.BlossomStagEntity::new, MobCategory.CREATURE)
                     .sized(0.95F, 1.95F).clientTrackingRange(14).build("riftworld:blossom_stag"));
 
+    /** v0.32.0: Лиоплевродон — 12-блочный засадник глубин Элисара (концепт `reports/mob_refs/03_ref_liopleurodon.png`). */
+    public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.LiopleurodonEntity>> LIOPLEURODON =
+            TYPES.register("liopleurodon", () -> EntityType.Builder
+                    .<ru.aiforge.riftworld.entity.LiopleurodonEntity>of(ru.aiforge.riftworld.entity.LiopleurodonEntity::new,
+                            MobCategory.WATER_CREATURE)
+                    .sized(1.6F, 1.2F).updateInterval(2).clientTrackingRange(16)
+                    .build("riftworld:liopleurodon"));
+
     private ModEntities() {
     }
 
@@ -94,5 +102,6 @@ public final class ModEntities {
         e.put(CRYSTAL_MINION.get(), ru.aiforge.riftworld.entity.CrystalMinion.attributes().build());
         e.put(SKY_DART_FISH.get(), ru.aiforge.riftworld.entity.SkyDartFishEntity.attributes().build());
         e.put(BLOSSOM_STAG.get(), ru.aiforge.riftworld.entity.BlossomStagEntity.attributes().build());
+        e.put(LIOPLEURODON.get(), ru.aiforge.riftworld.entity.LiopleurodonEntity.attributes().build());
     }
 }

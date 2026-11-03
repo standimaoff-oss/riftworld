@@ -146,6 +146,15 @@ public final class ModItems {
                     return res;
                 }
             });
+    // v0.32.0: Лиоплевродон (море) — яйцо призыва и дроп с хищника
+    public static final RegistryObject<Item> LIOPLEURODON_EGG = ITEMS.register("liopleurodon_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.LIOPLEURODON, 0x26323C, 0xC4C5BE,
+                    new Item.Properties()));
+    public static final RegistryObject<Item> LIOPLEURODON_TOOTH = ITEMS.register("liopleurodon_tooth",
+            () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> SEA_SCALE = ITEMS.register("sea_scale",
+            () -> new Item(new Item.Properties()));
+
     public static final RegistryObject<Item> BLOSSOM_STAG_EGG = ITEMS.register("blossom_stag_spawn_egg",
             () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.BLOSSOM_STAG, 0xFAF8F5, 0xF4B8C4, new Item.Properties()));
 

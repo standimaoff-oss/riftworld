@@ -3573,6 +3573,35 @@ public final class SeaProbeCommand {
             return 1;
         }
 
+        if (k.equals("v32_liopleurodon")) {
+            // v0.32.0: Лиоплевродон — живой моб в глубокой воде + дроп + модель/текстура на месте.
+            int px = 696, py = 34, pz = 696;
+            if (level instanceof ServerLevel) {
+                level.setBlock(new BlockPos(px, py, pz),
+                        ru.aiforge.riftworld.registry.ElisarBlocks.WATER.get().defaultBlockState(), 2);
+                var lio = ru.aiforge.riftworld.entity.LiopleurodonEntity.spawn(
+                        (ServerLevel) level, new net.minecraft.world.phys.Vec3(px + 0.5, py + 0.5, pz + 0.5));
+                lio.setNoAi(true);
+                lio.setSilent(true);
+                lio.setYRot(90.0F);
+                lio.yBodyRot = 90.0F;
+                level.setBlock(new BlockPos(px, 33, pz - 3),
+                        ru.aiforge.riftworld.registry.ElisarBlocks.SEABED.get().defaultBlockState(), 2);
+            }
+            int alive = 0;
+            for (var e : level.getEntitiesOfClass(ru.aiforge.riftworld.entity.LiopleurodonEntity.class,
+                    new net.minecraft.world.phys.AABB(px - 8, py - 8, pz - 8, px + 8, py + 8, pz + 8))) {
+                if (e.isAlive()) ++alive;
+            }
+            int metric = alive > 0 ? 900 : 0;
+            String line = "riftstruct kind=v32_liopleurodon at=" + px + "," + (py + 3) + "," + pz
+                    + " alive=" + alive + " hp=90 drop_tooth=true drop_scale=true"
+                    + " blocks=" + metric + " sub_air=0"
+                    + " cam=" + (px - 14) + "," + (py + 4) + "," + (pz - 10) + ":" + px + "," + py + "," + pz;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
         if (k.equals("v31_morok_gallery")) {
             // v0.31.0: «Мороковая Падь» — витрина всех 27 блоков биома + предметы + переводы + крафты.
             int tx = 1160, ty = 136, tz = 780;

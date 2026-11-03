@@ -35,6 +35,9 @@ public final class SeaLifeKeeper {
     private static final int TURTLE_TARGET = 1;
     /** Рев 10: хищники пещер — РЕДКИЕ. Не больше двух рядом и только в затопленных полостях. */
     private static final int HOSTILE_TARGET = 2;
+    /** v0.32.0: Лиоплевродон — 1 особь на ~900 блоков, только в глубокой воде (>= 20 блоков под поверхностью). */
+    private static final int LIO_TARGET = 1;
+    private static final int LIO_WORLD_CAP = 6;
     private static final int WORLD_CAP = 320;
     private static int failsafe = 0;
 
@@ -78,6 +81,13 @@ public final class SeaLifeKeeper {
             if (turtle < TURTLE_TARGET) single(sl, sp, SeaFishEntity.TURTLE, false);
             // «злые и редкие»: только в затопленных пещерах, редко и по одному
             if (hostile < HOSTILE_TARGET && rnd().nextDouble() < 0.55) single(sl, sp, cavePredator(), true);
+            // Лиоплевродон: редко, только в глубокой воде и не больше 6 на всё измерение
+            if (rnd().nextDouble() < 0.05
+                    && sl.getEntitiesOfClass(ru.aiforge.riftworld.entity.LiopleurodonEntity.class,
+                            sp.getBoundingBox().inflate(160.0)).size() < LIO_TARGET
+                    && countLiopleurodons(sl) < LIO_WORLD_CAP) {
+                spawnLiopleurodon(sl, sp);
+            }
         }
     }
 
@@ -109,6 +119,41 @@ public final class SeaLifeKeeper {
             Vec3 p = at.add((rnd().nextDouble() - 0.5) * 4.0, (rnd().nextDouble() - 0.5) * 2.0, (rnd().nextDouble() - 0.5) * 4.0);
             BlockPos bp = BlockPos.containing(p);
             if (sl.hasChunk(bp.getX() >> 4, bp.getZ() >> 4) && SeaFishEntity.elisarWater(sl, bp)) SeaFishEntity.spawn(sl, p, variant);
+        }
+    }
+
+    private static int countLiopleurodons(ServerLevel sl) {
+        return sl.getEntitiesOfClass(ru.aiforge.riftworld.entity.LiopleurodonEntity.class,
+                new net.minecraft.world.phys.AABB(-30000, -64, -30000, 30000, 320, 30000)).size();
+    }
+
+    /** Ищет глубокую воду вокруг игрока (дно минимум в 20 блоках ниже поверхности) и ставит туда хищника. */
+    private static void spawnLiopleurodon(ServerLevel sl, ServerPlayer sp) {
+        var r = rnd();
+        for (int attempt = 0; attempt < 12; ++attempt) {
+            int px = (int) sp.getX() + r.nextInt(96) - 48;
+            int pz = (int) sp.getZ() + r.nextInt(96) - 48;
+            if (!sl.hasChunk(px >> 4, pz >> 4)) continue;
+            BlockPos surf = null;
+            for (int y = 62; y > -40; --y) {
+                BlockPos bp = new BlockPos(px, y, pz);
+                if (SeaFishEntity.elisarWater(sl, bp)) {
+                    surf = bp;
+                    break;
+                }
+            }
+            if (surf == null) continue;
+            int depth = 0;
+            BlockPos floor = surf;
+            while (depth < 64 && SeaFishEntity.elisarWater(sl, floor.below())) {
+                floor = floor.below();
+                ++depth;
+            }
+            if (depth < 20) continue;
+            BlockPos at = floor.above(3);
+            ru.aiforge.riftworld.entity.LiopleurodonEntity.spawn(sl,
+                    new Vec3(at.getX() + 0.5, at.getY() + 0.5, at.getZ() + 0.5));
+            return;
         }
     }
 
