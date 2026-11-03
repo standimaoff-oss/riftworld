@@ -21,7 +21,7 @@ import zlib
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 ARGS = [a for a in sys.argv[1:] if not a.startswith("--")]
 NAME = ARGS[0] if ARGS else "liopleurodon"
-SCALE = 1.0
+SCALE = 1.25
 for a in sys.argv[1:]:
     if a.startswith("--scale="):
         SCALE = float(a.split("=", 1)[1])
@@ -179,7 +179,7 @@ def render_view(tex, cubes, azim_deg, elev_deg, zoom, img_w, img_h, bg):
     ox = (min(xs) + max(xs)) / 2
     oy = (min(ys) + max(ys)) / 2
     span = max(max(xs) - min(xs), max(ys) - min(ys), 1.0)
-    zoom = zoom * min(img_w, img_h) * 0.60 / span
+    zoom = zoom * min(img_w, img_h) * 0.66 / span
 
     zbuf = [[-1e9] * img_w for _ in range(img_h)]
     img = [[bg] * img_w for _ in range(img_h)]
@@ -194,36 +194,47 @@ def render_view(tex, cubes, azim_deg, elev_deg, zoom, img_w, img_h, bg):
             wn = rot(nrm)
             if dot(wn, (0, 0, -1)) <= 0.02:      # смотрит от камеры — не рисуем
                 continue
-            col = avg_color(tex, rects[fname])
             lam = max(0.0, dot(norm(wn), (-light[0], -light[1], -light[2])))
-            shade = 0.86 + 0.95 * lam
-            base = tuple(min(255, int(ch * shade)) for ch in col)
+            shade = 0.78 + 0.85 * lam
             quad = []
             for (fx, fy, fz) in verts:
                 p = (ox0 + fx * w, oy0 + fy * h, oz0 + fz * d)
-                r = rot(p)
-                quad.append(r)
+                quad.append(rot(p))
             depth = sum(p[2] for p in quad) / 4.0
             pts = [((p[0] - ox) * zoom + img_w / 2, (p[1] - oy) * zoom + img_h / 2) for p in quad]
+            rx, ry, rw2, rh2 = rects[fname]
+            # UV углов грани (для попиксельной выборки текстуры)
+            quad_uv = [(rx, ry), (rx + rw2, ry), (rx + rw2, ry + rh2), (rx, ry + rh2)]
 
             x0 = max(0, int(math.floor(min(p[0] for p in pts))))
             x1 = min(img_w - 1, int(math.ceil(max(p[0] for p in pts))))
             y0 = max(0, int(math.floor(min(p[1] for p in pts))))
             y1 = min(img_h - 1, int(math.ceil(max(p[1] for p in pts))))
-            n = len(pts)
-            for yy in range(y0, y1 + 1):
-                for xx in range(x0, x1 + 1):
-                    inside = False
-                    j = n - 1
-                    for i in range(n):
-                        xi, yi = pts[i]
-                        xj, yj = pts[j]
-                        if (yi > yy) != (yj > yy) and (xx < (xj - xi) * (yy - yi) / (yj - yi + 1e-9) + xi):
-                            inside = not inside
-                        j = i
-                    if inside and depth > zbuf[yy][xx]:
+            # две треугольные грани с попиксельной текстурой
+            for tri in ((0, 1, 2), (0, 2, 3)):
+                a, b, c = (pts[i] for i in tri)
+                t0, t1, t2 = (quad_uv[i] for i in tri)
+                det = (b[0] - a[0]) * (c[1] - a[1]) - (c[0] - a[0]) * (b[1] - a[1])
+                if abs(det) < 1e-9:
+                    continue
+                tx0 = max(0, int(math.floor(min(a[0], b[0], c[0]))))
+                tx1 = min(img_w - 1, int(math.ceil(max(a[0], b[0], c[0]))))
+                ty0 = max(0, int(math.floor(min(a[1], b[1], c[1]))))
+                ty1 = min(img_h - 1, int(math.ceil(max(a[1], b[1], c[1]))))
+                for yy in range(ty0, ty1 + 1):
+                    for xx in range(tx0, tx1 + 1):
+                        w0 = ((b[0] - xx) * (c[1] - yy) - (c[0] - xx) * (b[1] - yy)) / det
+                        w1 = ((c[0] - xx) * (a[1] - yy) - (a[0] - xx) * (c[1] - yy)) / det
+                        w2 = 1.0 - w0 - w1
+                        if w0 < -0.002 or w1 < -0.002 or w2 < -0.002:
+                            continue
+                        if depth <= zbuf[yy][xx]:
+                            continue
+                        u = w0 * t0[0] + w1 * t1[0] + w2 * t2[0]
+                        v = w0 * t0[1] + w1 * t1[1] + w2 * t2[1]
+                        col = tex_sample(tex, u, v)
                         zbuf[yy][xx] = depth
-                        img[yy][xx] = base
+                        img[yy][xx] = tuple(min(255, int(ch * shade)) for ch in col)
     return img
 
 
