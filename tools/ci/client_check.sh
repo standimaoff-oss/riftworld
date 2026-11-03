@@ -1478,9 +1478,9 @@ biome_section() {
   # ---------- v0.19.0: Надводная свайная деревня, Королевский Замок города, Босс Колоннады, Прислужники и 3D-оружие ----------
   echo "== v0.19.0: свайная деревня у Висячих садов, замок в центре города, Босс Колоннады и 3D-оружие =="
   probe_and_shot_struct "stilt_village"      200 "85_stilt_village_gardens"      0 1
-  probe_and_shot_struct "city_castle_front" 2000 "86_city_castle_barbican"       0 0
-  probe_and_shot_struct "city_castle_aerial" 2000 "87_city_castle_aerial"        0 0
-  probe_and_shot_struct "city_castle_north" 2000 "88_city_castle_rear_district"  0 0
+  probe_and_shot_struct "city_castle_front" 1850 "86_city_castle_barbican"       0 0
+  probe_and_shot_struct "city_castle_aerial" 1850 "87_city_castle_aerial"        0 0
+  probe_and_shot_struct "city_castle_north" 1850 "88_city_castle_rear_district"  0 0
   probe_and_shot_struct "colonnade_boss"        110 "89_colonnade_boss_and_minions" 0 0
   probe_and_shot_struct "colonnade_boss_minion" 110 "92_crystal_minion_closeup"     0 0
 

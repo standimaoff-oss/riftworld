@@ -161,7 +161,7 @@ public final class BlacktideCitadel {
             int cz = sz * SUPER + margin + r.nextInt(SUPER - 2 * margin);
             int rot = r.nextInt(4);
 
-            if (Math.hypot(cx, cz) < 760.0) continue;                     // вдали от Белого Города
+            if (Math.hypot(cx, cz) < 840.0) continue;                     // вдали от Белого Города и внешнего кольца
             if (Math.hypot(cx - 648.0, cz - 693.0) < 420.0) continue;     // вдали от морских проб spots.json
 
             if (!isPureOpenOceanSite(cx, cz, rot)) continue;
@@ -172,29 +172,30 @@ public final class BlacktideCitadel {
 
     /**
      * Проверяет, что весь остров Цитадели И весь подводный мост стоят СТРОГО В ЧИСТОМ ОТКРЫТОМ ОКЕАНЕ
-     * вдали от любых сухопутных/архипелаговых биомов (включая Пепельный биом!).
+     * вдали от любых сухопутных/архипелаговых биомов, пристаней и структур (включая Пепельный биом!).
      */
     private static boolean isPureOpenOceanSite(int cx, int cz, int rot) {
         int[][] checkOffsets = {
                 {0, 0}, {0, -95}, {-16, 95}, {-16, 134},
-                {105, 0}, {-95, 0}, {95, 55}, {95, -55}, {-65, 55}
+                {105, 0}, {-95, 0}, {95, 55}, {95, -55}, {-65, 55}, {-95, -55}
         };
         for (int[] off : checkOffsets) {
             double wx = cx + rotX(off[0], off[1], rot);
             double wz = cz + rotZ(off[0], off[1], rot);
 
-            if (AshenLands.blocks(wx, wz, 85.0) || AshenLands.weight(wx, wz) > 0.0) return false;
+            if (AshenLands.blocks(wx, wz, 110.0) || AshenLands.weight(wx, wz) > 0.0) return false;
             EmberRuins.Site es = EmberRuins.siteAt(wx, wz);
-            if (es != null && Math.hypot(wx - es.cx, wz - es.cz) < es.island.maxReach() + 95.0) return false;
-            if (VioletHills.nearAny(wx, wz, 40.0, 85.0)) return false;
-            if (CrystalRifts.nearAny(wx, wz, 40.0, 85.0)) return false;
+            if (es != null && Math.hypot(wx - es.cx, wz - es.cz) < es.island.maxReach() + 120.0) return false;
+            if (VioletHills.nearAny(wx, wz, 40.0, 110.0)) return false;
+            if (CrystalRifts.nearAny(wx, wz, 40.0, 110.0)) return false;
             SizoGrove.Region sr = SizoGrove.regionAt(wx, wz);
-            if (sr != null && Math.hypot(wx - sr.hub.cx, wz - sr.hub.cz) < sr.hub.maxReach() + 95.0) return false;
-            if (WaterfallGardens.nearAny(wx, wz, 40.0, 105.0)) return false;
+            if (sr != null && Math.hypot(wx - sr.hub.cx, wz - sr.hub.cz) < sr.hub.maxReach() + 120.0) return false;
+            if (WaterfallGardens.nearAny(wx, wz, 40.0, 125.0)) return false;
             MistKeep.Region mk = MistKeep.regionAt(wx, wz);
-            if (mk != null && Math.hypot(wx - mk.cx, wz - mk.cz) < mk.Rr + 95.0) return false;
-            if (WorldStructures.anyVillageAt(wx, wz, 115.0) != null) return false;
-            if (LandmarkStructures.theaterAt(wx, wz, 115.0) != null) return false;
+            if (mk != null && Math.hypot(wx - mk.cx, wz - mk.cz) < mk.Rr + 120.0) return false;
+            if (WorldStructures.anyVillageAt(wx, wz, 145.0) != null) return false;
+            if (LandmarkStructures.theaterAt(wx, wz, 145.0) != null) return false;
+            if (LandmarkStructures.harborNear(wx, wz, 175.0) != null) return false;
         }
         return true;
     }

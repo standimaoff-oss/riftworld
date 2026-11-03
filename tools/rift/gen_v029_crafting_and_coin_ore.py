@@ -596,8 +596,8 @@ def generate_all_recipes():
     shaped("dark_planks_stairs", ["#  ", "## ", "###"], {"#": "riftworld:dark_planks"}, "riftworld:dark_planks_stairs", 4)
     shaped("dark_planks_slab", ["###"], {"#": "riftworld:dark_planks"}, "riftworld:dark_planks_slab", 6)
     shaped("dark_fence", ["PSP", "PSP"], {"P": "riftworld:dark_planks", "S": "minecraft:stick"}, "riftworld:dark_fence", 3)
-    shaped("elisar_door", ["PP", "PP", "PP"], {"P": "#riftworld:mod_planks"}, "riftworld:elisar_door", 3)
-    shaped("elisar_fence", ["PSP", "PSP"], {"P": "#riftworld:mod_planks", "S": "minecraft:stick"}, "riftworld:elisar_fence", 3)
+    shaped("elisar_door", ["PP", "WW", "PP"], {"P": "#riftworld:mod_planks", "W": "riftworld:elisar_plaster"}, "riftworld:elisar_door", 3)
+    shaped("elisar_fence", ["PSP", "PSP"], {"P": "riftworld:elisar_plaster", "S": "minecraft:stick"}, "riftworld:elisar_fence", 3)
     shaped("rope_post", ["P", "R", "P"], {"P": "#minecraft:planks", "R": "riftworld:bridge_rope"}, "riftworld:rope_post", 2)
 
     # Elisar Stone, Cobble, Bricks, Plaster, Timber & Roofs
@@ -768,7 +768,8 @@ def generate_all_recipes():
     )
 
     # Temple Blocks (`temple_bricks`, `temple_pillar`, `temple_gold`, `temple_mosaic`, `mosaic_core`, etc.)
-    shaped("temple_bricks", ["##", "##"], {"#": "riftworld:ivory_marble"}, "riftworld:temple_bricks", 4)
+    shaped("temple_bricks", ["IP", "PI"], {"I": "riftworld:ivory_marble", "P": "riftworld:pearl_calcite"}, "riftworld:temple_bricks", 4)
+    stonecutting("temple_bricks_from_ivory_marble_stonecutting", "riftworld:ivory_marble", "riftworld:temple_bricks", 1)
     smelting("temple_bricks_cracked", "riftworld:temple_bricks", "riftworld:temple_bricks_cracked", xp=0.1, time=200)
     shapeless("temple_bricks_ivy", ["riftworld:temple_bricks", "#riftworld:mod_vines"], "riftworld:temple_bricks_ivy", 1)
     add_stone_shape_recipes("riftworld:temple_bricks", "riftworld:temple_bricks_stairs", "riftworld:temple_bricks_slab", None)

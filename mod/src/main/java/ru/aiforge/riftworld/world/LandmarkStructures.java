@@ -210,6 +210,7 @@ public final class LandmarkStructures {
 
     private static boolean openSeaClear(CityPlan plan, int cx, int cz, int radiusCheck) {
         if (WorldStructures.overlapsSpecialBiomes(cx, cz, 58)) return false;
+        if (BlacktideCitadel.insideAnyFootprint(cx, cz, 145.0)) return false;
         if (WorldStructures.anyVillageAt(cx, cz, 105) != null) return false;
         if (theaterAt(cx, cz, 105) != null) return false;
         if (WorldStructures.crashedShipNear(cx, cz, 92) != null

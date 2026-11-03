@@ -530,6 +530,7 @@ public final class WorldStructures {
                 int vz = (int) Math.round(rg.cz + sa * offshore);
 
                 if (nearProtectedZones(vx, vz, 55)) continue;
+                if (BlacktideCitadel.insideAnyFootprint(vx, vz, 145.0)) continue;
                 if (AshenLands.blocks(vx, vz, 95) || EmberRuins.siteAt(vx, vz) != null || MistKeep.inside(vx, vz)) continue;
                 if (VioletHills.nearAny(vx, vz, 34, 30) || CrystalRifts.nearAny(vx, vz, 34, 30) || SizoGrove.regionAt(vx, vz) != null) continue;
                 if (anyVillageAt(vx, vz, 85) != null) continue;
@@ -660,6 +661,7 @@ public final class WorldStructures {
     // =========================================================================
     private static boolean openDeepSea(int cx, int cz, int minDepthBelowSea, boolean surfaceSkyClear) {
         if (overlapsSpecialBiomes(cx, cz, 55)) return false;
+        if (BlacktideCitadel.insideAnyFootprint(cx, cz, 145.0)) return false;
         if (anyVillageAt(cx, cz, 95) != null) return false;
         // Проверяем лагунные свайные деревни у Висячих садов (без рекурсии в seaStiltVillage)
         int gsx = Math.floorDiv(cx, WaterfallGardens.SUPER), gsz = Math.floorDiv(cz, WaterfallGardens.SUPER);

@@ -40,12 +40,17 @@ public class MosaicCoreBE extends BlockEntity {
     private int waveRest;               // consecutive empty rings (ends the wave)
     private boolean open;               // Elisar return pool open (or Overworld breach active)
     private int overworldCooldown;      // prevents duplicate triggers during the 4s AWAKEN sequence
+    private int localTicks;             // monotonic per-BE tick counter (works both live & in deterministic tests)
     private static final int WAVE_MAX = 36;
     private static final int CANDLE_SCAN_XZ = 10;
     private static final Map<UUID, Long> TP_CD = new HashMap<>();
 
     public MosaicCoreBE(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MOSAIC_CORE.get(), pos, state);
+    }
+
+    public boolean isOpen() {
+        return open;
     }
 
     @Override
@@ -179,9 +184,10 @@ public class MosaicCoreBE extends BlockEntity {
         if (!(level instanceof ServerLevel sl)) return;
         boolean inElisar = sl.dimension().equals(Flight.ELISAR_DIM);
 
+        int lt = ++be.localTicks;
         if (!inElisar) {
             if (be.overworldCooldown > 0) --be.overworldCooldown;
-            if (sl.getGameTime() % 10 == 0) {
+            if (lt % 10 == 0) {
                 boolean hasOpenRift = PortalRitual.findNearbyOpenRift(sl, pos.above(), 6.0) != null;
                 if (hasOpenRift) {
                     be.open = true;
@@ -202,7 +208,7 @@ public class MosaicCoreBE extends BlockEntity {
         }
 
         if (be.open) {
-            if (sl.getGameTime() % 5 == 0) teleportStep(sl, pos);
+            if (lt % 5 == 0) teleportStep(sl, pos);
             long gt = sl.getGameTime();
             if (gt % 27 == 13) {
                 double rx = pos.getX() + 0.5 + sl.random.nextGaussian() * 6.0, rz = pos.getZ() + 0.5 + sl.random.nextGaussian() * 6.0;
@@ -217,13 +223,13 @@ public class MosaicCoreBE extends BlockEntity {
             return;
         }
         if (be.wave >= 0) {
-            if (sl.getGameTime() % 2 == 0) waveStep(sl, pos, be);
+            if (lt % 2 == 0) waveStep(sl, pos, be);
             return;
         }
-        if (sl.getGameTime() % 5 != 0) return;
+        if (lt % 5 != 0) return;
         if (be.flash >= 0) {
             be.flash -= 5;
-            if (sl.getGameTime() % 10 == 0) {
+            if (lt % 10 == 0) {
                 sl.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, pos.getX() + 0.5, pos.getY() + 1.2, pos.getZ() + 0.5, 24, 1.8, 0.4, 1.8, 0.02);
                 sl.sendParticles(ParticleTypes.ENCHANT, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5, 30, 1.6, 1.0, 1.6, 1.2);
             }

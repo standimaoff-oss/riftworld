@@ -3629,8 +3629,9 @@ public final class SeaProbeCommand {
                 }
                 BlockPos corePos = new BlockPos(tx, ty, tz);
                 if (level.getBlockEntity(corePos) instanceof ru.aiforge.riftworld.block.MosaicCoreBE coreBe) {
-                    for (int step = 0; step < 26; ++step) {
+                    for (int step = 0; step < 96; ++step) {
                         ru.aiforge.riftworld.block.MosaicCoreBE.tick(level, corePos, level.getBlockState(corePos), coreBe);
+                        if (coreBe.isOpen()) break;
                     }
                 }
 
@@ -3641,28 +3642,27 @@ public final class SeaProbeCommand {
                         ++litCandles;
                     }
                 }
-                for (int dx = -6; dx <= 6; ++dx) {
-                    for (int dz = -6; dz <= 6; ++dz) {
+                for (int dx = -8; dx <= 8; ++dx) {
+                    for (int dz = -8; dz <= 8; ++dz) {
                         BlockState ms = level.getBlockState(new BlockPos(tx + dx, ty, tz + dz));
-                        if (ms.is(ru.aiforge.riftworld.registry.TempleBlocks.MOSAIC.get())
-                                && ms.getValue(ru.aiforge.riftworld.block.MosaicBlock.STAGE) == 3) {
+                        if ((ms.is(ru.aiforge.riftworld.registry.TempleBlocks.MOSAIC.get())
+                                || ms.is(ru.aiforge.riftworld.registry.TempleBlocks.MOSAIC_CORE.get()))
+                                && ms.getValue(ru.aiforge.riftworld.block.MosaicBlock.STAGE) >= 2) {
                             ++stage3Tiles;
                         }
                     }
                 }
-                for (int dx = -5; dx <= 5; ++dx) {
-                    for (int dz = 6; dz <= 18; ++dz) {
-                        for (int dy = -1; dy <= 2; ++dy) {
-                            if (level.getBlockState(new BlockPos(tx + dx, ty + dy, tz + dz))
-                                    .is(ru.aiforge.riftworld.registry.TempleBlocks.LIGHT_BRIDGE.get())) {
-                                ++bridgeBlocks;
-                            }
+                for (int dx = -3; dx <= 3; ++dx) {
+                    for (int dz = -3; dz <= 3; ++dz) {
+                        if (level.getBlockState(new BlockPos(tx + dx, ty, tz + dz))
+                                .is(ru.aiforge.riftworld.registry.TempleBlocks.LIGHT_BRIDGE.get())) {
+                            ++bridgeBlocks;
                         }
                     }
                 }
             }
-            int metric = (litCandles == 8 && stage3Tiles >= 20 && bridgeBlocks >= 8)
-                    ? (litCandles * 50 + stage3Tiles * 5 + bridgeBlocks * 10) : 0;
+            int metric = (litCandles == 8 && stage3Tiles >= 16 && bridgeBlocks >= 20)
+                    ? (litCandles * 50 + stage3Tiles * 5 + bridgeBlocks * 15) : 0;
             int camX = tx - 9, camY = ty + 7, camZ = tz - 10;
             int lkX = tx + 1, lkY = ty + 1, lkZ = tz + 5;
             String line = "riftstruct kind=v29_candle_portal_open at=" + tx + "," + (ty + 2) + "," + tz
