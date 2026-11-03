@@ -1722,6 +1722,14 @@ public final class SeaProbeCommand {
      * находит ближайший экземпляр структуры, считает её реальные блоки в загруженных чанках, проверяет ограничения
      * (например, {@code houses=3..6} и {@code sub_air=0} под водой) и отдаёт ракурс камеры {@code cam=cx,cy,cz:lx,ly,lz}.
      */
+    /** v0.30.0: вблизи центра любой из 28 башен находятся её законные дверные проёмы (не считаем их дырой в стене). */
+    private static boolean nearTower(int lx, int lz) {
+        for (int[] tc : BlacktideCitadel.TOWER_CENTERS) {
+            if (Math.abs(tc[0] - lx) <= 8 && Math.abs(tc[1] - lz) <= 8) return true;
+        }
+        return false;
+    }
+
     private static int probeStruct(CommandSourceStack src, String rawKind) {
         ServerLevel level = src.getLevel();
         BlockPos at = BlockPos.containing(src.getPosition());
@@ -2576,6 +2584,8 @@ public final class SeaProbeCommand {
                     int wz = bs.cz + BlacktideCitadel.rotZ(lx, lz, bs.rot);
                     if (!level.hasChunk(wx >> 4, wz >> 4)) continue;
                     if (Math.abs(lx - BlacktideCitadel.GATE_LX) <= 6 && lz > 30) continue;   // арка главных ворот
+                    if (nearTower(lx, lz)) continue;                                          // дверные проёмы башен
+                    if (Math.abs(lx) <= 4 && lz <= -74) continue;                             // северный вход в Ротонду
                     for (int by = 47; by <= 61; by += 2) {
                         BlockState ws = level.getBlockState(mpWall.set(wx, bs.baseY + by, wz));
                         if (ws.isAir()) ++wallBreaches;
@@ -2587,7 +2597,9 @@ public final class SeaProbeCommand {
                     int wx = bs.cx + BlacktideCitadel.rotX(lx, lz, bs.rot);
                     int wz = bs.cz + BlacktideCitadel.rotZ(lx, lz, bs.rot);
                     if (!level.hasChunk(wx >> 4, wz >> 4)) continue;
-                    if (lz >= -7 && lz <= -2) continue;                                      // западные ворота каузея + восточный проём
+                    if (lz >= -8 && lz <= -2) continue;                                      // западные ворота каузея + восточный проём
+                    if (nearTower(lx, lz)) continue;                                          // дверные проёмы башен
+                    if (Math.abs(lx) <= 4 && lz <= -74) continue;                             // северный вход в Ротонду
                     for (int by = 47; by <= 61; by += 2) {
                         BlockState ws = level.getBlockState(mpWall.set(wx, bs.baseY + by, wz));
                         if (ws.isAir()) ++wallBreaches;
@@ -2608,10 +2620,11 @@ public final class SeaProbeCommand {
                             var ckey = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(cs.getBlock());
                             if (ckey == null || !ckey.getPath().endsWith("_stairs")) continue;
                             ++towerStairs;
-                            if (!level.getBlockState(mpWall.set(wx, bs.baseY + by + 1, wz)).isAir()
-                                    || !level.getBlockState(mpWall.set(wx, bs.baseY + by + 2, wz)).isAir()) {
-                                ++towerStairsJammed;
-                            }
+                            BlockPos up1 = mpWall.set(wx, bs.baseY + by + 1, wz);
+                            boolean jam1 = level.getBlockState(up1).isCollisionShapeFullBlock(level, up1);
+                            BlockPos up2 = mpWall.set(wx, bs.baseY + by + 2, wz);
+                            boolean jam2 = level.getBlockState(up2).isCollisionShapeFullBlock(level, up2);
+                            if (jam1 || jam2) ++towerStairsJammed;
                         }
                     }
                 }
