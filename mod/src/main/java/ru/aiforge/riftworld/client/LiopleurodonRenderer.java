@@ -14,8 +14,11 @@ import ru.aiforge.riftworld.client.geo.GeoModel;
 import ru.aiforge.riftworld.entity.LiopleurodonEntity;
 
 /**
- * v0.32.0 — рендер Лиоплевродона настоящей JSON-моделью ({@link GeoModel}):
- * 10 костей, 23 кубоида, атлас 256x256 (`assets/riftworld/geo/liopleurodon.json`).
+ * v0.33.0 — рендер Лиоплевродона настоящей JSON-моделью ({@link GeoModel}):
+ * 10 костей, 53 кубоида, атлас 256x256 (`assets/riftworld/geo/liopleurodon.json`).
+ * Модель пересобрана с честными UV-островками (полковая упаковка в
+ * `tools/rift/gen_v033_liopleurodon_model.py`): длинная крокодилья морда с рядами зубов,
+ * мощный корпус с гребнем, четыре веслообразных ласта, хвост с плавником.
  * Ласты и хвост анимируются на клиенте, пакетов это не тратит.
  */
 public class LiopleurodonRenderer extends EntityRenderer<LiopleurodonEntity> {
@@ -24,7 +27,7 @@ public class LiopleurodonRenderer extends EntityRenderer<LiopleurodonEntity> {
 
     public LiopleurodonRenderer(EntityRendererProvider.Context ctx) {
         super(ctx);
-        this.shadowRadius = 1.4F;
+        this.shadowRadius = 2.2F;
     }
 
     @Override

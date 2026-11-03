@@ -86,7 +86,7 @@ public final class ModEntities {
             TYPES.register("liopleurodon", () -> EntityType.Builder
                     .<ru.aiforge.riftworld.entity.LiopleurodonEntity>of(ru.aiforge.riftworld.entity.LiopleurodonEntity::new,
                             MobCategory.WATER_CREATURE)
-                    .sized(1.6F, 1.2F).updateInterval(2).clientTrackingRange(16)
+                    .sized(3.0F, 2.4F).updateInterval(2).clientTrackingRange(20)
                     .build("riftworld:liopleurodon"));
 
     private ModEntities() {
