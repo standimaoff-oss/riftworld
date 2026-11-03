@@ -178,7 +178,7 @@ def rime_specks(pixels, seed=11, density=0.10, color="#F2F7F7"):
 BARK = [(0.0, "#14151A"), (0.25, "#3A3B3E"), (0.55, "#B9B2A4"), (0.80, "#D9D2C4"), (1.0, "#EFE9DC")]
 BARK_STRIPPED = [(0.0, "#8C8579"), (0.5, "#CFC7B7"), (1.0, "#E8E1D2")]
 PLANKS = [(0.0, "#8E887A"), (0.45, "#BDB5A5"), (0.75, "#D3CBBA"), (1.0, "#E4DDCE")]
-NEEDLES = [(0.0, "#1E2A26"), (0.4, "#3A4E47"), (0.7, "#4A5F58"), (1.0, "#7E9198")]
+NEEDLES = [(0.0, "#3E5148"), (0.35, "#6B8279"), (0.7, "#9FB0A6"), (1.0, "#DCE8E2")]
 SOIL = [(0.0, "#14161A"), (0.5, "#22262B"), (0.85, "#333941"), (1.0, "#4A5058")]
 GRASS_TOP = [(0.0, "#4E5A54"), (0.4, "#7E8F86"), (0.8, "#9FAFA6"), (1.0, "#B9C4BC")]
 MOSS = [(0.0, "#5C6A62"), (0.5, "#9FAFA6"), (0.85, "#B7C4BB"), (1.0, "#CBD5CC")]
@@ -193,7 +193,7 @@ TEXTURE_JOBS = [
     ("stripped_sizo_log.png", "stripped_morok_log.png", BARK_STRIPPED, dict(cracks=False)),
     ("stripped_sizo_log_top.png", "stripped_morok_log_top.png", PLANKS, dict()),
     ("sizo_planks.png", "morok_planks.png", PLANKS, dict()),
-    ("sizo_leaves.png", "morok_leaves.png", NEEDLES, dict(rime=True)),
+    ("sizo_leaves.png", "morok_leaves.png", NEEDLES, dict(rime=True, rime_density=0.30)),
     ("celadon_fern.png", "morok_sapling.png", PLANKS, dict()),
     ("sizo_door_bottom.png", "morok_door_bottom.png", PLANKS, dict()),
     ("sizo_door_top.png", "morok_door_top.png", PLANKS, dict()),
@@ -227,7 +227,7 @@ def gen_textures():
         if opts.get("cracks"):
             px = add_cracks(px, seed=hash(dst_name) & 0x7FFF)
         if opts.get("rime"):
-            px = rime_specks(px, seed=(hash(dst_name) >> 3) & 0x7FFF)
+            px = rime_specks(px, density=opts.get("rime_density", 0.10), seed=(hash(dst_name) >> 3) & 0x7FFF)
         write_png(TEX / dst_name, px)
         made.append(dst_name)
     return made

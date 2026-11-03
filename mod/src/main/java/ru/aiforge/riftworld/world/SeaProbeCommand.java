@@ -3595,7 +3595,7 @@ public final class SeaProbeCommand {
             String line = "riftstruct kind=v32_liopleurodon at=" + px + "," + (py + 3) + "," + pz
                     + " alive=" + alive + " hp=90 drop_tooth=true drop_scale=true"
                     + " blocks=" + metric + " sub_air=0"
-                    + " cam=" + (px - 12) + "," + (py + 4) + "," + (pz + 4) + ":" + px + "," + (py + 1) + "," + pz;
+                    + " cam=" + (px - 20) + "," + (py + 9) + "," + (pz + 16) + ":" + px + "," + (py + 1) + "," + pz;
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
         }
@@ -3623,7 +3623,7 @@ public final class SeaProbeCommand {
             String line = "riftstruct kind=v34_pegasus at=" + px + "," + (py + 2) + "," + pz
                     + " alive=" + alive + " tamed=" + tamed + " saddleable=true saddle_seat=1.15"
                     + " blocks=" + metric + " sub_air=0"
-                    + " cam=" + (px - 5) + "," + (py + 2) + "," + (pz + 6) + ":" + px + "," + (py + 1) + "," + pz;
+                    + " cam=" + (px - 3) + "," + (py + 2) + "," + (pz + 4) + ":" + px + "," + (py + 1) + "," + pz;
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
         }
