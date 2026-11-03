@@ -427,6 +427,24 @@ TAGS = {
 }
 
 
+ITEM_SRC = {"morok_door": "morok_door_top"}
+
+
+def gen_item_textures():
+    """Предметные текстуры (дверь рисуется как предмет, а не как блок)."""
+    out = ASSETS / "textures/item"
+    out.mkdir(parents=True, exist_ok=True)
+    made = 0
+    for item, block_tex in ITEM_SRC.items():
+        src = TEX / f"{block_tex}.png"
+        if not src.exists():
+            print("  ! нет текстуры для предмета:", block_tex)
+            continue
+        write_png(out / f"{item}.png", read_png(src))
+        made += 1
+    return made
+
+
 def gen_tags():
     """Дописывает блоки биома в ванильные теги (скорость копания, звук, крафты)."""
     added = 0
@@ -486,6 +504,9 @@ def main():
 
     print("== очистка лишних клонов ==")
     print(f"  удалено: {cleanup()}")
+
+    print("== предметные текстуры ==")
+    print(f"  сделано: {gen_item_textures()}")
 
     print("== теги ==")
     print(f"  записей добавлено: {gen_tags()}")

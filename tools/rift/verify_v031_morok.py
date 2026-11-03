@@ -134,6 +134,23 @@ def main():
     for b in bad_size:
         errors.append(f"текстура не 16x16 RGBA-8: {b}")
 
+    # предметные текстуры (гейт CI: «Missing textures in model»)
+    missing_item = []
+    for f in MI.glob("*.json"):
+        if not any(f.stem == b or f.stem.startswith(b) for b in BLOCK_IDS):
+            continue
+        for t in textures_in(json.loads(f.read_text(encoding="utf-8")), set()):
+            if t.startswith("#") or ":" not in t:
+                continue
+            ns, path = t.split(":", 1)
+            if ns != "riftworld" or not path.startswith("item/"):
+                continue
+            if not (ASSETS / "textures" / f"{path}.png").exists():
+                missing_item.append(f"{f.stem} -> {t}")
+    print(f"  предметных текстур не найдено: {len(missing_item)}")
+    for m in missing_item:
+        errors.append(f"модель предмета ссылается на отсутствующую текстуру {m}")
+
     # рецепты
     known = set()
     for d in (MI,):

@@ -16,6 +16,7 @@ import net.minecraftforge.fml.common.Mod;
 import ru.aiforge.riftworld.RiftWorld;
 import ru.aiforge.riftworld.flight.Flight;
 import ru.aiforge.riftworld.registry.ElisarBlocks;
+import ru.aiforge.riftworld.registry.MorokBlocks;
 
 /**
  * Рев 10: операторская команда {@code /riftsea} — самопроверка «живого моря» прямо в игре.
@@ -3568,6 +3569,62 @@ public final class SeaProbeCommand {
                     + " axe_strip=" + strippedOk + "/7"
                     + " blocks=" + metric + " sub_air=0"
                     + " cam=" + tx + "," + (ty + 11) + "," + (tz + 16) + ":" + tx + "," + (ty + 1) + "," + (tz - 1);
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.equals("v31_morok_gallery")) {
+            // v0.31.0: «Мороковая Падь» — витрина всех 27 блоков биома + предметы + переводы + крафты.
+            int tx = 1160, ty = 136, tz = 780;
+            Block[] all = {
+                    MorokBlocks.MOROK_LOG.get(), MorokBlocks.STRIPPED_MOROK_LOG.get(),
+                    MorokBlocks.MOROK_WOOD.get(), MorokBlocks.STRIPPED_MOROK_WOOD.get(),
+                    MorokBlocks.MOROK_PLANKS.get(), MorokBlocks.MOROK_STAIRS.get(), MorokBlocks.MOROK_SLAB.get(),
+                    MorokBlocks.MOROK_FENCE.get(), MorokBlocks.MOROK_FENCE_GATE.get(), MorokBlocks.MOROK_DOOR.get(),
+                    MorokBlocks.MOROK_TRAPDOOR.get(), MorokBlocks.MOROK_PRESSURE_PLATE.get(), MorokBlocks.MOROK_BUTTON.get(),
+                    MorokBlocks.MOROK_LEAVES.get(), MorokBlocks.MOROK_SAPLING.get(),
+                    MorokBlocks.FROZEN_SOIL.get(), MorokBlocks.RIME_GRASS.get(), MorokBlocks.PALE_MOSS_BLOCK.get(),
+                    MorokBlocks.PALE_MOSS_CARPET.get(), MorokBlocks.ICE_FANG.get(), MorokBlocks.BONE_BRAMBLE.get(),
+                    MorokBlocks.CRACKED_RIME_BRICKS.get(), MorokBlocks.CRACKED_RIME_BRICKS_STAIRS.get(),
+                    MorokBlocks.CRACKED_RIME_BRICKS_SLAB.get(), MorokBlocks.CRACKED_RIME_BRICKS_WALL.get(),
+                    MorokBlocks.RIME_BRICK_PILLAR.get(), MorokBlocks.FOG_LANTERN.get()
+            };
+            int placed = 0, itemOk = 0, langOk = 0;
+            if (level instanceof ServerLevel) {
+                for (int i = 0; i < all.length; ++i) {
+                    int row = i / 14, col = i % 14;
+                    int bx = tx - 13 + col * 2, bz = tz + row * 4;
+                    Block b = all[i];
+                    level.setBlock(new BlockPos(bx, ty, bz), MorokBlocks.FROZEN_SOIL.get().defaultBlockState(), 2);
+                    BlockState st = b.defaultBlockState();
+                    if (b instanceof net.minecraft.world.level.block.StairBlock) {
+                        st = st.setValue(net.minecraft.world.level.block.StairBlock.FACING, net.minecraft.core.Direction.NORTH);
+                    } else if (b instanceof net.minecraft.world.level.block.DoorBlock) {
+                        st = st.setValue(net.minecraft.world.level.block.DoorBlock.FACING, net.minecraft.core.Direction.NORTH);
+                    }
+                    BlockPos pos = new BlockPos(bx, ty + 1, bz);
+                    level.setBlock(pos, st, 2);
+                    if (level.getBlockState(pos).is(b)) ++placed;
+                    if (b.asItem() != net.minecraft.world.item.Items.AIR) ++itemOk;
+                    var key = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(b);
+                    if (key != null) {
+                        String name = Component.translatable("block.riftworld." + key.getPath()).getString();
+                        if (!name.isEmpty() && !name.startsWith("block.")) ++langOk;
+                    }
+                }
+                // «холодный фонарь» на столбике + костёр из морозного кирпича — как в концепте
+                level.setBlock(new BlockPos(tx + 16, ty + 1, tz + 2), MorokBlocks.RIME_BRICK_PILLAR.get().defaultBlockState(), 2);
+                level.setBlock(new BlockPos(tx + 16, ty + 2, tz + 2), MorokBlocks.FOG_LANTERN.get().defaultBlockState(), 2);
+                level.setBlock(new BlockPos(tx - 15, ty + 1, tz + 2), MorokBlocks.CRACKED_RIME_BRICKS.get().defaultBlockState(), 2);
+                level.setBlock(new BlockPos(tx - 15, ty + 2, tz + 2), MorokBlocks.ICE_FANG.get().defaultBlockState(), 2);
+            }
+            int metric = (placed == all.length && itemOk == all.length) ? 900 : 0;
+            String line = "riftstruct kind=v31_morok_gallery at=" + tx + "," + (ty + 2) + "," + tz
+                    + " placed=" + placed + "/" + all.length
+                    + " items=" + itemOk + "/" + all.length
+                    + " lang=" + langOk + "/" + all.length
+                    + " blocks=" + metric + " sub_air=0"
+                    + " cam=" + tx + "," + (ty + 8) + "," + (tz + 16) + ":" + tx + "," + (ty + 1) + "," + tz;
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
         }
