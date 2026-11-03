@@ -105,11 +105,15 @@ jobs:
           mkdir -p ci/dt
           DTVER=$(sed -n 's/^dynamic_trees_version=//p' mod/gradle.properties | head -1)
           OUT=ci/dt/dynamictrees.jar
+          MR_URL=$(curl -fsSL "https://api.modrinth.com/v2/project/vdjF5PL5/version?game_versions=%5B%221.20.1%22%5D&loaders=%5B%22forge%22%5D" 2>/dev/null \
+            | python3 -c "import sys,json; vs=json.load(sys.stdin); print(next((f['url'] for v in vs if '${DTVER}' in v.get('version_number','') for f in v.get('files',[]) if f['filename'].endswith('.jar')), next((f['url'] for v in vs for f in v.get('files',[]) if f['filename'].endswith('.jar')), '')))" 2>/dev/null || true)
           for url in \
             "https://harleyoconnor.com/maven/com/ferreusveritas/dynamictrees/DynamicTrees-1.20.1/${DTVER}/DynamicTrees-1.20.1-${DTVER}.jar" \
+            "$MR_URL" \
             "https://api.cfwidget.com/mods/mc-mods/dynamic-trees/versions/${DTVER}/download"; do
+            [ -n "$url" ] || continue
             echo "== $url"
-            if curl -fsSL --retry 2 -o "$OUT.tmp" "$url"; then
+            if curl -fsSL --retry 4 --retry-delay 5 -o "$OUT.tmp" "$url"; then
               if unzip -l "$OUT.tmp" >/dev/null 2>&1; then mv "$OUT.tmp" "$OUT"; echo "DT jar: $(ls -l "$OUT" | awk '{print $5}') байт"; break; fi
               echo "  это не zip — пропускаю"
             fi

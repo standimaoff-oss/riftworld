@@ -80,9 +80,15 @@ if [ "${WITH_DT:-0}" = "1" ]; then
   # Приоритет 4: CurseForge (последний — api.cfwidget.com часто отдаёт HTML вместо jar)
   if [ -z "$DTMAIN" ]; then
     echo "  maven не сработал — пробуем CurseForge..."
-    curl -fsSL -L -o "$SRV/mods/dynamictrees.jar" \
+    if curl -fsSL -L -o "$SRV/mods/dynamictrees.jar.tmp" \
       "https://api.cfwidget.com/mods/mc-mods/dynamic-trees/versions/${DTVER}/download" \
-      && DTMAIN="$SRV/mods/dynamictrees.jar" || echo "  WARN: Dynamic Trees jar не скачался с CurseForge"
+      && unzip -l "$SRV/mods/dynamictrees.jar.tmp" >/dev/null 2>&1; then
+      mv "$SRV/mods/dynamictrees.jar.tmp" "$SRV/mods/dynamictrees.jar"
+      DTMAIN="$SRV/mods/dynamictrees.jar"
+    else
+      rm -f "$SRV/mods/dynamictrees.jar.tmp"
+      echo "  WARN: Dynamic Trees jar не скачался с CurseForge"
+    fi
   fi
   if [ -n "$DTMAIN" ] && [ -f "$DTMAIN" ]; then
     cp -f "$DTMAIN" "$SRV/mods/" 2>/dev/null || true
