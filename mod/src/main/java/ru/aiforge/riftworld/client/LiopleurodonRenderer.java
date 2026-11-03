@@ -14,8 +14,8 @@ import ru.aiforge.riftworld.client.geo.GeoModel;
 import ru.aiforge.riftworld.entity.LiopleurodonEntity;
 
 /**
- * v0.33.0 — рендер Лиоплевродона настоящей JSON-моделью ({@link GeoModel}):
- * 10 костей, 53 кубоида, атлас 256x256 (`assets/riftworld/geo/liopleurodon.json`).
+ * v0.38.0 — рендер Лиоплевродона настоящей JSON-моделью ({@link GeoModel}):
+ * 10 костей, 61 кубоид, атлас 256x256 (`assets/riftworld/geo/liopleurodon.json`).
  * Модель пересобрана с честными UV-островками (полковая упаковка в
  * `tools/rift/gen_v033_liopleurodon_model.py`): длинная крокодилья морда с рядами зубов,
  * мощный корпус с гребнем, четыре веслообразных ласта, хвост с плавником.

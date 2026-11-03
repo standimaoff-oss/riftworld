@@ -300,35 +300,40 @@ public final class SeaProbeCommand {
      * а не в ясном небе над Белым городом.
      */
     private static int[] morokSpot(ServerLevel level, int nearX, int nearZ, int cellRadius) {
-        int scx = Math.floorDiv(nearX, ru.aiforge.riftworld.world.MorokHollow.SUPER);
-        int scz = Math.floorDiv(nearZ, ru.aiforge.riftworld.world.MorokHollow.SUPER);
-        int bestX = Integer.MIN_VALUE, bestZ = 0;
-        double bestD = Double.MAX_VALUE;
-        for (int dx = -cellRadius; dx <= cellRadius; ++dx) {
-            for (int dz = -cellRadius; dz <= cellRadius; ++dz) {
-                var rg = ru.aiforge.riftworld.world.MorokHollow.region(scx + dx, scz + dz);
-                if (rg == null) continue;
-                double d = Math.hypot(rg.cx - nearX, rg.cz - nearZ);
-                if (d < bestD) {
-                    bestD = d;
-                    bestX = rg.cx;
-                    bestZ = rg.cz;
+        // v0.38.0: только НАСТОЯЩАЯ суша внутри Пади. Раньше бралась любая точка с весом >= 0.55 —
+        // включая открытый океан, где биом не включается (нужен остров), деревьев нет, а проба
+        // строила себе платформу прямо на воде (это и было видно на кадре 149).
+        return ru.aiforge.riftworld.world.MorokHollow.landSpot(level, nearX, nearZ, Math.max(3, cellRadius));
+    }
+
+    /**
+     * v0.38.0 — реальные числа модели из {@code assets/riftworld/geo/<name>.json}:
+     * {@code {кубоиды, кости, размер атласа}}.
+     *
+     * <p>Нужно, чтобы проба доказывала, что в сборке лежит именно пересобранная модель, а не
+     * печатала захардкоженное «53» (так было в v0.37.0: в гео уже 64 кубоида, в отчёте — 53).
+     */
+    private static int[] geoStats(String name) {
+        try {
+            var loc = new net.minecraft.resources.ResourceLocation("riftworld", "geo/" + name + ".json");
+            var res = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer()
+                    .getResourceManager().getResource(loc);
+            if (res.isEmpty()) return new int[]{-1, -1, -1};
+            try (var r = new java.io.InputStreamReader(res.get().open(), java.nio.charset.StandardCharsets.UTF_8)) {
+                var o = com.google.gson.JsonParser.parseReader(r).getAsJsonObject();
+                int boxes = 0;
+                var bones = o.getAsJsonArray("bones");
+                for (var b : bones) {
+                    if (b.getAsJsonObject().has("cubes")) {
+                        boxes += b.getAsJsonObject().getAsJsonArray("cubes").size();
+                    }
                 }
+                int atlas = o.has("texture_width") ? o.get("texture_width").getAsInt() : 0;
+                return new int[]{boxes, bones.size(), atlas};
             }
+        } catch (Throwable t) {
+            return new int[]{-1, -1, -1};
         }
-        if (bestX == Integer.MIN_VALUE) return null;
-        for (int r = 0; r <= 120; r += 6) {
-            for (int i = 0; i < 16; ++i) {
-                double a = i * Math.PI / 8.0;
-                int x = bestX + (int) Math.round(r * Math.cos(a));
-                int z = bestZ + (int) Math.round(r * Math.sin(a));
-                if (ru.aiforge.riftworld.world.MorokHollow.weight(x, z) < 0.55) continue;
-                level.getChunk(x >> 4, z >> 4);
-                int y = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
-                if (y > level.getMinBuildHeight() + 8 && y < level.getMaxBuildHeight() - 16) return new int[]{x, y, z};
-            }
-        }
-        return null;
     }
 
     /**
@@ -3612,11 +3617,12 @@ public final class SeaProbeCommand {
         }
 
         if (k.equals("v32_liopleurodon")) {
-            // v0.37.0: Лиоплевродон — съёмка в расчищенной «аквариумной» воде:
-            // ровный песчаный пол, подсветка по краям, камера в 9 блоках сбоку,
-            // два животных разного размера — видно и силуэт, и масштаб.
+            // v0.38.0: Лиоплевродон — модель ПЕРЕСОБРАНА (торпеда-корпус, короткий хвост,
+            // крупная голова с оскалом по наружной кромке челюстей). Проба больше не печатает
+            // «model_boxes=53» литералом: число кубоидов и костей читается из geo-JSON,
+            // иначе цифра в отчёте ничего не доказывала.
             int px = 696, py = 30, pz = 696;
-            int halfX = 22, halfZ = 14, hi = 9;
+            int halfX = 24, halfZ = 16, hi = 11;
             int alive = 0;
             if (level instanceof ServerLevel) {
                 for (int dx = -halfX; dx <= halfX; ++dx) {
@@ -3629,36 +3635,73 @@ public final class SeaProbeCommand {
                                 ru.aiforge.riftworld.registry.ElisarBlocks.SEABED.get().defaultBlockState(), 2);
                     }
                 }
-                // подсветка по двум сторонам, чтобы силуэт читался, но не «прожектор»
                 for (int dx = -halfX + 4; dx <= halfX - 4; dx += 8) {
                     for (int dz = -halfZ + 2; dz <= halfZ - 2; dz += 10) {
-                        level.setBlock(new BlockPos(px + dx, py + 6, pz + dz),
+                        level.setBlock(new BlockPos(px + dx, py + 8, pz + dz),
                                 ru.aiforge.riftworld.registry.ElisarBlocks.CAVE_GLOW.get().defaultBlockState(), 2);
                     }
                 }
+                // одно животное по центру — боком к камере, второе в глубине для масштаба
                 var lio = ru.aiforge.riftworld.entity.LiopleurodonEntity.spawn(
-                        (ServerLevel) level, new net.minecraft.world.phys.Vec3(px + 0.5, py + 3.5, pz + 0.5));
+                        (ServerLevel) level, new net.minecraft.world.phys.Vec3(px + 0.5, py + 5.0, pz + 0.5));
                 lio.setNoAi(true);
                 lio.setSilent(true);
-                lio.setYRot(90.0F);      // боком к камере
+                lio.setYRot(90.0F);
                 lio.yBodyRot = 90.0F;
                 var lio2 = ru.aiforge.riftworld.entity.LiopleurodonEntity.spawn(
-                        (ServerLevel) level, new net.minecraft.world.phys.Vec3(px - 12.5, py + 6.5, pz - 6.5));
+                        (ServerLevel) level, new net.minecraft.world.phys.Vec3(px - 13.5, py + 8.0, pz - 8.5));
                 lio2.setNoAi(true);
                 lio2.setSilent(true);
                 lio2.setYRot(115.0F);
                 lio2.yBodyRot = 115.0F;
             }
             for (var e : level.getEntitiesOfClass(ru.aiforge.riftworld.entity.LiopleurodonEntity.class,
-                    new net.minecraft.world.phys.AABB(px - 26, py - 8, pz - 18, px + 26, py + 14, pz + 18))) {
+                    new net.minecraft.world.phys.AABB(px - 30, py - 8, pz - 20, px + 30, py + 16, pz + 20))) {
                 if (e.isAlive()) ++alive;
             }
+            int[] geo = geoStats("liopleurodon");
             int metric = alive > 0 ? 900 : 0;
             String line = "riftstruct kind=v32_liopleurodon at=" + px + "," + (py + 3) + "," + pz
                     + " alive=" + alive + " hp=90 drop_tooth=true drop_scale=true"
-                    + " model_boxes=53 bones=10 atlas=256"
+                    + " model_boxes=" + geo[0] + " bones=" + geo[1] + " atlas=" + geo[2]
                     + " blocks=" + metric + " sub_air=0"
-                    + " cam=" + (px + 2) + "," + (py + 5) + "," + (pz + 10) + ":" + px + "," + (py + 3) + "," + pz;
+                    + " cam=" + (px + 9) + "," + (py + 7) + "," + (pz + 5) + ":" + px + "," + (py + 5) + "," + pz;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.equals("v38_liopleurodon_jaws")) {
+            // v0.38.0: крупный кадр ГОЛОВЫ — узкая морда, ряд клыков по наружной кромке
+            // верхней челюсти и светлая нижняя челюсть должны читаться вплотную.
+            int px = 700, py = 30, pz = 700;
+            int alive = 0;
+            if (level instanceof ServerLevel) {
+                for (int dx = -10; dx <= 10; ++dx) {
+                    for (int dz = -10; dz <= 10; ++dz) {
+                        for (int dy = 0; dy <= 9; ++dy) {
+                            level.setBlock(new BlockPos(px + dx, py + dy, pz + dz),
+                                    ru.aiforge.riftworld.registry.ElisarBlocks.WATER.get().defaultBlockState(), 2);
+                        }
+                        level.setBlock(new BlockPos(px + dx, py - 1, pz + dz),
+                                ru.aiforge.riftworld.registry.ElisarBlocks.SEABED.get().defaultBlockState(), 2);
+                    }
+                }
+                var lio = ru.aiforge.riftworld.entity.LiopleurodonEntity.spawn(
+                        (ServerLevel) level, new net.minecraft.world.phys.Vec3(px + 0.5, py + 4.6, pz + 0.5));
+                lio.setNoAi(true);
+                lio.setSilent(true);
+                lio.setYRot(90.0F);          // нос смотрит в -X
+                lio.yBodyRot = 90.0F;
+            }
+            for (var e : level.getEntitiesOfClass(ru.aiforge.riftworld.entity.LiopleurodonEntity.class,
+                    new net.minecraft.world.phys.AABB(px - 14, py - 6, pz - 14, px + 14, py + 12, pz + 14))) {
+                if (e.isAlive()) ++alive;
+            }
+            int[] geo = geoStats("liopleurodon");
+            String line = "riftstruct kind=v38_liopleurodon_jaws at=" + px + "," + (py + 4) + "," + pz
+                    + " alive=" + alive + " model_boxes=" + geo[0] + " bones=" + geo[1] + " atlas=" + geo[2]
+                    + " blocks=" + (alive > 0 ? 900 : 0) + " sub_air=0"
+                    + " cam=" + (px - 11) + "," + (py + 4) + "," + (pz + 8) + ":" + (px - 5) + "," + (py + 5) + "," + pz;
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
         }
@@ -3742,6 +3785,81 @@ public final class SeaProbeCommand {
                     + " alive=" + alive + " hp=64 darkness_on_hit=true antlers=6"
                     + " blocks=" + metric + " sub_air=0"
                     + " cam=" + cam35[0] + "," + cam35[1] + "," + cam35[2] + ":" + px + "," + (py + 2) + "," + pz;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.equals("v37_morok_natural")) {
+            // v0.38.0 — «биом дальше»: проба НИЧЕГО не строит, а считает то, что реально
+            // вырастил генератор в чаще Пади: стволы, патриархов (2x2), сухостой, поваленные
+            // брёвна, колючки, клыки, ковры мха. Плюс читает спавнеры биома из MobSpawnSettings —
+            // до этого в morok_hollow.json стояло "spawners": {} и биом был пустым.
+            int px = 1200, pz = 820;
+            int ground = 140;
+            boolean natural = false;
+            int[] spot = morokSpot(level, 1200, 820, 10);
+            if (spot != null) {
+                px = spot[0];
+                ground = spot[1];
+                pz = spot[2];
+                natural = true;
+            }
+            int logs = 0, leaves = 0, brambles = 0, fangs = 0, carpets = 0, rime = 0, soil = 0;
+            int trunks = 0;   // колонн ствола = число деревьев/сухостоя (патриарх даёт 4)
+            BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
+            int rad = 48;
+            for (int x = px - rad; x <= px + rad; ++x) {
+                for (int z = pz - rad; z <= pz + rad; ++z) {
+                    if (!level.hasChunk(x >> 4, z >> 4)) continue;
+                    for (int y = ground - 6; y <= ground + 26; ++y) {
+                        BlockState st = level.getBlockState(mp.set(x, y, z));
+                        if (st.isAir()) continue;
+                        if (st.is(MorokBlocks.MOROK_LOG.get())) ++logs;
+                        else if (st.is(MorokBlocks.MOROK_LEAVES.get())) ++leaves;
+                        else if (st.is(MorokBlocks.BONE_BRAMBLE.get())) ++brambles;
+                        else if (st.is(MorokBlocks.ICE_FANG.get())) ++fangs;
+                        else if (st.is(MorokBlocks.PALE_MOSS_CARPET.get())) ++carpets;
+                        else if (st.is(MorokBlocks.RIME_GRASS.get())) ++rime;
+                        else if (st.is(MorokBlocks.FROZEN_SOIL.get())) ++soil;
+                    }
+                    // ствол = колонна, где бревно стоит на мерзлоте
+                    for (int y = ground; y <= ground + 24; ++y) {
+                        if (level.getBlockState(mp.set(x, y + 1, z)).is(MorokBlocks.MOROK_LOG.get())
+                                && (level.getBlockState(mp.set(x, y, z)).is(MorokBlocks.RIME_GRASS.get())
+                                    || level.getBlockState(mp.set(x, y, z)).is(MorokBlocks.FROZEN_SOIL.get())
+                                    || level.getBlockState(mp.set(x, y, z)).is(MorokBlocks.PALE_MOSS_BLOCK.get()))) {
+                            ++trunks;
+                            break;
+                        }
+                    }
+                }
+            }
+            String biome = "?";
+            int spawnWendigo = 0, spawnPegasus = 0;
+            try {
+                var holder = level.getBiome(new BlockPos(px, ground + 1, pz));
+                var key = holder.unwrapKey();
+                if (key.isPresent()) biome = key.get().location().toString();
+                var mobs = holder.value().getMobSettings();
+                for (var sp : mobs.getMobs(net.minecraft.world.entity.MobCategory.MONSTER)) {
+                    if (sp.type == ru.aiforge.riftworld.registry.ModEntities.WENDIGO.get()) spawnWendigo = sp.getWeight().asInt();
+                }
+                for (var sp : mobs.getMobs(net.minecraft.world.entity.MobCategory.CREATURE)) {
+                    if (sp.type == ru.aiforge.riftworld.registry.ModEntities.PEGASUS.get()) spawnPegasus = sp.getWeight().asInt();
+                }
+            } catch (Throwable ignored) {
+            }
+            // камера с земли: 9 блоков в стороне, взгляд чуть вверх — видно стволы и кроны в тумане
+            int[] cam = closeSpot(level, px, ground + 3, pz, new int[]{9, 11, 13}, ground + 8);
+            int metric = (trunks >= 6 && logs >= 30 && leaves >= 120) ? (trunks * 40 + logs + leaves / 4) : 0;
+            String line = "riftstruct kind=v37_morok_natural at=" + px + "," + (ground + 2) + "," + pz
+                    + " natural=" + natural + " biome=" + biome
+                    + " trees=" + trunks + " logs=" + logs + " leaves=" + leaves
+                    + " brambles=" + brambles + " fangs=" + fangs + " carpets=" + carpets
+                    + " rime=" + rime + " soil=" + soil
+                    + " spawn_wendigo=" + spawnWendigo + " spawn_pegasus=" + spawnPegasus
+                    + " blocks=" + metric + " sub_air=0"
+                    + " cam=" + cam[0] + "," + cam[1] + "," + cam[2] + ":" + px + "," + (ground + 7) + "," + pz;
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
         }

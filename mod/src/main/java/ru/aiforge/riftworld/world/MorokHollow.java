@@ -3,6 +3,7 @@ package ru.aiforge.riftworld.world;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import ru.aiforge.riftworld.registry.MorokBlocks;
@@ -111,6 +112,72 @@ public final class MorokHollow {
         double h2 = ElisarChunkGenerator.hash(x, z, 912);
         if (h2 < 0.055) chunk.setBlockState(mp.set(x, top + 1, z), carpet, false);
         else if (h2 > 0.988) chunk.setBlockState(mp.set(x, top + 1, z), fang, false);
+    }
+
+    /**
+     * v0.38.0 — уровень «мерзлоты» в готовом чанке: верхний блок из набора Пади.
+     *
+     * <p>Декор (стволы, сухостой, поваленные бревна, колючки, клыки) ставится ПОСЛЕ рельефа,
+     * поэтому высоту колонки нельзя взять из карты высот (там ещё трава/мох биома): ищем
+     * первый сверху блок мерзлоты. {@code Integer.MIN_VALUE} — колонка не в Пади (вода/камень).
+     */
+    public static int groundOf(ChunkAccess chunk, BlockPos.MutableBlockPos mp, int x, int z) {
+        for (int y = 200; y > 60; --y) {
+            BlockState st = chunk.getBlockState(mp.set(x, y, z));
+            if (st.is(MorokBlocks.RIME_GRASS.get()) || st.is(MorokBlocks.PALE_MOSS_BLOCK.get())
+                    || st.is(MorokBlocks.FROZEN_SOIL.get())) {
+                return y;
+            }
+            if (!st.isAir() && !st.canBeReplaced()) return Integer.MIN_VALUE;   // камень/вода/постройка
+        }
+        return Integer.MIN_VALUE;
+    }
+
+    /**
+     * v0.38.0 — точка НАСТОЯЩЕЙ суши внутри Пади (для проб и камер CI).
+     *
+     * <p>Регион Пади задаётся расстоянием до центра и может лежать над открытым океаном: там
+     * биом не включается ({@code ElisarBiomeSource} требует остров), деревья не растут, а
+     * камера пробы оказывалась над водой. Перебираем сетку вокруг центра и берём колонку,
+     * где вес максимален, есть остров и верхний блок — мерзлота Пади.
+     *
+     * @return {@code {x, y, z}} или {@code null}
+     */
+    public static int[] landSpot(ServerLevel level, int nearX, int nearZ, int cellRadius) {
+        CityPlan plan = CityPlan.get();
+        int bestX = 0, bestY = 0, bestZ = 0;
+        int fbX = Integer.MIN_VALUE, fbY = 0, fbZ = 0;   // запасная точка на кромке биома
+        double bestW = -1.0;
+        for (int cx = -cellRadius; cx <= cellRadius; ++cx) {
+            for (int cz = -cellRadius; cz <= cellRadius; ++cz) {
+                int x = nearX + cx * 24, z = nearZ + cz * 24;
+                double w = weight(x + 0.5, z + 0.5);
+                if (w < 0.55 || w <= bestW) continue;
+                if (plan.islandAt(x + 0.5, z + 0.5) == null) continue;
+                level.getChunk(x >> 4, z >> 4);
+                int top = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+                if (top <= plan.ocean + 1) continue;
+                BlockState st = level.getBlockState(new BlockPos(x, top - 1, z));
+                boolean dressed = st.is(MorokBlocks.RIME_GRASS.get()) || st.is(MorokBlocks.PALE_MOSS_BLOCK.get())
+                        || st.is(MorokBlocks.FROZEN_SOIL.get());
+                if (!dressed) {
+                    // кромка биома: мерзлота ещё не легла (её красит только при morok=true).
+                    // Держим такую точку как запасную, но продолжаем искать «настоящую» чащу.
+                    if (fbX == Integer.MIN_VALUE) {
+                        fbX = x;
+                        fbY = top;
+                        fbZ = z;
+                    }
+                    continue;
+                }
+                bestW = w;
+                bestX = x;
+                bestY = top;
+                bestZ = z;
+            }
+        }
+        if (bestW >= 0) return new int[]{bestX, bestY, bestZ};
+        return fbX == Integer.MIN_VALUE ? null : new int[]{fbX, fbY, fbZ};
     }
 
     /**

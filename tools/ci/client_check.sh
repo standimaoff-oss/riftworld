@@ -1677,9 +1677,51 @@ biome_section() {
     log "  FAIL Мороковая Падь: туман не включён (${MOROK:0:160})"; FAILS=$((FAILS + 1))
   fi
 
+  # ---------- v0.38.0: НАСТОЯЩИЙ бор Пади (стволы, сухостой, бревна, колючки, клыки) + спавнеры биома ----------
+  echo "== v0.38.0: живой бор Мороковой Пади — натуральные деревья, сухостой, колючки и спавнеры биома =="
+  probe_and_shot_struct "v37_morok_natural"          260 "150_v38_morok_natural_forest"            0 0 14
+  NAT=$(EL execute at TestPlayer in riftworld:elisar run riftstruct v37_morok_natural 2>&1 | tr '\r\n' '  ')
+  log "  /riftstruct v37_morok_natural -> ${NAT:0:300}"
+  NAT_TREES=$(printf '%s' "$NAT" | sed -n 's/.* trees=\([0-9]*\).*/\1/p' | tail -1)
+  NAT_LEAVES=$(printf '%s' "$NAT" | sed -n 's/.* leaves=\([0-9]*\).*/\1/p' | tail -1)
+  NAT_BRAM=$(printf '%s' "$NAT" | sed -n 's/.* brambles=\([0-9]*\).*/\1/p' | tail -1)
+  NAT_FANG=$(printf '%s' "$NAT" | sed -n 's/.* fangs=\([0-9]*\).*/\1/p' | tail -1)
+  NAT_WEN=$(printf '%s' "$NAT" | sed -n 's/.* spawn_wendigo=\([0-9]*\).*/\1/p' | tail -1)
+  NAT_BIOME=$(printf '%s' "$NAT" | sed -n 's/.* biome=\([a-z:_]*\).*/\1/p' | tail -1)
+  if [ "${NAT_TREES:-0}" -ge 6 ] && [ "${NAT_LEAVES:-0}" -ge 120 ]; then
+    log "  OK   лес Пади растёт САМ: деревьев ${NAT_TREES}, листвы ${NAT_LEAVES}, колючек ${NAT_BRAM:-0}, клыков ${NAT_FANG:-0}"
+  else
+    log "  FAIL лес Пади: деревьев ${NAT_TREES:-0} (нужно >=6), листвы ${NAT_LEAVES:-0} (нужно >=120)"; FAILS=$((FAILS + 1))
+  fi
+  if [ "${NAT_BRAM:-0}" -ge 3 ] && [ "${NAT_FANG:-0}" -ge 2 ]; then
+    log "  OK   подлесок Пади на месте: колючки ${NAT_BRAM}, ледяные клыки ${NAT_FANG}"
+  else
+    log "  FAIL подлесок Пади: колючек ${NAT_BRAM:-0} (нужно >=3), клыков ${NAT_FANG:-0} (нужно >=2)"; FAILS=$((FAILS + 1))
+  fi
+  if [ "${NAT_BIOME:-}" = "riftworld:morok_hollow" ]; then
+    log "  OK   биом в точке пробы = riftworld:morok_hollow"
+  else
+    log "  FAIL биом в точке пробы = ${NAT_BIOME:-?} (ожидался riftworld:morok_hollow)"; FAILS=$((FAILS + 1))
+  fi
+  if [ "${NAT_WEN:-0}" -ge 1 ]; then
+    log "  OK   спавнеры биома живы: riftworld:wendigo weight=${NAT_WEN} (было "spawners": {})"
+  else
+    log "  FAIL спавнеры биома пусты: wendigo weight=${NAT_WEN:-0}"; FAILS=$((FAILS + 1))
+  fi
+
   # ---------- v0.32.0: Лиоплевродон — модель, текстура, поведение в глубокой воде ----------
   echo "== v0.32.0: Лиоплевродон — 12-блочный хищник глубин (модель + текстура + дроп) =="
   probe_and_shot_struct "v32_liopleurodon"           800 "146_v32_liopleurodon_deep_water"         1 0 10
+  LIO=$(EL execute at TestPlayer in riftworld:elisar run riftstruct v32_liopleurodon 2>&1 | tr '\r\n' '  ')
+  LIO_BOX=$(printf '%s' "$LIO" | sed -n 's/.* model_boxes=\([0-9]*\).*/\1/p' | tail -1)
+  LIO_BONES=$(printf '%s' "$LIO" | sed -n 's/.* bones=\([0-9]*\).*/\1/p' | tail -1)
+  if [ "${LIO_BOX:-0}" -ge 60 ] && [ "${LIO_BONES:-0}" -eq 10 ]; then
+    log "  OK   модель Лиоплевродона в сборке: кубоидов ${LIO_BOX}, костей ${LIO_BONES} (читается из geo/liopleurodon.json)"
+  else
+    log "  FAIL модель Лиоплевродона: кубоидов ${LIO_BOX:-0} (нужно >=60), костей ${LIO_BONES:-0} (нужно 10)"; FAILS=$((FAILS + 1))
+  fi
+  # Крупный кадр головы: узкая морда и ряд клыков по наружной кромке челюстей
+  probe_and_shot_struct "v38_liopleurodon_jaws"      800 "151_v38_liopleurodon_jaws_closeup"       1 0 8
 
   # ---------- v0.26.0: редкие выходы подводных пещер в море, /locate всех 26 структур и 9 биомов, все 16 яиц призыва ----------
   echo "== v0.26.0: редкие выходы пещер в море, /locate всех 26 структур и 9 биомов, яйца призыва всех 16 мобов (включая Дракона) =="

@@ -2066,44 +2066,160 @@ public class ElisarChunkGenerator extends ChunkGenerator {
 
     // ================================================================== decoration: buildings + props
     /**
-     * v0.36.0 — бледный бор «Мороковой Пади»: разреженные «костяные» сосны 9–17 блоков
-     * по решётке {@link MorokHollow#treeHere}, редкий подлесок и ледяные клыки.
+     * v0.38.0 — НАСТОЯЩИЙ бледный бор «Мороковой Пади».
+     *
+     * <p>До этого в биоме стояла только решётка одинаковых «палок с шапками»: 7x7, один тип
+     * дерева, без подлеска. Теперь декор строится слоями, как у ванильного таёжного бора:
+     * <ul>
+     *   <li><b>патриарх</b> (2x2 ствол, 15–22 блока, широкая рваная крона) — редкость ~6%;</li>
+     *   <li><b>обычная бледная сосна</b> (1x1, 9–17 блоков) — основная масса;</li>
+     *   <li><b>сухостой</b> — обломанный ствол без кроны, иногда с косой веткой;</li>
+     *   <li><b>поваленный ствол</b> — бревно на земле вдоль X или Z, 4–7 блоков;</li>
+     *   <li><b>колючки</b> {@code bone_bramble} — 2–4 блока в высоту, растут кущами;</li>
+     *   <li><b>ледяные клыки</b> {@code ice_fang} — одиночные и группами до 3 блоков.</li>
+     * </ul>
+     * Всё рисуется только в колонках текущего чанка (кроны на границе обрезаются, как и в
+     * ванильном декоре) — иначе генератор писал бы в чужие чанки и ломал детерминизм.
      */
     private static void morokTrees(WorldGenLevel level, ChunkAccess chunk, int x0, int z0) {
+        BlockState log = MorokBlocks.MOROK_LOG.get().defaultBlockState();
+        BlockState leaves = MorokBlocks.MOROK_LEAVES.get().defaultBlockState();
+        BlockState bramble = MorokBlocks.BONE_BRAMBLE.get().defaultBlockState();
+        BlockState fang = MorokBlocks.ICE_FANG.get().defaultBlockState();
+        BlockState carpet = MorokBlocks.PALE_MOSS_CARPET.get().defaultBlockState();
+        BlockState moss = MorokBlocks.PALE_MOSS_BLOCK.get().defaultBlockState();
+        BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
+
         for (int dx = 0; dx < 16; ++dx) {
             for (int dz = 0; dz < 16; ++dz) {
                 int x = x0 + dx, z = z0 + dz;
-                if (!MorokHollow.treeHere(x, z)) continue;
-                BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos(x, 0, z);
-                int top = Integer.MIN_VALUE;
-                for (int y = 200; y > 60; --y) {
-                    BlockState st = chunk.getBlockState(mp.set(x, y, z));
-                    if (st.is(MorokBlocks.RIME_GRASS.get()) || st.is(MorokBlocks.PALE_MOSS_BLOCK.get())
-                            || st.is(MorokBlocks.FROZEN_SOIL.get())) {
-                        top = y;
-                        break;
-                    }
-                }
+                double h = hash(x, z, 916);
+                boolean big = MorokHollow.treeHere(x, z) && h < 0.14;
+                boolean small = MorokHollow.treeHere(x, z) && !big;
+                boolean snag = !MorokHollow.treeHere(x, z) && h > 0.965 && MorokHollow.inside(x + 0.5, z + 0.5);
+                boolean fallen = !MorokHollow.treeHere(x, z) && h > 0.93 && h < 0.945
+                        && MorokHollow.inside(x + 0.5, z + 0.5);
+                boolean brambles = h > 0.86 && h < 0.885 && MorokHollow.inside(x + 0.5, z + 0.5);
+                boolean fangs = Math.floorMod(x, 13) == 6 && Math.floorMod(z, 13) == 6
+                        && MorokHollow.inside(x + 0.5, z + 0.5);
+                if (!(big || small || snag || fallen || brambles || fangs)) continue;
+
+                int top = MorokHollow.groundOf(chunk, mp, x, z);
                 if (top == Integer.MIN_VALUE) continue;
-                int h = MorokHollow.treeHeight(x, z);
-                BlockState log = MorokBlocks.MOROK_LOG.get().defaultBlockState();
-                BlockState leaves = MorokBlocks.MOROK_LEAVES.get().defaultBlockState();
-                for (int y = 1; y <= h; ++y) chunk.setBlockState(mp.set(x, top + y, z), log, false);
-                // редкая асимметричная крона: 3 яруса, у верхушки уже
-                int base = top + h;
-                for (int layer = 0; layer < 4; ++layer) {
-                    int r = 3 - layer / 2;
-                    int yy = base - layer * 2;
-                    for (int lx = -r; lx <= r; ++lx) {
-                        for (int lz = -r; lz <= r; ++lz) {
-                            if (Math.abs(lx) + Math.abs(lz) > r + 1) continue;
-                            if (hash(x + lx, z + lz, 915 + layer) < 0.22) continue;
-                            BlockPos p = mp.set(x + lx, yy, z + lz);
-                            if (chunk.getBlockState(p).isAir()) chunk.setBlockState(p, leaves, false);
+
+                if (big) {
+                    // 2x2 патриарх: ствол из четырёх колонн, крона из четырёх ярусов
+                    int hh = MorokHollow.treeHeight(x, z) + 6;
+                    for (int tx = 0; tx <= 1; ++tx) {
+                        for (int tz = 0; tz <= 1; ++tz) {
+                            int cx = x + tx, cz = z + tz;
+                            if (cx > x0 + 15 || cz > z0 + 15) continue;
+                            for (int y = 1; y <= hh; ++y) chunk.setBlockState(mp.set(cx, top + y, cz), log, false);
+                        }
+                    }
+                    for (int layer = 0; layer < 4; ++layer) {
+                        int r = 4 - layer / 2;
+                        int yy = top + hh - layer * 3;
+                        for (int lx = -r; lx <= r; ++lx) {
+                            for (int lz = -r; lz <= r; ++lz) {
+                                if (Math.abs(lx) + Math.abs(lz) > r + 2) continue;
+                                int cx = x + lx, cz = z + lz;
+                                if (cx < x0 || cx > x0 + 15 || cz < z0 || cz > z0 + 15) continue;
+                                if (hash(cx * 3, cz * 5, 917 + layer) < 0.28) continue;
+                                BlockPos p = mp.set(cx, yy, cz);
+                                if (chunk.getBlockState(p).isAir()) chunk.setBlockState(p, leaves, false);
+                            }
+                        }
+                    }
+                    continue;
+                }
+                if (small) {
+                    int hh = MorokHollow.treeHeight(x, z);
+                    for (int y = 1; y <= hh; ++y) chunk.setBlockState(mp.set(x, top + y, z), log, false);
+                    int base = top + hh;
+                    for (int layer = 0; layer < 4; ++layer) {
+                        int r = 3 - layer / 2;
+                        int yy = base - layer * 2;
+                        for (int lx = -r; lx <= r; ++lx) {
+                            for (int lz = -r; lz <= r; ++lz) {
+                                if (Math.abs(lx) + Math.abs(lz) > r + 1) continue;
+                                int cx = x + lx, cz = z + lz;
+                                if (cx < x0 || cx > x0 + 15 || cz < z0 || cz > z0 + 15) continue;
+                                if (hash(cx, cz, 918 + layer) < 0.22) continue;
+                                BlockPos p = mp.set(cx, yy, cz);
+                                if (chunk.getBlockState(p).isAir()) chunk.setBlockState(p, leaves, false);
+                            }
+                        }
+                    }
+                    chunk.setBlockState(mp.set(x, top + hh + 1, z), leaves, false);
+                    continue;
+                }
+                if (snag) {
+                    int hh = 4 + (int) Math.round(hash(x, z, 919) * 5);
+                    for (int y = 1; y <= hh; ++y) chunk.setBlockState(mp.set(x, top + y, z), log, false);
+                    if (hash(x, z, 920) < 0.5) {
+                        int by = top + hh - 2;
+                        int sx = hash(x, z, 921) < 0.5 ? 1 : -1;
+                        int cx = x + sx;
+                        if (cx >= x0 && cx <= x0 + 15) {
+                            chunk.setBlockState(mp.set(cx, by, z), log.setValue(net.minecraft.world.level.block.RotatedPillarBlock.AXIS,
+                                    net.minecraft.core.Direction.Axis.X), false);
+                        }
+                    }
+                    continue;
+                }
+                if (fallen) {
+                    boolean alongX = hash(x, z, 922) < 0.5;
+                    int len = 4 + (int) Math.round(hash(x, z, 923) * 3);
+                    for (int i = 0; i < len; ++i) {
+                        int cx = alongX ? x + i : x;
+                        int cz = alongX ? z : z + i;
+                        if (cx > x0 + 15 || cz > z0 + 15) break;
+                        BlockPos p = mp.set(cx, top + 1, cz);
+                        if (!chunk.getBlockState(p).isAir()) continue;
+                        chunk.setBlockState(p, log.setValue(net.minecraft.world.level.block.RotatedPillarBlock.AXIS,
+                                alongX ? net.minecraft.core.Direction.Axis.X : net.minecraft.core.Direction.Axis.Z), false);
+                        if (hash(cx, cz, 924) < 0.35) {
+                            BlockPos up = mp.set(cx, top + 2, cz);
+                            if (chunk.getBlockState(up).isAir()) chunk.setBlockState(up, moss, false);
+                        }
+                    }
+                    continue;
+                }
+                if (brambles) {
+                    // колючки — крестик-растение (как ванильный куст): только ПЛАСТОМ по земле,
+                    // ставить их друг на друга нельзя (canSurvive не разрешает грунт из колючек)
+                    int n = 4 + (int) Math.round(hash(x, z, 925) * 5);
+                    for (int i = 0; i < n; ++i) {
+                        int cx = x + ((i * 5) % 7) - 3;
+                        int cz = z + ((i * 7) % 7) - 3;
+                        if (cx < x0 || cx > x0 + 15 || cz < z0 || cz > z0 + 15) continue;
+                        int gt = MorokHollow.groundOf(chunk, mp, cx, cz);
+                        if (gt == Integer.MIN_VALUE) continue;
+                        BlockPos p = mp.set(cx, gt + 1, cz);
+                        if (chunk.getBlockState(p).isAir()) chunk.setBlockState(p, bramble, false);
+                    }
+                    continue;
+                }
+                if (fangs) {
+                    // ледяные клыки — тоже крестики: группа из 2–3 штук в линию, каждая на своём грунте
+                    int n = 2 + (int) Math.round(hash(x, z, 927) * 2);
+                    for (int i = 0; i < n; ++i) {
+                        int cx = x + i - 1;
+                        int cz = z + ((i * 2) % 3) - 1;
+                        if (cx < x0 || cx > x0 + 15 || cz < z0 || cz > z0 + 15) continue;
+                        int gt = MorokHollow.groundOf(chunk, mp, cx, cz);
+                        if (gt == Integer.MIN_VALUE) continue;
+                        BlockPos p = mp.set(cx, gt + 1, cz);
+                        if (chunk.getBlockState(p).isAir()) chunk.setBlockState(p, fang, false);
+                        if (hash(cx, cz, 929) < 0.35) {
+                            BlockPos cp = mp.set(cx + 1, gt + 1, cz);
+                            if (cx + 1 <= x0 + 15 && chunk.getBlockState(cp).isAir()) {
+                                chunk.setBlockState(cp, carpet, false);
+                            }
                         }
                     }
                 }
-                chunk.setBlockState(mp.set(x, top + h + 1, z), leaves, false);
             }
         }
     }

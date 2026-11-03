@@ -129,11 +129,13 @@ public final class ElisarSky extends DimensionSpecialEffects {
                 nearDist = Mth.lerp(wc, nearDist, far * 0.68F);
                 farDist = Mth.lerp(wc, farDist, far * 1.14F);
             }
-            // v0.37.0: «Мороковая Падь» — мгла сжимает обзор до 6–12 блоков, как в концепте
+            // v0.38.0: «Мороковая Падь» — дальность мглы берётся из конфига
+            // (config/riftworld-atmosphere.toml), по умолчанию 6.5 / 54 блока, как в концепте
             float wm = morokWeight(pos);
             if (wm > 0.001F) {
-                nearDist = Mth.lerp(wm, nearDist, 6.5F);
-                farDist = Mth.lerp(wm, farDist, Math.min(far, 54.0F));
+                nearDist = Mth.lerp(wm, nearDist, ru.aiforge.riftworld.RiftConfig.morokFogNear());
+                farDist = Mth.lerp(wm, farDist,
+                        Math.min(far, ru.aiforge.riftworld.RiftConfig.morokFogFar()));
             }
             e.setNearPlaneDistance(nearDist);
             e.setFarPlaneDistance(farDist);
@@ -175,10 +177,11 @@ public final class ElisarSky extends DimensionSpecialEffects {
             }
             float wm = morokWeight(pos);
             if (wm > 0.001F) {
-                float km = 0.94F * wm;
-                r = (float) Mth.lerp(km, r, MOROK_MIST.x);
-                gr = (float) Mth.lerp(km, gr, MOROK_MIST.y);
-                bl = (float) Mth.lerp(km, bl, MOROK_MIST.z);
+                float km = ru.aiforge.riftworld.RiftConfig.morokFogStrength() * wm;
+                float[] mc = ru.aiforge.riftworld.RiftConfig.morokFogColor();
+                r = Mth.lerp(km, r, mc[0]);
+                gr = Mth.lerp(km, gr, mc[1]);
+                bl = Mth.lerp(km, bl, mc[2]);
             }
             if (wg > 0.001F) {
                 float kg = 0.92F * wg;
