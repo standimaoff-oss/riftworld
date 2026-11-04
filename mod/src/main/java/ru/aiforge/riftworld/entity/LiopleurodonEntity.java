@@ -82,7 +82,7 @@ public class LiopleurodonEntity extends Mob {
     }
 
     public boolean inWater() {
-        return elisarWater(level(), blockPosition()) || elisarWater(level(), blockPosition().above());
+        return isInWaterOrBubble() || elisarWater(level(), blockPosition()) || elisarWater(level(), blockPosition().above());
     }
 
     @Override

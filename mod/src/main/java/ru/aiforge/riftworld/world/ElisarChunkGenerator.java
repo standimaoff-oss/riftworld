@@ -3205,6 +3205,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
 
     @Override
     public int getBaseHeight(int x, int z, Heightmap.Types type, LevelHeightAccessor level, RandomState rs) {
+        if (DeepOcean.openCoreChunk(x, z)) return CityPlan.get().ocean + 1;
         Col c = column(CityPlan.get(), x, z);
         if (c.spanTop != Integer.MIN_VALUE) {
             int base = c.isl == null ? CityPlan.get().ocean + 1 : c.top + 1;
@@ -3240,7 +3241,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
 
     @Override
     public void addDebugScreenInfo(List<String> info, RandomState rs, BlockPos pos) {
-        CityPlan.Island i = CityPlan.get().islandAt(pos.getX() + 0.5, pos.getZ() + 0.5);
+        CityPlan.Island i = DeepOcean.openCoreChunk(pos.getX(), pos.getZ())
+                ? null : CityPlan.get().islandAt(pos.getX() + 0.5, pos.getZ() + 0.5);
         info.add("Elisar: " + (i == null ? "open sky" : "island t=" + String.format("%.2f", i.t(pos.getX() + 0.5, pos.getZ() + 0.5))));
     }
 }
