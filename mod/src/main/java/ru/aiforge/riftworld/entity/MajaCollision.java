@@ -67,7 +67,10 @@ public final class MajaCollision {
             }
             AABB volume = new AABB(minX - MOTION_MARGIN, center.y + b.y0() - MOTION_MARGIN, minZ - MOTION_MARGIN,
                     maxX + MOTION_MARGIN, center.y + b.y1() + MOTION_MARGIN, maxZ + MOTION_MARGIN);
-            if (!level.getWorldBorder().isWithinBounds(volume) || !clearBox(level, volume)) return false;
+            var border = level.getWorldBorder();
+            if (volume.minX < border.getMinX() || volume.maxX > border.getMaxX()
+                    || volume.minZ < border.getMinZ() || volume.maxZ > border.getMaxZ()
+                    || !clearBox(level, volume)) return false;
         }
         return true;
     }

@@ -18,6 +18,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import ru.aiforge.riftworld.world.CityPlan;
+import ru.aiforge.riftworld.world.MajaIslandDevourer;
 
 /** A rare ocean titan. It ignores players; no chat or HUD messages are emitted. */
 public final class ElGranMajaEntity extends Mob {
@@ -25,9 +26,9 @@ public final class ElGranMajaEntity extends Mob {
     private static final EntityDataAccessor<Float> JAW = SynchedEntityData.defineId(ElGranMajaEntity.class, EntityDataSerializers.FLOAT);
     private float desiredYaw;
     private int directionTicks;
-    private int unsafeTicks;
     private float jawPrevious;
     private float jawCurrent;
+    private final MajaIslandDevourer devourer = new MajaIslandDevourer();
 
     public ElGranMajaEntity(EntityType<? extends ElGranMajaEntity> type, Level level) {
         super(type, level);
@@ -66,16 +67,22 @@ public final class ElGranMajaEntity extends Mob {
             if (MajaCollision.clear(server, position(), getYRot())) {
                 entityData.set(READY, true);
                 desiredYaw = getYRot();
-                unsafeTicks = 0;
             } else {
                 setDeltaMovement(Vec3.ZERO);
-                // Natural spawns check first. A misplaced command-summon fails closed.
-                if (++unsafeTicks > 200) discard();
+                // A command-summon inside rock or an entity waiting for chunks stays inert and hidden.
                 return;
             }
         }
         if (isNoAi()) {
             setDeltaMovement(Vec3.ZERO);
+            if (!MajaCollision.clear(server, position(), getYRot())) entityData.set(READY, false);
+            return;
+        }
+
+        if (devourer.tick(server, this)) {
+            setDeltaMovement(Vec3.ZERO);
+            entityData.set(JAW, 1.0F);
+            if (!MajaCollision.clear(server, position(), getYRot())) entityData.set(READY, false);
             return;
         }
 

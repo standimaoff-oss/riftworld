@@ -587,5 +587,6 @@
   "riftworld.compass.none": "Поблизости нет Тлеющих руин.",
   "riftworld.compass.ruins": "Стрелка компаса качнулась к ближайшим Тлеющим руинам (%s, %s).",
   "biome.riftworld.maja_ocean": "Океан Гран Махи",
-  "entity.riftworld.el_gran_maja": "Эль Гран Маха"
+  "entity.riftworld.el_gran_maja": "Эль Гран Маха",
+  "item.riftworld.el_gran_maja_spawn_egg": "Яйцо призыва: Эль Гран Маха"
 }

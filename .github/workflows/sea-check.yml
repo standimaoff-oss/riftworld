@@ -24,6 +24,18 @@ jobs:
         with:
           java-version: '17'
           distribution: temurin
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Check model, animation envelopes and island safety rules
+        shell: bash
+        run: |
+          python -m pip install numpy pillow
+          python reports/el_gran_maja_model/validate_el_gran_maja_model.py
+          python reports/el_gran_maja_model/validate_collision_bounds.py
+          mkdir -p /tmp/maja-unit
+          javac -d /tmp/maja-unit mod/src/main/java/ru/aiforge/riftworld/world/DeepOcean.java mod/src/main/java/ru/aiforge/riftworld/world/MajaSafetyPolicy.java tests/java/MajaRulesTest.java
+          java -cp /tmp/maja-unit MajaRulesTest
       - uses: gradle/actions/setup-gradle@v4
       - name: Compile and package both mods
         shell: bash

@@ -53,6 +53,7 @@ public final class ModTabs {
 
     private static void acceptAllSpawnEggs(CreativeModeTab.Output out) {
         out.accept(ModItems.LIOPLEURODON_EGG.get());
+        out.accept(ModItems.EL_GRAN_MAJA_EGG.get());
         out.accept(ModItems.BLOSSOM_STAG_EGG.get());
         out.accept(ModItems.PEGASUS_EGG.get());
         out.accept(ModItems.WENDIGO_EGG.get());

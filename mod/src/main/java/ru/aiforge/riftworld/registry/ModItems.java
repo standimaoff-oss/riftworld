@@ -150,6 +150,9 @@ public final class ModItems {
     public static final RegistryObject<Item> LIOPLEURODON_EGG = ITEMS.register("liopleurodon_spawn_egg",
             () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.LIOPLEURODON, 0x26323C, 0xC4C5BE,
                     new Item.Properties()));
+    public static final RegistryObject<Item> EL_GRAN_MAJA_EGG = ITEMS.register("el_gran_maja_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.EL_GRAN_MAJA, 0x263632, 0xA59D8B,
+                    new Item.Properties()));
     public static final RegistryObject<Item> LIOPLEURODON_TOOTH = ITEMS.register("liopleurodon_tooth",
             () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)));
     public static final RegistryObject<Item> SEA_SCALE = ITEMS.register("sea_scale",
