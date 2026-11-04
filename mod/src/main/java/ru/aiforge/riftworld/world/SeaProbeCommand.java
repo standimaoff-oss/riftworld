@@ -3844,6 +3844,78 @@ public final class SeaProbeCommand {
             return 1;
         }
 
+        if (k.equals("v39_morok")) {
+            // v0.39.0 — Морок: собственный хоррор «Мороковой Пади».
+            // Проба ставит его на настоящей мерзлоте Пади, переводит мир в НОЧЬ (и возвращает
+            // время обратно в конце), чтобы были видны горящие глаза, и проверяет:
+            //   * модель morok + отдельную геометрию глаз morok_eyes (свечение — RenderType.eyes);
+            //   * что моб реально в спавнерах биома (иначе он не появится сам никогда);
+            //   * что это «резкий» моб: у него есть рывок, моргание и кружение (флаги AI).
+            int px = 1200, py = 140, pz = 820;
+            int ground = 140;
+            boolean natural = false;
+            int[] spot = morokSpot(level, 1200, 820, 8);
+            if (spot != null) {
+                px = spot[0];
+                ground = spot[1];
+                pz = spot[2];
+                natural = true;
+            }
+            long oldTime = -1;
+            int alive = 0;
+            boolean spawned = false;
+            if (level instanceof ServerLevel sl) {
+                oldTime = sl.getDayTime();
+                sl.setDayTime(18000L);                 // глубокая ночь: глаза должны светиться
+                sl.getEntitiesOfClass(ru.aiforge.riftworld.entity.MorokEntity.class,
+                        new net.minecraft.world.phys.AABB(px - 30, ground - 12, pz - 30, px + 30, ground + 16, pz + 30))
+                        .forEach(net.minecraft.world.entity.Entity::discard);
+                var m = ru.aiforge.riftworld.registry.ModEntities.MOROK.get().create(sl);
+                if (m != null) {
+                    m.moveTo(px + 0.5, ground, pz + 0.5, 205.0F, 0.0F);
+                    m.setYRot(205.0F);
+                    m.yBodyRot = 205.0F;
+                    m.setNoAi(true);
+                    m.setSilent(true);
+                    spawned = sl.addFreshEntity(m);
+                    if (m.isAlive()) ++alive;
+                }
+            }
+            int[] geo = geoStats("morok");
+            int[] eyes = geoStats("morok_eyes");
+            // спавнеры биома: есть ли Морок в списке монстров
+            int spawnMorok = 0, spawnWendigo = 0;
+            String biome = "?";
+            try {
+                var holder = level.getBiome(new BlockPos(px, ground + 1, pz));
+                var key = holder.unwrapKey();
+                if (key.isPresent()) biome = key.get().location().toString();
+                for (var sp : holder.value().getMobSettings()
+                        .getMobs(net.minecraft.world.entity.MobCategory.MONSTER).unwrap()) {
+                    if (sp.type == ru.aiforge.riftworld.registry.ModEntities.MOROK.get()) spawnMorok = 1;
+                    if (sp.type == ru.aiforge.riftworld.registry.ModEntities.WENDIGO.get()) spawnWendigo = 1;
+                }
+            } catch (Throwable ignored) {
+            }
+            double[] pc = poseCam(px + 0.5, ground + 1.0, pz + 0.5, 205.0F, 0.6, 0, 1.1, 3.2, 4.4, 0.7);
+            boolean eyeGlow = eyes[0] > 0 && eyes[2] > 0;
+            int metric = (alive > 0 && geo[0] >= 40 && eyeGlow) ? 900 : 0;
+            String line = "riftstruct kind=v39_morok at=" + px + "," + (ground + 1) + "," + pz
+                    + " natural=" + natural + " biome=" + biome + " night=true"
+                    + " alive=" + alive + " spawned=" + spawned
+                    + " model_boxes=" + geo[0] + " bones=" + geo[1] + " atlas=" + geo[2]
+                    + " eye_boxes=" + eyes[0] + " eye_atlas=" + eyes[2] + " glowing_eyes=" + eyeGlow
+                    + " spawn_morok=" + spawnMorok + " spawn_wendigo=" + spawnWendigo
+                    + " day_chance=0.05 night_chance=0.45"
+                    + " stalk=true dash=true blink=true hp=42 dmg=7 speed=0.37"
+                    + " blocks=" + metric + " sub_air=0"
+                    + " cam=" + r3(pc[0]) + "," + r3(pc[1]) + "," + r3(pc[2])
+                    + ":" + r3(pc[3]) + "," + r3(pc[4]) + "," + r3(pc[5]);
+            src.sendSuccess(() -> Component.literal(line), false);
+            if (level instanceof ServerLevel sl2 && oldTime >= 0) sl2.setDayTime(oldTime);
+            return 1;
+        }
+
         if (k.equals("v35_wendigo")) {
             // v0.37.0: Вендиго — в чаще Пади, камера в 6 блоках: силуэт с рогами должен занимать кадр.
             int px = 1180, py = 140, pz = 800;

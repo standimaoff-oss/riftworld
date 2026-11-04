@@ -12,6 +12,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import ru.aiforge.riftworld.RiftWorld;
 import ru.aiforge.riftworld.entity.PegasusEntity;
+import ru.aiforge.riftworld.entity.MorokEntity;
 import ru.aiforge.riftworld.entity.WendigoEntity;
 import ru.aiforge.riftworld.flight.Flight;
 import ru.aiforge.riftworld.registry.ModEntities;
@@ -20,8 +21,9 @@ import ru.aiforge.riftworld.registry.ModEntities;
  * v0.36.0 — расселение новых мобов Элисара.
  *
  * <ul>
- *   <li><b>Вендиго</b> — только в «Мороковой Пади» ({@link MorokHollow}); ночью шанс втрое выше.
- *       Держим не больше 3 на игрока и 12 на измерение: это хозяин чащи, а не толпа.</li>
+ *   <li><b>Морок</b> (v0.39.0) — главный хоррор «Мороковой Пади»: <b>днём 5 %, ночью 45 %</b>,
+ *       не больше 3 на игрока. Появляется в тумане на 12–40 блоках, а не под носом.</li>
+ *   <li><b>Вендиго</b> — теперь редкий гость чащи (1 на игрока): его место занял Морок.</li>
  *   <li><b>Пегас</b> — только в живых биомах (Аметистовые холмы, Висячие сады, Роща Сизо),
  *       редко и по одному: скакун, а не «моб на каждом шагу».</li>
  * </ul>
@@ -29,8 +31,11 @@ import ru.aiforge.riftworld.registry.ModEntities;
  */
 @Mod.EventBusSubscriber(modid = RiftWorld.MODID)
 public final class MorokFaunaKeeper {
-    private static final int WENDIGO_PER_PLAYER = 3;
-    private static final int WENDIGO_WORLD_CAP = 12;
+    private static final int WENDIGO_PER_PLAYER = 1;
+    private static final int WENDIGO_WORLD_CAP = 5;
+    // v0.39.0: Морок — главный хоррор Пади. Ночью часто, днём редко.
+    private static final int MOROK_PER_PLAYER = 3;
+    private static final int MOROK_WORLD_CAP = 14;
     private static final int PEGASUS_PER_PLAYER = 2;
     private static final int PEGASUS_WORLD_CAP = 10;
     private static int failsafe = 0;
@@ -58,6 +63,17 @@ public final class MorokFaunaKeeper {
         for (ServerPlayer sp : new ArrayList<>(players)) {
             if (sp.isSpectator()) continue;
 
+            // ---------------- Морок: свой хоррор Пади (днём редко, ночью часто)
+            if (MorokHollow.inside(sp.getX(), sp.getZ())) {
+                List<MorokEntity> nearMorok = sl.getEntitiesOfClass(MorokEntity.class, sp.getBoundingBox().inflate(96.0));
+                // день 0.05, ночь 0.45 — ровно то, что просили: «редко днём, часто ночью»
+                double morokChance = night ? 0.45 : 0.05;
+                if (nearMorok.size() < MOROK_PER_PLAYER && r.nextDouble() < morokChance
+                        && countMorok(sl) < MOROK_WORLD_CAP) {
+                    spawnMorok(sl, sp);
+                }
+            }
+
             // ---------------- Вендиго: только в тумане Пади
             if (MorokHollow.inside(sp.getX(), sp.getZ())) {
                 List<WendigoEntity> near = sl.getEntitiesOfClass(WendigoEntity.class, sp.getBoundingBox().inflate(96.0));
@@ -82,12 +98,41 @@ public final class MorokFaunaKeeper {
         return VioletHills.inside(x, z) || SizoGrove.inside(x, z) || WaterfallGardens.inside(x, z);
     }
 
+    private static int countMorok(ServerLevel sl) {
+        return sl.getEntitiesOfClass(MorokEntity.class, new net.minecraft.world.phys.AABB(-30000, -64, -30000, 30000, 320, 30000)).size();
+    }
+
     private static int countWendigo(ServerLevel sl) {
         return sl.getEntitiesOfClass(WendigoEntity.class, new net.minecraft.world.phys.AABB(-30000, -64, -30000, 30000, 320, 30000)).size();
     }
 
     private static int countPegasus(ServerLevel sl) {
         return sl.getEntitiesOfClass(PegasusEntity.class, new net.minecraft.world.phys.AABB(-30000, -64, -30000, 30000, 320, 30000)).size();
+    }
+
+    private static void spawnMorok(ServerLevel sl, ServerPlayer sp) {
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        for (int attempt = 0; attempt < 14; ++attempt) {
+            // спавн не вплотную: Морок появляется в тумане на 12–40 блоках и уже сам выходит на охоту
+            int px = (int) sp.getX() + r.nextInt(64) - 32;
+            int pz = (int) sp.getZ() + r.nextInt(64) - 32;
+            if (!sl.hasChunk(px >> 4, pz >> 4)) continue;
+            if (!MorokHollow.inside(px + 0.5, pz + 0.5)) continue;
+            double d = Math.hypot(px + 0.5 - sp.getX(), pz + 0.5 - sp.getZ());
+            if (d < 12.0) continue;
+            BlockPos ground = groundAt(sl, px, pz);
+            if (ground == null) continue;
+            MorokEntity m = ModEntities.MOROK.get().create(sl);
+            if (m == null) return;
+            m.moveTo(ground.getX() + 0.5, ground.getY(), ground.getZ() + 0.5, r.nextFloat() * 360.0F, 0.0F);
+            m.finalizeSpawn(sl, sl.getCurrentDifficultyAt(ground), MobSpawnType.NATURAL, null, null);
+            sl.addFreshEntity(m);
+            if (r.nextDouble() < 0.5) {
+                sl.playSound(null, ground, net.minecraft.sounds.SoundEvents.WARDEN_HEARTBEAT,
+                        net.minecraft.sounds.SoundSource.HOSTILE, 1.2F, 0.7F);
+            }
+            return;
+        }
     }
 
     private static void spawnWendigo(ServerLevel sl, ServerPlayer sp) {

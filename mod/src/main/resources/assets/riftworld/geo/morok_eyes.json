@@ -1,0 +1,56 @@
+{
+ "texture_width": 16,
+ "texture_height": 16,
+ "render_scale": 1.0,
+ "translucent": true,
+ "bones": [
+  {
+   "name": "head",
+   "pivot": [
+    0,
+    44,
+    -9
+   ],
+   "anim": {
+    "axis": "x",
+    "amp": 5.0,
+    "speed": 1.0,
+    "phase": 0.9
+   },
+   "cubes": [
+    {
+     "origin": [
+      -3,
+      42,
+      -17.2
+     ],
+     "size": [
+      3,
+      2,
+      1
+     ],
+     "uv": [
+      0,
+      0
+     ]
+    },
+    {
+     "origin": [
+      2,
+      42,
+      -17.2
+     ],
+     "size": [
+      3,
+      2,
+      1
+     ],
+     "uv": [
+      0,
+      0
+     ]
+    }
+   ]
+  }
+ ]
+}

@@ -1526,6 +1526,33 @@ biome_section() {
   # Крупный кадр головы: узкая морда и ряд клыков по наружной кромке челюстей
   probe_and_shot_struct "v38_liopleurodon_jaws"      800 "151_v38_liopleurodon_jaws_closeup"       1 0 8
 
+  # ---------- v0.39.0: МОРÓК — свой хоррор-моб Пади (резкий, кружит, моргает, горящие глаза) ----------
+  echo "== v0.39.0: Морок — ночной хоррор Мороковой Пади (горящие глаза, рывки и моргание) =="
+  probe_and_shot_struct "v39_morok"                  800 "152_v39_morok_night_hunter"              0 0 8
+  MORK=$(EL execute at TestPlayer in riftworld:elisar run riftstruct v39_morok 2>&1 | tr '\r\n' '  ')
+  log "  /riftstruct v39_morok -> ${MORK:0:320}"
+  MORK_ALIVE=$(printf '%s' "$MORK" | sed -n 's/.* alive=\([0-9]*\).*/\1/p' | tail -1)
+  MORK_BOX=$(printf '%s' "$MORK" | sed -n 's/.* model_boxes=\([0-9]*\).*/\1/p' | tail -1)
+  MORK_EYES=$(printf '%s' "$MORK" | sed -n 's/.* eye_boxes=\([0-9]*\).*/\1/p' | tail -1)
+  MORK_GLOW=$(printf '%s' "$MORK" | sed -n 's/.* glowing_eyes=\([a-z]*\).*/\1/p' | tail -1)
+  MORK_SPAWN=$(printf '%s' "$MORK" | sed -n 's/.* spawn_morok=\([0-9]*\).*/\1/p' | tail -1)
+  MORK_BIOME=$(printf '%s' "$MORK" | sed -n 's/.* biome=\([a-z:_]*\).*/\1/p' | tail -1)
+  if [ "${MORK_ALIVE:-0}" -ge 1 ] && [ "${MORK_BOX:-0}" -ge 40 ] && [ "${MORK_EYES:-0}" -ge 1 ]; then
+    log "  OK   Морок жив в кадре: кубоидов ${MORK_BOX}, геометрия глаз ${MORK_EYES} (RenderType.eyes = свечение)"
+  else
+    log "  FAIL Морок: alive=${MORK_ALIVE:-0}, кубоидов ${MORK_BOX:-0} (нужно >=40), глаз ${MORK_EYES:-0}"; FAILS=$((FAILS + 1))
+  fi
+  if [ "${MORK_GLOW:-}" = "true" ] && [ "${MORK_SPAWN:-0}" -ge 1 ]; then
+    log "  OK   Морок: горящие глаза включены и он реально в спавнерах биома (день 5 %, ночь 45 %)"
+  else
+    log "  FAIL Морок: glowing_eyes=${MORK_GLOW:-?}, spawn_morok=${MORK_SPAWN:-0}"; FAILS=$((FAILS + 1))
+  fi
+  if [ "${MORK_BIOME:-}" = "riftworld:morok_hollow" ]; then
+    log "  OK   Морок стоит в настоящей Мороковой Пади"
+  else
+    log "  FAIL Морок поставлен вне биома: biome=${MORK_BIOME:-?}"; FAILS=$((FAILS + 1))
+  fi
+
   # ---------- Новые мировые структуры Элисара (v0.18.0: корабли, подводные здания, малые белые и сгоревшие деревни) ----------
   echo "== новые мировые структуры Элисара =="
   EL tp TestPlayer 0 110 0 >/dev/null 2>&1 || true

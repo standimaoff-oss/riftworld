@@ -162,6 +162,14 @@ public final class ModItems {
     public static final RegistryObject<Item> WENDIGO_EGG = ITEMS.register("wendigo_spawn_egg",
             () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.WENDIGO, 0x2B2622, 0x8FF0F0,
                     new Item.Properties()));
+    /** v0.39.0: Морок — своё яйцо призыва (редкость UNCOMMON, как у хозяев чащи). */
+    public static final RegistryObject<Item> MOROK_EGG = ITEMS.register("morok_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.MOROK, 0x15181C, 0xFF7A18,
+                    new Item.Properties()));
+    /** Трофей: раскалённый уголёк, который Морок носит вместо глаза. */
+    public static final RegistryObject<Item> MOROK_EYE = ITEMS.register("morok_ember",
+            () -> new Item(new Item.Properties().rarity(Rarity.RARE).fireResistant()));
+
     public static final RegistryObject<Item> PEGASUS_FEATHER = ITEMS.register("pegasus_feather",
             () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)));
     public static final RegistryObject<Item> WENDIGO_ANTLER = ITEMS.register("wendigo_antler",

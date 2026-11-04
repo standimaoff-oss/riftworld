@@ -105,6 +105,14 @@ public final class ModEntities {
                     .sized(0.9F, 2.7F).clientTrackingRange(10)
                     .build("riftworld:wendigo"));
 
+    /** v0.39.0: Морок — собственный хоррор-моб «Мороковой Пади» (быстрый, кружит, моргает). */
+    public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.MorokEntity>> MOROK =
+            TYPES.register("morok", () -> EntityType.Builder
+                    .<ru.aiforge.riftworld.entity.MorokEntity>of(ru.aiforge.riftworld.entity.MorokEntity::new,
+                            MobCategory.MONSTER)
+                    .sized(0.85F, 2.45F).clientTrackingRange(10)
+                    .build("riftworld:morok"));
+
     private ModEntities() {
     }
 
@@ -121,5 +129,6 @@ public final class ModEntities {
         e.put(LIOPLEURODON.get(), ru.aiforge.riftworld.entity.LiopleurodonEntity.attributes().build());
         e.put(PEGASUS.get(), ru.aiforge.riftworld.entity.PegasusEntity.attributes().build());
         e.put(WENDIGO.get(), ru.aiforge.riftworld.entity.WendigoEntity.attributes().build());
+        e.put(MOROK.get(), ru.aiforge.riftworld.entity.MorokEntity.attributes().build());
     }
 }

@@ -63,6 +63,8 @@ public final class ClientHooks {
                 ctx -> new GeoMobRenderer<>(ctx, "pegasus", "textures/entity/pegasus.png", 1.1F));
         e.registerEntityRenderer(ModEntities.WENDIGO.get(),
                 ctx -> new GeoMobRenderer<>(ctx, "wendigo", "textures/entity/wendigo.png", 0.9F));
+        // v0.39.0: Морок — геометрия morok + СВЕТЯЩИЕСЯ глаза (geo/morok_eyes.json, RenderType.eyes)
+        e.registerEntityRenderer(ModEntities.MOROK.get(), MorokRenderer::new);
     }
 
     @SubscribeEvent
