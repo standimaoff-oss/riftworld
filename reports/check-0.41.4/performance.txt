@@ -1,0 +1,12 @@
+Server JVM: 2433
+Generating/loading a 6x6 chunk square in a new Elisar ocean at 1715,2126.
+2433:
+Started recording 1.
+
+Use jcmd 2433 JFR.dump name=generation filename=FILEPATH to copy recording data to file.
+Marked [104, 129] chunks in riftworld:elisar from [104, 129] to [109, 134] to be force loaded
+
+Force-load command: exit=0, wall=4s (ticket creation, not full chunk completion).
+All 36 chunks FULL with bedrock: 0; wall=372s (from before forceload).
+Last readiness response: Incorrect argument for command
+...ld:elisar  if block 1664 -64 2064 bedrock if block 1664 -64 2080 bedrock if block 1664 -64 2096 bedrock if block 1664 -64 2112 bedrock if block 1664 -64 2128 bedrock if block 1664 -64 2144 bedrock if block 1680 -64 2064 bedrock if block 1680 -64 2080 bedrock if block 1680 -64 2096 bedrock if block 1680 -64 2112 bedrock if block 1680 -64 2128 bedrock if block 1680 -64 2144 bedrock if block 1696 -64 2064 bedrock if block 1696 -64 2080 bedrock if block 1696 -64 2096 bedrock if block 1696 -64 2112 bedrock if block 1696 -64 2128 bedrock if block 1696 -64 2144 bedrock if block 1712 -64 2064 bedrock if block 1712 -64 2080 bedrock if block 1712 -64 2096 bedrock if block 1712 -64 2112 bedrock if block 1712 -64 2128 bedrock if block 1712 -64 2144 bedrock if block 1728 -64 2064 bedrock if block 1728 -64 2080 bedrock if block 1728 -64 2096 bedrock if block 1728 -64 2112 bedrock if block 1728 -64 2128 bedrock if block 1728 -64 2144 bedrock if block 1744 -64 2064 bedrock if block 1744 -64 2080 bedrock if block 1744 -64 2096 bedrock if block 1744 -64 2112 bedrock if block 1744 -64 2128 bedrock if block 1744 -64 2144 bedrock run time query gametime<--[HERE]
