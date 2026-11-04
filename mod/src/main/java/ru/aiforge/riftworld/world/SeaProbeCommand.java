@@ -4006,7 +4006,8 @@ public final class SeaProbeCommand {
                     // v0.38.6: off-by-one — landSpot отдаёт ПЕРВЫЙ воздух над поверхностью
                     // (getHeight), значит первый блок ствола стоит ровно в этой точке (y = ground),
                     // а мерзлота под ним на y-1. Раньше проверялось y+1 → стволов всегда 0.
-                    for (int y = ground; y <= ground + 26; ++y) {
+                    // v0.39.4: окно стволов тоже расширено — лес на склонах ниже точки пробы
+                    for (int y = ground - 22; y <= ground + 28; ++y) {
                         if (level.getBlockState(mp.set(x, y, z)).is(MorokBlocks.MOROK_LOG.get())
                                 && (level.getBlockState(mp.set(x, y - 1, z)).is(MorokBlocks.RIME_GRASS.get())
                                     || level.getBlockState(mp.set(x, y - 1, z)).is(MorokBlocks.FROZEN_SOIL.get())

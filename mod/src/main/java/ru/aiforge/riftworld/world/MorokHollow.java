@@ -100,7 +100,9 @@ public final class MorokHollow {
                 if (landAt(x, z)) ++hits;
             }
         }
-        return total > 0 && hits * 3 >= total;   // >= 25 %
+        // v0.39.4: было 25 % — регион часто садился на крошечный островок или кромку,
+        // и внутри Пади оказывалось почти одно море (в пробе выше=2 из 9 кандидатов).
+        return total > 0 && hits * 2 >= total;   // >= 50 % пробных колонок — суша
     }
 
     /**
@@ -272,6 +274,29 @@ public final class MorokHollow {
         int bx = (Integer) hit[0], bz = (Integer) hit[1];
         int chunks = 0, above = 0, rime = 0, morok = 0;
         int[] firstMorok = null, found = null;
+        // v0.39.4: «сухая» точка ещё не значит «в лесу»: вокруг может быть море.
+        // Считаем, сколько из 8 направлений на 16 блоках — суша, и берём самую лесную точку.
+        int bestLand = -1;
+        int[] bestPoint = null;
+        for (int dx = -2; dx <= 2; ++dx) {
+            for (int dz = -2; dz <= 2; ++dz) {
+                int cx = bx + dx * 16, cz = bz + dz * 16;
+                if (!landAt(cx + 0.5, cz + 0.5)) continue;
+                int land = 1;
+                for (int i = 0; i < 8; ++i) {
+                    double a = i * Math.PI / 4.0;
+                    if (landAt(cx + 20 * Math.cos(a) + 0.5, cz + 20 * Math.sin(a) + 0.5)) ++land;
+                }
+                if (land > bestLand) {
+                    bestLand = land;
+                    bestPoint = new int[]{cx, cz};
+                }
+            }
+        }
+        if (bestPoint != null && bestLand >= 6) {
+            bx = bestPoint[0];
+            bz = bestPoint[1];
+        }
         // кандидаты: сама точка, потом 16 блоков по восьми направлениям — этого хватает,
         // чтобы не попасть в воду на кромке острова
         for (int i = -1; i < 8 && found == null; ++i) {
@@ -300,7 +325,7 @@ public final class MorokHollow {
             if (dressed && isMorok) found = new int[]{x, top, z};
         }
         if (found == null) found = firstMorok;
-        LAST_SEARCH = "pts=9 land=" + landAt(bx + 0.5, bz + 0.5) + " above=" + above
+        LAST_SEARCH = "pts=9 land=" + landAt(bx + 0.5, bz + 0.5) + " land_ring=" + bestLand + " above=" + above
                 + " rime=" + rime + " morok=" + morok + " chunks=" + chunks
                 + " region=" + rg.cx + "," + rg.cz + " R=" + rg.R;
         return found;
