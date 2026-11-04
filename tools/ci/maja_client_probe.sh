@@ -188,7 +188,7 @@ for _ in $(seq 1 24); do
 done
 rq execute as TestPlayer at TestPlayer run riftmajacheck | tee "$OUT/maja-natural-diagnostic.txt" || true
 if [ "$seen" = 1 ]; then echo "::notice title=Natural Maja spawn::Observed in a real new Elisar ocean."
-else echo "::warning title=Natural Maja spawn::Not observed within two minutes at this ocean location."; fi
+else fail "Natural Maja did not spawn in the open core within two minutes; see maja-natural-diagnostic.txt"; fi
 if grep -Ei 'Render thread/FATAL|Minecraft Crash Report|Error while rendering|NullPointerException' "$OUT/maja-client.log"; then
   fail "Client crashed or reported a rendering exception after entering the ocean"
 fi

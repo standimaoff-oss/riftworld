@@ -59,6 +59,7 @@ public class LiopleurodonRenderer extends EntityRenderer<LiopleurodonEntity> {
         // New source rig is Y-up; the game JSON stores Y-down model coordinates.
         pose.scale(s, -s, s);
         model.animate(time);
+        if (e.isBiting()) model.root.getChild("body").getChild("head").getChild("jaw").xRot -= 0.45F;
 
         VertexConsumer vc = buf.getBuffer(model.translucent
                 ? RenderType.entityTranslucent(TEX) : RenderType.entityCutoutNoCull(TEX));

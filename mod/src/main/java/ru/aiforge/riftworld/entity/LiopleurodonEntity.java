@@ -2,6 +2,9 @@ package ru.aiforge.riftworld.entity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
@@ -34,6 +37,18 @@ import ru.aiforge.riftworld.registry.ModEntities;
  * Физика как у морских рыб мода: без гравитации, поворот корпуса с ограничением угловой скорости.
  */
 public class LiopleurodonEntity extends Mob {
+    private static final EntityDataAccessor<Boolean> DATA_BITING =
+            SynchedEntityData.defineId(LiopleurodonEntity.class, EntityDataSerializers.BOOLEAN);
+    private int biteAnimationTicks;
+
+    @Override
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(DATA_BITING, false);
+    }
+
+    public boolean isBiting() { return this.entityData.get(DATA_BITING); }
+
     /** Точка дома: хищник не уходит из своей впадины через весь океан. */
     private Vec3 home;
     private Vec3 way;
@@ -78,6 +93,7 @@ public class LiopleurodonEntity extends Mob {
         }
         if (home == null) home = position();
         if (attackCd > 0) --attackCd;
+        if (biteAnimationTicks > 0 && --biteAnimationTicks == 0) this.entityData.set(DATA_BITING, false);
         if (grabTicks > 0) --grabTicks;
 
         if (isNoAi()) {                                   // витрина: только покачивание
@@ -144,6 +160,8 @@ public class LiopleurodonEntity extends Mob {
     private void bite(Player prey) {
         prey.hurt(damageSources().mobAttack(this), 12.0F);
         attackCd = 50;
+        biteAnimationTicks = 12;
+        this.entityData.set(DATA_BITING, true);
         grabTicks = 40;
         level().playSound(null, blockPosition(), SoundEvents.GUARDIAN_ATTACK, SoundSource.HOSTILE, 1.0F, 0.55F);
         prey.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, 2));

@@ -166,7 +166,6 @@ def liopleurodon():
     # Shoulder, long barrel and taper are layered on a stepped elliptical section.
     for z,d,w,h in [(-60,22,30,21),(-40,25,38,24),(-16,26,40,25),(9,25,37,24),(33,24,30,21),(56,19,23,17)]:
         m.box('body',[-w//2,-h//2,z],[w,h,d],'lio_side',z%2)
-        m.box('body',[-(w-8)//2,h//2-1,z+1],[w-8,4,max(1,d-2)],'lio_back')
         m.box('body',[-(w-7)//2,-h//2-3,z+1],[w-7,4,max(1,d-2)],'lio_belly')
         # A pale belly extends up the lower flanks, as in the reference.
         m.pair('body',w//2+0.15,-h//2,z+1,1,5,max(1,d-2),'lio_belly')
@@ -186,11 +185,8 @@ def liopleurodon():
             m.box('body',[x,7-i*2,z+i*2],[1,2,3],'scar')
     m.bone('head',[0,0,-56],'body',{'axis':'y','amp':2.3,'speed':.65,'phase':.1})
     m.box('head',[-16,-10,-75],[32,21,20],'lio_side')
-    m.box('head',[-12,9,-74],[24,4,20],'lio_back')
     m.box('head',[-14,-5,-95],[28,12,22],'lio_side')
-    m.box('head',[-12,5,-95],[24,4,21],'lio_back')
     m.box('head',[-10,-4,-116],[20,9,23],'lio_side')
-    m.box('head',[-8,4,-115],[16,3,20],'lio_back')
     m.box('head',[-10,-5,-116],[20,2,39],'gum')
     # Black mouth cavity recessed between the two jaws, and raised eyes/nostrils.
     m.box('head',[-12,-6,-95],[24,1,25],'mouth')

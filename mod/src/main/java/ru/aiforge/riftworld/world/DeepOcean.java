@@ -37,6 +37,20 @@ public final class DeepOcean {
         return region(Math.floorDiv(x, CELL), Math.floorDiv(z, CELL));
     }
 
+    /**
+     * Reserve an open-water centre for this 322-block creature. This is used
+     * only by world generation of new chunks; it never edits existing chunks.
+     * Whole-chunk boundaries keep biome, heightmaps and decoration consistent.
+     */
+    public static boolean openCoreChunk(int blockX, int blockZ) {
+        int x0 = Math.floorDiv(blockX, 16) * 16;
+        int z0 = Math.floorDiv(blockZ, 16) * 16;
+        Region r = regionAt(x0 + 8, z0 + 8);
+        long dx = Math.max(Math.abs((long) x0 - r.x()), Math.abs((long) x0 + 15 - r.x()));
+        long dz = Math.max(Math.abs((long) z0 - r.z()), Math.abs((long) z0 + 15 - r.z()));
+        return dx * dx + dz * dz <= 384L * 384L;
+    }
+
     /** A soft, 180-block coast prevents a cliff where the deeper seafloor begins. */
     public static double weight(int x, int z) {
         Region r = regionAt(x, z);

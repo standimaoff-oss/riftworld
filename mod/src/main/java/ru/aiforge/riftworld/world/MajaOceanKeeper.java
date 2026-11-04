@@ -35,7 +35,12 @@ public final class MajaOceanKeeper {
             int px = floor(player.getX()), pz = floor(player.getZ());
             DeepOcean.Region region = DeepOcean.regionAt(px, pz);
             if (!DeepOcean.contains(px, pz) || data.hasSpawned(region.key())) continue;
-            if (!level.getBiome(new BlockPos(px, sea - 8, pz)).is(BIOME)) continue;
+            // Saved pre-0.40 dimension codecs lack deep_ocean and fall back to
+            // abyss. Keep those worlds eligible based on region + real clearance,
+            // rather than making natural spawning impossible forever.
+            var biomeSource = level.getChunkSource().getGenerator().getBiomeSource();
+            boolean legacy = biomeSource instanceof ElisarBiomeSource source && !source.hasDeepOceanBiome();
+            if (!legacy && !level.getBiome(new BlockPos(px, sea - 8, pz)).is(BIOME)) continue;
             // The 322-block animal has to fit in *already loaded* chunks.
             // Centre it within the player's chunk and try diagonals first:
             // these reduce its maximum X/Z reach, whereas three random angles

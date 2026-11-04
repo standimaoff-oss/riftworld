@@ -6,7 +6,7 @@ on:
       - '.github/workflows/performance-baseline.yml'
       - 'tools/ci/perf_probe.sh'
 permissions:
-  contents: read
+  contents: write
 jobs:
   profile:
     runs-on: ubuntu-latest
@@ -28,6 +28,17 @@ jobs:
           bash tools/ci/server_check.sh
       - name: Profile old generation and collision
         run: bash tools/ci/perf_probe.sh
+      - name: Export completed-chunk baseline on this branch
+        run: |
+          set -euo pipefail
+          mkdir -p reports/performance
+          cp ci-out/performance.txt reports/performance/released-0.40.0-ready.txt
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add reports/performance/released-0.40.0-ready.txt
+          git diff --cached --quiet || git commit -m 'Export 0.40 baseline readiness profile [skip ci]'
+          git pull --rebase origin arena/361da66e-riftworld
+          git push origin HEAD:refs/heads/arena/361da66e-riftworld
       - name: Stop server
         if: always()
         run: python3 tools/rcon.py --password riftci --log '' --timeout 20 stop || true

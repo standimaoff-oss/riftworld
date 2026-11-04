@@ -58,8 +58,24 @@ set -e
 ELAPSED=$(( $(date +%s) - START ))
 cat "$OUT/force-load.txt" | tee -a "$LOG"
 log "Force-load command: exit=$RC, wall=${ELAPSED}s (ticket creation, not full chunk completion)."
-# Let async generation run after ticket creation; do not present this as TPS.
-sleep 30
+# Vanilla's "if loaded" requires FULL + ENTITY_TICKING. Check all 36
+# positions in ONE command, avoiding block reads that could load chunks.
+# This measures completed readiness, not just ticket submission.
+conditions=''
+for x in 1664 1680 1696 1712 1728 1744; do
+  for z in 2064 2080 2096 2112 2128 2144; do
+    conditions="$conditions if loaded $x 64 $z"
+  done
+done
+ready=0
+for _ in $(seq 1 180); do
+  response=$(rq "execute in riftworld:elisar $conditions run time query gametime" 2>&1 || true)
+  if [[ "$response" == *'The time is'* ]]; then ready=1; break; fi
+  sleep 2
+done
+ready_elapsed=$(( $(date +%s) - START ))
+log "All 36 chunks ENTITY_TICKING: $ready; wall=${ready_elapsed}s (from before forceload)."
+[ "$ready" = 1 ] || { echo '::error title=Profiler::Timed out waiting for all 36 chunks to become entity-ticking'; exit 1; }
 rq forge tps | tee -a "$LOG" || true
 profile_stop generation
 [ "$RC" = 0 ] || { echo '::error title=Profiler::Elisar forceload failed/timed out'; exit 1; }

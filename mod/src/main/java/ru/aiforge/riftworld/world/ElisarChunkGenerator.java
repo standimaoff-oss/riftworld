@@ -305,6 +305,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
 
     static Col column(CityPlan plan, int x, int z) {
         Col c = new Col();
+        if (DeepOcean.openCoreChunk(x, z)) return c;
         double px = x + 0.5, pz = z + 0.5;
         CityPlan.Bucket bk = plan.at(x, z);
         CityPlan.Island isl = plan.islandAt(px, pz);
@@ -1033,6 +1034,21 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         CityPlan plan = CityPlan.get();
         BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
         int x0 = chunk.getPos().getMinBlockX(), z0 = chunk.getPos().getMinBlockZ();
+        if (DeepOcean.openCoreChunk(x0, z0)) {
+            // New terrain only: avoid island/structure placement above the
+            // open-water core; old chunk data is never cleared or rewritten.
+            int[][] floors = new int[16][16];
+            for (int dx = 0; dx < 16; dx++) for (int dz = 0; dz < 16; dz++) {
+                int x = x0 + dx, z = z0 + dz;
+                int floor = oceanFloor(plan, x, z);
+                floors[dx][dz] = floor;
+                ElisarSea.column(chunk, mp, x, z, floor, plan.ocean);
+            }
+            for (int dx = 0; dx < 16; dx++) for (int dz = 0; dz < 16; dz++)
+                ElisarSea.decorate(chunk, mp, x0 + dx, z0 + dz, floors[dx][dz], plan.ocean);
+            Heightmap.primeHeightmaps(chunk, EnumSet.of(Heightmap.Types.OCEAN_FLOOR_WG, Heightmap.Types.WORLD_SURFACE_WG));
+            return chunk;
+        }
         BlockState water = st(ElisarBlocks.WATER);
         BlockState falling = water.setValue(LiquidBlock.LEVEL, 8);
         // Рев 14.23: вода Висячих садов — ВАНИЛЬНАЯ. Её цвет берётся из biome water_color,
@@ -2246,6 +2262,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
     public void applyBiomeDecoration(WorldGenLevel level, ChunkAccess chunk, StructureManager sm) {
         CityPlan plan = CityPlan.get();
         int x0 = chunk.getPos().getMinBlockX(), z0 = chunk.getPos().getMinBlockZ();
+        if (DeepOcean.openCoreChunk(x0, z0)) return;
         BoundingBox box = new BoundingBox(x0, MIN_Y, z0, x0 + 15, MIN_Y + HEIGHT - 1, z0 + 15);
         morokTrees(level, chunk, x0, z0);
         StructureTemplateManager stm = level.getLevel().getServer().getStructureManager();

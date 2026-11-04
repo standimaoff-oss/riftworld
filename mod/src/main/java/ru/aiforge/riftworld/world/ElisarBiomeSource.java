@@ -55,6 +55,9 @@ public class ElisarBiomeSource extends BiomeSource {
         return h;
     }
 
+    /** Saved pre-0.40 dimension codecs legitimately lack the new biome holder. */
+    public boolean hasDeepOceanBiome() { return deepOceanSetting.isPresent(); }
+
     @Override
     protected Codec<? extends BiomeSource> codec() {
         return CODEC;
@@ -105,6 +108,11 @@ public class ElisarBiomeSource extends BiomeSource {
 
     private void fillColumnBiomes(int qx, int qz, int ocean, ColCache cc, int slot, long key) {
         double x = qx * 4 + 2, z = qz * 4 + 2;
+        if (DeepOcean.openCoreChunk((int) Math.floor(x), (int) Math.floor(z)) && deepOceanSetting.isPresent()) {
+            cc.skyAbove70[slot] = cc.surf63to70[slot] = cc.mid39to62[slot] = cc.deepLe38[slot] = deepOcean;
+            cc.keys[slot] = key;
+            return;
+        }
         CityPlan plan = CityPlan.get();
         CityPlan.Island at = plan.islandAt(x, z);
         // v0.36.0: «Мороковая Падь» — сухопутный биом поверх диких островов (туман + бледный бор)
