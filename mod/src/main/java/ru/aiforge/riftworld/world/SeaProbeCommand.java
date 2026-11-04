@@ -3871,7 +3871,8 @@ public final class SeaProbeCommand {
             if (level != null) {
                 ServerLevel sl = level;
                 buildStage(sl, px, py, pz, 6);
-                cam34 = poseCam(px + 0.5, py + 1.3, pz + 0.5, 210.0F, 0.0, 0.0, 0.0, 5.0, 4.2, 1.3);
+                // v0.39.9: камера ближе — конь должен занимать кадр, а не тонуть в пейзаже
+                cam34 = poseCam(px + 0.5, py + 1.2, pz + 0.5, 210.0F, 0.0, 0.0, 0.0, 3.4, 2.8, 0.9);
                 clearAt(sl, cam34[0], cam34[1], cam34[2]);
             } else {
                 cam34 = new double[]{px - 3, py + 2, pz + 4, px, py + 1, pz};
@@ -4016,7 +4017,7 @@ public final class SeaProbeCommand {
             double[] cam35;
             if (level != null) {
                 ServerLevel sl = (ServerLevel) level;
-                cam35 = poseCam(px + 0.5, py + 1.2, pz + 0.5, 200.0F, 0.0, 0.0, 0.0, 4.6, 4.4, 1.4);
+                cam35 = poseCam(px + 0.5, py + 1.25, pz + 0.5, 200.0F, 0.0, 0.0, 0.0, 3.2, 2.8, 1.0);
                 clearAt(sl, cam35[0], cam35[1], cam35[2]);
             } else {
                 cam35 = new double[]{px - 4, py + 3, pz + 5, px, py + 2, pz};

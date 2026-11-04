@@ -113,7 +113,7 @@ def build_eyes():
         x = -3 if sx < 0 else 2
         # уголь: маленький куб + чуть больший ореол вокруг него
         # v0.39.8: модель пишется «вверх» (Y вверх), как и тело — глаза на высоте 42
-        cubes.append({"origin": [x, 42, EYE_Z - 0.2], "size": [3, 2, 1], "uv": [0, 0]})
+        cubes.append({"origin": [x, 41, EYE_Z - 0.2], "size": [4, 3, 1], "uv": [0, 0]})
     return {
         "texture_width": 16,
         "texture_height": 16,
@@ -129,20 +129,17 @@ def build_eyes():
 
 
 def eyes_texture():
-    """16x16: раскалённый уголь — белое ядро, оранжевый обод, тёмная кромка."""
+    """16x16: раскалённый уголь. UV глаза = [0,0], поэтому жар кладём в левый верхний угол."""
     img = []
     for y in range(16):
         row = []
         for x in range(16):
-            d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** 0.5
-            if d < 2.2:
-                c = hx(EYE_CORE)
-            elif d < 4.0:
-                c = hx(EYE)
-            elif d < 6.0:
-                c = (170, 52, 8)
+            if x < 5 and y < 5:
+                c = hx(EYE_CORE) if (x < 2 and y < 2) else hx(EYE)
+            elif x < 9 and y < 9:
+                c = (120, 48, 10)
             else:
-                c = (40, 12, 4)
+                c = (18, 10, 6)
             row.append((c[0], c[1], c[2], 255))
         img.append(row)
     return img

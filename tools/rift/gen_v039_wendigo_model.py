@@ -119,7 +119,7 @@ def build_eyes():
     cubes = []
     for x in (-4, 2):
         # v0.39.8: тело пишется «вверх», значит глаза — на высоте 45..48
-        cubes.append({"origin": [x, 45, -16.4], "size": [2, 3, 1], "uv": [0, 0]})
+        cubes.append({"origin": [x, 44, -16.4], "size": [3, 4, 1], "uv": [0, 0]})
     return {
         "texture_width": 16,
         "texture_height": 16,
@@ -140,15 +140,14 @@ def eyes_texture():
     for y in range(16):
         row = []
         for x in range(16):
-            d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** 0.5
-            if d < 2.0:
-                c = hx("#E8FFF8")
-            elif d < 3.8:
-                c = hx(EYE)
-            elif d < 5.8:
-                c = (32, 96, 84)
+            # v0.39.9: UV глаза = [0,0] (3x4 пикселя), поэтому жар должен быть В ЛЕВОМ ВЕРХНЕМ углу,
+            # а не в центре 16x16 — иначе глаз рисовался тёмным пятном.
+            if x < 4 and y < 5:
+                c = hx("#F4FFF9") if (x < 2 and y < 2) else hx(EYE)
+            elif x < 8 and y < 8:
+                c = (28, 92, 80)
             else:
-                c = (8, 24, 22)
+                c = (8, 22, 20)
             row.append((c[0], c[1], c[2], 255))
         img.append(row)
     return img
