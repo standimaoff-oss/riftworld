@@ -105,7 +105,7 @@ class Rig:
         return placed
 
     # ------------------------------------------------------------------ атлас
-    def texture(self, mats, placed, scar_color=None, scar_mats=()):
+    def texture(self, mats, placed, scar_color=None, scar_mats=(), patterns=None):
         A = self.atlas
         img = [[(0, 0, 0, 0)] * A for _ in range(A)]
         for cb, u, v in placed:
@@ -115,7 +115,7 @@ class Rig:
             for name, (fx, fy, fw, fh) in face_rects(u, v, w, h, d).items():
                 color = {"up": top_c, "down": bottom_c, "north": front_c, "south": front_c,
                          "east": side_c, "west": side_c}[name]
-                self._paint(img, fx, fy, fw, fh, color, seed + ord(name[0]), cb)
+                self._paint(img, fx, fy, fw, fh, color, seed + ord(name[0]), cb, patterns)
         if scar_color:
             for cb, u, v in placed:
                 if cb["mat"] not in scar_mats:
@@ -132,11 +132,12 @@ class Rig:
         return img
 
     @staticmethod
-    def _paint(img, x, y, fw, fh, color, seed, cb):
+    def _paint(img, x, y, fw, fh, color, seed, cb, patterns=None):
         A = len(img)
         r = rnd(seed)
         base = hx(color)
         specks = cb.get("speck") or []
+        pattern = (patterns or {}).get(cb["mat"])
         for yy in range(fh):
             for xx in range(fw):
                 k = 1.0 + (r() - 0.5) * 0.12
@@ -144,13 +145,32 @@ class Rig:
                 if specks and r() < 0.06:
                     sc = specks[int(r() * len(specks)) % len(specks)]
                     px = list(hx(sc))
+                # v0.39.3: узоры — без них текстуры мобов выглядели «залитыми краской»
+                if pattern == "dapple" and ((xx % 5 == 1 and yy % 5 == 2) or (xx % 7 == 4 and yy % 6 == 5)):
+                    px = [max(0, int(c * 0.80)) for c in px]          # яблоки на шкуре коня
+                elif pattern == "felt" and ((xx * 3 + yy * 5) % 11 < 3):
+                    px = [max(0, int(c * 0.72)) for c in px]
+                elif pattern == "bars" and (yy % 3 == 0):
+                    px = [max(0, int(c * 0.84)) for c in px]          # ряды перьев
+                elif pattern == "bare" and r() < 0.18:
+                    px = list(hx("#2B2320"))                          # просветы кожи между костями
+                elif pattern == "strands" and xx % 2 == 0:
+                    px = [max(0, int(c * 0.86)) for c in px]          # пряди гривы
+                elif pattern == "vein" and (xx + yy) % 6 == 0:
+                    px = [min(255, int(c * 1.25)) for c in px]        # прожилки
                 ax, ay = x + xx, y + yy
                 if 0 <= ax < A and 0 <= ay < A:
                     img[ay][ax] = (px[0], px[1], px[2], 255)
 
     # ------------------------------------------------------------------ выгрузка
     def write(self, name, mats, texture_rel, scale_to=None, length_axis=2, length_blocks=None,
-              scar_color=None, scar_mats=(), extra=None):
+              scar_color=None, scar_mats=(), extra=None, patterns=None, flip_y=False):
+        """flip_y — ВАЖНО для мобов: в Minecraft ось Y модели смотрит ВНИЗ.
+
+        Модели удобно писать «вверх» (0 = земля под лапами), но в игре такая модель встаёт
+        на голову — именно это случилось с Пегасом и Вендиго (они появлялись перевёрнутыми
+        и на кадрах выглядели кучей плит). При flip_y=True координаты зеркалятся по Y.
+        """
         placed = self.pack()
         pos = {id(cb): (u, v) for cb, u, v in placed}
         bones_out = []
@@ -158,8 +178,14 @@ class Rig:
             cubes = []
             for cb in b["cubes"]:
                 u, v = pos[id(cb)]
-                cubes.append({"origin": cb["origin"], "size": cb["size"], "uv": [u, v]})
-            entry = {"name": b["name"], "pivot": b["pivot"], "cubes": cubes}
+                o = list(cb["origin"])
+                if flip_y:
+                    o[1] = -(cb["origin"][1] + cb["size"][1])
+                cubes.append({"origin": o, "size": cb["size"], "uv": [u, v]})
+            pv = list(b["pivot"])
+            if flip_y:
+                pv[1] = -b["pivot"][1]
+            entry = {"name": b["name"], "pivot": pv, "cubes": cubes}
             if b.get("parent"):
                 entry["parent"] = b["parent"]
             if b.get("anim"):
@@ -189,7 +215,7 @@ class Rig:
         geo_path = ASSETS / "geo" / f"{name}.json"
         geo_path.write_text(json.dumps(geo, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
         tex_path = ASSETS / texture_rel
-        write_png(tex_path, self.texture(mats, placed, scar_color, scar_mats))
+        write_png(tex_path, self.texture(mats, placed, scar_color, scar_mats, patterns))
 
         # самопроверка: UV внутри атласа и без наложений
         used = [[False] * self.atlas for _ in range(self.atlas)]

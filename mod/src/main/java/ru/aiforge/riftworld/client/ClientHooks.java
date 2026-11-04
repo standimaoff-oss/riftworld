@@ -61,8 +61,9 @@ public final class ClientHooks {
         e.registerEntityRenderer(ModEntities.BLOSSOM_STAG.get(), PeacefulFaunaRenderers.BlossomStag::new);
         e.registerEntityRenderer(ModEntities.PEGASUS.get(),
                 ctx -> new GeoMobRenderer<>(ctx, "pegasus", "textures/entity/pegasus.png", 1.1F));
-        e.registerEntityRenderer(ModEntities.WENDIGO.get(),
-                ctx -> new GeoMobRenderer<>(ctx, "wendigo", "textures/entity/wendigo.png", 0.9F));
+        // v0.39.3: Вендиго пересобран (костяной череп + светящиеся глазницы) — свой рендер,
+        // как у Морока: тело cutout + глаза через RenderType.eyes.
+        e.registerEntityRenderer(ModEntities.WENDIGO.get(), WendigoRenderer::new);
         // v0.39.0: Морок — геометрия morok + СВЕТЯЩИЕСЯ глаза (geo/morok_eyes.json, RenderType.eyes)
         e.registerEntityRenderer(ModEntities.MOROK.get(), MorokRenderer::new);
     }
