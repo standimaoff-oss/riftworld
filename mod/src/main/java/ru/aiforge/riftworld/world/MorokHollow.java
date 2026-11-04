@@ -224,7 +224,17 @@ public final class MorokHollow {
                     || st.is(MorokBlocks.FROZEN_SOIL.get())) {
                 return y;
             }
-            if (!st.isAir() && !st.canBeReplaced()) return Integer.MIN_VALUE;   // камень/вода/постройка
+            // v0.39.2: КРОНА НАД ГОЛОВОЙ — НЕ СТЕНА. Раньше любой блок, который нельзя заменить
+            // (листва, бревно, колючка, клык, ковёр), обрывал поиск, и под сомкнутым пологом
+            // новые деревья и колючки физически не появлялись — отсюда trees=2 и brambles=0
+            // при живом лесе. Теперь «свои» растения Пади просто пропускаем и ищем землю ниже.
+            if (st.is(MorokBlocks.MOROK_LEAVES.get()) || st.is(MorokBlocks.MOROK_LOG.get())
+                    || st.is(MorokBlocks.STRIPPED_MOROK_LOG.get())
+                    || st.is(MorokBlocks.BONE_BRAMBLE.get()) || st.is(MorokBlocks.ICE_FANG.get())
+                    || st.is(MorokBlocks.PALE_MOSS_CARPET.get()) || st.canBeReplaced()) {
+                continue;
+            }
+            return Integer.MIN_VALUE;   // камень/вода/постройка
         }
         return Integer.MIN_VALUE;
     }
