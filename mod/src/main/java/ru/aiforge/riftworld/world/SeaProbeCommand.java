@@ -40,6 +40,8 @@ public final class SeaProbeCommand {
 
     @SubscribeEvent
     public static void register(RegisterCommandsEvent e) {
+        e.getDispatcher().register(Commands.literal("riftmajacheck").requires(s -> s.hasPermission(2))
+                .executes(c -> majaCheck(c.getSource())));
         e.getDispatcher().register(Commands.literal("riftsea").requires(s -> s.hasPermission(2))
                 .executes(c -> run(c.getSource())));
         // Рев 11: /rifttree — ближайшее дерево Элисара и сколько у него ВЕТВЕЙ (проверка «не квадрат»)
@@ -134,6 +136,34 @@ public final class SeaProbeCommand {
      * сколько у дерева ВЕТВЕЙ (брёвен вне ствола) и листвы. Именно так CI проверяет, что дерево
      * не «сплошной квадрат», а растёт с ветками.
      */
+    /** Non-loading diagnostic for operators: why can't Maja spawn at this player? */
+    private static int majaCheck(CommandSourceStack src) {
+        ServerLevel level = src.getLevel();
+        var pos = src.getPosition();
+        int x = (int) Math.floor(pos.x), z = (int) Math.floor(pos.z);
+        int sea = CityPlan.get().ocean;
+        DeepOcean.Region region = DeepOcean.regionAt(x, z);
+        StringBuilder out = new StringBuilder("maja_check dimension=").append(level.dimension().location())
+                .append(" x=").append(x).append(" z=").append(z)
+                .append(" ocean=").append(DeepOcean.contains(x, z))
+                .append(" biome=").append(level.getBiome(new BlockPos(x, sea - 8, z)).is(MajaOceanKeeper.BIOME))
+                .append(" spawned=").append(MajaWorldData.get(level).hasSpawned(region.key()));
+        double cx = ((x >> 4) << 4) + 8.0, cz = ((z >> 4) << 4) + 8.0;
+        for (int rise = 0; rise <= 40; rise += 8) {
+            out.append(" y").append(sea - 13 + rise).append('=');
+            for (int i = 0; i < 4; i++) {
+                StringBuilder why = new StringBuilder();
+                boolean ok = ru.aiforge.riftworld.entity.MajaCollision.clear(level,
+                        new net.minecraft.world.phys.Vec3(cx, sea - 13.0 + rise, cz), 45.0F + i * 90, why);
+                if (i > 0) out.append('/');
+                out.append(ok ? "clear" : why);
+            }
+        }
+        String line = out.toString();
+        src.sendSuccess(() -> Component.literal(line), false);
+        return 1;
+    }
+
     private static int tree(CommandSourceStack src, String kindFilter) {
         ServerLevel level = src.getLevel();
         if (level.dimension() != Flight.ELISAR_DIM) {

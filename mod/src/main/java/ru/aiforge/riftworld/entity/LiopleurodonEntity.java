@@ -92,8 +92,15 @@ public class LiopleurodonEntity extends Mob {
         }
         outOfWater = 0;
 
-        Player prey = level().getNearestPlayer(this, 24.0D);
-        if (prey != null && (prey.isCreative() || prey.isSpectator())) prey = null;
+        Player prey = null;
+        double nearest = 24.0D * 24.0D;
+        for (Player candidate : level().players()) {
+            double d2 = distanceToSqr(candidate);
+            if (candidate.isAlive() && !candidate.isCreative() && !candidate.isSpectator() && d2 < nearest) {
+                nearest = d2;
+                prey = candidate;
+            }
+        }
         // Elisar has its own liquid; vanilla isInWater() alone does not
         // necessarily recognise a player swimming in it. Daylight must not
         // suppress hunting in the open ocean.
@@ -105,7 +112,7 @@ public class LiopleurodonEntity extends Mob {
             double d = to.length();
             if (d < 24) {
                 chase(to.normalize(), d < 8 ? 0.62 : 0.45);
-                if (d < 7.0 && attackCd <= 0) {
+                if (d < 7.0 && attackCd <= 0 && hasLineOfSight(prey)) {
                     bite(prey);
                 }
                 faceTravel();

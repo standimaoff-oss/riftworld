@@ -60,7 +60,12 @@ public final class MajaCollision {
 
     /** Server-side, conservative test; the margin covers movement and yaw interpolation between ticks. */
     public static boolean clear(ServerLevel level, Vec3 center, float yaw) {
-        if (BOXES.isEmpty()) return false;
+        return clear(level, center, yaw, null);
+    }
+
+    /** Diagnostic is optional and never loads chunks; normal tick checks allocate nothing for it. */
+    public static boolean clear(ServerLevel level, Vec3 center, float yaw, StringBuilder diagnostic) {
+        if (BOXES.isEmpty()) { if (diagnostic != null) diagnostic.append("no_bounds"); return false; }
         double angle = Math.toRadians(180.0 - yaw);
         double cos = Math.cos(angle), sin = Math.sin(angle);
         AABB[] volumes = new AABB[BOXES.size()];
@@ -85,7 +90,10 @@ public final class MajaCollision {
             if (v.minX < border.getMinX() || v.maxX > border.getMaxX()
                     || v.minZ < border.getMinZ() || v.maxZ > border.getMaxZ()
                     || Math.floor(v.minY) < level.getMinBuildHeight()
-                    || Math.ceil(v.maxY) > level.getMaxBuildHeight()) return false;
+                    || Math.ceil(v.maxY) > level.getMaxBuildHeight()) {
+                if (diagnostic != null) diagnostic.append("border_or_height");
+                return false;
+            }
             volumes[i] = v;
             allMinX = Math.min(allMinX, v.minX); allMaxX = Math.max(allMaxX, v.maxX);
             allMinZ = Math.min(allMinZ, v.minZ); allMaxZ = Math.max(allMaxZ, v.maxZ);
@@ -109,7 +117,10 @@ public final class MajaCollision {
                 int ci = (x - minChunkX) * depth + z - minChunkZ;
                 if (chunks[ci] == null) {
                     chunks[ci] = level.getChunkSource().getChunkNow(x, z);
-                    if (chunks[ci] == null) return false;
+                    if (chunks[ci] == null) {
+                        if (diagnostic != null) diagnostic.append("unloaded(").append(x).append(',').append(z).append(')');
+                        return false;
+                    }
                 }
             }
         }
@@ -133,7 +144,10 @@ public final class MajaCollision {
                     int y0 = Math.max(minY, sy << 4), y1 = Math.min(maxY, (sy << 4) + 15);
                     for (int x = x0; x <= x1; ++x) for (int z = z0; z <= z1; ++z) for (int y = y0; y <= y1; ++y) {
                         BlockState state = section.getBlockState(x & 15, y & 15, z & 15);
-                        if (mayObstruct(state) && !state.getCollisionShape(level, p.set(x, y, z)).isEmpty()) return false;
+                        if (mayObstruct(state) && !state.getCollisionShape(level, p.set(x, y, z)).isEmpty()) {
+                            if (diagnostic != null) diagnostic.append("block(").append(x).append(',').append(y).append(',').append(z).append(':').append(state.getBlock()).append(')');
+                            return false;
+                        }
                     }
                 }
             }

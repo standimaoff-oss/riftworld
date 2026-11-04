@@ -51,7 +51,7 @@ public final class PegasusRenderer extends EntityRenderer<PegasusEntity> {
         // at rest they only breathe slightly, not flap at full speed forever.
         float wing = (e.isFlying() || (!e.onGround() && !e.isInWater()))
                 ? (float) Math.toRadians(28.0F + 42.0F * Mth.sin(time * 0.24F))
-                : (float) Math.toRadians(30.0F + 5.0F * Mth.sin(time * 0.08F));
+                : (float) Math.toRadians(50.0F + 5.0F * Mth.sin(time * 0.08F));
         body.getChild("wing_l").zRot = -wing;
         body.getChild("wing_r").zRot = wing;
         pose.pushPose();

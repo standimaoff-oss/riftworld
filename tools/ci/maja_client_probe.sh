@@ -30,7 +30,7 @@ renderDistance:12
 simulationDistance:8
 maxFps:30
 guiScale:2
-fov:1.0
+fov:0.0
 graphicsMode:1
 renderClouds:false
 pauseOnLostFocus:false
@@ -130,6 +130,27 @@ fi
 rq list | grep -q TestPlayer || fail 'Client disconnected during the fauna visual test'
 echo "OK: real client loaded both fauna rigs and photographed unsaddled/saddled Pegasus plus trophies (screenshots require review)."
 
+# A real survival player in Elisar water must take damage from the predator.
+# These are disposable coordinates; never run this script in a player world.
+rq kill '@e[type=riftworld:liopleurodon]' >/dev/null || true
+rq difficulty normal >/dev/null
+rq fill 40 199 3 54 207 17 riftworld:elisar_water >/dev/null
+rq gamemode survival TestPlayer >/dev/null
+rq effect give TestPlayer minecraft:water_breathing 60 0 true >/dev/null
+rq tp TestPlayer 47 202 10 >/dev/null
+rq summon riftworld:liopleurodon 51 202 10 '{PersistenceRequired:1b}' >/dev/null
+hit=0
+for _ in $(seq 1 15); do
+  health=$(rq data get entity TestPlayer Health 2>&1 || true)
+  echo "Predator test: $health" | tee -a "$OUT/predator-test.txt"
+  if echo "$health" | grep -Eq ': ([0-9](\.[0-9]+)?|1[0-9](\.[0-9]+)?)f$'; then hit=1; break; fi
+  sleep 1
+done
+[ "$hit" = 1 ] || fail 'Liopleurodon did not damage the survival player in Elisar water'
+rq kill '@e[type=riftworld:liopleurodon]' >/dev/null || true
+rq gamemode creative TestPlayer >/dev/null
+echo 'OK: Liopleurodon attacked a survival player in Elisar water.'
+
 # Exercise the actual custom dimension and the new biome, not just overworld registration.
 LOC=$(rq execute in riftworld:elisar positioned 0 54 0 run locate biome riftworld:maja_ocean)
 echo "Biome locate: $LOC"
@@ -141,6 +162,9 @@ print(*m.groups())
 PY
 )
 [[ "${OX:-}" =~ ^-?[0-9]+$ && "${OZ:-}" =~ ^-?[0-9]+$ ]] || fail "No ocean coordinates"
+# First deep-ocean centre, rather than the nearest biome edge (which can
+# overlap islands). Natural spawning must still use only already-loaded chunks.
+OX=1715; OZ=2126
 # The natural-spawn keeper intentionally ignores spectators.
 rq gamemode creative TestPlayer >/dev/null
 rq execute in riftworld:elisar run tp TestPlayer "$OX" 95 "$OZ" 0 0
@@ -162,6 +186,7 @@ for _ in $(seq 1 24); do
   if [[ "$result" == *"Test passed"* ]]; then seen=1; break; fi
   sleep 5
 done
+rq execute as TestPlayer at TestPlayer run riftmajacheck | tee "$OUT/maja-natural-diagnostic.txt" || true
 if [ "$seen" = 1 ]; then echo "::notice title=Natural Maja spawn::Observed in a real new Elisar ocean."
 else echo "::warning title=Natural Maja spawn::Not observed within two minutes at this ocean location."; fi
 if grep -Ei 'Render thread/FATAL|Minecraft Crash Report|Error while rendering|NullPointerException' "$OUT/maja-client.log"; then
