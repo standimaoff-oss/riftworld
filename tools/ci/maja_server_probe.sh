@@ -18,6 +18,10 @@ on_error() {
 }
 trap on_error EXIT
 
+CONFIG=ci/server/config/riftworld-maja.toml
+[ -f "$CONFIG" ] || fail "Maja config missing"
+grep -Eq 'allowIslandEating[[:space:]]*=[[:space:]]*false' "$CONFIG" || fail "Island eating must be disabled by default"
+log "Island eating is disabled by default."
 log "Force-loading a 253-chunk rectangle for the 322-block body..."
 rq forceload add -80 -176 80 176 | tee -a "$LOG"
 rq summon riftworld:el_gran_maja 0 200 0 '{NoAI:1b,PersistenceRequired:1b}' | tee -a "$LOG"

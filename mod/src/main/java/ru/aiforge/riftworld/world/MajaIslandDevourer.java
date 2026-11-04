@@ -11,6 +11,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.ForgeEventFactory;
+import ru.aiforge.riftworld.MajaConfig;
 import ru.aiforge.riftworld.entity.ElGranMajaEntity;
 import ru.aiforge.riftworld.registry.ElisarBlocks;
 
@@ -45,6 +46,7 @@ public final class MajaIslandDevourer {
 
     /** @return true while preparing or eating, when the titan should hold position and open its jaw. */
     public boolean tick(ServerLevel level, ElGranMajaEntity maja) {
+        if (!MajaConfig.islandEatingEnabled()) { job = null; return false; }
         if (cooldown > 0) --cooldown;
         if (job == null) {
             if (cooldown > 0 || maja.tickCount % 80 != 0) return false;

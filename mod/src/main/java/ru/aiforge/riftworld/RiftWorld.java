@@ -41,6 +41,7 @@ public final class RiftWorld {
         // v0.38.0: плотность/дальность/цвет мглы «Мороковой Пади» — в клиентском конфиге,
         // а не зашиты числом в ElisarSky (config/riftworld-atmosphere.toml).
         RiftConfig.register();
+        MajaConfig.register();
         bus.addListener((net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent e) ->
                 e.enqueueWork(ru.aiforge.riftworld.world.BlacktideCitadel::warmupAsync));
     }

@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import ru.aiforge.riftworld.MajaConfig;
 
 /** A small JVM integration test for placement indexing, protection and SavedData persistence. */
 public final class MajaWorldDataProbe {
@@ -11,6 +12,7 @@ public final class MajaWorldDataProbe {
         if (!condition) throw new AssertionError(what);
     }
     public static void main(String[] args) {
+        check(!MajaConfig.islandEatingEnabled(), "unloaded or default config must fail closed");
         MajaWorldData data = new MajaWorldData();
         data.markNewChunk(-1, -1, 0);
         data.markNewChunk(0, 0, 0);

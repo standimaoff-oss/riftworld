@@ -66,7 +66,8 @@ for _ in $(seq 1 180); do
   sleep 3
 done
 [[ "${players:-}" == *TestPlayer* ]] || fail "Client did not join the test server"
-rq gamemode creative TestPlayer >/dev/null
+# Spectator flight holds the camera at altitude; creative mode alone falls to the ground.
+rq gamemode spectator TestPlayer >/dev/null
 rq weather clear >/dev/null
 rq time set noon >/dev/null
 POS=$(rq data get entity '@e[type=riftworld:el_gran_maja,limit=1]' Pos)
@@ -80,6 +81,9 @@ PY
 # Head is about 156 blocks forward (+Z). Camera is just in front, within tracking distance.
 rq tp TestPlayer "$X" "$(( ${Y%.*} + 14 ))" "$(( ${Z%.*} + 188 ))" facing "$X" "$Y" "$(( ${Z%.*} + 115 ))" >/dev/null
 sleep 35
+if ! grep -Fq '[riftworld] geo el_gran_maja:' "$OUT/maja-client.log"; then
+  fail "The Maja renderer never loaded its model at the test camera position"
+fi
 WID=$(xdotool search --onlyvisible --name Minecraft | head -1 || true)
 [ -n "$WID" ] || fail "Minecraft window not found"
 xdotool windowraise "$WID" || true
@@ -101,6 +105,8 @@ print(*m.groups())
 PY
 )
 [[ "${OX:-}" =~ ^-?[0-9]+$ && "${OZ:-}" =~ ^-?[0-9]+$ ]] || fail "No ocean coordinates"
+# The natural-spawn keeper intentionally ignores spectators.
+rq gamemode creative TestPlayer >/dev/null
 rq execute in riftworld:elisar run tp TestPlayer "$OX" 95 "$OZ" 0 0
 sleep 60
 BIOME=''
