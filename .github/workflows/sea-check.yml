@@ -41,7 +41,9 @@ jobs:
     # прогон запускал бы сам себя бесконечно.
     if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    # v0.39.1: реальные прогоны с Падью и Лиоплевродоном вышли за 50 минут на шаге клиента —
+    # шаг обрывался, и кадры после него (151/152) не снимались. Поднимаем лимиты.
+    timeout-minutes: 150
     steps:
       - uses: actions/checkout@v4
 
@@ -155,7 +157,9 @@ jobs:
 
       - name: Launch real Minecraft client, enter Elisar and take screenshots
         if: steps.server.outcome == 'success' || steps.server.outcome == 'failure'
-        timeout-minutes: 50
+        # было 50: шаг стабильно упирался в лимит (прогоны #374, #375, #378) и обрывался
+        # на середине проб — кадры 151/152 и все гейты после обрыва пропадали.
+        timeout-minutes: 95
         env:
           # Рев 15.2: клиент поднимается С Dynamic Trees, но подключённым ЛОКАЛЬНЫМ jar-ом
           # (-PdtJarPath), а не из maven — оттуда приходит битый pom и валит сборку.
