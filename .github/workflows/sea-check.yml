@@ -6,11 +6,6 @@ on:
   pull_request:
     branches: ["main"]
   workflow_dispatch:
-    inputs:
-      export_jar:
-        description: 'After all tests pass, export the mod and client screenshot to this Arena branch'
-        type: boolean
-        default: false
 
 permissions:
   contents: read
@@ -96,7 +91,7 @@ jobs:
           name: riftworld-build
           path: build-artifact
       - uses: gradle/actions/setup-gradle@v4
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/arena/64445ff0-riftworld' && contains(github.event.head_commit.message, '[maja-export]')
       - name: Boot a real Forge server and probe it
         shell: bash
         env:
@@ -110,7 +105,7 @@ jobs:
         shell: bash
         run: bash tools/ci/maja_server_probe.sh
       - name: Real client rendering smoke test
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/arena/64445ff0-riftworld' && contains(github.event.head_commit.message, '[maja-export]')
         shell: bash
         run: bash tools/ci/maja_client_probe.sh
       - name: Stop the test server
@@ -126,7 +121,7 @@ jobs:
           retention-days: 14
 
   export-tested-jar:
-    if: github.event_name == 'workflow_dispatch' && inputs.export_jar && github.ref == 'refs/heads/arena/64445ff0-riftworld'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/arena/64445ff0-riftworld' && contains(github.event.head_commit.message, '[maja-export]')
     needs: [build, server-smoke]
     permissions:
       contents: write
@@ -155,10 +150,14 @@ jobs:
           [ -n "$shot" ] || { echo 'Missing client screenshot'; exit 1; }
           mkdir -p release reports/el_gran_maja_model
           cp "${jars[0]}" "release/$(basename "${jars[0]}")"
+          mapfile -t addons < <(find build-artifact -type f -name 'riftworld-dt-*.jar' ! -name '*sources*' ! -name '*javadoc*')
+          [ "${#addons[@]}" = 1 ] || { echo 'Expected exactly one optional addon jar'; exit 1; }
+          cp "${addons[0]}" "release/$(basename "${addons[0]}")"
+          (cd release && sha256sum riftworld-0.40.0.jar riftworld-dt-0.40.0.jar > riftworld-0.40.0.sha256)
           cp "$shot" reports/el_gran_maja_model/09_game_client_front.png
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add "release/$(basename "${jars[0]}")" reports/el_gran_maja_model/09_game_client_front.png
+          git add release/riftworld-0.40.0.jar release/riftworld-dt-0.40.0.jar release/riftworld-0.40.0.sha256 reports/el_gran_maja_model/09_game_client_front.png
           git diff --cached --quiet && exit 0
           git commit -m 'Export tested Riftworld mod and client capture [skip ci]'
           git push origin HEAD:refs/heads/arena/64445ff0-riftworld

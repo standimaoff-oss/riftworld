@@ -77,3 +77,30 @@ if grep -Ei 'Error while rendering entity|Exception.*ElGranMaja|Unable to load.*
 fi
 rq list | grep -q TestPlayer || fail "Client disconnected before the screenshot"
 echo "OK: real client joined the server; screenshot saved to $OUT/maja-client-front.png (requires visual review)."
+
+# Exercise the actual custom dimension and the new biome, not just overworld registration.
+LOC=$(rq execute in riftworld:elisar positioned 0 54 0 run locate biome riftworld:maja_ocean)
+echo "Biome locate: $LOC"
+read -r OX OZ < <(python3 - "$LOC" <<'PY'
+import re,sys
+m=re.search(r'\[\s*(-?\d+)\s*,\s*(?:~|-?\d+)\s*,\s*(-?\d+)\s*\]',sys.argv[1])
+if not m: raise SystemExit('Could not parse biome location: '+sys.argv[1])
+print(*m.groups())
+PY
+)
+[[ "${OX:-}" =~ ^-?[0-9]+$ && "${OZ:-}" =~ ^-?[0-9]+$ ]] || fail "No ocean coordinates"
+rq execute in riftworld:elisar run tp TestPlayer "$OX" 95 "$OZ" 0 0
+sleep 60
+BIOME=$(rq execute in riftworld:elisar if biome "$OX" 54 "$OZ" riftworld:maja_ocean 2>&1 || true)
+echo "Ocean biome check: $BIOME"
+[[ "$BIOME" == *"Test passed"* ]] || fail "Expected Maja ocean in new Elisar world"
+# Natural spawning is probabilistic and clearance-sensitive: report the observation without
+# equating a timeout to an absence of support. The collision and build gates remain mandatory.
+seen=0
+for _ in $(seq 1 24); do
+  result=$(rq execute in riftworld:elisar if entity '@e[type=riftworld:el_gran_maja]' 2>&1 || true)
+  if [[ "$result" == *"Test passed"* ]]; then seen=1; break; fi
+  sleep 5
+done
+if [ "$seen" = 1 ]; then echo "::notice title=Natural Maja spawn::Observed in a real new Elisar ocean."
+else echo "::warning title=Natural Maja spawn::Not observed within two minutes at this ocean location."; fi
