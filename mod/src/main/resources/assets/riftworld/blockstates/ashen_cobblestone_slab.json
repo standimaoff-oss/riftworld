@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "riftworld:block/ashen_cobblestone_slab"
+    },
+    "type=double": {
+      "model": "riftworld:block/ashen_cobblestone"
+    },
+    "type=top": {
+      "model": "riftworld:block/ashen_cobblestone_slab_top"
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "CCC",
+    "WWW",
+    "DDD"
+  ],
+  "key": {
+    "C": {
+      "item": "riftworld:castle_carpet"
+    },
+    "W": {
+      "item": "minecraft:red_wool"
+    },
+    "D": {
+      "item": "riftworld:dark_planks"
+    }
+  },
+  "result": {
+    "item": "riftworld:canopy_bed"
+  }
+}

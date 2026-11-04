@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "C",
+    "L"
+  ],
+  "key": {
+    "C": {
+      "item": "riftworld:elisar_chain"
+    },
+    "L": {
+      "item": "riftworld:elisar_lantern"
+    }
+  },
+  "result": {
+    "item": "riftworld:lantern_hanging"
+  }
+}

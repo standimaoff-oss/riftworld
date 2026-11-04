@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    "riftworld:sizo_planks_stairs",
+    "riftworld:ambra_planks_stairs",
+    "riftworld:garden_stairs",
+    "riftworld:lilac_stairs",
+    "riftworld:crystal_stairs",
+    "riftworld:charred_stairs",
+    "riftworld:dark_planks_stairs",
+    "riftworld:morok_planks_stairs"
+  ]
+}

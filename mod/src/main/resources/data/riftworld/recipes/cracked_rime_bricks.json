@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "building",
+  "pattern": [
+    "BI",
+    "IB"
+  ],
+  "key": {
+    "B": {
+      "item": "riftworld:frozen_soil"
+    },
+    "I": {
+      "item": "minecraft:packed_ice"
+    }
+  },
+  "result": {
+    "item": "riftworld:cracked_rime_bricks",
+    "count": 4
+  }
+}

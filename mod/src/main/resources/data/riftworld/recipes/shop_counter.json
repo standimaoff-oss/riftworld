@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SSS",
+    "PCP",
+    "PPP"
+  ],
+  "key": {
+    "S": {
+      "item": "riftworld:sizo_planks_slab"
+    },
+    "P": {
+      "item": "riftworld:sizo_planks"
+    },
+    "C": {
+      "item": "minecraft:chest"
+    }
+  },
+  "result": {
+    "item": "riftworld:shop_counter"
+  }
+}

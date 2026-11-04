@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " H ",
+    "CCC",
+    " A "
+  ],
+  "key": {
+    "H": {
+      "item": "minecraft:iron_helmet"
+    },
+    "C": {
+      "item": "minecraft:iron_chestplate"
+    },
+    "A": {
+      "item": "minecraft:armor_stand"
+    }
+  },
+  "result": {
+    "item": "riftworld:guard_armor"
+  }
+}

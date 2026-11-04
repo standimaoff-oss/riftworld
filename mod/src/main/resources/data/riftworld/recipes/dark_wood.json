@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "bark",
+  "pattern": [
+    "##",
+    "##"
+  ],
+  "key": {
+    "#": {
+      "item": "riftworld:dark_beam"
+    }
+  },
+  "result": {
+    "item": "riftworld:dark_wood",
+    "count": 3
+  }
+}

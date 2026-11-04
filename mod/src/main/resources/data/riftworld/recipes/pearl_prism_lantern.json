@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "PCP",
+    "CGC",
+    "PCP"
+  ],
+  "key": {
+    "P": {
+      "item": "riftworld:pearl_calcite"
+    },
+    "C": {
+      "item": "minecraft:amethyst_shard"
+    },
+    "G": {
+      "item": "minecraft:glowstone_dust"
+    }
+  },
+  "result": {
+    "item": "riftworld:pearl_prism_lantern",
+    "count": 1
+  }
+}

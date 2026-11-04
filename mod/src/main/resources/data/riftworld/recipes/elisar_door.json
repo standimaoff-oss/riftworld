@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "PP",
+    "WW",
+    "PP"
+  ],
+  "key": {
+    "P": {
+      "tag": "riftworld:mod_planks"
+    },
+    "W": {
+      "item": "riftworld:elisar_plaster"
+    }
+  },
+  "result": {
+    "item": "riftworld:elisar_door",
+    "count": 3
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SD",
+    "DS"
+  ],
+  "key": {
+    "S": {
+      "item": "riftworld:elisar_stone"
+    },
+    "D": {
+      "item": "minecraft:dirt"
+    }
+  },
+  "result": {
+    "item": "riftworld:elisar_crust",
+    "count": 4
+  }
+}

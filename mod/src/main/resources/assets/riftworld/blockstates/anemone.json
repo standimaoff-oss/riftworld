@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "waterlogged=true": {
+      "model": "riftworld:block/anemone"
+    },
+    "waterlogged=false": {
+      "model": "riftworld:block/anemone"
+    }
+  }
+}

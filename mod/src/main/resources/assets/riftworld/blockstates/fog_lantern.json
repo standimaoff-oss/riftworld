@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "hanging=false": {
+      "model": "riftworld:block/fog_lantern"
+    },
+    "hanging=true": {
+      "model": "riftworld:block/fog_lantern_hanging"
+    }
+  }
+}

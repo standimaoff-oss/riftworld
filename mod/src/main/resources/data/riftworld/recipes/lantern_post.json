@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "L",
+    "F"
+  ],
+  "key": {
+    "L": {
+      "item": "riftworld:elisar_lantern"
+    },
+    "F": {
+      "item": "riftworld:elisar_fence"
+    }
+  },
+  "result": {
+    "item": "riftworld:lantern_post"
+  }
+}

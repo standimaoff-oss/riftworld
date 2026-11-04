@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GGG",
+    "GTG",
+    "GGG"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:gold_nugget"
+    },
+    "T": {
+      "item": "riftworld:temple_bricks"
+    }
+  },
+  "result": {
+    "item": "riftworld:temple_gold",
+    "count": 1
+  }
+}

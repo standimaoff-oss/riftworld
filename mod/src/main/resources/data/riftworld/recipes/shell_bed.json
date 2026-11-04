@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SS",
+    "SS"
+  ],
+  "key": {
+    "S": {
+      "item": "riftworld:sea_shells"
+    }
+  },
+  "result": {
+    "item": "riftworld:shell_bed",
+    "count": 4
+  }
+}

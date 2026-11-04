@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "axis=x": {
+      "model": "riftworld:block/stripped_crystal_log_horizontal",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y": {
+      "model": "riftworld:block/stripped_crystal_log"
+    },
+    "axis=z": {
+      "model": "riftworld:block/stripped_crystal_log_horizontal",
+      "x": 90
+    }
+  }
+}

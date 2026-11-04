@@ -25,6 +25,7 @@ import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.RotatedPillarBlock;
+import net.minecraft.world.level.block.VineBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
@@ -39,8 +40,11 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import ru.aiforge.riftworld.block.ModelBlock;
 import ru.aiforge.riftworld.block.ModelKind;
+import ru.aiforge.riftworld.registry.CastleBlocks;
 import ru.aiforge.riftworld.registry.ElisarBlocks;
 import ru.aiforge.riftworld.registry.ModBlocks;
+import ru.aiforge.riftworld.registry.MorokBlocks;
+import ru.aiforge.riftworld.registry.TempleBlocks;
 
 /**
  * Planet Elisar: floating sky islands over a deep open ocean (40-50 blocks, currents, sea mist). Everything is analytic and deterministic
@@ -50,7 +54,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
     public static final Codec<ElisarChunkGenerator> CODEC = RecordCodecBuilder.create(i -> i.group(
             BiomeSource.CODEC.fieldOf("biome_source").forGetter(g -> g.biomeSource)).apply(i, i.stable(ElisarChunkGenerator::new)));
 
-    static final int MIN_Y = 0, HEIGHT = 256;
+    static final int MIN_Y = -64, HEIGHT = 384;
 
     public ElisarChunkGenerator(BiomeSource src) {
         super(src);
@@ -61,9 +65,22 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         return CODEC;
     }
 
+    @javax.annotation.Nullable
+    @Override
+    public com.mojang.datafixers.util.Pair<BlockPos, net.minecraft.core.Holder<net.minecraft.world.level.levelgen.structure.Structure>> findNearestMapStructure(
+            net.minecraft.server.level.ServerLevel level,
+            net.minecraft.core.HolderSet<net.minecraft.world.level.levelgen.structure.Structure> targets,
+            BlockPos origin, int searchRadius, boolean skipKnownStructures) {
+        var analytical = ElisarStructureLocator.findNearest(level, targets, origin, searchRadius);
+        if (analytical != null) {
+            return analytical;
+        }
+        return super.findNearestMapStructure(level, targets, origin, searchRadius, skipKnownStructures);
+    }
+
     // ================================================================== column model
     /** Surface kinds. */
-    static final int S_GRASS = 0, S_COBBLE = 1, S_PATH = 2, S_PLANK = 3, S_PLOT = 4;
+    static final int S_GRASS = 0, S_COBBLE = 1, S_PATH = 2, S_PLANK = 3, S_PLOT = 4, S_BARE = 5;
 
     static final class Col {
         CityPlan.Island isl;
@@ -76,11 +93,22 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         // bridge
         int deckY = Integer.MIN_VALUE;
         boolean rail, post, railX;
+        boolean cityViaduct, viaductCenter, viaductMosaic, viaductGateway, viaductKeystone;
+        int viaductBot = Integer.MIN_VALUE;
         boolean fence;            // rim fence of the city terraces
         boolean garden;           // biome 07 zone (terraced hub or its sea fringe)
-        boolean mtn;              // rev 9: многоуровневые горы (свои ярусы, пруды и водопады)
-        TerracedMountains.Region mtnRegion;
-        boolean pond, pondRim, springy;   // biome 07 terrace pools and hot-spring cores
+        boolean pond, pondRim, springy;   // biome 07 / 10 terrace pools and mineral cores
+        boolean crystal;          // biome 10 zone (CrystalRifts island or stone arch bridge)
+        int spanTop = Integer.MIN_VALUE, spanBot = Integer.MIN_VALUE;
+        boolean spanParapet, spanPost, spanLantern;
+        int sanctuaryZone;        // v0.27.0: 0=вне площади, 1=белый мрамор площади, 2=радиальная дорожка, 3=золотой узор, 4=зелёная клумба DT, 5=фонарная тумба
+        /**
+         * Рев 15: ГЛАДКАЯ (до квантования в ярусы) высота поверхности. Нужна Фиолетовым холмам:
+         * гряды лаванды идут ПО КОНТУРУ яруса, а сам контур — это изолиния этой высоты, поэтому
+         * полосы считаются прямо по ней (а не по шуму «в клетку», из-за которого поля читались
+         * фиолетовой крупой).
+         */
+        double soft = Double.NaN;
     }
 
     static double hash(int x, int z, int s) {
@@ -110,13 +138,21 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         int lx = Math.floorMod(x, 3) - (int) (hash(gx, gz, 94) * (big ? 2 : 3)), lz = Math.floorMod(z, 3) - (int) (hash(gx, gz, 95) * (big ? 2 : 3));
         if (lx < 0 || lz < 0 || lx > (big ? 1 : 0) || lz > (big ? 1 : 0)) return;
         double cx = gx * 3 + 1.5, cz = gz * 3 + 1.5;
-        double towerD = Math.hypot(cx - TOWER_X, cz - TOWER_Z);
+        InvertedTowers.Site nearTower = InvertedTowers.nearAt(cx, cz, 34.0);
+        double towerD = nearTower == null ? 999.0 : Math.hypot(cx - nearTower.cx(), cz - nearTower.cz());
         int y0;
-        if (towerD < 34 && towerD > 8 && pick < 0.10) {
-            y0 = (int) (TOWER_Y0 + hash(gx, gz, 92) * 95);
+        if (nearTower != null && towerD < 34 && towerD > 8 && pick < 0.10) {
+            y0 = (int) (nearTower.y0() + hash(gx, gz, 92) * 95);
         } else {
             CityPlan.Island n = plan.nearest(cx, cz);
             if (n == null) return;
+            // Рев 14.30: вокруг островов Висячих садов летающий мусор не нужен — на референсе чистое
+            // небо над водой, а в кадрах обломки читались как грязь.
+            if (n.kind == WaterfallGardens.KIND) return;
+            // Рев 15.4: над Фиолетовыми холмами и Сизо-рощей тоже чистое небо. На кадрах 49–51
+            // итерации 46 вокруг луга висели серые кубы «обломков» — они читались как мусор
+            // (на референсе 04 над полями ничего нет).
+            if (n.kind == 7 || n.kind == SizoGrove.KIND || n.kind == CrystalRifts.KIND) return;
             double t = n.t(cx, cz);
             if (t > -0.015 || t < -0.5) return;
             double p = 0.16 * (1 + t * 2.2);                 // denser right at the rim, thinning outwards
@@ -124,8 +160,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             y0 = (int) Math.floor(n.base - 22 + hash(gx, gz, 92) * 34);
         }
         double k = hash(gx, gz, 93);
-        BlockState s = k < 0.3 ? st(ElisarBlocks.CRUST) : k < 0.55 ? st(ElisarBlocks.STONE) : k < 0.7 ? st(ElisarBlocks.COBBLE)
-                : k < 0.82 ? st(ElisarBlocks.GRASS) : k < 0.92 ? st(ElisarBlocks.STONE_MOSSY) : st(ElisarBlocks.TOWER_BRICKS);
+        BlockState s = k < 0.34 ? st(ElisarBlocks.CRUST) : k < 0.62 ? st(ElisarBlocks.STONE) : k < 0.78 ? st(ElisarBlocks.COBBLE)
+                : k < 0.92 ? st(ElisarBlocks.GRASS) : st(ElisarBlocks.STONE_MOSSY);
         int h = big ? 2 : 1;
         for (int y = y0; y < y0 + h; ++y) chunk.setBlockState(mp.set(x, y, z), s, false);
     }
@@ -161,21 +197,25 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         {"wall_sconce",    "0",  "74", "-3", "south", "true"},
     };
 
-    private static void tower(ChunkAccess chunk, BlockPos.MutableBlockPos mp, int x, int z) {
-        int ix = x - TOWER_X, iz = z - TOWER_Z;
+    private static void tower(ChunkAccess chunk, BlockPos.MutableBlockPos mp, InvertedTowers.Site site, int x, int z) {
+        if (site == null) return;
+        int ix = x - site.cx(), iz = z - site.cz();
         if (Math.abs(ix) > 10 || Math.abs(iz) > 10) return;
         double dx = ix + 0.5, dz = iz + 0.5;
         double d = oct(dx, dz);
         BlockState br = st(ElisarBlocks.TOWER_BRICKS), cr = st(ElisarBlocks.TOWER_BRICKS_CRACKED);
+        BlockState moss = st(ElisarBlocks.STONE_MOSSY);
         BlockState lant = st(ElisarBlocks.LANTERN);
-        int y0 = TOWER_Y0;
+        int y0 = site.y0();
+        boolean wildRoost = !site.cityOrigin();
         // ladder wells: EAST well (cell ix 2, iz 0) pierces every landing and the roof and climbs the shaft on the spine
         // rib (ix 3); SOUTH drop links the deck hall with the spike reliquary (cells ix 0, iz 1..3, ladder on the rib ix 0, iz 4).
         boolean eastOpen = ix == 2 && iz == 0;
         boolean southOpen = ix == 0 && (iz == 2 || iz == 3);
         boolean southChute = ix == 0 && iz >= 1 && iz <= 3;
         boolean ribE = ix == 3 && iz == 0, ribS = ix == 0 && iz == 4;
-        for (int y = y0; y <= y0 + 101 && y < MIN_Y + HEIGHT; ++y) {
+        int lyMax = wildRoost ? 90 : 101;
+        for (int y = y0; y <= y0 + lyMax && y < MIN_Y + HEIGHT; ++y) {
             int ly = y - y0;
             boolean solid = false;
             if (ly <= 5) {                                         // spike tip
@@ -208,13 +248,23 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 if (ly % 13 == 8 && d <= 5.9 && d > 4.6) solid = true;   // string course
                 if ((ly == 40 || ly == 56 || ly == 72) && d <= 3.4) solid = true;   // the three landings
                 if ((ly == 40 || ly == 56 || ly == 72) && eastOpen) solid = false;  // hatch in every landing
-                if (ly >= 82) solid = d <= 6.6 && d > 3.4;         // upper ring
-            } else if (ly == 86) {                                 // roof disc with the entry hatch
-                solid = d <= 6.6;
+                if (ly >= 82) {
+                    double flare = wildRoost ? (6.6 + (ly - 82) * 0.35) : 6.6;
+                    solid = d <= flare && d > 3.4;                 // upper corbeled ring
+                }
+            } else if (ly == 86) {                                 // roof disc / Dragon Roost Crown platform
+                solid = d <= (wildRoost ? 7.8 : 6.6);
                 if (eastOpen) solid = false;
+            } else if (wildRoost) {                                // ancient open-sky Dragon Roost Crown on wild towers
+                boolean cornerMonolith = (Math.abs(ix) >= 5 && Math.abs(iz) <= 1) || (Math.abs(iz) >= 5 && Math.abs(ix) <= 1);
+                if (ly == 87) {
+                    solid = d <= 7.8 && d > 6.65 && (cornerMonolith || ((ix + 3 * iz) & 3) == 0);
+                } else if (ly == 88) {
+                    solid = d <= 7.7 && d > 6.75 && cornerMonolith && (Math.abs(ix) == 7 || Math.abs(iz) == 7);
+                }
             } else if (ly == 87) {                                 // torn root crown: jagged ring
                 solid = d <= 6.6 && d > 5.4 && ((ix + 3 * iz) % 5 != 0);
-            } else {                                               // root spire shell
+            } else {                                               // root spire shell (city tower)
                 double r = 6.6 * (1 - (ly - 87) / 15.0);
                 if (r > 0.2) solid = d <= r && d > r - 1.7;
             }
@@ -223,6 +273,12 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 if ((ix == 2 && iz == 0 && ly >= 23 && ly <= 85) || (ix == 0 && iz == 3 && ly >= 10 && ly <= 21)) {
                     chunk.setBlockState(mp.set(x, y, z), net.minecraft.world.level.block.Blocks.LADDER.defaultBlockState()
                             .setValue(net.minecraft.world.level.block.LadderBlock.FACING, ix == 2 ? net.minecraft.core.Direction.WEST : net.minecraft.core.Direction.NORTH), false);
+                } else if (wildRoost && eastOpen && ly == 86) {
+                    chunk.setBlockState(mp.set(x, y, z), Blocks.SPRUCE_TRAPDOOR.defaultBlockState()
+                            .setValue(net.minecraft.world.level.block.TrapDoorBlock.HALF, net.minecraft.world.level.block.state.properties.Half.TOP)
+                            .setValue(net.minecraft.world.level.block.TrapDoorBlock.FACING, Direction.WEST), false);
+                } else if (wildRoost && ly == 89 && ((Math.abs(ix) == 7 && iz == 0) || (ix == 0 && Math.abs(iz) == 7))) {
+                    chunk.setBlockState(mp.set(x, y, z), lant, false);   // warm beacon lanterns on the 4 compass crown monoliths
                 } else if (ix == 0 && iz == 0 && (ly == 41 || ly == 57 || ly == 73)) {
                     chunk.setBlockState(mp.set(x, y, z), lant, false);   // sitting lanterns on each landing
                 } else if (ix == 0 && iz == 0 && ly == 26 || ix == -1 && iz == 1 && ly == 21) {
@@ -230,15 +286,16 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 }
                 continue;
             }
-            chunk.setBlockState(mp.set(x, y, z), hash(x * 7 + y, z, 31) < 0.18 ? cr : br, false);
+            BlockState blk = (wildRoost && ly == 86 && hash(x, z, 37) < 0.28) ? moss : (hash(x * 7 + y, z, 31) < 0.18 ? cr : br);
+            chunk.setBlockState(mp.set(x, y, z), blk, false);
         }
     }
 
     /** Seabed height: gentle dunes around ocean-45 so the water column is 40-50 blocks deep everywhere (Rev 4 item 6).
      *  Рев 8: плюс ущелья — дно местами прорезано на 6–12 блоков вглубь (каньоны и желоба). */
     static int oceanFloor(CityPlan plan, int x, int z) {
-        double n = vnoise(x * 0.016, z * 0.016, 77) * 0.72 + vnoise(x * 0.052, z * 0.052, 78) * 0.28;
-        return Math.max(9, plan.ocean - 1 - 41 - (int) Math.round(n * 8) - ElisarSea.trenchDepth(x, z));
+        // Рев 10: дюны, желоба и абиссальные впадины считает сам ElisarSea (мир стал глубже: min_y = -64)
+        return ElisarSea.floor(x, z, plan.ocean);
     }
 
     private static boolean land(CityPlan plan, double px, double pz) {
@@ -260,6 +317,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             // plots: flatten (nearest plot wins), blend over the margin
             double best = 1e9;
             for (CityPlan.Plot p : bk.plots) {
+                if ("city_castle".equals(p.template())) continue; // v0.27.0: Святилище круглое, без квадратной подрезки!
                 double dx = Math.max(Math.max(p.x0() - px + 0.5, 0), px - 0.5 - (p.x0() + p.w() - 1));
                 double dz = Math.max(Math.max(p.z0() - pz + 0.5, 0), pz - 0.5 - (p.z0() + p.d() - 1));
                 double d = Math.hypot(dx, dz);
@@ -273,15 +331,58 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                     }
                 }
             }
-            if (isl.kind == 7) {                                       // Фиолетовые холмы: настоящий рельеф (rev 9)
-                VioletHills.Region vh = VioletHills.regionAt(px, pz);
-                if (vh != null && vh.meadow == isl) top = vh.hills(px, pz);
-            } else if (isl.kind == TerracedMountains.KIND) {           // Многоуровневые горы: ярусы-полки (rev 9)
-                TerracedMountains.Region tm = TerracedMountains.regionAt(px, pz);
-                if (tm != null && tm.massif == isl) {
-                    top = TerracedMountains.top(tm, px, pz);
-                    c.mtn = true;
-                    c.mtnRegion = tm;
+            // v0.27.0: Не-квадратная круглая белоснежная площадь вокруг Святилища Белого Города (центр 0, -4)
+            // с 8 плавными радиальными белыми дорожками к кольцевой улице и живыми клумбами под генеративные деревья DT!
+            if (!plan.islands.isEmpty() && isl == plan.islands.get(0)) {
+                double sdx = px;
+                double sdz = pz + 4.0;
+                double rSanct = Math.hypot(sdx, sdz);
+                double angSanct = Math.atan2(sdz, sdx);
+                double outerR = 36.8 - 1.6 * Math.cos(angSanct * 8.0) + 0.7 * (vnoise(px * 0.08, pz * 0.08, 411) - 0.5);
+                if (rSanct <= outerR + 6.0) {
+                    double sanctTop = 104.0;
+                    if (rSanct <= outerR) {
+                        top = sanctTop;
+                    } else {
+                        top = sanctTop + (top - sanctTop) * smooth((rSanct - outerR) / 6.0);
+                    }
+                    if (rSanct <= outerR) {
+                        boolean inRotunda = rSanct <= 16.0 || (Math.abs(sdx) <= 4.6 && sdz >= 11.5 && sdz <= 19.5);
+                        double innerRingR = 21.0 + 0.6 * Math.cos(angSanct * 8.0);
+                        double outerPromR = outerR - 2.5;
+                        if (inRotunda) {
+                            c.plot = true;
+                            c.sanctuaryZone = 1;
+                        } else if (rSanct <= innerRingR || rSanct >= outerPromR) {
+                            boolean goldInlay = Math.abs(rSanct - 18.4) < 0.55 || Math.abs(rSanct - (outerR - 1.1)) < 0.50;
+                            c.sanctuaryZone = goldInlay ? 3 : 1;
+                        } else {
+                            // 8 радиальных белых дорожек (южная к портику — парадная широкая, остальные 7 с плавным изгибом)
+                            double minArcDist = 1e9;
+                            boolean onSouthAve = (sdz > 0.0 && Math.abs(sdx) <= 3.1);
+                            double southDist = sdz > 0.0 ? Math.abs(sdx) : 1e9;
+                            for (int k = 0; k < 8; ++k) {
+                                if (k == 2) continue; // +pi/2 = южная аллея
+                                double targetA = k * (Math.PI / 4.0);
+                                double swirl = angSanct + 0.065 * Math.sin((rSanct - innerRingR) * 0.25);
+                                double da = Math.abs(Math.atan2(Math.sin(swirl - targetA), Math.cos(swirl - targetA)));
+                                double arcD = rSanct * da;
+                                if (arcD < minArcDist) minArcDist = arcD;
+                            }
+                            if (onSouthAve) {
+                                boolean lampPost = Math.abs(Math.abs(sdx) - 3.0) < 0.45
+                                        && (Math.abs(rSanct - 22.5) < 0.55 || Math.abs(rSanct - 31.5) < 0.55);
+                                if (lampPost) c.sanctuaryZone = 5;
+                                else if (southDist < 0.55 && (((int) Math.floor(pz)) & 1) == 0) c.sanctuaryZone = 3;
+                                else c.sanctuaryZone = 2;
+                            } else if (minArcDist <= 1.95) {
+                                boolean portalLamp = minArcDist > 1.35 && Math.abs(rSanct - 22.4) < 0.52;
+                                c.sanctuaryZone = portalLamp ? 5 : 2;
+                            } else {
+                                c.sanctuaryZone = 4; // живая полукруглая клумба для генеративных деревьев Dynamic Trees!
+                            }
+                        }
+                    }
                 }
             }
             if (isl.kind == 5) {                                       // castle plateau
@@ -293,72 +394,204 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                     double o = es.outside(px, pz);
                     top = o <= 0 ? es.y : es.y + (top - es.y) * smooth(o / 6.0);
                 }
-            } else if (isl.kind == 7) {                                // violet meadow: plateaus under the two churches
-                VioletHills.Region vr = VioletHills.regionAt(px, pz);
-                if (vr != null && vr.meadow == isl) {
-                    double oA = vr.churchA.outside(px, pz), oB = vr.churchB.outside(px, pz);
-                    double o = Math.min(oA, oB);
-                    int fy = oA <= oB ? vr.churchA.y : vr.churchB.y;
-                    if (o < 7) top = o <= 0 ? fy : fy + (top - fy) * smooth(o / 7.0);
+            } else if (isl.kind == WorldStructures.VILLAGE_KIND || isl.kind == WorldStructures.BURNED_VILLAGE_KIND) {
+                WorldStructures.Village wv = WorldStructures.anyVillageAt(px, pz, 56);
+                if (wv != null && wv.island == isl) {
+                    double o = Math.hypot(px - wv.cx, pz - wv.cz) - wv.flatR;
+                    double flatTop = wv.baseY - 1.0;
+                    top = o <= 0 ? flatTop : flatTop + (top - flatTop) * smooth(o / 9.0);
                 }
+            } else if (isl.kind == LandmarkStructures.THEATER_KIND) {
+                LandmarkStructures.GrandTheater gt = LandmarkStructures.theaterAt(px, pz, 56);
+                if (gt != null && gt.island == isl) {
+                    double o = Math.hypot(px - gt.cx, pz - gt.cz) - gt.flatR;
+                    double flatTop = gt.baseY - 1.0;
+                    top = o <= 0 ? flatTop : flatTop + (top - flatTop) * smooth(o / 9.0);
+                }
+            } else if (isl.kind == LandmarkStructures.HARBOR_COAST_KIND) {
+                // Пологий зелёный прибрежный остров, выходящий прямо из моря к каменной набережной порта
+                double ct = Math.max(0.0, isl.t(px, pz));
+                double hill = (plan.ocean - 3.0) + 14.5 * Math.pow(ct, 0.58)
+                        + 3.5 * (vnoise(px * 0.055, pz * 0.055, 809) - 0.35) * smooth(ct / 0.25);
+                top = hill;
+            } else if (isl.kind == 7) {                                // Фиолетовые холмы (референс 04)
+                // Рев 15 — биом переделан с нуля по просьбе владельца («сейчас сделано ужасно»).
+                // Что было не так на кадрах 49–51 итерации 44: серые «кучи» подпорных стенок на
+                // каждом перепаде, лаванда разложена шумом в клетку (читалась фиолетовой крупой),
+                // трава — белёсая элисарская (на фото луг сочный зелёный), ступени по 5 блоков.
+                //
+                // Что теперь:
+                //   * рельеф — ШИРОКИЕ ВОЛНЫ (две крупные, одна средняя, одна мелкая рябь), а не
+                //     конус: на склоне появляются настоящие холмы и ложбины, как на фото;
+                //   * квантование в ярусы по 2 блока → длинные узкие террасы-ленты по изолиниям;
+                //   * гладкая высота кладётся в {@code c.soft}: по ней потом режутся гряды лаванды
+                //     ПО КОНТУРУ, и подпорные стенки больше не нужны (обрыв яруса и есть стенка).
+                double dome = violetProfile(isl, px, pz, plan.ocean);
+                c.soft = dome;
+                top = violetTerrace(dome);
             }
-            else if (isl.kind == SizoGrove.KIND) {                     // sizo grove: terrace under the rare ruined temple
+            else if (isl.kind == SizoGrove.KIND) {                     // sizo grove: gentle forest floor, trail & ruined tower terrace
                 SizoGrove.Region sr = SizoGrove.regionAt(px, pz);
-                if (sr != null && sr.temple && sr.hub == isl) {
-                    double o = Math.max(Math.abs(px - sr.tx), Math.abs(pz - sr.tz)) - 8.0;
-                    if (o < 7) top = o <= 0 ? sr.ty : sr.ty + (top - sr.ty) * smooth(o / 7.0);
+                if (sr != null && sr.hub == isl) {
+                    // Мягко сглаживаем центральную лесную долину вдоль тропы, чтобы мощёная дорожка шла плавно
+                    double td = sr.trailDist(px, pz);
+                    double flatY = sr.hub.base + 2.2 + 1.8 * (vnoise(px * 0.012, pz * 0.012, 189) - 0.5);
+                    if (td < 9.0) {
+                        double k = smooth(Math.max(0.0, (td - 2.4) / 6.6));
+                        top = flatY + (top - flatY) * k;
+                    }
+                    if (sr.temple) {
+                        double o = Math.max(Math.abs(px - sr.tx), Math.abs(pz - sr.tz)) - 6.5;
+                        if (o < 8.0) top = o <= 0 ? sr.ty : sr.ty + (top - sr.ty) * smooth(o / 8.0);
+                    }
+                    double edgeJitter = 0.42 * (vnoise(px * 0.28, pz * 0.28, 191) - 0.5);
+                    if (isl.t(px, pz) > 0.20 && td <= SizoGrove.Region.TRAIL_HW + edgeJitter
+                            && (!sr.temple || Math.hypot(px - sr.tx, pz - sr.tz) > 4.2)) {
+                        c.surface = S_PATH;
+                    }
                 }
             }
             else if (isl.kind == WaterfallGardens.KIND) {              // biome 07: limestone terraces stepping to the sea
-                top = terraceTop(top, plan.ocean);
+                // Рев 14.5: остров-плато давал почти ровную высоту (разброс ~5 блоков), квантовать
+                // было нечего — полок-обрывов не получалось вовсе (проверено расчётом: STEP 5 давал
+                // 299 стен, STEP 8 — пять). Теперь у садов свой горный профиль: купол от кромки у воды
+                // к центру, и уже он квантуется в полки.
+                top = terraceTop(gardenProfile(isl, px, pz, plan.ocean), plan.ocean);
+            }
+            else if (isl.kind == CrystalRifts.KIND) {                  // biome 10: Хрустальные разломы (02_crystal_sanctum.png)
+                c.crystal = true;
+                CrystalRifts.Region cr0 = CrystalRifts.regionAt(px, pz);
+                top = crystalProfile(c, cr0, isl, px, pz, x, z);
             }
             c.top = (int) Math.floor(top);
-            // rev 9: пруды на полках и водопады с кромок ярусов
-            if (c.mtn && c.mtnRegion != null) {
-                if (TerracedMountains.pondAt(c.mtnRegion, px, pz, top) && c.top > plan.ocean + 6) {
-                    int ct = c.top;
-                    c.waterTop = ct;
-                    c.waterBottom = ct - 2;
-                    c.top = ct - 3;
-                    c.pond = true;
-                } else if (c.waterTop == Integer.MIN_VALUE) {
-                    double hi = 0;
-                    for (int dk = 0; dk < 4; ++dk) {
-                        double nx = px + (dk == 0 ? 1 : dk == 1 ? -1 : 0), nz = pz + (dk == 2 ? 1 : dk == 3 ? -1 : 0);
-                        double nt = TerracedMountains.top(c.mtnRegion, nx, nz);
-                        if (nt > hi) hi = nt;
+            // biome 10: бирюзовые минеральные чаши, ручьи-питатели и водопады Хрустальных разломов
+            if (isl.kind == CrystalRifts.KIND) {
+                CrystalRifts.Region crp = CrystalRifts.regionAt(px, pz);
+                if (crp != null && crp.owns(isl)) {
+                    CrystalRifts.Pool pl = crp.poolAt(isl, px, pz);
+                    if (pl != null) {
+                        double rEff = pl.r * (0.88 + 0.20 * vnoise(px * 0.17, pz * 0.17, 709));
+                        double pd = Math.hypot(px - pl.cx, pz - pl.cz);
+                        if (isl.t(px, pz) > 0.08 && pd <= rEff) {
+                            int depth = pd < rEff * 0.55 ? 3 : 2;
+                            c.waterTop = pl.waterY;
+                            c.waterBottom = pl.waterY - depth + 1;
+                            c.top = pl.waterY - depth;
+                            c.pond = true;
+                            c.surface = S_BARE;
+                        } else if (isl.t(px, pz) > 0.04 && pd <= rEff + 1.8) {
+                            if (c.top < pl.waterY + 1) c.top = pl.waterY + 1;
+                            c.pondRim = true;
+                        }
                     }
-                    if (hi > c.top + 4.5 && vnoise(px * 0.31, pz * 0.31, 709) > 0.46) {
-                        c.fallTop = (int) Math.floor(hi);
-                        c.fallBottom = c.top + 1;
+                    // Неглубокие бирюзовые протоки от чаши к водопадам на кромке обрыва
+                    for (CrystalRifts.Pool pl2 : crp.pools) {
+                        if (pl2.isl != isl) continue;
+                        for (CrystalRifts.Fall fl : crp.falls) {
+                            if (fl.isl != isl) continue;
+                            double fd = CityPlan.segDist(px, pz, pl2.cx, pl2.cz, fl.x, fl.z, null);
+                            if (isl.t(px, pz) > 0.04 && fd <= 1.35) {
+                                c.waterTop = pl2.waterY;
+                                c.waterBottom = pl2.waterY;
+                                c.top = Math.min(c.top, pl2.waterY - 1);
+                                c.pond = true;
+                                c.surface = S_BARE;
+                            } else if (isl.t(px, pz) > 0.03 && fd <= 2.6 && !c.pond) {
+                                if (c.top < pl2.waterY + 1) c.top = pl2.waterY + 1;
+                                c.pondRim = true;
+                            }
+                        }
+                    }
+                    CrystalRifts.Fall cf = crp.fallNear(isl, px, pz);
+                    if (cf != null) {
+                        boolean nearRim = false;
+                        for (int ddx = -2; ddx <= 2 && !nearRim; ++ddx)
+                            for (int ddz = -2; ddz <= 2; ++ddz)
+                                if (isl.t(px + ddx, pz + ddz) <= 0.025) { nearRim = true; break; }
+                        if (nearRim) {
+                            int fallLvl = (int) Math.round(isl.base + 2);
+                            for (CrystalRifts.Pool pl3 : crp.pools) if (pl3.isl == isl) { fallLvl = pl3.waterY; break; }
+                            c.fallTop = fallLvl;
+                            c.fallBottom = plan.ocean + 1;
+                            c.top = Math.min(c.top, fallLvl - 1);
+                            c.waterTop = Integer.MIN_VALUE;
+                            c.pond = false;
+                        }
+                    }
+                }
+            }
+            // Рев 14: ВОДОПАДЫ. На референсе с каждой полки через край льётся широкая струя и уходит
+            // вниз до самой воды. Раньше струя появлялась только там, где рядом оказывалась
+            // выпуклость рельефа (редкие «feed»-точки) — на кадрах биом стоял сухой. Теперь водопад
+            // выбирается заранее (см. WaterfallGardens.Fall) и льётся там, где его край выше соседа.
+            WaterfallGardens.Region grf0 = WaterfallGardens.regionAt(px, pz);
+            if (grf0 != null) {
+                WaterfallGardens.Fall fall = WaterfallGardens.fallNear(grf0, px, pz);
+                if (fall != null) {
+                    // Рев 14.26: у садов архипелаг — высоты соседей считаем по СВОЕМУ острову.
+                    int low = Integer.MAX_VALUE;
+                    for (int ddx = -2; ddx <= 2; ++ddx)
+                        for (int ddz = -2; ddz <= 2; ++ddz) {
+                            if (isl.t(px + ddx, pz + ddz) <= 0.05) continue;
+                            low = Math.min(low, (int) Math.floor(terraceTop(
+                                    gardenProfile(isl, px + ddx, pz + ddz, plan.ocean), plan.ocean)));
+                        }
+                    if (low < c.top - 1) {                    // край полки: рядом полка заметно ниже
+                        // Рев 16: струя начинается В САМОЙ КРОМКЕ (в блоке дёрна, который станет
+                        // водой), а не висит над травой. Иначе вода стояла «стаканом» на кромке
+                        // и не лилась — владелец: «водопады должны стекать».
+                        c.fallTop = c.top;
+                        c.fallBottom = plan.ocean + 1;
+                        c.waterTop = Integer.MIN_VALUE;
+                        c.pond = false;
                     }
                 }
             }
             // biome 07: terrace pools / hot springs carve back into the shelves
             WaterfallGardens.Region gr = WaterfallGardens.regionAt(px, pz);
-            if (isl.kind == WaterfallGardens.KIND && gr != null && gr.hub == isl) {
+            if (isl.kind == WaterfallGardens.KIND && gr != null && gr.owns(isl)) {
                 c.garden = true;
                 int ct = c.top;
-                double pn = vnoise(px * 0.09, pz * 0.09, 131);
-                if (pondAt(plan, gr, px, pz, ct)) {
-                    int pd = pn > 0.75 ? 3 : 2;
-                    c.waterTop = ct;
-                    c.waterBottom = ct - pd + 1;
-                    c.top = ct - pd;
-                    c.pond = true;
-                    c.springy = hash(x, z, 132) < 0.30;       // geothermal core: warm glow under the water
-                } else {
-                    c.pondRim = pondAt(plan, gr, px + 1, pz, ct) || pondAt(plan, gr, px - 1, pz, ct)
-                            || pondAt(plan, gr, px, pz + 1, ct) || pondAt(plan, gr, px, pz - 1, ct);
+                if (ct > plan.ocean + 2) {
+                    double pn = vnoise(px * 0.09, pz * 0.09, 131);
+                    if (pondAt(plan, gr, isl, px, pz, ct)) {
+                        int pd = pn > 0.75 ? 3 : 2;
+                        c.waterTop = ct;
+                        c.waterBottom = ct - pd + 1;
+                        c.top = ct - pd;
+                        c.pond = true;
+                        c.springy = hash(x, z, 132) < 0.30;       // geothermal core: warm glow under the water
+                    } else {
+                        c.pondRim = pondAt(plan, gr, isl, px + 1, pz, ct) || pondAt(plan, gr, isl, px - 1, pz, ct)
+                                || pondAt(plan, gr, isl, px, pz + 1, ct) || pondAt(plan, gr, isl, px, pz - 1, ct);
+                    }
                 }
-            } else if (isl.kind != 4 && WaterfallGardens.inside(px, pz)) {
-                c.garden = true;                                            // islet fringe inside the biome blob
             }
             double t = isl.t(px, pz);
             double depth = 3 + isl.depth * Math.pow(Math.max(t, 0), 0.55) * (0.72 + 0.28 * vnoise(px * 0.07, pz * 0.07, 11));
             double stal = Math.max(0, vnoise(px * 0.21, pz * 0.21, 12) - 0.6) * 48 * Math.pow(Math.max(t, 0), 0.3);
             c.bottom = Math.max(plan.ocean + 6, (int) Math.floor(c.top - depth - stal));
             c.bottom = Math.min(c.bottom, c.top - 2);
+            if (isl.kind == WaterfallGardens.KIND || isl.kind == LandmarkStructures.HARBOR_COAST_KIND) {
+                // Подводные ярусы (ocean - 9 и ocean - 4) — голый камень S_BARE под водой,
+                // а основание острова — сплошной камень до самого бедрока без единой пустоты.
+                if (c.top <= plan.ocean) {
+                    c.surface = S_BARE;
+                    c.waterTop = Integer.MIN_VALUE;
+                    c.pond = false;
+                    c.pondRim = false;
+                    c.fallTop = Integer.MIN_VALUE;
+                }
+                c.bottom = Math.min(c.bottom, Math.min(plan.ocean - 2, c.top - 4));
+            } else if (isl.kind == CrystalRifts.KIND) {
+                // Острые сланцевые кили и висячие каменные сталактиты под парящими островами (02_crystal_sanctum.png)
+                double ct = Math.max(0.0, t);
+                double hull = 4.0 + isl.depth * Math.pow(ct, 0.52) * (0.76 + 0.30 * vnoise(px * 0.065, pz * 0.065, 711));
+                double spireStal = Math.max(0.0, vnoise(px * 0.19, pz * 0.19, 712) - 0.46) * 44.0 * Math.pow(ct, 0.26)
+                        + Math.max(0.0, vnoise(px * 0.37, pz * 0.37, 713) - 0.60) * 18.0;
+                c.bottom = Math.max(plan.ocean + 5, (int) Math.floor(c.top - hull - spireStal));
+                c.bottom = Math.min(c.bottom, c.top - 3);
+            }
             // roads & plazas
             double rd = 1e9;
             int rk = -1;
@@ -377,91 +610,221 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 else if (rk == 1) c.surface = edge < 0.6 && hash(x, z, 4) < 0.35 ? S_GRASS : S_PATH;
                 else c.surface = S_PLANK;
             }
-            if (isl.kind == 7 && c.surface == S_GRASS) {               // violet meadow: footpath church <-> church
-                VioletHills.Region vr = VioletHills.regionAt(px, pz);
-                if (vr != null && vr.meadow == isl) {
-                    double pd = vr.pathDist(px, pz);
-                    if (pd <= 1.05 && !(pd < 0.5 && hash(x, z, 54) < 0.16)) c.surface = S_PATH;   // grass creeps back onto the centre line
-                }
-            }
             if (c.plot) c.surface = S_PLOT;
             if (isl.kind == 0 && !c.plot && c.surface == S_GRASS && t >= 0.05 && (!bk.plots.isEmpty() || rd < 9)) {
                 double tm = Math.min(Math.min(isl.t(px + 1, pz), isl.t(px - 1, pz)), Math.min(isl.t(px, pz + 1), isl.t(px, pz - 1)));
                 c.fence = tm < 0.05;
             }
         }
-        // bridges
+        // v0.26.0: Monumental White-Marble & Gilded Stone Arch Viaducts between White City islands
         for (CityPlan.Bridge b : bk.bridges) {
             double d = CityPlan.segDist(px, pz, b.ax(), b.az(), b.bx(), b.bz(), tt);
-            if (d > b.hw() + 1.05 || tt[0] <= 0 && d > b.hw() || tt[0] >= 1 && d > b.hw()) continue;
-            int y = b.deckY(tt[0]);
-            if (d <= b.hw()) {
+            double u = tt[0];
+            double balc = Math.max(0.0, 1.0 - Math.abs(u - 0.5) / 0.13);
+            double walkHw = b.hw() + 0.85 + 1.15 * smooth(balc);
+            double railMax = walkHw + 0.98;
+            if (d > railMax || (u <= 0 && d > walkHw) || (u >= 1 && d > walkHw)) continue;
+
+            double archRise = Math.min(2.6, 0.85 + b.length() * 0.042) * Math.sin(Math.PI * Math.max(0.0, Math.min(1.0, u)));
+            int y = (int) Math.round(b.ya() + (b.yb() - b.ya()) * smooth(u) + archRise);
+            double spanT = Math.abs(2.0 * Math.max(0.0, Math.min(1.0, u)) - 1.0);
+            int lenSteps = Math.max(4, (int) Math.round(b.length()));
+            int step = Math.max(0, Math.min(lenSteps, (int) Math.round(u * lenSteps)));
+            int corbelDrop = (d > walkHw - 0.7 && step % 4 == 0) ? 1 : 0;
+            int archDepth = 2 + (int) Math.round(9.5 * Math.pow(spanT, 1.85)) + corbelDrop;
+            int vBot = y - archDepth;
+
+            if (d <= walkHw) {
                 c.deckY = y;
                 c.rail = false;
-            } else if (c.deckY == Integer.MIN_VALUE) {
+                c.cityViaduct = true;
+                c.viaductBot = vBot;
+                c.viaductCenter = d <= 1.25;
+                c.viaductMosaic = d <= 0.68 && (step % 4 == 0);
+                c.viaductKeystone = false;
+            } else if (c.deckY == Integer.MIN_VALUE || (c.cityViaduct && c.rail)) {
                 c.deckY = y;
                 c.rail = true;
-                int step = (int) Math.floor(tt[0] * b.length());
-                c.post = step <= 0 || step >= (int) Math.floor(b.length()) - 1;
+                c.cityViaduct = true;
+                c.viaductBot = vBot;
+                boolean portalEnd = (step == 1 || step == lenSteps - 1);
+                boolean balconyPost = Math.abs(step - lenSteps / 2) == 2;
+                c.viaductGateway = portalEnd;
+                c.post = portalEnd || balconyPost || (step > 2 && step < lenSteps - 2 && step % 5 == 0);
+                c.viaductKeystone = Math.abs(step - lenSteps / 2) <= 1;
                 c.railX = Math.abs(b.bx() - b.ax()) >= Math.abs(b.bz() - b.az());
             }
             if (isl != null && c.top >= y) {
                 c.top = y;
-                c.surface = S_PLANK;
-                c.bottom = Math.min(c.bottom, y - 2);
+                c.surface = S_COBBLE;
+                c.bottom = Math.min(c.bottom, vBot);
             }
         }
-        // biome 07: the rare sagging plank bridges of the waterfall gardens
-        WaterfallGardens.Region grb = c.isl != null && c.isl.kind == WaterfallGardens.KIND ? WaterfallGardens.regionAt(px, pz) : null;
-        if (grb != null)
-            for (CityPlan.Bridge b : grb.bridges) {
-                double d = CityPlan.segDist(px, pz, b.ax(), b.az(), b.bx(), b.bz(), tt);
-                if (d > b.hw() + 1.05 || tt[0] <= 0 && d > b.hw() || tt[0] >= 1 && d > b.hw()) continue;
-                int y = b.deckY(tt[0]);
-                if (d <= b.hw()) {
-                    c.deckY = y;
-                    c.rail = false;
-                } else if (c.deckY == Integer.MIN_VALUE) {
-                    c.deckY = y;
-                    c.rail = true;
-                    int step = (int) Math.floor(tt[0] * b.length());
-                    c.post = step <= 0 || step >= (int) Math.floor(b.length()) - 1;
-                    c.railX = Math.abs(b.bx() - b.ax()) >= Math.abs(b.bz() - b.az());
-                }
-                if (c.isl != null && c.top >= y - 1) {
-                    c.top = y;
-                    c.surface = S_PLANK;
-                    c.bottom = Math.min(c.bottom, y - 2);
-                }
-            }
+        // Рев 14: на референсе Висячих садов НЕТ ни мостов, ни настилов, ни лестниц — убрано
+        // полностью (дощатые мосты с цепями жили здесь с рев 4).
         // water channels (river, pond, springs)
         for (CityPlan.Channel ch : bk.channels)
             applyChannel(c, plan, px, pz, ch.ax(), ch.az(), ch.bx(), ch.bz(), ch.hw(), ch.level(), ch.depth(), tt);
         // biome 04: the violet meadow river - a chord across the island that spills off both rims
         VioletHills.Region vr = VioletHills.regionAt(px, pz);
         if (vr != null)
-            applyChannel(c, plan, px, pz, vr.rax, vr.raz, vr.rbx, vr.rbz, VioletHills.Region.RIVER_HW, vr.riverLevel, 2, tt);
-        // biome 07: waterfalls - this column is low while a garden shelf with a pool/spring looms beside it
-        if (c.fallTop == Integer.MIN_VALUE && c.waterTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE) {
-            WaterfallGardens.Region grf = WaterfallGardens.regionAt(px, pz);
-            if (grf != null) {
-                boolean rim = grf.hub.t(px, pz) < 0.1;
-                for (int gdk = 0; gdk < 4; ++gdk) {
-                    double gx = px + (gdk == 0 ? 1 : gdk == 1 ? -1 : 0), gz = pz + (gdk == 2 ? 1 : gdk == 3 ? -1 : 0);
-                    if (grf.hub.t(gx, gz) < 0.12) continue;
-                    double gnt = terraceTop(grf.hub.raw(gx, gz), plan.ocean);
-                    if (gnt <= c.top + (rim ? 2.0 : 3.5)) continue;
-                    // rim takes wide pond spills and broad springs; interior only real pond lips and sharp springs
-                    boolean feed = vnoise(gx * 0.09, gz * 0.09, 131) > (rim ? 0.66 : 0.685)
-                            || vnoise(gx * 0.13, gz * 0.13, 141) > (rim ? 0.72 : 0.765);
-                    if (!feed) continue;
-                    c.fallTop = (int) Math.floor(gnt);
-                    c.fallBottom = c.isl != null ? c.top + 1 : plan.ocean + 1;
-                    break;
+            applyVioletStream(c, plan, px, pz, vr, tt);
+        // biome 10: каменные арочные мосты-переходы Хрустальных разломов между парящими островами
+        CrystalRifts.Region crSpanReg = CrystalRifts.regionAt(px, pz);
+        if (crSpanReg != null) {
+            double[] su = new double[1];
+            for (CrystalRifts.Span sp : crSpanReg.spans) {
+                double d = sp.dist(px, pz, su);
+                double u = su[0];
+                double hw = sp.halfWidth(u);
+                if (d > hw + 0.96) continue;
+                double ya = sp.islA == crSpanReg.hub ? crSpanReg.astroY : (sp.islA.base + 2.0);
+                double yb = sp.islB == crSpanReg.hub ? crSpanReg.astroY : (sp.islB.base + 2.0);
+                double deck = ya + (yb - ya) * smooth(u) + sp.archApexBonus * Math.sin(Math.PI * u);
+                int sy = (int) Math.floor(deck);
+                double pier = Math.pow(Math.abs(2.0 * u - 1.0), 1.55);
+                int thick = 2 + (int) Math.round(5.5 * pier);
+                c.crystal = true;
+                if (d <= hw) {
+                    c.spanTop = sy;
+                    c.spanBot = sy - thick + 1;
+                    c.spanParapet = false;
+                    if (c.isl != null) {
+                        c.top = sy;
+                        c.bottom = Math.min(c.bottom, sy - 3);
+                        c.surface = S_COBBLE;
+                        c.waterTop = Integer.MIN_VALUE;
+                        c.fallTop = Integer.MIN_VALUE;
+                        c.pond = false;
+                    }
+                } else if (c.spanTop == Integer.MIN_VALUE && u >= 0.06 && u <= 0.94) {
+                    c.spanTop = sy;
+                    c.spanBot = sy - Math.max(2, thick - 1) + 1;
+                    c.spanParapet = true;
+                    int stepAlong = (int) Math.floor(u * sp.len);
+                    c.spanPost = (stepAlong % 7 == 0) || u < 0.10 || u > 0.90;
+                    c.spanLantern = (stepAlong % 14 == 0) && u > 0.14 && u < 0.86;
+                    if (c.isl != null && c.top > sy) {
+                        c.top = sy;
+                        c.bottom = Math.min(c.bottom, sy - 3);
+                        c.surface = S_COBBLE;
+                    }
+                }
+                break;
+            }
+        }
+        // Рев 14.8: старый «feed»-механизм водопадов УДАЛЁН. Он искал более высокую полку в
+        // радиусе 1 и ставил струю почти на каждой колонке (шумовые пороги 0.50/0.58/0.72 в
+        // объединении давали ~65 %); пока рельеф был плоским, это давало одну клетку воды, но с
+        // настоящими полками биом залило водяной лестницей (29503 блоков воды в кубе ±36).
+        // Водопады теперь дают: предвыбранные WaterfallGardens.Fall (ниже) и шторы у подножия
+        // стен (см. блок про плющ/шторы в fillFromNoise).
+        return c;
+    }
+
+    /**
+     * Профиль парящих островов «Хрустальных разломов» (референс {@code 02_crystal_sanctum.png}):
+     * изумрудно-шалфейные террасы, острые беломраморные и сланцевые пики по краям, выровненные
+     * мраморные аллеи, площадь разрушенной астролябии и плавные подходы к каменным арочным мостам.
+     */
+    private static double crystalProfile(Col c, CrystalRifts.Region cr, CityPlan.Island isl,
+                                         double px, double pz, int x, int z) {
+        double t = Math.max(0.0, isl.t(px, pz));
+        double baseLevel = (cr != null && isl == cr.hub) ? cr.astroY : (isl.base + 2.0);
+        double top = baseLevel
+                + 3.6 * smooth(t / 0.34) * (0.55 + 0.45 * vnoise(px * 0.022, pz * 0.022, 701))
+                + 1.3 * (vnoise(px * 0.055, pz * 0.055, 702) - 0.5);
+
+        double minClear = 99.0;
+        if (cr != null && cr.owns(isl)) {
+            minClear = Math.min(minClear, cr.pathDist(isl, px, pz));
+            double[] uTmp = new double[1];
+            for (CrystalRifts.Span sp : cr.spans) {
+                double sd = sp.dist(px, pz, uTmp) - sp.halfWidth(uTmp[0]);
+                if (sd < minClear) minClear = sd;
+            }
+            for (CrystalRifts.Pool pl : cr.pools) {
+                if (pl.isl != isl) continue;
+                double pd = Math.hypot(px - pl.cx, pz - pl.cz) - pl.r;
+                if (pd < minClear) minClear = pd;
+                for (CrystalRifts.Fall fl : cr.falls) {
+                    if (fl.isl != isl) continue;
+                    double fd = CityPlan.segDist(px, pz, pl.cx, pl.cz, fl.x, fl.z, null) - 2.6;
+                    if (fd < minClear) minClear = fd;
+                }
+            }
+            for (CrystalRifts.Fall fl : cr.falls) {
+                if (fl.isl != isl) continue;
+                double fd = Math.hypot(px - fl.x, pz - fl.z) - fl.r;
+                if (fd < minClear) minClear = fd;
+            }
+        }
+        // Острые мраморно-сланцевые скальные пики вдоль диких плеч острова
+        double cragMask = smooth((minClear - 3.6) / 6.5) * smooth(t / 0.050);
+        double ridge = Math.max(0.0, vnoise(px * 0.048, pz * 0.048, 703) - 0.44) * 28.0
+                + Math.max(0.0, vnoise(px * 0.11, pz * 0.11, 704) - 0.50) * 11.5;
+        double crag = ridge * cragMask * ((cr != null && isl == cr.hub) ? 0.52 : 1.0);
+        top += crag;
+        if (crag > 3.0) c.surface = S_BARE;
+
+        if (cr != null && cr.owns(isl)) {
+            // 1) Площадь астролябии и центральная беломраморная аллея на hub (если выпала колоннада!)
+            if (isl == cr.hub && cr.hasColonnade) {
+                double ad = Math.hypot(px - cr.astroX, pz - cr.astroZ);
+                if (ad < CrystalRifts.Region.ASTRO_R + 7.5) {
+                    double k = smooth(Math.max(0.0, (ad - (CrystalRifts.Region.ASTRO_R + 1.8)) / 5.7));
+                    top = cr.astroY + (top - cr.astroY) * k;
+                }
+                double avd = cr.avenueDist(px, pz);
+                if (avd < CrystalRifts.Region.AVE_HW + 5.5) {
+                    double k = smooth(Math.max(0.0, (avd - CrystalRifts.Region.AVE_HW) / 5.5));
+                    top = cr.astroY + (top - cr.astroY) * k;
+                }
+                double crack = 0.35 * (vnoise(px * 0.36, pz * 0.36, 705) - 0.5);
+                if (ad <= CrystalRifts.Region.ASTRO_R + 1.8 || avd <= CrystalRifts.Region.AVE_HW + crack) {
+                    boolean mossSeam = ad > CrystalRifts.Region.ASTRO_R - 0.5 && avd > CrystalRifts.Region.AVE_HW - 0.85
+                            && hash(x, z, 706) < 0.24;
+                    c.surface = mossSeam ? S_GRASS : S_COBBLE;
+                }
+            }
+            // 2) Террасы минеральных чаш на окружающих островах
+            for (CrystalRifts.Pool pl : cr.pools) {
+                if (pl.isl != isl) continue;
+                double pd = Math.hypot(px - pl.cx, pz - pl.cz);
+                double target = pl.waterY + 1.0;
+                if (pd < pl.r + 8.5) {
+                    double k = smooth(Math.max(0.0, (pd - (pl.r + 1.5)) / 7.0));
+                    top = target + (top - target) * k;
+                }
+            }
+            // 3) Мраморные тропы на островах
+            double[] uSeg = new double[1];
+            for (CrystalRifts.IslandPath ip : cr.paths) {
+                if (ip.isl != isl) continue;
+                double d = CityPlan.segDist(px, pz, ip.ax, ip.az, ip.bx, ip.bz, uSeg);
+                if (d < ip.hw + 4.8) {
+                    double k = smooth(Math.max(0.0, (d - ip.hw) / 4.8));
+                    top = baseLevel + (top - baseLevel) * k;
+                }
+                if (t > 0.03 && d <= ip.hw + 0.25 * (vnoise(px * 0.32, pz * 0.32, 707) - 0.5) && c.surface != S_COBBLE) {
+                    c.surface = S_PATH;
+                }
+            }
+            // 4) Плавное сведение рельефа к устоям каменных арочных мостов
+            for (CrystalRifts.Span sp : cr.spans) {
+                if (sp.islA != isl && sp.islB != isl) continue;
+                double d = sp.dist(px, pz, uSeg);
+                double hw = sp.halfWidth(uSeg[0]);
+                if (d < hw + 5.2) {
+                    double ya = sp.islA == cr.hub ? cr.astroY : (sp.islA.base + 2.0);
+                    double yb = sp.islB == cr.hub ? cr.astroY : (sp.islB.base + 2.0);
+                    double deck = ya + (yb - ya) * smooth(uSeg[0]) + sp.archApexBonus * Math.sin(Math.PI * uSeg[0]);
+                    double k = smooth(Math.max(0.0, (d - hw) / 5.2));
+                    top = deck + (top - deck) * k;
                 }
             }
         }
-        return c;
+        return top;
     }
 
     /** Biome 07 terrace transform: horizontal limestone shelves with ~1-block steep rises, lowest shelf hugging the sea. */
@@ -469,20 +832,154 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         double h = top - (ocean + 1);
         if (h <= 0) return top;
         double L = Math.floor(h / WaterfallGardens.STEP), band = h - L * WaterfallGardens.STEP;
-        double rise = band <= 1.2 ? smooth(band / 1.2) : 1.0;
+        // Рев 14.2: полки с НАСТОЯЩИМИ обрывами. Раньше подъём на STEP размазывался по 1.2 блока
+        // высоты, а при пологом рельефе это давало пандус шириной в десятки блоков — вертикальных
+        // стен не было вовсе (на кадрах ровный зелёный холм, плющ физически некуда вешать).
+        // Теперь переход жёсткий: ровное плато + отвесная известняковая стена как на референсе.
+        double rise = band < 0.55 ? 0.0 : 1.0;
         return ocean + 1 + (L + rise) * WaterfallGardens.STEP;
+    }
+
+    /**
+     * Рев 14.18: точка обзора для кадра «как на референсе» — стоим на полке вплотную к обрыву,
+     * смотрим на его стену с плющом и водопадом. Возвращает {camX, camY, camZ, lookX, lookY, lookZ}.
+     *
+     * <p>Все высоты считаются тем же кодом, что и генерация ({@link #column}), поэтому камера
+     * гарантированно оказывается на полке, а не внутри камня или листвы.
+     */
+    public static int[] gardenWallView(int cx, int cz, int radius) {
+        CityPlan plan = CityPlan.get();
+        for (int rr = 6; rr <= radius; rr += 2) {
+            for (int a = 0; a < 360; a += 7) {
+                double th = Math.toRadians(a);
+                int x = (int) Math.round(cx + Math.cos(th) * rr);
+                int z = (int) Math.round(cz + Math.sin(th) * rr);
+                Col c = column(plan, x, z);
+                if (c.isl == null || !c.garden || c.surface != S_GRASS
+                        || c.waterTop != Integer.MIN_VALUE || c.deckY != Integer.MIN_VALUE) continue;
+                for (Direction d : Direction.Plane.HORIZONTAL) {
+                    Col n = column(plan, x + d.getStepX(), z + d.getStepZ());
+                    int rise = n.top - c.top;
+                    if (rise < 5) continue;                        // перед нами стена нужной высоты
+                    // Рев 14.22: для кадра ищем стену, по которой реально льётся струя
+                    // (тот же шум, что и в генерации штор), иначе кадр «сухой».
+                    boolean falling = vnoise(x * 0.085, z * 0.085, 171) > 0.70;
+                    if (!falling && rr < radius / 2) continue;
+                    // отходим назад по ТОЙ ЖЕ полке: высота площадки должна совпасть с подошвой
+                    int vx = x - d.getStepX() * 11, vz = z - d.getStepZ() * 11;
+                    Col vc = column(plan, vx, vz);
+                    if (vc.isl == null || Math.abs(vc.top - c.top) > 1) continue;
+                    if (vc.waterTop != Integer.MIN_VALUE) continue; // не встаём в пруд
+                    return new int[]{vx, c.top + 2, vz, x, c.top + Math.max(2, rise / 2), z};
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Рев 14.5: рельеф Висячих садов. Острова-плато в Elisar почти плоские (у hub разброс высоты
+     * ~5 блоков), поэтому ступени не образовывались: терраса квантует высоту, а квантовать было
+     * нечего. Здесь сады получают настоящую гору — купол от кромки у самой воды к центру плюс
+     * пологий шум, чтобы полки шли неровными языками, как на референсе.
+     */
+    public static double gardenProfile(CityPlan.Island isl, double px, double pz, int ocean) {
+        double t = Math.max(0.0, Math.min(1.0, isl.t(px, pz)));
+        // Ниже уровня моря: 2 пустых каменных подводных яруса (ocean - 9 и ocean - 4)
+        double rimWave = 0.022 * (vnoise(px * 0.045, pz * 0.045, 60) - 0.5);
+        if (t + rimWave < 0.08) return ocean - 9.0;
+        if (t + rimWave < 0.16) return ocean - 4.0;
+
+        // Нижний садовый ярус — строго на уровне моря (ocean + 1), выше — ступенчатые полки
+        double tg = Math.max(0.0, (t - 0.16) / 0.84);
+        double rim = ocean + 1.2;
+        double dome = rim + (isl.base + 8 - rim) * Math.pow(tg, 0.88);
+        double lobe = (4.6 * (vnoise(px * 0.028, pz * 0.028, 61) - 0.5)
+                     + 1.1 * (vnoise(px * 0.055, pz * 0.055, 62) - 0.5)) * smooth(tg / 0.18);
+        return Math.max(rim, dome + lobe);
+    }
+
+    /**
+     * Фиолетовые холмы: поля-террасы с подпорными стенками (референс 04).
+     * Рев 14.42: шаг 3 блока давал на склоне 10–12 ступеней-пятачков; на фото ступени крупные,
+     * их 4–6 на холм. Шаг 5 блока — ровно столько.
+     */
+    /**
+     * Рев 15: гладкий профиль луга Фиолетовых холмов (ДО квантования в ярусы) — одна формула на
+     * рельеф, гряды лаванды, посадку церквей и камеры CI. Широкие волны холмов + наплыв от кромки
+     * острова, как на референсе 04.
+     */
+    public static double violetProfile(CityPlan.Island isl, double px, double pz, int ocean) {
+        double tm = Math.max(0.0, Math.min(1.0, isl.t(px, pz)));
+        // Парящие острова архипелага Фиолетовых холмов: выразительный обрыв над морем и пропастями (y ~ ocean+14..19)
+        double rimY = Math.max(ocean + 13.5, isl.base - 3.5);
+        VioletHills.Region vr = VioletHills.regionAt(px, pz);
+        double rd = vr != null ? vr.mainRoadDist(px, pz) : 28.0;
+        double brd = vr != null ? vr.branchRoadDist(px, pz) : 40.0;
+        double valleyFloor = isl.base - 1.2
+                + 2.8 * (vnoise(px * 0.0046, pz * 0.0046, 70) - 0.5)
+                + 1.0 * (vnoise(px * 0.014, pz * 0.014, 74) - 0.5);
+        // Несколько отдельных мягких холмов слева и справа от дороги (+9..+17 блоков над дорожкой)
+        double hillWave = 0.42
+                + 0.78 * vnoise(px * 0.0086, pz * 0.0086, 71)
+                + 0.34 * (vnoise(px * 0.019, pz * 0.019, 72) - 0.35);
+        double flankMask = smooth(Math.max(0.0, Math.min(1.0, (rd - 3.8) / 22.0)));
+        double branchCut = 1.0 - 0.42 * Math.exp(-(brd * brd) / (9.0 * 9.0));
+        double hills = Math.max(0.0, 13.4 * hillWave) * flankMask * branchCut
+                + 0.85 * (vnoise(px * 0.026, pz * 0.026, 73) - 0.5) * flankMask;
+        double inland = smooth(tm / 0.14);
+        return rimY + (valleyFloor + hills - rimY) * inland;
+    }
+
+    /** Верх луга в точке (та же формула, что в {@link #column}), для посадки церквей и камер. */
+    public static int violetTop(CityPlan.Island isl, double px, double pz, int ocean) {
+        return (int) Math.floor(violetTerrace(violetProfile(isl, px, pz, ocean)));
+    }
+
+    public static final int VIOLET_STEP = 1;
+
+    private static double violetTerrace(double top) {
+        return Math.floor(top / (double) VIOLET_STEP) * VIOLET_STEP + 1.0;
     }
 
     /** Terraced top estimate of a garden column (bridge anchor heights in WaterfallGardens). */
     public static int gardenTerraceTop(CityPlan.Island isl, double px, double pz, int ocean) {
-        return (int) Math.floor(terraceTop(isl.raw(px, pz), ocean));
+        return (int) Math.floor(terraceTop(gardenProfile(isl, px, pz, ocean), ocean));
     }
 
     /** Biome 07 pond-mask test stateless over garden region: shelf cells the pond noise claims. */
-    private static boolean pondAt(CityPlan plan, WaterfallGardens.Region rg, double px, double pz, int maxTop) {
-        if (vnoise(px * 0.09, pz * 0.09, 131) <= 0.685) return false;
-        if (Math.hypot(px - rg.cx, pz - rg.cz) > rg.hub.R * 0.95) return false;
+    private static boolean pondAt(CityPlan plan, WaterfallGardens.Region rg, CityPlan.Island isl, double px, double pz, int maxTop) {
+        if (vnoise(px * 0.09, pz * 0.09, 131) <= 0.84) return false;
+        if (isl.t(px, pz) < 0.24) return false; // пруды только внутри надводных полок с учётом формы острова
         return maxTop > plan.ocean + 3 && maxTop < plan.ocean + 46;
+    }
+
+    /**
+     * Рев 15: ручей Фиолетовых холмов идёт ПО ТЕРРАСАМ, а не одним уровнем.
+     *
+     * <p>Раньше ручей вырезался на единой высоте ({@code riverLevel = base-2}): на кадрах 49–51 это
+     * была прямая бирюзовая канава с вертикальными стенками в 10+ блоков, перерезающая все ярусы
+     * насквозь. Теперь уровень воды берётся от ПОЛКИ, на которой стоит колонка: ручей спускается
+     * каскадом по террасам, оставаясь в одной-двух клетках от поверхности — как горный поток на
+     * референсе.
+     */
+    private static void applyVioletStream(Col c, CityPlan plan, double px, double pz,
+                                          VioletHills.Region vr, double[] tt) {
+        CityPlan.Island isl = c.isl;
+        if (isl == null || isl.kind != 7) return;
+        // Дорога доходит прямо до кромки парящего острова и обрывается над пустой пропастью между островами
+        if (isl.t(px, pz) < 0.025) return;
+        double dm = vr.mainRoadDist(px, pz);
+        double db = vr.branchRoadDist(px, pz);
+        double hw = VioletHills.Region.RIVER_HW;
+        double bhw = VioletHills.Region.BRANCH_HW;
+        if (dm <= hw || (isl.t(px, pz) > 0.04 && db <= bhw)) {
+            c.soft = Double.NaN;
+            c.surface = S_COBBLE;
+        } else if (dm <= hw + 1.95 || db <= bhw + 1.15) {
+            // Аккуратная зелёная обочина под каменные стенки, деревянные заборы и столбы с факелами
+            c.soft = Double.NaN;
+        }
     }
 
     /** Carves one straight water channel into the column (shared by city rivers and the violet meadow river). */
@@ -526,16 +1023,47 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         int x0 = chunk.getPos().getMinBlockX(), z0 = chunk.getPos().getMinBlockZ();
         BlockState water = st(ElisarBlocks.WATER);
         BlockState falling = water.setValue(LiquidBlock.LEVEL, 8);
+        // Рев 14.23: вода Висячих садов — ВАНИЛЬНАЯ. Её цвет берётся из biome water_color,
+        // и на референсе вода ярко-бирюзовая; у нашего флюида своя тёмно-синяя текстура, которую
+        // тинтом не осветлить. Море Элисара остаётся на своём флюиде.
+        BlockState gWater = st(ElisarBlocks.GARDEN_WATER);
+        BlockState gFalling = gWater.setValue(LiquidBlock.LEVEL, 8);
         BlockState seabed = st(ElisarBlocks.SEABED), stone = st(ElisarBlocks.STONE), mossy = st(ElisarBlocks.STONE_MOSSY), soil = st(ElisarBlocks.SOIL);
         BlockState grass = st(ElisarBlocks.GRASS), cobble = st(ElisarBlocks.COBBLE), path = st(ElisarBlocks.PATH), plank = st(ElisarBlocks.SIZO_PLANKS);
         BlockState tall = st(ElisarBlocks.TALL_GRASS), flowers = st(ElisarBlocks.FLOWERS), log = st(ElisarBlocks.SIZO_LOG);
         BlockState moss = st(ElisarBlocks.MOSS), crust = st(ElisarBlocks.CRUST);
-        BlockState ashlar = st(ru.aiforge.riftworld.registry.CastleBlocks.ASHLAR);
         BlockState aurite = st(ElisarBlocks.AURITE_ORE);
+        BlockState ducatOre = st(ElisarBlocks.DUCAT_ORE);
+        // Рев 14: у биома 07 своя зелёная палитра (референс — яркая трава и дубы, а не кремовый Элисар)
+        BlockState gardenGrass = st(ElisarBlocks.GARDEN_GRASS);
+        // Рев 15.4: газон Фиолетовых холмов — ВАНИЛЬНАЯ короткая трава: она тинтуется цветом
+        // биома (grass_color 0xB6C77A) и потому сочно-зелёная. Наша elisar_tall_grass почти белая,
+        // и на кадрах 49–51 весь луг был усыпан белой «крупой».
+        BlockState vGrass = Blocks.GRASS.defaultBlockState();
+        // Рев 15.5: ПОЧВА луга. Раньше поверхность холмов была нашим `elisar_soil` (#A69F93 —
+        // кремово-серый), из-за чего луг читался серым полем с белой крупой. Теперь дерн —
+        // ванильный `grass_block` (его верх и бока тинтуются grass_color биома → шалфейная
+        // зелень), а борозды между грядами — тёмная земля (`coarse_dirt`), как вспаханная
+        // полоса на референсе 04.
+        BlockState vTurf = Blocks.GRASS_BLOCK.defaultBlockState();
+        BlockState vEarth = Blocks.COARSE_DIRT.defaultBlockState();
+        // Рев 14.25: на обрывах садов — свой сочно-зелёный плющ, как на референсе
+        BlockState gIvy = ElisarBlocks.GARDEN_IVY.get().defaultBlockState();
+        BlockState lime = st(ElisarBlocks.GARDEN_LIMESTONE), limeMossy = st(ElisarBlocks.GARDEN_LIMESTONE_MOSSY);
+        BlockState riftMarble = st(ElisarBlocks.RIFT_MARBLE), riftMarbleMossy = st(ElisarBlocks.RIFT_MARBLE_MOSSY);
+        BlockState riftSlate = st(ElisarBlocks.RIFT_SLATE), riftMarbleSlab = st(ElisarBlocks.RIFT_MARBLE_SLAB);
+        BlockState riftTurf = st(ElisarBlocks.RIFT_TURF), riftGrass = st(ElisarBlocks.RIFT_GRASS);
+        BlockState crystalDeep = st(ElisarBlocks.CRYSTAL_BLOCK_DEEP), crystalMid = st(ElisarBlocks.CRYSTAL_BLOCK);
+        BlockState crystalBright = st(ElisarBlocks.CRYSTAL_BLOCK_BRIGHT);
+        BlockState crystalCluster = st(ElisarBlocks.CRYSTAL_CLUSTER), crystalShroom = st(ElisarBlocks.CRYSTAL_SHROOM);
         Col[][] cols = new Col[18][18];
+        // Рев 10: кромки дна по колонкам — декор моря ставится вторым проходом, после воды
+        int[][] seaFloor = new int[16][16];
+        for (int[] row : seaFloor) java.util.Arrays.fill(row, Integer.MIN_VALUE);
         for (int dx = -1; dx <= 16; ++dx)
             for (int dz = -1; dz <= 16; ++dz)
                 cols[dx + 1][dz + 1] = column(plan, x0 + dx, z0 + dz);
+        InvertedTowers.Site chunkTower = InvertedTowers.nearAt(x0 + 8.0, z0 + 8.0, 26.0);
         for (int dx = 0; dx < 16; ++dx) {
             for (int dz = 0; dz < 16; ++dz) {
                 int x = x0 + dx, z = z0 + dz;
@@ -543,13 +1071,20 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 // ocean plane
                 double aw = AshenLands.weight(x + 0.5, z + 0.5);
                 boolean ashen = aw > 0 && aw > hash(x, z, 88);
+                // v0.36.0: «Мороковая Падь» — сухопутный биом поверх диких островов (мерзлота + бледный бор)
+                double mwk = MorokHollow.weight(x + 0.5, z + 0.5);
+                boolean morok = !ashen && mwk > 0 && mwk > hash(x, z, 87);
+                if (morok && c.isl != null && c.top > plan.ocean + 1) {
+                    MorokHollow.dressSurface(chunk, mp, x, z, c.top);
+                }
                 if (ashen) {
                     if (c.isl == null || c.bottom > plan.ocean + 1) AshenLands.column(chunk, mp, x, z, c.isl != null);
                 } else if (c.isl == null || c.bottom > plan.ocean + 1) {
                     // Рев 8 «Живое море»: сплошной массив дна от y=0, ущелья, двухуровневые пещеры,
                     // «синие дыры» и рифовые сады (было: 5-блочная скорлупа и лысое дно).
                     int floor = oceanFloor(plan, x, z);
-                    ElisarSea.fill(chunk, mp, x, z, floor, plan.ocean);
+                    ElisarSea.column(chunk, mp, x, z, floor, plan.ocean);
+                    seaFloor[dx][dz] = floor;
                     // мини-биом «Туманный данж»: серые каменные столбы из воды + центральный утёс под руину
                     MistKeep.Region mr = MistKeep.regionAt(x + 0.5, z + 0.5);
                     if (mr != null) {
@@ -565,67 +1100,223 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                         }
                     }
                 }
-                if (!ashen && c.isl == null && c.fallTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE) debris(plan, chunk, mp, x, z);                if (dx == 15 && dz == 15) mistKeepDressing(plan, chunk, mp, x0, z0);
+                // Рев 11: СПЛОШНОЙ ПОЛ МИРА. Раньше в адских угодьях под пепельной равниной и на стыках
+                // с морем оставалась пустота — можно было копнуть вниз и улететь в бездну. Теперь под любой
+                // колонкой лежит камень/бедрок до самого низа измерения.
+                bedrockFloor(plan, chunk, mp, x, z, ashen, c);
+                if (!ashen && c.isl == null && c.fallTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE && c.spanTop == Integer.MIN_VALUE) debris(plan, chunk, mp, x, z);
+                if (dx == 15 && dz == 15) mistKeepDressing(plan, chunk, mp, x0, z0);
 
-                tower(chunk, mp, x, z);
+                tower(chunk, mp, chunkTower, x, z);
                 if (c.isl != null) {
-                    if (c.isl.kind == 5 || c.isl.kind == 6 || ashen && c.isl.kind != 0) {
+                    if (c.isl.kind == 5 || c.isl.kind == 6 || c.isl.kind == WorldStructures.BURNED_VILLAGE_KIND
+                            || ashen && c.isl.kind != 0) {
                         scorched(chunk, mp, c, x, z);
                     } else for (int y = c.bottom; y <= c.top; ++y) {
                         BlockState s;
                         if (y == c.top) {
-                            s = switch (c.surface) {
-                                case S_COBBLE -> cobble;
-                                case S_PATH -> path;
+                            s = switch (c.sanctuaryZone) {
+                                case 1 -> hash(x, z, 412) < 0.58
+                                        ? st(ElisarBlocks.IVORY_MARBLE_TILES)
+                                        : st(ElisarBlocks.IVORY_MARBLE);
+                                case 2 -> ((x + z) & 3) == 0
+                                        ? st(ElisarBlocks.IVORY_MARBLE_BRICKS)
+                                        : st(ElisarBlocks.IVORY_PAVING_STONE);
+                                case 3 -> st(ElisarBlocks.GILDED_IVORY_MARBLE);
+                                case 5 -> st(ElisarBlocks.CHISELED_IVORY_MARBLE);
+                                case 4 -> {
+                                    // Живой газон elisar_grass (почва DT!) с цветочным мхом только у самой кромки дорожек
+                                    boolean nearWhiteEdge = false;
+                                    for (Direction dd : Direction.Plane.HORIZONTAL) {
+                                        int nz = cols[dx + 1 + dd.getStepX()][dz + 1 + dd.getStepZ()].sanctuaryZone;
+                                        if (nz >= 1 && nz <= 3) { nearWhiteEdge = true; break; }
+                                    }
+                                    yield (nearWhiteEdge && hash(x, z, 415) < 0.65)
+                                            ? st(ElisarBlocks.BLOSSOM_MOSS)
+                                            : grass;
+                                }
+                                default -> null;
+                            };
+                            if (s == null) s = switch (c.surface) {
+                                case S_COBBLE -> {
+                                    if (c.isl.kind == CrystalRifts.KIND) {
+                                        double mh = hash(x, z, 721);
+                                        yield mh < 0.64 ? riftMarble
+                                                : mh < 0.88 ? riftMarbleMossy
+                                                : Blocks.CALCITE.defaultBlockState();
+                                    }
+                                    if (c.isl.kind == 7) {
+                                        double rh = hash(x, z, 181);
+                                        yield rh < 0.62 ? lime
+                                                : rh < 0.88 ? Blocks.DIORITE.defaultBlockState()
+                                                : Blocks.CALCITE.defaultBlockState();
+                                    }
+                                    yield cobble;
+                                }
+                                case S_PATH -> {
+                                    if (c.isl.kind == CrystalRifts.KIND) {
+                                        double ph = hash(x, z, 722);
+                                        yield ph < 0.54 ? riftMarble
+                                                : ph < 0.86 ? riftMarbleMossy
+                                                : riftSlate;
+                                    }
+                                    if (c.isl.kind == SizoGrove.KIND) {
+                                        double patch = vnoise(x * 0.36, z * 0.36, 193) + 0.24 * (hash(x, z, 194) - 0.5);
+                                        yield patch < 0.34 ? Blocks.COBBLESTONE.defaultBlockState()
+                                                : patch < 0.52 ? (hash(x, z, 195) < 0.55
+                                                    ? Blocks.MOSSY_COBBLESTONE.defaultBlockState()
+                                                    : Blocks.ANDESITE.defaultBlockState())
+                                                : patch < 0.80 ? Blocks.DIRT_PATH.defaultBlockState()
+                                                : Blocks.COARSE_DIRT.defaultBlockState();
+                                    }
+                                    yield path;
+                                }
                                 case S_PLANK -> plank;
                                 case S_PLOT -> cobble;         // pebble apron around the houses (reference)
                                 default -> {
-                                    if (c.mtn) {
-                                        yield vnoise(x * 0.12, z * 0.12, 68) > 0.66 ? moss : grass;   // зелёные полки, мох редкими пятнами
+                                    if (c.isl.kind == CrystalRifts.KIND) {
+                                        if (c.pond) {
+                                            double ch = hash(x, z, 723);
+                                            yield ch < 0.16 ? crystalDeep
+                                                    : ch < 0.22 ? crystalMid
+                                                    : ch < 0.68 ? riftMarble
+                                                    : riftMarbleMossy;
+                                        }
+                                        if (c.surface == S_BARE) {
+                                            double bh = hash(x, z, 724);
+                                            yield bh < 0.56 ? riftMarble : bh < 0.78 ? riftMarbleMossy : riftSlate;
+                                        }
+                                        if (c.pondRim) yield hash(x, z, 725) < 0.65 ? riftMarble : riftMarbleMossy;
+                                        boolean rimEdge = false;
+                                        for (Direction dd : Direction.Plane.HORIZONTAL) {
+                                            Col nb = cols[dx + 1 + dd.getStepX()][dz + 1 + dd.getStepZ()];
+                                            if (nb.isl == null || nb.top <= c.top - 3) { rimEdge = true; break; }
+                                        }
+                                        if (rimEdge && hash(x, z, 726) < 0.80)
+                                            yield hash(x, z, 727) < 0.62 ? riftMarble : riftMarbleMossy;
+                                        // Собственный шалфейно-изумрудный дёрн на белом мраморе (0 ванильной земли и травы!)
+                                        yield vnoise(x * 0.14, z * 0.14, 728) > 0.80 ? riftMarbleMossy : riftTurf;
                                     }
+                                    // Рев 15: луг Фиолетовых холмов — ЗЕЛЁНАЯ трава (на референсе сочный
+                                    // зелёный газон), а не белёсая элисарская корка. Именно из-за неё
+                                    // биом на кадрах читался «снежным» с фиолетовыми точками.
+                                    if (c.isl.kind == 7) yield hash(x, z, 62) < 0.10 ? soil : gardenGrass;
                                     if (c.garden) {
-                                        if (c.springy) yield ElisarBlocks.LANTERN.get().defaultBlockState();   // hot spring: warm glow in the pool bed
+                                        // Рев 14.28: подводная полка острова — голый камень (S_BARE)
+                                        if (c.surface == S_BARE) yield hash(x, z, 65) < 0.3 ? limeMossy : lime;
+                                        // Рев 14: фонарь в источнике был рукотворным предметом — на референсе
+                                        // только природная вода и камень. Убран.
                                         if (c.pondRim || c.pond) yield st(ru.aiforge.riftworld.registry.CastleBlocks.ASHLAR);            // travertine
-                                        yield vnoise(x * 0.14, z * 0.14, 67) > 0.60 ? moss : grass;
+                                        // Рев 14.12: кромка полки — светлый известняк (как на фото), трава
+                                        // начинается отступя от обрыва.
+                                        boolean rimEdge = false;
+                                        for (Direction dd : Direction.Plane.HORIZONTAL) {
+                                            Col nb = cols[dx + 1 + dd.getStepX()][dz + 1 + dd.getStepZ()];
+                                            if (nb.isl != null && nb.top <= c.top - 3) { rimEdge = true; break; }
+                                        }
+                                        if (rimEdge && (c.waterTop != Integer.MIN_VALUE || hash(x, z, 63) < 0.82))
+                                            yield hash(x, z, 64) < 0.38 ? limeMossy : lime;
+                                        yield vnoise(x * 0.14, z * 0.14, 67) > 0.72 ? moss : gardenGrass;
                                     }
-                                    if (c.isl.kind == 7) {
-                                        yield hash(x, z, 24) < 0.05 ? moss : grass;      // ровный луг, мох редкими пятнами
+                                    if (c.isl.kind == LandmarkStructures.HARBOR_COAST_KIND) {
+                                        if (c.surface == S_BARE) yield hash(x, z, 65) < 0.35 ? limeMossy : lime;
+                                        yield vnoise(x * 0.14, z * 0.14, 67) > 0.68 ? moss : Blocks.MOSS_BLOCK.defaultBlockState();
                                     }
                                     boolean groveTan = c.isl.kind == SizoGrove.KIND || (c.isl.kind != 4 && SizoGrove.inside(x + 0.5, z + 0.5));
                                     yield groveTan
-                                            ? (vnoise(x * 0.15, z * 0.15, 66) > 0.58 ? moss : grass)
+                                            ? (vnoise(x * 0.16, z * 0.16, 66) > 0.82 ? moss : grass)
                                             : (c.isl.kind != 4 && vnoise(x * 0.11, z * 0.11, 21) > 0.74 || hash(x, z, 23) < 0.012) ? moss : grass;
                                 }
                             };
-                        } else if (c.mtn) {
-                            // слоистые ярусы: под травой — почва, ниже известняк с прослоями мха, в глубине — камень
-                            int band = Math.floorMod(y + (int) (hash(x, z, 712) * 3), 7);
-                            s = y >= c.top - 1 ? soil
-                                    : y > c.top - 14 ? (band == 0 ? mossy : (band <= 3 ? ashlar : stone))
-                                    : (hash(x, y, z) < 0.08 ? mossy : stone);
-                            if (y <= c.top - 2 && y >= c.top - 6
-                                    && vnoise(x * 0.33, z * 0.33, 313) > 0.80 && hash(x, y, z) < 0.88) s = aurite;
                         } else if (y == c.top - 1) {
-                            // под травой — почва, а не белёсая корка: иначе склоны читаются как каменные ступени
-                            s = c.surface == S_GRASS || c.surface == S_PATH ? soil : crust;
+                            // В Хрустальных разломах под шалфейным дёрном сразу лежит замшелый/белый мрамор — без коричневой земли!
+                            s = c.isl.kind == CrystalRifts.KIND
+                                    ? (c.surface == S_GRASS && !c.pondRim ? riftMarbleMossy : riftMarble)
+                                    : (c.garden || c.isl.kind == 7 ? soil : crust);
+                        } else if (c.isl.kind == CrystalRifts.KIND) {
+                            // Светло-мраморные верхние обрывы -> тёмный сланец и сталактитовые кили снизу (без одиночных крапинок кристалла)
+                            int spanH = Math.max(4, c.top - c.bottom);
+                            double rel = (y - c.bottom) / (double) spanH;
+                            double hv = hash(x, y, z);
+                            if (rel < 0.36) {
+                                s = hv < 0.84 ? riftSlate : riftMarble;
+                            } else {
+                                s = hv < 0.66 ? riftMarble
+                                        : hv < 0.86 ? riftMarbleMossy
+                                        : riftSlate;
+                            }
+                        } else if (c.isl.kind == 7) {
+                            // Рев 15: обрыв яруса Фиолетовых холмов — каменная стенка террасы
+                            // (на фото каждая ступень подпёрта кладкой). Верхний блок — земля,
+                            // ниже 3–4 блока светлого камня, у подножия — мшистый.
+                            s = y >= c.top - 5
+                                    ? (hash(x, y, z) < 0.30 ? limeMossy : lime)
+                                    : (hash(x, y, z) < 0.10 ? mossy : stone);
+                        } else if (c.garden && y >= c.top - 14) {
+                            // стены полок — светлый известняк пластами, а на глубине 3..7 встречаются умеренные жилы монетоносной руды!
+                            if (y <= c.top - 3 && y >= c.top - 7
+                                    && vnoise(x * 0.33, z * 0.33, 313) > 0.89 && hash(x, y, z) < 0.28) {
+                                s = hash(x, z, 314) < 0.50 ? ducatOre : aurite;
+                            } else {
+                                s = (y <= c.top - 10 && hash(x, y, z) < 0.45) ? limeMossy : lime;
+                            }
                         } else if (y <= c.bottom + 1 && hash(x, z, y) < 0.5 || hash(x, y, z) < 0.07) {
                             s = mossy;
                         } else {
                             s = stone;
-                            // улучшение биомов: ауритовая руда (монетоносная) змеится вдоль ярусов Висячих садов,
-                            // прячась на глубине 2..6 под поверхностью полки - волно-лентовые прожилки с промывками
-                            if ((c.garden || c.mtn) && y <= c.top - 2 && y >= c.top - 6
-                                    && vnoise(x * 0.33, z * 0.33, 313) > 0.80 && hash(x, y, z) < 0.88) s = aurite;
+                            // v0.30.0: Сниженная частота спавна монетной руды внутри диких парящих островов Элисара
+                            if (c.isl.kind != 0 && y <= c.top - 5 && y >= c.bottom + 4) {
+                                double dv = vnoise(x * 0.24 + y * 0.07, z * 0.24 - y * 0.05, 519);
+                                if (dv > 0.895 && hash(x, y, z) < 0.24) {
+                                    s = ducatOre;
+                                }
+                            }
                         }
                         chunk.setBlockState(mp.set(x, y, z), s, false);
                     }
-                    // half-step slabs where a street climbs one block (smooth walking, no hard ledges)
-                    if (c.surface == S_COBBLE && c.waterTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE && c.fallTop == Integer.MIN_VALUE) {
+                    if (c.isl.kind == WaterfallGardens.KIND || c.isl.kind == LandmarkStructures.HARBOR_COAST_KIND) {
+                        // Сплошное каменное основание острова до бедрока (0 дыр) + вода над подводными ярусами (0 воздуха под водой).
+                        for (int y = MIN_Y + 2; y < c.bottom; ++y) {
+                            BlockState base = hash(x, y, z) < 0.18 ? limeMossy : stone;
+                            chunk.setBlockState(mp.set(x, y, z), base, false);
+                        }
+                        if (c.top < plan.ocean) {
+                            for (int y = c.top + 1; y <= plan.ocean; ++y) {
+                                chunk.setBlockState(mp.set(x, y, z), water, false);
+                            }
+                        }
+                    }
+                    // v0.27.0: Неразрушающий живой цветочный покров и белые мраморные фонарные тумбы на круглой площади Святилища
+                    if (c.sanctuaryZone == 5 && chunk.getBlockState(mp.set(x, c.top + 1, z)).isAir()) {
+                        chunk.setBlockState(mp.set(x, c.top + 1, z), st(ElisarBlocks.IVORY_MARBLE_WALL), false);
+                        if (chunk.getBlockState(mp.set(x, c.top + 2, z)).isAir()) {
+                            chunk.setBlockState(mp.set(x, c.top + 2, z), st(ElisarBlocks.LANTERN), false);
+                        }
+                    } else if (c.sanctuaryZone == 4 && chunk.getBlockState(mp.set(x, c.top + 1, z)).isAir()) {
+                        double fh = hash(x, z, 419);
+                        if (fh < 0.085) {
+                            chunk.setBlockState(mp.set(x, c.top + 1, z), st(ElisarBlocks.WHITE_LILY_CLUSTER), false);
+                        } else if (fh < 0.145) {
+                            chunk.setBlockState(mp.set(x, c.top + 1, z), st(ElisarBlocks.CELADON_FERN), false);
+                        } else if (fh < 0.180) {
+                            chunk.setBlockState(mp.set(x, c.top + 1, z), Blocks.OXEYE_DAISY.defaultBlockState(), false);
+                        } else if (fh < 0.205) {
+                            chunk.setBlockState(mp.set(x, c.top + 1, z), Blocks.LILY_OF_THE_VALLEY.defaultBlockState(), false);
+                        }
+                    }
+                    // half-step slabs where a street or country lane climbs one block (smooth walking, no hard ledges)
+                    if ((c.surface == S_COBBLE || ((c.isl.kind == SizoGrove.KIND || c.isl.kind == CrystalRifts.KIND) && c.surface == S_PATH))
+                            && c.waterTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE
+                            && c.spanTop == Integer.MIN_VALUE && c.fallTop == Integer.MIN_VALUE) {
                         for (Direction d : Direction.Plane.HORIZONTAL) {
                             Col n = cols[dx + 1 + d.getStepX()][dz + 1 + d.getStepZ()];
                             if (n.isl != null && n.top == c.top + 1 && n.deckY == Integer.MIN_VALUE
                                     && (n.surface == S_COBBLE || n.surface == S_PATH)) {
-                                chunk.setBlockState(mp.set(x, c.top + 1, z), st(ElisarBlocks.COBBLE_SLAB), false);
+                                BlockState roadSlab = c.isl.kind == CrystalRifts.KIND ? riftMarbleSlab
+                                        : c.isl.kind == 7 ? Blocks.SMOOTH_STONE_SLAB.defaultBlockState()
+                                        : c.isl.kind == SizoGrove.KIND ? Blocks.COBBLESTONE_SLAB.defaultBlockState()
+                                        : st(ElisarBlocks.COBBLE_SLAB);
+                                chunk.setBlockState(mp.set(x, c.top + 1, z), roadSlab, false);
                                 break;
                             }
                         }
@@ -641,88 +1332,279 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                             chunk.setBlockState(mp.set(x, c.top + 1, z), fs, false);
                         } else {
                             boolean violet = c.isl.kind == 7 || (c.isl.kind != 4 && VioletHills.inside(x + 0.5, z + 0.5));
-                            if (violet) {                                  // biome 04: drift FIELDS of lavender rows (the reference carpet)
-                                double field = vnoise(x * 0.021, z * 0.021, 92);
-                                double edge = vnoise(x * 0.09, z * 0.09, 90);
-                                if (field > 0.62) {                        // planted drift: wavy stripes, ~90% cover on rows
-                                    double ph = x * 0.866 + z * 0.5 + vnoise(x * 0.03, z * 0.03, 93) * 4.2;
-                                    int per = (int) Math.floor(ph) & 7;
-                                    boolean planted = per <= 2 || per == 5;
-                                    if (planted && h < 0.93) {
-                                        int f = (int) (hash(x, z, 91) * 100);
-                                        chunk.setBlockState(mp.set(x, c.top + 1, z), st(f < 58 ? ElisarBlocks.VIOLET_BLOOM : f < 86 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
-                                    } else if (h < 0.09) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
-                                } else if (field > 0.55) {                 // field fringe: mixed drifts
-                                    if (h < 0.30 && edge > 0.52) {
-                                        int f = (int) (hash(x, z, 91) * 100);
-                                        chunk.setBlockState(mp.set(x, c.top + 1, z), st(f < 50 ? ElisarBlocks.VIOLET_BLOOM : f < 80 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
-                                    } else if (h < 0.16) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
-                                } else {                                   // wild lilac meadows between fields
-                                    if (h < 0.14) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
-                                    else if (h < 0.17 && edge > 0.58) {
-                                        int f = (int) (hash(x, z, 91) * 3);
-                                        chunk.setBlockState(mp.set(x, c.top + 1, z), st(f == 0 ? ElisarBlocks.VIOLET_BLOOM : f == 1 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
+                            if (violet) {
+                                // Небольшая редкая примесь (~4 %) других цветов по референсу 04_violet_hills.png
+                                double acc = hash(x, z, 99);
+                                BlockState accentBloom = acc < 0.015 ? Blocks.PINK_TULIP.defaultBlockState()
+                                        : acc < 0.026 ? Blocks.ALLIUM.defaultBlockState()
+                                        : acc < 0.034 ? Blocks.ORANGE_TULIP.defaultBlockState()
+                                        : acc < 0.041 ? Blocks.OXEYE_DAISY.defaultBlockState()
+                                        : acc < 0.046 ? Blocks.CORNFLOWER.defaultBlockState()
+                                        : acc < 0.050 ? Blocks.DANDELION.defaultBlockState()
+                                        : null;
+                                if (Double.isNaN(c.soft)) {
+                                    // Чистая травяная обочина под придорожные каменные стенки, заборы и столбы с факелами
+                                    chunk.setBlockState(mp.set(x, c.top, z), vTurf, false);
+                                    VioletHills.Region vr0 = VioletHills.regionAt(x + 0.5, z + 0.5);
+                                    double md = vr0 != null ? vr0.mainRoadDist(x + 0.5, z + 0.5) : 99.0;
+                                    if (md > VioletHills.Region.RIVER_HW + 1.35) {
+                                        if (accentBloom != null) {
+                                            chunk.setBlockState(mp.set(x, c.top + 1, z), accentBloom, false);
+                                        } else if (h < 0.55) {
+                                            BlockState rimBloom = st(h < 0.24 ? ElisarBlocks.VIOLET_BLOOM
+                                                    : h < 0.44 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM);
+                                            chunk.setBlockState(mp.set(x, c.top + 1, z), rimBloom, false);
+                                        } else if (h < 0.72) {
+                                            chunk.setBlockState(mp.set(x, c.top + 1, z), vGrass, false);
+                                        }
+                                    }
+                                } else {
+                                    double soft = c.soft;
+                                    boolean stepLip = false;
+                                    for (Direction dd : Direction.Plane.HORIZONTAL) {
+                                        Col nb = cols[dx + 1 + dd.getStepX()][dz + 1 + dd.getStepZ()];
+                                        if (nb.isl != null && nb.top < c.top) { stepLip = true; break; }
+                                    }
+                                    double rp = soft * 0.55 + (x * 0.21 + z * 0.15) + 2.8 * vnoise(x * 0.015, z * 0.015, 91);
+                                    double frac = rp - Math.floor(rp);
+                                    boolean row = frac < 0.58 && !stepLip;
+                                    double band = vnoise(x * 0.013, z * 0.013, 94) + (hash(x, z, 98) - 0.5) * 0.18;
+                                    BlockState bloom = st(band < 0.44 ? ElisarBlocks.VIOLET_BLOOM
+                                            : band < 0.84 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM);
+                                    chunk.setBlockState(mp.set(x, c.top, z), vTurf, false);
+                                    // Воздушные одиночные ярусы цветов (1 блок в высоту, без двухэтажных нагромождений) + просветы зелёной травы
+                                    if (accentBloom != null) {
+                                        chunk.setBlockState(mp.set(x, c.top + 1, z), accentBloom, false);
+                                    } else if (row && h < 0.84) {
+                                        chunk.setBlockState(mp.set(x, c.top + 1, z),
+                                                h < 0.72 ? st(ElisarBlocks.LAVENDER_BED) : bloom, false);
+                                    } else if (stepLip && h < 0.36) {
+                                        chunk.setBlockState(mp.set(x, c.top + 1, z), h < 0.14 ? Blocks.FERN.defaultBlockState() : vGrass, false);
+                                    } else if (h < 0.52) {
+                                        chunk.setBlockState(mp.set(x, c.top + 1, z),
+                                                h < 0.22 ? st(ElisarBlocks.LAVENDER_BED) : bloom, false);
+                                    } else if (h < 0.76) {
+                                        chunk.setBlockState(mp.set(x, c.top + 1, z), vGrass, false);
                                     }
                                 }
-                            } else if (c.mtn) {
-                                // rev 9: полки многоуровневых гор - трава, цветы, низкие кусты
-                                if (h < 0.11) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
-                                else if (h < 0.30 && vnoise(x * 0.1, z * 0.1, 158) > 0.50) {
-                                    int f = (int) (hash(x, z, 159) * 100);
-                                    chunk.setBlockState(mp.set(x, c.top + 1, z), st(f < 34 ? ElisarBlocks.FLOWERS : f < 62 ? ElisarBlocks.VIOLET_BLOOM
-                                            : f < 84 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
-                                } else if (h < 0.36 && vnoise(x * 0.13, z * 0.13, 160) > 0.62
-                                        && chunk.getBlockState(mp.set(x, c.top + 1, z)).isAir()) {
-                                    chunk.setBlockState(mp.set(x, c.top + 1, z), ElisarBlocks.SIZO_LEAVES.get().defaultBlockState()
-                                            .setValue(LeavesBlock.PERSISTENT, true).setValue(LeavesBlock.DISTANCE, 1), false);   // куст на полке
-                                }
                             } else if (c.garden) {
-                                // biome 07: nearly-jungle - thick grass, colour splashes, creeping shrubs (tiny trees handled at region)
-                                if (h < 0.40) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
-                                else if (h < 0.50 && vnoise(x * 0.1, z * 0.1, 154) > 0.55) {
+                                if (h < 0.10) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
+                                else if (h < 0.26 && vnoise(x * 0.1, z * 0.1, 154) > 0.42) {
                                     int f = (int) (hash(x, z, 155) * 100);
-                                    chunk.setBlockState(mp.set(x, c.top + 1, z), st(f < 46 ? ElisarBlocks.FLOWERS : f < 66 ? ElisarBlocks.VIOLET_BLOOM : f < 84 ? ElisarBlocks.LILAC_BLOOM : ElisarBlocks.PALE_BLOOM), false);
-                                } else if (h < 0.55 && chunk.getBlockState(mp.set(x, c.top + 1, z)).isAir()) {
-                                    chunk.setBlockState(mp.set(x, c.top + 1, z), ElisarBlocks.SIZO_LEAVES.get().defaultBlockState()
-                                            .setValue(LeavesBlock.PERSISTENT, true).setValue(LeavesBlock.DISTANCE, 1), false);   // low creeping shrub
+                                    BlockState bloom = f < 42 ? Blocks.POPPY.defaultBlockState()
+                                            : f < 72 ? Blocks.DANDELION.defaultBlockState()
+                                            : f < 88 ? Blocks.CORNFLOWER.defaultBlockState()
+                                            : f < 95 ? Blocks.OXEYE_DAISY.defaultBlockState()
+                                            : st(ElisarBlocks.PALE_BLOOM);
+                                    chunk.setBlockState(mp.set(x, c.top + 1, z), bloom, false);
+                                }
+                            } else if (c.isl.kind == CrystalRifts.KIND) {
+                                // biome 10 (02_crystal_sanctum.png): собственная шалфейно-морозная трава разлома, друзы кристаллов и светящиеся грибы (0 ванильной травы!)
+                                if (c.spanTop == Integer.MIN_VALUE) {
+                                    double patch = vnoise(x * 0.14, z * 0.14, 731);
+                                    if (patch > 0.63 && h < 0.095) {
+                                        chunk.setBlockState(mp.set(x, c.top + 1, z), crystalShroom, false);
+                                    } else if (h < 0.042 || (c.pondRim && h < 0.14)) {
+                                        chunk.setBlockState(mp.set(x, c.top + 1, z), crystalCluster, false);
+                                    } else if (h < 0.255) {
+                                        chunk.setBlockState(mp.set(x, c.top + 1, z), riftGrass, false);
+                                    } else if (h < 0.278 && vnoise(x * 0.09, z * 0.09, 732) > 0.48) {
+                                        chunk.setBlockState(mp.set(x, c.top + 1, z), st(ElisarBlocks.PALE_BLOOM), false);
+                                    }
                                 }
                             } else if (c.isl.kind == SizoGrove.KIND || (c.isl.kind != 4 && SizoGrove.inside(x + 0.5, z + 0.5))) {
-                                // biome 05: mint floor with violet bloom drifts among the giants (no paths - TZ)
-                                if (h < 0.20) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
-                                else if (h < 0.42 && vnoise(x * 0.075, z * 0.075, 95) > 0.60) {
+                                // biome 05 (05_biome_sizo_grove.png): серебристо-мятная трава и нежные васильково-фиолетовые соцветия
+                                if (h < 0.25) {
+                                    chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
+                                } else if (h < 0.38 && vnoise(x * 0.085, z * 0.085, 95) > 0.48) {
                                     int f = (int) (hash(x, z, 96) * 100);
-                                    chunk.setBlockState(mp.set(x, c.top + 1, z), st(f < 40 ? ElisarBlocks.VIOLET_BLOOM : f < 72 ? ElisarBlocks.LILAC_BLOOM : f < 88 ? ElisarBlocks.PALE_BLOOM : ElisarBlocks.FLOWERS), false);
+                                    chunk.setBlockState(mp.set(x, c.top + 1, z),
+                                            st(f < 78 ? ElisarBlocks.FLOWERS : ElisarBlocks.PALE_BLOOM), false);
                                 }
                             } else if (h < 0.09) chunk.setBlockState(mp.set(x, c.top + 1, z), tall, false);
                             else if (h < 0.105) chunk.setBlockState(mp.set(x, c.top + 1, z), flowers, false);
                         }
                     }
                 }
-                // biome 07: hanging vine curtains draped from the cliff lip above this column (the reference look)
-                if ((c.garden || c.mtn) && c.surface == S_GRASS && c.waterTop == Integer.MIN_VALUE && c.deckY == Integer.MIN_VALUE) {
-                    int maxN = Integer.MIN_VALUE;
+                // Рев 15: СТАРЫЕ «ПОДПОРНЫЕ СТЕНКИ» УДАЛЕНЫ. Владелец видел на кадрах 49–51 серые
+                // кучи на каждом перепаде: проход ставил по 2 блока кладки в НАДземную часть у любой
+                // колонки, у которой сосед ниже на террасу, — то есть прямо на поле. Теперь стенку
+                // делает сам обрыв яруса (2 блока камня под почвой, см. цикл заполнения), а сверху
+                // остаётся ровная травяная кромка. Надземных камней в полях больше нет.
+                // biome 07: ПЛЮЩ ПО ОБРЫВАМ (референс). Раньше «шторы» собирались из белой листвы
+                // сизо, а ванильный VineBlock проверяет соседний блок через chunk.getBlockState —
+                // на границе чанка сосед ещё не сгенерирован, все стороны оставались false, и лоза
+                // не ставилась вовсе (в /riftbiome ivy=0). Теперь сторону выбираем по сетке колонок
+                // (она уже посчитана), а не по содержимому соседнего чанка.
+                // Рев 14.3, по референсу: у кромки каждой полки — ВОДОПАДНЫЕ ШТОРЫ (широкие струи,
+                // льющиеся через край) и длинные плети плюща по отвесной стене. И то и другое ставим
+                // в СВОЮ колонку у подножия стены: писать в соседний чанк при генерации нельзя.
+                if (c.garden && (c.surface == S_GRASS || c.surface == S_BARE) && c.deckY == Integer.MIN_VALUE) {
+                    int foot = c.surface == S_BARE ? plan.ocean : (c.waterTop != Integer.MIN_VALUE ? c.waterTop : c.top);
+                    boolean placedFall = false;
                     for (Direction d : Direction.Plane.HORIZONTAL) {
                         Col n = cols[dx + 1 + d.getStepX()][dz + 1 + d.getStepZ()];
-                        if (n.isl != null) maxN = Math.max(maxN, n.top);
+                        if (n.isl == null || n.surface != S_GRASS) continue;
+                        int rise = n.top - foot;
+                        if (rise < 4) continue;
+                        int nxp = x + d.getStepX(), nzp = z + d.getStepZ();
+                        WaterfallGardens.Region rgf = WaterfallGardens.regionAt(nxp, nzp);
+                        boolean preselected = rgf != null && WaterfallGardens.fallNear(rgf, nxp + 0.5, nzp + 0.5) != null;
+                        if (preselected || vnoise(x * 0.085, z * 0.085, 171) > 0.87) {
+                            if (nxp >= x0 && nxp <= x0 + 15 && nzp >= z0 && nzp <= z0 + 15) {
+                                chunk.setBlockState(mp.set(nxp, n.top, nzp), gWater, false);
+                            }
+                            for (int y = foot + 1; y <= n.top; ++y) {
+                                BlockPos wp = mp.set(x, y, z);
+                                if (chunk.getBlockState(wp).canBeReplaced())
+                                    chunk.setBlockState(wp, y == n.top ? gWater : gFalling, false);
+                            }
+                            placedFall = true;
+                            break;
+                        }
                     }
-                    if (maxN > c.top + 2.5 && vnoise(x * 0.21, z * 0.21, 151) > 0.40) {
-                        int len = 2 + (int) (hash(x, z, 152) * 3.0);
-                        for (int y = Math.max(c.top + 1, maxN - len); y < maxN; ++y) {
+                    if (!placedFall && vnoise(x * 0.21, z * 0.21, 151) > 0.30) {
+                        int minFrom = Integer.MAX_VALUE, maxTop = Integer.MIN_VALUE;
+                        for (Direction d : Direction.Plane.HORIZONTAL) {
+                            Col n = cols[dx + 1 + d.getStepX()][dz + 1 + d.getStepZ()];
+                            if (n.isl == null || n.surface != S_GRASS || n.top - foot < 4) continue;
+                            int len = Math.min(n.top - foot - 1, 6 + (int) (hash(x + d.getStepX(), z + d.getStepZ(), 152) * 9.0));
+                            minFrom = Math.min(minFrom, Math.max(foot + 1, n.top - 1 - len));
+                            maxTop = Math.max(maxTop, n.top - 1);
+                        }
+                        for (int y = minFrom; y <= maxTop; ++y) {
+                            BlockState face = gIvy;
+                            boolean any = false;
+                            for (Direction d : Direction.Plane.HORIZONTAL) {
+                                Col n = cols[dx + 1 + d.getStepX()][dz + 1 + d.getStepZ()];
+                                if (n.isl == null || n.surface != S_GRASS || n.top - foot < 4) continue;
+                                int len = Math.min(n.top - foot - 1, 6 + (int) (hash(x + d.getStepX(), z + d.getStepZ(), 152) * 9.0));
+                                int from = Math.max(foot + 1, n.top - 1 - len);
+                                if (y >= from && y <= n.top - 1) {
+                                    face = ivyFace(d, face);
+                                    any = true;
+                                }
+                            }
+                            if (any) {
+                                BlockPos vp = mp.set(x, y, z);
+                                BlockState cur = chunk.getBlockState(vp);
+                                if (cur.isAir() || cur.canBeReplaced()) chunk.setBlockState(vp, face, false);
+                            }
+                        }
+                    }
+                }
+                // biome 10: плоский настенный плющ по светло-мраморным скалам и обрывам над проливами (02_crystal_sanctum.png)
+                if (c.spanTop == Integer.MIN_VALUE && c.fallTop == Integer.MIN_VALUE && vnoise(x * 0.20, z * 0.20, 735) > 0.34) {
+                    int foot = c.isl == null ? plan.ocean + 2 : (c.waterTop != Integer.MIN_VALUE ? c.waterTop : c.top);
+                    int minFrom = Integer.MAX_VALUE, maxTop = Integer.MIN_VALUE;
+                    for (Direction d : Direction.Plane.HORIZONTAL) {
+                        Col n = cols[dx + 1 + d.getStepX()][dz + 1 + d.getStepZ()];
+                        if (n.isl == null || n.isl.kind != CrystalRifts.KIND) continue;
+                        int wallBot = Math.max(foot + 1, n.bottom + 2);
+                        if (n.top - wallBot < 4) continue;
+                        int len = Math.min(n.top - wallBot, 5 + (int) (hash(x + d.getStepX(), z + d.getStepZ(), 736) * 9.0));
+                        minFrom = Math.min(minFrom, Math.max(wallBot, n.top - len));
+                        maxTop = Math.max(maxTop, n.top - 1);
+                    }
+                    for (int y = minFrom; y <= maxTop; ++y) {
+                        BlockState face = gIvy;
+                        boolean any = false;
+                        for (Direction d : Direction.Plane.HORIZONTAL) {
+                            Col n = cols[dx + 1 + d.getStepX()][dz + 1 + d.getStepZ()];
+                            if (n.isl == null || n.isl.kind != CrystalRifts.KIND) continue;
+                            int wallBot = Math.max(foot + 1, n.bottom + 2);
+                            if (n.top - wallBot < 4) continue;
+                            int len = Math.min(n.top - wallBot, 5 + (int) (hash(x + d.getStepX(), z + d.getStepZ(), 736) * 9.0));
+                            int from = Math.max(wallBot, n.top - len);
+                            if (y >= from && y <= n.top - 1) {
+                                face = ivyFace(d, face);
+                                any = true;
+                            }
+                        }
+                        if (any) {
                             BlockPos vp = mp.set(x, y, z);
-                            if (chunk.getBlockState(vp).isAir() || chunk.getBlockState(vp).canBeReplaced())
-                                chunk.setBlockState(vp, ElisarBlocks.SIZO_LEAVES.get().defaultBlockState()
-                                        .setValue(LeavesBlock.PERSISTENT, true).setValue(LeavesBlock.DISTANCE, 2), false);
+                            BlockState cur = chunk.getBlockState(vp);
+                            if (cur.isAir() || cur.canBeReplaced()) chunk.setBlockState(vp, face, false);
                         }
                     }
                 }
                 if (c.waterTop != Integer.MIN_VALUE) {
-                    for (int y = c.waterBottom; y <= c.waterTop; ++y) chunk.setBlockState(mp.set(x, y, z), water, false);
+                    BlockState wb = (c.garden || c.crystal) ? gWater : water;
+                    for (int y = c.waterBottom; y <= c.waterTop; ++y) chunk.setBlockState(mp.set(x, y, z), wb, false);
                 }
                 if (c.fallTop != Integer.MIN_VALUE) {
-                    for (int y = c.fallBottom; y <= c.fallTop; ++y) chunk.setBlockState(mp.set(x, y, z), falling, false);
+                    // Рев 14.5: вода льётся ТОЛЬКО по воздуху. Раньше струя прописывалась на всю высоту
+                    // до океана без проверки — она прорезала полки насквозь, и биом оказывался залит
+                    // вертикальными водяными стенами (прогон 40693993378, кадр 42).
+                    //
+                    // Рев 16: ВОДОПАД ДОЛЖЕН ТЕЧЬ. В кромке полки (fallTop) теперь стоит настоящий
+                    // ИСТОЧНИК воды: он вырезает в дёрне ложбину и льётся вниз, а ванильная физика
+                    // поддерживает струю, пока чанк тикает. Ниже источника — падающая вода, чтобы
+                    // струя читалась сразу после генерации, не дожидаясь первых тиков жидкости.
+                    BlockPos lip = mp.set(x, c.fallTop, z);
+                    chunk.setBlockState(lip, (c.garden || c.crystal) ? gWater : water, false);   // ложбина в кромке = исток
+                    BlockState fallW = (c.garden || c.crystal) ? gFalling : falling;
+                    for (int y = c.fallBottom; y < c.fallTop; ++y) {
+                        BlockPos wp = mp.set(x, y, z);
+                        if (chunk.getBlockState(wp).canBeReplaced()) chunk.setBlockState(wp, fallW, false);
+                    }
                 }
                 if (c.deckY != Integer.MIN_VALUE) {
-                    if (!c.rail) {
+                    if (c.cityViaduct) {
+                        BlockState ashlar = st(CastleBlocks.ASHLAR);
+                        BlockState ashlarSlab = st(CastleBlocks.ASHLAR_SLAB);
+                        BlockState tFloor = st(TempleBlocks.FLOOR);
+                        BlockState tMosaic = st(TempleBlocks.MOSAIC);
+                        BlockState tBricks = st(TempleBlocks.BRICKS);
+                        BlockState tCol = st(TempleBlocks.GRAND_COLUMN);
+                        BlockState tGold = st(TempleBlocks.GOLD);
+                        BlockState wall = st(ElisarBlocks.STONE_WALL);
+
+                        int botY = Math.max(MIN_Y + 4, c.viaductBot);
+                        for (int y = botY; y <= c.deckY; ++y) {
+                            BlockState vb;
+                            if (y == c.deckY) {
+                                if (!c.rail) {
+                                    vb = c.viaductMosaic ? tMosaic
+                                            : (c.viaductCenter ? tFloor : (hash(x, z, 611) < 0.78 ? ashlar : tBricks));
+                                } else {
+                                    vb = c.viaductKeystone ? tMosaic : ashlar;
+                                }
+                            } else if (y == botY) {
+                                vb = c.viaductKeystone ? tMosaic : st(ElisarBlocks.BRICKS);
+                            } else {
+                                vb = hash(x, y, z) < 0.65 ? tBricks : ashlar;
+                            }
+                            chunk.setBlockState(mp.set(x, y, z), vb, false);
+                        }
+                        for (int y = c.deckY + 1; y <= c.deckY + 4; ++y) {
+                            chunk.setBlockState(mp.set(x, y, z), Blocks.AIR.defaultBlockState(), false);
+                        }
+                        if (!c.rail) {
+                            for (Direction d : Direction.Plane.HORIZONTAL) {
+                                Col n = cols[dx + 1 + d.getStepX()][dz + 1 + d.getStepZ()];
+                                int nWalk = (!n.rail && n.deckY != Integer.MIN_VALUE) ? n.deckY
+                                        : (n.isl != null ? n.top : Integer.MIN_VALUE);
+                                if (nWalk == c.deckY + 1) {
+                                    chunk.setBlockState(mp.set(x, c.deckY + 1, z), ashlarSlab, false);
+                                    break;
+                                }
+                            }
+                        } else if (c.isl == null || c.top <= c.deckY) {
+                            if (c.viaductGateway) {
+                                chunk.setBlockState(mp.set(x, c.deckY + 1, z), tCol, false);
+                                chunk.setBlockState(mp.set(x, c.deckY + 2, z), tCol, false);
+                                chunk.setBlockState(mp.set(x, c.deckY + 3, z), tGold, false);
+                                chunk.setBlockState(mp.set(x, c.deckY + 4, z), st(ElisarBlocks.LANTERN), false);
+                            } else if (c.post) {
+                                chunk.setBlockState(mp.set(x, c.deckY + 1, z), tCol, false);
+                                chunk.setBlockState(mp.set(x, c.deckY + 2, z), Blocks.CHISELED_STONE_BRICKS.defaultBlockState(), false);
+                                chunk.setBlockState(mp.set(x, c.deckY + 3, z), st(ElisarBlocks.LANTERN), false);
+                            } else {
+                                chunk.setBlockState(mp.set(x, c.deckY + 1, z), wall, false);
+                            }
+                        }
+                    } else if (!c.rail) {
                         chunk.setBlockState(mp.set(x, c.deckY, z), plank, false);
                         BlockState above = Blocks.AIR.defaultBlockState();
                         for (Direction d : Direction.Plane.HORIZONTAL) {     // half step where the sagging deck rises
@@ -745,11 +1627,79 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                         }
                     }
                 }
+                // biome 10: каменные арочные мосты-переходы Хрустальных разломов (02_crystal_sanctum.png)
+                if (c.spanTop != Integer.MIN_VALUE) {
+                    for (int y = c.spanBot; y <= c.spanTop; ++y) {
+                        BlockState archBlock;
+                        if (y == c.spanTop) {
+                            double sh = hash(x, z, 740);
+                            archBlock = sh < 0.68 ? riftMarble : (sh < 0.90 ? riftMarbleMossy : Blocks.CALCITE.defaultBlockState());
+                        } else if (y == c.spanBot) {
+                            archBlock = hash(x, y, z) < 0.72 ? riftSlate : riftMarbleMossy;
+                        } else {
+                            archBlock = hash(x, y, z) < 0.64 ? riftMarble : (hash(x, y, z) < 0.84 ? riftMarbleMossy : riftSlate);
+                        }
+                        chunk.setBlockState(mp.set(x, y, z), archBlock, false);
+                    }
+                    // Свободный проход над мостом + плавные мраморные полублоки на подъёме арки
+                    for (int y = c.spanTop + 1; y <= c.spanTop + 4; ++y) {
+                        chunk.setBlockState(mp.set(x, y, z), Blocks.AIR.defaultBlockState(), false);
+                    }
+                    if (!c.spanParapet) {
+                        for (Direction d : Direction.Plane.HORIZONTAL) {
+                            Col n = cols[dx + 1 + d.getStepX()][dz + 1 + d.getStepZ()];
+                            int nWalk = (!n.spanParapet && n.spanTop != Integer.MIN_VALUE) ? n.spanTop
+                                    : (n.isl != null ? n.top : Integer.MIN_VALUE);
+                            if (nWalk == c.spanTop + 1) {
+                                chunk.setBlockState(mp.set(x, c.spanTop + 1, z), riftMarbleSlab, false);
+                                break;
+                            }
+                        }
+                    } else if (c.isl == null || c.top <= c.spanTop) {
+                        if (c.spanPost) {
+                            chunk.setBlockState(mp.set(x, c.spanTop + 1, z), riftMarble, false);
+                            if (c.spanLantern) {
+                                chunk.setBlockState(mp.set(x, c.spanTop + 2, z), crystalCluster, false);
+                            } else {
+                                chunk.setBlockState(mp.set(x, c.spanTop + 2, z), riftMarbleSlab, false);
+                            }
+                        } else if (hash(x, z, 741) > 0.14) {
+                            chunk.setBlockState(mp.set(x, c.spanTop + 1, z), riftMarbleSlab, false);
+                        }
+                    }
+                }
                 trees(plan, chunk, mp, x, z);
             }
         }
+        // Рев 10 «Живое море 2»: сад на дне и убранство затопленных пещер — вторым проходом,
+        // чтобы растения ставились на уже готовую воду и породу.
+        for (int dx = 0; dx < 16; ++dx)
+            for (int dz = 0; dz < 16; ++dz)
+                if (seaFloor[dx][dz] != Integer.MIN_VALUE)
+                    ElisarSea.decorate(chunk, mp, x0 + dx, z0 + dz, seaFloor[dx][dz], plan.ocean);
         Heightmap.primeHeightmaps(chunk, EnumSet.of(Heightmap.Types.OCEAN_FLOOR_WG, Heightmap.Types.WORLD_SURFACE_WG));
         return CompletableFuture.completedFuture(chunk);
+    }
+
+    /**
+     * Пол мира (Рев 11): две плиты бедрока у самого низа измерения плюс каменная подушка под пепельной
+     * равниной адских угодьев. Адские угодья заливали только y >= ocean-2, а всё, что ниже, оставалось
+     * воздухом — отсюда и «провал в пустоту» под замком. Теперь там монолит из обожжённого камня до бедрока.
+     */
+    private static void bedrockFloor(CityPlan plan, ChunkAccess chunk, BlockPos.MutableBlockPos mp, int x, int z,
+                                     boolean ashen, Col c) {
+        BlockState bedrock = Blocks.BEDROCK.defaultBlockState();
+        BlockState stone = st(ElisarBlocks.STONE);
+        BlockState sst = st(ru.aiforge.riftworld.registry.CastleBlocks.SCORCHED_STONE);
+        chunk.setBlockState(mp.set(x, MIN_Y, z), bedrock, false);
+        chunk.setBlockState(mp.set(x, MIN_Y + 1, z), bedrock, false);
+        if (ashen) {
+            // монолит под пепельной равниной (и под замком в ней): от бедрока до подошвы равнины
+            for (int y = MIN_Y + 2; y <= plan.ocean - 3; ++y) {
+                boolean deep = y > MIN_Y + 4;
+                chunk.setBlockState(mp.set(x, y, z), deep && hash(x, y, z) < 0.22 ? stone : sst, false);
+            }
+        }
     }
 
     /** Scorched castle island: ash / burnt soil top with ember-dark patches, scorched stone body, a few boulders. */
@@ -764,8 +1714,9 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             else s = hash(x, y, z) < 0.25 ? stone : sst;
             chunk.setBlockState(mp.set(x, y, z), s, false);
         }
-        // boulders of scorched stone (outside the castle)
-        if (!CastleSite.inFootprint(x, z, 3) && !EmberRuins.inFootprint(x, z, 3) && c.top - c.bottom > 3) {
+        // boulders of scorched stone (outside the castle & villages)
+        if (!CastleSite.inFootprint(x, z, 3) && !AshenLands.inAnyStructureFootprint(x, z, 3) && !EmberRuins.inFootprint(x, z, 3)
+                && !WorldStructures.inFootprint(x, z, 3) && c.top - c.bottom > 3) {
             int gx = Math.floorDiv(x, 9), gz = Math.floorDiv(z, 9);
             if (hash(gx, gz, 53) < 0.22) {
                 double bx = gx * 9 + 2 + hash(gx, gz, 54) * 5, bz = gz * 9 + 2 + hash(gx, gz, 55) * 5, br = 1.2 + hash(gx, gz, 56) * 1.6;
@@ -800,6 +1751,37 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         }
     }
 
+    /** Плющ, прижатый к стене в направлении {@code d} (стена стоит с этой стороны). */
+    private static BlockState ivyFace(Direction d, BlockState ivy) {
+        // в ваниле «north=true» значит «опора с севера», поэтому сторона совпадает с направлением стены
+        return switch (d) {
+            case NORTH -> ivy.setValue(VineBlock.NORTH, true);
+            case SOUTH -> ivy.setValue(VineBlock.SOUTH, true);
+            case EAST -> ivy.setValue(VineBlock.EAST, true);
+            default -> ivy.setValue(VineBlock.WEST, true);
+        };
+    }
+
+    /**
+     * Рев 14: плющ на стене обрыва. {@link net.minecraft.world.level.block.VineBlock} держится за
+     * соседний твёрдый блок, поэтому выставляем только те стороны, где действительно стена — иначе
+     * ванильная проверка снимет лозу в первом же тике.
+     */
+    private static BlockState ivyFor(ChunkAccess chunk, int x, int y, int z, BlockState ivy) {
+        BlockState out = ivy;
+        if (solidAt(chunk, x, y, z - 1)) out = out.setValue(VineBlock.NORTH, true);
+        if (solidAt(chunk, x, y, z + 1)) out = out.setValue(VineBlock.SOUTH, true);
+        if (solidAt(chunk, x - 1, y, z)) out = out.setValue(VineBlock.WEST, true);
+        if (solidAt(chunk, x + 1, y, z)) out = out.setValue(VineBlock.EAST, true);
+        if (solidAt(chunk, x, y + 1, z)) out = out.setValue(VineBlock.UP, true);
+        return out;
+    }
+
+    private static boolean solidAt(ChunkAccess chunk, int x, int y, int z) {
+        BlockState st = chunk.getBlockState(new BlockPos(x, y, z));
+        return st.isSolidRender(chunk, new BlockPos(x, y, z)) && !st.canBeReplaced();
+    }
+
     private static net.minecraft.world.level.block.state.properties.BooleanProperty prop(Direction d) {
         return switch (d) {
             case NORTH -> FenceBlock.NORTH;
@@ -811,12 +1793,23 @@ public class ElisarChunkGenerator extends ChunkGenerator {
 
     // ------------------------------------------------------------------ native trees
     private static void trees(CityPlan plan, ChunkAccess chunk, BlockPos.MutableBlockPos mp, int x, int z) {
+        // Рев 16 — ВСЕ ДЕРЕВЬЯ СТАВИТ АДДОН DYNAMIC TREES. Владелец: «янтарник, сизоствол, садовый
+        // дуб и др. должны меняться аддоном DT, а сейчас в части биомов обычные деревья». Пока DT
+        // загружен, обычные (stock) деревья генератора не ставятся вообще: их место занимает
+        // DtGround.plantChunk (см. applyBiomeDecoration) с видом по биому — ambra / sizo /
+        // giant_sizo / garden_oak / lilac. Без DT мод по-прежнему строит свои деревья, чтобы
+        // биомы не оставались лысыми.
+        // Исключение — сухие обгорелые стволы адских угодий (kind 2): это не дерево, а декорация.
+        boolean dtTrees = DtGround.dtPresent();
         java.util.List<CityPlan.Tree> wild = WildIslands.treesNear(x, z);
         java.util.List<CityPlan.Tree> all = wild.isEmpty() ? plan.at(x, z).trees : new java.util.ArrayList<>(plan.at(x, z).trees);
         if (!wild.isEmpty()) all.addAll(wild);
         for (CityPlan.Tree t : all) {
+            if (dtTrees && t.kind != 2) continue;              // деревья отданы аддону DT
             int dx = x - t.x, dz = z - t.z;
-            int reach = t.kind == SizoGrove.TREE_GIANT ? 7 : 4;
+            // Рев 14.13: у садовых дубов широкая крона — иначе она обрезалась бы по квадрату в 4 блока
+            int reach = t.kind == SizoGrove.TREE_GIANT ? 7
+                    : t.kind == WaterfallGardens.TREE_OAK ? 10 : 4;
             if (Math.abs(dx) > reach || Math.abs(dz) > reach) continue;
             int base = t.baseY;
             if (base == Integer.MIN_VALUE) {
@@ -827,37 +1820,208 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             if (base < 0) continue;
             if (t.kind == 2) { deadTree(chunk, mp, t, base, x, z); continue; }
             if (t.kind == SizoGrove.TREE_GIANT) { giantSizo(chunk, mp, t, base, x, z); continue; }
-            boolean sizo = t.kind == 0;
-            BlockState logS = (sizo ? ElisarBlocks.SIZO_LOG : ElisarBlocks.AMBRA_LOG).get().defaultBlockState().setValue(RotatedPillarBlock.AXIS, Direction.Axis.Y);
-            BlockState leaf = (sizo ? ElisarBlocks.SIZO_LEAVES : ElisarBlocks.AMBRA_LEAVES).get().defaultBlockState()
+            boolean sizo = t.kind == 0 && SizoGrove.inside(t.x + 0.5, t.z + 0.5);
+            // Рев 11: дерево строится по «чертежу» — ствол, настоящие наклонные ВЕТКИ и крона-облако
+            // на их концах. Раньше сизо был набором колец, а амбра — шаром: издалека это читалось
+            // сплошным квадратом. Теперь у каждого дерева свой скелет из ветвей.
+            TileBlueprint bp = blueprintOf(t);
+            java.util.List<int[]> cells = bp.at(x - t.x, z - t.z);
+            if (cells == null) continue;
+            // Рев 14: у садов свой вид дерева (kind 4) — дуб с бурой корой и зелёной кроной,
+            // как на референсе; белые сизо/амбра здесь больше не растут.
+            boolean gardenTree = t.kind == WaterfallGardens.TREE_OAK;
+            boolean violetTree = false;   // Рев 16: обычных фиолетовых деревьев в холмах больше нет
+            BlockState logS = (gardenTree ? ElisarBlocks.GARDEN_LOG
+                    : sizo || violetTree ? ElisarBlocks.SIZO_LOG : ElisarBlocks.AMBRA_LOG).get().defaultBlockState()
+                    .setValue(RotatedPillarBlock.AXIS, Direction.Axis.Y);
+            BlockState leaf = (gardenTree ? ElisarBlocks.GARDEN_LEAVES
+                    : violetTree ? ElisarBlocks.VIOLET_LEAVES
+                    : sizo ? ElisarBlocks.SIZO_LEAVES : ElisarBlocks.AMBRA_LEAVES).get().defaultBlockState()
                     .setValue(LeavesBlock.PERSISTENT, true).setValue(LeavesBlock.DISTANCE, 1);
-            double dist = Math.sqrt(dx * dx + dz * dz);
-            if (dx == 0 && dz == 0) {
-                for (int y = base; y < base + t.h; ++y) chunk.setBlockState(mp.set(x, y, z), logS, false);
+            // сначала листва, потом брёвна — ветки прорезают крону, а не тонут в ней
+            for (int[] cell : cells) {
+                if (cell[0] != 0) continue;
+                BlockPos p = mp.set(x, base + cell[1], z);
+                if (chunk.getBlockState(p).isAir() || chunk.getBlockState(p).canBeReplaced()) chunk.setBlockState(p, leaf, false);
             }
-            if (sizo) {
-                for (int j = 3; j <= t.h + 1; ++j) {
-                    double r = (1 - (j - 3) / (double) (t.h - 1)) * 3.3 + 0.55;
-                    if ((j & 1) == 1) r *= 0.72;
-                    if (dist > r || dx == 0 && dz == 0 && j < t.h) continue;
-                    if (dist > r - 1 && hash(x * 3 + j, z, t.seed) < 0.3) continue;
-                    BlockPos p = mp.set(x, base + j, z);
-                    if (chunk.getBlockState(p).isAir() || chunk.getBlockState(p).canBeReplaced()) chunk.setBlockState(p, leaf, false);
+            for (int[] cell : cells) {
+                if (cell[0] == 0) continue;
+                BlockPos p = mp.set(x, base + cell[1], z);
+                Direction.Axis ax = cell[0] == 1 ? Direction.Axis.X : cell[0] == 2 ? Direction.Axis.Z : Direction.Axis.Y;
+                chunk.setBlockState(p, logS.setValue(RotatedPillarBlock.AXIS, ax), false);
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------ чертёж дерева (ствол + ветки + крона)
+    /** Ячейка чертежа: [тип (0 — листва, 1 — бревно по X, 2 — по Z, 3 — по Y), смещение по Y]. */
+    private record TileBlueprint(java.util.Map<Long, java.util.List<int[]>> columns) {
+        java.util.List<int[]> at(int dx, int dz) {
+            if (Math.abs(dx) > 12 || Math.abs(dz) > 12) return null;
+            return columns.get(((long) (dx + 16) << 8) | (dz + 16));
+        }
+    }
+
+    private static final java.util.Map<Long, TileBlueprint> BLUEPRINTS = new java.util.concurrent.ConcurrentHashMap<>();
+
+    private static TileBlueprint blueprintOf(CityPlan.Tree t) {
+        long key = ((long) t.x << 42) ^ ((long) t.z << 12) ^ (t.seed & 0xFFFL) ^ ((long) t.baseY << 1);
+        return BLUEPRINTS.computeIfAbsent(key, k -> buildBlueprint(t));
+    }
+
+    /**
+     * Скелет дерева: вертикальный ствол, 4–6 ветвей под углом вверх (как у настоящего дерева),
+     * крона-облако на каждой ветви и на макушке. Всё считается один раз и кешируется, а колонки
+     * чанка просто спрашивают «что тут стоит».
+     */
+    private static TileBlueprint buildBlueprint(CityPlan.Tree t) {
+        java.util.Map<Long, java.util.List<int[]>> cols = new java.util.HashMap<>();
+        java.util.Random r = new java.util.Random(t.seed * 0x9E3779B1L);
+        boolean sizo = t.kind == 0;
+        // Рев 14.13: дубы Висячих садов — крупные, с широкой кроной, как на референсе
+        boolean garden = t.kind == WaterfallGardens.TREE_OAK;
+        // Рев 14.36: на референсе 04 кроны фиолетовых деревьев — широкие и пышные (в 2 раза шире
+        // ствола), а не «шарик на палке». Даём им отдельный масштаб кроны.
+        boolean violetCanopy = false;     // Рев 16: фиолетовые деревья ставит аддон DT (riftworlddt:lilac)
+        int h = Math.max(5, t.h);
+        java.util.function.BiConsumer<int[], Integer> put = (pos, kind) -> {
+            int dx = pos[0], dy = pos[1], dz = pos[2];
+            if (dy < 0) return;
+            long ck = ((long) (dx + 16) << 8) | (dz + 16);
+            java.util.List<int[]> list = cols.computeIfAbsent(ck, q -> new java.util.ArrayList<>());
+            for (int[] e : list) if (e[0] == kind && e[1] == dy) return;      // без дублей
+            list.add(new int[]{kind, dy});
+        };
+
+        // ствол
+        int trunkTop = h - 1;
+        for (int dy = 0; dy <= trunkTop; ++dy) put.accept(new int[]{0, dy, 0}, 3);
+
+        // ветви: расходятся вверх от ствола
+        int n = 4 + r.nextInt(3);
+        java.util.List<double[]> tips = new java.util.ArrayList<>();
+        for (int i = 0; i < n; ++i) {
+            double a = i * Math.PI * 2 / n + r.nextDouble() * 0.55;
+            double y0 = trunkTop * (0.42 + 0.34 * r.nextDouble());
+            double len = 2.6 + r.nextDouble() * 2.6 * (violetCanopy ? 1.45 : sizo ? 1.15 : garden ? 1.25 : 1.0);
+            double up = 0.5 + r.nextDouble() * 0.65;
+            double bx = Math.cos(a) * len, bz = Math.sin(a) * len, by = y0 + len * up;
+            int steps = (int) Math.ceil(len * up + len);
+            for (int k = 0; k <= steps; ++k) {
+                double f = k / (double) Math.max(1, steps);
+                int px = (int) Math.round(bx * f), pz = (int) Math.round(bz * f), py = (int) Math.round(y0 + (by - y0) * f);
+                double ddx = bx * (f + 0.5), ddz = bz * (f + 0.5);
+                int kind = Math.abs(ddx) > Math.abs(ddz) ? 1 : 2;
+                put.accept(new int[]{px, py, pz}, k == 0 || k == steps ? 3 : kind);
+            }
+            tips.add(new double[]{bx, by, bz});
+            // крона на конце ветви: облако листвы.
+            // Рев 15.4: у фиолетовых деревьев крону целиком рисует {@link #violetUmbrella()};
+            // облака на концах ветвей давали рядом с зонтом «шишки» и рваные клочья.
+            if (!violetCanopy) {
+                crown(cols, put, bx, by, bz,
+                        (2.2 + r.nextDouble() * (sizo ? 0.9 : garden ? 0.9 : 0.6)), r);
+            }
+        }
+        // макушка
+        if (violetCanopy) {
+            // Рев 15, по референсу 04: крона Фиолетовых холмов — плотный ШИРОКИЙ зонт из наложенных
+            // ярусов листвы (как сиреневое дерево), а не «шарик на палке» из отдельных облачков.
+            violetUmbrella(cols, put, trunkTop, r);
+        } else {
+            crown(cols, put, 0, trunkTop + 1.4, 0,
+                    (sizo ? 2.5 : garden ? 3.3 : 2.9) + r.nextDouble() * 0.5, r);
+        }
+        // Рев 11.19: рваный контур кроны оставлял одиночные блоки листвы, висящие в воздухе.
+        // Убираем листву, у которой меньше двух соседей (брёвна соседями считаются).
+        java.util.Set<Long> solid = new java.util.HashSet<>();
+        for (java.util.Map.Entry<Long, java.util.List<int[]>> en : cols.entrySet()) {
+            int cx = (int) (en.getKey() >> 8) - 16, cz = (int) (en.getKey() & 0xFFL) - 16;
+            for (int[] e2 : en.getValue()) solid.add(cellKey(cx, e2[1], cz));
+        }
+        java.util.Set<Long> lonely = new java.util.HashSet<>();
+        for (java.util.Map.Entry<Long, java.util.List<int[]>> en : cols.entrySet()) {
+            int cx = (int) (en.getKey() >> 8) - 16, cz = (int) (en.getKey() & 0xFFL) - 16;
+            for (int[] e2 : en.getValue()) {
+                if (e2[0] != 0) continue;
+                if (neighbours(solid, cx, e2[1], cz) < 2) lonely.add(cellKey(cx, e2[1], cz));
+            }
+        }
+        if (!lonely.isEmpty()) {
+            for (java.util.Map.Entry<Long, java.util.List<int[]>> en : cols.entrySet()) {
+                int cx = (int) (en.getKey() >> 8) - 16, cz = (int) (en.getKey() & 0xFFL) - 16;
+                en.getValue().removeIf(e2 -> e2[0] == 0 && lonely.contains(cellKey(cx, e2[1], cz)));
+            }
+        }
+        return new TileBlueprint(cols);
+    }
+
+    private static long cellKey(int x, int y, int z) {
+        return ((long) (x + 32) << 40) | ((long) (z + 32) << 20) | y;
+    }
+
+    private static int neighbours(java.util.Set<Long> solid, int x, int y, int z) {
+        int n = 0;
+        if (solid.contains(cellKey(x + 1, y, z))) ++n;
+        if (solid.contains(cellKey(x - 1, y, z))) ++n;
+        if (solid.contains(cellKey(x, y + 1, z))) ++n;
+        if (solid.contains(cellKey(x, y - 1, z))) ++n;
+        if (solid.contains(cellKey(x, y, z + 1))) ++n;
+        if (solid.contains(cellKey(x, y, z - 1))) ++n;
+        return n;
+    }
+
+    /**
+     * Рев 15: крона-зонт для дерева Фиолетовых холмов (референс 04).
+     *
+     * <p>Складывается из четырёх-пяти горизонтальных ярусов листвы: самый широкий — в середине,
+     * кверху и книзу ярусы уже. Получается пышная вытянутая крона, как у сирени, при этом нижняя
+     * граница ровная и «читается» с земли (раньше это был один шар, и издалека крона выглядела
+     * кубиком на палке).
+     */
+    private static void violetUmbrella(java.util.Map<Long, java.util.List<int[]>> cols,
+                                       java.util.function.BiConsumer<int[], Integer> put,
+                                       int trunkTop, java.util.Random r) {
+        // Рев 15.6: крона — ПРИПЛЮСНУТЫЙ ЭЛЛИПСОИД (не стопка дисков). Радиус яруса считается по
+        // формуле сферы rad = R*√(1-(dy/H)²), поэтому силуэт получается плавным куполом, как у
+        // сирени на референсе 04, а не «капустой» из ровных слоёв (так было в итерациях 47–48).
+        double baseR = 5.2 + r.nextDouble() * 1.3;
+        double squash = 0.78 + r.nextDouble() * 0.10;       // крона шире, чем глубже
+        double H = 2.6 + r.nextDouble() * 0.8;             // полувысота купола
+        double cy = trunkTop + 0.4;                        // центр купола чуть выше ствола
+        int y0 = (int) Math.floor(cy - H), y1 = (int) Math.ceil(cy + H);
+        for (int y = y0; y <= y1; ++y) {
+            double dy = (y - cy) / H;
+            if (Math.abs(dy) > 1.0) continue;
+            double rad = baseR * Math.sqrt(1.0 - dy * dy);
+            if (rad < 0.7) continue;
+            int R = (int) Math.ceil(rad) + 1;
+            for (int dx = -R; dx <= R; ++dx) {
+                for (int dz = -R; dz <= R; ++dz) {
+                    double d = Math.hypot(dx, dz / squash);
+                    if (d > rad + (r.nextDouble() - 0.5) * 0.7) continue;
+                    if (d > rad - 0.9 && r.nextDouble() < 0.22) continue;      // рваный контур
+                    put.accept(new int[]{dx, y, dz}, 0);
                 }
-            } else {
-                double R = 2.7 + (t.seed % 3) * 0.3;
-                int cy = base + t.h - 1;
-                for (int y = cy - 3; y <= cy + 3; ++y) {
-                    double dy = (y - cy) * 1.25;
-                    double q = dx * dx + dz * dz + dy * dy;
-                    if (q > R * R || dx == 0 && dz == 0 && y < base + t.h) continue;
-                    if (q > (R - 1) * (R - 1) && hash(x, z * 5 + y, t.seed) < 0.28) continue;
-                    BlockPos p = mp.set(x, y, z);
-                    if (chunk.getBlockState(p).isAir() || chunk.getBlockState(p).canBeReplaced()) chunk.setBlockState(p, leaf, false);
-                }
-                // two short branches into the crown
-                if (dist > 0 && dist < 1.5 && Math.abs(dx) + Math.abs(dz) == 1 && hash(dx, dz, t.seed) < 0.5) {
-                    chunk.setBlockState(mp.set(x, base + t.h - 2, z), logS.setValue(RotatedPillarBlock.AXIS, dx != 0 ? Direction.Axis.X : Direction.Axis.Z), false);
+            }
+        }
+    }
+
+    /** Крона-облако: почти шар с рваным краем, чтобы листва не выглядела кубиком. */
+    private static void crown(java.util.Map<Long, java.util.List<int[]>> cols,
+                              java.util.function.BiConsumer<int[], Integer> put,
+                              double cx, double cy, double cz, double radius, java.util.Random r) {
+        int R = (int) Math.ceil(radius);
+        for (int dx = -R; dx <= R; ++dx) {
+            for (int dz = -R; dz <= R; ++dz) {
+                for (int dy = -R; dy <= R; ++dy) {
+                    // Рев 14.37: крона — ВЫТЯНУТЫЙ ВВЕРХ шар (на референсе 04 кроны пышные и высокие,
+                    // а не блины). Плюс больше рваного контура по внешней оболочке, иначе издалека
+                    // листва читается сплошным кубом.
+                    double d = Math.sqrt(dx * dx + dy * dy * 0.86 + dz * dz);
+                    if (d > radius) continue;
+                    if (d > radius - 0.9 && r.nextDouble() < 0.34) continue;      // рваный контур
+                    put.accept(new int[]{(int) Math.round(cx) + dx, (int) Math.round(cy) + dy, (int) Math.round(cz) + dz}, 0);
                 }
             }
         }
@@ -901,11 +2065,177 @@ public class ElisarChunkGenerator extends ChunkGenerator {
     }
 
     // ================================================================== decoration: buildings + props
+    /**
+     * v0.38.0 — НАСТОЯЩИЙ бледный бор «Мороковой Пади».
+     *
+     * <p>До этого в биоме стояла только решётка одинаковых «палок с шапками»: 7x7, один тип
+     * дерева, без подлеска. Теперь декор строится слоями, как у ванильного таёжного бора:
+     * <ul>
+     *   <li><b>патриарх</b> (2x2 ствол, 15–22 блока, широкая рваная крона) — редкость ~6%;</li>
+     *   <li><b>обычная бледная сосна</b> (1x1, 9–17 блоков) — основная масса;</li>
+     *   <li><b>сухостой</b> — обломанный ствол без кроны, иногда с косой веткой;</li>
+     *   <li><b>поваленный ствол</b> — бревно на земле вдоль X или Z, 4–7 блоков;</li>
+     *   <li><b>колючки</b> {@code bone_bramble} — 2–4 блока в высоту, растут кущами;</li>
+     *   <li><b>ледяные клыки</b> {@code ice_fang} — одиночные и группами до 3 блоков.</li>
+     * </ul>
+     * Всё рисуется только в колонках текущего чанка (кроны на границе обрезаются, как и в
+     * ванильном декоре) — иначе генератор писал бы в чужие чанки и ломал детерминизм.
+     */
+    private static void morokTrees(WorldGenLevel level, ChunkAccess chunk, int x0, int z0) {
+        BlockState log = MorokBlocks.MOROK_LOG.get().defaultBlockState();
+        BlockState leaves = MorokBlocks.MOROK_LEAVES.get().defaultBlockState();
+        BlockState bramble = MorokBlocks.BONE_BRAMBLE.get().defaultBlockState();
+        BlockState fang = MorokBlocks.ICE_FANG.get().defaultBlockState();
+        BlockState carpet = MorokBlocks.PALE_MOSS_CARPET.get().defaultBlockState();
+        BlockState moss = MorokBlocks.PALE_MOSS_BLOCK.get().defaultBlockState();
+        BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
+
+        for (int dx = 0; dx < 16; ++dx) {
+            for (int dz = 0; dz < 16; ++dz) {
+                int x = x0 + dx, z = z0 + dz;
+                double h = hash(x, z, 916);
+                boolean big = MorokHollow.treeHere(x, z) && h < 0.14;
+                boolean small = MorokHollow.treeHere(x, z) && !big;
+                boolean snag = !MorokHollow.treeHere(x, z) && h > 0.965 && MorokHollow.inside(x + 0.5, z + 0.5);
+                boolean fallen = !MorokHollow.treeHere(x, z) && h > 0.93 && h < 0.945
+                        && MorokHollow.inside(x + 0.5, z + 0.5);
+                // v0.39.1: полоса колючек была 2.5 % и почти всегда упиралась в склон —
+                // в отчёте за прогон #378 колючек 0 при гейте >= 3. Расширяем полосу.
+                boolean brambles = h > 0.78 && h < 0.90 && MorokHollow.inside(x + 0.5, z + 0.5);
+                boolean fangs = Math.floorMod(x, 13) == 6 && Math.floorMod(z, 13) == 6
+                        && MorokHollow.inside(x + 0.5, z + 0.5);
+                if (!(big || small || snag || fallen || brambles || fangs)) continue;
+
+                int top = MorokHollow.groundOf(chunk, mp, x, z);
+                if (top == Integer.MIN_VALUE) continue;
+
+                if (big) {
+                    // 2x2 патриарх: ствол из четырёх колонн, крона из четырёх ярусов
+                    int hh = MorokHollow.treeHeight(x, z) + 6;
+                    for (int tx = 0; tx <= 1; ++tx) {
+                        for (int tz = 0; tz <= 1; ++tz) {
+                            int cx = x + tx, cz = z + tz;
+                            if (cx > x0 + 15 || cz > z0 + 15) continue;
+                            for (int y = 1; y <= hh; ++y) chunk.setBlockState(mp.set(cx, top + y, cz), log, false);
+                        }
+                    }
+                    // крона-конус: ярусы через 2 блока, радиус 4 -> 1, рваная кромка
+                    int[] radii = {4, 4, 3, 3, 2, 2, 1};
+                    for (int layer = 0; layer < radii.length; ++layer) {
+                        int r = radii[layer];
+                        int yy = top + hh - (radii.length - 1 - layer) * 2;
+                        for (int lx = -r; lx <= r; ++lx) {
+                            for (int lz = -r; lz <= r; ++lz) {
+                                if (lx * lx + lz * lz > r * r + r) continue;
+                                int cx = x + lx, cz = z + lz;
+                                if (cx < x0 || cx > x0 + 15 || cz < z0 || cz > z0 + 15) continue;
+                                if (hash(cx * 3, cz * 5, 917 + layer) < 0.18) continue;
+                                BlockPos p = mp.set(cx, yy, cz);
+                                if (chunk.getBlockState(p).isAir()) chunk.setBlockState(p, leaves, false);
+                            }
+                        }
+                    }
+                    continue;
+                }
+                if (small) {
+                    int hh = MorokHollow.treeHeight(x, z);
+                    for (int y = 1; y <= hh; ++y) chunk.setBlockState(mp.set(x, top + y, z), log, false);
+                    int base = top + hh;
+                    // крона-конус: ярусы через 2 блока, радиус 3 -> 1 (а не одна плоская плита)
+                    int[] radii = {3, 3, 2, 2, 1};
+                    for (int layer = 0; layer < radii.length; ++layer) {
+                        int r = radii[layer];
+                        int yy = base - (radii.length - 1 - layer) * 2;
+                        for (int lx = -r; lx <= r; ++lx) {
+                            for (int lz = -r; lz <= r; ++lz) {
+                                if (lx * lx + lz * lz > r * r + r) continue;
+                                int cx = x + lx, cz = z + lz;
+                                if (cx < x0 || cx > x0 + 15 || cz < z0 || cz > z0 + 15) continue;
+                                if (hash(cx, cz, 918 + layer) < 0.16) continue;
+                                BlockPos p = mp.set(cx, yy, cz);
+                                if (chunk.getBlockState(p).isAir()) chunk.setBlockState(p, leaves, false);
+                            }
+                        }
+                    }
+                    chunk.setBlockState(mp.set(x, top + hh + 1, z), leaves, false);   // макушка
+                    continue;
+                }
+                if (snag) {
+                    int hh = 4 + (int) Math.round(hash(x, z, 919) * 5);
+                    for (int y = 1; y <= hh; ++y) chunk.setBlockState(mp.set(x, top + y, z), log, false);
+                    if (hash(x, z, 920) < 0.5) {
+                        int by = top + hh - 2;
+                        int sx = hash(x, z, 921) < 0.5 ? 1 : -1;
+                        int cx = x + sx;
+                        if (cx >= x0 && cx <= x0 + 15) {
+                            chunk.setBlockState(mp.set(cx, by, z), log.setValue(net.minecraft.world.level.block.RotatedPillarBlock.AXIS,
+                                    net.minecraft.core.Direction.Axis.X), false);
+                        }
+                    }
+                    continue;
+                }
+                if (fallen) {
+                    boolean alongX = hash(x, z, 922) < 0.5;
+                    int len = 4 + (int) Math.round(hash(x, z, 923) * 3);
+                    for (int i = 0; i < len; ++i) {
+                        int cx = alongX ? x + i : x;
+                        int cz = alongX ? z : z + i;
+                        if (cx > x0 + 15 || cz > z0 + 15) break;
+                        BlockPos p = mp.set(cx, top + 1, cz);
+                        if (!chunk.getBlockState(p).isAir()) continue;
+                        chunk.setBlockState(p, log.setValue(net.minecraft.world.level.block.RotatedPillarBlock.AXIS,
+                                alongX ? net.minecraft.core.Direction.Axis.X : net.minecraft.core.Direction.Axis.Z), false);
+                        if (hash(cx, cz, 924) < 0.35) {
+                            BlockPos up = mp.set(cx, top + 2, cz);
+                            if (chunk.getBlockState(up).isAir()) chunk.setBlockState(up, moss, false);
+                        }
+                    }
+                    continue;
+                }
+                if (brambles) {
+                    // колючки — крестик-растение (как ванильный куст): только ПЛАСТОМ по земле,
+                    // ставить их друг на друга нельзя (canSurvive не разрешает грунт из колючек)
+                    int n = 6 + (int) Math.round(hash(x, z, 925) * 5);
+                    for (int i = 0; i < n; ++i) {
+                        int cx = x + ((i * 5) % 7) - 3;
+                        int cz = z + ((i * 7) % 7) - 3;
+                        if (cx < x0 || cx > x0 + 15 || cz < z0 || cz > z0 + 15) continue;
+                        int gt = MorokHollow.groundOf(chunk, mp, cx, cz);
+                        if (gt == Integer.MIN_VALUE) continue;
+                        BlockPos p = mp.set(cx, gt + 1, cz);
+                        if (chunk.getBlockState(p).isAir()) chunk.setBlockState(p, bramble, false);
+                    }
+                    continue;
+                }
+                if (fangs) {
+                    // ледяные клыки — тоже крестики: группа из 2–3 штук в линию, каждая на своём грунте
+                    int n = 2 + (int) Math.round(hash(x, z, 927) * 2);
+                    for (int i = 0; i < n; ++i) {
+                        int cx = x + i - 1;
+                        int cz = z + ((i * 2) % 3) - 1;
+                        if (cx < x0 || cx > x0 + 15 || cz < z0 || cz > z0 + 15) continue;
+                        int gt = MorokHollow.groundOf(chunk, mp, cx, cz);
+                        if (gt == Integer.MIN_VALUE) continue;
+                        BlockPos p = mp.set(cx, gt + 1, cz);
+                        if (chunk.getBlockState(p).isAir()) chunk.setBlockState(p, fang, false);
+                        if (hash(cx, cz, 929) < 0.35) {
+                            BlockPos cp = mp.set(cx + 1, gt + 1, cz);
+                            if (cx + 1 <= x0 + 15 && chunk.getBlockState(cp).isAir()) {
+                                chunk.setBlockState(cp, carpet, false);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     @Override
     public void applyBiomeDecoration(WorldGenLevel level, ChunkAccess chunk, StructureManager sm) {
         CityPlan plan = CityPlan.get();
         int x0 = chunk.getPos().getMinBlockX(), z0 = chunk.getPos().getMinBlockZ();
         BoundingBox box = new BoundingBox(x0, MIN_Y, z0, x0 + 15, MIN_Y + HEIGHT - 1, z0 + 15);
+        morokTrees(level, chunk, x0, z0);
         StructureTemplateManager stm = level.getLevel().getServer().getStructureManager();
         RandomSource rnd = RandomSource.create(chunk.getPos().toLong());
         java.util.Set<CityPlan.Plot> plots = new java.util.LinkedHashSet<>();
@@ -932,19 +2262,31 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             BlockPos pos = new BlockPos(p.x0() - bb.minX(), p.h() + p.yOff(), p.z0() - bb.minZ());
             tpl.get().placeInWorld(level, pos, pos, s, rnd, 2);
         }
-        if (x0 + 15 >= CastleSite.X0 && x0 <= CastleSite.X0 + CastleSite.TW - 1 && z0 + 15 >= CastleSite.Z0 && z0 <= CastleSite.Z0 + CastleSite.TD - 1) {
+        AshenLands.Region ashReg = AshenLands.regionAt(x0 + 8, z0 + 8);
+        if (ashReg != null && ashReg.hasRedCastle
+                && x0 + 15 >= ashReg.x0 && x0 <= ashReg.x0 + CastleSite.TW - 1
+                && z0 + 15 >= ashReg.z0 && z0 <= ashReg.z0 + CastleSite.TD - 1) {
             stm.get(new ResourceLocation("riftworld", "castle/castle")).ifPresent(tpl -> {
                 StructurePlaceSettings s = new StructurePlaceSettings().setBoundingBox(box).setIgnoreEntities(true).setKnownShape(true);
-                BlockPos pos = new BlockPos(CastleSite.X0, CastleSite.Y, CastleSite.Z0);
+                BlockPos pos = new BlockPos(ashReg.x0, CastleSite.Y, ashReg.z0);
                 tpl.placeInWorld(level, pos, pos, s, rnd, 2);
             });
         }
-        // Inverted Tower interior dressing (reliquary, deck hall, landings)
-        if (x0 + 15 >= TOWER_X - 12 && x0 <= TOWER_X + 12 && z0 + 15 >= TOWER_Z - 12 && z0 <= TOWER_Z + 12) {
+        // v0.29.0: Океаническая «Цитадель Чёрного утёса» (blacktide.nbt): спавнится ТОЛЬКО в открытом море, мост уходит под воду в дно!
+        BlacktideCitadel.Site btSite = BlacktideCitadel.siteForChunk(x0, z0);
+        if (btSite != null) {
+            BlacktideCitadel.buildInChunk(chunk, plan, btSite, x0, z0);
+        }
+        // Inverted Tower interior dressing (reliquary, deck hall, landings) — both City & Wild Inverted Towers
+        InvertedTowers.Site decTower = InvertedTowers.nearAt(x0 + 8.0, z0 + 8.0, 26.0);
+        if (decTower != null && x0 + 15 >= decTower.cx() - 12 && x0 <= decTower.cx() + 12
+                && z0 + 15 >= decTower.cz() - 12 && z0 <= decTower.cz() + 12) {
             for (String[] dec : TOWER_DECOR) {
                 ModelKind k = kind(dec[0]);
                 if (k == null) continue;
-                BlockPos at = new BlockPos(TOWER_X + Integer.parseInt(dec[1]), TOWER_Y0 + Integer.parseInt(dec[2]), TOWER_Z + Integer.parseInt(dec[3]));
+                BlockPos at = new BlockPos(decTower.cx() + Integer.parseInt(dec[1]),
+                        decTower.y0() + Integer.parseInt(dec[2]),
+                        decTower.cz() + Integer.parseInt(dec[3]));
                 if (!box.isInside(at)) continue;
                 Direction f = switch (dec[4]) {
                     case "north" -> Direction.NORTH; case "east" -> Direction.EAST; case "west" -> Direction.WEST; default -> Direction.SOUTH;
@@ -952,81 +2294,89 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 placeModel(level, box, k, at, f, Boolean.parseBoolean(dec[5]));
             }
         }
-        // biome 04: the two Violet Hills churches (one intact, one ruined), max 2 per biome region
-        VioletHills.Region vreg = VioletHills.regionAt(x0 + 8, z0 + 8);
-        if (vreg != null && (vreg.churchA.outside(x0 + 8, z0 + 8) < 48 || vreg.churchB.outside(x0 + 8, z0 + 8) < 48)) {
-            for (VioletHills.Church ch : new VioletHills.Church[] { vreg.churchA, vreg.churchB }) {
-                if (x0 + 15 < ch.x0 || x0 > ch.x0 + ch.wx - 1 || z0 + 15 < ch.z0 || z0 > ch.z0 + ch.wz - 1) continue;
-                Optional<StructureTemplate> t = stm.get(new ResourceLocation("riftworld", ch.ruined ? "ruins/church_violet_ruins" : "ruins/church_violet"));
-                if (t.isEmpty()) continue;
-                Rotation rot = switch (ch.facing) {
-                    case "west" -> Rotation.CLOCKWISE_90;
-                    case "north" -> Rotation.CLOCKWISE_180;
-                    case "east" -> Rotation.COUNTERCLOCKWISE_90;
-                    default -> Rotation.NONE;
-                };
-                StructurePlaceSettings sp = new StructurePlaceSettings().setRotation(rot).setBoundingBox(box).setIgnoreEntities(true);
-                BoundingBox bb = t.get().getBoundingBox(sp, BlockPos.ZERO);
-                BlockPos pos = new BlockPos(ch.x0 - bb.minX(), ch.y, ch.z0 - bb.minZ());
-                t.get().placeInWorld(level, pos, pos, sp, rnd, 2);
-            }
-        }
-        // biome 05: grove dressing - mossy boulders & amber-band way pillars (also on islets inside the grove sea-ring)
+        // Референс 04_violet_hills.png: вдоль извилистой светлой дороги стоят каменные столбы с факелами,
+        // низкие каменные стенки и деревянные заборы с проходами к лавандовым склонам (церквей нет).
         BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
+        VioletHills.Region vreg = VioletHills.regionAt(x0 + 8, z0 + 8);
+        if (vreg != null) {
+            buildVioletRoadside(chunk, mp, plan, vreg, x0, z0);
+        }
+        // biome 10 (02_crystal_sanctum.png): гигантские шестигранные блочные кристаллы и разрушенная колоннада-астролябия
+        CrystalRifts.Region creg = CrystalRifts.regionAt(x0 + 8, z0 + 8);
+        if (creg != null) {
+            buildCrystalRiftsStructures(chunk, mp, plan, creg, x0, z0);
+        }
+        // biome 05 (05_biome_sizo_grove.png): ступенчатые замшелые серые валуны и парные путевые столбы с янтарным огнём
         SizoGrove.Region greg = SizoGrove.regionAt(x0 + 8, z0 + 8);
         if (greg != null) {
+            BlockState rockAndesite = Blocks.ANDESITE.defaultBlockState();
+            BlockState rockCobble = Blocks.COBBLESTONE.defaultBlockState();
+            BlockState rockMossy = Blocks.MOSSY_COBBLESTONE.defaultBlockState();
+            BlockState rockPale = st(ElisarBlocks.STONE);
+            BlockState mossCap = st(ElisarBlocks.MOSS);
             for (SizoGrove.Boulder b : greg.boulders) {
                 if (b.x + b.r < x0 - 1 || b.x - b.r > x0 + 16 || b.z + b.r < z0 - 1 || b.z - b.r > z0 + 16) continue;
                 Col bc = column(plan, b.x, b.z);
                 if (bc.isl == null || bc.top <= plan.ocean + 1) continue;
-                double rx = b.r, ry = b.r * 0.72;
-                int cy = bc.top + (int) Math.round(ry * 0.28);
+                double rx = b.r + 0.55, ry = b.r * 1.12 + 0.6;
+                int cy = bc.top + (int) Math.round(ry * 0.22);
                 int cx0 = Math.max(x0, (int) Math.floor(b.x - rx)), cx1 = Math.min(x0 + 15, (int) Math.ceil(b.x + rx));
                 int cz0 = Math.max(z0, (int) Math.floor(b.z - rx)), cz1 = Math.min(z0 + 15, (int) Math.ceil(b.z + rx));
+                int bseed = (int) (b.seed & 0x3FFFFFFF);
                 for (int bx = cx0; bx <= cx1; ++bx)
                     for (int bz = cz0; bz <= cz1; ++bz) {
                         double dx2 = bx - b.x, dz2 = bz - b.z;
-                        double hq = (dx2 * dx2 + dz2 * dz2) / (rx * rx);
-                        if (hq >= 1) continue;
-                        int maxDy = (int) Math.floor(ry * Math.sqrt(1 - hq) + 0.4);
-                        for (int dy = -maxDy; dy <= maxDy; ++dy) {
+                        double warp = 0.82 + 0.34 * vnoise(bx * 0.32 + (bseed & 63), bz * 0.32, 211);
+                        double hq = (dx2 * dx2 + dz2 * dz2) / (rx * rx * warp * warp);
+                        if (hq >= 1.0) continue;
+                        // Ступенчатый скальный уступ с толстой мшистой шапкой сверху (как на 05_biome_sizo_grove.png)
+                        int maxDy = (int) Math.floor(ry * Math.pow(1.0 - hq, 0.62) + 0.45);
+                        for (int dy = -maxDy - 1; dy <= maxDy; ++dy) {
                             int yy = cy + dy;
                             if (yy <= plan.ocean) continue;
-                            // moss cap wherever sky faces the boulder, yellowed stone core beneath (the reference look)
-                            boolean cap = dy >= maxDy - 1 && hash(bx, bz, (int) (b.seed & 0x3FFFFFFF)) < (dy == maxDy ? 0.85 : 0.3);
-                            chunk.setBlockState(mp.set(bx, yy, bz), st(cap ? ElisarBlocks.MOSS : ElisarBlocks.STONE), false);
+                            boolean skyCap = dy == maxDy && hash(bx, bz, bseed) < 0.90;
+                            boolean mossyRim = dy >= maxDy - 1 && hash(bx, yy, bz) < 0.55;
+                            double rk = hash(bx, yy, bz ^ 0x55AA);
+                            BlockState bs = skyCap ? mossCap
+                                    : mossyRim ? rockMossy
+                                    : rk < 0.44 ? rockAndesite
+                                    : rk < 0.76 ? rockCobble : rockPale;
+                            chunk.setBlockState(mp.set(bx, yy, bz), bs, false);
                         }
                     }
             }
+            BlockState pillarBase = Blocks.CHISELED_STONE_BRICKS.defaultBlockState();
+            BlockState pillarShaft = ru.aiforge.riftworld.registry.TempleBlocks.PILLAR.get().defaultBlockState()
+                    .setValue(RotatedPillarBlock.AXIS, Direction.Axis.Y);
+            BlockState pillarAmber = ru.aiforge.riftworld.registry.TempleBlocks.GOLD_RUNE.get().defaultBlockState()
+                    .setValue(ru.aiforge.riftworld.block.GoldRuneBlock.LIT, true);
+            BlockState pillarCap = Blocks.STONE_BRICK_SLAB.defaultBlockState();
             for (int[] pp : SizoGrove.pillarsIn(greg, x0, z0)) {
                 if (pp[0] < x0 || pp[0] > x0 + 15 || pp[1] < z0 || pp[1] > z0 + 15) continue;
                 Col pc = column(plan, pp[0], pp[1]);
                 if (pc.isl == null || pc.top <= plan.ocean + 1) continue;
-                BlockState pl = ru.aiforge.riftworld.registry.TempleBlocks.PILLAR.get().defaultBlockState().setValue(RotatedPillarBlock.AXIS, Direction.Axis.Y);
-                for (int dy = 1; dy <= 3; ++dy) chunk.setBlockState(mp.set(pp[0], pc.top + dy, pp[1]), pl, false);
-                chunk.setBlockState(mp.set(pp[0], pc.top + 4, pp[1]), st(ru.aiforge.riftworld.registry.TempleBlocks.GOLD), false);
-                chunk.setBlockState(mp.set(pp[0], pc.top + 5, pp[1]), pl, false);
-                chunk.setBlockState(mp.set(pp[0], pc.top + 6, pp[1]), st(ru.aiforge.riftworld.registry.TempleBlocks.SLAB), false);
+                chunk.setBlockState(mp.set(pp[0], pc.top + 1, pp[1]), pillarBase, false);
+                chunk.setBlockState(mp.set(pp[0], pc.top + 2, pp[1]), pillarShaft, false);
+                chunk.setBlockState(mp.set(pp[0], pc.top + 3, pp[1]), pillarAmber, false);
+                chunk.setBlockState(mp.set(pp[0], pc.top + 4, pp[1]), pillarBase, false);
+                chunk.setBlockState(mp.set(pp[0], pc.top + 5, pp[1]), pillarCap, false);
             }
         }
-        // biome 05: the rare RUINED pale temple, alone on its terrace
+        // biome 05 (05_biome_sizo_grove.png): деревянная тележка и резное придорожное святилище у тропы
+        for (SizoGrove.Cart cart : SizoGrove.cartsIn(greg, x0, z0)) {
+            Col cc = column(plan, cart.x, cart.z);
+            if (cc.isl == null || cc.top <= plan.ocean + 1) continue;
+            buildCart(chunk, mp, cart, cc.top + 1, x0, z0);
+        }
+        for (SizoGrove.Shrine sh : SizoGrove.shrinesIn(greg, x0, z0)) {
+            Col sc = column(plan, sh.x, sh.z);
+            if (sc.isl == null || sc.top <= plan.ocean + 1) continue;
+            buildShrine(chunk, mp, sh, sc.top + 1, x0, z0);
+        }
+        // biome 05 (05_biome_sizo_grove.png): высокая замшелая полуразрушенная каменная башня в дымке в конце тропы
         SizoGrove.Region treg = SizoGrove.templeIn(x0, z0);
         if (treg != null) {
-            Optional<StructureTemplate> t = stm.get(new ResourceLocation("riftworld", "ruins/temple_sizo_ruins"));
-            if (!t.isEmpty()) {
-                Rotation rot = switch (treg.trot) {
-                    case 1 -> Rotation.CLOCKWISE_90;
-                    case 2 -> Rotation.CLOCKWISE_180;
-                    case 3 -> Rotation.COUNTERCLOCKWISE_90;
-                    default -> Rotation.NONE;
-                };
-                StructurePlaceSettings sp = new StructurePlaceSettings().setRotation(rot).setBoundingBox(box).setIgnoreEntities(true);
-                BoundingBox bb = t.get().getBoundingBox(sp, BlockPos.ZERO);
-                int cwx = (int) Math.floor(treg.tx - (bb.minX() + bb.maxX()) / 2.0);
-                int cwz = (int) Math.floor(treg.tz - (bb.minZ() + bb.maxZ()) / 2.0);
-                BlockPos pos = new BlockPos(cwx, treg.ty, cwz);      // floor layer replaces the flattened terrace top
-                t.get().placeInWorld(level, pos, pos, sp, rnd, 2);
-            }
+            buildSizoWatchtower(chunk, mp, treg, x0, z0);
         }
         EmberRuins.Site es = EmberRuins.siteAt(x0 + 8, z0 + 8);
         if (es != null && x0 + 15 >= es.x0 && x0 <= es.x0 + EmberRuins.TW - 1 && z0 + 15 >= es.z0 && z0 <= es.z0 + EmberRuins.TD - 1) {
@@ -1048,11 +2398,17 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             }
         }
         if (AshenLands.weight(x0 + 8, z0 + 8) > 0) {
-            for (AshenLands.Placed pl : AshenLands.decor()) {
+            for (AshenLands.Placed pl : AshenLands.decorNear(x0, z0)) {
                 BlockPos bp = pl.pos();
-                if (bp.getX() >= x0 && bp.getX() <= x0 + 15 && bp.getZ() >= z0 && bp.getZ() <= z0 + 15) level.setBlock(bp, pl.state(), 2);
+                if (bp.getX() >= x0 && bp.getX() <= x0 + 15 && bp.getZ() >= z0 && bp.getZ() <= z0 + 15
+                        && !WorldStructures.inFootprint(bp.getX(), bp.getZ(), 2)) {
+                    level.setBlock(bp, pl.state(), 2);
+                }
             }
         }
+        // Новые мировые структуры Элисара: малые белые деревни (<=6 домов), сгоревшие деревни,
+        // большой корабль в скале, затонувший корабль на дне и редкие подводные здания!
+        WorldStructures.buildInChunk(level, chunk, box, stm, rnd, plan, x0, z0);
         for (CityPlan.Prop p : props) {
             Direction f = Direction.byName(p.facing());
             if (f == null || f.getAxis() == Direction.Axis.Y) f = Direction.SOUTH;
@@ -1091,7 +2447,53 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             ModelKind k = kind(p.kind());
             if (k != null) placeModel(level, box, k, new BlockPos(p.x(), y, p.z()), f, p.lit());
         }
+        // Рев 14.36 — ПОЧЕМУ АДДОН DYNAMIC TREES «НИЧЕГО НЕ МЕНЯЛ»: у нас СВОЙ applyBiomeDecoration,
+        // и он никогда не запускал ванильный конвейер фич биома. DT добавляет свою фичу в биомы
+        // модификатором (Phase.ADD), но она физически не выполнялась — динамические деревья и
+        // кораллы не появлялись в мире вовсе (в CI они росли только через /dynamictrees settree).
+        // Теперь после собственной расстановки мы честно прогоняем фичи биома. Своих фич у наших
+        // биомов нет (features: [] во всех JSON), поэтому лишнего декора не появится — придут
+        // только фичи модов (DT и т.п.).
+        try {
+            super.applyBiomeDecoration(level, chunk, sm);
+        } catch (Throwable err) {
+            if (FEATURE_FAILS.getAndIncrement() == 0)
+                org.apache.logging.log4j.LogManager.getLogger("riftworld").warn(
+                        "biome decoration features failed once (run continues): " + err);
+        }
+        // Рев 15.11: фича DT в нашем мире деревьев не даёт (её конвейер «диски → heightmap →
+        // GroundFinder» на кастомном генераторе пуст, см. /riftdtdbg), поэтому аддон сажает
+        // деревья и кораллы сам — тем же API DT (Species.generate). В биомах, которых нет в
+        // списке видов аддона, ничего не происходит.
+        try {
+            DtGround.plantChunk(level, chunk.getPos());
+        } catch (Throwable err) {
+            if (DT_FAILS.getAndIncrement() == 0)
+                org.apache.logging.log4j.LogManager.getLogger("riftworld").warn(
+                        "DT planting failed once (run continues): " + err);
+        }
+        // Планируем тики жидкости у водопадов Висячих садов, чтобы струи активно стекали вниз и растекались у подножия
+        if (WaterfallGardens.regionAt(x0 + 8, z0 + 8) != null) {
+            var gBlock = ElisarBlocks.GARDEN_WATER.get();
+            for (int dx = 0; dx < 16; ++dx)
+                for (int dz = 0; dz < 16; ++dz) {
+                    int wx = x0 + dx, wz = z0 + dz;
+                    for (int wy = plan.ocean; wy <= plan.ocean + 52; ++wy) {
+                        BlockState bs = chunk.getBlockState(mp.set(wx, wy, wz));
+                        if (bs.getBlock() == gBlock) {
+                            var fs = bs.getFluidState();
+                            if (!fs.isEmpty()) level.scheduleTick(mp.immutable(), fs.getType(), 2);
+                        }
+                    }
+                }
+        }
     }
+
+    /** Счётчик сбоев чужих фич: логируем только первый, чтобы не залить лог. */
+    private static final java.util.concurrent.atomic.AtomicInteger FEATURE_FAILS = new java.util.concurrent.atomic.AtomicInteger();
+
+    /** Счётчик сбоев собственной посадки DT: логируем только первый. */
+    private static final java.util.concurrent.atomic.AtomicInteger DT_FAILS = new java.util.concurrent.atomic.AtomicInteger();
 
     private static ModelKind kind(String name) {
         try {
@@ -1116,6 +2518,287 @@ public class ElisarChunkGenerator extends ChunkGenerator {
 
 
     /** Мини-биом «Туманный данж» (обходом за чанк): почти сломанная ротонда на центральном утёсе + обрушенная винтовая лестница. */
+    private static void putChunk(ChunkAccess chunk, BlockPos.MutableBlockPos mp, int x0, int z0,
+                                 int bx, int by, int bz, BlockState state) {
+        if (bx >= x0 && bx <= x0 + 15 && bz >= z0 && bz <= z0 + 15) {
+            chunk.setBlockState(mp.set(bx, by, bz), state, false);
+        }
+    }
+
+    private static long packXZ(int x, int z) {
+        return (((long) x) << 32) ^ (z & 0xFFFFFFFFL);
+    }
+
+    /**
+     * Референс 04_violet_hills.png: вдоль главной извилистой дороги идут чередующиеся пролёты
+     * низких каменных стенок и тёплых деревянных заборов, каменные столбы-тумбы с факелами/фонарями
+     * на концах пролётов и открытые проходы к лавандовым полям.
+     */
+    private static void buildVioletRoadside(ChunkAccess chunk, BlockPos.MutableBlockPos mp, CityPlan plan,
+                                            VioletHills.Region vr, int x0, int z0) {
+        // Проверяем, проходит ли дорога рядом с текущим чанком
+        if (vr.mainRoadDist(x0 + 8, z0 + 8) > 22.0) return;
+        double totalLen = vr.mainRoadLen();
+        if (totalLen < 8.0) return;
+
+        // kind: 1 = каменная стенка, 2 = деревянный забор, 3 = каменный столб с факелом/фонарём
+        java.util.HashMap<Long, Integer> curb = new java.util.HashMap<>();
+        double sideOff = VioletHills.Region.RIVER_HW + 1.05;
+        for (int side = -1; side <= 1; side += 2) {
+            int prevX = Integer.MIN_VALUE, prevZ = Integer.MIN_VALUE, prevKind = 0;
+            int lastPierX = -999999, lastPierZ = -999999;
+            for (double s = 2.0; s <= totalLen - 2.0; s += 0.35) {
+                double[] pt = vr.roadSidePoint(s, side * sideOff);
+                int bx = (int) Math.floor(pt[0]);
+                int bz = (int) Math.floor(pt[1]);
+                if (bx < x0 - 3 || bx > x0 + 18 || bz < z0 - 3 || bz > z0 + 18) {
+                    prevX = Integer.MIN_VALUE;
+                    continue;
+                }
+                CityPlan.Island bIsl = vr.islandAt(bx + 0.5, bz + 0.5);
+                if (bIsl == null || bIsl.t(bx + 0.5, bz + 0.5) < 0.08) {
+                    prevX = Integer.MIN_VALUE;
+                    continue;
+                }
+                // Оставляем аккуратный открытый перекрёсток там, где отходит боковая тропинка
+                if (vr.branchRoadDist(bx + 0.5, bz + 0.5) <= VioletHills.Region.BRANCH_HW + 1.15) {
+                    prevX = Integer.MIN_VALUE;
+                    continue;
+                }
+                int seg = (int) Math.floor(s / 7.0);
+                int mod = Math.floorMod(seg + (side > 0 ? 2 : 0), 5);
+                if (mod == 0) {
+                    prevX = Integer.MIN_VALUE;
+                    continue; // открытый проход в лавандовое поле
+                }
+                boolean nearBoundary = Math.abs(s - Math.round(s / 7.0) * 7.0) < 0.55;
+                int kind = (mod == 1 || mod == 3) ? 1 : 2;
+                if (nearBoundary && Math.hypot(bx - lastPierX, bz - lastPierZ) >= 4.2) {
+                    kind = 3;
+                    lastPierX = bx;
+                    lastPierZ = bz;
+                }
+                if (prevX != Integer.MIN_VALUE && bx != prevX && bz != prevZ && prevKind != 0) {
+                    // Замыкаем диагональный шаг 4-связным углом, чтобы забор и стенка не рвались
+                    long elbowKey = packXZ(bx, prevZ);
+                    curb.putIfAbsent(elbowKey, prevKind == 3 ? 1 : prevKind);
+                }
+                long key = packXZ(bx, bz);
+                int old = curb.getOrDefault(key, 0);
+                if (kind > old) curb.put(key, kind);
+                prevX = bx;
+                prevZ = bz;
+                prevKind = kind;
+            }
+        }
+
+        BlockState pierStone = st(ru.aiforge.riftworld.registry.CastleBlocks.ASHLAR);
+        BlockState pierChiseled = Blocks.CHISELED_STONE_BRICKS.defaultBlockState();
+        BlockState torch = Blocks.TORCH.defaultBlockState();
+        BlockState lantern = st(ElisarBlocks.LANTERN);
+
+        for (var entry : curb.entrySet()) {
+            long key = entry.getKey();
+            int bx = (int) (key >> 32);
+            int bz = (int) key;
+            if (bx < x0 || bx > x0 + 15 || bz < z0 || bz > z0 + 15) continue;
+            Col c = column(plan, bx, bz);
+            if (c.isl == null || c.isl.kind != 7 || c.surface == S_COBBLE || c.top <= plan.ocean + 1) continue;
+            int kind = entry.getValue();
+            // Очищаем цветы в точке установки придорожной ограды
+            chunk.setBlockState(mp.set(bx, c.top + 2, bz), Blocks.AIR.defaultBlockState(), false);
+            boolean cn = curb.containsKey(packXZ(bx, bz - 1));
+            boolean cs = curb.containsKey(packXZ(bx, bz + 1));
+            boolean cw = curb.containsKey(packXZ(bx - 1, bz));
+            boolean ce = curb.containsKey(packXZ(bx + 1, bz));
+            if (kind == 3) {
+                boolean ornate = hash(bx, bz, 305) < 0.36;
+                chunk.setBlockState(mp.set(bx, c.top + 1, bz), ornate ? pierChiseled : pierStone, false);
+                chunk.setBlockState(mp.set(bx, c.top + 2, bz), hash(bx, bz, 306) < 0.25 ? lantern : torch, false);
+            } else if (kind == 1) {
+                var low = net.minecraft.world.level.block.state.properties.WallSide.LOW;
+                var none = net.minecraft.world.level.block.state.properties.WallSide.NONE;
+                boolean straightNS = cn && cs && !cw && !ce;
+                boolean straightEW = cw && ce && !cn && !cs;
+                BlockState ws = Blocks.STONE_BRICK_WALL.defaultBlockState()
+                        .setValue(net.minecraft.world.level.block.WallBlock.NORTH_WALL, cn ? low : none)
+                        .setValue(net.minecraft.world.level.block.WallBlock.SOUTH_WALL, cs ? low : none)
+                        .setValue(net.minecraft.world.level.block.WallBlock.WEST_WALL, cw ? low : none)
+                        .setValue(net.minecraft.world.level.block.WallBlock.EAST_WALL, ce ? low : none)
+                        .setValue(net.minecraft.world.level.block.WallBlock.UP, !(straightNS || straightEW));
+                chunk.setBlockState(mp.set(bx, c.top + 1, bz), ws, false);
+            } else {
+                BlockState fs = st(ElisarBlocks.FENCE)
+                        .setValue(FenceBlock.NORTH, cn)
+                        .setValue(FenceBlock.SOUTH, cs)
+                        .setValue(FenceBlock.WEST, cw)
+                        .setValue(FenceBlock.EAST, ce);
+                chunk.setBlockState(mp.set(bx, c.top + 1, bz), fs, false);
+            }
+        }
+    }
+
+    /**
+     * Референс 05_biome_sizo_grove.png: тёплая деревянная тележка у лесной тропы —
+     * дощатое днище, реечные откидные борта из еловых люков, колёса и парные оглобли вперёд.
+     */
+    private static void buildCart(ChunkAccess chunk, BlockPos.MutableBlockPos mp, SizoGrove.Cart cart, int base, int x0, int z0) {
+        BlockState plank = Blocks.SPRUCE_PLANKS.defaultBlockState();
+        BlockState slab = Blocks.SPRUCE_SLAB.defaultBlockState();
+        BlockState wheelX = Blocks.SPRUCE_LOG.defaultBlockState().setValue(RotatedPillarBlock.AXIS, Direction.Axis.X);
+        BlockState wheelZ = Blocks.SPRUCE_LOG.defaultBlockState().setValue(RotatedPillarBlock.AXIS, Direction.Axis.Z);
+        BlockState cargo = Blocks.BARREL.defaultBlockState();
+        BlockState shaft = Blocks.SPRUCE_FENCE.defaultBlockState();
+        int[] du = switch (cart.rot % 4) { case 0 -> new int[]{1, 0}; case 1 -> new int[]{0, 1}; case 2 -> new int[]{-1, 0}; default -> new int[]{0, -1}; };
+        int[] dv = new int[]{-du[1], du[0]};
+        for (int a = -1; a <= 1; ++a) {
+            for (int b = -1; b <= 0; ++b) {
+                int bx = cart.x + du[0] * a + dv[0] * b, bz = cart.z + du[1] * a + dv[1] * b;
+                putChunk(chunk, mp, x0, z0, bx, base, bz, plank);
+                if (a == -1 && b == 0) {
+                    putChunk(chunk, mp, x0, z0, bx, base + 1, bz, cargo);
+                } else if (a == 0 && b == -1) {
+                    putChunk(chunk, mp, x0, z0, bx, base + 1, bz, slab);
+                } else {
+                    putChunk(chunk, mp, x0, z0, bx, base + 1, bz, Blocks.AIR.defaultBlockState());
+                }
+            }
+        }
+        // Реечные деревянные борта из вертикально открытых еловых люков
+        Direction sideNeg = dv[0] < 0 ? Direction.WEST : dv[0] > 0 ? Direction.EAST : dv[1] < 0 ? Direction.NORTH : Direction.SOUTH;
+        Direction sidePos = sideNeg.getOpposite();
+        BlockState tdNeg = Blocks.SPRUCE_TRAPDOOR.defaultBlockState()
+                .setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING, sidePos)
+                .setValue(net.minecraft.world.level.block.TrapDoorBlock.OPEN, true);
+        BlockState tdPos = Blocks.SPRUCE_TRAPDOOR.defaultBlockState()
+                .setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING, sideNeg)
+                .setValue(net.minecraft.world.level.block.TrapDoorBlock.OPEN, true);
+        for (int a = -1; a <= 1; ++a) {
+            putChunk(chunk, mp, x0, z0, cart.x + du[0] * a - dv[0] * 2, base + 1, cart.z + du[1] * a - dv[1] * 2, tdNeg);
+            putChunk(chunk, mp, x0, z0, cart.x + du[0] * a + dv[0], base + 1, cart.z + du[1] * a + dv[1], tdPos);
+        }
+        // Колёса по бокам и две оглобли вперёд
+        putChunk(chunk, mp, x0, z0, cart.x - dv[0] * 2, base, cart.z - dv[1] * 2, du[0] == 0 ? wheelX : wheelZ);
+        putChunk(chunk, mp, x0, z0, cart.x + dv[0], base, cart.z + dv[1], du[0] == 0 ? wheelX : wheelZ);
+        for (int b = -1; b <= 0; ++b) {
+            BlockState sf = shaft
+                    .setValue(FenceBlock.NORTH, du[1] != 0)
+                    .setValue(FenceBlock.SOUTH, du[1] != 0)
+                    .setValue(FenceBlock.EAST, du[0] != 0)
+                    .setValue(FenceBlock.WEST, du[0] != 0);
+            putChunk(chunk, mp, x0, z0, cart.x + du[0] * 2 + dv[0] * b, base, cart.z + du[1] * 2 + dv[1] * b, sf);
+        }
+    }
+
+    /**
+     * Референс 05_biome_sizo_grove.png: резное придорожное святилище на замшелом каменном цоколе
+     * с деревянными стойками, двускатной ступенчатой крышей, цепью и тёплым янтарным камнем внутри.
+     */
+    private static void buildShrine(ChunkAccess chunk, BlockPos.MutableBlockPos mp, SizoGrove.Shrine sh, int base, int x0, int z0) {
+        BlockState brick = Blocks.STONE_BRICKS.defaultBlockState();
+        BlockState brickMossy = Blocks.MOSSY_STONE_BRICKS.defaultBlockState();
+        BlockState chiseled = Blocks.CHISELED_STONE_BRICKS.defaultBlockState();
+        BlockState plank = Blocks.SPRUCE_PLANKS.defaultBlockState();
+        BlockState post = Blocks.SPRUCE_FENCE.defaultBlockState();
+        BlockState slab = Blocks.SPRUCE_SLAB.defaultBlockState();
+        BlockState gold = ru.aiforge.riftworld.registry.TempleBlocks.GOLD_RUNE.get().defaultBlockState()
+                .setValue(ru.aiforge.riftworld.block.GoldRuneBlock.LIT, true);
+        BlockState chain = st(ElisarBlocks.CHAIN).setValue(net.minecraft.world.level.block.ChainBlock.AXIS, Direction.Axis.Y);
+        for (int dx = -1; dx <= 1; ++dx)
+            for (int dz = -1; dz <= 1; ++dz) {
+                putChunk(chunk, mp, x0, z0, sh.x + dx, base, sh.z + dz, ((dx + dz) & 1) == 0 ? brickMossy : brick);
+                putChunk(chunk, mp, x0, z0, sh.x + dx, base + 1, sh.z + dz, dx == 0 && dz == 0 ? gold : chiseled);
+                putChunk(chunk, mp, x0, z0, sh.x + dx, base + 2, sh.z + dz, plank);
+                if (Math.abs(dx) == 1 && Math.abs(dz) == 1) {
+                    putChunk(chunk, mp, x0, z0, sh.x + dx, base + 3, sh.z + dz, post);
+                } else {
+                    putChunk(chunk, mp, x0, z0, sh.x + dx, base + 3, sh.z + dz, Blocks.AIR.defaultBlockState());
+                }
+                putChunk(chunk, mp, x0, z0, sh.x + dx, base + 4, sh.z + dz, slab);
+            }
+        putChunk(chunk, mp, x0, z0, sh.x, base + 3, sh.z, chain);
+        for (int dx = -1; dx <= 1; ++dx) {
+            putChunk(chunk, mp, x0, z0, sh.x + dx, base + 4, sh.z, plank);
+        }
+        putChunk(chunk, mp, x0, z0, sh.x, base + 5, sh.z, slab);
+        int[] f = switch (sh.rot % 4) { case 0 -> new int[]{0, 1}; case 1 -> new int[]{1, 0}; case 2 -> new int[]{0, -1}; default -> new int[]{-1, 0}; };
+        putChunk(chunk, mp, x0, z0, sh.x + f[0] * 2, base, sh.z + f[1] * 2, brickMossy);
+    }
+
+    /**
+     * Референс 05_biome_sizo_grove.png: высокая замшелая полуразрушенная башня из светлого камня
+     * в конце лесной тропы (7×7 в плане, высота 14 блоков, зубчатый обломанный верх, мшистые уступы и бойницы).
+     */
+    private static void buildSizoWatchtower(ChunkAccess chunk, BlockPos.MutableBlockPos mp,
+                                            SizoGrove.Region sr, int x0, int z0) {
+        if (sr.tx + 7 < x0 || sr.tx - 7 > x0 + 15 || sr.tz + 7 < z0 || sr.tz - 7 > z0 + 15) return;
+        BlockState ashlar = st(ru.aiforge.riftworld.registry.CastleBlocks.ASHLAR);
+        BlockState brick = st(ElisarBlocks.GARDEN_LIMESTONE);
+        BlockState mossy = st(ElisarBlocks.GARDEN_LIMESTONE_MOSSY);
+        BlockState cracked = st(ElisarBlocks.STONE_MOSSY);
+        BlockState mossBlock = st(ElisarBlocks.MOSS);
+        BlockState slab = st(ru.aiforge.riftworld.registry.TempleBlocks.SLAB);
+        BlockState air = Blocks.AIR.defaultBlockState();
+
+        // Ступенчатый замшелый цоколь из светлого известняка вокруг башни (радиус 5)
+        for (int dx = -5; dx <= 5; ++dx)
+            for (int dz = -5; dz <= 5; ++dz) {
+                double d = Math.hypot(dx, dz);
+                if (d > 5.3 || (Math.abs(dx) <= 3 && Math.abs(dz) <= 3)) continue;
+                int hSkirt = d < 4.3 ? 2 : 1;
+                for (int dy = 0; dy <= hSkirt; ++dy) {
+                    boolean topCap = dy == hSkirt && hash(sr.tx + dx, sr.tz + dz, 401) < 0.72;
+                    putChunk(chunk, mp, x0, z0, sr.tx + dx, sr.ty + dy, sr.tz + dz,
+                            topCap ? mossBlock : (hash(sr.tx + dx, dy, sr.tz + dz) < 0.55 ? mossy : brick));
+                }
+            }
+
+        // Направление входа — к началу лесной тропы
+        double[] start = sr.trailPoint(0.25);
+        double vx = start[0] - sr.tx, vz = start[1] - sr.tz;
+        int doorX = Math.abs(vx) >= Math.abs(vz) ? (vx >= 0 ? 3 : -3) : 0;
+        int doorZ = Math.abs(vx) < Math.abs(vz) ? (vz >= 0 ? 3 : -3) : 0;
+
+        // Стены башни 7×7 с неровным обрушенным верхом (высота 9..14 блоков)
+        for (int dx = -3; dx <= 3; ++dx)
+            for (int dz = -3; dz <= 3; ++dz) {
+                int bx = sr.tx + dx, bz = sr.tz + dz;
+                boolean wall = Math.abs(dx) == 3 || Math.abs(dz) == 3;
+                boolean corner = Math.abs(dx) == 3 && Math.abs(dz) == 3;
+                putChunk(chunk, mp, x0, z0, bx, sr.ty, bz, ((dx + dz) & 1) == 0 ? mossy : brick);
+                if (!wall) {
+                    for (int dy = 1; dy <= 14; ++dy) putChunk(chunk, mp, x0, z0, bx, sr.ty + dy, bz, air);
+                    continue;
+                }
+                // Живописный зубчатый силуэт руины: один угол выше (до +14), противоположный ниже (+9..+11)
+                double ruinProfile = 10.5 + 3.2 * vnoise(bx * 0.27, bz * 0.27, 409) + (corner ? 1.2 : 0.0);
+                int maxH = Math.max(8, Math.min(14, (int) Math.round(ruinProfile)));
+                for (int dy = 1; dy <= 14; ++dy) {
+                    if (dy > maxH) {
+                        putChunk(chunk, mp, x0, z0, bx, sr.ty + dy, bz, air);
+                        continue;
+                    }
+                    // Арочный вход со стороны тропы и узкие бойницы на среднем ярусе
+                    boolean doorway = (doorX != 0 && dx == doorX && Math.abs(dz) <= 1 && dy <= 4)
+                            || (doorZ != 0 && dz == doorZ && Math.abs(dx) <= 1 && dy <= 4);
+                    boolean slit = (dy >= 7 && dy <= 9) && ((Math.abs(dx) == 3 && dz == 0) || (Math.abs(dz) == 3 && dx == 0));
+                    if (doorway || slit) {
+                        putChunk(chunk, mp, x0, z0, bx, sr.ty + dy, bz, air);
+                        continue;
+                    }
+                    double rk = hash(bx, sr.ty + dy, bz);
+                    BlockState ws = (dy == maxH && rk < 0.48) ? mossBlock
+                            : (dy <= 3 || rk < 0.34) ? mossy
+                            : rk < 0.62 ? ashlar
+                            : rk < 0.84 ? brick : cracked;
+                    putChunk(chunk, mp, x0, z0, bx, sr.ty + dy, bz, ws);
+                }
+                if (maxH < 14 && hash(bx, bz, 412) < 0.42) {
+                    putChunk(chunk, mp, x0, z0, bx, sr.ty + maxH + 1, bz, slab);
+                }
+            }
+    }
+
     private static void mistKeepDressing(CityPlan plan, ChunkAccess chunk, BlockPos.MutableBlockPos mp, int x0, int z0) {
         MistKeep.Region rg = MistKeep.regionAt(x0 + 8, z0 + 8);
         if (rg == null) return;
@@ -1201,6 +2884,264 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         }
     }
 
+    /**
+     * Строит монументальные объекты биома «Хрустальные разломы» ({@code 02_crystal_sanctum.png}) строго в границах чанка:
+     * <ol>
+     *   <li>наклонные шестигранные блочные кристаллы с пирамидальным остриём и градиентом свечения;</li>
+     *   <li>центральную разрушенную мраморную колоннаду-астролябию с парящим хрустальным ядром и плющом;</li>
+     *   <li>запасные серебристые деревья, если аддон Dynamic Trees не загружен.</li>
+     * </ol>
+     */
+    private static void buildCrystalRiftsStructures(ChunkAccess chunk, BlockPos.MutableBlockPos mp,
+                                                    CityPlan plan, CrystalRifts.Region cr, int x0, int z0) {
+        BlockState riftMarble = st(ElisarBlocks.RIFT_MARBLE);
+        BlockState riftMarbleMossy = st(ElisarBlocks.RIFT_MARBLE_MOSSY);
+        BlockState riftSlate = st(ElisarBlocks.RIFT_SLATE);
+        BlockState riftMarbleSlab = st(ElisarBlocks.RIFT_MARBLE_SLAB);
+        BlockState crystalDeep = st(ElisarBlocks.CRYSTAL_BLOCK_DEEP);
+        BlockState crystalMid = st(ElisarBlocks.CRYSTAL_BLOCK);
+        BlockState crystalBright = st(ElisarBlocks.CRYSTAL_BLOCK_BRIGHT);
+        BlockState crystalCluster = st(ElisarBlocks.CRYSTAL_CLUSTER);
+        BlockState gWater = st(ElisarBlocks.GARDEN_WATER);
+        BlockState gIvy = ElisarBlocks.GARDEN_IVY.get().defaultBlockState();
+
+        // 1) Гигантские шестигранные блочные кристаллы (Spire)
+        for (CrystalRifts.Spire sp : cr.spires) {
+            if (sp.maxX < x0 || sp.minX > x0 + 15 || sp.maxZ < z0 || sp.minZ > z0 + 15) continue;
+            // Ортонормированный базис (U = ось роста, V, W = поперечные оси шестигранника с поворотом sp.twist)
+            double refX = Math.abs(sp.dy) > 0.92 ? 1.0 : 0.0;
+            double refY = Math.abs(sp.dy) > 0.92 ? 0.0 : 1.0;
+            double refZ = 0.0;
+            double b1x = sp.dy * refZ - sp.dz * refY;
+            double b1y = sp.dz * refX - sp.dx * refZ;
+            double b1z = sp.dx * refY - sp.dy * refX;
+            double b1l = Math.max(1e-6, Math.sqrt(b1x * b1x + b1y * b1y + b1z * b1z));
+            b1x /= b1l; b1y /= b1l; b1z /= b1l;
+            double b2x = sp.dy * b1z - sp.dz * b1y;
+            double b2y = sp.dz * b1x - sp.dx * b1z;
+            double b2z = sp.dx * b1y - sp.dy * b1x;
+            double ct = Math.cos(sp.twist), stw = Math.sin(sp.twist);
+            double vx = b1x * ct + b2x * stw, vy = b1y * ct + b2y * stw, vz = b1z * ct + b2z * stw;
+            double wx = -b1x * stw + b2x * ct, wy = -b1y * stw + b2y * ct, wz = -b1z * stw + b2z * ct;
+
+            int bx0 = Math.max(x0, sp.minX), bx1 = Math.min(x0 + 15, sp.maxX);
+            int bz0 = Math.max(z0, sp.minZ), bz1 = Math.min(z0 + 15, sp.maxZ);
+            int by0 = Math.max(MIN_Y + 2, sp.minY), by1 = Math.min(MIN_Y + HEIGHT - 4, sp.maxY);
+
+            for (int bx = bx0; bx <= bx1; ++bx) {
+                for (int bz = bz0; bz <= bz1; ++bz) {
+                    int topCrystalY = Integer.MIN_VALUE;
+                    double topCrystalU = 0.0;
+                    for (int by = by0; by <= by1; ++by) {
+                        double rx = (bx + 0.5) - sp.ox;
+                        double ry = (by + 0.5) - sp.oy;
+                        double rz = (bz + 0.5) - sp.oz;
+                        double s = rx * sp.dx + ry * sp.dy + rz * sp.dz;
+                        if (s < -3.0 || s > sp.length + 0.45) continue;
+                        double u = s / sp.length;
+                        double rad;
+                        if (s < 0.0) {
+                            rad = sp.baseRadius * (1.06 + 0.08 * (-s / 3.0));
+                        } else if (u <= 0.68) {
+                            rad = sp.baseRadius * (1.06 - 0.20 * (u / 0.68));
+                        } else {
+                            rad = Math.max(0.42, sp.baseRadius * 0.86 * (1.0 - (u - 0.68) / 0.35));
+                        }
+                        double pu = rx * vx + ry * vy + rz * vz;
+                        double pv = rx * wx + ry * wy + rz * wz;
+                        double hex = Math.max(Math.abs(pu), 0.5 * Math.abs(pu) + 0.8660254 * Math.abs(pv));
+                        if (hex <= rad) {
+                            BlockState cs;
+                            double hv = hash(bx, by, bz);
+                            if (u < 0.22) {
+                                cs = hv < 0.82 ? crystalDeep : crystalMid;
+                            } else if (u < 0.56) {
+                                cs = hv < 0.76 ? crystalMid : crystalDeep;
+                            } else if (u < 0.78) {
+                                cs = (hex > rad * 0.76 || hv < 0.34) ? crystalBright : crystalMid;
+                            } else {
+                                cs = crystalBright;
+                            }
+                            chunk.setBlockState(mp.set(bx, by, bz), cs, false);
+                            if (u > 0.05 && u < 0.45 && by > topCrystalY) {
+                                topCrystalY = by;
+                                topCrystalU = u;
+                            }
+                        } else if (sp.dy > 0.0 && s >= -0.8 && s <= 1.35 && hex <= rad + 0.85) {
+                            BlockPos cp = mp.set(bx, by, bz);
+                            BlockState cur = chunk.getBlockState(cp);
+                            if (!cur.is(ElisarBlocks.CRYSTAL_BLOCK.get())
+                                    && !cur.is(ElisarBlocks.CRYSTAL_BLOCK_BRIGHT.get())
+                                    && !cur.is(ElisarBlocks.CRYSTAL_BLOCK_DEEP.get())) {
+                                chunk.setBlockState(cp, hash(bx, by, bz) < 0.68 ? riftSlate : riftMarbleMossy, false);
+                            }
+                        }
+                    }
+                    if (topCrystalY != Integer.MIN_VALUE && topCrystalU < 0.35 && hash(bx, bz, 751) < 0.14) {
+                        BlockPos up = mp.set(bx, topCrystalY + 1, bz);
+                        if (chunk.getBlockState(up).isAir()) {
+                            chunk.setBlockState(up, crystalCluster, false);
+                        }
+                    }
+                }
+            }
+        }
+
+        // 2) Центральная разрушенная каменная колоннада-астролябия на hub (если сгенерирована по случайному шансу!)
+        int ay = cr.astroY;
+        if (cr.hasColonnade && x0 <= cr.astroX + 18 && x0 + 15 >= cr.astroX - 18 && z0 <= cr.astroZ + 18 && z0 + 15 >= cr.astroZ - 18) {
+            int ax0 = Math.max(x0, (int) Math.floor(cr.astroX - 17));
+            int ax1 = Math.min(x0 + 15, (int) Math.ceil(cr.astroX + 17));
+            int az0 = Math.max(z0, (int) Math.floor(cr.astroZ - 17));
+            int az1 = Math.min(z0 + 15, (int) Math.ceil(cr.astroZ + 17));
+            for (int bx = ax0; bx <= ax1; ++bx) {
+                for (int bz = az0; bz <= az1; ++bz) {
+                    double dx = (bx + 0.5) - cr.astroX, dz = (bz + 0.5) - cr.astroZ;
+                    double r = Math.hypot(dx, dz);
+                    if (r > 15.8) continue;
+                    // Плавная каменная ступень сопряжения святилища с рельефом острова (r = 14.5..15.8)
+                    if (r > 14.5) {
+                        if (hash(bx, bz, 759) < 0.78) {
+                            chunk.setBlockState(mp.set(bx, ay - 1, bz), riftMarbleMossy, false);
+                            chunk.setBlockState(mp.set(bx, ay, bz), riftMarbleSlab, false);
+                        }
+                        continue;
+                    }
+                    // Подложка площади святилища
+                    for (int fy = ay - 3; fy <= ay - 1; ++fy) {
+                        chunk.setBlockState(mp.set(bx, fy, bz), (fy == ay - 1 && r < 3.2) ? crystalBright : riftMarble, false);
+                    }
+                    for (int cl = ay + 1; cl <= ay + 13; ++cl) {
+                        BlockPos cp = mp.set(bx, cl, bz);
+                        BlockState st0 = chunk.getBlockState(cp);
+                        if (st0.is(ElisarBlocks.CRYSTAL_SHROOM.get()) || st0.is(ElisarBlocks.CRYSTAL_CLUSTER.get())
+                                || st0.is(ElisarBlocks.RIFT_GRASS.get())
+                                || st0.is(Blocks.GRASS) || st0.is(Blocks.FERN)) {
+                            chunk.setBlockState(cp, Blocks.AIR.defaultBlockState(), false);
+                        }
+                    }
+                    if (r < 1.85) {
+                        // Светящаяся руническая печать в центре открытой арены колоннады
+                        chunk.setBlockState(mp.set(bx, ay, bz), r < 1.05 ? crystalBright : crystalMid, false);
+                    } else if (r < 3.35) {
+                        chunk.setBlockState(mp.set(bx, ay, bz), r < 2.65 ? gWater : riftMarble, false);
+                    } else if ((r >= 6.4 && r <= 7.2) || (r >= 10.6 && r <= 11.3)) {
+                        // Два концентрических светящихся хрустальных кольца астролябии
+                        chunk.setBlockState(mp.set(bx, ay, bz), hash(bx, bz, 760) < 0.65 ? crystalBright : crystalMid, false);
+                    } else {
+                        double ang = Math.atan2(dz, dx) - cr.phi;
+                        boolean compassRay = Math.abs(Math.sin(ang * 4.0)) < 0.13 && r < 12.0;
+                        BlockState fl = compassRay ? riftSlate
+                                : (hash(bx, bz, 761) < 0.72 ? riftMarble : riftMarbleMossy);
+                        chunk.setBlockState(mp.set(bx, ay, bz), fl, false);
+                    }
+                }
+            }
+
+            // 12 высоких каннелированных мраморных колонн по кругу R = 12.6 + резной двойной архитрав с плющом
+            double rCol = 12.6;
+            int[] colH = {10, 10, 6, 10, 10, 7, 10, 10, 5, 10, 10, 10};
+            for (int k = 0; k < 12; ++k) {
+                double ang = cr.phi + (k + 0.5) * (Math.PI / 6.0);
+                int px = (int) Math.floor(cr.astroX + Math.cos(ang) * rCol);
+                int pz = (int) Math.floor(cr.astroZ + Math.sin(ang) * rCol);
+                int h = colH[k];
+                for (Direction d : Direction.Plane.HORIZONTAL) {
+                    int sx = px + d.getStepX(), sz = pz + d.getStepZ();
+                    if (sx >= x0 && sx <= x0 + 15 && sz >= z0 && sz <= z0 + 15) {
+                        chunk.setBlockState(mp.set(sx, ay + 1, sz), riftMarbleSlab, false);
+                        if (h == 10) {
+                            chunk.setBlockState(mp.set(sx, ay + 10, sz),
+                                    riftMarbleSlab.setValue(net.minecraft.world.level.block.SlabBlock.TYPE,
+                                            net.minecraft.world.level.block.state.properties.SlabType.TOP), false);
+                        }
+                    }
+                }
+                if (px >= x0 && px <= x0 + 15 && pz >= z0 && pz <= z0 + 15) {
+                    for (int y = 1; y <= h; ++y) {
+                        BlockState ps = (y == h && h < 10) ? riftMarbleMossy
+                                : (y == 5 && h >= 7) ? riftSlate
+                                : (hash(px, ay + y, pz) < 0.24 ? riftMarbleMossy : riftMarble);
+                        chunk.setBlockState(mp.set(px, ay + y, pz), ps, false);
+                    }
+                    if (h < 10) {
+                        chunk.setBlockState(mp.set(px, ay + h + 1, pz), riftMarbleSlab, false);
+                    }
+                }
+                if (h < 10) {
+                    int fx = (int) Math.floor(cr.astroX + Math.cos(ang) * (rCol + 2.5));
+                    int fz = (int) Math.floor(cr.astroZ + Math.sin(ang) * (rCol + 2.5));
+                    if (fx >= x0 && fx <= x0 + 15 && fz >= z0 && fz <= z0 + 15) {
+                        Col fc = column(plan, fx, fz);
+                        if (fc.isl != null) {
+                            chunk.setBlockState(mp.set(fx, fc.top + 1, fz), riftMarbleMossy, false);
+                        }
+                    }
+                }
+            }
+            int[][] lintelPairs = {{0, 1}, {3, 4}, {6, 7}, {9, 10}, {10, 11}, {11, 12}};
+            for (int[] pair : lintelPairs) {
+                double a0 = cr.phi + (pair[0] + 0.5) * (Math.PI / 6.0);
+                double a1 = cr.phi + (pair[1] + 0.5) * (Math.PI / 6.0);
+                for (int step = 0; step <= 20; ++step) {
+                    double a = a0 + (a1 - a0) * (step / 20.0);
+                    int lx = (int) Math.floor(cr.astroX + Math.cos(a) * rCol);
+                    int lz = (int) Math.floor(cr.astroZ + Math.sin(a) * rCol);
+                    if (lx < x0 || lx > x0 + 15 || lz < z0 || lz > z0 + 15) continue;
+                    chunk.setBlockState(mp.set(lx, ay + 11, lz),
+                            hash(lx, lz, 765) < 0.30 ? riftMarbleMossy : riftMarble, false);
+                    chunk.setBlockState(mp.set(lx, ay + 12, lz),
+                            step % 4 == 0 ? riftSlate : riftMarbleSlab, false);
+                    int vx2 = lx + (Math.cos(a) >= 0 ? 1 : -1);
+                    Direction attach = Math.cos(a) >= 0 ? Direction.WEST : Direction.EAST;
+                    if (vx2 >= x0 && vx2 <= x0 + 15 && hash(lx, lz, 767) < 0.48) {
+                        int vLen = 1 + (int) (hash(lx, lz, 768) * 4.0);
+                        for (int vy2 = 0; vy2 < vLen; ++vy2) {
+                            BlockPos vp = mp.set(vx2, ay + 11 - vy2, lz);
+                            if (chunk.getBlockState(vp).isAir()) {
+                                chunk.setBlockState(vp, ivyFace(attach, gIvy), false);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // 3) Запасные миниатюрные деревца вдоль аллеи (ТОЛЬКО если колоннада выпала и аддон Dynamic Trees не загружен!)
+        if (cr.hasColonnade && !DtGround.dtPresent()) {
+            BlockState cLog = st(ElisarBlocks.CRYSTAL_LOG);
+            BlockState cLeaf = st(ElisarBlocks.CRYSTAL_LEAVES).setValue(LeavesBlock.PERSISTENT, true);
+            double ax = cr.aveAx, az = cr.aveAz, bx = cr.aveBx, bz = cr.aveBz;
+            double len = Math.max(1.0, Math.hypot(bx - ax, bz - az));
+            double ux = (bx - ax) / len, uz = (bz - az) / len;
+            double px2 = -uz, pz2 = ux;
+            int count = Math.min(4, Math.max(2, (int) Math.floor(len / 8.5)));
+            for (int k = 0; k < count; ++k) {
+                double dist = 5.0 + k * 8.5;
+                if (dist > len - 6.0) break;
+                for (int side = -1; side <= 1; side += 2) {
+                    int tx = (int) Math.round(ax + ux * dist + px2 * side * (CrystalRifts.Region.AVE_HW + 2.4));
+                    int tz = (int) Math.round(az + uz * dist + pz2 * side * (CrystalRifts.Region.AVE_HW + 2.4));
+                    Col tc = column(plan, tx, tz);
+                    if (tc.isl == null || tc.isl.kind != CrystalRifts.KIND || tc.surface != S_GRASS) continue;
+                    int th = 2 + (k % 2);
+                    if (tx >= x0 && tx <= x0 + 15 && tz >= z0 && tz <= z0 + 15) {
+                        for (int y = 1; y <= th; ++y) chunk.setBlockState(mp.set(tx, tc.top + y, tz), cLog, false);
+                        chunk.setBlockState(mp.set(tx, tc.top + th + 1, tz), cLeaf, false);
+                    }
+                    int[][] tufts = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+                    for (int ti = 0; ti < tufts.length; ++ti) {
+                        if (((k + ti) & 1) == 0) continue;
+                        int lx = tx + tufts[ti][0], lz = tz + tufts[ti][1];
+                        if (lx >= x0 && lx <= x0 + 15 && lz >= z0 && lz <= z0 + 15) {
+                            chunk.setBlockState(mp.set(lx, tc.top + th, lz), cLeaf, false);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     // ================================================================== misc ChunkGenerator plumbing
     @Override
     public void applyCarvers(WorldGenRegion region, long seed, RandomState rs, BiomeManager bm, StructureManager sm, ChunkAccess chunk, GenerationStep.Carving step) {
@@ -1236,6 +3177,10 @@ public class ElisarChunkGenerator extends ChunkGenerator {
     @Override
     public int getBaseHeight(int x, int z, Heightmap.Types type, LevelHeightAccessor level, RandomState rs) {
         Col c = column(CityPlan.get(), x, z);
+        if (c.spanTop != Integer.MIN_VALUE) {
+            int base = c.isl == null ? CityPlan.get().ocean + 1 : c.top + 1;
+            return Math.max(base, c.spanTop + (c.spanParapet ? 2 : 1));
+        }
         int mt = AshenLands.weight(x, z) > 0 ? AshenLands.moundTop(x, z) : Integer.MIN_VALUE;
         if (c.isl == null && mt != Integer.MIN_VALUE) return mt + 1;
         return c.isl == null ? CityPlan.get().ocean + 1 : c.top + 1;
@@ -1248,13 +3193,18 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         BlockState[] arr = new BlockState[HEIGHT];
         java.util.Arrays.fill(arr, Blocks.AIR.defaultBlockState());
         int of = oceanFloor(plan, x, z);
-        arr[of] = ElisarBlocks.SEABED.get().defaultBlockState();
-        arr[of - 1] = ElisarBlocks.SEABED.get().defaultBlockState();
-        // Рев 8: дно — сплошной массив породы (а не 5 блоков), для расстановки структур/высот
-        for (int y = 0; y <= of - 2; ++y) arr[y] = ElisarBlocks.STONE.get().defaultBlockState();
-        for (int y = of + 1; y <= plan.ocean; ++y) arr[y] = ElisarBlocks.WATER.get().defaultBlockState();
+        // Рев 10: индексы массива отсчитываются от MIN_Y (мир стал глубже: min_y = -64, height = 384)
+        arr[0] = Blocks.BEDROCK.defaultBlockState();          // Рев 11: пол мира и в базовой колонке
+        arr[1] = Blocks.BEDROCK.defaultBlockState();
+        arr[of - MIN_Y] = ElisarBlocks.SEABED.get().defaultBlockState();
+        arr[of - 1 - MIN_Y] = ElisarBlocks.SEABED.get().defaultBlockState();
+        for (int y = ElisarSea.BOTTOM; y <= of - 2; ++y) arr[y - MIN_Y] = ElisarBlocks.STONE.get().defaultBlockState();
+        for (int y = of + 1; y <= plan.ocean; ++y) arr[y - MIN_Y] = ElisarBlocks.WATER.get().defaultBlockState();
         if (c.isl != null) {
-            for (int y = Math.max(0, c.bottom); y <= Math.min(HEIGHT - 1, c.top); ++y) arr[y] = ElisarBlocks.STONE.get().defaultBlockState();
+            for (int y = Math.max(MIN_Y, c.bottom); y <= Math.min(MIN_Y + HEIGHT - 1, c.top); ++y) arr[y - MIN_Y] = ElisarBlocks.STONE.get().defaultBlockState();
+        }
+        if (c.spanTop != Integer.MIN_VALUE) {
+            for (int y = Math.max(MIN_Y, c.spanBot); y <= Math.min(MIN_Y + HEIGHT - 1, c.spanTop); ++y) arr[y - MIN_Y] = ElisarBlocks.RIFT_MARBLE.get().defaultBlockState();
         }
         return new NoiseColumn(MIN_Y, arr);
     }

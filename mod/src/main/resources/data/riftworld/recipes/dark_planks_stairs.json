@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "#  ",
+    "## ",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "riftworld:dark_planks"
+    }
+  },
+  "result": {
+    "item": "riftworld:dark_planks_stairs",
+    "count": 4
+  }
+}

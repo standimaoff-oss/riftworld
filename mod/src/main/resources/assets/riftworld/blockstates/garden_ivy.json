@@ -1,0 +1,56 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "north": "true"
+      },
+      "apply": {
+        "model": "riftworld:block/garden_ivy_north"
+      }
+    },
+    {
+      "when": {
+        "south": "true"
+      },
+      "apply": {
+        "model": "riftworld:block/garden_ivy_south"
+      }
+    },
+    {
+      "when": {
+        "west": "true"
+      },
+      "apply": {
+        "model": "riftworld:block/garden_ivy_west"
+      }
+    },
+    {
+      "when": {
+        "east": "true"
+      },
+      "apply": {
+        "model": "riftworld:block/garden_ivy_east"
+      }
+    },
+    {
+      "when": {
+        "up": "true"
+      },
+      "apply": {
+        "model": "riftworld:block/garden_ivy_up"
+      }
+    },
+    {
+      "when": {
+        "north": "false",
+        "south": "false",
+        "west": "false",
+        "east": "false",
+        "up": "false"
+      },
+      "apply": {
+        "model": "riftworld:block/garden_ivy_south"
+      }
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "group": "planks",
+  "ingredients": [
+    {
+      "item": "riftworld:dark_beam"
+    }
+  ],
+  "result": {
+    "item": "riftworld:dark_planks",
+    "count": 4
+  }
+}

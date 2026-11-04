@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "riftworld:block/garden_log",
+    "side": "riftworld:block/garden_log"
+  }
+}

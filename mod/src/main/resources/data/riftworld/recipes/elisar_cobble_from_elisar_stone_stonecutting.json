@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "riftworld:elisar_stone"
+  },
+  "result": "riftworld:elisar_cobble",
+  "count": 1
+}

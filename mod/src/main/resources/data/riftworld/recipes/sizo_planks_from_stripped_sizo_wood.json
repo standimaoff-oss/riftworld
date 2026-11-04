@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "group": "planks",
+  "ingredients": [
+    {
+      "item": "riftworld:stripped_sizo_wood"
+    }
+  ],
+  "result": {
+    "item": "riftworld:sizo_planks",
+    "count": 4
+  }
+}

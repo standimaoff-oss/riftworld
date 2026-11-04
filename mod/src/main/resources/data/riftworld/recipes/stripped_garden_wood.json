@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "bark",
+  "pattern": [
+    "##",
+    "##"
+  ],
+  "key": {
+    "#": {
+      "item": "riftworld:stripped_garden_log"
+    }
+  },
+  "result": {
+    "item": "riftworld:stripped_garden_wood",
+    "count": 3
+  }
+}

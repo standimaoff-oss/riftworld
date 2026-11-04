@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "#  ",
+    "## ",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "riftworld:temple_bricks"
+    }
+  },
+  "result": {
+    "item": "riftworld:temple_bricks_stairs",
+    "count": 4
+  }
+}

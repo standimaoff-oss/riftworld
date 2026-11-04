@@ -76,7 +76,7 @@ public final class EmberRuins {
         if (r.nextDouble() > 0.7) return null;
         int cx = sx * SUPER + EDGE + r.nextInt(SUPER - 2 * EDGE), cz = sz * SUPER + EDGE + r.nextInt(SUPER - 2 * EDGE);
         if (Math.hypot(cx, cz) < 520) return null;                                                       // city ring
-        if (Math.hypot(cx - AshenLands.CX, cz - AshenLands.CZ) < AshenLands.R + 60 + ASH_R + 40) return null;  // real Ashen Lands
+        if (AshenLands.blocks(cx, cz, 60 + ASH_R + 40)) return null;                                          // адские угодья
         return new Site(cx, cz, 98 + r.nextInt(18), 26 + r.nextDouble() * 6, r);
     }
 

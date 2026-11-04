@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "riftworld:ambra_log"
+  },
+  "result": "riftworld:stripped_ambra_log",
+  "count": 1
+}

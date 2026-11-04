@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "#",
+    "#"
+  ],
+  "key": {
+    "#": {
+      "item": "riftworld:ivory_marble_slab"
+    }
+  },
+  "result": {
+    "item": "riftworld:chiseled_ivory_marble",
+    "count": 1
+  }
+}

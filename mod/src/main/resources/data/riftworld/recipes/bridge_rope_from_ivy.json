@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "V",
+    "V",
+    "V"
+  ],
+  "key": {
+    "V": {
+      "tag": "riftworld:mod_vines"
+    }
+  },
+  "result": {
+    "item": "riftworld:bridge_rope",
+    "count": 2
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "group": "buttons",
+  "ingredients": [
+    {
+      "item": "riftworld:morok_planks"
+    }
+  ],
+  "result": {
+    "item": "riftworld:morok_button",
+    "count": 1
+  }
+}

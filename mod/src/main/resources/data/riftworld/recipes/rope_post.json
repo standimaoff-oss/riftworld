@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "P",
+    "R",
+    "P"
+  ],
+  "key": {
+    "P": {
+      "tag": "minecraft:planks"
+    },
+    "R": {
+      "item": "riftworld:bridge_rope"
+    }
+  },
+  "result": {
+    "item": "riftworld:rope_post",
+    "count": 2
+  }
+}

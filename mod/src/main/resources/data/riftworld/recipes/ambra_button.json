@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "group": "wooden_button",
+  "ingredients": [
+    {
+      "item": "riftworld:ambra_planks"
+    }
+  ],
+  "result": {
+    "item": "riftworld:ambra_button",
+    "count": 1
+  }
+}

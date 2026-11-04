@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "building",
+  "pattern": [
+    "B",
+    "B"
+  ],
+  "key": {
+    "B": {
+      "item": "riftworld:cracked_rime_bricks"
+    }
+  },
+  "result": {
+    "item": "riftworld:rime_brick_pillar",
+    "count": 2
+  }
+}

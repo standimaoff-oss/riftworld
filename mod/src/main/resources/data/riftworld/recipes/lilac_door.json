@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "group": "wooden_door",
+  "pattern": [
+    "##",
+    "##",
+    "##"
+  ],
+  "key": {
+    "#": {
+      "item": "riftworld:lilac_planks"
+    }
+  },
+  "result": {
+    "item": "riftworld:lilac_door",
+    "count": 3
+  }
+}

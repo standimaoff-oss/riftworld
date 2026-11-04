@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "group": "wooden_button",
+  "ingredients": [
+    {
+      "item": "riftworld:sizo_planks"
+    }
+  ],
+  "result": {
+    "item": "riftworld:sizo_button",
+    "count": 1
+  }
+}

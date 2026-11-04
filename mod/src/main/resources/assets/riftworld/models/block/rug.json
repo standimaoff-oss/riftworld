@@ -1,13 +1,83 @@
 {
-  "loader": "forge:obj",
-  "model": "riftworld:models/block/obj/rug.obj",
-  "flip_v": false,
-  "emissive_ambient": true,
-  "automatic_culling": false,
-  "shade_quads": true,
-  "render_type": "minecraft:cutout",
-  "ambientocclusion": false,
   "textures": {
-    "particle": "riftworld:block/obj/m_e_wood"
-  }
+    "particle": "riftworld:block/rug_item",
+    "wool": "riftworld:block/rug_item",
+    "center": "riftworld:block/rug_center",
+    "trim": "riftworld:block/rug_trim"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        1,
+        16
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#wool"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#center",
+          "cullface": "down"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            8,
+            0.5
+          ],
+          "texture": "#trim",
+          "cullface": "north"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            8,
+            0.5
+          ],
+          "texture": "#trim",
+          "cullface": "south"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            8,
+            0.5
+          ],
+          "texture": "#trim",
+          "cullface": "west"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            8,
+            0.5
+          ],
+          "texture": "#trim",
+          "cullface": "east"
+        }
+      }
+    }
+  ]
 }

@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/inner_stairs",
+  "textures": {
+    "bottom": "riftworld:block/lilac_planks",
+    "top": "riftworld:block/lilac_planks",
+    "side": "riftworld:block/lilac_planks"
+  }
+}

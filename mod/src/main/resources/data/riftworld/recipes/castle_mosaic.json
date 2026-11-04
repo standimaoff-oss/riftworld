@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GA",
+    "AG"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:gold_nugget"
+    },
+    "A": {
+      "item": "riftworld:ashlar"
+    }
+  },
+  "result": {
+    "item": "riftworld:castle_mosaic",
+    "count": 2
+  }
+}

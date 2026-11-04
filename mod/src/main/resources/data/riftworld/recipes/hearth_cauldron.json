@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " H ",
+    "ACA",
+    " F "
+  ],
+  "key": {
+    "H": {
+      "item": "riftworld:elisar_chain"
+    },
+    "A": {
+      "item": "riftworld:ashlar"
+    },
+    "C": {
+      "item": "minecraft:cauldron"
+    },
+    "F": {
+      "item": "minecraft:campfire"
+    }
+  },
+  "result": {
+    "item": "riftworld:hearth_cauldron"
+  }
+}

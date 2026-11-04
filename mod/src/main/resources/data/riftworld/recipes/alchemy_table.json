@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " B ",
+    "DDD",
+    "M M"
+  ],
+  "key": {
+    "B": {
+      "item": "minecraft:brewing_stand"
+    },
+    "D": {
+      "item": "riftworld:dark_planks"
+    },
+    "M": {
+      "item": "riftworld:dark_beam"
+    }
+  },
+  "result": {
+    "item": "riftworld:alchemy_table"
+  }
+}

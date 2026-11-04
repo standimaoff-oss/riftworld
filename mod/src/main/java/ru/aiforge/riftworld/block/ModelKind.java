@@ -83,7 +83,7 @@ public enum ModelKind {
     FIREPLACE("fireplace", -1, 1, 0, 3, Block.box(0, 0, 0, 16, 16, 16)),
     SHOP_COUNTER("shop_counter", 0, 1, 0, 2, Block.box(0, 0, 2, 16, 16, 14)),
     SHOP_SHELF("shop_shelf", 0, 1, 0, 2, Block.box(0, 0, 8, 16, 16, 16)),
-    RUG("rug", 0, 1, 1, 1, Block.box(0, 0, 0, 16, 1, 16)),
+    RUG("rug", 0, 0, 0, 1, Block.box(0, 0, 0, 16, 1, 16)),
     COOKING_POT("cooking_pot", 0, 0, 0, 2, Block.box(2, 0, 2, 14, 16, 14)),
     WANTED_WALL("wanted_wall", 0, 0, 0, 2, Block.box(1, 0, 14, 15, 16, 16)),
     CRATE_STACK("crate_stack", 0, 0, 0, 1, Block.box(1, 0, 1, 15, 16, 15)),

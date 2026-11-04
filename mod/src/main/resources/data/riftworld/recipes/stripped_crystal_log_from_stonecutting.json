@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "riftworld:crystal_log"
+  },
+  "result": "riftworld:stripped_crystal_log",
+  "count": 1
+}

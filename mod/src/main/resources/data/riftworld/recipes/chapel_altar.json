@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "CCC",
+    "AAA",
+    "A A"
+  ],
+  "key": {
+    "C": {
+      "item": "riftworld:castle_carpet"
+    },
+    "A": {
+      "item": "riftworld:ashlar"
+    }
+  },
+  "result": {
+    "item": "riftworld:chapel_altar"
+  }
+}

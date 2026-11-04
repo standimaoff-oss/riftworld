@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column_horizontal",
+  "textures": {
+    "end": "riftworld:block/lilac_rings",
+    "side": "riftworld:block/lilac_bark"
+  }
+}

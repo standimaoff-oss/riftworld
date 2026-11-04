@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "CCC",
+    "CBC",
+    "CRC"
+  ],
+  "key": {
+    "C": {
+      "tag": "riftworld:mod_cobblestone"
+    },
+    "B": {
+      "item": "minecraft:bow"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "result": {
+    "item": "minecraft:dispenser",
+    "count": 1
+  }
+}

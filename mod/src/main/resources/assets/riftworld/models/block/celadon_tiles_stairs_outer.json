@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/outer_stairs",
+  "textures": {
+    "bottom": "riftworld:block/celadon_tiles",
+    "top": "riftworld:block/celadon_tiles",
+    "side": "riftworld:block/celadon_tiles"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "#  ",
+    "## ",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "riftworld:keep_stone"
+    }
+  },
+  "result": {
+    "item": "riftworld:keep_stone_stairs",
+    "count": 4
+  }
+}

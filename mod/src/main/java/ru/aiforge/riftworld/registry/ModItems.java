@@ -14,9 +14,35 @@ import ru.aiforge.riftworld.item.ResonanceStoneItem;
 public final class ModItems {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, RiftWorld.MODID);
 
-    /** Biome 01: creative spawn egg of the paper dragon. */
+    /** Biome 01: creative spawn egg of the paper dragon (works on ground, water, AND right-clicking mid-air!). */
     public static final RegistryObject<Item> PAPER_DRAGON_EGG = ITEMS.register("paper_dragon_spawn_egg",
-            () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.PAPER_DRAGON, 0xF3EFE4, 0xD22E28, new Item.Properties()));
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.PAPER_DRAGON, 0xF3EFE4, 0xD22E28, new Item.Properties()) {
+                @Override
+                public net.minecraft.world.InteractionResultHolder<net.minecraft.world.item.ItemStack> use(
+                        net.minecraft.world.level.Level level,
+                        net.minecraft.world.entity.player.Player player,
+                        net.minecraft.world.InteractionHand hand) {
+                    var res = super.use(level, player, hand);
+                    if (res.getResult().consumesAction()) return res;
+                    net.minecraft.world.item.ItemStack stack = player.getItemInHand(hand);
+                    var hit = getPlayerPOVHitResult(level, player, net.minecraft.world.level.ClipContext.Fluid.ANY);
+                    if (hit.getType() == net.minecraft.world.phys.HitResult.Type.MISS) {
+                        if (!level.isClientSide && level instanceof net.minecraft.server.level.ServerLevel sl) {
+                            net.minecraft.world.phys.Vec3 spawnPos = player.getEyePosition().add(player.getLookAngle().scale(14.0));
+                            var ent = ModEntities.PAPER_DRAGON.get().spawn(
+                                    sl, stack, player, net.minecraft.core.BlockPos.containing(spawnPos),
+                                    net.minecraft.world.entity.MobSpawnType.SPAWN_EGG, false, false);
+                            if (ent != null) {
+                                ent.moveTo(spawnPos.x, spawnPos.y, spawnPos.z, player.getYRot(), 0.0F);
+                                if (!player.getAbilities().instabuild) stack.shrink(1);
+                                player.awardStat(net.minecraft.stats.Stats.ITEM_USED.get(this));
+                            }
+                        }
+                        return net.minecraft.world.InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
+                    }
+                    return res;
+                }
+            });
 
     /** Rev 4 item 13: rope for self-assembling bridges (craft: 3 string in a column). */
     public static final RegistryObject<Item> BRIDGE_ROPE = ITEMS.register("bridge_rope",
@@ -29,6 +55,31 @@ public final class ModItems {
     public static final RegistryObject<Item> ELISAR_DUCAT = ITEMS.register("elisar_ducat",
             () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)));
 
+    // v0.26.0: Крафтовая особая бумага для приручения Бумажного Дракона (окрашивает его 2 уса!),
+    // кастомное Драконье седло Элисара и Горн Дракона (призыв с небес даже вне зоны симуляции)
+    public static final RegistryObject<Item> GILDED_PAPER = ITEMS.register("gilded_paper",
+            () -> new ru.aiforge.riftworld.item.DragonPaperItem(ru.aiforge.riftworld.item.DragonPaperItem.WHISKER_GILDED,
+                    new Item.Properties().stacksTo(64).rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> EMERALD_PAPER = ITEMS.register("emerald_paper",
+            () -> new ru.aiforge.riftworld.item.DragonPaperItem(ru.aiforge.riftworld.item.DragonPaperItem.WHISKER_EMERALD,
+                    new Item.Properties().stacksTo(64).rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> DIAMOND_PAPER = ITEMS.register("diamond_paper",
+            () -> new ru.aiforge.riftworld.item.DragonPaperItem(ru.aiforge.riftworld.item.DragonPaperItem.WHISKER_DIAMOND,
+                    new Item.Properties().stacksTo(64).rarity(Rarity.RARE)));
+    public static final RegistryObject<Item> AMETHYST_PAPER = ITEMS.register("amethyst_paper",
+            () -> new ru.aiforge.riftworld.item.DragonPaperItem(ru.aiforge.riftworld.item.DragonPaperItem.WHISKER_AMETHYST,
+                    new Item.Properties().stacksTo(64).rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> CRIMSON_PAPER = ITEMS.register("crimson_paper",
+            () -> new ru.aiforge.riftworld.item.DragonPaperItem(ru.aiforge.riftworld.item.DragonPaperItem.WHISKER_CRIMSON,
+                    new Item.Properties().stacksTo(64).rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> LAPIS_PAPER = ITEMS.register("lapis_paper",
+            () -> new ru.aiforge.riftworld.item.DragonPaperItem(ru.aiforge.riftworld.item.DragonPaperItem.WHISKER_LAPIS,
+                    new Item.Properties().stacksTo(64).rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> DRAGON_SADDLE = ITEMS.register("dragon_saddle",
+            () -> new ru.aiforge.riftworld.item.DragonSaddleItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE)));
+    public static final RegistryObject<Item> DRAGON_WHISTLE = ITEMS.register("dragon_whistle",
+            () -> new ru.aiforge.riftworld.item.DragonWhistleItem(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC)));
+
     public static final RegistryObject<Item> MORGRATH_SCYTHE = ITEMS.register("morgrath_scythe",
             () -> new ru.aiforge.riftworld.item.ScytheItem(new Item.Properties().rarity(Rarity.EPIC).fireResistant()));
     public static final RegistryObject<Item> GUARD_SICKLE = ITEMS.register("guard_sickle",
@@ -38,12 +89,94 @@ public final class ModItems {
     public static final RegistryObject<Item> GUARD_EGG = ITEMS.register("ember_guard_spawn_egg",
             () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.GUARD, 0x3b2b26, 0xe0602a, new Item.Properties()));
 
-    // Рев 8: яйца призыва морской живности (по одному на характерный вид)
+    // v0.19.0: Босс Колоннады, его Прислужники и 4 уникальных кристальных оружия/артефакта
+    public static final RegistryObject<Item> CRYSTAL_KATAR = ITEMS.register("crystal_katar",
+            () -> new ru.aiforge.riftworld.item.CrystalKatarItem(new Item.Properties().rarity(Rarity.RARE)));
+    public static final RegistryObject<Item> CRYSTAL_BARRAGE = ITEMS.register("crystal_barrage",
+            () -> new ru.aiforge.riftworld.item.CrystalBarrageItem(new Item.Properties().stacksTo(64).rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> CRYSTAL_AEGIS = ITEMS.register("crystal_aegis",
+            () -> new ru.aiforge.riftworld.item.CrystalAegisItem(new Item.Properties().stacksTo(64).rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> ASTRAL_PRISM = ITEMS.register("astral_prism",
+            () -> new ru.aiforge.riftworld.item.AstralPrismItem(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC).fireResistant()));
+    public static final RegistryObject<Item> RIFT_OBELISK_BOSS_EGG = ITEMS.register("rift_obelisk_boss_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.RIFT_OBELISK_BOSS, 0xDDE4F0, 0x56E8FF, new Item.Properties()));
+    public static final RegistryObject<Item> CRYSTAL_MINION_EGG = ITEMS.register("crystal_minion_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.CRYSTAL_MINION, 0xCFD8E8, 0x32C4E8, new Item.Properties()));
+
+    // Рев 8 + v0.26.0: яйца призыва ВСЕХ 11 видов морской живности Элисара!
     public static final RegistryObject<Item> EGG_SILVER = egg("silver_fish_spawn_egg", ru.aiforge.riftworld.entity.SeaFishEntity.SILVER, 0xC6D3DC, 0x2B3440);
     public static final RegistryObject<Item> EGG_GOLD = egg("gold_fish_spawn_egg", ru.aiforge.riftworld.entity.SeaFishEntity.GOLD, 0xE9C25A, 0xC29A38);
+    public static final RegistryObject<Item> EGG_STRIPED = egg("striped_fish_spawn_egg", ru.aiforge.riftworld.entity.SeaFishEntity.STRIPED, 0x4DB8C4, 0xF6E58D);
     public static final RegistryObject<Item> EGG_JELLY = egg("jelly_fish_spawn_egg", ru.aiforge.riftworld.entity.SeaFishEntity.JELLY, 0x9FE6FF, 0xD8F7FF);
     public static final RegistryObject<Item> EGG_RAY = egg("ray_fish_spawn_egg", ru.aiforge.riftworld.entity.SeaFishEntity.RAY, 0x68798C, 0xDCE6EC);
     public static final RegistryObject<Item> EGG_ANGLER = egg("angler_fish_spawn_egg", ru.aiforge.riftworld.entity.SeaFishEntity.ANGLER, 0x2C3947, 0xDFFFA8);
+    public static final RegistryObject<Item> EGG_EEL = egg("eel_fish_spawn_egg", ru.aiforge.riftworld.entity.SeaFishEntity.EEL, 0x394854, 0xA8D8CE);
+    // Рев 10 «Живое море 2»: тропические мирные (хирург, черепаха) и редкие пещерные (глот, жгучая медуза)
+    public static final RegistryObject<Item> EGG_SURGEON = egg("surgeon_fish_spawn_egg", ru.aiforge.riftworld.entity.SeaFishEntity.SURGEON, 0x2F6FD0, 0xF2D24C);
+    public static final RegistryObject<Item> EGG_TURTLE = egg("turtle_spawn_egg", ru.aiforge.riftworld.entity.SeaFishEntity.TURTLE, 0x4E7A4A, 0xE3DCC0);
+    public static final RegistryObject<Item> EGG_GLOOM = egg("gloom_fish_spawn_egg", ru.aiforge.riftworld.entity.SeaFishEntity.GLOOM, 0x2A1F36, 0xC46BFF);
+    public static final RegistryObject<Item> EGG_STING = egg("sting_fish_spawn_egg", ru.aiforge.riftworld.entity.SeaFishEntity.STING, 0xB05AD6, 0xFFE9FF);
+
+    // v0.27.0: Яйца призыва двух мирных существ обычного биома (летающая рыбка-стрекоза и белоснежный цветущий олень)
+    public static final RegistryObject<Item> SKY_DART_EGG = ITEMS.register("sky_dart_fish_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.SKY_DART_FISH, 0xF5F1E8, 0x7EC5BB, new Item.Properties()) {
+                @Override
+                public net.minecraft.world.InteractionResultHolder<net.minecraft.world.item.ItemStack> use(
+                        net.minecraft.world.level.Level level,
+                        net.minecraft.world.entity.player.Player player,
+                        net.minecraft.world.InteractionHand hand) {
+                    var res = super.use(level, player, hand);
+                    if (res.getResult().consumesAction()) return res;
+                    net.minecraft.world.item.ItemStack stack = player.getItemInHand(hand);
+                    var hit = getPlayerPOVHitResult(level, player, net.minecraft.world.level.ClipContext.Fluid.ANY);
+                    if (hit.getType() == net.minecraft.world.phys.HitResult.Type.MISS) {
+                        if (!level.isClientSide && level instanceof net.minecraft.server.level.ServerLevel sl) {
+                            net.minecraft.world.phys.Vec3 spawnPos = player.getEyePosition().add(player.getLookAngle().scale(3.5));
+                            var ent = ModEntities.SKY_DART_FISH.get().spawn(
+                                    sl, stack, player, net.minecraft.core.BlockPos.containing(spawnPos),
+                                    net.minecraft.world.entity.MobSpawnType.SPAWN_EGG, false, false);
+                            if (ent != null) {
+                                ent.moveTo(spawnPos.x, spawnPos.y, spawnPos.z, player.getYRot(), 0.0F);
+                                if (!player.getAbilities().instabuild) stack.shrink(1);
+                                player.awardStat(net.minecraft.stats.Stats.ITEM_USED.get(this));
+                            }
+                        }
+                        return net.minecraft.world.InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
+                    }
+                    return res;
+                }
+            });
+    // v0.32.0: Лиоплевродон (море) — яйцо призыва и дроп с хищника
+    public static final RegistryObject<Item> LIOPLEURODON_EGG = ITEMS.register("liopleurodon_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.LIOPLEURODON, 0x26323C, 0xC4C5BE,
+                    new Item.Properties()));
+    public static final RegistryObject<Item> LIOPLEURODON_TOOTH = ITEMS.register("liopleurodon_tooth",
+            () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> SEA_SCALE = ITEMS.register("sea_scale",
+            () -> new Item(new Item.Properties()));
+
+    // v0.34.0: Пегас (земля/воздух) и Вендиго (Мороковая Падь)
+    public static final RegistryObject<Item> PEGASUS_EGG = ITEMS.register("pegasus_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.PEGASUS, 0xF2F0EC, 0xCFCBC4,
+                    new Item.Properties()));
+    public static final RegistryObject<Item> WENDIGO_EGG = ITEMS.register("wendigo_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.WENDIGO, 0x2B2622, 0x8FF0F0,
+                    new Item.Properties()));
+    /** v0.39.0: Морок — своё яйцо призыва (редкость UNCOMMON, как у хозяев чащи). */
+    public static final RegistryObject<Item> MOROK_EGG = ITEMS.register("morok_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.MOROK, 0x15181C, 0xFF7A18,
+                    new Item.Properties()));
+    /** Трофей: раскалённый уголёк, который Морок носит вместо глаза. */
+    public static final RegistryObject<Item> MOROK_EYE = ITEMS.register("morok_ember",
+            () -> new Item(new Item.Properties().rarity(Rarity.RARE).fireResistant()));
+
+    public static final RegistryObject<Item> PEGASUS_FEATHER = ITEMS.register("pegasus_feather",
+            () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> WENDIGO_ANTLER = ITEMS.register("wendigo_antler",
+            () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)));
+
+    public static final RegistryObject<Item> BLOSSOM_STAG_EGG = ITEMS.register("blossom_stag_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.BLOSSOM_STAG, 0xFAF8F5, 0xF4B8C4, new Item.Properties()));
 
     private static RegistryObject<Item> egg(String id, int variant, int back, int spots) {
         return ITEMS.register(id, () -> new ru.aiforge.riftworld.item.SeaEggItem(variant, new Item.Properties()));
@@ -51,7 +184,7 @@ public final class ModItems {
 
     static {
         for (RegistryObject<? extends net.minecraft.world.level.block.Block> b : ModBlocks.WITH_ITEM) {
-            ITEMS.register(b.getId().getPath(), () -> b.get() instanceof ModelBlock mb
+            ITEMS.register(b.getId().getPath(), () -> (b.get() instanceof ModelBlock mb && !(mb instanceof ru.aiforge.riftworld.block.MergingRugBlock))
                     ? new ModelBlockItem(mb, new Item.Properties())
                     : new BlockItem(b.get(), new Item.Properties()));
         }

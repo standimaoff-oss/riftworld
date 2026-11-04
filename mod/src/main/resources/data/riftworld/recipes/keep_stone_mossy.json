@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "riftworld:keep_stone"
+    },
+    {
+      "tag": "riftworld:mod_vines"
+    }
+  ],
+  "result": {
+    "item": "riftworld:keep_stone_mossy",
+    "count": 1
+  }
+}

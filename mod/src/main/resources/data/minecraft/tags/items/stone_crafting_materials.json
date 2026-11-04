@@ -1,0 +1,15 @@
+{
+  "replace": false,
+  "values": [
+    "riftworld:elisar_cobble",
+    "riftworld:elisar_stone",
+    "riftworld:ashen_cobblestone",
+    "riftworld:scorched_stone",
+    "riftworld:keep_stone",
+    "riftworld:garden_limestone",
+    "riftworld:rift_slate",
+    "riftworld:rift_marble",
+    "riftworld:ivory_marble",
+    "riftworld:pearl_calcite"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "LLL",
+    "SSS"
+  ],
+  "key": {
+    "L": {
+      "item": "riftworld:sizo_log"
+    },
+    "S": {
+      "item": "minecraft:stick"
+    }
+  },
+  "result": {
+    "item": "riftworld:firewood_stack",
+    "count": 3
+  }
+}

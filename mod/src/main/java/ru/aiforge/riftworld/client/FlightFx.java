@@ -109,6 +109,7 @@ public final class FlightFx {
     // ------------------------------------------------------------------------------------------------ render
     @SubscribeEvent
     public static void render(RenderLevelStageEvent e) {
+        if (ShaderCompat.isRenderingShadowPass()) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
         float pt = e.getPartialTick();
@@ -163,7 +164,8 @@ public final class FlightFx {
         RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
         RenderSystem.depthMask(false);
         RenderSystem.disableCull();
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+        RenderSystem.setShaderTexture(0, ShaderCompat.WHITE_TEX);
     }
 
     private static void endAdditive() {
@@ -180,13 +182,13 @@ public final class FlightFx {
     }
 
     private static void col(BufferBuilder b, Matrix4f m, float x, float y, float z, int argb) {
-        b.vertex(m, x, y, z).color((argb >> 16) & 255, (argb >> 8) & 255, argb & 255, (argb >>> 24)).endVertex();
+        b.vertex(m, x, y, z).uv(0.5F, 0.5F).color((argb >> 16) & 255, (argb >> 8) & 255, argb & 255, (argb >>> 24)).endVertex();
     }
 
     /** Shimmering rainbow band over the lower 20 % of the sphere (y 0.1 .. 1.9 above the capsule floor block). */
     private static void laserCap(Matrix4f m, Vector3f c, float t, float a) {
         BufferBuilder b = Tesselator.getInstance().getBuilder();
-        b.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        b.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
         int seg = 48, rings = 5;
         for (int layer = 0; layer < 2; ++layer) {
             float R = SPHERE_R + 0.08F + layer * 0.07F;
@@ -221,7 +223,7 @@ public final class FlightFx {
         Vector3f p1 = Math.abs(ax.y) < 0.9F ? new Vector3f(ax).cross(0, 1, 0).normalize() : new Vector3f(ax).cross(1, 0, 0).normalize();
         Vector3f p2 = new Vector3f(ax).cross(p1).normalize();
         BufferBuilder b = Tesselator.getInstance().getBuilder();
-        b.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        b.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
         int n = 6;
         for (int i = 0; i <= n; ++i) {
             boolean coreStrand = i == n;
@@ -257,9 +259,10 @@ public final class FlightFx {
         float speed = FlightClient.bell(u, 0.34F, 0.66F);          // the jump
         // stars (streaks during the jump: we fly towards -Z, the stars rush past towards +Z)
         RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+        RenderSystem.setShaderTexture(0, ShaderCompat.WHITE_TEX);
         BufferBuilder b = Tesselator.getInstance().getBuilder();
-        b.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        b.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
         Vector3f motion = new Vector3f(0, 0, 1);
         for (int i = 0; i < STARS; ++i) {
             Vector3f d = new Vector3f(STAR[i * 5], STAR[i * 5 + 1], STAR[i * 5 + 2]);

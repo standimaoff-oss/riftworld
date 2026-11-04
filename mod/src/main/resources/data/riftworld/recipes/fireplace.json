@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "BBB",
+    "B B",
+    "BCB"
+  ],
+  "key": {
+    "B": {
+      "item": "riftworld:elisar_bricks"
+    },
+    "C": {
+      "item": "minecraft:campfire"
+    }
+  },
+  "result": {
+    "item": "riftworld:fireplace"
+  }
+}

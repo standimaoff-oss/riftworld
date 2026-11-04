@@ -29,10 +29,15 @@ import ru.aiforge.riftworld.flight.Flight;
  */
 @Mod.EventBusSubscriber(modid = RiftWorld.MODID)
 public final class SeaLifeKeeper {
-    private static final int PEACEFUL_TARGET = 12;
+    private static final int PEACEFUL_TARGET = 14;
     private static final int JELLY_TARGET = 2;
     private static final int RAY_TARGET = 1;
-    private static final int HOSTILE_TARGET = 3;
+    private static final int TURTLE_TARGET = 1;
+    /** Рев 10: хищники пещер — РЕДКИЕ. Не больше двух рядом и только в затопленных полостях. */
+    private static final int HOSTILE_TARGET = 2;
+    /** v0.32.0: Лиоплевродон — 1 особь на ~900 блоков, только в глубокой воде (>= 20 блоков под поверхностью). */
+    private static final int LIO_TARGET = 1;
+    private static final int LIO_WORLD_CAP = 6;
     private static final int WORLD_CAP = 320;
     private static int failsafe = 0;
 
@@ -52,27 +57,37 @@ public final class SeaLifeKeeper {
     }
 
     private static void tick(ServerLevel sl) {
-        List<net.minecraft.world.entity.Entity> ents = new ArrayList<>();
-        for (var ent : sl.getEntities().getAll()) ents.add(ent);
-        int total = 0;
-        for (var ent : ents) if (ent instanceof SeaFishEntity) ++total;
-        if (total >= WORLD_CAP) return;
+        List<ServerPlayer> players = sl.players();
+        if (players.isEmpty()) return;
 
-        for (ServerPlayer sp : new ArrayList<>(sl.players())) {
-            int peaceful = 0, jelly = 0, ray = 0, hostile = 0;
-            for (var ent : ents) {
-                if (!(ent instanceof SeaFishEntity f)) continue;
+        // v0.28.0: Вместо копирования ВСЕХ сущностей измерения в ArrayList используем локальный AABB-запрос вокруг игроков!
+        for (ServerPlayer sp : new ArrayList<>(players)) {
+            if (sp.isSpectator()) continue;
+            List<SeaFishEntity> nearby = sl.getEntitiesOfClass(SeaFishEntity.class, sp.getBoundingBox().inflate(80.0));
+            if (nearby.size() >= WORLD_CAP / Math.max(1, players.size())) continue;
+            int peaceful = 0, jelly = 0, ray = 0, turtle = 0, hostile = 0;
+            for (SeaFishEntity f : nearby) {
                 if (f.distanceToSqr(sp) > 80 * 80) continue;
                 int v = f.variant();
                 if (v == SeaFishEntity.JELLY) ++jelly;
                 else if (v == SeaFishEntity.RAY) ++ray;
+                else if (v == SeaFishEntity.TURTLE) ++turtle;
                 else if (f.hostile()) ++hostile;
                 else ++peaceful;
             }
             if (peaceful < PEACEFUL_TARGET) school(sl, sp, peaceful);
             if (jelly < JELLY_TARGET) single(sl, sp, SeaFishEntity.JELLY, false);
             if (ray < RAY_TARGET) single(sl, sp, SeaFishEntity.RAY, false);
-            if (hostile < HOSTILE_TARGET) single(sl, sp, rnd().nextDouble() < 0.55 ? SeaFishEntity.ANGLER : SeaFishEntity.EEL, true);
+            if (turtle < TURTLE_TARGET) single(sl, sp, SeaFishEntity.TURTLE, false);
+            // «злые и редкие»: только в затопленных пещерах, редко и по одному
+            if (hostile < HOSTILE_TARGET && rnd().nextDouble() < 0.55) single(sl, sp, cavePredator(), true);
+            // Лиоплевродон: редко, только в глубокой воде и не больше 6 на всё измерение
+            if (rnd().nextDouble() < 0.05
+                    && sl.getEntitiesOfClass(ru.aiforge.riftworld.entity.LiopleurodonEntity.class,
+                            sp.getBoundingBox().inflate(160.0)).size() < LIO_TARGET
+                    && countLiopleurodons(sl) < LIO_WORLD_CAP) {
+                spawnLiopleurodon(sl, sp);
+            }
         }
     }
 
@@ -80,11 +95,21 @@ public final class SeaLifeKeeper {
         return ThreadLocalRandom.current();
     }
 
+    /** Кто именно выйдет из темноты: удильщик и угорь обычны, глот и жгучая медуза — редкая находка. */
+    private static int cavePredator() {
+        double r = rnd().nextDouble();
+        if (r < 0.34) return SeaFishEntity.ANGLER;
+        if (r < 0.64) return SeaFishEntity.EEL;
+        if (r < 0.86) return SeaFishEntity.GLOOM;
+        return SeaFishEntity.STING;
+    }
+
     /** Косяк мирных рыб: 6..9 штук одной породы, в открытой воде недалеко от игрока. */
     private static void school(ServerLevel sl, ServerPlayer sp, int havePeaceful) {
-        int variant = switch (rnd().nextInt(10)) {
+        int variant = switch (rnd().nextInt(14)) {
             case 0, 1 -> SeaFishEntity.GOLD;
             case 2, 3, 4 -> SeaFishEntity.STRIPED;
+            case 5, 6 -> SeaFishEntity.SURGEON;      // тропический хирург — стайками у рифов
             default -> SeaFishEntity.SILVER;
         };
         Vec3 at = findWater(sl, sp, false);
@@ -92,7 +117,43 @@ public final class SeaLifeKeeper {
         int n = Math.min(9, Math.max(4, PEACEFUL_TARGET - havePeaceful));
         for (int i = 0; i < n; i++) {
             Vec3 p = at.add((rnd().nextDouble() - 0.5) * 4.0, (rnd().nextDouble() - 0.5) * 2.0, (rnd().nextDouble() - 0.5) * 4.0);
-            if (SeaFishEntity.elisarWater(sl, BlockPos.containing(p))) SeaFishEntity.spawn(sl, p, variant);
+            BlockPos bp = BlockPos.containing(p);
+            if (sl.hasChunk(bp.getX() >> 4, bp.getZ() >> 4) && SeaFishEntity.elisarWater(sl, bp)) SeaFishEntity.spawn(sl, p, variant);
+        }
+    }
+
+    private static int countLiopleurodons(ServerLevel sl) {
+        return sl.getEntitiesOfClass(ru.aiforge.riftworld.entity.LiopleurodonEntity.class,
+                new net.minecraft.world.phys.AABB(-30000, -64, -30000, 30000, 320, 30000)).size();
+    }
+
+    /** Ищет глубокую воду вокруг игрока (дно минимум в 20 блоках ниже поверхности) и ставит туда хищника. */
+    private static void spawnLiopleurodon(ServerLevel sl, ServerPlayer sp) {
+        var r = rnd();
+        for (int attempt = 0; attempt < 12; ++attempt) {
+            int px = (int) sp.getX() + r.nextInt(96) - 48;
+            int pz = (int) sp.getZ() + r.nextInt(96) - 48;
+            if (!sl.hasChunk(px >> 4, pz >> 4)) continue;
+            BlockPos surf = null;
+            for (int y = 62; y > -40; --y) {
+                BlockPos bp = new BlockPos(px, y, pz);
+                if (SeaFishEntity.elisarWater(sl, bp)) {
+                    surf = bp;
+                    break;
+                }
+            }
+            if (surf == null) continue;
+            int depth = 0;
+            BlockPos floor = surf;
+            while (depth < 64 && SeaFishEntity.elisarWater(sl, floor.below())) {
+                floor = floor.below();
+                ++depth;
+            }
+            if (depth < 20) continue;
+            BlockPos at = floor.above(3);
+            ru.aiforge.riftworld.entity.LiopleurodonEntity.spawn(sl,
+                    new Vec3(at.getX() + 0.5, at.getY() + 0.5, at.getZ() + 0.5));
+            return;
         }
     }
 
@@ -125,6 +186,10 @@ public final class SeaLifeKeeper {
             }
             BlockPos p = new BlockPos(x, y, z);
             if (!SeaFishEntity.elisarWater(sl, p) || !SeaFishEntity.elisarWater(sl, p.above())) continue;
+            if (cave) {
+                // хищник выходит только в темноте: над полостью не должно быть открытого света
+                if (sl.getBrightness(net.minecraft.world.level.LightLayer.SKY, p) > 4) continue;
+            }
             if (cave && !(sl.getBlockState(p.below()).isSolidRender(sl, p.below()))) {
                 // хотим «с потолком над головой» — проверяем, что над рыбой не сразу открытое море
                 boolean roofed = false;

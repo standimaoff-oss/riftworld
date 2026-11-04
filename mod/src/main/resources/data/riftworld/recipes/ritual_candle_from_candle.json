@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "C",
+    "G"
+  ],
+  "key": {
+    "C": {
+      "item": "minecraft:candle"
+    },
+    "G": {
+      "item": "minecraft:gold_nugget"
+    }
+  },
+  "result": {
+    "item": "riftworld:ritual_candle",
+    "count": 1
+  }
+}

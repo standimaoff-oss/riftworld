@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "riftworld:castle_roof"
+  },
+  "result": "riftworld:castle_roof_stairs",
+  "count": 1
+}

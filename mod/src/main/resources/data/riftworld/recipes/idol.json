@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " S ",
+    " G ",
+    " S "
+  ],
+  "key": {
+    "S": {
+      "item": "riftworld:elisar_stone"
+    },
+    "G": {
+      "item": "minecraft:gold_nugget"
+    }
+  },
+  "result": {
+    "item": "riftworld:idol"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " H ",
+    "CCC",
+    "III"
+  ],
+  "key": {
+    "H": {
+      "item": "riftworld:elisar_chain"
+    },
+    "C": {
+      "item": "riftworld:ritual_candle"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "result": {
+    "item": "riftworld:castle_chandelier"
+  }
+}

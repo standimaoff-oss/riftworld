@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "riftworld:rift_slate"
+  },
+  "result": "riftworld:rift_slate_stairs",
+  "count": 1
+}

@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "G G",
+    "GGG",
+    "S V"
+  ],
+  "key": {
+    "G": {
+      "item": "riftworld:garden_planks"
+    },
+    "S": {
+      "item": "minecraft:stick"
+    },
+    "V": {
+      "tag": "riftworld:mod_vines"
+    }
+  },
+  "result": {
+    "item": "riftworld:wagon_overgrown"
+  }
+}

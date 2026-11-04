@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "group": "planks",
+  "ingredients": [
+    {
+      "item": "riftworld:stripped_charred_log"
+    }
+  ],
+  "result": {
+    "item": "riftworld:charred_planks",
+    "count": 4
+  }
+}

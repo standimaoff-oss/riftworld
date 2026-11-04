@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/outer_stairs",
+  "textures": {
+    "bottom": "riftworld:block/garden_planks",
+    "top": "riftworld:block/garden_planks",
+    "side": "riftworld:block/garden_planks"
+  }
+}

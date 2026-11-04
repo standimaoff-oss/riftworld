@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "riftworld:rift_marble"
+  },
+  "result": "riftworld:rift_marble_slab",
+  "count": 2
+}

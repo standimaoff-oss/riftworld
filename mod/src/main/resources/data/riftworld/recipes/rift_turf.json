@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "riftworld:elisar_soil"
+    },
+    {
+      "item": "riftworld:rift_grass"
+    }
+  ],
+  "result": {
+    "item": "riftworld:rift_turf"
+  }
+}

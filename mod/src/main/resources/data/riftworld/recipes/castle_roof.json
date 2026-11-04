@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SS",
+    "BB"
+  ],
+  "key": {
+    "S": {
+      "item": "riftworld:scorched_stone"
+    },
+    "B": {
+      "item": "minecraft:brick"
+    }
+  },
+  "result": {
+    "item": "riftworld:castle_roof",
+    "count": 4
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "PPP",
+    "AAA",
+    "S S"
+  ],
+  "key": {
+    "P": {
+      "item": "riftworld:sizo_planks"
+    },
+    "A": {
+      "item": "minecraft:paper"
+    },
+    "S": {
+      "item": "minecraft:stick"
+    }
+  },
+  "result": {
+    "item": "riftworld:bounty_board"
+  }
+}

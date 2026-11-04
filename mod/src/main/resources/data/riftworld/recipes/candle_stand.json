@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "CCC",
+    " I ",
+    " B "
+  ],
+  "key": {
+    "C": {
+      "item": "riftworld:ritual_candle"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "B": {
+      "item": "riftworld:brass_block"
+    }
+  },
+  "result": {
+    "item": "riftworld:candle_stand"
+  }
+}

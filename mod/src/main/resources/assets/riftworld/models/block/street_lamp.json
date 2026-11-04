@@ -3,7 +3,7 @@
   "model": "riftworld:models/block/obj/street_lamp.obj",
   "flip_v": false,
   "emissive_ambient": true,
-  "automatic_culling": false,
+  "automatic_culling": true,
   "shade_quads": true,
   "render_type": "minecraft:cutout",
   "ambientocclusion": false,

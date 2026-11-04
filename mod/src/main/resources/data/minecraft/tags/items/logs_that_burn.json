@@ -1,0 +1,33 @@
+{
+  "replace": false,
+  "values": [
+    "riftworld:sizo_log",
+    "riftworld:stripped_sizo_log",
+    "riftworld:sizo_wood",
+    "riftworld:stripped_sizo_wood",
+    "riftworld:ambra_log",
+    "riftworld:stripped_ambra_log",
+    "riftworld:ambra_wood",
+    "riftworld:stripped_ambra_wood",
+    "riftworld:garden_log",
+    "riftworld:stripped_garden_log",
+    "riftworld:garden_wood",
+    "riftworld:stripped_garden_wood",
+    "riftworld:lilac_log",
+    "riftworld:stripped_lilac_log",
+    "riftworld:lilac_wood",
+    "riftworld:stripped_lilac_wood",
+    "riftworld:crystal_log",
+    "riftworld:stripped_crystal_log",
+    "riftworld:crystal_wood",
+    "riftworld:stripped_crystal_wood",
+    "riftworld:charred_log",
+    "riftworld:stripped_charred_log",
+    "riftworld:charred_wood",
+    "riftworld:stripped_charred_wood",
+    "riftworld:dark_beam",
+    "riftworld:stripped_dark_beam",
+    "riftworld:dark_wood",
+    "riftworld:stripped_dark_wood"
+  ]
+}

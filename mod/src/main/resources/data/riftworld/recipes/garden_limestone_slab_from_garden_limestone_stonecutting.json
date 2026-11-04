@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "riftworld:garden_limestone"
+  },
+  "result": "riftworld:garden_limestone_slab",
+  "count": 2
+}

@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    "riftworld:sizo_door",
+    "riftworld:ambra_door",
+    "riftworld:garden_door",
+    "riftworld:lilac_door",
+    "riftworld:crystal_door",
+    "riftworld:charred_door",
+    "riftworld:dark_door",
+    "riftworld:elisar_door"
+  ]
+}

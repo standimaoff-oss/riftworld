@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "riftworld:charred_log"
+  },
+  "result": "riftworld:stripped_charred_log",
+  "count": 1
+}
