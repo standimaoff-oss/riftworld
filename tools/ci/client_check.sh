@@ -141,6 +141,26 @@ fi
 EL() { RCON execute in riftworld:elisar run "$@" 2>&1; }
 # Рев 12: если выделенный сервер упал, его лог — единственный источник причины падения.
 # Раньше в артефактах был только снимок лога из шага 1, и «Connection Lost» приходилось гадать.
+# v0.39.12: клиент может умереть молча посреди прогона (JVM убита на тяжёлой сцене — #384/#385/#419).
+# Раньше после этого КАЖДАЯ проба возвращала пустоту и отчёт показывал 40 «провалов», которых нет.
+# Теперь потеря игрока обнаруживается сразу: пишем маркер, помечаем оставшиеся пробы как
+# «пропущено из-за смерти клиента» и выходим с кодом 3, чтобы аннотация была честной.
+client_lost() {
+  local n
+  n=$(RCON list 2>/dev/null || true)
+  case "$n" in *TestPlayer*) return 1 ;; esac
+  return 0
+}
+
+require_client() {   # require_client <что дальше проверяем>
+  client_lost || return 0
+  log "  СТОП клиент потерян ($1): JVM клиента умерла, дальше кадры и пробы невозможны"
+  log "  СТОП причина ищется в reports/iteration-N/client.log (маркер '!! JVM КЛИЕНТА УМЕРЛА')"
+  CLIENT_LOST=1
+  write_report
+  exit 3
+}
+
 keep_server_logs() {
   local srv=${SRV:-ci/server}
   [ -f "$srv/logs/latest.log" ] && cp "$srv/logs/latest.log" "$OUT/server_latest.log" 2>/dev/null || true
@@ -320,6 +340,7 @@ write_report() {
     echo "- воды в колонке (${KX:-?},y,${KZ:-?}): **$WATER** блоков"
     echo "- море: дно y=$SEA_FLOOR, вода $SEA_WATER блоков, глубочайшее дно y=$SEA_MIN"
     echo "- пещеры: $SEA_CAVES колонок, воды $SEA_WET / воздуха $SEA_AIR блоков (у свода $SEA_CEIL, висячего $SEA_FLOAT)"
+    [ "${CLIENT_LOST:-0}" = "1" ] && echo "- **клиент потерян посреди прогона**: оставшиеся кадры и пробы не снимались (см. маркер в client.log)"
     echo "- провалов проб: **$FAILS**"
     echo "- строк Exception/ERROR в логе клиента (без звука/наратора/authlib): **$(grep -E "Exception|ERROR" "$OUT/client.log" 2>/dev/null | grep -viE "Narrator|flite|text2speech|OpenAL|SoundSystem|SoundEngine|no sound|libflite|Yggdrasil|authlib|AuthenticationUnavailable|MinecraftClientException|JsonSyntaxException|Expected BEGIN_OBJECT|Cannot contact authentication server|SocketTimeoutException|Read timed out" | wc -l)**"
     echo
@@ -560,6 +581,7 @@ mob_model_probe "v35_wendigo"     "148_v35_wendigo_antlered_horror"
 mob_model_probe "v36_morok_biome" "149_v36_morok_hollow_fog_forest"
 # v0.39.7: Морок — тоже в начале очереди: в #387 он стоял в конце и кадр не снялся
 mob_model_probe "v39_morok"       "152_v39_morok_night_hunter"
+require_client "после кадров мобов"
 view "$VX" 66 "$VZ" 90 42 14 "02_reef_from_above"        # рифовый сад сверху сквозь воду
 view "$((VX + 10))" "$((VF + 6))" "$VZ" 270 18 14 "03_reef_underwater"   # риф вплотную под водой
 view "$((VX + 4))" "$((VF + 9))" "$VZ" 210 22 14 "03b_reef_hills"         # рифовые холмы и палитры
@@ -906,6 +928,56 @@ fi
 # Референсы лежат в репозитории: reports/refs_rev4/07_waterfall_gardens.png и 05_biome_sizo_grove.png.
 # Сверять «как на фото» можно только по кадрам из живого клиента, поэтому здесь отдельная секция:
 # находим регион биома через /riftbiome, ставим камеры и снимаем те же ракурсы, что на референсе.
+probe_and_shot_struct() {
+  local skind="$1" min_blk="$2" shot_name="$3" underw="${4:-0}" check_houses="${5:-0}" settle="${6:-16}"
+  local S0 SAT SX SY SZ S1 SBLK SAIR SHSE SCAM
+  EL tp TestPlayer 0 110 0 >/dev/null 2>&1 || true
+  sleep 1
+  S0=$(EL execute at TestPlayer in riftworld:elisar run riftstruct "$skind" 2>&1 | tr '\r\n' '  ')
+  SAT=$(printf '%s' "$S0" | sed -n 's/.* at=\([-0-9]*,[-0-9]*,[-0-9]*\).*/\1/p' | tail -1)
+  if [ -z "${SAT:-}" ]; then
+    log "  FAIL /riftstruct $skind не нашёл структуру (${S0:0:140})"; FAILS=$((FAILS + 1)); return
+  fi
+  SX=$(printf '%s' "$SAT" | cut -d, -f1); SY=$(printf '%s' "$SAT" | cut -d, -f2); SZ=$(printf '%s' "$SAT" | cut -d, -f3)
+  if [ "$underw" = "1" ]; then
+    RCON effect give TestPlayer minecraft:night_vision 120 0 true >/dev/null 2>&1 || true
+    RCON effect give TestPlayer minecraft:conduit_power 120 0 true >/dev/null 2>&1 || true
+  else
+    RCON effect clear TestPlayer >/dev/null 2>&1 || true
+  fi
+  EL tp TestPlayer "$SX" "$((SY + 8))" "$SZ" >/dev/null 2>&1 || true
+  if [ "${settle:-16}" -ge 20 ]; then
+    sleep 12
+  else
+    sleep 6
+  fi
+  S1=$(EL execute at TestPlayer in riftworld:elisar run riftstruct "$skind" 2>&1 | tr '\r\n' '  ')
+  log "  /riftstruct $skind -> ${S1:0:280}"
+  SBLK=$(printf '%s' "$S1" | sed -n 's/.* blocks=\([0-9]*\).*/\1/p' | tail -1)
+  SAIR=$(printf '%s' "$S1" | sed -n 's/.* sub_air=\([0-9]*\).*/\1/p' | tail -1)
+  SHSE=$(printf '%s' "$S1" | sed -n 's/.* houses=\([0-9]*\).*/\1/p' | tail -1)
+  # v0.39.2: камеры проб теперь ДРОБНЫЕ (poseCam считает позицию в системе координат моба),
+  # поэтому в шаблоне есть точка. Раньше `[-0-9]*` не цеплял «689.0», SCAM оставался пустым
+  # и кадры 146/151/152 не снимались вообще — хотя пробы выполнялись.
+  SCAM=$(printf '%s' "$S1" | grep -o 'cam=[-0-9.]*,[-0-9.]*,[-0-9.]*:[-0-9.]*,[-0-9.]*,[-0-9.]*' | tail -1 | sed 's/^cam=//')
+  if [ "${SBLK:-0}" -ge "$min_blk" ] && [ "${SAIR:-0}" -eq 0 ]; then
+    log "  OK   структура $skind построена: blocks=${SBLK}, sub_air=${SAIR:-0}"
+  else
+    log "  FAIL структура $skind: blocks=${SBLK:-0} (ожидалось >=${min_blk}), sub_air=${SAIR:-?}"; FAILS=$((FAILS + 1))
+  fi
+  if [ "$check_houses" = "1" ]; then
+    if [ "${SHSE:-0}" -ge 3 ] && [ "${SHSE:-0}" -le 6 ]; then
+      log "  OK   деревня $skind содержит ровно ${SHSE} небольших домов (лимит <= 6 соблюдён)"
+    else
+      log "  FAIL деревня $skind: houses=${SHSE:-0} (ожидалось 3..6)"; FAILS=$((FAILS + 1))
+    fi
+  fi
+  if [ -n "${SCAM:-}" ]; then
+    lookat $(printf '%s' "$SCAM" | cut -d: -f1 | tr ',' ' ') $(printf '%s' "$SCAM" | cut -d: -f2 | tr ',' ' ') "$settle" "$shot_name"
+  fi
+  RCON effect clear TestPlayer >/dev/null 2>&1 || true
+}
+
 biome_section() {
   echo "  [БИОМ] секция садов и рощи" >> "$PROBES"
   # Рев 14.19: раньше режим ставился «молча», и если команда не проходила, игрок падал с высоты
@@ -1382,154 +1454,6 @@ biome_section() {
     FAILS=$((FAILS + 1))
   fi
 
-  # ---------- Новый биом: Хрустальные разломы (riftworld:crystal_rifts, 02_crystal_sanctum.png) ----------
-  locate_check riftworld:crystal_rifts crystal_rifts
-  local CL0 CHX CHZ CI1X CI1Z CMX CMZ CL CBIO CISL CBRGW CBRGN CCRYS CMARB CFLORA CWAT CSIZO
-  CL0=$(EL execute at TestPlayer in riftworld:elisar run riftbiome crystal 2>&1 | tr '\r\n' '  ')
-  CHX=$(printf '%s' "$CL0" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\1/p' | tail -1)
-  CHZ=$(printf '%s' "$CL0" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\2/p' | tail -1)
-  CI1X=$(printf '%s' "$CL0" | sed -n 's/.* isl1=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\1/p' | tail -1)
-  CI1Z=$(printf '%s' "$CL0" | sed -n 's/.* isl1=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\2/p' | tail -1)
-  if [ -z "${CHX:-}" ] || [ -z "${CHZ:-}" ]; then
-    log "  FAIL /riftbiome crystal не нашёл архипелаг Хрустальных разломов"; FAILS=$((FAILS + 1))
-  else
-    # Прогружаем чанки святилища, каменного арочного моста и главного кристального острова #1
-    EL tp TestPlayer "$CHX" 102 "$CHZ" >/dev/null 2>&1 || true
-    sleep 5
-    if [ -n "${CI1X:-}" ] && [ -n "${CI1Z:-}" ]; then
-      CMX=$(( (CHX + CI1X) / 2 )); CMZ=$(( (CHZ + CI1Z) / 2 ))
-      EL tp TestPlayer "$CMX" 102 "$CMZ" >/dev/null 2>&1 || true
-      sleep 4
-      EL tp TestPlayer "$CI1X" 106 "$CI1Z" >/dev/null 2>&1 || true
-      sleep 5
-    fi
-    EL tp TestPlayer "$CHX" 98 "$CHZ" >/dev/null 2>&1 || true
-    sleep 4
-    CL=$(EL execute at TestPlayer in riftworld:elisar run riftbiome crystal 2>&1 | tr '\r\n' '  ')
-    log "  /riftbiome crystal -> ${CL:0:360}"
-    CBIO=$(printf '%s' "$CL" | sed -n 's/.* bio=\([^ ]*\).*/\1/p' | tail -1)
-    CISL=$(printf '%s' "$CL" | sed -n 's/.* cislands=\([0-9]*\).*/\1/p' | tail -1)
-    CBRGN=$(printf '%s' "$CL" | sed -n 's/.* cbridges=\([0-9]*\).*/\1/p' | tail -1)
-    CBRGW=$(printf '%s' "$CL" | sed -n 's/.* bridge_walkable=\([0-9]*\).*/\1/p' | tail -1)
-    CCRYS=$(printf '%s' "$CL" | sed -n 's/.* crystal_blocks=\([0-9]*\).*/\1/p' | tail -1)
-    CMARB=$(printf '%s' "$CL" | sed -n 's/.* marble_blocks=\([0-9]*\).*/\1/p' | tail -1)
-    CTURF=$(printf '%s' "$CL" | sed -n 's/.* rift_turf=\([0-9]*\).*/\1/p' | tail -1)
-    CRGRS=$(printf '%s' "$CL" | sed -n 's/.* rift_grass=\([0-9]*\).*/\1/p' | tail -1)
-    CVGRS=$(printf '%s' "$CL" | sed -n 's/.* vanilla_grass=\([0-9]*\).*/\1/p' | tail -1)
-    CI1TR=$(printf '%s' "$CL" | sed -n 's/.* isl1_trees=\([0-9]*\).*/\1/p' | tail -1)
-    CFLORA=$(printf '%s' "$CL" | sed -n 's/.* crystal_flora=\([0-9]*\).*/\1/p' | tail -1)
-    CWAT=$(printf '%s' "$CL" | sed -n 's/.* water=\([0-9]*\).*/\1/p' | tail -1)
-    CSIZO=$(printf '%s' "$CL" | sed -n 's/.* sizo_blocks=\([0-9]*\).*/\1/p' | tail -1)
-
-    if [ "${CBIO:-}" = "riftworld:crystal_rifts" ]; then log "  OK   Хрустальные разломы: биом святилища ${CBIO}"
-    else log "  FAIL Хрустальные разломы: биом ${CBIO:-?} вместо riftworld:crystal_rifts"; FAILS=$((FAILS + 1)); fi
-
-    if [ "${CISL:-0}" -ge 4 ] && [ "${CISL:-0}" -le 8 ] && [ "${CBRGN:-0}" -ge 3 ]; then
-      log "  OK   Хрустальные разломы: архипелаг из ${CISL} островов и ${CBRGN} арочных мостов"
-    else
-      log "  FAIL Хрустальные разломы: островов=${CISL:-0}, мостов=${CBRGN:-0}"; FAILS=$((FAILS + 1))
-    fi
-
-    if [ "${CBRGW:-0}" -eq 1 ]; then
-      log "  OK   Хрустальные разломы: каменный арочный мост непрерывен и полностью проходим пешком"
-    else
-      log "  FAIL Хрустальные разломы: мост между островами имеет разрыв (bridge_walkable=${CBRGW:-0})"; FAILS=$((FAILS + 1))
-    fi
-
-    if [ "${CCRYS:-0}" -ge 450 ] && [ "${CMARB:-0}" -ge 1500 ] && [ "${CWAT:-0}" -ge 40 ]; then
-      log "  OK   Хрустальные разломы: многоблочные кристаллы на всех островах (${CCRYS}), мрамор/сланец (${CMARB}), чаши/водопады (${CWAT})"
-    else
-      log "  FAIL Хрустальные разломы: кристаллов=${CCRYS:-0} мрамора=${CMARB:-0} воды=${CWAT:-0}"; FAILS=$((FAILS + 1))
-    fi
-
-    if [ "${CTURF:-0}" -ge 250 ] && [ "${CRGRS:-0}" -ge 40 ] && [ "${CVGRS:-1}" -eq 0 ] && [ "${CI1TR:-1}" -eq 0 ]; then
-      log "  OK   Хрустальные разломы: собственный шалфейный дёрн (${CTURF}) и трава разлома (${CRGRS}), ванильной травы=0, деревьев на кристальном острове=0"
-    else
-      log "  FAIL Хрустальные разломы: rift_turf=${CTURF:-0} rift_grass=${CRGRS:-0} vanilla_grass=${CVGRS:-?} isl1_trees=${CI1TR:-?}"; FAILS=$((FAILS + 1))
-    fi
-
-    if [ "${CSIZO:-1}" -eq 0 ]; then
-      log "  OK   Хрустальные разломы: чужих деревьев сизо нет (sizo_blocks=0)"
-    else
-      log "  FAIL Хрустальные разломы: найдены блоки сизо (${CSIZO})"; FAILS=$((FAILS + 1))
-    fi
-
-    if [ "${WITH_DT:-0}" = "1" ]; then
-      local CDTW CDTN
-      CDTW=$(EL execute at TestPlayer in riftworld:elisar run riftdtwild 44 2>&1 | tr '\r\n' '  ')
-      log "  /riftdtwild (хрустальные разломы, мини-бонсай серебрица) -> ${CDTW:0:240}"
-      CDTN=$(printf '%s' "$CDTW" | sed -n 's/.* dt=\([0-9]*\).*/\1/p' | tail -1)
-      if [ "${CDTN:-0}" -ge 16 ] && [ "${CDTN:-0}" -le 260 ] && ! printf '%s' "$CDTW" | grep -q 'ambra_'; then
-        log "  OK   Хрустальные разломы: миниатюрные редкие деревца DT вдоль аллеи (${CDTN} блоков, без лесов и без ambra)"
-      else
-        log "  FAIL Хрустальные разломы: проблемы с мини-бонсай DT (dt=${CDTN:-0}, raw=${CDTW:0:120})"; FAILS=$((FAILS + 1))
-      fi
-    fi
-
-    local CV1 CV2 CV3 CV4 CV5
-    CV1=$(printf '%s' "$CL" | grep -o 'cview1=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^cview1=//')
-    CV2=$(printf '%s' "$CL" | grep -o 'cview2=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^cview2=//')
-    CV3=$(printf '%s' "$CL" | grep -o 'cview3=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^cview3=//')
-    CV4=$(printf '%s' "$CL" | grep -o 'cview4=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^cview4=//')
-    CV5=$(printf '%s' "$CL" | grep -o 'cview5=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^cview5=//')
-    [ -n "${CV1:-}" ] && lookat $(printf '%s' "$CV1" | cut -d: -f1 | tr ',' ' ') $(printf '%s' "$CV1" | cut -d: -f2 | tr ',' ' ') 18 "70_crystal_sanctum_overview"
-    [ -n "${CV2:-}" ] && lookat $(printf '%s' "$CV2" | cut -d: -f1 | tr ',' ' ') $(printf '%s' "$CV2" | cut -d: -f2 | tr ',' ' ') 16 "71_crystal_bridge_passage"
-    [ -n "${CV3:-}" ] && lookat $(printf '%s' "$CV3" | cut -d: -f1 | tr ',' ' ') $(printf '%s' "$CV3" | cut -d: -f2 | tr ',' ' ') 16 "72_crystal_giant_spire_pool"
-    [ -n "${CV4:-}" ] && lookat $(printf '%s' "$CV4" | cut -d: -f1 | tr ',' ' ') $(printf '%s' "$CV4" | cut -d: -f2 | tr ',' ' ') 16 "73_crystal_astrolabe_avenue"
-    [ -n "${CV5:-}" ] && lookat $(printf '%s' "$CV5" | cut -d: -f1 | tr ',' ' ') $(printf '%s' "$CV5" | cut -d: -f2 | tr ',' ' ') 16 "74_crystal_archipelago_falls"
-  fi
-
-  probe_and_shot_struct() {
-    local skind="$1" min_blk="$2" shot_name="$3" underw="${4:-0}" check_houses="${5:-0}" settle="${6:-16}"
-    local S0 SAT SX SY SZ S1 SBLK SAIR SHSE SCAM
-    EL tp TestPlayer 0 110 0 >/dev/null 2>&1 || true
-    sleep 1
-    S0=$(EL execute at TestPlayer in riftworld:elisar run riftstruct "$skind" 2>&1 | tr '\r\n' '  ')
-    SAT=$(printf '%s' "$S0" | sed -n 's/.* at=\([-0-9]*,[-0-9]*,[-0-9]*\).*/\1/p' | tail -1)
-    if [ -z "${SAT:-}" ]; then
-      log "  FAIL /riftstruct $skind не нашёл структуру (${S0:0:140})"; FAILS=$((FAILS + 1)); return
-    fi
-    SX=$(printf '%s' "$SAT" | cut -d, -f1); SY=$(printf '%s' "$SAT" | cut -d, -f2); SZ=$(printf '%s' "$SAT" | cut -d, -f3)
-    if [ "$underw" = "1" ]; then
-      RCON effect give TestPlayer minecraft:night_vision 120 0 true >/dev/null 2>&1 || true
-      RCON effect give TestPlayer minecraft:conduit_power 120 0 true >/dev/null 2>&1 || true
-    else
-      RCON effect clear TestPlayer >/dev/null 2>&1 || true
-    fi
-    EL tp TestPlayer "$SX" "$((SY + 8))" "$SZ" >/dev/null 2>&1 || true
-    if [ "${settle:-16}" -ge 20 ]; then
-      sleep 12
-    else
-      sleep 6
-    fi
-    S1=$(EL execute at TestPlayer in riftworld:elisar run riftstruct "$skind" 2>&1 | tr '\r\n' '  ')
-    log "  /riftstruct $skind -> ${S1:0:280}"
-    SBLK=$(printf '%s' "$S1" | sed -n 's/.* blocks=\([0-9]*\).*/\1/p' | tail -1)
-    SAIR=$(printf '%s' "$S1" | sed -n 's/.* sub_air=\([0-9]*\).*/\1/p' | tail -1)
-    SHSE=$(printf '%s' "$S1" | sed -n 's/.* houses=\([0-9]*\).*/\1/p' | tail -1)
-    # v0.39.2: камеры проб теперь ДРОБНЫЕ (poseCam считает позицию в системе координат моба),
-    # поэтому в шаблоне есть точка. Раньше `[-0-9]*` не цеплял «689.0», SCAM оставался пустым
-    # и кадры 146/151/152 не снимались вообще — хотя пробы выполнялись.
-    SCAM=$(printf '%s' "$S1" | grep -o 'cam=[-0-9.]*,[-0-9.]*,[-0-9.]*:[-0-9.]*,[-0-9.]*,[-0-9.]*' | tail -1 | sed 's/^cam=//')
-    if [ "${SBLK:-0}" -ge "$min_blk" ] && [ "${SAIR:-0}" -eq 0 ]; then
-      log "  OK   структура $skind построена: blocks=${SBLK}, sub_air=${SAIR:-0}"
-    else
-      log "  FAIL структура $skind: blocks=${SBLK:-0} (ожидалось >=${min_blk}), sub_air=${SAIR:-?}"; FAILS=$((FAILS + 1))
-    fi
-    if [ "$check_houses" = "1" ]; then
-      if [ "${SHSE:-0}" -ge 3 ] && [ "${SHSE:-0}" -le 6 ]; then
-        log "  OK   деревня $skind содержит ровно ${SHSE} небольших домов (лимит <= 6 соблюдён)"
-      else
-        log "  FAIL деревня $skind: houses=${SHSE:-0} (ожидалось 3..6)"; FAILS=$((FAILS + 1))
-      fi
-    fi
-    if [ -n "${SCAM:-}" ]; then
-      lookat $(printf '%s' "$SCAM" | cut -d: -f1 | tr ',' ' ') $(printf '%s' "$SCAM" | cut -d: -f2 | tr ',' ' ') "$settle" "$shot_name"
-    fi
-    RCON effect clear TestPlayer >/dev/null 2>&1 || true
-  }
-
-  # ВАЖНО (v0.38.5): блок Пади и Лиоплевродона стоит ПЕРВЫМ среди тяжёлых проб.
   # ---------- v0.33–v0.36: биом «Мороковая Падь» (кадры мобов снимаются раньше — см. выше) ----------
   echo "== v0.33–v0.36: Пегас, Вендиго, биом Мороковая Падь — пробы =="
   # v0.37.0: туман Пади — проверяем, что в биоме реально включается мгла (fog=true) и вес > 0.05
@@ -1540,6 +1464,7 @@ biome_section() {
     log "  FAIL Мороковая Падь: туман не включён (${MOROK:0:160})"; FAILS=$((FAILS + 1))
   fi
 
+  require_client "перед бором Пади"
   # ---------- v0.38.0: НАСТОЯЩИЙ бор Пади (стволы, сухостой, бревна, колючки, клыки) + спавнеры биома ----------
   echo "== v0.38.0: живой бор Мороковой Пади — натуральные деревья, сухостой, колючки и спавнеры биома =="
   probe_and_shot_struct "v37_morok_natural"          260 "150_v38_morok_natural_forest"            0 0 14
@@ -1574,6 +1499,7 @@ biome_section() {
     log "  FAIL в спавнере биома нет Морока: spawn_morok=${NAT_MORK:-0}"; FAILS=$((FAILS + 1))
   fi
 
+  require_client "перед Лиоплевродоном"
   # ---------- v0.32.0: Лиоплевродон — модель, текстура, поведение в глубокой воде ----------
   echo "== v0.32.0: Лиоплевродон — 12-блочный хищник глубин (модель + текстура + дроп) =="
   probe_and_shot_struct "v32_liopleurodon"           800 "146_v32_liopleurodon_deep_water"         1 0 10
@@ -2016,6 +1942,113 @@ RCON effect clear TestPlayer >/dev/null 2>&1 || true
 RCON effect clear TestPlayer >/dev/null 2>&1 || true
 
 # ---------------------------------------------------------------- итог
+# v0.39.12: БЛОК ХРУСТАЛЬНЫХ РАЗЛОМОВ ПЕРЕНЕСЁН В КОНЕЦ.
+# Три прогона подряд (#384, #385, #419) клиент умирал именно на генерации архипелага —
+# и все пробы, стоявшие после, показывали «провал», хотя их даже не выполняли.
+# Теперь этот блок идёт последним: остальные гейты измеряются до него.
+crystal_section() {
+  # ---------- Новый биом: Хрустальные разломы (riftworld:crystal_rifts, 02_crystal_sanctum.png) ----------
+  require_client "перед генерацией Хрустальных разломов"
+  locate_check riftworld:crystal_rifts crystal_rifts
+  local CL0 CHX CHZ CI1X CI1Z CMX CMZ CL CBIO CISL CBRGW CBRGN CCRYS CMARB CFLORA CWAT CSIZO
+  CL0=$(EL execute at TestPlayer in riftworld:elisar run riftbiome crystal 2>&1 | tr '\r\n' '  ')
+  CHX=$(printf '%s' "$CL0" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\1/p' | tail -1)
+  CHZ=$(printf '%s' "$CL0" | sed -n 's/.* at=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\2/p' | tail -1)
+  CI1X=$(printf '%s' "$CL0" | sed -n 's/.* isl1=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\1/p' | tail -1)
+  CI1Z=$(printf '%s' "$CL0" | sed -n 's/.* isl1=\(-\?[0-9]*\),\(-\?[0-9]*\).*/\2/p' | tail -1)
+  if [ -z "${CHX:-}" ] || [ -z "${CHZ:-}" ]; then
+    log "  FAIL /riftbiome crystal не нашёл архипелаг Хрустальных разломов"; FAILS=$((FAILS + 1))
+  else
+    # Прогружаем чанки святилища, каменного арочного моста и главного кристального острова #1
+    EL tp TestPlayer "$CHX" 102 "$CHZ" >/dev/null 2>&1 || true
+    sleep 5
+    if [ -n "${CI1X:-}" ] && [ -n "${CI1Z:-}" ]; then
+      CMX=$(( (CHX + CI1X) / 2 )); CMZ=$(( (CHZ + CI1Z) / 2 ))
+      EL tp TestPlayer "$CMX" 102 "$CMZ" >/dev/null 2>&1 || true
+      sleep 4
+      EL tp TestPlayer "$CI1X" 106 "$CI1Z" >/dev/null 2>&1 || true
+      sleep 5
+    fi
+    EL tp TestPlayer "$CHX" 98 "$CHZ" >/dev/null 2>&1 || true
+    sleep 4
+    CL=$(EL execute at TestPlayer in riftworld:elisar run riftbiome crystal 2>&1 | tr '\r\n' '  ')
+    log "  /riftbiome crystal -> ${CL:0:360}"
+    CBIO=$(printf '%s' "$CL" | sed -n 's/.* bio=\([^ ]*\).*/\1/p' | tail -1)
+    CISL=$(printf '%s' "$CL" | sed -n 's/.* cislands=\([0-9]*\).*/\1/p' | tail -1)
+    CBRGN=$(printf '%s' "$CL" | sed -n 's/.* cbridges=\([0-9]*\).*/\1/p' | tail -1)
+    CBRGW=$(printf '%s' "$CL" | sed -n 's/.* bridge_walkable=\([0-9]*\).*/\1/p' | tail -1)
+    CCRYS=$(printf '%s' "$CL" | sed -n 's/.* crystal_blocks=\([0-9]*\).*/\1/p' | tail -1)
+    CMARB=$(printf '%s' "$CL" | sed -n 's/.* marble_blocks=\([0-9]*\).*/\1/p' | tail -1)
+    CTURF=$(printf '%s' "$CL" | sed -n 's/.* rift_turf=\([0-9]*\).*/\1/p' | tail -1)
+    CRGRS=$(printf '%s' "$CL" | sed -n 's/.* rift_grass=\([0-9]*\).*/\1/p' | tail -1)
+    CVGRS=$(printf '%s' "$CL" | sed -n 's/.* vanilla_grass=\([0-9]*\).*/\1/p' | tail -1)
+    CI1TR=$(printf '%s' "$CL" | sed -n 's/.* isl1_trees=\([0-9]*\).*/\1/p' | tail -1)
+    CFLORA=$(printf '%s' "$CL" | sed -n 's/.* crystal_flora=\([0-9]*\).*/\1/p' | tail -1)
+    CWAT=$(printf '%s' "$CL" | sed -n 's/.* water=\([0-9]*\).*/\1/p' | tail -1)
+    CSIZO=$(printf '%s' "$CL" | sed -n 's/.* sizo_blocks=\([0-9]*\).*/\1/p' | tail -1)
+
+    if [ "${CBIO:-}" = "riftworld:crystal_rifts" ]; then log "  OK   Хрустальные разломы: биом святилища ${CBIO}"
+    else log "  FAIL Хрустальные разломы: биом ${CBIO:-?} вместо riftworld:crystal_rifts"; FAILS=$((FAILS + 1)); fi
+
+    if [ "${CISL:-0}" -ge 4 ] && [ "${CISL:-0}" -le 8 ] && [ "${CBRGN:-0}" -ge 3 ]; then
+      log "  OK   Хрустальные разломы: архипелаг из ${CISL} островов и ${CBRGN} арочных мостов"
+    else
+      log "  FAIL Хрустальные разломы: островов=${CISL:-0}, мостов=${CBRGN:-0}"; FAILS=$((FAILS + 1))
+    fi
+
+    if [ "${CBRGW:-0}" -eq 1 ]; then
+      log "  OK   Хрустальные разломы: каменный арочный мост непрерывен и полностью проходим пешком"
+    else
+      log "  FAIL Хрустальные разломы: мост между островами имеет разрыв (bridge_walkable=${CBRGW:-0})"; FAILS=$((FAILS + 1))
+    fi
+
+    if [ "${CCRYS:-0}" -ge 450 ] && [ "${CMARB:-0}" -ge 1500 ] && [ "${CWAT:-0}" -ge 40 ]; then
+      log "  OK   Хрустальные разломы: многоблочные кристаллы на всех островах (${CCRYS}), мрамор/сланец (${CMARB}), чаши/водопады (${CWAT})"
+    else
+      log "  FAIL Хрустальные разломы: кристаллов=${CCRYS:-0} мрамора=${CMARB:-0} воды=${CWAT:-0}"; FAILS=$((FAILS + 1))
+    fi
+
+    if [ "${CTURF:-0}" -ge 250 ] && [ "${CRGRS:-0}" -ge 40 ] && [ "${CVGRS:-1}" -eq 0 ] && [ "${CI1TR:-1}" -eq 0 ]; then
+      log "  OK   Хрустальные разломы: собственный шалфейный дёрн (${CTURF}) и трава разлома (${CRGRS}), ванильной травы=0, деревьев на кристальном острове=0"
+    else
+      log "  FAIL Хрустальные разломы: rift_turf=${CTURF:-0} rift_grass=${CRGRS:-0} vanilla_grass=${CVGRS:-?} isl1_trees=${CI1TR:-?}"; FAILS=$((FAILS + 1))
+    fi
+
+    if [ "${CSIZO:-1}" -eq 0 ]; then
+      log "  OK   Хрустальные разломы: чужих деревьев сизо нет (sizo_blocks=0)"
+    else
+      log "  FAIL Хрустальные разломы: найдены блоки сизо (${CSIZO})"; FAILS=$((FAILS + 1))
+    fi
+
+    if [ "${WITH_DT:-0}" = "1" ]; then
+      local CDTW CDTN
+      CDTW=$(EL execute at TestPlayer in riftworld:elisar run riftdtwild 44 2>&1 | tr '\r\n' '  ')
+      log "  /riftdtwild (хрустальные разломы, мини-бонсай серебрица) -> ${CDTW:0:240}"
+      CDTN=$(printf '%s' "$CDTW" | sed -n 's/.* dt=\([0-9]*\).*/\1/p' | tail -1)
+      if [ "${CDTN:-0}" -ge 16 ] && [ "${CDTN:-0}" -le 260 ] && ! printf '%s' "$CDTW" | grep -q 'ambra_'; then
+        log "  OK   Хрустальные разломы: миниатюрные редкие деревца DT вдоль аллеи (${CDTN} блоков, без лесов и без ambra)"
+      else
+        log "  FAIL Хрустальные разломы: проблемы с мини-бонсай DT (dt=${CDTN:-0}, raw=${CDTW:0:120})"; FAILS=$((FAILS + 1))
+      fi
+    fi
+
+    local CV1 CV2 CV3 CV4 CV5
+    CV1=$(printf '%s' "$CL" | grep -o 'cview1=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^cview1=//')
+    CV2=$(printf '%s' "$CL" | grep -o 'cview2=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^cview2=//')
+    CV3=$(printf '%s' "$CL" | grep -o 'cview3=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^cview3=//')
+    CV4=$(printf '%s' "$CL" | grep -o 'cview4=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^cview4=//')
+    CV5=$(printf '%s' "$CL" | grep -o 'cview5=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^cview5=//')
+    [ -n "${CV1:-}" ] && lookat $(printf '%s' "$CV1" | cut -d: -f1 | tr ',' ' ') $(printf '%s' "$CV1" | cut -d: -f2 | tr ',' ' ') 18 "70_crystal_sanctum_overview"
+    [ -n "${CV2:-}" ] && lookat $(printf '%s' "$CV2" | cut -d: -f1 | tr ',' ' ') $(printf '%s' "$CV2" | cut -d: -f2 | tr ',' ' ') 16 "71_crystal_bridge_passage"
+    [ -n "${CV3:-}" ] && lookat $(printf '%s' "$CV3" | cut -d: -f1 | tr ',' ' ') $(printf '%s' "$CV3" | cut -d: -f2 | tr ',' ' ') 16 "72_crystal_giant_spire_pool"
+    [ -n "${CV4:-}" ] && lookat $(printf '%s' "$CV4" | cut -d: -f1 | tr ',' ' ') $(printf '%s' "$CV4" | cut -d: -f2 | tr ',' ' ') 16 "73_crystal_astrolabe_avenue"
+    [ -n "${CV5:-}" ] && lookat $(printf '%s' "$CV5" | cut -d: -f1 | tr ',' ' ') $(printf '%s' "$CV5" | cut -d: -f2 | tr ',' ' ') 16 "74_crystal_archipelago_falls"
+  fi
+
+  # ВАЖНО (v0.38.5): блок Пади и Лиоплевродона стоит ПЕРВЫМ среди тяжёлых проб.
+}
+crystal_section || log "  FAIL секция Хрустальных разломов упала с кодом $?"
+
 echo "== диагностика положения =="
 log "  игрок: $(EL data get entity TestPlayer Pos 2>&1 | head -1)"
 log "  рыбы:  $(EL data get entity @e[type=riftworld:sea_fish,limit=1] Pos 2>&1 | head -1)"
