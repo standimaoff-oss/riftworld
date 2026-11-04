@@ -3864,7 +3864,9 @@ public final class SeaProbeCommand {
             long oldTime = -1;
             int alive = 0;
             boolean spawned = false;
-            if (level instanceof ServerLevel sl) {
+            {
+                // тут level уже ServerLevel (метод run принимает его), поэтому без instanceof
+                ServerLevel sl = level;
                 oldTime = sl.getDayTime();
                 sl.setDayTime(18000L);                 // глубокая ночь: глаза должны светиться
                 sl.getEntitiesOfClass(ru.aiforge.riftworld.entity.MorokEntity.class,
@@ -3912,7 +3914,7 @@ public final class SeaProbeCommand {
                     + " cam=" + r3(pc[0]) + "," + r3(pc[1]) + "," + r3(pc[2])
                     + ":" + r3(pc[3]) + "," + r3(pc[4]) + "," + r3(pc[5]);
             src.sendSuccess(() -> Component.literal(line), false);
-            if (level instanceof ServerLevel sl2 && oldTime >= 0) sl2.setDayTime(oldTime);
+            if (oldTime >= 0) level.setDayTime(oldTime);   // возвращаем время: ночь нужна была только для кадра
             return 1;
         }
 
