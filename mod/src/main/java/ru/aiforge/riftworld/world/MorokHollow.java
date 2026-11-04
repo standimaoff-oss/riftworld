@@ -239,30 +239,57 @@ public final class MorokHollow {
      *
      * @return {@code {x, y, z}} или {@code null}
      */
+    /** Диагностика поиска точки для пробы (печатается в отчёте CI). */
+    public static volatile String LAST_SEARCH = "not_run";
+
     public static int[] landSpot(ServerLevel level, int nearX, int nearZ, int cellRadius) {
         CityPlan plan = CityPlan.get();
         Object[] hit = findLandRegion(nearX, nearZ, cellRadius);
-        if (hit == null) return null;
-        int bx = (Integer) hit[0], bz = (Integer) hit[1];
-        // вокруг найденной точки ищем уже «одетую» мерзлоту Пади: тогда кадр покажет живой биом
-        for (int r = 0; r <= 32; r += 16) {
-            for (int n = (r == 0 ? 1 : 8); n > 0; --n) {
-                double a = n * Math.PI / 4.0;
-                int x = bx + (int) Math.round(r * Math.cos(a));
-                int z = bz + (int) Math.round(r * Math.sin(a));
-                if (!landAt(x + 0.5, z + 0.5)) continue;
-                level.getChunk(x >> 4, z >> 4);
+        if (hit == null) {
+            LAST_SEARCH = "no_region";
+            return null;
+        }
+        Region rg = (Region) hit[2];
+        int pts = 0, land = 0, above = 0, rime = 0, morok = 0, chunks = 0;
+        int[] found = null, morokOnly = null;
+        // сплошная решётка по диску региона: 16 блоков — это ровно чанк, поэтому каждый
+        // форсируем один раз; ищем колонку, где РЕАЛЬНО биом Пади и живая поверхность
+        for (int r = 0; r <= rg.R && found == null; r += 16) {
+            int steps = (r == 0) ? 1 : Math.max(8, (int) (2 * Math.PI * r / 16.0));
+            for (int i = 0; i < steps && found == null; ++i) {
+                double a = i * 2 * Math.PI / steps;
+                int x = rg.cx + (int) Math.round(r * Math.cos(a));
+                int z = rg.cz + (int) Math.round(r * Math.sin(a));
+                ++pts;
+                if (weight(x + 0.5, z + 0.5) < 0.55) continue;
+                if (landAt(x + 0.5, z + 0.5)) ++land;
+                if (chunks >= 60) continue;
+                if (!level.hasChunk(x >> 4, z >> 4)) {
+                    level.getChunk(x >> 4, z >> 4);
+                    ++chunks;
+                }
                 int top = level.getHeight(
                         net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
                 if (top <= plan.ocean + 1) continue;
+                ++above;
                 BlockState st = level.getBlockState(new BlockPos(x, top - 1, z));
-                if (st.is(MorokBlocks.RIME_GRASS.get()) || st.is(MorokBlocks.PALE_MOSS_BLOCK.get())
-                        || st.is(MorokBlocks.FROZEN_SOIL.get())) {
-                    return new int[]{x, top, z};
-                }
+                boolean dressed = st.is(MorokBlocks.RIME_GRASS.get()) || st.is(MorokBlocks.PALE_MOSS_BLOCK.get())
+                        || st.is(MorokBlocks.FROZEN_SOIL.get());
+                if (dressed) ++rime;
+                boolean isMorok = level.getBiome(new BlockPos(x, top, z)).unwrapKey()
+                        .map(key -> key.location().equals(new net.minecraft.resources.ResourceLocation(
+                                "riftworld", "morok_hollow")))
+                        .orElse(false);
+                if (isMorok) ++morok;
+                if (isMorok && morokOnly == null) morokOnly = new int[]{x, top, z};
+                if (dressed && isMorok) found = new int[]{x, top, z};
             }
         }
-        return null;
+        if (found == null) found = morokOnly;
+        LAST_SEARCH = "pts=" + pts + " land=" + land + " above=" + above
+                + " rime=" + rime + " morok=" + morok + " chunks=" + chunks
+                + " region=" + rg.cx + "," + rg.cz + " R=" + rg.R;
+        return found;
     }
 
     /**

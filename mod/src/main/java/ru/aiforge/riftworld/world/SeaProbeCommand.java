@@ -313,6 +313,33 @@ public final class SeaProbeCommand {
      * <p>Нужно, чтобы проба доказывала, что в сборке лежит именно пересобранная модель, а не
      * печатала захардкоженное «53» (так было в v0.37.0: в гео уже 64 кубоида, в отчёте — 53).
      */
+    /**
+     * Камера в системе координат животного: {@code {camX, camY, camZ, tgtX, tgtY, tgtZ}}.
+     *
+     * <p>Раньше кадры Лиоплевродона снимались «на глаз» относительно центра площадки — и на
+     * кадре 151 крупным планом оказывался хвост, потому что нос смотрит в −X, а камера стояла
+     * с +Z. Здесь смещение задаётся вдоль носа ({@code along}) и вбок ({@code side}).
+     *
+     * @param yaw    рыскание животного (градусы MC: 0 = +Z, 90 = −X)
+     * @param along  сколько блоков вперёд от центра (плюс — к носу)
+     * @param side   сколько блоков вправо от носа
+     * @param up     сколько блоков вверх
+     */
+    private static double[] poseCam(double cx, double cy, double cz, float yaw,
+                                    double along, double side, double up,
+                                    double distAlong, double distSide, double distUp) {
+        double rad = Math.toRadians(yaw);
+        double fx = -Math.sin(rad), fz = Math.cos(rad);      // вперёд (к носу)
+        double rx = Math.cos(rad), rz = Math.sin(rad);       // вправо
+        double gx = cx + fx * along + rx * side;
+        double gz = cz + fz * along + rz * side;
+        double gy = cy + up;
+        double camX = gx + fx * distAlong + rx * distSide;
+        double camZ = gz + fz * distAlong + rz * distSide;
+        double camY = gy + distUp;
+        return new double[]{camX, camY, camZ, gx, gy, gz};
+    }
+
     private static int[] geoStats(String name) {
         // 1) сначала читаем НАПРЯМУЮ из jar мода: ServerResourceManager не отдаёт
         //    нестандартные каталоги вроде assets/riftworld/geo/ (в прогоне #370 это дало -1),
@@ -346,6 +373,11 @@ public final class SeaProbeCommand {
         } catch (Throwable ignored) {
         }
         return new int[]{-1, -1, -1};
+    }
+
+    /** Число с тремя знаками: камеры теперь дробные (Vec3, а не целые блоки). */
+    private static String r3(double v) {
+        return String.valueOf(Math.round(v * 1000.0) / 1000.0);
     }
 
     /** {@code {кубоиды, кости, размер атласа}} из открытого geo-JSON. */
@@ -3701,11 +3733,15 @@ public final class SeaProbeCommand {
             }
             int[] geo = geoStats("liopleurodon");
             int metric = alive > 0 ? 900 : 0;
+            // v0.38.4: камера — три четверти сбоку-спереди, дистанция под 8.6-блочную тушу
+            double[] pc = poseCam(px + 0.5, py + 5.0, pz + 0.5, 90.0F,
+                    3.0, 0, 0.4, 4.5, 13.0, 4.0);
             String line = "riftstruct kind=v32_liopleurodon at=" + px + "," + (py + 3) + "," + pz
                     + " alive=" + alive + " hp=90 drop_tooth=true drop_scale=true"
                     + " model_boxes=" + geo[0] + " bones=" + geo[1] + " atlas=" + geo[2]
                     + " blocks=" + metric + " sub_air=0"
-                    + " cam=" + (px + 4) + "," + (py + 9) + "," + (pz + 13) + ":" + px + "," + (py + 5) + "," + pz;
+                    + " cam=" + r3(pc[0]) + "," + r3(pc[1]) + "," + r3(pc[2])
+                    + ":" + r3(pc[3]) + "," + r3(pc[4]) + "," + r3(pc[5]);
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
         }
@@ -3744,10 +3780,14 @@ public final class SeaProbeCommand {
                 if (e.isAlive()) ++alive;
             }
             int[] geo = geoStats("liopleurodon");
+            // v0.38.4: прицел — в голову (нос смотрит в −X), камера спереди-сбоку в 6.5 блоках
+            double[] pc = poseCam(px + 0.5, py + 4.6, pz + 0.5, 90.0F,
+                    3.4, 0, 0.5, 3.0, 3.4, 1.2);
             String line = "riftstruct kind=v38_liopleurodon_jaws at=" + px + "," + (py + 4) + "," + pz
                     + " alive=" + alive + " model_boxes=" + geo[0] + " bones=" + geo[1] + " atlas=" + geo[2]
                     + " blocks=" + (alive > 0 ? 900 : 0) + " sub_air=0"
-                    + " cam=" + (px - 9) + "," + (py + 6) + "," + (pz + 7) + ":" + (px - 6) + "," + (py + 5) + "," + pz;
+                    + " cam=" + r3(pc[0]) + "," + r3(pc[1]) + "," + r3(pc[2])
+                    + ":" + r3(pc[3]) + "," + r3(pc[4]) + "," + r3(pc[5]);
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
         }
@@ -3918,6 +3958,7 @@ public final class SeaProbeCommand {
             String line = "riftstruct kind=v37_morok_natural at=" + px + "," + (ground + 2) + "," + pz
                     + " natural=" + natural + " biome=" + biome
                     + " regions=" + scan[0] + " land_regions=" + scan[1]
+                    + " search=[" + ru.aiforge.riftworld.world.MorokHollow.LAST_SEARCH.replace(' ', ',') + "]"
                     + " trees=" + trunks + " logs=" + logs + " leaves=" + leaves
                     + " brambles=" + brambles + " fangs=" + fangs + " carpets=" + carpets
                     + " rime=" + rime + " soil=" + soil
