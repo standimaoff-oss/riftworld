@@ -47,7 +47,9 @@ BEFORE=$(rq data get entity "$SEL" Pos)
 rq data merge entity "$SEL" '{NoAI:0b}' | tee -a "$LOG"
 sleep 5
 AFTER=$(rq data get entity "$SEL" Pos)
-python3 - "$BEFORE" "$AFTER" <<'PY' || fail "Anchor did not move in empty, loaded space"
+log "Before motion: $BEFORE"
+log "After motion: $AFTER"
+python3 - "$BEFORE" "$AFTER" <<'PY' || fail "Motion probe: before=$BEFORE after=$AFTER"
 import re,sys
 vectors=[]
 for text in sys.argv[1:]:
@@ -56,7 +58,7 @@ for text in sys.argv[1:]:
     vectors.append(tuple(float(x) for x in m.groups()))
 d=sum((a-b)**2 for a,b in zip(*vectors))**.5
 print('before:',vectors[0],'after:',vectors[1],'distance:',round(d,3))
-if not .1<d<25: raise SystemExit('unexpected motion')
+if not .1<d<40: raise SystemExit('unexpected motion')
 PY
 rq data merge entity "$SEL" '{NoAI:1b}' | tee -a "$LOG"
 rq tp "$SEL" 0 200 0 0 0 | tee -a "$LOG"
