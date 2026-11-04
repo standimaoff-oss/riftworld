@@ -8,6 +8,8 @@ public final class SeaWorldgenParityProbe {
         if (!value) throw new AssertionError(label + " at " + x + "," + y + "," + z);
     }
     public static void main(String[] args) {
+        net.minecraft.SharedConstants.tryDetectVersion();
+        net.minecraft.server.Bootstrap.bootStrap();
         Random random = new Random(0x5ea40L);
         int sea = CityPlan.get().ocean, caves = 0, shafts = 0, pockets = 0;
         for (int sample = 0; sample < 420; ++sample) {

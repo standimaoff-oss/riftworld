@@ -14,6 +14,8 @@ public final class WorldgenConcurrencyProbe {
     private record Result(WildIslands.Cell cell, CrystalRifts.Region region, BlacktideCitadel.Site site) {}
 
     public static void main(String[] args) throws Exception {
+        net.minecraft.SharedConstants.tryDetectVersion();
+        net.minecraft.server.Bootstrap.bootStrap();
         ExecutorService pool = Executors.newFixedThreadPool(WORKERS, r -> {
             Thread t = new Thread(r, "worldgen-race-probe");
             t.setDaemon(true); // report a deadlock as a failed task, not a stuck CI job
