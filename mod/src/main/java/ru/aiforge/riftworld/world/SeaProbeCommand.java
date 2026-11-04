@@ -3954,8 +3954,9 @@ public final class SeaProbeCommand {
                 }
             } catch (Throwable ignored) {
             }
-            // v0.39.10: кадр 152 в #404 снимался со спины — старая схема ставила камеру сбоку-сзади.
-            double[] pc = poseCam(px + 0.5, ground + 1.2, pz + 0.5, 205.0F, 0.0, 0.0, 0.0, 3.2, 2.8, 1.0);
+            // v0.39.14: кадр 152 в #422 обрезал голову справа — объектив стоял слишком близко (5.2 блока
+            // по диагонали) и целился в грудь. Отодвигаем и целимся в голову: рога/череп Морока на 2.2 блока.
+            double[] pc = poseCam(px + 0.5, ground + 1.9, pz + 0.5, 205.0F, 0.0, 0.0, 0.0, 5.2, 3.4, 1.2);
             boolean eyeGlow = eyes[0] > 0 && eyes[2] > 0;
             int metric = (alive > 0 && geo[0] >= 40 && eyeGlow) ? 900 : 0;
             String line = "riftstruct kind=v39_morok at=" + px + "," + (ground + 1) + "," + pz
