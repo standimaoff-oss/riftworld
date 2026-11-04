@@ -62,9 +62,28 @@ public final class MorokHollow {
             if (sg != null && Math.hypot(cx - sg.hub.cx, cz - sg.hub.cz) < R + sg.hub.maxReach() + 60) continue;
             MistKeep.Region mk = MistKeep.regionAt(cx, cz);
             if (mk != null && Math.hypot(cx - mk.cx, cz - mk.cz) < R + mk.Rr + 80) continue;
+            // v0.38.1: регион ОБЯЗАН лежать на суше. До этого Падь могла целиком попасть на
+            // открытый океан: биом не включался (нужен остров), лес не рос, а проба строила
+            // себе платформу прямо на воде — именно это и было видно на кадрах 149/150.
+            if (!hasLand(cx, cz, R)) continue;
             return new Region(cx, cz, R, FIXED ^ ((long) cx * 1000003L + (long) cz * 7867L));
         }
         return null;
+    }
+
+    /** Есть ли под регионом суша: не меньше половины пробных колонок должны быть островом. */
+    private static boolean hasLand(int cx, int cz, int R) {
+        CityPlan plan = CityPlan.get();
+        int hits = 0, total = 0;
+        for (int i = 0; i < 32; ++i) {
+            double a = i * Math.PI / 16.0;
+            double rr = R * (0.30 + 0.55 * (((i * 37) % 11) / 10.0));
+            int x = (int) Math.round(cx + rr * Math.cos(a));
+            int z = (int) Math.round(cz + rr * Math.sin(a));
+            ++total;
+            if (plan.islandAt(x + 0.5, z + 0.5) != null) ++hits;
+        }
+        return total > 0 && hits * 100 / total >= 45;
     }
 
     public static Region regionAt(double x, double z) {
@@ -144,39 +163,49 @@ public final class MorokHollow {
      * @return {@code {x, y, z}} или {@code null}
      */
     public static int[] landSpot(ServerLevel level, int nearX, int nearZ, int cellRadius) {
+        // 1) ищем РЕГИОН Пади на сетке SUPER (соседние ячейки): регион может быть и за 5 км
+        int scx = Math.floorDiv(nearX, SUPER);
+        int scz = Math.floorDiv(nearZ, SUPER);
+        Region best = null;
+        double bestD = Double.MAX_VALUE;
+        for (int dx = -cellRadius; dx <= cellRadius; ++dx) {
+            for (int dz = -cellRadius; dz <= cellRadius; ++dz) {
+                Region rg = region(scx + dx, scz + dz);
+                if (rg == null) continue;
+                double d = Math.hypot(rg.cx - nearX, rg.cz - nearZ);
+                if (d < bestD) {
+                    bestD = d;
+                    best = rg;
+                }
+            }
+        }
+        if (best == null) return null;
+        // 2) внутри региона ищем НАСТОЯЩУЮ сушу: остров, вес >= 0.55, поверхность уже в мерзлоте
         CityPlan plan = CityPlan.get();
-        int bestX = 0, bestY = 0, bestZ = 0;
-        int fbX = Integer.MIN_VALUE, fbY = 0, fbZ = 0;   // запасная точка на кромке биома
-        double bestW = -1.0;
-        for (int cx = -cellRadius; cx <= cellRadius; ++cx) {
-            for (int cz = -cellRadius; cz <= cellRadius; ++cz) {
-                int x = nearX + cx * 24, z = nearZ + cz * 24;
-                double w = weight(x + 0.5, z + 0.5);
-                if (w < 0.55 || w <= bestW) continue;
+        int fbX = Integer.MIN_VALUE, fbY = 0, fbZ = 0;
+
+        for (int r = 0; r <= best.R + 40; r += 12) {
+            for (int i = 0; i < 24; ++i) {
+                double a = i * Math.PI / 12.0;
+                int x = best.cx + (int) Math.round(r * Math.cos(a));
+                int z = best.cz + (int) Math.round(r * Math.sin(a));
+                if (weight(x + 0.5, z + 0.5) < 0.55) continue;
                 if (plan.islandAt(x + 0.5, z + 0.5) == null) continue;
                 level.getChunk(x >> 4, z >> 4);
-                int top = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+                int top = level.getHeight(
+                        net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
                 if (top <= plan.ocean + 1) continue;
                 BlockState st = level.getBlockState(new BlockPos(x, top - 1, z));
                 boolean dressed = st.is(MorokBlocks.RIME_GRASS.get()) || st.is(MorokBlocks.PALE_MOSS_BLOCK.get())
                         || st.is(MorokBlocks.FROZEN_SOIL.get());
-                if (!dressed) {
-                    // кромка биома: мерзлота ещё не легла (её красит только при morok=true).
-                    // Держим такую точку как запасную, но продолжаем искать «настоящую» чащу.
-                    if (fbX == Integer.MIN_VALUE) {
-                        fbX = x;
-                        fbY = top;
-                        fbZ = z;
-                    }
-                    continue;
+                if (dressed) return new int[]{x, top, z};
+                if (fbX == Integer.MIN_VALUE) {
+                    fbX = x;
+                    fbY = top;
+                    fbZ = z;
                 }
-                bestW = w;
-                bestX = x;
-                bestY = top;
-                bestZ = z;
             }
         }
-        if (bestW >= 0) return new int[]{bestX, bestY, bestZ};
         return fbX == Integer.MIN_VALUE ? null : new int[]{fbX, fbY, fbZ};
     }
 

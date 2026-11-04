@@ -2117,15 +2117,17 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                             for (int y = 1; y <= hh; ++y) chunk.setBlockState(mp.set(cx, top + y, cz), log, false);
                         }
                     }
-                    for (int layer = 0; layer < 4; ++layer) {
-                        int r = 4 - layer / 2;
-                        int yy = top + hh - layer * 3;
+                    // крона-конус: ярусы через 2 блока, радиус 4 -> 1, рваная кромка
+                    int[] radii = {4, 4, 3, 3, 2, 2, 1};
+                    for (int layer = 0; layer < radii.length; ++layer) {
+                        int r = radii[layer];
+                        int yy = top + hh - (radii.length - 1 - layer) * 2;
                         for (int lx = -r; lx <= r; ++lx) {
                             for (int lz = -r; lz <= r; ++lz) {
-                                if (Math.abs(lx) + Math.abs(lz) > r + 2) continue;
+                                if (lx * lx + lz * lz > r * r + r) continue;
                                 int cx = x + lx, cz = z + lz;
                                 if (cx < x0 || cx > x0 + 15 || cz < z0 || cz > z0 + 15) continue;
-                                if (hash(cx * 3, cz * 5, 917 + layer) < 0.28) continue;
+                                if (hash(cx * 3, cz * 5, 917 + layer) < 0.18) continue;
                                 BlockPos p = mp.set(cx, yy, cz);
                                 if (chunk.getBlockState(p).isAir()) chunk.setBlockState(p, leaves, false);
                             }
@@ -2137,21 +2139,23 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                     int hh = MorokHollow.treeHeight(x, z);
                     for (int y = 1; y <= hh; ++y) chunk.setBlockState(mp.set(x, top + y, z), log, false);
                     int base = top + hh;
-                    for (int layer = 0; layer < 4; ++layer) {
-                        int r = 3 - layer / 2;
-                        int yy = base - layer * 2;
+                    // крона-конус: ярусы через 2 блока, радиус 3 -> 1 (а не одна плоская плита)
+                    int[] radii = {3, 3, 2, 2, 1};
+                    for (int layer = 0; layer < radii.length; ++layer) {
+                        int r = radii[layer];
+                        int yy = base - (radii.length - 1 - layer) * 2;
                         for (int lx = -r; lx <= r; ++lx) {
                             for (int lz = -r; lz <= r; ++lz) {
-                                if (Math.abs(lx) + Math.abs(lz) > r + 1) continue;
+                                if (lx * lx + lz * lz > r * r + r) continue;
                                 int cx = x + lx, cz = z + lz;
                                 if (cx < x0 || cx > x0 + 15 || cz < z0 || cz > z0 + 15) continue;
-                                if (hash(cx, cz, 918 + layer) < 0.22) continue;
+                                if (hash(cx, cz, 918 + layer) < 0.16) continue;
                                 BlockPos p = mp.set(cx, yy, cz);
                                 if (chunk.getBlockState(p).isAir()) chunk.setBlockState(p, leaves, false);
                             }
                         }
                     }
-                    chunk.setBlockState(mp.set(x, top + hh + 1, z), leaves, false);
+                    chunk.setBlockState(mp.set(x, top + hh + 1, z), leaves, false);   // макушка
                     continue;
                 }
                 if (snag) {

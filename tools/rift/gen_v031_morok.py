@@ -178,7 +178,7 @@ def rime_specks(pixels, seed=11, density=0.10, color="#DCE8E6"):
 BARK = [(0.0, "#14151A"), (0.25, "#3A3B3E"), (0.55, "#B9B2A4"), (0.80, "#D9D2C4"), (1.0, "#EFE9DC")]
 BARK_STRIPPED = [(0.0, "#8C8579"), (0.5, "#CFC7B7"), (1.0, "#E8E1D2")]
 PLANKS = [(0.0, "#8E887A"), (0.45, "#BDB5A5"), (0.75, "#D3CBBA"), (1.0, "#E4DDCE")]
-NEEDLES = [(0.0, "#0B120F"), (0.5, "#16211C"), (0.85, "#243430"), (1.0, "#33453F")]
+NEEDLES = [(0.0, "#141C18"), (0.45, "#1F2B25"), (0.80, "#2E4038"), (1.0, "#43584C")]
 SOIL = [(0.0, "#14161A"), (0.5, "#22262B"), (0.85, "#333941"), (1.0, "#4A5058")]
 GRASS_TOP = [(0.0, "#4E5A54"), (0.4, "#7E8F86"), (0.8, "#9FAFA6"), (1.0, "#B9C4BC")]
 MOSS = [(0.0, "#5C6A62"), (0.5, "#9FAFA6"), (0.85, "#B7C4BB"), (1.0, "#CBD5CC")]
@@ -193,7 +193,9 @@ TEXTURE_JOBS = [
     ("stripped_sizo_log.png", "stripped_morok_log.png", BARK_STRIPPED, dict(cracks=False)),
     ("stripped_sizo_log_top.png", "stripped_morok_log_top.png", PLANKS, dict()),
     ("sizo_planks.png", "morok_planks.png", PLANKS, dict()),
-    ("sizo_leaves.png", "morok_leaves.png", NEEDLES, dict(rime=True, rime_density=0.30)),
+    # v0.38.1: хвоя БЕЗ дырок. Исходник ванильной листвы на 31% прозрачный, и в тумане
+    # сквозь дырки светило белое небо — на кадре это выглядело «чёрно-белым шумом».
+    ("sizo_leaves.png", "morok_leaves.png", NEEDLES, dict(solid=True, rime=True, rime_density=0.05)),
     ("celadon_fern.png", "morok_sapling.png", PLANKS, dict()),
     ("sizo_door_bottom.png", "morok_door_bottom.png", PLANKS, dict()),
     ("sizo_door_top.png", "morok_door_top.png", PLANKS, dict()),
@@ -226,6 +228,9 @@ def gen_textures():
         px = recolor(read_png(src), stops)
         if opts.get("cracks"):
             px = add_cracks(px, seed=hash(dst_name) & 0x7FFF, density=0.45)
+        if opts.get("solid"):
+            # плотная хвоя: альфа 255 у всех пикселей (иначе cutout-листва «дырявит» крону)
+            px = [[(r, g, b, 255) for (r, g, b, a) in row] for row in px]
         if opts.get("rime"):
             px = rime_specks(px, density=opts.get("rime_density", 0.10), seed=(hash(dst_name) >> 3) & 0x7FFF)
         write_png(TEX / dst_name, px)

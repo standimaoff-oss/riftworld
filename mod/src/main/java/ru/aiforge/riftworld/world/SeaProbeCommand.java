@@ -314,23 +314,52 @@ public final class SeaProbeCommand {
      * печатала захардкоженное «53» (так было в v0.37.0: в гео уже 64 кубоида, в отчёте — 53).
      */
     private static int[] geoStats(String name) {
+        // 1) сначала читаем НАПРЯМУЮ из jar мода: ServerResourceManager не отдаёт
+        //    нестандартные каталоги вроде assets/riftworld/geo/ (в прогоне #370 это дало -1),
+        //    а путь внутри ModFile находится всегда и на клиенте, и на сервере.
         try {
-            var loc = new net.minecraft.resources.ResourceLocation("riftworld", "geo/" + name + ".json");
-            var res = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer()
-                    .getResourceManager().getResource(loc);
-            if (res.isEmpty()) return new int[]{-1, -1, -1};
-            try (var r = new java.io.InputStreamReader(res.get().open(), java.nio.charset.StandardCharsets.UTF_8)) {
-                var o = com.google.gson.JsonParser.parseReader(r).getAsJsonObject();
-                int boxes = 0;
-                var bones = o.getAsJsonArray("bones");
-                for (var b : bones) {
-                    if (b.getAsJsonObject().has("cubes")) {
-                        boxes += b.getAsJsonObject().getAsJsonArray("cubes").size();
+            var modFile = net.minecraftforge.fml.ModList.get().getModFileById("riftworld");
+            if (modFile != null) {
+                var path = modFile.getFile().findResource("assets", "riftworld", "geo", name + ".json");
+                if (path != null) {
+                    try (var r = new java.io.InputStreamReader(java.nio.file.Files.newInputStream(path),
+                            java.nio.charset.StandardCharsets.UTF_8)) {
+                        return parseGeo(r);
                     }
                 }
-                int atlas = o.has("texture_width") ? o.get("texture_width").getAsInt() : 0;
-                return new int[]{boxes, bones.size(), atlas};
             }
+        } catch (Throwable ignored) {
+        }
+        // 2) запасной путь — через менеджер ресурсов сервера
+        try {
+            var srv = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+            if (srv != null) {
+                var loc = new net.minecraft.resources.ResourceLocation("riftworld", "geo/" + name + ".json");
+                var res = srv.getResourceManager().getResource(loc);
+                if (res.isPresent()) {
+                    try (var r = new java.io.InputStreamReader(res.get().open(),
+                            java.nio.charset.StandardCharsets.UTF_8)) {
+                        return parseGeo(r);
+                    }
+                }
+            }
+        } catch (Throwable ignored) {
+        }
+        return new int[]{-1, -1, -1};
+    }
+
+    /** {@code {кубоиды, кости, размер атласа}} из открытого geo-JSON. */
+    private static int[] parseGeo(java.io.Reader reader) {
+        try {
+            var o = com.google.gson.JsonParser.parseReader(reader).getAsJsonObject();
+            int boxes = 0;
+            var bones = o.getAsJsonArray("bones");
+            for (var b : bones) {
+                var bo = b.getAsJsonObject();
+                if (bo.has("cubes")) boxes += bo.getAsJsonArray("cubes").size();
+            }
+            int atlas = o.has("texture_width") ? o.get("texture_width").getAsInt() : 0;
+            return new int[]{boxes, bones.size(), atlas};
         } catch (Throwable t) {
             return new int[]{-1, -1, -1};
         }
@@ -3641,19 +3670,30 @@ public final class SeaProbeCommand {
                                 ru.aiforge.riftworld.registry.ElisarBlocks.CAVE_GLOW.get().defaultBlockState(), 2);
                     }
                 }
-                // одно животное по центру — боком к камере, второе в глубине для масштаба
+                // одно животное по центру — боком к камере, второе в глубине для масштаба.
+                // v0.38.1: сначала убираем всех прежних — иначе звери предыдущих кадров
+                // сваливались в кучу и на снимке получалась «гора ящиков».
+                level.getEntitiesOfClass(ru.aiforge.riftworld.entity.LiopleurodonEntity.class,
+                        new net.minecraft.world.phys.AABB(px - 40, py - 12, pz - 30, px + 40, py + 20, pz + 30))
+                        .forEach(net.minecraft.world.entity.Entity::discard);
                 var lio = ru.aiforge.riftworld.entity.LiopleurodonEntity.spawn(
                         (ServerLevel) level, new net.minecraft.world.phys.Vec3(px + 0.5, py + 5.0, pz + 0.5));
                 lio.setNoAi(true);
                 lio.setSilent(true);
+                lio.setNoGravity(true);
+                lio.setXRot(0.0F);
                 lio.setYRot(90.0F);
                 lio.yBodyRot = 90.0F;
+                lio.yHeadRot = 90.0F;
                 var lio2 = ru.aiforge.riftworld.entity.LiopleurodonEntity.spawn(
                         (ServerLevel) level, new net.minecraft.world.phys.Vec3(px - 13.5, py + 8.0, pz - 8.5));
                 lio2.setNoAi(true);
                 lio2.setSilent(true);
+                lio2.setNoGravity(true);
+                lio2.setXRot(0.0F);
                 lio2.setYRot(115.0F);
                 lio2.yBodyRot = 115.0F;
+                lio2.yHeadRot = 115.0F;
             }
             for (var e : level.getEntitiesOfClass(ru.aiforge.riftworld.entity.LiopleurodonEntity.class,
                     new net.minecraft.world.phys.AABB(px - 30, py - 8, pz - 20, px + 30, py + 16, pz + 20))) {
@@ -3665,7 +3705,7 @@ public final class SeaProbeCommand {
                     + " alive=" + alive + " hp=90 drop_tooth=true drop_scale=true"
                     + " model_boxes=" + geo[0] + " bones=" + geo[1] + " atlas=" + geo[2]
                     + " blocks=" + metric + " sub_air=0"
-                    + " cam=" + (px + 9) + "," + (py + 7) + "," + (pz + 5) + ":" + px + "," + (py + 5) + "," + pz;
+                    + " cam=" + (px + 4) + "," + (py + 9) + "," + (pz + 13) + ":" + px + "," + (py + 5) + "," + pz;
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
         }
@@ -3686,12 +3726,18 @@ public final class SeaProbeCommand {
                                 ru.aiforge.riftworld.registry.ElisarBlocks.SEABED.get().defaultBlockState(), 2);
                     }
                 }
+                level.getEntitiesOfClass(ru.aiforge.riftworld.entity.LiopleurodonEntity.class,
+                        new net.minecraft.world.phys.AABB(px - 30, py - 10, pz - 30, px + 30, py + 16, pz + 30))
+                        .forEach(net.minecraft.world.entity.Entity::discard);
                 var lio = ru.aiforge.riftworld.entity.LiopleurodonEntity.spawn(
                         (ServerLevel) level, new net.minecraft.world.phys.Vec3(px + 0.5, py + 4.6, pz + 0.5));
                 lio.setNoAi(true);
                 lio.setSilent(true);
+                lio.setNoGravity(true);
+                lio.setXRot(0.0F);
                 lio.setYRot(90.0F);          // нос смотрит в -X
                 lio.yBodyRot = 90.0F;
+                lio.yHeadRot = 90.0F;
             }
             for (var e : level.getEntitiesOfClass(ru.aiforge.riftworld.entity.LiopleurodonEntity.class,
                     new net.minecraft.world.phys.AABB(px - 14, py - 6, pz - 14, px + 14, py + 12, pz + 14))) {
@@ -3701,7 +3747,7 @@ public final class SeaProbeCommand {
             String line = "riftstruct kind=v38_liopleurodon_jaws at=" + px + "," + (py + 4) + "," + pz
                     + " alive=" + alive + " model_boxes=" + geo[0] + " bones=" + geo[1] + " atlas=" + geo[2]
                     + " blocks=" + (alive > 0 ? 900 : 0) + " sub_air=0"
-                    + " cam=" + (px - 11) + "," + (py + 4) + "," + (pz + 8) + ":" + (px - 5) + "," + (py + 5) + "," + pz;
+                    + " cam=" + (px - 9) + "," + (py + 6) + "," + (pz + 7) + ":" + (px - 6) + "," + (py + 5) + "," + pz;
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
         }
