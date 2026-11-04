@@ -3952,7 +3952,8 @@ public final class SeaProbeCommand {
                 }
             } catch (Throwable ignored) {
             }
-            double[] pc = poseCam(px + 0.5, ground + 1.0, pz + 0.5, 205.0F, 0.6, 0, 1.1, 3.2, 4.4, 0.7);
+            // v0.39.10: кадр 152 в #404 снимался со спины — старая схема ставила камеру сбоку-сзади.
+            double[] pc = poseCam(px + 0.5, ground + 1.2, pz + 0.5, 205.0F, 0.0, 0.0, 0.0, 3.2, 2.8, 1.0);
             boolean eyeGlow = eyes[0] > 0 && eyes[2] > 0;
             int metric = (alive > 0 && geo[0] >= 40 && eyeGlow) ? 900 : 0;
             String line = "riftstruct kind=v39_morok at=" + px + "," + (ground + 1) + "," + pz
