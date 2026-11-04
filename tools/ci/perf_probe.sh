@@ -65,12 +65,15 @@ log "Force-load command: exit=$RC, wall=${ELAPSED}s (ticket creation, not full c
 conditions=''
 for x in 1664 1680 1696 1712 1728 1744; do
   for z in 2064 2080 2096 2112 2128 2144; do
-    conditions="$conditions if block $x -64 $z minecraft:bedrock"
+    conditions="$conditions if block $x -64 $z bedrock"
   done
 done
+ready_command="execute in riftworld:elisar $conditions run time query gametime"
+# Minecraft 1.20.1's RCON reader has a 1460-byte buffer, including headers.
+[ "${#ready_command}" -lt 1400 ] || { echo '::error title=Profiler::readiness command exceeds RCON packet budget'; exit 1; }
 ready=0
 for _ in $(seq 1 180); do
-  response=$(rq "execute in riftworld:elisar $conditions run time query gametime" 2>&1 || true)
+  response=$(rq "$ready_command" 2>&1 || true)
   if [[ "$response" == *'The time is'* ]]; then ready=1; break; fi
   sleep 2
 done
