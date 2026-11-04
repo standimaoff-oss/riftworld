@@ -1,0 +1,1390 @@
+ad RCON Client /127.0.0.1 started
+[15:19:36] [RCON Client /127.0.0.1 #309/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:19:36] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:19:36] [RCON Client /127.0.0.1 #310/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:19:36] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:19:36] [RCON Client /127.0.0.1 #311/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:19:36] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:19:36] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 696.500000, 59.000000, 696.500000]
+[15:19:36] [RCON Client /127.0.0.1 #312/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:19:36] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:19:36] [RCON Client /127.0.0.1 #313/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:19:36] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:19:36] [RCON Client /127.0.0.1 #314/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:19:36] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:19:36] [RCON Client /127.0.0.1 #315/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:19:36] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:19:36] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 696.500000, 60.000000, 696.500000]
+[15:19:36] [RCON Client /127.0.0.1 #316/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:19:36] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:19:36] [RCON Client /127.0.0.1 #317/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:19:37] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:19:37] [RCON Client /127.0.0.1 #318/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:19:37] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:19:37] [RCON Client /127.0.0.1 #319/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:19:37] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:19:37] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 696.500000, 61.000000, 696.500000]
+[15:19:37] [RCON Client /127.0.0.1 #320/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:19:37] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:19:37] [RCON Client /127.0.0.1 #321/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:19:37] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:19:37] [RCON Client /127.0.0.1 #322/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:19:37] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:19:37] [RCON Client /127.0.0.1 #323/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:19:37] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:19:37] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 696.500000, 62.000000, 696.500000]
+[15:19:37] [RCON Client /127.0.0.1 #324/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:19:37] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:19:37] [RCON Client /127.0.0.1 #325/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:19:37] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:19:37] [RCON Client /127.0.0.1 #326/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:19:37] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:19:37] [RCON Client /127.0.0.1 #327/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:19:37] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:19:37] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 696.500000, 63.000000, 696.500000]
+[15:19:37] [RCON Client /127.0.0.1 #328/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:19:37] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:19:37] [RCON Client /127.0.0.1 #329/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:19:37] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:19:37] [RCON Client /127.0.0.1 #330/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:19:38] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:19:38] [RCON Client /127.0.0.1 #331/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:19:38] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:19:38] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 696.500000, 64.000000, 696.500000]
+[15:19:38] [RCON Client /127.0.0.1 #332/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:19:38] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:19:38] [RCON Client /127.0.0.1 #333/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:19:38] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:19:38] [RCON Client /127.0.0.1 #334/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:19:38] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:19:38] [RCON Client /127.0.0.1 #335/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:19:38] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:19:38] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 696.500000, 65.000000, 696.500000]
+[15:19:38] [RCON Client /127.0.0.1 #336/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:19:38] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:19:38] [RCON Client /127.0.0.1 #337/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:19:38] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:19:38] [RCON Client /127.0.0.1 #338/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:19:38] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:19:38] [RCON Client /127.0.0.1 #339/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:19:38] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:19:38] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 696.500000, 66.000000, 696.500000]
+[15:19:38] [RCON Client /127.0.0.1 #340/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:19:38] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:19:38] [RCON Client /127.0.0.1 #341/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:19:38] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:19:38] [RCON Client /127.0.0.1 #342/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:19:38] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:19:38] [RCON Client /127.0.0.1 #343/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:19:38] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:19:38] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 600.500000, 16.000000, 666.500000]
+[15:19:38] [RCON Client /127.0.0.1 #344/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:19:38] [Server thread/WARN] [minecraft/ServerGamePacketListenerImpl]: TestPlayer moved too quickly! -96.0,-49.231523797587016,-30.0
+[15:20:24] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:20:24] [RCON Client /127.0.0.1 #345/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:20:24] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:20:24] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 696.500000, 46.000000, 702.500000]
+[15:20:24] [RCON Client /127.0.0.1 #346/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:20:27] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:20:27] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Elisar Sea Fish]
+[15:20:27] [RCON Client /127.0.0.1 #347/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:20:27] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:20:27] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Elisar Sea Fish]
+[15:20:27] [RCON Client /127.0.0.1 #348/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:20:27] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:20:27] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Elisar Sea Fish]
+[15:20:27] [RCON Client /127.0.0.1 #349/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:20:27] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:20:27] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Elisar Sea Fish]
+[15:20:27] [RCON Client /127.0.0.1 #350/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:20:27] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:20:27] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Elisar Sea Fish]
+[15:20:27] [RCON Client /127.0.0.1 #351/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:20:27] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:20:27] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Elisar Sea Fish]
+[15:20:27] [RCON Client /127.0.0.1 #352/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:20:27] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:20:27] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 625.500000, 5.000000, 570.500000]
+[15:20:27] [RCON Client /127.0.0.1 #353/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:20:30] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:20:30] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Elisar Sea Fish]
+[15:20:30] [RCON Client /127.0.0.1 #354/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:20:30] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:20:30] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Elisar Sea Fish]
+[15:20:30] [RCON Client /127.0.0.1 #355/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:20:31] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:20:31] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Elisar Sea Fish]
+[15:20:31] [RCON Client /127.0.0.1 #356/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:20:39] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:20:39] [RCON Client /127.0.0.1 #357/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:20:39] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:20:39] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Applied effect Night Vision to TestPlayer]
+[15:20:39] [RCON Client /127.0.0.1 #358/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:20:41] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:20:56] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[15:20:56] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 15448ms or 308 ticks behind
+[15:20:56] [RCON Client /127.0.0.1 #359/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:20:58] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:22:52] [RCON Client /127.0.0.1 #360/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:22:52] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:22:52] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -6821.500000, 106.000000, 4271.500000]
+[15:22:52] [RCON Client /127.0.0.1 #361/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:22:58] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:22:59] [RCON Client /127.0.0.1 #362/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:22:59] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:23:38] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -6822.637000, 99.600000, 4265.070000]
+[15:23:38] [RCON Client /127.0.0.1 #363/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:23:40] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 148863ms or 2977 ticks behind
+[15:23:45] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:23:53] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[15:23:53] [RCON Client /127.0.0.1 #364/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:23:54] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:23:54] [RCON Client /127.0.0.1 #365/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:23:55] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:23:55] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -6821.500000, 108.000000, 4271.500000]
+[15:23:55] [RCON Client /127.0.0.1 #366/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:23:55] [Server thread/WARN] [minecraft/ServerGamePacketListenerImpl]: TestPlayer moved too quickly! -6822.0,-1.0,4271.0
+[15:24:01] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:24:01] [RCON Client /127.0.0.1 #367/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:24:01] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:24:01] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -6824.061000, 101.600000, 4265.673000]
+[15:24:01] [RCON Client /127.0.0.1 #368/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:24:08] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:24:13] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[15:24:13] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 4885ms or 97 ticks behind
+[15:24:13] [RCON Client /127.0.0.1 #369/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:24:14] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:24:14] [RCON Client /127.0.0.1 #370/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:24:14] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:24:14] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -6821.500000, 109.000000, 4271.500000]
+[15:24:14] [RCON Client /127.0.0.1 #371/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:24:20] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:24:20] [RCON Client /127.0.0.1 #372/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:24:21] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:24:21] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -6810.500000, 109.000000, 4284.500000]
+[15:24:21] [RCON Client /127.0.0.1 #373/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:24:27] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:24:27] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[15:24:27] [RCON Client /127.0.0.1 #374/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:24:27] [Server thread/WARN] [minecraft/ServerGamePacketListenerImpl]: TestPlayer moved too quickly! 6811.0,13.0,-4284.0
+[15:24:28] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:24:29] [RCON Client /127.0.0.1 #375/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:24:29] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:24:33] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -6821.500000, 110.000000, 4271.500000]
+[15:24:33] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 4631ms or 92 ticks behind
+[15:24:33] [RCON Client /127.0.0.1 #376/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:24:39] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:24:39] [RCON Client /127.0.0.1 #377/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:24:40] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:24:40] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -6823.882000, 103.800000, 4266.197000]
+[15:24:40] [RCON Client /127.0.0.1 #378/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:24:46] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:24:46] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 609.500000, 66.000000, 678.500000]
+[15:24:46] [RCON Client /127.0.0.1 #379/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:25:03] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:25:03] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 619.500000, 19.000000, 678.500000]
+[15:25:03] [RCON Client /127.0.0.1 #380/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:25:19] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:25:19] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 613.500000, 22.000000, 678.500000]
+[15:25:19] [RCON Client /127.0.0.1 #381/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:25:35] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:25:35] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 591.500000, 16.000000, 678.500000]
+[15:25:35] [RCON Client /127.0.0.1 #382/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:25:51] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:25:51] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 611.500000, 15.000000, 678.500000]
+[15:25:51] [RCON Client /127.0.0.1 #383/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:26:06] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:26:06] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Set TestPlayer's game mode to Spectator Mode]
+[15:26:06] [RCON Client /127.0.0.1 #384/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:26:06] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:26:06] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 591.500000, 22.000000, 715.500000]
+[15:26:06] [RCON Client /127.0.0.1 #385/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:26:25] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:26:25] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 597.500000, 12.000000, 700.500000]
+[15:26:25] [RCON Client /127.0.0.1 #386/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:26:40] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:26:40] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 621.500000, 29.000000, 717.500000]
+[15:26:40] [RCON Client /127.0.0.1 #387/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:26:58] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:26:58] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Set TestPlayer's game mode to Creative Mode]
+[15:26:58] [RCON Client /127.0.0.1 #388/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:26:58] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:26:58] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 615.500000, 26.000000, 615.500000]
+[15:26:58] [RCON Client /127.0.0.1 #389/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:27:13] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:27:13] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 609.500000, 64.000000, 704.500000]
+[15:27:13] [RCON Client /127.0.0.1 #390/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:27:28] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:27:28] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 626.500000, 65.000000, 770.500000]
+[15:27:28] [RCON Client /127.0.0.1 #391/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:27:45] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:27:45] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 612.500000, 27.000000, 786.500000]
+[15:27:45] [RCON Client /127.0.0.1 #392/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:28:02] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:28:02] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Applied effect Night Vision to TestPlayer]
+[15:28:02] [RCON Client /127.0.0.1 #393/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:28:03] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:28:03] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 625.500000, 6.000000, 570.500000]
+[15:28:03] [RCON Client /127.0.0.1 #394/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:28:19] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:28:19] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 625.500000, 5.000000, 570.500000]
+[15:28:19] [RCON Client /127.0.0.1 #395/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:28:33] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:28:33] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Removed effect Night Vision from TestPlayer]
+[15:28:33] [RCON Client /127.0.0.1 #396/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:28:33] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:28:33] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 619.500000, 19.000000, 678.500000]
+[15:28:33] [RCON Client /127.0.0.1 #397/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:28:35] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:28:35] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Elisar Sea Fish]
+[15:28:35] [RCON Client /127.0.0.1 #398/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:28:35] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:28:35] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Elisar Sea Fish]
+[15:28:35] [RCON Client /127.0.0.1 #399/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:28:35] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:28:35] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Elisar Sea Fish]
+[15:28:35] [RCON Client /127.0.0.1 #400/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:28:35] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:28:35] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Elisar Sea Fish]
+[15:28:35] [RCON Client /127.0.0.1 #401/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:28:43] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:28:43] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 619.500000, 18.000000, 678.500000]
+[15:28:43] [RCON Client /127.0.0.1 #402/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:28:45] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:28:45] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Elisar Sea Fish]
+[15:28:45] [RCON Client /127.0.0.1 #403/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:28:45] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:28:45] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Elisar Sea Fish]
+[15:28:45] [RCON Client /127.0.0.1 #404/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:28:45] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:28:45] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Elisar Sea Fish]
+[15:28:45] [RCON Client /127.0.0.1 #405/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:28:52] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:28:52] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 625.500000, 6.000000, 570.500000]
+[15:28:52] [RCON Client /127.0.0.1 #406/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:28:54] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:28:54] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Elisar Sea Fish]
+[15:28:54] [RCON Client /127.0.0.1 #407/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:28:54] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:28:54] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Elisar Sea Fish]
+[15:28:54] [RCON Client /127.0.0.1 #408/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:28:55] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:28:55] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Elisar Sea Fish]
+[15:28:55] [RCON Client /127.0.0.1 #409/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:29:01] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:29:01] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 696.500000, 44.000000, 696.500000]
+[15:29:01] [RCON Client /127.0.0.1 #410/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:29:03] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:29:03] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Elisar Sea Fish]
+[15:29:03] [RCON Client /127.0.0.1 #411/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:29:03] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:29:03] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Elisar Sea Fish]
+[15:29:03] [RCON Client /127.0.0.1 #412/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:29:03] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:29:03] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Elisar Sea Fish]
+[15:29:03] [RCON Client /127.0.0.1 #413/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:29:10] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:29:10] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 696.500000, 22.000000, 696.500000]
+[15:29:10] [RCON Client /127.0.0.1 #414/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:29:26] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:29:26] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 625.500000, 5.000000, 570.500000]
+[15:29:26] [RCON Client /127.0.0.1 #415/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:29:40] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:29:40] [RCON Client /127.0.0.1 #416/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:29:40] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:29:40] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 696.500000, 40.000000, 696.500000]
+[15:29:40] [RCON Client /127.0.0.1 #417/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:29:43] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:29:43] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Applied effect Night Vision to TestPlayer]
+[15:29:43] [RCON Client /127.0.0.1 #418/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:29:43] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:29:43] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Killed 15 entities]
+[15:29:43] [RCON Client /127.0.0.1 #419/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:29:44] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:29:44] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Elisar Sea Fish]
+[15:29:44] [RCON Client /127.0.0.1 #420/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:29:45] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:29:45] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported Elisar Sea Fish to 696.500000, 39.909283, 693.901592]
+[15:29:45] [RCON Client /127.0.0.1 #421/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:29:46] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:29:46] [RCON Client /127.0.0.1 #422/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:29:47] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:29:47] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Killed 12 entities]
+[15:29:47] [RCON Client /127.0.0.1 #423/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:29:48] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:29:48] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Elisar Sea Fish]
+[15:29:48] [RCON Client /127.0.0.1 #424/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:29:49] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:29:49] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported Elisar Sea Fish to 696.500000, 39.909283, 693.901592]
+[15:29:49] [RCON Client /127.0.0.1 #425/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:29:49] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:29:49] [RCON Client /127.0.0.1 #426/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:29:51] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:29:51] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Killed 10 entities]
+[15:29:51] [RCON Client /127.0.0.1 #427/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:29:52] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:29:52] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Elisar Sea Fish]
+[15:29:52] [RCON Client /127.0.0.1 #428/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:29:53] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:29:53] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported Elisar Sea Fish to 696.500000, 39.909283, 693.901592]
+[15:29:53] [RCON Client /127.0.0.1 #429/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:29:53] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:29:53] [RCON Client /127.0.0.1 #430/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:29:55] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:29:55] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Killed 15 entities]
+[15:29:55] [RCON Client /127.0.0.1 #431/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:29:56] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:29:56] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Elisar Sea Fish]
+[15:29:56] [RCON Client /127.0.0.1 #432/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:29:57] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:29:57] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported Elisar Sea Fish to 696.500000, 39.909283, 693.901592]
+[15:29:57] [RCON Client /127.0.0.1 #433/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:29:57] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:29:57] [RCON Client /127.0.0.1 #434/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:29:59] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:29:59] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Killed 9 entities]
+[15:29:59] [RCON Client /127.0.0.1 #435/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:30:01] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:30:01] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Elisar Sea Fish]
+[15:30:01] [RCON Client /127.0.0.1 #436/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:30:02] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:30:02] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported Elisar Sea Fish to 696.500000, 39.909283, 693.901592]
+[15:30:02] [RCON Client /127.0.0.1 #437/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:30:02] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:30:02] [RCON Client /127.0.0.1 #438/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:30:03] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:30:03] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Killed 10 entities]
+[15:30:03] [RCON Client /127.0.0.1 #439/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:30:05] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:30:05] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Elisar Sea Fish]
+[15:30:05] [RCON Client /127.0.0.1 #440/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:30:06] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:30:06] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported Elisar Sea Fish to 696.500000, 39.909283, 693.901592]
+[15:30:06] [RCON Client /127.0.0.1 #441/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:30:06] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:30:06] [RCON Client /127.0.0.1 #442/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:30:08] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:30:08] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Killed 11 entities]
+[15:30:08] [RCON Client /127.0.0.1 #443/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:30:09] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:30:09] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Elisar Sea Fish]
+[15:30:09] [RCON Client /127.0.0.1 #444/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:30:10] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:30:10] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported Elisar Sea Fish to 696.500000, 39.909283, 693.901592]
+[15:30:10] [RCON Client /127.0.0.1 #445/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:30:10] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:30:10] [RCON Client /127.0.0.1 #446/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:30:12] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:30:12] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Killed 13 entities]
+[15:30:12] [RCON Client /127.0.0.1 #447/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:30:13] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:30:13] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Elisar Sea Fish]
+[15:30:13] [RCON Client /127.0.0.1 #448/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:30:14] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:30:14] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported Elisar Sea Fish to 696.500000, 39.909283, 693.901592]
+[15:30:14] [RCON Client /127.0.0.1 #449/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:30:14] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:30:14] [RCON Client /127.0.0.1 #450/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:30:16] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:30:16] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Killed 3 entities]
+[15:30:16] [RCON Client /127.0.0.1 #451/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:30:17] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:30:17] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Elisar Sea Fish]
+[15:30:17] [RCON Client /127.0.0.1 #452/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:30:18] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:30:18] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported Elisar Sea Fish to 696.500000, 39.909283, 693.901592]
+[15:30:18] [RCON Client /127.0.0.1 #453/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:30:18] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:30:18] [RCON Client /127.0.0.1 #454/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:30:20] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:30:20] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Killed 11 entities]
+[15:30:20] [RCON Client /127.0.0.1 #455/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:30:21] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:30:21] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Elisar Sea Fish]
+[15:30:21] [RCON Client /127.0.0.1 #456/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:30:22] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:30:22] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported Elisar Sea Fish to 696.500000, 39.909283, 693.901592]
+[15:30:22] [RCON Client /127.0.0.1 #457/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:30:22] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:30:22] [RCON Client /127.0.0.1 #458/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:30:24] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:30:24] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Killed 6 entities]
+[15:30:24] [RCON Client /127.0.0.1 #459/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:30:25] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:30:25] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Summoned new Elisar Sea Fish]
+[15:30:25] [RCON Client /127.0.0.1 #460/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:30:26] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:30:26] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported Elisar Sea Fish to 696.500000, 39.909283, 693.901592]
+[15:30:26] [RCON Client /127.0.0.1 #461/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:30:26] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:30:26] [RCON Client /127.0.0.1 #462/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:30:28] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:30:28] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Killed 6 entities]
+[15:30:28] [RCON Client /127.0.0.1 #463/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:30:28] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:30:28] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Removed every effect from TestPlayer]
+[15:30:28] [RCON Client /127.0.0.1 #464/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:30:28] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:30:30] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -29.500000, 120.000000, 58.500000]
+[15:30:30] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 2207ms or 44 ticks behind
+[15:30:30] [RCON Client /127.0.0.1 #465/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:30:34] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:30:38] [RCON Client /127.0.0.1 #466/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:30:38] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:30:38] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 10.500000, 114.000000, 16.500000]
+[15:30:38] [RCON Client /127.0.0.1 #467/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:30:46] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:30:53] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 7263ms or 145 ticks behind
+[15:30:53] [RCON Client /127.0.0.1 #468/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:30:54] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:30:54] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Set TestPlayer's game mode to Spectator Mode]
+[15:30:54] [RCON Client /127.0.0.1 #469/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:30:54] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:30:54] [RCON Client /127.0.0.1 #470/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:30:55] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:30:55] [RCON Client /127.0.0.1 #471/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:30:57] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:30:57] [RCON Client /127.0.0.1 #472/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:31:15] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:31:15] [RCON Client /127.0.0.1 #473/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:31:16] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:31:16] [RCON Client /127.0.0.1 #474/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:31:18] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:31:18] [RCON Client /127.0.0.1 #475/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:31:36] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:31:36] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Set TestPlayer's game mode to Creative Mode]
+[15:31:36] [RCON Client /127.0.0.1 #476/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:31:36] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:31:36] [RCON Client /127.0.0.1 #477/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:31:36] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:31:36] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Gave 1 [Sizo Seed] to TestPlayer]
+[15:31:36] [RCON Client /127.0.0.1 #478/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:31:36] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:31:36] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Gave 1 [Lilac Blossom Seed] to TestPlayer]
+[15:31:36] [RCON Client /127.0.0.1 #479/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:31:36] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:31:36] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Gave 1 [Garden Oak Acorn] to TestPlayer]
+[15:31:36] [RCON Client /127.0.0.1 #480/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:31:36] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:31:36] [RCON Client /127.0.0.1 #481/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:31:36] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:31:37] [RCON Client /127.0.0.1 #482/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:31:37] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:31:37] [RCON Client /127.0.0.1 #483/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:31:37] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:31:37] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 15.500000, 112.000000, 15.500000]
+[15:31:37] [RCON Client /127.0.0.1 #484/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:31:40] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:31:40] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 9, 104, 9]
+[15:31:40] [RCON Client /127.0.0.1 #485/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:31:40] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:31:40] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Successfully filled 429 block(s)]
+[15:31:40] [RCON Client /127.0.0.1 #486/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:31:40] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:31:40] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Successfully set tree at position 9, 104, 9 to species Sizo Tree with JoCode JJJ0JP1JJ+ZJOOPvnRJOOPvn.]
+[15:31:40] [RCON Client /127.0.0.1 #487/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:31:46] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:31:46] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Successfully sent 4 growth pulses to tree at position 9, 104, 9.]
+[15:31:46] [RCON Client /127.0.0.1 #488/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:31:48] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:31:48] [RCON Client /127.0.0.1 #489/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:31:49] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:31:49] [RCON Client /127.0.0.1 #490/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:31:49] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:31:49] [RCON Client /127.0.0.1 #491/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:31:49] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:31:49] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at -9, 104, 19]
+[15:31:49] [RCON Client /127.0.0.1 #492/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:31:49] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:31:49] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Successfully filled 121 block(s)]
+[15:31:49] [RCON Client /127.0.0.1 #493/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:31:49] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:31:49] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Successfully set tree at position -9, 104, 19 to species Oak with JoCode JJJ0JR7Jxx+nXv.]
+[15:31:49] [RCON Client /127.0.0.1 #494/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:31:52] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:31:52] [RCON Client /127.0.0.1 #495/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:31:52] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:31:52] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 25, 104, 1]
+[15:31:52] [RCON Client /127.0.0.1 #496/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:31:52] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:31:52] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Successfully filled 79 block(s)]
+[15:31:52] [RCON Client /127.0.0.1 #497/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:31:52] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:31:52] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Changed the block at 25, 105, 1]
+[15:31:52] [RCON Client /127.0.0.1 #498/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:31:53] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:31:53] [RCON Client /127.0.0.1 #499/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:31:57] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:31:57] [RCON Client /127.0.0.1 #500/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:31:57] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:31:57] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Set TestPlayer's game mode to Spectator Mode]
+[15:31:57] [RCON Client /127.0.0.1 #501/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:31:57] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:31:57] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 20.500000, 111.000000, 20.500000]
+[15:31:57] [RCON Client /127.0.0.1 #502/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:32:13] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:32:13] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 13.500000, 114.000000, 22.500000]
+[15:32:13] [RCON Client /127.0.0.1 #503/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:32:28] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:32:28] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 11.500000, 125.000000, 11.500000]
+[15:32:28] [RCON Client /127.0.0.1 #504/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:32:42] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:32:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Set TestPlayer's game mode to Creative Mode]
+[15:32:42] [RCON Client /127.0.0.1 #505/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:32:42] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:32:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Set TestPlayer's game mode to Spectator Mode]
+[15:32:42] [RCON Client /127.0.0.1 #506/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:32:42] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:32:42] [RCON Client /127.0.0.1 #507/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:32:42] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:33:12] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 406.500000, 130.000000, -649.500000]
+[15:33:12] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 29162ms or 583 ticks behind
+[15:33:12] [RCON Client /127.0.0.1 #508/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:33:24] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:35:25] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:36:29] [RCON Client /127.0.0.1 #509/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:37:13] [RCON Client /127.0.0.1 #510/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:37:13] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:37:13] [Server thread/INFO] [minecraft/LocateCommand]: Locating element riftworld:waterfall_gardens took 0 ms
+[15:37:13] [RCON Client /127.0.0.1 #511/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:37:14] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:37:14] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Marked chunk [25, -41] in riftworld:elisar to be force loaded]
+[15:37:14] [RCON Client /127.0.0.1 #512/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:37:15] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 228480ms or 4569 ticks behind
+[15:37:17] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:37:17] [RCON Client /127.0.0.1 #513/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:37:17] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:37:17] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 407.500000, 106.000000, -650.500000]
+[15:37:17] [RCON Client /127.0.0.1 #514/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:37:20] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:37:20] [RCON Client /127.0.0.1 #515/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:37:21] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:37:54] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 287.500000, 92.000000, -676.500000]
+[15:37:54] [Server thread/INFO] [minecraft/ServerGamePacketListenerImpl]: TestPlayer lost connection: Disconnected
+[15:37:54] [Server thread/INFO] [minecraft/MinecraftServer]: TestPlayer left the game
+[15:37:54] [RCON Client /127.0.0.1 #516/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:37:54] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 24418ms or 488 ticks behind
+[15:38:13] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:38:13] [RCON Client /127.0.0.1 #517/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:38:14] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:38:14] [RCON Client /127.0.0.1 #518/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:38:15] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:38:15] [RCON Client /127.0.0.1 #519/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:38:35] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:38:35] [RCON Client /127.0.0.1 #520/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:38:36] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:38:36] [RCON Client /127.0.0.1 #521/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:38:37] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:38:37] [RCON Client /127.0.0.1 #522/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:38:55] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:38:55] [RCON Client /127.0.0.1 #523/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:38:56] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:38:56] [RCON Client /127.0.0.1 #524/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:38:57] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:38:58] [RCON Client /127.0.0.1 #525/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:39:13] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:39:13] [RCON Client /127.0.0.1 #526/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:39:14] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:39:14] [RCON Client /127.0.0.1 #527/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:39:16] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:39:16] [RCON Client /127.0.0.1 #528/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:39:37] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:39:37] [RCON Client /127.0.0.1 #529/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:39:38] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:39:38] [RCON Client /127.0.0.1 #530/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:39:40] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:39:40] [RCON Client /127.0.0.1 #531/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:39:57] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:39:57] [RCON Client /127.0.0.1 #532/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:39:58] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:39:58] [RCON Client /127.0.0.1 #533/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:40:00] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:40:00] [RCON Client /127.0.0.1 #534/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:40:19] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:40:19] [RCON Client /127.0.0.1 #535/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:40:21] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:40:21] [RCON Client /127.0.0.1 #536/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:40:22] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:40:22] [RCON Client /127.0.0.1 #537/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:40:23] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:40:23] [RCON Client /127.0.0.1 #538/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:40:23] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:40:23] [RCON Client /127.0.0.1 #539/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:40:23] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:40:23] [RCON Client /127.0.0.1 #540/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:40:23] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:40:23] [RCON Client /127.0.0.1 #541/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:40:25] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:40:25] [RCON Client /127.0.0.1 #542/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:40:26] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:40:26] [RCON Client /127.0.0.1 #543/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:40:39] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:40:39] [RCON Client /127.0.0.1 #544/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:40:39] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:40:39] [RCON Client /127.0.0.1 #545/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:40:40] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:40:40] [RCON Client /127.0.0.1 #546/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:40:42] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:40:42] [RCON Client /127.0.0.1 #547/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:40:47] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:40:47] [RCON Client /127.0.0.1 #548/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:40:47] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:40:47] [RCON Client /127.0.0.1 #549/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:40:48] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:40:48] [RCON Client /127.0.0.1 #550/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:40:50] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:40:50] [RCON Client /127.0.0.1 #551/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:41:09] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:41:09] [RCON Client /127.0.0.1 #552/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:41:10] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:41:10] [RCON Client /127.0.0.1 #553/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:41:12] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:41:12] [RCON Client /127.0.0.1 #554/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:41:29] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:41:29] [RCON Client /127.0.0.1 #555/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:41:31] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:41:31] [RCON Client /127.0.0.1 #556/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:41:32] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:41:32] [RCON Client /127.0.0.1 #557/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:41:49] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:41:49] [RCON Client /127.0.0.1 #558/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:41:49] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:41:49] [RCON Client /127.0.0.1 #559/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:41:51] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:41:51] [RCON Client /127.0.0.1 #560/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:41:52] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:41:52] [RCON Client /127.0.0.1 #561/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:42:05] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:42:05] [RCON Client /127.0.0.1 #562/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:42:05] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:42:05] [RCON Client /127.0.0.1 #563/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:42:07] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:42:07] [RCON Client /127.0.0.1 #564/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:42:08] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:42:08] [RCON Client /127.0.0.1 #565/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:42:13] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:42:13] [RCON Client /127.0.0.1 #566/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:42:13] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:42:13] [RCON Client /127.0.0.1 #567/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:42:15] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:42:15] [RCON Client /127.0.0.1 #568/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:42:16] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:42:16] [RCON Client /127.0.0.1 #569/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:42:35] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:42:35] [RCON Client /127.0.0.1 #570/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:42:37] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:42:37] [RCON Client /127.0.0.1 #571/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:42:38] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:42:38] [RCON Client /127.0.0.1 #572/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:42:57] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:42:57] [RCON Client /127.0.0.1 #573/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:42:59] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:42:59] [RCON Client /127.0.0.1 #574/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:43:00] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:43:00] [RCON Client /127.0.0.1 #575/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:43:18] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:43:18] [RCON Client /127.0.0.1 #576/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:43:19] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:43:19] [RCON Client /127.0.0.1 #577/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:43:20] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:43:20] [RCON Client /127.0.0.1 #578/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:43:38] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:43:38] [RCON Client /127.0.0.1 #579/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:43:39] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:43:39] [RCON Client /127.0.0.1 #580/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:43:40] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:43:40] [RCON Client /127.0.0.1 #581/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:43:57] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:43:57] [RCON Client /127.0.0.1 #582/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:43:58] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:43:58] [RCON Client /127.0.0.1 #583/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:43:59] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:43:59] [RCON Client /127.0.0.1 #584/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:03] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:03] [RCON Client /127.0.0.1 #585/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:04] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:04] [RCON Client /127.0.0.1 #586/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:04] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:04] [RCON Client /127.0.0.1 #587/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:04] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:04] [RCON Client /127.0.0.1 #588/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:04] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:04] [RCON Client /127.0.0.1 #589/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:04] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:04] [RCON Client /127.0.0.1 #590/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:04] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:04] [RCON Client /127.0.0.1 #591/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:04] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:04] [RCON Client /127.0.0.1 #592/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:04] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:04] [RCON Client /127.0.0.1 #593/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:05] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:05] [RCON Client /127.0.0.1 #594/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:07] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:07] [RCON Client /127.0.0.1 #595/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:09] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:09] [RCON Client /127.0.0.1 #596/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:09] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:09] [RCON Client /127.0.0.1 #597/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:09] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:09] [RCON Client /127.0.0.1 #598/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:10] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:10] [RCON Client /127.0.0.1 #599/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:11] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:11] [RCON Client /127.0.0.1 #600/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:14] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:14] [RCON Client /127.0.0.1 #601/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:14] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:14] [RCON Client /127.0.0.1 #602/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:14] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:14] [RCON Client /127.0.0.1 #603/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:15] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:15] [RCON Client /127.0.0.1 #604/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:16] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:16] [RCON Client /127.0.0.1 #605/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:19] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:19] [RCON Client /127.0.0.1 #606/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:19] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:19] [RCON Client /127.0.0.1 #607/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:20] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:20] [RCON Client /127.0.0.1 #608/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:21] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:21] [RCON Client /127.0.0.1 #609/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:23] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:23] [RCON Client /127.0.0.1 #610/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:24] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:24] [RCON Client /127.0.0.1 #611/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:24] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:24] [RCON Client /127.0.0.1 #612/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:25] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:25] [RCON Client /127.0.0.1 #613/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:26] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:26] [RCON Client /127.0.0.1 #614/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:29] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:29] [RCON Client /127.0.0.1 #615/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:31] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:31] [RCON Client /127.0.0.1 #616/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:32] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:32] [RCON Client /127.0.0.1 #617/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:34] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:34] [RCON Client /127.0.0.1 #618/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:34] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:34] [RCON Client /127.0.0.1 #619/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:36] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:36] [RCON Client /127.0.0.1 #620/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:37] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:37] [RCON Client /127.0.0.1 #621/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:39] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:39] [RCON Client /127.0.0.1 #622/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:39] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:39] [RCON Client /127.0.0.1 #623/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:40] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:40] [RCON Client /127.0.0.1 #624/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:42] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:42] [RCON Client /127.0.0.1 #625/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:44] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:44] [RCON Client /127.0.0.1 #626/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:44] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:44] [RCON Client /127.0.0.1 #627/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:45] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:45] [RCON Client /127.0.0.1 #628/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:46] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:46] [RCON Client /127.0.0.1 #629/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:49] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:49] [RCON Client /127.0.0.1 #630/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:49] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:49] [RCON Client /127.0.0.1 #631/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:50] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:50] [RCON Client /127.0.0.1 #632/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:51] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:51] [RCON Client /127.0.0.1 #633/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:53] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:53] [RCON Client /127.0.0.1 #634/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:54] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:54] [RCON Client /127.0.0.1 #635/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:55] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:55] [RCON Client /127.0.0.1 #636/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:56] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:56] [RCON Client /127.0.0.1 #637/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:58] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:58] [RCON Client /127.0.0.1 #638/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:44:58] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:44:58] [RCON Client /127.0.0.1 #639/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:00] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:00] [RCON Client /127.0.0.1 #640/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:01] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:01] [RCON Client /127.0.0.1 #641/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:03] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:03] [RCON Client /127.0.0.1 #642/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:03] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:03] [RCON Client /127.0.0.1 #643/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:04] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:04] [RCON Client /127.0.0.1 #644/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:06] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:06] [RCON Client /127.0.0.1 #645/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:08] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:08] [RCON Client /127.0.0.1 #646/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:08] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:08] [RCON Client /127.0.0.1 #647/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:09] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:09] [RCON Client /127.0.0.1 #648/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:11] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:11] [RCON Client /127.0.0.1 #649/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:13] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:13] [RCON Client /127.0.0.1 #650/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:13] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:13] [RCON Client /127.0.0.1 #651/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:14] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:14] [RCON Client /127.0.0.1 #652/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:15] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:15] [RCON Client /127.0.0.1 #653/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:18] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:18] [RCON Client /127.0.0.1 #654/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:18] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:18] [RCON Client /127.0.0.1 #655/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:19] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:19] [RCON Client /127.0.0.1 #656/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:20] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:20] [RCON Client /127.0.0.1 #657/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:22] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:22] [RCON Client /127.0.0.1 #658/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:23] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:23] [RCON Client /127.0.0.1 #659/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:23] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:23] [RCON Client /127.0.0.1 #660/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:24] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:24] [RCON Client /127.0.0.1 #661/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:25] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:25] [RCON Client /127.0.0.1 #662/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:26] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:26] [RCON Client /127.0.0.1 #663/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:28] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:28] [RCON Client /127.0.0.1 #664/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:29] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:29] [RCON Client /127.0.0.1 #665/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:31] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:31] [RCON Client /127.0.0.1 #666/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:31] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:31] [RCON Client /127.0.0.1 #667/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:32] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:32] [RCON Client /127.0.0.1 #668/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:34] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:34] [RCON Client /127.0.0.1 #669/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:36] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:36] [RCON Client /127.0.0.1 #670/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:36] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:36] [RCON Client /127.0.0.1 #671/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:37] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:37] [RCON Client /127.0.0.1 #672/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:39] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:39] [RCON Client /127.0.0.1 #673/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:41] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:41] [RCON Client /127.0.0.1 #674/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:41] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:41] [RCON Client /127.0.0.1 #675/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:42] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:42] [RCON Client /127.0.0.1 #676/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:43] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:43] [RCON Client /127.0.0.1 #677/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:46] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:46] [RCON Client /127.0.0.1 #678/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:46] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:46] [RCON Client /127.0.0.1 #679/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:47] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:47] [RCON Client /127.0.0.1 #680/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:48] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:48] [RCON Client /127.0.0.1 #681/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:50] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:50] [RCON Client /127.0.0.1 #682/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:51] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:51] [RCON Client /127.0.0.1 #683/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:52] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:52] [RCON Client /127.0.0.1 #684/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:53] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:53] [RCON Client /127.0.0.1 #685/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:55] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:55] [RCON Client /127.0.0.1 #686/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:55] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:55] [RCON Client /127.0.0.1 #687/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:57] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:57] [RCON Client /127.0.0.1 #688/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:45:58] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:45:58] [RCON Client /127.0.0.1 #689/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:00] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:00] [RCON Client /127.0.0.1 #690/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:00] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:00] [RCON Client /127.0.0.1 #691/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:01] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:01] [RCON Client /127.0.0.1 #692/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:03] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:03] [RCON Client /127.0.0.1 #693/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:05] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:05] [RCON Client /127.0.0.1 #694/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:05] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:05] [RCON Client /127.0.0.1 #695/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:06] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:06] [RCON Client /127.0.0.1 #696/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:07] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:07] [RCON Client /127.0.0.1 #697/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:10] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:10] [RCON Client /127.0.0.1 #698/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:10] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:10] [RCON Client /127.0.0.1 #699/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:11] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:11] [RCON Client /127.0.0.1 #700/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:12] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:12] [RCON Client /127.0.0.1 #701/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:15] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:15] [RCON Client /127.0.0.1 #702/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:15] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:15] [RCON Client /127.0.0.1 #703/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:16] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:16] [RCON Client /127.0.0.1 #704/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:17] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:17] [RCON Client /127.0.0.1 #705/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:19] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:19] [RCON Client /127.0.0.1 #706/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:19] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:19] [RCON Client /127.0.0.1 #707/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:21] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:21] [RCON Client /127.0.0.1 #708/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:22] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:22] [RCON Client /127.0.0.1 #709/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:24] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:24] [RCON Client /127.0.0.1 #710/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:24] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:24] [RCON Client /127.0.0.1 #711/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:26] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:26] [RCON Client /127.0.0.1 #712/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:27] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:27] [RCON Client /127.0.0.1 #713/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:29] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:29] [RCON Client /127.0.0.1 #714/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:29] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:29] [RCON Client /127.0.0.1 #715/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:30] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:30] [RCON Client /127.0.0.1 #716/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:32] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:32] [RCON Client /127.0.0.1 #717/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:34] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:34] [RCON Client /127.0.0.1 #718/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:34] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:34] [RCON Client /127.0.0.1 #719/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:35] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:35] [RCON Client /127.0.0.1 #720/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:36] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:36] [RCON Client /127.0.0.1 #721/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:39] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:39] [RCON Client /127.0.0.1 #722/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:39] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:39] [RCON Client /127.0.0.1 #723/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:39] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:39] [RCON Client /127.0.0.1 #724/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:40] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:40] [RCON Client /127.0.0.1 #725/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:41] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:41] [RCON Client /127.0.0.1 #726/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:44] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:44] [RCON Client /127.0.0.1 #727/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:44] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:44] [RCON Client /127.0.0.1 #728/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:45] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:45] [RCON Client /127.0.0.1 #729/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:46] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:46] [RCON Client /127.0.0.1 #730/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:48] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:48] [RCON Client /127.0.0.1 #731/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:49] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:49] [RCON Client /127.0.0.1 #732/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:50] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:50] [RCON Client /127.0.0.1 #733/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:51] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:51] [RCON Client /127.0.0.1 #734/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:53] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:53] [RCON Client /127.0.0.1 #735/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:53] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:53] [RCON Client /127.0.0.1 #736/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:55] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:55] [RCON Client /127.0.0.1 #737/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:56] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:56] [RCON Client /127.0.0.1 #738/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:58] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:58] [RCON Client /127.0.0.1 #739/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:58] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:58] [RCON Client /127.0.0.1 #740/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:46:59] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:46:59] [RCON Client /127.0.0.1 #741/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:01] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:01] [RCON Client /127.0.0.1 #742/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:03] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:03] [RCON Client /127.0.0.1 #743/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:03] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:03] [RCON Client /127.0.0.1 #744/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:04] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:04] [RCON Client /127.0.0.1 #745/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:06] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:06] [RCON Client /127.0.0.1 #746/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:08] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:08] [RCON Client /127.0.0.1 #747/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:08] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:08] [RCON Client /127.0.0.1 #748/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:09] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:09] [RCON Client /127.0.0.1 #749/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:10] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:10] [RCON Client /127.0.0.1 #750/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:13] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:13] [RCON Client /127.0.0.1 #751/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:13] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:13] [RCON Client /127.0.0.1 #752/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:13] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:13] [RCON Client /127.0.0.1 #753/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:14] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:14] [RCON Client /127.0.0.1 #754/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:15] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:15] [RCON Client /127.0.0.1 #755/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:18] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:18] [RCON Client /127.0.0.1 #756/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:18] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:18] [RCON Client /127.0.0.1 #757/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:19] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:19] [RCON Client /127.0.0.1 #758/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:20] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:20] [RCON Client /127.0.0.1 #759/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:22] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:22] [RCON Client /127.0.0.1 #760/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:22] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:22] [RCON Client /127.0.0.1 #761/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:24] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:24] [RCON Client /127.0.0.1 #762/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:25] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:25] [RCON Client /127.0.0.1 #763/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:27] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:27] [RCON Client /127.0.0.1 #764/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:27] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:27] [RCON Client /127.0.0.1 #765/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:29] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:29] [RCON Client /127.0.0.1 #766/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:30] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:30] [RCON Client /127.0.0.1 #767/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:32] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:32] [RCON Client /127.0.0.1 #768/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:32] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:32] [RCON Client /127.0.0.1 #769/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:33] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:33] [RCON Client /127.0.0.1 #770/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:35] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:35] [RCON Client /127.0.0.1 #771/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:37] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:37] [RCON Client /127.0.0.1 #772/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:37] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:37] [RCON Client /127.0.0.1 #773/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:38] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:38] [RCON Client /127.0.0.1 #774/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:39] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:39] [RCON Client /127.0.0.1 #775/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:42] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:42] [RCON Client /127.0.0.1 #776/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:42] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:42] [RCON Client /127.0.0.1 #777/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:43] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:43] [RCON Client /127.0.0.1 #778/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:44] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:44] [RCON Client /127.0.0.1 #779/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:47] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:47] [RCON Client /127.0.0.1 #780/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:47] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:47] [RCON Client /127.0.0.1 #781/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:48] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:48] [RCON Client /127.0.0.1 #782/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:49] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:49] [RCON Client /127.0.0.1 #783/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:51] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:51] [RCON Client /127.0.0.1 #784/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:51] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:51] [RCON Client /127.0.0.1 #785/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:53] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:53] [RCON Client /127.0.0.1 #786/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:54] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:54] [RCON Client /127.0.0.1 #787/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:56] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:56] [RCON Client /127.0.0.1 #788/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:56] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:56] [RCON Client /127.0.0.1 #789/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:57] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:57] [RCON Client /127.0.0.1 #790/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:47:59] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:47:59] [RCON Client /127.0.0.1 #791/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:01] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:01] [RCON Client /127.0.0.1 #792/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:01] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:01] [RCON Client /127.0.0.1 #793/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:02] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:02] [RCON Client /127.0.0.1 #794/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:04] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:04] [RCON Client /127.0.0.1 #795/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:06] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:06] [RCON Client /127.0.0.1 #796/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:06] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:06] [RCON Client /127.0.0.1 #797/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:07] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:07] [RCON Client /127.0.0.1 #798/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:08] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:08] [RCON Client /127.0.0.1 #799/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:11] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:11] [RCON Client /127.0.0.1 #800/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:11] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:11] [RCON Client /127.0.0.1 #801/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:12] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:12] [RCON Client /127.0.0.1 #802/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:13] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:13] [RCON Client /127.0.0.1 #803/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:15] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:15] [RCON Client /127.0.0.1 #804/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:16] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:16] [RCON Client /127.0.0.1 #805/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:17] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:17] [RCON Client /127.0.0.1 #806/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:18] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:18] [RCON Client /127.0.0.1 #807/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:20] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:20] [RCON Client /127.0.0.1 #808/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:20] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:20] [RCON Client /127.0.0.1 #809/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:22] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:22] [RCON Client /127.0.0.1 #810/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:23] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:23] [RCON Client /127.0.0.1 #811/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:25] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:25] [RCON Client /127.0.0.1 #812/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:25] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:25] [RCON Client /127.0.0.1 #813/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:26] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:26] [RCON Client /127.0.0.1 #814/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:28] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:28] [RCON Client /127.0.0.1 #815/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:30] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:30] [RCON Client /127.0.0.1 #816/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:30] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:30] [RCON Client /127.0.0.1 #817/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:31] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:31] [RCON Client /127.0.0.1 #818/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:33] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:33] [RCON Client /127.0.0.1 #819/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:35] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:35] [RCON Client /127.0.0.1 #820/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:35] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:35] [RCON Client /127.0.0.1 #821/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:36] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:36] [RCON Client /127.0.0.1 #822/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:37] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:37] [RCON Client /127.0.0.1 #823/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:40] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:40] [RCON Client /127.0.0.1 #824/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:40] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:40] [RCON Client /127.0.0.1 #825/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:41] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:41] [RCON Client /127.0.0.1 #826/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:42] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:42] [RCON Client /127.0.0.1 #827/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:44] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:44] [RCON Client /127.0.0.1 #828/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:45] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:45] [RCON Client /127.0.0.1 #829/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:46] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:46] [RCON Client /127.0.0.1 #830/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:47] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:47] [RCON Client /127.0.0.1 #831/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:49] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:49] [RCON Client /127.0.0.1 #832/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:49] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:49] [RCON Client /127.0.0.1 #833/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:51] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:51] [RCON Client /127.0.0.1 #834/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:52] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:52] [RCON Client /127.0.0.1 #835/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:54] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:54] [RCON Client /127.0.0.1 #836/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:54] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:54] [RCON Client /127.0.0.1 #837/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:54] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:54] [RCON Client /127.0.0.1 #838/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:56] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:56] [RCON Client /127.0.0.1 #839/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:57] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:57] [RCON Client /127.0.0.1 #840/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:59] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:59] [RCON Client /127.0.0.1 #841/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:59] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:59] [RCON Client /127.0.0.1 #842/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:59] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:59] [RCON Client /127.0.0.1 #843/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:59] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:59] [RCON Client /127.0.0.1 #844/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:59] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:59] [RCON Client /127.0.0.1 #845/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:59] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:59] [RCON Client /127.0.0.1 #846/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:59] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:59] [RCON Client /127.0.0.1 #847/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:48:59] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:48:59] [RCON Client /127.0.0.1 #848/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:49:00] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:49:00] [RCON Client /127.0.0.1 #849/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:49:00] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:49:00] [Server thread/INFO] [minecraft/LocateCommand]: Locating element riftworld:overgrown_temple took 1 ms
+[15:49:00] [RCON Client /127.0.0.1 #850/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:49:00] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:49:00] [RCON Client /127.0.0.1 #851/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:49:01] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:49:01] [RCON Client /127.0.0.1 #852/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:49:02] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:49:02] [RCON Client /127.0.0.1 #853/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:49:09] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:49:09] [RCON Client /127.0.0.1 #854/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:49:14] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:49:14] [RCON Client /127.0.0.1 #855/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:49:15] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:49:15] [RCON Client /127.0.0.1 #856/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:49:16] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:49:16] [RCON Client /127.0.0.1 #857/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:49:17] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:49:17] [RCON Client /127.0.0.1 #858/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:49:23] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:49:23] [RCON Client /127.0.0.1 #859/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:49:23] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:49:23] [RCON Client /127.0.0.1 #860/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:49:24] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:49:24] [RCON Client /127.0.0.1 #861/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:49:25] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:49:25] [RCON Client /127.0.0.1 #862/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:49:26] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:49:26] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Set the time to 6000]
+[15:49:26] [RCON Client /127.0.0.1 #863/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:49:27] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:49:27] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Set the weather to clear]
+[15:49:27] [RCON Client /127.0.0.1 #864/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:49:27] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:49:27] [RCON Client /127.0.0.1 #865/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:49:28] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:49:28] [RCON Client /127.0.0.1 #866/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:49:29] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:49:29] [RCON Client /127.0.0.1 #867/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:49:39] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:49:39] [RCON Client /127.0.0.1 #868/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:49:40] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:49:40] [RCON Client /127.0.0.1 #869/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:49:41] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:49:41] [RCON Client /127.0.0.1 #870/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:49:42] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:49:42] [RCON Client /127.0.0.1 #871/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:49:48] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:49:48] [RCON Client /127.0.0.1 #872/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:49:48] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:49:48] [RCON Client /127.0.0.1 #873/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:49:49] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:49:49] [RCON Client /127.0.0.1 #874/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:49:50] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:49:50] [RCON Client /127.0.0.1 #875/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:49:55] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:49:55] [RCON Client /127.0.0.1 #876/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:49:56] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:49:56] [RCON Client /127.0.0.1 #877/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:49:57] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:49:57] [RCON Client /127.0.0.1 #878/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:49:59] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:49:59] [RCON Client /127.0.0.1 #879/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:50:00] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:50:00] [RCON Client /127.0.0.1 #880/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:50:01] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:50:01] [RCON Client /127.0.0.1 #881/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:50:02] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:50:02] [RCON Client /127.0.0.1 #882/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:50:03] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:50:03] [RCON Client /127.0.0.1 #883/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:50:04] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:50:04] [RCON Client /127.0.0.1 #884/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:50:05] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:50:05] [RCON Client /127.0.0.1 #885/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:50:06] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:50:06] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Set the time to 6000]
+[15:50:06] [RCON Client /127.0.0.1 #886/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:50:06] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:50:06] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Set the weather to clear]
+[15:50:06] [RCON Client /127.0.0.1 #887/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:50:06] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:50:06] [RCON Client /127.0.0.1 #888/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:50:08] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:50:08] [RCON Client /127.0.0.1 #889/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:50:09] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:50:09] [RCON Client /127.0.0.1 #890/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:50:14] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:50:14] [RCON Client /127.0.0.1 #891/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:50:14] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:50:14] [RCON Client /127.0.0.1 #892/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:50:16] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:50:16] [RCON Client /127.0.0.1 #893/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:50:17] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:50:17] [RCON Client /127.0.0.1 #894/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:50:23] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:50:23] [RCON Client /127.0.0.1 #895/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:50:24] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:50:24] [RCON Client /127.0.0.1 #896/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:50:26] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:50:26] [RCON Client /127.0.0.1 #897/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:50:29] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:50:29] [RCON Client /127.0.0.1 #898/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:50:30] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:50:30] [RCON Client /127.0.0.1 #899/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:50:31] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:50:31] [RCON Client /127.0.0.1 #900/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:50:35] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:50:35] [RCON Client /127.0.0.1 #901/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:50:36] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:50:36] [RCON Client /127.0.0.1 #902/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:50:37] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:50:37] [RCON Client /127.0.0.1 #903/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:50:39] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:50:39] [RCON Client /127.0.0.1 #904/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:50:51] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:50:51] [RCON Client /127.0.0.1 #905/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:50:52] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:50:52] [RCON Client /127.0.0.1 #906/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:50:53] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:50:53] [RCON Client /127.0.0.1 #907/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:50:55] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:50:55] [RCON Client /127.0.0.1 #908/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:50:55] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:50:55] [RCON Client /127.0.0.1 #909/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:50:56] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:50:56] [RCON Client /127.0.0.1 #910/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:50:57] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:50:57] [RCON Client /127.0.0.1 #911/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:50:59] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:50:59] [RCON Client /127.0.0.1 #912/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:51:00] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:51:00] [RCON Client /127.0.0.1 #913/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:51:01] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:51:01] [RCON Client /127.0.0.1 #914/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:51:02] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:51:02] [RCON Client /127.0.0.1 #915/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:51:04] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:51:04] [RCON Client /127.0.0.1 #916/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:51:05] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:51:05] [RCON Client /127.0.0.1 #917/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:51:06] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:51:06] [RCON Client /127.0.0.1 #918/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:51:07] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:51:07] [RCON Client /127.0.0.1 #919/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:51:09] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:51:09] [RCON Client /127.0.0.1 #920/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:51:10] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:51:10] [RCON Client /127.0.0.1 #921/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:51:11] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:51:11] [RCON Client /127.0.0.1 #922/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:51:12] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:51:12] [RCON Client /127.0.0.1 #923/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:51:14] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:51:14] [RCON Client /127.0.0.1 #924/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[15:51:19] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[15:51:19] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Stopping the server]
+[15:51:19] [RCON Client /127.0.0.1 #925/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
