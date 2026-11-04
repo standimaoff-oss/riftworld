@@ -117,7 +117,7 @@ def main():
     # v0.39.3: масштаб привязан к ВЫСОТЕ в холке (2.15 блока) — раньше считался по высоте
     # 24 юнита и растягивал коня в ширину до 6 блоков.
     info = r.write("pegasus", MATS, "textures/entity/pegasus.png", scale_to=1.0, length_axis=1,
-                   length_blocks=2.5, scar_color=None, flip_y=True,
+                   length_blocks=2.5, scar_color=None, flip_y=False,
                    patterns={"coat": "dapple", "coat_shade": "dapple", "mane": "strands",
                              "feather": "bars", "feather_edge": "bars"})
     print(f"костей: {info['bones']}  кубоидов: {info['cubes']}  render_scale: {info['scale']}")

@@ -60,7 +60,7 @@ public class WendigoRenderer extends EntityRenderer<WendigoEntity> {
         body.render(pose, buf.getBuffer(RenderType.entityCutoutNoCull(TEXTURE)), light, OverlayTexture.NO_OVERLAY);
         if (eyes != null) {
             eyes.animate(time);
-            eyes.render(pose, buf.getBuffer(RenderType.eyes(EYES)), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
+            eyes.render(pose, buf.getBuffer(RenderType.entityCutoutNoCull(EYES)), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
         }
         pose.popPose();
         super.render(e, yaw, partial, pose, buf, light);

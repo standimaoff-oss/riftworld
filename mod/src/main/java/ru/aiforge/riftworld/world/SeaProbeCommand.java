@@ -3916,6 +3916,14 @@ public final class SeaProbeCommand {
                 sl.getEntitiesOfClass(ru.aiforge.riftworld.entity.MorokEntity.class,
                         new net.minecraft.world.phys.AABB(px - 30, ground - 12, pz - 30, px + 30, ground + 16, pz + 30))
                         .forEach(net.minecraft.world.entity.Entity::discard);
+                // v0.39.8: на площадке могли остаться Пегас и Вендиго от предыдущих проб
+                sl.getEntitiesOfClass(ru.aiforge.riftworld.entity.PegasusEntity.class,
+                        new net.minecraft.world.phys.AABB(px - 30, ground - 12, pz - 30, px + 30, ground + 16, pz + 30))
+                        .forEach(net.minecraft.world.entity.Entity::discard);
+                sl.getEntitiesOfClass(ru.aiforge.riftworld.entity.WendigoEntity.class,
+                        new net.minecraft.world.phys.AABB(px - 30, ground - 12, pz - 30, px + 30, ground + 16, pz + 30))
+                        .forEach(net.minecraft.world.entity.Entity::discard);
+                buildStage(sl, px, ground, pz, 6);   // v0.39.8: чистая сцена, как у Пегаса и Вендиго
                 var m = ru.aiforge.riftworld.registry.ModEntities.MOROK.get().create(sl);
                 if (m != null) {
                     m.moveTo(px + 0.5, ground, pz + 0.5, 205.0F, 0.0F);
@@ -3981,6 +3989,13 @@ public final class SeaProbeCommand {
                 // v0.39.7: в #387 проба отчиталась alive=2 — второй Вендиго заходил в кадр и мешал.
                 // Чистим прошлых и ставим ровно одного, без ИИ, иначе он уходит из кадра.
                 sl.getEntitiesOfClass(ru.aiforge.riftworld.entity.WendigoEntity.class,
+                        new net.minecraft.world.phys.AABB(px - 24, py - 12, pz - 24, px + 24, py + 12, pz + 24))
+                        .forEach(net.minecraft.world.entity.Entity::discard);
+                // v0.39.8: Пегас от предыдущей пробы стоял на той же сцене и лез в кадр
+                sl.getEntitiesOfClass(ru.aiforge.riftworld.entity.PegasusEntity.class,
+                        new net.minecraft.world.phys.AABB(px - 24, py - 12, pz - 24, px + 24, py + 12, pz + 24))
+                        .forEach(net.minecraft.world.entity.Entity::discard);
+                sl.getEntitiesOfClass(ru.aiforge.riftworld.entity.MorokEntity.class,
                         new net.minecraft.world.phys.AABB(px - 24, py - 12, pz - 24, px + 24, py + 12, pz + 24))
                         .forEach(net.minecraft.world.entity.Entity::discard);
                 var wd = ru.aiforge.riftworld.registry.ModEntities.WENDIGO.get().create(sl);

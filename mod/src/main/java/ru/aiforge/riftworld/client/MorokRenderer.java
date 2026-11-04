@@ -66,7 +66,7 @@ public class MorokRenderer extends EntityRenderer<MorokEntity> {
         // 2) глаза: полная яркость + RenderType.eyes (аддитивное «свечение» в темноте)
         if (eyes != null) {
             eyes.animate(time);
-            VertexConsumer glow = buf.getBuffer(RenderType.eyes(EYES));
+            VertexConsumer glow = buf.getBuffer(RenderType.entityCutoutNoCull(EYES));
             eyes.render(pose, glow, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
         }
         pose.popPose();

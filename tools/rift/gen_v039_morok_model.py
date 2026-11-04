@@ -112,8 +112,8 @@ def build_eyes():
     for sx in (-1, 1):
         x = -3 if sx < 0 else 2
         # уголь: маленький куб + чуть больший ореол вокруг него
-        # голова модели после flip_y живёт в отрицательных Y: 42 -> -(42+2)
-        cubes.append({"origin": [x, -44, EYE_Z - 0.2], "size": [3, 2, 1], "uv": [0, 0]})
+        # v0.39.8: модель пишется «вверх» (Y вверх), как и тело — глаза на высоте 42
+        cubes.append({"origin": [x, 42, EYE_Z - 0.2], "size": [3, 2, 1], "uv": [0, 0]})
     return {
         "texture_width": 16,
         "texture_height": 16,
@@ -121,7 +121,7 @@ def build_eyes():
         "translucent": True,
         "bones": [{
             "name": "head",
-            "pivot": [0, -44, -9],
+            "pivot": [0, 44, -9],
             "anim": {"axis": "x", "amp": 5.0, "speed": 1.0, "phase": 0.9},
             "cubes": cubes,
         }],
@@ -151,7 +151,7 @@ def eyes_texture():
 def main():
     r = build()
     info = r.write("morok", MATS, "textures/entity/morok.png", scale_to=1.0, length_axis=1,
-                   length_blocks=2.42, scar_color=None, flip_y=True,
+                   length_blocks=2.42, scar_color=None, flip_y=False,
                    patterns={"skin": "felt", "veil": "bare", "bone": "vein"})
     eyes = build_eyes()
     (ASSETS / "geo" / "morok_eyes.json").write_text(

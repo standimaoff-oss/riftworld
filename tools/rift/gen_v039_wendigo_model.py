@@ -118,7 +118,8 @@ def build_eyes():
     """Светящиеся глаза вендиго: отдельная геометрия под RenderType.eyes."""
     cubes = []
     for x in (-4, 2):
-        cubes.append({"origin": [x, -48, -16.4], "size": [2, 3, 1], "uv": [0, 0]})
+        # v0.39.8: тело пишется «вверх», значит глаза — на высоте 45..48
+        cubes.append({"origin": [x, 45, -16.4], "size": [2, 3, 1], "uv": [0, 0]})
     return {
         "texture_width": 16,
         "texture_height": 16,
@@ -126,7 +127,7 @@ def build_eyes():
         "translucent": True,
         "bones": [{
             "name": "head",
-            "pivot": [0, -44, -9],
+            "pivot": [0, 44, -9],
             "anim": {"axis": "x", "amp": 6.0, "speed": 0.9, "phase": 0.7},
             "cubes": cubes,
         }],
@@ -156,7 +157,7 @@ def eyes_texture():
 def main():
     r = build()
     info = r.write("wendigo", MATS, "textures/entity/wendigo.png", scale_to=1.0, length_axis=1,
-                   length_blocks=2.62, scar_color=None, flip_y=True,
+                   length_blocks=2.62, scar_color=None, flip_y=False,
                    patterns={"hide": "bare", "hide_dark": "bare", "bone": "vein", "antler": "vein"})
     (ASSETS / "geo" / "wendigo_eyes.json").write_text(
         json.dumps(build_eyes(), ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
