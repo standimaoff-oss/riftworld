@@ -198,6 +198,19 @@ if ! wait_connect; then
   start_client
   wait_connect || { echo "FATAL: клиент не поднялся со второй попытки"; tail -30 "$OUT/client.log"; exit 1; }
 fi
+# v0.39.6: сторож клиента. В прогонах #384/#385 JVM умирал молча (последняя строка лога —
+# переключение режима), и понять это можно было только по «No entity was found» через полчаса.
+# Теперь смерть клиента пишется в лог, а hs_err_pid*.log копируется в отчёт.
+(
+  while kill -0 "$CPID" 2>/dev/null; do sleep 10; done
+  echo "[$(date -u +%H:%M:%S)] !! JVM КЛИЕНТА УМЕРЛА (pid $CPID) — дальше все кадры и пробы недействительны" >>"$OUT/client.log" 2>/dev/null || true
+  for h in mod/hs_err_pid*.log "$RUN"/hs_err_pid*.log mod/run/hs_err_pid*.log; do
+    [ -f "$h" ] && cp "$h" "$OUT/" 2>/dev/null || true
+  done
+  [ -d "$RUN/crash-reports" ] && cp "$RUN"/crash-reports/*.txt "$OUT/" 2>/dev/null || true
+) &
+WATCHDOG=$!
+
 sleep 25
 shot "01_boot"
 
@@ -492,6 +505,7 @@ CNT=$(EL execute at TestPlayer run execute if entity @e[type=riftworld:sea_fish,
 if [[ "$CNT" == *"Test passed"* ]]; then log "  OK   рыбы в мире есть и тикают"
 else log "  FAIL рыб в мире нет"; FAILS=$((FAILS + 1)); fi
 
+
 # ---------------------------------------------------------------- скриншоты
 echo "== скриншоты =="
 key F1                       # убрать HUD — «красивые» кадры
@@ -507,6 +521,43 @@ lookat() { # lookat <cx> <cy> <cz> <tx> <ty> <tz> <pause> <name> — камер�
   yp=$(python3 tools/ci/lookat_angles.py "$1" "$2" "$3" "$4" "$5" "$6")
   view "$1" "$2" "$3" "${yp% *}" "${yp#* }" "$7" "$8"
 }
+
+# ---------------------------------------------------------------- модели мобов
+# v0.39.6: кадры переделанных мобов снимаются В САМОМ НАЧАЛЕ.
+# Два прогона подряд (#384, #385) клиент умирал на «садах» (кадр 127), и кадры Пегаса/Вендиго,
+# стоявшие в конце очереди, не снимались вообще — то есть переделанные модели никто не видел.
+# Здесь проба и кадр делаются сразу после рыб, до тяжёлой генерации островов.
+mob_model_probe() {  # mob_model_probe <kind> <shot_name>
+  local kind="$1" shot_name="$2" S0 SAT SX SY SZ S1 SBLK SAIR SCAM
+  EL tp TestPlayer 0 110 0 >/dev/null 2>&1 || true
+  sleep 1
+  S0=$(EL execute at TestPlayer in riftworld:elisar run riftstruct "$kind" 2>&1 | tr '\r\n' '  ')
+  SAT=$(printf '%s' "$S0" | sed -n 's/.* at=\([-0-9]*,[-0-9]*,[-0-9]*\).*/\1/p' | tail -1)
+  if [ -z "${SAT:-}" ]; then
+    log "  FAIL /riftstruct $kind не нашёл структуру (${S0:0:140})"; FAILS=$((FAILS + 1)); return
+  fi
+  SX=$(printf '%s' "$SAT" | cut -d, -f1); SY=$(printf '%s' "$SAT" | cut -d, -f2); SZ=$(printf '%s' "$SAT" | cut -d, -f3)
+  EL tp TestPlayer "$SX" "$((SY + 8))" "$SZ" >/dev/null 2>&1 || true
+  sleep 6
+  S1=$(EL execute at TestPlayer in riftworld:elisar run riftstruct "$kind" 2>&1 | tr '\r\n' '  ')
+  log "  /riftstruct $kind -> ${S1:0:280}"
+  SBLK=$(printf '%s' "$S1" | sed -n 's/.* blocks=\([0-9]*\).*/\1/p' | tail -1)
+  SAIR=$(printf '%s' "$S1" | sed -n 's/.* sub_air=\([0-9]*\).*/\1/p' | tail -1)
+  SCAM=$(printf '%s' "$S1" | grep -o 'cam=[-0-9.]*,[-0-9.]*,[-0-9.]*:[-0-9.]*,[-0-9.]*,[-0-9.]*' | tail -1 | sed 's/^cam=//')
+  if [ "${SBLK:-0}" -ge 800 ] && [ "${SAIR:-0}" -eq 0 ]; then
+    log "  OK   структура $kind построена: blocks=${SBLK}, sub_air=${SAIR:-0}"
+  else
+    log "  FAIL структура $kind: blocks=${SBLK:-0} (ожидалось >=800), sub_air=${SAIR:-?}"; FAILS=$((FAILS + 1))
+  fi
+  if [ -n "${SCAM:-}" ]; then
+    lookat $(printf '%s' "$SCAM" | cut -d: -f1 | tr ',' ' ') $(printf '%s' "$SCAM" | cut -d: -f2 | tr ',' ' ') 6 "$shot_name"
+  fi
+}
+
+echo "== v0.33–v0.36: переделанные модели — Пегас, Вендиго, биом Мороковая Падь =="
+mob_model_probe "v34_pegasus"     "147_v34_pegasus_winged_steed"
+mob_model_probe "v35_wendigo"     "148_v35_wendigo_antlered_horror"
+mob_model_probe "v36_morok_biome" "149_v36_morok_hollow_fog_forest"
 view "$VX" 66 "$VZ" 90 42 14 "02_reef_from_above"        # рифовый сад сверху сквозь воду
 view "$((VX + 10))" "$((VF + 6))" "$VZ" 270 18 14 "03_reef_underwater"   # риф вплотную под водой
 view "$((VX + 4))" "$((VF + 9))" "$VZ" 210 22 14 "03b_reef_hills"         # рифовые холмы и палитры
@@ -1328,15 +1379,6 @@ biome_section() {
     log "  FAIL DT в мире не растёт (${DTN:-0} блоков аддона) — фичи биома не запускаются"
     FAILS=$((FAILS + 1))
   fi
-
-  # ---------- v0.39.5: КАДРЫ НОВЫХ МОДЕЛЕЙ — ПЕРВЫМИ среди тяжёлых проб ----------
-  # Прогон #384: клиент умер на «Хрустальных разломах» (кадр 127), и кадры Пегаса/Вендиго/Морока,
-  # стоявшие в конце очереди, не снялись вообще. Модели мобов — то, что владелец просил переделать,
-  # поэтому их кадры снимаем ДО тяжёлой генерации архипелага.
-  echo "== v0.33–v0.36 (сразу): Пегас, Вендиго, биом Мороковая Падь =="
-  probe_and_shot_struct "v34_pegasus"                800 "147_v34_pegasus_winged_steed"            0 0 6
-  probe_and_shot_struct "v35_wendigo"                800 "148_v35_wendigo_antlered_horror"         0 0 6
-  probe_and_shot_struct "v36_morok_biome"            800 "149_v36_morok_hollow_fog_forest"        0 0 6
 
   # ---------- Новый биом: Хрустальные разломы (riftworld:crystal_rifts, 02_crystal_sanctum.png) ----------
   locate_check riftworld:crystal_rifts crystal_rifts

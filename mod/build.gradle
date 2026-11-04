@@ -107,7 +107,10 @@ minecraft {
             }
             // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
             property 'forge.enabledGameTestNamespaces', mod_id
-            jvmArgs '-Xmx2400M', '-XX:+UseG1GC'
+            // v0.39.6: 2400M не хватало — в прогонах #384/#385 JVM умирала без стектрейса
+            // ровно на телепорте к «садам» (большая прогрузка). Плюс ExitOnOutOfMemoryError:
+            // при нехватке памяти в логе появится внятная строка вместо тишины.
+            jvmArgs '-Xmx4096M', '-XX:+UseG1GC', '-XX:+ExitOnOutOfMemoryError'
             property 'fml.earlyprogresswindow', 'false'
             args '--username', 'TestPlayer', '--width', '1920', '--height', '1080'
             if (project.hasProperty('autoJoin')) {

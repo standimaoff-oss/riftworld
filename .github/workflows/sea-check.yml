@@ -298,6 +298,9 @@ jobs:
             mkdir -p "$DEST/crash"
             cp ci-shots/crash/*.txt "$DEST/crash/" 2>/dev/null || true
           fi
+          if ls ci-shots/hs_err_pid*.log >/dev/null 2>&1; then
+            for h in ci-shots/hs_err_pid*.log; do tail -c 100000 "$h" > "$DEST/$(basename "$h")" || true; done
+          fi
           grep -nE 'Exception|\\bERROR\\b|FATAL|Unable to load model|Missing textures' ci-shots/client.log 2>/dev/null \
             | tail -80 > "$DEST/client_errors.txt" || true
           # индекс с прямыми ссылками на каждый кадр
