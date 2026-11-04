@@ -3981,8 +3981,8 @@ public final class SeaProbeCommand {
             // В v0.38.3 стоял радиус 48 с полной загрузкой 7x7 чанков — шаг клиента
             // вылезал за лимит 50 минут (прогон #374), и пробы после него не выполнялись.
             int forced = 0;
-            for (int cx = (px - rad) >> 4; cx <= (px + rad) >> 4 && forced < 20; ++cx) {
-                for (int cz = (pz - rad) >> 4; cz <= (pz + rad) >> 4 && forced < 20; ++cz) {
+            for (int cx = (px - rad) >> 4; cx <= (px + rad) >> 4 && forced < 26; ++cx) {
+                for (int cz = (pz - rad) >> 4; cz <= (pz + rad) >> 4 && forced < 26; ++cz) {
                     if (level.hasChunk(cx, cz)) continue;
                     level.getChunk(cx, cz);
                     ++forced;
@@ -3991,7 +3991,7 @@ public final class SeaProbeCommand {
             for (int x = px - rad; x <= px + rad; ++x) {
                 for (int z = pz - rad; z <= pz + rad; ++z) {
                     if (!level.hasChunk(x >> 4, z >> 4)) continue;
-                    for (int y = ground - 6; y <= ground + 26; ++y) {
+                    for (int y = ground - 20; y <= ground + 30; ++y) {
                         BlockState st = level.getBlockState(mp.set(x, y, z));
                         if (st.isAir()) continue;
                         if (st.is(MorokBlocks.MOROK_LOG.get())) ++logs;

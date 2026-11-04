@@ -302,8 +302,10 @@ public final class MorokHollow {
      */
     public static boolean treeHere(int x, int z) {
         if (!inside(x + 0.5, z + 0.5)) return false;
-        if (Math.floorMod(x, 7) != 3 || Math.floorMod(z, 7) != 3) return false;
-        return ElisarChunkGenerator.hash(x, z, 913) < 0.66;
+        // v0.39.1: решётка 5x5 вместо 7x7. При 7x7 в круге радиуса 32 вырастало два дерева —
+        // это не бор, а «три палки в тумане» (гейт trees >= 6 не проходил). 5x5 даёт ~80 стволов.
+        if (Math.floorMod(x, 5) != 2 || Math.floorMod(z, 5) != 2) return false;
+        return ElisarChunkGenerator.hash(x, z, 913) < 0.62;
     }
 
     /** Высота ствола бледной сосны (9–17 блоков). */

@@ -2099,7 +2099,9 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 boolean snag = !MorokHollow.treeHere(x, z) && h > 0.965 && MorokHollow.inside(x + 0.5, z + 0.5);
                 boolean fallen = !MorokHollow.treeHere(x, z) && h > 0.93 && h < 0.945
                         && MorokHollow.inside(x + 0.5, z + 0.5);
-                boolean brambles = h > 0.86 && h < 0.885 && MorokHollow.inside(x + 0.5, z + 0.5);
+                // v0.39.1: полоса колючек была 2.5 % и почти всегда упиралась в склон —
+                // в отчёте за прогон #378 колючек 0 при гейте >= 3. Расширяем полосу.
+                boolean brambles = h > 0.78 && h < 0.90 && MorokHollow.inside(x + 0.5, z + 0.5);
                 boolean fangs = Math.floorMod(x, 13) == 6 && Math.floorMod(z, 13) == 6
                         && MorokHollow.inside(x + 0.5, z + 0.5);
                 if (!(big || small || snag || fallen || brambles || fangs)) continue;
@@ -2193,7 +2195,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 if (brambles) {
                     // колючки — крестик-растение (как ванильный куст): только ПЛАСТОМ по земле,
                     // ставить их друг на друга нельзя (canSurvive не разрешает грунт из колючек)
-                    int n = 4 + (int) Math.round(hash(x, z, 925) * 5);
+                    int n = 6 + (int) Math.round(hash(x, z, 925) * 5);
                     for (int i = 0; i < n; ++i) {
                         int cx = x + ((i * 5) % 7) - 3;
                         int cz = z + ((i * 7) % 7) - 3;
