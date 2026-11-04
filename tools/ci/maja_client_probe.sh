@@ -94,6 +94,42 @@ fi
 rq list | grep -q TestPlayer || fail "Client disconnected before the screenshot"
 echo "OK: real client joined the server; screenshot saved to $OUT/maja-client-front.png (requires visual review)."
 
+# The rebuilt creatures must load and render in the real client, not just the
+# software preview. Clear the titan so it cannot obscure the much smaller rigs.
+rq kill '@e[type=riftworld:el_gran_maja]' >/dev/null
+rq summon riftworld:liopleurodon 0 200 0 '{NoAI:1b,NoGravity:1b,PersistenceRequired:1b}' >/dev/null
+rq tp TestPlayer -11 204 12 facing 0 200 0 >/dev/null
+sleep 15
+grep -Fq '[riftworld] geo liopleurodon:' "$OUT/maja-client.log" || fail 'Liopleurodon model was not loaded by the real client'
+import -window root "$OUT/fauna-liopleurodon.png"
+rq summon riftworld:pegasus 32 200 0 '{NoAI:1b,NoGravity:1b,PersistenceRequired:1b}' >/dev/null
+rq tp TestPlayer 23 204 10 facing 32 202 0 >/dev/null
+sleep 15
+grep -Fq '[riftworld] geo pegasus:' "$OUT/maja-client.log" || fail 'Pegasus model was not loaded by the real client'
+import -window root "$OUT/fauna-pegasus-unsaddled.png"
+rq data merge entity '@e[type=riftworld:pegasus,limit=1]' '{Tamed:1b,Saddle:1b}' >/dev/null
+rq data get entity '@e[type=riftworld:pegasus,limit=1]' Saddle | grep -q '1b' || fail 'Pegasus saddle was not synchronized'
+sleep 5
+import -window root "$OUT/fauna-pegasus-saddled.png"
+# Photograph a trophy in hand and the creative inventory. Pixel-level visual
+# review is still required; the server probe separately verifies actual drops.
+rq fill 44 199 7 50 199 13 minecraft:stone >/dev/null
+rq gamemode creative TestPlayer >/dev/null
+rq tp TestPlayer 47 200 10 facing 32 202 0 >/dev/null
+for item in wendigo_antler pegasus_feather liopleurodon_tooth; do rq give TestPlayer "riftworld:$item" 1 >/dev/null; done
+rq item replace entity TestPlayer weapon.mainhand with riftworld:wendigo_antler >/dev/null
+sleep 5
+import -window root "$OUT/fauna-trophy-held.png"
+xdotool key --window "$WID" e
+sleep 3
+import -window root "$OUT/fauna-trophy-inventory.png"
+xdotool key --window "$WID" e
+if grep -Ei 'не удалось загрузить geo-модель (pegasus|liopleurodon)|Error while rendering entity|Unable to load.*(pegasus|liopleurodon)|Failed to load.*(pegasus|liopleurodon)' "$OUT/maja-client.log"; then
+  fail 'Client log reports a rebuilt fauna renderer/resource failure'
+fi
+rq list | grep -q TestPlayer || fail 'Client disconnected during the fauna visual test'
+echo "OK: real client loaded both fauna rigs and photographed unsaddled/saddled Pegasus plus trophies (screenshots require review)."
+
 # Exercise the actual custom dimension and the new biome, not just overworld registration.
 LOC=$(rq execute in riftworld:elisar positioned 0 54 0 run locate biome riftworld:maja_ocean)
 echo "Biome locate: $LOC"

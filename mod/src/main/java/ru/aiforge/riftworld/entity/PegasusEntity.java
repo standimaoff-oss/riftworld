@@ -181,7 +181,8 @@ public class PegasusEntity extends Animal {
 
     @Override
     public double getPassengersRidingOffset() {
-        return 1.15D;
+        // Match the saddle height of the rebuilt horse instead of embedding the rider.
+        return 1.75D;
     }
 
     @Override

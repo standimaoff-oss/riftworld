@@ -1018,6 +1018,18 @@ public class ElisarChunkGenerator extends ChunkGenerator {
 
     @Override
     public CompletableFuture<ChunkAccess> fillFromNoise(Executor exec, Blender blender, RandomState rs, StructureManager sm, ChunkAccess chunk) {
+        // The NOISE stage was previously generated synchronously in Minecraft's
+        // single worldgen mailbox, blocking unrelated chunks behind a long ocean
+        // fill. Match vanilla's background execution, then complete on the chunk
+        // mailbox. All mutable scratch state below is local to this chunk.
+        // ChunkAccess.setBlockState already uses the section's checked write;
+        // unlike vanilla's direct unchecked section writes, do not acquire the
+        // entire section around it (that would double-acquire the palette lock).
+        return CompletableFuture.supplyAsync(() -> fillElisarChunk(chunk), net.minecraft.Util.backgroundExecutor())
+                .whenCompleteAsync((result, error) -> { }, exec);
+    }
+
+    private ChunkAccess fillElisarChunk(ChunkAccess chunk) {
         CityPlan plan = CityPlan.get();
         BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
         int x0 = chunk.getPos().getMinBlockX(), z0 = chunk.getPos().getMinBlockZ();
@@ -1678,7 +1690,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 if (seaFloor[dx][dz] != Integer.MIN_VALUE)
                     ElisarSea.decorate(chunk, mp, x0 + dx, z0 + dz, seaFloor[dx][dz], plan.ocean);
         Heightmap.primeHeightmaps(chunk, EnumSet.of(Heightmap.Types.OCEAN_FLOOR_WG, Heightmap.Types.WORLD_SURFACE_WG));
-        return CompletableFuture.completedFuture(chunk);
+        return chunk;
     }
 
     /**

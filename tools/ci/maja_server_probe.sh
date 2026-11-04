@@ -41,6 +41,17 @@ rq setblock 0 200 155 minecraft:stone | tee -a "$LOG"
 wait_ready 0b
 rq setblock 0 200 155 minecraft:air | tee -a "$LOG"
 wait_ready 1b
+log "A waterlogged solid must still block the full model..."
+rq setblock 0 200 155 'minecraft:oak_slab[type=bottom,waterlogged=true]' | tee -a "$LOG"
+wait_ready 0b
+rq setblock 0 200 155 minecraft:air | tee -a "$LOG"
+wait_ready 1b
+log "A waterlogged, no-collision sea decal must remain passable..."
+rq setblock 0 200 155 'riftworld:sea_shells[waterlogged=true]' | tee -a "$LOG"
+rq execute if block 0 200 155 riftworld:sea_shells | grep -q 'Test passed' || fail "Sea decal was not placed"
+wait_ready 1b
+rq execute if block 0 200 155 riftworld:sea_shells | grep -q 'Test passed' || fail "Sea decal disappeared before the check"
+rq setblock 0 200 155 minecraft:air | tee -a "$LOG"
 log "A world border smaller than the body must also reject it..."
 rq worldborder set 300 | tee -a "$LOG"
 wait_ready 0b

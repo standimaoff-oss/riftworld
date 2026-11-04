@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -36,6 +37,11 @@ public class LiopleurodonRenderer extends EntityRenderer<LiopleurodonEntity> {
     }
 
     @Override
+    public boolean shouldRender(LiopleurodonEntity e, Frustum frustum, double x, double y, double z) {
+        return e.shouldRender(x, y, z) && (e.noCulling || frustum.isVisible(e.getBoundingBoxForCulling().inflate(5.0, 1.0, 5.0)));
+    }
+
+    @Override
     public void render(LiopleurodonEntity e, float yaw, float partial, PoseStack pose, MultiBufferSource buf, int light) {
         GeoModel model = GeoModel.of("liopleurodon");
         if (model == null) {
@@ -50,7 +56,8 @@ public class LiopleurodonRenderer extends EntityRenderer<LiopleurodonEntity> {
         pose.mulPose(Axis.YP.rotationDegrees(180.0F - yRot));   // модель смотрит носом в -Z
         pose.mulPose(Axis.XP.rotationDegrees(xRot));
         float s = model.renderScale;
-        pose.scale(s, s, s);
+        // New source rig is Y-up; the game JSON stores Y-down model coordinates.
+        pose.scale(s, -s, s);
         model.animate(time);
 
         VertexConsumer vc = buf.getBuffer(model.translucent

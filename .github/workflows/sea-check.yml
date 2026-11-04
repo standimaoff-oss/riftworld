@@ -3,6 +3,8 @@ name: Build and smoke-test Riftworld
 on:
   push:
     branches: ["arena/**"]
+    paths-ignore:
+      - 'release/**'
   pull_request:
     branches: ["main"]
   workflow_dispatch:
@@ -33,6 +35,7 @@ jobs:
           python -m pip install numpy pillow
           python reports/el_gran_maja_model/validate_el_gran_maja_model.py
           python reports/el_gran_maja_model/validate_collision_bounds.py
+          python tools/rift/validate_reference_fauna.py
           mkdir -p /tmp/maja-unit
           javac -d /tmp/maja-unit mod/src/main/java/ru/aiforge/riftworld/world/DeepOcean.java mod/src/main/java/ru/aiforge/riftworld/world/MajaSafetyPolicy.java tests/java/MajaRulesTest.java
           java -cp /tmp/maja-unit MajaRulesTest
@@ -44,7 +47,7 @@ jobs:
           cd mod
           chmod +x gradlew
           for attempt in 1 2 3; do
-            if ./gradlew jar dtJar majaSafetyCheck --no-daemon --console=plain 2>&1 | tee ../build-ci.log; then
+            if ./gradlew jar dtJar majaSafetyCheck seaWorldgenParity worldgenConcurrencyCheck --no-daemon --console=plain 2>&1 | tee ../build-ci.log; then
               exit 0
             fi
             # A javac error is deterministic; retries are only for transient Maven errors.
@@ -91,7 +94,7 @@ jobs:
           name: riftworld-build
           path: build-artifact
       - uses: gradle/actions/setup-gradle@v4
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/arena/361da66e-riftworld'
       - name: Boot a real Forge server and probe it
         shell: bash
         env:
@@ -104,8 +107,11 @@ jobs:
       - name: Verify Maja motion and block/border collisions on the server
         shell: bash
         run: bash tools/ci/maja_server_probe.sh
+      - name: Verify creature trophy drops
+        shell: bash
+        run: bash tools/ci/fauna_server_probe.sh
       - name: Real client rendering smoke test
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/arena/361da66e-riftworld'
         shell: bash
         run: bash tools/ci/maja_client_probe.sh
       - name: Stop the test server
@@ -119,3 +125,69 @@ jobs:
           path: ci-out/
           if-no-files-found: warn
           retention-days: 14
+
+  candidate-profile:
+    needs: build
+    if: github.ref == 'refs/heads/arena/361da66e-riftworld'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/download-artifact@v4
+        with:
+          name: riftworld-build
+          path: build-artifact
+      - name: Boot candidate on a fresh disposable server
+        env:
+          KEEP: '1'
+          NORMAL_PROBE: '0'
+        run: |
+          mkdir -p mod/build/libs
+          find build-artifact -name '*.jar' -exec cp {} mod/build/libs/ \;
+          bash tools/ci/server_check.sh
+      - name: Profile candidate generation and collision
+        run: bash tools/ci/perf_probe.sh
+      - name: Stop server
+        if: always()
+        run: python3 tools/rcon.py --password riftci --log '' --timeout 20 stop || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: candidate-performance-profile
+          path: ci-out/
+          if-no-files-found: warn
+
+  addon-smoke:
+    needs: build
+    if: github.ref == 'refs/heads/arena/361da66e-riftworld'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/download-artifact@v4
+        with:
+          name: riftworld-build
+          path: build-artifact
+      - name: Boot Forge with Dynamic Trees and the add-on
+        env:
+          KEEP: '0'
+          NORMAL_PROBE: '0'
+          WITH_DT: '1'
+        run: |
+          mkdir -p mod/build/libs
+          find build-artifact -name '*.jar' -exec cp {} mod/build/libs/ \;
+          bash tools/ci/server_check.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: riftworld-addon-smoke
+          path: ci-out/
+          if-no-files-found: warn
