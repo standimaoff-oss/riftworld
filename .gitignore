@@ -1,0 +1,6 @@
+
+# локальный venv для оффлайн-генераторов текстур (tools/rift/*.py)
+.venv-tools/
+
+.cache/
+__pycache__/
