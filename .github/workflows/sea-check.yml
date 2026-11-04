@@ -212,7 +212,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p reports/check-0.41.4
-          for f in fauna-liopleurodon.png fauna-liopleurodon-motion.png fauna-pegasus-motion.png fauna-pegasus-unsaddled.png fauna-pegasus-saddled.png maja-natural-diagnostic.txt predator-test.txt performance.txt; do
+          for f in fauna-liopleurodon.png fauna-liopleurodon-motion.png fauna-pegasus-motion.png fauna-pegasus-unsaddled.png fauna-pegasus-saddled.png maja-natural-diagnostic.txt predator-test.txt performance.txt client-commands.log; do
             path=$(find exported -name "$f" -print -quit)
             [ -z "$path" ] || cp "$path" "reports/check-0.41.4/$f"
           done

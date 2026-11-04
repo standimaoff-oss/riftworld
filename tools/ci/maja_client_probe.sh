@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # A focused visual smoke check; server + NoAI test titan come from maja_server_probe.sh.
-set -euo pipefail
+set -Eeuo pipefail
 OUT=${OUT:-ci-out}
 RUN=${RUN:-ci/maja-run}
 mkdir -p "$OUT" "$RUN/client/config"
@@ -17,7 +17,8 @@ on_error() {
   fi
 }
 trap on_error EXIT
-rq() { python3 tools/rcon.py --password "${RCON_PW:-riftci}" --log "" --timeout 90 "$@"; }
+trap 'code=$?; echo "::error title=Client test failed::line $LINENO, exit $code, command: $BASH_COMMAND"' ERR
+rq() { python3 tools/rcon.py --password "${RCON_PW:-riftci}" --log "$OUT/client-commands.log" --timeout 90 "$@"; }
 
 sudo apt-get update -qq
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq xvfb openbox x11-utils xdotool imagemagick libgl1 libglx-mesa0 libxi6 libxxf86vm1 libxfixes3 libxrender1 libxkbcommon0 libsm6 libopenal1 >/dev/null
@@ -45,7 +46,7 @@ overrideHeight:1080
 mipmapLevels:0
 entityDistanceScaling:1.5
 OPTS
-export DISPLAY=:99 LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe MESA_GL_VERSION_OVERRIDE=3.3
+export ALSOFT_DRIVERS=null DISPLAY=:99 LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe MESA_GL_VERSION_OVERRIDE=3.3
 Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp >"$OUT/maja-xvfb.log" 2>&1 &
 openbox >"$OUT/maja-openbox.log" 2>&1 &
 for _ in $(seq 1 30); do xdpyinfo -display :99 >/dev/null 2>&1 && break; sleep 1; done

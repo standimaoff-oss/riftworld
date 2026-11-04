@@ -68,13 +68,16 @@ for x in 1664 1680 1696 1712 1728 1744; do
     conditions="$conditions if block $x -64 $z bedrock"
   done
 done
-ready_command="execute in riftworld:elisar $conditions run time query gametime"
+ready_command="execute in riftworld:elisar${conditions} run time query gametime"
 # Minecraft 1.20.1's RCON reader has a 1460-byte buffer, including headers.
 [ "${#ready_command}" -lt 1400 ] || { echo '::error title=Profiler::readiness command exceeds RCON packet budget'; exit 1; }
 ready=0
 for _ in $(seq 1 180); do
   response=$(rq "$ready_command" 2>&1 || true)
   if [[ "$response" == *'The time is'* ]]; then ready=1; break; fi
+  if [[ "$response" == *'Incorrect argument'* || "$response" == *'Unknown command'* ]]; then
+    log "Invalid readiness command: $response"; exit 1
+  fi
   sleep 2
 done
 ready_elapsed=$(( $(date +%s) - START ))
