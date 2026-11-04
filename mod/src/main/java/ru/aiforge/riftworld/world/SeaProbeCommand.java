@@ -3843,6 +3843,7 @@ public final class SeaProbeCommand {
             int px = 1200, pz = 820;
             int ground = 140;
             boolean natural = false;
+            int[] scan = ru.aiforge.riftworld.world.MorokHollow.scanStats(1200, 820, 10);
             int[] spot = morokSpot(level, 1200, 820, 10);
             if (spot != null) {
                 px = spot[0];
@@ -3854,6 +3855,13 @@ public final class SeaProbeCommand {
             int trunks = 0;   // колонн ствола = число деревьев/сухостоя (патриарх даёт 4)
             BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
             int rad = 48;
+            // v0.38.3: БЕЗ этого счёт читал только тот чанк, где стоял игрок, и лес «не находился»
+            // (в #371 получилось trees=2 при живом биоме). Грузим кольцо чанков вокруг точки.
+            for (int cx = (px - rad) >> 4; cx <= (px + rad) >> 4; ++cx) {
+                for (int cz = (pz - rad) >> 4; cz <= (pz + rad) >> 4; ++cz) {
+                    level.getChunk(cx, cz);
+                }
+            }
             for (int x = px - rad; x <= px + rad; ++x) {
                 for (int z = pz - rad; z <= pz + rad; ++z) {
                     if (!level.hasChunk(x >> 4, z >> 4)) continue;
@@ -3909,6 +3917,7 @@ public final class SeaProbeCommand {
             int metric = (trunks >= 6 && logs >= 30 && leaves >= 120) ? (trunks * 40 + logs + leaves / 4) : 0;
             String line = "riftstruct kind=v37_morok_natural at=" + px + "," + (ground + 2) + "," + pz
                     + " natural=" + natural + " biome=" + biome
+                    + " regions=" + scan[0] + " land_regions=" + scan[1]
                     + " trees=" + trunks + " logs=" + logs + " leaves=" + leaves
                     + " brambles=" + brambles + " fangs=" + fangs + " carpets=" + carpets
                     + " rime=" + rime + " soil=" + soil

@@ -62,14 +62,65 @@ public final class MorokHollow {
             if (sg != null && Math.hypot(cx - sg.hub.cx, cz - sg.hub.cz) < R + sg.hub.maxReach() + 60) continue;
             MistKeep.Region mk = MistKeep.regionAt(cx, cz);
             if (mk != null && Math.hypot(cx - mk.cx, cz - mk.cz) < R + mk.Rr + 80) continue;
-            // ВАЖНО (v0.38.2): никаких запросов к карте островов из gen()! Раньше здесь
-            // была проверка «регион на суше» через CityPlan/WildIslands, и она попадала
-            // в путь генерации чанков: прогон #371 залип на /riftbiome crystal, потому что
-            // построение тайлов островов рекурсивно дёргало генерацию регионов.
-            // Суша проверяется там, где это дёшево и уместно — в {@link #landSpot}.
+            // v0.38.3: регион обязан задевать сушу, иначе биом физически не появляется —
+            // ElisarBiomeSource красит в Падь только острова. Проверка идёт через
+            // WildIslands.cell(...) — тот же примитив, что использует FloatingIslands:
+            // это чистая математика по сетке 160x160 с кэшем, без CityPlan.islandAt и без
+            // построения тайлов (именно оно в v0.38.1 залипло на /riftbiome crystal).
+            if (!touchesLand(cx, cz, R)) continue;
             return new Region(cx, cz, R, FIXED ^ ((long) cx * 1000003L + (long) cz * 7867L));
         }
         return null;
+    }
+
+    /** Есть ли суша ровно в этой точке (дикие острова: сетка {@code WildIslands.CELL}). */
+    public static boolean landAt(double x, double z) {
+        int cell = WildIslands.CELL;
+        int cx = Math.floorDiv((int) Math.floor(x), cell);
+        int cz = Math.floorDiv((int) Math.floor(z), cell);
+        for (int dx = -1; dx <= 1; ++dx) {
+            for (int dz = -1; dz <= 1; ++dz) {
+                for (CityPlan.Island isl : WildIslands.cell(cx + dx, cz + dz).islands) {
+                    if (isl.contains(x, z)) return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /** Задевает ли регион сушу: хотя бы четверть пробных колонок должны быть островом. */
+    private static boolean touchesLand(int cx, int cz, int R) {
+        int hits = 0, total = 0;
+        for (double frac : new double[]{0.75, 0.55, 0.35}) {
+            for (int i = 0; i < 8; ++i) {
+                double a = i * Math.PI / 4.0;
+                double x = cx + R * frac * Math.cos(a);
+                double z = cz + R * frac * Math.sin(a);
+                ++total;
+                if (landAt(x, z)) ++hits;
+            }
+        }
+        return total > 0 && hits * 3 >= total;   // >= 25 %
+    }
+
+    /**
+     * Диагностика для пробы: сколько регионов Пади рядом и у скольких из них есть суша.
+     *
+     * @return {@code {регионов, регионов на суше}}
+     */
+    public static int[] scanStats(int nearX, int nearZ, int cellRadius) {
+        int scx = Math.floorDiv(nearX, SUPER);
+        int scz = Math.floorDiv(nearZ, SUPER);
+        int all = 0, land = 0;
+        for (int dx = -cellRadius; dx <= cellRadius; ++dx) {
+            for (int dz = -cellRadius; dz <= cellRadius; ++dz) {
+                Region rg = region(scx + dx, scz + dz);
+                if (rg == null) continue;
+                ++all;
+                if (touchesLand(rg.cx, rg.cz, rg.R)) ++land;
+            }
+        }
+        return new int[]{all, land};
     }
 
     /**
@@ -82,7 +133,6 @@ public final class MorokHollow {
      * @return {@code {x, z, Region}} или {@code null}, если суши под Падью нет рядом
      */
     public static Object[] findLandRegion(int nearX, int nearZ, int cellRadius) {
-        CityPlan plan = CityPlan.get();
         int scx = Math.floorDiv(nearX, SUPER);
         int scz = Math.floorDiv(nearZ, SUPER);
         java.util.List<Region> found = new java.util.ArrayList<>();
@@ -95,7 +145,7 @@ public final class MorokHollow {
         // ближние к запрошенной точке — первыми
         found.sort(java.util.Comparator.comparingDouble(
                 r -> Math.hypot(r.cx - nearX, r.cz - nearZ)));
-        int budget = 900;   // страховка от гигантских карт островов
+        int budget = 2400;  // страховка от долгого поиска
         for (Region rg : found) {
             // кольца внутри региона (вес >= 0.55 требует d <= R-25), 16 направлений
             for (double frac : new double[]{0.70, 0.50, 0.30}) {
@@ -105,7 +155,7 @@ public final class MorokHollow {
                     int z = rg.cz + (int) Math.round(rg.R * frac * Math.sin(a));
                     if (--budget <= 0) return null;
                     if (weight(x + 0.5, z + 0.5) < 0.55) continue;
-                    if (plan.islandAt(x + 0.5, z + 0.5) == null) continue;
+                    if (!landAt(x + 0.5, z + 0.5)) continue;
                     return new Object[]{x, z, rg};
                 }
             }
@@ -200,7 +250,7 @@ public final class MorokHollow {
                 double a = n * Math.PI / 4.0;
                 int x = bx + (int) Math.round(r * Math.cos(a));
                 int z = bz + (int) Math.round(r * Math.sin(a));
-                if (plan.islandAt(x + 0.5, z + 0.5) == null) continue;
+                if (!landAt(x + 0.5, z + 0.5)) continue;
                 level.getChunk(x >> 4, z >> 4);
                 int top = level.getHeight(
                         net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
