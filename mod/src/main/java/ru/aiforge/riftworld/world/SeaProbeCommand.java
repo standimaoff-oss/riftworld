@@ -3683,23 +3683,14 @@ public final class SeaProbeCommand {
             // «model_boxes=53» литералом: число кубоидов и костей читается из geo-JSON,
             // иначе цифра в отчёте ничего не доказывала.
             int px = 696, py = 30, pz = 696;
-            int halfX = 24, halfZ = 16, hi = 11;
             int alive = 0;
             if (level instanceof ServerLevel) {
-                for (int dx = -halfX; dx <= halfX; ++dx) {
-                    for (int dz = -halfZ; dz <= halfZ; ++dz) {
-                        for (int dy = 0; dy <= hi; ++dy) {
-                            level.setBlock(new BlockPos(px + dx, py + dy, pz + dz),
-                                    ru.aiforge.riftworld.registry.ElisarBlocks.WATER.get().defaultBlockState(), 2);
-                        }
-                        level.setBlock(new BlockPos(px + dx, py - 1, pz + dz),
-                                ru.aiforge.riftworld.registry.ElisarBlocks.SEABED.get().defaultBlockState(), 2);
-                    }
-                }
-                for (int dx = -halfX + 4; dx <= halfX - 4; dx += 8) {
-                    for (int dz = -halfZ + 2; dz <= halfZ - 2; dz += 10) {
-                        level.setBlock(new BlockPos(px + dx, py + 8, pz + dz),
-                                ru.aiforge.riftworld.registry.ElisarBlocks.CAVE_GLOW.get().defaultBlockState(), 2);
+                // v0.38.6: бассейн больше НЕ строим. Здесь и так открытое море (проба /riftsea:
+                // дно ~10, вода до 62), а 18 000 setBlock с флагом 2 съедали минуты шага клиента —
+                // из-за них прогон #375 упёрся в лимит 50 минут. Грузим только чанки под камеру.
+                for (int cx = (px - 22) >> 4; cx <= (px + 22) >> 4; ++cx) {
+                    for (int cz = (pz - 16) >> 4; cz <= (pz + 16) >> 4; ++cz) {
+                        if (!level.hasChunk(cx, cz)) level.getChunk(cx, cz);
                     }
                 }
                 // одно животное по центру — боком к камере, второе в глубине для масштаба.
@@ -3752,14 +3743,10 @@ public final class SeaProbeCommand {
             int px = 700, py = 30, pz = 700;
             int alive = 0;
             if (level instanceof ServerLevel) {
-                for (int dx = -10; dx <= 10; ++dx) {
-                    for (int dz = -10; dz <= 10; ++dz) {
-                        for (int dy = 0; dy <= 9; ++dy) {
-                            level.setBlock(new BlockPos(px + dx, py + dy, pz + dz),
-                                    ru.aiforge.riftworld.registry.ElisarBlocks.WATER.get().defaultBlockState(), 2);
-                        }
-                        level.setBlock(new BlockPos(px + dx, py - 1, pz + dz),
-                                ru.aiforge.riftworld.registry.ElisarBlocks.SEABED.get().defaultBlockState(), 2);
+                // v0.38.6: вода здесь настоящая (море Элисара), строить бассейн не нужно.
+                for (int cx = (px - 12) >> 4; cx <= (px + 12) >> 4; ++cx) {
+                    for (int cz = (pz - 12) >> 4; cz <= (pz + 12) >> 4; ++cz) {
+                        if (!level.hasChunk(cx, cz)) level.getChunk(cx, cz);
                     }
                 }
                 level.getEntitiesOfClass(ru.aiforge.riftworld.entity.LiopleurodonEntity.class,
@@ -3809,18 +3796,39 @@ public final class SeaProbeCommand {
                 level.setBlock(new BlockPos(px, py - 1, pz), MorokBlocks.RIME_GRASS.get().defaultBlockState(), 2);
             }
             int alive = 0, tamed = 0;
+            boolean spawned = false;
             if (level instanceof ServerLevel) {
+                // v0.38.6: Пегас — летающая тварь: без NoAI он улетал из кадра, а если точка
+                // попала под крону — задыхался в блоках. Чистим карман 3x3x3 и фиксируем позу.
+                for (int dx = -1; dx <= 1; ++dx) {
+                    for (int dz = -1; dz <= 1; ++dz) {
+                        for (int dy = 0; dy <= 2; ++dy) {
+                            level.setBlock(new BlockPos(px + dx, py + dy, pz + dz),
+                                    net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 2);
+                        }
+                        level.setBlock(new BlockPos(px + dx, py - 1, pz + dz),
+                                MorokBlocks.RIME_GRASS.get().defaultBlockState(), 2);
+                    }
+                }
+                if (level.getBlockState(new BlockPos(px, py - 1, pz)).isAir()) {
+                    level.setBlock(new BlockPos(px, py - 1, pz),
+                            MorokBlocks.RIME_GRASS.get().defaultBlockState(), 2);
+                }
                 var pg = ru.aiforge.riftworld.registry.ModEntities.PEGASUS.get().create((ServerLevel) level);
                 if (pg != null) {
                     pg.moveTo(px + 0.5, py, pz + 0.5, 210.0F, 0.0F);
                     pg.setYRot(210.0F);
                     pg.yBodyRot = 210.0F;
-                    ((ServerLevel) level).addFreshEntity(pg);
+                    pg.setNoAi(true);
+                    pg.setSilent(true);
+                    spawned = ((ServerLevel) level).addFreshEntity(pg);
+                    if (pg.isAlive()) ++alive;      // проверка по ССЫЛКЕ, а не по AABB
+                    if (pg.isTamed()) ++tamed;
                 }
             }
             for (var e : level.getEntitiesOfClass(ru.aiforge.riftworld.entity.PegasusEntity.class,
-                    new net.minecraft.world.phys.AABB(px - 6, py - 6, pz - 6, px + 6, py + 6, pz + 6))) {
-                if (e.isAlive()) ++alive;
+                    new net.minecraft.world.phys.AABB(px - 12, py - 8, pz - 12, px + 12, py + 10, pz + 12))) {
+                if (e.isAlive() && alive == 0) ++alive;
                 if (e.isTamed()) ++tamed;
             }
             int[] cam34 = (level != null)
@@ -3828,7 +3836,7 @@ public final class SeaProbeCommand {
                     : new int[]{px - 3, py + 2, pz + 4};
             int metric = alive > 0 ? 900 : 0;
             String line = "riftstruct kind=v34_pegasus at=" + px + "," + (py + 2) + "," + pz
-                    + " alive=" + alive + " tamed=" + tamed + " where=" + where
+                    + " alive=" + alive + " tamed=" + tamed + " where=" + where + " spawned=" + spawned
                     + " saddleable=true saddle_seat=1.15"
                     + " blocks=" + metric + " sub_air=0"
                     + " cam=" + cam34[0] + "," + cam34[1] + "," + cam34[2] + ":" + px + "," + (py + 1) + "," + pz;
@@ -3894,13 +3902,13 @@ public final class SeaProbeCommand {
             int logs = 0, leaves = 0, brambles = 0, fangs = 0, carpets = 0, rime = 0, soil = 0;
             int trunks = 0;   // колонн ствола = число деревьев/сухостоя (патриарх даёт 4)
             BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
-            int rad = 24;
+            int rad = 32;
             // v0.38.5: считаем в радиусе 24 блоков и форсируем НЕ БОЛЬШЕ 16 чанков.
             // В v0.38.3 стоял радиус 48 с полной загрузкой 7x7 чанков — шаг клиента
             // вылезал за лимит 50 минут (прогон #374), и пробы после него не выполнялись.
             int forced = 0;
-            for (int cx = (px - rad) >> 4; cx <= (px + rad) >> 4 && forced < 16; ++cx) {
-                for (int cz = (pz - rad) >> 4; cz <= (pz + rad) >> 4 && forced < 16; ++cz) {
+            for (int cx = (px - rad) >> 4; cx <= (px + rad) >> 4 && forced < 20; ++cx) {
+                for (int cz = (pz - rad) >> 4; cz <= (pz + rad) >> 4 && forced < 20; ++cz) {
                     if (level.hasChunk(cx, cz)) continue;
                     level.getChunk(cx, cz);
                     ++forced;
@@ -3920,12 +3928,15 @@ public final class SeaProbeCommand {
                         else if (st.is(MorokBlocks.RIME_GRASS.get())) ++rime;
                         else if (st.is(MorokBlocks.FROZEN_SOIL.get())) ++soil;
                     }
-                    // ствол = колонна, где бревно стоит на мерзлоте
-                    for (int y = ground; y <= ground + 24; ++y) {
-                        if (level.getBlockState(mp.set(x, y + 1, z)).is(MorokBlocks.MOROK_LOG.get())
-                                && (level.getBlockState(mp.set(x, y, z)).is(MorokBlocks.RIME_GRASS.get())
-                                    || level.getBlockState(mp.set(x, y, z)).is(MorokBlocks.FROZEN_SOIL.get())
-                                    || level.getBlockState(mp.set(x, y, z)).is(MorokBlocks.PALE_MOSS_BLOCK.get()))) {
+                    // ствол = колонна, где бревно стоит на мерзлоте.
+                    // v0.38.6: off-by-one — landSpot отдаёт ПЕРВЫЙ воздух над поверхностью
+                    // (getHeight), значит первый блок ствола стоит ровно в этой точке (y = ground),
+                    // а мерзлота под ним на y-1. Раньше проверялось y+1 → стволов всегда 0.
+                    for (int y = ground; y <= ground + 26; ++y) {
+                        if (level.getBlockState(mp.set(x, y, z)).is(MorokBlocks.MOROK_LOG.get())
+                                && (level.getBlockState(mp.set(x, y - 1, z)).is(MorokBlocks.RIME_GRASS.get())
+                                    || level.getBlockState(mp.set(x, y - 1, z)).is(MorokBlocks.FROZEN_SOIL.get())
+                                    || level.getBlockState(mp.set(x, y - 1, z)).is(MorokBlocks.PALE_MOSS_BLOCK.get()))) {
                             ++trunks;
                             break;
                         }
