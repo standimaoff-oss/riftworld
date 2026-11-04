@@ -41,7 +41,9 @@ public final class ElGranMajaRenderer extends EntityRenderer<ElGranMajaEntity> {
         if (!e.isReadyToRender()) return;
         GeoModel model = GeoModel.of("el_gran_maja");
         if (model == null) return;
-        float bodyYaw = Mth.rotLerp(partial, e.yBodyRotO, e.yBodyRot);
+        // Use the same entity yaw that the server's collision envelopes test.
+        // Mob body-yaw smoothing can otherwise start at zero after spawn or lag behind.
+        float bodyYaw = Mth.rotLerp(partial, e.yRotO, e.getYRot());
         pose.pushPose();
         pose.mulPose(Axis.YP.rotationDegrees(180.0F - bodyYaw));
         // Riftworld's GeoModel uses Minecraft's Y-down model coordinates.

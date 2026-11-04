@@ -24,7 +24,11 @@ import net.minecraft.world.phys.Vec3;
 public final class MajaCollision {
     private record Box(double x0, double y0, double z0, double x1, double y1, double z1) {}
     private static final List<Box> BOXES = readBounds();
-    private static final double MOTION_MARGIN = 1.25;
+    // Entity yaw is sent as a byte (1.40625° steps): at 166 blocks even a
+    // one-step discrepancy moves a tail tip over four blocks. Include that,
+    // per-tick turning and movement, without unnecessarily shrinking water depth.
+    private static final double HORIZONTAL_MARGIN = 6.0;
+    private static final double VERTICAL_MARGIN = 1.25;
 
     private MajaCollision() {}
 
@@ -65,8 +69,8 @@ public final class MajaCollision {
                 minX = Math.min(minX, wx); maxX = Math.max(maxX, wx);
                 minZ = Math.min(minZ, wz); maxZ = Math.max(maxZ, wz);
             }
-            AABB volume = new AABB(minX - MOTION_MARGIN, center.y + b.y0() - MOTION_MARGIN, minZ - MOTION_MARGIN,
-                    maxX + MOTION_MARGIN, center.y + b.y1() + MOTION_MARGIN, maxZ + MOTION_MARGIN);
+            AABB volume = new AABB(minX - HORIZONTAL_MARGIN, center.y + b.y0() - VERTICAL_MARGIN, minZ - HORIZONTAL_MARGIN,
+                    maxX + HORIZONTAL_MARGIN, center.y + b.y1() + VERTICAL_MARGIN, maxZ + HORIZONTAL_MARGIN);
             var border = level.getWorldBorder();
             if (volume.minX < border.getMinX() || volume.maxX > border.getMaxX()
                     || volume.minZ < border.getMinZ() || volume.maxZ > border.getMaxZ()

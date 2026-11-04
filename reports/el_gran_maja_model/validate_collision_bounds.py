@@ -42,6 +42,13 @@ def main():
             def world(v): return np.column_stack((ca*v[:,0]+sa*v[:,1],-sa*v[:,0]+ca*v[:,1]))
             transformed=world(p[:,[0,2]]); envelope=world(corners)
             assert np.all(transformed>=envelope.min(axis=0)-1e-5) and np.all(transformed<=envelope.max(axis=0)+1e-5)
+            # Vanilla's packet yaw is quantised to 1/256 of a turn. Test the
+            # client's possible orientation against the server's 6-block X/Z margin.
+            qangle=math.radians(180-(yaw+rng.uniform(-360/256,360/256)))
+            qc,qs=math.cos(qangle),math.sin(qangle)
+            xz=p[:,[0,2]]
+            quantized=np.column_stack((qc*xz[:,0]+qs*xz[:,1],-qs*xz[:,0]+qc*xz[:,1]))
+            assert np.all(quantized>=envelope.min(axis=0)-6.0) and np.all(quantized<=envelope.max(axis=0)+6.0)
     print(f'OK: {len(bones)} collision envelopes contain {samples} sampled hierarchical poses per bone; assets match.')
     print('NOTE: this checks geometry bounds, not interactions with a running game or external mods.')
 
