@@ -3894,12 +3894,16 @@ public final class SeaProbeCommand {
             int logs = 0, leaves = 0, brambles = 0, fangs = 0, carpets = 0, rime = 0, soil = 0;
             int trunks = 0;   // колонн ствола = число деревьев/сухостоя (патриарх даёт 4)
             BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
-            int rad = 48;
-            // v0.38.3: БЕЗ этого счёт читал только тот чанк, где стоял игрок, и лес «не находился»
-            // (в #371 получилось trees=2 при живом биоме). Грузим кольцо чанков вокруг точки.
-            for (int cx = (px - rad) >> 4; cx <= (px + rad) >> 4; ++cx) {
-                for (int cz = (pz - rad) >> 4; cz <= (pz + rad) >> 4; ++cz) {
+            int rad = 24;
+            // v0.38.5: считаем в радиусе 24 блоков и форсируем НЕ БОЛЬШЕ 16 чанков.
+            // В v0.38.3 стоял радиус 48 с полной загрузкой 7x7 чанков — шаг клиента
+            // вылезал за лимит 50 минут (прогон #374), и пробы после него не выполнялись.
+            int forced = 0;
+            for (int cx = (px - rad) >> 4; cx <= (px + rad) >> 4 && forced < 16; ++cx) {
+                for (int cz = (pz - rad) >> 4; cz <= (pz + rad) >> 4 && forced < 16; ++cz) {
+                    if (level.hasChunk(cx, cz)) continue;
                     level.getChunk(cx, cz);
+                    ++forced;
                 }
             }
             for (int x = px - rad; x <= px + rad; ++x) {
