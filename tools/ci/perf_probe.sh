@@ -58,13 +58,14 @@ set -e
 ELAPSED=$(( $(date +%s) - START ))
 cat "$OUT/force-load.txt" | tee -a "$LOG"
 log "Force-load command: exit=$RC, wall=${ELAPSED}s (ticket creation, not full chunk completion)."
-# Vanilla's "if loaded" requires FULL + ENTITY_TICKING. Check all 36
-# positions in ONE command, avoiding block reads that could load chunks.
-# This measures completed readiness, not just ticket submission.
+# Minecraft 1.20.1 has no "execute if loaded". The vanilla "if block"
+# argument first checks hasChunkAt (FULL) without requesting a chunk. Every
+# ocean column has bedrock at -64. Check all 36 in one RCON command: this
+# measures FULL chunk/block readiness, not just ticket submission.
 conditions=''
 for x in 1664 1680 1696 1712 1728 1744; do
   for z in 2064 2080 2096 2112 2128 2144; do
-    conditions="$conditions if loaded $x 64 $z"
+    conditions="$conditions if block $x -64 $z minecraft:bedrock"
   done
 done
 ready=0
@@ -74,8 +75,9 @@ for _ in $(seq 1 180); do
   sleep 2
 done
 ready_elapsed=$(( $(date +%s) - START ))
-log "All 36 chunks ENTITY_TICKING: $ready; wall=${ready_elapsed}s (from before forceload)."
-[ "$ready" = 1 ] || { echo '::error title=Profiler::Timed out waiting for all 36 chunks to become entity-ticking'; exit 1; }
+log "All 36 chunks FULL with bedrock: $ready; wall=${ready_elapsed}s (from before forceload)."
+[ "$ready" = 1 ] || log "Last readiness response: $response"
+[ "$ready" = 1 ] || { echo '::error title=Profiler::Timed out waiting for all 36 FULL chunks'; exit 1; }
 rq forge tps | tee -a "$LOG" || true
 profile_stop generation
 [ "$RC" = 0 ] || { echo '::error title=Profiler::Elisar forceload failed/timed out'; exit 1; }

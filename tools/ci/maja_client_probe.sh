@@ -102,11 +102,15 @@ rq tp TestPlayer -5 202 7 facing 0 200 0 >/dev/null
 sleep 15
 grep -Fq '[riftworld] geo liopleurodon:' "$OUT/maja-client.log" || fail 'Liopleurodon model was not loaded by the real client'
 import -window root "$OUT/fauna-liopleurodon.png"
+sleep 1
+import -window root "$OUT/fauna-liopleurodon-motion.png"
 rq summon riftworld:pegasus 32 200 0 '{NoAI:1b,NoGravity:1b,PersistenceRequired:1b}' >/dev/null
 rq tp TestPlayer 27 203 6 facing 32 202 0 >/dev/null
 sleep 15
 grep -Fq '[riftworld] geo pegasus:' "$OUT/maja-client.log" || fail 'Pegasus model was not loaded by the real client'
 import -window root "$OUT/fauna-pegasus-unsaddled.png"
+sleep 1
+import -window root "$OUT/fauna-pegasus-motion.png"
 rq data merge entity '@e[type=riftworld:pegasus,limit=1]' '{Tamed:1b,Saddle:1b}' >/dev/null
 rq data get entity '@e[type=riftworld:pegasus,limit=1]' Saddle | grep -q '1b' || fail 'Pegasus saddle was not synchronized'
 sleep 5
