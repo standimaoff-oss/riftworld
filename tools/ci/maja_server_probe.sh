@@ -59,4 +59,6 @@ print('before:',vectors[0],'after:',vectors[1],'distance:',round(d,3))
 if not .1<d<25: raise SystemExit('unexpected motion')
 PY
 rq data merge entity "$SEL" '{NoAI:1b}' | tee -a "$LOG"
+rq tp "$SEL" 0 200 0 0 0 | tee -a "$LOG"
+wait_ready 1b
 log "OK: live server tested readiness, solid-block collision, border containment and movement."
