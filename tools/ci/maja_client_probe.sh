@@ -98,12 +98,12 @@ echo "OK: real client joined the server; screenshot saved to $OUT/maja-client-fr
 # software preview. Clear the titan so it cannot obscure the much smaller rigs.
 rq kill '@e[type=riftworld:el_gran_maja]' >/dev/null
 rq summon riftworld:liopleurodon 0 200 0 '{NoAI:1b,NoGravity:1b,PersistenceRequired:1b}' >/dev/null
-rq tp TestPlayer -11 204 12 facing 0 200 0 >/dev/null
+rq tp TestPlayer -5 202 7 facing 0 200 0 >/dev/null
 sleep 15
 grep -Fq '[riftworld] geo liopleurodon:' "$OUT/maja-client.log" || fail 'Liopleurodon model was not loaded by the real client'
 import -window root "$OUT/fauna-liopleurodon.png"
 rq summon riftworld:pegasus 32 200 0 '{NoAI:1b,NoGravity:1b,PersistenceRequired:1b}' >/dev/null
-rq tp TestPlayer 23 204 10 facing 32 202 0 >/dev/null
+rq tp TestPlayer 27 203 6 facing 32 202 0 >/dev/null
 sleep 15
 grep -Fq '[riftworld] geo pegasus:' "$OUT/maja-client.log" || fail 'Pegasus model was not loaded by the real client'
 import -window root "$OUT/fauna-pegasus-unsaddled.png"

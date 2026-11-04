@@ -42,15 +42,24 @@ public final class MajaOceanKeeper {
             // and offsets often had no chance of fitting at normal view distance.
             double x = ((px >> 4) << 4) + 8.0;
             double z = ((pz >> 4) << 4) + 8.0;
-            Vec3 at = new Vec3(x, sea - 13.0, z);
             int first = level.random.nextInt(4);
-            for (int attempt = 0; attempt < 4; ++attempt) {
-                float yaw = 45.0F + ((first + attempt) & 3) * 90.0F;
-                if (!MajaCollision.clear(level, at, yaw)) continue;
-                ElGranMajaEntity maja = new ElGranMajaEntity(ModEntities.EL_GRAN_MAJA.get(), level);
-                maja.moveTo(at.x, at.y, at.z, yaw, 0.0F);
-                if (level.addFreshEntity(maja)) data.recordSpawn(region.key());
-                break;
+            boolean spawned = false;
+            // A fixed sea-13 anchor put the animated jaw through the seabed.
+            // Try progressively shallower positions, keeping the same full
+            // loaded-chunk, border and solid-block checks for each candidate.
+            for (int rise = 0; rise <= 40 && !spawned; rise += 8) {
+                Vec3 at = new Vec3(x, sea - 13.0 + rise, z);
+                for (int attempt = 0; attempt < 4; ++attempt) {
+                    float yaw = 45.0F + ((first + attempt) & 3) * 90.0F;
+                    if (!MajaCollision.clear(level, at, yaw)) continue;
+                    ElGranMajaEntity maja = new ElGranMajaEntity(ModEntities.EL_GRAN_MAJA.get(), level);
+                    maja.moveTo(at.x, at.y, at.z, yaw, 0.0F);
+                    if (level.addFreshEntity(maja)) {
+                        data.recordSpawn(region.key());
+                        spawned = true;
+                    }
+                    break;
+                }
             }
         }
     }

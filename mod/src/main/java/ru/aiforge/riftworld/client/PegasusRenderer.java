@@ -49,8 +49,9 @@ public final class PegasusRenderer extends EntityRenderer<PegasusEntity> {
         body.getChild("leg_rear_l").xRot = -gait;
         // Geometry is authored open like the reference. Wings beat while flying;
         // at rest they only breathe slightly, not flap at full speed forever.
-        float wing = e.isFlying() ? (float) Math.toRadians(30.0F + 24.0F * Mth.sin(time * 0.22F))
-                : (float) Math.toRadians(30.0F + 2.0F * Mth.sin(time * 0.045F));
+        float wing = (e.isFlying() || (!e.onGround() && !e.isInWater()))
+                ? (float) Math.toRadians(28.0F + 42.0F * Mth.sin(time * 0.24F))
+                : (float) Math.toRadians(30.0F + 5.0F * Mth.sin(time * 0.08F));
         body.getChild("wing_l").zRot = -wing;
         body.getChild("wing_r").zRot = wing;
         pose.pushPose();

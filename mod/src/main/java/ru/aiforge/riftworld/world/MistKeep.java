@@ -1,6 +1,7 @@
 package ru.aiforge.riftworld.world;
 
 import java.util.Random;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -23,13 +24,13 @@ public final class MistKeep {
         }
     }
 
-    private static final ConcurrentHashMap<Long, Region> CACHE = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Long, Optional<Region>> CACHE = new ConcurrentHashMap<>();
 
     private MistKeep() {
     }
 
     public static Region region(int sx, int sz) {
-        return CACHE.computeIfAbsent(WildIslands.key(sx, sz), k -> gen(sx, sz));
+        return CACHE.computeIfAbsent(WildIslands.key(sx, sz), k -> Optional.ofNullable(gen(sx, sz))).orElse(null);
     }
 
     private static Region gen(int sx, int sz) {

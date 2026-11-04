@@ -223,8 +223,8 @@ def liopleurodon():
             name=('fin_front_' if front else 'fin_rear_')+label
             m.bone(name,[side*15,-4,z+7],'body',{'axis':'z','amp':side*(12 if front else 9),'speed':1.0,'phase':0 if front else .9})
             for x,y,zz,w,h,d,mat in [
-                (12,-8,z,15,9,19,'lio_fin'),(24,-12,z+3,15,8,16,'lio_fin'),
-                (37,-17,z+7,12,7,12,'lio_fin'),(48,-20,z+10,6,5,7,'lio_fin_edge')]:
+                (12,-8,z,15,7,24,'lio_fin'),(24,-12,z+2,15,6,23,'lio_fin'),
+                (37,-16,z+4,12,5,19,'lio_fin'),(48,-19,z+7,9,4,14,'lio_fin_edge')]:
                 if not front: x=12+(x-12)*4//5; w=max(4,w*4//5)
                 xx=x if side>0 else -x-w
                 m.box(name,[xx,y,zz],[w,h,d],mat)
@@ -233,11 +233,11 @@ def liopleurodon():
                 if not front: x=12+(x-12)*4//5
                 xx=x if side>0 else -x-5
                 m.box(name,[xx,(-3.85 if j<2 else -9.85),z+4+j*2],[5,1,10-j*2],'lio_fin_edge',j%2)
-    m.bone('tail_1',[0,0,70],'body',{'axis':'y','amp':5,'speed':.8,'phase':.4})
+    m.bone('tail_1',[0,0,70],'body',{'axis':'y','amp':12,'speed':1.1,'phase':.4})
     for z,d,w,h in [(73,13,20,15),(85,12,15,13),(96,12,10,10)]:
         m.box('tail_1',[-w//2,-h//2,z],[w,h,d],'lio_side')
         m.box('tail_1',[-max(2,w//2-2),-h//2-2,z],[max(4,w-4),3,d],'lio_belly')
-    m.bone('tail_tip',[0,0,104],'tail_1',{'axis':'y','amp':10,'speed':.8,'phase':1.3})
+    m.bone('tail_tip',[0,0,104],'tail_1',{'axis':'y','amp':20,'speed':1.1,'phase':1.3})
     m.box('tail_tip',[-4,-4,105],[8,8,9],'lio_side')
     for i in range(4):
         m.box('tail_tip',[-2,3+i*3,108+i],[4,4,6-i],'lio_fin_edge')
@@ -311,7 +311,7 @@ def pegasus():
             extra=int(9*math.sin(math.pi*(i+1)/12))
             sidebox(18,34,z,13,3,3,'wing',i%2)
             sidebox(29,37,z+1,11+extra//2,3,3,'wing',i%2)
-            sidebox(39+extra//2,40,z+2,8+extra//2,2,2,'wing_tip',i%2)
+            sidebox(39+extra//2,40,z+2,16+extra,2,2,'wing_tip',i%2)
             # Fine raised shafts separate the primaries instead of leaving a
             # featureless white plane; all of these still share UV templates.
             sidebox(30,40.15,z+1,10+extra//2,1,1,'wing_shadow',i%2)
