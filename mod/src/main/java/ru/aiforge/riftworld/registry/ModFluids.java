@@ -61,10 +61,11 @@ public final class ModFluids {
                 public int getTintColor(net.minecraft.world.level.material.FluidState state,
                         net.minecraft.world.level.BlockAndTintGetter world, net.minecraft.core.BlockPos pos) {
                     if (world == null || pos == null) return 0xFFFFFFFF;
-                    int rgb = world.getBlockTint(pos, (biome, x, z) ->
-                            biome.getWaterColor() == ru.aiforge.riftworld.world.DeepOcean.WATER_COLOR
-                                    ? 0xEAF5F6 : 0xFFFFFF);
-                    return 0xFF000000 | rgb;
+                    // ClientLevel caches only the three vanilla ColorResolver instances.
+                    // Passing a custom lambda to getBlockTint crashes chunk rendering.
+                    var level = net.minecraft.client.Minecraft.getInstance().level;
+                    return level != null && level.getBiome(pos).is(ru.aiforge.riftworld.world.MajaOceanKeeper.BIOME)
+                            ? 0xFFEAF5F6 : 0xFFFFFFFF;
                 }
 
                 /** 0 floating on the crest, 1 kneeling on the dunes 42+ blocks down. */
@@ -77,8 +78,8 @@ public final class ModFluids {
                 public Vector3f modifyFogColor(Camera camera, float partialTick, ClientLevel level, int renderDistance, float darkenWorldAmount, Vector3f fluidFogColor) {
                     float d = depth(camera);
                     // Рев 8: глубина больше не чёрная — холодный синий с бирюзовым свечением снизу
-                    boolean maja = level.getBiome(camera.getBlockPosition()).value().getWaterColor()
-                            == ru.aiforge.riftworld.world.DeepOcean.WATER_COLOR;
+                    boolean maja = level.getBiome(camera.getBlockPosition()).is(
+                            ru.aiforge.riftworld.world.MajaOceanKeeper.BIOME);
                     return new Vector3f(net.minecraft.util.Mth.lerp(d, 0.20F, 0.07F) * (maja ? 0.96F : 1.0F),
                             net.minecraft.util.Mth.lerp(d, 0.56F, 0.26F) * (maja ? 0.98F : 1.0F),
                             net.minecraft.util.Mth.lerp(d, 0.80F, 0.45F));

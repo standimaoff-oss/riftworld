@@ -122,3 +122,8 @@ for _ in $(seq 1 24); do
 done
 if [ "$seen" = 1 ]; then echo "::notice title=Natural Maja spawn::Observed in a real new Elisar ocean."
 else echo "::warning title=Natural Maja spawn::Not observed within two minutes at this ocean location."; fi
+if grep -Ei 'Render thread/FATAL|Minecraft Crash Report|Error while rendering|NullPointerException' "$OUT/maja-client.log"; then
+  fail "Client crashed or reported a rendering exception after entering the ocean"
+fi
+rq list | grep -q TestPlayer || fail "Client disconnected in the ocean"
+echo "OK: client remained connected after entering the generated ocean."
