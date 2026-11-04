@@ -20,13 +20,14 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from geo_model_lib import Rig, ASSETS, write_png, hx  # noqa: E402
+from tex_paint import MOROK as MOROK_PAINTERS  # noqa: E402
 
 ATLAS = 256
 
-VEIL = "#242B31"
-VEIL_LIGHT = "#39434B"
-SKIN = "#5A646D"
-SKIN_DARK = "#3A424A"
+VEIL = "#2F3841"
+VEIL_LIGHT = "#46525C"
+SKIN = "#6B7681"
+SKIN_DARK = "#48525B"
 BONE = "#CFC7B2"
 BONE_DARK = "#9A917C"
 EYE = "#FF7A18"          # раскалённый уголь — основа «горящих глаз»
@@ -37,14 +38,18 @@ MATS = {
     "veil": (VEIL_LIGHT, VEIL, VEIL, VEIL),
     "skin": (SKIN, SKIN_DARK, SKIN, SKIN_DARK),
     "skin_dark": (SKIN_DARK, VEIL, SKIN_DARK, VEIL),
+    "skull": (SKIN, SKIN_DARK, SKIN, SKIN_DARK),
     "bone": (BONE, BONE_DARK, BONE, BONE_DARK),
+    "rib": ("#9C937E", "#7A7261", "#9C937E", "#7A7261"),
     "eye": (EYE, EYE, EYE, EYE),
     "claw": (CLAW, CLAW, CLAW, CLAW),
 }
 
 SPECK = ["#151A1F", "#6B7783", "#2E353C"]
 
-EYE_Z = -17          # глубина глазниц в системе модели (нос смотрит в -Z)
+# v0.39.11: «маска» кончается на z=-19, поэтому глазницы ставим ПЕРЕД ней (было -17 —
+# угли утопали внутри черепа и в кадре #404 светился один пиксель).
+EYE_Z = -19.6        # глубина глазниц в системе модели (нос смотрит в -Z)
 HEAD_PIVOT = [0, 44, -9]        # до flip_y; в geo пишется как -44
 
 
@@ -56,10 +61,11 @@ def build():
     r.cube([-5, 18, -4], [10, 8, 7], "veil", SPECK)            # таз
     r.cube([-6, 25, -5], [12, 12, 8], "veil", SPECK)           # грудь
     r.cube([-7, 30, -4], [14, 3, 7], "skin_dark")              # плечевой горб
-    # рёбра наружу: полосы кости по груди
-    for yy in (26, 29, 32):
-        r.cube([-6, yy, -6], [12, 1, 1], "bone")
-    r.cube([-1, 20, -6], [2, 9, 1], "bone")                    # грудина
+    # рёбра: две пары коротких дуг по бокам груди, БЕЗ перемычки посередине
+    # (v0.39.11: сплошные полосы через всю грудь читались как белый крест/буква «Т» на торсе)
+    for yy in (26, 29, 32, 35):
+        r.cube([-5, yy, -6], [4, 1, 1], "rib")
+        r.cube([1, yy, -6], [4, 1, 1], "rib")
 
     # --- «вуаль»: лоскуты, свисающие с плеч (рваный силуэт, не человек)
     r.bone("veil", [0, 32, -2], {"axis": "y", "amp": 3.0, "speed": 1.4, "phase": 0.0})
@@ -75,16 +81,16 @@ def build():
 
     # --- голова: гладкая маска без лица, вместо глаз — угольки
     r.bone("head", HEAD_PIVOT, {"axis": "x", "amp": 5.0, "speed": 1.0, "phase": 0.9})
-    r.cube([-4, 37, -16], [8, 9, 9], "skin", SPECK)            # череп
-    r.cube([-3, 39, -19], [6, 5, 3], "skin", SPECK)            # «маска» вперёд
+    r.cube([-4, 37, -16], [8, 9, 9], "skull")                  # череп: глаза и пасть рисует текстура
+    r.cube([-3, 39, -19], [6, 5, 3], "skull")                  # «маска» вперёд
     r.cube([-3, 37, -19], [6, 2, 2], "skin_dark")              # чёрная пасть-щель
-    r.cube([-5, 40, -18], [10, 1, 2], "bone")                  # костяная кромка надбровья
+    r.cube([-4, 40, -18], [8, 1, 2], "rib")                    # костяная кромка надбровья
     # глазницы: тёмные провалы, угольки глаз светятся отдельной моделью morok_eyes
-    r.cube([-4, 42, EYE_Z], [3, 2, 1], "claw")
-    r.cube([1, 42, EYE_Z], [3, 2, 1], "claw")
+    r.cube([-4, 41, EYE_Z], [3, 3, 1], "claw")
+    r.cube([1, 41, EYE_Z], [3, 3, 1], "claw")
     # оскал: редкие длинные зубы по краю пасти
     for i, sx in enumerate((-3, -1, 1)):
-        r.cube([sx, 36, -20], [1, 2, 1], "bone")
+        r.cube([sx, 36, -20], [1, 2, 1], "rib")
 
     # --- руки: до колен, с длинными пальцами
     for side, sx in (("l", 1), ("r", -1)):
@@ -113,7 +119,7 @@ def build_eyes():
         x = -3 if sx < 0 else 2
         # уголь: маленький куб + чуть больший ореол вокруг него
         # v0.39.8: модель пишется «вверх» (Y вверх), как и тело — глаза на высоте 42
-        cubes.append({"origin": [x, 41, EYE_Z - 0.2], "size": [4, 3, 1], "uv": [0, 0]})
+        cubes.append({"origin": [x, 41, EYE_Z - 0.35], "size": [4, 3, 1], "uv": [0, 0]})
     return {
         "texture_width": 16,
         "texture_height": 16,
@@ -149,8 +155,10 @@ def main():
     r = build()
     info = r.write("morok", MATS, "textures/entity/morok.png", scale_to=1.0, length_axis=1,
                    length_blocks=2.42, scar_color=None, flip_y=False,
-                   patterns={"skin": "felt", "veil": "bare", "bone": "vein"})
+                   patterns=None, painters=MOROK_PAINTERS)
     eyes = build_eyes()
+    # v0.39.11: масштаб глаз ВСЕГДА как у тела — иначе угли съезжают с черепа
+    eyes["render_scale"] = info["scale"]
     (ASSETS / "geo" / "morok_eyes.json").write_text(
         json.dumps(eyes, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     write_png(ASSETS / "textures" / "entity" / "morok_eyes.png", eyes_texture())

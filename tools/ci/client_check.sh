@@ -1550,6 +1550,7 @@ biome_section() {
   NAT_BRAM=$(printf '%s' "$NAT" | sed -n 's/.* brambles=\([0-9]*\).*/\1/p' | tail -1)
   NAT_FANG=$(printf '%s' "$NAT" | sed -n 's/.* fangs=\([0-9]*\).*/\1/p' | tail -1)
   NAT_WEN=$(printf '%s' "$NAT" | sed -n 's/.* spawn_wendigo=\([0-9]*\).*/\1/p' | tail -1)
+  NAT_MORK=$(printf '%s' "$NAT" | sed -n 's/.* spawn_morok=\([0-9]*\).*/\1/p' | tail -1)
   NAT_BIOME=$(printf '%s' "$NAT" | sed -n 's/.* biome=\([a-z:_]*\).*/\1/p' | tail -1)
   if [ "${NAT_TREES:-0}" -ge 6 ] && [ "${NAT_LEAVES:-0}" -ge 120 ]; then
     log "  OK   лес Пади растёт САМ: деревьев ${NAT_TREES}, листвы ${NAT_LEAVES}, колючек ${NAT_BRAM:-0}, клыков ${NAT_FANG:-0}"
@@ -1566,10 +1567,11 @@ biome_section() {
   else
     log "  FAIL биом в точке пробы = ${NAT_BIOME:-?} (ожидался riftworld:morok_hollow)"; FAILS=$((FAILS + 1))
   fi
-  if [ "${NAT_WEN:-0}" -ge 1 ]; then
-    log "  OK   спавнеры биома живы: riftworld:wendigo weight=${NAT_WEN} (было "spawners": {})"
+  # v0.39.11: натуральный хоррор Пади — Морок (Вендиго убран из спавнера, остался яйцом и легендой)
+  if [ "${NAT_MORK:-0}" -ge 1 ]; then
+    log "  OK   спавнеры биома живы: Морок в списке монстров (wendigo=${NAT_WEN:-0} — он больше не спавнится сам)"
   else
-    log "  FAIL спавнеры биома пусты: wendigo weight=${NAT_WEN:-0}"; FAILS=$((FAILS + 1))
+    log "  FAIL в спавнере биома нет Морока: spawn_morok=${NAT_MORK:-0}"; FAILS=$((FAILS + 1))
   fi
 
   # ---------- v0.32.0: Лиоплевродон — модель, текстура, поведение в глубокой воде ----------

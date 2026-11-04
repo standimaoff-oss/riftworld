@@ -3949,6 +3949,8 @@ public final class SeaProbeCommand {
                         .getMobs(net.minecraft.world.entity.MobCategory.MONSTER).unwrap()) {
                     if (sp.type == ru.aiforge.riftworld.registry.ModEntities.MOROK.get()) spawnMorok = 1;
                     if (sp.type == ru.aiforge.riftworld.registry.ModEntities.WENDIGO.get()) spawnWendigo = 1;
+                    // v0.39.11: Вендиго убран из натурального спавна — хоррор Пади теперь Морок
+                    if (sp.type == ru.aiforge.riftworld.registry.ModEntities.MOROK.get()) spawnMorok = 1;
                 }
             } catch (Throwable ignored) {
             }
@@ -4096,7 +4098,7 @@ public final class SeaProbeCommand {
                 }
             }
             String biome = "?";
-            int spawnWendigo = 0, spawnPegasus = 0, spawnMonsterTotal = 0, spawnCreatureTotal = 0;
+            int spawnWendigo = 0, spawnMorok = 0, spawnPegasus = 0, spawnMonsterTotal = 0, spawnCreatureTotal = 0;
             try {
                 var holder = level.getBiome(new BlockPos(px, ground + 1, pz));
                 var key = holder.unwrapKey();
@@ -4110,6 +4112,8 @@ public final class SeaProbeCommand {
                 for (var sp : mobs.getMobs(net.minecraft.world.entity.MobCategory.MONSTER).unwrap()) {
                     ++catMonster;
                     if (sp.type == ru.aiforge.riftworld.registry.ModEntities.WENDIGO.get()) spawnWendigo = 1;
+                    // v0.39.11: Вендиго убран из натурального спавна — хоррор Пади теперь Морок
+                    if (sp.type == ru.aiforge.riftworld.registry.ModEntities.MOROK.get()) spawnMorok = 1;
                 }
                 for (var sp : mobs.getMobs(net.minecraft.world.entity.MobCategory.CREATURE).unwrap()) {
                     ++catCreature;
@@ -4129,7 +4133,7 @@ public final class SeaProbeCommand {
                     + " trees=" + trunks + " logs=" + logs + " leaves=" + leaves
                     + " brambles=" + brambles + " fangs=" + fangs + " carpets=" + carpets
                     + " rime=" + rime + " soil=" + soil
-                    + " spawn_wendigo=" + spawnWendigo + " spawn_pegasus=" + spawnPegasus
+                    + " spawn_morok=" + spawnMorok + " spawn_wendigo=" + spawnWendigo + " spawn_pegasus=" + spawnPegasus
                     + " spawn_monster=" + spawnMonsterTotal + " spawn_creature=" + spawnCreatureTotal
                     + " blocks=" + metric + " sub_air=0"
                     + " cam=" + cam[0] + "," + cam[1] + "," + cam[2] + ":" + px + "," + (ground + 7) + "," + pz;

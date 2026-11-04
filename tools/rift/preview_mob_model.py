@@ -165,6 +165,11 @@ def render_view(tex, cubes, azim_deg, elev_deg, zoom, img_w, img_h, bg):
 
     def rot(p):
         x, y, z = p
+        # v0.39.11: ВАЖНО. Наши рендеры мобов (GeoMobRenderer/MorokRenderer/WendigoRenderer) НЕ делают
+        # ванильный pose.scale(-1,-1,1), поэтому в мире +Y модели смотрит ВВЕРХ (y=0 — земля под
+        # лапами). Превью раньше рисовало +Y вниз (как «до разворота» в ванилле) и показывало
+        # правильных мобов перевёрнутыми. Зеркалим Y здесь, чтобы лист совпадал с игрой.
+        y = -y
         x1 = x * ca + z * sa
         z1 = -x * sa + z * ca
         y2 = y * ce - z1 * se

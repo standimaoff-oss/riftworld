@@ -40,12 +40,6 @@
         "weight": 36,
         "minCount": 1,
         "maxCount": 2
-      },
-      {
-        "type": "riftworld:wendigo",
-        "weight": 24,
-        "minCount": 1,
-        "maxCount": 2
       }
     ],
     "creature": [
@@ -58,10 +52,6 @@
     ]
   },
   "spawn_costs": {
-    "riftworld:wendigo": {
-      "energy_budget": 0.28,
-      "charge": 1.1
-    },
     "riftworld:morok": {
       "energy_budget": 0.34,
       "charge": 1.2

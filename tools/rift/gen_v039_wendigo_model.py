@@ -20,6 +20,7 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from geo_model_lib import Rig, ASSETS, write_png, hx  # noqa: E402
+from tex_paint import WENDIGO as WENDIGO_PAINTERS  # noqa: E402
 
 ATLAS = 256
 
@@ -37,6 +38,7 @@ MATS = {
     "hide": (HIDE_LIGHT, HIDE, HIDE, HIDE_DARK),
     "hide_dark": (HIDE, HIDE_DARK, HIDE_DARK, "#241B14"),
     "bone": (BONE, BONE_DARK, BONE, BONE_DARK),
+    "skull": (BONE, BONE_DARK, BONE, BONE_DARK),
     "antler": (ANTLER, BONE_DARK, ANTLER, BONE_DARK),
     "socket": (SOCKET, SOCKET, SOCKET, SOCKET),
     "claw": (CLAW, CLAW, CLAW, CLAW),
@@ -54,6 +56,8 @@ def build():
     r.bone("root", [0, 28, 0])
     r.cube([-5, 22, -4], [10, 8, 7], "hide", SPECK)          # таз
     r.cube([-6, 31, -5], [12, 12, 8], "hide", SPECK)         # грудь
+    r.cube([-7, 38, -3], [14, 3, 7], "hide_dark")            # сгорбленные плечи
+    r.cube([-5, 40, -6], [10, 2, 4], "hide_dark")            # загривок
     r.cube([-7, 33, -4], [14, 3, 8], "hide_dark")            # плечевой горб
     r.cube([-1, 26, -6], [2, 9, 1], "bone")                  # грудина наружу
     # рёбра наружу: три пары светлых дуг по груди
@@ -73,8 +77,8 @@ def build():
 
     # --- голова: лосиный череп, чёрные глазницы, длинная морда
     r.bone("head", HEAD_PIVOT_UP, {"axis": "x", "amp": 6.0, "speed": 0.9, "phase": 0.7})
-    r.cube([-4, 43, -17], [8, 7, 8], "bone", ["#C4BAA2", "#8D8371"])   # череп
-    r.cube([-3, 42, -23], [6, 5, 6], "bone", ["#C4BAA2", "#8D8371"])   # морда
+    r.cube([-4, 43, -17], [8, 7, 8], "skull")                          # череп
+    r.cube([-3, 42, -23], [6, 5, 6], "skull")                          # морда
     r.cube([-2, 41, -25], [4, 2, 2], "hide_dark")                      # нос
     r.cube([-4, 45, -16], [2, 3, 3], "socket")                         # глазницы (свет рисует рендер)
     r.cube([2, 45, -16], [2, 3, 3], "socket")
@@ -100,8 +104,8 @@ def build():
         r.cube([min(sx * 6, sx * 10), 26, -4], [4, 15, 4], "hide", SPECK)    # плечо
         r.cube([min(sx * 7, sx * 10), 14, -4], [3, 13, 3], "hide_dark")      # предплечье
         r.cube([min(sx * 7, sx * 11), 9, -5], [4, 6, 4], "hide", SPECK)      # кисть
-        for k in range(3):
-            r.cube([min(sx * 7, sx * 12) + k, 6, -5 + k], [1, 4, 1], "claw")
+        for k in range(4):
+            r.cube([min(sx * 7, sx * 12) + k, 3, -5 + k], [1, 7, 1], "claw")   # длинные когти
 
     # --- ноги: «птичьи» — бедро, назад выгнутая голень, широкая лапа
     for side, sx in (("l", 1), ("r", -1)):
@@ -119,7 +123,7 @@ def build_eyes():
     cubes = []
     for x in (-4, 2):
         # v0.39.8: тело пишется «вверх», значит глаза — на высоте 45..48
-        cubes.append({"origin": [x, 44, -16.4], "size": [3, 4, 1], "uv": [0, 0]})
+        cubes.append({"origin": [x, 44, -17.4], "size": [3, 4, 1], "uv": [0, 0]})   # v0.39.11: перед черепом
     return {
         "texture_width": 16,
         "texture_height": 16,
@@ -157,9 +161,12 @@ def main():
     r = build()
     info = r.write("wendigo", MATS, "textures/entity/wendigo.png", scale_to=1.0, length_axis=1,
                    length_blocks=2.62, scar_color=None, flip_y=False,
-                   patterns={"hide": "bare", "hide_dark": "bare", "bone": "vein", "antler": "vein"})
+                   patterns=None, painters=WENDIGO_PAINTERS)
+    eyes = build_eyes()
+    # v0.39.11: масштаб глаз ВСЕГДА как у тела — иначе угли съезжают с черепа
+    eyes["render_scale"] = info["scale"]
     (ASSETS / "geo" / "wendigo_eyes.json").write_text(
-        json.dumps(build_eyes(), ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+        json.dumps(eyes, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     write_png(ASSETS / "textures" / "entity" / "wendigo_eyes.png", eyes_texture())
     print(f"костей: {info['bones']}  кубоидов: {info['cubes']}  render_scale: {info['scale']}")
     print(f"габариты в блоках: {info['size_blocks']} (x, y, z)")

@@ -1,7 +1,7 @@
 {
  "texture_width": 16,
  "texture_height": 16,
- "render_scale": 0.723,
+ "render_scale": 0.699,
  "translucent": true,
  "bones": [
   {
@@ -22,7 +22,7 @@
      "origin": [
       -4,
       44,
-      -16.4
+      -17.4
      ],
      "size": [
       3,
@@ -38,7 +38,7 @@
      "origin": [
       2,
       44,
-      -16.4
+      -17.4
      ],
      "size": [
       3,

@@ -34,6 +34,35 @@ def rnd(seed):
     return nxt
 
 
+def noise2(seed, x, y):
+    """Детерминированный «шум» 0..1 от координат: рисунок не зависит от порядка обхода."""
+    n = (seed * 374761393 + x * 668265263 + y * 2147483647) & 0x7FFFFFFF
+    n = (n ^ (n >> 13)) * 1274126177 & 0x7FFFFFFF
+    return ((n ^ (n >> 16)) & 0xFFFF) / 65535.0
+
+
+def smooth_noise(seed, x, y, scale):
+    """Сглаженный шум по сетке scale — из него получаются кляксы, а не «соль с перцем»."""
+    fx, fy = x / scale, y / scale
+    ix, iy = int(fx), int(fy)
+    tx, ty = fx - ix, fy - iy
+    tx, ty = tx * tx * (3 - 2 * tx), ty * ty * (3 - 2 * ty)
+    a = noise2(seed, ix, iy)
+    b = noise2(seed, ix + 1, iy)
+    c = noise2(seed, ix, iy + 1)
+    d = noise2(seed, ix + 1, iy + 1)
+    return (a * (1 - tx) + b * tx) * (1 - ty) + (c * (1 - tx) + d * tx) * ty
+
+
+def shade(c, k):
+    return tuple(max(0, min(255, int(v * k))) for v in c)
+
+
+def mixc(a, b, t):
+    t = max(0.0, min(1.0, t))
+    return tuple(int(a[i] + (b[i] - a[i]) * t) for i in range(3))
+
+
 def write_png(path, pixels):
     h, w = len(pixels), len(pixels[0])
     raw = bytearray()
@@ -105,7 +134,7 @@ class Rig:
         return placed
 
     # ------------------------------------------------------------------ атлас
-    def texture(self, mats, placed, scar_color=None, scar_mats=(), patterns=None):
+    def texture(self, mats, placed, scar_color=None, scar_mats=(), patterns=None, painters=None):
         A = self.atlas
         img = [[(0, 0, 0, 0)] * A for _ in range(A)]
         for cb, u, v in placed:
@@ -115,7 +144,8 @@ class Rig:
             for name, (fx, fy, fw, fh) in face_rects(u, v, w, h, d).items():
                 color = {"up": top_c, "down": bottom_c, "north": front_c, "south": front_c,
                          "east": side_c, "west": side_c}[name]
-                self._paint(img, fx, fy, fw, fh, color, seed + ord(name[0]), cb, patterns)
+                self._paint(img, fx, fy, fw, fh, color, seed + ord(name[0]), cb, patterns,
+                            (painters or {}).get(cb["mat"]), name)
         if scar_color:
             for cb, u, v in placed:
                 if cb["mat"] not in scar_mats:
@@ -132,7 +162,7 @@ class Rig:
         return img
 
     @staticmethod
-    def _paint(img, x, y, fw, fh, color, seed, cb, patterns=None):
+    def _paint(img, x, y, fw, fh, color, seed, cb, patterns=None, painter=None, face="?"):
         A = len(img)
         r = rnd(seed)
         base = hx(color)
@@ -142,6 +172,11 @@ class Rig:
             for xx in range(fw):
                 k = 1.0 + (r() - 0.5) * 0.12
                 px = [max(0, min(255, int(c * k))) for c in base]
+                # v0.39.11: «художник» материала рисует настоящий рисунок (глаза, перья, кору)
+                if painter is not None:
+                    got = painter(face, xx, yy, fw, fh, tuple(px), seed)
+                    if got is not None:
+                        px = [max(0, min(255, int(v))) for v in got]
                 if specks and r() < 0.06:
                     sc = specks[int(r() * len(specks)) % len(specks)]
                     px = list(hx(sc))
@@ -164,7 +199,8 @@ class Rig:
 
     # ------------------------------------------------------------------ выгрузка
     def write(self, name, mats, texture_rel, scale_to=None, length_axis=2, length_blocks=None,
-              scar_color=None, scar_mats=(), extra=None, patterns=None, flip_y=False):
+              scar_color=None, scar_mats=(), extra=None, patterns=None, flip_y=False,
+              painters=None):
         """flip_y — зеркалит геометрию по Y. Для рендеров на {@code GeoModel} он НЕ НУЖЕН и вреден.
 
         Путаница из прогона #396: в ванильных мобах модель пишут «вниз» (+Y = вниз), потому что
@@ -218,7 +254,7 @@ class Rig:
         geo_path = ASSETS / "geo" / f"{name}.json"
         geo_path.write_text(json.dumps(geo, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
         tex_path = ASSETS / texture_rel
-        write_png(tex_path, self.texture(mats, placed, scar_color, scar_mats, patterns))
+        write_png(tex_path, self.texture(mats, placed, scar_color, scar_mats, patterns, painters))
 
         # самопроверка: UV внутри атласа и без наложений
         used = [[False] * self.atlas for _ in range(self.atlas)]

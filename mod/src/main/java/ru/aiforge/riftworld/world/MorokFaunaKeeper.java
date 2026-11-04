@@ -13,7 +13,6 @@ import net.minecraftforge.fml.common.Mod;
 import ru.aiforge.riftworld.RiftWorld;
 import ru.aiforge.riftworld.entity.PegasusEntity;
 import ru.aiforge.riftworld.entity.MorokEntity;
-import ru.aiforge.riftworld.entity.WendigoEntity;
 import ru.aiforge.riftworld.flight.Flight;
 import ru.aiforge.riftworld.registry.ModEntities;
 
@@ -23,7 +22,8 @@ import ru.aiforge.riftworld.registry.ModEntities;
  * <ul>
  *   <li><b>Морок</b> (v0.39.0) — главный хоррор «Мороковой Пади»: <b>днём 5 %, ночью 45 %</b>,
  *       не больше 3 на игрока. Появляется в тумане на 12–40 блоках, а не под носом.</li>
- *   <li><b>Вендиго</b> — теперь редкий гость чащи (1 на игрока): его место занял Морок.</li>
+ *   <li><b>Вендиго</b> — v0.39.11: натурального спавна больше нет. Владелец попросил своего
+ *       хоррор-моба вместо него — им стал Морок; Вендиго остался яйцом призыва и легендой чащи.</li>
  *   <li><b>Пегас</b> — только в живых биомах (Аметистовые холмы, Висячие сады, Роща Сизо),
  *       редко и по одному: скакун, а не «моб на каждом шагу».</li>
  * </ul>
@@ -31,8 +31,6 @@ import ru.aiforge.riftworld.registry.ModEntities;
  */
 @Mod.EventBusSubscriber(modid = RiftWorld.MODID)
 public final class MorokFaunaKeeper {
-    private static final int WENDIGO_PER_PLAYER = 1;
-    private static final int WENDIGO_WORLD_CAP = 5;
     // v0.39.0: Морок — главный хоррор Пади. Ночью часто, днём редко.
     private static final int MOROK_PER_PLAYER = 3;
     private static final int MOROK_WORLD_CAP = 14;
@@ -74,15 +72,9 @@ public final class MorokFaunaKeeper {
                 }
             }
 
-            // ---------------- Вендиго: только в тумане Пади
-            if (MorokHollow.inside(sp.getX(), sp.getZ())) {
-                List<WendigoEntity> near = sl.getEntitiesOfClass(WendigoEntity.class, sp.getBoundingBox().inflate(96.0));
-                double chance = night ? 0.30 : 0.10;
-                if (near.size() < WENDIGO_PER_PLAYER && r.nextDouble() < chance
-                        && countWendigo(sl) < WENDIGO_WORLD_CAP) {
-                    spawnWendigo(sl, sp);
-                }
-            }
+            // ---------------- Вендиго больше НЕ спавнится сам (v0.39.11).
+            // Владелец: «у нас будет не вендиго, а какой-то свой хоррор-моб». Морок занял его место
+            // в спавнере биома; Вендиго остался яйцом призыва, структурой-легендой и записью в бестиарии.
 
             // ---------------- Пегас: живые биомы
             if (liveBiomeAt(sp.getX(), sp.getZ())) {
@@ -100,10 +92,6 @@ public final class MorokFaunaKeeper {
 
     private static int countMorok(ServerLevel sl) {
         return sl.getEntitiesOfClass(MorokEntity.class, new net.minecraft.world.phys.AABB(-30000, -64, -30000, 30000, 320, 30000)).size();
-    }
-
-    private static int countWendigo(ServerLevel sl) {
-        return sl.getEntitiesOfClass(WendigoEntity.class, new net.minecraft.world.phys.AABB(-30000, -64, -30000, 30000, 320, 30000)).size();
     }
 
     private static int countPegasus(ServerLevel sl) {
@@ -131,24 +119,6 @@ public final class MorokFaunaKeeper {
                 sl.playSound(null, ground, net.minecraft.sounds.SoundEvents.WARDEN_HEARTBEAT,
                         net.minecraft.sounds.SoundSource.HOSTILE, 1.2F, 0.7F);
             }
-            return;
-        }
-    }
-
-    private static void spawnWendigo(ServerLevel sl, ServerPlayer sp) {
-        ThreadLocalRandom r = ThreadLocalRandom.current();
-        for (int attempt = 0; attempt < 14; ++attempt) {
-            int px = (int) sp.getX() + r.nextInt(72) - 36;
-            int pz = (int) sp.getZ() + r.nextInt(72) - 36;
-            if (!sl.hasChunk(px >> 4, pz >> 4)) continue;
-            if (!MorokHollow.inside(px + 0.5, pz + 0.5)) continue;
-            BlockPos ground = groundAt(sl, px, pz);
-            if (ground == null) continue;
-            WendigoEntity w = ModEntities.WENDIGO.get().create(sl);
-            if (w == null) return;
-            w.moveTo(ground.getX() + 0.5, ground.getY(), ground.getZ() + 0.5, r.nextFloat() * 360.0F, 0.0F);
-            w.finalizeSpawn(sl, sl.getCurrentDifficultyAt(ground), MobSpawnType.NATURAL, null, null);
-            sl.addFreshEntity(w);
             return;
         }
     }
