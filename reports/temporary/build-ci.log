@@ -1,0 +1,68 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.8/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Configure project :
+Java: 17.0.21, JVM: 17.0.21+9 (Eclipse Adoptium), Arch: amd64
+
+> Task :compileJava UP-TO-DATE
+> Task :processResources UP-TO-DATE
+> Task :classes UP-TO-DATE
+> Task :jar
+> Task :downloadMcpConfig
+> Task :extractSrg UP-TO-DATE
+> Task :createMcpToSrg UP-TO-DATE
+> Task :reobfJar
+> Task :compileDtaddonJava UP-TO-DATE
+> Task :processDtaddonResources UP-TO-DATE
+> Task :dtaddonClasses UP-TO-DATE
+> Task :dtJar UP-TO-DATE
+> Task :compileTestJava UP-TO-DATE
+> Task :processTestResources NO-SOURCE
+> Task :testClasses UP-TO-DATE
+
+> Task :majaSafetyCheck
+2026-11-04 16:27:09,039 main WARN Advanced terminal features are not available in this environment
+OK: Maja saved journal, player block protection, spawn record and invalidation
+
+> Task :seaWorldgenParity FAILED
+2026-11-04 16:27:09,942 main WARN Advanced terminal features are not available in this environment
+Exception in thread "main" java.lang.ExceptionInInitializerError
+	at net.minecraft.world.level.chunk.ChunkGenerator.<clinit>(ChunkGenerator.java:81)
+	at ru.aiforge.riftworld.world.AshenLands.moundTopIn(AshenLands.java:361)
+	at ru.aiforge.riftworld.world.AshenLands$Region.<init>(AshenLands.java:177)
+	at ru.aiforge.riftworld.world.AshenLands.gen(AshenLands.java:240)
+	at ru.aiforge.riftworld.world.AshenLands.lambda$region$0(AshenLands.java:221)
+	at java.base/java.util.concurrent.ConcurrentHashMap.computeIfAbsent(ConcurrentHashMap.java:1708)
+	at ru.aiforge.riftworld.world.AshenLands.region(AshenLands.java:221)
+	at ru.aiforge.riftworld.world.AshenLands.nearestMatching(AshenLands.java:282)
+	at ru.aiforge.riftworld.world.AshenLands.nearestWithRedCastle(AshenLands.java:271)
+	at ru.aiforge.riftworld.world.AshenLands.<clinit>(AshenLands.java:341)
+	at ru.aiforge.riftworld.world.ElisarSea.computeSeaExitInCell(ElisarSea.java:268)
+	at ru.aiforge.riftworld.world.ElisarSea.lambda$seaExitInCell$0(ElisarSea.java:257)
+	at java.base/java.util.concurrent.ConcurrentHashMap.computeIfAbsent(ConcurrentHashMap.java:1708)
+	at ru.aiforge.riftworld.world.ElisarSea.seaExitInCell(ElisarSea.java:257)
+	at ru.aiforge.riftworld.world.ElisarSea.seaCaveExit(ElisarSea.java:326)
+	at ru.aiforge.riftworld.world.SeaWorldgenParityProbe.main(SeaWorldgenParityProbe.java:21)
+Caused by: java.lang.IllegalArgumentException: Not bootstrapped (called from registry ResourceKey[minecraft:root / minecraft:root])
+	at net.minecraft.server.Bootstrap.createBootstrapException(Bootstrap.java:118)
+	at net.minecraft.server.Bootstrap.checkBootstrapCalled(Bootstrap.java:111)
+	at net.minecraft.core.MappedRegistry.<init>(MappedRegistry.java:85)
+	at net.minecraft.core.MappedRegistry.<init>(MappedRegistry.java:81)
+	at net.minecraft.core.registries.BuiltInRegistries.<clinit>(BuiltInRegistries.java:113)
+	... 16 more
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_2-1793809616772.json
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':seaWorldgenParity'.
+> Process 'command '/usr/lib/jvm/temurin-17-jdk-amd64/bin/java'' finished with non-zero exit value 1
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 16s
+13 actionable tasks: 5 executed, 8 up-to-date
