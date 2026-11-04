@@ -34,110 +34,129 @@ def fur(base, seed, x, y, k=0.10, scale=2.2):
 
 
 # ------------------------------------------------------------------ ПЕГАС
+# v0.40.0: масть серая с тёмными «отметинами», поэтому рисунок строится на КОНТРАСТЕ:
+# светлый хребет, тёмное брюхо и низ ног, почти белые маховые с тёмными кончиками.
 def pegasus_coat(face, x, y, fw, fh, base, seed):
-    """Белая шкура с серыми яблоками; низ темнее, круп светлее."""
-    c = rim(base, y, fh, 1.06, 0.86)
-    c = fur(c, seed, x, y, 0.06, 2.6)
-    # яблоки: редкие мягкие пятна на боках и крупе
-    if face in ("east", "west", "up", "north", "south"):
-        n = smooth_noise(seed + 7, x, y, 4.0)
-        if n > 0.72:
-            c = shade(c, 0.88 - (0.08 if n > 0.85 else 0.0))
-        elif n < 0.22:
-            c = shade(c, 1.05)
-    return c
+    """Шкура: яблоки (мягкие пятна), светлая спина, тёмное брюхо, волоски."""
+    c = rim(base, y, fh, 1.08, 0.80)
+    # яблоки: пятна по гладкому шуму, а не «соль с перцем»
+    n = smooth_noise(seed + 7, x, y, 3.6)
+    if n > 0.70:
+        c = shade(c, 0.86)
+    elif n < 0.26:
+        c = shade(c, 1.06)
+    # брюхо и низ корпуса — темнее (объём)
+    if face in ("east", "west", "north", "south") and fh > 4 and y > fh * 0.66:
+        c = shade(c, 0.88)
+    return fur(c, seed, x, y, 0.05, 2.0)
 
 
 def pegasus_leg(face, x, y, fw, fh, base, seed):
-    """Нога: сверху белая, к копыту темнеет (грязь и шерсть)."""
-    t = y / max(1, fh - 1)
-    c = mixc(shade(base, 1.04), shade(hx("#B9B2A6"), 0.96), max(0.0, t - 0.45) / 0.55)
-    return fur(c, seed, x, y, 0.07, 1.8)
+    """Нога: от серой шкуры к почти чёрной «чулке» у копыта (так у настоящих коней)."""
+    t = y / max(1, fh - 1)                     # 0 — верх коробки, 1 — низ
+    c = mixc(shade(base, 1.05), hx("#3E3830"), min(1.0, max(0.0, t - 0.18) / 0.82))
+    c = fur(c, seed, x, y, 0.06, 1.6)
+    if t > 0.86:
+        c = shade(c, 1.12)                     # венчик светлее чулки
+    return c
 
 
 def pegasus_skull(face, x, y, fw, fh, base, seed):
-    """Голова: глаза на боках, тёмная переносица сверху, белая морда."""
+    """Голова: тёмная переносица сверху, скула в тени, блик на лбу."""
     c = pegasus_coat(face, x, y, fw, fh, base, seed)
-    if fw < 3 or fh < 3:
-        return c
-    if face in ("east", "west"):
-        # глаз: миндалина с бликом — на 45 % по длине и 38 % по высоте грани
-        ex, ey = fw * 0.42, fh * 0.38
-        if ellipse(x, y, ex, ey, max(1.2, fw * 0.16), max(1.0, fh * 0.13)):
-            c = hx("#1B1F26")
-            if ellipse(x, y, ex - fw * 0.05, ey - fh * 0.04, 0.9, 0.9):
-                c = hx("#EDF3FA")
-            elif ellipse(x, y, ex, ey, max(0.9, fw * 0.09), max(0.8, fh * 0.07)):
-                c = hx("#3A4652")
-        # скула: чуть темнее под глазом
-        elif y > fh * 0.55 and smooth_noise(seed, x, y, 3.0) > 0.6:
-            c = shade(c, 0.93)
-    if face == "up":
-        # тёмная полоса по переносице
-        if abs(x - (fw - 1) / 2.0) < max(1.0, fw * 0.16):
-            c = mixc(c, hx("#C9C2B6"), 0.55)
+    if face == "up" and fw > 2:
+        if abs(x - (fw - 1) / 2.0) < max(1.0, fw * 0.22):
+            c = mixc(c, hx("#8A8172"), 0.45)    # тёмная полоса по переносице
+    if face in ("east", "west") and fh > 3:
+        if y < fh * 0.30:
+            c = shade(c, 1.08)                  # блик на лбу
+        elif y > fh * 0.62:
+            c = shade(c, 0.88)                  # скула в тени
+    return c
+
+
+def pegasus_muzzle(face, x, y, fw, fh, base, seed):
+    """Морда: тёмный нос, ноздри и линия рта — только на передней грани."""
+    c = pegasus_coat(face, x, y, fw, fh, base, seed)
     if face == "north":
-        # морда: розоватый нос и ноздри
-        if y > fh * 0.55:
-            c = mixc(c, hx("#C79E96"), 0.45)
-        if y < fh * 0.45 and ellipse(x, y, fw * 0.30, fh * 0.55, 1.0, 1.0):
-            c = hx("#6B4A45")
-        if y < fh * 0.45 and ellipse(x, y, fw * 0.70, fh * 0.55, 1.0, 1.0):
-            c = hx("#6B4A45")
+        if y > fh * 0.42:
+            c = mixc(c, hx("#4A443C"), 0.55)
+        if ellipse(x, y, fw * 0.26, fh * 0.30, max(0.9, fw * 0.15), max(0.8, fh * 0.14)):
+            c = hx("#241F1B")
+        if ellipse(x, y, fw * 0.74, fh * 0.30, max(0.9, fw * 0.15), max(0.8, fh * 0.14)):
+            c = hx("#241F1B")
+        if y >= fh - 1:
+            c = hx("#241F1B")                   # рот
+    if face in ("east", "west") and y > fh * 0.6:
+        c = mixc(c, hx("#4A443C"), 0.35)
     return c
 
 
 def pegasus_mane(face, x, y, fw, fh, base, seed):
-    """Грива: вертикальные пряди с тёмными прядями и светлыми бликами."""
-    c = rim(base, y, fh, 1.12, 0.80)
+    """Грива и хвост: вертикальные пряди, светлые блики, тёмные концы."""
+    c = rim(base, y, fh, 1.16, 0.72)
     strand = (x * 5 + (seed >> 3)) % 7
     if strand == 0:
-        c = shade(c, 0.78)
+        c = shade(c, 0.72)
     elif strand == 3:
-        c = shade(c, 1.08)
-    if y > fh * 0.75:
-        c = shade(c, 0.86)          # концы прядей темнее
-    return fur(c, seed, x, y, 0.05, 1.4)
+        c = shade(c, 1.16)
+    elif strand == 5:
+        c = shade(c, 0.86)
+    if y > fh * 0.72:
+        c = shade(c, 0.84)
+    return fur(c, seed, x, y, 0.05, 1.3)
 
 
 def pegasus_feather(face, x, y, fw, fh, base, seed):
-    """Маховое перо: ряды чешуек, светлая кромка сверху, тёмный кончик."""
-    row = y // 2
-    c = rim(base, y, fh, 1.08, 0.84)
-    if (y % 2) == 0:
-        c = shade(c, 0.95)
-    if (x + row * 3) % 5 == 0:
-        c = shade(c, 0.88)                          # стержень пера
-    if y >= fh - 1:
-        c = shade(c, 0.80)                          # тёмный кончик
-    if y == 0:
-        c = shade(c, 1.10)                          # светлая кромка
+    """Маховое перо: стержень вдоль длинной оси, бородки рядами, тёмная КАЙМА по краю.
+
+    Кайма обязательна: перья лежат вплотную, и без неё веер сбоку сливается в «доску»
+    (именно так крыло и выглядело в кадрах 147 прогонов #396–#423).
+    """
+    long_axis_x = fw >= fh                      # перо вытянуто вдоль X текстуры
+    c = rim(base, y, fh, 1.04, 0.90)
+    shaft = fh // 2
+    if y == shaft:                              # стержень
+        c = shade(c, 1.08)
+    if (x + y * 2) % 5 == 0:                    # бородки
+        c = shade(c, 0.94)
+    # тёмная кайма по контуру грани — перья перестают сливаться
+    if x == 0 or y == 0 or y == fh - 1 or x == fw - 1:
+        c = mixc(c, hx("#6A635A"), 0.40)
+    # кончик пера почти чёрный
+    if long_axis_x and x >= fw - 2:
+        c = mixc(c, hx("#3A352F"), 0.72)
+    if long_axis_x and x >= fw - 3:
+        c = mixc(c, hx("#6A635A"), 0.35)
+    if not long_axis_x and y == fh - 1:
+        c = mixc(c, hx("#6A635A"), 0.45)
     return c
 
 
 def pegasus_feather_edge(face, x, y, fw, fh, base, seed):
+    """Кроющее перо / костяная основа крыла — темнее махового."""
     c = pegasus_feather(face, x, y, fw, fh, base, seed)
-    return shade(c, 0.92)
+    return shade(c, 0.86)
 
 
 def pegasus_hoof(face, x, y, fw, fh, base, seed):
-    """Копыто: почти чёрное с блеском сверху и светлой полосой у венчика."""
-    c = shade(base, 1.0 + (0.20 if y == 0 else 0.0))
+    """Копыто: чёрное, со светлой полосой у венчика и блеском."""
+    c = shade(base, 1.0 + (0.22 if y == 0 else 0.0))
     if y <= max(1, fh // 4):
-        c = mixc(c, hx("#6E6A62"), 0.35)
-    if smooth_noise(seed, x, y, 1.6) > 0.75:
-        c = shade(c, 0.72)
+        c = mixc(c, hx("#6E6A62"), 0.40)
+    if smooth_noise(seed, x, y, 1.6) > 0.74:
+        c = shade(c, 0.74)
     return c
 
 
 def pegasus_saddle(face, x, y, fw, fh, base, seed):
     """Седло: кожа с прошивкой по краю и золотой пряжкой."""
-    c = rim(base, y, fh, 1.12, 0.82)
+    c = rim(base, y, fh, 1.14, 0.78)
     if face in ("north", "south", "east", "west"):
         if x in (0, fw - 1) or y in (0, fh - 1):
             c = hx("#E3D6A8")                       # прошивка
         if ellipse(x, y, fw * 0.5, fh * 0.5, fw * 0.18, fh * 0.16):
-            c = hx("#C9A24A")                       # пряжка
+            c = hx("#D9B24C")                       # пряжка
             if ellipse(x, y, fw * 0.5, fh * 0.5, fw * 0.08, fh * 0.07):
                 c = hx("#8C6B21")
     else:
@@ -145,16 +164,34 @@ def pegasus_saddle(face, x, y, fw, fh, base, seed):
     return c
 
 
+def pegasus_eye(face, x, y, fw, fh, base, seed):
+    """Глаз коня: янтарная радужка, чёрный зрачок, белый блик."""
+    cx, cy = (fw - 1) / 2.0, (fh - 1) / 2.0
+    c = hx("#E9A93C")
+    if x == 0 and y == 0:
+        c = hx("#6B4A16")                           # тень в углу
+    if abs(x - cx) < 1.0 and abs(y - cy) < 1.0:
+        c = hx("#120E0A")                           # зрачок
+        if x == int(round(cx)) and y == int(round(cy)) - 1:
+            c = hx("#FFF6E2")                       # блик
+    return c
+
+
 PEGASUS = {
     "coat": pegasus_coat,
     "leg": pegasus_leg,
     "skull": pegasus_skull,
+    "muzzle": pegasus_muzzle,
+    "nose": lambda face, x, y, fw, fh, base, seed: hx("#241F1B"),
     "mane": pegasus_mane,
     "tail": pegasus_mane,
     "feather": pegasus_feather,
     "feather_edge": pegasus_feather_edge,
+    "feather_tip": pegasus_feather_edge,
     "hoof": pegasus_hoof,
     "saddle": pegasus_saddle,
+    "gold": lambda face, x, y, fw, fh, base, seed: shade(hx("#D9B24C"), 1.0 + (0.15 if y == 0 else 0.0)),
+    "eye": pegasus_eye,
 }
 
 
@@ -233,46 +270,89 @@ WENDIGO = {
 
 
 # ------------------------------------------------------------------ МОРОК
-def morok_veil(face, x, y, fw, fh, base, seed):
-    """Рваная вуаль: тёмная ткань с неровным нижним краем."""
-    c = rim(base, y, fh, 1.14, 0.74)
-    if y > fh * 0.7 and smooth_noise(seed, x, y, 2.0) > 0.5:
-        c = shade(c, 0.62)
-    return c
-
-
+# v0.40.0: кожа пепельная с прожилками и РЁБРАМИ, нарисованными на груди; костяная маска
+# с провалами глазниц; саван — почти чёрная ткань с изорванным низом.
 def morok_skin(face, x, y, fw, fh, base, seed):
-    """Кожа Морока: пепельная, с прожилками и грязными пятнами."""
-    c = rim(base, y, fh, 1.08, 0.80)
-    if smooth_noise(seed, x, y, 2.6) > 0.74:
-        c = shade(c, 0.84)
-    if (x * 2 + y * 3) % 13 == 0:
-        c = shade(c, 1.10)
+    """Пепельная кожа: тёмные прожилки, грязные пятна, светлые натянутые сухожилия."""
+    c = rim(base, y, fh, 1.10, 0.74)
+    vein = smooth_noise(seed + 3, x, y, 2.4)
+    if vein > 0.74:
+        c = shade(c, 0.78)                       # прожилка
+    elif vein < 0.16:
+        c = shade(c, 1.12)                       # сухожилие
+    fleece = smooth_noise(seed + 9, x, y, 1.5)
+    if fleece > 0.70:
+        c = shade(c, 1.06)
+    if smooth_noise(seed + 13, x, y, 3.2) > 0.84:
+        c = mixc(c, hx("#2A3038"), 0.30)         # грязное пятно
     return c
 
 
-def morok_skull(face, x, y, fw, fh, base, seed):
-    """Лицо: два уголька глаз и щель пасти спереди, тени по бокам."""
+def morok_chest(face, x, y, fw, fh, base, seed):
+    """Грудь: на передней грани проступают РЁБРА (тёмные дуги под кожей)."""
     c = morok_skin(face, x, y, fw, fh, base, seed)
+    if face == "north" and fh > 5:
+        # три ребра: дуги, которые уходят к бокам вниз
+        for i, yy in enumerate((fh * 0.30, fh * 0.52, fh * 0.74)):
+            band = abs(y - yy)
+            if band < 1.0:
+                c = shade(c, 0.74)
+            elif band < 2.0:
+                c = shade(c, 0.90)
+            if abs(x - (fw - 1) / 2.0) < 1.0 and band < 1.0:
+                c = shade(c, 0.62)               # грудина
+    return c
+
+
+def morok_cloak(face, x, y, fw, fh, base, seed):
+    """Саван: почти чёрная ткань, светлые рваные нити, изорванный нижний край."""
+    c = rim(base, y, fh, 1.28, 0.66)
+    thread = (x * 3 + (seed >> 4)) % 9
+    if thread == 0:
+        c = shade(c, 1.35)                       # нить основы
+    elif thread == 4:
+        c = shade(c, 0.72)
+    if y > fh * 0.72 and smooth_noise(seed, x, y, 1.8) > 0.46:
+        c = shade(c, 0.55)                       # рваный низ
+    return c
+
+
+def morok_bone(face, x, y, fw, fh, base, seed):
+    """Кость маски: тёплая, с трещинами и тёмными швами между костями."""
+    c = rim(base, y, fh, 1.06, 0.84)
+    crack = smooth_noise(seed, x, y, 2.0)
+    if crack > 0.80:
+        c = shade(c, 0.80)
+    elif crack < 0.18:
+        c = shade(c, 1.06)
+    if y == 0 or y == fh - 1:
+        c = shade(c, 0.86)                       # шов по краю
+    return c
+
+
+def morok_face(face, x, y, fw, fh, base, seed):
+    """Череп: на передней грани тёмная переносица и линия челюсти, щёки в тени."""
+    c = morok_bone(face, x, y, fw, fh, base, seed)
     if face == "north":
-        if ellipse(x, y, fw * 0.28, fh * 0.36, max(1.2, fw * 0.15), max(1.0, fh * 0.14)):
-            c = hx("#0D0F11")
-        if ellipse(x, y, fw * 0.72, fh * 0.36, max(1.2, fw * 0.15), max(1.0, fh * 0.14)):
-            c = hx("#0D0F11")
-        if y > fh * 0.62 and abs(x - (fw - 1) / 2.0) < max(1.0, fw * 0.30):
-            c = hx("#12141A")                       # пасть
-    if face in ("east", "west") and y > fh * 0.5 and smooth_noise(seed, x, y, 2.0) > 0.6:
+        if abs(x - (fw - 1) / 2.0) < 1.0 and y < fh * 0.45:
+            c = shade(c, 0.72)                   # переносица
+        if y > fh - 2:
+            c = shade(c, 0.66)                   # линия челюсти
+    if face in ("east", "west") and y > fh * 0.62:
         c = shade(c, 0.88)
     return c
 
 
 MOROK = {
-    "veil": morok_veil,
     "skin": morok_skin,
     "skin_dark": morok_skin,
-    "skull": morok_skull,
-    "bone": wendigo_bone,
-    "claw": wendigo_claw,
+    "chest": morok_chest,
+    "bone": morok_face,
+    "bone_dark": morok_bone,
+    "socket": lambda face, x, y, fw, fh, base, seed: hx("#070809"),
+    "cloak": morok_cloak,
+    "claw": lambda face, x, y, fw, fh, base, seed: shade(hx("#0A0B0D"), 1.0 + (0.25 if y == 0 else 0.0)),
+    "eye": lambda face, x, y, fw, fh, base, seed: hx("#FF7A18"),
 }
 
 

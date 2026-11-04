@@ -150,15 +150,25 @@ public final class MorokHollow {
         int budget = 2400;  // страховка от долгого поиска
         for (Region rg : found) {
             // кольца внутри региона (вес >= 0.55 требует d <= R-25), 16 направлений
-            for (double frac : new double[]{0.70, 0.50, 0.30}) {
-                for (int i = 0; i < 16; ++i) {
-                    double a = i * Math.PI / 8.0;
-                    int x = rg.cx + (int) Math.round(rg.R * frac * Math.cos(a));
-                    int z = rg.cz + (int) Math.round(rg.R * frac * Math.sin(a));
-                    if (--budget <= 0) return null;
-                    if (weight(x + 0.5, z + 0.5) < 0.55) continue;
-                    if (!landAt(x + 0.5, z + 0.5)) continue;
-                    return new Object[]{x, z, rg};
+            // v0.40.0: кольца идут ОТ ЦЕНТРА. Раньше первым бралось кольцо 0.70R — это рваная
+            // кромка Пади, где weight прыгает через 0.40 из-за шума кромки: точка проходила порог
+            // 0.55, но половина окна ±32 блока оказывалась ВНЕ биома. Отсюда «trees=2,
+            // brambles=0» в прогонах #378–#423: проба мерила опушку, а не бор.
+            // Два прохода: сначала ищем точку в САМОЙ ЧАЩЕ (weight >= 0.80, окно ±32 блока целиком
+            // в биоме), и только если такой нет — берём старое мягкое условие 0.55 (кромка).
+            // Так проба не остаётся без точки на маленьком острове.
+            for (double minW : new double[]{0.80, 0.55}) {
+                for (double frac : new double[]{0.22, 0.34, 0.46, 0.60}) {
+                    for (int i = 0; i < 16; ++i) {
+                        double a = i * Math.PI / 8.0;
+                        int x = rg.cx + (int) Math.round(rg.R * frac * Math.cos(a));
+                        int z = rg.cz + (int) Math.round(rg.R * frac * Math.sin(a));
+                        if (--budget <= 0) return null;
+                        // в чаще, а не на кромке: окно пробы должно целиком лежать внутри биома
+                        if (weight(x + 0.5, z + 0.5) < minW) continue;
+                        if (!landAt(x + 0.5, z + 0.5)) continue;
+                        return new Object[]{x, z, rg};
+                    }
                 }
             }
         }
@@ -339,8 +349,10 @@ public final class MorokHollow {
         if (!inside(x + 0.5, z + 0.5)) return false;
         // v0.39.1: решётка 5x5 вместо 7x7. При 7x7 в круге радиуса 32 вырастало два дерева —
         // это не бор, а «три палки в тумане» (гейт trees >= 6 не проходил). 5x5 даёт ~80 стволов.
-        if (Math.floorMod(x, 5) != 2 || Math.floorMod(z, 5) != 2) return false;
-        return ElisarChunkGenerator.hash(x, z, 913) < 0.62;
+        // v0.40.0: 4x4 — «биом дальше»: бор должен быть бором. 5x5 давала 2.5 % колонок,
+        // 4x4 с порогом 0.70 даёт 4.4 % (плюс столько же сухостоя и поваленных стволов).
+        if (Math.floorMod(x, 4) != 2 || Math.floorMod(z, 4) != 2) return false;
+        return ElisarChunkGenerator.hash(x, z, 913) < 0.70;
     }
 
     /** Высота ствола бледной сосны (9–17 блоков). */

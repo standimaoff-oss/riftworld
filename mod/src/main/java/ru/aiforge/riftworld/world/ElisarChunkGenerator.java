@@ -2101,7 +2101,9 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                         && MorokHollow.inside(x + 0.5, z + 0.5);
                 // v0.39.1: полоса колючек была 2.5 % и почти всегда упиралась в склон —
                 // в отчёте за прогон #378 колючек 0 при гейте >= 3. Расширяем полосу.
-                boolean brambles = h > 0.78 && h < 0.90 && MorokHollow.inside(x + 0.5, z + 0.5);
+                // v0.40.0: полоса 0.62..0.78 — подлесок должен быть в каждом втором чанке,
+                // а не «одна колючка на весь бор» (в #423 их было ноль).
+                boolean brambles = h > 0.62 && h < 0.78 && MorokHollow.inside(x + 0.5, z + 0.5);
                 boolean fangs = Math.floorMod(x, 13) == 6 && Math.floorMod(z, 13) == 6
                         && MorokHollow.inside(x + 0.5, z + 0.5);
                 if (!(big || small || snag || fallen || brambles || fangs)) continue;

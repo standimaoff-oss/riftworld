@@ -3872,7 +3872,9 @@ public final class SeaProbeCommand {
                 ServerLevel sl = level;
                 buildStage(sl, px, py, pz, 6);
                 // v0.39.9: камера ближе — конь должен занимать кадр, а не тонуть в пейзаже
-                cam34 = poseCam(px + 0.5, py + 1.2, pz + 0.5, 210.0F, 0.0, 0.0, 0.0, 3.4, 2.8, 0.9);
+                // v0.40.0: конь вырос до 2.6 блока и раскрыл крылья — объектив в 3 блока,
+                // цель на уровне груди, чтобы в кадр попали и голова с ушами, и веер маховых.
+                cam34 = poseCam(px + 0.5, py + 1.35, pz + 0.5, 210.0F, 0.0, 0.0, 0.0, 2.05, 2.25, 0.70);
                 clearAt(sl, cam34[0], cam34[1], cam34[2]);
             } else {
                 cam34 = new double[]{px - 3, py + 2, pz + 4, px, py + 1, pz};
@@ -3956,7 +3958,9 @@ public final class SeaProbeCommand {
             }
             // v0.39.14: кадр 152 в #422 обрезал голову справа — объектив стоял слишком близко (5.2 блока
             // по диагонали) и целился в грудь. Отодвигаем и целимся в голову: рога/череп Морока на 2.2 блока.
-            double[] pc = poseCam(px + 0.5, ground + 1.9, pz + 0.5, 205.0F, 0.0, 0.0, 0.0, 5.2, 3.4, 1.2);
+            // v0.40.0: Морок вырос до 2.85 блока; камера в 3 блока и целится в маску —
+            // в #422/#423 объектив стоял в 6.3 блока, и угли глаз были двумя пикселями.
+            double[] pc = poseCam(px + 0.5, ground + 1.55, pz + 0.5, 205.0F, 0.0, 0.0, 0.0, 2.15, 2.00, 0.55);
             boolean eyeGlow = eyes[0] > 0 && eyes[2] > 0;
             int metric = (alive > 0 && geo[0] >= 40 && eyeGlow) ? 900 : 0;
             String line = "riftstruct kind=v39_morok at=" + px + "," + (ground + 1) + "," + pz
@@ -4021,7 +4025,8 @@ public final class SeaProbeCommand {
             double[] cam35;
             if (level != null) {
                 ServerLevel sl = (ServerLevel) level;
-                cam35 = poseCam(px + 0.5, py + 1.25, pz + 0.5, 200.0F, 0.0, 0.0, 0.0, 3.2, 2.8, 1.0);
+                // v0.40.0: та же беда, что у Пегаса и Морока — моб тонул в пейзаже.
+                cam35 = poseCam(px + 0.5, py + 1.30, pz + 0.5, 200.0F, 0.0, 0.0, 0.0, 1.95, 2.10, 0.65);
                 clearAt(sl, cam35[0], cam35[1], cam35[2]);
             } else {
                 cam35 = new double[]{px - 4, py + 3, pz + 5, px, py + 2, pz};
