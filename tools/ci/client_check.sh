@@ -1447,7 +1447,10 @@ biome_section() {
     SBLK=$(printf '%s' "$S1" | sed -n 's/.* blocks=\([0-9]*\).*/\1/p' | tail -1)
     SAIR=$(printf '%s' "$S1" | sed -n 's/.* sub_air=\([0-9]*\).*/\1/p' | tail -1)
     SHSE=$(printf '%s' "$S1" | sed -n 's/.* houses=\([0-9]*\).*/\1/p' | tail -1)
-    SCAM=$(printf '%s' "$S1" | grep -o 'cam=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^cam=//')
+    # v0.39.2: камеры проб теперь ДРОБНЫЕ (poseCam считает позицию в системе координат моба),
+    # поэтому в шаблоне есть точка. Раньше `[-0-9]*` не цеплял «689.0», SCAM оставался пустым
+    # и кадры 146/151/152 не снимались вообще — хотя пробы выполнялись.
+    SCAM=$(printf '%s' "$S1" | grep -o 'cam=[-0-9.]*,[-0-9.]*,[-0-9.]*:[-0-9.]*,[-0-9.]*,[-0-9.]*' | tail -1 | sed 's/^cam=//')
     if [ "${SBLK:-0}" -ge "$min_blk" ] && [ "${SAIR:-0}" -eq 0 ]; then
       log "  OK   структура $skind построена: blocks=${SBLK}, sub_air=${SAIR:-0}"
     else
@@ -1640,7 +1643,7 @@ biome_section() {
     sleep 1
     S0=$(EL execute at TestPlayer in riftworld:elisar run riftstruct "$skind" 2>&1 | tr '\r\n' '  ')
     SAT=$(printf '%s' "$S0" | sed -n 's/.* at=\([-0-9]*,[-0-9]*,[-0-9]*\).*/\1/p' | tail -1)
-    SCAM0=$(printf '%s' "$S0" | grep -o 'cam=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^cam=//')
+    SCAM0=$(printf '%s' "$S0" | grep -o 'cam=[-0-9.]*,[-0-9.]*,[-0-9.]*:[-0-9.]*,[-0-9.]*,[-0-9.]*' | tail -1 | sed 's/^cam=//')
     if [ -z "${SAT:-}" ]; then
       log "  FAIL /riftstruct $skind не нашёл структуру (${S0:0:140})"; FAILS=$((FAILS + 1)); return
     fi
@@ -1664,7 +1667,10 @@ biome_section() {
     log "  /riftstruct $skind -> ${S1:0:280}"
     SBLK=$(printf '%s' "$S1" | sed -n 's/.* blocks=\([0-9]*\).*/\1/p' | tail -1)
     SAIR=$(printf '%s' "$S1" | sed -n 's/.* sub_air=\([0-9]*\).*/\1/p' | tail -1)
-    SCAM=$(printf '%s' "$S1" | grep -o 'cam=[-0-9]*,[-0-9]*,[-0-9]*:[-0-9]*,[-0-9]*,[-0-9]*' | tail -1 | sed 's/^cam=//')
+    # v0.39.2: камеры проб теперь ДРОБНЫЕ (poseCam считает позицию в системе координат моба),
+    # поэтому в шаблоне есть точка. Раньше `[-0-9]*` не цеплял «689.0», SCAM оставался пустым
+    # и кадры 146/151/152 не снимались вообще — хотя пробы выполнялись.
+    SCAM=$(printf '%s' "$S1" | grep -o 'cam=[-0-9.]*,[-0-9.]*,[-0-9.]*:[-0-9.]*,[-0-9.]*,[-0-9.]*' | tail -1 | sed 's/^cam=//')
     if [ "${SBLK:-0}" -ge "$min_blk" ] && [ "${SAIR:-0}" -eq 0 ]; then
       log "  OK   структура $skind построена: blocks=${SBLK}, sub_air=${SAIR:-0}"
     else
