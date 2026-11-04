@@ -20,4 +20,4 @@ python reports/el_gran_maja_model/build_collision_bounds.py
 python reports/el_gran_maja_model/validate_collision_bounds.py
 ```
 
-Референс и модель сверены в `01_model_front_and_side_ortho.png` и `06_reference_mouth_vs_model_mouth.png`; масштабный вид — `03_model_three_quarter_scale_with_player.png`. Внешний вид в настоящем клиенте может отличаться из-за освещения, воды и тумана.
+Референс и модель сверены в `01_model_front_and_side_ortho.png` и `06_mouth_reference_comparison.png`; масштабный вид — `03_model_three_quarter_scale_with_player.png`. Внешний вид в настоящем клиенте может отличаться из-за освещения, воды и тумана.

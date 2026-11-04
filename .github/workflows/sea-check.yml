@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: ["main"]
   workflow_dispatch:
+    inputs:
+      export_jar:
+        description: 'After all tests pass, export the mod and client screenshot to this Arena branch'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -52,6 +57,20 @@ jobs:
             sleep 15
           done
           exit 1
+      - name: Expose compiler errors in check annotations
+        if: failure()
+        shell: bash
+        run: |
+          python - <<'PYCODE'
+          from pathlib import Path
+          p = Path('build-ci.log')
+          if p.exists():
+              lines = p.read_text(errors='replace').splitlines()
+              for i, line in enumerate(lines):
+                  if ' error:' in line or line.startswith('FAILURE:') or 'What went wrong:' in line:
+                      text = ' | '.join(lines[i:i+4]).replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+                      print('::error title=Build diagnostic::' + text[:3000])
+          PYCODE
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -76,15 +95,28 @@ jobs:
         with:
           name: riftworld-build
           path: build-artifact
+      - uses: gradle/actions/setup-gradle@v4
+        if: github.event_name == 'workflow_dispatch'
       - name: Boot a real Forge server and probe it
         shell: bash
         env:
-          KEEP: '0'
+          KEEP: '1'
           NORMAL_PROBE: '0'
         run: |
           mkdir -p mod/build/libs
           find build-artifact -name '*.jar' -exec cp {} mod/build/libs/ \;
           bash tools/ci/server_check.sh
+      - name: Verify Maja motion and block/border collisions on the server
+        shell: bash
+        run: bash tools/ci/maja_server_probe.sh
+      - name: Real client rendering smoke test
+        if: github.event_name == 'workflow_dispatch'
+        shell: bash
+        run: bash tools/ci/maja_client_probe.sh
+      - name: Stop the test server
+        if: always()
+        shell: bash
+        run: python3 tools/rcon.py --password riftci --log '' --timeout 20 stop || true
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -92,3 +124,41 @@ jobs:
           path: ci-out/
           if-no-files-found: warn
           retention-days: 14
+
+  export-tested-jar:
+    if: github.event_name == 'workflow_dispatch' && inputs.export_jar && github.ref == 'refs/heads/arena/64445ff0-riftworld'
+    needs: [build, server-smoke]
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: riftworld-build
+          path: build-artifact
+      - uses: actions/download-artifact@v4
+        with:
+          name: riftworld-server-smoke
+          path: test-artifact
+      - name: Export exactly the tested jar and screenshot to the current branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          [ "$(git rev-parse HEAD)" = "$GITHUB_SHA" ] || { echo 'Branch changed during the test; refusing to export'; exit 1; }
+          mapfile -t jars < <(find build-artifact -type f -name 'riftworld-*.jar' ! -name 'riftworld-dt-*' ! -name '*sources*' ! -name '*javadoc*')
+          [ "${#jars[@]}" = 1 ] || { echo 'Expected exactly one primary mod jar'; exit 1; }
+          shot=$(find test-artifact -name 'maja-client-front.png' -type f -print -quit)
+          [ -n "$shot" ] || { echo 'Missing client screenshot'; exit 1; }
+          mkdir -p release reports/el_gran_maja_model
+          cp "${jars[0]}" "release/$(basename "${jars[0]}")"
+          cp "$shot" reports/el_gran_maja_model/09_game_client_front.png
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "release/$(basename "${jars[0]}")" reports/el_gran_maja_model/09_game_client_front.png
+          git diff --cached --quiet && exit 0
+          git commit -m 'Export tested Riftworld mod and client capture [skip ci]'
+          git push origin HEAD:refs/heads/arena/64445ff0-riftworld

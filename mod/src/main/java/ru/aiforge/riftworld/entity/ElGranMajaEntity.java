@@ -135,6 +135,9 @@ public final class ElGranMajaEntity extends Mob {
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.putFloat("majaDesiredYaw", desiredYaw);
+        // Read-only diagnostics for server operators and the automated collision probe.
+        tag.putBoolean("majaReady", isReadyToRender());
+        tag.putFloat("majaJaw", entityData.get(JAW));
     }
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
