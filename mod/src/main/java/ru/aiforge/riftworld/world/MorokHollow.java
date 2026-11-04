@@ -62,28 +62,55 @@ public final class MorokHollow {
             if (sg != null && Math.hypot(cx - sg.hub.cx, cz - sg.hub.cz) < R + sg.hub.maxReach() + 60) continue;
             MistKeep.Region mk = MistKeep.regionAt(cx, cz);
             if (mk != null && Math.hypot(cx - mk.cx, cz - mk.cz) < R + mk.Rr + 80) continue;
-            // v0.38.1: регион ОБЯЗАН лежать на суше. До этого Падь могла целиком попасть на
-            // открытый океан: биом не включался (нужен остров), лес не рос, а проба строила
-            // себе платформу прямо на воде — именно это и было видно на кадрах 149/150.
-            if (!hasLand(cx, cz, R)) continue;
+            // ВАЖНО (v0.38.2): никаких запросов к карте островов из gen()! Раньше здесь
+            // была проверка «регион на суше» через CityPlan/WildIslands, и она попадала
+            // в путь генерации чанков: прогон #371 залип на /riftbiome crystal, потому что
+            // построение тайлов островов рекурсивно дёргало генерацию регионов.
+            // Суша проверяется там, где это дёшево и уместно — в {@link #landSpot}.
             return new Region(cx, cz, R, FIXED ^ ((long) cx * 1000003L + (long) cz * 7867L));
         }
         return null;
     }
 
-    /** Есть ли под регионом суша: не меньше половины пробных колонок должны быть островом. */
-    private static boolean hasLand(int cx, int cz, int R) {
+    /**
+     * Регион Пади, который реально стоит на суше, вместе с точкой внутри него.
+     *
+     * <p>Проверка суши вынесена СЮДА (а не в {@link #gen}), потому что {@code islandAt}
+     * строит тайлы островов: из пути генерации чанков это давало залипание сервера.
+     *
+     * @param cellRadius сколько ячеек {@link #SUPER} просмотреть вокруг точки
+     * @return {@code {x, z, Region}} или {@code null}, если суши под Падью нет рядом
+     */
+    public static Object[] findLandRegion(int nearX, int nearZ, int cellRadius) {
         CityPlan plan = CityPlan.get();
-        int hits = 0, total = 0;
-        for (int i = 0; i < 32; ++i) {
-            double a = i * Math.PI / 16.0;
-            double rr = R * (0.30 + 0.55 * (((i * 37) % 11) / 10.0));
-            int x = (int) Math.round(cx + rr * Math.cos(a));
-            int z = (int) Math.round(cz + rr * Math.sin(a));
-            ++total;
-            if (plan.islandAt(x + 0.5, z + 0.5) != null) ++hits;
+        int scx = Math.floorDiv(nearX, SUPER);
+        int scz = Math.floorDiv(nearZ, SUPER);
+        java.util.List<Region> found = new java.util.ArrayList<>();
+        for (int dx = -cellRadius; dx <= cellRadius; ++dx) {
+            for (int dz = -cellRadius; dz <= cellRadius; ++dz) {
+                Region rg = region(scx + dx, scz + dz);
+                if (rg != null) found.add(rg);
+            }
         }
-        return total > 0 && hits * 100 / total >= 45;
+        // ближние к запрошенной точке — первыми
+        found.sort(java.util.Comparator.comparingDouble(
+                r -> Math.hypot(r.cx - nearX, r.cz - nearZ)));
+        int budget = 900;   // страховка от гигантских карт островов
+        for (Region rg : found) {
+            // кольца внутри региона (вес >= 0.55 требует d <= R-25), 16 направлений
+            for (double frac : new double[]{0.70, 0.50, 0.30}) {
+                for (int i = 0; i < 16; ++i) {
+                    double a = i * Math.PI / 8.0;
+                    int x = rg.cx + (int) Math.round(rg.R * frac * Math.cos(a));
+                    int z = rg.cz + (int) Math.round(rg.R * frac * Math.sin(a));
+                    if (--budget <= 0) return null;
+                    if (weight(x + 0.5, z + 0.5) < 0.55) continue;
+                    if (plan.islandAt(x + 0.5, z + 0.5) == null) continue;
+                    return new Object[]{x, z, rg};
+                }
+            }
+        }
+        return null;
     }
 
     public static Region regionAt(double x, double z) {
@@ -163,50 +190,29 @@ public final class MorokHollow {
      * @return {@code {x, y, z}} или {@code null}
      */
     public static int[] landSpot(ServerLevel level, int nearX, int nearZ, int cellRadius) {
-        // 1) ищем РЕГИОН Пади на сетке SUPER (соседние ячейки): регион может быть и за 5 км
-        int scx = Math.floorDiv(nearX, SUPER);
-        int scz = Math.floorDiv(nearZ, SUPER);
-        Region best = null;
-        double bestD = Double.MAX_VALUE;
-        for (int dx = -cellRadius; dx <= cellRadius; ++dx) {
-            for (int dz = -cellRadius; dz <= cellRadius; ++dz) {
-                Region rg = region(scx + dx, scz + dz);
-                if (rg == null) continue;
-                double d = Math.hypot(rg.cx - nearX, rg.cz - nearZ);
-                if (d < bestD) {
-                    bestD = d;
-                    best = rg;
-                }
-            }
-        }
-        if (best == null) return null;
-        // 2) внутри региона ищем НАСТОЯЩУЮ сушу: остров, вес >= 0.55, поверхность уже в мерзлоте
         CityPlan plan = CityPlan.get();
-        int fbX = Integer.MIN_VALUE, fbY = 0, fbZ = 0;
-
-        for (int r = 0; r <= best.R + 40; r += 12) {
-            for (int i = 0; i < 24; ++i) {
-                double a = i * Math.PI / 12.0;
-                int x = best.cx + (int) Math.round(r * Math.cos(a));
-                int z = best.cz + (int) Math.round(r * Math.sin(a));
-                if (weight(x + 0.5, z + 0.5) < 0.55) continue;
+        Object[] hit = findLandRegion(nearX, nearZ, cellRadius);
+        if (hit == null) return null;
+        int bx = (Integer) hit[0], bz = (Integer) hit[1];
+        // вокруг найденной точки ищем уже «одетую» мерзлоту Пади: тогда кадр покажет живой биом
+        for (int r = 0; r <= 32; r += 16) {
+            for (int n = (r == 0 ? 1 : 8); n > 0; --n) {
+                double a = n * Math.PI / 4.0;
+                int x = bx + (int) Math.round(r * Math.cos(a));
+                int z = bz + (int) Math.round(r * Math.sin(a));
                 if (plan.islandAt(x + 0.5, z + 0.5) == null) continue;
                 level.getChunk(x >> 4, z >> 4);
                 int top = level.getHeight(
                         net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
                 if (top <= plan.ocean + 1) continue;
                 BlockState st = level.getBlockState(new BlockPos(x, top - 1, z));
-                boolean dressed = st.is(MorokBlocks.RIME_GRASS.get()) || st.is(MorokBlocks.PALE_MOSS_BLOCK.get())
-                        || st.is(MorokBlocks.FROZEN_SOIL.get());
-                if (dressed) return new int[]{x, top, z};
-                if (fbX == Integer.MIN_VALUE) {
-                    fbX = x;
-                    fbY = top;
-                    fbZ = z;
+                if (st.is(MorokBlocks.RIME_GRASS.get()) || st.is(MorokBlocks.PALE_MOSS_BLOCK.get())
+                        || st.is(MorokBlocks.FROZEN_SOIL.get())) {
+                    return new int[]{x, top, z};
                 }
             }
         }
-        return fbX == Integer.MIN_VALUE ? null : new int[]{fbX, fbY, fbZ};
+        return null;
     }
 
     /**
