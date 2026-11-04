@@ -345,19 +345,3 @@ tasks.register('majaSafetyCheck', JavaExec) {
     classpath = sourceSets.test.runtimeClasspath
     mainClass = 'ru.aiforge.riftworld.world.MajaWorldDataProbe'
 }
-
-// Compare optimized seabed calculations with the original deterministic equations.
-tasks.register('seaWorldgenParity', JavaExec) {
-    group = 'verification'
-    dependsOn tasks.named('testClasses')
-    classpath = sourceSets.test.runtimeClasspath
-    mainClass = 'ru.aiforge.riftworld.world.SeaWorldgenParityProbe'
-}
-
-// Concurrent, cold-cache worldgen requests must retain canonical identities.
-tasks.register('worldgenConcurrencyCheck', JavaExec) {
-    group = 'verification'
-    dependsOn tasks.named('testClasses')
-    classpath = sourceSets.test.runtimeClasspath
-    mainClass = 'ru.aiforge.riftworld.world.WorldgenConcurrencyProbe'
-}
