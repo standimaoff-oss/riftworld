@@ -244,3 +244,27 @@ jobs:
             git commit -m 'Add tested Riftworld 0.41.0 artifacts [skip ci]'
             git push origin HEAD:refs/heads/arena/361da66e-riftworld
           fi
+
+  temporary-build-diagnostic:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/arena/361da66e-riftworld'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: riftworld-build
+          path: previous-build
+          run-id: 41867819034
+          github-token: ${{ github.token }}
+      - name: Export failure diagnostic
+        run: |
+          mkdir -p reports/temporary
+          cp "$(find previous-build -name build-ci.log -print -quit)" reports/temporary/build-ci.log
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add reports/temporary/build-ci.log
+          git commit -m 'Export temporary build diagnostic [skip ci]'
+          git push origin HEAD:refs/heads/arena/361da66e-riftworld
