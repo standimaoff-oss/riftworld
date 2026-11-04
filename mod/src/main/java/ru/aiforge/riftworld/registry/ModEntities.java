@@ -89,6 +89,14 @@ public final class ModEntities {
                     .sized(4.4F, 2.6F).updateInterval(2).clientTrackingRange(24)
                     .build("riftworld:liopleurodon"));
 
+    /** El Gran Maja: small anchor; full animated terrain collision is checked separately. */
+    public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.ElGranMajaEntity>> EL_GRAN_MAJA =
+            TYPES.register("el_gran_maja", () -> EntityType.Builder
+                    .<ru.aiforge.riftworld.entity.ElGranMajaEntity>of(ru.aiforge.riftworld.entity.ElGranMajaEntity::new,
+                            MobCategory.WATER_CREATURE)
+                    .sized(1.0F, 1.0F).updateInterval(2).clientTrackingRange(32)
+                    .build("riftworld:el_gran_maja"));
+
     /** v0.34.0: Пегас — крылатый скакун «земля/воздух» (концепт `reports/mob_refs/04_ref_pegasus.png`). */
     public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.PegasusEntity>> PEGASUS =
             TYPES.register("pegasus", () -> EntityType.Builder
@@ -127,6 +135,7 @@ public final class ModEntities {
         e.put(SKY_DART_FISH.get(), ru.aiforge.riftworld.entity.SkyDartFishEntity.attributes().build());
         e.put(BLOSSOM_STAG.get(), ru.aiforge.riftworld.entity.BlossomStagEntity.attributes().build());
         e.put(LIOPLEURODON.get(), ru.aiforge.riftworld.entity.LiopleurodonEntity.attributes().build());
+        e.put(EL_GRAN_MAJA.get(), ru.aiforge.riftworld.entity.ElGranMajaEntity.attributes().build());
         e.put(PEGASUS.get(), ru.aiforge.riftworld.entity.PegasusEntity.attributes().build());
         e.put(WENDIGO.get(), ru.aiforge.riftworld.entity.WendigoEntity.attributes().build());
         e.put(MOROK.get(), ru.aiforge.riftworld.entity.MorokEntity.attributes().build());

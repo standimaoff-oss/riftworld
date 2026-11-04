@@ -585,5 +585,7 @@
   "riftworld.column.hint": "Бейте по кристаллу на вершине — или киркой",
   "riftworld.compass.castle": "Компас снова указывает на Чертог Тлеющего Рога.",
   "riftworld.compass.none": "Поблизости нет Тлеющих руин.",
-  "riftworld.compass.ruins": "Стрелка компаса качнулась к ближайшим Тлеющим руинам (%s, %s)."
+  "riftworld.compass.ruins": "Стрелка компаса качнулась к ближайшим Тлеющим руинам (%s, %s).",
+  "biome.riftworld.maja_ocean": "Океан Гран Махи",
+  "entity.riftworld.el_gran_maja": "Эль Гран Маха"
 }

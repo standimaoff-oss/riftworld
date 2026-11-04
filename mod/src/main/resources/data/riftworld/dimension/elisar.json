@@ -13,7 +13,8 @@
       "reef": "riftworld:shallow_reef",
       "abyss": "riftworld:abyss",
       "crystal": "riftworld:crystal_rifts",
-      "morok": "riftworld:morok_hollow"
+      "morok": "riftworld:morok_hollow",
+      "deep_ocean": "riftworld:maja_ocean"
     }
   }
 }

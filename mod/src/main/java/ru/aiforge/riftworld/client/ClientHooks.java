@@ -48,6 +48,7 @@ public final class ClientHooks {
         e.registerEntityRenderer(ModEntities.PAPER_DRAGON.get(), PaperDragonRenderer::new);
         e.registerEntityRenderer(ModEntities.SEA_FISH.get(), SeaFishRenderer::new);
         e.registerEntityRenderer(ModEntities.LIOPLEURODON.get(), LiopleurodonRenderer::new);
+        e.registerEntityRenderer(ModEntities.EL_GRAN_MAJA.get(), ElGranMajaRenderer::new);
         e.registerEntityRenderer(ru.aiforge.riftworld.registry.ModEntities.BOSS.get(), RiftMobRenderer::boss);
         e.registerEntityRenderer(ru.aiforge.riftworld.registry.ModEntities.GUARD.get(), RiftMobRenderer::guard);
         e.registerEntityRenderer(ru.aiforge.riftworld.registry.ModEntities.SCYTHE_ITEM.get(), ScytheDropRenderer::new);

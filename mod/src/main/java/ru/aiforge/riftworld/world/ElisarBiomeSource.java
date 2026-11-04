@@ -3,6 +3,7 @@ package ru.aiforge.riftworld.world;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -26,13 +27,16 @@ public class ElisarBiomeSource extends BiomeSource {
             Biome.CODEC.fieldOf("reef").forGetter(s -> s.reef),
             Biome.CODEC.fieldOf("abyss").forGetter(s -> s.abyss),
             Biome.CODEC.fieldOf("crystal").forGetter(s -> s.crystal),
-            Biome.CODEC.fieldOf("morok").forGetter(s -> s.morok)).apply(i, ElisarBiomeSource::new));
+            Biome.CODEC.fieldOf("morok").forGetter(s -> s.morok),
+            // Old saved dimension codecs do not have this field: keep them readable.
+            Biome.CODEC.optionalFieldOf("deep_ocean").forGetter(s -> s.deepOceanSetting)).apply(i, ElisarBiomeSource::new));
 
-    private final Holder<Biome> def, ashen, violet, sizo, gardens, mist, reef, abyss, crystal, morok;
+    private final Holder<Biome> def, ashen, violet, sizo, gardens, mist, reef, abyss, crystal, morok, deepOcean;
+    private final Optional<Holder<Biome>> deepOceanSetting;
 
     public ElisarBiomeSource(Holder<Biome> def, Holder<Biome> ashen, Holder<Biome> violet, Holder<Biome> sizo, Holder<Biome> gardens,
                              Holder<Biome> mist, Holder<Biome> reef, Holder<Biome> abyss, Holder<Biome> crystal,
-                             Holder<Biome> morok) {
+                             Holder<Biome> morok, Optional<Holder<Biome>> deepOcean) {
         this.def = def;
         this.ashen = ashen;
         this.violet = prosec(violet);
@@ -43,6 +47,8 @@ public class ElisarBiomeSource extends BiomeSource {
         this.abyss = abyss;
         this.crystal = crystal;
         this.morok = morok;
+        this.deepOceanSetting = deepOcean;
+        this.deepOcean = deepOcean.orElse(abyss);
     }
 
     private static Holder<Biome> prosec(Holder<Biome> h) {
@@ -56,7 +62,7 @@ public class ElisarBiomeSource extends BiomeSource {
 
     @Override
     protected Stream<Holder<Biome>> collectPossibleBiomes() {
-        return Stream.of(def, ashen, violet, sizo, gardens, mist, reef, abyss, crystal, morok);
+        return Stream.of(def, ashen, violet, sizo, gardens, mist, reef, abyss, crystal, morok, deepOcean).distinct();
     }
 
     /**
@@ -156,7 +162,8 @@ public class ElisarBiomeSource extends BiomeSource {
         } else {
             int ix = (int) Math.floor(x), iz = (int) Math.floor(z);
             int floor = ElisarChunkGenerator.oceanFloor(plan, ix, iz);
-            if (ElisarSea.reefness(ix, iz) > 0.45) seaBiome = reef;
+            if (DeepOcean.contains(ix, iz) && deepOceanSetting.isPresent()) seaBiome = deepOcean;
+            else if (ElisarSea.reefness(ix, iz) > 0.45) seaBiome = reef;
             else if (ocean - floor > 46) seaBiome = abyss;
         }
 
@@ -330,6 +337,29 @@ public class ElisarBiomeSource extends BiomeSource {
                             bestPos = new BlockPos(mk.cx, ocean + 10, mk.cz);
                             bestHolder = mist;
                         }
+                    }
+                }
+            }
+        }
+
+        // 10. Deep ocean: regions have known centres, so /locate works from any altitude.
+        if (deepOceanSetting.isPresent() && predicate.test(deepOcean)) {
+            int qy = (ocean - 8) >> 2;
+            if (getNoiseBiome(ox >> 2, qy, oz >> 2, sampler) == deepOcean) {
+                return Pair.of(new BlockPos(ox, ocean - 8, oz), deepOcean);
+            }
+            int cx0 = Math.floorDiv(ox, DeepOcean.CELL), cz0 = Math.floorDiv(oz, DeepOcean.CELL);
+            int cells = Math.max(1, radius / DeepOcean.CELL + 2);
+            for (int dx = -cells; dx <= cells; ++dx) for (int dz = -cells; dz <= cells; ++dz) {
+                DeepOcean.Region rg = DeepOcean.region(cx0 + dx, cz0 + dz);
+                // A land/structure biome may cover the centre: sample a small cross too.
+                for (int sx = -600; sx <= 600; sx += 300) for (int sz = -600; sz <= 600; sz += 300) {
+                    int x = rg.x() + sx, z = rg.z() + sz;
+                    double d2 = distSq(x, z, ox, oz);
+                    if (d2 < bestD2 && getNoiseBiome(x >> 2, qy, z >> 2, sampler) == deepOcean) {
+                        bestD2 = d2;
+                        bestPos = new BlockPos(x, ocean - 8, z);
+                        bestHolder = deepOcean;
                     }
                 }
             }

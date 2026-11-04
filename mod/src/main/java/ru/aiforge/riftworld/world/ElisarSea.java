@@ -105,6 +105,8 @@ public final class ElisarSea {
         f += boulder(x, z);                        // редкие валуны на дне
         f -= trenchDepth(x, z);
         f -= pitDepth(x, z);
+        // The new basin is deeper but joins the old seabed gradually, without a hard wall.
+        f -= (int) Math.round(12.0 * DeepOcean.weight(x, z));
         return Math.max(DEEPEST_FLOOR, f);
     }
 

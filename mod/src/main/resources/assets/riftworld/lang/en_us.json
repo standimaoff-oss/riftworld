@@ -587,5 +587,7 @@
   "riftworld.column.hint": "Strike the crystal at the top — or use a pickaxe",
   "riftworld.compass.castle": "The compass points to the Hall of the Smouldering Horn again.",
   "riftworld.compass.none": "No Smouldering Ruins nearby.",
-  "riftworld.compass.ruins": "The compass needle swings towards the nearest Smouldering Ruins (%s, %s)."
+  "riftworld.compass.ruins": "The compass needle swings towards the nearest Smouldering Ruins (%s, %s).",
+  "biome.riftworld.maja_ocean": "The Maja Ocean",
+  "entity.riftworld.el_gran_maja": "El Gran Maja"
 }
