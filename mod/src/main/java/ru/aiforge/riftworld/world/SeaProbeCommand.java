@@ -3840,18 +3840,17 @@ public final class SeaProbeCommand {
                 var holder = level.getBiome(new BlockPos(px, ground + 1, pz));
                 var key = holder.unwrapKey();
                 if (key.isPresent()) biome = key.get().location().toString();
-                // карта спавнеров биома: MobSpawnSettings.spawners (MobCategory -> список SpawnerData).
+                // MobSpawnSettings#getMobs(category) возвращает WeightedRandomList (НЕ Iterable) —
+                // поэтому разворачиваем его через unwrap(); поле spawners приватное.
                 // Проверяем САМ ФАКТ регистрации моба в биоме: именно этого не хватало в v0.36.0,
                 // когда в morok_hollow.json стояло "spawners": {} и в чаще никого не было.
                 var mobs = holder.value().getMobSettings();
                 int catMonster = 0, catCreature = 0;
-                for (var sp : mobs.spawners.getOrDefault(net.minecraft.world.entity.MobCategory.MONSTER,
-                        java.util.Collections.emptyList())) {
+                for (var sp : mobs.getMobs(net.minecraft.world.entity.MobCategory.MONSTER).unwrap()) {
                     ++catMonster;
                     if (sp.type == ru.aiforge.riftworld.registry.ModEntities.WENDIGO.get()) spawnWendigo = 1;
                 }
-                for (var sp : mobs.spawners.getOrDefault(net.minecraft.world.entity.MobCategory.CREATURE,
-                        java.util.Collections.emptyList())) {
+                for (var sp : mobs.getMobs(net.minecraft.world.entity.MobCategory.CREATURE).unwrap()) {
                     ++catCreature;
                     if (sp.type == ru.aiforge.riftworld.registry.ModEntities.PEGASUS.get()) spawnPegasus = 1;
                 }
