@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "riftworld:roof_blue"
+  },
+  "result": "riftworld:roof_blue_slab",
+  "count": 2
+}

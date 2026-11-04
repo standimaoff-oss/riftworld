@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "QQ",
+    "SS"
+  ],
+  "key": {
+    "Q": {
+      "item": "minecraft:quartz"
+    },
+    "S": {
+      "tag": "riftworld:mod_cobblestone"
+    }
+  },
+  "result": {
+    "item": "riftworld:rift_marble",
+    "count": 4
+  }
+}

@@ -2,6 +2,10 @@ package ru.aiforge.riftworld.world;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Blocks;
@@ -15,44 +19,328 @@ import ru.aiforge.riftworld.registry.CastleBlocks;
 import ru.aiforge.riftworld.registry.ElisarBlocks;
 
 /**
- * «Адские угодья» (Ashen Lands, lightweight first version): a scorched region of ~235 blocks around the castle island.
- * Below the islands the ocean is replaced by an ash plain cut by glowing lava meanders; three huge islands lie fallen on
- * the plain (one carries a ruined house, one a broken bridge); floating islands inside the region are burnt, with bare
- * dead trees; the air is ash-brown (ElisarSky fog + biome particles).
+ * «Адские угодья» ({@code riftworld:ashen_lands}): крупный вулканическо-пепельный биом со случайными
+ * комбинациями структур от региона к региону (v0.23.0):
+ * <ul>
+ *   <li>Иногда биом генерируется <b>полностью пустым</b> (дикая пепельная пустошь с лавовыми реками и курганами);</li>
+ *   <li>Иногда спавнится только одна структура (Красный замок 1-го босса, Сгоревшая готическая церковь
+ *       или прибрежно-морская «Цитадель Чёрного утёса» {@link BlacktideCitadel});</li>
+ *   <li>Иногда — частичные пары или сразу <b>все три ансамбля вместе</b> в одном огромном регионе!</li>
+ * </ul>
  */
 public final class AshenLands {
-    public static final double CX = CastleSite.CX, CZ = CastleSite.CZ, R = 235;
+    public static final int SUPER = 1860;
+    private static final long FIXED = 0x0A5E71A9L;
+    private static final int OCEAN_Y = 62;
 
     /** A huge island that fell onto the plain. */
     public record Mound(double x, double z, double r, double h, double tx, double tz, int seed) {
     }
 
-    public static final List<Mound> MOUNDS = List.of(
-            new Mound(-120, 585, 46, 30, 0.45, -0.25, 1),       // ruined house on top
-            new Mound(185, 590, 40, 26, -0.35, 0.4, 2),         // broken bridge
-            new Mound(-70, 318, 34, 22, 0.2, 0.5, 3));
-    public static final List<CityPlan.Tree> TREES = new ArrayList<>();
+    public record Placed(BlockPos pos, BlockState state) {
+    }
 
-    static {
-        java.util.Random r = new java.util.Random(0xA5E0L);
-        for (Mound m : MOUNDS) {
-            int n = (int) (m.r * m.r / 140);
-            for (int k = 0, tries = 0; k < n && tries < 200; ++tries) {
-                double a = r.nextDouble() * Math.PI * 2, d = Math.sqrt(r.nextDouble()) * m.r * 0.8;
-                int x = (int) Math.floor(m.x + Math.cos(a) * d), z = (int) Math.floor(m.z + Math.sin(a) * d);
-                if (m.seed == 1 && Math.abs(x - m.x) < 9 && Math.abs(z - m.z) < 9) continue;
-                if (m.seed == 2 && Math.abs(z - m.z) < 5) continue;
-                boolean ok = true;
-                for (CityPlan.Tree t : TREES) if (Math.abs(t.x - x) < 6 && Math.abs(t.z - z) < 6) { ok = false; break; }
-                if (!ok) continue;
-                CityPlan.Tree t = new CityPlan.Tree(x, z, 2, 5 + r.nextInt(6), r.nextInt(1 << 30));
-                t.baseY = moundTop(x, z) + 1;
-                if (t.baseY <= ocean() + 2) continue;
-                TREES.add(t);
-                ++k;
+    /** Один регион адских угодий с индивидуальным набором сгенерированных структур (comboMode 0..7). */
+    public static final class Region {
+        public final int cx, cz;
+        public final double R;
+        public final int comboMode;
+        public final boolean hasRedCastle;
+        public final boolean hasBurnedChurch;
+        public final boolean hasBelfry;
+        public final boolean hasVillage;
+
+        public final int x0, z0;
+        @Nullable
+        public final CityPlan.Island island;
+        public final int churchX, churchZ, churchY;
+        public final double churchDirX, churchDirZ;
+
+        public final List<CityPlan.Tree> castleTrees = new ArrayList<>();
+        public final List<Mound> mounds;
+        public final List<CityPlan.Tree> moundTrees = new ArrayList<>();
+        private List<Placed> decor;
+
+        Region(int cx, int cz, double R, long rSeed, int comboMode) {
+            this.cx = cx;
+            this.cz = cz;
+            this.R = R;
+            this.comboMode = comboMode;
+
+            // v0.29.0: Цитадель Чёрного утёса спавнится ТОЛЬКО В ОТКРЫТОМ ОКЕАНЕ (BlacktideCitadel.java),
+            // а 8 комбинаций сухопутного Пепельного биома (0..7) покрывают все 2^3 сочетания его сухопутных построек:
+            //   bit 2 (4) -> Красный замок 1-го босса;
+            //   bit 1 (2) -> Сгоревшая готическая церковь;
+            //   bit 0 (1) -> Осадная колокольня;
+            //   0 = полностью пустой биом, 7 = ВСЕ ТРИ сухопутные доминанты + сгоревшая деревня!
+            this.hasRedCastle = (comboMode == 3 || comboMode == 4 || comboMode == 6 || comboMode == 7);
+            this.hasBurnedChurch = (comboMode == 2 || comboMode == 4 || comboMode == 5 || comboMode == 7);
+            this.hasBelfry = (comboMode == 1 || comboMode == 5 || comboMode == 6 || comboMode == 7);
+            this.hasVillage = (comboMode == 2 || comboMode == 5 || comboMode == 7);
+
+            this.x0 = cx - 38;
+            this.z0 = cz - 34;
+            Random rnd = new Random(rSeed ^ 0xA5E5L);
+
+            if (this.hasRedCastle) {
+                this.island = new CityPlan.Island(cx, cz, CastleSite.R, CastleSite.Y, CastleSite.R * 0.6 + 14,
+                        rnd.nextDouble() * 6.283, rnd.nextDouble() * 6.283, rnd.nextDouble() * 6.283, 5, 0.35);
+                for (int k = 0, tries = 0; k < 34 && tries < 600; ++tries) {
+                    double a = rnd.nextDouble() * Math.PI * 2, d = 20 + rnd.nextDouble() * (CastleSite.R - 26);
+                    int x = (int) Math.floor(cx + Math.cos(a) * d), z = (int) Math.floor(cz + Math.sin(a) * d);
+                    if (island.t(x, z) < 0.12 || inCastleFootprint(x, z, 7)) continue;
+                    if (Math.abs(x - cx) < 12 && z < z0) continue;
+                    boolean ok = true;
+                    for (CityPlan.Tree t : castleTrees) {
+                        if (Math.abs(t.x - x) < 6 && Math.abs(t.z - z) < 6) {
+                            ok = false;
+                            break;
+                        }
+                    }
+                    if (!ok) continue;
+                    castleTrees.add(new CityPlan.Tree(x, z, 2, 5 + rnd.nextInt(6), rnd.nextInt(1 << 30)));
+                    ++k;
+                }
+            } else {
+                this.island = null;
+            }
+
+            // Крупные обрушившиеся вулканические курганы на расширенной пепельной равнине
+            List<Mound> mList = new ArrayList<>();
+            double[][] moundOffsets = {
+                    {-185, 138, 54, 32, 0.45, -0.25, 1},
+                    {174, 146, 48, 28, -0.35, 0.40, 2},
+                    {-132, -182, 42, 24, 0.20, 0.50, 3},
+                    {212, -164, 46, 26, -0.28, -0.36, 4},
+                    {-248, -24, 40, 22, 0.38, 0.22, 5}
+            };
+            for (double[] mo : moundOffsets) {
+                double mx = cx + mo[0], mz = cz + mo[1];
+                mList.add(new Mound(mx, mz, mo[2], mo[3], mo[4], mo[5], (int) mo[6]));
+            }
+            this.mounds = List.copyOf(mList);
+
+            // Позиция Сгоревшей готической церкви на пепельной равнине (свободный сектор вдали от курганов и деревни)
+            if (this.hasBurnedChurch) {
+                int bestChX = cx + 18, bestChZ = cz - 210;
+                double[][] cands = {
+                        {18, -210}, {-28, 216}, {218, -42}, {-222, 68}, {112, -206}, {-198, -112}
+                };
+                for (double[] cd : cands) {
+                    int tx = cx + (int) cd[0];
+                    int tz = cz + (int) cd[1];
+                    boolean hitMound = false;
+                    for (Mound m : this.mounds) {
+                        if (Math.hypot(tx - m.x, tz - m.z) < m.r + 34.0) {
+                            hitMound = true;
+                            break;
+                        }
+                    }
+                    if (hitMound) continue;
+                    if (Math.hypot(tx - (cx + 138), tz - (cz + 28)) < 54.0) continue; // не задеваем колокольню
+                    bestChX = tx;
+                    bestChZ = tz;
+                    break;
+                }
+                this.churchX = bestChX;
+                this.churchZ = bestChZ;
+                this.churchY = OCEAN_Y + 2;
+                double dxC = cx - bestChX, dzC = cz - bestChZ;
+                double dLen = Math.max(1.0, Math.hypot(dxC, dzC));
+                this.churchDirX = dxC / dLen;
+                this.churchDirZ = dzC / dLen;
+            } else {
+                this.churchX = cx;
+                this.churchZ = cz;
+                this.churchY = OCEAN_Y + 2;
+                this.churchDirX = 0.0;
+                this.churchDirZ = 1.0;
+            }
+
+            Random mr = new Random(rSeed ^ 0xA5E0L);
+            for (Mound m : mounds) {
+                int n = (int) (m.r * m.r / 145);
+                for (int k = 0, tries = 0; k < n && tries < 220; ++tries) {
+                    double a = mr.nextDouble() * Math.PI * 2, d = Math.sqrt(mr.nextDouble()) * m.r * 0.8;
+                    int x = (int) Math.floor(m.x + Math.cos(a) * d), z = (int) Math.floor(m.z + Math.sin(a) * d);
+                    if (!isEmptyBiome() && m.seed == 1 && Math.abs(x - m.x) < 9 && Math.abs(z - m.z) < 9) continue;
+                    if (!isEmptyBiome() && m.seed == 2 && Math.abs(z - m.z) < 5) continue;
+                    boolean ok = true;
+                    for (CityPlan.Tree t : moundTrees) {
+                        if (Math.abs(t.x - x) < 6 && Math.abs(t.z - z) < 6) {
+                            ok = false;
+                            break;
+                        }
+                    }
+                    if (!ok) continue;
+                    CityPlan.Tree t = new CityPlan.Tree(x, z, 2, 5 + mr.nextInt(6), mr.nextInt(1 << 30));
+                    t.baseY = moundTopIn(mounds, x, z) + 1;
+                    if (t.baseY <= OCEAN_Y + 2) continue;
+                    moundTrees.add(t);
+                    ++k;
+                }
             }
         }
+
+        public boolean isEmptyBiome() {
+            return !hasRedCastle && !hasBurnedChurch && !hasBelfry && !hasVillage;
+        }
+
+        public boolean inCastleFootprint(double x, double z, double margin) {
+            if (!hasRedCastle) return false;
+            return x >= x0 - margin && x < x0 + CastleSite.TW + margin
+                    && z >= z0 - margin && z < z0 + CastleSite.TD + margin;
+        }
+
+        public double castleOutside(double x, double z) {
+            if (!hasRedCastle) return 1e9;
+            double dx = Math.max(Math.max(x0 - x, 0), x - (x0 + CastleSite.TW - 1));
+            double dz = Math.max(Math.max(z0 - z, 0), z - (z0 + CastleSite.TD - 1));
+            return Math.hypot(dx, dz);
+        }
+
+        public synchronized List<Placed> decor() {
+            if (decor == null) {
+                List<Placed> out = new ArrayList<>();
+                // В полностью пустом варианте биома (comboMode=0) нет никаких руин и мостов — чистая дикая пустошь!
+                if (!isEmptyBiome() && !mounds.isEmpty()) {
+                    house(out, mounds, mounds.get(0));
+                    if (mounds.size() > 1) {
+                        bridge(out, mounds, mounds.get(1));
+                    }
+                }
+                decor = out;
+            }
+            return decor;
+        }
     }
+
+    private static final ConcurrentHashMap<Long, Optional<Region>> CACHE = new ConcurrentHashMap<>();
+
+    public static Region region(int sx, int sz) {
+        return CACHE.computeIfAbsent(WildIslands.key(sx, sz), k -> Optional.ofNullable(gen(sx, sz))).orElse(null);
+    }
+
+    private static Region gen(int sx, int sz) {
+        if (sx == 0 && sz == 0) return null; // hub city cell
+        long cellSeed = FIXED ^ (sx * 53982894593057L + sz * 317074912223L) * 0x9E3779B97F4A7C15L;
+        Random r = new Random(cellSeed);
+
+        // v0.30.0: 100% честный вероятностный спавн биома и его структур (без закреплённых 100%-ячеек!)
+        if (r.nextDouble() > 0.56) return null;
+        int mode = r.nextInt(8);
+
+        int margin = 430;
+        for (int attempt = 0; attempt < 10; ++attempt) {
+            int cx = sx * SUPER + margin + r.nextInt(SUPER - 2 * margin);
+            int cz = sz * SUPER + margin + r.nextInt(SUPER - 2 * margin);
+            double R = 370 + r.nextInt(65); // увеличенный масштаб биома: радиус 370..434 (диаметр до ~868 блоков!)
+            if (Math.hypot(cx, cz) < R + 540) continue;                    // вдали от Белого города
+            if (Math.hypot(cx - 648, cz - 693) < R + 320) continue;        // не перекрывает морские пробы spots.json
+            return new Region(cx, cz, R, cellSeed ^ attempt, mode);
+        }
+        return null;
+    }
+
+    /** Регион адских угодий, чья сухопутная область покрывает точку (x, z), или null. */
+    public static Region regionAt(double x, double z) {
+        int sx = Math.floorDiv((int) Math.floor(x), SUPER), sz = Math.floorDiv((int) Math.floor(z), SUPER);
+        Region best = null;
+        double bestD = 1e18;
+        for (int dx = -1; dx <= 1; ++dx) {
+            for (int dz = -1; dz <= 1; ++dz) {
+                Region rg = region(sx + dx, sz + dz);
+                if (rg == null) continue;
+                double d = Math.hypot(x - rg.cx, z - rg.cz);
+                if (d < rg.R + 95 && d < bestD) {
+                    bestD = d;
+                    best = rg;
+                }
+            }
+        }
+        return best;
+    }
+
+    /** Ближайший любой регион адских угодий (включая пустые и частичные). */
+    public static Region nearest(double x, double z) {
+        return nearestMatching(x, z, false);
+    }
+
+    /** Ближайший регион адских угодий, в котором сгенерирован Красный замок 1-го босса. */
+    public static Region nearestWithRedCastle(double x, double z) {
+        return nearestMatching(x, z, true);
+    }
+
+    private static Region nearestMatching(double x, double z, boolean requireRedCastle) {
+        int sx0 = Math.floorDiv((int) Math.floor(x), SUPER), sz0 = Math.floorDiv((int) Math.floor(z), SUPER);
+        Region best = null;
+        double bestD = 1e18;
+        for (int rad = 0; rad <= 10; ++rad) {
+            for (int dx = -rad; dx <= rad; ++dx) {
+                for (int dz = -rad; dz <= rad; ++dz) {
+                    if (Math.max(Math.abs(dx), Math.abs(dz)) != rad) continue;
+                    Region rg = region(sx0 + dx, sz0 + dz);
+                    if (rg == null) continue;
+                    if (requireRedCastle && !rg.hasRedCastle) continue;
+                    double d = Math.hypot(x - rg.cx, z - rg.cz);
+                    if (d < bestD) {
+                        bestD = d;
+                        best = rg;
+                    }
+                }
+            }
+            if (best != null && rad >= 1) break;
+        }
+        return best;
+    }
+
+    /** 0 вне региона .. 1 в центре сухопутного Пепельного биома. */
+    public static double weight(double x, double z) {
+        int sx = Math.floorDiv((int) Math.floor(x), SUPER), sz = Math.floorDiv((int) Math.floor(z), SUPER);
+        double best = EmberRuins.weight(x, z);
+        for (int dx = -1; dx <= 1; ++dx) {
+            for (int dz = -1; dz <= 1; ++dz) {
+                Region rg = region(sx + dx, sz + dz);
+                if (rg == null) continue;
+                double ox = x - rg.cx, oz = z - rg.cz;
+                if (Math.abs(ox) > rg.R + 90 || Math.abs(oz) > rg.R + 90) continue;
+                double d = Math.hypot(ox, oz) + (ElisarChunkGenerator.vnoise(x * 0.015, z * 0.015, 81) - 0.5) * 42;
+                double w = Math.max(0, Math.min(1, (rg.R - d) / 34.0));
+                if (w > best) best = w;
+            }
+        }
+        return best;
+    }
+
+    public static boolean blocks(double x, double z, double margin) {
+        int sx = Math.floorDiv((int) Math.floor(x), SUPER), sz = Math.floorDiv((int) Math.floor(z), SUPER);
+        for (int dx = -1; dx <= 1; ++dx) {
+            for (int dz = -1; dz <= 1; ++dz) {
+                Region rg = region(sx + dx, sz + dz);
+                if (rg == null) continue;
+                if (Math.hypot(x - rg.cx, z - rg.cz) < rg.R + margin) return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean inAnyStructureFootprint(double x, double z, double margin) {
+        int sx = Math.floorDiv((int) Math.floor(x), SUPER), sz = Math.floorDiv((int) Math.floor(z), SUPER);
+        for (int dx = -1; dx <= 1; ++dx) {
+            for (int dz = -1; dz <= 1; ++dz) {
+                Region rg = region(sx + dx, sz + dz);
+                if (rg == null) continue;
+                if (rg.inCastleFootprint(x, z, margin)) return true;
+                if (rg.hasBurnedChurch && Math.hypot(x - rg.churchX, z - rg.churchZ) <= 26.0 + margin) return true;
+            }
+        }
+        return false;
+    }
+
+    /** Совместимость со старыми константами: ближайший к городу регион с Красным замком. */
+    public static final Region CAPITAL = nearestWithRedCastle(0, 0);
+    public static final int CX = CAPITAL.cx, CZ = CAPITAL.cz;
+    public static final double R = CAPITAL.R;
 
     private AshenLands() {
     }
@@ -61,34 +349,32 @@ public final class AshenLands {
         return CityPlan.get().ocean;
     }
 
-    /** 0 outside .. 1 inside, with a wobbly edge. */
-    public static double weight(double x, double z) {
-        double dx = x - CX, dz = z - CZ;
-        if (Math.abs(dx) > R + 60 || Math.abs(dz) > R + 60) return EmberRuins.weight(x, z);
-        double d = Math.hypot(dx, dz) + (ElisarChunkGenerator.vnoise(x * 0.015, z * 0.015, 81) - 0.5) * 40;
-        return Math.max(0, Math.min(1, (R - d) / 30.0));
-    }
-
     public static boolean inside(double x, double z) {
-        return weight(x, z) > 0.5;
+        Region rg = regionAt(x, z);
+        return rg != null && weight(x, z) > 0.35;
     }
 
-    // ------------------------------------------------------------------ fallen islands
-    /** Top Y of the fallen islands at (x, z), or Integer.MIN_VALUE where there is none. */
-    public static int moundTop(int x, int z) {
+    private static int moundTopIn(List<Mound> mounds, int x, int z) {
         double best = -1;
-        for (Mound m : MOUNDS) {
+        for (Mound m : mounds) {
             double dx = x + 0.5 - m.x, dz = z + 0.5 - m.z;
             double wob = (ElisarChunkGenerator.vnoise(x * 0.06, z * 0.06, 90 + m.seed) - 0.5) * 0.35;
             double d = Math.hypot(dx, dz) / m.r + wob;
             if (d >= 1) continue;
             double h = m.h * Math.pow(1 - d * d, 0.55);
-            h += (dx * m.tx + dz * m.tz) / m.r * m.h * 0.35 * (1 - d);             // tilted - it came down on one side
+            h += (dx * m.tx + dz * m.tz) / m.r * m.h * 0.35 * (1 - d);
             h += (ElisarChunkGenerator.vnoise(x * 0.12, z * 0.12, 95 + m.seed) - 0.5) * 5 * (1 - d);
-            if (m.seed == 1 && Math.abs(dx) < 9 && Math.abs(dz) < 9) h = m.h * 0.92; // flat yard for the house
+            if (m.seed == 1 && Math.abs(dx) < 9 && Math.abs(dz) < 9) h = m.h * 0.92;
             best = Math.max(best, Math.min(h, m.h * 1.1));
         }
-        return best < 1.5 ? Integer.MIN_VALUE : ocean() + (int) Math.floor(best);
+        return best < 1.5 ? Integer.MIN_VALUE : OCEAN_Y + (int) Math.floor(best);
+    }
+
+    /** Top Y of the fallen volcanic mounds at (x, z), or Integer.MIN_VALUE where there is none. */
+    public static int moundTop(int x, int z) {
+        Region rg = regionAt(x + 0.5, z + 0.5);
+        if (rg == null) return Integer.MIN_VALUE;
+        return moundTopIn(rg.mounds, x, z);
     }
 
     /** Lava meander under (x, z)? Contour lines of a warped noise field = winding channels ~3 blocks wide. */
@@ -107,7 +393,10 @@ public final class AshenLands {
         BlockState sst = CastleBlocks.SCORCHED_STONE.get().defaultBlockState(), stone = ElisarBlocks.STONE.get().defaultBlockState();
         BlockState lava = ru.aiforge.riftworld.registry.ModBlocks.MAGMA_MEANDER.get().defaultBlockState();
         int top = moundTop(x, z);
-        chunk.setBlockState(mp.set(x, o - 2, z), sst, false);
+        int floor = Math.max(-56, ElisarSea.floor(x, z, o));
+        for (int y = floor; y <= o - 2; ++y) {
+            chunk.setBlockState(mp.set(x, y, z), y <= floor + 2 ? stone : sst, false);
+        }
         if (top != Integer.MIN_VALUE) {
             double n = ElisarChunkGenerator.vnoise(x * 0.09, z * 0.09, 51);
             for (int y = o - 1; y <= top; ++y) {
@@ -119,7 +408,7 @@ public final class AshenLands {
             }
             return;
         }
-        if (meander(x, z)) {
+        if (meander(x, z) && !inAnyStructureFootprint(x + 0.5, z + 0.5, 4.0)) {
             chunk.setBlockState(mp.set(x, o - 1, z), lava, false);
             return;
         }
@@ -127,9 +416,8 @@ public final class AshenLands {
         boolean bank = meander(x + 1, z) || meander(x - 1, z) || meander(x, z + 1) || meander(x, z - 1);
         chunk.setBlockState(mp.set(x, o - 1, z), bank || n < 0.35 ? sst : soil, false);
         chunk.setBlockState(mp.set(x, o, z), bank ? sst : n > 0.55 ? ash : n > 0.4 ? soil : sst, false);
-        // boulders
         int gx = Math.floorDiv(x, 11), gz = Math.floorDiv(z, 11);
-        if (!bank && ElisarChunkGenerator.hash(gx, gz, 77) < 0.3) {
+        if (!bank && ElisarChunkGenerator.hash(gx, gz, 77) < 0.3 && !inAnyStructureFootprint(x + 0.5, z + 0.5, 5.0)) {
             double bx = gx * 11 + 3 + ElisarChunkGenerator.hash(gx, gz, 78) * 5, bz = gz * 11 + 3 + ElisarChunkGenerator.hash(gx, gz, 79) * 5;
             double br = 1.3 + ElisarChunkGenerator.hash(gx, gz, 80) * 2.2;
             double d = Math.hypot(x + 0.5 - bx, z + 0.5 - bz);
@@ -138,40 +426,36 @@ public final class AshenLands {
                 for (int y = 1; y <= h; ++y) chunk.setBlockState(mp.set(x, o + y, z), ElisarChunkGenerator.hash(x, y, z) < 0.3 ? stone : sst, false);
             }
         }
-        // scattered ash heaps
-        if (ElisarChunkGenerator.hash(x, z, 82) < 0.02) chunk.setBlockState(mp.set(x, o + 1, z), ash, false);
+        if (ElisarChunkGenerator.hash(x, z, 82) < 0.02 && !inAnyStructureFootprint(x + 0.5, z + 0.5, 3.0)) {
+            chunk.setBlockState(mp.set(x, o + 1, z), ash, false);
+        }
     }
 
     public static List<CityPlan.Tree> treesNear(int x, int z) {
+        Region rg = regionAt(x + 0.5, z + 0.5);
+        if (rg == null) return List.of();
         List<CityPlan.Tree> out = new ArrayList<>();
-        for (CityPlan.Tree t : TREES) if (Math.abs(x - t.x) <= 4 && Math.abs(z - t.z) <= 4) out.add(t);
+        for (CityPlan.Tree t : rg.moundTrees) {
+            if (Math.abs(x - t.x) <= 4 && Math.abs(z - t.z) <= 4) out.add(t);
+        }
+        for (CityPlan.Tree t : rg.castleTrees) {
+            if (Math.abs(x - t.x) <= 4 && Math.abs(z - t.z) <= 4) out.add(t);
+        }
         return out;
     }
 
-    // ------------------------------------------------------------------ ruined house + broken bridge (decoration pass)
-    public record Placed(BlockPos pos, BlockState state) {
-    }
-
-    private static List<Placed> decor;
-
-    public static synchronized List<Placed> decor() {
-        if (decor == null) {
-            List<Placed> out = new ArrayList<>();
-            house(out, MOUNDS.get(0));
-            bridge(out, MOUNDS.get(1));
-            decor = out;
-        }
-        return decor;
+    public static List<Placed> decorNear(int x0, int z0) {
+        Region rg = regionAt(x0 + 8, z0 + 8);
+        return rg == null ? List.of() : rg.decor();
     }
 
     private static BlockState s(net.minecraftforge.registries.RegistryObject<? extends net.minecraft.world.level.block.Block> b) {
         return b.get().defaultBlockState();
     }
 
-    /** Former house: 9 x 7 shell of castle bricks with crumbled walls, an empty door and window, fallen roof beams. */
-    private static void house(List<Placed> out, Mound m) {
-        int x0 = (int) m.x - 4, z0 = (int) m.z - 3, y0 = moundTop((int) m.x, (int) m.z) + 1;
-        java.util.Random r = new java.util.Random(0xB0B5E);
+    private static void house(List<Placed> out, List<Mound> mounds, Mound m) {
+        int x0 = (int) m.x - 4, z0 = (int) m.z - 3, y0 = moundTopIn(mounds, (int) m.x, (int) m.z) + 1;
+        Random r = new Random(0xB0B5E);
         BlockState br = s(CastleBlocks.BRICKS), cr = s(CastleBlocks.BRICKS_CRACKED), ash = s(CastleBlocks.ASHLAR);
         for (int x = x0; x < x0 + 9; ++x)
             for (int z = z0; z < z0 + 7; ++z) {
@@ -183,19 +467,18 @@ public final class AshenLands {
                 }
                 boolean corner = (x == x0 || x == x0 + 8) && (z == z0 || z == z0 + 6);
                 int h = corner ? 4 + r.nextInt(2) : (int) Math.round(1 + 3.2 * Math.abs(Math.sin((x * 0.9 + z * 1.3) * 0.7)) * r.nextDouble() + (x < x0 + 4 ? 1 : 0));
-                if (z == z0 && (x == x0 + 4)) h = 0;                                   // doorway (north)
+                if (z == z0 && x == x0 + 4) h = 0;
                 for (int y = 0; y < h; ++y) {
-                    if (z == z0 + 6 && x == x0 + 4 && y == 1) continue;                 // window
+                    if (z == z0 + 6 && x == x0 + 4 && y == 1) continue;
                     if (x == x0 && z == z0 + 3 && y == 1) continue;
                     BlockState b = corner ? ash : r.nextInt(3) == 0 ? cr : br;
                     out.add(new Placed(new BlockPos(x, y0 + y, z), b));
                 }
                 if (z == z0 && x == x0 + 4) {
-                    out.add(new Placed(new BlockPos(x, y0 + 3, z), ash));                 // lintel survived
+                    out.add(new Placed(new BlockPos(x, y0 + 3, z), ash));
                     out.add(new Placed(new BlockPos(x - 1, y0, z), br));
                 }
             }
-        // fallen roof beams lying across the room, a slab of roof, rubble outside
         for (int k = 0; k < 6; ++k) {
             out.add(new Placed(new BlockPos(x0 + 1 + k, y0, z0 + 2 + (k > 3 ? 1 : 0)), s(CastleBlocks.CHARRED_LOG).setValue(RotatedPillarBlock.AXIS, Direction.Axis.X)));
         }
@@ -206,35 +489,31 @@ public final class AshenLands {
         for (int k = 0; k < 8; ++k) {
             int x = x0 - 2 + r.nextInt(13), z = z0 - 2 + r.nextInt(11);
             if (x > x0 && x < x0 + 8 && z > z0 && z < z0 + 6) continue;
-            out.add(new Placed(new BlockPos(x, moundTop(x, z) + 1, z), r.nextBoolean() ? cr : s(CastleBlocks.BRICKS_SLAB)));
+            out.add(new Placed(new BlockPos(x, moundTopIn(mounds, x, z) + 1, z), r.nextBoolean() ? cr : s(CastleBlocks.BRICKS_SLAB)));
         }
-        // chimney stub
         for (int y = 0; y < 6; ++y) out.add(new Placed(new BlockPos(x0 + 8, y0 + y, z0 + 5), y > 3 ? cr : br));
         out.add(new Placed(new BlockPos(x0 + 7, y0, z0 + 5), Blocks.AIR.defaultBlockState()));
     }
 
-    /** Broken bridge: a stone abutment on the fallen island and a plank deck on posts that ends in mid-air; the rest lies below. */
-    private static void bridge(List<Placed> out, Mound m) {
+    private static void bridge(List<Placed> out, List<Mound> mounds, Mound m) {
         int bz = (int) m.z;
         int xa = (int) (m.x - m.r * 0.45);
-        int ya = moundTop(xa, bz) + 1;
+        int ya = moundTopIn(mounds, xa, bz) + 1;
         BlockState ashl = s(CastleBlocks.ASHLAR), plank = s(CastleBlocks.DARK_PLANKS), fence = s(CastleBlocks.DARK_FENCE);
         BlockState slab = s(CastleBlocks.DARK_SLAB);
         BlockState chainY = s(ElisarBlocks.CHAIN).setValue(ChainBlock.AXIS, Direction.Axis.Y);
-        // abutment
         for (int dz = -2; dz <= 2; ++dz)
             for (int y = ya - 3; y <= ya; ++y) out.add(new Placed(new BlockPos(xa, y, bz + dz), ashl));
         out.add(new Placed(new BlockPos(xa, ya + 1, bz - 2), ashl));
         out.add(new Placed(new BlockPos(xa, ya + 1, bz + 2), ashl));
         out.add(new Placed(new BlockPos(xa, ya + 2, bz - 2), s(ElisarBlocks.LANTERN)));
-        // deck westwards, sagging, with gaps and a ragged end
         int len = 16;
         for (int k = 1; k <= len; ++k) {
             int x = xa - k;
             int y = ya - (int) Math.round(Math.sin(Math.PI * k / 30.0) * 2.2);
             for (int dz = -1; dz <= 1; ++dz) {
-                if (k > len - 3 && (dz + k) % 3 == 0) continue;                  // ragged end
-                if (k == 9 && dz == 0) continue;                                  // missing plank
+                if (k > len - 3 && (dz + k) % 3 == 0) continue;
+                if (k == 9 && dz == 0) continue;
                 out.add(new Placed(new BlockPos(x, y, bz + dz), k > len - 2 ? slab.setValue(SlabBlock.TYPE, SlabType.TOP) : plank));
             }
             if (k % 5 == 0 && k < len - 2) {
@@ -243,18 +522,15 @@ public final class AshenLands {
                     out.add(new Placed(new BlockPos(x, y + 1, bz + dz), fence));
                     out.add(new Placed(new BlockPos(x, y + 2, bz + dz), fence));
                 }
-                // pier down to the plain
-                for (int y2 = ocean() + 1; y2 < y; ++y2) out.add(new Placed(new BlockPos(x, y2, bz), k == 10 && y2 > y - 4 ? Blocks.AIR.defaultBlockState() : s(CastleBlocks.DARK_BEAM)));
+                for (int y2 = OCEAN_Y + 1; y2 < y; ++y2) out.add(new Placed(new BlockPos(x, y2, bz), k == 10 && y2 > y - 4 ? Blocks.AIR.defaultBlockState() : s(CastleBlocks.DARK_BEAM)));
             }
-            if (k == len - 1) for (int y2 = y - 1; y2 > y - 5; --y2) out.add(new Placed(new BlockPos(x, y2, bz + 1), chainY));   // dangling chain
+            if (k == len - 1) for (int y2 = y - 1; y2 > y - 5; --y2) out.add(new Placed(new BlockPos(x, y2, bz + 1), chainY));
         }
-        // fallen pieces on the plain below the gap
-        int o = ocean();
         for (int k = 0; k < 7; ++k) {
             int x = xa - len - 2 - k, z = bz - 2 + (k * 5) % 5;
-            if (!meander(x, z)) out.add(new Placed(new BlockPos(x, o + 1, z), k % 2 == 0 ? plank : slab));
+            if (!meander(x, z)) out.add(new Placed(new BlockPos(x, OCEAN_Y + 1, z), k % 2 == 0 ? plank : slab));
         }
-        out.add(new Placed(new BlockPos(xa - len - 4, o + 1, bz + 2), s(CastleBlocks.DARK_BEAM).setValue(RotatedPillarBlock.AXIS, Direction.Axis.X)));
-        out.add(new Placed(new BlockPos(xa - len - 5, o + 1, bz + 2), s(CastleBlocks.DARK_BEAM).setValue(RotatedPillarBlock.AXIS, Direction.Axis.X)));
+        out.add(new Placed(new BlockPos(xa - len - 4, OCEAN_Y + 1, bz + 2), s(CastleBlocks.DARK_BEAM).setValue(RotatedPillarBlock.AXIS, Direction.Axis.X)));
+        out.add(new Placed(new BlockPos(xa - len - 5, OCEAN_Y + 1, bz + 2), s(CastleBlocks.DARK_BEAM).setValue(RotatedPillarBlock.AXIS, Direction.Axis.X)));
     }
 }

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "#  ",
+    "## ",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "riftworld:roof_red"
+    }
+  },
+  "result": {
+    "item": "riftworld:roof_red_stairs",
+    "count": 4
+  }
+}

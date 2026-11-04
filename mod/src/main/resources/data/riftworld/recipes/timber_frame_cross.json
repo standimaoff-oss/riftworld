@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "S S",
+    " P ",
+    "S S"
+  ],
+  "key": {
+    "S": {
+      "item": "minecraft:stick"
+    },
+    "P": {
+      "item": "riftworld:elisar_plaster"
+    }
+  },
+  "result": {
+    "item": "riftworld:timber_frame_cross",
+    "count": 4
+  }
+}

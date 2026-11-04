@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "B B",
+    " B ",
+    " P "
+  ],
+  "key": {
+    "B": {
+      "item": "minecraft:bone"
+    },
+    "P": {
+      "item": "riftworld:sizo_planks"
+    }
+  },
+  "result": {
+    "item": "riftworld:trophy_antlers"
+  }
+}

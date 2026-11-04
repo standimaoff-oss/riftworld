@@ -57,6 +57,17 @@ public final class ModFluids {
                     return 0xFFFFFFFF;
                 }
 
+                @Override
+                public int getTintColor(net.minecraft.world.level.material.FluidState state,
+                        net.minecraft.world.level.BlockAndTintGetter world, net.minecraft.core.BlockPos pos) {
+                    if (world == null || pos == null) return 0xFFFFFFFF;
+                    // ClientLevel caches only the three vanilla ColorResolver instances.
+                    // Passing a custom lambda to getBlockTint crashes chunk rendering.
+                    var level = net.minecraft.client.Minecraft.getInstance().level;
+                    return level != null && level.getBiome(pos).is(ru.aiforge.riftworld.world.MajaOceanKeeper.BIOME)
+                            ? 0xFFEAF5F6 : 0xFFFFFFFF;
+                }
+
                 /** 0 floating on the crest, 1 kneeling on the dunes 42+ blocks down. */
                 private static float depth(Camera cam) {
                     int sea = ru.aiforge.riftworld.world.CityPlan.get().ocean;
@@ -67,7 +78,11 @@ public final class ModFluids {
                 public Vector3f modifyFogColor(Camera camera, float partialTick, ClientLevel level, int renderDistance, float darkenWorldAmount, Vector3f fluidFogColor) {
                     float d = depth(camera);
                     // Рев 8: глубина больше не чёрная — холодный синий с бирюзовым свечением снизу
-                    return new Vector3f(net.minecraft.util.Mth.lerp(d, 0.20F, 0.07F), net.minecraft.util.Mth.lerp(d, 0.56F, 0.26F), net.minecraft.util.Mth.lerp(d, 0.80F, 0.45F));
+                    boolean maja = level.getBiome(camera.getBlockPosition()).is(
+                            ru.aiforge.riftworld.world.MajaOceanKeeper.BIOME);
+                    return new Vector3f(net.minecraft.util.Mth.lerp(d, 0.20F, 0.07F) * (maja ? 0.96F : 1.0F),
+                            net.minecraft.util.Mth.lerp(d, 0.56F, 0.26F) * (maja ? 0.98F : 1.0F),
+                            net.minecraft.util.Mth.lerp(d, 0.80F, 0.45F));
                 }
 
                 @Override
@@ -80,10 +95,70 @@ public final class ModFluids {
         }
     });
 
+    /**
+     * Рев 14.24: вода Висячих садов. Своя текстура — яркая бирюза, как на референсе.
+     * Ванильную воду в Элисаре красить нельзя (тинт биома на неё не ложится, кадры выходили
+     * серо-чёрными), а тинт поверх нашей тёмно-синей текстуры её только затемняет.
+     */
+    public static final RegistryObject<FluidType> GARDEN_TYPE = TYPES.register("garden_water", () -> new FluidType(FluidType.Properties.create()
+            .descriptionId("block.riftworld.garden_water").canSwim(true).canDrown(false).canExtinguish(true).canHydrate(false)
+            .supportsBoating(false).fallDistanceModifier(0F).motionScale(0.014D).canPushEntity(true)
+            .sound(SoundActions.BUCKET_FILL, SoundEvents.BUCKET_FILL).sound(SoundActions.BUCKET_EMPTY, SoundEvents.BUCKET_EMPTY)) {
+        @Override
+        public void initializeClient(Consumer<IClientFluidTypeExtensions> consumer) {
+            consumer.accept(new IClientFluidTypeExtensions() {
+                private final ResourceLocation still = new ResourceLocation(RiftWorld.MODID, "block/garden_water_still");
+                private final ResourceLocation flow = new ResourceLocation(RiftWorld.MODID, "block/garden_water_flow");
+
+                @Override
+                public ResourceLocation getStillTexture() {
+                    return still;
+                }
+
+                @Override
+                public ResourceLocation getFlowingTexture() {
+                    return flow;
+                }
+
+                @Override
+                public ResourceLocation getOverlayTexture() {
+                    return still;
+                }
+
+                @Override
+                public int getTintColor() {
+                    return 0xFFFFFFFF;
+                }
+
+                @Override
+                public Vector3f modifyFogColor(Camera camera, float partialTick, ClientLevel level, int renderDistance, float darkenWorldAmount, Vector3f fluidFogColor) {
+                    return new Vector3f(0.36F, 0.78F, 0.86F);   // бирюзовая дымка под водой
+                }
+
+                @Override
+                public void modifyFogRender(Camera camera, FogRenderer.FogMode mode, float renderDistance, float partialTick, float nearDistance, float farDistance, FogShape shape) {
+                    com.mojang.blaze3d.systems.RenderSystem.setShaderFogStart(-6F);
+                    com.mojang.blaze3d.systems.RenderSystem.setShaderFogEnd(96F);
+                }
+            });
+        }
+    });
+
+    public static final RegistryObject<ForgeFlowingFluid.Source> GARDEN_SOURCE = FLUIDS.register("garden_water",
+            () -> new ru.aiforge.riftworld.block.ElisarWaterFluid.Source(gardenProps()));
+    public static final RegistryObject<ForgeFlowingFluid.Flowing> GARDEN_FLOWING = FLUIDS.register("flowing_garden_water",
+            () -> new ru.aiforge.riftworld.block.ElisarWaterFluid.Flowing(gardenProps()));
+
     public static final RegistryObject<ForgeFlowingFluid.Source> SOURCE = FLUIDS.register("elisar_water", () -> new ru.aiforge.riftworld.block.ElisarWaterFluid.Source(props()));
     public static final RegistryObject<ForgeFlowingFluid.Flowing> FLOWING = FLUIDS.register("flowing_elisar_water", () -> new ru.aiforge.riftworld.block.ElisarWaterFluid.Flowing(props()));
     public static final RegistryObject<Item> BUCKET = ITEMS.register("elisar_water_bucket",
             () -> new BucketItem(SOURCE, new Item.Properties().craftRemainder(Items.BUCKET).stacksTo(1)));
+
+    private static ForgeFlowingFluid.Properties gardenProps() {
+        return new ForgeFlowingFluid.Properties(GARDEN_TYPE, GARDEN_SOURCE, GARDEN_FLOWING)
+                .block(ElisarBlocks.GARDEN_WATER)
+                .slopeFindDistance(4).levelDecreasePerBlock(1).tickRate(5);
+    }
 
     private static ForgeFlowingFluid.Properties props() {
         return new ForgeFlowingFluid.Properties(TYPE, SOURCE, FLOWING).block(ElisarBlocks.WATER).bucket(BUCKET)

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "riftworld:elisar_bricks"
+    }
+  },
+  "result": {
+    "item": "riftworld:elisar_bricks_slab",
+    "count": 6
+  }
+}

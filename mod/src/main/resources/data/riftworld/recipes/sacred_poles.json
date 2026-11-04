@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "S W",
+    "S W",
+    "P P"
+  ],
+  "key": {
+    "S": {
+      "item": "minecraft:stick"
+    },
+    "W": {
+      "item": "minecraft:white_wool"
+    },
+    "P": {
+      "item": "riftworld:sizo_planks_slab"
+    }
+  },
+  "result": {
+    "item": "riftworld:sacred_poles",
+    "count": 2
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "riftworld:ivory_marble_bricks"
+  },
+  "result": "riftworld:ivory_marble_bricks_stairs",
+  "count": 1
+}

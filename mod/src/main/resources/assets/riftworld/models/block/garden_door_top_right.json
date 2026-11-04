@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/door_top_right",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "bottom": "riftworld:block/garden_door_bottom",
+    "top": "riftworld:block/garden_door_top"
+  }
+}

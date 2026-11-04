@@ -1,0 +1,7 @@
+{
+  "loader": "dynamictrees:branch",
+  "textures": {
+    "bark": "riftworld:block/ambra_log",
+    "rings": "riftworld:block/ambra_log_top"
+  }
+}

@@ -1,6 +1,10 @@
 {
   "replace": false,
   "values": [
-    "riftworld:castle_bricks_wall"
+    "riftworld:castle_bricks_wall",
+    "riftworld:elisar_bricks_wall",
+    "riftworld:garden_limestone_wall",
+    "riftworld:rift_slate_wall",
+    "riftworld:ashen_cobblestone_wall"
   ]
 }

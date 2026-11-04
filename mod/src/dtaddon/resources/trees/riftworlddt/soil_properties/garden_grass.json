@@ -1,0 +1,8 @@
+{
+  "primitive_soil": "riftworld:garden_grass",
+  "acceptable_soils": [
+    "dirt_like"
+  ],
+  "block_registry_name": "riftworlddt:rooty_garden_grass",
+  "only_if_loaded": "riftworld"
+}

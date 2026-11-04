@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "riftworld:ashen_cobblestone"
+  },
+  "result": "riftworld:ashen_cobblestone_wall",
+  "count": 1
+}

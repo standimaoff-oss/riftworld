@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    "riftworld:sizo_fence_gate",
+    "riftworld:ambra_fence_gate",
+    "riftworld:garden_fence_gate",
+    "riftworld:lilac_fence_gate",
+    "riftworld:crystal_fence_gate",
+    "riftworld:charred_fence_gate",
+    "riftworld:dark_fence_gate"
+  ]
+}

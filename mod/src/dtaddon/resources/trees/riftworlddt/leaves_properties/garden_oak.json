@@ -1,0 +1,8 @@
+{
+  "primitive_leaves": "riftworld:garden_leaves",
+  "color": "0xFFFFFF",
+  "cell_kit": "dynamictrees:deciduous",
+  "smother": 4,
+  "block_registry_name": "riftworlddt:garden_oak_leaves",
+  "only_if_loaded": "riftworld"
+}

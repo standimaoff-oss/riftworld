@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "CCC",
+    "DDD",
+    "B B"
+  ],
+  "key": {
+    "C": {
+      "item": "riftworld:castle_carpet"
+    },
+    "D": {
+      "item": "riftworld:dark_planks"
+    },
+    "B": {
+      "item": "riftworld:dark_beam"
+    }
+  },
+  "result": {
+    "item": "riftworld:feast_table"
+  }
+}

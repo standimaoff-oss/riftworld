@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "group": "building",
+  "ingredients": [
+    {
+      "item": "riftworld:frozen_soil"
+    },
+    {
+      "item": "riftworld:pale_moss_block"
+    }
+  ],
+  "result": {
+    "item": "riftworld:rime_grass",
+    "count": 1
+  }
+}

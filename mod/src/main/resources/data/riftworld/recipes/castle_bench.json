@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "DDD",
+    "S S"
+  ],
+  "key": {
+    "D": {
+      "item": "riftworld:dark_planks_slab"
+    },
+    "S": {
+      "item": "minecraft:stick"
+    }
+  },
+  "result": {
+    "item": "riftworld:castle_bench",
+    "count": 2
+  }
+}

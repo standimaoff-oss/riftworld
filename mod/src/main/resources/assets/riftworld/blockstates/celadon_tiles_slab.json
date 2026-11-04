@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "riftworld:block/celadon_tiles_slab"
+    },
+    "type=top": {
+      "model": "riftworld:block/celadon_tiles_slab_top"
+    },
+    "type=double": {
+      "model": "riftworld:block/celadon_tiles"
+    }
+  }
+}

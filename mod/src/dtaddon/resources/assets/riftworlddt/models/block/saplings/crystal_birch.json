@@ -1,0 +1,8 @@
+{
+  "parent": "dynamictrees:block/smartmodel/sapling",
+  "render_type": "minecraft:cutout_mipped",
+  "textures": {
+    "leaves": "riftworld:block/crystal_canopy",
+    "log": "riftworld:block/crystal_bark"
+  }
+}

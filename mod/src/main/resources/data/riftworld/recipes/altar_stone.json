@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "LLL",
+    " G ",
+    "SSS"
+  ],
+  "key": {
+    "L": {
+      "item": "riftworld:elisar_stone_slab"
+    },
+    "G": {
+      "item": "minecraft:gold_ingot"
+    },
+    "S": {
+      "item": "riftworld:elisar_stone"
+    }
+  },
+  "result": {
+    "item": "riftworld:altar_stone"
+  }
+}

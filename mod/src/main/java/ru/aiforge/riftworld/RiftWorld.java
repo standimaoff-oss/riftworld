@@ -17,7 +17,10 @@ public final class RiftWorld {
 
     public RiftWorld() {
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
-        ModBlocks.BLOCKS.register(bus);
+        // Рев 13: блоки — раньше всех. Аддон Dynamic Trees читает trees/*.json в RegisterEvent(BLOCKS)
+        // на обычном приоритете и должен видеть riftworld:*-блоки, иначе получает air, «теряет»
+        // LeavesProperties и падает NPE в SoilProperties#getBlock (см. EarlyRegistrations).
+        ru.aiforge.riftworld.registry.EarlyRegistrations.registerFirst(bus, ModBlocks.BLOCKS);
         ru.aiforge.riftworld.registry.ModEntities.TYPES.register(bus);
         ModItems.ITEMS.register(bus);
         ModFluids.TYPES.register(bus);
@@ -29,6 +32,17 @@ public final class RiftWorld {
         ModWorldgen.PIECES.register(bus);
         ModBlockEntities.TYPES.register(bus);
         ModTabs.TABS.register(bus);
+        ru.aiforge.riftworld.registry.ModParticles.PARTICLES.register(bus);
+        // Рев 14.41: аддон Dynamic Trees должен РЕАЛЬНО сажать деревья в нашем измерении —
+        // для этого ему нужен свой поиск грунта (см. DtGround). Ставим здесь, пока DT ещё не
+        // успел закэшировать стандартный GroundFinder по heightmap.
+        ru.aiforge.riftworld.world.DtGround.install();
         ru.aiforge.riftworld.net.Net.init();
+        // v0.38.0: плотность/дальность/цвет мглы «Мороковой Пади» — в клиентском конфиге,
+        // а не зашиты числом в ElisarSky (config/riftworld-atmosphere.toml).
+        RiftConfig.register();
+        MajaConfig.register();
+        bus.addListener((net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent e) ->
+                e.enqueueWork(ru.aiforge.riftworld.world.BlacktideCitadel::warmupAsync));
     }
 }

@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "G A",
+    "DDD"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:glass_bottle"
+    },
+    "A": {
+      "item": "minecraft:amethyst_shard"
+    },
+    "D": {
+      "item": "riftworld:dark_planks_slab"
+    }
+  },
+  "result": {
+    "item": "riftworld:alchemy_set"
+  }
+}

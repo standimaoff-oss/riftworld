@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "IP",
+    "PI"
+  ],
+  "key": {
+    "I": {
+      "item": "riftworld:ivory_marble"
+    },
+    "P": {
+      "item": "riftworld:pearl_calcite"
+    }
+  },
+  "result": {
+    "item": "riftworld:temple_bricks",
+    "count": 4
+  }
+}

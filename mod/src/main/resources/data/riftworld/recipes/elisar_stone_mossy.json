@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "riftworld:elisar_stone"
+    },
+    {
+      "tag": "riftworld:mod_vines"
+    }
+  ],
+  "result": {
+    "item": "riftworld:elisar_stone_mossy",
+    "count": 1
+  }
+}

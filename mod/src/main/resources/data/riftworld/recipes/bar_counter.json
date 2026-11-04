@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SSS",
+    "PPP",
+    "PBP"
+  ],
+  "key": {
+    "S": {
+      "item": "riftworld:ambra_planks_slab"
+    },
+    "P": {
+      "item": "riftworld:ambra_planks"
+    },
+    "B": {
+      "item": "minecraft:barrel"
+    }
+  },
+  "result": {
+    "item": "riftworld:bar_counter"
+  }
+}

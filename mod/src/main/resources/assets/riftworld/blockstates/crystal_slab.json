@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "riftworld:block/crystal_slab"
+    },
+    "type=double": {
+      "model": "riftworld:block/crystal_planks"
+    },
+    "type=top": {
+      "model": "riftworld:block/crystal_slab_top"
+    }
+  }
+}

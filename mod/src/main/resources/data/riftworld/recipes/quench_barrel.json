@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "PWP",
+    "PBP"
+  ],
+  "key": {
+    "P": {
+      "item": "riftworld:sizo_planks"
+    },
+    "W": {
+      "item": "minecraft:water_bucket"
+    },
+    "B": {
+      "item": "minecraft:barrel"
+    }
+  },
+  "result": {
+    "item": "riftworld:quench_barrel"
+  }
+}

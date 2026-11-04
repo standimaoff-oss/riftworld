@@ -1,0 +1,83 @@
+{
+  "textures": {
+    "particle": "riftworld:block/pale_moss_carpet",
+    "wool": "riftworld:block/pale_moss_carpet",
+    "center": "riftworld:block/pale_moss_carpet_center",
+    "trim": "riftworld:block/pale_moss_carpet_trim"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        1,
+        16
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#wool"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#center",
+          "cullface": "down"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            8,
+            0.5
+          ],
+          "texture": "#trim",
+          "cullface": "north"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            8,
+            0.5
+          ],
+          "texture": "#trim",
+          "cullface": "south"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            8,
+            0.5
+          ],
+          "texture": "#trim",
+          "cullface": "west"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            8,
+            0.5
+          ],
+          "texture": "#trim",
+          "cullface": "east"
+        }
+      }
+    }
+  ]
+}

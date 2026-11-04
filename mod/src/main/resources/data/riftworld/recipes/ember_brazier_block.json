@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "I I",
+    "ICI",
+    "BBB"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_bars"
+    },
+    "C": {
+      "item": "minecraft:campfire"
+    },
+    "B": {
+      "item": "riftworld:obsidian_bricks"
+    }
+  },
+  "result": {
+    "item": "riftworld:ember_brazier_block",
+    "count": 1
+  }
+}

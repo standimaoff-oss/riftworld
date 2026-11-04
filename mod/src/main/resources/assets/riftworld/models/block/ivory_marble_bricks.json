@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "riftworld:block/ivory_marble_bricks"
+  }
+}

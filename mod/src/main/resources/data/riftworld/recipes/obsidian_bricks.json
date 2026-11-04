@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "OB",
+    "BO"
+  ],
+  "key": {
+    "O": {
+      "item": "minecraft:obsidian"
+    },
+    "B": {
+      "item": "minecraft:polished_basalt"
+    }
+  },
+  "result": {
+    "item": "riftworld:obsidian_bricks",
+    "count": 4
+  }
+}

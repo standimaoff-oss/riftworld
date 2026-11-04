@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "group": "building",
+  "ingredients": [
+    {
+      "item": "riftworld:rime_grass"
+    },
+    {
+      "item": "minecraft:vine"
+    }
+  ],
+  "result": {
+    "item": "riftworld:pale_moss_block",
+    "count": 2
+  }
+}

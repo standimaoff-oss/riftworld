@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    "riftworld:elisar_stone",
+    "riftworld:scorched_stone",
+    "riftworld:keep_stone",
+    "riftworld:garden_limestone",
+    "riftworld:rift_marble",
+    "riftworld:ivory_marble",
+    "riftworld:ashlar"
+  ]
+}

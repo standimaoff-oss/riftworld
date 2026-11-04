@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "#  ",
+    "## ",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "riftworld:ivory_marble_bricks"
+    }
+  },
+  "result": {
+    "item": "riftworld:ivory_marble_bricks_stairs",
+    "count": 4
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "#  ",
+    "## ",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "riftworld:sizo_planks"
+    }
+  },
+  "result": {
+    "item": "riftworld:sizo_planks_stairs",
+    "count": 4
+  }
+}

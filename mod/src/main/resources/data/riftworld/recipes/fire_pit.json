@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " S ",
+    "SCS",
+    "SSS"
+  ],
+  "key": {
+    "S": {
+      "item": "riftworld:elisar_cobble"
+    },
+    "C": {
+      "item": "minecraft:charcoal"
+    }
+  },
+  "result": {
+    "item": "riftworld:fire_pit"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "D",
+    "N",
+    "D"
+  ],
+  "key": {
+    "D": {
+      "item": "riftworld:dark_planks"
+    },
+    "N": {
+      "item": "minecraft:iron_nugget"
+    }
+  },
+  "result": {
+    "item": "riftworld:dark_beam",
+    "count": 2
+  }
+}

@@ -33,6 +33,7 @@ public final class CityPlan {
     public final Map<String, int[]> templates = new HashMap<>();
     public final int spawnX, spawnZ;
     private final Map<Long, Bucket> grid = new HashMap<>();
+    private final double cityBoundSq;
 
     public static synchronized CityPlan get() {
         if (instance == null) {
@@ -52,6 +53,17 @@ public final class CityPlan {
         /** 0 = city island, 1 large, 2 medium, 3 small, 4 bowl islet (wild islands of the main biome). */
         public int kind;
         public double hill = 1.0;
+        /**
+         * Рев 15: вытянутость острова (эллипс). У Фиолетовых холмов луг должен быть ДЛИННЫМ,
+         * как на референсе 04: тогда террасы-изолинии идут длинными лентами через склон, а не
+         * концентрическими кольцами «свадебного торта». 0 — круглый остров, 0.5 — эллипс 3:2.
+         */
+        public double elong = 0.0;
+        public double elongAng = 0.0;
+        /** Несимметричные изгибы и лопасти береговой линии для крупных речных островов садов. */
+        public double bend = 0.0;
+        public double lobe2 = 0.0;
+        public double lobe3 = 0.0;
 
         public Island(double cx, double cz, double R, double base, double depth, double p1, double p2, double p3, int kind, double hill) {
             this.cx = cx; this.cz = cz; this.R = R; this.base = base; this.depth = depth;
@@ -66,12 +78,58 @@ public final class CityPlan {
         }
 
         double shapeR(double th) {
-            return R * (1 + 0.07 * Math.sin(3 * th + p1) + 0.045 * Math.sin(5 * th + p2) + 0.025 * Math.sin(11 * th + p3));
+            if (lobe2 == 0.0 && lobe3 == 0.0) {
+                return R * (1 + 0.07 * Math.sin(3 * th + p1) + 0.045 * Math.sin(5 * th + p2) + 0.025 * Math.sin(11 * th + p3));
+            }
+            double mod = 1 + lobe2 * Math.cos(2 * th + p2)
+                    + (0.07 + lobe3) * Math.sin(3 * th + p1)
+                    + 0.045 * Math.sin(5 * th + p2)
+                    + 0.025 * Math.sin(11 * th + p3);
+            return R * Math.max(0.62, mod);
         }
 
+        /** Максимальный габарит острова по осям X/Z с учётом вытянутости, изгиба и лопастей. */
+        public double maxReach() {
+            return R * (1 + elong) * (1.16 + Math.abs(lobe2) + Math.abs(lobe3) + Math.abs(bend) * 0.55) + 4.0;
+        }
+
+        /** Быстрая проверка вхождения точки внутрь острова с предварительным AABB-отсечением за 2 операции. */
+        public boolean contains(double x, double z) {
+            double r = maxReach();
+            return Math.abs(x - cx) <= r && Math.abs(z - cz) <= r && t(x, z) > 0.0;
+        }
+
+        /** Точное расстояние от (cx, cz) до кромки острова (t == 0) вдоль луча (cosA, sinA). */
+        public double rimDist(double cosA, double sinA) {
+            if (elong == 0.0 && bend == 0.0) {
+                return shapeR(Math.atan2(sinA, cosA));
+            }
+            double lo = R * 0.25, hi = maxReach() + 6.0;
+            for (int i = 0; i < 8; ++i) {
+                double mid = 0.5 * (lo + hi);
+                if (t(cx + cosA * mid, cz + sinA * mid) >= 0.0) lo = mid;
+                else hi = mid;
+            }
+            return 0.5 * (lo + hi);
+        }
+
+        /**
+         * «Глубина» точки внутри острова: 1 в центре, 0 на кромке, &lt;0 снаружи.
+         *
+         * <p>Рев 15: при {@code elong > 0} остров — ЭЛЛИПС (площадь сохраняется): растяжение
+         * считается в нормированных координатах, поэтому поля идут лентами вдоль длинной оси.
+         */
         public double t(double x, double z) {
             double dx = x - cx, dz = z - cz;
-            return 1 - Math.hypot(dx, dz) / shapeR(Math.atan2(dz, dx));
+            if (elong == 0.0 && bend == 0.0) return 1 - Math.hypot(dx, dz) / shapeR(Math.atan2(dz, dx));
+            double ca = Math.cos(elongAng), sa = Math.sin(elongAng);
+            double u = (dx * ca + dz * sa) / (1 + elong);
+            double v = (-dx * sa + dz * ca) * (1 + elong);
+            if (bend != 0.0) {
+                double un = Math.max(-1.6, Math.min(1.6, u / Math.max(12.0, R)));
+                v -= bend * R * (un * un - 0.25);
+            }
+            return 1 - Math.hypot(u, v) / shapeR(Math.atan2(v, u));
         }
 
         public double raw(double x, double z) {
@@ -176,7 +234,7 @@ public final class CityPlan {
             Bridge br = new Bridge(a.get(0).getAsDouble(), a.get(1).getAsDouble(), b.get(0).getAsDouble(), b.get(1).getAsDouble(),
                     r.get("ya").getAsInt(), r.get("yb").getAsInt(), r.get("sag").getAsDouble(), r.get("hw").getAsDouble());
             bridges.add(br);
-            index(Math.min(br.ax, br.bx) - 4, Math.min(br.az, br.bz) - 4, Math.max(br.ax, br.bx) + 4, Math.max(br.az, br.bz) + 4, bk -> bk.bridges.add(br));
+            index(Math.min(br.ax, br.bx) - 8, Math.min(br.az, br.bz) - 8, Math.max(br.ax, br.bx) + 8, Math.max(br.az, br.bz) + 8, bk -> bk.bridges.add(br));
         }
         JsonObject rv = o.getAsJsonObject("river");
         if (rv != null && rv.has("pts")) {
@@ -208,6 +266,12 @@ public final class CityPlan {
         JsonArray sp = o.getAsJsonArray("spawn");
         spawnX = sp.get(0).getAsInt();
         spawnZ = sp.get(1).getAsInt();
+        double maxCityR = 320.0;
+        for (Island isl : islands) {
+            double r = Math.hypot(isl.cx, isl.cz) + isl.maxReach() + 16.0;
+            if (r > maxCityR) maxCityR = r;
+        }
+        cityBoundSq = maxCityR * maxCityR;
     }
 
     private void addChannel(Channel c) {
@@ -237,11 +301,19 @@ public final class CityPlan {
     public Island nearest(double x, double z) {
         Island best = null;
         double bt = -1e9;
-        for (Island i : islands) {
-            double t = i.t(x, z);
-            if (t > bt) { bt = t; best = i; }
+        double dCitySq = x * x + z * z;
+        if (dCitySq <= cityBoundSq * 2.25) {
+            for (int k = 0, n = islands.size(); k < n; ++k) {
+                Island i = islands.get(k);
+                double lim = i.maxReach() * 1.65 + 12.0;
+                if (Math.abs(x - i.cx) > lim || Math.abs(z - i.cz) > lim) continue;
+                double t = i.t(x, z);
+                if (t > bt) { bt = t; best = i; }
+            }
         }
-        for (Island i : WildIslands.near(x, z)) {
+        Island[] wild = WildIslands.tileCandidates(x, z);
+        for (int k = 0, n = wild.length; k < n; ++k) {
+            Island i = wild[k];
             double t = i.t(x, z);
             if (t > bt) { bt = t; best = i; }
         }
@@ -249,13 +321,13 @@ public final class CityPlan {
     }
 
     public Island islandAt(double x, double z) {
-        for (Island i : islands) {
-            if (i.t(x, z) > 0) return i;
+        if (x * x + z * z <= cityBoundSq) {
+            for (int k = 0, n = islands.size(); k < n; ++k) {
+                Island i = islands.get(k);
+                if (i.contains(x, z)) return i;
+            }
         }
-        for (Island i : WildIslands.near(x, z)) {
-            if (i.t(x, z) > 0) return i;
-        }
-        return null;
+        return WildIslands.islandAt(x, z);
     }
 
     public List<Prop> propsNear(int x, int z) {

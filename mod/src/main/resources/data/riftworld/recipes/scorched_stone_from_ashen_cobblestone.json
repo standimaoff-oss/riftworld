@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smelting",
+  "ingredient": {
+    "item": "riftworld:ashen_cobblestone"
+  },
+  "result": "riftworld:scorched_stone",
+  "experience": 0.1,
+  "cookingtime": 200
+}

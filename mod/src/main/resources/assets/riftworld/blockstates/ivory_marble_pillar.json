@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "axis=x": {
+      "model": "riftworld:block/ivory_marble_pillar_horizontal",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y": {
+      "model": "riftworld:block/ivory_marble_pillar"
+    },
+    "axis=z": {
+      "model": "riftworld:block/ivory_marble_pillar_horizontal",
+      "x": 90
+    }
+  }
+}

@@ -2,6 +2,12 @@
   "replace": false,
   "values": [
     "riftworld:sizo_planks",
-    "riftworld:ambra_planks"
+    "riftworld:ambra_planks",
+    "riftworld:garden_planks",
+    "riftworld:lilac_planks",
+    "riftworld:crystal_planks",
+    "riftworld:charred_planks",
+    "riftworld:dark_planks",
+    "riftworld:morok_planks"
   ]
 }

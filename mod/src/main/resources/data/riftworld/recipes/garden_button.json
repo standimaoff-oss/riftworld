@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "group": "wooden_button",
+  "ingredients": [
+    {
+      "item": "riftworld:garden_planks"
+    }
+  ],
+  "result": {
+    "item": "riftworld:garden_button",
+    "count": 1
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "riftworld:block/crystal_canopy"
+  },
+  "render_type": "minecraft:cutout_mipped"
+}

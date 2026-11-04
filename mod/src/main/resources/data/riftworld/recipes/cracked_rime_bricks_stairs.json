@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "building",
+  "pattern": [
+    "B  ",
+    "BB ",
+    "BBB"
+  ],
+  "key": {
+    "B": {
+      "item": "riftworld:cracked_rime_bricks"
+    }
+  },
+  "result": {
+    "item": "riftworld:cracked_rime_bricks_stairs",
+    "count": 4
+  }
+}

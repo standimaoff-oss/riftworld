@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "###",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "riftworld:ashen_cobblestone"
+    }
+  },
+  "result": {
+    "item": "riftworld:ashen_cobblestone_wall",
+    "count": 6
+  }
+}

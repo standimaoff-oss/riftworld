@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "group": "planks",
+  "ingredients": [
+    {
+      "item": "riftworld:garden_wood"
+    }
+  ],
+  "result": {
+    "item": "riftworld:garden_planks",
+    "count": 4
+  }
+}

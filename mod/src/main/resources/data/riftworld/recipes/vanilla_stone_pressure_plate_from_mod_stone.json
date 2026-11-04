@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SS"
+  ],
+  "key": {
+    "S": {
+      "tag": "riftworld:mod_smooth_stone"
+    }
+  },
+  "result": {
+    "item": "minecraft:stone_pressure_plate",
+    "count": 1
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "riftworld:ashlar"
+  },
+  "result": "riftworld:ashlar_pillar",
+  "count": 1
+}

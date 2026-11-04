@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "PSP",
+    "P P",
+    "PPP"
+  ],
+  "key": {
+    "P": {
+      "item": "riftworld:sizo_planks"
+    },
+    "S": {
+      "item": "riftworld:sizo_planks_slab"
+    }
+  },
+  "result": {
+    "item": "riftworld:wardrobe"
+  }
+}

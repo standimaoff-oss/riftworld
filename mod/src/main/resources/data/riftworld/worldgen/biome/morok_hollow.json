@@ -1,0 +1,72 @@
+{
+  "has_precipitation": true,
+  "temperature": -0.5,
+  "downfall": 0.35,
+  "effects": {
+    "sky_color": 9409960,
+    "fog_color": 13227736,
+    "water_color": 4088929,
+    "water_fog_color": 2768965,
+    "grass_color": 8294278,
+    "foliage_color": 5664098,
+    "particle": {
+      "options": {
+        "type": "minecraft:snowflake"
+      },
+      "probability": 0.045
+    },
+    "ambient_sound": "minecraft:ambient.cave",
+    "mood_sound": {
+      "sound": "minecraft:ambient.cave",
+      "tick_delay": 3200,
+      "block_search_extent": 8,
+      "offset": 2.0
+    },
+    "additions_sound": {
+      "sound": "minecraft:ambient.basalt_deltas.additions",
+      "tick_chance": 0.0111
+    },
+    "music": {
+      "sound": "minecraft:music.nether.soul_sand_valley",
+      "min_delay": 12000,
+      "max_delay": 24000,
+      "replace_current_music": false
+    }
+  },
+  "spawners": {
+    "monster": [
+      {
+        "type": "riftworld:morok",
+        "weight": 36,
+        "minCount": 1,
+        "maxCount": 2
+      },
+      {
+        "type": "riftworld:wendigo",
+        "weight": 24,
+        "minCount": 1,
+        "maxCount": 2
+      }
+    ],
+    "creature": [
+      {
+        "type": "riftworld:pegasus",
+        "weight": 6,
+        "minCount": 1,
+        "maxCount": 1
+      }
+    ]
+  },
+  "spawn_costs": {
+    "riftworld:wendigo": {
+      "energy_budget": 0.28,
+      "charge": 1.1
+    },
+    "riftworld:morok": {
+      "energy_budget": 0.34,
+      "charge": 1.2
+    }
+  },
+  "carvers": {},
+  "features": []
+}

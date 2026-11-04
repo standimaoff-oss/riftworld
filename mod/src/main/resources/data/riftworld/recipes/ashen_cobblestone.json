@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SA",
+    "AS"
+  ],
+  "key": {
+    "S": {
+      "item": "riftworld:scorched_stone"
+    },
+    "A": {
+      "item": "riftworld:ash_block"
+    }
+  },
+  "result": {
+    "item": "riftworld:ashen_cobblestone",
+    "count": 4
+  }
+}

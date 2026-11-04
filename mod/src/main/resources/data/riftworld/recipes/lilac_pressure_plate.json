@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "group": "wooden_pressure_plate",
+  "pattern": [
+    "##"
+  ],
+  "key": {
+    "#": {
+      "item": "riftworld:lilac_planks"
+    }
+  },
+  "result": {
+    "item": "riftworld:lilac_pressure_plate",
+    "count": 1
+  }
+}

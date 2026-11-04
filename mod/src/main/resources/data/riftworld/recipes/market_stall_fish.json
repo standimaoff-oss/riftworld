@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "BBB",
+    "SFS",
+    "PPP"
+  ],
+  "key": {
+    "B": {
+      "item": "minecraft:blue_wool"
+    },
+    "S": {
+      "item": "minecraft:stick"
+    },
+    "F": {
+      "tag": "minecraft:fishes"
+    },
+    "P": {
+      "item": "riftworld:sizo_planks"
+    }
+  },
+  "result": {
+    "item": "riftworld:market_stall_fish"
+  }
+}

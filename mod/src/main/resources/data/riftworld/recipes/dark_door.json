@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "group": "wooden_door",
+  "pattern": [
+    "##",
+    "##",
+    "##"
+  ],
+  "key": {
+    "#": {
+      "item": "riftworld:dark_planks"
+    }
+  },
+  "result": {
+    "item": "riftworld:dark_door",
+    "count": 3
+  }
+}

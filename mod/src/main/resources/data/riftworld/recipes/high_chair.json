@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "D  ",
+    "DDD",
+    "F F"
+  ],
+  "key": {
+    "D": {
+      "item": "riftworld:dark_planks_slab"
+    },
+    "F": {
+      "item": "riftworld:dark_fence"
+    }
+  },
+  "result": {
+    "item": "riftworld:high_chair"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "type": "forge:add_spawns",
+  "biomes": "#riftworld:peaceful_normal_biomes",
+  "spawners": [
+    {
+      "type": "riftworld:blossom_stag",
+      "weight": 10,
+      "minCount": 2,
+      "maxCount": 4
+    },
+    {
+      "type": "riftworld:sky_dart_fish",
+      "weight": 12,
+      "minCount": 3,
+      "maxCount": 5
+    }
+  ]
+}

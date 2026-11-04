@@ -35,7 +35,5 @@ public final class ModBlockEntities {
     /** Rev 4 item 13: rope-bridge post block entity. */
     public static final RegistryObject<BlockEntityType<ru.aiforge.riftworld.block.BridgePostBE>> BRIDGE_POST = TYPES.register("bridge_post",
             () -> BlockEntityType.Builder.of(ru.aiforge.riftworld.block.BridgePostBE::new, ru.aiforge.riftworld.registry.BridgeBlocks.POST.get()).build(null));
-    public static final RegistryObject<BlockEntityType<ru.aiforge.riftworld.block.DemonGateBE>> DEMON_GATE = TYPES.register("demon_gate",
-            () -> BlockEntityType.Builder.of(ru.aiforge.riftworld.block.DemonGateBE::new, TempleBlocks.DEMON_GATE.get()).build(null));
 }
 

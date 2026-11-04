@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "waterlogged=true": {
+      "model": "riftworld:block/sea_urchin"
+    },
+    "waterlogged=false": {
+      "model": "riftworld:block/sea_urchin"
+    }
+  }
+}

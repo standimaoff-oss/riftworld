@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "riftworld:lilac_log"
+  },
+  "result": "riftworld:stripped_lilac_log",
+  "count": 1
+}

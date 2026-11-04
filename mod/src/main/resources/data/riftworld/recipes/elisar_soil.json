@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "DG",
+    "GD"
+  ],
+  "key": {
+    "D": {
+      "item": "minecraft:dirt"
+    },
+    "G": {
+      "item": "riftworld:elisar_silt"
+    }
+  },
+  "result": {
+    "item": "riftworld:elisar_soil",
+    "count": 4
+  }
+}

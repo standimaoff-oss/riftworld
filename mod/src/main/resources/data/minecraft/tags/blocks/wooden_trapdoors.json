@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    "riftworld:sizo_trapdoor",
+    "riftworld:ambra_trapdoor",
+    "riftworld:garden_trapdoor",
+    "riftworld:lilac_trapdoor",
+    "riftworld:crystal_trapdoor",
+    "riftworld:charred_trapdoor",
+    "riftworld:dark_trapdoor",
+    "riftworld:morok_trapdoor"
+  ]
+}

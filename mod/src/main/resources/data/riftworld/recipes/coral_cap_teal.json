@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "CC",
+    "CC"
+  ],
+  "key": {
+    "C": {
+      "item": "riftworld:coral_tube"
+    }
+  },
+  "result": {
+    "item": "riftworld:coral_cap_teal",
+    "count": 2
+  }
+}

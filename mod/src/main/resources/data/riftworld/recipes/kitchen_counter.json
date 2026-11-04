@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "EEE",
+    "P P",
+    "PPP"
+  ],
+  "key": {
+    "E": {
+      "item": "riftworld:elisar_stone_slab"
+    },
+    "P": {
+      "item": "riftworld:sizo_planks"
+    }
+  },
+  "result": {
+    "item": "riftworld:kitchen_counter",
+    "count": 2
+  }
+}

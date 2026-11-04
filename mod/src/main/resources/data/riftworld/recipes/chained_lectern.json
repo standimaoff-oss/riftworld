@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " B ",
+    "HHH",
+    " D "
+  ],
+  "key": {
+    "B": {
+      "item": "minecraft:book"
+    },
+    "H": {
+      "item": "riftworld:elisar_chain"
+    },
+    "D": {
+      "item": "riftworld:dark_planks"
+    }
+  },
+  "result": {
+    "item": "riftworld:chained_lectern"
+  }
+}

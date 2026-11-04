@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "riftworld:garden_log"
+  },
+  "result": "riftworld:stripped_garden_log",
+  "count": 1
+}

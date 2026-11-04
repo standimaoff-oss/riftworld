@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "riftworld:block/garden_slab"
+    },
+    "type=double": {
+      "model": "riftworld:block/garden_planks"
+    },
+    "type=top": {
+      "model": "riftworld:block/garden_slab_top"
+    }
+  }
+}

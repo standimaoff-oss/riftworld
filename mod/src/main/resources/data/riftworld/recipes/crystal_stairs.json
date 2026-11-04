@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "wooden_stairs",
+  "pattern": [
+    "#  ",
+    "## ",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "riftworld:crystal_planks"
+    }
+  },
+  "result": {
+    "item": "riftworld:crystal_stairs",
+    "count": 4
+  }
+}

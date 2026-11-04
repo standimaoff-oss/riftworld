@@ -1,0 +1,8 @@
+{
+  "primitive_soil": "riftworld:rift_turf",
+  "acceptable_soils": [
+    "dirt_like"
+  ],
+  "block_registry_name": "riftworlddt:rooty_rift_turf",
+  "only_if_loaded": "riftworld"
+}

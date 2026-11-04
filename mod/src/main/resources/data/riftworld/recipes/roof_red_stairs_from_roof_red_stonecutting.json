@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "riftworld:roof_red"
+  },
+  "result": "riftworld:roof_red_stairs",
+  "count": 1
+}
