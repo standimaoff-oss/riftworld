@@ -5,6 +5,18 @@ OUT=${OUT:-ci-out}
 RUN=${RUN:-ci/maja-run}
 mkdir -p "$OUT" "$RUN/client/config"
 fail() { echo "::error title=Maja client probe::$*"; exit 1; }
+on_error() {
+  code=$?
+  if [ "$code" -ne 0 ]; then
+    for file in ci/server/logs/latest.log "$OUT/maja-client.log"; do
+      [ -f "$file" ] || continue
+      grep -Ei 'error|exception|crash|disconnected' "$file" | tail -8 | while IFS= read -r line; do
+        echo "::error title=Game diagnostic::${line:0:450}"
+      done || true
+    done
+  fi
+}
+trap on_error EXIT
 rq() { python3 tools/rcon.py --password "${RCON_PW:-riftci}" --log "" --timeout 90 "$@"; }
 
 sudo apt-get update -qq
@@ -91,9 +103,15 @@ PY
 [[ "${OX:-}" =~ ^-?[0-9]+$ && "${OZ:-}" =~ ^-?[0-9]+$ ]] || fail "No ocean coordinates"
 rq execute in riftworld:elisar run tp TestPlayer "$OX" 95 "$OZ" 0 0
 sleep 60
-BIOME=$(rq execute in riftworld:elisar if biome "$OX" 54 "$OZ" riftworld:maja_ocean 2>&1 || true)
+BIOME=''
+for _ in $(seq 1 24); do
+  BIOME=$(rq execute in riftworld:elisar if biome "$OX" 54 "$OZ" riftworld:maja_ocean 2>&1 || true)
+  [[ "$BIOME" == *"Test passed"* ]] && break
+  [[ "$BIOME" == *"Test failed"* ]] && break
+  sleep 5
+done
 echo "Ocean biome check: $BIOME"
-[[ "$BIOME" == *"Test passed"* ]] || fail "Expected Maja ocean in new Elisar world"
+[[ "$BIOME" == *"Test passed"* ]] || fail "Ocean at $OX,54,$OZ; locate=$LOC; check=$BIOME"
 # Natural spawning is probabilistic and clearance-sensitive: report the observation without
 # equating a timeout to an absence of support. The collision and build gates remain mandatory.
 seen=0
