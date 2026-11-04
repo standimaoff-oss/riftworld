@@ -3835,18 +3835,28 @@ public final class SeaProbeCommand {
                 }
             }
             String biome = "?";
-            int spawnWendigo = 0, spawnPegasus = 0;
+            int spawnWendigo = 0, spawnPegasus = 0, spawnMonsterTotal = 0, spawnCreatureTotal = 0;
             try {
                 var holder = level.getBiome(new BlockPos(px, ground + 1, pz));
                 var key = holder.unwrapKey();
                 if (key.isPresent()) biome = key.get().location().toString();
+                // карта спавнеров биома: MobSpawnSettings.spawners (MobCategory -> список SpawnerData).
+                // Проверяем САМ ФАКТ регистрации моба в биоме: именно этого не хватало в v0.36.0,
+                // когда в morok_hollow.json стояло "spawners": {} и в чаще никого не было.
                 var mobs = holder.value().getMobSettings();
-                for (var sp : mobs.getMobs(net.minecraft.world.entity.MobCategory.MONSTER)) {
-                    if (sp.type == ru.aiforge.riftworld.registry.ModEntities.WENDIGO.get()) spawnWendigo = sp.getWeight().asInt();
+                int catMonster = 0, catCreature = 0;
+                for (var sp : mobs.spawners.getOrDefault(net.minecraft.world.entity.MobCategory.MONSTER,
+                        java.util.Collections.emptyList())) {
+                    ++catMonster;
+                    if (sp.type == ru.aiforge.riftworld.registry.ModEntities.WENDIGO.get()) spawnWendigo = 1;
                 }
-                for (var sp : mobs.getMobs(net.minecraft.world.entity.MobCategory.CREATURE)) {
-                    if (sp.type == ru.aiforge.riftworld.registry.ModEntities.PEGASUS.get()) spawnPegasus = sp.getWeight().asInt();
+                for (var sp : mobs.spawners.getOrDefault(net.minecraft.world.entity.MobCategory.CREATURE,
+                        java.util.Collections.emptyList())) {
+                    ++catCreature;
+                    if (sp.type == ru.aiforge.riftworld.registry.ModEntities.PEGASUS.get()) spawnPegasus = 1;
                 }
+                spawnMonsterTotal = catMonster;
+                spawnCreatureTotal = catCreature;
             } catch (Throwable ignored) {
             }
             // камера с земли: 9 блоков в стороне, взгляд чуть вверх — видно стволы и кроны в тумане
@@ -3858,6 +3868,7 @@ public final class SeaProbeCommand {
                     + " brambles=" + brambles + " fangs=" + fangs + " carpets=" + carpets
                     + " rime=" + rime + " soil=" + soil
                     + " spawn_wendigo=" + spawnWendigo + " spawn_pegasus=" + spawnPegasus
+                    + " spawn_monster=" + spawnMonsterTotal + " spawn_creature=" + spawnCreatureTotal
                     + " blocks=" + metric + " sub_air=0"
                     + " cam=" + cam[0] + "," + cam[1] + "," + cam[2] + ":" + px + "," + (ground + 7) + "," + pz;
             src.sendSuccess(() -> Component.literal(line), false);
