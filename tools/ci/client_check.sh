@@ -122,6 +122,13 @@ RCON() {
     fi
     sleep 1.2
   done
+  # v0.39.5: если сервер перестал отвечать посреди прогона (прогон #384: клиент умер на кадре 127,
+  # дальше ВСЕ пробы возвращали пустоту) — это должно быть видно в логе, а не выглядеть как «моб не
+  # заспавнился». Пишем маркер один раз на серию.
+  if [ "${__RCON_DEAD:-0}" = "0" ]; then
+    echo "[$(date -u +%H:%M:%S)] !! RCON не отвечает — сервер или клиент умер посреди прогона" >>"${LOG:-/dev/null}" 2>/dev/null || true
+    __RCON_DEAD=1
+  fi
   printf '%s\n' "$out"
   return "$rc"
 }
@@ -1322,6 +1329,15 @@ biome_section() {
     FAILS=$((FAILS + 1))
   fi
 
+  # ---------- v0.39.5: КАДРЫ НОВЫХ МОДЕЛЕЙ — ПЕРВЫМИ среди тяжёлых проб ----------
+  # Прогон #384: клиент умер на «Хрустальных разломах» (кадр 127), и кадры Пегаса/Вендиго/Морока,
+  # стоявшие в конце очереди, не снялись вообще. Модели мобов — то, что владелец просил переделать,
+  # поэтому их кадры снимаем ДО тяжёлой генерации архипелага.
+  echo "== v0.33–v0.36 (сразу): Пегас, Вендиго, биом Мороковая Падь =="
+  probe_and_shot_struct "v34_pegasus"                800 "147_v34_pegasus_winged_steed"            0 0 6
+  probe_and_shot_struct "v35_wendigo"                800 "148_v35_wendigo_antlered_horror"         0 0 6
+  probe_and_shot_struct "v36_morok_biome"            800 "149_v36_morok_hollow_fog_forest"        0 0 6
+
   # ---------- Новый биом: Хрустальные разломы (riftworld:crystal_rifts, 02_crystal_sanctum.png) ----------
   locate_check riftworld:crystal_rifts crystal_rifts
   local CL0 CHX CHZ CI1X CI1Z CMX CMZ CL CBIO CISL CBRGW CBRGN CCRYS CMARB CFLORA CWAT CSIZO
@@ -1470,11 +1486,8 @@ biome_section() {
   }
 
   # ВАЖНО (v0.38.5): блок Пади и Лиоплевродона стоит ПЕРВЫМ среди тяжёлых проб.
-  # ---------- v0.33–v0.36: новая модель Лиоплевродона, Пегас, Вендиго и биом «Мороковая Падь» ----------
-  echo "== v0.33–v0.36: Лиоплевродон (новая модель), Пегас, Вендиго, биом Мороковая Падь =="
-  probe_and_shot_struct "v34_pegasus"                800 "147_v34_pegasus_winged_steed"            0 0 6
-  probe_and_shot_struct "v35_wendigo"                800 "148_v35_wendigo_antlered_horror"         0 0 6
-  probe_and_shot_struct "v36_morok_biome"            800 "149_v36_morok_hollow_fog_forest"        0 0 6
+  # ---------- v0.33–v0.36: биом «Мороковая Падь» (кадры мобов снимаются раньше — см. выше) ----------
+  echo "== v0.33–v0.36: Пегас, Вендиго, биом Мороковая Падь — пробы =="
   # v0.37.0: туман Пади — проверяем, что в биоме реально включается мгла (fog=true) и вес > 0.05
   MOROK=$(EL execute at TestPlayer in riftworld:elisar run riftstruct v36_morok_biome 2>&1 | tr '\r\n' '  ')
   if printf '%s' "$MOROK" | grep -q "fog=true"; then

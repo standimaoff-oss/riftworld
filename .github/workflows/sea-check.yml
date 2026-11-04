@@ -286,6 +286,18 @@ jobs:
           if [ -f ci-shots/client_attempt1.log ]; then
             tail -c 100000 ci-shots/client_attempt1.log > "$DEST/client_attempt1.log" || true
           fi
+          # v0.39.5: лог СЕРВЕРА и crash-репорты. В прогоне #384 клиент умер на кадре 127 и все
+          # дальнейшие пробы возвращали пустоту — по логу клиента причину не увидеть.
+          if [ -f ci-shots/server_latest.log ]; then
+            tail -c 150000 ci-shots/server_latest.log > "$DEST/server_latest.log" || true
+          fi
+          if [ -f ci-shots/server_console.log ]; then
+            tail -c 150000 ci-shots/server_console.log > "$DEST/server_console.log" || true
+          fi
+          if ls ci-shots/crash/*.txt >/dev/null 2>&1; then
+            mkdir -p "$DEST/crash"
+            cp ci-shots/crash/*.txt "$DEST/crash/" 2>/dev/null || true
+          fi
           grep -nE 'Exception|\\bERROR\\b|FATAL|Unable to load model|Missing textures' ci-shots/client.log 2>/dev/null \
             | tail -80 > "$DEST/client_errors.txt" || true
           # индекс с прямыми ссылками на каждый кадр
