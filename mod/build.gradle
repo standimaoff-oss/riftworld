@@ -337,3 +337,11 @@ tasks.withType(JavaCompile).configureEach {
 tasks.withType(JavaCompile).configureEach {
     options.compilerArgs += ['-Xmaxerrs', '2000']
 }
+
+// Lightweight integration check of the saved island-safety journal (does not start a game).
+tasks.register('majaSafetyCheck', JavaExec) {
+    group = 'verification'
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'ru.aiforge.riftworld.world.MajaWorldDataProbe'
+}

@@ -6,8 +6,14 @@ import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.event.level.ChunkEvent;
 import net.minecraftforge.event.level.PistonEvent;
 import net.minecraftforge.event.CommandEvent;
+import net.minecraftforge.event.TickEvent;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
+import net.minecraft.core.BlockPos;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -17,6 +23,7 @@ import ru.aiforge.riftworld.flight.Flight;
 /** Records only newly generated chunks and ordinary Forge player placements. */
 @Mod.EventBusSubscriber(modid = RiftWorld.MODID)
 public final class MajaSafetyEvents {
+    private static final Map<ServerLevel, Set<BlockPos>> PENDING_BREAKS = new HashMap<>();
     private static final Pattern WORLD_EDIT = Pattern.compile("(^|[\\s/])(setblock|fill|clone|place)(\\s|$)|//(set|paste|replace|undo)(\\s|$)");
     private MajaSafetyEvents() {}
 
@@ -35,14 +42,33 @@ public final class MajaSafetyEvents {
                 || !level.dimension().equals(Flight.ELISAR_DIM)) return;
         MajaWorldData data = MajaWorldData.get(level);
         if (event instanceof BlockEvent.EntityMultiPlaceEvent multi) {
-            for (var snapshot : multi.getReplacedBlockSnapshots()) data.placed(snapshot.getPos());
-        } else data.placed(event.getPos());
+            for (var snapshot : multi.getReplacedBlockSnapshots()) recordPlacement(level, data, snapshot.getPos());
+        } else recordPlacement(level, data, event.getPos());
+    }
+
+    private static void recordPlacement(ServerLevel level, MajaWorldData data, BlockPos pos) {
+        Set<BlockPos> pending = PENDING_BREAKS.get(level);
+        if (pending != null) pending.remove(pos);
+        data.placed(pos);
     }
 
     @SubscribeEvent(priority = EventPriority.MONITOR)
     public static void breakBlock(BlockEvent.BreakEvent event) {
         if (event.getLevel() instanceof ServerLevel level && level.dimension().equals(Flight.ELISAR_DIM))
-            MajaWorldData.get(level).broken(event.getPos());
+            PENDING_BREAKS.computeIfAbsent(level, unused -> new HashSet<>()).add(event.getPos().immutable());
+    }
+
+    /** The break event happens before the block actually disappears; a cancelled break must stay protected. */
+    @SubscribeEvent
+    public static void finishBreaks(TickEvent.LevelTickEvent event) {
+        if (event.phase != TickEvent.Phase.END || !(event.level instanceof ServerLevel level)) return;
+        Set<BlockPos> pending = PENDING_BREAKS.remove(level);
+        if (pending == null) return;
+        MajaWorldData data = MajaWorldData.get(level);
+        for (BlockPos pos : pending) {
+            if (level.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4) != null
+                    && level.isEmptyBlock(pos)) data.broken(pos);
+        }
     }
     @SubscribeEvent(priority = EventPriority.MONITOR)
     public static void piston(PistonEvent.Pre event) {

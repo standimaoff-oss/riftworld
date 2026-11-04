@@ -7,6 +7,7 @@ import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.ForgeEventFactory;
@@ -22,13 +23,14 @@ import ru.aiforge.riftworld.registry.ElisarBlocks;
 public final class MajaIslandDevourer {
     private static final int SCAN_BUDGET = 2048;
     private static final int BREAK_BUDGET = 96;
+    private record Bite(long pos, Block expectedBlock) {}
     private Job job;
     private int cooldown;
 
     private static final class Job {
         final CityPlan.Island island;
         final int minX, maxX, minZ, maxZ;
-        final List<Long> blocks = new ArrayList<>();
+        final List<Bite> blocks = new ArrayList<>();
         final Set<Long> protectedCells = new HashSet<>();
         int x, z, y = Integer.MIN_VALUE, top, surfaceTop, consumeIndex;
         boolean scanComplete;
@@ -62,13 +64,17 @@ public final class MajaIslandDevourer {
         data.protectPlacedNear(job.island.cx, job.island.cz, job.island.maxReach() + 8, job.protectedCells);
         int done = 0;
         while (done++ < BREAK_BUDGET && job.consumeIndex < job.blocks.size()) {
-            BlockPos p = BlockPos.of(job.blocks.get(job.consumeIndex++));
+            Bite bite = job.blocks.get(job.consumeIndex++);
+            BlockPos p = BlockPos.of(bite.pos());
             if (job.protectedCells.contains(p.asLong()) || data.wasPlaced(p)) continue;
             BlockState state = level.getBlockState(p);
             if (state.isAir()) continue;
-            if (state.hasBlockEntity() || !natural(state)) return cancel();
-            if (!ForgeEventFactory.onEntityDestroyBlock(maja, p, state)) return cancel();
-            level.destroyBlock(p, false, maja);
+            if (state.hasBlockEntity() || !natural(state) || state.getBlock() != bite.expectedBlock()) return cancel();
+            if (!state.canEntityDestroy(level, p, maja) || !ForgeEventFactory.onEntityDestroyBlock(maja, p, state)) return cancel();
+            // A protection/event handler may itself replace a block or unload a chunk during the callback.
+            if (level.getChunkSource().getChunkNow(p.getX() >> 4, p.getZ() >> 4) == null
+                    || level.getBlockState(p).getBlock() != bite.expectedBlock() || data.wasPlaced(p)) return cancel();
+            if (!level.destroyBlock(p, false, maja)) return cancel();
         }
         if (job.consumeIndex >= job.blocks.size()) return cancel();
         return true;
@@ -143,7 +149,7 @@ public final class MajaIslandDevourer {
                 if (state.hasBlockEntity()) return false;
                 if (!data.wasPlaced(pos) && !natural(state)) return false;
                 // Natural foliage is usually below top+24; do not delete higher, unrelated terrain.
-                if (j.y <= j.surfaceTop + 24 && !data.wasPlaced(pos) && natural(state)) j.blocks.add(pos.asLong());
+                if (j.y <= j.surfaceTop + 24 && !data.wasPlaced(pos) && natural(state)) j.blocks.add(new Bite(pos.asLong(), state.getBlock()));
             }
             if (++j.y > j.top) nextColumn(j);
         }

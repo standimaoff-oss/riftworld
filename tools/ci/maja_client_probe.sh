@@ -18,7 +18,7 @@ renderDistance:12
 simulationDistance:8
 maxFps:30
 guiScale:2
-fov:0.0
+fov:1.0
 graphicsMode:1
 renderClouds:false
 pauseOnLostFocus:false
@@ -66,7 +66,7 @@ print(*m.groups())
 PY
 )
 # Head is about 156 blocks forward (+Z). Camera is just in front, within tracking distance.
-rq tp TestPlayer "$X" "$(( ${Y%.*} + 14 ))" "$(( ${Z%.*} + 176 ))" facing "$X" "$Y" "$(( ${Z%.*} + 115 ))" >/dev/null
+rq tp TestPlayer "$X" "$(( ${Y%.*} + 14 ))" "$(( ${Z%.*} + 188 ))" facing "$X" "$Y" "$(( ${Z%.*} + 115 ))" >/dev/null
 sleep 35
 WID=$(xdotool search --onlyvisible --name Minecraft | head -1 || true)
 [ -n "$WID" ] || fail "Minecraft window not found"
