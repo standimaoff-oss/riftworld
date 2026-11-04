@@ -558,6 +558,8 @@ echo "== v0.33–v0.36: переделанные модели — Пегас, В
 mob_model_probe "v34_pegasus"     "147_v34_pegasus_winged_steed"
 mob_model_probe "v35_wendigo"     "148_v35_wendigo_antlered_horror"
 mob_model_probe "v36_morok_biome" "149_v36_morok_hollow_fog_forest"
+# v0.39.7: Морок — тоже в начале очереди: в #387 он стоял в конце и кадр не снялся
+mob_model_probe "v39_morok"       "152_v39_morok_night_hunter"
 view "$VX" 66 "$VZ" 90 42 14 "02_reef_from_above"        # рифовый сад сверху сквозь воду
 view "$((VX + 10))" "$((VF + 6))" "$VZ" 270 18 14 "03_reef_underwater"   # риф вплотную под водой
 view "$((VX + 4))" "$((VF + 9))" "$VZ" 210 22 14 "03b_reef_hills"         # рифовые холмы и палитры

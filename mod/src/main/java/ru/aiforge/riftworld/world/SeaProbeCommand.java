@@ -8,6 +8,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.event.RegisterCommandsEvent;
@@ -266,6 +267,39 @@ public final class SeaProbeCommand {
      * Рев 12: БЛИЗКАЯ точка съёмки — коралл должен занимать кадр, а не быть точкой вдали.
      * Перебираем радиусы 6–14 и 16 направлений, проверяем свободный столбик камеры и прямую видимость.
      */
+    /**
+     * v0.39.7: сцена для кадра модели. Кадры 147/148 в прогоне #387 показали не моба, а листву:
+     * камера стояла в кроне. Здесь вокруг моба строится ровная площадка из мерзлоты (13x13) и
+     * вычищается воздух до 8 блоков вверх — тогда модель видно целиком при любом лесе вокруг.
+     */
+    private static void buildStage(ServerLevel level, int cx, int cy, int cz, int r) {
+        for (int dx = -r; dx <= r; ++dx) {
+            for (int dz = -r; dz <= r; ++dz) {
+                level.setBlock(new BlockPos(cx + dx, cy - 1, cz + dz),
+                        MorokBlocks.RIME_GRASS.get().defaultBlockState(), 3);
+                for (int dy = 0; dy <= 8; ++dy) {
+                    BlockPos p = new BlockPos(cx + dx, cy + dy, cz + dz);
+                    if (!level.getBlockState(p).isAir()) {
+                        level.setBlock(p, Blocks.AIR.defaultBlockState(), 3);
+                    }
+                }
+            }
+        }
+    }
+
+    /** v0.39.7: вычищаем воздух вокруг объектива — иначе кадр упирается в листву или ствол. */
+    private static void clearAt(ServerLevel level, double x, double y, double z) {
+        int bx = (int) Math.floor(x), by = (int) Math.floor(y), bz = (int) Math.floor(z);
+        for (int dx = -1; dx <= 1; ++dx) {
+            for (int dy = -1; dy <= 1; ++dy) {
+                for (int dz = -1; dz <= 1; ++dz) {
+                    level.setBlock(new BlockPos(bx + dx, by + dy, bz + dz),
+                            Blocks.AIR.defaultBlockState(), 3);
+                }
+            }
+        }
+    }
+
     private static int[] closeSpot(ServerLevel level, int tx, int y, int tz, int[] radii, int lookY) {
         for (int r : radii) {
             for (int i = 0; i < 16; ++i) {
@@ -3831,15 +3865,25 @@ public final class SeaProbeCommand {
                 if (e.isAlive() && alive == 0) ++alive;
                 if (e.isTamed()) ++tamed;
             }
-            int[] cam34 = (level != null)
-                    ? closeSpot(level, px, py + 1, pz, new int[]{6, 7, 8, 9}, py + 1)
-                    : new int[]{px - 3, py + 2, pz + 4};
+            // v0.39.7: вместо поиска «свободного угла» строим чистую сцену — кадры 147/148 в #387
+            // были листвой перед объективом, а не мобом.
+            double[] cam34;
+            if (level != null) {
+                ServerLevel sl = level;
+                buildStage(sl, px, py, pz, 6);
+                cam34 = poseCam(px + 0.5, py + 1.3, pz + 0.5, 210.0F, 0.0, 0.0, 0.0, 5.0, 4.2, 1.3);
+                clearAt(sl, cam34[0], cam34[1], cam34[2]);
+            } else {
+                cam34 = new double[]{px - 3, py + 2, pz + 4, px, py + 1, pz};
+            }
             int metric = alive > 0 ? 900 : 0;
             String line = "riftstruct kind=v34_pegasus at=" + px + "," + (py + 2) + "," + pz
                     + " alive=" + alive + " tamed=" + tamed + " where=" + where + " spawned=" + spawned
                     + " saddleable=true saddle_seat=1.15"
                     + " blocks=" + metric + " sub_air=0"
-                    + " cam=" + cam34[0] + "," + cam34[1] + "," + cam34[2] + ":" + px + "," + (py + 1) + "," + pz;
+                    + " cam=" + r3(cam34[0]) + "," + r3(cam34[1]) + "," + r3(cam34[2])
+                    + ":" + r3(cam34[3]) + "," + r3(cam34[4]) + "," + r3(cam34[5])
+                    + " stage=13x13";
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
         }
@@ -3933,26 +3977,42 @@ public final class SeaProbeCommand {
             }
             int alive = 0;
             if (level instanceof ServerLevel) {
-                var wd = ru.aiforge.riftworld.registry.ModEntities.WENDIGO.get().create((ServerLevel) level);
+                ServerLevel sl = (ServerLevel) level;
+                // v0.39.7: в #387 проба отчиталась alive=2 — второй Вендиго заходил в кадр и мешал.
+                // Чистим прошлых и ставим ровно одного, без ИИ, иначе он уходит из кадра.
+                sl.getEntitiesOfClass(ru.aiforge.riftworld.entity.WendigoEntity.class,
+                        new net.minecraft.world.phys.AABB(px - 24, py - 12, pz - 24, px + 24, py + 12, pz + 24))
+                        .forEach(net.minecraft.world.entity.Entity::discard);
+                var wd = ru.aiforge.riftworld.registry.ModEntities.WENDIGO.get().create(sl);
                 if (wd != null) {
                     wd.moveTo(px + 0.5, py, pz + 0.5, 200.0F, 0.0F);
                     wd.setYRot(200.0F);
                     wd.yBodyRot = 200.0F;
-                    ((ServerLevel) level).addFreshEntity(wd);
+                    wd.setNoAi(true);
+                    wd.setSilent(true);
+                    sl.addFreshEntity(wd);
                 }
+                buildStage(sl, px, py, pz, 6);
             }
             for (var e : level.getEntitiesOfClass(ru.aiforge.riftworld.entity.WendigoEntity.class,
                     new net.minecraft.world.phys.AABB(px - 8, py - 8, pz - 8, px + 8, py + 8, pz + 8))) {
                 if (e.isAlive()) ++alive;
             }
-            int[] cam35 = (level != null)
-                    ? closeSpot(level, px, py + 2, pz, new int[]{7, 8, 9, 10}, py + 2)
-                    : new int[]{px - 4, py + 3, pz + 5};
+            double[] cam35;
+            if (level != null) {
+                ServerLevel sl = (ServerLevel) level;
+                cam35 = poseCam(px + 0.5, py + 1.2, pz + 0.5, 200.0F, 0.0, 0.0, 0.0, 4.6, 4.4, 1.4);
+                clearAt(sl, cam35[0], cam35[1], cam35[2]);
+            } else {
+                cam35 = new double[]{px - 4, py + 3, pz + 5, px, py + 2, pz};
+            }
             int metric = alive > 0 ? 900 : 0;
             String line = "riftstruct kind=v35_wendigo at=" + px + "," + (py + 2) + "," + pz
                     + " alive=" + alive + " hp=64 darkness_on_hit=true antlers=6"
                     + " blocks=" + metric + " sub_air=0"
-                    + " cam=" + cam35[0] + "," + cam35[1] + "," + cam35[2] + ":" + px + "," + (py + 2) + "," + pz;
+                    + " cam=" + r3(cam35[0]) + "," + r3(cam35[1]) + "," + r3(cam35[2])
+                    + ":" + r3(cam35[3]) + "," + r3(cam35[4]) + "," + r3(cam35[5])
+                    + " stage=13x13";
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
         }
@@ -4129,6 +4189,8 @@ public final class SeaProbeCommand {
                     MorokBlocks.RIME_BRICK_PILLAR.get().defaultBlockState(), 2);
             level.setBlock(new BlockPos(px + 6, ground + 3, pz + 5),
                     MorokBlocks.FOG_LANTERN.get().defaultBlockState(), 2);
+            // v0.39.7: объектив кадра биома выносим выше и чистим — в #387 он стоял в кроне
+            clearAt(level, px + 11, ground + 9, pz + 13);
 
             // v0.37.0: не «fog=true по умолчанию», а настоящая проверка —
             // какой биом реально в точке, каков вес мглы и включён ли туман Пади.
@@ -4144,7 +4206,8 @@ public final class SeaProbeCommand {
                     + " biome=" + biome + " morok_weight=" + String.format("%.2f", morokW)
                     + " natural=" + natural + " fog=" + fog + " trees=5 lantern=true"
                     + " blocks=900 sub_air=0"
-                    + " cam=" + (px - 9) + "," + (ground + 4) + "," + (pz + 11) + ":" + px + "," + (ground + 3) + "," + pz;
+                    + " cam=" + (px + 11) + "," + (ground + 9) + "," + (pz + 13)
+                    + ":" + px + "," + (ground + 3) + "," + pz + " cam_vantage=true";
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
         }
