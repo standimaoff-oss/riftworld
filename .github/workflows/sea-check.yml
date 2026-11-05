@@ -107,23 +107,29 @@ jobs:
           sha256sum *.jar > SHA256SUMS.txt
           ls -l
       - name: Publish the build as a GitHub release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ env.VER }}
-          name: v${{ env.VER }}
-          fail_on_unmatched_files: true
-          body: |
-            Автоматическая сборка Riftworld **v${{ env.VER }}** (Minecraft Forge 1.20.1 / Java 17).
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="v$VER"
+          NOTES=$(mktemp)
+          cat > "$NOTES" <<EOF
+          Автоматическая сборка Riftworld **$TAG** (Minecraft Forge 1.20.1 / Java 17).
 
-            - `riftworld-${{ env.VER }}.jar` — основной мод, ставится в `mods`.
-            - `riftworld-dt-${{ env.VER }}.jar` — аддон к Dynamic Trees, только вместе с DT.
-            - `SHA256SUMS.txt` — контрольные суммы.
+          - \`riftworld-$VER.jar\` — основной мод, ставится в \`mods\`.
+          - \`riftworld-dt-$VER.jar\` — аддон к Dynamic Trees, только вместе с DT.
+          - \`SHA256SUMS.txt\` — контрольные суммы.
 
-            Подробности версии — в [README](https://github.com/standimaoff-oss/riftworld/blob/${{ github.ref_name }}/README.md).
-            Сборка и серверные пробы: [run ${{ github.run_id }}](https://github.com/standimaoff-oss/riftworld/actions/runs/${{ github.run_id }}).
-          files: |
-            out/*.jar
-            out/SHA256SUMS.txt
+          Подробности версии — в [README](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/README.md).
+          Сборка и серверные пробы: [run ${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+          EOF
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" out/*.jar out/SHA256SUMS.txt --clobber
+            gh release edit "$TAG" --notes-file "$NOTES"
+          else
+            gh release create "$TAG" out/*.jar out/SHA256SUMS.txt --title "$TAG" --notes-file "$NOTES" --target "${{ github.sha }}"
+          fi
 
   server-smoke:
     needs: build
