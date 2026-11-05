@@ -107,7 +107,7 @@ rq tp "$MAJA" 0 60 0 0 0 >/dev/null
 rq tp TestPlayer 130 100 100 facing 0 67 140 >/dev/null
 sleep 10
 import -window root "$OUT/maja-breach-start.png"
-rq data merge entity "$MAJA" '{NoAI:0b,majaMotionTick:0}' >/dev/null
+rq data merge entity "$MAJA" '{NoAI:0b,majaMotionTick:125}' >/dev/null
 sleep 5
 import -window root "$OUT/maja-breach-rise.png"
 echo 'OK: captured controlled water-surface breach frames for visual review.'
@@ -223,6 +223,17 @@ if grep -Ei 'Render thread/FATAL|Minecraft Crash Report|Error while rendering|Nu
 fi
 rq list | grep -q TestPlayer || fail "Client disconnected in the ocean"
 echo "OK: client remained connected after entering the generated ocean."
+
+# Stage the naturally spawned Maja inside the actual generated deep ocean.
+# Freeze translation only; the client still animates the validated swimming bones.
+rq execute in riftworld:elisar run tp '@e[type=riftworld:el_gran_maja,limit=1]' 1715 30 2126 0 0 >/dev/null
+rq execute in riftworld:elisar run data merge entity '@e[type=riftworld:el_gran_maja,limit=1]' '{NoAI:1b}' >/dev/null
+rq gamemode spectator TestPlayer >/dev/null
+rq execute in riftworld:elisar run tp TestPlayer 1780 35 2145 facing 1715 30 2126 >/dev/null
+sleep 15
+import -window root "$OUT/maja-deep-ocean.png"
+sleep 3
+import -window root "$OUT/maja-deep-ocean-swim.png"
 
 # Inspect the actual generated wreck from two sides. Screenshot review is manual;
 # the server probe independently asserts hull and mast blocks.

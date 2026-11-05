@@ -105,9 +105,11 @@ public final class ElisarSea {
         f += boulder(x, z);                        // редкие валуны на дне
         f -= trenchDepth(x, z);
         f -= pitDepth(x, z);
-        // The new basin is deeper but joins the old seabed gradually, without a hard wall.
-        f -= (int) Math.round(12.0 * DeepOcean.weight(x, z));
-        return Math.max(DEEPEST_FLOOR, f);
+        // Preserve old sea-floor noise outside the basin and blend to exactly
+        // 120 water blocks over the region, tapering outside its boundary.
+        int ordinary = Math.max(DEEPEST_FLOOR, f);
+        double blend = DeepOcean.floorBlend(x, z);
+        return (int) Math.round(ordinary + (DeepOcean.deepFloor(sea) - ordinary) * blend);
     }
 
     /**

@@ -79,7 +79,7 @@ PY
 # displacement is measured on the server, not inferred from screenshots.
 rq data merge entity "$SEL" '{NoAI:1b}' >/dev/null
 rq tp "$SEL" 0 60 0 0 0 >/dev/null
-rq data merge entity "$SEL" '{NoAI:0b,majaMotionTick:0}' >/dev/null
+rq data merge entity "$SEL" '{NoAI:0b,majaMotionTick:125}' >/dev/null
 BEFORE=$(rq data get entity "$SEL" Pos)
 sleep 5
 AFTER=$(rq data get entity "$SEL" Pos)

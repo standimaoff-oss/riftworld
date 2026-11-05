@@ -59,6 +59,17 @@ public final class DeepOcean {
         return t * t * (3.0 - 2.0 * t);
     }
 
+    /** Full 120-block water depth throughout the region, easing outward beyond its boundary. */
+    public static double floorBlend(int x, int z) {
+        Region r = regionAt(x, z);
+        double d = Math.hypot((double) x - r.x(), (double) z - r.z());
+        double t = Math.max(0.0, Math.min(1.0, (r.radius() + 180.0 - d) / 180.0));
+        return t * t * (3.0 - 2.0 * t);
+    }
+
+    /** Floor under 120 blocks of water at sea level 62; leave rock above bedrock. */
+    public static int deepFloor(int sea) { return Math.max(-60, sea - 120); }
+
     public static boolean contains(int x, int z) {
         Region r = regionAt(x, z);
         double dx = (double) x - r.x(), dz = (double) z - r.z();

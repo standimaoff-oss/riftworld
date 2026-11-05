@@ -124,6 +124,14 @@ public final class ElGranMajaEntity extends Mob {
                 directionTicks = 120;
             }
         }
+        // A restrained trail follows the moving head underwater. Do not query
+        // unloaded chunks or alter block contents for cosmetic effects.
+        if (tickCount % 12 == 0 && !server.getFluidState(blockPosition()).isEmpty()
+                && getY() < sea - 5 && motion.horizontalDistanceSqr() > 0.001) {
+            double bx = getX() - Math.sin(rad) * 105.0;
+            double bz = getZ() + Math.cos(rad) * 105.0;
+            server.sendParticles(ParticleTypes.BUBBLE, bx, getY() - 3, bz, 12, 8.0, 1.5, 5.0, 0.06);
+        }
         if (tickCount % 2 == 0) {
             float breathing = 0.12F + 0.12F * (1.0F + Mth.sin(tickCount * 0.026F));
             entityData.set(JAW, Mth.clamp(breach > 0.12 ? (float) (0.35 + breach * 0.55) : breathing, 0.0F, 1.0F));

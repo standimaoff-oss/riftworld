@@ -51,7 +51,10 @@ public final class ElGranMajaRenderer extends EntityRenderer<ElGranMajaEntity> {
         pose.scale(model.renderScale, -model.renderScale, model.renderScale);
         pose.translate(0.0, 0.0, -CENTER_Z);
         // Faster travelling wave, with the original proven angular envelopes unchanged.
-        model.animate((e.tickCount + partial) * 1.3F);
+        float swimTime = e.tickCount + partial;
+        // Subtle variation in stroke cadence; angular ranges are unchanged,
+        // so the existing validated collision envelopes remain conservative.
+        model.animate(swimTime * 1.3F + 3.0F * Mth.sin(swimTime * 0.025F));
         // In Y-up source coordinates: +8 is closed, -13 is fully open.
         float jawDegrees = Mth.lerp(e.jaw(partial), 8.0F, -13.0F);
         model.root.getChild("head").getChild("jaw").xRot = (float) Math.toRadians(-jawDegrees);

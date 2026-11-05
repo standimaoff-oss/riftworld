@@ -115,6 +115,8 @@ jobs:
         run: bash tools/ci/fauna_server_probe.sh
       - name: Verify ocean wreck in newly generated chunks
         run: bash tools/ci/ocean_wreck_probe.sh
+      - name: Verify 120-block ocean and submerged Maja on the server
+        run: bash tools/ci/deep_ocean_probe.sh
       - name: Real client rendering smoke test
         if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/arena/361da66e-riftworld'
         shell: bash

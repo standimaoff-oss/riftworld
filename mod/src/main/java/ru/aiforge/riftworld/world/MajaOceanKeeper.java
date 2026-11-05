@@ -49,11 +49,10 @@ public final class MajaOceanKeeper {
             double z = ((pz >> 4) << 4) + 8.0;
             int first = level.random.nextInt(4);
             boolean spawned = false;
-            // A fixed sea-13 anchor put the animated jaw through the seabed.
-            // Try progressively shallower positions, keeping the same full
-            // loaded-chunk, border and solid-block checks for each candidate.
-            for (int rise = 0; rise <= 40 && !spawned; rise += 8) {
-                Vec3 at = new Vec3(x, sea - 13.0 + rise, z);
+            // Prefer a fully submerged anchor in the new 120-block basin.
+            // Existing worlds retain shallower fallbacks and identical safety checks.
+            for (int rise = 0; rise <= 56 && !spawned; rise += 8) {
+                Vec3 at = new Vec3(x, sea - 32.0 + rise, z);
                 for (int attempt = 0; attempt < 4; ++attempt) {
                     float yaw = 45.0F + ((first + attempt) & 3) * 90.0F;
                     if (!MajaCollision.clear(level, at, yaw)) continue;

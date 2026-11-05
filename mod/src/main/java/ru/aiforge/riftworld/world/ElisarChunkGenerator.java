@@ -1044,8 +1044,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 floors[dx][dz] = floor;
                 ElisarSea.column(chunk, mp, x, z, floor, plan.ocean);
             }
-            for (int dx = 0; dx < 16; dx++) for (int dz = 0; dz < 16; dz++)
-                ElisarSea.decorate(chunk, mp, x0 + dx, z0 + dz, floors[dx][dz], plan.ocean);
+            // The core keeps the whole 120-block water column unobstructed;
+            // reef structures remain outside the reserved swimming area.
             Heightmap.primeHeightmaps(chunk, EnumSet.of(Heightmap.Types.OCEAN_FLOOR_WG, Heightmap.Types.WORLD_SURFACE_WG));
             return chunk;
         }
@@ -3231,7 +3231,11 @@ public class ElisarChunkGenerator extends ChunkGenerator {
 
     @Override
     public int getBaseHeight(int x, int z, Heightmap.Types type, LevelHeightAccessor level, RandomState rs) {
-        if (DeepOcean.openCoreChunk(x, z)) return CityPlan.get().ocean + 1;
+        if (DeepOcean.openCoreChunk(x, z)) {
+            if (type == Heightmap.Types.OCEAN_FLOOR_WG || type == Heightmap.Types.OCEAN_FLOOR)
+                return oceanFloor(CityPlan.get(), x, z) + 1;
+            return CityPlan.get().ocean + 1;
+        }
         Col c = column(CityPlan.get(), x, z);
         if (c.spanTop != Integer.MIN_VALUE) {
             int base = c.isl == null ? CityPlan.get().ocean + 1 : c.top + 1;
