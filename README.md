@@ -3,8 +3,9 @@
 # Мод «Разлом» — отчёт по доработкам (Рев 15.4)
 
 Текущая версия: **0.45.0** (Minecraft Forge 1.20.1 / Java 17).
-Установите `release/riftworld-0.45.0.jar` в `mods`, удалив предыдущий jar Riftworld.
-`release/riftworld-dt-0.45.0.jar` — необязательный аддон; для него также нужен Dynamic Trees.
+Скачать: **[release v0.45.0](https://github.com/standimaoff-oss/riftworld/releases/tag/v0.45.0)** —
+`riftworld-0.45.0.jar` ставится в `mods` вместо предыдущего Riftworld,
+`riftworld-dt-0.45.0.jar` — необязательный аддон к Dynamic Trees (нужен сам DT).
 Перед обновлением сделайте резервную копию мира.
 
 ## v0.45.0 — новая фауна, гладкая голова Maja, чистые мосты

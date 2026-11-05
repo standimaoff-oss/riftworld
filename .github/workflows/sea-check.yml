@@ -82,6 +82,49 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+  publish-release:
+    needs: build
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/arena/')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: riftworld-build
+          path: build-artifact
+      - name: Collect jars
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p out
+          VER=$(grep -E '^mod_version=' mod/gradle.properties | cut -d= -f2 | tr -d '[:space:]')
+          echo "VER=$VER" >> "$GITHUB_ENV"
+          find build-artifact -name 'riftworld*.jar' -exec cp {} out/ \;
+          cd out
+          sha256sum *.jar > SHA256SUMS.txt
+          ls -l
+      - name: Publish the build as a GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.VER }}
+          name: v${{ env.VER }}
+          fail_on_unmatched_files: true
+          body: |
+            Автоматическая сборка Riftworld **v${{ env.VER }}** (Minecraft Forge 1.20.1 / Java 17).
+
+            - `riftworld-${{ env.VER }}.jar` — основной мод, ставится в `mods`.
+            - `riftworld-dt-${{ env.VER }}.jar` — аддон к Dynamic Trees, только вместе с DT.
+            - `SHA256SUMS.txt` — контрольные суммы.
+
+            Подробности версии — в [README](https://github.com/standimaoff-oss/riftworld/blob/${{ github.ref_name }}/README.md).
+            Сборка и серверные пробы: [run ${{ github.run_id }}](https://github.com/standimaoff-oss/riftworld/actions/runs/${{ github.run_id }}).
+          files: |
+            out/*.jar
+            out/SHA256SUMS.txt
+
   server-smoke:
     needs: build
     runs-on: ubuntu-latest
