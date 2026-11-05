@@ -143,6 +143,14 @@ public final class ElGranMajaEntity extends Mob {
 
     @Override
     public boolean canBreatheUnderwater() { return true; }
+
+    @Override
+    public boolean canDrownInFluidType(net.minecraftforge.fluids.FluidType type) {
+        // Forge handles custom fluids separately from vanilla water; the
+        // vanilla canBreatheUnderwater override alone is not enough here.
+        return type == ru.aiforge.riftworld.registry.ModFluids.TYPE.get()
+                ? false : super.canDrownInFluidType(type);
+    }
     @Override
     public boolean removeWhenFarAway(double distance) { return false; }
     @Override

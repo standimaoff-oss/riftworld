@@ -26,10 +26,14 @@ for point in '1715 2126' '1680 2090' '1750 2160'; do
   echo "$point: 120 water blocks y=-57..62, seabed y=-58" | tee -a "$report"
 done
 rq execute in riftworld:elisar run summon riftworld:el_gran_maja 1715 30 2126 '{Tags:["deep_test"],majaMotionTick:600}' | tee -a "$report"
-sleep 15
+sleep 22
 selector='@e[type=riftworld:el_gran_maja,tag=deep_test,limit=1]'
 rq execute in riftworld:elisar run data get entity "$selector" | tee -a "$report" | grep -q 'majaReady: 1b' || { echo '::error::Submerged Maja is not collision-ready'; exit 1; }
 rq execute in riftworld:elisar run data get entity "$selector" Pos | tee -a "$report"
+# Forge custom-fluid breathing is separate from vanilla water. Wait beyond
+# the 300-tick air supply and check both air and health, not just readiness.
+rq execute in riftworld:elisar run data get entity "$selector" Air | tee -a "$report" | grep -q '300s' || { echo '::error::Maja is consuming air in Elisar water'; exit 1; }
+rq execute in riftworld:elisar run data get entity "$selector" Health | tee -a "$report" | grep -q '1024.0f' || { echo '::error::Submerged Maja lost health'; exit 1; }
 # At this phase she should swim at y=30, wholly under the surface.
 rq execute in riftworld:elisar if entity '@e[type=riftworld:el_gran_maja,tag=deep_test,y=28,dy=4,x=1600,dx=230,z=1900,dz=400]' run time query gametime | grep -q 'The time is' || { echo '::error::Maja left the submerged cruising depth'; exit 1; }
 rq execute in riftworld:elisar run kill "$selector" | tee -a "$report"
