@@ -571,14 +571,17 @@ def pegasus():
         # pale underside plates (thin, inset by one texel)
         m.box(tip, [X(38, 12), 41, -5], [12, 1, 8], 'wing_shadow')
         m.box(mid, [X(23, 14), 38, -6], [14, 1, 9], 'wing_shadow')
-        # feather fringe: scalloped, individually sized outer primaries
-        for i in range(7):
-            x = 56 + i * 1.6
-            y = 43 - i // 3
-            z = 2 + i * 2.2
-            m.box(tip, [X(int(x), 8 - i // 3), int(y), int(z)], [max(3, 8 - i // 3), 2, 4],
+        # primaries: heavily overlapped slices, drooping toward the tip, so the
+        # hand of the wing reads as one swept sheet instead of a comb of plates
+        for i in range(8):
+            x = 54 + i * 1.5
+            y = 43 - i
+            z = 1 + i * 1.5
+            w = max(3, 9 - i)
+            m.box(tip, [X(int(x), w), int(y), int(z)], [w, 2, 5],
                   'wing_tip' if i % 2 else 'wing', i % 2)
-            m.box(tip, [X(int(x + 4), 4), int(y - 1), int(z + 2)], [4, 1, 3], 'wing_shadow', i % 2)
+            m.box(tip, [X(int(x), w - 1), int(y) - 1, int(z) + 1], [w - 1, 1, 3],
+                  'wing_shadow', i % 2)
         # secondaries: fringe behind the forearm
         for i in range(5):
             x = 24 + i * 3
