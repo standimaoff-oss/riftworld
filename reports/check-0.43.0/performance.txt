@@ -1,47 +1,47 @@
-Server JVM: 2182
+Server JVM: 2226
 Generating/loading a 6x6 chunk square in a new Elisar ocean at 1715,2126.
-2182:
+2226:
 Started recording 1.
 
-Use jcmd 2182 JFR.dump name=generation filename=FILEPATH to copy recording data to file.
+Use jcmd 2226 JFR.dump name=generation filename=FILEPATH to copy recording data to file.
 Marked [104, 129] chunks in riftworld:elisar from [104, 129] to [109, 134] to be force loaded
 
 Force-load command: exit=0, wall=3s (ticket creation, not full chunk completion).
-All 36 chunks FULL with bedrock: 1; wall=3s (from before forceload).
-Dim minecraft:overworld (minecraft:overworld): Mean tick time: 0.925 ms. Mean TPS: 20.000
-Dim minecraft:the_nether (minecraft:the_nether): Mean tick time: 0.045 ms. Mean TPS: 20.000
-Dim riftworld:transit (riftworld:transit): Mean tick time: 0.023 ms. Mean TPS: 20.000
-Dim riftworld:elisar (riftworld:elisar): Mean tick time: 1.755 ms. Mean TPS: 20.000
-Dim minecraft:the_end (minecraft:the_end): Mean tick time: 0.042 ms. Mean TPS: 20.000
-Overall: Mean tick time: 2.823 ms. Mean TPS: 20.000
+All 36 chunks FULL with bedrock: 1; wall=4s (from before forceload).
+Dim minecraft:overworld (minecraft:overworld): Mean tick time: 1.438 ms. Mean TPS: 20.000
+Dim minecraft:the_nether (minecraft:the_nether): Mean tick time: 0.047 ms. Mean TPS: 20.000
+Dim riftworld:transit (riftworld:transit): Mean tick time: 0.033 ms. Mean TPS: 20.000
+Dim riftworld:elisar (riftworld:elisar): Mean tick time: 1.926 ms. Mean TPS: 20.000
+Dim minecraft:the_end (minecraft:the_end): Mean tick time: 0.137 ms. Mean TPS: 20.000
+Overall: Mean tick time: 3.643 ms. Mean TPS: 20.000
 
-2182:
-Stopped recording "generation", 679.2 kB written to:
+2226:
+Stopped recording "generation", 738.7 kB written to:
 
 /home/runner/work/riftworld/riftworld/ci-out/generation.jfr
-generation: total samples=349; samples containing mod code=240
-  inclusive  239  ru.aiforge.riftworld.world.ElisarChunkGenerator.fillElisarChunk
-  inclusive  239  ru.aiforge.riftworld.world.ElisarChunkGenerator$$Lambda$7218+0x00007f9254ec7158.1851043102.get
-  inclusive  239  ru.aiforge.riftworld.world.ElisarChunkGenerator.lambda$fillFromNoise$2
-  inclusive  197  ru.aiforge.riftworld.world.ElisarSea.column
-  inclusive   61  ru.aiforge.riftworld.world.ElisarSea$CaveColumn.caveAt
-  inclusive   48  ru.aiforge.riftworld.world.ElisarSea.caveValue
-  inclusive   42  ru.aiforge.riftworld.world.ElisarSea.vnoise3
-  inclusive   36  ru.aiforge.riftworld.world.ElisarSea$CaveColumn.pocketAt
-  inclusive   23  ru.aiforge.riftworld.world.ElisarSea.decorate
-  inclusive   21  ru.aiforge.riftworld.world.ElisarSea.caveDressing
-  inclusive   20  ru.aiforge.riftworld.world.ElisarSea.rock
-  inclusive   16  ru.aiforge.riftworld.world.ElisarSea$CaveColumn.openAboveAt
+generation: total samples=305; samples containing mod code=198
+  inclusive  193  ru.aiforge.riftworld.world.ElisarChunkGenerator$$Lambda$7213+0x00007f6fccec7d18.347633570.get
+  inclusive  193  ru.aiforge.riftworld.world.ElisarChunkGenerator.fillElisarChunk
+  inclusive  193  ru.aiforge.riftworld.world.ElisarChunkGenerator.lambda$fillFromNoise$2
+  inclusive  155  ru.aiforge.riftworld.world.ElisarSea.column
+  inclusive   47  ru.aiforge.riftworld.world.ElisarSea.vnoise3
+  inclusive   43  ru.aiforge.riftworld.world.ElisarSea$CaveColumn.caveAt
+  inclusive   37  ru.aiforge.riftworld.world.ElisarSea.caveValue
+  inclusive   29  ru.aiforge.riftworld.world.ElisarSea.hash3
+  inclusive   28  ru.aiforge.riftworld.world.ElisarSea$CaveColumn.pocketAt
+  inclusive   23  ru.aiforge.riftworld.world.ElisarSea.rock
+  inclusive   21  ru.aiforge.riftworld.world.ElisarSea.decorate
+  inclusive   14  ru.aiforge.riftworld.world.ElisarSea$CaveColumn.shaftAt
   top mod frames:
-     102  ru.aiforge.riftworld.world.ElisarSea.column
-      28  ru.aiforge.riftworld.world.ElisarSea.vnoise3
-      19  ru.aiforge.riftworld.world.ElisarSea.caveDressing
+      70  ru.aiforge.riftworld.world.ElisarSea.column
+      29  ru.aiforge.riftworld.world.ElisarSea.hash3
+      18  ru.aiforge.riftworld.world.ElisarSea.vnoise3
       17  ru.aiforge.riftworld.world.ElisarChunkGenerator.fillElisarChunk
-      15  ru.aiforge.riftworld.world.ElisarSea.caveValue
-      15  ru.aiforge.riftworld.world.ElisarSea.hash3
-      13  ru.aiforge.riftworld.world.ElisarSea$CaveColumn.caveAt
-       7  ru.aiforge.riftworld.world.ElisarSea.boulder
-::notice title=Profile generation::ru.aiforge.riftworld.world.ElisarChunkGenerator.fillElisarChunk:239, ru.aiforge.riftworld.world.ElisarChunkGenerator$$Lambda$7218+0x00007f9254ec7158.1851043102.get:239, ru.aiforge.riftworld.world.ElisarChunkGenerator.lambda$fillFromNoise$2:239, ru.aiforge.riftworld.world.ElisarSea.column:197, ru.aiforge.riftworld.world.ElisarSea$CaveColumn.caveAt:61
+      13  ru.aiforge.riftworld.world.ElisarSea.caveDressing
+       7  ru.aiforge.riftworld.world.ElisarSea.caveValue
+       6  ru.aiforge.riftworld.world.ElisarSea$CaveColumn.caveAt
+       4  ru.aiforge.riftworld.world.ElisarSea.garden
+::notice title=Profile generation::ru.aiforge.riftworld.world.ElisarChunkGenerator$$Lambda$7213+0x00007f6fccec7d18.347633570.get:193, ru.aiforge.riftworld.world.ElisarChunkGenerator.fillElisarChunk:193, ru.aiforge.riftworld.world.ElisarChunkGenerator.lambda$fillFromNoise$2:193, ru.aiforge.riftworld.world.ElisarSea.column:155, ru.aiforge.riftworld.world.ElisarSea.vnoise3:47
 Testing the full-size titan on a loaded flat world, then sampling its tick cost.
 Island eating is disabled by default.
 Force-loading a 253-chunk rectangle for the 322-block body...
@@ -81,8 +81,8 @@ Allowing AI: the anchor must actually move while the area is clear.
 Modified entity data of El Gran Maja
 
 Before motion: El Gran Maja has the following entity data: [0.5d, 200.0d, 0.5d]
-After motion: El Gran Maja has the following entity data: [-1.5262292286418517d, 172.80000000000058d, 13.897822770624188d]
-before: (0.5, 200.0, 0.5) after: (-1.5262292286418517, 172.80000000000058, 13.897822770624188) distance: 30.388
+After motion: El Gran Maja has the following entity data: [3.050076144660014d, 167.6800000000007d, 16.406729127247626d]
+before: (0.5, 200.0, 0.5) after: (3.050076144660014, 167.6800000000007, 16.406729127247626) distance: 36.112
 Breach before: El Gran Maja has the following entity data: [0.5d, 60.0d, 0.5d]
 Breach after: El Gran Maja has the following entity data: [0.5d, 80.65607411943535d, 16.66000000000001d]
 vertical rise: 20.656074119435345
@@ -92,33 +92,25 @@ Teleported El Gran Maja to 0.500000, 200.000000, 0.500000
 
 majaReady=1b
 OK: live server tested readiness, solid-block collision, border containment and movement.
-2182:
+2226:
 Started recording 2.
 
-Use jcmd 2182 JFR.dump name=titan filename=FILEPATH to copy recording data to file.
-Dim minecraft:overworld (minecraft:overworld): Mean tick time: 0.406 ms. Mean TPS: 20.000
-Dim minecraft:the_nether (minecraft:the_nether): Mean tick time: 0.005 ms. Mean TPS: 20.000
-Dim riftworld:transit (riftworld:transit): Mean tick time: 0.003 ms. Mean TPS: 20.000
-Dim riftworld:elisar (riftworld:elisar): Mean tick time: 0.093 ms. Mean TPS: 20.000
-Dim minecraft:the_end (minecraft:the_end): Mean tick time: 0.003 ms. Mean TPS: 20.000
-Overall: Mean tick time: 0.521 ms. Mean TPS: 20.000
+Use jcmd 2226 JFR.dump name=titan filename=FILEPATH to copy recording data to file.
+Dim minecraft:overworld (minecraft:overworld): Mean tick time: 0.645 ms. Mean TPS: 20.000
+Dim minecraft:the_nether (minecraft:the_nether): Mean tick time: 0.008 ms. Mean TPS: 20.000
+Dim riftworld:transit (riftworld:transit): Mean tick time: 0.005 ms. Mean TPS: 20.000
+Dim riftworld:elisar (riftworld:elisar): Mean tick time: 0.143 ms. Mean TPS: 20.000
+Dim minecraft:the_end (minecraft:the_end): Mean tick time: 0.006 ms. Mean TPS: 20.000
+Overall: Mean tick time: 0.823 ms. Mean TPS: 20.000
 
-2182:
-Stopped recording "titan", 387.8 kB written to:
+2226:
+Stopped recording "titan", 399.8 kB written to:
 
 /home/runner/work/riftworld/riftworld/ci-out/titan.jfr
-titan: total samples=27; samples containing mod code=7
-  inclusive    4  ru.aiforge.riftworld.entity.MajaCollision.clear
-  inclusive    4  ru.aiforge.riftworld.entity.ElGranMajaEntity.m_8119_
-  inclusive    3  ru.aiforge.riftworld.block.MosaicCoreBE.tick
-  inclusive    3  ru.aiforge.riftworld.block.MosaicCoreBlock.lambda$getTicker$0
-  inclusive    3  ru.aiforge.riftworld.block.MosaicCoreBlock$$Lambda$7026+0x00007f9254e89a60.685251767.m_155252_
-  inclusive    3  ru.aiforge.riftworld.block.MosaicCoreBE.evaluateCandlesAndTrigger
-  inclusive    2  ru.aiforge.riftworld.block.MosaicCoreBE.countCandles
-  inclusive    1  ru.aiforge.riftworld.flight.PortalRitual.findNearbyOpenRift
+titan: total samples=36; samples containing mod code=5
+  inclusive    5  ru.aiforge.riftworld.entity.ElGranMajaEntity.m_8119_
+  inclusive    5  ru.aiforge.riftworld.entity.MajaCollision.clear
   top mod frames:
-       4  ru.aiforge.riftworld.entity.MajaCollision.clear
-       2  ru.aiforge.riftworld.block.MosaicCoreBE.countCandles
-       1  ru.aiforge.riftworld.flight.PortalRitual.findNearbyOpenRift
-::notice title=Profile titan::ru.aiforge.riftworld.entity.MajaCollision.clear:4, ru.aiforge.riftworld.entity.ElGranMajaEntity.m_8119_:4, ru.aiforge.riftworld.block.MosaicCoreBE.tick:3, ru.aiforge.riftworld.block.MosaicCoreBlock.lambda$getTicker$0:3, ru.aiforge.riftworld.block.MosaicCoreBlock$$Lambda$7026+0x00007f9254e89a60.685251767.m_155252_:3
+       5  ru.aiforge.riftworld.entity.MajaCollision.clear
+::notice title=Profile titan::ru.aiforge.riftworld.entity.ElGranMajaEntity.m_8119_:5, ru.aiforge.riftworld.entity.MajaCollision.clear:5
 Profiler finished. JFR samples are diagnostic, not an FPS or speedup claim.
