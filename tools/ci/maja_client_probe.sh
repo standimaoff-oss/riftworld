@@ -97,6 +97,19 @@ fi
 rq list | grep -q TestPlayer || fail "Client disconnected before the screenshot"
 echo "OK: real client joined the server; screenshot saved to $OUT/maja-client-front.png (requires visual review)."
 
+# Controlled visual scene in a disposable flat world. This shallow water
+# surface is staged; it is not a screenshot of the natural Elisar ocean.
+MAJA='@e[type=riftworld:el_gran_maja,limit=1]'
+rq fill -70 59 20 70 59 170 minecraft:water >/dev/null
+rq tp "$MAJA" 0 60 0 0 0 >/dev/null
+rq tp TestPlayer 0 75 188 facing 0 67 115 >/dev/null
+rq data merge entity "$MAJA" '{NoAI:0b,majaMotionTick:0}' >/dev/null
+sleep 1
+import -window root "$OUT/maja-breach-start.png"
+sleep 5
+import -window root "$OUT/maja-breach-rise.png"
+echo 'OK: captured controlled water-surface breach frames for visual review.'
+
 # The rebuilt creatures must load and render in the real client, not just the
 # software preview. Clear the titan so it cannot obscure the much smaller rigs.
 rq kill '@e[type=riftworld:el_gran_maja]' >/dev/null

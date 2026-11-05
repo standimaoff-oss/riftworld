@@ -43,8 +43,17 @@ for _ in $(seq 1 30); do
   [[ "$READY" == *'1b'* ]] && break
   sleep 2
 done
+# Wait for candidate-search opportunities rather than checking immediately after spawn.
+TICKS=0
+for _ in $(seq 1 90); do
+  TICK_OUTPUT=$(rq execute in riftworld:elisar run data get entity "$SEL" majaTicks 2>&1 || true)
+  TICKS=$(echo "$TICK_OUTPUT" | sed -n 's/.*: \([0-9][0-9]*\)$/\1/p')
+  [[ "${TICKS:-0}" -ge 120 ]] && break
+  sleep 2
+done
 rq execute in riftworld:elisar as "$SEL" at @s run riftmajapose | tee -a "$LOG" || true
-rq execute in riftworld:elisar run data get entity "$SEL" majaTicks | tee -a "$LOG" || true
+log "griefing=false active ticks: ${TICKS:-0}"
+[[ "${TICKS:-0}" -ge 120 ]] || fail 'not enough active ticks to exercise the mobGriefing gate'
 COUNT=$(rq execute in riftworld:elisar run data get entity "$SEL" majaBlocksEaten)
 log "griefing=false: $READY; $COUNT"
 [[ "$READY" == *'1b'* && "$COUNT" == *'0' ]] || fail 'unready or ate with mobGriefing disabled'

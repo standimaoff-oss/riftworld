@@ -84,7 +84,8 @@ public final class ElGranMajaEntity extends Mob {
 
         if (devourer.tick(server, this)) {
             setDeltaMovement(Vec3.ZERO);
-            entityData.set(JAW, 1.0F);
+            // Chewing stays inside the validated jaw envelope and is interpolated on clients.
+            entityData.set(JAW, 0.70F + 0.28F * Mth.sin(tickCount * 0.16F));
             if (!MajaCollision.clear(server, position(), getYRot())) entityData.set(READY, false);
             return;
         }
