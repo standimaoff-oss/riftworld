@@ -21,11 +21,11 @@ tutorialStep:none
 onboardAccessibility:false
 skipMultiplayerWarning:true
 joinedFirstServer:true
-renderDistance:10
+renderDistance:16
 simulationDistance:8
 maxFps:30
 guiScale:2
-fov:1.0
+fov:0.35
 graphicsMode:1
 renderClouds:false
 pauseOnLostFocus:false
@@ -91,9 +91,9 @@ shot() {
 rq fill 190 99 -24 226 99 24 minecraft:grass_block >/dev/null
 rq kill '@e[type=riftworld:pegasus]' >/dev/null 2>&1 || true
 rq summon riftworld:pegasus 208 100 0 '{NoAI:1b,PersistenceRequired:1b}' >/dev/null
-shot frame-pegasus-three-quarter 201 102 -13 208 101 0 10
-shot frame-pegasus-side 208 102 -14 208 101 0 6
-shot frame-pegasus-head 206 102 -6 208 103 -1 6
+shot frame-pegasus-three-quarter 203 102 -8 208 101 0 10
+shot frame-pegasus-side 208 102 -9 208 101 0 6
+shot frame-pegasus-head 207 103 -5 208 102.6 -1 6
 
 # ---------------------------------------------------------------- liopleurodon
 LOC=$(rq execute in riftworld:elisar positioned 0 54 0 run locate biome riftworld:maja_ocean | tr -d '\n')
@@ -108,10 +108,10 @@ PY
 [[ "${OX:-}" =~ ^-?[0-9]+$ ]] || fail "No ocean coordinates: $LOC"
 rq execute in riftworld:elisar run forceload add "$OX" "$OZ" >/dev/null 2>&1 || true
 rq kill '@e[type=riftworld:liopleurodon]' >/dev/null 2>&1 || true
-rq execute in riftworld:elisar run summon riftworld:liopleurodon "$OX" 40 "$OZ" \
+rq execute in riftworld:elisar run summon riftworld:liopleurodon "$OX" 50 "$OZ" \
   '{NoAI:1b,PersistenceRequired:1b}' >/dev/null
 sleep 6
-rq execute in riftworld:elisar run tp TestPlayer "$((OX + 8))" 40 "$((OZ - 10))" facing "$OX" 40 "$OZ" >/dev/null
+rq execute in riftworld:elisar run tp TestPlayer "$((OX + 5))" 51 "$((OZ - 6))" facing "$OX" 50 "$OZ" >/dev/null
 sleep 10
 capture_underwater() {
   local name=$1
@@ -124,32 +124,26 @@ capture_underwater() {
   echo "captured $name"
 }
 capture_underwater frame-liopleurodon-swim
-rq execute in riftworld:elisar run tp TestPlayer "$((OX + 13))" 41 "$OZ" facing "$OX" 40 "$OZ" >/dev/null
+rq execute in riftworld:elisar run tp TestPlayer "$OX" 51 "$((OZ - 9))" facing "$OX" 50 "$OZ" >/dev/null
 sleep 6
 capture_underwater frame-liopleurodon-side
-rq execute in riftworld:elisar run tp TestPlayer "$((OX + 5))" 42 "$((OZ + 1))" facing "$OX" 40 "$OZ" >/dev/null
+rq execute in riftworld:elisar run tp TestPlayer "$OX" 52 "$((OZ - 4))" facing "$OX" 50.5 "$OZ" >/dev/null
 sleep 6
 capture_underwater frame-liopleurodon-head
 
 # ---------------------------------------------------------------- El Gran Maja
 rq kill '@e[type=riftworld:el_gran_maja]' >/dev/null 2>&1 || true
-rq forceload add -80 -176 240 176 >/dev/null 2>&1 || true
-rq summon riftworld:el_gran_maja "$((OX - 120))" 40 "$OZ" '{NoAI:1b,PersistenceRequired:1b}' >/dev/null
-for _ in $(seq 1 60); do
-  state=$(rq execute in riftworld:elisar run data get entity \
-    '@e[type=riftworld:el_gran_maja,limit=1]' majaReady 2>&1 || true)
+rq forceload add -80 -176 80 176 >/dev/null 2>&1 || true
+rq summon riftworld:el_gran_maja 0 200 0 '{NoAI:1b,PersistenceRequired:1b}' >/dev/null
+for _ in $(seq 1 80); do
+  state=$(rq data get entity '@e[type=riftworld:el_gran_maja,limit=1]' majaReady 2>&1 || true)
   [[ "$state" == *1b* ]] && break
   sleep 3
 done
 sleep 6
-rq execute in riftworld:elisar run tp TestPlayer "$((OX - 120))" 60 "$((OZ - 150))" \
-  facing "$((OX - 120))" 30 "$((OZ + 60))" >/dev/null
-sleep 12
-capture_underwater frame-maja-body
-rq execute in riftworld:elisar run tp TestPlayer "$((OX - 120))" 46 "$((OZ + 40))" \
-  facing "$((OX - 120))" 34 "$((OZ + 120))" >/dev/null
-sleep 10
-capture_underwater frame-maja-head
+# whole body from the side (the titan is ~322 blocks long) and the head up close
+shot frame-maja-body 0 300 -820 0 205 0 14
+shot frame-maja-head 0 214 188 0 200 115 12
 
 echo "captured $SHOT in-game frames"
 [ "$SHOT" -ge 6 ] || fail "Only $SHOT frames captured"
