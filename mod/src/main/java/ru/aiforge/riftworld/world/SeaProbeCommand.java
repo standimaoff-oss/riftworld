@@ -38,8 +38,44 @@ public final class SeaProbeCommand {
     private SeaProbeCommand() {
     }
 
+    /** Read-only diagnostic: never generates or loads chunks. */
+    private static int majaIsland(CommandSourceStack src) {
+        if (!src.getLevel().dimension().equals(Flight.ELISAR_DIM)) {
+            src.sendFailure(Component.literal("Use /execute in riftworld:elisar positioned <x> <y> <z> run riftmajaisland"));
+            return 0;
+        }
+        int ox = (int) Math.floor(src.getPosition().x), oz = (int) Math.floor(src.getPosition().z);
+        int cx = Math.floorDiv(ox, WildIslands.CELL), cz = Math.floorDiv(oz, WildIslands.CELL);
+        CityPlan.Island best = null;
+        double score = Double.POSITIVE_INFINITY;
+        for (int x = cx - 7; x <= cx + 7; x++) for (int z = cz - 7; z <= cz + 7; z++) {
+            for (CityPlan.Island island : WildIslands.cell(x, z).islands) {
+                if (island.kind != 2 || island.R > 24.0 || !DeepOcean.contains((int)island.cx, (int)island.cz)) continue;
+                DeepOcean.Region ocean = DeepOcean.regionAt((int)island.cx, (int)island.cz);
+                double d = Math.hypot(island.cx - ocean.x(), island.cz - ocean.z());
+                // The core suppresses islands, and an island crossing its edge is incomplete.
+                if (d < 384 + island.maxReach() * 1.5 + 32 || d + island.maxReach() + 16 >= ocean.radius()) continue;
+                if (ElisarChunkGenerator.column(CityPlan.get(), (int)island.cx, (int)island.cz).isl != island) continue;
+                double q = Math.hypot(island.cx - ox, island.cz - oz);
+                if (q < score) { score = q; best = island; }
+            }
+        }
+        if (best == null) { src.sendFailure(Component.literal("No suitable medium ocean island nearby")); return 0; }
+        int ix = (int)Math.floor(best.cx), iz = (int)Math.floor(best.cz);
+        int ax = ix, az = (int)Math.floor(best.cz - 156 - best.maxReach() - 20);
+        int ay = (int)Math.max(67, Math.min(85, best.base - 38));
+        String message = String.format(java.util.Locale.ROOT,
+                "maja_island x=%d z=%d radius=%.2f reach=%.2f base=%.2f anchor_x=%d anchor_y=%d anchor_z=%d",
+                ix, iz, best.R, best.maxReach(), best.base, ax, ay, az);
+        src.sendSuccess(() -> Component.literal(message), false);
+        return 1;
+    }
+
+
     @SubscribeEvent
     public static void register(RegisterCommandsEvent e) {
+        e.getDispatcher().register(Commands.literal("riftmajaisland").requires(s -> s.hasPermission(2))
+                .executes(c -> majaIsland(c.getSource())));
         e.getDispatcher().register(Commands.literal("riftmajacheck").requires(s -> s.hasPermission(2))
                 .executes(c -> majaCheck(c.getSource())));
         e.getDispatcher().register(Commands.literal("riftsea").requires(s -> s.hasPermission(2))

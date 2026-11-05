@@ -19,6 +19,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import ru.aiforge.riftworld.world.CityPlan;
 import ru.aiforge.riftworld.world.MajaIslandDevourer;
+import ru.aiforge.riftworld.world.MajaMotion;
+import net.minecraft.core.particles.ParticleTypes;
 
 /** A rare ocean titan. It ignores players; no chat or HUD messages are emitted. */
 public final class ElGranMajaEntity extends Mob {
@@ -26,6 +28,7 @@ public final class ElGranMajaEntity extends Mob {
     private static final EntityDataAccessor<Float> JAW = SynchedEntityData.defineId(ElGranMajaEntity.class, EntityDataSerializers.FLOAT);
     private float desiredYaw;
     private int directionTicks;
+    private int motionTick = -1;
     private float jawPrevious;
     private float jawCurrent;
     private final MajaIslandDevourer devourer = new MajaIslandDevourer();
@@ -91,10 +94,12 @@ public final class ElGranMajaEntity extends Mob {
             directionTicks = 240 + random.nextInt(240);
         }
         float nextYaw = getYRot() + Mth.clamp(Mth.wrapDegrees(desiredYaw - getYRot()), -0.20F, 0.20F);
-        double cycle = (tickCount + (getId() & 255)) % 1600;
-        double breach = cycle < 220 ? Math.sin(Math.PI * cycle / 220.0) : 0.0;
-        double desiredY = CityPlan.get().ocean - 13.0 + 18.0 * breach;
-        double vertical = Mth.clamp((desiredY - getY()) * 0.045, -0.22, 0.22);
+        if (motionTick < 0) motionTick = Math.floorMod(getUUID().hashCode(), MajaMotion.PERIOD);
+        motionTick = (motionTick + 1) % MajaMotion.PERIOD;
+        double breach = MajaMotion.breach(motionTick);
+        int sea = CityPlan.get().ocean;
+        double vertical = MajaMotion.verticalSpeed(getY(), MajaMotion.targetY(sea, motionTick));
+        double oldY = getY();
         double rad = Math.toRadians(nextYaw);
         Vec3 motion = new Vec3(-Math.sin(rad) * 0.16, vertical, Math.cos(rad) * 0.16);
         Vec3 next = position().add(motion);
@@ -104,6 +109,11 @@ public final class ElGranMajaEntity extends Mob {
             yHeadRot = nextYaw;
             setDeltaMovement(motion);
             move(MoverType.SELF, motion);
+            if ((oldY < sea && getY() >= sea) || (oldY > sea && getY() <= sea)) {
+                double hx = getX() - Math.sin(rad) * 145.0;
+                double hz = getZ() + Math.cos(rad) * 145.0;
+                server.sendParticles(ParticleTypes.SPLASH, hx, sea + 0.2, hz, 36, 12.0, 0.5, 6.0, 0.25);
+            }
         } else {
             setDeltaMovement(Vec3.ZERO);
             // If terrain changed underneath the existing envelope, hide rather than render through it.
@@ -113,7 +123,7 @@ public final class ElGranMajaEntity extends Mob {
                 directionTicks = 120;
             }
         }
-        if (tickCount % 5 == 0) {
+        if (tickCount % 2 == 0) {
             float breathing = 0.12F + 0.12F * (1.0F + Mth.sin(tickCount * 0.026F));
             entityData.set(JAW, Mth.clamp(breach > 0.12 ? (float) (0.35 + breach * 0.55) : breathing, 0.0F, 1.0F));
         }
@@ -135,6 +145,10 @@ public final class ElGranMajaEntity extends Mob {
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.putFloat("majaDesiredYaw", desiredYaw);
+        tag.putInt("majaMotionTick", motionTick);
+        tag.putDouble("majaBreach", motionTick < 0 ? 0.0 : MajaMotion.breach(motionTick));
+        tag.putString("majaFeedStatus", devourer.status());
+        tag.putInt("majaBlocksEaten", devourer.blocksEaten());
         // Read-only diagnostics for server operators and the automated collision probe.
         tag.putBoolean("majaReady", isReadyToRender());
         tag.putFloat("majaJaw", entityData.get(JAW));
@@ -143,6 +157,7 @@ public final class ElGranMajaEntity extends Mob {
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         desiredYaw = tag.getFloat("majaDesiredYaw");
+        motionTick = tag.contains("majaMotionTick") ? Math.floorMod(tag.getInt("majaMotionTick"), MajaMotion.PERIOD) : -1;
         // Re-check the loaded world before displaying any part of the model.
         entityData.set(READY, false);
     }

@@ -50,7 +50,8 @@ public final class ElGranMajaRenderer extends EntityRenderer<ElGranMajaEntity> {
         // Reflect once here so the reference's dorsal side points upward.
         pose.scale(model.renderScale, -model.renderScale, model.renderScale);
         pose.translate(0.0, 0.0, -CENTER_Z);
-        model.animate(e.tickCount + partial);
+        // Faster travelling wave, with the original proven angular envelopes unchanged.
+        model.animate((e.tickCount + partial) * 1.3F);
         // In Y-up source coordinates: +8 is closed, -13 is fully open.
         float jawDegrees = Mth.lerp(e.jaw(partial), 8.0F, -13.0F);
         model.root.getChild("head").getChild("jaw").xRot = (float) Math.toRadians(-jawDegrees);

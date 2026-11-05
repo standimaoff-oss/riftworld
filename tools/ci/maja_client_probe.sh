@@ -89,6 +89,8 @@ WID=$(xdotool search --onlyvisible --name Minecraft | head -1 || true)
 [ -n "$WID" ] || fail "Minecraft window not found"
 xdotool windowraise "$WID" || true
 import -window root "$OUT/maja-client-front.png"
+sleep 3
+import -window root "$OUT/maja-client-swim-motion.png"
 if grep -Ei 'Error while rendering entity|Exception.*ElGranMaja|Unable to load.*el_gran_maja|Failed to load.*el_gran_maja' "$OUT/maja-client.log"; then
   fail "Client log reports a Maja renderer/resource failure"
 fi

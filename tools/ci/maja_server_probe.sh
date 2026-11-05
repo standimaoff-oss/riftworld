@@ -75,6 +75,26 @@ d=sum((a-b)**2 for a,b in zip(*vectors))**.5
 print('before:',vectors[0],'after:',vectors[1],'distance:',round(d,3))
 if not .1<d<40: raise SystemExit('unexpected motion')
 PY
+# Force the beginning of a breach on the disposable flat world. The Y
+# displacement is measured on the server, not inferred from screenshots.
+rq data merge entity "$SEL" '{NoAI:1b}' >/dev/null
+rq tp "$SEL" 0 60 0 0 0 >/dev/null
+rq data merge entity "$SEL" '{NoAI:0b,majaMotionTick:0}' >/dev/null
+BEFORE=$(rq data get entity "$SEL" Pos)
+sleep 5
+AFTER=$(rq data get entity "$SEL" Pos)
+log "Breach before: $BEFORE"
+log "Breach after: $AFTER"
+python3 - "$BEFORE" "$AFTER" <<'PYBREACH' || fail "Maja failed to rise during its breach"
+import re,sys
+ys=[]
+for text in sys.argv[1:]:
+    m=re.search(r'\[\s*([-\d.eE+]+)d?\s*,\s*([-\d.eE+]+)d?\s*,\s*([-\d.eE+]+)d?\s*\]',text)
+    if not m: raise SystemExit('bad position '+text)
+    ys.append(float(m.group(2)))
+print('vertical rise:', ys[1]-ys[0])
+if ys[1]-ys[0] < 3: raise SystemExit('breach did not rise')
+PYBREACH
 rq data merge entity "$SEL" '{NoAI:1b}' | tee -a "$LOG"
 rq tp "$SEL" 0 200 0 0 0 | tee -a "$LOG"
 wait_ready 1b
