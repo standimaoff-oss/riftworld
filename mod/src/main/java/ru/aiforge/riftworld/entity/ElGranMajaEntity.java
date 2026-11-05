@@ -146,6 +146,7 @@ public final class ElGranMajaEntity extends Mob {
         super.addAdditionalSaveData(tag);
         tag.putFloat("majaDesiredYaw", desiredYaw);
         tag.putInt("majaMotionTick", motionTick);
+        tag.putInt("majaTicks", tickCount);
         tag.putDouble("majaBreach", motionTick < 0 ? 0.0 : MajaMotion.breach(motionTick));
         tag.putString("majaFeedStatus", devourer.status());
         tag.putInt("majaBlocksEaten", devourer.blocksEaten());

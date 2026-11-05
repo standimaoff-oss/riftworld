@@ -38,6 +38,14 @@ public final class SeaProbeCommand {
     private SeaProbeCommand() {
     }
 
+    private static int majaPose(CommandSourceStack src) {
+        StringBuilder why = new StringBuilder();
+        boolean clear = ru.aiforge.riftworld.entity.MajaCollision.clear(src.getLevel(), src.getPosition(), src.getRotation().y, why);
+        String message = "maja_pose clear=" + clear + " reason=" + (clear ? "none" : why);
+        src.sendSuccess(() -> Component.literal(message), false);
+        return clear ? 1 : 0;
+    }
+
     /** Read-only diagnostic: never generates or loads chunks. */
     private static int majaIsland(CommandSourceStack src) {
         if (!src.getLevel().dimension().equals(Flight.ELISAR_DIM)) {
@@ -74,6 +82,8 @@ public final class SeaProbeCommand {
 
     @SubscribeEvent
     public static void register(RegisterCommandsEvent e) {
+        e.getDispatcher().register(Commands.literal("riftmajapose").requires(s -> s.hasPermission(2))
+                .executes(c -> majaPose(c.getSource())));
         e.getDispatcher().register(Commands.literal("riftmajaisland").requires(s -> s.hasPermission(2))
                 .executes(c -> majaIsland(c.getSource())));
         e.getDispatcher().register(Commands.literal("riftmajacheck").requires(s -> s.hasPermission(2))

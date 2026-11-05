@@ -23,8 +23,14 @@ log "island: $B"; [[ "$B" == *'Marked'* || "$B" == *'already'* ]] || fail 'islan
 rq execute in riftworld:elisar run gamerule mobGriefing false >/dev/null
 rq execute in riftworld:elisar run summon riftworld:el_gran_maja "$AX" "$AY" "$AZ" '{PersistenceRequired:1b,majaMotionTick:500}' | tee -a "$LOG"
 SEL='@e[type=riftworld:el_gran_maja,limit=1]'
-sleep 15
-READY=$(rq execute in riftworld:elisar run data get entity "$SEL" majaReady)
+READY=''
+for _ in $(seq 1 30); do
+  READY=$(rq execute in riftworld:elisar run data get entity "$SEL" majaReady 2>&1 || true)
+  [[ "$READY" == *'1b'* ]] && break
+  sleep 2
+done
+rq execute in riftworld:elisar as "$SEL" at @s run riftmajapose | tee -a "$LOG" || true
+rq execute in riftworld:elisar run data get entity "$SEL" majaTicks | tee -a "$LOG" || true
 COUNT=$(rq execute in riftworld:elisar run data get entity "$SEL" majaBlocksEaten)
 log "griefing=false: $READY; $COUNT"
 [[ "$READY" == *'1b'* && "$COUNT" == *'0' ]] || fail 'unready or ate with mobGriefing disabled'
