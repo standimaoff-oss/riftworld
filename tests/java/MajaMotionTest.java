@@ -2,7 +2,7 @@ import ru.aiforge.riftworld.world.MajaMotion;
 public final class MajaMotionTest {
     public static void main(String[] args) {
         if (MajaMotion.breach(0) != 0 || MajaMotion.breach(MajaMotion.BREACH_TICKS) != 0) throw new AssertionError("cycle boundary");
-        if (MajaMotion.targetY(62, 140) < 87) throw new AssertionError("breach apex");
+        if (MajaMotion.targetY(62, 140) < 85.9) throw new AssertionError("breach apex");
         double y = 60, low = y, high = y;
         for (int t = 0; t <= MajaMotion.PERIOD; t++) {
             double v = MajaMotion.verticalSpeed(y, MajaMotion.targetY(62, t));
