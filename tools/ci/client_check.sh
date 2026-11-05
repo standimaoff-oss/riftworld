@@ -533,6 +533,10 @@ key F1                       # убрать HUD — «красивые» кад�
 RCON effect give TestPlayer minecraft:night_vision 600 0 true >/dev/null 2>&1 || true
 sleep 2
 view() { # view <x> <y> <z> <yaw> <pitch> <pause> <name>
+  # v0.40.2: КАМЕРА ВСЕГДА В РЕЖИМЕ НАБЛЮДАТЕЛЯ. Иначе игрок, поставленный в воздух на
+  # (x,y,z), падал за время паузы, и кадр снимался уже с земли: в #425 Морок попал в кадр
+  # по колено, а Пегас — обрезанным сверху. Спектатор не падает и не застревает в блоках.
+  EL gamemode spectator TestPlayer >/dev/null 2>&1 || true
   EL tp TestPlayer "$1" "$2" "$3" "$4" "$5" >/dev/null 2>&1
   sleep "$6"
   shot "$7"
