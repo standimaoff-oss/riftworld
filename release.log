@@ -1,0 +1,15 @@
++ '[' -n mod/build/libs/riftworld-0.40.3.jar ']'
++ cp mod/build/libs/riftworld-0.40.3.jar ci-out/riftworld-v0.40.3.jar
+++ ls mod/build/libs/riftworld-dt-0.40.3.jar
+++ head -1
++ DTJAR=mod/build/libs/riftworld-dt-0.40.3.jar
++ '[' -n mod/build/libs/riftworld-dt-0.40.3.jar ']'
++ cp mod/build/libs/riftworld-dt-0.40.3.jar ci-out/riftworld-dt-v0.40.3.jar
+++ wc -c
++ echo 'notes: ci-shots/report_client.md (40638 байт)'
+notes: ci-shots/report_client.md (40638 байт)
++ gh release delete v0.40.3 --yes --cleanup-tag
+release not found
++ true
++ gh release create v0.40.3 ci-out/riftworld-v0.40.3.jar ci-out/riftworld-dt-v0.40.3.jar --title v0.40.3 --notes-file ci-shots/report_client.md
+https://github.com/standimaoff-oss/riftworld/releases/tag/v0.40.3
