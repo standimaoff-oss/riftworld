@@ -88,8 +88,14 @@ public final class ModFluids {
                 @Override
                 public void modifyFogRender(Camera camera, FogRenderer.FogMode mode, float renderDistance, float partialTick, float nearDistance, float farDistance, FogShape shape) {
                     float d = depth(camera);
-                    com.mojang.blaze3d.systems.RenderSystem.setShaderFogStart(-6F + d * 2F);
-                    com.mojang.blaze3d.systems.RenderSystem.setShaderFogEnd(net.minecraft.util.Mth.lerp(d, 78F, 52F));
+                    // The titan is over 300 blocks long: normal underwater fog
+                    // hides it entirely. Extend visibility only in its biome;
+                    // actual chunk and entity tracking distances are unchanged.
+                    ClientLevel level = net.minecraft.client.Minecraft.getInstance().level;
+                    boolean maja = level != null && level.getBiome(camera.getBlockPosition()).is(
+                            ru.aiforge.riftworld.world.MajaOceanKeeper.BIOME);
+                    com.mojang.blaze3d.systems.RenderSystem.setShaderFogStart(maja ? 30F : -6F + d * 2F);
+                    com.mojang.blaze3d.systems.RenderSystem.setShaderFogEnd(maja ? 210F : net.minecraft.util.Mth.lerp(d, 78F, 52F));
                 }
             });
         }
