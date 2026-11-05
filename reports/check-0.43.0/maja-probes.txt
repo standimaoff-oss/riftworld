@@ -1,0 +1,47 @@
+Island eating is disabled by default.
+Force-loading a 253-chunk rectangle for the 322-block body...
+Marked [-5, -11] chunks in minecraft:overworld from [-5, -11] to [5, 11] to be force loaded
+
+Summoned new El Gran Maja
+
+majaReady=1b
+Placing a solid block inside the forward head envelope...
+Changed the block at 0, 200, 155
+
+majaReady=0b
+Changed the block at 0, 200, 155
+
+majaReady=1b
+A waterlogged solid must still block the full model...
+Changed the block at 0, 200, 155
+
+majaReady=0b
+Changed the block at 0, 200, 155
+
+majaReady=1b
+A waterlogged, no-collision sea decal must remain passable...
+Changed the block at 0, 200, 155
+
+majaReady=1b
+Changed the block at 0, 200, 155
+
+A world border smaller than the body must also reject it...
+Set the world border to 300.0 block(s) wide
+
+majaReady=0b
+Set the world border to 59999968.0 block(s) wide
+
+majaReady=1b
+Allowing AI: the anchor must actually move while the area is clear.
+Modified entity data of El Gran Maja
+
+Before motion: El Gran Maja has the following entity data: [0.5d, 200.0d, 0.5d]
+After motion: El Gran Maja has the following entity data: [-1.9584469049293451d, 167.6800000000007d, 16.4281642739889d]
+Breach before: El Gran Maja has the following entity data: [0.5d, 60.016044225847146d, 0.66d]
+Breach after: El Gran Maja has the following entity data: [0.5d, 80.8219729345885d, 16.82000000000001d]
+Modified entity data of El Gran Maja
+
+Teleported El Gran Maja to 0.500000, 200.000000, 0.500000
+
+majaReady=1b
+OK: live server tested readiness, solid-block collision, border containment and movement.
