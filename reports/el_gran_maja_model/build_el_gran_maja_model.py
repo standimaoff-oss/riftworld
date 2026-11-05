@@ -149,7 +149,7 @@ def build_model():
 
     # Skull: horizontal layers bounded independently by the front and side
     # reference trace. Three overlapping depth sections softly round each layer.
-    n_layers = 20
+    n_layers = 26
     for i in range(n_layers):
         v0, v1 = .39*i/n_layers, .39*(i+1)/n_layers
         vm = (v0+v1)/2
@@ -176,8 +176,8 @@ def build_model():
 
     # Defined overhanging upper visor; its bottom edge is the reference arch.
     # The mouth is substantially narrower than the wing span.
-    for x in range(0, q(.41*HALF), 24):
-        w = min(24, q(.41*HALF)-x)
+    for x in range(0, q(.41*HALF), 16):
+        w = min(16, q(.41*HALF)-x)
         u = u_of(x+w/2)
         v_top = max(interp(FRONT_TOP,u), .30 + .035*min(1,u/.41))
         v_bottom = interp(UPPER_LIP,u)
@@ -192,8 +192,8 @@ def build_model():
     # the front relief has a pale raised rim, and the traced bottom retains the
     # two ledges at either side of the mouth.
     x_start = 296
-    for x in range(x_start, HALF, 24):
-        w = min(24, HALF-x)
+    for x in range(x_start, HALF, 16):
+        w = min(16, HALF-x)
         u = u_of(x+w/2)
         ytop = q(vy(interp(FRONT_TOP,u)))
         yrim = q(vy(interp(FRONT_RIM,u)))
@@ -235,8 +235,8 @@ def build_model():
 
     # Back wall and lateral warm pouches. Both are hidden behind the gums and
     # teeth; they are actual volumes, not a billboard or a photograph.
-    for x in range(0, q(.41*HALF), 24):
-        w = min(24,q(.41*HALF)-x)
+    for x in range(0, q(.41*HALF), 16):
+        w = min(16,q(.41*HALF)-x)
         u = u_of(x+w/2)
         if u <= .30:
             v0 = interp(UPPER_LIP,u)+.012
@@ -281,8 +281,8 @@ def build_model():
     # Sculpted lower jaw: its front is the traced U-shaped arc; toward the
     # hinge the underside follows the other reference's side silhouette.
     jaw_outer = q(.40*HALF)
-    for x in range(0,jaw_outer,24):
-        w = min(24,jaw_outer-x)
+    for x in range(0,jaw_outer,16):
+        w = min(16,jaw_outer-x)
         u = u_of(x+w/2)
         z0 = q(lower_z(u))
         zmax = q(tz(.215))
@@ -307,17 +307,29 @@ def build_model():
 
     # Three small wet eyes per cluster (as reference 03) plus a subtler fourth
     # bead (visible in reference 01), each genuinely raised above a socket.
-    eyes = [(.073,.206,34),(.120,.247,34),(.166,.207,46),(.205,.238,19)]
+    eyes = [(.073,.206,20),(.120,.247,20),(.166,.207,26),(.205,.238,12)]
     for i,(u,v,diam) in enumerate(eyes):
-        xc = q(u*HALF); yc = q(vy(v))
-        zf = q(tz(interp(DOME_FRONT,v))-50)
-        m.pair("head",xc-(diam+4)//2,yc-(diam+4)//2,zf+6,
-               diam+4,diam+4,98,"eye_socket",key=("socket",diam))
-        m.pair("head",xc-diam//2,yc-diam//2,zf,
-               diam,diam,25,"eye",key=("eye",diam))
-    # Low creases above the eye clusters, not a high artificial brow.
-    for x,w,topv in [(44,48,.174),(92,56,.178),(148,53,.172)]:
-        m.pair("head",x,q(vy(topv)-10),-820,w,11,44,"brow",key=("brow",x))
+        xc = q(u*HALF); yc = q(vy(v)) - 6
+        # The dome surface at this height: both beads are mostly embedded, so a
+        # small dark eye sits flush in a shallow socket instead of a raised cube.
+        surf = q(tz(interp(DOME_FRONT,v)))
+        # Flat, thin beads lying on the dome: they follow the sloped surface far
+        # more closely than a tall block, which used to stick out like a wart.
+        m.pair("head",xc-(diam+6)//2,yc-8,surf-14,
+               diam+6,8,18,"eye_socket",key=("socket",diam))
+        m.pair("head",xc-diam//2,yc-6,surf-7,
+               diam,6,11,"eye",key=("eye",diam))
+    # Smooth brow ridge: many thin overlapping wedges follow the dome instead
+    # of three tall blocks, so the forehead reads as one continuous curve.
+    for k in range(28):
+        x = 30 + k * 9
+        if x > q(.30*HALF) - 6:
+            break
+        u = u_of(x)
+        topv = interp(FRONT_TOP, u) + .012
+        thick = 4 if abs(u - .14) < .05 else 3
+        m.pair("head", x, q(vy(topv) - thick), -246 + k * 6, 9, thick, 16,
+               "brow", key=("brow", k % 4))
 
     # Fewer, wider individual teeth: four joined, tapering 3-D sections per
     # tooth, with independent lean, bend, depth and length. The sparse rear

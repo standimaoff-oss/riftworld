@@ -18,16 +18,16 @@ def require(value, message):
         raise AssertionError(message)
 
 
-def check_model(name, required_bones):
+def check_model(name, required_bones, min_cubes=300):
     game = json.loads((ASSET / 'geo' / f'{name}.json').read_text())
-    src = json.loads((REPORT / f'{name}.blockbench.geo.json').read_text())['minecraft:geometry'][0]['bones']
+    source = json.loads((REPORT / f'{name}.blockbench.geo.json').read_text())['minecraft:geometry'][0]['bones']
     game_bones = game['bones']
-    require(len(game_bones) == len(src), f'{name}: mismatched bone count')
+    require(len(game_bones) == len(source), f'{name}: mismatched bone count')
     atlas = Image.open(ASSET / 'textures/entity' / f'{name}.png').convert('RGBA')
     require(atlas.size == (game['texture_width'], game['texture_height']), f'{name}: atlas size mismatch')
     seen = set()
     cube_count = 0
-    for ref, bone in zip(src, game_bones):
+    for ref, bone in zip(source, game_bones):
         n = bone['name']
         require(n not in seen and n == ref['name'], f'{name}: duplicate/mismatched bone {n}')
         if bone.get('parent'):
@@ -56,7 +56,7 @@ def check_model(name, required_bones):
             amp = -a['amp'] if a['axis'] in ('x', 'z') else a['amp']
             require(b['amp'] == amp and b['axis'] == a['axis'], f'{name}/{n}: animation reflection mismatch')
     require(required_bones <= seen, f'{name}: missing required joints {required_bones-seen}')
-    require(cube_count >= 170, f'{name}: geometry unexpectedly lost detail')
+    require(cube_count >= min_cubes, f'{name}: geometry unexpectedly lost detail')
     print(f'{name}: {len(seen)} bones, {cube_count} cuboids, opaque UV faces, correct coordinate reflection')
 
 
@@ -70,8 +70,14 @@ def check_item(name):
 
 
 def main():
-    check_model('liopleurodon', {'body','head','jaw','fin_front_l','fin_front_r','fin_rear_l','fin_rear_r','tail_1','tail_tip'})
-    check_model('pegasus', {'body','neck','head','wing_l','wing_r','leg_front_l','leg_front_r','leg_rear_l','leg_rear_r','tail','saddle'})
+    # v0.45.0 rigs (rebuilt from reports/reference_fauna/refs_v2)
+    check_model('liopleurodon', {'body_front','body_mid','body_rear','tail_1','tail_2','neck','head','jaw',
+                                 'flipper_front_l','flipper_front_r','flipper_rear_l','flipper_rear_r'})
+    check_model('pegasus', {'body','neck_low','neck_up','head','ear_l','ear_r','mane_1','mane_2','mane_3',
+                            'leg_front_l','leg_front_l_low','leg_front_r','leg_front_r_low',
+                            'leg_rear_l','leg_rear_l_low','leg_rear_r','leg_rear_r_low',
+                            'wing_l','wing_l_mid','wing_l_tip','wing_r','wing_r_mid','wing_r_tip',
+                            'tail_1','tail_2','tail_3','saddle'})
     for name in ('liopleurodon_tooth','sea_scale','pegasus_feather','wendigo_antler','morok_ember'):
         check_item(name)
     for name in ('liopleurodon','pegasus','wendigo'):

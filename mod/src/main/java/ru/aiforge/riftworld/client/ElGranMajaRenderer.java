@@ -51,8 +51,16 @@ public final class ElGranMajaRenderer extends EntityRenderer<ElGranMajaEntity> {
         // Reflect once here so the reference's dorsal side points upward.
         pose.scale(model.renderScale, -model.renderScale, model.renderScale);
         pose.translate(0.0, 0.0, -CENTER_Z);
-        // Faster travelling wave, with the original proven angular envelopes unchanged.
+        // v0.45.0: the server now eases its heading, so a bank proportional to the
+        // per-tick yaw delta reads as a graceful carve instead of a snap. Roll is
+        // applied after centring the 322-block body, so it turns around its spine.
+        float yawRate = Mth.wrapDegrees(e.getYRot() - e.yRotO);
         float swimTime = e.tickCount + partial;
+        float bank = Mth.clamp(-yawRate * 4.2F, -15.0F, 15.0F) + 1.1F * Mth.sin(swimTime * 0.012F);
+        float nosePitch = Mth.clamp((float) (-e.getDeltaMovement().y * 20.0), -7.0F, 7.0F);
+        pose.mulPose(Axis.ZP.rotationDegrees(bank));
+        pose.mulPose(Axis.XP.rotationDegrees(nosePitch));
+        // Faster travelling wave, with the original proven angular envelopes unchanged.
         // Subtle variation in stroke cadence; angular ranges are unchanged,
         // so the existing validated collision envelopes remain conservative.
         model.animate(swimTime * 1.3F + 3.0F * Mth.sin(swimTime * 0.025F));

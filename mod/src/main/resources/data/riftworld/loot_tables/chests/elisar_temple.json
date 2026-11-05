@@ -1,0 +1,98 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "riftworld:resonance_stone",
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": { "min": 1.0, "max": 3.0, "type": "minecraft:uniform" }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:flint_and_steel"
+        }
+      ]
+    },
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "riftworld:ritual_candle",
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": { "min": 2.0, "max": 4.0, "type": "minecraft:uniform" }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "rolls": { "min": 3.0, "max": 4.0, "type": "minecraft:uniform" },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "weight": 10,
+          "name": "minecraft:amethyst_shard",
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": { "min": 3.0, "max": 6.0, "type": "minecraft:uniform" }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "weight": 8,
+          "name": "minecraft:gold_ingot",
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": { "min": 2.0, "max": 5.0, "type": "minecraft:uniform" }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "weight": 6,
+          "name": "minecraft:lapis_lazuli",
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": { "min": 3.0, "max": 7.0, "type": "minecraft:uniform" }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "weight": 5,
+          "name": "riftworld:elisar_ducat",
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": { "min": 3.0, "max": 9.0, "type": "minecraft:uniform" }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "weight": 4,
+          "name": "minecraft:enchanted_book"
+        }
+      ]
+    }
+  ]
+}

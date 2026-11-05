@@ -641,7 +641,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 c.cityViaduct = true;
                 c.viaductBot = vBot;
                 c.viaductCenter = d <= 1.25;
-                c.viaductMosaic = d <= 0.68 && (step % 4 == 0);
+                c.viaductMosaic = false;   // v0.45.0: ritual mosaic removed from bridges
                 c.viaductKeystone = false;
             } else if (c.deckY == Integer.MIN_VALUE || (c.cityViaduct && c.rail)) {
                 c.deckY = y;
@@ -1582,7 +1582,6 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                         BlockState ashlar = st(CastleBlocks.ASHLAR);
                         BlockState ashlarSlab = st(CastleBlocks.ASHLAR_SLAB);
                         BlockState tFloor = st(TempleBlocks.FLOOR);
-                        BlockState tMosaic = st(TempleBlocks.MOSAIC);
                         BlockState tBricks = st(TempleBlocks.BRICKS);
                         BlockState tCol = st(TempleBlocks.GRAND_COLUMN);
                         BlockState tGold = st(TempleBlocks.GOLD);
@@ -1593,13 +1592,13 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                             BlockState vb;
                             if (y == c.deckY) {
                                 if (!c.rail) {
-                                    vb = c.viaductMosaic ? tMosaic
-                                            : (c.viaductCenter ? tFloor : (hash(x, z, 611) < 0.78 ? ashlar : tBricks));
+                                    vb = (c.viaductCenter || c.viaductMosaic) ? tFloor
+                                            : (hash(x, z, 611) < 0.78 ? ashlar : tBricks);
                                 } else {
-                                    vb = c.viaductKeystone ? tMosaic : ashlar;
+                                    vb = c.viaductKeystone ? tGold : ashlar;
                                 }
                             } else if (y == botY) {
-                                vb = c.viaductKeystone ? tMosaic : st(ElisarBlocks.BRICKS);
+                                vb = c.viaductKeystone ? tGold : st(ElisarBlocks.BRICKS);
                             } else {
                                 vb = hash(x, y, z) < 0.65 ? tBricks : ashlar;
                             }
