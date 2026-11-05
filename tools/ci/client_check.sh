@@ -538,8 +538,12 @@ view() { # view <x> <y> <z> <yaw> <pitch> <pause> <name>
   shot "$7"
 }
 lookat() { # lookat <cx> <cy> <cz> <tx> <ty> <tz> <pause> <name> — камера смотрит ровно на цель
-  local yp
-  yp=$(python3 tools/ci/lookat_angles.py "$1" "$2" "$3" "$4" "$5" "$6")
+  # v0.40.0: /tp ставит НОГИ игрока в (cx,cy,cz), а глаза на 1.62 блока выше. Углы считались
+  # от ног, поэтому цель уезжала вниз кадра: моб в 3 блоках оказывался у нижней кромки
+  # (кадры 147/148/152 прогона #424 — Морок обрезан по грудь, Пегас влез в объектив).
+  local yp ey
+  ey=$(python3 -c "print(round(float('$2') + 1.62, 3))")
+  yp=$(python3 tools/ci/lookat_angles.py "$1" "$ey" "$3" "$4" "$5" "$6")
   view "$1" "$2" "$3" "${yp% *}" "${yp#* }" "$7" "$8"
 }
 
@@ -1469,7 +1473,7 @@ biome_section() {
   echo "== v0.38.0: живой бор Мороковой Пади — натуральные деревья, сухостой, колючки и спавнеры биома =="
   probe_and_shot_struct "v37_morok_natural"          260 "150_v38_morok_natural_forest"            0 0 14
   NAT=$(EL execute at TestPlayer in riftworld:elisar run riftstruct v37_morok_natural 2>&1 | tr '\r\n' '  ')
-  log "  /riftstruct v37_morok_natural -> ${NAT:0:300}"
+  log "  /riftstruct v37_morok_natural -> ${NAT:0:560}"
   NAT_TREES=$(printf '%s' "$NAT" | sed -n 's/.* trees=\([0-9]*\).*/\1/p' | tail -1)
   NAT_LEAVES=$(printf '%s' "$NAT" | sed -n 's/.* leaves=\([0-9]*\).*/\1/p' | tail -1)
   NAT_BRAM=$(printf '%s' "$NAT" | sed -n 's/.* brambles=\([0-9]*\).*/\1/p' | tail -1)
@@ -1477,10 +1481,15 @@ biome_section() {
   NAT_WEN=$(printf '%s' "$NAT" | sed -n 's/.* spawn_wendigo=\([0-9]*\).*/\1/p' | tail -1)
   NAT_MORK=$(printf '%s' "$NAT" | sed -n 's/.* spawn_morok=\([0-9]*\).*/\1/p' | tail -1)
   NAT_BIOME=$(printf '%s' "$NAT" | sed -n 's/.* biome=\([a-z:_]*\).*/\1/p' | tail -1)
+  # v0.40.0: почему бор не растёт — печатаем диагностику в отчёт отдельной строкой
+  NAT_DIAG=$(printf '%s' "$NAT" | sed -n 's/.* diag_cols=\([^ ]*\) diag_treehere=\([^ ]*\) diag_dressed_top=\([^ ]*\) diag_snow_on_top=\([^ ]*\) diag_groundof_ok=\([0-9]*\).*/колонок \1, пригодно по формуле \2, с мерзлотой сверху \3, под снегом \4, нашлось грунта \5/p' | tail -1)
+  if [ -n "${NAT_DIAG:-}" ]; then
+    log "  бор Пади: ${NAT_DIAG}"
+  fi
   if [ "${NAT_TREES:-0}" -ge 6 ] && [ "${NAT_LEAVES:-0}" -ge 120 ]; then
     log "  OK   лес Пади растёт САМ: деревьев ${NAT_TREES}, листвы ${NAT_LEAVES}, колючек ${NAT_BRAM:-0}, клыков ${NAT_FANG:-0}"
   else
-    log "  FAIL лес Пади: деревьев ${NAT_TREES:-0} (нужно >=6), листвы ${NAT_LEAVES:-0} (нужно >=120)"; FAILS=$((FAILS + 1))
+    log "  FAIL лес Пади: деревьев ${NAT_TREES:-0} (нужно >=6), листвы ${NAT_LEAVES:-0} (нужно >=120)${NAT_DIAG:+; бор Пади: $NAT_DIAG}"; FAILS=$((FAILS + 1))
   fi
   if [ "${NAT_BRAM:-0}" -ge 3 ] && [ "${NAT_FANG:-0}" -ge 2 ]; then
     log "  OK   подлесок Пади на месте: колючки ${NAT_BRAM}, ледяные клыки ${NAT_FANG}"

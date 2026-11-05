@@ -240,10 +240,17 @@ public final class MorokHollow {
             // (листва, бревно, колючка, клык, ковёр), обрывал поиск, и под сомкнутым пологом
             // новые деревья и колючки физически не появлялись — отсюда trees=2 и brambles=0
             // при живом лесе. Теперь «свои» растения Пади просто пропускаем и ищем землю ниже.
+            // v0.40.0: СНЕГ НАД МЕРЗЛОТОЙ — НЕ СТЕНА. Биом холодный (temperature -0.5), и на грунт
+            // ложится снежный слой: раньше поиск упирался в него и отдавал «нет земли», поэтому
+            // бор не строился вовсе (trees=2 при 205 пригодных колонках в окне пробы).
             if (st.is(MorokBlocks.MOROK_LEAVES.get()) || st.is(MorokBlocks.MOROK_LOG.get())
                     || st.is(MorokBlocks.STRIPPED_MOROK_LOG.get())
                     || st.is(MorokBlocks.BONE_BRAMBLE.get()) || st.is(MorokBlocks.ICE_FANG.get())
-                    || st.is(MorokBlocks.PALE_MOSS_CARPET.get()) || st.canBeReplaced()) {
+                    || st.is(MorokBlocks.PALE_MOSS_CARPET.get())
+                    || st.is(net.minecraft.world.level.block.Blocks.SNOW)
+                    || st.is(net.minecraft.world.level.block.Blocks.POWDER_SNOW)
+                    || st.is(net.minecraft.world.level.block.Blocks.ICE)
+                    || st.canBeReplaced()) {
                 continue;
             }
             return Integer.MIN_VALUE;   // камень/вода/постройка

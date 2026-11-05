@@ -2690,7 +2690,7 @@ public final class SeaProbeCommand {
                 for (int dx = -4; dx <= 4; dx += 2) {
                     int wx = bs.cx + BlacktideCitadel.rotX(BlacktideCitadel.GATE_LX + dx, lz, bs.rot);
                     int wz = bs.cz + BlacktideCitadel.rotZ(BlacktideCitadel.GATE_LX + dx, lz, bs.rot);
-                    if (!level.hasChunk(wx >> 4, wz >> 4)) continue;
+                    level.getChunk(wx >> 4, wz >> 4);   // мост уходит в дно в 7 чанках от центра
                     for (int wy = ocean - 20; wy <= ocean - 2; wy += 2) {
                         BlockState st = level.getBlockState(mpSub.set(wx, wy, wz));
                         if (!st.isAir() && !st.is(ElisarBlocks.WATER.get())) ++subBridgeBlocks;
@@ -2706,7 +2706,10 @@ public final class SeaProbeCommand {
                 for (int lz = -24; lz <= 32; lz += 4) {
                     int wx = bs.cx + BlacktideCitadel.rotX(lx, lz, bs.rot);
                     int wz = bs.cz + BlacktideCitadel.rotZ(lx, lz, bs.rot);
-                    if (!level.hasChunk(wx >> 4, wz >> 4)) continue;
+                    // v0.40.0: раньше здесь стоял `if (!hasChunk) continue` — восточный бастион
+                    // лежит в 6 чанках от цитадели, эти чанки никто не загружал, и проба честно
+                    // насчитывала 0 блоков, обнуляя ВСЮ структуру (blocks=0 в #421–#424).
+                    level.getChunk(wx >> 4, wz >> 4);
                     for (int by = 32; by <= 41; by += 2) {
                         if (!level.getBlockState(mpSub.set(wx, bs.baseY + by, wz)).isAir()) ++lvl1EastBlocks;
                     }
@@ -3874,7 +3877,7 @@ public final class SeaProbeCommand {
                 // v0.39.9: камера ближе — конь должен занимать кадр, а не тонуть в пейзаже
                 // v0.40.0: конь вырос до 2.6 блока и раскрыл крылья — объектив в 3 блока,
                 // цель на уровне груди, чтобы в кадр попали и голова с ушами, и веер маховых.
-                cam34 = poseCam(px + 0.5, py + 1.35, pz + 0.5, 210.0F, 0.0, 0.0, 0.0, 2.05, 2.25, 0.70);
+                cam34 = poseCam(px + 0.5, py + 1.30, pz + 0.5, 210.0F, 0.0, 0.0, 0.0, 2.55, 2.65, 0.85);
                 clearAt(sl, cam34[0], cam34[1], cam34[2]);
             } else {
                 cam34 = new double[]{px - 3, py + 2, pz + 4, px, py + 1, pz};
@@ -3960,7 +3963,7 @@ public final class SeaProbeCommand {
             // по диагонали) и целился в грудь. Отодвигаем и целимся в голову: рога/череп Морока на 2.2 блока.
             // v0.40.0: Морок вырос до 2.85 блока; камера в 3 блока и целится в маску —
             // в #422/#423 объектив стоял в 6.3 блока, и угли глаз были двумя пикселями.
-            double[] pc = poseCam(px + 0.5, ground + 1.55, pz + 0.5, 205.0F, 0.0, 0.0, 0.0, 2.15, 2.00, 0.55);
+            double[] pc = poseCam(px + 0.5, ground + 1.45, pz + 0.5, 205.0F, 0.0, 0.0, 0.0, 2.35, 2.25, 0.60);
             boolean eyeGlow = eyes[0] > 0 && eyes[2] > 0;
             int metric = (alive > 0 && geo[0] >= 40 && eyeGlow) ? 900 : 0;
             String line = "riftstruct kind=v39_morok at=" + px + "," + (ground + 1) + "," + pz
@@ -4026,7 +4029,7 @@ public final class SeaProbeCommand {
             if (level != null) {
                 ServerLevel sl = (ServerLevel) level;
                 // v0.40.0: та же беда, что у Пегаса и Морока — моб тонул в пейзаже.
-                cam35 = poseCam(px + 0.5, py + 1.30, pz + 0.5, 200.0F, 0.0, 0.0, 0.0, 1.95, 2.10, 0.65);
+                cam35 = poseCam(px + 0.5, py + 1.25, pz + 0.5, 200.0F, 0.0, 0.0, 0.0, 2.20, 2.30, 0.60);
                 clearAt(sl, cam35[0], cam35[1], cam35[2]);
             } else {
                 cam35 = new double[]{px - 4, py + 3, pz + 5, px, py + 2, pz};
@@ -4060,6 +4063,13 @@ public final class SeaProbeCommand {
             }
             int logs = 0, leaves = 0, brambles = 0, fangs = 0, carpets = 0, rime = 0, soil = 0;
             int trunks = 0;   // колонн ствола = число деревьев/сухостоя (патриарх даёт 4)
+            // v0.40.0: диагностика «почему бор не растёт». Считаем по тому же окну ±32:
+            //   cols          — колонок реально просмотрено (чанк загружен);
+            //   treehere      — сколько колонок ПО ФОРМУЛЕ генератора годятся под ствол;
+            //   dressed_top   — у скольких верхний блок уже мерзлота Пади;
+            //   snow_on_top   — у скольких сверху лежит снег (именно он рубил поиск земли);
+            //   groundof_ok   — у скольких groundOf() находит грунт (0 = деревья физически некуда ставить).
+            int dCols = 0, dTreeHere = 0, dDressed = 0, dSnow = 0, dGroundOk = 0;
             BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
             int rad = 32;
             // v0.38.5: считаем в радиусе 24 блоков и форсируем НЕ БОЛЬШЕ 16 чанков.
@@ -4076,6 +4086,20 @@ public final class SeaProbeCommand {
             for (int x = px - rad; x <= px + rad; ++x) {
                 for (int z = pz - rad; z <= pz + rad; ++z) {
                     if (!level.hasChunk(x >> 4, z >> 4)) continue;
+                    ++dCols;
+                    if (ru.aiforge.riftworld.world.MorokHollow.treeHere(x, z)) ++dTreeHere;
+                    int hTop = level.getHeight(
+                            net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+                    net.minecraft.world.level.block.state.BlockState dTop =
+                            level.getBlockState(mp.set(x, hTop - 1, z));
+                    if (dTop.is(MorokBlocks.RIME_GRASS.get()) || dTop.is(MorokBlocks.PALE_MOSS_BLOCK.get())
+                            || dTop.is(MorokBlocks.FROZEN_SOIL.get())) ++dDressed;
+                    net.minecraft.world.level.block.state.BlockState dAbove =
+                            level.getBlockState(mp.set(x, hTop, z));
+                    if (dAbove.is(net.minecraft.world.level.block.Blocks.SNOW)
+                            || dAbove.is(net.minecraft.world.level.block.Blocks.POWDER_SNOW)) ++dSnow;
+                    if (ru.aiforge.riftworld.world.MorokHollow.groundOf(level.getChunk(x >> 4, z >> 4), mp, x, z)
+                            != Integer.MIN_VALUE) ++dGroundOk;
                     for (int y = ground - 20; y <= ground + 30; ++y) {
                         BlockState st = level.getBlockState(mp.set(x, y, z));
                         if (st.isAir()) continue;
@@ -4131,11 +4155,17 @@ public final class SeaProbeCommand {
             }
             // камера с земли: 9 блоков в стороне, взгляд чуть вверх — видно стволы и кроны в тумане
             int[] cam = closeSpot(level, px, ground + 3, pz, new int[]{9, 11, 13}, ground + 8);
-            int metric = (trunks >= 6 && logs >= 30 && leaves >= 120) ? (trunks * 40 + logs + leaves / 4) : 0;
+            // v0.40.0: метрика — ЭТО РЕАЛЬНЫЕ блоки бора, а не «0, если гейт не сошёлся»:
+            // иначе отчёт показывал «блоков 0» даже там, где деревья стоят, и понять причину
+            // провала было нельзя (в #421–#424 так и было).
+            int metric = trunks * 40 + logs + leaves / 4;
             String line = "riftstruct kind=v37_morok_natural at=" + px + "," + (ground + 2) + "," + pz
                     + " natural=" + natural + " biome=" + biome
                     + " regions=" + scan[0] + " land_regions=" + scan[1]
                     + " search=[" + ru.aiforge.riftworld.world.MorokHollow.LAST_SEARCH.replace(' ', ',') + "]"
+                    + " diag_cols=" + dCols + " diag_treehere=" + dTreeHere
+                    + " diag_dressed_top=" + dDressed + " diag_snow_on_top=" + dSnow
+                    + " diag_groundof_ok=" + dGroundOk
                     + " trees=" + trunks + " logs=" + logs + " leaves=" + leaves
                     + " brambles=" + brambles + " fangs=" + fangs + " carpets=" + carpets
                     + " rime=" + rime + " soil=" + soil
@@ -4955,7 +4985,10 @@ public final class SeaProbeCommand {
             int skyDragons = 0;
             var sp = src.getPlayer();
             if (sp == null && !level.players().isEmpty()) sp = level.players().get(0);
-            if (sp != null && sp.distanceToSqr(px, py, pz) < 64.0 * 64.0 && level.hasChunk(px >> 4, pz >> 4)) {
+            // v0.40.0: раньше суммон делался только если игрок ближе 64 блоков И чанк уже загружен —
+            // в #421–#424 оба условия не сходились, и проба отчитывалась «blocks=0».
+            level.getChunk(px >> 4, pz >> 4);
+            if (sp != null && sp.distanceToSqr(px, py, pz) < 256.0 * 256.0) {
                 sp.setYRot(0.0F);
                 sp.setXRot(-22.0F);
                 var whistle = new net.minecraft.world.item.ItemStack(ru.aiforge.riftworld.registry.ModItems.DRAGON_WHISTLE.get());
