@@ -91,9 +91,9 @@ shot() {
 rq fill 190 99 -24 226 99 24 minecraft:grass_block >/dev/null
 rq kill '@e[type=riftworld:pegasus]' >/dev/null 2>&1 || true
 rq summon riftworld:pegasus 208 100 0 '{NoAI:1b,PersistenceRequired:1b}' >/dev/null
-shot frame-pegasus-three-quarter 204 101.8 -7 208 101 0 10
-shot frame-pegasus-side 213 101.8 0 208 101 0 6
-shot frame-pegasus-head 208 102.6 -4 208 102.4 -0.5 6
+shot frame-pegasus-three-quarter 205.5 101.7 -3.6 208 101 0 10
+shot frame-pegasus-side 211.6 101.7 0 208 101 0 7
+shot frame-pegasus-head 208 102.3 -2.3 208 102.1 -0.6 7
 
 # ---------------------------------------------------------------- liopleurodon
 LOC=$(rq execute in riftworld:elisar positioned 0 54 0 run locate biome riftworld:maja_ocean | tr -d '\n')
@@ -127,7 +127,7 @@ capture_underwater frame-liopleurodon-swim
 rq execute in riftworld:elisar run tp TestPlayer "$OX" 51 "$((OZ - 9))" facing "$OX" 50 "$OZ" >/dev/null
 sleep 6
 capture_underwater frame-liopleurodon-side
-rq execute in riftworld:elisar run tp TestPlayer "$OX" 52 "$((OZ - 4))" facing "$OX" 50.5 "$OZ" >/dev/null
+rq execute in riftworld:elisar run tp TestPlayer "$OX" 51.4 "$((OZ - 3))" facing "$OX" 50.6 "$OZ" >/dev/null
 sleep 6
 capture_underwater frame-liopleurodon-head
 
@@ -142,7 +142,7 @@ for _ in $(seq 1 80); do
 done
 sleep 6
 # whole body from the side (the titan is ~322 blocks long) and the head up close
-shot frame-maja-body 70 250 250 0 205 -20 14
+shot frame-maja-body 150 228 70 0 202 -45 14
 shot frame-maja-head 0 214 188 0 200 115 12
 
 echo "captured $SHOT in-game frames"
