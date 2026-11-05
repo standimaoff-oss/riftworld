@@ -558,6 +558,9 @@ lookat() { # lookat <cx> <cy> <cz> <tx> <ty> <tz> <pause> <name> — камер�
 # Здесь проба и кадр делаются сразу после рыб, до тяжёлой генерации островов.
 mob_model_probe() {  # mob_model_probe <kind> <shot_name>
   local kind="$1" shot_name="$2" S0 SAT SX SY SZ S1 SBLK SAIR SCAM
+  # v0.40.3: убираем мусор прошлой пробы. В #426 в кадр 148 попал Пегас, задавленный постройкой
+  # сцены: он умирал и ронял перо, а у пера не было модели — в кадре стоял магента-куб.
+  EL kill @e[type=!player,distance=..40] >/dev/null 2>&1 || true
   EL tp TestPlayer 0 110 0 >/dev/null 2>&1 || true
   sleep 1
   S0=$(EL execute at TestPlayer in riftworld:elisar run riftstruct "$kind" 2>&1 | tr '\r\n' '  ')

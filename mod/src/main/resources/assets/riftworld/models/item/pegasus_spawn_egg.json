@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "riftworld:item/pegasus_spawn_egg"
+  }
+}
