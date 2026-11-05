@@ -102,10 +102,12 @@ echo "OK: real client joined the server; screenshot saved to $OUT/maja-client-fr
 MAJA='@e[type=riftworld:el_gran_maja,limit=1]'
 rq fill -70 59 20 70 59 170 minecraft:water >/dev/null
 rq tp "$MAJA" 0 60 0 0 0 >/dev/null
-rq tp TestPlayer 0 75 188 facing 0 67 115 >/dev/null
-rq data merge entity "$MAJA" '{NoAI:0b,majaMotionTick:0}' >/dev/null
-sleep 1
+# A side/front angle avoids the moving head overtaking the camera. Wait for
+# the teleport and chunks before capturing the first phase.
+rq tp TestPlayer 130 100 100 facing 0 67 140 >/dev/null
+sleep 10
 import -window root "$OUT/maja-breach-start.png"
+rq data merge entity "$MAJA" '{NoAI:0b,majaMotionTick:0}' >/dev/null
 sleep 5
 import -window root "$OUT/maja-breach-rise.png"
 echo 'OK: captured controlled water-surface breach frames for visual review.'
