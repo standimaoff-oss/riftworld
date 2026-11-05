@@ -1,10 +1,9 @@
 package ru.aiforge.riftworld.world;
 
-/** Deterministic first-pass wreck plan, evaluated per block and clipped by the caller's chunk.
- * It never changes existing chunks and is outside Maja's reserved open-water core.
- */
+/** A deterministic chunk-clipped plan for an ocean wreck. Only newly generated
+ * chunks are touched, outside Maja's reserved open-water core. */
 public final class OceanWreck {
-    public static final int NONE = 0, PLANK = 1, LOG = 2, MOSS = 3, RAIL = 4;
+    public static final int NONE = 0, PLANK = 1, LOG = 2, MOSS = 3, RAIL = 4, DARK_PLANK = 5;
     public static final int OFFSET_X = 600;
     private OceanWreck() {}
 
@@ -13,37 +12,47 @@ public final class OceanWreck {
         int dx = x - (r.x() + OFFSET_X), dz = z - r.z(), dy = y - sea;
         int ax = Math.abs(dx), az = Math.abs(dz);
         if (ax > 28 || az > 9 || dy < -6 || dy > 23) return NONE;
-        // Raised broken rails along both surviving halves. The straight fence
-        // runs are aligned with the hull, with gaps at the splintered ends.
-        if (dy == 5 && az >= 5 && az <= 8 && ax >= 9 && ax <= 23
-                && az == Math.max(1, 8 - Math.max(0, ax - 14) / 2)
-                && ax % 6 != 0) return RAIL;
-        // Fragments in the breach, with space for swimming between them.
+
+        // The broken mast leans towards the bow, with block-connected steps.
+        int mx = 9 + Math.max(0, dy - 4) / 4;
+        if (dz == 0 && dy >= 2 && dy <= 21
+                && (dx == mx || (dy > 4 && (dy - 4) % 4 == 0 && dx == mx - 1))) return LOG;
+        if (dy == 17 && dx >= 7 && dx <= 19 && dz == 0) return LOG;
+        if (dx >= -9 && dx <= -4 && dz == 1 && dy == 4 + (dx + 9)) return LOG;
+
+        // Fore and aft are deliberately different. The narrow forward end
+        // tapers more sharply; the upper planks descend into a jagged breach.
+        int width = 8 - Math.max(0, ax - (dx < 0 ? 13 : 17)) / (dx < 0 ? 2 : 3);
+        width = Math.max(1, width);
+        int bottom = -6 + Math.max(0, ax - 16) / 4;
+        int top = Math.min(7, 1 + Math.max(0, ax - 4) / 4);
+        int damage = Math.floorMod(dx * 31 + dz * 17, 7);
+        if (az >= width - 1 && ax < 13 && damage < 3) top--;
+        // The breach meanders sideways, opens towards the waterline, and
+        // preserves a few ribs and remnants below rather than a clean cut.
+        int gap = dy < -3 ? 1 : (dy < 1 ? 2 : 3 + Math.floorMod(dz, 3));
+        boolean broken = ax <= gap;
         if (dy == -1 && ax <= 4 && az >= 3 && az <= 4 && (dx + dz) % 3 != 0) return LOG;
-        // Ragged halves of a long, tapering ship; the gap is intentionally open.
-        int width = Math.max(1, 8 - Math.max(0, ax - 14) / 2);
-        int top = 4 + Math.max(0, ax - 14) / 5;
-        int bottom = -6 + Math.max(0, ax - 17) / 4;
-        boolean split = ax <= 3 + (Math.abs(dz) % 2);
-        if (!split && ax <= 27 && az <= width && dy >= bottom && dy <= top) {
-            int widthAtY = Math.max(1, width - Math.max(0, -3 - dy));
-            if (az <= widthAtY && (az >= widthAtY - 1 || dy == bottom || dy == 2)) {
-                if (dy <= 0 && (dx * dx + dz * dz + dy * dy) % 17 == 0) return MOSS;
-                return dy == bottom || (ax % 7 == 0 && az == widthAtY) ? LOG : PLANK;
+        if (broken) return NONE;
+
+        int widthAtY = Math.max(1, width - Math.max(0, (1 - dy) / 2));
+        if (ax <= 27 && az <= widthAtY && dy >= bottom && dy <= top) {
+            boolean outside = az >= widthAtY - 1;
+            boolean hole = outside && ax < 16 && dy >= 0 && damage == 0 && dy != 2;
+            if (!hole && (outside || dy == bottom || dy == 2)) {
+                if (dy <= 0 && Math.floorMod(dx * dx + dz * dz + dy * dy, 17) == 0) return MOSS;
+                if (dy == bottom || (ax % 7 == 0 && az == widthAtY)) return LOG;
+                return dy <= 0 ? DARK_PLANK : PLANK;
             }
         }
-        // Raised, damaged forecastle and sterncastle, with open decks inside.
+        // Damaged rails and raised aft/forecastle planks.
+        if (dy == top + 1 && az == width && ax >= 12 && ax <= 25
+                && ax % 6 != 0 && damage != 0) return RAIL;
         if (ax >= 18 && ax <= 25 && az <= width && dy >= 5 && dy <= 7
                 && (az >= width - 1 || ax == 25)
-                && (dx + 2 * dz + dy) % 7 != 0) return PLANK;
-        // Cross beams on the open deck; no block entities or loot in this draft.
+                && Math.floorMod(dx + 2 * dz + dy, 7) != 0) return PLANK;
         if (dy == 3 && (dx == -18 || dx == -10 || dx == 16 || dx == 22)
                 && az < width - 1 && az > 1) return LOG;
-        // Broken central mast, a yardarm and a tilted remnant, without sails.
-        if (dx == 9 && dz == 0 && dy >= 2 && dy <= 21) return LOG;
-        if (dy == 17 && dx >= 4 && dx <= 15 && dz == 0) return LOG;
-        if (dx >= -9 && dx <= -4 && dz == 1 && dy == 4 + (dx + 9)) return LOG;
-        if (dy == 3 && ax >= 8 && ax <= 23 && az == width) return LOG;
         return NONE;
     }
 }

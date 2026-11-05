@@ -210,7 +210,7 @@ echo "OK: client remained connected after entering the generated ocean."
 # Inspect the actual generated wreck from two sides. Screenshot review is manual;
 # the server probe independently asserts hull and mast blocks.
 rq gamemode spectator TestPlayer >/dev/null
-rq execute in riftworld:elisar run tp TestPlayer 2315 82 2172 facing 2315 64 2126 >/dev/null
+rq execute in riftworld:elisar run tp TestPlayer 2315 69 2172 facing 2315 64 2126 >/dev/null
 sleep 35
 import -window root "$OUT/ocean-wreck-overview.png"
 rq execute in riftworld:elisar run tp TestPlayer 2280 72 2155 facing 2315 64 2126 >/dev/null

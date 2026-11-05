@@ -5,7 +5,7 @@ set -euo pipefail
 mkdir -p ci-out
 rq() { python3 tools/rcon.py --password "${RCON_PW:-riftci}" --log '' --timeout 240 "$@"; }
 rq execute in riftworld:elisar run forceload add 2288 2112 2335 2143 | tee ci-out/ocean-wreck.txt
-for spec in '2324 82 2126 minecraft:dark_oak_log' '2303 64 2133 minecraft:spruce_planks'; do
+for spec in '2328 82 2126 minecraft:dark_oak_log' '2303 64 2133 minecraft:spruce_planks'; do
   ready=0
   for _ in $(seq 1 90); do
     result=$(rq execute in riftworld:elisar if block $spec run time query gametime 2>&1 || true)

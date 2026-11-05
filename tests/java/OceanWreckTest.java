@@ -14,7 +14,7 @@ public class OceanWreckTest {
                             if (DeepOcean.openCoreChunk(x, z) || !DeepOcean.contains(x, z)) throw new AssertionError("wreck outside safe ocean");
                             count++;
                             if (m == OceanWreck.RAIL) rails++;
-                            if (x == r.x() + 609 && z == r.z() && y > 65) mast++;
+                            if (x >= r.x() + 609 && x <= r.x() + 614 && z == r.z() && y > 65) mast++;
                         }
                     }
             if (count < 500 || mast < 10 || rails < 10) throw new AssertionError("wreck incomplete " + count + ", " + mast + ", rails=" + rails);
