@@ -2274,6 +2274,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 BlockState state = switch (kind) {
                     case OceanWreck.LOG -> Blocks.DARK_OAK_LOG.defaultBlockState();
                     case OceanWreck.MOSS -> Blocks.MOSSY_COBBLESTONE.defaultBlockState();
+                    case OceanWreck.RAIL -> Blocks.SPRUCE_FENCE.defaultBlockState()
+                            .setValue(FenceBlock.EAST, true).setValue(FenceBlock.WEST, true);
                     default -> Blocks.SPRUCE_PLANKS.defaultBlockState();
                 };
                 chunk.setBlockState(pos, state, false);

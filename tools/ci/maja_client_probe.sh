@@ -105,6 +105,9 @@ grep -Fq '[riftworld] geo liopleurodon:' "$OUT/maja-client.log" || fail 'Liopleu
 import -window root "$OUT/fauna-liopleurodon.png"
 sleep 1
 import -window root "$OUT/fauna-liopleurodon-motion.png"
+rq tp TestPlayer -12 201 0 facing 0 200 0 >/dev/null
+sleep 4
+import -window root "$OUT/fauna-liopleurodon-side.png"
 rq summon riftworld:pegasus 32 200 0 '{NoAI:1b,NoGravity:1b,PersistenceRequired:1b}' >/dev/null
 rq tp TestPlayer 27 203 6 facing 32 202 0 >/dev/null
 sleep 15
@@ -112,6 +115,10 @@ grep -Fq '[riftworld] geo pegasus:' "$OUT/maja-client.log" || fail 'Pegasus mode
 import -window root "$OUT/fauna-pegasus-unsaddled.png"
 sleep 1
 import -window root "$OUT/fauna-pegasus-motion.png"
+rq tp TestPlayer 20 202 0 facing 32 202 0 >/dev/null
+sleep 4
+import -window root "$OUT/fauna-pegasus-side.png"
+rq tp TestPlayer 27 203 6 facing 32 202 0 >/dev/null
 rq data merge entity '@e[type=riftworld:pegasus,limit=1]' '{Tamed:1b,Saddle:1b}' >/dev/null
 rq data get entity '@e[type=riftworld:pegasus,limit=1]' Saddle | grep -q '1b' || fail 'Pegasus saddle was not synchronized'
 sleep 5
@@ -199,3 +206,15 @@ if grep -Ei 'Render thread/FATAL|Minecraft Crash Report|Error while rendering|Nu
 fi
 rq list | grep -q TestPlayer || fail "Client disconnected in the ocean"
 echo "OK: client remained connected after entering the generated ocean."
+
+# Inspect the actual generated wreck from two sides. Screenshot review is manual;
+# the server probe independently asserts hull and mast blocks.
+rq gamemode spectator TestPlayer >/dev/null
+rq execute in riftworld:elisar run tp TestPlayer 2315 82 2172 facing 2315 64 2126 >/dev/null
+sleep 35
+import -window root "$OUT/ocean-wreck-overview.png"
+rq execute in riftworld:elisar run tp TestPlayer 2280 72 2155 facing 2315 64 2126 >/dev/null
+sleep 10
+import -window root "$OUT/ocean-wreck-bow.png"
+rq list | grep -q TestPlayer || fail 'Client disconnected while viewing the wreck'
+echo 'OK: captured real-client wreck views for manual review.'
