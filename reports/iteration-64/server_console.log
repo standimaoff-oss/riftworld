@@ -1,0 +1,1345 @@
+7.0.0.1 started
+[23:41:21] [RCON Client /127.0.0.1 #541/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:41:21] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:41:23] [RCON Client /127.0.0.1 #542/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:41:23] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:41:23] [RCON Client /127.0.0.1 #543/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:41:23] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:41:24] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[23:41:24] [RCON Client /127.0.0.1 #544/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:41:25] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:41:39] [RCON Client /127.0.0.1 #545/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:41:39] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 8140ms or 162 ticks behind
+[23:41:39] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:41:39] [RCON Client /127.0.0.1 #546/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:41:39] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:41:41] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -6651.500000, 131.000000, 4218.500000]
+[23:41:41] [RCON Client /127.0.0.1 #547/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:41:47] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:41:47] [RCON Client /127.0.0.1 #548/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:41:47] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:41:47] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -6642.500000, 124.000000, 4218.500000]
+[23:41:47] [RCON Client /127.0.0.1 #549/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:41:47] [Server thread/WARN] [minecraft/ServerGamePacketListenerImpl]: TestPlayer moved too quickly! 9.0,-7.0,0.0
+[23:42:02] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:42:02] [RCON Client /127.0.0.1 #550/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:42:02] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:42:03] [RCON Client /127.0.0.1 #551/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:42:03] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:42:03] [RCON Client /127.0.0.1 #552/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:42:03] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:42:04] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[23:42:04] [RCON Client /127.0.0.1 #553/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:42:05] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:42:05] [RCON Client /127.0.0.1 #554/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:42:06] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:42:06] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Applied effect Night Vision to TestPlayer]
+[23:42:06] [RCON Client /127.0.0.1 #555/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:42:06] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:42:06] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Applied effect Conduit Power to TestPlayer]
+[23:42:06] [RCON Client /127.0.0.1 #556/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:42:06] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:42:06] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 696.500000, 41.000000, 696.500000]
+[23:42:06] [RCON Client /127.0.0.1 #557/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:42:06] [Server thread/WARN] [minecraft/ServerGamePacketListenerImpl]: TestPlayer moved too quickly! 696.0,-69.0,696.0
+[23:42:12] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:42:12] [RCON Client /127.0.0.1 #558/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:42:12] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:42:12] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 689.000000, 39.400000, 709.500000]
+[23:42:12] [RCON Client /127.0.0.1 #559/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:42:12] [Server thread/WARN] [minecraft/ServerGamePacketListenerImpl]: TestPlayer moved too quickly! -7.5,-1.6000000000000014,13.0
+[23:42:22] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:42:22] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Removed every effect from TestPlayer]
+[23:42:22] [RCON Client /127.0.0.1 #560/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:42:23] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:42:23] [RCON Client /127.0.0.1 #561/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:42:23] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:42:23] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[23:42:23] [RCON Client /127.0.0.1 #562/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:42:24] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:42:24] [RCON Client /127.0.0.1 #563/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:42:24] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:42:24] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Applied effect Night Vision to TestPlayer]
+[23:42:24] [RCON Client /127.0.0.1 #564/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:42:24] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:42:24] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Applied effect Conduit Power to TestPlayer]
+[23:42:24] [RCON Client /127.0.0.1 #565/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:42:25] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:42:25] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 700.500000, 42.000000, 700.500000]
+[23:42:25] [RCON Client /127.0.0.1 #566/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:42:31] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:42:31] [RCON Client /127.0.0.1 #567/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:42:31] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:42:31] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 694.100000, 36.300000, 703.900000]
+[23:42:31] [RCON Client /127.0.0.1 #568/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:42:39] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:42:39] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Removed every effect from TestPlayer]
+[23:42:39] [RCON Client /127.0.0.1 #569/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:42:39] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:42:40] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[23:42:40] [RCON Client /127.0.0.1 #570/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:42:41] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:42:42] [RCON Client /127.0.0.1 #571/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:42:42] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:42:42] [RCON Client /127.0.0.1 #572/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:42:42] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:42:43] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -6651.500000, 130.000000, 4218.500000]
+[23:42:43] [RCON Client /127.0.0.1 #573/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:42:49] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:42:49] [RCON Client /127.0.0.1 #574/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:42:49] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:42:49] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -6652.404000, 123.100000, 4215.706000]
+[23:42:49] [RCON Client /127.0.0.1 #575/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:42:58] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:42:58] [RCON Client /127.0.0.1 #576/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:42:58] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:42:58] [RCON Client /127.0.0.1 #577/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:42:58] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:43:02] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[23:43:02] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 4004ms or 80 ticks behind
+[23:43:02] [RCON Client /127.0.0.1 #578/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:43:04] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:43:04] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[23:43:04] [RCON Client /127.0.0.1 #579/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:43:05] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:43:05] [RCON Client /127.0.0.1 #580/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:43:05] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:43:05] [RCON Client /127.0.0.1 #581/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:43:05] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:43:10] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 937.500000, 74.000000, 155.500000]
+[23:43:10] [RCON Client /127.0.0.1 #582/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:43:16] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:43:22] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 5263ms or 105 ticks behind
+[23:43:22] [RCON Client /127.0.0.1 #583/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:43:22] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:43:22] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 920.500000, 74.000000, 138.500000]
+[23:43:22] [RCON Client /127.0.0.1 #584/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:43:39] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:43:39] [RCON Client /127.0.0.1 #585/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:43:39] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:43:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[23:43:42] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 2344ms or 46 ticks behind
+[23:43:42] [RCON Client /127.0.0.1 #586/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:43:43] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:43:43] [RCON Client /127.0.0.1 #587/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:43:43] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:43:43] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Applied effect Night Vision to TestPlayer]
+[23:43:43] [RCON Client /127.0.0.1 #588/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:43:43] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:43:43] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Applied effect Conduit Power to TestPlayer]
+[23:43:43] [RCON Client /127.0.0.1 #589/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:43:43] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:43:48] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -672.500000, 22.000000, 325.500000]
+[23:43:48] [RCON Client /127.0.0.1 #590/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:43:54] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:43:54] [RCON Client /127.0.0.1 #591/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:43:54] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:43:54] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -676.500000, 20.000000, 311.500000]
+[23:43:54] [RCON Client /127.0.0.1 #592/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:44:12] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:44:12] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Removed every effect from TestPlayer]
+[23:44:12] [RCON Client /127.0.0.1 #593/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:44:12] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:44:14] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[23:44:14] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 2153ms or 43 ticks behind
+[23:44:14] [RCON Client /127.0.0.1 #594/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:44:15] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:44:16] [RCON Client /127.0.0.1 #595/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:44:16] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:44:16] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Applied effect Night Vision to TestPlayer]
+[23:44:16] [RCON Client /127.0.0.1 #596/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:44:16] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:44:16] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Applied effect Conduit Power to TestPlayer]
+[23:44:16] [RCON Client /127.0.0.1 #597/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:44:16] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:44:16] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -782.500000, 20.000000, 314.500000]
+[23:44:16] [RCON Client /127.0.0.1 #598/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:44:22] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:44:22] [RCON Client /127.0.0.1 #599/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:44:22] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:44:22] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -770.500000, 18.000000, 326.500000]
+[23:44:22] [RCON Client /127.0.0.1 #600/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:44:40] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:44:40] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Removed every effect from TestPlayer]
+[23:44:40] [RCON Client /127.0.0.1 #601/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:44:40] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:44:41] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[23:44:41] [RCON Client /127.0.0.1 #602/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:44:42] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:44:42] [RCON Client /127.0.0.1 #603/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:44:42] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:44:42] [RCON Client /127.0.0.1 #604/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:44:42] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:44:44] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -809.500000, 105.000000, -364.500000]
+[23:44:44] [RCON Client /127.0.0.1 #605/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:44:50] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:44:50] [RCON Client /127.0.0.1 #606/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:44:50] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:44:50] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -801.500000, 108.000000, -340.500000]
+[23:44:50] [RCON Client /127.0.0.1 #607/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:45:07] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:45:07] [RCON Client /127.0.0.1 #608/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:45:07] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:45:08] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[23:45:08] [RCON Client /127.0.0.1 #609/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:45:09] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:45:09] [RCON Client /127.0.0.1 #610/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:45:09] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:45:09] [RCON Client /127.0.0.1 #611/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:45:09] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:45:11] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 490.500000, 72.000000, 5249.500000]
+[23:45:11] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 2168ms or 43 ticks behind
+[23:45:11] [RCON Client /127.0.0.1 #612/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:45:17] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:45:20] [RCON Client /127.0.0.1 #613/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:45:21] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:45:21] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 497.500000, 74.000000, 5272.500000]
+[23:45:21] [RCON Client /127.0.0.1 #614/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:45:38] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:45:38] [RCON Client /127.0.0.1 #615/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:45:38] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:45:40] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[23:45:40] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 2214ms or 44 ticks behind
+[23:45:40] [RCON Client /127.0.0.1 #616/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:45:41] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:45:41] [RCON Client /127.0.0.1 #617/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:45:41] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:45:41] [RCON Client /127.0.0.1 #618/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:45:42] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:45:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 382.500000, 73.000000, -566.500000]
+[23:45:42] [RCON Client /127.0.0.1 #619/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:45:48] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:45:48] [RCON Client /127.0.0.1 #620/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:45:48] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:45:48] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 368.500000, 78.000000, -541.500000]
+[23:45:48] [RCON Client /127.0.0.1 #621/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:46:05] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:46:05] [RCON Client /127.0.0.1 #622/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:46:05] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:46:09] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[23:46:09] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 4080ms or 81 ticks behind
+[23:46:09] [RCON Client /127.0.0.1 #623/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:46:10] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:46:11] [RCON Client /127.0.0.1 #624/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:46:11] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:46:11] [RCON Client /127.0.0.1 #625/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:46:11] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:46:11] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 120.000000, 36.500000]
+[23:46:11] [RCON Client /127.0.0.1 #626/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:46:11] [Server thread/WARN] [minecraft/ServerGamePacketListenerImpl]: TestPlayer moved too quickly! 0.0,10.0,36.0
+[23:46:17] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:46:17] [RCON Client /127.0.0.1 #627/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:46:17] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:46:17] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 14.500000, 122.000000, 58.500000]
+[23:46:17] [RCON Client /127.0.0.1 #628/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:46:34] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:46:34] [RCON Client /127.0.0.1 #629/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:46:35] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:46:35] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[23:46:35] [RCON Client /127.0.0.1 #630/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:46:36] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:46:36] [RCON Client /127.0.0.1 #631/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:46:36] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:46:36] [RCON Client /127.0.0.1 #632/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:46:36] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:46:36] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 120.000000, 0.500000]
+[23:46:36] [RCON Client /127.0.0.1 #633/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:46:42] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:46:42] [RCON Client /127.0.0.1 #634/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:46:42] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:46:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 48.500000, 154.000000, 54.500000]
+[23:46:42] [RCON Client /127.0.0.1 #635/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:46:42] [Server thread/WARN] [minecraft/ServerGamePacketListenerImpl]: TestPlayer moved too quickly! 48.0,34.0,54.0
+[23:46:59] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:46:59] [RCON Client /127.0.0.1 #636/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:46:59] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:46:59] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[23:46:59] [RCON Client /127.0.0.1 #637/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:46:59] [Server thread/WARN] [minecraft/ServerGamePacketListenerImpl]: TestPlayer moved too quickly! -48.0,-44.0,-54.0
+[23:47:00] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:47:00] [RCON Client /127.0.0.1 #638/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:47:00] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:47:00] [RCON Client /127.0.0.1 #639/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:47:00] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:47:00] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 120.000000, -53.500000]
+[23:47:00] [RCON Client /127.0.0.1 #640/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:47:06] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:47:06] [RCON Client /127.0.0.1 #641/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:47:06] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:47:06] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -17.500000, 132.000000, -77.500000]
+[23:47:06] [RCON Client /127.0.0.1 #642/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:47:23] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:47:23] [RCON Client /127.0.0.1 #643/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:47:23] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:47:23] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[23:47:23] [RCON Client /127.0.0.1 #644/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:47:24] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:47:24] [RCON Client /127.0.0.1 #645/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:47:24] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:47:24] [RCON Client /127.0.0.1 #646/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:47:24] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:47:45] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 1220.500000, 97.000000, -535.500000]
+[23:47:45] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 20817ms or 416 ticks behind
+[23:47:45] [RCON Client /127.0.0.1 #647/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:47:51] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:47:51] [RCON Client /127.0.0.1 #648/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:47:51] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:48:10] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 1216.500000, 93.000000, -546.500000]
+[23:48:10] [RCON Client /127.0.0.1 #649/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:48:10] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 9522ms or 190 ticks behind
+[23:48:26] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:48:26] [RCON Client /127.0.0.1 #650/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:48:26] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:48:26] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[23:48:26] [RCON Client /127.0.0.1 #651/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:48:27] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:48:27] [RCON Client /127.0.0.1 #652/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:48:27] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:48:27] [RCON Client /127.0.0.1 #653/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:48:27] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:48:27] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 1220.500000, 97.000000, -535.500000]
+[23:48:27] [RCON Client /127.0.0.1 #654/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:48:34] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:48:34] [RCON Client /127.0.0.1 #655/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:48:34] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:48:34] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 1221.500000, 91.000000, -544.500000]
+[23:48:34] [RCON Client /127.0.0.1 #656/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:48:51] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:48:51] [RCON Client /127.0.0.1 #657/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:48:51] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:48:51] [RCON Client /127.0.0.1 #658/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:48:51] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:48:51] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Set TestPlayer's game mode to Creative Mode]
+[23:48:51] [RCON Client /127.0.0.1 #659/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:48:52] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:48:52] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Removed 3 item(s) from player TestPlayer]
+[23:48:52] [RCON Client /127.0.0.1 #660/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:48:52] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:48:52] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Replaced a slot on TestPlayer with [Shardgauntlet Blade]]
+[23:48:52] [RCON Client /127.0.0.1 #661/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:48:53] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:48:53] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Replaced a slot on TestPlayer with [Fan of Shards]]
+[23:48:53] [RCON Client /127.0.0.1 #662/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:48:53] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:48:53] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Replaced a slot on TestPlayer with [Bastion of Facets]]
+[23:48:53] [RCON Client /127.0.0.1 #663/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:48:53] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:48:53] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Replaced a slot on TestPlayer with [Archon's Rift Prism]]
+[23:48:53] [RCON Client /127.0.0.1 #664/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:48:53] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:48:53] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 1216.500000, 92.000000, -546.500000]
+[23:48:53] [RCON Client /127.0.0.1 #665/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:48:55] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:49:14] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 19896ms or 397 ticks behind
+[23:49:14] [RCON Client /127.0.0.1 #666/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:49:15] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:49:15] [RCON Client /127.0.0.1 #667/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:49:17] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:49:23] [RCON Client /127.0.0.1 #668/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:49:24] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:49:24] [RCON Client /127.0.0.1 #669/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:49:26] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:49:26] [RCON Client /127.0.0.1 #670/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:49:27] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:49:27] [RCON Client /127.0.0.1 #671/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:49:30] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:49:30] [RCON Client /127.0.0.1 #672/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:49:30] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:49:30] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Replaced a slot on TestPlayer with [Archon's Rift Prism]]
+[23:49:30] [RCON Client /127.0.0.1 #673/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:49:30] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:49:30] [RCON Client /127.0.0.1 #674/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:49:32] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:49:32] [RCON Client /127.0.0.1 #675/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:49:33] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:49:33] [RCON Client /127.0.0.1 #676/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:49:34] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:49:34] [RCON Client /127.0.0.1 #677/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:49:35] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:49:35] [RCON Client /127.0.0.1 #678/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:49:37] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:49:37] [RCON Client /127.0.0.1 #679/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:49:38] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:49:38] [RCON Client /127.0.0.1 #680/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:49:39] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:49:39] [RCON Client /127.0.0.1 #681/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:49:40] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:49:40] [RCON Client /127.0.0.1 #682/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:49:42] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:49:42] [RCON Client /127.0.0.1 #683/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:49:43] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:49:43] [RCON Client /127.0.0.1 #684/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:49:44] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:49:44] [RCON Client /127.0.0.1 #685/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:49:46] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:49:46] [RCON Client /127.0.0.1 #686/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:49:47] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:49:47] [RCON Client /127.0.0.1 #687/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:49:48] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:49:48] [RCON Client /127.0.0.1 #688/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:49:49] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:49:49] [RCON Client /127.0.0.1 #689/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:49:51] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:49:51] [RCON Client /127.0.0.1 #690/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:49:52] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:49:52] [RCON Client /127.0.0.1 #691/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:49:55] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:49:55] [RCON Client /127.0.0.1 #692/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:49:55] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:49:55] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Set TestPlayer's game mode to Spectator Mode]
+[23:49:55] [RCON Client /127.0.0.1 #693/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:49:55] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:49:55] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[23:49:55] [RCON Client /127.0.0.1 #694/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:49:56] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:49:56] [RCON Client /127.0.0.1 #695/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:49:57] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:49:57] [RCON Client /127.0.0.1 #696/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:49:57] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:50:02] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -404.500000, 71.000000, -117.500000]
+[23:50:02] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 4879ms or 97 ticks behind
+[23:50:02] [RCON Client /127.0.0.1 #697/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:50:08] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:50:08] [RCON Client /127.0.0.1 #698/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:50:08] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:50:09] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -322.500000, 92.000000, -93.500000]
+[23:50:09] [RCON Client /127.0.0.1 #699/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:50:27] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:50:27] [RCON Client /127.0.0.1 #700/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:50:27] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:50:27] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[23:50:27] [RCON Client /127.0.0.1 #701/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:50:28] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:50:28] [RCON Client /127.0.0.1 #702/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:50:29] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:50:29] [RCON Client /127.0.0.1 #703/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:50:29] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:50:31] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -359.500000, 71.000000, 1181.500000]
+[23:50:31] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 2430ms or 48 ticks behind
+[23:50:31] [RCON Client /127.0.0.1 #704/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:50:37] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:50:37] [RCON Client /127.0.0.1 #705/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:50:37] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:50:37] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -352.500000, 76.000000, 1204.500000]
+[23:50:37] [RCON Client /127.0.0.1 #706/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:50:37] [Server thread/WARN] [minecraft/ServerGamePacketListenerImpl]: TestPlayer moved too quickly! 7.0,5.0,23.0
+[23:50:55] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:50:55] [RCON Client /127.0.0.1 #707/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:50:55] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:50:57] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[23:50:57] [RCON Client /127.0.0.1 #708/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:50:58] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:51:57] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 59002ms or 1180 ticks behind
+[23:51:57] [RCON Client /127.0.0.1 #709/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:51:57] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:51:57] [RCON Client /127.0.0.1 #710/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:51:57] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:51:57] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -361.500000, 72.000000, -543.500000]
+[23:51:57] [RCON Client /127.0.0.1 #711/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:52:03] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:52:03] [RCON Client /127.0.0.1 #712/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:52:04] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:52:04] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -335.500000, 81.000000, -515.500000]
+[23:52:04] [RCON Client /127.0.0.1 #713/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:52:21] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:52:21] [RCON Client /127.0.0.1 #714/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:52:21] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:52:22] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[23:52:22] [RCON Client /127.0.0.1 #715/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:52:23] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:52:23] [RCON Client /127.0.0.1 #716/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:52:23] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:52:23] [RCON Client /127.0.0.1 #717/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:52:23] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:52:25] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -551.500000, 107.000000, 381.500000]
+[23:52:25] [RCON Client /127.0.0.1 #718/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:52:31] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:52:31] [RCON Client /127.0.0.1 #719/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:52:31] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:52:31] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -541.500000, 115.000000, 403.500000]
+[23:52:31] [RCON Client /127.0.0.1 #720/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:52:31] [Server thread/WARN] [minecraft/ServerGamePacketListenerImpl]: TestPlayer moved too quickly! 10.0,8.0,22.0
+[23:52:48] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:52:48] [RCON Client /127.0.0.1 #721/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:52:48] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:52:51] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[23:52:51] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 2558ms or 51 ticks behind
+[23:52:51] [RCON Client /127.0.0.1 #722/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:52:52] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:52:54] [RCON Client /127.0.0.1 #723/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:52:54] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:52:54] [RCON Client /127.0.0.1 #724/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:52:54] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:52:59] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 172.500000, 77.000000, 621.500000]
+[23:52:59] [RCON Client /127.0.0.1 #725/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:53:05] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:53:06] [RCON Client /127.0.0.1 #726/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:53:06] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:53:09] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 196.500000, 78.000000, 647.500000]
+[23:53:09] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 2522ms or 50 ticks behind
+[23:53:09] [RCON Client /127.0.0.1 #727/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:53:25] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:53:25] [RCON Client /127.0.0.1 #728/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:53:25] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:53:29] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[23:53:29] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 3797ms or 75 ticks behind
+[23:53:29] [RCON Client /127.0.0.1 #729/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:53:30] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:53:30] [RCON Client /127.0.0.1 #730/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:53:30] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:53:30] [RCON Client /127.0.0.1 #731/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:53:30] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:53:49] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 821.500000, 110.000000, -2291.500000]
+[23:53:49] [RCON Client /127.0.0.1 #732/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:53:49] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 5060ms or 101 ticks behind
+[23:53:55] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:54:12] [RCON Client /127.0.0.1 #733/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:54:12] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 7634ms or 152 ticks behind
+[23:54:12] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:54:12] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 836.500000, 109.000000, -2276.500000]
+[23:54:12] [RCON Client /127.0.0.1 #734/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:54:12] [Server thread/WARN] [minecraft/ServerGamePacketListenerImpl]: TestPlayer moved too quickly! 15.0,-1.0,15.0
+[23:54:28] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:54:28] [RCON Client /127.0.0.1 #735/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:54:28] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:55:13] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[23:55:13] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 44216ms or 884 ticks behind
+[23:55:13] [RCON Client /127.0.0.1 #736/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:55:14] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:55:14] [RCON Client /127.0.0.1 #737/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:55:14] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:55:14] [RCON Client /127.0.0.1 #738/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:55:14] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:55:20] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -514.500000, 72.000000, 3139.500000]
+[23:55:20] [RCON Client /127.0.0.1 #739/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:55:26] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:55:26] [RCON Client /127.0.0.1 #740/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:55:26] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:55:26] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -518.500000, 75.000000, 3165.500000]
+[23:55:26] [RCON Client /127.0.0.1 #741/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:55:26] [Server thread/WARN] [minecraft/ServerGamePacketListenerImpl]: TestPlayer moved too quickly! -4.0,3.0,26.0
+[23:55:42] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:55:42] [RCON Client /127.0.0.1 #742/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:55:42] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:55:48] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[23:55:48] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 5666ms or 113 ticks behind
+[23:55:48] [RCON Client /127.0.0.1 #743/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:55:49] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:55:49] [RCON Client /127.0.0.1 #744/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:55:49] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:55:49] [RCON Client /127.0.0.1 #745/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:55:49] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:56:10] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 1384.500000, 94.000000, -460.500000]
+[23:56:10] [RCON Client /127.0.0.1 #746/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:56:10] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 6587ms or 131 ticks behind
+[23:56:16] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:56:36] [RCON Client /127.0.0.1 #747/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:56:36] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 11493ms or 229 ticks behind
+[23:56:36] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:56:36] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 1388.500000, 94.000000, -444.500000]
+[23:56:36] [RCON Client /127.0.0.1 #748/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:56:53] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:56:53] [RCON Client /127.0.0.1 #749/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:56:53] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:57:29] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[23:57:29] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 36027ms or 720 ticks behind
+[23:57:29] [RCON Client /127.0.0.1 #750/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:57:30] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:57:30] [RCON Client /127.0.0.1 #751/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:57:30] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:57:30] [RCON Client /127.0.0.1 #752/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:57:30] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:57:47] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -992.500000, 106.000000, -879.500000]
+[23:57:48] [RCON Client /127.0.0.1 #753/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:57:48] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 3842ms or 76 ticks behind
+[23:57:54] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:57:54] [RCON Client /127.0.0.1 #754/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:57:54] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:57:54] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -976.500000, 108.000000, -860.500000]
+[23:57:54] [RCON Client /127.0.0.1 #755/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:58:11] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:58:11] [RCON Client /127.0.0.1 #756/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:58:11] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:58:12] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[23:58:12] [RCON Client /127.0.0.1 #757/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:58:13] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:58:13] [RCON Client /127.0.0.1 #758/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:58:13] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:58:13] [RCON Client /127.0.0.1 #759/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:58:13] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:58:14] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 170.500000, 81.000000, 605.500000]
+[23:58:14] [RCON Client /127.0.0.1 #760/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:58:20] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:58:20] [RCON Client /127.0.0.1 #761/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:58:20] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:58:20] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 170.500000, 73.000000, 605.500000]
+[23:58:20] [RCON Client /127.0.0.1 #762/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:58:37] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:58:37] [RCON Client /127.0.0.1 #763/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:58:37] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:58:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[23:58:42] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 5322ms or 106 ticks behind
+[23:58:42] [RCON Client /127.0.0.1 #764/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:58:43] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:58:43] [RCON Client /127.0.0.1 #765/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:58:43] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:58:46] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 1216.500000, 93.000000, -546.500000]
+[23:58:46] [RCON Client /127.0.0.1 #766/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:58:56] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:58:56] [RCON Client /127.0.0.1 #767/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:58:56] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:58:56] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 1204.500000, 98.000000, -558.500000]
+[23:58:56] [RCON Client /127.0.0.1 #768/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:58:58] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:58:59] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[23:58:59] [RCON Client /127.0.0.1 #769/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:59:00] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:59:00] [RCON Client /127.0.0.1 #770/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:59:00] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:59:00] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 1216.500000, 93.000000, -546.500000]
+[23:59:00] [RCON Client /127.0.0.1 #771/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:59:00] [Server thread/WARN] [minecraft/ServerGamePacketListenerImpl]: TestPlayer moved too quickly! 1216.0,-17.0,-547.0
+[23:59:09] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:59:09] [RCON Client /127.0.0.1 #772/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:59:09] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:59:09] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 1202.500000, 98.000000, -562.500000]
+[23:59:09] [RCON Client /127.0.0.1 #773/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:59:12] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:59:12] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[23:59:12] [RCON Client /127.0.0.1 #774/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:59:13] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:59:13] [RCON Client /127.0.0.1 #775/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:59:13] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:59:23] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -958.500000, 131.000000, -12.500000]
+[23:59:23] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 9780ms or 195 ticks behind
+[23:59:23] [RCON Client /127.0.0.1 #776/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:59:32] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:59:32] [RCON Client /127.0.0.1 #777/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:59:32] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:59:32] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -958.500000, 131.000000, -12.500000]
+[23:59:32] [RCON Client /127.0.0.1 #778/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:59:34] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:59:34] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[23:59:34] [RCON Client /127.0.0.1 #779/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:59:35] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:59:35] [RCON Client /127.0.0.1 #780/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:59:35] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:59:35] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -985.500000, 73.000000, -23.500000]
+[23:59:35] [RCON Client /127.0.0.1 #781/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:59:44] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:59:44] [RCON Client /127.0.0.1 #782/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:59:44] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:59:44] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -985.500000, 73.000000, -23.500000]
+[23:59:44] [RCON Client /127.0.0.1 #783/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:59:47] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:59:48] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[23:59:48] [RCON Client /127.0.0.1 #784/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:59:49] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:59:49] [RCON Client /127.0.0.1 #785/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:59:49] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:59:49] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -959.500000, 139.000000, -0.500000]
+[23:59:49] [RCON Client /127.0.0.1 #786/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:59:59] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:59:59] [RCON Client /127.0.0.1 #787/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[23:59:59] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[23:59:59] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -959.500000, 139.000000, -0.500000]
+[23:59:59] [RCON Client /127.0.0.1 #788/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:00:00] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:00:49] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 48413ms or 968 ticks behind
+[00:00:49] [RCON Client /127.0.0.1 #789/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:00:49] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:00:49] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -1642.500000, 94.000000, 226.500000]
+[00:00:50] [RCON Client /127.0.0.1 #790/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:01:00] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:01:00] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[00:01:01] [RCON Client /127.0.0.1 #791/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:01:02] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:01:41] [RCON Client /127.0.0.1 #792/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:01:41] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 36927ms or 738 ticks behind
+[00:01:41] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:01:41] [RCON Client /127.0.0.1 #793/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:01:41] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:01:46] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 2237.500000, 82.000000, 2304.500000]
+[00:01:46] [RCON Client /127.0.0.1 #794/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:01:58] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:01:59] [RCON Client /127.0.0.1 #795/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:01:59] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:01:59] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 2207.500000, 76.000000, 2288.500000]
+[00:01:59] [RCON Client /127.0.0.1 #796/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:02:22] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:02:22] [RCON Client /127.0.0.1 #797/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:02:22] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:02:25] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[00:02:25] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 2327ms or 46 ticks behind
+[00:02:25] [RCON Client /127.0.0.1 #798/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:02:26] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:02:31] [RCON Client /127.0.0.1 #799/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:02:31] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:02:32] [RCON Client /127.0.0.1 #800/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:02:32] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:02:32] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 2325.500000, 108.000000, 2320.500000]
+[00:02:32] [RCON Client /127.0.0.1 #801/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:02:44] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:02:45] [RCON Client /127.0.0.1 #802/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:02:45] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:02:45] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 2217.500000, 124.000000, 2228.500000]
+[00:02:45] [RCON Client /127.0.0.1 #803/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:03:12] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:03:12] [RCON Client /127.0.0.1 #804/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:03:12] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:03:14] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[00:03:14] [RCON Client /127.0.0.1 #805/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:03:15] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:03:15] [RCON Client /127.0.0.1 #806/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:03:15] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:03:15] [RCON Client /127.0.0.1 #807/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:03:15] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:03:16] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 2324.500000, 109.000000, 2320.500000]
+[00:03:16] [RCON Client /127.0.0.1 #808/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:03:22] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:03:22] [RCON Client /127.0.0.1 #809/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:03:22] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:03:22] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 2324.500000, 101.000000, 2320.500000]
+[00:03:22] [RCON Client /127.0.0.1 #810/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:03:38] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:03:38] [RCON Client /127.0.0.1 #811/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:03:38] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:03:42] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[00:03:42] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 4049ms or 80 ticks behind
+[00:03:42] [RCON Client /127.0.0.1 #812/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:03:43] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:03:43] [RCON Client /127.0.0.1 #813/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:03:43] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:03:43] [RCON Client /127.0.0.1 #814/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:03:43] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:03:43] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 2326.500000, 119.000000, 2320.500000]
+[00:03:43] [RCON Client /127.0.0.1 #815/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:03:43] [Server thread/WARN] [minecraft/ServerGamePacketListenerImpl]: TestPlayer moved too quickly! 2326.0,9.0,2320.0
+[00:03:49] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:03:49] [RCON Client /127.0.0.1 #816/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:03:50] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:03:50] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 2326.500000, 111.000000, 2320.500000]
+[00:03:50] [RCON Client /127.0.0.1 #817/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:04:03] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:04:03] [RCON Client /127.0.0.1 #818/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:04:03] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:04:06] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[00:04:06] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 2760ms or 55 ticks behind
+[00:04:06] [RCON Client /127.0.0.1 #819/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:04:07] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:04:07] [RCON Client /127.0.0.1 #820/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:04:07] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:04:07] [RCON Client /127.0.0.1 #821/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:04:07] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:04:07] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 2373.500000, 109.000000, 2320.500000]
+[00:04:07] [RCON Client /127.0.0.1 #822/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:04:14] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:04:14] [RCON Client /127.0.0.1 #823/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:04:14] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:04:14] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 2373.500000, 101.000000, 2320.500000]
+[00:04:14] [RCON Client /127.0.0.1 #824/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:04:27] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:04:27] [RCON Client /127.0.0.1 #825/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:04:28] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:04:29] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[00:04:29] [RCON Client /127.0.0.1 #826/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:04:30] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:04:30] [RCON Client /127.0.0.1 #827/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:04:30] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:04:31] [RCON Client /127.0.0.1 #828/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:04:31] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:04:32] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 2297.500000, 108.000000, 2338.500000]
+[00:04:32] [RCON Client /127.0.0.1 #829/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:04:39] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:04:39] [RCON Client /127.0.0.1 #830/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:04:39] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:04:39] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 2297.500000, 100.000000, 2338.500000]
+[00:04:39] [RCON Client /127.0.0.1 #831/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:04:52] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:04:52] [RCON Client /127.0.0.1 #832/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:04:52] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:04:55] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[00:04:55] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 2840ms or 56 ticks behind
+[00:04:55] [RCON Client /127.0.0.1 #833/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:04:56] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:04:57] [RCON Client /127.0.0.1 #834/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:04:57] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:04:57] [RCON Client /127.0.0.1 #835/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:04:57] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:04:57] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 2325.500000, 102.000000, 2320.500000]
+[00:04:57] [RCON Client /127.0.0.1 #836/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:05:10] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:05:10] [RCON Client /127.0.0.1 #837/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:05:10] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:05:10] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 2237.500000, 114.000000, 2424.500000]
+[00:05:10] [RCON Client /127.0.0.1 #838/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:05:10] [Server thread/WARN] [minecraft/ServerGamePacketListenerImpl]: TestPlayer moved too quickly! -88.0,12.0,104.0
+[00:05:37] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:05:37] [RCON Client /127.0.0.1 #839/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:05:37] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:05:37] [RCON Client /127.0.0.1 #840/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:05:37] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:05:38] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[00:05:38] [RCON Client /127.0.0.1 #841/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:05:39] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:05:39] [RCON Client /127.0.0.1 #842/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:05:39] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:05:39] [RCON Client /127.0.0.1 #843/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:05:39] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:05:45] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 2425.500000, 72.000000, 1137.500000]
+[00:05:45] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 5326ms or 106 ticks behind
+[00:05:45] [RCON Client /127.0.0.1 #844/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:05:51] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:05:54] [RCON Client /127.0.0.1 #845/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:05:54] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:06:00] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 2400.500000, 75.000000, 1155.500000]
+[00:06:00] [RCON Client /127.0.0.1 #846/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:06:17] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:06:17] [RCON Client /127.0.0.1 #847/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:06:17] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:06:18] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[00:06:18] [RCON Client /127.0.0.1 #848/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:06:19] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:06:19] [RCON Client /127.0.0.1 #849/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:06:20] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:06:20] [RCON Client /127.0.0.1 #850/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:06:20] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:06:40] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 2477.500000, 72.000000, -3149.500000]
+[00:06:40] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 19924ms or 398 ticks behind
+[00:06:40] [RCON Client /127.0.0.1 #851/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:06:46] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:07:49] [RCON Client /127.0.0.1 #852/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:07:49] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 54731ms or 1094 ticks behind
+[00:07:49] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:08:00] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 2429.500000, 88.000000, -3101.500000]
+[00:08:00] [RCON Client /127.0.0.1 #853/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:08:16] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:08:16] [RCON Client /127.0.0.1 #854/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:08:16] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:09:11] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[00:09:11] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 54397ms or 1087 ticks behind
+[00:09:11] [RCON Client /127.0.0.1 #855/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:09:12] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:09:12] [RCON Client /127.0.0.1 #856/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:09:12] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:09:12] [RCON Client /127.0.0.1 #857/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:09:12] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:09:12] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -988.500000, 92.000000, -1201.500000]
+[00:09:12] [RCON Client /127.0.0.1 #858/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:09:18] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:09:18] [RCON Client /127.0.0.1 #859/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:09:18] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:09:18] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -1030.500000, 111.000000, -1159.500000]
+[00:09:18] [RCON Client /127.0.0.1 #860/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:09:37] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:09:37] [RCON Client /127.0.0.1 #861/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:09:37] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:09:37] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[00:09:37] [RCON Client /127.0.0.1 #862/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:09:39] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:09:39] [RCON Client /127.0.0.1 #863/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:09:39] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:09:39] [RCON Client /127.0.0.1 #864/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:09:39] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:09:39] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 768.500000, 145.000000, 768.500000]
+[00:09:39] [RCON Client /127.0.0.1 #865/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:09:45] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:09:45] [RCON Client /127.0.0.1 #866/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:09:45] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:09:45] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 768.500000, 147.000000, 778.500000]
+[00:09:45] [RCON Client /127.0.0.1 #867/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:09:56] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:09:56] [RCON Client /127.0.0.1 #868/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:09:56] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:09:57] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[00:09:57] [RCON Client /127.0.0.1 #869/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:09:58] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:09:58] [RCON Client /127.0.0.1 #870/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:09:58] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:09:58] [RCON Client /127.0.0.1 #871/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:09:59] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:09:59] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 118.000000, 18.500000]
+[00:09:59] [RCON Client /127.0.0.1 #872/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:10:05] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:10:05] [RCON Client /127.0.0.1 #873/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:10:05] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:10:05] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 4.500000, 113.000000, 34.500000]
+[00:10:05] [RCON Client /127.0.0.1 #874/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:10:20] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:10:20] [RCON Client /127.0.0.1 #875/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:10:20] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:10:20] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[00:10:20] [RCON Client /127.0.0.1 #876/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:10:21] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:10:21] [RCON Client /127.0.0.1 #877/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:10:21] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:10:21] [RCON Client /127.0.0.1 #878/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:10:21] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:10:21] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 118.000000, 18.500000]
+[00:10:21] [RCON Client /127.0.0.1 #879/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:10:21] [Server thread/WARN] [minecraft/ServerGamePacketListenerImpl]: TestPlayer moved too quickly! 0.0,8.0,18.0
+[00:10:27] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:10:27] [RCON Client /127.0.0.1 #880/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:10:27] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:10:27] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 26.500000, 144.000000, 36.500000]
+[00:10:27] [RCON Client /127.0.0.1 #881/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:10:40] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:10:40] [RCON Client /127.0.0.1 #882/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:10:40] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:10:40] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[00:10:40] [RCON Client /127.0.0.1 #883/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:10:41] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:10:41] [RCON Client /127.0.0.1 #884/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:10:41] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:10:41] [RCON Client /127.0.0.1 #885/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:10:41] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:10:41] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 157.500000, 115.000000, -32.500000]
+[00:10:41] [RCON Client /127.0.0.1 #886/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:10:47] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:10:47] [RCON Client /127.0.0.1 #887/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:10:47] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:10:47] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 135.500000, 117.000000, -38.500000]
+[00:10:47] [RCON Client /127.0.0.1 #888/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:11:01] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:11:01] [RCON Client /127.0.0.1 #889/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:11:01] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:11:01] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[00:11:01] [RCON Client /127.0.0.1 #890/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:11:02] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:11:02] [RCON Client /127.0.0.1 #891/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:11:02] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:11:02] [RCON Client /127.0.0.1 #892/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:11:02] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:11:35] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 897.500000, 223.000000, -128.500000]
+[00:11:35] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 33167ms or 663 ticks behind
+[00:11:35] [RCON Client /127.0.0.1 #893/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:11:41] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:11:41] [RCON Client /127.0.0.1 #894/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:11:41] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:11:58] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 916.500000, 223.000000, -109.500000]
+[00:11:58] [RCON Client /127.0.0.1 #895/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:11:58] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 8282ms or 165 ticks behind
+[00:12:13] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:12:13] [RCON Client /127.0.0.1 #896/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:12:13] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:12:41] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[00:12:41] [RCON Client /127.0.0.1 #897/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:12:41] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 27898ms or 557 ticks behind
+[00:12:42] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:12:42] [RCON Client /127.0.0.1 #898/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:12:42] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:12:42] [RCON Client /127.0.0.1 #899/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:12:42] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:12:44] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -619.500000, 156.000000, -419.500000]
+[00:12:44] [RCON Client /127.0.0.1 #900/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:12:50] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:12:59] [RCON Client /127.0.0.1 #901/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:12:59] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 3128ms or 62 ticks behind
+[00:12:59] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:12:59] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -619.500000, 148.000000, -419.500000]
+[00:12:59] [RCON Client /127.0.0.1 #902/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:13:04] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:13:04] [RCON Client /127.0.0.1 #903/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:13:04] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:13:05] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[00:13:05] [RCON Client /127.0.0.1 #904/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:13:06] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:13:06] [RCON Client /127.0.0.1 #905/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:13:06] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:13:06] [RCON Client /127.0.0.1 #906/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:13:06] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:13:06] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 768.500000, 146.000000, 736.500000]
+[00:13:06] [RCON Client /127.0.0.1 #907/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:13:12] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:13:12] [RCON Client /127.0.0.1 #908/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:13:12] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:13:12] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 768.500000, 145.000000, 752.500000]
+[00:13:12] [RCON Client /127.0.0.1 #909/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:13:15] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:13:15] [RCON Client /127.0.0.1 #910/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:13:15] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:13:16] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[00:13:16] [RCON Client /127.0.0.1 #911/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:13:17] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:13:17] [RCON Client /127.0.0.1 #912/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:13:18] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:13:18] [RCON Client /127.0.0.1 #913/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:13:18] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:13:18] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 768.500000, 146.000000, 704.500000]
+[00:13:18] [RCON Client /127.0.0.1 #914/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:13:24] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:13:24] [RCON Client /127.0.0.1 #915/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:13:24] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:13:24] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 768.500000, 143.000000, 715.500000]
+[00:13:24] [RCON Client /127.0.0.1 #916/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:13:29] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:13:29] [RCON Client /127.0.0.1 #917/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:13:29] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:13:30] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[00:13:30] [RCON Client /127.0.0.1 #918/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:13:31] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:13:31] [RCON Client /127.0.0.1 #919/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:13:31] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:13:31] [RCON Client /127.0.0.1 #920/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:13:32] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:13:32] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 880.500000, 146.000000, 620.500000]
+[00:13:32] [RCON Client /127.0.0.1 #921/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:13:32] [Server thread/WARN] [minecraft/ServerGamePacketListenerImpl]: TestPlayer moved too quickly! 880.0,36.0,620.0
+[00:13:38] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:13:38] [RCON Client /127.0.0.1 #922/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:13:38] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:13:38] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 880.500000, 138.000000, 623.500000]
+[00:13:38] [RCON Client /127.0.0.1 #923/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:13:42] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:13:42] [RCON Client /127.0.0.1 #924/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:13:42] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:13:44] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[00:13:44] [RCON Client /127.0.0.1 #925/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:13:45] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:13:45] [RCON Client /127.0.0.1 #926/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:13:45] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:13:45] [RCON Client /127.0.0.1 #927/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:13:45] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:13:45] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 960.500000, 146.000000, 700.500000]
+[00:13:45] [RCON Client /127.0.0.1 #928/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:13:51] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:13:51] [RCON Client /127.0.0.1 #929/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:13:51] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:13:51] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 960.500000, 137.000000, 703.500000]
+[00:13:51] [RCON Client /127.0.0.1 #930/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:13:56] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:13:56] [RCON Client /127.0.0.1 #931/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:13:56] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:14:00] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[00:14:00] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 3534ms or 70 ticks behind
+[00:14:00] [RCON Client /127.0.0.1 #932/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:14:01] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:14:01] [RCON Client /127.0.0.1 #933/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:14:01] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:14:01] [RCON Client /127.0.0.1 #934/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:14:01] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:14:01] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 1040.500000, 146.000000, 780.500000]
+[00:14:01] [RCON Client /127.0.0.1 #935/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:14:07] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:14:07] [RCON Client /127.0.0.1 #936/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:14:07] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:14:07] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 1040.500000, 147.000000, 796.500000]
+[00:14:07] [RCON Client /127.0.0.1 #937/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:14:07] [Server thread/WARN] [minecraft/ServerGamePacketListenerImpl]: TestPlayer moved too quickly! 0.0,1.0,16.0
+[00:14:16] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:14:16] [RCON Client /127.0.0.1 #938/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:14:16] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:14:18] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[00:14:18] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 2326ms or 46 ticks behind
+[00:14:18] [RCON Client /127.0.0.1 #939/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:14:19] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:14:19] [RCON Client /127.0.0.1 #940/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:14:19] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:14:19] [RCON Client /127.0.0.1 #941/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:14:19] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:14:22] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -400.500000, 71.000000, -116.500000]
+[00:14:22] [RCON Client /127.0.0.1 #942/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:14:28] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:14:28] [RCON Client /127.0.0.1 #943/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:14:28] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:14:28] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -324.500000, 90.000000, -94.500000]
+[00:14:28] [RCON Client /127.0.0.1 #944/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:14:44] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:14:44] [RCON Client /127.0.0.1 #945/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:14:44] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:14:45] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[00:14:45] [RCON Client /127.0.0.1 #946/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:14:46] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:14:46] [RCON Client /127.0.0.1 #947/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:14:46] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:14:46] [RCON Client /127.0.0.1 #948/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:14:46] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:14:46] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 820.500000, 154.000000, 760.500000]
+[00:14:46] [RCON Client /127.0.0.1 #949/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:14:52] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:14:52] [RCON Client /127.0.0.1 #950/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:14:52] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:14:52] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 811.500000, 151.000000, 750.500000]
+[00:14:52] [RCON Client /127.0.0.1 #951/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:14:52] [Server thread/WARN] [minecraft/ServerGamePacketListenerImpl]: TestPlayer moved too quickly! -9.0,-3.0,-10.0
+[00:14:59] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:14:59] [RCON Client /127.0.0.1 #952/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:14:59] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:15:00] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[00:15:00] [RCON Client /127.0.0.1 #953/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:15:01] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:15:01] [RCON Client /127.0.0.1 #954/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:15:01] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:15:01] [RCON Client /127.0.0.1 #955/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:15:01] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:15:02] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 2237.500000, 76.000000, 2304.500000]
+[00:15:02] [RCON Client /127.0.0.1 #956/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:15:08] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:15:08] [RCON Client /127.0.0.1 #957/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:15:08] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:15:08] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 2211.500000, 73.000000, 2336.500000]
+[00:15:08] [RCON Client /127.0.0.1 #958/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:15:24] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:15:24] [RCON Client /127.0.0.1 #959/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:15:24] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:15:26] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[00:15:26] [RCON Client /127.0.0.1 #960/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:15:27] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:15:27] [RCON Client /127.0.0.1 #961/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:15:27] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:15:27] [RCON Client /127.0.0.1 #962/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:15:27] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:15:27] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 890.500000, 154.000000, 760.500000]
+[00:15:27] [RCON Client /127.0.0.1 #963/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:15:34] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:15:34] [RCON Client /127.0.0.1 #964/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:15:34] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:15:34] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 890.500000, 148.000000, 767.500000]
+[00:15:34] [RCON Client /127.0.0.1 #965/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:15:40] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:15:40] [RCON Client /127.0.0.1 #966/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:15:40] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:15:43] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[00:15:43] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 2907ms or 58 ticks behind
+[00:15:43] [RCON Client /127.0.0.1 #967/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:15:44] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:15:44] [RCON Client /127.0.0.1 #968/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:15:44] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:15:44] [RCON Client /127.0.0.1 #969/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:15:44] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:15:50] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 310.500000, 84.000000, 310.500000]
+[00:15:50] [RCON Client /127.0.0.1 #970/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:15:56] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:15:56] [RCON Client /127.0.0.1 #971/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:15:56] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:15:56] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 310.500000, 88.000000, 310.500000]
+[00:15:56] [RCON Client /127.0.0.1 #972/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:16:08] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:16:08] [RCON Client /127.0.0.1 #973/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:16:08] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:16:13] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[00:16:13] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 4752ms or 95 ticks behind
+[00:16:13] [RCON Client /127.0.0.1 #974/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:16:14] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:16:21] [RCON Client /127.0.0.1 #975/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:16:21] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:16:21] [RCON Client /127.0.0.1 #976/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:16:21] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:16:21] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 1160.500000, 146.000000, 780.500000]
+[00:16:21] [RCON Client /127.0.0.1 #977/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:16:27] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:16:27] [RCON Client /127.0.0.1 #978/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:16:27] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:16:27] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 1160.500000, 141.000000, 795.500000]
+[00:16:27] [Server thread/WARN] [minecraft/ServerGamePacketListenerImpl]: TestPlayer moved too quickly! 0.0,-5.0,15.0
+[00:16:27] [RCON Client /127.0.0.1 #979/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:16:34] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:16:34] [RCON Client /127.0.0.1 #980/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:16:34] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:16:37] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 0.500000, 110.000000, 0.500000]
+[00:16:37] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 3173ms or 63 ticks behind
+[00:16:37] [RCON Client /127.0.0.1 #981/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:16:38] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:16:38] [RCON Client /127.0.0.1 #982/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:16:39] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:16:39] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Applied effect Night Vision to TestPlayer]
+[00:16:39] [RCON Client /127.0.0.1 #983/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:16:39] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:16:39] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Applied effect Conduit Power to TestPlayer]
+[00:16:39] [RCON Client /127.0.0.1 #984/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:16:39] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:16:39] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -14.500000, 22.000000, 36.500000]
+[00:16:39] [RCON Client /127.0.0.1 #985/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:16:45] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:16:45] [RCON Client /127.0.0.1 #986/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:16:45] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:16:45] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to -9.500000, 20.000000, 38.500000]
+[00:16:45] [RCON Client /127.0.0.1 #987/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:17:00] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:17:00] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Removed every effect from TestPlayer]
+[00:17:00] [RCON Client /127.0.0.1 #988/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:17:00] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:17:01] [RCON Client /127.0.0.1 #989/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:17:01] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:17:01] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 120.500000, 185.000000, -139.500000]
+[00:17:01] [RCON Client /127.0.0.1 #990/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:17:01] [Server thread/WARN] [minecraft/ServerGamePacketListenerImpl]: TestPlayer moved too quickly! 130.0,165.0,-178.0
+[00:17:02] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:17:02] [Server thread/INFO] [minecraft/LocateCommand]: Locating element riftworld:blacktide_citadel took 0 ms
+[00:17:02] [RCON Client /127.0.0.1 #991/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:17:02] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:17:02] [Server thread/INFO] [minecraft/LocateCommand]: Locating element riftworld:city_sanctuary took 0 ms
+[00:17:02] [RCON Client /127.0.0.1 #992/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:17:02] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:17:02] [Server thread/INFO] [minecraft/LocateCommand]: Locating element riftworld:inverted_tower took 0 ms
+[00:17:02] [RCON Client /127.0.0.1 #993/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:17:02] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:17:02] [Server thread/INFO] [minecraft/LocateCommand]: Locating element riftworld:grand_theater took 0 ms
+[00:17:02] [RCON Client /127.0.0.1 #994/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:17:02] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:17:02] [Server thread/INFO] [minecraft/LocateCommand]: Locating element riftworld:sea_cave_exit took 0 ms
+[00:17:02] [RCON Client /127.0.0.1 #995/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:17:03] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:17:03] [Server thread/INFO] [minecraft/LocateCommand]: Locating element riftworld:shallow_reef took 7 ms
+[00:17:03] [RCON Client /127.0.0.1 #996/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:17:03] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:17:03] [Server thread/INFO] [minecraft/LocateCommand]: Locating element riftworld:abyss took 0 ms
+[00:17:03] [RCON Client /127.0.0.1 #997/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:17:03] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:17:03] [Server thread/INFO] [minecraft/LocateCommand]: Locating element riftworld:violet_hills took 0 ms
+[00:17:03] [RCON Client /127.0.0.1 #998/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:17:03] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:17:03] [Server thread/INFO] [minecraft/LocateCommand]: Locating element riftworld:crystal_rifts took 0 ms
+[00:17:03] [RCON Client /127.0.0.1 #999/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:17:03] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:17:03] [Server thread/INFO] [minecraft/LocateCommand]: Locating element riftworld:overgrown_temple took 0 ms
+[00:17:03] [RCON Client /127.0.0.1 #1000/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:17:03] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:17:23] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 540.500000, 108.000000, -419.500000]
+[00:17:23] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 20001ms or 400 ticks behind
+[00:17:23] [RCON Client /127.0.0.1 #1001/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:17:29] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:17:29] [RCON Client /127.0.0.1 #1002/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:17:33] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:18:22] [Server thread/INFO] [minecraft/MinecraftServer]: [Paper Dragon: Teleported TestPlayer to 568.500000, 109.500000, -391.500000]
+[00:18:22] [RCON Client /127.0.0.1 #1003/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:18:22] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 44263ms or 885 ticks behind
+[00:18:24] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:18:26] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 24.500000, 162.000000, 88.500000]
+[00:18:26] [RCON Client /127.0.0.1 #1004/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:18:31] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:18:31] [RCON Client /127.0.0.1 #1005/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:18:31] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:18:31] [RCON Client /127.0.0.1 #1006/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:18:31] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:18:31] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Set the time to 6000]
+[00:18:31] [RCON Client /127.0.0.1 #1007/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:18:31] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:18:31] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Set the weather to clear]
+[00:18:31] [RCON Client /127.0.0.1 #1008/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:18:31] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:18:31] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 96.500000, -48.000000, 128.500000]
+[00:18:31] [RCON Client /127.0.0.1 #1009/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:18:40] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:18:40] [RCON Client /127.0.0.1 #1010/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:18:40] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:18:40] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 106.500000, -55.000000, 148.500000]
+[00:18:40] [RCON Client /127.0.0.1 #1011/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:18:40] [Server thread/WARN] [minecraft/ServerGamePacketListenerImpl]: TestPlayer moved too quickly! 10.0,-7.0,20.0
+[00:18:46] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:18:46] [RCON Client /127.0.0.1 #1012/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:18:46] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:18:46] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 103.500000, -55.000000, 146.500000]
+[00:18:46] [RCON Client /127.0.0.1 #1013/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:18:51] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:18:51] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Set TestPlayer's game mode to Creative Mode]
+[00:18:51] [RCON Client /127.0.0.1 #1014/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:18:51] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:18:51] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Removed 34 item(s) from player TestPlayer]
+[00:18:51] [RCON Client /127.0.0.1 #1015/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:18:51] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:18:51] [RCON Client /127.0.0.1 #1016/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:18:51] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:18:51] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Set TestPlayer's game mode to Spectator Mode]
+[00:18:51] [RCON Client /127.0.0.1 #1017/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:18:51] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:18:51] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Set the time to 6000]
+[00:18:51] [RCON Client /127.0.0.1 #1018/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:18:51] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:18:51] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Set the weather to clear]
+[00:18:51] [RCON Client /127.0.0.1 #1019/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:18:52] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:18:52] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 28.500000, -57.000000, 24.500000]
+[00:18:52] [RCON Client /127.0.0.1 #1020/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:18:56] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:18:56] [RCON Client /127.0.0.1 #1021/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:18:56] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:18:56] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 28.500000, -53.000000, 12.500000]
+[00:18:56] [RCON Client /127.0.0.1 #1022/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:19:02] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:19:02] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 28.500000, -57.000000, 24.500000]
+[00:19:02] [RCON Client /127.0.0.1 #1023/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:19:02] [Server thread/WARN] [minecraft/ServerGamePacketListenerImpl]: TestPlayer moved too quickly! 0.0,-4.0,12.0
+[00:19:04] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:19:04] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 42.500000, -42.000000, 28.500000]
+[00:19:04] [RCON Client /127.0.0.1 #1024/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:19:04] [Server thread/WARN] [minecraft/ServerGamePacketListenerImpl]: TestPlayer moved too quickly! 14.0,15.0,4.0
+[00:19:07] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:19:07] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 28.500000, -57.000000, 24.500000]
+[00:19:07] [RCON Client /127.0.0.1 #1025/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:19:07] [Server thread/WARN] [minecraft/ServerGamePacketListenerImpl]: TestPlayer moved too quickly! -14.0,-15.0,-4.0
+[00:19:08] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:19:08] [RCON Client /127.0.0.1 #1026/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:19:20] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:19:20] [RCON Client /127.0.0.1 #1027/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:19:20] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:19:20] [RCON Client /127.0.0.1 #1028/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:19:20] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:19:20] [RCON Client /127.0.0.1 #1029/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:19:20] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:19:20] [RCON Client /127.0.0.1 #1030/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:19:20] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:19:20] [RCON Client /127.0.0.1 #1031/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:19:20] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:19:20] [RCON Client /127.0.0.1 #1032/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:19:20] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:19:20] [Server thread/INFO] [minecraft/LocateCommand]: Locating element riftworld:crystal_rifts took 0 ms
+[00:19:20] [RCON Client /127.0.0.1 #1033/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:19:20] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:19:20] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Marked chunk [-22, 79] in riftworld:elisar to be force loaded]
+[00:19:20] [RCON Client /127.0.0.1 #1034/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:19:22] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:19:22] [RCON Client /127.0.0.1 #1035/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:19:23] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:19:23] [RCON Client /127.0.0.1 #1036/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:19:23] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:19:23] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 1214.500000, 102.000000, -550.500000]
+[00:19:23] [RCON Client /127.0.0.1 #1037/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:19:28] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:19:39] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 1196.500000, 102.000000, -457.500000]
+[00:19:39] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 10872ms or 217 ticks behind
+[00:19:39] [RCON Client /127.0.0.1 #1038/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:19:43] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:20:30] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 1179.500000, 106.000000, -364.500000]
+[00:20:30] [RCON Client /127.0.0.1 #1039/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:20:35] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:21:18] [Server thread/WARN] [minecraft/ServerGamePacketListenerImpl]: TestPlayer moved too quickly! 0.0,-10.806526110008988,0.0
+[00:21:18] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 1214.500000, 98.000000, -550.500000]
+[00:21:18] [RCON Client /127.0.0.1 #1040/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:21:18] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 84389ms or 1687 ticks behind
+[00:21:22] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:21:46] [RCON Client /127.0.0.1 #1041/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:21:46] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:21:46] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 12715ms or 254 ticks behind
+[00:21:46] [RCON Client /127.0.0.1 #1042/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:21:46] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:21:46] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 1193.500000, 93.000000, -598.500000]
+[00:21:46] [RCON Client /127.0.0.1 #1043/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:22:05] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:22:05] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 1199.500000, 94.000000, -487.500000]
+[00:22:05] [RCON Client /127.0.0.1 #1044/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:22:22] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:22:22] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 1189.500000, 95.000000, -394.500000]
+[00:22:22] [RCON Client /127.0.0.1 #1045/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:22:22] [Server thread/WARN] [minecraft/ServerGamePacketListenerImpl]: TestPlayer moved too quickly! -10.0,4.5,93.0
+[00:22:28] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 4561ms or 91 ticks behind
+[00:22:39] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:22:39] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 1214.500000, 92.000000, -550.500000]
+[00:22:39] [RCON Client /127.0.0.1 #1046/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:22:56] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:22:56] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Teleported TestPlayer to 1165.500000, 85.000000, -495.500000]
+[00:22:56] [RCON Client /127.0.0.1 #1047/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:23:12] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:23:12] [RCON Client /127.0.0.1 #1048/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:23:12] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:23:12] [RCON Client /127.0.0.1 #1049/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:23:12] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:23:12] [RCON Client /127.0.0.1 #1050/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:23:14] [Server thread/INFO] [minecraft/ServerGamePacketListenerImpl]: TestPlayer lost connection: Disconnected
+[00:23:14] [Server thread/INFO] [minecraft/MinecraftServer]: TestPlayer left the game
+[00:23:18] [RCON Listener #1/INFO] [minecraft/GenericThread]: Thread RCON Client /127.0.0.1 started
+[00:23:18] [Server thread/INFO] [minecraft/MinecraftServer]: [Rcon: Stopping the server]
+[00:23:18] [RCON Client /127.0.0.1 #1051/INFO] [minecraft/RconClient]: Thread RCON Client /127.0.0.1 shutting down
+[00:23:18] [Server thread/INFO] [minecraft/MinecraftServer]: Stopping server
+[00:23:18] [Server thread/INFO] [minecraft/MinecraftServer]: Saving players
+[00:23:18] [Server thread/INFO] [minecraft/MinecraftServer]: Saving worlds
