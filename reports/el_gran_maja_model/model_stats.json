@@ -1,6 +1,6 @@
 {
   "bones_count": 13,
-  "cubes_count": 4416,
+  "cubes_count": 4780,
   "upper_teeth": 32,
   "lower_teeth": 30,
   "upper_tooth_cuboids": 128,
@@ -20,7 +20,7 @@
       928
     ],
     "y": [
-      -354,
+      -357,
       360
     ],
     "z": [
@@ -30,12 +30,12 @@
   },
   "size_units": {
     "width_x": 1856,
-    "height_y": 714,
+    "height_y": 717,
     "length_z": 5154
   },
   "size_blocks_meters": {
     "width_x": 116.0,
-    "height_y": 44.625,
+    "height_y": 44.812,
     "length_z": 322.125
   },
   "cuboids_by_material": {
@@ -45,7 +45,7 @@
     "chin_face": 48,
     "chin_top": 478,
     "crown_face": 104,
-    "crown_top": 476,
+    "crown_top": 852,
     "eye": 8,
     "eye_socket": 8,
     "fin": 60,
@@ -53,7 +53,6 @@
     "gum_upper": 156,
     "keel": 62,
     "mouth_cheek": 14,
-    "mouth_wall": 12,
     "neck": 16,
     "throat": 34,
     "tongue": 478,

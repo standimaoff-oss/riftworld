@@ -233,6 +233,21 @@ def build_model():
         if yrim > ybot+8:
             m.pair("head",x,yrim-7,zfront-9,w,15,30,"wing_rim",key=("rim",x))
 
+    # Rear occiput wall. The traced skull stops at the back of the dome, which
+    # left two open windows behind the head (they read as holes in game); this
+    # solid wall closes them from the inside, hidden by the neck in front of it.
+    occ_z0 = q(tz(.205))
+    for x in range(0, HALF, 24):
+        w = min(24, HALF-x)
+        u = u_of(x+w/2)
+        ytop = q(vy(interp(FRONT_TOP,u)))
+        ylow = q(vy(interp(FRONT_BOTTOM,u)))
+        if ytop - ylow < 8:
+            continue
+        for k in range(0, ytop-ylow, 96):
+            h = min(96, ytop-ylow-k)
+            m.pair("head",x,ylow+k,occ_z0,w,h,72,"crown_top",key=("occiput",x,k//96))
+
     # Back wall and lateral warm pouches. Both are hidden behind the gums and
     # teeth; they are actual volumes, not a billboard or a photograph.
     for x in range(0, q(.41*HALF), 16):
@@ -253,17 +268,6 @@ def build_model():
             zf = q(min(-630+300*(u-.30)/.11, outer_wing_z(u)+wing_inset-36))
         if v1 > v0:
             m.pair("head",x,q(vy(v1)),zf,w,q(HEIGHT*(v1-v0)),160,mat,key=(mat,x))
-
-    # A thin sagittal interior wall gives the mouth real dark depth when seen
-    # from the side. It sits behind the teeth; from the front it is only 4
-    # model units wide and cannot replace the actual 3-D teeth or gum volumes.
-    for z0 in range(-858, -185, 60):
-        z1 = min(-185, z0+60)
-        t = (z0+z1+1716)/2/673
-        vtop = .505 + .06*t
-        vbottom = .89 - .22*t
-        m.centered("head", q(vy(vbottom)), z0, 4, q(HEIGHT*(vbottom-vtop)),
-                   z1-z0, "mouth_wall", key=("wall",z0))
 
     # Thick, vertically striated upper gum pad, from the traced upper lip down
     # to the nearly level root line of the needle curtain.

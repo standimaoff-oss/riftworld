@@ -252,12 +252,54 @@ def shade(color, factor):
     return tuple(max(0, min(255, int(c * factor))) for c in color)
 
 
+def _pixels(draw):
+    img = getattr(draw, '_image', None) or getattr(draw, 'im', None)
+    return img.load() if img is not None else None
+
+
+def bevel(px, fx, fy, fw, fh, rng):
+    """One-texel bevel: dark seam on the bottom/right, a lit edge on top/left.
+
+    This is what makes a cube read as a solid body instead of a flat stamp of
+    colour, and it also hides the hard edge between neighbouring boxes.
+    """
+    if px is None or fw < 2 or fh < 2:
+        return
+    dark = 0.86 + rng.random() * 0.04
+    light = 1.05 + rng.random() * 0.04
+    for x in range(fx, fx + fw):
+        px[x, fy] = shade(px[x, fy], light)
+        px[x, fy + fh - 1] = shade(px[x, fy + fh - 1], dark)
+    for y in range(fy, fy + fh):
+        px[fx, y] = shade(px[fx, y], (light + 1.0) * 0.5)
+        px[fx + fw - 1, y] = shade(px[fx + fw - 1, y], (dark + 1.0) * 0.5)
+
+
 def paint_template(draw, palette, u, v, w, h, d, rng, variant):
+    """Base gradient first, style detail on top, then a lit bevel.
+
+    The detail has to be painted *after* the gradient: painting it first and
+    then filling whole rows with one colour (the old order) flattened every box
+    into a single square of paint, which is exactly how it looked in game.
+    """
     up_c, side_c, front_c, down_c, style = palette
+    px = _pixels(draw)
     for face, (fx, fy, fw, fh) in faces(u, v, w, h, d).items():
         base = rgb({'up': up_c, 'down': down_c, 'north': front_c, 'south': front_c,
                     'east': side_c, 'west': side_c}[face])
-        draw.rectangle((fx, fy, fx + fw - 1, fy + fh - 1), fill=(*base, 255))
+        if face in ('east', 'west', 'north', 'south'):
+            for row in range(fh):
+                f = 1.030 - 0.070 * (row / max(1, fh - 1))
+                draw.line((fx, fy + row, fx + fw - 1, fy + row), fill=(*shade(base, f), 255))
+        elif face == 'up':
+            for col in range(fw):
+                f = 0.995 + 0.025 * math.sin(math.pi * col / max(1, fw - 1))
+                draw.line((fx + col, fy, fx + col, fy + fh - 1), fill=(*shade(base, f), 255))
+        else:
+            for row in range(fh):
+                f = 0.975 - 0.040 * (row / max(1, fh - 1))
+                draw.line((fx, fy + row, fx + fw - 1, fy + row), fill=(*shade(base, f), 255))
+
         if style == 'feather':
             paint_feather(draw, fx, fy, fw, fh, base, rng)
         elif style == 'hair':
@@ -280,36 +322,25 @@ def paint_template(draw, palette, u, v, w, h, d, rng, variant):
             paint_eye(draw, fx, fy, fw, fh, base)
         else:
             paint_smooth(draw, fx, fy, fw, fh, base, rng)
-        # every face gets a soft top-lit / bottom-shadowed gradient
-        if face in ('east', 'west', 'north', 'south'):
-            for row in range(fh):
-                k = row / max(1, fh - 1)
-                f = 1.028 - 0.062 * k
-                draw.line((fx, fy + row, fx + fw - 1, fy + row), fill=(*shade(base, f), 255))
-        elif face == 'up':
-            for col in range(fw):
-                f = 0.995 + 0.02 * math.sin(math.pi * col / max(1, fw - 1))
-                draw.line((fx + col, fy, fx + col, fy + fh - 1), fill=(*shade(base, f), 255))
-        else:
-            for row in range(fh):
-                f = 0.985 - 0.025 * row / max(1, fh - 1)
-                draw.line((fx, fy + row, fx + fw - 1, fy + row), fill=(*shade(base, f), 255))
-        if variant and style in ('fur', 'scale', 'feather') and min(fw, fh) > 3:
-            # second variant: a slightly warmer/cooler cast keeps repeated parts
-            # from reading as one duplicated stamp.
-            f = 0.985 if variant % 2 else 1.012
-            for row in range(fh):
-                draw.line((fx, fy + row, fx + fw - 1, fy + row), fill=(*shade(base, f), 255))
+        bevel(px, fx, fy, fw, fh, rng)
+        if variant and min(fw, fh) > 3 and px is not None:
+            # a per-face tint keeps repeated parts from reading as one stamp
+            f = 0.975 if variant % 2 else 1.018
+            for y in range(fy + 1, fy + fh - 1):
+                for x in range(fx + 1, fx + fw - 1):
+                    px[x, y] = shade(px[x, y], f)
 
 
 def paint_fur(draw, fx, fy, fw, fh, base, rng):
-    for _ in range(max(1, fw * fh // 26)):
+    """Short directional strands, not isolated dots: reads as hair, not noise."""
+    for _ in range(max(2, fw * fh // 12)):
         x = fx + rng.randrange(fw)
         y = fy + rng.randrange(fh)
-        f = rng.choice((0.93, 0.96, 1.03, 1.06))
-        draw.point((x, y), fill=(*shade(base, f), 255))
-        if rng.random() < 0.35:
-            draw.point((x, min(fy + fh - 1, y + 1)), fill=(*shade(base, f * 0.99), 255))
+        ln = 1 + rng.randrange(3)
+        f = rng.choice((0.915, 0.945, 0.975, 1.035, 1.065))
+        draw.line((x, y, x, min(fy + fh - 1, y + ln)), fill=(*shade(base, f), 255))
+        if rng.random() < 0.30:
+            draw.point((x, max(fy, y - 1)), fill=(*shade(base, f * 0.96), 255))
 
 
 def paint_hair(draw, fx, fy, fw, fh, base, rng):
@@ -344,20 +375,22 @@ def paint_feather(draw, fx, fy, fw, fh, base, rng):
 
 
 def paint_scale(draw, fx, fy, fw, fh, base, rng):
-    for _ in range(max(1, fw * fh // 30)):
-        x = fx + rng.randrange(fw)
-        y = fy + rng.randrange(fh)
-        f = rng.choice((0.88, 0.92, 0.96, 1.02, 1.05))
-        sw = 1 + rng.randrange(2)
-        sh = 1 + rng.randrange(2)
-        draw.rectangle((x, y, min(fx + fw - 1, x + sw), min(fy + fh - 1, y + sh)),
-                       fill=(*shade(base, f), 255))
-    # soft mottling between the back and the belly
-    if fh > 4:
-        for y in range(fy + 1, fy + fh, 3):
-            if rng.random() < 0.35:
-                f = rng.choice((0.9, 1.06))
-                draw.line((fx, y, fx + fw - 1, y), fill=(*shade(base, f), 255))
+    """Overlapping scale rows with a dark seam and a lit crown on every plate."""
+    sx, sy = 4, 3
+    for row, y in enumerate(range(fy, fy + fh, sy)):
+        offset = (row % 2) * (sx // 2)
+        for x in range(fx + offset, fx + fw, sx):
+            x2 = min(fx + fw - 1, x + sx - 1)
+            y2 = min(fy + fh - 1, y + sy - 1)
+            if x2 <= x - 1:
+                continue
+            f = rng.choice((0.905, 0.945, 0.985, 1.045))
+            draw.rectangle((x, y, x2, y2), fill=(*shade(base, f), 255))
+            draw.line((x, y2, x2, y2), fill=(*shade(base, 0.795), 255))
+            if x2 + 1 <= fx + fw - 1:
+                draw.line((x2, y, x2, y2), fill=(*shade(base, 0.86), 255))
+            if rng.random() < 0.25 and y2 - 1 > y:
+                draw.line((x + 1, y + 1, x2 - 1, y + 1), fill=(*shade(base, 1.06), 255))
 
 
 def paint_scar(draw, fx, fy, fw, fh, base, rng):
