@@ -1,146 +1,151 @@
-[05Nov2026 12:25:43.683] [main/INFO] [cpw.mods.modlauncher.Launcher/MODLAUNCHER]: ModLauncher running: args [--launchTarget, forgeserver, --fml.forgeVersion, 47.4.23, --fml.mcVersion, 1.20.1, --fml.forgeGroup, net.minecraftforge, --fml.mcpVersion, 20230612.114412, nogui]
-[05Nov2026 12:25:43.687] [main/INFO] [cpw.mods.modlauncher.Launcher/MODLAUNCHER]: ModLauncher 10.0.9+10.0.9+main.dcd20f30 starting: java version 17.0.21 by Eclipse Adoptium; OS Linux arch amd64 version 7.0.0-1017-azure
-[05Nov2026 12:25:43.786] [main/WARN] [net.minecraftforge.fml.loading.FMLConfig/CORE]: Configuration file /home/runner/work/riftworld/riftworld/ci/server/config/fml.toml is not correct. Correcting
-[05Nov2026 12:25:43.787] [main/INFO] [net.minecraftforge.fml.loading.FMLConfig/CORE]: Incorrect key [earlyWindowSkipGLVersions] was corrected from null to []
-[05Nov2026 12:25:43.788] [main/INFO] [net.minecraftforge.fml.loading.FMLConfig/CORE]: Incorrect key [earlyWindowLogHelpMessage] was corrected from null to true
-[05Nov2026 12:25:43.788] [main/INFO] [net.minecraftforge.fml.loading.FMLConfig/CORE]: Incorrect key [earlyWindowSquir] was corrected from null to false
-[05Nov2026 12:25:43.788] [main/INFO] [net.minecraftforge.fml.loading.FMLConfig/CORE]: Incorrect key [earlyWindowShowCPU] was corrected from null to false
-[05Nov2026 12:25:43.828] [main/INFO] [net.minecraftforge.fml.loading.ImmediateWindowHandler/]: ImmediateWindowProvider not loading because launch target is forgeserver
-[05Nov2026 12:25:43.874] [main/INFO] [mixin/]: SpongePowered MIXIN Subsystem Version=0.8.5 Source=union:/home/runner/work/riftworld/riftworld/ci/server/libraries/org/spongepowered/mixin/0.8.5/mixin-0.8.5.jar%2365!/ Service=ModLauncher Env=SERVER
-[05Nov2026 12:25:44.107] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file /home/runner/work/riftworld/riftworld/ci/server/libraries/net/minecraftforge/fmlcore/1.20.1-47.4.23/fmlcore-1.20.1-47.4.23.jar is missing mods.toml file
-[05Nov2026 12:25:44.108] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file /home/runner/work/riftworld/riftworld/ci/server/libraries/net/minecraftforge/javafmllanguage/1.20.1-47.4.23/javafmllanguage-1.20.1-47.4.23.jar is missing mods.toml file
-[05Nov2026 12:25:44.109] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file /home/runner/work/riftworld/riftworld/ci/server/libraries/net/minecraftforge/lowcodelanguage/1.20.1-47.4.23/lowcodelanguage-1.20.1-47.4.23.jar is missing mods.toml file
-[05Nov2026 12:25:44.111] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file /home/runner/work/riftworld/riftworld/ci/server/libraries/net/minecraftforge/mclanguage/1.20.1-47.4.23/mclanguage-1.20.1-47.4.23.jar is missing mods.toml file
-[05Nov2026 12:25:44.152] [main/INFO] [net.minecraftforge.fml.loading.moddiscovery.JarInJarDependencyLocator/]: No dependencies to load found. Skipping!
-[05Nov2026 12:25:45.559] [main/INFO] [cpw.mods.modlauncher.LaunchServiceHandler/MODLAUNCHER]: Launching target 'forgeserver' with arguments [nogui]
-[05Nov2026 12:25:51.432] [modloading-worker-0/INFO] [net.minecraftforge.common.ForgeMod/FORGEMOD]: Forge mod loading, version 47.4.23, for MC 1.20.1 with MCP 20230612.114412
-[05Nov2026 12:25:51.439] [modloading-worker-0/INFO] [net.minecraftforge.common.MinecraftForge/FORGE]: MinecraftForge v47.4.23 Initialized
-[05Nov2026 12:25:52.104] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Configuration file /home/runner/work/riftworld/riftworld/ci/server/config/riftworld-maja.toml is not correct. Correcting
-[05Nov2026 12:25:52.544] [Forge Version Check/INFO] [net.minecraftforge.fml.VersionChecker/]: [forge] Starting version check at https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json
-[05Nov2026 12:25:52.922] [riftworld-blacktide-warmup/INFO] [RiftWorld/Blacktide/]: Loaded blacktide.nbt (248x176x228) in 806 ms
-[05Nov2026 12:25:53.086] [Forge Version Check/INFO] [net.minecraftforge.fml.VersionChecker/]: [forge] Found status: OUTDATED Current: 47.4.23 Target: 47.4.28
-[05Nov2026 12:25:53.756] [main/INFO] [com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService/]: Environment: authHost='https://authserver.mojang.com', accountsHost='https://api.mojang.com', sessionHost='https://sessionserver.mojang.com', servicesHost='https://api.minecraftservices.com', name='PROD'
-[05Nov2026 12:25:53.787] [main/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/home/runner/work/riftworld/riftworld/ci/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23103!/assets/.mcassetsroot' uses unexpected schema
-[05Nov2026 12:25:53.788] [main/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/home/runner/work/riftworld/riftworld/ci/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23103!/data/.mcassetsroot' uses unexpected schema
-[05Nov2026 12:25:55.605] [main/INFO] [net.minecraft.world.item.crafting.RecipeManager/]: Loaded 7 recipes
-[05Nov2026 12:25:55.733] [main/INFO] [net.minecraft.advancements.AdvancementList/]: Loaded 1271 advancements
-[05Nov2026 12:25:56.361] [Server thread/INFO] [net.minecraft.server.dedicated.DedicatedServer/]: Starting minecraft server version 1.20.1
-[05Nov2026 12:25:56.361] [Server thread/INFO] [net.minecraft.server.dedicated.DedicatedServer/]: Loading properties
-[05Nov2026 12:25:56.362] [Server thread/INFO] [net.minecraft.server.dedicated.DedicatedServer/]: Default game type: CREATIVE
-[05Nov2026 12:25:56.362] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Generating keypair
-[05Nov2026 12:25:56.458] [Server thread/INFO] [net.minecraft.server.dedicated.DedicatedServer/]: Starting Minecraft server on *:25565
-[05Nov2026 12:25:56.480] [Server thread/INFO] [net.minecraft.server.network.ServerConnectionListener/]: Using epoll channel type
-[05Nov2026 12:25:56.561] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
-[05Nov2026 12:25:56.562] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: The server will make no attempt to authenticate usernames. Beware.
-[05Nov2026 12:25:56.562] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
-[05Nov2026 12:25:56.562] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: To change this, set "online-mode" to "true" in the server.properties file.
-[05Nov2026 12:25:56.583] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Configuration file ./world/serverconfig/forge-server.toml is not correct. Correcting
-[05Nov2026 12:25:56.584] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server was corrected from null to its default, SimpleCommentedConfig:{}. 
-[05Nov2026 12:25:56.584] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.removeErroringBlockEntities was corrected from null to its default, false. 
-[05Nov2026 12:25:56.584] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.removeErroringEntities was corrected from null to its default, false. 
-[05Nov2026 12:25:56.584] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.fullBoundingBoxLadders was corrected from null to its default, false. 
-[05Nov2026 12:25:56.584] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.zombieBaseSummonChance was corrected from null to its default, 0.1. 
-[05Nov2026 12:25:56.584] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.zombieBabyChance was corrected from null to its default, 0.05. 
-[05Nov2026 12:25:56.585] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.permissionHandler was corrected from null to its default, forge:default_handler. 
-[05Nov2026 12:25:56.585] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.advertiseDedicatedServerToLan was corrected from null to its default, true. 
-[05Nov2026 12:25:56.585] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.useItemWithDurationZero was corrected from null to its default, false. 
-[05Nov2026 12:25:56.628] [Server thread/INFO] [net.minecraft.server.dedicated.DedicatedServer/]: Preparing level "world"
-[05Nov2026 12:25:57.447] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Preparing start region for dimension minecraft:overworld
-[05Nov2026 12:25:58.177] [Worker-Main-3/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
-[05Nov2026 12:25:58.179] [Worker-Main-3/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
-[05Nov2026 12:25:58.461] [Worker-Main-2/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 2%
-[05Nov2026 12:25:58.949] [Worker-Main-1/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 28%
-[05Nov2026 12:25:59.448] [Worker-Main-2/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 68%
-[05Nov2026 12:25:59.857] [Server thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Time elapsed: 2410 ms
-[05Nov2026 12:25:59.858] [Server thread/INFO] [net.minecraft.server.dedicated.DedicatedServer/]: Done (3.276s)! For help, type "help"
-[05Nov2026 12:25:59.858] [Server thread/INFO] [net.minecraft.server.dedicated.DedicatedServer/]: Starting remote control listener
-[05Nov2026 12:25:59.863] [Server thread/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Listener started
-[05Nov2026 12:25:59.863] [Server thread/INFO] [net.minecraft.server.rcon.thread.RconThread/]: RCON running on 0.0.0.0:25575
-[05Nov2026 12:25:59.891] [Server thread/INFO] [net.minecraftforge.server.permission.PermissionAPI/]: Successfully initialized permission handler forge:default_handler
-[05Nov2026 12:26:01.631] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:01.636] [RCON Client /127.0.0.1 #2/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:01.684] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:01.688] [RCON Client /127.0.0.1 #3/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:06.804] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:07.395] [RCON Client /127.0.0.1 #4/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:07.468] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:12.351] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Rcon: Marked [101, 140] chunks in riftworld:elisar from [101, 140] to [110, 161] to be force loaded]
-[05Nov2026 12:26:12.351] [Server thread/WARN] [net.minecraft.server.MinecraftServer/]: Can't keep up! Is the server overloaded? Running 4859ms or 97 ticks behind
-[05Nov2026 12:26:12.393] [RCON Client /127.0.0.1 #5/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:12.517] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:13.211] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Rcon: Marked [103, 162] chunks in riftworld:elisar from [103, 161] to [108, 166] to be force loaded]
-[05Nov2026 12:26:13.260] [RCON Client /127.0.0.1 #6/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:13.401] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:13.433] [RCON Client /127.0.0.1 #7/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:13.505] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:13.509] [RCON Client /127.0.0.1 #8/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:13.561] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:13.564] [RCON Client /127.0.0.1 #9/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:13.609] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:13.614] [RCON Client /127.0.0.1 #10/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:13.659] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:13.661] [RCON Client /127.0.0.1 #11/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:13.708] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:13.710] [RCON Client /127.0.0.1 #12/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:13.768] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:13.770] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Rcon: Gamerule mobGriefing is now set to: false]
-[05Nov2026 12:26:13.774] [RCON Client /127.0.0.1 #13/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:13.816] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:13.858] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Rcon: Summoned new El Gran Maja]
-[05Nov2026 12:26:13.903] [RCON Client /127.0.0.1 #14/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:13.964] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:13.991] [RCON Client /127.0.0.1 #15/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:14.052] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:14.059] [RCON Client /127.0.0.1 #16/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:16.107] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:16.109] [RCON Client /127.0.0.1 #17/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:18.152] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:18.153] [RCON Client /127.0.0.1 #18/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:20.194] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:20.196] [RCON Client /127.0.0.1 #19/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:20.234] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:20.235] [RCON Client /127.0.0.1 #20/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:20.275] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:20.277] [RCON Client /127.0.0.1 #21/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:20.316] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:20.320] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Rcon: Teleported El Gran Maja to 1690.500000, 134.000000, 2420.500000]
-[05Nov2026 12:26:20.321] [RCON Client /127.0.0.1 #22/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:20.357] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:20.358] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Rcon: Gamerule mobGriefing is now set to: true]
-[05Nov2026 12:26:20.358] [RCON Client /127.0.0.1 #23/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:20.398] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:20.399] [RCON Client /127.0.0.1 #24/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:20.437] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:20.438] [RCON Client /127.0.0.1 #25/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:20.479] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:20.480] [RCON Client /127.0.0.1 #26/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:24.526] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:24.527] [RCON Client /127.0.0.1 #27/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:24.565] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:24.566] [RCON Client /127.0.0.1 #28/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:24.602] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:24.603] [RCON Client /127.0.0.1 #29/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:28.644] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:28.646] [RCON Client /127.0.0.1 #30/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:28.682] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:28.684] [RCON Client /127.0.0.1 #31/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:28.720] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:28.721] [RCON Client /127.0.0.1 #32/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:32.760] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:32.761] [RCON Client /127.0.0.1 #33/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:32.800] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:32.801] [RCON Client /127.0.0.1 #34/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:32.836] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:32.838] [RCON Client /127.0.0.1 #35/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:36.882] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:36.883] [RCON Client /127.0.0.1 #36/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:36.918] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:36.920] [RCON Client /127.0.0.1 #37/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:36.957] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:36.958] [RCON Client /127.0.0.1 #38/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:41.002] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:41.004] [RCON Client /127.0.0.1 #39/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:41.039] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:41.040] [RCON Client /127.0.0.1 #40/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
-[05Nov2026 12:26:41.076] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
-[05Nov2026 12:26:41.077] [RCON Client /127.0.0.1 #41/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:01.194] [main/INFO] [cpw.mods.modlauncher.Launcher/MODLAUNCHER]: ModLauncher running: args [--launchTarget, forgeserver, --fml.forgeVersion, 47.4.23, --fml.mcVersion, 1.20.1, --fml.forgeGroup, net.minecraftforge, --fml.mcpVersion, 20230612.114412, nogui]
+[05Nov2026 12:36:01.197] [main/INFO] [cpw.mods.modlauncher.Launcher/MODLAUNCHER]: ModLauncher 10.0.9+10.0.9+main.dcd20f30 starting: java version 17.0.21 by Eclipse Adoptium; OS Linux arch amd64 version 7.0.0-1017-azure
+[05Nov2026 12:36:01.263] [main/WARN] [net.minecraftforge.fml.loading.FMLConfig/CORE]: Configuration file /home/runner/work/riftworld/riftworld/ci/server/config/fml.toml is not correct. Correcting
+[05Nov2026 12:36:01.264] [main/INFO] [net.minecraftforge.fml.loading.FMLConfig/CORE]: Incorrect key [earlyWindowSkipGLVersions] was corrected from null to []
+[05Nov2026 12:36:01.264] [main/INFO] [net.minecraftforge.fml.loading.FMLConfig/CORE]: Incorrect key [earlyWindowLogHelpMessage] was corrected from null to true
+[05Nov2026 12:36:01.265] [main/INFO] [net.minecraftforge.fml.loading.FMLConfig/CORE]: Incorrect key [earlyWindowSquir] was corrected from null to false
+[05Nov2026 12:36:01.265] [main/INFO] [net.minecraftforge.fml.loading.FMLConfig/CORE]: Incorrect key [earlyWindowShowCPU] was corrected from null to false
+[05Nov2026 12:36:01.289] [main/INFO] [net.minecraftforge.fml.loading.ImmediateWindowHandler/]: ImmediateWindowProvider not loading because launch target is forgeserver
+[05Nov2026 12:36:01.316] [main/INFO] [mixin/]: SpongePowered MIXIN Subsystem Version=0.8.5 Source=union:/home/runner/work/riftworld/riftworld/ci/server/libraries/org/spongepowered/mixin/0.8.5/mixin-0.8.5.jar%2365!/ Service=ModLauncher Env=SERVER
+[05Nov2026 12:36:01.476] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file /home/runner/work/riftworld/riftworld/ci/server/libraries/net/minecraftforge/fmlcore/1.20.1-47.4.23/fmlcore-1.20.1-47.4.23.jar is missing mods.toml file
+[05Nov2026 12:36:01.477] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file /home/runner/work/riftworld/riftworld/ci/server/libraries/net/minecraftforge/javafmllanguage/1.20.1-47.4.23/javafmllanguage-1.20.1-47.4.23.jar is missing mods.toml file
+[05Nov2026 12:36:01.478] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file /home/runner/work/riftworld/riftworld/ci/server/libraries/net/minecraftforge/lowcodelanguage/1.20.1-47.4.23/lowcodelanguage-1.20.1-47.4.23.jar is missing mods.toml file
+[05Nov2026 12:36:01.479] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file /home/runner/work/riftworld/riftworld/ci/server/libraries/net/minecraftforge/mclanguage/1.20.1-47.4.23/mclanguage-1.20.1-47.4.23.jar is missing mods.toml file
+[05Nov2026 12:36:01.506] [main/INFO] [net.minecraftforge.fml.loading.moddiscovery.JarInJarDependencyLocator/]: No dependencies to load found. Skipping!
+[05Nov2026 12:36:02.510] [main/INFO] [cpw.mods.modlauncher.LaunchServiceHandler/MODLAUNCHER]: Launching target 'forgeserver' with arguments [nogui]
+[05Nov2026 12:36:06.355] [modloading-worker-0/INFO] [net.minecraftforge.common.ForgeMod/FORGEMOD]: Forge mod loading, version 47.4.23, for MC 1.20.1 with MCP 20230612.114412
+[05Nov2026 12:36:06.362] [modloading-worker-0/INFO] [net.minecraftforge.common.MinecraftForge/FORGE]: MinecraftForge v47.4.23 Initialized
+[05Nov2026 12:36:06.785] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Configuration file /home/runner/work/riftworld/riftworld/ci/server/config/riftworld-maja.toml is not correct. Correcting
+[05Nov2026 12:36:07.129] [Forge Version Check/INFO] [net.minecraftforge.fml.VersionChecker/]: [forge] Starting version check at https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json
+[05Nov2026 12:36:07.392] [riftworld-blacktide-warmup/INFO] [RiftWorld/Blacktide/]: Loaded blacktide.nbt (248x176x228) in 594 ms
+[05Nov2026 12:36:07.520] [Forge Version Check/INFO] [net.minecraftforge.fml.VersionChecker/]: [forge] Found status: OUTDATED Current: 47.4.23 Target: 47.4.28
+[05Nov2026 12:36:07.838] [main/INFO] [com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService/]: Environment: authHost='https://authserver.mojang.com', accountsHost='https://api.mojang.com', sessionHost='https://sessionserver.mojang.com', servicesHost='https://api.minecraftservices.com', name='PROD'
+[05Nov2026 12:36:07.896] [main/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/home/runner/work/riftworld/riftworld/ci/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23103!/assets/.mcassetsroot' uses unexpected schema
+[05Nov2026 12:36:07.897] [main/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/home/runner/work/riftworld/riftworld/ci/server/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23103!/data/.mcassetsroot' uses unexpected schema
+[05Nov2026 12:36:09.087] [main/INFO] [net.minecraft.world.item.crafting.RecipeManager/]: Loaded 7 recipes
+[05Nov2026 12:36:09.164] [main/INFO] [net.minecraft.advancements.AdvancementList/]: Loaded 1271 advancements
+[05Nov2026 12:36:09.539] [Server thread/INFO] [net.minecraft.server.dedicated.DedicatedServer/]: Starting minecraft server version 1.20.1
+[05Nov2026 12:36:09.540] [Server thread/INFO] [net.minecraft.server.dedicated.DedicatedServer/]: Loading properties
+[05Nov2026 12:36:09.540] [Server thread/INFO] [net.minecraft.server.dedicated.DedicatedServer/]: Default game type: CREATIVE
+[05Nov2026 12:36:09.540] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Generating keypair
+[05Nov2026 12:36:09.623] [Server thread/INFO] [net.minecraft.server.dedicated.DedicatedServer/]: Starting Minecraft server on *:25565
+[05Nov2026 12:36:09.641] [Server thread/INFO] [net.minecraft.server.network.ServerConnectionListener/]: Using epoll channel type
+[05Nov2026 12:36:09.703] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+[05Nov2026 12:36:09.704] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: The server will make no attempt to authenticate usernames. Beware.
+[05Nov2026 12:36:09.704] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+[05Nov2026 12:36:09.704] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: To change this, set "online-mode" to "true" in the server.properties file.
+[05Nov2026 12:36:09.728] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Configuration file ./world/serverconfig/forge-server.toml is not correct. Correcting
+[05Nov2026 12:36:09.728] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server was corrected from null to its default, SimpleCommentedConfig:{}. 
+[05Nov2026 12:36:09.728] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.removeErroringBlockEntities was corrected from null to its default, false. 
+[05Nov2026 12:36:09.729] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.removeErroringEntities was corrected from null to its default, false. 
+[05Nov2026 12:36:09.729] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.fullBoundingBoxLadders was corrected from null to its default, false. 
+[05Nov2026 12:36:09.729] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.zombieBaseSummonChance was corrected from null to its default, 0.1. 
+[05Nov2026 12:36:09.729] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.zombieBabyChance was corrected from null to its default, 0.05. 
+[05Nov2026 12:36:09.729] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.permissionHandler was corrected from null to its default, forge:default_handler. 
+[05Nov2026 12:36:09.729] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.advertiseDedicatedServerToLan was corrected from null to its default, true. 
+[05Nov2026 12:36:09.729] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.useItemWithDurationZero was corrected from null to its default, false. 
+[05Nov2026 12:36:09.748] [Server thread/INFO] [net.minecraft.server.dedicated.DedicatedServer/]: Preparing level "world"
+[05Nov2026 12:36:10.296] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Preparing start region for dimension minecraft:overworld
+[05Nov2026 12:36:11.027] [Worker-Main-1/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
+[05Nov2026 12:36:11.028] [Worker-Main-1/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
+[05Nov2026 12:36:11.297] [Worker-Main-1/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 7%
+[05Nov2026 12:36:11.809] [Worker-Main-1/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 52%
+[05Nov2026 12:36:12.171] [Server thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Time elapsed: 1875 ms
+[05Nov2026 12:36:12.172] [Server thread/INFO] [net.minecraft.server.dedicated.DedicatedServer/]: Done (2.445s)! For help, type "help"
+[05Nov2026 12:36:12.172] [Server thread/INFO] [net.minecraft.server.dedicated.DedicatedServer/]: Starting remote control listener
+[05Nov2026 12:36:12.175] [Server thread/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Listener started
+[05Nov2026 12:36:12.175] [Server thread/INFO] [net.minecraft.server.rcon.thread.RconThread/]: RCON running on 0.0.0.0:25575
+[05Nov2026 12:36:12.198] [Server thread/INFO] [net.minecraftforge.server.permission.PermissionAPI/]: Successfully initialized permission handler forge:default_handler
+[05Nov2026 12:36:13.203] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:13.212] [RCON Client /127.0.0.1 #2/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:13.241] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:13.244] [RCON Client /127.0.0.1 #3/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:18.330] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:18.654] [RCON Client /127.0.0.1 #4/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:18.697] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:22.023] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Rcon: Marked [101, 140] chunks in riftworld:elisar from [101, 140] to [110, 161] to be force loaded]
+[05Nov2026 12:36:22.027] [Server thread/WARN] [net.minecraft.server.MinecraftServer/]: Can't keep up! Is the server overloaded? Running 3329ms or 66 ticks behind
+[05Nov2026 12:36:22.071] [RCON Client /127.0.0.1 #5/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:22.152] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:22.650] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Rcon: Marked [103, 162] chunks in riftworld:elisar from [103, 161] to [108, 166] to be force loaded]
+[05Nov2026 12:36:22.694] [RCON Client /127.0.0.1 #6/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:22.793] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:22.800] [RCON Client /127.0.0.1 #7/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:22.848] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:22.860] [RCON Client /127.0.0.1 #8/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:22.893] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:22.894] [RCON Client /127.0.0.1 #9/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:22.927] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:22.928] [RCON Client /127.0.0.1 #10/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:22.960] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:22.961] [RCON Client /127.0.0.1 #11/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:22.992] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:22.994] [RCON Client /127.0.0.1 #12/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:23.026] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:23.027] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Rcon: Gamerule mobGriefing is now set to: false]
+[05Nov2026 12:36:23.028] [RCON Client /127.0.0.1 #13/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:23.057] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:23.083] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Rcon: Summoned new El Gran Maja]
+[05Nov2026 12:36:23.083] [RCON Client /127.0.0.1 #14/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:23.115] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:23.139] [RCON Client /127.0.0.1 #15/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:23.180] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:23.182] [RCON Client /127.0.0.1 #16/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:25.214] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:25.215] [RCON Client /127.0.0.1 #17/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:27.245] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:27.246] [RCON Client /127.0.0.1 #18/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:29.275] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:29.276] [RCON Client /127.0.0.1 #19/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:29.304] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:29.306] [RCON Client /127.0.0.1 #20/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:29.333] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:29.334] [RCON Client /127.0.0.1 #21/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:29.361] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:29.364] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Rcon: Teleported El Gran Maja to 1690.500000, 134.000000, 2420.500000]
+[05Nov2026 12:36:29.365] [RCON Client /127.0.0.1 #22/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:29.392] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:29.392] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Rcon: Gamerule mobGriefing is now set to: true]
+[05Nov2026 12:36:29.393] [RCON Client /127.0.0.1 #23/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:29.419] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:29.420] [RCON Client /127.0.0.1 #24/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:29.446] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:29.447] [RCON Client /127.0.0.1 #25/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:29.472] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:29.473] [RCON Client /127.0.0.1 #26/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:33.501] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:33.502] [RCON Client /127.0.0.1 #27/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:33.532] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:33.533] [RCON Client /127.0.0.1 #28/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:33.562] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:33.563] [RCON Client /127.0.0.1 #29/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:37.594] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:37.596] [RCON Client /127.0.0.1 #30/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:37.623] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:37.624] [RCON Client /127.0.0.1 #31/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:37.652] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:37.653] [RCON Client /127.0.0.1 #32/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:41.682] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:41.684] [RCON Client /127.0.0.1 #33/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:41.710] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:41.711] [RCON Client /127.0.0.1 #34/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:41.737] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:41.738] [RCON Client /127.0.0.1 #35/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:45.772] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:45.773] [RCON Client /127.0.0.1 #36/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:45.799] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:45.801] [RCON Client /127.0.0.1 #37/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:45.827] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:45.828] [RCON Client /127.0.0.1 #38/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:49.856] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:49.857] [RCON Client /127.0.0.1 #39/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:49.885] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:49.886] [RCON Client /127.0.0.1 #40/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:49.912] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:49.913] [RCON Client /127.0.0.1 #41/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:53.941] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:53.942] [RCON Client /127.0.0.1 #42/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:53.970] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:53.971] [RCON Client /127.0.0.1 #43/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[05Nov2026 12:36:53.997] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[05Nov2026 12:36:53.998] [RCON Client /127.0.0.1 #44/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
