@@ -741,13 +741,13 @@ def liopleurodon():
             m.box(base, [14 if side > 0 else -20, -7, z_root - 8], [5, 2, 8], 'fin_pale')
             m.box(base, [20 if side > 0 else -24, -8, z_root - 4], [3, 1, 7], 'scar')
 
-    # ---- vertical tail fluke: long upper lobe, short lower lobe
-    m.box('tail_2', [-2, -12, 118], [4, 7, 8], 'flank')
-    for i in range(5):
-        m.box('tail_2', [-1, -13 - i * 2, 121 + i], [2, 3, 5 - i // 2], 'fin_edge', i % 2)
-    for i in range(5):
-        m.box('tail_2', [-1, 1 + i * 3, 120 + i], [2, 4, 5 - i // 2], 'fin', i % 2)
-    m.box('tail_2', [-1, 15, 121], [2, 3, 3], 'fin_edge')
+    # ---- tail fluke: a tapering vertical fin that grows out of the tail, not a spike
+    for i in range(6):
+        z = 110 + i * 3
+        h = 15 - i * 2                 # 15 -> 5 units, blends into the tip tube
+        m.box('tail_2', [-2, 2 - h // 2, z], [4, h, 3],
+              'fin' if i % 2 else 'fin_edge', i % 2)
+    m.box('tail_2', [-1, -1, 128], [2, 5, 3], 'fin_edge')
 
     return m.export()
 

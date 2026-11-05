@@ -73,7 +73,9 @@ for text in sys.argv[1:]:
     vectors.append(tuple(float(x) for x in m.groups()))
 d=sum((a-b)**2 for a,b in zip(*vectors))**.5
 print('before:',vectors[0],'after:',vectors[1],'distance:',round(d,3))
-if not .1<d<40: raise SystemExit('unexpected motion')
+# v0.45.0 cruises at 0.42 blocks/tick, i.e. ~42 blocks in the 5 s window. The
+# bound only has to catch a frozen anchor or a teleport, not police the cruise speed.
+if not .1<d<60: raise SystemExit('unexpected motion')
 PY
 # Force the beginning of a breach on the disposable flat world. The Y
 # displacement is measured on the server, not inferred from screenshots.

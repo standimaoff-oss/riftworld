@@ -71,7 +71,7 @@ def shot(name, pose, cam, look, half, bg, out):
 def main():
     pegasus_bg = sky(1100, 720)
     water = make_underwater_bg(1100, 720,
-                               top_rgb=(30, 62, 92), bot_rgb=(8, 18, 30))
+                               top_rgb=(96, 138, 168), bot_rgb=(38, 62, 84))
     # --- pegasus: standing with folded wings, three-quarter; then a downstroke
     shot('pegasus', pose_folded(), (-300, 170, -260), (0, 30, -2), 58, pegasus_bg,
          'pegasus_preview_folded.png')
