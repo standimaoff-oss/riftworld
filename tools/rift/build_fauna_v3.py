@@ -249,7 +249,13 @@ class Model:
 
 # --------------------------------------------------------------------- texture painting
 def shade(color, factor):
-    return tuple(max(0, min(255, int(c * factor))) for c in color)
+    return tuple(max(0, min(255, int(c * factor))) for c in color[:3])
+
+
+def shade_px(color, factor):
+    """Scale a pixel's colour without ever touching its alpha channel."""
+    rgb_ = shade(color, factor)
+    return rgb_ if len(color) <= 3 else rgb_ + (color[3],)
 
 
 def _pixels(draw):
@@ -268,11 +274,11 @@ def bevel(px, fx, fy, fw, fh, rng):
     dark = 0.86 + rng.random() * 0.04
     light = 1.05 + rng.random() * 0.04
     for x in range(fx, fx + fw):
-        px[x, fy] = shade(px[x, fy], light)
-        px[x, fy + fh - 1] = shade(px[x, fy + fh - 1], dark)
+        px[x, fy] = shade_px(px[x, fy], light)
+        px[x, fy + fh - 1] = shade_px(px[x, fy + fh - 1], dark)
     for y in range(fy, fy + fh):
-        px[fx, y] = shade(px[fx, y], (light + 1.0) * 0.5)
-        px[fx + fw - 1, y] = shade(px[fx + fw - 1, y], (dark + 1.0) * 0.5)
+        px[fx, y] = shade_px(px[fx, y], (light + 1.0) * 0.5)
+        px[fx + fw - 1, y] = shade_px(px[fx + fw - 1, y], (dark + 1.0) * 0.5)
 
 
 def paint_template(draw, palette, u, v, w, h, d, rng, variant):
@@ -328,7 +334,7 @@ def paint_template(draw, palette, u, v, w, h, d, rng, variant):
             f = 0.975 if variant % 2 else 1.018
             for y in range(fy + 1, fy + fh - 1):
                 for x in range(fx + 1, fx + fw - 1):
-                    px[x, y] = shade(px[x, y], f)
+                    px[x, y] = shade_px(px[x, y], f)
 
 
 def paint_fur(draw, fx, fy, fw, fh, base, rng):
