@@ -181,8 +181,8 @@ public class PegasusEntity extends Animal {
 
     @Override
     public double getPassengersRidingOffset() {
-        // Match the saddle height of the rebuilt horse instead of embedding the rider.
-        return 1.75D;
+        // v0.45.3: the rig now renders at 0.48, so the saddle sits ~1.2 blocks up.
+        return 1.22D;
     }
 
     @Override

@@ -488,7 +488,7 @@ def paddle(m, bone, side, slices, mats):
 
 # --------------------------------------------------------------------- pegasus
 def pegasus():
-    m = Model('pegasus', 0.66)
+    m = Model('pegasus', 0.48)
 
     # ---- torso: chest, high withers, deep barrel, muscular haunch
     m.bone('body', [0, 33, 0])
@@ -508,57 +508,54 @@ def pegasus():
     m.box('body', [-4, 20, 0], [8, 2, 14], 'coat_shade')
     m.box('body', [-4, 38, 25], [8, 4, 6], 'coat_light')
 
-    # ---- neck: rises and arches forward; thick crest + throat
-    m.bone('neck_low', [0, 38, -19], 'body', {'axis': 'x', 'amp': 1.0, 'speed': .4})
-    m.bone('neck_up', [0, 46, -25], 'neck_low', {'axis': 'x', 'amp': .9, 'speed': .5, 'phase': .6})
-    stack(m, 'neck_low', [(36, 0, -19, 16, 4, 14), (40, 0, -21, 15, 4, 13),
-                          (44, 0, -23, 14, 4, 12)], ['coat', 'coat_light', 'coat'])
-    stack(m, 'neck_up', [(47, 0, -25, 13, 4, 11), (50, 0, -27, 12, 4, 10),
-                         (53, 0, -28, 11, 3, 9)], ['coat', 'coat_light', 'coat'])
-    m.box('neck_low', [-5, 33, -17], [10, 4, 12], 'coat_shade')
-    m.box('neck_up', [-4, 43, -24], [8, 4, 9], 'coat_shade')
-    m.box('neck_up', [-4, 47, -27], [8, 6, 6], 'coat_light')
+    # ---- neck: long, arched forward off the withers (a horse neck, not a post)
+    m.bone('neck_low', [0, 40, -20], 'body', {'axis': 'x', 'amp': 1.0, 'speed': .4})
+    m.bone('neck_up', [0, 51, -30], 'neck_low', {'axis': 'x', 'amp': .9, 'speed': .5, 'phase': .6})
+    stack(m, 'neck_low', [(40, 0, -20, 16, 4, 15), (44, 0, -24, 15, 4, 13),
+                          (48, 0, -28, 14, 4, 12)], ['coat', 'coat_light', 'coat'])
+    stack(m, 'neck_up', [(51, 0, -31, 13, 4, 11), (54, 0, -34, 12, 4, 10),
+                         (57, 0, -37, 11, 3, 9)], ['coat', 'coat_light', 'coat'])
+    m.box('neck_low', [-5, 35, -18], [10, 5, 12], 'coat_shade')     # chest/throat junction
+    m.box('neck_up', [-4, 48, -28], [8, 4, 9], 'coat_shade')        # throat
+    m.box('neck_low', [-4, 42, -23], [8, 3, 8], 'coat_shade')       # underside of the arch
 
-    # ---- head: explicit wedge (skull, brow, face, muzzle, jaw) so the
-    # silhouette reads as a horse head instead of a tapered tube
-    m.bone('head', [0, 53, -28], 'neck_up', {'axis': 'x', 'amp': .8, 'speed': .62, 'phase': .2})
-    m.box('head', [-5, 48, -37], [10, 10, 11], 'coat')            # cranium
-    m.box('head', [-4, 47, -40], [8, 9, 9], 'coat', 1)            # chamfer
-    m.box('head', [-5, 56, -40], [10, 3, 8], 'coat_light')        # brow ridge
-    m.box('head', [-4, 45, -45], [8, 9, 7], 'coat')                # face
-    m.box('head', [-3, 43, -49], [6, 6, 5], 'coat')                # muzzle
-    m.box('head', [-2, 44, -51], [4, 4, 2], 'muzzle')              # nose pad
-    m.box('head', [-4, 42, -50], [8, 3, 6], 'coat_shade')          # lower jaw
-    m.box('head', [-3, 43, -51], [6, 1, 2], 'lip')                 # lower lip
-    m.box('head', [-6, 49, -36], [2, 7, 9], 'coat_shade')          # cheek
-    m.box('head', [4, 49, -36], [2, 7, 9], 'coat_shade')           # cheek
-    m.sym('head', 1, 44, -51, 1, 2, 2, 'nostril')
-    m.box('head', [-2, 56, -43], [4, 1, 7], 'coat_light')          # blaze
-    m.sym('head', 4, 53, -42, 2, 2, 3, 'coat_shade')               # eye socket
-    m.sym('head', 5, 53, -42, 1, 1, 2, 'eye')
-    m.sym('head', 6, 54, -42, 1, 1, 1, 'eye_glint')
-    m.sym('head', 4, 51, -40, 2, 1, 4, 'coat_light')
-    m.bone('ear_l', [3, 58, -35], 'head')
-    m.bone('ear_r', [-4, 58, -35], 'head')
-    m.box('ear_l', [2, 57, -36], [3, 5, 2], 'coat')
-    m.box('ear_l', [3, 59, -36], [1, 3, 1], 'ear_inner')
-    m.box('ear_r', [-5, 57, -36], [3, 5, 2], 'coat')
-    m.box('ear_r', [-4, 59, -36], [1, 3, 1], 'ear_inner')
-    for i in range(3):
-        m.box('head', [-2 + i % 2, 57 - i, -36 - i], [2, 3, 2], 'mane' if i % 2 else 'mane_dark', i % 2)
+    # ---- head: skull, brow, tapered face, muzzle, jaw and cheeks
+    m.bone('head', [0, 58, -40], 'neck_up', {'axis': 'x', 'amp': .8, 'speed': .62, 'phase': .2})
+    m.box('head', [-5, 53, -48], [10, 9, 10], 'coat')              # cranium
+    m.box('head', [-4, 52, -51], [8, 8, 8], 'coat', 1)             # chamfer behind the brow
+    m.box('head', [-5, 61, -49], [10, 3, 8], 'coat_light')         # brow ridge
+    m.box('head', [-4, 52, -55], [8, 7, 6], 'coat')                # face
+    m.box('head', [-3, 51, -60], [6, 6, 5], 'coat')                # muzzle
+    m.box('head', [-2, 52, -62], [4, 4, 2], 'muzzle')              # nose pad
+    m.box('head', [-4, 49, -60], [8, 3, 6], 'coat_shade')          # lower jaw
+    m.box('head', [-3, 50, -62], [6, 1, 2], 'lip')                 # lower lip
+    m.box('head', [-6, 54, -47], [2, 6, 8], 'coat_shade')          # cheek
+    m.box('head', [4, 54, -47], [2, 6, 8], 'coat_shade')           # cheek
+    m.sym('head', 1, 51, -62, 1, 2, 2, 'nostril')
+    m.box('head', [-2, 61, -52], [4, 1, 7], 'coat_light')          # blaze
+    m.sym('head', 4, 58, -52, 2, 2, 3, 'coat_shade')               # eye socket
+    m.sym('head', 5, 58, -52, 1, 1, 2, 'eye')
+    m.sym('head', 6, 59, -52, 1, 1, 1, 'eye_glint')
+    m.sym('head', 3, 56, -51, 2, 1, 4, 'coat_light')
+    m.bone('ear_l', [3, 63, -46], 'head')
+    m.bone('ear_r', [-4, 63, -46], 'head')
+    m.box('ear_l', [2, 62, -47], [3, 5, 2], 'coat')
+    m.box('ear_l', [3, 64, -47], [1, 3, 1], 'ear_inner')
+    m.box('ear_r', [-5, 62, -47], [3, 5, 2], 'coat')
+    m.box('ear_r', [-4, 64, -47], [1, 3, 1], 'ear_inner')
+    m.box('head', [-2, 62, -45], [2, 4, 3], 'mane')                # forelock
 
-    # ---- mane: a raised, flowing crest along the back of the neck
-    m.bone('mane_1', [0, 40, -21], 'neck_low', {'axis': 'z', 'amp': 3, 'speed': .7})
-    m.bone('mane_2', [0, 47, -25], 'neck_up', {'axis': 'z', 'amp': 4, 'speed': .62, 'phase': .5})
-    m.bone('mane_3', [0, 52, -28], 'neck_up', {'axis': 'z', 'amp': 5, 'speed': .55, 'phase': 1.0})
-    for bone, y0, z0, n in (('mane_1', 39, -17, 5), ('mane_2', 45, -22, 5), ('mane_3', 50, -26, 4)):
+    # ---- mane: a low crest that follows the arch, no spikes above the head
+    m.bone('mane_1', [0, 42, -22], 'neck_low', {'axis': 'z', 'amp': 3, 'speed': .7})
+    m.bone('mane_2', [0, 49, -29], 'neck_up', {'axis': 'z', 'amp': 4, 'speed': .62, 'phase': .5})
+    m.bone('mane_3', [0, 55, -35], 'neck_up', {'axis': 'z', 'amp': 5, 'speed': .55, 'phase': 1.0})
+    for bone, y0, z0, n in (('mane_1', 41, -20, 4), ('mane_2', 48, -27, 4), ('mane_3', 54, -33, 3)):
         for i in range(n):
-            y = y0 + i * 2 + 1
-            z = z0 - i * 2 - 1
-            m.box(bone, [-3, y, z], [6, 4, 4], 'mane' if i % 2 else 'mane_dark', i % 2)
-            m.box(bone, [-2, y + 3, z - 1], [4, 3, 3], 'mane_dark' if i % 2 else 'mane', i % 2)
-            m.box(bone, [2, y - 1, z + 1], [2, 6, 3], 'mane', (i + 1) % 2)
-            m.box(bone, [-5, y - 1, z + 1], [2, 7, 3], 'mane_dark', i % 2)
+            y = y0 + i * 2
+            z = z0 - i * 2
+            m.box(bone, [-3, y, z - 2], [6, 3, 5], 'mane' if i % 2 else 'mane_dark', i % 2)
+            m.box(bone, [2, y - 1, z - 1], [2, 4, 4], 'mane_dark' if i % 2 else 'mane', i % 2)
+            m.box(bone, [-5, y - 1, z - 1], [2, 4, 4], 'mane' if i % 2 else 'mane_dark', i % 2)
 
     # ---- legs: shoulder/hip, forearm/gaskin, cannon, fetlock, hoof
     for front, z_leg, top in ((True, -16, 33), (False, 16, 34)):
