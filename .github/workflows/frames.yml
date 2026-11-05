@@ -57,6 +57,21 @@ jobs:
             fi
             gh release upload "v$VER" ci-out/frames/*.png --clobber
           fi
+      - name: Commit the frames into the branch for review
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          VER=$(grep -E '^mod_version=' mod/gradle.properties | cut -d= -f2 | tr -d '[:space:]')
+          if ! ls ci-out/frames/*.png >/dev/null 2>&1; then echo "no frames to commit"; exit 0; fi
+          mkdir -p "reports/ingame/$VER"
+          cp ci-out/frames/*.png "reports/ingame/$VER/"
+          git config user.name "riftworld-ci"
+          git config user.email "ci@riftworld.invalid"
+          git add "reports/ingame/$VER"
+          git diff --cached --quiet && { echo "nothing new"; exit 0; }
+          git commit -m "Capture v$VER in-game frames [skip ci]"
+          git push origin "HEAD:${{ github.ref_name }}"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
