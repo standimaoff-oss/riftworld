@@ -9,10 +9,10 @@ fail() { log "FAILED: $*"; tail -25 ci/server/logs/latest.log | tee -a "$LOG" ||
 grep -Eq 'allowIslandEating[[:space:]]*=[[:space:]]*true' ci/server/config/riftworld-maja.toml || fail 'test config is not enabled'
 SITE=$(rq execute in riftworld:elisar positioned 1715 70 2126 run riftmajaisland)
 log "$SITE"
-read -r IX IZ R AX AY AZ < <(python3 - "$SITE" <<'PY'
+read -r IX IZ R AX AY AZ BASE < <(python3 - "$SITE" <<'PY'
 import re,sys,math
 v=dict(re.findall(r'(x|z|radius|reach|base|anchor_x|anchor_y|anchor_z)=(-?[\d.]+)',sys.argv[1]))
-print(int(v['x']),int(v['z']),math.ceil(float(v['reach']))+10,int(v['anchor_x']),int(v['anchor_y']),int(v['anchor_z']))
+print(int(v['x']),int(v['z']),math.ceil(float(v['reach']))+10,int(v['anchor_x']),int(v['anchor_y']),int(v['anchor_z']),int(float(v['base'])))
 PY
 )
 # Clipped rectangles overlap; do not force more than the vanilla 256-chunk cap.
@@ -20,6 +20,20 @@ A=$(rq execute in riftworld:elisar run forceload add $((AX-70)) $((AZ-170)) $((A
 log "body: $A"; [[ "$A" == *'Marked'* ]] || fail 'body forceload failed'
 B=$(rq execute in riftworld:elisar run forceload add $((IX-R)) $((IZ-R)) $((IX+R)) $((IZ+R)))
 log "island: $B"; [[ "$B" == *'Marked'* || "$B" == *'already'* ]] || fail 'island forceload failed'
+# Find a genuinely clear pose without weakening the 322-block collision check.
+# Nearby islands can obstruct the first analytic anchor at one elevation.
+found=0
+for Y in "$AY" 100 110 120 130 "$((BASE+5))"; do
+  (( Y >= BASE - 75 && Y <= BASE + 8 )) || continue
+  for _ in $(seq 1 8); do
+    POSE=$(rq execute in riftworld:elisar positioned "$AX" "$Y" "$AZ" rotated 0 0 run riftmajapose 2>&1 || true)
+    [[ "$POSE" != *'unloaded('* ]] && break
+    sleep 3
+  done
+  log "candidate y=$Y: $POSE"
+  if [[ "$POSE" == *'clear=true'* ]]; then AY=$Y; found=1; break; fi
+done
+[ "$found" = 1 ] || fail 'no collision-safe pose near selected island'
 rq execute in riftworld:elisar run gamerule mobGriefing false >/dev/null
 rq execute in riftworld:elisar run summon riftworld:el_gran_maja "$AX" "$AY" "$AZ" '{PersistenceRequired:1b,majaMotionTick:500}' | tee -a "$LOG"
 SEL='@e[type=riftworld:el_gran_maja,limit=1]'
