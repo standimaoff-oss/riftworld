@@ -232,7 +232,8 @@ rq gamemode spectator TestPlayer >/dev/null
 rq execute in riftworld:elisar run tp TestPlayer 1780 35 2145 facing 1715 30 2126 >/dev/null
 sleep 15
 import -window root "$OUT/maja-deep-ocean.png"
-sleep 3
+rq execute in riftworld:elisar run tp TestPlayer 1765 35 2200 facing 1715 30 2225 >/dev/null
+sleep 10
 import -window root "$OUT/maja-deep-ocean-swim.png"
 
 # Inspect the actual generated wreck from two sides. Screenshot review is manual;

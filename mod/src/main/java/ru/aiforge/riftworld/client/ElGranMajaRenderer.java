@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderer;
@@ -60,6 +61,12 @@ public final class ElGranMajaRenderer extends EntityRenderer<ElGranMajaEntity> {
         model.root.getChild("head").getChild("jaw").xRot = (float) Math.toRadians(-jawDegrees);
         // ModelPart.render recursively draws children; drawing getAllParts()
         // separately duplicates bones and loses their parent transformations.
+        // A subtle minimum on the creature only keeps its dark texture legible
+        // in the deep ocean without lighting terrain or changing server state.
+        if (e.getY() < ru.aiforge.riftworld.world.CityPlan.get().ocean
+                && e.level().getBiome(e.blockPosition()).is(ru.aiforge.riftworld.world.MajaOceanKeeper.BIOME)) {
+            light = LightTexture.pack(Math.max(12, LightTexture.block(light)), LightTexture.sky(light));
+        }
         model.root.render(pose, buffers.getBuffer(RenderType.entityCutoutNoCull(TEXTURE)), light, OverlayTexture.NO_OVERLAY);
         pose.popPose();
     }
