@@ -37,9 +37,10 @@ jobs:
           python reports/el_gran_maja_model/validate_collision_bounds.py
           python tools/rift/validate_reference_fauna.py
           mkdir -p /tmp/maja-unit
-          javac -d /tmp/maja-unit mod/src/main/java/ru/aiforge/riftworld/world/DeepOcean.java mod/src/main/java/ru/aiforge/riftworld/world/MajaSafetyPolicy.java tests/java/MajaRulesTest.java tests/java/DeepOceanCoreTest.java
+          javac -d /tmp/maja-unit mod/src/main/java/ru/aiforge/riftworld/world/DeepOcean.java mod/src/main/java/ru/aiforge/riftworld/world/MajaSafetyPolicy.java tests/java/MajaRulesTest.java tests/java/DeepOceanCoreTest.java mod/src/main/java/ru/aiforge/riftworld/world/OceanWreck.java tests/java/OceanWreckTest.java
           java -cp /tmp/maja-unit MajaRulesTest
           java -cp /tmp/maja-unit DeepOceanCoreTest
+          java -cp /tmp/maja-unit OceanWreckTest
       - uses: gradle/actions/setup-gradle@v4
       - name: Compile and package both mods
         shell: bash
@@ -111,6 +112,8 @@ jobs:
       - name: Verify creature trophy drops
         shell: bash
         run: bash tools/ci/fauna_server_probe.sh
+      - name: Verify ocean wreck in newly generated chunks
+        run: bash tools/ci/ocean_wreck_probe.sh
       - name: Real client rendering smoke test
         if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/arena/361da66e-riftworld'
         shell: bash

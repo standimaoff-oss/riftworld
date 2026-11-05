@@ -1,26 +1,26 @@
 {
   "bones": 9,
-  "cuboids": 207,
-  "unique_uv_nets": 60,
+  "cuboids": 271,
+  "unique_uv_nets": 96,
   "atlas": 512,
   "scale": 0.8,
   "bounds_units": [
     [
-      -57,
-      57
+      -51,
+      51
     ],
     [
-      -19,
-      16
+      -14,
+      14
     ],
     [
-      -117,
-      114
+      -121,
+      119
     ]
   ],
   "dimensions_blocks": [
-    5.7,
-    1.75,
-    11.55
+    5.1,
+    1.4,
+    12.0
   ]
 }

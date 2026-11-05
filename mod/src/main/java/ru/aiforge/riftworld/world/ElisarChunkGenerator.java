@@ -2258,11 +2258,34 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         }
     }
 
+    private static void placeOceanWreck(ChunkAccess chunk, int x0, int z0, int sea) {
+        DeepOcean.Region r = DeepOcean.regionAt(x0 + 8, z0 + 8);
+        int cx = r.x() + OceanWreck.OFFSET_X, cz = r.z();
+        if (x0 > cx + 28 || x0 + 15 < cx - 28 || z0 > cz + 9 || z0 + 15 < cz - 9) return;
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        for (int x = x0; x < x0 + 16; x++) for (int z = z0; z < z0 + 16; z++)
+            for (int y = sea - 6; y <= sea + 23; y++) {
+                int kind = OceanWreck.materialAt(x, y, z, sea);
+                if (kind == OceanWreck.NONE) continue;
+                pos.set(x, y, z);
+                BlockState existing = chunk.getBlockState(pos);
+                // Do not carve islands or other solid worldgen; preserve them if they overlap.
+                if (!existing.isAir() && existing.getFluidState().isEmpty()) continue;
+                BlockState state = switch (kind) {
+                    case OceanWreck.LOG -> Blocks.DARK_OAK_LOG.defaultBlockState();
+                    case OceanWreck.MOSS -> Blocks.MOSSY_COBBLESTONE.defaultBlockState();
+                    default -> Blocks.SPRUCE_PLANKS.defaultBlockState();
+                };
+                chunk.setBlockState(pos, state, false);
+            }
+    }
+
     @Override
     public void applyBiomeDecoration(WorldGenLevel level, ChunkAccess chunk, StructureManager sm) {
         CityPlan plan = CityPlan.get();
         int x0 = chunk.getPos().getMinBlockX(), z0 = chunk.getPos().getMinBlockZ();
         if (DeepOcean.openCoreChunk(x0, z0)) return;
+        placeOceanWreck(chunk, x0, z0, plan.ocean);
         BoundingBox box = new BoundingBox(x0, MIN_Y, z0, x0 + 15, MIN_Y + HEIGHT - 1, z0 + 15);
         morokTrees(level, chunk, x0, z0);
         StructureTemplateManager stm = level.getLevel().getServer().getStructureManager();
