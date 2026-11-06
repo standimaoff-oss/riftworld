@@ -51,6 +51,13 @@ jobs:
           chmod +x gradlew
           ./gradlew jar --no-daemon --console=plain --max-workers=2
 
+      - name: Refresh release jar with rebuilt renderer classes
+        run: |
+          JAR=$(find mod/build/libs -maxdepth 1 -name '*.jar' ! -name '*sources*' ! -name '*javadoc*' | head -1)
+          test -n "$JAR"
+          cp "$JAR" release/riftworld-0.40.0.jar
+          ls -lh release/riftworld-0.40.0.jar
+
       - name: Boot Forge server for the real client
         env:
           KEEP: '1'
@@ -85,9 +92,9 @@ jobs:
           git config user.email "ci@users.noreply.github.com"
           git pull --rebase origin "${GITHUB_REF_NAME}" || true
           mkdir -p reports/hero_models/game
-          git add -f reports/hero_models/game
+          git add -f reports/hero_models/game release/riftworld-0.40.0.jar
           if ! git diff --cached --quiet; then
-            git commit -m "chore: in-game hero model shots via Xvfb/llvmpipe [skip ci]"
+            git commit -m "chore: in-game hero model shots and rebuilt jar [skip ci]"
             git push origin "HEAD:${GITHUB_REF_NAME}"
           else
             echo "No screenshot changes to publish"

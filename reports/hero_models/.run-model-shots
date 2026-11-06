@@ -1,5 +1,5 @@
 Trigger for .github/workflows/model-shots.yml
 Arena branch: arena/c6b2c67b-riftworld
 Purpose: real Forge-client screenshots under Xvfb :99 + Mesa llvmpipe.
-Pass 3: no /riftstruct probes, stable RCON, controlled stages, 8 facing cameras.
+Pass 4: renderer Y-flip fixed, open-sky Pegasus platform, rebuilt release jar.
 Changing only this file runs the screenshot workflow and is ignored by sea-check.yml.

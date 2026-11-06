@@ -15,10 +15,15 @@ import ru.aiforge.riftworld.RiftWorld;
 import ru.aiforge.riftworld.client.geo.GeoModel;
 
 /**
- * v0.41.0 — общий рендер «моб из JSON»: одна и та же геометрия {@link GeoModel}
- * для Пегаса ({@code geo/pegasus.json}, 14 костей / 370 кубоидов / атлас 1024²)
- * и Вендиго ({@code geo/wendigo.json}). Анимации костей считаются на клиенте,
- * пакетов не тратит. Пегаса собирает {@code gen_v041_pegasus_model.py}.
+ * v0.41.1 — общий рендер «моб из JSON»: одна и та же геометрия {@link GeoModel}
+ * для Пегаса ({@code geo/pegasus.json}, 14 костей / 370 кубоидов / атлас 1024²).
+ * Анимации костей считаются на клиенте, пакетов не тратит. Пегаса собирает
+ * {@code gen_v041_pegasus_model.py}.
+ *
+ * <p>Генератор выгружает кубоиды в системе «+Y вниз, нос в −Z» (как ванильные
+ * ModelPart). {@code EntityRenderer} сам НЕ делает ванильный {@code scale(-1,-1,1)},
+ * поэтому здесь он применяется явно: без этого модель переворачивалась и уходила
+ * под землю, а нос смотрел в противоположную от {@code yBodyRot} сторону.
  */
 public class GeoMobRenderer<T extends LivingEntity> extends EntityRenderer<T> {
     private final ResourceLocation texture;
@@ -53,7 +58,7 @@ public class GeoMobRenderer<T extends LivingEntity> extends EntityRenderer<T> {
         pose.mulPose(Axis.YP.rotationDegrees(180.0F - yRot));   // модель смотрит носом в -Z
         pose.mulPose(Axis.XP.rotationDegrees(xRot));
         float s = geo.renderScale;
-        pose.scale(s, s, s);
+        pose.scale(-s, -s, s);          // +Y модели вниз → +Y мира вверх; нос по yBodyRot
         geo.animate(time);
 
         VertexConsumer vc = buf.getBuffer(geo.translucent

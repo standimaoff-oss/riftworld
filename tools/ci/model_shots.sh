@@ -4,7 +4,7 @@
 # Dedicated-сервер уже поднят tools/ci/server_check.sh (KEEP=1).
 #
 # В отличие от камер /riftstruct здесь сцены ставятся в контролируемых координатах:
-# чистая платформа для Пегаса и песчаный аквариум для Лиоплевродона.
+# платформа в открытом небе для Пегаса и песчаный аквариум для Лиоплевродона.
 #
 # usage: OUT=ci-out/model-shots RUN=ci/model-run bash tools/ci/model_shots.sh
 set -o pipefail
@@ -238,20 +238,20 @@ ELQ kill '@e[type=riftworld:pegasus]'
 ELQ kill '@e[type=riftworld:liopleurodon]'
 
 # ------------------------------------------------------------------ сцена 1: Пегас
-log "== сцена: Пегас на чистой платформе =="
-ELQ tp TestPlayer 0 105 0 0 0
+log "== сцена: Пегас на платформе в открытом небе =="
+ELQ tp TestPlayer 0 205 0 0 0
 sleep 8
-ELQ fill -10 99 -10 10 99 10 minecraft:grass_block
-ELQ fill -10 100 -10 10 108 10 minecraft:air
-ELQ fill -10 98 -10 10 98 10 minecraft:dirt
-ELQ summon riftworld:pegasus 0.5 100 0.5 \
+ELQ fill -12 190 -12 12 210 12 minecraft:air
+ELQ fill -12 198 -12 12 198 12 minecraft:dirt
+ELQ fill -12 199 -12 12 199 12 minecraft:grass_block
+ELQ summon riftworld:pegasus 0.5 200 0.5 \
   '{NoAI:1b,PersistenceRequired:1b,Invulnerable:1b,Silent:1b,NoGravity:1b,Rotation:[0f,0f]}'
 sleep 8
 
-view_face "01_pegasus_front" 0 103 12 0 101.5 0 10
-view_face "02_pegasus_side" 12 103 0 0 101.5 0 10
-view_face "03_pegasus_three_quarter" 9 104 9 0 101.5 0 10
-view_face "04_pegasus_wingspan_top" 0 112 0.5 0 101.5 0 10
+view_face "01_pegasus_front" 0 203 12 0 201.5 0 10
+view_face "02_pegasus_side" 12 203 0 0 201.5 0 10
+view_face "03_pegasus_three_quarter" 9 204 9 0 201.5 0 10
+view_face "04_pegasus_wingspan_top" 0 212 0.5 0 201.5 0 10
 
 # ------------------------------------------------------------------ сцена 2: Лиоплевродон
 log "== сцена: Лиоплевродон в чистом аквариуме =="
