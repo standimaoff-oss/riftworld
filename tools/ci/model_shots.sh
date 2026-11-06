@@ -19,8 +19,16 @@ mkdir -p "$OUT" "$RUN/client/config" "$REPO_SHOTS"
 : > "$OUT/shots_report.txt"
 log() { echo "$*" | tee -a "$OUT/shots_report.txt"; }
 fail() { echo "FATAL: $*" | tee -a "$OUT/shots_report.txt"; exit 1; }
-rq() { python3 tools/rcon.py --password "$RCON_PW" --log "" --timeout 90 "$@"; }
+rq() { python3 tools/rcon.py --password "$RCON_PW" --log "" --timeout 45 "$@"; }
 EL() { rq execute in riftworld:elisar run "$@" 2>&1; }
+ELQ() {
+  local out
+  out=$(EL "$@" 2>&1) || true
+  case "$out" in
+    *Incorrect*|*Unknown*|*Invalid*|*Expected*|*timeout*|*unreachable*)
+      log "  WARN RCON: ${out:0:220}" ;;
+  esac
+}
 
 # ------------------------------------------------------------------ настройки клиента
 cat > "$RUN/client/options.txt" <<'OPTS'
@@ -39,7 +47,7 @@ pauseOnLostFocus:false
 narrator:0
 soundCategory_master:0.0
 fullscreen:true
-hideGui:true
+hideGui:false
 showSubtitles:false
 autoJump:false
 darkMojangStudiosBackground:true
@@ -118,6 +126,16 @@ wait_connect() {
   return 1
 }
 
+server_ok() {
+  local ans
+  for _ in $(seq 1 20); do
+    ans=$(python3 tools/rcon.py --password "$RCON_PW" --log "" --timeout 10 list 2>/dev/null || true)
+    case "$ans" in *TestPlayer*) return 0 ;; esac
+    sleep 3
+  done
+  return 1
+}
+
 log "== старт Forge-клиента =="
 start_client
 if ! wait_connect; then
@@ -139,6 +157,7 @@ done
 [ "$PLAYER" = 1 ] || fail "TestPlayer не зашёл на сервер"
 log "игрок в игре: $players"
 sleep 20
+server_ok || fail "сервер не отвечает на RCON перед съёмкой"
 
 RCON_gamerule() { rq gamerule "$@" >/dev/null 2>&1 || true; }
 RCON_gamerule doDaylightCycle false
@@ -189,7 +208,7 @@ shot() {
 }
 
 face() {
-  EL tp TestPlayer "$1" "$2" "$3" facing "$4" "$5" "$6" >/dev/null 2>&1 || true
+  ELQ tp TestPlayer "$1" "$2" "$3" facing "$4" "$5" "$6"
 }
 
 view_face() { # name cx cy cz tx ty tz pause
@@ -204,35 +223,29 @@ key F1
 sleep 2
 shot "00_boot"
 
-# ------------------------------------------------------------------ пробы: только статистика моделей
-probe_stats() {
-  local kind=$1 out
-  log "== /riftstruct $kind (статистика) =="
-  out=$(rq execute at TestPlayer in riftworld:elisar run riftstruct "$kind" 2>&1 | tr '\r\n' '  ')
-  sleep 5
-  log "  ${out:0:500}"
-}
+# ------------------------------------------------------------------ статистика и подготовка сцен
+# /riftstruct здесь НЕ вызываем: v34_pegasus грузил далёкую Мороковую Падь и
+# на llvmpipe-сервере это подвисало RCON. Геометрию проверяем валидатором,
+# а загрузку в клиенте — логом geo в конце прогона.
+log "== проверка игровых ассетов =="
+python3 tools/rift/validate_v041_hero_models.py > "$OUT/model_stats.txt" 2>&1 || true
+head -3 "$OUT/model_stats.txt" | tee -a "$OUT/shots_report.txt" || true
 
-EL tp TestPlayer 0 110 0 90 0 >/dev/null 2>&1 || true
-EL forceload add -20 -20 20 20 >/dev/null 2>&1 || true
-EL forceload add 180 180 220 220 >/dev/null 2>&1 || true
-probe_stats "v34_pegasus"
-probe_stats "v32_liopleurodon"
-probe_stats "v38_liopleurodon_jaws"
-
-# Чистим всё, что наспавнили пробы, чтобы кадры были одиночными и чистыми.
-EL kill '@e[type=riftworld:pegasus]' >/dev/null 2>&1 || true
-EL kill '@e[type=riftworld:liopleurodon]' >/dev/null 2>&1 || true
+ELQ tp TestPlayer 0 110 0 90 0
+ELQ forceload add -12 -12 12 12
+ELQ forceload add 192 192 208 208
+ELQ kill '@e[type=riftworld:pegasus]'
+ELQ kill '@e[type=riftworld:liopleurodon]'
 
 # ------------------------------------------------------------------ сцена 1: Пегас
 log "== сцена: Пегас на чистой платформе =="
-EL tp TestPlayer 0 105 0 0 0 >/dev/null 2>&1 || true
+ELQ tp TestPlayer 0 105 0 0 0
 sleep 8
-EL fill -14 99 -14 14 99 14 minecraft:grass_block >/dev/null 2>&1 || true
-EL fill -14 100 -14 14 109 14 minecraft:air >/dev/null 2>&1 || true
-EL fill -14 98 -14 14 98 14 minecraft:dirt >/dev/null 2>&1 || true
-EL summon riftworld:pegasus 0.5 100 0.5 \
-  '{NoAI:1b,PersistenceRequired:1b,Invulnerable:1b,Silent:1b,NoGravity:1b,Rotation:[0f,0f]}' >/dev/null 2>&1 || true
+ELQ fill -10 99 -10 10 99 10 minecraft:grass_block
+ELQ fill -10 100 -10 10 108 10 minecraft:air
+ELQ fill -10 98 -10 10 98 10 minecraft:dirt
+ELQ summon riftworld:pegasus 0.5 100 0.5 \
+  '{NoAI:1b,PersistenceRequired:1b,Invulnerable:1b,Silent:1b,NoGravity:1b,Rotation:[0f,0f]}'
 sleep 8
 
 view_face "01_pegasus_front" 0 103 12 0 101.5 0 10
@@ -242,23 +255,26 @@ view_face "04_pegasus_wingspan_top" 0 112 0.5 0 101.5 0 10
 
 # ------------------------------------------------------------------ сцена 2: Лиоплевродон
 log "== сцена: Лиоплевродон в чистом аквариуме =="
-EL kill '@e[type=riftworld:pegasus]' >/dev/null 2>&1 || true
-EL tp TestPlayer 200 45 200 0 0 >/dev/null 2>&1 || true
+ELQ kill '@e[type=riftworld:pegasus]'
+ELQ tp TestPlayer 200 40 200 0 0
 sleep 8
-EL fill 188 20 188 212 20 212 minecraft:sand >/dev/null 2>&1 || true
-EL fill 188 21 188 212 50 212 minecraft:water >/dev/null 2>&1 || true
-EL fill 188 51 188 212 70 212 minecraft:air >/dev/null 2>&1 || true
-EL summon riftworld:liopleurodon 200.5 35 200.5 \
-  '{NoAI:1b,PersistenceRequired:1b,Invulnerable:1b,Silent:1b,NoGravity:1b,Rotation:[90f,0f]}' >/dev/null 2>&1 || true
+ELQ fill 192 20 192 208 20 208 minecraft:sand
+ELQ fill 192 21 192 208 45 208 minecraft:water
+ELQ fill 192 46 192 208 60 208 minecraft:air
+ELQ summon riftworld:liopleurodon 200.5 35 200.5 \
+  '{NoAI:1b,PersistenceRequired:1b,Invulnerable:1b,Silent:1b,NoGravity:1b,Rotation:[90f,0f]}'
 sleep 10
 
-view_face "05_liopleurodon_side" 200 35.5 215 200.5 35.5 200.5 12
-view_face "06_liopleurodon_three_quarter" 212 37.5 212 200.5 35.5 200.5 12
-view_face "07_liopleurodon_head" 190 36 203 196 35.5 200.5 12
-view_face "08_liopleurodon_top" 200 48 200 200 35 200 12
+view_face "05_liopleurodon_side" 200 35.5 207 200.5 35.5 200.5 12
+view_face "06_liopleurodon_three_quarter" 207 37.5 207 200.5 35.5 200.5 12
+view_face "07_liopleurodon_head" 194 36 203 196 35.5 200.5 12
+view_face "08_liopleurodon_top" 200 44 200 200 35 200 12
 
 # ------------------------------------------------------------------ проверка загрузки моделей
 {
+  echo "# Проверка игровых ассетов"
+  cat "$OUT/model_stats.txt" 2>/dev/null || true
+  echo
   echo "# Загрузка geo-моделей в реальном клиенте"
   grep -F '[riftworld] geo ' "$OUT/client.log" | grep -E 'pegasus|liopleurodon' || true
   echo
@@ -281,6 +297,7 @@ cp "$OUT"/0[1-9]_*.jpg "$REPO_SHOTS"/ 2>/dev/null || true
 cp "$OUT/00_boot.jpg" "$REPO_SHOTS"/ 2>/dev/null || true
 cp "$OUT/00_in_game_contact_sheet.jpg" "$REPO_SHOTS"/ 2>/dev/null || true
 cp "$OUT/llvmpipe.txt" "$REPO_SHOTS"/ 2>/dev/null || true
+cp "$OUT/model_stats.txt" "$REPO_SHOTS"/ 2>/dev/null || true
 cp "$OUT/model_load.txt" "$REPO_SHOTS"/ 2>/dev/null || true
 cp "$OUT/shots_report.txt" "$REPO_SHOTS"/ 2>/dev/null || true
 log "готово: $OUT и $REPO_SHOTS"

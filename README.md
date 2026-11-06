@@ -30,8 +30,8 @@ CI собирает мод и проверяет геометрию, игров�
 - Оффлайн-листы: `reports/hero_models/01_offline_model_sheets.png`. Игровые кадры снимаются
   отдельным workflow `Hero model in-game screenshots`: реальный Forge-клиент под
   **Xvfb :99 + Mesa llvmpipe**, 1920×1080, HUD скрыт, управляемые сцены с одним Пегасом
-  и одним Лиоплевродоном, 8 ракурсов. `/riftstruct v34_pegasus`, `v32_liopleurodon`,
-  `v38_liopleurodon_jaws` подтверждают загрузку новой геометрии. Результат — `reports/hero_models/game/`.
+  и одним Лиоплевродоном, 8 ракурсов. Валидатор ассетов и лог загрузки geo в клиенте
+  подтверждают новую геометрию. Результат — `reports/hero_models/game/`.
 - `release/riftworld-0.40.0.jar` обновлён теми же четырьмя ассетами (`patch_release_jar.py`),
   чтобы установленный jar не отставал от исходников.
 
