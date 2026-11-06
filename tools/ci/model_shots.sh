@@ -248,10 +248,10 @@ ELQ summon riftworld:pegasus 0.5 200 0.5 \
   '{NoAI:1b,PersistenceRequired:1b,Invulnerable:1b,Silent:1b,NoGravity:1b,Rotation:[0f,0f]}'
 sleep 8
 
-view_face "01_pegasus_front" 0 202.5 7 0 201.5 0 10
-view_face "02_pegasus_side" 7 202.5 0 0 201.5 0 10
-view_face "03_pegasus_three_quarter" 5 203 5 0 201.5 0 10
-view_face "04_pegasus_wingspan_top" 0 208 0.5 0 201.5 0 10
+view_face "01_pegasus_front" 0 201 7 0 201.2 0 10
+view_face "02_pegasus_side" 7 201 0 0 201.2 0 10
+view_face "03_pegasus_three_quarter" 5 201 5 0 201.2 0 10
+view_face "04_pegasus_wingspan_top" 0 207 0.5 0 201.2 0 10
 
 # ------------------------------------------------------------------ сцена 2: Лиоплевродон
 log "== сцена: Лиоплевродон в чистом аквариуме =="
