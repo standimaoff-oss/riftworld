@@ -72,10 +72,15 @@ Workflow `.github/workflows/model-shots.yml` запускается `workflow_di
 3. `tools/ci/model_shots.sh` поднимает реальный клиент `gradlew runClient`
    под **Xvfb :99**, `LIBGL_ALWAYS_SOFTWARE=1`, `GALLIUM_DRIVER=llvmpipe`,
    `MESA_LOADER_DRIVER_OVERRIDE=llvmpipe`, 1920×1080;
-4. RCON переводит игрока в Элисар, грузит чанки, вызывает сцены
-   `/riftstruct v34_pegasus`, `v32_liopleurodon`, `v38_liopleurodon_jaws`,
-   скрывает HUD клавишей F1 и снимает `import -window root`;
-5. кадры и контактный лист публикуются обратно в ветку и выгружаются артефактом.
+4. `/riftstruct v34_pegasus`, `v32_liopleurodon`, `v38_liopleurodon_jaws`
+   вызываются только за статистикой загруженной геометрии; для самих кадров
+   RCON ставит две контролируемые сцены в Элисаре: чистую травяную платформу
+   с одним неподвижным Пегасом и песчаный аквариум без кораллов с одним
+   неподвижным Лиоплевродоном. Камеры задаются командой `tp ... facing ...`,
+   HUD скрыт (`hideGui` + F1), съёмка — `import -window root`;
+5. получается 8 игровых кадров (4 ракурса Пегаса, 4 ракурса Лиоплевродона)
+   плюс `00_in_game_contact_sheet.jpg`; всё публикуется обратно в ветку
+   и выгружается артефактом.
 
 Доказательство программного рендера — `game/llvmpipe.txt`; загрузка geo в
 клиенте — `game/model_load.txt`; координаты камер и ответы проб —

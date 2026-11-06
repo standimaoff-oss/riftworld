@@ -28,9 +28,10 @@ CI собирает мод и проверяет геометрию, игров�
   и `*.blockbench.geo.json` (Bedrock geometry 1.12). MCP-коннектор Blockbench в этой среде
   недоступен, поэтому правка сделана генераторами напрямую, а проекты экспортированы в совместимых форматах.
 - Оффлайн-листы: `reports/hero_models/01_offline_model_sheets.png`. Игровые кадры снимаются
-  отдельным workflow `Hero model in-game screenshots` (`workflow_dispatch`): реальный Forge-клиент
-  под **Xvfb :99 + Mesa llvmpipe**, 1920×1080, HUD скрыт, сцены `/riftstruct v34_pegasus`,
-  `v32_liopleurodon`, `v38_liopleurodon_jaws`. Результат публикуется в `reports/hero_models/game/`.
+  отдельным workflow `Hero model in-game screenshots`: реальный Forge-клиент под
+  **Xvfb :99 + Mesa llvmpipe**, 1920×1080, HUD скрыт, управляемые сцены с одним Пегасом
+  и одним Лиоплевродоном, 8 ракурсов. `/riftstruct v34_pegasus`, `v32_liopleurodon`,
+  `v38_liopleurodon_jaws` подтверждают загрузку новой геометрии. Результат — `reports/hero_models/game/`.
 - `release/riftworld-0.40.0.jar` обновлён теми же четырьмя ассетами (`patch_release_jar.py`),
   чтобы установленный jar не отставал от исходников.
 

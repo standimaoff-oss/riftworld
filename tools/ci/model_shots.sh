@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 # Настоящие игровые кадры переработанных Пегаса и Лиоплевродона.
-# Forge-клиент под Xvfb :99, программный OpenGL Mesa llvmpipe, 1920x1080,
-# dedicаted-сервер уже поднят tools/ci/server_check.sh (KEEP=1).
+# Forge-клиент под Xvfb :99, программный OpenGL Mesa llvmpipe, 1920x1080.
+# Dedicated-сервер уже поднят tools/ci/server_check.sh (KEEP=1).
+#
+# В отличие от камер /riftstruct здесь сцены ставятся в контролируемых координатах:
+# чистая платформа для Пегаса и песчаный аквариум для Лиоплевродона.
 #
 # usage: OUT=ci-out/model-shots RUN=ci/model-run bash tools/ci/model_shots.sh
 set -o pipefail
@@ -36,18 +39,18 @@ pauseOnLostFocus:false
 narrator:0
 soundCategory_master:0.0
 fullscreen:true
+hideGui:true
 showSubtitles:false
 autoJump:false
 darkMojangStudiosBackground:true
 skipRealms32bitWarning:true
 gamma:1.0
-hideGui:false
 bobView:false
 overrideWidth:1920
 overrideHeight:1080
 mipmapLevels:0
-entityDistanceScaling:1.5
-biomeBlendRadius:3
+entityDistanceScaling:2.0
+biomeBlendRadius:2
 OPTS
 cat > "$RUN/client/config/fml.toml" <<'FML'
 maxThreads = -1
@@ -140,10 +143,13 @@ sleep 20
 RCON_gamerule() { rq gamerule "$@" >/dev/null 2>&1 || true; }
 RCON_gamerule doDaylightCycle false
 RCON_gamerule doWeatherCycle false
+RCON_gamerule doMobSpawning false
 rq weather clear >/dev/null 2>&1 || true
-rq gamemode creative TestPlayer >/dev/null 2>&1 || true
-rq effect give TestPlayer minecraft:night_vision 900 0 true >/dev/null 2>&1 || true
-rq effect give TestPlayer minecraft:conduit_power 900 0 true >/dev/null 2>&1 || true
+rq time set noon >/dev/null 2>&1 || true
+rq difficulty peaceful >/dev/null 2>&1 || true
+rq gamemode spectator TestPlayer >/dev/null 2>&1 || true
+rq effect clear TestPlayer >/dev/null 2>&1 || true
+rq effect give TestPlayer minecraft:night_vision 999 0 true >/dev/null 2>&1 || true
 
 # ------------------------------------------------------------------ X11 съёмка
 WID=""
@@ -182,67 +188,74 @@ shot() {
   log "  снято: $OUT/$1.jpg (${WIDTH}x${HEIGHT})"
 }
 
-view() { # view <x> <y> <z> <yaw> <pitch> <pause> <name>
-  EL tp TestPlayer "$1" "$2" "$3" "$4" "$5" >/dev/null 2>&1 || true
-  sleep "$6"
-  shot "$7"
+face() {
+  EL tp TestPlayer "$1" "$2" "$3" facing "$4" "$5" "$6" >/dev/null 2>&1 || true
 }
 
-lookat() { # lookat <cx> <cy> <cz> <tx> <ty> <tz> <pause> <name>
-  local yp
-  yp=$(python3 tools/ci/lookat_angles.py "$1" "$2" "$3" "$4" "$5" "$6" 2>/dev/null || echo "0 0")
-  view "$1" "$2" "$3" "${yp% *}" "${yp#* }" "$7" "$8"
+view_face() { # name cx cy cz tx ty tz pause
+  local name=$1 cx=$2 cy=$3 cz=$4 tx=$5 ty=$6 tz=$7 pause=${8:-8}
+  log "  камера $cx,$cy,$cz → $tx,$ty,$tz"
+  face "$cx" "$cy" "$cz" "$tx" "$ty" "$tz"
+  sleep "$pause"
+  shot "$name"
 }
 
-key F1                         # убрать HUD: чистая витрина модели
+key F1
 sleep 2
 shot "00_boot"
 
-# ------------------------------------------------------------------ сцены /riftstruct
-EL tp TestPlayer 0 110 0 90 0 >/dev/null 2>&1 || true
-EL time set noon >/dev/null 2>&1 || true
-EL forceload add 670 670 730 730 >/dev/null 2>&1 || true
-EL forceload add 1140 780 1180 820 >/dev/null 2>&1 || true
-EL tp TestPlayer 1160 145 800 0 0 >/dev/null 2>&1 || true
-sleep 12
-EL tp TestPlayer 696 50 696 0 0 >/dev/null 2>&1 || true
-sleep 12
-
-PROBE_OUT=""; PROBE_AT=""; PROBE_CAM=""
-probe_cam() {
-  local kind=$1 out=""
-  log "== /riftstruct $kind =="
-  for _ in 1 2; do
-    out=$(rq execute at TestPlayer in riftworld:elisar run riftstruct "$kind" 2>&1 | tr '\r\n' '  ')
-    sleep 5
-  done
+# ------------------------------------------------------------------ пробы: только статистика моделей
+probe_stats() {
+  local kind=$1 out
+  log "== /riftstruct $kind (статистика) =="
+  out=$(rq execute at TestPlayer in riftworld:elisar run riftstruct "$kind" 2>&1 | tr '\r\n' '  ')
+  sleep 5
   log "  ${out:0:500}"
-  PROBE_OUT="$out"
-  PROBE_AT=$(printf '%s' "$out" | sed -n 's/.* at=\([-0-9.]*,[-0-9.]*,[-0-9.]*\).*/\1/p' | tail -1)
-  PROBE_CAM=$(printf '%s' "$out" | grep -o 'cam=[-0-9.]*,[-0-9.]*,[-0-9.]*:[-0-9.]*,[-0-9.]*,[-0-9.]*' | tail -1 | sed 's/^cam=//')
-  [ -n "$PROBE_AT" ] || PROBE_AT="0,110,0"
 }
 
-use_cam() { # use_cam <name> <pause> <factor>
-  local vals
-  vals=$(python3 tools/ci/model_shot_camera.py "$PROBE_CAM" "$3" "$PROBE_AT" 2>/dev/null || true)
-  [ -n "$vals" ] || vals="0 110 0 0 110 0"
-  read -r CX CY CZ TX TY TZ <<< "$vals"
-  log "  камера $CX,$CY,$CZ → $TX,$TY,$TZ (factor=$3)"
-  lookat "$CX" "$CY" "$CZ" "$TX" "$TY" "$TZ" "$2" "$1"
-}
+EL tp TestPlayer 0 110 0 90 0 >/dev/null 2>&1 || true
+EL forceload add -20 -20 20 20 >/dev/null 2>&1 || true
+EL forceload add 180 180 220 220 >/dev/null 2>&1 || true
+probe_stats "v34_pegasus"
+probe_stats "v32_liopleurodon"
+probe_stats "v38_liopleurodon_jaws"
 
-# Пегас — ПЕРВЫМ, чтобы новые модели точно попали в кадры.
-probe_cam "v34_pegasus"
-use_cam "01_pegasus_hero" 12 1.0
-use_cam "02_pegasus_wingspan" 10 1.34
+# Чистим всё, что наспавнили пробы, чтобы кадры были одиночными и чистыми.
+EL kill '@e[type=riftworld:pegasus]' >/dev/null 2>&1 || true
+EL kill '@e[type=riftworld:liopleurodon]' >/dev/null 2>&1 || true
 
-# Лиоплевродон — общий план, широкий план и крупная пасть.
-probe_cam "v32_liopleurodon"
-use_cam "03_liopleurodon_full" 14 1.0
-use_cam "04_liopleurodon_wide" 10 1.32
-probe_cam "v38_liopleurodon_jaws"
-use_cam "05_liopleurodon_jaws" 12 1.0
+# ------------------------------------------------------------------ сцена 1: Пегас
+log "== сцена: Пегас на чистой платформе =="
+EL tp TestPlayer 0 105 0 0 0 >/dev/null 2>&1 || true
+sleep 8
+EL fill -14 99 -14 14 99 14 minecraft:grass_block >/dev/null 2>&1 || true
+EL fill -14 100 -14 14 109 14 minecraft:air >/dev/null 2>&1 || true
+EL fill -14 98 -14 14 98 14 minecraft:dirt >/dev/null 2>&1 || true
+EL summon riftworld:pegasus 0.5 100 0.5 \
+  '{NoAI:1b,PersistenceRequired:1b,Invulnerable:1b,Silent:1b,NoGravity:1b,Rotation:[0f,0f]}' >/dev/null 2>&1 || true
+sleep 8
+
+view_face "01_pegasus_front" 0 103 12 0 101.5 0 10
+view_face "02_pegasus_side" 12 103 0 0 101.5 0 10
+view_face "03_pegasus_three_quarter" 9 104 9 0 101.5 0 10
+view_face "04_pegasus_wingspan_top" 0 112 0.5 0 101.5 0 10
+
+# ------------------------------------------------------------------ сцена 2: Лиоплевродон
+log "== сцена: Лиоплевродон в чистом аквариуме =="
+EL kill '@e[type=riftworld:pegasus]' >/dev/null 2>&1 || true
+EL tp TestPlayer 200 45 200 0 0 >/dev/null 2>&1 || true
+sleep 8
+EL fill 188 20 188 212 20 212 minecraft:sand >/dev/null 2>&1 || true
+EL fill 188 21 188 212 50 212 minecraft:water >/dev/null 2>&1 || true
+EL fill 188 51 188 212 70 212 minecraft:air >/dev/null 2>&1 || true
+EL summon riftworld:liopleurodon 200.5 35 200.5 \
+  '{NoAI:1b,PersistenceRequired:1b,Invulnerable:1b,Silent:1b,NoGravity:1b,Rotation:[90f,0f]}' >/dev/null 2>&1 || true
+sleep 10
+
+view_face "05_liopleurodon_side" 200 35.5 215 200.5 35.5 200.5 12
+view_face "06_liopleurodon_three_quarter" 212 37.5 212 200.5 35.5 200.5 12
+view_face "07_liopleurodon_head" 190 36 203 196 35.5 200.5 12
+view_face "08_liopleurodon_top" 200 48 200 200 35 200 12
 
 # ------------------------------------------------------------------ проверка загрузки моделей
 {
@@ -258,12 +271,15 @@ if ! grep -q 'geo pegasus:' "$OUT/client.log" || ! grep -q 'geo liopleurodon:' "
 fi
 
 # ------------------------------------------------------------------ контактный лист и публикация
+rm -f "$REPO_SHOTS"/0[1-9]_*.jpg "$REPO_SHOTS"/00_in_game_contact_sheet.jpg
 if compgen -G "$OUT/0[1-9]_*.jpg" >/dev/null; then
-  montage -label '%f' "$OUT"/0[1-9]_*.jpg -tile 2x3 -geometry 800x450+10+10 \
+  montage -label '%f' "$OUT"/0[1-9]_*.jpg -tile 2x4 -geometry 800x450+10+10 \
     -background '#101820' -font DejaVu-Sans -pointsize 18 \
     "$OUT/00_in_game_contact_sheet.jpg" 2>/dev/null || true
 fi
-cp "$OUT"/*.jpg "$REPO_SHOTS"/ 2>/dev/null || true
+cp "$OUT"/0[1-9]_*.jpg "$REPO_SHOTS"/ 2>/dev/null || true
+cp "$OUT/00_boot.jpg" "$REPO_SHOTS"/ 2>/dev/null || true
+cp "$OUT/00_in_game_contact_sheet.jpg" "$REPO_SHOTS"/ 2>/dev/null || true
 cp "$OUT/llvmpipe.txt" "$REPO_SHOTS"/ 2>/dev/null || true
 cp "$OUT/model_load.txt" "$REPO_SHOTS"/ 2>/dev/null || true
 cp "$OUT/shots_report.txt" "$REPO_SHOTS"/ 2>/dev/null || true
