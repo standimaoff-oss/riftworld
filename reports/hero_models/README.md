@@ -1,0 +1,81 @@
+# Лиоплевродон и Пегас — переработанные модели
+
+Две «витринные» модели мобов пересобраны с нуля в стиле ванильных кубоидных
+JSON-моделей мода, но с намного большей детализацией и настоящими текстурами.
+
+| Модель | Было | Стало | Габариты в блоках |
+| --- | --- | --- | --- |
+| `liopleurodon` | 10 костей · 66 кубоидов · 512² | **12 костей · 554 кубоида · 1024²** | 4.56 × 2.03 × 8.60 |
+| `pegasus` | 10 костей · 54 кубоида · 256² | **14 костей · 370 кубоидов · 1024²** | 4.18 × 2.92 × 4.81 |
+
+## Что именно изменилось
+
+**Лиоплевродон.** Фасеточная торпеда-корпус вместо «набора коробок»: короткая
+толстая шея, удлинённая крокодилья морда, отдельная анимированная нижняя
+челюсть, тёмное нёбо, язык, десны, 40+ зубов разной длины и четыре клыка.
+Добавлены надбровные гребни, трёхслойные глаза, ноздри, скуловые дуги,
+шрамы, спинные скуты, брюшные пластины, редкая бирюзовая боковая линия,
+четыре широких веслообразных ласта с ведущей кромкой и лучами,
+трёхсегментный хвост с вертикальным серповидным плавником.
+
+**Пегас.** Анатомичный белый скакун вместо «блина»: округлый корпус,
+аркообразная шея, лошадиная голова с ушами/ноздрями/глазами и чёлкой,
+четыре ноги с коленями, щётками, копытами и золотыми подковами,
+развёрнутые вверх-назад крылья с leading edge, кроющими и маховыми перьями,
+многослойная грива и хвост отдельными прядями, седло с попоной, стёжкой,
+лукой, стременами, подпругой и уздечкой с золотыми пряжками.
+
+Атласы рисуются процедурно: чешуя, «яблоки» на шкуре, пряди, бородки перьев,
+стёжка, золотой кант, мягкий шум, градиент и фаски на рёбрах кубоидов.
+Каждый кубоид получает свою ванильную UV-развёртку; skyline-упаковка
+гарантирует отсутствие наложений.
+
+## Файлы
+
+- Игровые ассеты: `mod/src/main/resources/assets/riftworld/geo/{liopleurodon,pegasus}.json`
+  и `.../textures/entity/{liopleurodon,pegasus}.png`.
+- Blockbench-проекты: `pegasus.bbmodel`, `liopleurodon.bbmodel` — самодостаточные,
+  PNG встроен в `textures[0].source`, кости сохранены группами `outliner`.
+- Альтернативный импорт: `pegasus.blockbench.geo.json`,
+  `liopleurodon.blockbench.geo.json` — Bedrock geometry 1.12.
+- Статистика: `*_stats.json`. Оффлайн-витрина: `01_offline_model_sheets.png`.
+- Игровые кадры: `game/` (создаются workflow `Hero model in-game screenshots`).
+
+> MCP-коннектор Blockbench в этой сессии Arena недоступен (`unsupported`),
+> поэтому правка выполнена напрямую в исходниках через генераторы, а для
+> Blockbench экспортированы совместимые проекты. Никакой «ручной магии» в jar:
+> те же четыре ассета лежат и в `release/riftworld-0.40.0.jar`.
+
+## Воспроизведение
+
+```bash
+python3 tools/rift/gen_v041_liopleurodon_model.py
+python3 tools/rift/gen_v041_pegasus_model.py
+python3 tools/rift/validate_v041_hero_models.py
+python3 tools/rift/preview_mob_model.py pegasus --scale=1.15 --sheet
+python3 tools/rift/preview_mob_model.py liopleurodon --scale=1.15 --sheet
+python3 reports/hero_models/make_offline_sheet.py
+python3 tools/rift/patch_release_jar.py
+```
+
+Старые точки входа `gen_v032_liopleurodon.py`, `gen_v033_liopleurodon_model.py`
+и `gen_v034_pegasus_model.py` сохранены, но больше не откатывают новые модели.
+
+## Игровые скриншоты
+
+Workflow `.github/workflows/model-shots.yml` запускается вручную
+(`gh workflow run model-shots.yml --ref arena/c6b2c67b-riftworld`):
+
+1. собирается Forge-jar и поднимается выделенный сервер;
+2. `tools/ci/server_check.sh` оставляет сервер живым (`KEEP=1`);
+3. `tools/ci/model_shots.sh` поднимает реальный клиент `gradlew runClient`
+   под **Xvfb :99**, `LIBGL_ALWAYS_SOFTWARE=1`, `GALLIUM_DRIVER=llvmpipe`,
+   `MESA_LOADER_DRIVER_OVERRIDE=llvmpipe`, 1920×1080;
+4. RCON переводит игрока в Элисар, грузит чанки, вызывает сцены
+   `/riftstruct v34_pegasus`, `v32_liopleurodon`, `v38_liopleurodon_jaws`,
+   скрывает HUD клавишей F1 и снимает `import -window root`;
+5. кадры и контактный лист публикуются обратно в ветку и выгружаются артефактом.
+
+Доказательство программного рендера — `game/llvmpipe.txt`; загрузка geo в
+клиенте — `game/model_load.txt`; координаты камер и ответы проб —
+`game/shots_report.txt`.

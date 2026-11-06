@@ -1,0 +1,91 @@
+name: Hero model in-game screenshots
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: riftworld-hero-model-shots-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  shots:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: temurin
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Validate rebuilt hero models
+        run: python3 tools/rift/validate_v041_hero_models.py
+
+      - name: Install Xvfb, window tools and Mesa llvmpipe
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
+            xvfb openbox x11-utils xdotool imagemagick mesa-utils \
+            libgl1 libglx-mesa0 libgl1-mesa-dri libegl-mesa0 libgbm1 \
+            libxi6 libxxf86vm1 libxfixes3 libxrender1 libxkbcommon0 libsm6 libopenal1
+
+      - name: Build mod jar
+        run: |
+          cd mod
+          chmod +x gradlew
+          ./gradlew jar --no-daemon --console=plain --max-workers=2
+
+      - name: Boot Forge server for the real client
+        env:
+          KEEP: '1'
+          NORMAL_PROBE: '0'
+          OUT: ci-out/server
+        run: bash tools/ci/server_check.sh
+
+      - name: Capture in-game model screenshots (Xvfb + llvmpipe)
+        env:
+          OUT: ci-out/model-shots
+          RUN: ci/model-run
+          DISP: ':99'
+          RCON_PW: riftci
+        run: bash tools/ci/model_shots.sh
+
+      - name: Stop test server
+        if: always()
+        run: python3 tools/rcon.py --password riftci --log '' --timeout 20 stop || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: riftworld-hero-model-shots
+          path: ci-out/model-shots/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Publish screenshots back to the Arena branch
+        if: always()
+        run: |
+          git config user.name "riftworld-ci"
+          git config user.email "ci@users.noreply.github.com"
+          git pull --rebase origin "${GITHUB_REF_NAME}" || true
+          mkdir -p reports/hero_models/game
+          git add -f reports/hero_models/game
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: in-game hero model shots via Xvfb/llvmpipe [skip ci]"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          else
+            echo "No screenshot changes to publish"
+          fi

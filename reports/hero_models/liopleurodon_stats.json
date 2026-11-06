@@ -1,0 +1,33 @@
+{
+  "name": "liopleurodon",
+  "bones": 12,
+  "cubes": 554,
+  "atlas": 1024,
+  "occupied_uv_px": 138990,
+  "render_scale": 0.702,
+  "design_extents_units": {
+    "lo": [
+      -52.0,
+      -20.15,
+      -104.0
+    ],
+    "hi": [
+      52.0,
+      26.07,
+      92.0
+    ],
+    "size": [
+      104.0,
+      46.22,
+      196.0
+    ]
+  },
+  "size_blocks": [
+    4.563,
+    2.028,
+    8.599
+  ],
+  "game_geo": "mod/src/main/resources/assets/riftworld/geo/liopleurodon.json",
+  "texture": "mod/src/main/resources/assets/riftworld/textures/entity/liopleurodon.png",
+  "flip_y": true
+}

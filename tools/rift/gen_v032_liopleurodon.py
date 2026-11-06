@@ -278,17 +278,14 @@ NAMES = {
 
 
 def main():
+    # v0.41.0: этот исторический генератор больше НЕ трогает geo/атлас моба:
+    # модель собирается gen_v041_liopleurodon_model.py (554 кубоида, 1024²).
+    # Здесь остались только предметы/языки, чтобы старый запуск не откатывал зверя.
     model = build_model()
     uv_blocks(model)
     for b in model["bones"]:
         for c in b["cubes"]:
             c.pop("_tag", None)
-    GEO.parent.mkdir(parents=True, exist_ok=True)
-    GEO.write_text(json.dumps(model, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
-
-    paint = build_model()
-    uv_blocks(paint)
-    write_png(TEX_ENTITY, paint_texture(paint))
 
     item_texture(TEX_ITEM / "liopleurodon_tooth.png", draw_tooth)
     item_texture(TEX_ITEM / "sea_scale.png", draw_scale)
@@ -304,9 +301,9 @@ def main():
             data[k] = pair[idx]
         path.write_text(json.dumps(data, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
-    cubes = sum(len(b["cubes"]) for b in model["bones"])
-    print(f"geo: костей {len(model['bones'])}, кубоидов {cubes} -> {GEO.relative_to(ROOT)}")
-    print(f"текстура: {TEX_ENTITY.relative_to(ROOT)} {TW}x{TH}")
+    print("[compat] предметы/языки обновлены; geo и атлас моба собирает gen_v041_liopleurodon_model.py")
+    import gen_v041_liopleurodon_model as hero
+    hero.main()
 
 
 if __name__ == "__main__":

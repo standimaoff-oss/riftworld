@@ -1,0 +1,33 @@
+{
+  "name": "pegasus",
+  "bones": 14,
+  "cubes": 370,
+  "atlas": 1024,
+  "occupied_uv_px": 40822,
+  "render_scale": 1.0,
+  "design_extents_units": {
+    "lo": [
+      -33.4,
+      0.0,
+      -45.0
+    ],
+    "hi": [
+      33.4,
+      46.75,
+      32.0
+    ],
+    "size": [
+      66.8,
+      46.75,
+      77.0
+    ]
+  },
+  "size_blocks": [
+    4.175,
+    2.922,
+    4.812
+  ],
+  "game_geo": "mod/src/main/resources/assets/riftworld/geo/pegasus.json",
+  "texture": "mod/src/main/resources/assets/riftworld/textures/entity/pegasus.png",
+  "flip_y": true
+}
