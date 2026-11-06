@@ -63,8 +63,9 @@ python3 tools/rift/patch_release_jar.py
 
 ## Игровые скриншоты
 
-Workflow `.github/workflows/model-shots.yml` запускается вручную
-(`gh workflow run model-shots.yml --ref arena/c6b2c67b-riftworld`):
+Workflow `.github/workflows/model-shots.yml` запускается `workflow_dispatch` либо
+изменением файла-маркера `reports/hero_models/.run-model-shots` в этой ветке
+(запасной путь, когда у токена нет права `actions:write`):
 
 1. собирается Forge-jar и поднимается выделенный сервер;
 2. `tools/ci/server_check.sh` оставляет сервер живым (`KEEP=1`);

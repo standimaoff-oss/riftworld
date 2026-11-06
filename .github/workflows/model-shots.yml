@@ -2,6 +2,9 @@ name: Hero model in-game screenshots
 
 on:
   workflow_dispatch:
+  push:
+    branches: ["arena/c6b2c67b-riftworld"]
+    paths: ["reports/hero_models/.run-model-shots"]
 
 permissions:
   contents: write

@@ -3,6 +3,7 @@ name: Build and smoke-test Riftworld
 on:
   push:
     branches: ["arena/**"]
+    paths-ignore: ["reports/hero_models/.run-model-shots"]
   pull_request:
     branches: ["main"]
   workflow_dispatch:
