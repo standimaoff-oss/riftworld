@@ -1,6 +1,6 @@
 Trigger for .github/workflows/model-shots.yml
 Arena branch: arena/c6b2c67b-riftworld
 Purpose: real Forge-client screenshots under Xvfb :99 + Mesa llvmpipe.
-Pass 5: closer Pegasus cameras after the v0.41.1 orientation fix.
+Pass 6: Pegasus cameras lowered to body level for readable side/front profiles.
 Run request: final corrected in-game hero screenshots.
 Changing only this file runs the screenshot workflow and is ignored by sea-check.yml.
