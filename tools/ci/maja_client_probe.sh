@@ -51,16 +51,29 @@ Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp >"$OUT/maja-xvfb.log" 2>&1 &
 openbox >"$OUT/maja-openbox.log" 2>&1 &
 for _ in $(seq 1 30); do xdpyinfo -display :99 >/dev/null 2>&1 && break; sleep 1; done
 xdpyinfo -display :99 >/dev/null 2>&1 || fail "No virtual display"
-(
-  cd mod
-  chmod +x gradlew
-  ./gradlew runClient --no-daemon --console=plain -PrunDir="$PWD/../$RUN" -PautoJoin=127.0.0.1:25565
-) > "$OUT/maja-client.log" 2>&1 &
-client=$!
-for _ in $(seq 1 180); do
+launch_client() {
+  ( cd mod
+    chmod +x gradlew
+    ./gradlew runClient --no-daemon --console=plain -PrunDir="$PWD/../$RUN" -PautoJoin=127.0.0.1:25565
+  ) > "$OUT/maja-client.log" 2>&1 &
+  client=$!
+}
+# Раннее окно Forge на раннере иногда не поднимает GL-контекст («We died but
+# didn't somehow»). Это не про игру, а про драйвер в контейнере — пробуем снова,
+# вместо того чтобы ронять весь визуальный прогон.
+launch_client
+attempt=1
+for _ in $(seq 1 240); do
   players=$(rq list 2>&1 || true)
   [[ "$players" == *TestPlayer* ]] && break
   if ! kill -0 "$client" 2>/dev/null; then
+    if [ "$attempt" -lt 3 ] && grep -Fqi "We died but didn't somehow" "$OUT/maja-client.log"; then
+      echo "::warning title=client::раннее окно Forge упало при старте, перезапуск ($attempt/3)"
+      attempt=$((attempt + 1))
+      launch_client
+      sleep 5
+      continue
+    fi
     tail -30 "$OUT/maja-client.log" | while IFS= read -r line; do echo "::error title=client::${line:0:350}"; done
     fail "Client exited before joining"
   fi

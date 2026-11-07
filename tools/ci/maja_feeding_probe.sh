@@ -23,7 +23,11 @@ log "island: $B"; [[ "$B" == *'Marked'* || "$B" == *'already'* ]] || fail 'islan
 # Find a genuinely clear pose without weakening the 322-block collision check.
 # Nearby islands can obstruct the first analytic anchor at one elevation.
 found=0
-for Y in "$AY" 100 110 120 130 "$((BASE+5))"; do
+# Кандидатов больше и они привязаны к BASE: мир каждый прогон новый, и при
+# старом списке (100/110/120/130) почти все высоты отсекались условием
+# Y <= BASE+8 — прогон падал на случайном рельефе, а не на настоящей ошибке.
+CANDIDATES="$AY $((AY+6)) $((AY-6)) $((AY+12)) $((AY-12)) $((BASE+5)) $((BASE+2)) $((BASE-5)) 100 110 120 130"
+for Y in $CANDIDATES; do
   (( Y >= BASE - 75 && Y <= BASE + 8 )) || continue
   for _ in $(seq 1 8); do
     POSE=$(rq execute in riftworld:elisar positioned "$AX" "$Y" "$AZ" rotated 0 0 run riftmajapose 2>&1 || true)
