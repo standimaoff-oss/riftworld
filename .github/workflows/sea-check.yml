@@ -109,7 +109,9 @@ jobs:
         shell: bash
         run: bash tools/ci/blockbench_models_probe.sh
       - name: Real client rendering smoke test
-        if: github.event_name == 'workflow_dispatch'
+        # Runs on every arena working branch push so the El Gran Maja head shots
+        # (front cheeks, 3/4 cheeks, sealed rear skull) stay reviewable.
+        if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/heads/arena/')
         shell: bash
         run: bash tools/ci/maja_client_probe.sh
       - name: Stop the test server
