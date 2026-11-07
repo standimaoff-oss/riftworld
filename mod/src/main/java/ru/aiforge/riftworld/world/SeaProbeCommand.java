@@ -3853,13 +3853,25 @@ public final class SeaProbeCommand {
                         if (!sl.hasChunk(cx, cz)) sl.getChunk(cx, cz);
                     }
                 }
+                // Ensure pure open Elisar ocean water in the camera & creature volume (leaving coral seafloor below y=31 intact!)
+                for (int dx = -12; dx <= 12; ++dx) {
+                    for (int dz = -12; dz <= 12; ++dz) {
+                        for (int dy = -3; dy <= 7; ++dy) {
+                            BlockPos wp = new BlockPos(px + dx, py + dy, pz + dz);
+                            if (!sl.getBlockState(wp).is(ElisarBlocks.WATER.get())) {
+                                sl.setBlock(wp, ElisarBlocks.WATER.get().defaultBlockState(), 2);
+                            }
+                        }
+                    }
+                }
                 sl.getEntitiesOfClass(ru.aiforge.riftworld.entity.LiopleurodonEntity.class,
-                        new net.minecraft.world.phys.AABB(px - 48, py - 24, pz - 48, px + 48, py + 24, pz + 48))
+                        new net.minecraft.world.phys.AABB(px - 48, py - 24, pz - 48, px + 48, py + 32, pz + 48))
                         .forEach(net.minecraft.world.entity.Entity::discard);
 
                 var hero = ru.aiforge.riftworld.entity.LiopleurodonEntity.spawn(
                         sl, new net.minecraft.world.phys.Vec3(px + 0.5, py, pz + 0.5));
                 hero.setNoAi(true);
+                hero.setInvulnerable(true);
                 hero.setSilent(true);
                 hero.setNoGravity(true);
                 hero.setXRot(0.0F);
@@ -3868,8 +3880,9 @@ public final class SeaProbeCommand {
                 hero.yHeadRot = 90.0F;
 
                 var mate = ru.aiforge.riftworld.entity.LiopleurodonEntity.spawn(
-                        sl, new net.minecraft.world.phys.Vec3(px - 14.5, py + 3.5, pz - 11.5));
+                        sl, new net.minecraft.world.phys.Vec3(px - 15.5, py + 3.0, pz - 12.5));
                 mate.setNoAi(true);
+                mate.setInvulnerable(true);
                 mate.setSilent(true);
                 mate.setNoGravity(true);
                 mate.setXRot(4.0F);
@@ -3879,11 +3892,11 @@ public final class SeaProbeCommand {
             }
             int[] geo = geoStats("liopleurodon");
             double[] camHero = poseCam(px + 0.5, py, pz + 0.5, 90.0F,
-                    0.8, 0.0, 1.15, 7.8, 8.4, 0.65);
+                    0.7, 0.0, 1.15, 7.2, 7.8, 0.35);
             double[] camJaws = poseCam(px + 0.5, py, pz + 0.5, 90.0F,
-                    4.25, 0.0, 1.18, 2.95, 2.75, -1.15);
+                    4.30, 0.0, 1.15, 2.75, 2.55, -1.25);
             double[] camDorsal = poseCam(px + 0.5, py, pz + 0.5, 90.0F,
-                    0.4, 0.0, 1.2, 6.2, -7.8, 4.4);
+                    0.35, 0.0, 1.15, 5.8, -7.2, 3.8);
             String line = "riftstruct kind=bb_liopleurodon_showcase"
                     + " model_boxes=" + geo[0] + " bones=" + geo[1] + " atlas=" + geo[2]
                     + " cam_hero=" + r3(camHero[0]) + "," + r3(camHero[1]) + "," + r3(camHero[2])
@@ -3897,19 +3910,29 @@ public final class SeaProbeCommand {
         }
 
         if (k.equals("bb_pegasus_showcase")) {
-            int px = 520, py = 108, pz = 520;
+            int px = 520, py = 118, pz = 520;
             if (level != null) {
                 ServerLevel sl = level;
-                for (int cx = (px - 24) >> 4; cx <= (px + 40) >> 4; ++cx) {
-                    for (int cz = (pz - 24) >> 4; cz <= (pz + 24) >> 4; ++cz) {
+                for (int cx = (px - 28) >> 4; cx <= (px + 44) >> 4; ++cx) {
+                    for (int cz = (pz - 28) >> 4; cz <= (pz + 28) >> 4; ++cz) {
                         if (!sl.hasChunk(cx, cz)) sl.getChunk(cx, cz);
                     }
                 }
                 sl.getEntitiesOfClass(ru.aiforge.riftworld.entity.PegasusEntity.class,
-                        new net.minecraft.world.phys.AABB(px - 32, py - 20, pz - 32, px + 56, py + 32, pz + 32))
+                        new net.minecraft.world.phys.AABB(px - 36, py - 28, pz - 36, px + 60, py + 32, pz + 36))
                         .forEach(net.minecraft.world.entity.Entity::discard);
 
-                // Build a clean sunlit Elisar garden terrace so no tree canopy blocks the camera
+                // Clear any natural floating canopy/island remnants in the vista above y=114
+                for (int dx = -22; dx <= 44; ++dx) {
+                    for (int dz = -22; dz <= 22; ++dz) {
+                        for (int dy = -3; dy <= 18; ++dy) {
+                            sl.setBlock(new BlockPos(px + dx, py + dy, pz + dz),
+                                    net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 2);
+                        }
+                    }
+                }
+
+                // Build a clean sunlit Elisar garden terrace with moss marble, grass, white lilies & celadon ferns
                 for (int dx = -12; dx <= 34; ++dx) {
                     for (int dz = -12; dz <= 12; ++dz) {
                         double edge = Math.hypot(Math.max(0, Math.abs(dx - 11) - 13), Math.max(0, Math.abs(dz) - 4));
@@ -3918,11 +3941,7 @@ public final class SeaProbeCommand {
                                 ElisarBlocks.RIFT_MARBLE_MOSSY.get().defaultBlockState(), 2);
                         sl.setBlock(new BlockPos(px + dx, py - 1, pz + dz),
                                 ElisarBlocks.GARDEN_GRASS.get().defaultBlockState(), 2);
-                        for (int dy = 0; dy <= 14; ++dy) {
-                            sl.setBlock(new BlockPos(px + dx, py + dy, pz + dz),
-                                    net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 2);
-                        }
-                        if (((dx * 7 + dz * 13) & 15) == 3 && Math.hypot(dx, dz) > 3.2 && Math.hypot(dx - 22, dz) > 3.2) {
+                        if (((dx * 7 + dz * 13) & 15) == 3 && Math.hypot(dx, dz) > 3.5 && Math.hypot(dx - 22, dz) > 3.5) {
                             sl.setBlock(new BlockPos(px + dx, py, pz + dz),
                                     (((dx + dz) & 1) == 0 ? ElisarBlocks.WHITE_LILY_CLUSTER.get() : ElisarBlocks.CELADON_FERN.get()).defaultBlockState(), 2);
                         }
@@ -3938,6 +3957,7 @@ public final class SeaProbeCommand {
                     wild.yHeadRot = 40.0F;
                     wild.setOnGround(true);
                     wild.setNoAi(true);
+                    wild.setInvulnerable(true);
                     wild.setSilent(true);
                     sl.addFreshEntity(wild);
                 }
@@ -3953,6 +3973,7 @@ public final class SeaProbeCommand {
                     royal.setSaddled(true);
                     royal.setOnGround(true);
                     royal.setNoAi(true);
+                    royal.setInvulnerable(true);
                     royal.setSilent(true);
                     sl.addFreshEntity(royal);
                 }
@@ -3960,24 +3981,25 @@ public final class SeaProbeCommand {
                 // 3) Airborne Soaring Pegasus in Elisar sky (full 5.3-block 3-tiered feathered wingspan!)
                 var flyer = ru.aiforge.riftworld.registry.ModEntities.PEGASUS.get().create(sl);
                 if (flyer != null) {
-                    flyer.moveTo(px + 11.5, py + 7.5, pz + 0.5, 38.0F, -6.0F);
+                    flyer.moveTo(px + 11.5, py + 7.0, pz + 0.5, 38.0F, -6.0F);
                     flyer.setYRot(38.0F);
                     flyer.yBodyRot = 38.0F;
                     flyer.yHeadRot = 38.0F;
                     flyer.setOnGround(false);
                     flyer.setFlyingState(true);
                     flyer.setNoAi(true);
+                    flyer.setInvulnerable(true);
                     flyer.setSilent(true);
                     sl.addFreshEntity(flyer);
                 }
             }
             int[] geo = geoStats("pegasus");
             double[] camWild = poseCam(px + 0.5, py, pz + 0.5, 40.0F,
-                    0.15, 0.0, 1.32, 2.75, 2.55, -1.15);
+                    0.10, 0.0, 1.02, 3.65, 3.35, -1.02);
             double[] camSaddle = poseCam(px + 22.5, py, pz + 0.5, 52.0F,
-                    0.05, 0.0, 1.32, 2.35, 2.75, -1.05);
-            double[] camFlight = poseCam(px + 11.5, py + 7.5, pz + 0.5, 38.0F,
-                    0.10, 0.0, 1.45, 3.65, 2.95, -0.65);
+                    0.05, 0.0, 1.02, 3.25, 3.55, -0.95);
+            double[] camFlight = poseCam(px + 11.5, py + 7.0, pz + 0.5, 38.0F,
+                    0.10, 0.0, 1.15, 4.35, 3.55, -0.70);
             String line = "riftstruct kind=bb_pegasus_showcase"
                     + " model_boxes=" + geo[0] + " bones=" + geo[1] + " atlas=" + geo[2]
                     + " cam_wild=" + r3(camWild[0]) + "," + r3(camWild[1]) + "," + r3(camWild[2])

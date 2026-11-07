@@ -84,8 +84,9 @@ public class LiopleurodonEntity extends Mob {
         if (blindCd > 0) --blindCd;
         if (grabTicks > 0) --grabTicks;
 
-        if (isNoAi()) {                                   // витрина: только покачивание
-            setDeltaMovement(0, Math.sin(tickCount * 0.05) * 0.004, 0);
+        if (isNoAi()) {                                   // витрина: фиксируем точку дома против плавучести жидкости
+            setDeltaMovement(Vec3.ZERO);
+            setPos(home.x, home.y + Math.sin(tickCount * 0.05) * 0.04, home.z);
             return;
         }
 

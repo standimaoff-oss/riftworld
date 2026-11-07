@@ -175,7 +175,7 @@ grep -Ei 'Error while rendering entity|Exception.*(Liopleurodon|Pegasus)|Failed 
 grep -Fq '[riftworld] geo liopleurodon:' "$OUT/bb-client.log" || fail "Liopleurodon geo log missing"
 grep -Fq '[riftworld] geo pegasus:' "$OUT/bb-client.log" || fail "Pegasus geo log missing"
 
-if grep -Ei 'Error while rendering entity.*(liopleurodon|pegasus)|Exception.*(Liopleurodon|Pegasus)|Failed to load.*(liopleurodon|pegasus)' "$OUT/bb-client.log"; then
+if grep -Ei 'Error while rendering entity.*(liopleurodon|pegasus)|Exception.*(LiopleurodonRenderer|PegasusRenderer|LiopleurodonBlockbench|PegasusBlockbench)|Failed to load texture.*(liopleurodon|pegasus)' "$OUT/bb-client.log"; then
   grep -Ei 'Error while rendering entity.*(liopleurodon|pegasus)|Exception.*(Liopleurodon|Pegasus)|Failed to load.*(liopleurodon|pegasus)' "$OUT/bb-client.log" | head -5 | while IFS= read -r l; do
     echo "::error title=Model render error::${l:0:450}"
   done
