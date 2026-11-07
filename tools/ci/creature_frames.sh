@@ -96,16 +96,28 @@ shot frame-pegasus-side 211.6 101.7 0 208 101 0 7
 shot frame-pegasus-head 208 102.3 -2.3 208 102.1 -0.6 7
 
 # ---------------------------------------------------------------- liopleurodon
-LOC=$(rq execute in riftworld:elisar positioned 0 54 0 run locate biome riftworld:maja_ocean | tr -d '\n')
-echo "ocean: $LOC"
-read -r OX OZ < <(python3 - "$LOC" <<'PY'
+# locate может вернуть пустоту, пока чанки прогреваются — пробуем несколько раз
+# и в крайнем случае берём известный центр глубокого океана (его же использует
+# maja_client_probe). Падать из-за поиска биома тут незачем: это всего лишь кадры.
+OX=""; OZ=""
+for attempt in 1 2 3 4 5 6; do
+  LOC=$(rq execute in riftworld:elisar positioned 0 54 0 run locate biome riftworld:maja_ocean 2>&1 | tr -d '\n' || true)
+  echo "ocean attempt $attempt: $LOC"
+  read -r OX OZ < <(python3 - "$LOC" <<'PY'
 import re,sys
 m=re.search(r'\[\s*(-?\d+)\s*,\s*(?:~|-?\d+)\s*,\s*(-?\d+)\s*\]',sys.argv[1])
-if not m: raise SystemExit('no ocean coordinates in '+sys.argv[1])
-print(*m.groups())
+print((' '.join(m.groups())) if m else '')
 PY
-)
-[[ "${OX:-}" =~ ^-?[0-9]+$ ]] || fail "No ocean coordinates: $LOC"
+) || true
+  if [[ "${OX:-}" =~ ^-?[0-9]+$ && "${OZ:-}" =~ ^-?[0-9]+$ ]]; then break; fi
+  OX=""; OZ=""
+  sleep 10
+done
+if [[ ! "${OX:-}" =~ ^-?[0-9]+$ ]]; then
+  echo "::warning title=In-game frames::locate biome не нашёл океан, берём известный центр"
+  OX=1715; OZ=2126
+fi
+echo "ocean centre: $OX $OZ"
 rq execute in riftworld:elisar run forceload add "$OX" "$OZ" >/dev/null 2>&1 || true
 rq kill '@e[type=riftworld:liopleurodon]' >/dev/null 2>&1 || true
 rq execute in riftworld:elisar run summon riftworld:liopleurodon "$OX" 50 "$OZ" \
