@@ -294,7 +294,13 @@ PY
   rq execute in riftworld:elisar run tp TestPlayer "$1" "$2" "$3" facing "$4" "$5" "$6" >/dev/null
   sleep "$wait"
   import -window root "$OUT/$name.png"
-  echo "captured $name"
+  local colors
+  colors=$(identify -format '%k' "$OUT/$name.png" 2>/dev/null || echo 0)
+  # Пустой чёрный кадр и «missing texture» ловим сразу: глазами кадры из CI
+  # не посмотреть, а показывать пользователю битую картинку нельзя.
+  [[ "$colors" =~ ^[0-9]+$ ]] && [ "$colors" -ge 400 ] \
+    || fail "frame $name looks blank (unique colours: $colors)"
+  echo "captured $name ($colors colours)"
 }
 gear_shot gear-armour-row   cam_row   30
 gear_shot gear-elisar-folk  cam_folk  26
