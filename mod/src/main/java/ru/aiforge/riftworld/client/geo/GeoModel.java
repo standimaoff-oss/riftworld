@@ -47,26 +47,23 @@ public final class GeoModel {
     public final float renderScale;
     public final boolean translucent;
     private final List<Bone> bones;
-    private final ModelPart[] allParts;
     private final Map<String, ModelPart> byName;
 
-    private GeoModel(ModelPart root, int texWidth, int texHeight, float renderScale, boolean translucent,
-                     List<Bone> bones, Map<String, ModelPart> byName) {
+    private GeoModel(ModelPart root, int texWidth, int texHeight, float renderScale, boolean translucent, List<Bone> bones, Map<String, ModelPart> byName) {
         this.root = root;
         this.texWidth = texWidth;
         this.texHeight = texHeight;
         this.renderScale = renderScale;
         this.translucent = translucent;
         this.bones = bones;
-        this.allParts = root.getAllParts().toArray(ModelPart[]::new);
         this.byName = byName;
     }
 
     /**
      * Вложенная кость по имени (или null). Рендерер пользуется этим, чтобы поверх синусов
      * из geo-файла наложить свою позу: изгиб в повороте, волну по телу, арку при выпрыгивании.
-     * Порядок вызова обязателен: сначала {@link #animate(float)}, потом правки — animate()
-     * каждый кадр сбрасывает кости на базовую позу.
+     * Порядок обязателен: сначала {@link #animate(float)}, потом правки — animate()
+     * каждый кадр сбрасывает кости на базовую позу из файла.
      */
     public ModelPart bone(String name) { return byName.get(name); }
 
@@ -86,14 +83,10 @@ public final class GeoModel {
         }
     }
 
-    /**
-     * Рисуем ВСЁ дерево костей: {@code ModelPart.render} рисует только собственные кубы и не спускается
-     * к детям — из-за этого раньше выходил один серый ящик вместо рыбы.
-     */
+    /** ModelPart.render recursively draws its children. Rendering every part separately
+     * both duplicated geometry and drew descendants without their parent's transform. */
     public void render(PoseStack pose, VertexConsumer vc, int light, int overlay) {
-        for (int i = 0, n = this.allParts.length; i < n; ++i) {
-            this.allParts[i].render(pose, vc, light, overlay, 1.0F, 1.0F, 1.0F, 1.0F);
-        }
+        root.render(pose, vc, light, overlay);
     }
 
     // ------------------------------------------------------------------ загрузка с диска
@@ -160,7 +153,8 @@ public final class GeoModel {
                         JsonArray size = c.getAsJsonArray("size");
                         JsonArray uv = c.getAsJsonArray("uv");
                         cubes.texOffs(uv.get(0).getAsInt(), uv.get(1).getAsInt());
-                        if (c.has("mirror") && c.get("mirror").getAsBoolean()) cubes.mirror();
+                        // CubeListBuilder retains this setting between boxes.
+                        cubes.mirror(c.has("mirror") && c.get("mirror").getAsBoolean());
                         // коробка задана в абсолютных координатах модели -> переводим в локальные координаты кости
                         cubes.addBox(org.get(0).getAsFloat() - pivot[0], org.get(1).getAsFloat() - pivot[1],
                                 org.get(2).getAsFloat() - pivot[2],

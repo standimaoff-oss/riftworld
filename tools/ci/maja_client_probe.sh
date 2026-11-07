@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # A focused visual smoke check; server + NoAI test titan come from maja_server_probe.sh.
-set -euo pipefail
+set -Eeuo pipefail
 OUT=${OUT:-ci-out}
 RUN=${RUN:-ci/maja-run}
 mkdir -p "$OUT" "$RUN/client/config"
@@ -17,7 +17,8 @@ on_error() {
   fi
 }
 trap on_error EXIT
-rq() { python3 tools/rcon.py --password "${RCON_PW:-riftci}" --log "" --timeout 90 "$@"; }
+trap 'code=$?; echo "::error title=Client test failed::line $LINENO, exit $code, command: $BASH_COMMAND"' ERR
+rq() { python3 tools/rcon.py --password "${RCON_PW:-riftci}" --log "$OUT/client-commands.log" --timeout 90 "$@"; }
 
 sudo apt-get update -qq
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq xvfb openbox x11-utils xdotool imagemagick libgl1 libglx-mesa0 libxi6 libxxf86vm1 libxfixes3 libxrender1 libxkbcommon0 libsm6 libopenal1 >/dev/null
@@ -30,7 +31,7 @@ renderDistance:12
 simulationDistance:8
 maxFps:30
 guiScale:2
-fov:-0.1
+fov:0.0
 graphicsMode:1
 renderClouds:false
 pauseOnLostFocus:false
@@ -45,7 +46,7 @@ overrideHeight:1080
 mipmapLevels:0
 entityDistanceScaling:1.5
 OPTS
-export DISPLAY=:99 LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe MESA_GL_VERSION_OVERRIDE=3.3
+export ALSOFT_DRIVERS=null DISPLAY=:99 LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe MESA_GL_VERSION_OVERRIDE=3.3
 Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp >"$OUT/maja-xvfb.log" 2>&1 &
 openbox >"$OUT/maja-openbox.log" 2>&1 &
 for _ in $(seq 1 30); do xdpyinfo -display :99 >/dev/null 2>&1 && break; sleep 1; done
@@ -88,64 +89,96 @@ WID=$(xdotool search --onlyvisible --name Minecraft | head -1 || true)
 [ -n "$WID" ] || fail "Minecraft window not found"
 xdotool windowraise "$WID" || true
 import -window root "$OUT/maja-client-front.png"
+sleep 3
+import -window root "$OUT/maja-client-swim-motion.png"
 if grep -Ei 'Error while rendering entity|Exception.*ElGranMaja|Unable to load.*el_gran_maja|Failed to load.*el_gran_maja' "$OUT/maja-client.log"; then
   fail "Client log reports a Maja renderer/resource failure"
 fi
 rq list | grep -q TestPlayer || fail "Client disconnected before the screenshot"
 echo "OK: real client joined the server; screenshot saved to $OUT/maja-client-front.png (requires visual review)."
 
-# ------------------------------------------------------------------------------
-# Head showcase: the renderer mirrors the model once, so the snout ends up ~161
-# blocks in front (+Z) of the entity and the occiput / neck junction near +92.
-# ------------------------------------------------------------------------------
-SEL='@e[type=riftworld:el_gran_maja,limit=1]'
-rq tp "$SEL" 0 200 0 0 0 >/dev/null
-sleep 6
-POS=$(rq data get entity "$SEL" Pos)
-read -r X Y Z < <(python3 - "$POS" <<'PY'
-import re,sys
-m=re.search(r'\[\s*([-\d.eE+]+)d?\s*,\s*([-\d.eE+]+)d?\s*,\s*([-\d.eE+]+)d?\s*\]',sys.argv[1])
-if not m: raise SystemExit('Could not parse '+sys.argv[1])
-print(*m.groups())
-PY
-)
-head_shot() {
-  local name="$1" dx="$2" dy="$3" dz="$4" tx="$5" ty="$6" tz="$7" line
-  line=$(python3 - "$X" "$Y" "$Z" "$dx" "$dy" "$dz" "$tx" "$ty" "$tz" <<'PYEOF'
-import sys
-X, Y, Z = map(float, sys.argv[1:4])
-dx, dy, dz, tx, ty, tz = map(float, sys.argv[4:10])
-print("%.1f %.1f %.1f %.1f %.1f %.1f" % (X+dx, Y+dy, Z+dz, X+tx, Y+ty, Z+tz))
-PYEOF
-)
-  read -r CX CY CZ TX TY TZ <<< "$line"
-  rq tp TestPlayer "$CX" "$CY" "$CZ" facing "$TX" "$TY" "$TZ" >/dev/null
-  sleep 18
-  xdotool windowraise "$WID" || true
-  import -window root "$OUT/$name"
-  echo "  Captured $OUT/$name (cam=$CX,$CY,$CZ -> $TX,$TY,$TZ)"
-  # Objective frame check: an all-sky frame (camera outside the entity tracking
-  # distance) is almost flat, so both the colour count and the dark-pixel share
-  # collapse.  Fail loudly instead of shipping an empty screenshot.
-  colours=$(identify -format "%k" "$OUT/$name" 2>/dev/null || echo 0)
-  dark=$(convert "$OUT/$name" -colorspace Gray -resize 240x135! -threshold 40% -negate \
-         -format "%[fx:mean]" info: 2>/dev/null || echo 0)
-  echo "    frame check: unique colours=$colours dark_share=$dark"
-  [ "$colours" -ge 1000 ] || fail "$name looks empty (only $colours unique colours)"
-  awk -v d="$dark" 'BEGIN{exit !(d+0>=0.004)}' \
-    || fail "$name contains almost no model pixels (dark share $dark)"
-}
-# The snout tip sits ~161 blocks ahead of the entity, and the client only tracks
-# entities within renderDistance (192), so the camera can never get closer than
-# ~25 blocks to the nose; the narrower FOV above is what frames the head.
-head_shot "maja-client-cheeks-front.png"   0.0  5.0 186.0  0.0 3.0 128.0
-head_shot "maja-client-cheeks-3q.png"     38.0 11.0 178.0  0.0 3.0 128.0
-head_shot "maja-client-rear-skull.png"    16.0 34.0  18.0  0.0 4.0  95.0
-if grep -Ei 'Error while rendering entity|Exception.*ElGranMaja|Unable to load.*el_gran_maja' "$OUT/maja-client.log"; then
-  fail "Client log reports a Maja renderer failure during the head showcase"
+# Controlled visual scene in a disposable flat world. This shallow water
+# surface is staged; it is not a screenshot of the natural Elisar ocean.
+MAJA='@e[type=riftworld:el_gran_maja,limit=1]'
+rq fill -70 59 20 70 59 170 minecraft:water >/dev/null
+rq tp "$MAJA" 0 60 0 0 0 >/dev/null
+# A side/front angle avoids the moving head overtaking the camera. Wait for
+# the teleport and chunks before capturing the first phase.
+rq tp TestPlayer 130 100 100 facing 0 67 140 >/dev/null
+sleep 10
+import -window root "$OUT/maja-breach-start.png"
+rq data merge entity "$MAJA" '{NoAI:0b,majaMotionTick:125}' >/dev/null
+sleep 5
+import -window root "$OUT/maja-breach-rise.png"
+echo 'OK: captured controlled water-surface breach frames for visual review.'
+
+# The rebuilt creatures must load and render in the real client, not just the
+# software preview. Clear the titan so it cannot obscure the much smaller rigs.
+rq kill '@e[type=riftworld:el_gran_maja]' >/dev/null
+rq summon riftworld:liopleurodon 0 200 0 '{NoAI:1b,NoGravity:1b,PersistenceRequired:1b}' >/dev/null
+rq tp TestPlayer -5 202 7 facing 0 200 0 >/dev/null
+sleep 15
+grep -Fq '[riftworld] geo liopleurodon:' "$OUT/maja-client.log" || fail 'Liopleurodon model was not loaded by the real client'
+import -window root "$OUT/fauna-liopleurodon.png"
+sleep 1
+import -window root "$OUT/fauna-liopleurodon-motion.png"
+rq tp TestPlayer -12 201 0 facing 0 200 0 >/dev/null
+sleep 4
+import -window root "$OUT/fauna-liopleurodon-side.png"
+rq summon riftworld:pegasus 32 200 0 '{NoAI:1b,NoGravity:1b,PersistenceRequired:1b}' >/dev/null
+rq tp TestPlayer 27 203 6 facing 32 202 0 >/dev/null
+sleep 15
+grep -Fq '[riftworld] geo pegasus:' "$OUT/maja-client.log" || fail 'Pegasus model was not loaded by the real client'
+import -window root "$OUT/fauna-pegasus-unsaddled.png"
+sleep 1
+import -window root "$OUT/fauna-pegasus-motion.png"
+rq tp TestPlayer 20 202 0 facing 32 202 0 >/dev/null
+sleep 4
+import -window root "$OUT/fauna-pegasus-side.png"
+rq tp TestPlayer 27 203 6 facing 32 202 0 >/dev/null
+rq data merge entity '@e[type=riftworld:pegasus,limit=1]' '{Tamed:1b,Saddle:1b}' >/dev/null
+rq data get entity '@e[type=riftworld:pegasus,limit=1]' Saddle | grep -q '1b' || fail 'Pegasus saddle was not synchronized'
+sleep 5
+import -window root "$OUT/fauna-pegasus-saddled.png"
+# Photograph a trophy in hand and the creative inventory. Pixel-level visual
+# review is still required; the server probe separately verifies actual drops.
+rq fill 44 199 7 50 199 13 minecraft:stone >/dev/null
+rq gamemode creative TestPlayer >/dev/null
+rq tp TestPlayer 47 200 10 facing 32 202 0 >/dev/null
+for item in wendigo_antler pegasus_feather liopleurodon_tooth; do rq give TestPlayer "riftworld:$item" 1 >/dev/null; done
+rq item replace entity TestPlayer weapon.mainhand with riftworld:wendigo_antler >/dev/null
+sleep 5
+import -window root "$OUT/fauna-trophy-held.png"
+xdotool key --window "$WID" e
+sleep 3
+import -window root "$OUT/fauna-trophy-inventory.png"
+xdotool key --window "$WID" e
+if grep -Ei 'не удалось загрузить geo-модель (pegasus|liopleurodon)|Error while rendering entity|Unable to load.*(pegasus|liopleurodon)|Failed to load.*(pegasus|liopleurodon)' "$OUT/maja-client.log"; then
+  fail 'Client log reports a rebuilt fauna renderer/resource failure'
 fi
-rq list | grep -q TestPlayer || fail "Client disconnected during the head showcase"
-echo "OK: captured El Gran Maja front cheeks, 3/4 cheeks and sealed rear skull/neck."
+rq list | grep -q TestPlayer || fail 'Client disconnected during the fauna visual test'
+echo "OK: real client loaded both fauna rigs and photographed unsaddled/saddled Pegasus plus trophies (screenshots require review)."
+
+# A real survival player in Elisar water must take damage from the predator.
+# These are disposable coordinates; never run this script in a player world.
+rq kill '@e[type=riftworld:liopleurodon]' >/dev/null || true
+rq difficulty normal >/dev/null
+rq fill 40 199 3 54 207 17 riftworld:elisar_water >/dev/null
+rq gamemode survival TestPlayer >/dev/null
+rq effect give TestPlayer minecraft:water_breathing 60 0 true >/dev/null
+rq tp TestPlayer 47 202 10 >/dev/null
+rq summon riftworld:liopleurodon 51 202 10 '{PersistenceRequired:1b}' >/dev/null
+hit=0
+for _ in $(seq 1 15); do
+  health=$(rq data get entity TestPlayer Health 2>&1 || true)
+  echo "Predator test: $health" | tee -a "$OUT/predator-test.txt"
+  if echo "$health" | grep -Eq ': ([0-9](\.[0-9]+)?|1[0-9](\.[0-9]+)?)f$'; then hit=1; break; fi
+  sleep 1
+done
+[ "$hit" = 1 ] || fail 'Liopleurodon did not damage the survival player in Elisar water'
+rq kill '@e[type=riftworld:liopleurodon]' >/dev/null || true
+rq gamemode creative TestPlayer >/dev/null
+echo 'OK: Liopleurodon attacked a survival player in Elisar water.'
 
 # Exercise the actual custom dimension and the new biome, not just overworld registration.
 LOC=$(rq execute in riftworld:elisar positioned 0 54 0 run locate biome riftworld:maja_ocean)
@@ -158,6 +191,9 @@ print(*m.groups())
 PY
 )
 [[ "${OX:-}" =~ ^-?[0-9]+$ && "${OZ:-}" =~ ^-?[0-9]+$ ]] || fail "No ocean coordinates"
+# First deep-ocean centre, rather than the nearest biome edge (which can
+# overlap islands). Natural spawning must still use only already-loaded chunks.
+OX=1715; OZ=2126
 # The natural-spawn keeper intentionally ignores spectators.
 rq gamemode creative TestPlayer >/dev/null
 rq execute in riftworld:elisar run tp TestPlayer "$OX" 95 "$OZ" 0 0
@@ -179,10 +215,76 @@ for _ in $(seq 1 24); do
   if [[ "$result" == *"Test passed"* ]]; then seen=1; break; fi
   sleep 5
 done
+rq execute as TestPlayer at TestPlayer run riftmajacheck | tee "$OUT/maja-natural-diagnostic.txt" || true
 if [ "$seen" = 1 ]; then echo "::notice title=Natural Maja spawn::Observed in a real new Elisar ocean."
-else echo "::warning title=Natural Maja spawn::Not observed within two minutes at this ocean location."; fi
+else fail "Natural Maja did not spawn in the open core within two minutes; see maja-natural-diagnostic.txt"; fi
 if grep -Ei 'Render thread/FATAL|Minecraft Crash Report|Error while rendering|NullPointerException' "$OUT/maja-client.log"; then
   fail "Client crashed or reported a rendering exception after entering the ocean"
 fi
 rq list | grep -q TestPlayer || fail "Client disconnected in the ocean"
 echo "OK: client remained connected after entering the generated ocean."
+
+# Stage the naturally spawned Maja inside the actual generated deep ocean.
+# Freeze translation only; the client still animates the validated swimming bones.
+rq execute in riftworld:elisar run tp '@e[type=riftworld:el_gran_maja,limit=1]' 1715 30 2126 0 0 >/dev/null
+rq execute in riftworld:elisar run data merge entity '@e[type=riftworld:el_gran_maja,limit=1]' '{NoAI:1b}' >/dev/null
+rq gamemode spectator TestPlayer >/dev/null
+rq execute in riftworld:elisar run tp TestPlayer 1780 35 2145 facing 1715 30 2126 >/dev/null
+sleep 15
+import -window root "$OUT/maja-deep-ocean.png"
+rq execute in riftworld:elisar run tp TestPlayer 1765 35 2200 facing 1715 30 2225 >/dev/null
+sleep 10
+import -window root "$OUT/maja-deep-ocean-swim.png"
+
+# Inspect the actual generated wreck from two sides. Screenshot review is manual;
+# the server probe independently asserts hull and mast blocks.
+rq gamemode spectator TestPlayer >/dev/null
+rq execute in riftworld:elisar run tp TestPlayer 2315 69 2172 facing 2315 64 2126 >/dev/null
+sleep 35
+import -window root "$OUT/ocean-wreck-overview.png"
+rq execute in riftworld:elisar run tp TestPlayer 2280 72 2155 facing 2315 64 2126 >/dev/null
+sleep 10
+import -window root "$OUT/ocean-wreck-bow.png"
+rq list | grep -q TestPlayer || fail 'Client disconnected while viewing the wreck'
+echo 'OK: captured real-client wreck views for manual review.'
+
+# ---------------------------------------------------------------------------
+# Снаряжение и люди Элисара. Витрину ставит команда /riftstruct v40_gear: она
+# сама чистит площадку, одевает четыре стойки и призывает жителя, стража и
+# лучника. Кадры снимает настоящий клиент — их нужно смотреть глазами.
+# ---------------------------------------------------------------------------
+rq gamemode creative TestPlayer >/dev/null
+rq execute in riftworld:elisar run time set noon >/dev/null
+# llvmpipe подгружает новый участок медленно: греем клиент прямо на точке съёмки.
+rq execute in riftworld:elisar run tp TestPlayer 760 123 770 0 0 >/dev/null
+sleep 30
+GEAR_INFO=$(rq execute in riftworld:elisar positioned 760 118 760 run riftstruct v40_gear)
+echo "gear showcase: $GEAR_INFO"
+[[ "$GEAR_INFO" == *"stands=4"* ]] || fail "Expected 4 armour stands, got: $GEAR_INFO"
+[[ "$GEAR_INFO" == *"folk=3"* ]] || fail "Expected 3 Elisar folk, got: $GEAR_INFO"
+STANDS=$(rq execute in riftworld:elisar positioned 760 118 760 if entity '@e[type=minecraft:armor_stand,distance=..40]' 2>&1 || true)
+[[ "$STANDS" == *"Test passed"* ]] || fail "No armour stands near the showcase: $STANDS"
+
+# gear_shot <имя файла> <имя камеры> [ожидание]
+gear_shot() {
+  local name=$1 cam=$2 wait=${3:-24} pose
+  pose=$(python3 - "$GEAR_INFO" "$cam" <<'PY'
+import re, sys
+m = re.search(sys.argv[2] + r'=(-?[\d.]+),(-?[\d.]+),(-?[\d.]+):(-?[\d.]+),(-?[\d.]+),(-?[\d.]+)', sys.argv[1])
+if not m:
+    raise SystemExit('no camera pose')
+print(' '.join(m.groups()))
+PY
+)
+  [ -n "$pose" ] || fail "No camera pose '$cam' in: $GEAR_INFO"
+  set -- $pose
+  rq execute in riftworld:elisar run tp TestPlayer "$1" "$2" "$3" facing "$4" "$5" "$6" >/dev/null
+  sleep "$wait"
+  import -window root "$OUT/$name.png"
+  echo "captured $name"
+}
+gear_shot gear-armour-row   cam_row   30
+gear_shot gear-elisar-folk  cam_folk  26
+gear_shot gear-closeup      cam_close 22
+rq list | grep -q TestPlayer || fail 'Client disconnected during the gear showcase'
+echo 'OK: captured the Elisar gear and folk showcase for manual review.'

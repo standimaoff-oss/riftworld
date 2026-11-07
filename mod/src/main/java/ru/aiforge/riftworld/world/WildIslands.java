@@ -41,10 +41,14 @@ public final class WildIslands {
     }
 
     public static Cell cell(int cx, int cz) {
-        Cell c = CACHE.get(key(cx, cz));
+        long key = key(cx, cz);
+        Cell c = CACHE.get(key);
         if (c == null) {
             c = gen(cx, cz);
-            CACHE.putIfAbsent(key(cx, cz), c);
+            Cell winner = CACHE.putIfAbsent(key, c);
+            // Different worldgen workers must all use the same island objects;
+            // several terrain/structure checks intentionally compare identity.
+            if (winner != null) c = winner;
         }
         return c;
     }

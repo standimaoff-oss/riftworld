@@ -19,40 +19,30 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import ru.aiforge.riftworld.world.CityPlan;
 import ru.aiforge.riftworld.world.MajaIslandDevourer;
+import ru.aiforge.riftworld.world.MajaMotion;
+import net.minecraft.core.particles.ParticleTypes;
 
 /** A rare ocean titan. It ignores players; no chat or HUD messages are emitted. */
 public final class ElGranMajaEntity extends Mob {
     private static final EntityDataAccessor<Boolean> READY = SynchedEntityData.defineId(ElGranMajaEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Float> JAW = SynchedEntityData.defineId(ElGranMajaEntity.class, EntityDataSerializers.FLOAT);
-
-    /** Крейсерская скорость, блоков за тик. */
-    private static final float CRUISE = 0.16F;
-    /** Предел угловой скорости поворота, градусов за тик. */
-    private static final float MAX_TURN_RATE = 0.30F;
-    /** Набор угловой скорости, градусов за тик за тик. */
-    private static final float TURN_ACCEL = 0.011F;
-
     private float desiredYaw;
     private int directionTicks;
+    /** Eased heading rate in degrees per tick: starts and stops smoothly. */
+    private float turnRate;
+    /** Smoothed cruise speed factor, so it accelerates out of a turn. */
+    private float speedFactor = 1.0F;
+    private int motionTick = -1;
     private float jawPrevious;
     private float jawCurrent;
-    private final MajaIslandDevourer devourer = new MajaIslandDevourer();
-
-    // ---- состояние анимации. Считается одинаково на сервере и на клиенте: ----
-    // клиент видит тот же yaw и ту же позицию, поэтому сглаженные значения совпадают
-    // и рендереру не нужны лишние пакеты.
-    private float turnVelocity;        // текущая угловая скорость руля, градусов за тик
-    private float currentSpeed = CRUISE;
-    private float verticalVelocity;
-    private float turnRate;            // сглаженная угловая скорость для рендера
-    private float turnRatePrevious;
-    private float swimSpeed;           // сглаженная поступательная скорость
+    // ---- состояние анимации: считается одинаково на сервере и на клиенте ----
+    private float swimSpeed;
     private float swimSpeedPrevious;
-    private float breachAmount;        // 0..1, насколько зверь вышел из воды
+    private float breachAmount;
     private float breachPrevious;
     private double lastX;
     private double lastZ;
-    private int avoidSign = 1;
+    private final MajaIslandDevourer devourer = new MajaIslandDevourer();
 
     public ElGranMajaEntity(EntityType<? extends ElGranMajaEntity> type, Level level) {
         super(type, level);
@@ -74,13 +64,11 @@ public final class ElGranMajaEntity extends Mob {
     }
 
     public boolean isReadyToRender() { return entityData.get(READY); }
-    /** Сглаженная угловая скорость поворота, градусов за тик (плюс — вправо). */
-    public float turnRate(float partial) { return Mth.lerp(partial, turnRatePrevious, turnRate); }
-    /** Сглаженная поступательная скорость, блоков за тик. */
+    public float jaw(float partial) { return Mth.lerp(partial, jawPrevious, jawCurrent); }
+    /** Сглаженная поступательная скорость для анимации, блоков за тик. */
     public float swimSpeed(float partial) { return Mth.lerp(partial, swimSpeedPrevious, swimSpeed); }
     /** Насколько зверь поднялся из воды: 0 — в глубине, 1 — верхняя точка выпрыгивания. */
     public float breachAmount(float partial) { return Mth.lerp(partial, breachPrevious, breachAmount); }
-    public float jaw(float partial) { return Mth.lerp(partial, jawPrevious, jawCurrent); }
 
     /** Do not let normal Mob navigation move the small vanilla anchor hitbox. */
     @Override
@@ -88,26 +76,21 @@ public final class ElGranMajaEntity extends Mob {
 
     @Override
     public void tick() {
-        // yRotO перезаписывается внутри super.tick(), поэтому угловую скорость снимаем до него.
-        float yawDelta = Mth.wrapDegrees(getYRot() - yRotO);
         super.tick();
         jawPrevious = jawCurrent;
         jawCurrent += (entityData.get(JAW) - jawCurrent) * 0.12F;
-
-        // ---------- состояние анимации: одинаково на сервере и на клиенте ----------
-        turnRatePrevious = turnRate;
+        // Фаза считается от UUID, поэтому клиент тикает её сам и остаётся в синхроне
+        // с сервером без лишних пакетов. Рендереру нужны и скорость, и фаза выпрыгивания.
+        if (motionTick < 0) motionTick = Math.floorMod(getUUID().hashCode(), MajaMotion.PERIOD);
+        motionTick = (motionTick + 1) % MajaMotion.PERIOD;
         swimSpeedPrevious = swimSpeed;
         breachPrevious = breachAmount;
-        turnRate += (yawDelta - turnRate) * 0.10F;
         // Страховка первого тика: lastX/lastZ ещё нулевые, «перемещение» было бы огромным.
-        double moved = Math.min(1.0, Math.hypot(getX() - lastX, getZ() - lastZ));
+        double moved = Math.min(2.0, Math.hypot(getX() - lastX, getZ() - lastZ));
         lastX = getX();
         lastZ = getZ();
         swimSpeed += ((float) moved - swimSpeed) * 0.10F;
-        double cycle = (tickCount + (getId() & 255)) % 1600;
-        double breach = cycle < 220 ? Math.sin(Math.PI * cycle / 220.0) : 0.0;
-        breachAmount += ((float) breach - breachAmount) * 0.18F;
-
+        breachAmount += ((float) MajaMotion.breach(motionTick) - breachAmount) * 0.20F;
         if (level().isClientSide || !(level() instanceof ServerLevel server)) return;
         if (!isReadyToRender()) {
             // /summon inside rock or an unloaded area never renders half a creature in blocks.
@@ -128,33 +111,39 @@ public final class ElGranMajaEntity extends Mob {
 
         if (devourer.tick(server, this)) {
             setDeltaMovement(Vec3.ZERO);
-            entityData.set(JAW, 1.0F);
+            // Chewing stays inside the validated jaw envelope and is interpolated on clients.
+            entityData.set(JAW, 0.70F + 0.28F * Mth.sin(tickCount * 0.16F));
             if (!MajaCollision.clear(server, position(), getYRot())) entityData.set(READY, false);
             return;
         }
 
         if (--directionTicks <= 0) {
-            desiredYaw = getYRot() + (random.nextFloat() - 0.5F) * 70.0F;
-            directionTicks = 240 + random.nextInt(240);
+            // Wide, lazy course changes instead of constant small zig-zags:
+            // the old ±22° every 12 s read as an almost stationary titan.
+            desiredYaw = getYRot() + (random.nextFloat() - 0.5F) * 96.0F;
+            directionTicks = 300 + random.nextInt(300);
         }
-        // Плавное руление: угловая скорость набирается и гасится, а не прыгает рывком.
-        float toTarget = Mth.wrapDegrees(desiredYaw - getYRot());
-        float wanted = Mth.clamp(toTarget * 0.022F, -MAX_TURN_RATE, MAX_TURN_RATE);
-        turnVelocity += Mth.clamp(wanted - turnVelocity, -TURN_ACCEL, TURN_ACCEL);
-        turnVelocity *= 0.94F; // трение воды
-        float nextYaw = getYRot() + turnVelocity;
-
-        // В повороте зверь притормаживает: так разворот читается как разворот, а не как телепорт.
-        float turning = Math.min(1.0F, Math.abs(turnVelocity) / MAX_TURN_RATE);
-        float targetSpeed = CRUISE * (1.0F - 0.45F * turning);
-        currentSpeed += Mth.clamp(targetSpeed - currentSpeed, -0.0025F, 0.0025F);
-
-        double desiredY = CityPlan.get().ocean - 13.0 + 18.0 * breach;
-        verticalVelocity += Mth.clamp((desiredY - getY()) * 0.045 - verticalVelocity, -0.010, 0.010);
-        verticalVelocity *= 0.94F;
-        double vertical = Mth.clamp(verticalVelocity, -0.22, 0.22);
+        // Eased steering: the commanded rate is limited by the heading error and
+        // by an angular acceleration, so a turn eases in and out instead of
+        // snapping to a new direction.
+        float error = Mth.wrapDegrees(desiredYaw - getYRot());
+        float wantedRate = Mth.clamp(error * 0.055F, -0.85F, 0.85F);
+        float maxStep = 0.028F;
+        turnRate += Mth.clamp(wantedRate - turnRate, -maxStep, maxStep);
+        turnRate = Mth.clamp(turnRate, -0.85F, 0.85F);
+        // slow down slightly while carving a turn, speed up on the straight
+        float wantedSpeed = 1.0F - 0.28F * Math.min(1.0F, Math.abs(turnRate) / 0.85F);
+        speedFactor += Mth.clamp(wantedSpeed - speedFactor, -0.02F, 0.02F);
+        float nextYaw = getYRot() + turnRate;
+        double breach = MajaMotion.breach(motionTick);
+        int sea = CityPlan.get().ocean;
+        double vertical = MajaMotion.verticalSpeed(getY(), MajaMotion.targetY(sea, motionTick));
+        double oldY = getY();
         double rad = Math.toRadians(nextYaw);
-        Vec3 motion = new Vec3(-Math.sin(rad) * currentSpeed, vertical, Math.cos(rad) * currentSpeed);
+        // 0.42 blocks/tick (~8.4 blocks/s): the titan visibly cruises instead of
+        // drifting; the 6-block collision margin still covers one tick of travel.
+        double cruise = 0.42 * speedFactor;
+        Vec3 motion = new Vec3(-Math.sin(rad) * cruise, vertical, Math.cos(rad) * cruise);
         Vec3 next = position().add(motion);
         if (MajaCollision.clear(server, next, nextYaw)) {
             setYRot(nextYaw);
@@ -162,21 +151,30 @@ public final class ElGranMajaEntity extends Mob {
             yHeadRot = nextYaw;
             setDeltaMovement(motion);
             move(MoverType.SELF, motion);
+            if ((oldY < sea && getY() >= sea) || (oldY > sea && getY() <= sea)) {
+                double hx = getX() - Math.sin(rad) * 145.0;
+                double hz = getZ() + Math.cos(rad) * 145.0;
+                server.sendParticles(ParticleTypes.SPLASH, hx, sea + 0.2, hz, 36, 12.0, 0.5, 6.0, 0.25);
+            }
         } else {
             setDeltaMovement(Vec3.ZERO);
-            // Упираемся в берег: уводим руль в одну сторону, пока не найдём выход.
-            turnVelocity = Mth.clamp(turnVelocity + avoidSign * TURN_ACCEL * 3.0F, -MAX_TURN_RATE, MAX_TURN_RATE);
-            currentSpeed *= 0.92F;
             // If terrain changed underneath the existing envelope, hide rather than render through it.
             if (!MajaCollision.clear(server, position(), getYRot())) entityData.set(READY, false);
-            if (tickCount % 40 == 0) {
-                desiredYaw = getYRot() + avoidSign * 55.0F;
-                directionTicks = 120;
-                // Если и в эту сторону не пускает — следующий заход попробуем зеркально.
-                avoidSign = -avoidSign;
+            if (tickCount % 30 == 0) {
+                // blocked: pick a gentler escape course, still eased by turnRate
+                desiredYaw = getYRot() + (random.nextBoolean() ? 52.0F : -52.0F);
+                directionTicks = 160;
             }
         }
-        if (tickCount % 5 == 0) {
+        // A restrained trail follows the moving head underwater. Do not query
+        // unloaded chunks or alter block contents for cosmetic effects.
+        if (tickCount % 12 == 0 && !server.getFluidState(blockPosition()).isEmpty()
+                && getY() < sea - 5 && motion.horizontalDistanceSqr() > 0.001) {
+            double bx = getX() - Math.sin(rad) * 105.0;
+            double bz = getZ() + Math.cos(rad) * 105.0;
+            server.sendParticles(ParticleTypes.BUBBLE, bx, getY() - 3, bz, 12, 8.0, 1.5, 5.0, 0.06);
+        }
+        if (tickCount % 2 == 0) {
             float breathing = 0.12F + 0.12F * (1.0F + Mth.sin(tickCount * 0.026F));
             entityData.set(JAW, Mth.clamp(breach > 0.12 ? (float) (0.35 + breach * 0.55) : breathing, 0.0F, 1.0F));
         }
@@ -187,6 +185,14 @@ public final class ElGranMajaEntity extends Mob {
 
     @Override
     public boolean canBreatheUnderwater() { return true; }
+
+    @Override
+    public boolean canDrownInFluidType(net.minecraftforge.fluids.FluidType type) {
+        // Forge handles custom fluids separately from vanilla water; the
+        // vanilla canBreatheUnderwater override alone is not enough here.
+        return type == ru.aiforge.riftworld.registry.ModFluids.TYPE.get()
+                ? false : super.canDrownInFluidType(type);
+    }
     @Override
     public boolean removeWhenFarAway(double distance) { return false; }
     @Override
@@ -198,8 +204,13 @@ public final class ElGranMajaEntity extends Mob {
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.putFloat("majaDesiredYaw", desiredYaw);
-        tag.putFloat("majaTurnVelocity", turnVelocity);
-        tag.putFloat("majaSpeed", currentSpeed);
+        tag.putFloat("majaTurnRate", turnRate);
+        tag.putFloat("majaSpeedFactor", speedFactor);
+        tag.putInt("majaMotionTick", motionTick);
+        tag.putInt("majaTicks", tickCount);
+        tag.putDouble("majaBreach", motionTick < 0 ? 0.0 : MajaMotion.breach(motionTick));
+        tag.putString("majaFeedStatus", devourer.status());
+        tag.putInt("majaBlocksEaten", devourer.blocksEaten());
         // Read-only diagnostics for server operators and the automated collision probe.
         tag.putBoolean("majaReady", isReadyToRender());
         tag.putFloat("majaJaw", entityData.get(JAW));
@@ -208,8 +219,9 @@ public final class ElGranMajaEntity extends Mob {
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         desiredYaw = tag.getFloat("majaDesiredYaw");
-        turnVelocity = tag.getFloat("majaTurnVelocity");
-        if (tag.contains("majaSpeed")) currentSpeed = tag.getFloat("majaSpeed");
+        turnRate = tag.contains("majaTurnRate") ? tag.getFloat("majaTurnRate") : 0.0F;
+        speedFactor = tag.contains("majaSpeedFactor") ? tag.getFloat("majaSpeedFactor") : 1.0F;
+        motionTick = tag.contains("majaMotionTick") ? Math.floorMod(tag.getInt("majaMotionTick"), MajaMotion.PERIOD) : -1;
         // Re-check the loaded world before displaying any part of the model.
         entityData.set(READY, false);
     }

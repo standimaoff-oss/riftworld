@@ -38,8 +38,56 @@ public final class SeaProbeCommand {
     private SeaProbeCommand() {
     }
 
+    private static int majaPose(CommandSourceStack src) {
+        StringBuilder why = new StringBuilder();
+        boolean clear = ru.aiforge.riftworld.entity.MajaCollision.clear(src.getLevel(), src.getPosition(), src.getRotation().y, why);
+        String message = "maja_pose clear=" + clear + " reason=" + (clear ? "none" : why);
+        src.sendSuccess(() -> Component.literal(message), false);
+        return clear ? 1 : 0;
+    }
+
+    /** Read-only diagnostic: never generates or loads chunks. */
+    private static int majaIsland(CommandSourceStack src) {
+        if (!src.getLevel().dimension().equals(Flight.ELISAR_DIM)) {
+            src.sendFailure(Component.literal("Use /execute in riftworld:elisar positioned <x> <y> <z> run riftmajaisland"));
+            return 0;
+        }
+        int ox = (int) Math.floor(src.getPosition().x), oz = (int) Math.floor(src.getPosition().z);
+        int cx = Math.floorDiv(ox, WildIslands.CELL), cz = Math.floorDiv(oz, WildIslands.CELL);
+        CityPlan.Island best = null;
+        double score = Double.POSITIVE_INFINITY;
+        for (int x = cx - 7; x <= cx + 7; x++) for (int z = cz - 7; z <= cz + 7; z++) {
+            for (CityPlan.Island island : WildIslands.cell(x, z).islands) {
+                if (island.kind != 2 || island.R > 24.0 || !DeepOcean.contains((int)island.cx, (int)island.cz)) continue;
+                DeepOcean.Region ocean = DeepOcean.regionAt((int)island.cx, (int)island.cz);
+                double d = Math.hypot(island.cx - ocean.x(), island.cz - ocean.z());
+                // The core suppresses islands, and an island crossing its edge is incomplete.
+                if (d < 384 + island.maxReach() * 1.5 + 32 || d + island.maxReach() + 16 >= ocean.radius()) continue;
+                if (ElisarChunkGenerator.column(CityPlan.get(), (int)island.cx, (int)island.cz).isl != island) continue;
+                double q = Math.hypot(island.cx - ox, island.cz - oz);
+                if (q < score) { score = q; best = island; }
+            }
+        }
+        if (best == null) { src.sendFailure(Component.literal("No suitable medium ocean island nearby")); return 0; }
+        int ix = (int)Math.floor(best.cx), iz = (int)Math.floor(best.cz);
+        int ax = ix, az = (int)Math.floor(best.cz - 156 - best.maxReach() - 20);
+        int ay = (int)Math.max(67, Math.min(85, best.base - 38));
+        String message = String.format(java.util.Locale.ROOT,
+                "maja_island x=%d z=%d radius=%.2f reach=%.2f base=%.2f anchor_x=%d anchor_y=%d anchor_z=%d",
+                ix, iz, best.R, best.maxReach(), best.base, ax, ay, az);
+        src.sendSuccess(() -> Component.literal(message), false);
+        return 1;
+    }
+
+
     @SubscribeEvent
     public static void register(RegisterCommandsEvent e) {
+        e.getDispatcher().register(Commands.literal("riftmajapose").requires(s -> s.hasPermission(2))
+                .executes(c -> majaPose(c.getSource())));
+        e.getDispatcher().register(Commands.literal("riftmajaisland").requires(s -> s.hasPermission(2))
+                .executes(c -> majaIsland(c.getSource())));
+        e.getDispatcher().register(Commands.literal("riftmajacheck").requires(s -> s.hasPermission(2))
+                .executes(c -> majaCheck(c.getSource())));
         e.getDispatcher().register(Commands.literal("riftsea").requires(s -> s.hasPermission(2))
                 .executes(c -> run(c.getSource())));
         // Рев 11: /rifttree — ближайшее дерево Элисара и сколько у него ВЕТВЕЙ (проверка «не квадрат»)
@@ -134,6 +182,34 @@ public final class SeaProbeCommand {
      * сколько у дерева ВЕТВЕЙ (брёвен вне ствола) и листвы. Именно так CI проверяет, что дерево
      * не «сплошной квадрат», а растёт с ветками.
      */
+    /** Non-loading diagnostic for operators: why can't Maja spawn at this player? */
+    private static int majaCheck(CommandSourceStack src) {
+        ServerLevel level = src.getLevel();
+        var pos = src.getPosition();
+        int x = (int) Math.floor(pos.x), z = (int) Math.floor(pos.z);
+        int sea = CityPlan.get().ocean;
+        DeepOcean.Region region = DeepOcean.regionAt(x, z);
+        StringBuilder out = new StringBuilder("maja_check dimension=").append(level.dimension().location())
+                .append(" x=").append(x).append(" z=").append(z)
+                .append(" ocean=").append(DeepOcean.contains(x, z))
+                .append(" biome=").append(level.getBiome(new BlockPos(x, sea - 8, z)).is(MajaOceanKeeper.BIOME))
+                .append(" spawned=").append(MajaWorldData.get(level).hasSpawned(region.key()));
+        double cx = ((x >> 4) << 4) + 8.0, cz = ((z >> 4) << 4) + 8.0;
+        for (int rise = 0; rise <= 40; rise += 8) {
+            out.append(" y").append(sea - 13 + rise).append('=');
+            for (int i = 0; i < 4; i++) {
+                StringBuilder why = new StringBuilder();
+                boolean ok = ru.aiforge.riftworld.entity.MajaCollision.clear(level,
+                        new net.minecraft.world.phys.Vec3(cx, sea - 13.0 + rise, cz), 45.0F + i * 90, why);
+                if (i > 0) out.append('/');
+                out.append(ok ? "clear" : why);
+            }
+        }
+        String line = out.toString();
+        src.sendSuccess(() -> Component.literal(line), false);
+        return 1;
+    }
+
     private static int tree(CommandSourceStack src, String kindFilter) {
         ServerLevel level = src.getLevel();
         if (level.dimension() != Flight.ELISAR_DIM) {

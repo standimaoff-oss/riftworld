@@ -332,7 +332,8 @@ public class PegasusEntity extends Animal {
 
     @Override
     public double getPassengersRidingOffset() {
-        return 1.15D;
+        // v0.45.3: the rig now renders at 0.48, so the saddle sits ~1.2 blocks up.
+        return 1.22D;
     }
 
     @Override
