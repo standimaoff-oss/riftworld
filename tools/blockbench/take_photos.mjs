@@ -27,6 +27,8 @@ const outDir = path.resolve(arg('out', path.join(repoRoot, 'reports/blockbench_f
 const idsArg = arg('ids', 'porcelain_crane,basalt_beetle,ash_moth,amethyst_fox');
 const ids = idsArg.split(',').map(s => s.trim()).filter(Boolean);
 const background = arg('background', '#f2f4f8');
+const resolutionArg = arg('resolution', '1600x1200').split('x').map(Number);
+const finalResolution = resolutionArg.length === 2 && resolutionArg.every(v => v > 0) ? resolutionArg : [1600, 1200];
 
 const titles = {
   porcelain_crane: 'Фарфоровый журавль',
@@ -123,7 +125,36 @@ try {
     const id = ids[i];
     const bbPath = path.join(repoRoot, 'blockbench/riftworld_fauna', id + '.bbmodel');
     const bbmodel = fs.readFileSync(bbPath, 'utf8');
-    const shot = await page.evaluate(async ({ bbmodel }) => {
+    const project = JSON.parse(bbmodel);
+    const bounds = { min: [Infinity, Infinity, Infinity], max: [-Infinity, -Infinity, -Infinity] };
+    for (const element of project.elements || []) {
+      if (!element.from || !element.to) continue;
+      for (let axis = 0; axis < 3; axis++) {
+        bounds.min[axis] = Math.min(bounds.min[axis], element.from[axis]);
+        bounds.max[axis] = Math.max(bounds.max[axis], element.to[axis]);
+      }
+    }
+    const center = bounds.min.map((v, axis) => (v + bounds.max[axis]) / 2);
+    const extent = bounds.max.map((v, axis) => v - bounds.min[axis]);
+    const maxExtent = Math.max(...extent, 1);
+    // Fill the frame instead of keeping the old fixed zoom across 4x-sized projects.
+    const zoomPercent = Math.max(4, Math.min(42, 2600 / maxExtent));
+    const cameraPositions = {
+      porcelain_crane: [512, 512 * 0.55, -320],
+      basalt_beetle: [-512, 512 * 0.6, -512],
+      ash_moth: [0, 420, -512],
+      amethyst_fox: [-512, 512 * 0.5, -512]
+    };
+    const offset = cameraPositions[id] || [-512, 512 * 0.6, -512];
+    const cameraPreset = {
+      name: 'Riftworld reference view',
+      projection: 'orthographic',
+      position: [center[0] + offset[0], center[1] + offset[1], center[2] + offset[2]],
+      target: center,
+      zoom: 0.5
+    };
+    const shot = await page.evaluate(async ({ bbmodel, cameraPreset, zoomPercent, finalResolution }) => {
+      localStorage.setItem('camera_presets', JSON.stringify([cameraPreset]));
       newProject(Formats.bedrock_old);
       Codecs.project.parse(JSON.parse(bbmodel));
       const tex = Project.textures[0];
@@ -138,9 +169,9 @@ try {
         const url = await new Promise((resolve, reject) => {
           const timer = setTimeout(() => reject(new Error('Blockbench screenshot timeout')), 30000);
           Screencam.advancedScreenshot(Preview.selected, {
-            angle_preset: 'isometric_right',
+            angle_preset: '0',
             resolution,
-            zoom: 42,
+            zoom: zoomPercent,
             anti_aliasing: 'off',
             show_gizmos: false,
             shading: true,
@@ -156,10 +187,9 @@ try {
         return url;
       }
       await capture([800, 600]);
-      const resolution = [1200, 900];
-      const dataUrl = await capture(resolution);
-      return { dataUrl, resolution };
-    }, { bbmodel });
+      const dataUrl = await capture(finalResolution);
+      return { dataUrl, resolution: finalResolution, zoomPercent, cameraPreset };
+    }, { bbmodel, cameraPreset, zoomPercent, finalResolution });
 
     const filename = String(i + 1).padStart(2, '0') + '_' + id + '.png';
     const file = path.join(outDir, filename);
@@ -176,9 +206,10 @@ try {
       title_ru: titles[id] || id,
       file: path.relative(repoRoot, file),
       source: path.relative(repoRoot, bbPath),
-      camera: 'isometric_right',
+      camera: 'custom_reference_view',
+      camera_preset: shot.cameraPreset,
       resolution: shot.resolution,
-      zoom_percent: 42
+      zoom_percent: shot.zoomPercent
     });
     console.log(`[photo] ${file}`);
   }
@@ -192,7 +223,7 @@ const montageArgs = ['-background', background, '-fill', '#20242c', '-font', 'De
 for (const photo of report.photos) {
   montageArgs.push('-label', photo.title_ru, path.join(repoRoot, photo.file));
 }
-montageArgs.push('-tile', '2x2', '-geometry', '600x450+14+14', overview);
+montageArgs.push('-tile', '2x2', '-geometry', '800x600+14+14', overview);
 execFileSync('montage', montageArgs);
 for (const extra of fs.readdirSync(outDir)) {
   if (/^00_all_models-\d+\.png$/.test(extra)) fs.rmSync(path.join(outDir, extra));

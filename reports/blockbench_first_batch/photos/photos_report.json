@@ -7,48 +7,108 @@
       "title_ru": "Фарфоровый журавль",
       "file": "reports/blockbench_first_batch/photos/01_porcelain_crane.png",
       "source": "blockbench/riftworld_fauna/porcelain_crane.bbmodel",
-      "camera": "isometric_right",
+      "camera": "custom_reference_view",
+      "camera_preset": {
+        "name": "Riftworld reference view",
+        "projection": "orthographic",
+        "position": [
+          512,
+          361.6,
+          -321
+        ],
+        "target": [
+          0,
+          80,
+          -1
+        ],
+        "zoom": 0.5
+      },
       "resolution": [
-        1200,
-        900
+        1600,
+        1200
       ],
-      "zoom_percent": 42
+      "zoom_percent": 16.455696202531644
     },
     {
       "id": "basalt_beetle",
       "title_ru": "Базальтовый жук-углеед",
       "file": "reports/blockbench_first_batch/photos/02_basalt_beetle.png",
       "source": "blockbench/riftworld_fauna/basalt_beetle.bbmodel",
-      "camera": "isometric_right",
+      "camera": "custom_reference_view",
+      "camera_preset": {
+        "name": "Riftworld reference view",
+        "projection": "orthographic",
+        "position": [
+          -512,
+          345.2,
+          -522
+        ],
+        "target": [
+          0,
+          38,
+          -10
+        ],
+        "zoom": 0.5
+      },
       "resolution": [
-        1200,
-        900
+        1600,
+        1200
       ],
-      "zoom_percent": 42
+      "zoom_percent": 19.696969696969695
     },
     {
       "id": "ash_moth",
       "title_ru": "Пепельная моль",
       "file": "reports/blockbench_first_batch/photos/03_ash_moth.png",
       "source": "blockbench/riftworld_fauna/ash_moth.bbmodel",
-      "camera": "isometric_right",
+      "camera": "custom_reference_view",
+      "camera_preset": {
+        "name": "Riftworld reference view",
+        "projection": "orthographic",
+        "position": [
+          0,
+          448.5,
+          -505
+        ],
+        "target": [
+          0,
+          28.5,
+          7
+        ],
+        "zoom": 0.5
+      },
       "resolution": [
-        1200,
-        900
+        1600,
+        1200
       ],
-      "zoom_percent": 42
+      "zoom_percent": 17.56756756756757
     },
     {
       "id": "amethyst_fox",
       "title_ru": "Аметистовый лис",
       "file": "reports/blockbench_first_batch/photos/04_amethyst_fox.png",
       "source": "blockbench/riftworld_fauna/amethyst_fox.bbmodel",
-      "camera": "isometric_right",
+      "camera": "custom_reference_view",
+      "camera_preset": {
+        "name": "Riftworld reference view",
+        "projection": "orthographic",
+        "position": [
+          -512,
+          307.5,
+          -494.5
+        ],
+        "target": [
+          0,
+          51.5,
+          17.5
+        ],
+        "zoom": 0.5
+      },
       "resolution": [
-        1200,
-        900
+        1600,
+        1200
       ],
-      "zoom_percent": 42
+      "zoom_percent": 17.687074829931973
     }
   ],
   "overview": "reports/blockbench_first_batch/photos/00_all_models.png"

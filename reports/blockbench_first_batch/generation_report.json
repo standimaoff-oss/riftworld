@@ -15,34 +15,37 @@
         "title_ru": "Фарфоровый журавль",
         "biome": "elisar_city",
         "concept": "reports/biome_mob_concepts/01_elisar_city_porcelain_crane.png",
+        "revision": 2,
         "generator": "Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)",
-        "bones": 13,
-        "cubes": 31,
+        "bones": 12,
+        "cubes": 1231,
         "atlas": [
-          256,
-          256
+          2048,
+          2048
         ],
+        "units_per_block": 64,
+        "render_scale": 0.25,
         "bounds_blockbench": {
           "min": [
-            -6,
-            0,
-            -15
+            -25,
+            1,
+            -69
           ],
           "max": [
-            6,
-            39,
-            15
+            25,
+            159,
+            67
           ]
         },
         "size_blocks": [
-          0.75,
-          2.4375,
-          1.875
+          0.78125,
+          2.46875,
+          2.125
         ],
         "animations": 7,
-        "bbmodel_bytes": 81370,
-        "geo_bones": 13,
-        "geo_cubes": 31
+        "bbmodel_bytes": 2158517,
+        "geo_bones": 12,
+        "geo_cubes": 1231
       },
       "structural_validation": "ok"
     },
@@ -58,34 +61,37 @@
         "title_ru": "Базальтовый жук-углеед",
         "biome": "ashen_lands",
         "concept": "reports/biome_mob_concepts/02_ashen_lands_basalt_beetle.png",
+        "revision": 2,
         "generator": "Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)",
-        "bones": 24,
-        "cubes": 44,
+        "bones": 22,
+        "cubes": 1086,
         "atlas": [
-          256,
-          256
+          2048,
+          2048
         ],
+        "units_per_block": 64,
+        "render_scale": 0.25,
         "bounds_blockbench": {
           "min": [
-            -14,
+            -54,
             0,
-            -17
+            -76
           ],
           "max": [
-            14,
-            17,
-            12
+            54,
+            76,
+            56
           ]
         },
         "size_blocks": [
-          1.75,
-          1.0625,
-          1.8125
+          1.6875,
+          1.1875,
+          2.0625
         ],
-        "animations": 17,
-        "bbmodel_bytes": 133309,
-        "geo_bones": 24,
-        "geo_cubes": 44
+        "animations": 9,
+        "bbmodel_bytes": 2235680,
+        "geo_bones": 22,
+        "geo_cubes": 1086
       },
       "structural_validation": "ok"
     },
@@ -101,34 +107,37 @@
         "title_ru": "Пепельная моль",
         "biome": "ashen_lands",
         "concept": "reports/biome_mob_concepts/03_ashen_lands_ash_moth.png",
+        "revision": 2,
         "generator": "Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)",
-        "bones": 9,
-        "cubes": 24,
+        "bones": 10,
+        "cubes": 477,
         "atlas": [
-          256,
-          256
+          2048,
+          2048
         ],
+        "units_per_block": 64,
+        "render_scale": 0.25,
         "bounds_blockbench": {
           "min": [
-            -18,
-            8,
-            -10
+            -74,
+            -3,
+            -31
           ],
           "max": [
-            18,
-            19,
-            8
+            74,
+            60,
+            45
           ]
         },
         "size_blocks": [
-          2.25,
-          0.6875,
-          1.125
+          2.3125,
+          0.984375,
+          1.1875
         ],
-        "animations": 9,
-        "bbmodel_bytes": 71407,
-        "geo_bones": 9,
-        "geo_cubes": 24
+        "animations": 10,
+        "bbmodel_bytes": 908239,
+        "geo_bones": 10,
+        "geo_cubes": 477
       },
       "structural_validation": "ok"
     },
@@ -144,34 +153,37 @@
         "title_ru": "Аметистовый лис",
         "biome": "violet_hills",
         "concept": "reports/biome_mob_concepts/04_violet_hills_amethyst_fox.png",
+        "revision": 2,
         "generator": "Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)",
         "bones": 9,
-        "cubes": 27,
+        "cubes": 309,
         "atlas": [
-          256,
-          256
+          2048,
+          2048
         ],
+        "units_per_block": 64,
+        "render_scale": 0.25,
         "bounds_blockbench": {
           "min": [
-            -5,
+            -19,
             0,
-            -17
+            -56
           ],
           "max": [
-            5,
-            18,
-            17
+            19,
+            103,
+            91
           ]
         },
         "size_blocks": [
-          0.625,
-          1.125,
-          2.125
+          0.59375,
+          1.609375,
+          2.296875
         ],
         "animations": 8,
-        "bbmodel_bytes": 73874,
+        "bbmodel_bytes": 686601,
         "geo_bones": 9,
-        "geo_cubes": 27
+        "geo_cubes": 309
       },
       "structural_validation": "ok"
     }
@@ -180,30 +192,30 @@
     {
       "id": "porcelain_crane",
       "status": "ok",
-      "bones": 13,
-      "cubes": 31,
-      "texture_width": 256,
-      "texture_height": 256,
+      "bones": 12,
+      "cubes": 1231,
+      "texture_width": 2048,
+      "texture_height": 2048,
       "texture_loaded": true,
       "animations": 1
     },
     {
       "id": "basalt_beetle",
       "status": "ok",
-      "bones": 24,
-      "cubes": 44,
-      "texture_width": 256,
-      "texture_height": 256,
+      "bones": 22,
+      "cubes": 1086,
+      "texture_width": 2048,
+      "texture_height": 2048,
       "texture_loaded": true,
       "animations": 1
     },
     {
       "id": "ash_moth",
       "status": "ok",
-      "bones": 9,
-      "cubes": 24,
-      "texture_width": 256,
-      "texture_height": 256,
+      "bones": 10,
+      "cubes": 477,
+      "texture_width": 2048,
+      "texture_height": 2048,
       "texture_loaded": true,
       "animations": 1
     },
@@ -211,9 +223,9 @@
       "id": "amethyst_fox",
       "status": "ok",
       "bones": 9,
-      "cubes": 27,
-      "texture_width": 256,
-      "texture_height": 256,
+      "cubes": 309,
+      "texture_width": 2048,
+      "texture_height": 2048,
       "texture_loaded": true,
       "animations": 1
     }

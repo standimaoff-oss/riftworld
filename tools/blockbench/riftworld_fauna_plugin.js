@@ -1,11 +1,10 @@
-/* Riftworld Fauna — first Blockbench-API batch.
+/* Riftworld Fauna — reference-detail Blockbench-API batch, revision 2.
  *
- * This file is both a loadable Blockbench plugin and a headless library.
- * It builds editable Bedrock-entity projects with the public Blockbench API
- * (Group / Cube / Texture / Animation / Codecs), then exports:
- *   - .bbmodel via Codecs.project.compile()
- *   - a Riftworld runtime geo JSON converted from Codecs.bedrock_old.compile()
- *   - a pixel-art atlas PNG data URL painted into a Blockbench Texture.
+ * Builds editable Bedrock-entity projects through the public Blockbench API
+ * (Group / Cube / Texture / Animation / Codecs). Geometry is authored at 64
+ * units per Minecraft block and exported with render_scale 0.25, so the custom
+ * Riftworld integer-cube loader keeps working while the visible voxel step is
+ * 1/32 block instead of the previous 1/16 block.
  *
  * Authoring space: Blockbench internal, Y up, ground y=0, nose toward -Z.
  * Runtime space: Riftworld GeoModel, Y down, ground y=0, nose toward -Z.
@@ -13,27 +12,45 @@
 (function (global) {
   'use strict';
 
-  const ATLAS = 256;
+  const ATLAS = 2048;
   const LOOP = 2.0;
+  const UNITS_PER_BLOCK = 64;
+  const RENDER_SCALE = 16 / UNITS_PER_BLOCK;
 
   const MATERIALS = {
-    porcelain:    { base: [244, 239, 230], noise: 4,  edge: -10 },
-    celadon:      { base: [126, 197, 187], noise: 6,  edge: -12 },
-    gold:         { base: [201, 162, 74],  noise: 8,  edge: -14, pattern: 'metal' },
-    basalt:       { base: [43, 43, 48],    noise: 6,  edge: -10 },
-    basalt_plate: { base: [58, 58, 66],    noise: 7,  edge: -12, pattern: 'plate' },
-    lava:         { base: [255, 122, 24],  noise: 14, edge: -8,  pattern: 'lava' },
-    ash:          { base: [154, 154, 152], noise: 8,  edge: -10, pattern: 'fuzz' },
-    ash_dark:     { base: [110, 110, 108], noise: 7,  edge: -10 },
-    wing:         { base: [176, 176, 172], noise: 6,  edge: -8,  pattern: 'wing' },
-    eyespot:      { base: [176, 176, 172], noise: 5,  edge: -8,  pattern: 'eyespot' },
-    ember:        { base: [255, 140, 40],  noise: 10, edge: -6,  pattern: 'lava' },
-    violet:       { base: [139, 95, 191],  noise: 7,  edge: -12, pattern: 'fur' },
-    lavender:     { base: [183, 156, 224], noise: 6,  edge: -10 },
-    white:        { base: [242, 236, 250], noise: 4,  edge: -8 },
-    crystal:      { base: [106, 63, 160],  noise: 8,  edge: -10, pattern: 'crystal' },
-    eye:          { base: [16, 16, 20],    noise: 2,  edge: 0,   pattern: 'eye' },
-    eye_light:    { base: [230, 220, 245], noise: 3,  edge: 0,   pattern: 'eye' }
+    porcelain:    { base: [243, 240, 233], noise: 3,  edge: -4, pattern: 'ceramic' },
+    porcelain_hi: { base: [252, 250, 246], noise: 2,  edge: -3, pattern: 'ceramic' },
+    porcelain_lo: { base: [219, 216, 208], noise: 3,  edge: -4, pattern: 'ceramic' },
+    celadon:      { base: [151, 203, 188], noise: 4,  edge: -5, pattern: 'feather' },
+    celadon_hi:   { base: [185, 224, 211], noise: 3,  edge: -4, pattern: 'feather' },
+    celadon_lo:   { base: [112, 169, 156], noise: 4,  edge: -5, pattern: 'feather' },
+    gold:         { base: [196, 157, 66],  noise: 5,  edge: -6, pattern: 'metal' },
+    gold_hi:      { base: [232, 197, 106], noise: 4,  edge: -4, pattern: 'metal' },
+    ivory:        { base: [232, 226, 211], noise: 3,  edge: -4, pattern: 'ceramic' },
+    basalt:       { base: [42, 40, 43],    noise: 6,  edge: -6, pattern: 'basalt' },
+    basalt_hi:    { base: [61, 58, 62],    noise: 6,  edge: -6, pattern: 'basalt' },
+    basalt_lo:    { base: [28, 27, 30],    noise: 5,  edge: -5, pattern: 'basalt' },
+    lava:         { base: [255, 121, 22],  noise: 12, edge: -4, pattern: 'lava' },
+    lava_hi:      { base: [255, 190, 64],  noise: 10, edge: -3, pattern: 'lava' },
+    ember:        { base: [255, 145, 38],  noise: 9,  edge: -4, pattern: 'lava' },
+    ash:          { base: [158, 156, 151], noise: 6,  edge: -5, pattern: 'fuzz' },
+    ash_hi:       { base: [184, 181, 175], noise: 5,  edge: -4, pattern: 'fuzz' },
+    ash_dark:     { base: [105, 103, 100], noise: 5,  edge: -5, pattern: 'fuzz' },
+    wing:         { base: [172, 169, 163], noise: 5,  edge: -4, pattern: 'wing' },
+    wing_hi:      { base: [193, 190, 183], noise: 4,  edge: -3, pattern: 'wing' },
+    wing_lo:      { base: [135, 132, 127], noise: 5,  edge: -4, pattern: 'wing' },
+    eyespot:      { base: [164, 161, 155], noise: 4,  edge: -4, pattern: 'eyespot' },
+    violet:       { base: [137, 96, 184],  noise: 6,  edge: -5, pattern: 'fur' },
+    violet_hi:    { base: [172, 132, 214], noise: 5,  edge: -4, pattern: 'fur' },
+    violet_lo:    { base: [104, 68, 150],  noise: 5,  edge: -5, pattern: 'fur' },
+    lavender:     { base: [190, 160, 224], noise: 5,  edge: -4, pattern: 'fur' },
+    white:        { base: [241, 237, 228], noise: 3,  edge: -4, pattern: 'fur' },
+    white_hi:     { base: [252, 250, 245], noise: 2,  edge: -3, pattern: 'fur' },
+    crystal:      { base: [128, 74, 190],  noise: 6,  edge: -5, pattern: 'crystal' },
+    crystal_hi:   { base: [190, 139, 235], noise: 5,  edge: -4, pattern: 'crystal' },
+    crystal_lo:   { base: [83, 45, 133],   noise: 5,  edge: -5, pattern: 'crystal' },
+    eye:          { base: [18, 17, 21],    noise: 1,  edge: 0,  pattern: 'eye' },
+    eye_light:    { base: [248, 246, 255], noise: 1,  edge: 0,  pattern: 'eye' }
   };
 
   function fnv(str) {
@@ -44,8 +61,9 @@
     }
     return (h >>> 0) / 4294967295;
   }
-
   function clamp8(v) { return Math.max(0, Math.min(255, Math.round(v))); }
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function dist(a, b) { return Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]); }
 
   class Atlas {
     constructor(size) {
@@ -82,58 +100,101 @@
     };
   }
 
-  function paintFace(atlas, rect, matKey, seed, face) {
+  // Map a texel back to authoring-space coordinates so noise/veins/fur patches
+  // continue across neighbouring cubes instead of restarting on every face.
+  function worldTexel(face, lx, ly, from, to) {
+    switch (face) {
+      case 'up':    return [from[0] + lx + 0.5, to[1], from[2] + ly + 0.5];
+      case 'down':  return [from[0] + lx + 0.5, from[1], from[2] + ly + 0.5];
+      case 'north': return [from[0] + lx + 0.5, to[1] - ly - 0.5, from[2]];
+      case 'south': return [from[0] + lx + 0.5, to[1] - ly - 0.5, to[2]];
+      case 'east':  return [to[0], to[1] - ly - 0.5, from[2] + lx + 0.5];
+      case 'west':  return [from[0], to[1] - ly - 0.5, from[2] + lx + 0.5];
+      default:      return [from[0], from[1], from[2]];
+    }
+  }
+
+  function paintFace(atlas, rect, matKey, seed, face, cube, extra) {
     const mat = MATERIALS[matKey] || MATERIALS.ash;
     const [x0, y0, w, h] = rect;
-    const cx = x0 + w / 2;
-    const cy = y0 + h / 2;
     for (let y = y0; y < y0 + h; y++) {
       for (let x = x0; x < x0 + w; x++) {
-        const n = fnv(seed + ':' + face + ':' + x + ',' + y);
+        const lx = x - x0, ly = y - y0;
+        const p = worldTexel(face, lx, ly, cube.from, cube.to);
+        const gx = Math.floor(p[0] / 2), gy = Math.floor(p[1] / 2), gz = Math.floor(p[2] / 2);
+        const n = fnv(matKey + ':' + gx + ',' + gy + ',' + gz);
         let r = mat.base[0] + (n - 0.5) * 2 * mat.noise;
         let g = mat.base[1] + (n - 0.5) * 2 * mat.noise;
         let b = mat.base[2] + (n - 0.5) * 2 * mat.noise;
-        const border = (x === x0 || y === y0 || x === x0 + w - 1 || y === y0 + h - 1);
-        if (border) { r += mat.edge; g += mat.edge; b += mat.edge; }
-        const lx = x - x0;
-        const ly = y - y0;
+        const border = (lx === 0 || ly === 0 || lx === w - 1 || ly === h - 1);
+        if (border && w > 2 && h > 2) { r += mat.edge; g += mat.edge; b += mat.edge; }
         switch (mat.pattern) {
-          case 'metal':
-            if ((lx + ly) % 7 === 0) { r += 28; g += 24; b += 12; }
-            break;
-          case 'plate':
-            if (lx % 4 === 0 || ly % 4 === 0) { r -= 10; g -= 10; b -= 10; }
-            if (n > 0.82) { r += 12; g += 12; b += 14; }
-            break;
-          case 'lava':
-            if (n > 0.72) { r = 255; g = 190 + n * 50; b = 70; }
-            else if (n < 0.18) { r -= 70; g -= 45; b -= 20; }
-            break;
-          case 'fuzz':
-            if (n > 0.66) { r += 14; g += 14; b += 12; }
-            else if (n < 0.33) { r -= 12; g -= 12; b -= 12; }
-            break;
-          case 'wing':
-            if (lx % 5 === 0) { r -= 16; g -= 16; b -= 14; }
-            if (ly === 0 || ly === h - 1) { r -= 10; g -= 10; b -= 8; }
-            break;
-          case 'eyespot':
-            if (face === 'up' || face === 'down') {
-              const d = Math.max(Math.abs(x - cx), Math.abs(y - cy));
-              if (d < Math.min(w, h) * 0.16) { r = 35; g = 35; b = 38; }
-              else if (d < Math.min(w, h) * 0.30) { r = 226; g = 220; b = 205; }
-              else if (d < Math.min(w, h) * 0.44) { r = 255; g = 140; b = 45; }
+          case 'ceramic':
+            if ((Math.floor(p[0] / 8) + Math.floor(p[1] / 8) + Math.floor(p[2] / 8)) % 9 === 0) {
+              r -= 7; g -= 7; b -= 6;
             }
             break;
-          case 'fur':
-            if ((lx + 2 * ly) % 6 === 0) { r += 12; g += 10; b += 16; }
+          case 'metal':
+            if ((Math.floor(p[0] / 2) + Math.floor(p[1] / 2) + Math.floor(p[2] / 2)) % 5 === 0) {
+              r += 22; g += 18; b += 8;
+            }
             break;
+          case 'feather': {
+            const stripe = Math.floor((p[2] + p[0] * 0.35) / 4) % 4;
+            if (stripe === 0) { r -= 12; g -= 12; b -= 10; }
+            if (stripe === 1) { r += 8; g += 8; b += 7; }
+            break;
+          }
+          case 'basalt': {
+            const block = fnv(matKey + ':block:' + Math.floor(p[0] / 4) + ',' + Math.floor(p[1] / 4) + ',' + Math.floor(p[2] / 4));
+            const delta = (block - 0.5) * 22;
+            r += delta; g += delta; b += delta;
+            if (block > 0.86) { r += 12; g += 12; b += 13; }
+            break;
+          }
+          case 'lava':
+            if (n > 0.7) { r = 255; g = 195 + n * 45; b = 78; }
+            else if (n < 0.2) { r -= 55; g -= 42; b -= 16; }
+            break;
+          case 'fuzz':
+            if (n > 0.62) { r += 13; g += 13; b += 11; }
+            else if (n < 0.3) { r -= 11; g -= 11; b -= 10; }
+            break;
+          case 'wing': {
+            const vein = Math.floor((p[2] + Math.abs(p[0]) * 0.22) / 5) % 5;
+            if (vein === 0) { r -= 20; g -= 20; b -= 17; }
+            if (vein === 1) { r += 9; g += 9; b += 8; }
+            break;
+          }
+          case 'eyespot': {
+            if (extra && extra.eyespot_plane === 'xy' && face !== 'north' && face !== 'south') {
+              r = 150; g = 147; b = 141;
+              break;
+            }
+            // Rings are painted in the wing's local XZ plane, not per cube.
+            const c = extra && extra.eyespot_center ? extra.eyespot_center : [0, 0, 0];
+            const vertical = extra && extra.eyespot_plane === 'xy';
+            const dx = p[0] - c[0], dz = (vertical ? p[1] : p[2]) - c[vertical ? 1 : 2];
+            const d = Math.hypot(dx, dz);
+            const radius = extra && extra.eyespot_radius ? extra.eyespot_radius : 10;
+            if (d < radius * 0.34) { r = 34; g = 33; b = 32; }
+            else if (d < radius * 0.52) { r = 211; g = 207; b = 198; }
+            else if (d < radius * 0.78) { r = 57; g = 55; b = 53; }
+            else if (d < radius) { r = 122; g = 119; b = 114; }
+            break;
+          }
+          case 'fur': {
+            const patch = fnv(matKey + ':patch:' + Math.floor(p[0] / 4) + ',' + Math.floor(p[1] / 4) + ',' + Math.floor(p[2] / 4));
+            if (patch > 0.72) { r += 20; g += 16; b += 24; }
+            else if (patch < 0.24) { r -= 18; g -= 14; b -= 22; }
+            break;
+          }
           case 'crystal':
-            if (lx % 3 === 0) { r += 34; g += 28; b += 44; }
-            if ((lx + ly) % 5 === 0) { r -= 22; g -= 18; b -= 26; }
+            if ((Math.floor(p[0] / 2) + Math.floor(p[1] / 2)) % 4 === 0) { r += 34; g += 26; b += 44; }
+            if ((Math.floor(p[2] / 2) + Math.floor(p[1] / 2)) % 5 === 0) { r -= 24; g -= 18; b -= 30; }
             break;
           case 'eye':
-            if (w > 2 && h > 2 && lx === 1 && ly === 1) { r = 245; g = 245; b = 250; }
+            if (w > 2 && h > 2 && lx === 1 && ly === 1) { r = 250; g = 250; b = 255; }
             break;
         }
         atlas.set(x, y, r, g, b);
@@ -159,14 +220,14 @@
       Project.box_uv = true;
     }
 
-    bone(name, parent, pivot) {
+    bone(name, parent, pivot, rotation) {
       if (this.bones.has(name)) throw new Error('duplicate bone ' + name);
       const parentGroup = parent ? this.bones.get(parent) : null;
       if (parent && !parentGroup) throw new Error('unknown parent ' + parent + ' for ' + name);
       const g = new Group({
         name,
         origin: pivot.slice(),
-        rotation: [0, 0, 0],
+        rotation: rotation ? rotation.slice() : [0, 0, 0],
         export: true,
         visibility: true,
         isOpen: true
@@ -178,18 +239,20 @@
       return g;
     }
 
-    cube(bone, name, from, to, mat) {
+    cube(bone, name, from, to, mat, extra) {
       const g = this.bones.get(bone);
       if (!g) throw new Error('unknown bone ' + bone);
+      const f = from.map(v => Math.round(v));
+      const t = to.map(v => Math.round(v));
       for (let i = 0; i < 3; i++) {
-        if (!Number.isInteger(from[i]) || !Number.isInteger(to[i]) || to[i] <= from[i]) {
-          throw new Error('cube ' + name + ' needs integer from<to, got ' + JSON.stringify({ from, to }));
+        if (!Number.isInteger(f[i]) || !Number.isInteger(t[i]) || t[i] <= f[i]) {
+          throw new Error('cube ' + name + ' needs integer from<to, got ' + JSON.stringify({ from: f, to: t }));
         }
       }
       const c = new Cube({
         name,
-        from: from.slice(),
-        to: to.slice(),
+        from: f,
+        to: t,
         box_uv: true,
         uv_offset: [0, 0],
         mirror_uv: false,
@@ -197,8 +260,15 @@
         export: true,
         visibility: true
       }).addTo(g).init();
-      this.cubes.push({ cube: c, mat, seed: this.id + '/' + bone + '/' + name });
+      this.cubes.push({ cube: c, mat, extra: extra || null, seed: this.id + '/' + bone + '/' + name + '/' + this.cubes.length });
       return c;
+    }
+
+    box(bone, name, center, size, mat, extra) {
+      const half = size.map(v => v / 2);
+      return this.cube(bone, name,
+        [center[0] - half[0], center[1] - half[1], center[2] - half[2]],
+        [center[0] + half[0], center[1] + half[1], center[2] + half[2]], mat, extra);
     }
 
     animate(bone, axis, amp, speed, phase) {
@@ -229,7 +299,7 @@
       for (const it of this.uvItems) {
         const rects = faceRects(it.uv[0], it.uv[1], it.w, it.h, it.d);
         for (const face of Object.keys(rects)) {
-          paintFace(atlas, rects[face], it.item.mat, it.item.seed, face);
+          paintFace(atlas, rects[face], it.item.mat, it.item.seed, face, it.item.cube, it.item.extra);
         }
       }
       return atlas.toDataURL();
@@ -244,7 +314,7 @@
         uv_height: this.size,
         keep_size: true
       }).fromDataURL(dataURL).add();
-      for (let i = 0; i < 100; i++) {
+      for (let i = 0; i < 150; i++) {
         if (tex.width === this.size && tex.height === this.size && !tex.error) break;
         await new Promise(r => setTimeout(r, 20));
       }
@@ -271,12 +341,7 @@
           const value = a.amp * Math.sin((2 * Math.PI * t) / LOOP + a.phase);
           const dp = { x: 0, y: 0, z: 0 };
           dp[a.axis] = Math.round(value * 1000) / 1000;
-          ba.addKeyframe({
-            time: t,
-            channel: 'rotation',
-            data_points: [dp],
-            interpolation: 'linear'
-          });
+          ba.addKeyframe({ time: t, channel: 'rotation', data_points: [dp], interpolation: 'linear' });
         }
       }
       return anim;
@@ -311,7 +376,7 @@
       return {
         texture_width: this.size,
         texture_height: this.size,
-        render_scale: this.spec.render_scale == null ? 1.0 : this.spec.render_scale,
+        render_scale: RENDER_SCALE,
         translucent: false,
         bones
       };
@@ -341,288 +406,450 @@
         title_ru: this.spec.title_ru,
         biome: this.spec.biome,
         concept: this.spec.concept,
+        revision: 2,
         generator: 'Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)',
         bones: this.bones.size,
         cubes: this.cubes.length,
         atlas: [this.size, this.size],
+        units_per_block: UNITS_PER_BLOCK,
+        render_scale: RENDER_SCALE,
         bounds_blockbench: { min: [minX, minY, minZ], max: [maxX, maxY, maxZ] },
-        size_blocks: [(maxX - minX) / 16, (maxY - minY) / 16, (maxZ - minZ) / 16],
+        size_blocks: [
+          (maxX - minX) * RENDER_SCALE / 16,
+          (maxY - minY) * RENDER_SCALE / 16,
+          (maxZ - minZ) * RENDER_SCALE / 16
+        ],
         animations: Object.keys(this.anims).length,
         bbmodel_bytes: bbmodel.length,
         geo_bones: geo.bones.length,
         geo_cubes: geo.bones.reduce((n, b) => n + (b.cubes ? b.cubes.length : 0), 0)
       };
-      return {
-        id: this.id,
-        title_ru: this.spec.title_ru,
-        biome: this.spec.biome,
-        concept: this.spec.concept,
-        bbmodel,
-        geo,
-        texture: dataURL,
-        bedrock,
-        stats
-      };
+      return { id: this.id, title_ru: this.spec.title_ru, biome: this.spec.biome, concept: this.spec.concept, bbmodel, geo, texture: dataURL, bedrock, stats };
     }
   }
+
+  // ---------------------------------------------------------------- helpers
+
+  function ellipsoidSolid(b, bone, prefix, center, radii, step, mat) {
+    const [cx, cy, cz] = center, [rx, ry, rz] = radii;
+    let count = 0;
+    for (let y = Math.ceil((cy - ry) / step) * step; y < cy + ry; y += step) {
+      const yy = Math.min(1, Math.max(-1, (y + step / 2 - cy) / ry));
+      const sy = Math.sqrt(Math.max(0, 1 - yy * yy));
+      for (let x = Math.ceil((cx - rx * sy) / step) * step; x < cx + rx * sy; x += step) {
+        const xx = Math.min(1, Math.max(-1, (x + step / 2 - cx) / (rx * sy || 1)));
+        const sz = Math.sqrt(Math.max(0, 1 - xx * xx));
+        const z0 = Math.round(cz - rz * sy * sz), z1 = Math.round(cz + rz * sy * sz);
+        if (z1 <= z0) continue;
+        const x1 = Math.min(Math.round(cx + rx * sy), x + step);
+        if (x1 <= x) continue;
+        b.cube(bone, prefix + '_' + count++, [x, y, z0], [x1, y + step, z1], typeof mat === 'function' ? mat(x, y, z0) : mat);
+      }
+    }
+  }
+
+  function ellipsoidShell(b, bone, prefix, center, radii, step, matFn, opts) {
+    const options = opts || {};
+    const [cx, cy, cz] = center, [rx, ry, rz] = radii;
+    const i0 = Math.floor((cx - rx) / step), i1 = Math.ceil((cx + rx) / step);
+    const j0 = Math.floor((cy - ry) / step), j1 = Math.ceil((cy + ry) / step);
+    const k0 = Math.floor((cz - rz) / step), k1 = Math.ceil((cz + rz) / step);
+    const inside = (i, j, k) => {
+      const x = (i + 0.5) * step - cx, y = (j + 0.5) * step - cy, z = (k + 0.5) * step - cz;
+      if (options.minY != null && (j + 0.5) * step < options.minY) return false;
+      if (options.maxY != null && (j + 0.5) * step > options.maxY) return false;
+      return (x * x) / (rx * rx) + (y * y) / (ry * ry) + (z * z) / (rz * rz) <= 1;
+    };
+    const surface = new Map();
+    for (let j = j0; j < j1; j++) for (let k = k0; k < k1; k++) for (let i = i0; i < i1; i++) {
+      if (!inside(i, j, k)) continue;
+      const exposed = !inside(i + 1, j, k) || !inside(i - 1, j, k) || !inside(i, j + 1, k) ||
+        !inside(i, j - 1, k) || !inside(i, j, k + 1) || !inside(i, j, k - 1);
+      if (!exposed) continue;
+      const p = [(i + 0.5) * step, (j + 0.5) * step, (k + 0.5) * step];
+      const mat = typeof matFn === 'function' ? matFn(p, i, j, k) : matFn;
+      if (mat) surface.set(i + ',' + j + ',' + k, { i, j, k, mat });
+    }
+    let count = 0;
+    for (let j = j0; j < j1; j++) for (let k = k0; k < k1; k++) {
+      let i = i0;
+      while (i < i1) {
+        const cell = surface.get(i + ',' + j + ',' + k);
+        if (!cell) { i++; continue; }
+        let end = i + 1;
+        while (end < i1) {
+          const next = surface.get(end + ',' + j + ',' + k);
+          if (!next || next.mat !== cell.mat) break;
+          end++;
+        }
+        b.cube(bone, prefix + '_' + count++, [i * step, j * step, k * step], [end * step, (j + 1) * step, (k + 1) * step], cell.mat, cell.extra);
+        i = end;
+      }
+    }
+  }
+
+  function tubePath(b, bone, prefix, points, width, mat, step) {
+    const s = step || 4;
+    let count = 0;
+    for (let seg = 0; seg < points.length - 1; seg++) {
+      const a = points[seg], c = points[seg + 1];
+      const n = Math.max(1, Math.ceil(dist(a, c) / s));
+      for (let i = 0; i < n; i++) {
+        const t = i / n;
+        const p = [lerp(a[0], c[0], t), lerp(a[1], c[1], t), lerp(a[2], c[2], t)];
+        const w = typeof width === 'function' ? width(seg + t) : width;
+        b.box(bone, prefix + '_' + count++, p, [w, w, w], typeof mat === 'function' ? mat(seg + t, p) : mat);
+      }
+    }
+    const last = points[points.length - 1];
+    const w = typeof width === 'function' ? width(points.length - 1) : width;
+    b.box(bone, prefix + '_end', last, [w, w, w], typeof mat === 'function' ? mat(points.length - 1, last) : mat);
+  }
+
+  function feather(b, bone, prefix, root, tip, width, thickness, mat, veinMat) {
+    const length = dist(root, tip);
+    const n = Math.max(4, Math.ceil(length / 2));
+    for (let i = 0; i < n; i++) {
+      const t = (i + 0.5) / n;
+      const p = [lerp(root[0], tip[0], t), lerp(root[1], tip[1], t), lerp(root[2], tip[2], t)];
+      const w = Math.max(2, Math.round(width * (1 - t * 0.78)));
+      const dx = Math.abs(tip[0] - root[0]), dy = Math.abs(tip[1] - root[1]), dz = Math.abs(tip[2] - root[2]);
+      let size;
+      if (dz >= dx && dz >= dy) size = [w, thickness, 4];
+      else if (dx >= dy) size = [4, thickness, w];
+      else size = [w, 4, thickness];
+      b.box(bone, prefix + '_vane_' + i, p, size, mat);
+      if (veinMat && i % 2 === 0) {
+        const veinSize = dz >= dx && dz >= dy ? [1, thickness + 1, 3] : dx >= dy ? [3, thickness + 1, 1] : [1, 3, thickness + 1];
+        b.box(bone, prefix + '_vein_' + i, [p[0], p[1] + 0.5, p[2]], veinSize, veinMat);
+      }
+    }
+  }
+
+  function crystal(b, bone, prefix, base, height, width, lean) {
+    const tiers = 6;
+    const dx = lean ? lean[0] : 0, dz = lean ? lean[1] : 0;
+    for (let i = 0; i < tiers; i++) {
+      const t = i / (tiers - 1);
+      const w = Math.max(1, Math.round(width * (i === tiers - 1 ? 0.22 : i === tiers - 2 ? 0.48 : 1 - t * 0.45)));
+      const h = Math.max(1, Math.round(height / tiers));
+      const center = [base[0] + dx * t * height, base[1] + h * (i + 0.5), base[2] + dz * t * height];
+      const mat = i % 3 === 0 ? 'crystal_hi' : i % 3 === 1 ? 'crystal' : 'crystal_lo';
+      b.box(bone, prefix + '_' + i, center, [w, h, w], mat);
+    }
+  }
+
+  // ---------------------------------------------------------------- crane
 
   function buildPorcelainCrane(b) {
-    b.bone('body', null, [0, 20, 0]);
-    b.cube('body', 'porcelain_body', [-4, 17, -7], [4, 24, 7], 'porcelain');
-    b.cube('body', 'celadon_back', [-3, 24, -4], [3, 25, 5], 'celadon');
-    b.cube('body', 'gold_seam_left', [-4, 20, -2], [-3, 21, 4], 'gold');
-    b.cube('body', 'gold_seam_right', [3, 20, -2], [4, 21, 4], 'gold');
-    b.cube('body', 'gold_breast_seam', [-1, 18, -7], [1, 22, -6], 'gold');
+    b.bone('body', null, [0, 88, 2]);
+    ellipsoidShell(b, 'body', 'porcelain_hull', [0, 90, 4], [19, 23, 34], 4, (p) => {
+      if (p[1] > 104 && Math.abs(p[0]) < 12) return 'porcelain_hi';
+      if (p[1] < 78) return 'porcelain_lo';
+      return 'porcelain';
+    });
+    // Kintsugi seams: thin raised gold geometry, not random yellow pixels.
+    tubePath(b, 'body', 'gold_seam_back', [[-8, 108, -12], [-2, 112, 0], [6, 108, 14], [10, 100, 26]], 1, 'gold', 3);
+    tubePath(b, 'body', 'gold_seam_breast', [[0, 96, -28], [4, 86, -30], [2, 76, -24]], 1, 'gold', 3);
+    tubePath(b, 'body', 'gold_seam_side', [[18, 94, -8], [19, 86, 4], [16, 78, 16]], 1, 'gold', 3);
 
-    b.bone('neck_lower', 'body', [0, 23, -5]);
-    b.cube('neck_lower', 'neck_lower', [-2, 23, -8], [2, 29, -4], 'porcelain');
-    b.cube('neck_lower', 'neck_gold_ring', [-2, 27, -8], [2, 28, -4], 'gold');
-    b.bone('neck_upper', 'neck_lower', [0, 29, -6]);
-    b.cube('neck_upper', 'neck_upper', [-1, 29, -9], [1, 34, -5], 'porcelain');
-    b.bone('head', 'neck_upper', [0, 34, -8]);
-    b.cube('head', 'head', [-2, 34, -11], [2, 38, -7], 'porcelain');
-    b.cube('head', 'beak', [-1, 35, -15], [1, 36, -11], 'gold');
-    b.cube('head', 'eye_left', [-3, 36, -10], [-2, 37, -9], 'eye');
-    b.cube('head', 'eye_right', [2, 36, -10], [3, 37, -9], 'eye');
-    b.cube('head', 'crest', [-1, 38, -10], [1, 39, -8], 'celadon');
+    b.bone('neck_lower', 'body', [0, 102, -22]);
+    const neck = [[0, 100, -20], [0, 114, -30], [0, 128, -27], [0, 142, -35], [0, 150, -40]];
+    tubePath(b, 'neck_lower', 'neck_porcelain', neck, t => t < 1 ? 10 : t < 3 ? 8 : 7, 'porcelain', 3);
+    tubePath(b, 'neck_lower', 'neck_gold', [[4, 104, -24], [4, 116, -31], [3, 128, -28], [3, 142, -36]], 1, 'gold', 2);
+    b.bone('head', 'neck_lower', [0, 148, -40]);
+    b.box('head', 'skull', [0, 152, -42], [12, 10, 16], 'porcelain_hi');
+    b.box('head', 'crown', [0, 158, -42], [8, 2, 10], 'porcelain');
+    b.box('head', 'beak_base', [0, 151, -53], [6, 4, 8], 'gold');
+    b.box('head', 'beak_mid', [0, 150, -60], [4, 3, 7], 'gold_hi');
+    b.box('head', 'beak_tip', [0, 149, -66], [2, 2, 6], 'gold');
+    b.box('head', 'eye_left', [-6, 154, -45], [1, 3, 3], 'eye');
+    b.box('head', 'eye_right', [6, 154, -45], [1, 3, 3], 'eye');
 
-    b.bone('wing_left', 'body', [-4, 22, 0]);
-    b.cube('wing_left', 'wing_upper', [-6, 19, -5], [-4, 24, 6], 'celadon');
-    b.cube('wing_left', 'wing_lower', [-5, 17, -3], [-4, 20, 7], 'porcelain');
-    b.cube('wing_left', 'wing_tip', [-5, 16, 4], [-4, 18, 8], 'celadon');
-    b.cube('wing_left', 'wing_gold_line', [-6, 22, -2], [-5, 23, 5], 'gold');
-    b.bone('wing_right', 'body', [4, 22, 0]);
-    b.cube('wing_right', 'wing_upper', [4, 19, -5], [6, 24, 6], 'celadon');
-    b.cube('wing_right', 'wing_lower', [4, 17, -3], [5, 20, 7], 'porcelain');
-    b.cube('wing_right', 'wing_tip', [4, 16, 4], [5, 18, 8], 'celadon');
-    b.cube('wing_right', 'wing_gold_line', [5, 22, -2], [6, 23, 5], 'gold');
-
-    b.bone('tail', 'body', [0, 21, 7]);
-    b.cube('tail', 'tail_base', [-3, 20, 7], [3, 23, 12], 'celadon');
-    b.cube('tail', 'tail_tip', [-2, 19, 12], [2, 21, 15], 'porcelain');
-
-    b.bone('leg_left_upper', 'body', [-2, 17, 0]);
-    b.cube('leg_left_upper', 'thigh', [-3, 10, -1], [-1, 17, 1], 'celadon');
-    b.bone('leg_left_lower', 'leg_left_upper', [-2, 10, 0]);
-    b.cube('leg_left_lower', 'shin', [-3, 3, -1], [-1, 10, 1], 'porcelain');
-    b.bone('foot_left', 'leg_left_lower', [-2, 3, 0]);
-    b.cube('foot_left', 'ankle', [-3, 1, -1], [-1, 3, 1], 'gold');
-    b.cube('foot_left', 'foot', [-4, 0, -4], [0, 1, 2], 'gold');
-
-    b.bone('leg_right_upper', 'body', [2, 17, 0]);
-    b.cube('leg_right_upper', 'thigh', [1, 10, -1], [3, 17, 1], 'celadon');
-    b.bone('leg_right_lower', 'leg_right_upper', [2, 10, 0]);
-    b.cube('leg_right_lower', 'shin', [1, 3, -1], [3, 10, 1], 'porcelain');
-    b.bone('foot_right', 'leg_right_lower', [2, 3, 0]);
-    b.cube('foot_right', 'ankle', [1, 1, -1], [3, 3, 1], 'gold');
-    b.cube('foot_right', 'foot', [0, 0, -4], [4, 1, 2], 'gold');
-
-    b.animate('neck_lower', 'x', 3, 0.6, 0);
-    b.animate('head', 'x', 4, 0.6, 0.5);
-    b.animate('wing_left', 'z', 2, 0.8, 0);
-    b.animate('wing_right', 'z', 2, 0.8, Math.PI);
-    b.animate('tail', 'y', 4, 0.7, 0);
-    b.animate('leg_left_upper', 'x', 3, 1.2, 0);
-    b.animate('leg_right_upper', 'x', 3, 1.2, Math.PI);
-  }
-
-  function buildBasaltBeetle(b) {
-    b.bone('body', null, [0, 8, 0]);
-    b.cube('body', 'abdomen', [-7, 6, 2], [7, 13, 12], 'basalt');
-    b.cube('body', 'thorax', [-6, 7, -8], [6, 14, 2], 'basalt_plate');
-    b.cube('body', 'lava_core', [-2, 10, -2], [2, 12, 6], 'lava');
-
-    b.bone('head', 'body', [0, 9, -8]);
-    b.cube('head', 'head', [-5, 7, -14], [5, 13, -8], 'basalt');
-    b.cube('head', 'mandible_left', [-4, 7, -17], [-1, 9, -14], 'basalt_plate');
-    b.cube('head', 'mandible_right', [1, 7, -17], [4, 9, -14], 'basalt_plate');
-    b.cube('head', 'horn_left', [-3, 13, -13], [-1, 17, -10], 'basalt_plate');
-    b.cube('head', 'horn_right', [1, 13, -13], [3, 17, -10], 'basalt_plate');
-    b.cube('head', 'eye_left', [-6, 10, -13], [-5, 12, -11], 'lava');
-    b.cube('head', 'eye_right', [5, 10, -13], [6, 12, -11], 'lava');
-    b.bone('antenna_left', 'head', [-3, 13, -13]);
-    b.cube('antenna_left', 'antenna', [-4, 13, -16], [-3, 16, -14], 'basalt');
-    b.cube('antenna_left', 'antenna_tip', [-4, 16, -17], [-3, 17, -15], 'ember');
-    b.bone('antenna_right', 'head', [3, 13, -13]);
-    b.cube('antenna_right', 'antenna', [3, 13, -16], [4, 16, -14], 'basalt');
-    b.cube('antenna_right', 'antenna_tip', [3, 16, -17], [4, 17, -15], 'ember');
-
-    b.bone('elytra_left', 'body', [-1, 13, 2]);
-    b.cube('elytra_left', 'shell', [-8, 13, 1], [-1, 16, 12], 'basalt_plate');
-    b.cube('elytra_left', 'crack_a', [-6, 16, 3], [-5, 17, 9], 'lava');
-    b.cube('elytra_left', 'crack_b', [-3, 16, 5], [-2, 17, 10], 'lava');
-    b.bone('elytra_right', 'body', [1, 13, 2]);
-    b.cube('elytra_right', 'shell', [1, 13, 1], [8, 16, 12], 'basalt_plate');
-    b.cube('elytra_right', 'crack_a', [5, 16, 3], [6, 17, 9], 'lava');
-    b.cube('elytra_right', 'crack_b', [2, 16, 5], [3, 17, 10], 'lava');
-
-    const legs = [
-      ['front_left',  -6, -6, -1], ['front_right',  6, -6, 1],
-      ['middle_left', -7,  0, -1], ['middle_right', 7,  0, 1],
-      ['back_left',   -6,  7, -1], ['back_right',   6,  7, 1]
-    ];
-    for (const [name, x, z, side] of legs) {
-      const hipX = x;
-      const kneeX = x + side * 3;
-      const footX = x + side * 6;
-      b.bone('leg_' + name, 'body', [hipX, 8, z]);
-      b.cube('leg_' + name, 'coxa', [Math.min(hipX, kneeX), 7, z - 1], [Math.max(hipX, kneeX), 10, z + 1], 'basalt');
-      b.bone('leg_' + name + '_lower', 'leg_' + name, [kneeX, 8, z]);
-      b.cube('leg_' + name + '_lower', 'femur', [Math.min(kneeX, footX), 4, z - 1], [Math.max(kneeX, footX), 8, z + 1], 'basalt_plate');
-      b.bone('leg_' + name + '_foot', 'leg_' + name + '_lower', [footX, 4, z]);
-      b.cube('leg_' + name + '_foot', 'tibia', [footX - 1, 0, z - 1], [footX + 1, 4, z + 1], 'basalt');
-      b.cube('leg_' + name + '_foot', 'ember_claw', [footX - 1, 0, z - 2], [footX + 1, 1, z - 1], 'ember');
+    for (const side of [-1, 1]) {
+      const wing = side < 0 ? 'wing_left' : 'wing_right';
+      b.bone(wing, 'body', [side * 17, 100, 2]);
+      // Folded celadon wing coverts.
+      ellipsoidShell(b, wing, 'covert', [side * 18, 96, 6], [5, 14, 26], 4, p => p[1] > 100 ? 'celadon_hi' : 'celadon');
+      // Overlapping flight feathers fan toward the tail.
+      for (let i = 0; i < 6; i++) {
+        const root = [side * (19 + i % 2), 98 - i * 2, -8 + i * 5];
+        const tip = [side * (20 + i % 2), 82 - i * 3, 24 + i * 5];
+        feather(b, wing, 'flight_' + i, root, tip, 11 - i * 0.5, 2, i % 2 ? 'celadon' : 'celadon_hi', 'gold');
+      }
+      tubePath(b, wing, 'wing_gold_crack', [[side * 22, 104, -4], [side * 23, 96, 8], [side * 21, 88, 20]], 1, 'gold', 3);
+      b.animate(wing, 'z', 1.5, 0.8, side < 0 ? 0 : Math.PI);
     }
 
-    b.animate('head', 'x', 2, 0.7, 0);
-    b.animate('antenna_left', 'y', 5, 1.1, 0);
-    b.animate('antenna_right', 'y', 5, 1.1, Math.PI);
-    b.animate('elytra_left', 'z', 1.5, 0.9, 0);
-    b.animate('elytra_right', 'z', 1.5, 0.9, Math.PI);
-    legs.forEach(([name], i) => {
-      b.animate('leg_' + name, 'x', 6, 1.4, (i % 3) * (Math.PI / 3));
-      b.animate('leg_' + name + '_lower', 'x', 4, 1.4, (i % 3) * (Math.PI / 3) + 0.6);
-    });
+    b.bone('tail', 'body', [0, 88, 30]);
+    for (let i = 0; i < 9; i++) {
+      const spread = (i - 4) / 4;
+      const root = [spread * 8, 90 - Math.abs(spread) * 4, 30];
+      const tip = [spread * 22, 62 - Math.abs(spread) * 8, 58 + (1 - Math.abs(spread)) * 8];
+      feather(b, 'tail', 'tail_feather_' + i, root, tip, 12, 2, i % 2 ? 'porcelain_hi' : 'celadon_hi', 'gold');
+    }
+
+    for (const side of [-1, 1]) {
+      const upper = side < 0 ? 'leg_left_upper' : 'leg_right_upper';
+      const lower = side < 0 ? 'leg_left_lower' : 'leg_right_lower';
+      const foot = side < 0 ? 'foot_left' : 'foot_right';
+      const x = side * 8;
+      b.bone(upper, 'body', [x, 72, 2]);
+      b.box(upper, 'thigh', [x, 66, 2], [6, 14, 6], 'porcelain_lo');
+      b.bone(lower, upper, [x, 58, 2]);
+      b.box(lower, 'knee', [x, 58, 2], [5, 5, 5], 'ivory');
+      b.box(lower, 'shin', [x, 32, 2], [3, 48, 3], 'ivory');
+      b.bone(foot, lower, [x, 8, 2]);
+      b.box(foot, 'ankle', [x, 8, 2], [4, 4, 4], 'ivory');
+      b.box(foot, 'toe_front', [x, 2, -6], [2, 2, 14], 'ivory');
+      b.box(foot, 'toe_left', [x - 3, 2, -3], [2, 2, 10], 'ivory');
+      b.box(foot, 'toe_right', [x + 3, 2, -3], [2, 2, 10], 'ivory');
+      b.box(foot, 'toe_back', [x, 2, 8], [2, 2, 6], 'ivory');
+      b.animate(upper, 'x', 2, 1.2, side < 0 ? 0 : Math.PI);
+    }
+    b.animate('neck_lower', 'x', 2, 0.6, 0);
+    b.animate('head', 'x', 2.5, 0.6, 0.5);
+    b.animate('tail', 'y', 3, 0.7, 0);
   }
+
+  // ---------------------------------------------------------------- beetle
+
+  function nCrack(p) { return fnv('crack:' + Math.floor(p[0] / 4) + ',' + Math.floor(p[1] / 4) + ',' + Math.floor(p[2] / 4)) > 0.72; }
+
+  function buildBasaltBeetle(b) {
+    b.bone('body', null, [0, 34, 4]);
+    // Glowing core under the separated basalt plates.
+    ellipsoidSolid(b, 'body', 'lava_core', [0, 46, 8], [43, 26, 47], 4, 'lava');
+    const seeds = [
+      [-0.55, 0.75, -0.35], [0.05, 0.95, -0.2], [0.6, 0.7, -0.3],
+      [-0.7, 0.45, 0.25], [-0.15, 0.8, 0.45], [0.45, 0.75, 0.5],
+      [0.75, 0.35, 0.1], [-0.35, 0.4, -0.75], [0.3, 0.45, -0.7]
+    ];
+    ellipsoidShell(b, 'body', 'basalt_plate', [0, 46, 8], [46, 30, 50], 4, (p) => {
+      const q = [(p[0] / 46), (p[1] - 46) / 30, (p[2] - 8) / 50];
+      let best = 0, second = 1;
+      let d0 = dist(q, seeds[0]), d1 = dist(q, seeds[1]);
+      if (d1 < d0) { best = 1; second = 0; [d0, d1] = [d1, d0]; }
+      for (let i = 2; i < seeds.length; i++) {
+        const d = dist(q, seeds[i]);
+        if (d < d0) { second = best; d1 = d0; best = i; d0 = d; }
+        else if (d < d1) { second = i; d1 = d; }
+      }
+      if (d1 - d0 < 0.065) return nCrack(p) ? 'lava_hi' : 'lava';
+      return best % 3 === 0 ? 'basalt_hi' : best % 3 === 1 ? 'basalt' : 'basalt_lo';
+    }, { minY: 28 });
+    // Thorax collar.
+    ellipsoidShell(b, 'body', 'thorax', [0, 38, -38], [30, 18, 18], 4, p => p[1] > 44 ? 'basalt_hi' : 'basalt');
+
+    b.bone('head', 'body', [0, 34, -50]);
+    b.box('head', 'head_block', [0, 32, -56], [34, 20, 20], 'basalt');
+    b.box('head', 'face_plate', [0, 38, -62], [26, 8, 8], 'basalt_hi');
+    b.box('head', 'eye_left', [-17, 36, -60], [2, 6, 6], 'lava_hi');
+    b.box('head', 'eye_right', [17, 36, -60], [2, 6, 6], 'lava_hi');
+    b.box('head', 'mandible_left', [-10, 24, -66], [10, 6, 12], 'basalt_lo');
+    b.box('head', 'mandible_right', [10, 24, -66], [10, 6, 12], 'basalt_lo');
+    b.box('head', 'mandible_tip_left', [-13, 22, -73], [5, 4, 6], 'basalt');
+    b.box('head', 'mandible_tip_right', [13, 22, -73], [5, 4, 6], 'basalt');
+    // Curved orange horns.
+    for (const side of [-1, 1]) {
+      tubePath(b, 'head', 'horn_' + side, [[side * 12, 40, -56], [side * 18, 48, -60], [side * 20, 60, -62], [side * 16, 68, -60]],
+        t => t < 1 ? 9 : t < 2 ? 7 : 5, t => t < 2 ? 'ember' : 'lava_hi', 3);
+    }
+    for (const side of [-1, 1]) {
+      const ant = side < 0 ? 'antenna_left' : 'antenna_right';
+      b.bone(ant, 'head', [side * 10, 44, -54]);
+      tubePath(b, ant, 'segments', [[side * 10, 44, -54], [side * 16, 54, -60], [side * 22, 64, -66], [side * 28, 72, -70]],
+        t => t < 2 ? 5 : 4, 'basalt_lo', 4);
+      b.box(ant, 'club', [side * 29, 73, -71], [6, 6, 6], 'basalt');
+      b.animate(ant, 'y', 4, 1.1, side < 0 ? 0 : Math.PI);
+    }
+
+    const legs = [
+      ['front_left', -24, -34, -1], ['front_right', 24, -34, 1],
+      ['middle_left', -30, 2, -1], ['middle_right', 30, 2, 1],
+      ['back_left', -24, 36, -1], ['back_right', 24, 36, 1]
+    ];
+    for (const [name, x, z, side] of legs) {
+      const hip = 'leg_' + name, knee = hip + '_lower', foot = hip + '_foot';
+      b.bone(hip, 'body', [x, 30, z]);
+      b.box(hip, 'coxa', [x + side * 5, 28, z], [12, 10, 12], 'basalt');
+      b.bone(knee, hip, [x + side * 10, 26, z]);
+      tubePath(b, knee, 'femur', [[x + side * 10, 26, z], [x + side * 16, 18, z + side * 3], [x + side * 18, 12, z + side * 4]], 10, 'basalt_hi', 3);
+      b.bone(foot, knee, [x + side * 18, 10, z + side * 3]);
+      tubePath(b, foot, 'tibia', [[x + side * 18, 12, z + side * 4], [x + side * 19, 4, z + side * 3]], 7, 'basalt', 3);
+      b.box(foot, 'claw', [x + side * 18, 2, z + side * 3 - 3], [12, 4, 14], 'basalt_lo');
+      b.box(foot, 'claw_tip', [x + side * 18, 1, z + side * 3 - 9], [8, 2, 5], 'basalt');
+      b.animate(hip, 'x', 4, 1.4, (legs.findIndex(l => l[0] === name) % 3) * Math.PI / 3);
+    }
+    b.animate('head', 'x', 1.5, 0.7, 0);
+  }
+
+  // ---------------------------------------------------------------- moth
 
   function buildAshMoth(b) {
-    b.bone('body', null, [0, 12, 0]);
-    b.cube('body', 'abdomen', [-2, 11, 0], [2, 14, 8], 'ash');
-    b.cube('body', 'thorax', [-3, 11, -6], [3, 15, 0], 'ash');
-    b.cube('body', 'ember_band', [-2, 12, 2], [2, 13, 4], 'ember');
+    b.bone('body', null, [0, 28, 0]);
+    ellipsoidShell(b, 'body', 'thorax_fuzz', [0, 30, -8], [9, 9, 12], 2, p => p[1] > 32 ? 'ash_hi' : 'ash');
+    ellipsoidShell(b, 'body', 'abdomen_fuzz', [0, 28, 12], [7, 7, 18], 2, p => Math.floor(p[2] / 4) % 2 ? 'ash' : 'ash_dark');
+    b.box('body', 'ember_band', [0, 28, 4], [12, 2, 4], 'ember');
 
-    b.bone('head', 'body', [0, 13, -6]);
-    b.cube('head', 'head', [-2, 12, -9], [2, 16, -6], 'ash');
-    b.cube('head', 'eye_left', [-3, 13, -8], [-2, 15, -7], 'eye');
-    b.cube('head', 'eye_right', [2, 13, -8], [3, 15, -7], 'eye');
-    b.bone('antenna_left', 'head', [-1, 16, -8]);
-    b.cube('antenna_left', 'stalk', [-2, 16, -10], [-1, 19, -8], 'ash_dark');
-    b.cube('antenna_left', 'feather_a', [-3, 17, -10], [-2, 18, -9], 'ash_dark');
-    b.cube('antenna_left', 'feather_b', [-3, 18, -9], [-2, 19, -8], 'ash_dark');
-    b.bone('antenna_right', 'head', [1, 16, -8]);
-    b.cube('antenna_right', 'stalk', [1, 16, -10], [2, 19, -8], 'ash_dark');
-    b.cube('antenna_right', 'feather_a', [2, 17, -10], [3, 18, -9], 'ash_dark');
-    b.cube('antenna_right', 'feather_b', [2, 18, -9], [3, 19, -8], 'ash_dark');
+    b.bone('head', 'body', [0, 32, -20]);
+    b.box('head', 'head', [0, 33, -22], [12, 10, 10], 'ash_hi');
+    b.box('head', 'face', [0, 31, -28], [8, 6, 3], 'ash');
+    b.box('head', 'eye_left', [-6, 34, -25], [2, 5, 5], 'eye');
+    b.box('head', 'eye_right', [6, 34, -25], [2, 5, 5], 'eye');
+    for (const side of [-1, 1]) {
+      const ant = side < 0 ? 'antenna_left' : 'antenna_right';
+      b.bone(ant, 'head', [side * 4, 38, -24]);
+      tubePath(b, ant, 'stalk', [[side * 4, 38, -24], [side * 8, 46, -28], [side * 12, 54, -30]], 2, 'ash_dark', 3);
+      for (let i = 0; i < 6; i++) {
+        const t = i / 5;
+        const p = [side * (5 + t * 8), 40 + t * 14, -25 - t * 5];
+        b.box(ant, 'barb_outer_' + i, [p[0] + side * 3, p[1], p[2]], [5, 1, 2], 'ash_dark');
+        b.box(ant, 'barb_inner_' + i, [p[0] - side * 2, p[1] + 1, p[2]], [4, 1, 2], 'ash');
+      }
+      b.animate(ant, 'y', 5, 1.3, side < 0 ? 0 : Math.PI);
+    }
 
-    b.bone('wing_fore_left', 'body', [-3, 14, -3]);
-    b.cube('wing_fore_left', 'membrane', [-18, 14, -6], [-3, 15, 2], 'eyespot');
-    b.cube('wing_fore_left', 'ember_tip', [-18, 14, -6], [-15, 15, -3], 'ember');
-    b.bone('wing_hind_left', 'body', [-3, 13, 1]);
-    b.cube('wing_hind_left', 'membrane', [-14, 13, 1], [-3, 14, 8], 'wing');
-    b.cube('wing_hind_left', 'ember_edge', [-14, 13, 6], [-11, 14, 8], 'ember');
+    for (const side of [-1, 1]) {
+      const fore = side < 0 ? 'wing_fore_left' : 'wing_fore_right';
+      const hind = side < 0 ? 'wing_hind_left' : 'wing_hind_right';
+      b.bone(fore, 'body', [side * 6, 32, -8]);
+      // Tapered, stepped forewing with dihedral and orange tip.
+      for (let x = 6; x < 74; x += 2) {
+        const t = (x - 6) / 68;
+        const chord = Math.round(34 * (1 - t * 0.60));
+        const zLead = Math.round(-22 + t * 12);
+        const zTrail = zLead + chord;
+        const y = 32 + Math.floor(t * 28 / 2) * 2;
+        const mat = x > 56 ? (x > 68 ? 'lava_hi' : 'ember') : (Math.floor(x / 6) % 2 ? 'wing' : 'wing_hi');
+        b.cube(fore, 'membrane_' + x, [side < 0 ? side * (x + 2) : side * x, y, Math.min(zLead, zTrail)], [side < 0 ? side * x : side * (x + 2), y + 2, Math.max(zLead, zTrail)], mat);
+        if (x % 14 === 6 && x < 56) {
+          b.box(fore, 'vein_' + x, [side * (x + 1), y + 2, (zLead + zTrail) / 2], [1, 1, Math.abs(zTrail - zLead) - 2], 'wing_lo');
+        }
+      }
+      b.bone(hind, 'body', [side * 6, 28, 6]);
+      const eyeCenter = [side * 27, 18, 9];
+      for (let x = 6; x < 50; x += 2) {
+        const t = (x - 6) / 44;
+        const half = Math.round(15 * Math.sqrt(Math.max(0, 1 - Math.pow((t - 0.42) / 0.66, 2))));
+        if (half < 2) continue;
+        const yCenter = 20 - Math.floor(t * 6 / 2) * 2;
+        const z = 8 + Math.floor(t * 4 / 2) * 2;
+        b.cube(hind, 'membrane_' + x, [side < 0 ? side * (x + 2) : side * x, yCenter - half, z], [side < 0 ? side * x : side * (x + 2), yCenter + half, z + 2], 'eyespot',
+          { eyespot_center: eyeCenter, eyespot_radius: 12, eyespot_plane: 'xy' });
+        if (x % 14 === 6 && Math.abs(x - 27) > 13) b.box(hind, 'vein_' + x, [side * (x + 1), yCenter, z - 1], [1, half * 2 - 2, 1], 'wing_lo');
+      }
+      b.animate(fore, 'z', 10, 2.2, side < 0 ? 0 : Math.PI);
+      b.animate(hind, 'z', 7, 2.2, side < 0 ? 0.3 : Math.PI + 0.3);
+    }
 
-    b.bone('wing_fore_right', 'body', [3, 14, -3]);
-    b.cube('wing_fore_right', 'membrane', [3, 14, -6], [18, 15, 2], 'eyespot');
-    b.cube('wing_fore_right', 'ember_tip', [15, 14, -6], [18, 15, -3], 'ember');
-    b.bone('wing_hind_right', 'body', [3, 13, 1]);
-    b.cube('wing_hind_right', 'membrane', [3, 13, 1], [14, 14, 8], 'wing');
-    b.cube('wing_hind_right', 'ember_edge', [11, 13, 6], [14, 14, 8], 'ember');
-
-    b.bone('legs', 'body', [0, 10, -2]);
-    b.cube('legs', 'leg_left_front', [-2, 8, -4], [-1, 11, -3], 'ash_dark');
-    b.cube('legs', 'leg_right_front', [1, 8, -4], [2, 11, -3], 'ash_dark');
-    b.cube('legs', 'leg_left_back', [-2, 8, 1], [-1, 11, 2], 'ash_dark');
-    b.cube('legs', 'leg_right_back', [1, 8, 1], [2, 11, 2], 'ash_dark');
-
-    b.animate('body', 'x', 3, 1.1, 0);
-    b.animate('head', 'x', 2, 1.1, 0.3);
-    b.animate('antenna_left', 'y', 6, 1.3, 0);
-    b.animate('antenna_right', 'y', 6, 1.3, Math.PI);
-    b.animate('wing_fore_left', 'z', 25, 2.2, 0);
-    b.animate('wing_fore_right', 'z', 25, 2.2, Math.PI);
-    b.animate('wing_hind_left', 'z', 18, 2.2, 0.3);
-    b.animate('wing_hind_right', 'z', 18, 2.2, Math.PI + 0.3);
-    b.animate('legs', 'x', 4, 1.1, 0);
+    b.bone('legs', 'body', [0, 22, -6]);
+    for (const side of [-1, 1]) for (let i = 0; i < 3; i++) {
+      const z = -12 + i * 8;
+      b.box('legs', 'leg_' + side + '_' + i, [side * 5, 18, z], [2, 8, 2], 'ash_dark');
+      b.box('legs', 'foot_' + side + '_' + i, [side * 6, 14, z - 2], [3, 2, 4], 'ash_dark');
+    }
+    b.bone('ash_trail', 'body', [0, 20, 20]);
+    const motes = [[-8, 12, 24], [6, 10, 28], [-3, 6, 32], [10, 4, 36], [-10, 2, 40], [2, -2, 44]];
+    motes.forEach((p, i) => b.box('ash_trail', 'mote_' + i, p, [2 + i % 2, 2, 2], i % 2 ? 'ash' : 'ash_dark'));
+    b.animate('body', 'x', 2, 1.1, 0);
+    b.animate('head', 'x', 1.5, 1.1, 0.3);
+    b.animate('legs', 'x', 3, 1.1, 0);
+    b.animate('ash_trail', 'y', 4, 0.9, 0);
   }
 
+  // ---------------------------------------------------------------- fox
+
   function buildAmethystFox(b) {
-    b.bone('body', null, [0, 8, 0]);
-    b.cube('body', 'body', [-4, 6, -7], [4, 11, 7], 'violet');
-    b.cube('body', 'chest', [-3, 6, -7], [3, 9, -4], 'white');
-    b.cube('body', 'back_crystal_a', [-2, 11, -2], [0, 14, 0], 'crystal');
-    b.cube('body', 'back_crystal_b', [0, 11, 1], [2, 14, 3], 'crystal');
-    b.cube('body', 'back_crystal_c', [-1, 11, 4], [1, 13, 6], 'crystal');
+    b.bone('body', null, [0, 44, 0]);
+    ellipsoidShell(b, 'body', 'torso_fur', [0, 46, 2], [16, 16, 32], 4, p => {
+      if (p[1] > 54) return 'violet_hi';
+      if (p[1] < 38) return 'violet_lo';
+      return fnv('torso:' + Math.floor(p[0] / 4) + ',' + Math.floor(p[2] / 4)) > 0.55 ? 'lavender' : 'violet';
+    });
+    // White chest bib.
+    ellipsoidShell(b, 'body', 'chest_bib', [0, 40, -25], [12, 12, 8], 4, p => p[1] > 42 ? 'white_hi' : 'white');
+    // Shoulder and haunch muscles.
+    for (const side of [-1, 1]) {
+      b.box('body', 'shoulder_' + side, [side * 14, 44, -16], [8, 18, 16], 'violet_hi');
+      b.box('body', 'haunch_' + side, [side * 14, 46, 20], [10, 20, 18], 'lavender');
+    }
 
-    b.bone('head', 'body', [0, 10, -7]);
-    b.cube('head', 'head', [-4, 9, -13], [4, 14, -7], 'violet');
-    b.cube('head', 'muzzle', [-2, 9, -16], [2, 11, -13], 'white');
-    b.cube('head', 'nose', [-1, 10, -17], [1, 11, -16], 'eye');
-    b.cube('head', 'eye_left', [-4, 12, -12], [-3, 13, -10], 'eye_light');
-    b.cube('head', 'eye_right', [3, 12, -12], [4, 13, -10], 'eye_light');
-    b.bone('ear_left', 'head', [-3, 14, -10]);
-    b.cube('ear_left', 'ear', [-4, 14, -11], [-1, 18, -9], 'violet');
-    b.cube('ear_left', 'inner', [-3, 15, -10], [-2, 17, -9], 'lavender');
-    b.bone('ear_right', 'head', [3, 14, -10]);
-    b.cube('ear_right', 'ear', [1, 14, -11], [4, 18, -9], 'violet');
-    b.cube('ear_right', 'inner', [2, 15, -10], [3, 17, -9], 'lavender');
+    b.bone('head', 'body', [0, 58, -28]);
+    b.box('head', 'skull', [0, 62, -34], [22, 18, 20], 'violet_hi');
+    b.box('head', 'brow', [0, 68, -38], [24, 6, 14], 'lavender');
+    b.box('head', 'cheek_left', [-12, 58, -36], [6, 10, 12], 'white');
+    b.box('head', 'cheek_right', [12, 58, -36], [6, 10, 12], 'white');
+    b.box('head', 'muzzle', [0, 57, -48], [14, 8, 12], 'white_hi');
+    b.box('head', 'lower_jaw', [0, 53, -46], [12, 3, 10], 'white');
+    b.box('head', 'nose', [0, 60, -55], [6, 4, 3], 'violet_lo');
+    b.box('head', 'eye_left', [-11, 64, -42], [2, 4, 5], 'eye_light');
+    b.box('head', 'eye_right', [11, 64, -42], [2, 4, 5], 'eye_light');
+    b.box('head', 'eye_socket_left', [-12, 64, -42], [1, 6, 7], 'violet_lo');
+    b.box('head', 'eye_socket_right', [12, 64, -42], [1, 6, 7], 'violet_lo');
+    for (const side of [-1, 1]) {
+      const ear = side < 0 ? 'ear_left' : 'ear_right';
+      b.bone(ear, 'head', [side * 8, 70, -32]);
+      // Tall tapered ear with pale inner face and crystal tip.
+      b.box(ear, 'ear_base', [side * 8, 74, -32], [11, 7, 8], 'violet');
+      b.box(ear, 'ear_lower', [side * 8, 80, -32], [9, 6, 7], 'violet_hi');
+      b.box(ear, 'ear_mid', [side * 10, 86, -32], [7, 6, 6], 'lavender');
+      b.box(ear, 'ear_inner', [side * 10, 81, -35], [6, 12, 1], 'white');
+      b.box(ear, 'ear_upper', [side * 11, 92, -32], [5, 6, 4], 'violet_hi');
+      b.box(ear, 'ear_tip', [side * 12, 97, -32], [3, 5, 3], 'crystal_hi');
+      b.box(ear, 'ear_point', [side * 12, 101, -32], [1, 4, 1], 'crystal');
+      b.animate(ear, 'y', 2, 1.0, side < 0 ? 0 : Math.PI);
+    }
 
-    b.bone('leg_front_left', 'body', [-3, 6, -5]);
-    b.cube('leg_front_left', 'leg', [-4, 0, -6], [-2, 6, -4], 'violet');
-    b.cube('leg_front_left', 'paw', [-4, 0, -6], [-2, 1, -4], 'white');
-    b.bone('leg_front_right', 'body', [3, 6, -5]);
-    b.cube('leg_front_right', 'leg', [2, 0, -6], [4, 6, -4], 'violet');
-    b.cube('leg_front_right', 'paw', [2, 0, -6], [4, 1, -4], 'white');
-    b.bone('leg_back_left', 'body', [-3, 6, 5]);
-    b.cube('leg_back_left', 'haunch', [-5, 5, 3], [-3, 9, 7], 'violet');
-    b.cube('leg_back_left', 'leg', [-4, 0, 4], [-2, 6, 6], 'violet');
-    b.cube('leg_back_left', 'paw', [-4, 0, 4], [-2, 1, 6], 'white');
-    b.bone('leg_back_right', 'body', [3, 6, 5]);
-    b.cube('leg_back_right', 'haunch', [3, 5, 3], [5, 9, 7], 'violet');
-    b.cube('leg_back_right', 'leg', [2, 0, 4], [4, 6, 6], 'violet');
-    b.cube('leg_back_right', 'paw', [2, 0, 4], [4, 1, 6], 'white');
+    for (const side of [-1, 1]) {
+      const front = side < 0 ? 'leg_front_left' : 'leg_front_right';
+      const back = side < 0 ? 'leg_back_left' : 'leg_back_right';
+      b.bone(front, 'body', [side * 10, 38, -18]);
+      b.box(front, 'upper', [side * 10, 32, -18], [8, 14, 8], 'violet');
+      b.box(front, 'white_sock', [side * 10, 16, -18], [6, 20, 6], 'white');
+      b.box(front, 'paw', [side * 10, 3, -20], [8, 4, 10], 'white_hi');
+      b.box(front, 'toe_band', [side * 10, 1, -22], [8, 2, 4], 'lavender');
+      b.bone(back, 'body', [side * 10, 40, 20]);
+      b.box(back, 'thigh', [side * 11, 34, 20], [10, 16, 12], 'lavender');
+      b.box(back, 'hock', [side * 10, 24, 22], [6, 8, 6], 'violet');
+      b.box(back, 'white_sock', [side * 10, 14, 22], [6, 16, 6], 'white');
+      b.box(back, 'paw', [side * 10, 3, 20], [8, 4, 10], 'white_hi');
+      b.box(back, 'toe_band', [side * 10, 1, 18], [8, 2, 4], 'lavender');
+      b.animate(front, 'x', 5, 1.2, side < 0 ? 0 : Math.PI);
+      b.animate(back, 'x', 5, 1.2, side < 0 ? Math.PI : 0);
+    }
 
-    b.bone('tail', 'body', [0, 9, 7]);
-    b.cube('tail', 'tail_base', [-2, 9, 7], [2, 12, 13], 'violet');
-    b.cube('tail', 'tail_tip', [-2, 10, 13], [2, 13, 17], 'white');
-    b.cube('tail', 'tail_crystal', [-1, 12, 9], [1, 15, 11], 'crystal');
+    // Bushy tail stepped downward toward the ground, ending in a crystal cluster.
+    b.bone('tail', 'body', [0, 48, 30]);
+    const tailPts = [[0, 48, 30], [0, 44, 42], [0, 38, 54], [0, 30, 66], [0, 22, 76]];
+    for (let i = 0; i < tailPts.length - 1; i++) {
+      const a = tailPts[i], c = tailPts[i + 1];
+      const center = [(a[0] + c[0]) / 2, (a[1] + c[1]) / 2, (a[2] + c[2]) / 2];
+      const w = 26 - i * 2;
+      b.box('tail', 'fur_' + i, center, [w, w, 18], i % 2 ? 'lavender' : 'violet_hi');
+      b.box('tail', 'fur_patch_' + i, [center[0] + w / 2, center[1] + 2, center[2]], [2, w - 4, 12], 'violet');
+    }
+    crystal(b, 'tail', 'tail_cluster_main', [0, 24, 78], 24, 12, [0, 0.22]);
+    crystal(b, 'tail', 'tail_cluster_left', [-9, 21, 76], 18, 8, [-0.22, 0.14]);
+    crystal(b, 'tail', 'tail_cluster_right', [9, 21, 76], 18, 8, [0.22, 0.14]);
+    crystal(b, 'tail', 'tail_cluster_back', [0, 18, 86], 16, 7, [0, 0.28]);
+    crystal(b, 'tail', 'tail_cluster_low_left', [-6, 14, 80], 12, 6, [-0.18, 0.2]);
+    crystal(b, 'tail', 'tail_cluster_low_right', [6, 14, 80], 12, 6, [0.18, 0.2]);
 
-    b.animate('head', 'x', 3, 0.8, 0);
-    b.animate('ear_left', 'y', 2, 1.0, 0);
-    b.animate('ear_right', 'y', 2, 1.0, Math.PI);
-    b.animate('tail', 'y', 12, 1.3, 0);
-    b.animate('leg_front_left', 'x', 8, 1.2, 0);
-    b.animate('leg_front_right', 'x', 8, 1.2, Math.PI);
-    b.animate('leg_back_left', 'x', 8, 1.2, Math.PI);
-    b.animate('leg_back_right', 'x', 8, 1.2, 0);
+    // Dorsal crystal ridge, faceted stacks instead of square posts.
+    const ridge = [[-2, 60, -12, 12, 6], [2, 62, -2, 18, 8], [-1, 61, 10, 14, 7], [3, 58, 22, 11, 5]];
+    ridge.forEach((r, i) => crystal(b, 'body', 'spine_' + i, [r[0], r[1], r[2]], r[3], r[4], [i % 2 ? 0.1 : -0.08, 0.05]));
+    crystal(b, 'body', 'shoulder_crystal', [14, 54, -14], 10, 5, [0.14, 0]);
+
+    b.animate('head', 'x', 2, 0.8, 0);
+    b.animate('tail', 'y', 6, 1.3, 0);
   }
 
   const SPECS = [
-    {
-      id: 'porcelain_crane',
-      title_ru: 'Фарфоровый журавль',
-      biome: 'elisar_city',
-      concept: 'reports/biome_mob_concepts/01_elisar_city_porcelain_crane.png',
-      atlas: ATLAS,
-      render_scale: 1.0,
-      build: buildPorcelainCrane
-    },
-    {
-      id: 'basalt_beetle',
-      title_ru: 'Базальтовый жук-углеед',
-      biome: 'ashen_lands',
-      concept: 'reports/biome_mob_concepts/02_ashen_lands_basalt_beetle.png',
-      atlas: ATLAS,
-      render_scale: 1.0,
-      build: buildBasaltBeetle
-    },
-    {
-      id: 'ash_moth',
-      title_ru: 'Пепельная моль',
-      biome: 'ashen_lands',
-      concept: 'reports/biome_mob_concepts/03_ashen_lands_ash_moth.png',
-      atlas: ATLAS,
-      render_scale: 1.0,
-      build: buildAshMoth
-    },
-    {
-      id: 'amethyst_fox',
-      title_ru: 'Аметистовый лис',
-      biome: 'violet_hills',
-      concept: 'reports/biome_mob_concepts/04_violet_hills_amethyst_fox.png',
-      atlas: ATLAS,
-      render_scale: 1.0,
-      build: buildAmethystFox
-    }
+    { id: 'porcelain_crane', title_ru: 'Фарфоровый журавль', biome: 'elisar_city', concept: 'reports/biome_mob_concepts/01_elisar_city_porcelain_crane.png', atlas: ATLAS, build: buildPorcelainCrane },
+    { id: 'basalt_beetle', title_ru: 'Базальтовый жук-углеед', biome: 'ashen_lands', concept: 'reports/biome_mob_concepts/02_ashen_lands_basalt_beetle.png', atlas: ATLAS, build: buildBasaltBeetle },
+    { id: 'ash_moth', title_ru: 'Пепельная моль', biome: 'ashen_lands', concept: 'reports/biome_mob_concepts/03_ashen_lands_ash_moth.png', atlas: ATLAS, build: buildAshMoth },
+    { id: 'amethyst_fox', title_ru: 'Аметистовый лис', biome: 'violet_hills', concept: 'reports/biome_mob_concepts/04_violet_hills_amethyst_fox.png', atlas: ATLAS, build: buildAmethystFox }
   ];
 
   async function generateOne(spec) {
@@ -630,7 +857,6 @@
     spec.build(builder);
     return await builder.finish();
   }
-
   async function generateAll(options) {
     const opts = options || {};
     const ids = opts.ids || SPECS.map(s => s.id);
@@ -644,8 +870,9 @@
   }
 
   global.RiftworldFauna = {
-    version: '0.1.0',
+    version: '0.2.0',
     blockbench: '5.2.2',
+    revision: 2,
     specs: SPECS.map(s => ({ id: s.id, title_ru: s.title_ru, biome: s.biome, concept: s.concept })),
     generateAll,
     generateOne: id => {
@@ -660,10 +887,10 @@
       title: 'Riftworld Fauna',
       author: 'Riftworld',
       icon: 'fa-cube',
-      version: '0.1.0',
+      version: '0.2.0',
       min_version: '5.2.0',
       variant: 'both',
-      description: 'Procedural Blockbench-API source for the first four Riftworld biome mobs.',
+      description: 'Reference-detail procedural Blockbench-API source for the first four Riftworld biome mobs.',
       onload() {},
       onunload() {}
     });
