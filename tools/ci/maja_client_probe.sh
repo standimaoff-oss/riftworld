@@ -30,7 +30,7 @@ renderDistance:12
 simulationDistance:8
 maxFps:30
 guiScale:2
-fov:1.0
+fov:-0.1
 graphicsMode:1
 renderClouds:false
 pauseOnLostFocus:false
@@ -124,10 +124,23 @@ PYEOF
   xdotool windowraise "$WID" || true
   import -window root "$OUT/$name"
   echo "  Captured $OUT/$name (cam=$CX,$CY,$CZ -> $TX,$TY,$TZ)"
+  # Objective frame check: an all-sky frame (camera outside the entity tracking
+  # distance) is almost flat, so both the colour count and the dark-pixel share
+  # collapse.  Fail loudly instead of shipping an empty screenshot.
+  colours=$(identify -format "%k" "$OUT/$name" 2>/dev/null || echo 0)
+  dark=$(convert "$OUT/$name" -colorspace Gray -resize 240x135! -threshold 40% -negate \
+         -format "%[fx:mean]" info: 2>/dev/null || echo 0)
+  echo "    frame check: unique colours=$colours dark_share=$dark"
+  [ "$colours" -ge 1000 ] || fail "$name looks empty (only $colours unique colours)"
+  awk -v d="$dark" 'BEGIN{exit !(d+0>=0.004)}' \
+    || fail "$name contains almost no model pixels (dark share $dark)"
 }
-head_shot "maja-client-cheeks-front.png"   0.0  8.0 198.0  0.0 2.0 118.0
-head_shot "maja-client-cheeks-3q.png"     44.0 18.0 176.0  0.0 2.0 118.0
-head_shot "maja-client-rear-skull.png"    18.0 40.0  20.0  0.0 6.0  92.0
+# The snout tip sits ~161 blocks ahead of the entity, and the client only tracks
+# entities within renderDistance (192), so the camera can never get closer than
+# ~25 blocks to the nose; the narrower FOV above is what frames the head.
+head_shot "maja-client-cheeks-front.png"   0.0  5.0 186.0  0.0 3.0 128.0
+head_shot "maja-client-cheeks-3q.png"     38.0 11.0 178.0  0.0 3.0 128.0
+head_shot "maja-client-rear-skull.png"    16.0 34.0  18.0  0.0 4.0  95.0
 if grep -Ei 'Error while rendering entity|Exception.*ElGranMaja|Unable to load.*el_gran_maja' "$OUT/maja-client.log"; then
   fail "Client log reports a Maja renderer failure during the head showcase"
 fi

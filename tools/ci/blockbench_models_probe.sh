@@ -131,6 +131,15 @@ capture_cam() {
   xdotool windowraise "$WID" || true
   import -window root "$SHOT_DIR/$out_png"
   echo "  Captured $SHOT_DIR/$out_png (cam=$CX,$CY,$CZ -> $TX,$TY,$TZ)"
+  # Objective frame check: a camera placed outside the entity tracking distance
+  # renders only sky, which is almost flat and has almost no model pixels.
+  colours=$(identify -format "%k" "$SHOT_DIR/$out_png" 2>/dev/null || echo 0)
+  dark=$(convert "$SHOT_DIR/$out_png" -colorspace Gray -resize 240x135! -threshold 40% -negate \
+         -format "%[fx:mean]" info: 2>/dev/null || echo 0)
+  echo "    frame check: unique colours=$colours dark_share=$dark"
+  [ "$colours" -ge 1000 ] || fail "$out_png looks empty (only $colours unique colours)"
+  awk -v d="$dark" 'BEGIN{exit !(d+0>=0.004)}' \
+    || fail "$out_png contains almost no model pixels (dark share $dark)"
 }
 
 # ==============================================================================
