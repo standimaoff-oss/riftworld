@@ -91,7 +91,6 @@ jobs:
           name: riftworld-build
           path: build-artifact
       - uses: gradle/actions/setup-gradle@v4
-        if: github.event_name == 'workflow_dispatch'
       - name: Boot a real Forge server and probe it
         shell: bash
         env:
@@ -104,6 +103,9 @@ jobs:
       - name: Verify Maja motion and block/border collisions on the server
         shell: bash
         run: bash tools/ci/maja_server_probe.sh
+      - name: Real client Xvfb + Mesa llvmpipe probe for Blockbench Liopleurodon & Pegasus
+        shell: bash
+        run: bash tools/ci/blockbench_models_probe.sh
       - name: Real client rendering smoke test
         if: github.event_name == 'workflow_dispatch'
         shell: bash

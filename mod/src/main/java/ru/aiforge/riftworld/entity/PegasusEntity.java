@@ -92,6 +92,18 @@ public class PegasusEntity extends Animal {
         return this.entityData.get(DATA_FLYING);
     }
 
+    public void setTamed(boolean v) {
+        this.entityData.set(DATA_TAME, v);
+    }
+
+    public void setSaddled(boolean v) {
+        this.entityData.set(DATA_SADDLE, v);
+    }
+
+    public void setFlyingState(boolean v) {
+        setFlying(v);
+    }
+
     private void setFlying(boolean v) {
         this.entityData.set(DATA_FLYING, v);
         this.setNoGravity(v);
@@ -195,7 +207,7 @@ public class PegasusEntity extends Animal {
         super.tick();
         if (this.level().isClientSide) return;
         // питомец без всадника медленно опускается и садится на землю
-        if (isFlying() && !this.isVehicle()) {
+        if (isFlying() && !this.isVehicle() && !this.isNoAi()) {
             Vec3 v = this.getDeltaMovement().scale(0.86).add(0, -0.06, 0);
             setDeltaMovement(v);
             move(MoverType.SELF, v);
