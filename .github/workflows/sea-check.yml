@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: riftworld-check-${{ github.ref }}
@@ -16,6 +16,7 @@ concurrency:
 
 jobs:
   build:
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-latest
     timeout-minutes: 55
     steps:
@@ -114,6 +115,21 @@ jobs:
         if: always()
         shell: bash
         run: python3 tools/rcon.py --password riftci --log '' --timeout 20 stop || true
+      - name: Publish Xvfb + Mesa llvmpipe screenshots to working branch
+        if: always() && startsWith(github.ref, 'refs/heads/arena/')
+        shell: bash
+        run: |
+          if [ -d ci-out/blockbench_shots ] && [ -n "$(ls -A ci-out/blockbench_shots 2>/dev/null)" ]; then
+            mkdir -p reports/blockbench_models/ingame
+            cp -a ci-out/blockbench_shots/* reports/blockbench_models/ingame/
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add reports/blockbench_models/ingame/
+            if ! git diff --cached --quiet; then
+              git commit -m "Add Xvfb + Mesa llvmpipe in-game screenshots [skip ci]"
+              git push origin "HEAD:${GITHUB_REF_NAME}"
+            fi
+          fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:

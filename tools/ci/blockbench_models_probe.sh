@@ -169,11 +169,17 @@ capture_cam "$PEG_INFO" "cam_flight" "08_ingame_pegasus_flight.png"  12
 # ==============================================================================
 # 3) Verify client logs & renderer health
 # ==============================================================================
+grep -F '[riftworld] geo' "$OUT/bb-client.log" > "$SHOT_DIR/geo_loaded.txt" || true
+grep -Ei 'Error while rendering entity|Exception.*(Liopleurodon|Pegasus)|Failed to load.*(liopleurodon|pegasus)' "$OUT/bb-client.log" > "$SHOT_DIR/render_diagnostics.txt" || true
+
 grep -Fq '[riftworld] geo liopleurodon:' "$OUT/bb-client.log" || fail "Liopleurodon geo log missing"
 grep -Fq '[riftworld] geo pegasus:' "$OUT/bb-client.log" || fail "Pegasus geo log missing"
 
-if grep -Ei 'Error while rendering entity|Exception.*(Liopleurodon|Pegasus)|Failed to load.*(liopleurodon|pegasus)' "$OUT/bb-client.log"; then
-  fail "Client log contains entity rendering errors"
+if grep -Ei 'Error while rendering entity.*(liopleurodon|pegasus)|Exception.*(Liopleurodon|Pegasus)|Failed to load.*(liopleurodon|pegasus)' "$OUT/bb-client.log"; then
+  grep -Ei 'Error while rendering entity.*(liopleurodon|pegasus)|Exception.*(Liopleurodon|Pegasus)|Failed to load.*(liopleurodon|pegasus)' "$OUT/bb-client.log" | head -5 | while IFS= read -r l; do
+    echo "::error title=Model render error::${l:0:450}"
+  done
+  fail "Client log contains Liopleurodon/Pegasus entity rendering errors"
 fi
 
 rq list | grep -q TestPlayer || fail "Client disconnected before finishing captures"
