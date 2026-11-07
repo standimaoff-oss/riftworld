@@ -3846,7 +3846,8 @@ public final class SeaProbeCommand {
 
         if (k.equals("bb_liopleurodon_showcase")) {
             int px = 696, py = 36, pz = 696;
-            if (level instanceof ServerLevel sl) {
+            if (level != null) {
+                ServerLevel sl = level;
                 for (int cx = (px - 24) >> 4; cx <= (px + 24) >> 4; ++cx) {
                     for (int cz = (pz - 24) >> 4; cz <= (pz + 24) >> 4; ++cz) {
                         if (!sl.hasChunk(cx, cz)) sl.getChunk(cx, cz);
@@ -3897,7 +3898,8 @@ public final class SeaProbeCommand {
 
         if (k.equals("bb_pegasus_showcase")) {
             int px = 520, py = 108, pz = 520;
-            if (level instanceof ServerLevel sl) {
+            if (level != null) {
+                ServerLevel sl = level;
                 for (int cx = (px - 24) >> 4; cx <= (px + 40) >> 4; ++cx) {
                     for (int cz = (pz - 24) >> 4; cz <= (pz + 24) >> 4; ++cz) {
                         if (!sl.hasChunk(cx, cz)) sl.getChunk(cx, cz);
