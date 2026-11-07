@@ -133,6 +133,10 @@ jobs:
 
   server-smoke:
     needs: build
+    # Кадры и отчёты probe-скриптов публикуются прямо в ветвь: без write
+    # прав на contents git push из джобы отказывается с 403.
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:
@@ -191,6 +195,10 @@ jobs:
 
   maja-feeding:
     needs: build
+    # Кадры и отчёты probe-скриптов публикуются прямо в ветвь: без write
+    # прав на contents git push из джобы отказывается с 403.
+    permissions:
+      contents: write
     if: github.ref == 'refs/heads/arena/361da66e-riftworld' || github.ref == 'refs/heads/arena/b4294aa1-riftworld'
     runs-on: ubuntu-latest
     timeout-minutes: 35

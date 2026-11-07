@@ -61,8 +61,10 @@ for try in 1 2 3 4 5; do
     # Параллельные джобы пушат в ту же ветвь: принимаем её состояние как есть
     # (наши свежескопированные файлы лежат на диске и не пропадают) и
     # пересоздаём коммит уже на новой базе.
-    git fetch origin "$BRANCH" >>"$DIAG" 2>&1 || echo "fetch не удался" >>"$DIAG"
-    git reset --mixed "origin/$BRANCH" >>"$DIAG" 2>&1 || echo "reset не удался" >>"$DIAG"
+    # Полный refspec и FETCH_HEAD: короткое имя ветки не обновляет
+    # refs/remotes/origin/*, и reset ушёл бы на устаревший коммит.
+    git fetch origin "refs/heads/$BRANCH" >>"$DIAG" 2>&1 || echo "fetch не удался" >>"$DIAG"
+    git reset --mixed FETCH_HEAD >>"$DIAG" 2>&1 || echo "reset не удался" >>"$DIAG"
     add_all
     if git diff --cached --quiet; then
         echo "после синхронизации нечего публиковать" >>"$DIAG"
