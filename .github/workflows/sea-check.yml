@@ -177,37 +177,10 @@ jobs:
       - name: Publish the in-game screenshots to the working branch
         # Кадры снимает настоящий клиент под Xvfb: держать их в ветке удобнее,
         # чем ходить за артефактами, — на них смотрят глазами при ревью.
+        # Туда же попадают текстовые отчёты probe-скриптов.
         if: always() && startsWith(github.ref, 'refs/heads/arena/')
         shell: bash
-        run: |
-          set -euo pipefail
-          changed=0
-          if ls ci-out/*.png >/dev/null 2>&1; then
-            mkdir -p reports/ci_frames
-            cp -a ci-out/*.png reports/ci_frames/
-            git add reports/ci_frames
-            changed=1
-          fi
-          if ls mod/build/libs/*.jar >/dev/null 2>&1; then
-            mkdir -p release
-            cp -a mod/build/libs/*.jar release/
-            git add release
-            changed=1
-          fi
-          if [ "$changed" = 1 ]; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            if ! git diff --cached --quiet; then
-              git commit -m "Add in-game screenshots and jars [skip ci]"
-              # Параллельные джобы пушат в ту же ветку: перед пушем подтягиваем
-              # чужое и пересаживаем свой коммит, иначе пуш отвергнут (exit 128).
-              for try in 1 2 3 4 5; do
-                git pull --rebase origin "${GITHUB_REF_NAME}" || true
-                git push origin "HEAD:${GITHUB_REF_NAME}" && break
-                sleep 15
-              done
-            fi
-          fi
+        run: bash tools/ci/publish_frames.sh
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -242,6 +215,12 @@ jobs:
       - name: Save server diagnostics
         if: always()
         run: tail -500 ci/server/logs/latest.log > ci-out/feeding-server-tail.log || true
+      - name: Publish the feeding report to the working branch
+        # Отчёт probe-скрипта кладём в ветвь: по нему видно, какая именно
+        # проверка не прошла, даже когда логи джобы недоступны.
+        if: always() && startsWith(github.ref, 'refs/heads/arena/')
+        shell: bash
+        run: bash tools/ci/publish_frames.sh
       - name: Stop server
         if: always()
         run: python3 tools/rcon.py --password riftci --log '' --timeout 20 stop || true

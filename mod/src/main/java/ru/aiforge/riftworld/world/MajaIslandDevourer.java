@@ -174,10 +174,14 @@ public final class MajaIslandDevourer {
     }
 
     private static boolean natural(BlockState s) {
+        // v0.46.0: рифт-кристалл генерируется гнёздами прямо в коренном камне диких
+        // островов, поэтому пожиратель обязан считать его природной породой — иначе
+        // сканирование прерывается на первом же гнезде и остров остаётся несъеденным.
         return s.is(ElisarBlocks.STONE.get()) || s.is(ElisarBlocks.STONE_MOSSY.get())
                 || s.is(ElisarBlocks.GRASS.get()) || s.is(ElisarBlocks.SOIL.get())
                 || s.is(ElisarBlocks.CRUST.get()) || s.is(ElisarBlocks.MOSS.get())
-                || s.is(ElisarBlocks.DUCAT_ORE.get()) || s.is(ElisarBlocks.TALL_GRASS.get())
+                || s.is(ElisarBlocks.DUCAT_ORE.get()) || s.is(ElisarBlocks.RIFTCRYSTAL_ORE.get())
+                || s.is(ElisarBlocks.TALL_GRASS.get())
                 || s.is(ElisarBlocks.FLOWERS.get()) || s.is(ElisarBlocks.AMBRA_LOG.get())
                 || s.is(ElisarBlocks.AMBRA_LEAVES.get());
     }

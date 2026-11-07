@@ -35,13 +35,14 @@ public final class ElGranMajaEntity extends Mob {
     private int motionTick = -1;
     private float jawPrevious;
     private float jawCurrent;
-    // ---- состояние анимации: считается одинаково на сервере и на клиенте ----
+    // ---- состояние анимации: считается только на клиенте, серверную физику не трогает ----
     private float swimSpeed;
     private float swimSpeedPrevious;
     private float breachAmount;
     private float breachPrevious;
     private double lastX;
     private double lastZ;
+    private int clientMotionTick = -1;
     private final MajaIslandDevourer devourer = new MajaIslandDevourer();
 
     public ElGranMajaEntity(EntityType<? extends ElGranMajaEntity> type, Level level) {
@@ -79,18 +80,21 @@ public final class ElGranMajaEntity extends Mob {
         super.tick();
         jawPrevious = jawCurrent;
         jawCurrent += (entityData.get(JAW) - jawCurrent) * 0.12F;
-        // Фаза считается от UUID, поэтому клиент тикает её сам и остаётся в синхроне
-        // с сервером без лишних пакетов. Рендереру нужны и скорость, и фаза выпрыгивания.
-        if (motionTick < 0) motionTick = Math.floorMod(getUUID().hashCode(), MajaMotion.PERIOD);
-        motionTick = (motionTick + 1) % MajaMotion.PERIOD;
-        swimSpeedPrevious = swimSpeed;
-        breachPrevious = breachAmount;
-        // Страховка первого тика: lastX/lastZ ещё нулевые, «перемещение» было бы огромным.
-        double moved = Math.min(2.0, Math.hypot(getX() - lastX, getZ() - lastZ));
-        lastX = getX();
-        lastZ = getZ();
-        swimSpeed += ((float) moved - swimSpeed) * 0.10F;
-        breachAmount += ((float) MajaMotion.breach(motionTick) - breachAmount) * 0.20F;
+        // Анимация считается ТОЛЬКО на клиенте: серверный motionTick нельзя двигать
+        // вне серверного прохода, иначе меняется проверенная физика зверя. Фаза всё
+        // равно выводится из UUID, поэтому клиент не нуждается ни в одном пакете.
+        if (level().isClientSide) {
+            if (clientMotionTick < 0) clientMotionTick = Math.floorMod(getUUID().hashCode(), MajaMotion.PERIOD);
+            clientMotionTick = (clientMotionTick + 1) % MajaMotion.PERIOD;
+            swimSpeedPrevious = swimSpeed;
+            breachPrevious = breachAmount;
+            // Страховка первого тика: lastX/lastZ ещё нулевые, «перемещение» было бы огромным.
+            double moved = Math.min(2.0, Math.hypot(getX() - lastX, getZ() - lastZ));
+            lastX = getX();
+            lastZ = getZ();
+            swimSpeed += ((float) moved - swimSpeed) * 0.10F;
+            breachAmount += ((float) MajaMotion.breach(clientMotionTick) - breachAmount) * 0.20F;
+        }
         if (level().isClientSide || !(level() instanceof ServerLevel server)) return;
         if (!isReadyToRender()) {
             // /summon inside rock or an unloaded area never renders half a creature in blocks.
@@ -135,6 +139,8 @@ public final class ElGranMajaEntity extends Mob {
         float wantedSpeed = 1.0F - 0.28F * Math.min(1.0F, Math.abs(turnRate) / 0.85F);
         speedFactor += Mth.clamp(wantedSpeed - speedFactor, -0.02F, 0.02F);
         float nextYaw = getYRot() + turnRate;
+        if (motionTick < 0) motionTick = Math.floorMod(getUUID().hashCode(), MajaMotion.PERIOD);
+        motionTick = (motionTick + 1) % MajaMotion.PERIOD;
         double breach = MajaMotion.breach(motionTick);
         int sea = CityPlan.get().ocean;
         double vertical = MajaMotion.verticalSpeed(getY(), MajaMotion.targetY(sea, motionTick));
