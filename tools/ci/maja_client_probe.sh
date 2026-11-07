@@ -294,16 +294,57 @@ PY
   rq execute in riftworld:elisar run tp TestPlayer "$1" "$2" "$3" facing "$4" "$5" "$6" >/dev/null
   sleep "$wait"
   import -window root "$OUT/$name.png"
-  local colors
+  validate_frame "$name"
+}
+
+# Кадры из CI глазами не посмотреть, поэтому проверяем их числами: пустой
+# чёрный кадр ловим по числу уникальных цветов, а «missing texture» — по доле
+# точных пикселей magenta #F800F8. Битую картинку показывать нельзя.
+IM_BIN=$(command -v magick || command -v convert || true)
+validate_frame() {
+  local name=$1 colors=0 magenta=0
   colors=$(identify -format '%k' "$OUT/$name.png" 2>/dev/null || echo 0)
-  # Пустой чёрный кадр и «missing texture» ловим сразу: глазами кадры из CI
-  # не посмотреть, а показывать пользователю битую картинку нельзя.
+  if [ -n "$IM_BIN" ]; then
+    magenta=$("$IM_BIN" "$OUT/$name.png" -fill white -opaque '#F800F8' \
+      -fill black +opaque white -format '%[fx:mean]' info: 2>/dev/null || echo 0)
+  fi
   [[ "$colors" =~ ^[0-9]+$ ]] && [ "$colors" -ge 400 ] \
     || fail "frame $name looks blank (unique colours: $colors)"
-  echo "captured $name ($colors colours)"
+  awk -v m="$magenta" 'BEGIN { exit !(m + 0 < 0.0004) }' \
+    || fail "frame $name has the missing-texture magenta (доля: $magenta)"
+  echo "captured $name ($colors colours, magenta $magenta)"
+}
+
+# Кадр с произвольной точки. Брошенные предметы рисуются тем же кастомным
+# рендерером, что и в руках, — по таким кадрам сразу видно, какой актив
+# остался без текстуры.
+look_shot() {
+  local name=$1 x=$2 y=$3 z=$4 tx=$5 ty=$6 tz=$7 wait=${8:-26}
+  rq execute in riftworld:elisar run tp TestPlayer "$x" "$y" "$z" facing "$tx" "$ty" "$tz" >/dev/null
+  sleep "$wait"
+  import -window root "$OUT/$name.png"
+  validate_frame "$name"
 }
 gear_shot gear-armour-row   cam_row   30
 gear_shot gear-elisar-folk  cam_folk  26
 gear_shot gear-closeup      cam_close 22
+
+# Отдельные кадры по каждому активу: если кадр витрины окажется битым, эти
+# два сразу покажут, что потеряло текстуру — инструменты или броня.
+drop_row() {
+  local z=$1; shift
+  local i=0 item
+  for item in "$@"; do
+    rq execute in riftworld:elisar run summon item $((752 + i * 2)) 121 "$z" \
+      "{Item:{id:\"riftworld:$item\",Count:1b},PickupDelay:32767s,Age:-32768s}" >/dev/null
+    i=$((i + 1))
+  done
+}
+drop_row 774 aurite_sword aurite_pickaxe aurite_axe aurite_shovel aurite_hoe \
+            riftcrystal_sword riftcrystal_pickaxe riftcrystal_axe riftcrystal_shovel riftcrystal_hoe
+look_shot gear-dropped-tools 772 124 764 772 121 776 28
+drop_row 782 aurite_helmet aurite_chestplate aurite_leggings aurite_boots \
+            riftcrystal_helmet riftcrystal_chestplate riftcrystal_leggings riftcrystal_boots
+look_shot gear-dropped-armour 772 124 772 772 121 784 28
 rq list | grep -q TestPlayer || fail 'Client disconnected during the gear showcase'
 echo 'OK: captured the Elisar gear and folk showcase for manual review.'
