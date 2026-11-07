@@ -1,0 +1,22 @@
+maja_island x=1690 z=2627 radius=23.38 reach=31.12 base=129.22 anchor_x=1690 anchor_y=85 anchor_z=2420
+body: Marked [101, 140] chunks in riftworld:elisar from [101, 140] to [110, 161] to be force loaded
+island: Marked [103, 162] chunks in riftworld:elisar from [103, 161] to [108, 166] to be force loaded
+candidate y=85: maja_pose clear=false reason=block(1642,79,2504:Block{riftworld:elisar_stone_mossy})
+candidate y=91: maja_pose clear=false reason=block(1642,79,2504:Block{riftworld:elisar_stone_mossy})
+candidate y=79: maja_pose clear=false reason=block(1642,79,2504:Block{riftworld:elisar_stone_mossy})
+candidate y=97: maja_pose clear=false reason=block(1642,79,2504:Block{riftworld:elisar_stone_mossy})
+candidate y=73: maja_pose clear=false reason=block(1642,79,2504:Block{riftworld:elisar_stone_mossy})
+candidate y=134: maja_pose clear=true reason=none
+Summoned new El Gran Maja
+
+maja_pose clear=true reason=none
+
+griefing=false active ticks: 125
+griefing=false: El Gran Maja has the following entity data: 1b; El Gran Maja has the following entity data: 0
+El Gran Maja has the following entity data: "idle"; El Gran Maja has the following entity data: 0; El Gran Maja has the following entity data: 1b
+El Gran Maja has the following entity data: "scanning"; El Gran Maja has the following entity data: 0; El Gran Maja has the following entity data: 1b
+El Gran Maja has the following entity data: "eating"; El Gran Maja has the following entity data: 4960; El Gran Maja has the following entity data: 1b
+El Gran Maja has the following entity data: "eating"; El Gran Maja has the following entity data: 12681; El Gran Maja has the following entity data: 1b
+El Gran Maja has the following entity data: "eating"; El Gran Maja has the following entity data: 20509; El Gran Maja has the following entity data: 1b
+El Gran Maja has the following entity data: "finished"; El Gran Maja has the following entity data: 28207; El Gran Maja has the following entity data: 1b
+OK: full medium island job completed with mobGriefing enabled; disabled gate preserved blocks.

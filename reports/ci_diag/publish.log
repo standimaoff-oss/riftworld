@@ -1,0 +1,14 @@
+run 42399240726 / job maja-feeding / ветвь arena/b4294aa1-riftworld
+== содержимое ci-out ==
+total 1232
+drwxr-xr-x  2 runner runner    4096 Nov  7 18:06 .
+drwxr-xr-x 13 runner runner    4096 Nov  7 18:05 ..
+-rw-r--r--  1 runner runner     134 Nov  7 18:05 done.txt
+-rw-r--r--  1 runner runner       0 Nov  7 18:05 errors.txt
+-rw-r--r--  1 runner runner   23063 Nov  7 18:06 feeding-server-tail.log
+-rw-r--r--  1 runner runner 1194778 Nov  7 18:05 installer.log
+-rw-r--r--  1 runner runner   10994 Nov  7 18:05 latest.log
+-rw-r--r--  1 runner runner    2064 Nov  7 18:06 maja-feeding.txt
+-rw-r--r--  1 runner runner     222 Nov  7 18:05 mods.txt
+-rw-r--r--  1 runner runner    1343 Nov  7 18:05 report_server.md
+-rw-r--r--  1 runner runner     491 Nov  7 18:05 tps.txt
