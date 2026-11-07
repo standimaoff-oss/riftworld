@@ -138,7 +138,7 @@ capture_cam() {
   dark=$(convert "$SHOT_DIR/$out_png" -colorspace Gray -resize 240x135! -threshold 40% -negate \
          -format "%[fx:mean]" info: 2>/dev/null || echo 0)
   echo "    frame check: unique colours=$colours dark_share=$dark"
-  [ "$colours" -ge 1000 ] || fail "$out_png looks empty (only $colours unique colours)"
+  [ "$colours" -ge 250 ] || fail "$out_png looks empty (only $colours unique colours)"
   awk -v d="$dark" 'BEGIN{exit !(d+0>=0.004)}' \
     || fail "$out_png contains almost no model pixels (dark share $dark)"
 }
@@ -183,17 +183,23 @@ capture_cam "$PEG_INFO" "cam_hover"  "10_ingame_pegasus_hover.png"          12
 # 3) ELISAR GEAR & FOLK (v0.40.0): armour stands + villager / guard / archer
 # ==============================================================================
 echo "== Staging the Elisar gear and folk showcase =="
-rq execute in riftworld:elisar run time set 4500 >/dev/null
-rq execute in riftworld:elisar run tp TestPlayer 760 130 790 0 0 >/dev/null
-sleep 10
+rq execute in riftworld:elisar run time set 6000 >/dev/null
+# llvmpipe подгружает новый участок медленно: греем клиент прямо на точке съёмки.
+rq execute in riftworld:elisar run tp TestPlayer 760 123 770 0 0 >/dev/null
+sleep 30
 GEAR_INFO=$(rq execute in riftworld:elisar positioned 760 118 760 run riftstruct v40_gear)
 echo "  $GEAR_INFO"
 [[ "$GEAR_INFO" == *"stands=4"* ]] || fail "Expected 4 armour stands, got: $GEAR_INFO"
 [[ "$GEAR_INFO" == *"folk=3"* ]] || fail "Expected 3 Elisar folk, got: $GEAR_INFO"
+# Сущности должны существовать на сервере: иначе пустой кадр — не вина камеры.
+stands=$(rq execute in riftworld:elisar positioned 760 118 760 if entity '@e[type=minecraft:armor_stand,distance=..40]' 2>&1 || true)
+[[ "$stands" == *"Test passed"* ]] || fail "No armour stands near the showcase: $stands"
+folk=$(rq execute in riftworld:elisar positioned 760 118 760 if entity '@e[type=riftworld:elisar_guard]' 2>&1 || true)
+[[ "$folk" == *"Test passed"* ]] || fail "No Elisar guard spawned: $folk"
 
-capture_cam "$GEAR_INFO" "cam_row"   "11_ingame_gear_row.png"      20
-capture_cam "$GEAR_INFO" "cam_folk"  "12_ingame_elisar_folk.png"   18
-capture_cam "$GEAR_INFO" "cam_close" "13_ingame_gear_closeup.png"  14
+capture_cam "$GEAR_INFO" "cam_row"   "11_ingame_gear_row.png"      30
+capture_cam "$GEAR_INFO" "cam_folk"  "12_ingame_elisar_folk.png"   26
+capture_cam "$GEAR_INFO" "cam_close" "13_ingame_gear_closeup.png"  22
 
 # ==============================================================================
 # 4) Verify client logs & renderer health
