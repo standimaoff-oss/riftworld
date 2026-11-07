@@ -6,9 +6,9 @@ import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
-import net.minecraft.world.entity.ai.goal.HurtByTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
-import net.minecraft.world.entity.ai.goal.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.RangedBowAttackGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
@@ -53,7 +53,7 @@ public final class ElisarArcherEntity extends PathfinderMob implements RangedAtt
 
     @Override
     public void performRangedAttack(LivingEntity target, float distanceFactor) {
-        Arrow arrow = new Arrow(this.level, this);
+        Arrow arrow = new Arrow(this.level(), this);
         arrow.setBaseDamage(4.0D);
         double dx = target.getX() - this.getX();
         double dy = target.getEyeY() - this.getEyeY();
@@ -61,6 +61,6 @@ public final class ElisarArcherEntity extends PathfinderMob implements RangedAtt
         // Небольшой подъём, компенсирующий падение стрелы на дальней дистанции.
         double lift = Math.sqrt(dx * dx + dz * dz) * 0.12D;
         arrow.shoot(dx, dy + lift, dz, 1.6F, 4.0F);
-        this.level.addFreshEntity(arrow);
+        this.level().addFreshEntity(arrow);
     }
 }
