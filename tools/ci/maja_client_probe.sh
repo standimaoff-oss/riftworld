@@ -325,10 +325,6 @@ look_shot() {
   import -window root "$OUT/$name.png"
   validate_frame "$name"
 }
-gear_shot gear-armour-row   cam_row   30
-gear_shot gear-elisar-folk  cam_folk  26
-gear_shot gear-closeup      cam_close 22
-
 # Отдельные кадры по каждому активу: если кадр витрины окажется битым, эти
 # два сразу покажут, что потеряло текстуру — инструменты или броня.
 drop_row() {
@@ -346,5 +342,9 @@ look_shot gear-dropped-tools 772 124 764 772 121 776 28
 drop_row 782 aurite_helmet aurite_chestplate aurite_leggings aurite_boots \
             riftcrystal_helmet riftcrystal_chestplate riftcrystal_leggings riftcrystal_boots
 look_shot gear-dropped-armour 772 124 772 772 121 784 28
+
+gear_shot gear-armour-row   cam_row   30
+gear_shot gear-elisar-folk  cam_folk  26
+gear_shot gear-closeup      cam_close 22
 rq list | grep -q TestPlayer || fail 'Client disconnected during the gear showcase'
 echo 'OK: captured the Elisar gear and folk showcase for manual review.'
