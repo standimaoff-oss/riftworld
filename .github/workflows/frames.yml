@@ -71,7 +71,19 @@ jobs:
           git add "reports/ingame/$VER"
           git diff --cached --quiet && { echo "nothing new"; exit 0; }
           git commit -m "Capture v$VER in-game frames [skip ci]"
-          git push origin "HEAD:${{ github.ref_name }}"
+          # Одновременно с нами в ветвь пушат джобы sea-check: принимаем их
+          # состояние и пересоздаём коммит на новой базе.
+          for try in 1 2 3 4 5; do
+            git push origin "HEAD:${{ github.ref_name }}" && exit 0
+            sleep 10
+            git fetch origin "refs/heads/${{ github.ref_name }}"
+            git reset --mixed FETCH_HEAD
+            git add -A "reports/ingame/$VER"
+            git diff --cached --quiet && { echo "nothing new"; exit 0; }
+            git commit -m "Capture v$VER in-game frames [skip ci]"
+          done
+          echo "НЕ УДАЛОСЬ запушить кадры за 5 попыток"
+          exit 1
       - uses: actions/upload-artifact@v4
         if: always()
         with:

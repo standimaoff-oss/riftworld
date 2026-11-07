@@ -358,6 +358,9 @@ rq execute in riftworld:elisar positioned 760 118 760 \
   as '@e[type=minecraft:armor_stand,distance=..40]' \
   run data modify entity @s ArmorItems set value [{},{},{},{}] >/dev/null
 look_shot gear-stands-naked 755.25 119.6 767 755.25 119.3 760.5 30
+# Возвращаем стойкам броню и предметы: дальше витрину снимают уже полностью.
+GEAR_INFO=$(rq execute in riftworld:elisar positioned 760 118 760 run riftstruct v40_gear)
+echo "showcase rebuilt: $GEAR_INFO"
 
 gear_shot gear-armour-row   cam_row   30
 gear_shot gear-elisar-folk  cam_folk  26
