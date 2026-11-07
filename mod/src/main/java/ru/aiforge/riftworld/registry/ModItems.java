@@ -227,27 +227,37 @@ public final class ModItems {
 
     // --- Инструменты: кирка, топор, лопата, мотыга (2 руды: аурит и рифт-кристалл) ---
     public static final RegistryObject<Item> AURITE_PICKAXE = ITEMS.register("aurite_pickaxe",
-            () -> new PickaxeItem(ru.aiforge.riftworld.item.RiftGearTiers.AURITE, 1, -2.8F, gear()));
+            () -> new ru.aiforge.riftworld.item.GlbPickaxeItem(ru.aiforge.riftworld.item.RiftGearTiers.AURITE, 1, -2.8F,
+                    "aurite_pickaxe", 0.95F, gear()));
     public static final RegistryObject<Item> AURITE_AXE = ITEMS.register("aurite_axe",
-            () -> new AxeItem(ru.aiforge.riftworld.item.RiftGearTiers.AURITE, 6.0F, -3.0F, gear()));
+            () -> new ru.aiforge.riftworld.item.GlbAxeItem(ru.aiforge.riftworld.item.RiftGearTiers.AURITE, 6.0F, -3.0F,
+                    "aurite_axe", 0.92F, gear()));
     public static final RegistryObject<Item> AURITE_SHOVEL = ITEMS.register("aurite_shovel",
-            () -> new ShovelItem(ru.aiforge.riftworld.item.RiftGearTiers.AURITE, 2.5F, -3.0F, gear()));
+            () -> new ru.aiforge.riftworld.item.GlbShovelItem(ru.aiforge.riftworld.item.RiftGearTiers.AURITE, 2.5F, -3.0F,
+                    "aurite_shovel", 0.92F, gear()));
     public static final RegistryObject<Item> AURITE_HOE = ITEMS.register("aurite_hoe",
-            () -> new HoeItem(ru.aiforge.riftworld.item.RiftGearTiers.AURITE, -2, -0.5F, gear()));
+            () -> new ru.aiforge.riftworld.item.GlbHoeItem(ru.aiforge.riftworld.item.RiftGearTiers.AURITE, -2, -0.5F,
+                    "aurite_hoe", 0.92F, gear()));
     public static final RegistryObject<Item> RIFTCRYSTAL_PICKAXE = ITEMS.register("riftcrystal_pickaxe",
-            () -> new PickaxeItem(ru.aiforge.riftworld.item.RiftGearTiers.RIFTCRYSTAL, 2, -2.6F, gear()));
+            () -> new ru.aiforge.riftworld.item.GlbPickaxeItem(ru.aiforge.riftworld.item.RiftGearTiers.RIFTCRYSTAL, 2, -2.6F,
+                    "riftcrystal_pickaxe", 0.95F, gear()));
     public static final RegistryObject<Item> RIFTCRYSTAL_AXE = ITEMS.register("riftcrystal_axe",
-            () -> new AxeItem(ru.aiforge.riftworld.item.RiftGearTiers.RIFTCRYSTAL, 8.0F, -2.9F, gear()));
+            () -> new ru.aiforge.riftworld.item.GlbAxeItem(ru.aiforge.riftworld.item.RiftGearTiers.RIFTCRYSTAL, 8.0F, -2.9F,
+                    "riftcrystal_axe", 0.92F, gear()));
     public static final RegistryObject<Item> RIFTCRYSTAL_SHOVEL = ITEMS.register("riftcrystal_shovel",
-            () -> new ShovelItem(ru.aiforge.riftworld.item.RiftGearTiers.RIFTCRYSTAL, 3.5F, -2.9F, gear()));
+            () -> new ru.aiforge.riftworld.item.GlbShovelItem(ru.aiforge.riftworld.item.RiftGearTiers.RIFTCRYSTAL, 3.5F, -2.9F,
+                    "riftcrystal_shovel", 0.92F, gear()));
     public static final RegistryObject<Item> RIFTCRYSTAL_HOE = ITEMS.register("riftcrystal_hoe",
-            () -> new HoeItem(ru.aiforge.riftworld.item.RiftGearTiers.RIFTCRYSTAL, -1, -0.5F, gear()));
+            () -> new ru.aiforge.riftworld.item.GlbHoeItem(ru.aiforge.riftworld.item.RiftGearTiers.RIFTCRYSTAL, -1, -0.5F,
+                    "riftcrystal_hoe", 0.92F, gear()));
 
     // --- Оружие: в референсе 03 только инструменты, поэтому мечи сделаны по его же палитре ---
     public static final RegistryObject<Item> AURITE_SWORD = ITEMS.register("aurite_sword",
-            () -> new SwordItem(ru.aiforge.riftworld.item.RiftGearTiers.AURITE, 4, -2.3F, gear()));
+            () -> new ru.aiforge.riftworld.item.GlbSwordItem(ru.aiforge.riftworld.item.RiftGearTiers.AURITE, 4, -2.3F,
+                    "aurite_sword", 1.05F, gear()));
     public static final RegistryObject<Item> RIFTCRYSTAL_SWORD = ITEMS.register("riftcrystal_sword",
-            () -> new SwordItem(ru.aiforge.riftworld.item.RiftGearTiers.RIFTCRYSTAL, 6, -2.2F, gear()));
+            () -> new ru.aiforge.riftworld.item.GlbSwordItem(ru.aiforge.riftworld.item.RiftGearTiers.RIFTCRYSTAL, 6, -2.2F,
+                    "riftcrystal_sword", 1.05F, gear()));
 
     // --- Яйца призыва жителей Элисара (референсы 05–07) ---
     public static final RegistryObject<Item> ELISAR_VILLAGER_EGG = ITEMS.register("elisar_villager_spawn_egg",

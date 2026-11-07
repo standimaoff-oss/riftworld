@@ -51,9 +51,12 @@ def main() -> None:
     # ---------------------------------------------------------------- models
     for mat in MATERIALS:
         for tool in TOOLS:
+            # Оружие и инструменты рисуются объёмной GLB-моделью (gen_v046_weapons.py),
+            # поэтому предмету нужен builtin/entity, а не плоский handheld-спрайт.
             write(ASSETS / f"models/item/{mat}_{tool}.json", j({
-                "parent": "minecraft:item/handheld",
-                "textures": {"layer0": f"riftworld:item/{mat}_{tool}"},
+                "parent": "builtin/entity",
+                "gui_light": "front",
+                "textures": {"particle": f"riftworld:item/{mat}_{tool}"},
             }))
             made += 1
         for slot in ARMOUR:

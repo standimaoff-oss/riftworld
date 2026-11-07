@@ -1,6 +1,7 @@
 {
-  "parent": "minecraft:item/handheld",
+  "parent": "builtin/entity",
+  "gui_light": "front",
   "textures": {
-    "layer0": "riftworld:item/aurite_shovel"
+    "particle": "riftworld:item/aurite_shovel"
   }
 }
