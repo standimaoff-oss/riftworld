@@ -1,0 +1,414 @@
+[18:06:17] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:06:20] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:06:23] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:06:26] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:06:29] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:06:32] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:06:35] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:06:38] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:06:41] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:06:44] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:06:47] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:06:51] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:06:54] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:06:57] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:07:00] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:07:03] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:07:06] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:07:09] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:07:12] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:07:15] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:07:18] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:07:21] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:07:24] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:07:27] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:07:30] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:07:33] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:07:36] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:07:39] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:07:42] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:07:45] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:07:48] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:07:51] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:07:54] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:07:57] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:08:00] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:08:04] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:08:07] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:08:10] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:08:13] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:08:16] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[18:08:19] exit=0 > list
+There are 1 of a max of 5 players online: TestPlayer
+
+
+[18:08:19] exit=0 > gamemode spectator TestPlayer
+Set TestPlayer's game mode to Spectator Mode
+
+
+[18:08:19] exit=0 > weather clear
+Set the weather to clear
+
+
+[18:08:19] exit=0 > time set noon
+Set the time to 6000
+
+
+[18:08:19] exit=0 > data get entity @e[type=riftworld:el_gran_maja,limit=1] Pos
+El Gran Maja has the following entity data: [0.5d, 200.0d, 0.5d]
+
+
+[18:08:19] exit=0 > tp TestPlayer 0.5 214 188 facing 0.5 200.0 115
+Teleported TestPlayer to 0.500000, 214.000000, 188.500000
+
+
+[18:08:58] exit=0 > list
+There are 1 of a max of 5 players online: TestPlayer
+
+
+[18:08:58] exit=0 > fill -70 59 20 70 59 170 minecraft:water
+Successfully filled 21291 block(s)
+
+
+[18:08:59] exit=0 > tp @e[type=riftworld:el_gran_maja,limit=1] 0 60 0 0 0
+Teleported El Gran Maja to 0.500000, 60.000000, 0.500000
+
+
+[18:09:00] exit=0 > tp TestPlayer 130 100 100 facing 0 67 140
+Teleported TestPlayer to 130.500000, 100.000000, 100.500000
+
+
+[18:09:10] exit=0 > data merge entity @e[type=riftworld:el_gran_maja,limit=1] {NoAI:0b,majaMotionTick:125}
+Modified entity data of El Gran Maja
+
+
+[18:09:16] exit=0 > kill @e[type=riftworld:el_gran_maja]
+Killed El Gran Maja
+
+
+[18:09:16] exit=0 > summon riftworld:liopleurodon 0 200 0 {NoAI:1b,NoGravity:1b,PersistenceRequired:1b}
+Summoned new Liopleurodon
+
+
+[18:09:16] exit=0 > tp TestPlayer -5 202 7 facing 0 200 0
+Teleported TestPlayer to -4.500000, 202.000000, 7.500000
+
+
+[18:09:33] exit=0 > tp TestPlayer -12 201 0 facing 0 200 0
+Teleported TestPlayer to -11.500000, 201.000000, 0.500000
+
+
+[18:09:37] exit=0 > summon riftworld:pegasus 32 200 0 {NoAI:1b,NoGravity:1b,PersistenceRequired:1b}
+Summoned new Pegasus
+
+
+[18:09:37] exit=0 > tp TestPlayer 27 203 6 facing 32 202 0
+Teleported TestPlayer to 27.500000, 203.000000, 6.500000
+
+
+[18:09:54] exit=0 > tp TestPlayer 20 202 0 facing 32 202 0
+Teleported TestPlayer to 20.500000, 202.000000, 0.500000
+
+
+[18:09:58] exit=0 > tp TestPlayer 27 203 6 facing 32 202 0
+Teleported TestPlayer to 27.500000, 203.000000, 6.500000
+
+
+[18:09:58] exit=0 > data merge entity @e[type=riftworld:pegasus,limit=1] {Tamed:1b,Saddle:1b}
+Modified entity data of Pegasus
+
+
+[18:09:58] exit=0 > data get entity @e[type=riftworld:pegasus,limit=1] Saddle
+Pegasus has the following entity data: 1b
+
+
+[18:10:03] exit=0 > fill 44 199 7 50 199 13 minecraft:stone
+Successfully filled 49 block(s)
+
+
+[18:10:03] exit=0 > gamemode creative TestPlayer
+Set TestPlayer's game mode to Creative Mode
+
+
+[18:10:03] exit=0 > tp TestPlayer 47 200 10 facing 32 202 0
+Teleported TestPlayer to 47.500000, 200.000000, 10.500000
+
+
+[18:10:03] exit=0 > give TestPlayer riftworld:wendigo_antler 1
+Gave 1 [Wendigo Antler] to TestPlayer
+
+
+[18:10:03] exit=0 > give TestPlayer riftworld:pegasus_feather 1
+Gave 1 [Pegasus Feather] to TestPlayer
+
+
+[18:10:03] exit=0 > give TestPlayer riftworld:liopleurodon_tooth 1
+Gave 1 [Liopleurodon Tooth] to TestPlayer
+
+
+[18:10:04] exit=0 > item replace entity TestPlayer weapon.mainhand with riftworld:wendigo_antler
+Replaced a slot on TestPlayer with [Wendigo Antler]
+
+
+[18:10:12] exit=0 > list
+There are 1 of a max of 5 players online: TestPlayer
+
+
+[18:10:12] exit=0 > kill @e[type=riftworld:liopleurodon]
+Killed Liopleurodon
+
+
+[18:10:12] exit=0 > difficulty normal
+The difficulty has been set to Normal
+
+
+[18:10:12] exit=0 > fill 40 199 3 54 207 17 riftworld:elisar_water
+Successfully filled 2025 block(s)
+
+
+[18:10:12] exit=0 > gamemode survival TestPlayer
+Set TestPlayer's game mode to Survival Mode
+
+
+[18:10:12] exit=0 > effect give TestPlayer minecraft:water_breathing 60 0 true
+Applied effect Water Breathing to TestPlayer
+
+
+[18:10:12] exit=0 > tp TestPlayer 47 202 10
+Teleported TestPlayer to 47.500000, 202.000000, 10.500000
+
+
+[18:10:12] exit=0 > summon riftworld:liopleurodon 51 202 10 {PersistenceRequired:1b}
+Summoned new Liopleurodon
+
+
+[18:10:13] exit=0 > data get entity TestPlayer Health
+TestPlayer has the following entity data: 8.0f
+
+
+[18:10:13] exit=0 > kill @e[type=riftworld:liopleurodon]
+Killed Liopleurodon
+
+
+[18:10:13] exit=0 > gamemode creative TestPlayer
+Set TestPlayer's game mode to Creative Mode
+
+
+[18:10:13] exit=0 > execute in riftworld:elisar positioned 0 54 0 run locate biome riftworld:maja_ocean
+The nearest riftworld:maja_ocean is at [1115, 54, 1526] (1889 blocks away)
+
+
+[18:10:13] exit=0 > gamemode creative TestPlayer
+
+
+[18:10:13] exit=0 > execute in riftworld:elisar run tp TestPlayer 1715 95 2126 0 0
+Teleported TestPlayer to 1715.500000, 95.000000, 2126.500000
+
+
+[18:11:13] exit=0 > execute in riftworld:elisar if biome 1715 54 2126 riftworld:maja_ocean
+Test passed
+
+
+[18:11:13] exit=0 > execute in riftworld:elisar if entity @e[type=riftworld:el_gran_maja]
+Test passed, count: 1
+
+
+[18:11:13] exit=0 > execute as TestPlayer at TestPlayer run riftmajacheck
+maja_check dimension=riftworld:elisar x=1710 z=2126 ocean=true biome=true spawned=true y49=clear/clear/clear/clear y57=clear/clear/clear/clear y65=clear/clear/clear/clear y73=clear/clear/clear/clear y81=clear/clear/clear/clear y89=clear/clear/clear/clear
+
+
+[18:11:14] exit=0 > list
+There are 1 of a max of 5 players online: TestPlayer
+
+
+[18:11:14] exit=0 > execute in riftworld:elisar run tp @e[type=riftworld:el_gran_maja,limit=1] 1715 30 2126 0 0
+Teleported El Gran Maja to 1715.500000, 30.000000, 2126.500000
+
+
+[18:11:14] exit=0 > execute in riftworld:elisar run data merge entity @e[type=riftworld:el_gran_maja,limit=1] {NoAI:1b}
+Modified entity data of El Gran Maja
+
+
+[18:11:14] exit=0 > gamemode spectator TestPlayer
+Set TestPlayer's game mode to Spectator Mode
+
+
+[18:11:14] exit=0 > execute in riftworld:elisar run tp TestPlayer 1780 35 2145 facing 1715 30 2126
+Teleported TestPlayer to 1780.500000, 35.000000, 2145.500000
+
+
+[18:11:30] exit=0 > execute in riftworld:elisar run tp TestPlayer 1765 35 2200 facing 1715 30 2225
+Teleported TestPlayer to 1765.500000, 35.000000, 2200.500000
+
+
+[18:11:41] exit=0 > gamemode spectator TestPlayer
+
+
+[18:11:41] exit=0 > execute in riftworld:elisar run tp TestPlayer 2315 69 2172 facing 2315 64 2126
+Teleported TestPlayer to 2315.500000, 69.000000, 2172.500000
+
+
+[18:12:16] exit=0 > execute in riftworld:elisar run tp TestPlayer 2280 72 2155 facing 2315 64 2126
+Teleported TestPlayer to 2280.500000, 72.000000, 2155.500000
+
+
+[18:12:27] exit=0 > list
+There are 1 of a max of 5 players online: TestPlayer
+
+
+[18:12:27] exit=0 > gamemode creative TestPlayer
+Set TestPlayer's game mode to Creative Mode
+
+
+[18:12:27] exit=0 > execute in riftworld:elisar run time set noon
+Set the time to 6000
+
+
+[18:12:28] exit=0 > execute in riftworld:elisar run tp TestPlayer 760 123 770 0 0
+Teleported TestPlayer to 760.500000, 123.000000, 770.500000
+
+
+[18:12:58] exit=0 > execute in riftworld:elisar positioned 760 118 760 run riftstruct v40_gear
+riftstruct kind=v40_gear stands=4 folk=3 materials=aurite,riftcrystal cam_row=760.5,122.2,770.0:760.5,120.0,760.5 cam_folk=760.5,121.2,778.5:760.5,119.6,767.5 cam_close=755.25,120.1,764.7:755.25,119.4,760.5
+
+
+[18:12:58] exit=0 > execute in riftworld:elisar positioned 760 118 760 if entity @e[type=minecraft:armor_stand,distance=..40]
+Test passed, count: 4
+
+
+[18:12:58] exit=0 > execute in riftworld:elisar run tp TestPlayer 760.5 122.2 770.0 facing 760.5 120.0 760.5
+Teleported TestPlayer to 760.500000, 122.200000, 770.000000
+
+
+[18:13:29] exit=0 > execute in riftworld:elisar run tp TestPlayer 760.5 121.2 778.5 facing 760.5 119.6 767.5
+Teleported TestPlayer to 760.500000, 121.200000, 778.500000
+
+
+[18:13:55] exit=0 > execute in riftworld:elisar run tp TestPlayer 755.25 120.1 764.7 facing 755.25 119.4 760.5
+Teleported TestPlayer to 755.250000, 120.100000, 764.700000
+
+
+[18:14:18] exit=0 > list
+There are 1 of a max of 5 players online: TestPlayer
+
+
