@@ -311,8 +311,10 @@ validate_frame() {
   fi
   [[ "$colors" =~ ^[0-9]+$ ]] && [ "$colors" -ge 400 ] \
     || fail "frame $name looks blank (unique colours: $colors)"
-  awk -v m="$magenta" 'BEGIN { exit !(m + 0 < 0.00005) }' \
-    || fail "frame $name has the missing-texture magenta (доля: $magenta)"
+  if ! awk -v m="$magenta" 'BEGIN { exit !(m + 0 < 0.00005) }'; then
+    echo "WARNING: $name содержит «missing texture» (доля magenta $magenta)"
+    MAGENTA_BAD="${MAGENTA_BAD:+$MAGENTA_BAD }$name"
+  fi
   echo "captured $name ($colors colours, magenta $magenta)"
 }
 
@@ -346,9 +348,21 @@ look_shot gear-dropped-armour 759 121 775 759 120 782 30
 # Две стойки в доспехах и две стойки с инструментами — порознь, крупным планом.
 look_shot gear-stands-armour 755.25 119.6 767 755.25 119.3 760.5 30
 look_shot gear-stands-tools  764.25 119.6 767 764.25 119.3 760.5 30
+# Убираем из рук предметы: остаётся только броня.
+rq execute in riftworld:elisar positioned 760 118 760 \
+  as '@e[type=minecraft:armor_stand,distance=..40]' \
+  run data modify entity @s HandItems set value [{},{}] >/dev/null
+look_shot gear-stands-nohands 755.25 119.6 767 755.25 119.3 760.5 30
+# Убираем и броню: остаются голые стойки.
+rq execute in riftworld:elisar positioned 760 118 760 \
+  as '@e[type=minecraft:armor_stand,distance=..40]' \
+  run data modify entity @s ArmorItems set value [{},{},{},{}] >/dev/null
+look_shot gear-stands-naked 755.25 119.6 767 755.25 119.3 760.5 30
 
 gear_shot gear-armour-row   cam_row   30
 gear_shot gear-elisar-folk  cam_folk  26
 gear_shot gear-closeup      cam_close 22
 rq list | grep -q TestPlayer || fail 'Client disconnected during the gear showcase'
+[[ -z "${MAGENTA_BAD:-}" ]] \
+  || fail "в кадрах есть текстура-заглушка «missing texture»:$MAGENTA_BAD"
 echo 'OK: captured the Elisar gear and folk showcase for manual review.'
