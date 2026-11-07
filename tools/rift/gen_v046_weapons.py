@@ -170,8 +170,11 @@ def build(name: str, tier: str):
 
 
 def png_bytes(atlas: np.ndarray) -> bytes:
+    # RGBA, как у всех остальных моделей мода: NativeImage/DynamicTexture в
+    # клиенте ожидают четыре компоненты, и на трёх текстура не поднимается.
+    rgba = np.dstack([atlas, np.full(atlas.shape[:2], 255, dtype=np.uint8)])
     buf = io.BytesIO()
-    Image.fromarray(atlas, "RGB").save(buf, "PNG", optimize=True)
+    Image.fromarray(rgba, "RGBA").save(buf, "PNG", optimize=True)
     return buf.getvalue()
 
 
