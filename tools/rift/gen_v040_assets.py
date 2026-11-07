@@ -102,7 +102,11 @@ def main() -> None:
     for mat in MATERIALS:
         gem = GEM[mat]
         for name, (pattern, count) in PATTERNS.items():
-            key = {"M": {"item": gem}, "S": {"item": "minecraft:stick"}}
+            used = {c for row in pattern for c in row if c != ' '}
+            key = {"M": {"item": gem}}
+            # Ванильные бронные раскладки палок не используют: лишний символ в key — ошибка загрузки.
+            if "S" in used:
+                key["S"] = {"item": "minecraft:stick"}
             write(DATA / f"recipes/{mat}_{name}.json", j({
                 "type": "minecraft:crafting_shaped",
                 "pattern": pattern,
