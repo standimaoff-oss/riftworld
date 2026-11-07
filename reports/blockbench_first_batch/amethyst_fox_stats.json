@@ -1,0 +1,34 @@
+{
+  "id": "amethyst_fox",
+  "title_ru": "Аметистовый лис",
+  "biome": "violet_hills",
+  "concept": "reports/biome_mob_concepts/04_violet_hills_amethyst_fox.png",
+  "generator": "Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)",
+  "bones": 9,
+  "cubes": 27,
+  "atlas": [
+    256,
+    256
+  ],
+  "bounds_blockbench": {
+    "min": [
+      -5,
+      0,
+      -17
+    ],
+    "max": [
+      5,
+      18,
+      17
+    ]
+  },
+  "size_blocks": [
+    0.625,
+    1.125,
+    2.125
+  ],
+  "animations": 8,
+  "bbmodel_bytes": 73874,
+  "geo_bones": 9,
+  "geo_cubes": 27
+}

@@ -4,3 +4,6 @@
 
 .cache/
 __pycache__/
+
+# Headless Blockbench runner dependencies (installed locally, not vendored)
+tools/blockbench/node_modules/
