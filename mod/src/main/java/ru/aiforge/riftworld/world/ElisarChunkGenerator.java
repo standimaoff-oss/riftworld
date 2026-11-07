@@ -1033,6 +1033,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         BlockState tall = st(ElisarBlocks.TALL_GRASS), flowers = st(ElisarBlocks.FLOWERS), log = st(ElisarBlocks.SIZO_LOG);
         BlockState moss = st(ElisarBlocks.MOSS), crust = st(ElisarBlocks.CRUST);
         BlockState aurite = st(ElisarBlocks.AURITE_ORE);
+        // v0.40.0: редкая руда рифт-кристалла — только 2–3 места в Элисаре и понемногу.
+        BlockState riftcrystalOre = st(ElisarBlocks.RIFTCRYSTAL_ORE);
         BlockState ducatOre = st(ElisarBlocks.DUCAT_ORE);
         // Рев 14: у биома 07 своя зелёная палитра (референс — яркая трава и дубы, а не кремовый Элисар)
         BlockState gardenGrass = st(ElisarBlocks.GARDEN_GRASS);
@@ -1245,6 +1247,10 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                         : hv < 0.86 ? riftMarbleMossy
                                         : riftSlate;
                             }
+                            // Гнёзда рифт-кристалла (место 1 из 3): в тёмном сланце нижней половины разлома.
+                            if (s.is(riftSlate.getBlock()) && vnoise(x * 0.42, z * 0.42 + y * 0.05, 727) > 0.955 && hash(x, y, z) < 0.16) {
+                                s = riftcrystalOre;
+                            }
                         } else if (c.isl.kind == 7) {
                             // Рев 15: обрыв яруса Фиолетовых холмов — каменная стенка террасы
                             // (на фото каждая ступень подпёрта кладкой). Верхний блок — земля,
@@ -1252,6 +1258,10 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                             s = y >= c.top - 5
                                     ? (hash(x, y, z) < 0.30 ? limeMossy : lime)
                                     : (hash(x, y, z) < 0.10 ? mossy : stone);
+                            // Гнёзда рифт-кристалла (место 2 из 3): в кладке террас Фиолетовых холмов.
+                            if (vnoise(x * 0.50, z * 0.50 - y * 0.07, 811) > 0.965 && hash(x, y, z) < 0.12) {
+                                s = riftcrystalOre;
+                            }
                         } else if (c.garden && y >= c.top - 14) {
                             // стены полок — светлый известняк пластами, а на глубине 3..7 встречаются умеренные жилы монетоносной руды!
                             if (y <= c.top - 3 && y >= c.top - 7
@@ -1270,6 +1280,11 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                 if (dv > 0.895 && hash(x, y, z) < 0.24) {
                                     s = ducatOre;
                                 }
+                            }
+                            // Гнёзда рифт-кристалла (место 3 из 3): глубоко в коренном камне диких островов.
+                            if (s.is(stone.getBlock()) && y <= c.bottom + 8
+                                    && vnoise(x * 0.38, z * 0.38 + y * 0.03, 907) > 0.972 && hash(x, y, z) < 0.10) {
+                                s = riftcrystalOre;
                             }
                         }
                         chunk.setBlockState(mp.set(x, y, z), s, false);

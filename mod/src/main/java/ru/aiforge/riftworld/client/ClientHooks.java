@@ -74,6 +74,10 @@ public final class ClientHooks {
         e.registerEntityRenderer(ModEntities.WENDIGO.get(), WendigoRenderer::new);
         // v0.39.0: Морок — геометрия morok + СВЕТЯЩИЕСЯ глаза (geo/morok_eyes.json, RenderType.eyes)
         e.registerEntityRenderer(ModEntities.MOROK.get(), MorokRenderer::new);
+        // v0.40.0: жители Элисара — житель, страж и лучник (референсы 05–07).
+        e.registerEntityRenderer(ModEntities.ELISAR_VILLAGER.get(), c -> new ElisarFolkRenderer<>(c, "elisar_villager"));
+        e.registerEntityRenderer(ModEntities.ELISAR_GUARD.get(), c -> new ElisarFolkRenderer<>(c, "elisar_guard"));
+        e.registerEntityRenderer(ModEntities.ELISAR_ARCHER.get(), c -> new ElisarFolkRenderer<>(c, "elisar_archer"));
     }
 
     @SubscribeEvent

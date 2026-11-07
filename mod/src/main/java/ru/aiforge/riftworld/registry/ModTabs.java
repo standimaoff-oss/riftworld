@@ -30,6 +30,27 @@ public final class ModTabs {
                 out.accept(ModItems.CRYSTAL_AEGIS.get());
                 out.accept(ModItems.ASTRAL_PRISM.get());
                 out.accept(ModItems.ELISAR_DUCAT.get());
+                // v0.40.0: снаряжение Элисара — металлы, броня, инструменты и оружие.
+                out.accept(ModItems.AURITE_INGOT.get());
+                out.accept(ModItems.RIFTCRYSTAL.get());
+                out.accept(ModItems.AURITE_HELMET.get());
+                out.accept(ModItems.AURITE_CHESTPLATE.get());
+                out.accept(ModItems.AURITE_LEGGINGS.get());
+                out.accept(ModItems.AURITE_BOOTS.get());
+                out.accept(ModItems.RIFTCRYSTAL_HELMET.get());
+                out.accept(ModItems.RIFTCRYSTAL_CHESTPLATE.get());
+                out.accept(ModItems.RIFTCRYSTAL_LEGGINGS.get());
+                out.accept(ModItems.RIFTCRYSTAL_BOOTS.get());
+                out.accept(ModItems.AURITE_SWORD.get());
+                out.accept(ModItems.AURITE_PICKAXE.get());
+                out.accept(ModItems.AURITE_AXE.get());
+                out.accept(ModItems.AURITE_SHOVEL.get());
+                out.accept(ModItems.AURITE_HOE.get());
+                out.accept(ModItems.RIFTCRYSTAL_SWORD.get());
+                out.accept(ModItems.RIFTCRYSTAL_PICKAXE.get());
+                out.accept(ModItems.RIFTCRYSTAL_AXE.get());
+                out.accept(ModItems.RIFTCRYSTAL_SHOVEL.get());
+                out.accept(ModItems.RIFTCRYSTAL_HOE.get());
                 out.accept(ModItems.BRIDGE_ROPE.get());
                 out.accept(ModItems.GILDED_PAPER.get());
                 out.accept(ModItems.EMERALD_PAPER.get());
@@ -78,6 +99,9 @@ public final class ModTabs {
         out.accept(ModItems.EGG_TURTLE.get());
         out.accept(ModItems.EGG_GLOOM.get());
         out.accept(ModItems.EGG_STING.get());
+        out.accept(ModItems.ELISAR_VILLAGER_EGG.get());
+        out.accept(ModItems.ELISAR_GUARD_EGG.get());
+        out.accept(ModItems.ELISAR_ARCHER_EGG.get());
     }
 
     @SubscribeEvent

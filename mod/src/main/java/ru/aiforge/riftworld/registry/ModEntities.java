@@ -26,6 +26,17 @@ public final class ModEntities {
     public static final RegistryObject<EntityType<ScytheItemEntity>> SCYTHE_ITEM = TYPES.register("scythe_item", () -> EntityType.Builder
             .<ScytheItemEntity>of(ScytheItemEntity::new, MobCategory.MISC).sized(0.5F, 0.3F).fireImmune().clientTrackingRange(8)
             .updateInterval(20).build("riftworld:scythe_item"));
+
+    // v0.40.0: народ Элисара (референсы 05–07) — житель, страж и лучник.
+    public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.ElisarVillagerEntity>> ELISAR_VILLAGER = TYPES.register("elisar_villager",
+            () -> EntityType.Builder.<ru.aiforge.riftworld.entity.ElisarVillagerEntity>of(ru.aiforge.riftworld.entity.ElisarVillagerEntity::new, MobCategory.CREATURE)
+                    .sized(0.6F, 1.95F).clientTrackingRange(10).build("riftworld:elisar_villager"));
+    public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.ElisarGuardEntity>> ELISAR_GUARD = TYPES.register("elisar_guard",
+            () -> EntityType.Builder.<ru.aiforge.riftworld.entity.ElisarGuardEntity>of(ru.aiforge.riftworld.entity.ElisarGuardEntity::new, MobCategory.CREATURE)
+                    .sized(0.6F, 1.95F).clientTrackingRange(10).build("riftworld:elisar_guard"));
+    public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.ElisarArcherEntity>> ELISAR_ARCHER = TYPES.register("elisar_archer",
+            () -> EntityType.Builder.<ru.aiforge.riftworld.entity.ElisarArcherEntity>of(ru.aiforge.riftworld.entity.ElisarArcherEntity::new, MobCategory.CREATURE)
+                    .sized(0.6F, 1.95F).clientTrackingRange(10).build("riftworld:elisar_archer"));
     /** v0.24.0: Огромный плавный модульный 3D оригами-дракон (~47.7 м), парящий вдоль диких островов, под сводами и над морем (вне Города!). */
     public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.PaperDragonEntity>> PAPER_DRAGON = TYPES.register("paper_dragon",
             () -> EntityType.Builder.<ru.aiforge.riftworld.entity.PaperDragonEntity>of(ru.aiforge.riftworld.entity.PaperDragonEntity::new, MobCategory.AMBIENT)
@@ -138,6 +149,9 @@ public final class ModEntities {
         e.put(EL_GRAN_MAJA.get(), ru.aiforge.riftworld.entity.ElGranMajaEntity.attributes().build());
         e.put(PEGASUS.get(), ru.aiforge.riftworld.entity.PegasusEntity.attributes().build());
         e.put(WENDIGO.get(), ru.aiforge.riftworld.entity.WendigoEntity.attributes().build());
+        e.put(ELISAR_VILLAGER.get(), ru.aiforge.riftworld.entity.ElisarVillagerEntity.attributes().build());
+        e.put(ELISAR_GUARD.get(), ru.aiforge.riftworld.entity.ElisarGuardEntity.attributes().build());
+        e.put(ELISAR_ARCHER.get(), ru.aiforge.riftworld.entity.ElisarArcherEntity.attributes().build());
         e.put(MOROK.get(), ru.aiforge.riftworld.entity.MorokEntity.attributes().build());
     }
 }

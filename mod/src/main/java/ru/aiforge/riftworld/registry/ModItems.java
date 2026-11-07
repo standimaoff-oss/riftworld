@@ -1,8 +1,15 @@
 package ru.aiforge.riftworld.registry;
 
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.ArmorMaterial;
+import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.HoeItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.PickaxeItem;
 import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.ShovelItem;
+import net.minecraft.world.item.SwordItem;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -183,6 +190,79 @@ public final class ModItems {
 
     private static RegistryObject<Item> egg(String id, int variant, int back, int spots) {
         return ITEMS.register(id, () -> new ru.aiforge.riftworld.item.SeaEggItem(variant, new Item.Properties()));
+    }
+
+    // ==========================================================================================
+    // v0.40.0 «Снаряжение и люди Элисара»: два металла, два комплекта брони и два комплекта
+    // инструментов/оружия. Аурит — руда, из которой уже делают монеты; рифт-кристалл — редкая
+    // руда всего из 2–3 биомов. Все крафты — ванильные раскладки с подменой материала.
+    // ==========================================================================================
+
+    /** Слиток аурита: выплавляется из ауритовой руды, идёт и в монеты, и в «среднюю» броню. */
+    public static final RegistryObject<Item> AURITE_INGOT = ITEMS.register("aurite_ingot",
+            () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)));
+
+    /** Рифт-кристалл: редкий самоцвет из Хрустальных разломов, глубинного камня и Фиолетовых холмов. */
+    public static final RegistryObject<Item> RIFTCRYSTAL = ITEMS.register("riftcrystal",
+            () -> new Item(new Item.Properties().rarity(Rarity.RARE)));
+
+    // --- Броня: аурит (средняя) и рифт-кристалл (сильная) ---
+    public static final RegistryObject<Item> AURITE_HELMET = armour("aurite_helmet",
+            ru.aiforge.riftworld.item.RiftArmorMaterials.AURITE, ArmorItem.Type.HELMET);
+    public static final RegistryObject<Item> AURITE_CHESTPLATE = armour("aurite_chestplate",
+            ru.aiforge.riftworld.item.RiftArmorMaterials.AURITE, ArmorItem.Type.CHESTPLATE);
+    public static final RegistryObject<Item> AURITE_LEGGINGS = armour("aurite_leggings",
+            ru.aiforge.riftworld.item.RiftArmorMaterials.AURITE, ArmorItem.Type.LEGGINGS);
+    public static final RegistryObject<Item> AURITE_BOOTS = armour("aurite_boots",
+            ru.aiforge.riftworld.item.RiftArmorMaterials.AURITE, ArmorItem.Type.BOOTS);
+
+    public static final RegistryObject<Item> RIFTCRYSTAL_HELMET = armour("riftcrystal_helmet",
+            ru.aiforge.riftworld.item.RiftArmorMaterials.RIFTCRYSTAL, ArmorItem.Type.HELMET);
+    public static final RegistryObject<Item> RIFTCRYSTAL_CHESTPLATE = armour("riftcrystal_chestplate",
+            ru.aiforge.riftworld.item.RiftArmorMaterials.RIFTCRYSTAL, ArmorItem.Type.CHESTPLATE);
+    public static final RegistryObject<Item> RIFTCRYSTAL_LEGGINGS = armour("riftcrystal_leggings",
+            ru.aiforge.riftworld.item.RiftArmorMaterials.RIFTCRYSTAL, ArmorItem.Type.LEGGINGS);
+    public static final RegistryObject<Item> RIFTCRYSTAL_BOOTS = armour("riftcrystal_boots",
+            ru.aiforge.riftworld.item.RiftArmorMaterials.RIFTCRYSTAL, ArmorItem.Type.BOOTS);
+
+    // --- Инструменты: кирка, топор, лопата, мотыга (2 руды: аурит и рифт-кристалл) ---
+    public static final RegistryObject<Item> AURITE_PICKAXE = ITEMS.register("aurite_pickaxe",
+            () -> new PickaxeItem(ru.aiforge.riftworld.item.RiftGearTiers.AURITE, 1, -2.8F, gear()));
+    public static final RegistryObject<Item> AURITE_AXE = ITEMS.register("aurite_axe",
+            () -> new AxeItem(ru.aiforge.riftworld.item.RiftGearTiers.AURITE, 6.0F, -3.0F, gear()));
+    public static final RegistryObject<Item> AURITE_SHOVEL = ITEMS.register("aurite_shovel",
+            () -> new ShovelItem(ru.aiforge.riftworld.item.RiftGearTiers.AURITE, 2.5F, -3.0F, gear()));
+    public static final RegistryObject<Item> AURITE_HOE = ITEMS.register("aurite_hoe",
+            () -> new HoeItem(ru.aiforge.riftworld.item.RiftGearTiers.AURITE, -2, -0.5F, gear()));
+    public static final RegistryObject<Item> RIFTCRYSTAL_PICKAXE = ITEMS.register("riftcrystal_pickaxe",
+            () -> new PickaxeItem(ru.aiforge.riftworld.item.RiftGearTiers.RIFTCRYSTAL, 2, -2.6F, gear()));
+    public static final RegistryObject<Item> RIFTCRYSTAL_AXE = ITEMS.register("riftcrystal_axe",
+            () -> new AxeItem(ru.aiforge.riftworld.item.RiftGearTiers.RIFTCRYSTAL, 8.0F, -2.9F, gear()));
+    public static final RegistryObject<Item> RIFTCRYSTAL_SHOVEL = ITEMS.register("riftcrystal_shovel",
+            () -> new ShovelItem(ru.aiforge.riftworld.item.RiftGearTiers.RIFTCRYSTAL, 3.5F, -2.9F, gear()));
+    public static final RegistryObject<Item> RIFTCRYSTAL_HOE = ITEMS.register("riftcrystal_hoe",
+            () -> new HoeItem(ru.aiforge.riftworld.item.RiftGearTiers.RIFTCRYSTAL, -1, -0.5F, gear()));
+
+    // --- Оружие: в референсе 03 только инструменты, поэтому мечи сделаны по его же палитре ---
+    public static final RegistryObject<Item> AURITE_SWORD = ITEMS.register("aurite_sword",
+            () -> new SwordItem(ru.aiforge.riftworld.item.RiftGearTiers.AURITE, 4, -2.3F, gear()));
+    public static final RegistryObject<Item> RIFTCRYSTAL_SWORD = ITEMS.register("riftcrystal_sword",
+            () -> new SwordItem(ru.aiforge.riftworld.item.RiftGearTiers.RIFTCRYSTAL, 6, -2.2F, gear()));
+
+    // --- Яйца призыва жителей Элисара (референсы 05–07) ---
+    public static final RegistryObject<Item> ELISAR_VILLAGER_EGG = ITEMS.register("elisar_villager_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.ELISAR_VILLAGER, 0x8F7B84, 0xAC8A9D, new Item.Properties()));
+    public static final RegistryObject<Item> ELISAR_GUARD_EGG = ITEMS.register("elisar_guard_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.ELISAR_GUARD, 0xC27E3F, 0xEDECF3, new Item.Properties()));
+    public static final RegistryObject<Item> ELISAR_ARCHER_EGG = ITEMS.register("elisar_archer_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.ELISAR_ARCHER, 0x6A493A, 0xD09873, new Item.Properties()));
+
+    private static Item.Properties gear() {
+        return new Item.Properties();
+    }
+
+    private static RegistryObject<Item> armour(String id, ArmorMaterial material, ArmorItem.Type slot) {
+        return ITEMS.register(id, () -> new ArmorItem(material, slot, gear()));
     }
 
     static {

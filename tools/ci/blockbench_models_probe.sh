@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Real Minecraft 1.20.1 Forge `runClient` visual probe under Xvfb + Mesa llvmpipe (1920x1080)
-# Captures 8 Full HD in-game screenshots of the Blockbench MCP Liopleurodon & Pegasus models.
+# Captures 11 Full HD in-game screenshots: Liopleurodon, Pegasus (5 poses) and the
+# v0.40.0 Elisar gear & folk showcase.
 set -euo pipefail
 
 OUT=${OUT:-ci-out}
@@ -179,7 +180,23 @@ capture_cam "$PEG_INFO" "cam_glide"  "09_ingame_pegasus_banking_glide.png"  12
 capture_cam "$PEG_INFO" "cam_hover"  "10_ingame_pegasus_hover.png"          12
 
 # ==============================================================================
-# 3) Verify client logs & renderer health
+# 3) ELISAR GEAR & FOLK (v0.40.0): armour stands + villager / guard / archer
+# ==============================================================================
+echo "== Staging the Elisar gear and folk showcase =="
+rq execute in riftworld:elisar run time set 4500 >/dev/null
+rq execute in riftworld:elisar run tp TestPlayer 760 130 790 0 0 >/dev/null
+sleep 10
+GEAR_INFO=$(rq execute in riftworld:elisar positioned 760 118 760 run riftstruct v40_gear)
+echo "  $GEAR_INFO"
+[[ "$GEAR_INFO" == *"stands=4"* ]] || fail "Expected 4 armour stands, got: $GEAR_INFO"
+[[ "$GEAR_INFO" == *"folk=3"* ]] || fail "Expected 3 Elisar folk, got: $GEAR_INFO"
+
+capture_cam "$GEAR_INFO" "cam_row"   "11_ingame_gear_row.png"      20
+capture_cam "$GEAR_INFO" "cam_folk"  "12_ingame_elisar_folk.png"   18
+capture_cam "$GEAR_INFO" "cam_close" "13_ingame_gear_closeup.png"  14
+
+# ==============================================================================
+# 4) Verify client logs & renderer health
 # ==============================================================================
 grep -F '[riftworld] geo' "$OUT/bb-client.log" > "$SHOT_DIR/geo_loaded.txt" || true
 grep -Ei 'Error while rendering entity|Exception.*(Liopleurodon|Pegasus)|Failed to load.*(liopleurodon|pegasus)' "$OUT/bb-client.log" > "$SHOT_DIR/render_diagnostics.txt" || true
@@ -196,4 +213,4 @@ fi
 
 rq list | grep -q TestPlayer || fail "Client disconnected before finishing captures"
 pkill -f forgeclientuserdev 2>/dev/null || true
-echo "SUCCESS: All 8 Full HD in-game screenshots rendered via Xvfb + Mesa llvmpipe!"
+echo "SUCCESS: All 11 Full HD in-game screenshots rendered via Xvfb + Mesa llvmpipe!"

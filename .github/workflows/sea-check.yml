@@ -135,11 +135,17 @@ jobs:
             git add reports/el_gran_maja_model/ingame/
             changed=1
           fi
+          if ls mod/build/libs/*.jar >/dev/null 2>&1; then
+            mkdir -p release
+            cp -a mod/build/libs/*.jar release/
+            git add release/
+            changed=1
+          fi
           if [ "$changed" = 1 ]; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             if ! git diff --cached --quiet; then
-              git commit -m "Add Xvfb + Mesa llvmpipe in-game screenshots [skip ci]"
+              git commit -m "Add Xvfb + Mesa llvmpipe in-game screenshots and jars [skip ci]"
               git push origin "HEAD:${GITHUB_REF_NAME}"
             fi
           fi
