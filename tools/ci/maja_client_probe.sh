@@ -305,12 +305,13 @@ validate_frame() {
   local name=$1 colors=0 magenta=0
   colors=$(identify -format '%k' "$OUT/$name.png" 2>/dev/null || echo 0)
   if [ -n "$IM_BIN" ]; then
-    magenta=$("$IM_BIN" "$OUT/$name.png" -fill white -opaque '#F800F8' \
+    # Рендер даёт (245,0,245), а не ровно #F800F8, поэтому нужен допуск.
+    magenta=$("$IM_BIN" "$OUT/$name.png" -fuzz 5% -fill white -opaque '#F800F8' \
       -fill black +opaque white -format '%[fx:mean]' info: 2>/dev/null || echo 0)
   fi
   [[ "$colors" =~ ^[0-9]+$ ]] && [ "$colors" -ge 400 ] \
     || fail "frame $name looks blank (unique colours: $colors)"
-  awk -v m="$magenta" 'BEGIN { exit !(m + 0 < 0.0004) }' \
+  awk -v m="$magenta" 'BEGIN { exit !(m + 0 < 0.00005) }' \
     || fail "frame $name has the missing-texture magenta (доля: $magenta)"
   echo "captured $name ($colors colours, magenta $magenta)"
 }
@@ -338,10 +339,13 @@ drop_row() {
 }
 drop_row 774 aurite_sword aurite_pickaxe aurite_axe aurite_shovel aurite_hoe \
             riftcrystal_sword riftcrystal_pickaxe riftcrystal_axe riftcrystal_shovel riftcrystal_hoe
-look_shot gear-dropped-tools 772 124 764 772 121 776 28
+look_shot gear-dropped-tools 761 121 767 761 120 774 30
 drop_row 782 aurite_helmet aurite_chestplate aurite_leggings aurite_boots \
             riftcrystal_helmet riftcrystal_chestplate riftcrystal_leggings riftcrystal_boots
-look_shot gear-dropped-armour 772 124 772 772 121 784 28
+look_shot gear-dropped-armour 759 121 775 759 120 782 30
+# Две стойки в доспехах и две стойки с инструментами — порознь, крупным планом.
+look_shot gear-stands-armour 755.25 119.6 767 755.25 119.3 760.5 30
+look_shot gear-stands-tools  764.25 119.6 767 764.25 119.3 760.5 30
 
 gear_shot gear-armour-row   cam_row   30
 gear_shot gear-elisar-folk  cam_folk  26
