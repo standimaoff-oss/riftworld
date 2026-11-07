@@ -3844,6 +3844,215 @@ public final class SeaProbeCommand {
             return 1;
         }
 
+        if (k.equals("bb_liopleurodon_showcase")) {
+            int px = 696, py = 36, pz = 696;
+            if (level != null) {
+                ServerLevel sl = level;
+                for (int cx = (px - 24) >> 4; cx <= (px + 24) >> 4; ++cx) {
+                    for (int cz = (pz - 24) >> 4; cz <= (pz + 24) >> 4; ++cz) {
+                        if (!sl.hasChunk(cx, cz)) sl.getChunk(cx, cz);
+                    }
+                }
+                // Ensure pure open Elisar ocean water in the camera & creature volume (leaving coral seafloor below y=31 intact!)
+                for (int dx = -12; dx <= 12; ++dx) {
+                    for (int dz = -12; dz <= 12; ++dz) {
+                        for (int dy = -3; dy <= 7; ++dy) {
+                            BlockPos wp = new BlockPos(px + dx, py + dy, pz + dz);
+                            if (!sl.getBlockState(wp).is(ElisarBlocks.WATER.get())) {
+                                sl.setBlock(wp, ElisarBlocks.WATER.get().defaultBlockState(), 2);
+                            }
+                        }
+                    }
+                }
+                sl.getEntitiesOfClass(ru.aiforge.riftworld.entity.LiopleurodonEntity.class,
+                        new net.minecraft.world.phys.AABB(px - 48, py - 24, pz - 48, px + 48, py + 32, pz + 48))
+                        .forEach(net.minecraft.world.entity.Entity::discard);
+
+                var hero = ru.aiforge.riftworld.entity.LiopleurodonEntity.spawn(
+                        sl, new net.minecraft.world.phys.Vec3(px + 0.5, py, pz + 0.5));
+                hero.setNoAi(true);
+                hero.setInvulnerable(true);
+                hero.setSilent(true);
+                hero.setNoGravity(true);
+                hero.setXRot(0.0F);
+                hero.setYRot(90.0F);
+                hero.yBodyRot = 90.0F;
+                hero.yHeadRot = 90.0F;
+
+                var mate = ru.aiforge.riftworld.entity.LiopleurodonEntity.spawn(
+                        sl, new net.minecraft.world.phys.Vec3(px - 15.5, py + 3.0, pz - 12.5));
+                mate.setNoAi(true);
+                mate.setInvulnerable(true);
+                mate.setSilent(true);
+                mate.setNoGravity(true);
+                mate.setXRot(4.0F);
+                mate.setYRot(112.0F);
+                mate.yBodyRot = 112.0F;
+                mate.yHeadRot = 112.0F;
+            }
+            int[] geo = geoStats("liopleurodon");
+            double[] camHero = poseCam(px + 0.5, py, pz + 0.5, 90.0F,
+                    0.7, 0.0, 1.15, 7.2, 7.8, 0.35);
+            double[] camJaws = poseCam(px + 0.5, py, pz + 0.5, 90.0F,
+                    4.30, 0.0, 1.15, 2.75, 2.55, -1.25);
+            double[] camDorsal = poseCam(px + 0.5, py, pz + 0.5, 90.0F,
+                    0.35, 0.0, 1.15, 5.8, -7.2, 3.8);
+            String line = "riftstruct kind=bb_liopleurodon_showcase"
+                    + " model_boxes=" + geo[0] + " bones=" + geo[1] + " atlas=" + geo[2]
+                    + " cam_hero=" + r3(camHero[0]) + "," + r3(camHero[1]) + "," + r3(camHero[2])
+                    + ":" + r3(camHero[3]) + "," + r3(camHero[4]) + "," + r3(camHero[5])
+                    + " cam_jaws=" + r3(camJaws[0]) + "," + r3(camJaws[1]) + "," + r3(camJaws[2])
+                    + ":" + r3(camJaws[3]) + "," + r3(camJaws[4]) + "," + r3(camJaws[5])
+                    + " cam_dorsal=" + r3(camDorsal[0]) + "," + r3(camDorsal[1]) + "," + r3(camDorsal[2])
+                    + ":" + r3(camDorsal[3]) + "," + r3(camDorsal[4]) + "," + r3(camDorsal[5]);
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.equals("bb_pegasus_showcase")) {
+            int px = 520, py = 118, pz = 520;
+            if (level != null) {
+                ServerLevel sl = level;
+                for (int cx = (px - 28) >> 4; cx <= (px + 44) >> 4; ++cx) {
+                    for (int cz = (pz - 28) >> 4; cz <= (pz + 28) >> 4; ++cz) {
+                        if (!sl.hasChunk(cx, cz)) sl.getChunk(cx, cz);
+                    }
+                }
+                sl.getEntitiesOfClass(ru.aiforge.riftworld.entity.PegasusEntity.class,
+                        new net.minecraft.world.phys.AABB(px - 36, py - 28, pz - 36, px + 60, py + 32, pz + 36))
+                        .forEach(net.minecraft.world.entity.Entity::discard);
+
+                // Clear any natural floating canopy/island remnants in the vista above y=114
+                for (int dx = -22; dx <= 44; ++dx) {
+                    for (int dz = -22; dz <= 22; ++dz) {
+                        for (int dy = -3; dy <= 18; ++dy) {
+                            sl.setBlock(new BlockPos(px + dx, py + dy, pz + dz),
+                                    net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 2);
+                        }
+                    }
+                }
+
+                // Build a clean sunlit Elisar garden terrace with moss marble, grass, white lilies & celadon ferns
+                for (int dx = -12; dx <= 34; ++dx) {
+                    for (int dz = -12; dz <= 12; ++dz) {
+                        double edge = Math.hypot(Math.max(0, Math.abs(dx - 11) - 13), Math.max(0, Math.abs(dz) - 4));
+                        if (edge > 9.5) continue;
+                        sl.setBlock(new BlockPos(px + dx, py - 2, pz + dz),
+                                ElisarBlocks.RIFT_MARBLE_MOSSY.get().defaultBlockState(), 2);
+                        sl.setBlock(new BlockPos(px + dx, py - 1, pz + dz),
+                                ElisarBlocks.GARDEN_GRASS.get().defaultBlockState(), 2);
+                        if (((dx * 7 + dz * 13) & 15) == 3 && Math.hypot(dx, dz) > 3.5 && Math.hypot(dx - 22, dz) > 3.5) {
+                            sl.setBlock(new BlockPos(px + dx, py, pz + dz),
+                                    (((dx + dz) & 1) == 0 ? ElisarBlocks.WHITE_LILY_CLUSTER.get() : ElisarBlocks.CELADON_FERN.get()).defaultBlockState(), 2);
+                        }
+                    }
+                }
+
+                // 1) Wild Pegasus on ground (folded swan-wings, pure celestial white coat)
+                var wild = ru.aiforge.riftworld.registry.ModEntities.PEGASUS.get().create(sl);
+                if (wild != null) {
+                    wild.moveTo(px + 0.5, py, pz + 0.5, 40.0F, 0.0F);
+                    wild.setYRot(40.0F);
+                    wild.yBodyRot = 40.0F;
+                    wild.yHeadRot = 40.0F;
+                    wild.setOnGround(true);
+                    wild.setNoAi(true);
+                    wild.setInvulnerable(true);
+                    wild.setSilent(true);
+                    sl.addFreshEntity(wild);
+                    wild.setShowcasePose(ru.aiforge.riftworld.entity.PegasusEntity.POSE_GROUND_FOLDED);
+                }
+
+                // 2) Tamed & Royal Saddled Pegasus on ground (Elisar mahogany-gold saddle + jeweled bridle)
+                var royal = ru.aiforge.riftworld.registry.ModEntities.PEGASUS.get().create(sl);
+                if (royal != null) {
+                    royal.moveTo(px + 22.5, py, pz + 0.5, 52.0F, 0.0F);
+                    royal.setYRot(52.0F);
+                    royal.yBodyRot = 52.0F;
+                    royal.yHeadRot = 52.0F;
+                    royal.setTamed(true);
+                    royal.setSaddled(true);
+                    royal.setOnGround(true);
+                    royal.setNoAi(true);
+                    royal.setInvulnerable(true);
+                    royal.setSilent(true);
+                    sl.addFreshEntity(royal);
+                    royal.setShowcasePose(ru.aiforge.riftworld.entity.PegasusEntity.POSE_GROUND_FOLDED);
+                }
+
+                // 3) Airborne Soaring Pegasus in Elisar sky (full 3-tiered feathered wingspan, flapping)
+                var flyer = ru.aiforge.riftworld.registry.ModEntities.PEGASUS.get().create(sl);
+                if (flyer != null) {
+                    flyer.moveTo(px + 11.5, py + 7.0, pz + 0.5, 38.0F, -6.0F);
+                    flyer.setYRot(38.0F);
+                    flyer.yBodyRot = 38.0F;
+                    flyer.yHeadRot = 38.0F;
+                    flyer.setOnGround(false);
+                    flyer.setFlyingState(true);
+                    flyer.setNoAi(true);
+                    flyer.setInvulnerable(true);
+                    flyer.setSilent(true);
+                    sl.addFreshEntity(flyer);
+                    flyer.setShowcasePose(ru.aiforge.riftworld.entity.PegasusEntity.POSE_FLY_FLAP);
+                }
+
+                // 4) High soaring Pegasus: banking glide (12° roll) + stationary hover showcase
+                var glider = ru.aiforge.riftworld.registry.ModEntities.PEGASUS.get().create(sl);
+                if (glider != null) {
+                    glider.moveTo(px + 30.5, py + 12.5, pz - 6.5, 24.0F, -4.0F);
+                    glider.setYRot(24.0F);
+                    glider.yBodyRot = 24.0F;
+                    glider.yHeadRot = 24.0F;
+                    glider.setOnGround(false);
+                    glider.setFlyingState(true);
+                    glider.setNoAi(true);
+                    glider.setInvulnerable(true);
+                    glider.setSilent(true);
+                    sl.addFreshEntity(glider);
+                    glider.setShowcasePose(ru.aiforge.riftworld.entity.PegasusEntity.POSE_FLY_GLIDE);
+                }
+                var hoverer = ru.aiforge.riftworld.registry.ModEntities.PEGASUS.get().create(sl);
+                if (hoverer != null) {
+                    hoverer.moveTo(px - 12.5, py + 15.0, pz - 9.5, 8.0F, -2.0F);
+                    hoverer.setYRot(8.0F);
+                    hoverer.yBodyRot = 8.0F;
+                    hoverer.yHeadRot = 8.0F;
+                    hoverer.setOnGround(false);
+                    hoverer.setFlyingState(true);
+                    hoverer.setNoAi(true);
+                    hoverer.setInvulnerable(true);
+                    hoverer.setSilent(true);
+                    sl.addFreshEntity(hoverer);
+                    hoverer.setShowcasePose(ru.aiforge.riftworld.entity.PegasusEntity.POSE_FLY_HOVER);
+                }
+            }
+            int[] geo = geoStats("pegasus");
+            double[] camWild = poseCam(px + 0.5, py, pz + 0.5, 40.0F,
+                    0.10, 0.0, 1.02, 3.65, 3.35, -1.02);
+            double[] camSaddle = poseCam(px + 22.5, py, pz + 0.5, 52.0F,
+                    0.05, 0.0, 1.02, 3.25, 3.55, -0.95);
+            double[] camFlight = poseCam(px + 11.5, py + 7.0, pz + 0.5, 38.0F,
+                    0.10, 0.0, 1.15, 4.35, 3.55, -0.70);
+            double[] camGlide = poseCam(px + 30.5, py + 12.5, pz - 6.5, 24.0F,
+                    0.15, 0.0, 1.10, 4.60, 3.20, 0.55);
+            double[] camHover = poseCam(px - 12.5, py + 15.0, pz - 9.5, 8.0F,
+                    0.15, 0.0, 1.05, 4.10, 3.40, 0.20);
+            String line = "riftstruct kind=bb_pegasus_showcase"
+                    + " model_boxes=" + geo[0] + " bones=" + geo[1] + " atlas=" + geo[2]
+                    + " cam_wild=" + r3(camWild[0]) + "," + r3(camWild[1]) + "," + r3(camWild[2])
+                    + ":" + r3(camWild[3]) + "," + r3(camWild[4]) + "," + r3(camWild[5])
+                    + " cam_saddle=" + r3(camSaddle[0]) + "," + r3(camSaddle[1]) + "," + r3(camSaddle[2])
+                    + ":" + r3(camSaddle[3]) + "," + r3(camSaddle[4]) + "," + r3(camSaddle[5])
+                    + " cam_flight=" + r3(camFlight[0]) + "," + r3(camFlight[1]) + "," + r3(camFlight[2])
+                    + ":" + r3(camFlight[3]) + "," + r3(camFlight[4]) + "," + r3(camFlight[5])
+                    + " cam_glide=" + r3(camGlide[0]) + "," + r3(camGlide[1]) + "," + r3(camGlide[2])
+                    + ":" + r3(camGlide[3]) + "," + r3(camGlide[4]) + "," + r3(camGlide[5])
+                    + " cam_hover=" + r3(camHover[0]) + "," + r3(camHover[1]) + "," + r3(camHover[2])
+                    + ":" + r3(camHover[3]) + "," + r3(camHover[4]) + "," + r3(camHover[5]);
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
         if (k.equals("v39_morok")) {
             // v0.39.0 — Морок: собственный хоррор «Мороковой Пади».
             // Проба ставит его на настоящей мерзлоте Пади, переводит мир в НОЧЬ (и возвращает

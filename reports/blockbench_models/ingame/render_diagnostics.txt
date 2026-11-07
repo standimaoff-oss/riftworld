@@ -1,0 +1,3 @@
+[07:52:26] [Worker-Main-3/WARN] [minecraft/ModelBakery]: Unable to load model: 'riftworld:liopleurodon_spawn_egg#inventory' referenced from: riftworld:liopleurodon_spawn_egg#inventory: java.io.FileNotFoundException: riftworld:models/item/liopleurodon_spawn_egg.json
+[07:52:26] [Worker-Main-3/WARN] [minecraft/ModelBakery]: Unable to load model: 'riftworld:pegasus_spawn_egg#inventory' referenced from: riftworld:pegasus_spawn_egg#inventory: java.io.FileNotFoundException: riftworld:models/item/pegasus_spawn_egg.json
+[07:52:26] [Worker-Main-3/WARN] [minecraft/ModelBakery]: Unable to load model: 'riftworld:pegasus_feather#inventory' referenced from: riftworld:pegasus_feather#inventory: java.io.FileNotFoundException: riftworld:models/item/pegasus_feather.json

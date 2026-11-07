@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: riftworld-check-${{ github.ref }}
@@ -16,6 +16,7 @@ concurrency:
 
 jobs:
   build:
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-latest
     timeout-minutes: 55
     steps:
@@ -33,6 +34,7 @@ jobs:
           python -m pip install numpy pillow
           python reports/el_gran_maja_model/validate_el_gran_maja_model.py
           python reports/el_gran_maja_model/validate_collision_bounds.py
+          python reports/el_gran_maja_model/verify_head_details.py
           mkdir -p /tmp/maja-unit
           javac -d /tmp/maja-unit mod/src/main/java/ru/aiforge/riftworld/world/DeepOcean.java mod/src/main/java/ru/aiforge/riftworld/world/MajaSafetyPolicy.java tests/java/MajaRulesTest.java
           java -cp /tmp/maja-unit MajaRulesTest
@@ -91,7 +93,6 @@ jobs:
           name: riftworld-build
           path: build-artifact
       - uses: gradle/actions/setup-gradle@v4
-        if: github.event_name == 'workflow_dispatch'
       - name: Boot a real Forge server and probe it
         shell: bash
         env:
@@ -104,6 +105,9 @@ jobs:
       - name: Verify Maja motion and block/border collisions on the server
         shell: bash
         run: bash tools/ci/maja_server_probe.sh
+      - name: Real client Xvfb + Mesa llvmpipe probe for Blockbench Liopleurodon & Pegasus
+        shell: bash
+        run: bash tools/ci/blockbench_models_probe.sh
       - name: Real client rendering smoke test
         if: github.event_name == 'workflow_dispatch'
         shell: bash
@@ -112,6 +116,31 @@ jobs:
         if: always()
         shell: bash
         run: python3 tools/rcon.py --password riftci --log '' --timeout 20 stop || true
+      - name: Publish Xvfb + Mesa llvmpipe screenshots to working branch
+        if: always() && startsWith(github.ref, 'refs/heads/arena/')
+        shell: bash
+        run: |
+          changed=0
+          if [ -d ci-out/blockbench_shots ] && [ -n "$(ls -A ci-out/blockbench_shots 2>/dev/null)" ]; then
+            mkdir -p reports/blockbench_models/ingame
+            cp -a ci-out/blockbench_shots/* reports/blockbench_models/ingame/
+            git add reports/blockbench_models/ingame/
+            changed=1
+          fi
+          if ls ci-out/maja-client-*.png >/dev/null 2>&1; then
+            mkdir -p reports/el_gran_maja_model/ingame
+            cp -a ci-out/maja-client-*.png reports/el_gran_maja_model/ingame/
+            git add reports/el_gran_maja_model/ingame/
+            changed=1
+          fi
+          if [ "$changed" = 1 ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            if ! git diff --cached --quiet; then
+              git commit -m "Add Xvfb + Mesa llvmpipe in-game screenshots [skip ci]"
+              git push origin "HEAD:${GITHUB_REF_NAME}"
+            fi
+          fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:

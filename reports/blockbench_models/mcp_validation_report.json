@@ -1,0 +1,137 @@
+{
+  "mcp_server": "blockbench-mcp-headless 1.10.1 (jasonjgardner/blockbench-mcp-plugin)",
+  "liopleurodon": {
+    "groups": 24,
+    "cubes": 234,
+    "atlas": 1024,
+    "geometry_validation": {
+      "errors": 0,
+      "warnings": 0,
+      "passed": true
+    },
+    "self_test": [
+      {
+        "gate": "outliner",
+        "discriminates": true,
+        "clean_violations": 0,
+        "injected_violations": 1,
+        "injected": "(outliner): added a reference to a node that does not exist"
+      },
+      {
+        "gate": "unlisted_nodes",
+        "discriminates": true,
+        "clean_violations": 0,
+        "injected_violations": 1,
+        "injected": "chest_core: removed it from the outliner"
+      },
+      {
+        "gate": "degenerate",
+        "discriminates": true,
+        "clean_violations": 0,
+        "injected_violations": 1,
+        "injected": "chest_core: made it 0.05 units thick"
+      },
+      {
+        "gate": "block_limits",
+        "discriminates": null,
+        "clean_violations": 0,
+        "injected_violations": 0,
+        "impossible": "block_limits is disabled."
+      },
+      {
+        "gate": "floating",
+        "discriminates": true,
+        "clean_violations": 0,
+        "injected_violations": 1,
+        "injected": "chest_core: moved it 1000 units away"
+      },
+      {
+        "gate": "interpenetration",
+        "discriminates": null,
+        "clean_violations": 0,
+        "injected_violations": 0,
+        "impossible": "Needs two unrotated cubes in different groups, one thicker than the penetration depth."
+      },
+      {
+        "gate": "mirror",
+        "discriminates": true,
+        "clean_violations": 0,
+        "injected_violations": 1,
+        "injected": "pectoral_girdle_l: shifted it 2 units on x (its mirror is pectoral_girdle_r)"
+      }
+    ],
+    "animation_validation": {
+      "errors": 0,
+      "warnings": 1,
+      "passed": true
+    },
+    "java_export_notes": []
+  },
+  "pegasus": {
+    "groups": 37,
+    "cubes": 179,
+    "atlas": 512,
+    "geometry_validation": {
+      "errors": 0,
+      "warnings": 0,
+      "passed": true
+    },
+    "self_test": [
+      {
+        "gate": "outliner",
+        "discriminates": true,
+        "clean_violations": 0,
+        "injected_violations": 1,
+        "injected": "(outliner): added a reference to a node that does not exist"
+      },
+      {
+        "gate": "unlisted_nodes",
+        "discriminates": true,
+        "clean_violations": 0,
+        "injected_violations": 1,
+        "injected": "ribcage_core: removed it from the outliner"
+      },
+      {
+        "gate": "degenerate",
+        "discriminates": true,
+        "clean_violations": 0,
+        "injected_violations": 1,
+        "injected": "ribcage_core: made it 0.05 units thick"
+      },
+      {
+        "gate": "block_limits",
+        "discriminates": null,
+        "clean_violations": 0,
+        "injected_violations": 0,
+        "impossible": "block_limits is disabled."
+      },
+      {
+        "gate": "floating",
+        "discriminates": true,
+        "clean_violations": 0,
+        "injected_violations": 1,
+        "injected": "ribcage_core: moved it 1000 units away"
+      },
+      {
+        "gate": "interpenetration",
+        "discriminates": null,
+        "clean_violations": 0,
+        "injected_violations": 0,
+        "impossible": "Needs two unrotated cubes in different groups, one thicker than the penetration depth."
+      },
+      {
+        "gate": "mirror",
+        "discriminates": true,
+        "clean_violations": 0,
+        "injected_violations": 1,
+        "injected": "pectoral_muscle_l: shifted it 2 units on x (its mirror is pectoral_muscle_r)"
+      }
+    ],
+    "animation_validation": {
+      "errors": 0,
+      "warnings": 2,
+      "passed": true
+    },
+    "java_export_notes": []
+  }
+}

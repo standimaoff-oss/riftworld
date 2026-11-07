@@ -145,8 +145,33 @@ def main():
     point=np.array([0.,-210.,-750.])
     posed=r.rot_x(-13)@(point-pivot)+pivot
     assert posed[1]<point[1]
+
+    # Automated watertightness check across the posterior skull & head-to-neck junction:
+    # verify zero dorsal holes (X, Z) and zero rear occipital holes (X, Y)!
+    head_neck_cubes = [
+        c for bn in ("head", "neck_1") for c in model.by_name[bn]["cubes"]
+    ]
+    for gx in range(-420, 421, 8):
+        for gz in range(-480, 405, 16):
+            hit_top = any(
+                c["origin"][0] <= gx < c["origin"][0] + c["size"][0]
+                and c["origin"][2] <= gz < c["origin"][2] + c["size"][2]
+                and c["origin"][1] + c["size"][1] > 40
+                for c in head_neck_cubes
+            )
+            assert hit_top, f"Dorsal skull/neck gap detected at x={gx}, z={gz}"
+    for gx in range(-360, 361, 8):
+        for gy in range(-40, 145, 12):
+            hit_rear = any(
+                c["origin"][0] <= gx < c["origin"][0] + c["size"][0]
+                and c["origin"][1] <= gy < c["origin"][1] + c["size"][1]
+                and c["origin"][2] + c["size"][2] >= 280
+                for c in head_neck_cubes
+            )
+            assert hit_rear, f"Posterior occipital skull hole detected at x={gx}, y={gy}"
+
     print(f"OK: {len(cubes)} cuboids, 13 bones, 4096×4096 atlas, 16 texels/block/axis.")
-    print(f"OK: bounds {s['length_z']} × {s['width_x']} × {s['height_y']} blocks; jaw opens downward.")
+    print(f"OK: bounds {s['length_z']} × {s['width_x']} × {s['height_y']} blocks; jaw opens downward; 0 rear skull holes.")
     print("OK: Java box-UV and mirror oracle, atlas regions, templates, alpha and export ordering.")
     print("NOTE: projection sheets and symmetric/repeated parts deliberately reuse UV pixels.")
 

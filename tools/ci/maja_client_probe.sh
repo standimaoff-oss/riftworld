@@ -94,6 +94,46 @@ fi
 rq list | grep -q TestPlayer || fail "Client disconnected before the screenshot"
 echo "OK: real client joined the server; screenshot saved to $OUT/maja-client-front.png (requires visual review)."
 
+# ------------------------------------------------------------------------------
+# Head showcase: the renderer mirrors the model once, so the snout ends up ~161
+# blocks in front (+Z) of the entity and the occiput / neck junction near +92.
+# ------------------------------------------------------------------------------
+SEL='@e[type=riftworld:el_gran_maja,limit=1]'
+rq tp "$SEL" 0 200 0 0 0 >/dev/null
+sleep 6
+POS=$(rq data get entity "$SEL" Pos)
+read -r X Y Z < <(python3 - "$POS" <<'PY'
+import re,sys
+m=re.search(r'\[\s*([-\d.eE+]+)d?\s*,\s*([-\d.eE+]+)d?\s*,\s*([-\d.eE+]+)d?\s*\]',sys.argv[1])
+if not m: raise SystemExit('Could not parse '+sys.argv[1])
+print(*m.groups())
+PY
+)
+head_shot() {
+  local name="$1" dx="$2" dy="$3" dz="$4" tx="$5" ty="$6" tz="$7" line
+  line=$(python3 - "$X" "$Y" "$Z" "$dx" "$dy" "$dz" "$tx" "$ty" "$tz" <<'PYEOF'
+import sys
+X, Y, Z = map(float, sys.argv[1:4])
+dx, dy, dz, tx, ty, tz = map(float, sys.argv[4:10])
+print("%.1f %.1f %.1f %.1f %.1f %.1f" % (X+dx, Y+dy, Z+dz, X+tx, Y+ty, Z+tz))
+PYEOF
+)
+  read -r CX CY CZ TX TY TZ <<< "$line"
+  rq tp TestPlayer "$CX" "$CY" "$CZ" facing "$TX" "$TY" "$TZ" >/dev/null
+  sleep 18
+  xdotool windowraise "$WID" || true
+  import -window root "$OUT/$name"
+  echo "  Captured $OUT/$name (cam=$CX,$CY,$CZ -> $TX,$TY,$TZ)"
+}
+head_shot "maja-client-cheeks-front.png"   0.0  8.0 198.0  0.0 2.0 118.0
+head_shot "maja-client-cheeks-3q.png"     44.0 18.0 176.0  0.0 2.0 118.0
+head_shot "maja-client-rear-skull.png"    18.0 40.0  20.0  0.0 6.0  92.0
+if grep -Ei 'Error while rendering entity|Exception.*ElGranMaja|Unable to load.*el_gran_maja' "$OUT/maja-client.log"; then
+  fail "Client log reports a Maja renderer failure during the head showcase"
+fi
+rq list | grep -q TestPlayer || fail "Client disconnected during the head showcase"
+echo "OK: captured El Gran Maja front cheeks, 3/4 cheeks and sealed rear skull/neck."
+
 # Exercise the actual custom dimension and the new biome, not just overworld registration.
 LOC=$(rq execute in riftworld:elisar positioned 0 54 0 run locate biome riftworld:maja_ocean)
 echo "Biome locate: $LOC"
