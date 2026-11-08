@@ -53,6 +53,7 @@
     mint_hi:       { base: [190, 218, 207], noise: 3, edge: -3, pattern: 'fur' },
     mint_lo:       { base: [91, 136, 132], noise: 4, edge: -4, pattern: 'fur' },
     leaf_cream:    { base: [226, 233, 218], noise: 3, edge: -4, pattern: 'feather' },
+    leaf_vein:     { base: [105, 142, 153], noise: 3, edge: -3, pattern: 'ceramic' },
     leaf_green:    { base: [144, 180, 155], noise: 4, edge: -4, pattern: 'feather' },
     branch:        { base: [99, 83, 69], noise: 4, edge: -4, pattern: 'basalt' },
     flower_blue:   { base: [145, 126, 218], noise: 3, edge: -3, pattern: 'fur' },
@@ -64,8 +65,8 @@
     petal_pink:    { base: [245, 170, 192], noise: 3, edge: -4, pattern: 'fur' },
     petal_light:   { base: [255, 206, 215], noise: 3, edge: -3, pattern: 'fur' },
     frog_toe:      { base: [166, 221, 169], noise: 3, edge: -4, pattern: 'fur' },
-    bone:          { base: [226, 222, 205], noise: 3, edge: -4, pattern: 'ceramic' },
-    bone_hi:       { base: [244, 241, 225], noise: 2, edge: -3, pattern: 'ceramic' },
+    bone:          { base: [226, 222, 205], noise: 2, edge: -3, pattern: 'bone_tiles' },
+    bone_hi:       { base: [244, 241, 225], noise: 2, edge: -3, pattern: 'bone_tiles' },
     bone_shadow:   { base: [173, 170, 155], noise: 4, edge: -4, pattern: 'ceramic' },
     raven:         { base: [33, 37, 43], noise: 4, edge: -4, pattern: 'feather' },
     raven_hi:      { base: [51, 55, 62], noise: 4, edge: -3, pattern: 'feather' },
@@ -83,8 +84,8 @@
     squid_edge:    { base: [95, 129, 183], noise: 3, edge: -3, pattern: 'metal' },
     glow_cyan:     { base: [87, 238, 229], noise: 2, edge: -2, pattern: 'eye' },
     squid_eye:     { base: [202, 200, 245], noise: 2, edge: -2, pattern: 'eye' },
-    silver:        { base: [186, 205, 214], noise: 5, edge: -4, pattern: 'fur' },
-    silver_hi:     { base: [204, 221, 226], noise: 4, edge: -3, pattern: 'ceramic' },
+    silver:        { base: [164, 186, 196], noise: 3, edge: -2, pattern: 'silver_scale' },
+    silver_hi:     { base: [198, 217, 222], noise: 3, edge: -2, pattern: 'silver_scale' },
     silver_dark:   { base: [113, 145, 158], noise: 4, edge: -4, pattern: 'fur' },
     serpent_teal:  { base: [54, 115, 120], noise: 3, edge: -4, pattern: 'fur' },
     serpent_fin:   { base: [189, 222, 214], noise: 3, edge: -3, pattern: 'ceramic' },
@@ -227,6 +228,17 @@
             const spot = fnv('frog:' + Math.floor(p[0] / 7) + ',' + Math.floor(p[1] / 7) + ',' + Math.floor(p[2] / 7));
             if (spot > 0.82) { r += 43; g += 26; b -= 33; }
             else if (spot < 0.12) { r -= 12; g -= 17; b += 8; }
+            break;
+          }
+          case 'silver_scale':
+          case 'bone_tiles': {
+            // Coarse deliberate Minecraft pixels in local face coordinates,
+            // avoiding the old continuous horizontal bands on long limbs.
+            const raw = Math.sin((Math.floor(lx/5)+1)*12.9898 + (Math.floor(ly/5)+1)*78.233 + fnv(seed+face)*437.123)*43758.5453;
+            const tile = raw - Math.floor(raw);
+            const a = mat.pattern === 'silver_scale' ? (tile > .76 ? 23 : tile < .25 ? -17 : 0)
+              : (tile > .82 ? 8 : tile < .18 ? -9 : 0);
+            r += a; g += a; b += a;
             break;
           }
           case 'fur': {
@@ -455,7 +467,7 @@
         title_ru: this.spec.title_ru,
         biome: this.spec.biome,
         concept: this.spec.concept,
-        revision: this.id === 'sizo_leafwing' ? 3 : this.id === 'bone_raven' ? 2 : ['porcelain_crane', 'basalt_beetle', 'ash_moth', 'amethyst_fox'].includes(this.id) ? 3 : 1,
+        revision: this.id === 'sizo_leafwing' ? 4 : this.id === 'bone_raven' ? 3 : this.id === 'silver_sea_serpent' ? 2 : ['porcelain_crane', 'basalt_beetle', 'ash_moth', 'amethyst_fox'].includes(this.id) ? 3 : 1,
         generator: 'Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)',
         bones: this.bones.size,
         cubes: this.cubes.length,
@@ -910,7 +922,12 @@
     b.box('body','rump',[0,36,22],[23,19,13],'mint');
     b.bone('neck','body',[0,46,-15],[-18,0,0]);
     b.box('neck','neck',[0,55,-21],[17,24,18],'mint');
-    b.box('neck','throat',[0,54,-31],[14,22,4],'leaf_cream');
+    b.box('neck','throat',[0,52,-31],[19,23,5],'leaf_cream');
+    for(let i=-2;i<=2;i++) { b.box('neck','breast_tuft_'+i,[i*4,40-Math.abs(i),-33],[4,10,5],i%2?'white':'leaf_cream'); }
+    for(const side of [-1,1]) {
+      b.box('neck','breast_side_'+side,[side*10,50,-27],[2,20,10],'leaf_cream');
+      for(let i=0;i<3;i++) b.box('neck','breast_side_tip_'+side+'_'+i,[side*10,40-i*2,-30+i*4],[2,8,4],i%2?'white':'leaf_cream');
+    }
     for(let i=0;i<5;i++) b.box('neck','throat_tip_'+i,[(i-2)*3,40-Math.abs(i-2),-32],[3,8,3],i%2?'bone':'leaf_cream');
     b.bone('head','neck',[0,68,-25]);
     b.box('head','skull',[0,72,-29],[21,15,20],'mint_hi');
@@ -926,54 +943,96 @@
       b.box('head','cheek_'+side,[side*11,66,-29],[5,5,11],'leaf_cream');
       const ear=side<0?'ear_left':'ear_right';
       b.bone(ear,'head',[side*9,76,-23],[0,0,side*-30]);
-      b.box(ear,'ear',[side*9,83,-23],[7,16,5],'mint_hi');
-      b.box(ear,'ear_inner',[side*9,83,-26],[3,11,1],'leaf_cream');
+      b.box(ear,'ear_base',[side*10,80,-23],[8,9,5],'mint_hi');
+      b.box(ear,'ear_mid',[side*16,82,-23],[10,7,5],'mint');
+      b.box(ear,'ear_tip',[side*22,85,-23],[6,4,4],'mint_hi');
+      b.box(ear,'ear_inner',[side*16,82,-26],[10,3,1],'leaf_cream');
+      for(let t=0;t<3;t++) b.box('head','cheek_fur_'+side+'_'+t,[side*(11+t*2),65+t,-28+t*3],[4,4,5],'leaf_cream');
       const ant=side<0?'antler_left':'antler_right';
       b.bone(ant,'head',[side*7,79,-24]);
       barXY(b,ant,ant+'_main',[side*7,79,-24],[side*13,101,-24],3,3,'branch');
       barXY(b,ant,ant+'_fork1',[side*10,90,-24],[side*19,97,-24],3,3,'branch');
       barXY(b,ant,ant+'_fork2',[side*13,99,-24],[side*18,108,-24],2,3,'branch');
+      barYZ(b,ant,ant+'_backbranch',[side*12,91,-24],[side*12,103,-13],3,3,'branch');
+      barYZ(b,ant,ant+'_backtip',[side*12,99,-18],[side*12,107,-19],2,2,'branch');
     }
+    // Rasterise the actual leaf-like outline as cuboids rather than one
+    // triangle: three lobes and multiple discrete pale patches.
+    function intervalsAt(poly, x) {
+      const yy=[];
+      for(let i=0;i<poly.length;i++) {
+        const a=poly[i], c=poly[(i+1)%poly.length];
+        if((a[0]<=x && c[0]>x)||(c[0]<=x && a[0]>x)) yy.push(a[1]+(c[1]-a[1])*(x-a[0])/(c[0]-a[0]));
+      }
+      yy.sort((a,c)=>a-c); return yy;
+    }
+    const outline=[[12,53],[18,79],[47,105],[76,115],[146,124],[136,110],
+      [118,98],[140,96],[128,82],[106,75],[111,69],[99,58],[79,52],
+      [82,46],[66,37],[52,39],[39,45],[24,44]];
+    const patches=[
+      [[52,102],[78,110],[132,117],[119,105],[98,97],[76,98]],
+      [[51,99],[78,96],[121,92],[111,84],[94,80],[72,82]],
+      [[49,95],[70,80],[96,72],[94,63],[78,57],[62,60]],
+      [[43,85],[60,66],[72,59],[68,48],[56,46],[44,52],[31,57]]
+    ];
+    // Raise both leaf surfaces clear of the curled tail and shoulders.
+    outline.forEach(p=>p[1]+=12); patches.forEach(poly=>poly.forEach(p=>p[1]+=12));
     for(const side of [-1,1]) {
       const wing=side<0?'wing_left':'wing_right';
-      b.bone(wing,'body',[side*12,48,1],[0,0,side*4]);
-      // Multi-lobed, continuous leaf membrane: broad at midspan, tapered to
-      // tip, with three stepped scallops rather than a single triangle.
-      for(let x=12;x<144;x+=4) {
-        const t=(x-12)/132, top=76+48*t;
-        const scallop=14*Math.abs(Math.sin(t*Math.PI*3));
-        const bottom=37+15*t+68*t*t*t*t+scallop;
-        const h=Math.max(3,Math.round(top-bottom));
-        b.box(wing,'membrane_'+x,[side*(x+2),Math.round((top+bottom)/2),5],[4,h,3],'leaf_green');
-        const inset=Math.max(2,h-22);
-        if(h>24) b.box(wing,'cream_'+x,[side*(x+2),Math.round((top+bottom)/2)+1,3],[4,inset,2],'leaf_cream');
+      const pivot=[side*12,48,1];
+      b.bone(wing+'_yaw','body',pivot,[0,side<0?0:-12,0]);
+      b.bone(wing,wing+'_yaw',pivot,[0,0,side*4]);
+      for(let x=12;x<146;x+=2) {
+        const sample=x+1, yy=intervalsAt(outline,sample);
+        for(let q=0;q+1<yy.length;q+=2) {
+          const low=Math.round(yy[q]), high=Math.round(yy[q+1]);
+          if(high>low) b.box(wing,'leaf_'+x+'_'+q,[side*sample,(low+high)/2,5],[2,high-low,3],'leaf_green');
+        }
+        patches.forEach((poly,j)=>{
+          const p=intervalsAt(poly,sample);
+          for(let q=0;q+1<p.length;q+=2) {
+            const low=Math.round(p[q]), high=Math.round(p[q+1]);
+            if(high>low) b.box(wing,'pale_'+j+'_'+x+'_'+q,[side*sample,(low+high)/2,3],[2,high-low,2],'leaf_cream');
+          }
+        });
       }
-      barXY(b,wing,wing+'_leading',[side*11,72,1],[side*139,122,1],4,3,'mint_lo');
-      barXY(b,wing,wing+'_vein_top',[side*13,60,0],[side*103,100,0],3,2,'mint_lo');
-      barXY(b,wing,wing+'_vein_mid',[side*13,58,0],[side*110,84,0],3,2,'mint_lo');
-      barXY(b,wing,wing+'_vein_low',[side*14,55,0],[side*77,65,0],3,2,'mint_lo');
+      barXY(b,wing,wing+'_arm',[side*12,55,0],[side*47,116,0],5,4,'mint_hi');
+      barXY(b,wing,wing+'_leading',[side*47,116,0],[side*145,136,0],4,3,'leaf_vein');
+      [[126,112],[126,96],[103,78],[79,53],[51,43]].forEach(([x,y],i)=>
+        barXY(b,wing,wing+'_vein_'+i,[side*47,115,0],[side*x,y+12,0],2,2,'leaf_vein'));
       b.animate(wing,'z',6,1.3,side<0?0:Math.PI);
     }
     for(const side of [-1,1]) for(const back of [false,true]) {
       const n='leg_'+(back?'back_':'front_')+(side<0?'left':'right'), z=back?19:-12, x=side*10;
       b.bone(n,'body',[x,32,z]);
       b.box(n,'haunch',[x,28,z],[10,13,12],back?'mint':'mint_hi');
-      barYZ(b,n,n+'_upper',[x,28,z],[x,17,z+(back?6:3)],7,7,'mint');
-      barYZ(b,n,n+'_lower',[x,17,z+(back?6:3)],[x,5,z-3],6,6,'mint_hi');
-      b.box(n,'paw',[x,3,z-7],[9,5,11],'mint_lo');
-      for(let i=-1;i<=1;i++) b.box(n,'claw_'+i,[x+i*3,2,z-13],[2,3,4],'branch');
+      barYZ(b,n,n+'_upper',[x,28,z],[x,17,z+(back?8:-5)],7,7,'mint');
+      barYZ(b,n,n+'_lower',[x,17,z+(back?8:-5)],[x,5,z+(back?2:-13)],6,6,'mint_hi');
+      b.box(n,'paw',[x,3,z+(back?-2:-16)],[9,5,11],'mint_lo');
+      for(let i=-1;i<=1;i++) b.box(n,'claw_'+i,[x+i*3,2,z+(back?-8:-22)],[2,3,4],'branch');
       b.animate(n,'x',3,1.0,(side<0)!==back?0:Math.PI);
     }
     b.bone('tail','body',[0,38,25]);
-    const tail=[[0,37,24],[0,31,42],[0,21,61],[0,16,79],[0,19,94],[0,29,101],[0,39,98],[0,42,88],[0,37,81]];
-    for(let i=0;i<tail.length-1;i++) barYZ(b,'tail','tail_curve_'+i,tail[i],tail[i+1],Math.max(5,10-i),Math.max(5,10-i),i%2?'mint_hi':'mint');
-    b.box('tail','leaf_tip',[0,35,81],[13,12,5],'leaf_green');
-    b.box('tail','leaf_tip_vein',[0,35,78],[2,9,1],'mint_lo');
+    const tail=[[0,37,24],[0,28,44],[0,17,65],[0,13,83],[0,17,98],[0,27,104],[0,39,100],[0,44,91],[0,40,81]];
+    for(let i=0;i<tail.length-1;i++) barYZ(b,'tail','tail_curve_'+i,tail[i],tail[i+1],Math.max(6,12-i),Math.max(6,12-i),i%2?'mint_hi':'mint');
+    [[86,40,6],[82,37,12],[78,34,17],[74,31,14],[70,29,7]].forEach(([z,y,h],i)=>
+      b.box('tail','leaf_slice_'+i,[0,y,z],[4,h,4],i%2?'leaf_green':'mint_hi'));
+    barYZ(b,'tail','leaf_tip_vein',[3,40,87],[3,27,68],2,2,'leaf_vein');
     for(const side of [-1,1]) {
       b.box('neck','flower_'+side,[side*10,58,-29],[6,6,2],'flower_blue');
       b.box('neck','flower_dot_'+side,[side*10,58,-31],[2,2,2],'eye_light');
     }
     b.animate('tail','y',4,1.0,0); b.animate('head','x',2,0.8,0);
+    // Scale the complete head subtree (including bone pivots) as one
+    // proportion change; leave the wing span and tail unchanged.
+    const head=b.bones.get('head'), pivot=[0,68,-25], factor=1.20;
+    function inHead(node) { while(node) { if(node===head) return true; node=node.parent; } return false; }
+    for(const item of b.cubes) if(inHead(item.cube.parent)) {
+      item.cube.from=item.cube.from.map((v,i)=>Math.round(pivot[i]+(v-pivot[i])*factor));
+      item.cube.to=item.cube.to.map((v,i)=>Math.max(item.cube.from[i]+1,Math.round(pivot[i]+(v-pivot[i])*factor)));
+    }
+    for(const group of b.bones.values()) if(inHead(group))
+      group.origin=group.origin.map((v,i)=>Math.round(pivot[i]+(v-pivot[i])*factor));
   }
 
   function buildAzureFrog(b) {
@@ -1017,56 +1076,74 @@
 
   // Bone raven: hollow ribs, ivory skull and ragged black feather wings.
   function buildBoneRaven(b) {
-    b.bone('body',null,[0,48,0]);
-    b.box('body','spine',[0,54,3],[6,6,43],'bone');
-    b.box('body','breastbone',[0,41,-9],[8,17,19],'bone_hi');
-    b.box('body','pelvis',[0,42,21],[15,9,11],'bone');
+    b.bone('body',null,[0,49,0]);
+    b.box('body','spine',[0,56,4],[7,7,47],'bone');
+    b.box('body','sternum',[0,43,-9],[11,21,23],'bone_hi');
+    b.box('body','pelvis',[0,43,23],[17,10,13],'bone');
+    // Each distinct curved rib wraps around an open, visibly hollow chest.
     for(let i=0;i<4;i++) for(const side of [-1,1]) {
-      const z=-11+i*10, n='rib_'+side+'_'+i;
-      barXY(b,'body',n+'_upper',[side*3,54,z],[side*13,48,z],3,3,'bone_hi');
-      barXY(b,'body',n+'_lower',[side*13,48,z],[side*8,37,z],3,3,'bone');
-      barXY(b,'body',n+'_bottom',[side*8,37,z],[side*3,35,z],3,3,'bone');
+      const z=-11+i*11, n='rib_'+side+'_'+i;
+      barXY(b,'body',n+'_upper',[side*3,57,z],[side*16,51,z],4,4,'bone_hi');
+      barXY(b,'body',n+'_lower',[side*16,51,z],[side*14,38,z],4,4,'bone');
+      barXY(b,'body',n+'_bottom',[side*14,38,z],[side*5,34,z],4,4,'bone_hi');
     }
-    b.bone('neck','body',[0,59,-17],[18,0,0]);
-    for(let i=0;i<3;i++) b.box('neck','vertebra_'+i,[0,62+i*4,-18-i*2],[8-i,4,7],'bone');
-    b.bone('head','neck',[0,72,-22]);
-    b.box('head','skull',[0,76,-26],[25,19,22],'bone_hi');
-    b.box('head','crown',[0,85,-26],[25,3,19],'bone');
-    b.box('head','beak_base',[0,72,-41],[13,8,18],'bone_hi');
-    b.box('head','beak_tip',[0,70,-53],[9,6,8],'bone');
-    b.box('head','lower_jaw',[0,67,-40],[10,3,18],'bone_shadow');
+    b.bone('neck','body',[0,59,-18],[18,0,0]);
+    for(let i=0;i<3;i++) b.box('neck','vertebra_'+i,[0,63+i*4,-20-i*2],[10-i,4,9],'bone');
+    b.bone('head','neck',[0,75,-25]);
+    b.box('head','skull',[0,79,-29],[29,20,25],'bone_hi');
+    b.box('head','skull_top',[0,89,-29],[29,3,24],'bone');
+    b.box('head','cheekbone',[0,73,-35],[25,5,15],'bone');
+    b.box('head','beak_base',[0,73,-48],[16,10,22],'bone_hi');
+    b.box('head','beak_tip',[0,71,-63],[12,8,12],'bone');
+    b.box('head','beak_end',[0,69,-70],[9,6,4],'bone_shadow');
+    b.box('head','lower_jaw',[0,65,-50],[11,3,23],'bone');
     for(const side of [-1,1]) {
-      b.box('head','socket_'+side,[side*13,76,-27],[2,12,11],'eye');
-      b.box('head','ember_'+side,[side*14,76,-27],[2,6,6],'amber');
-      b.box('head','nostril_'+side,[side*7,73,-43],[2,3,5],'eye');
+      b.box('head','socket_'+side,[side*15,79,-31],[2,13,13],'eye');
+      b.box('head','ember_'+side,[side*16,79,-31],[2,7,7],'amber');
+      b.box('head','nostril_'+side,[side*8,75,-51],[2,3,5],'eye');
       const wing=side<0?'wing_left':'wing_right';
-      b.bone(wing,'body',[side*10,57,0],[0,0,side*5]);
-      // Fanned individual tapering flight feathers, instead of the old dark
-      // solid curtain. Their roots overlap, and their tips sweep outward.
-      for(let i=0;i<11;i++) {
-        const root=[side*(14+i*4),60+i*1.5,4];
-        const tip=[side*(50+i*8),31+i*3,4];
-        const feather=wing+'_flight_'+i;
-        barXY(b,wing,feather,root,tip,7,3,i%3===0?'raven_hi':'raven');
-      }
-      barXY(b,wing,wing+'_humerus',[side*10,57,0],[side*43,73,0],6,5,'bone');
-      barXY(b,wing,wing+'_forearm',[side*43,73,0],[side*108,83,0],5,5,'bone_hi');
-      for(let i=0;i<4;i++) barXY(b,wing,wing+'_finger_'+i,[side*43,72,-1],[side*(65+i*12),43+i*4,-1],3,3,'bone');
+      b.bone(wing,'body',[side*11,58,2],[0,0,side*3]);
+      // A raised elbow and long outer bone, with separate unequal primaries.
+      barXY(b,wing,wing+'_humerus',[side*11,58,1],[side*35,61,1],7,5,'bone');
+      barXY(b,wing,wing+'_elbow',[side*35,61,1],[side*40,96,1],6,6,'bone_hi');
+      barXY(b,wing,wing+'_forearm',[side*40,96,1],[side*105,83,1],6,5,'bone_hi');
+      b.box(wing,'elbow_cap',[side*40,96,1],[8,8,7],'bone_hi');
+      const tips=[[57,44],[68,41],[80,38],[92,38],[104,38],[116,40],[129,43],[141,48],[152,54],[162,60],[171,66]];
+      tips.forEach(([tx,ty],i)=>{
+        const rx=39+i*5.5, ry=90-i*1.15;
+        barXY(b,wing,wing+'_flight_'+i,[side*rx,ry,5],[side*tx,ty,5],6+(i%2),3,i%3===0?'raven_hi':'raven');
+        // Secondary layered darker feathers rather than a uniform curtain.
+        if(i<7) barXY(b,wing,wing+'_secondary_'+i,[side*(rx-2),ry-5,7],[side*(tx-7),ty+5,7],6,3,'raven');
+      });
+      [[59,51],[78,48],[98,48]].forEach(([tx,ty],i)=>
+        barXY(b,wing,wing+'_finger_'+i,[side*40,91,-1],[side*tx,ty,-1],4,3,'bone'));
       b.animate(wing,'z',6,1.3,side<0?0:Math.PI);
-      const leg=side<0?'leg_left':'leg_right';
-      b.bone(leg,'body',[side*7,38,15]);
-      barYZ(b,leg,leg+'_thigh',[side*7,38,15],[side*7,25,11],5,5,'bone');
-      barYZ(b,leg,leg+'_shin',[side*7,25,11],[side*7,5,1],4,4,'bone_hi');
-      b.box(leg,'ankle',[side*7,5,1],[5,5,5],'bone');
-      for(let i=-1;i<=1;i++) b.box(leg,'toe_'+i,[side*7+i*4,2,-5],[3,3,14],'bone_hi');
+      const leg=side<0?'leg_left':'leg_right',x=side*9;
+      b.bone(leg,'body',[x,39,17]);
+      barYZ(b,leg,leg+'_thigh',[x,39,17],[x,26,24],6,6,'bone');
+      barYZ(b,leg,leg+'_shin',[x,26,24],[x,5,9],4,4,'bone_hi');
+      b.box(leg,'ankle',[x,5,9],[5,5,5],'bone');
+      for(let i=-1;i<=1;i++) b.box(leg,'toe_'+i,[x+i*4,2,2],[3,3,16],'bone_hi');
       b.animate(leg,'x',3,1.0,side<0?0:Math.PI);
     }
-    b.bone('tail','body',[0,44,23]);
-    for(let i=-3;i<=3;i++) {
-      const feather='tail_feather_'+i;
-      barYZ(b,'tail',feather,[i*3,43,23],[i*3,38,48+Math.abs(i)],4,3,i%2?'raven':'raven_hi');
+    b.bone('tail','body',[0,44,25]);
+    for(let i=-4;i<=4;i++) {
+      const n='tail_feather_'+(i+4), x=i*3;
+      barYZ(b,'tail',n,[x,43,24],[x,23+i*2,82-Math.abs(i)*2],5,3,i%2?'raven':'raven_hi');
     }
     b.animate('head','x',2,0.8,0);
+    // The reference has a much larger skull, chest and feet in proportion to
+    // the span than the preceding draft. Scale anatomy, then move the wing
+    // roots with their complete subtrees to keep them attached to shoulders.
+    const wingL=b.bones.get('wing_left'), wingR=b.bones.get('wing_right');
+    function wingSide(node) { while(node) { if(node===wingL) return -1; if(node===wingR) return 1; node=node.parent; } return 0; }
+    function move(v,side) { return side ? [Math.round(v[0]+side*3),Math.round(v[1]+14),v[2]] : v.map(n=>Math.round(n*1.25)); }
+    for(const item of b.cubes) {
+      const side=wingSide(item.cube.parent);
+      item.cube.from=move(item.cube.from,side);
+      item.cube.to=move(item.cube.to,side).map((n,i)=>Math.max(n,item.cube.from[i]+1));
+    }
+    for(const group of b.bones.values()) group.origin=move(group.origin,wingSide(group));
   }
 
   function buildCoralHermitCrab(b) {
@@ -1205,45 +1282,50 @@
   }
 
   function buildSilverSeaSerpent(b) {
-    b.bone('body',null,[0,45,0]);
-    // Upright serpentine S-curve in the sagittal plane. Every segment is a
-    // rotated, integer-sized cuboid; separate bones keep it editable.
-    const path=[[0,86,-108],[0,78,-88],[0,35,-82],[0,21,-60],
-      [0,31,-36],[0,75,-9],[0,100,16],[0,94,39],[0,59,57],
-      [0,49,77],[0,60,103],[0,75,130],[0,82,150]];
-    const widths=[24,22,24,22,24,22,24,21,19,17,15,12];
+    b.bone('body',null,[0,50,0]);
+    // Reference has thick vertical neck, deep first trough, tall centre arch,
+    // shallow second trough and a tapered upturned tail.
+    const path=[[0,100,-108],[0,89,-89],[0,46,-86],[0,25,-71],[0,20,-57],
+      [0,31,-40],[0,69,-18],[0,103,5],[0,108,26],[0,96,43],
+      [0,65,57],[0,56,73],[0,59,91],[0,69,115],[0,85,141]];
+    const widths=[28,26,24,27,25,23,28,26,24,22,20,18,16,14];
     for(let i=0;i<path.length-1;i++) {
-      const a=path[i], c=path[i+1], w=widths[i], n='curve_'+i;
-      barYZ(b,'body',n,a,c,w,w,i%3===0?'silver_hi':'silver');
-      if(i>0) b.box('body','joint_'+i,a,[w-4,w-2,w-2],i%3?'silver':'silver_dark');
-      const dy=c[1]-a[1], dz=c[2]-a[2], length=Math.hypot(dy,dz);
-      const ny=dz/length,nz=-dy/length;
-      const off=w/2+1;
+      const a=path[i], c=path[i+1], w=widths[i], dy=c[1]-a[1], dz=c[2]-a[2], length=Math.hypot(dy,dz);
+      // Extend each beam slightly into its neighbours, while alternating width
+      // so coincident outer faces do not z-fight at the bends.
+      const ex=3/length, aa=[0,a[1]-dy*ex,a[2]-dz*ex], cc=[0,c[1]+dy*ex,c[2]+dz*ex];
+      barYZ(b,'body','curve_'+i,aa,cc,w,w,i%4===0?'silver_hi':'silver');
+      const ny=dz/length,nz=-dy/length, off=w/2+1;
       const a2=[0,a[1]+ny*off,a[2]+nz*off],c2=[0,c[1]+ny*off,c[2]+nz*off];
-      barYZ(b,'body','dorsal_stripe_'+i,a2,c2,9,3,'serpent_teal');
+      barYZ(b,'body','dorsal_stripe_'+i,a2,c2,12,4,'serpent_teal');
+      // Broad, pale crest plates, not narrow spikes. Each overlaps next plate.
+      const crestOff=off+3.5;
+      const a3=[0,a[1]+ny*crestOff,a[2]+nz*crestOff],c3=[0,c[1]+ny*crestOff,c[2]+nz*crestOff];
+      barYZ(b,'body','crest_base_'+i,a3,c3,5,5,'serpent_fin');
       for(let j=0;j<2;j++) {
-        const t=(j+0.35)/2, py=a[1]+dy*t, pz=a[2]+dz*t;
-        barYZ(b,'body','crest_'+i+'_'+j,[0,py+ny*off,pz+nz*off],
-          [0,py+ny*(off+8),pz+nz*(off+8)],4,3,'serpent_fin');
+        const t=(j+.5)/2, py=a[1]+dy*t, pz=a[2]+dz*t;
+        barYZ(b,'body','crest_plate_'+i+'_'+j,[0,py+ny*(off+2),pz+nz*(off+2)],
+          [0,py+ny*(off+10),pz+nz*(off+10)],4,Math.max(5,Math.round(length/3)),'serpent_fin');
       }
     }
-    b.bone('head','body',[0,86,-108]);
-    b.box('head','skull',[0,88,-116],[25,19,24],'silver');
-    b.box('head','forehead',[0,97,-116],[23,4,22],'silver_hi');
-    b.box('head','muzzle',[0,82,-133],[17,10,19],'silver_hi');
-    b.box('head','nose',[0,83,-144],[13,7,5],'silver_dark');
-    b.box('head','jaw',[0,76,-132],[14,4,17],'silver_dark');
+    b.bone('head','body',[0,100,-108]);
+    b.box('head','skull',[0,103,-118],[29,21,27],'silver');
+    b.box('head','forehead',[0,114,-118],[28,4,25],'silver_hi');
+    b.box('head','muzzle',[0,96,-137],[20,11,21],'silver_hi');
+    b.box('head','nose',[0,96,-150],[17,8,6],'silver_dark');
+    b.box('head','jaw',[0,90,-137],[18,4,20],'silver_dark');
     for(const side of [-1,1]) {
-      b.box('head','eye_socket_'+side,[side*13,88,-121],[2,8,9],'silver_dark');
-      b.box('head','eye_'+side,[side*14,88,-121],[2,5,6],'serpent_eye');
-      b.box('head','horn_'+side,[side*8,101,-110],[3,4,22],'silver_hi');
-      b.box('head','nostril_'+side,[side*8,85,-140],[1,2,3],'serpent_teal');
-      barYZ(b,'head','whisker_'+side,[side*6,76,-132],[side*6,68,-129],2,2,'silver_dark');
-      for(let i=0;i<2;i++) b.box('head','tooth_'+side+'_'+i,[side*5,74,-137+i*5],[2,4,2],'silver_hi');
+      b.box('head','eye_socket_'+side,[side*15,103,-123],[2,8,10],'silver_dark');
+      b.box('head','eye_'+side,[side*16,103,-123],[2,5,6],'serpent_eye');
+      b.box('head','horn_'+side,[side*9,119,-111],[4,4,24],'silver_hi');
+      b.box('head','nostril_'+side,[side*10,98,-144],[1,2,3],'serpent_teal');
+      barYZ(b,'head','whisker_'+side,[side*6,89,-139],[side*6,80,-135],2,2,'silver_dark');
+      for(let i=0;i<2;i++) b.box('head','tooth_'+side+'_'+i,[side*6,87,-143+i*6],[2,4,2],'silver_hi');
       const fin=side<0?'fin_left':'fin_right';
-      b.bone(fin,'body',[side*10,21,-56],[0,0,side*18]);
-      b.box(fin,'fin_root',[side*17,20,-55],[16,3,11],'silver_dark');
-      b.box(fin,'fin_outer',[side*25,20,-55],[9,3,9],'serpent_fin');
+      b.bone(fin,'body',[side*10,21,-57],[0,0,side*25]);
+      b.box(fin,'fin_root',[side*18,20,-57],[19,4,13],'silver_dark');
+      b.box(fin,'fin_outer',[side*29,19,-57],[12,4,13],'silver_hi');
+      for(let j=-1;j<=1;j++) barYZ(b,fin,fin+'_ray_'+j,[side*18,18,-58+j*4],[side*18,4,-33+j*5],4,4,'silver_hi');
       b.animate(fin,'z',4,1.2,side<0?0:Math.PI);
     }
     b.animate('head','y',2,0.8,0);
@@ -1281,7 +1363,7 @@
   }
 
   global.RiftworldFauna = {
-    version: '0.6.0',
+    version: '0.7.0',
     blockbench: '5.2.2',
     revision: 3,
     specs: SPECS.map(s => ({ id: s.id, title_ru: s.title_ru, biome: s.biome, concept: s.concept })),
@@ -1298,7 +1380,7 @@
       title: 'Riftworld Fauna',
       author: 'Riftworld',
       icon: 'fa-cube',
-      version: '0.6.0',
+      version: '0.7.0',
       min_version: '5.2.0',
       variant: 'both',
       description: 'Reference-detail procedural Blockbench-API source for eleven Riftworld biome mobs.',

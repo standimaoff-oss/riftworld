@@ -199,10 +199,10 @@
         "title_ru": "Сизый листокрыл",
         "biome": "sizo_grove",
         "concept": "reports/biome_mob_concepts/05_sizo_grove_sizo_leafwing.png",
-        "revision": 3,
+        "revision": 4,
         "generator": "Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)",
-        "bones": 44,
-        "cubes": 206,
+        "bones": 57,
+        "cubes": 519,
         "atlas": [
           2048,
           2048
@@ -211,25 +211,25 @@
         "render_scale": 0.25,
         "bounds_blockbench": {
           "min": [
-            -144,
+            -146,
             1,
-            -50
+            -55
           ],
           "max": [
-            144,
-            166,
-            102
+            146,
+            176,
+            106
           ]
         },
         "size_blocks": [
-          4.5,
-          2.578125,
-          2.375
+          4.5625,
+          2.734375,
+          2.515625
         ],
         "animations": 8,
-        "bbmodel_bytes": 558618,
-        "geo_bones": 44,
-        "geo_cubes": 206
+        "bbmodel_bytes": 1088155,
+        "geo_bones": 57,
+        "geo_cubes": 519
       },
       "structural_validation": "ok"
     },
@@ -291,10 +291,10 @@
         "title_ru": "Костяной ворон",
         "biome": "morok_hollow",
         "concept": "reports/biome_mob_concepts/11_morok_hollow_bone_raven.png",
-        "revision": 2,
+        "revision": 3,
         "generator": "Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)",
-        "bones": 77,
-        "cubes": 94,
+        "bones": 93,
+        "cubes": 114,
         "atlas": [
           2048,
           2048
@@ -303,25 +303,25 @@
         "render_scale": 0.25,
         "bounds_blockbench": {
           "min": [
-            -95,
+            -138,
             1,
-            -57
+            -90
           ],
           "max": [
-            96,
-            111,
-            39
+            139,
+            137,
+            69
           ]
         },
         "size_blocks": [
-          2.984375,
-          1.71875,
-          1.5
+          4.328125,
+          2.125,
+          2.484375
         ],
         "animations": 5,
-        "bbmodel_bytes": 374823,
-        "geo_bones": 77,
-        "geo_cubes": 94
+        "bbmodel_bytes": 448243,
+        "geo_bones": 93,
+        "geo_cubes": 114
       },
       "structural_validation": "ok"
     },
@@ -475,10 +475,10 @@
         "title_ru": "Серебряный морской змей",
         "biome": "maja_ocean",
         "concept": "reports/biome_mob_concepts/15_maja_ocean_silver_sea_serpent.png",
-        "revision": 1,
+        "revision": 2,
         "generator": "Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)",
-        "bones": 54,
-        "cubes": 82,
+        "bones": 82,
+        "cubes": 99,
         "atlas": [
           2048,
           2048
@@ -487,25 +487,25 @@
         "render_scale": 0.25,
         "bounds_blockbench": {
           "min": [
-            -29,
-            11,
-            -146
+            -35,
+            -4,
+            -153
           ],
           "max": [
-            30,
-            122,
-            146
+            35,
+            134,
+            135
           ]
         },
         "size_blocks": [
-          0.921875,
-          1.734375,
-          4.5625
+          1.09375,
+          2.15625,
+          4.5
         ],
         "animations": 3,
-        "bbmodel_bytes": 348542,
-        "geo_bones": 54,
-        "geo_cubes": 82
+        "bbmodel_bytes": 410210,
+        "geo_bones": 82,
+        "geo_cubes": 99
       },
       "structural_validation": "ok"
     }
@@ -554,8 +554,8 @@
     {
       "id": "sizo_leafwing",
       "status": "ok",
-      "bones": 44,
-      "cubes": 206,
+      "bones": 57,
+      "cubes": 519,
       "texture_width": 2048,
       "texture_height": 2048,
       "texture_loaded": true,
@@ -574,8 +574,8 @@
     {
       "id": "bone_raven",
       "status": "ok",
-      "bones": 77,
-      "cubes": 94,
+      "bones": 93,
+      "cubes": 114,
       "texture_width": 2048,
       "texture_height": 2048,
       "texture_loaded": true,
@@ -614,8 +614,8 @@
     {
       "id": "silver_sea_serpent",
       "status": "ok",
-      "bones": 54,
-      "cubes": 82,
+      "bones": 82,
+      "cubes": 99,
       "texture_width": 2048,
       "texture_height": 2048,
       "texture_loaded": true,

@@ -147,19 +147,19 @@ try {
     const extent = bounds.max.map((v, axis) => v - bounds.min[axis]);
     const maxExtent = Math.max(...extent, 1);
     // Fill the frame instead of keeping the old fixed zoom across 4x-sized projects.
-    const zoomPercent = Math.max(4, Math.min(42, (id === 'sizo_leafwing' ? 3200 : 2600) / maxExtent));
+    const zoomPercent = Math.max(4, Math.min(42, (id === 'sizo_leafwing' || id === 'bone_raven' ? 3200 : 2600) / maxExtent));
     const cameraPositions = {
       porcelain_crane: [512, 512 * 0.55, -320],
       basalt_beetle: [-512, 512 * 0.6, -512],
       ash_moth: [0, 135, -512],
       amethyst_fox: [-512, 220, -280],
-      sizo_leafwing: [-360, 210, -512],
+      sizo_leafwing: [512, 190, -300],
       azure_frog: [-512, 270, -512],
       bone_raven: [-400, 160, -512],
       coral_hermit_crab: [-512, 240, -512],
       reef_seahorse: [-512, 190, -320],
       ghost_squid: [-512, 360, -512],
-      silver_sea_serpent: [-512, 110, -100]
+      silver_sea_serpent: [-512, 260, -160]
     };
     const offset = view === 'front' ? [0, 130, -512]
       : view === 'side' ? [512, 130, 0]

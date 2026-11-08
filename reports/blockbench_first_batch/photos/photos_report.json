@@ -120,14 +120,14 @@
         "name": "Riftworld reference view",
         "projection": "orthographic",
         "position": [
-          -360,
-          293.5,
-          -486
+          512,
+          278.5,
+          -274.5
         ],
         "target": [
           0,
-          83.5,
-          26
+          88.5,
+          25.5
         ],
         "zoom": 0.5
       },
@@ -135,7 +135,7 @@
         1600,
         1200
       ],
-      "zoom_percent": 11.11111111111111
+      "zoom_percent": 10.95890410958904
     },
     {
       "id": "azure_frog",
@@ -175,13 +175,13 @@
         "projection": "orthographic",
         "position": [
           -399.5,
-          216,
-          -521
+          229,
+          -522.5
         ],
         "target": [
           0.5,
-          56,
-          -9
+          69,
+          -10.5
         ],
         "zoom": 0.5
       },
@@ -189,7 +189,7 @@
         1600,
         1200
       ],
-      "zoom_percent": 13.612565445026178
+      "zoom_percent": 11.552346570397113
     },
     {
       "id": "coral_hermit_crab",
@@ -282,14 +282,14 @@
         "name": "Riftworld reference view",
         "projection": "orthographic",
         "position": [
-          -511.5,
-          176.5,
-          -100
+          -512,
+          325,
+          -169
         ],
         "target": [
-          0.5,
-          66.5,
-          0
+          0,
+          65,
+          -9
         ],
         "zoom": 0.5
       },
@@ -297,7 +297,7 @@
         1600,
         1200
       ],
-      "zoom_percent": 8.904109589041095
+      "zoom_percent": 9.027777777777779
     }
   ],
   "overview": "reports/blockbench_first_batch/photos/00_all_models.png"
