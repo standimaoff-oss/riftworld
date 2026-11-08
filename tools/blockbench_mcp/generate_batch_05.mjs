@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /**
- * Batch 05 Generator (V2 Masterpiece) via Official Blockbench MCP (`jasonjgardner/blockbench-mcp-plugin`):
- *   13 — Рифовый морской конёк (`reef_seahorse`)
- *   14 — Глубоководный кальмар-призрак (`ghost_squid`)
- *   15 — Серебряный морской змей (`silver_sea_serpent`)
+ * Batch 05 Generator (V5 Masterpiece) via Official Blockbench MCP (`jasonjgardner/blockbench-mcp-plugin`):
+ *   13 — Рифовый морской конёк (`reef_seahorse` — без пузырьков, рельефные панцирные щитки)
+ *   14 — Глубоководный кальмар-призрак (`ghost_squid` — без контурных рамок, 3-сегментные щупальца)
+ *   15 — Серебряный морской змей (`silver_sea_serpent` — детализированный морской дракон-левиафан, ~92 элемента)
  */
 
 import fs from 'node:fs';
@@ -11,14 +11,14 @@ import path from 'node:path';
 import os from 'node:os';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { ModelBuilder, BlockbenchMcpSession } from './builder_lib.mjs';
+import { ModelBuilder, BlockbenchMcpSession, vSub, vNorm, vAdd, vScale } from './builder_lib.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '../..');
 
 // ============================================================================
 // MODEL 13: REEF SEAHORSE (`reef_seahorse` — Рифовый морской конёк)
-// Biome: riftworld:shallow_reef
+// Biome: riftworld:shallow_reef — ZERO BUBBLES!
 // ============================================================================
 function buildReefSeahorse() {
   const b = new ModelBuilder({
@@ -29,10 +29,9 @@ function buildReefSeahorse() {
     renderScale: 0.90,
     translucent: true,
   });
-  b.freeElements = ['bubble_mote_1', 'bubble_mote_2', 'bubble_mote_3'];
-  b.asymmetric = ['bubble_mote_1', 'bubble_mote_2', 'bubble_mote_3'];
+  b.freeElements = [];
+  b.asymmetric = [];
 
-  // Bone Hierarchy + Riftworld Runtime Animations
   b.addGroup('root', [0, 14, 0], [0, 0, 0], null, {
     wave: 'cos', axis: 'y', speed: 0.08, amp: 0.05, phase: 0,
   });
@@ -69,7 +68,7 @@ function buildReefSeahorse() {
     mat: 'seahorse_trunk_flank',
   });
 
-  // Stepped Seafoam-Teal Dorsal Spine Plates along Back (`+Z`)
+  // Stepped Seafoam-Teal Dorsal Spine Plates + Sculpted Angled Ridge Spines along Back (`+Z`)
   b.addCenteredBox('dorsal_plate_low', {
     center: [0, 12.0, 3.0],
     size: [4, 4, 2],
@@ -85,6 +84,20 @@ function buildReefSeahorse() {
   b.addCenteredBox('dorsal_plate_upper', {
     center: [0, 21.2, 2.5],
     size: [4, 5, 2],
+    parent: 'trunk',
+    mat: 'seahorse_teal',
+  });
+  b.addCenteredBox('dorsal_ridge_nape', {
+    center: [0, 21.6, 3.3],
+    size: [2, 3, 2],
+    rotation: [-18, 0, 0],
+    parent: 'trunk',
+    mat: 'seahorse_teal',
+  });
+  b.addCenteredBox('dorsal_ridge_waist', {
+    center: [0, 11.6, 3.8],
+    size: [2, 3, 2],
+    rotation: [16, 0, 0],
     parent: 'trunk',
     mat: 'seahorse_teal',
   });
@@ -109,7 +122,7 @@ function buildReefSeahorse() {
     mat: 'seahorse_belly',
   });
 
-  // Prominent Scalloped Fan Dorsal Fin (`dorsal_fin`) (`orig_13_seahorse.png`!)
+  // Prominent Scalloped Fan Dorsal Fin (`dorsal_fin`)
   b.addCenteredBox('dorsal_fin_stem', {
     center: [0, 16.0, 4.5],
     size: [1, 6, 3],
@@ -172,7 +185,7 @@ function buildReefSeahorse() {
     mat: 'seahorse_coral',
   });
 
-  // Flush `3x3` Tubular Seafoam Snout + Coral-Peach Tip (zero coplanar Z-seam!)
+  // Flush `3x3` Tubular Seafoam Snout + Coral-Peach Tip
   b.addSegmentBox('snout_tube', {
     pStart: [0, 24.5, -2.0],
     pEnd: [0, 22.3, -6.6],
@@ -219,7 +232,6 @@ function buildReefSeahorse() {
       mat: 'seahorse_fin',
     });
 
-    // Branching Coral-Orange & Pastel-Pink Crown Antlers (2 pairs + forks!)
     b.addSegmentBox('antler_upper_l_main', {
       pStart: [-1.1, 28.0, 0.2],
       pEnd: [-2.3, 33.2, 2.4],
@@ -267,7 +279,6 @@ function buildReefSeahorse() {
   });
 
   // --- 3. PREHENSILE FORWARD-CURLING SPIRAL TAIL (`tail_curl`, resting on `Y = 0`) ---
-  // Wider open spiral window (`Z = -5.5 .. +5.5`, `Y = 0 .. 10.5`) matching `orig_13_seahorse.png`!
   b.addCenteredBox('tail_stem_outer', {
     center: [0, 6.5, 4.5],
     size: [4, 9, 2],
@@ -323,26 +334,6 @@ function buildReefSeahorse() {
     mat: 'seahorse_coral',
   });
 
-  // --- 4. THREE FLOATING WATER BUBBLES IN FRONT OF SNOUT (`freeElements`) ---
-  b.addCenteredBox('bubble_mote_1', {
-    center: [-0.2, 23.5, -10.2],
-    size: [1, 1, 1],
-    parent: 'head',
-    mat: 'seahorse_bubble',
-  });
-  b.addCenteredBox('bubble_mote_2', {
-    center: [0.3, 26.5, -10.8],
-    size: [2, 2, 2],
-    parent: 'head',
-    mat: 'seahorse_bubble',
-  });
-  b.addCenteredBox('bubble_mote_3', {
-    center: [-0.4, 30.5, -9.8],
-    size: [3, 3, 3],
-    parent: 'head',
-    mat: 'seahorse_bubble',
-  });
-
   // Blockbench Keyframe Animations
   b.addAnimation('idle', {
     length: 4.0,
@@ -370,7 +361,7 @@ function buildReefSeahorse() {
 
 // ============================================================================
 // MODEL 14: GHOST SQUID (`ghost_squid` — Глубоководный кальмар-призрак)
-// Biome: riftworld:abyss
+// Biome: riftworld:abyss — ZERO CONTOUR OUTLINES + 3-SEGMENT FLOWING TENTACLES!
 // ============================================================================
 function buildGhostSquid() {
   const b = new ModelBuilder({
@@ -407,7 +398,6 @@ function buildGhostSquid() {
     mat: 'squid_mantle',
   });
 
-  // Smooth 4-Sided Converging Torpedo Cone (ZERO blunt telescope steps!)
   b.addSegmentBox('mantle_cone_core', {
     pStart: [0, 25.4, -23.8],
     pEnd: [0, 20.5, -10.5],
@@ -442,7 +432,6 @@ function buildGhostSquid() {
     mat: 'squid_mantle',
   });
 
-  // Mirrored Cone Flank Panels & Translucent Lateral Stabilizer Fins
   b.addMirrored(() => {
     b.addSegmentBox('mantle_cone_flank_l', {
       pStart: [-1.4, 25.3, -23.2],
@@ -471,7 +460,7 @@ function buildGhostSquid() {
     });
   });
 
-  // --- 2. RECESSED HEAD COLLAR & LARGE GLOWING PALE-LAVENDER LATERAL EYES ---
+  // --- 2. RECESSED HEAD COLLAR & LARGE LUMINOUS LAVENDER EYES ---
   b.addSegmentBox('head_box', {
     pStart: [0, 16.2, 1.5],
     pEnd: [0, 13.8, 8.0],
@@ -498,138 +487,109 @@ function buildGhostSquid() {
     });
   });
 
-  // --- 3. EIGHT LONG STREAMING ARMS + TWO EXTRA-LONG CLUBBED TENTACLES (`orig_14_squid.png`!) ---
+  // --- 3. GRACEFUL 3-SEGMENT CURVING ARMS + EXTRA-LONG CLUBBED TENTACLES ---
   b.addMirrored(() => {
-    // Upper 2 pairs (`arms_upper`)
-    b.addSegmentBox('arm_dorsal_l_base', {
+    // Dorsal-inner curving 3-segment arm
+    b.addSegmentBox('arm_dorsal_l_1', {
       pStart: [-1.3, 15.8, 7.2],
-      pEnd: [-2.2, 13.8, 17.5],
-      width: 2,
-      depth: 2,
-      upHint: [0, 1, 0],
-      padStart: 1.2,
-      padEnd: 0.8,
-      parent: 'arms_upper',
-      mat: 'squid_tentacle',
+      pEnd: [-2.1, 14.8, 14.2],
+      width: 2, depth: 2, upHint: [0, 1, 0], padStart: 1.2, padEnd: 0.8,
+      parent: 'arms_upper', mat: 'squid_tentacle',
     });
-    b.addSegmentBox('arm_dorsal_l_tip', {
-      pStart: [-2.2, 13.8, 17.5],
-      pEnd: [-3.4, 12.2, 27.8],
-      width: 2,
-      depth: 2,
-      upHint: [0, 1, 0],
-      padStart: 0.8,
-      padEnd: 0.4,
-      parent: 'arms_upper',
-      mat: 'squid_tentacle',
+    b.addSegmentBox('arm_dorsal_l_2', {
+      pStart: [-2.1, 14.8, 14.2],
+      pEnd: [-3.2, 13.8, 21.4],
+      width: 2, depth: 2, upHint: [0, 1, 0], padStart: 0.8, padEnd: 0.8,
+      parent: 'arms_upper', mat: 'squid_tentacle',
+    });
+    b.addSegmentBox('arm_dorsal_l_3', {
+      pStart: [-3.2, 13.8, 21.4],
+      pEnd: [-4.0, 13.2, 28.0],
+      width: 1, depth: 1, upHint: [0, 1, 0], padStart: 0.8, padEnd: 0.4,
+      parent: 'arms_upper', mat: 'squid_tentacle',
     });
 
-    b.addSegmentBox('arm_upper_lat_l_base', {
+    // Upper-lateral wide curving 3-segment arm
+    b.addSegmentBox('arm_upper_lat_l_1', {
       pStart: [-2.5, 14.8, 7.2],
-      pEnd: [-5.2, 12.0, 17.2],
-      width: 2,
-      depth: 2,
-      upHint: [0, 1, 0],
-      padStart: 1.2,
-      padEnd: 0.8,
-      parent: 'arms_upper',
-      mat: 'squid_tentacle',
+      pEnd: [-4.6, 12.8, 14.0],
+      width: 2, depth: 2, upHint: [0, 1, 0], padStart: 1.2, padEnd: 0.8,
+      parent: 'arms_upper', mat: 'squid_tentacle',
     });
-    b.addSegmentBox('arm_upper_lat_l_tip', {
-      pStart: [-5.2, 12.0, 17.2],
-      pEnd: [-7.8, 9.8, 26.8],
-      width: 2,
-      depth: 2,
-      upHint: [0, 1, 0],
-      padStart: 0.8,
-      padEnd: 0.4,
-      parent: 'arms_upper',
-      mat: 'squid_tentacle',
+    b.addSegmentBox('arm_upper_lat_l_2', {
+      pStart: [-4.6, 12.8, 14.0],
+      pEnd: [-6.8, 10.8, 20.8],
+      width: 2, depth: 2, upHint: [0, 1, 0], padStart: 0.8, padEnd: 0.8,
+      parent: 'arms_upper', mat: 'squid_tentacle',
+    });
+    b.addSegmentBox('arm_upper_lat_l_3', {
+      pStart: [-6.8, 10.8, 20.8],
+      pEnd: [-8.4, 9.6, 27.0],
+      width: 1, depth: 1, upHint: [0, 1, 0], padStart: 0.8, padEnd: 0.4,
+      parent: 'arms_upper', mat: 'squid_tentacle',
     });
 
-    // Lower 2 pairs (`arms_lower`) — deepest ventral tip touches `Y = 0` cleanly!
-    b.addSegmentBox('arm_lower_lat_l_base', {
+    // Lower-lateral sweeping 3-segment arm
+    b.addSegmentBox('arm_lower_lat_l_1', {
       pStart: [-2.4, 12.4, 7.2],
-      pEnd: [-4.6, 7.0, 16.5],
-      width: 2,
-      depth: 2,
-      upHint: [0, 1, 0],
-      padStart: 1.2,
-      padEnd: 0.8,
-      parent: 'arms_lower',
-      mat: 'squid_tentacle',
+      pEnd: [-4.2, 8.2, 13.8],
+      width: 2, depth: 2, upHint: [0, 1, 0], padStart: 1.2, padEnd: 0.8,
+      parent: 'arms_lower', mat: 'squid_tentacle',
     });
-    b.addSegmentBox('arm_lower_lat_l_tip', {
-      pStart: [-4.6, 7.0, 16.5],
-      pEnd: [-6.4, 2.2, 24.8],
-      width: 2,
-      depth: 2,
-      upHint: [0, 1, 0],
-      padStart: 0.8,
-      padEnd: 0.4,
-      parent: 'arms_lower',
-      mat: 'squid_tentacle',
+    b.addSegmentBox('arm_lower_lat_l_2', {
+      pStart: [-4.2, 8.2, 13.8],
+      pEnd: [-5.8, 4.2, 19.8],
+      width: 2, depth: 2, upHint: [0, 1, 0], padStart: 0.8, padEnd: 0.8,
+      parent: 'arms_lower', mat: 'squid_tentacle',
+    });
+    b.addSegmentBox('arm_lower_lat_l_3', {
+      pStart: [-5.8, 4.2, 19.8],
+      pEnd: [-6.8, 1.4, 25.2],
+      width: 1, depth: 1, upHint: [0, 1, 0], padStart: 0.8, padEnd: 0.3,
+      parent: 'arms_lower', mat: 'squid_tentacle',
     });
 
-    b.addSegmentBox('arm_ventral_l_base', {
+    // Ventral-inner deepest arm touching `Y = 0` cleanly
+    b.addSegmentBox('arm_ventral_l_1', {
       pStart: [-1.2, 11.4, 7.2],
-      pEnd: [-2.0, 5.4, 15.8],
-      width: 2,
-      depth: 2,
-      upHint: [0, 1, 0],
-      padStart: 1.2,
-      padEnd: 0.8,
-      parent: 'arms_lower',
-      mat: 'squid_tentacle',
+      pEnd: [-1.8, 6.8, 13.4],
+      width: 2, depth: 2, upHint: [0, 1, 0], padStart: 1.2, padEnd: 0.8,
+      parent: 'arms_lower', mat: 'squid_tentacle',
     });
-    b.addSegmentBox('arm_ventral_l_tip', {
-      pStart: [-2.0, 5.4, 15.8],
-      pEnd: [-2.8, 0.9, 23.2],
-      width: 2,
-      depth: 2,
-      upHint: [0, 1, 0],
-      padStart: 0.8,
-      padEnd: 0.0,
-      parent: 'arms_lower',
-      mat: 'squid_tentacle',
+    b.addSegmentBox('arm_ventral_l_2', {
+      pStart: [-1.8, 6.8, 13.4],
+      pEnd: [-2.5, 2.4, 19.2],
+      width: 2, depth: 2, upHint: [0, 1, 0], padStart: 0.8, padEnd: 0.8,
+      parent: 'arms_lower', mat: 'squid_tentacle',
+    });
+    b.addSegmentBox('arm_ventral_l_3', {
+      pStart: [-2.5, 2.4, 19.2],
+      pEnd: [-3.0, 0.8, 24.0],
+      width: 2, depth: 2, upHint: [0, 1, 0], padStart: 0.8, padEnd: 0.0,
+      parent: 'arms_lower', mat: 'squid_tentacle',
     });
 
-    // Extra-Long Feeding Tentacle with Enlarged Bioluminescent Club (`tentacle_long_l`)
+    // Extra-Long Feeding Tentacle with Bioluminescent Club
     b.addGroup('tentacle_long_l', [-2.4, 13.0, 7.0], [0, 0, 0], 'head_collar', {
       wave: 'cos', axis: 'y', speed: 0.14, amp: 0.12, phase: 1.1,
     });
     b.addSegmentBox('tentacle_l_stalk_1', {
       pStart: [-2.2, 13.4, 7.2],
-      pEnd: [-4.0, 9.6, 17.8],
-      width: 2,
-      depth: 2,
-      upHint: [0, 1, 0],
-      padStart: 1.2,
-      padEnd: 0.8,
-      parent: 'tentacle_long_l',
-      mat: 'squid_tentacle',
+      pEnd: [-3.8, 9.8, 16.8],
+      width: 2, depth: 2, upHint: [0, 1, 0], padStart: 1.2, padEnd: 0.8,
+      parent: 'tentacle_long_l', mat: 'squid_tentacle',
     });
     b.addSegmentBox('tentacle_l_stalk_2', {
-      pStart: [-4.0, 9.6, 17.8],
-      pEnd: [-5.4, 6.2, 26.2],
-      width: 2,
-      depth: 2,
-      upHint: [0, 1, 0],
-      padStart: 0.8,
-      padEnd: 0.8,
-      parent: 'tentacle_long_l',
-      mat: 'squid_tentacle',
+      pStart: [-3.8, 9.8, 16.8],
+      pEnd: [-5.2, 6.4, 25.8],
+      width: 2, depth: 2, upHint: [0, 1, 0], padStart: 0.8, padEnd: 0.8,
+      parent: 'tentacle_long_l', mat: 'squid_tentacle',
     });
     b.addSegmentBox('tentacle_l_club', {
-      pStart: [-5.3, 6.4, 25.8],
-      pEnd: [-6.4, 4.4, 31.2],
-      width: 3,
-      depth: 2,
-      upHint: [0, 1, 0],
-      padStart: 0.6,
-      padEnd: 0.4,
-      parent: 'tentacle_long_l',
-      mat: 'squid_club',
+      pStart: [-5.1, 6.5, 25.4],
+      pEnd: [-6.2, 4.6, 31.2],
+      width: 3, depth: 2, upHint: [0, 1, 0], padStart: 0.6, padEnd: 0.4,
+      parent: 'tentacle_long_l', mat: 'squid_club',
     });
   });
 
@@ -641,8 +601,8 @@ function buildGhostSquid() {
       { bone: 'mantle_root', channel: 'position', keys: [{ time: 0.0, value: [0, 0, 0] }, { time: 2.0, value: [0, 0.7, -0.5] }, { time: 4.0, value: [0, 0, 0] }] },
       { bone: 'fin_l', channel: 'rotation', keys: [{ time: 0.0, value: [0, 0, -11] }, { time: 1.0, value: [0, 0, 11] }, { time: 2.0, value: [0, 0, -11] }, { time: 3.0, value: [0, 0, 11] }, { time: 4.0, value: [0, 0, -11] }] },
       { bone: 'fin_r', channel: 'rotation', keys: [{ time: 0.0, value: [0, 0, 11] }, { time: 1.0, value: [0, 0, -11] }, { time: 2.0, value: [0, 0, 11] }, { time: 3.0, value: [0, 0, -11] }, { time: 4.0, value: [0, 0, 11] }] },
-      { bone: 'arms_upper', channel: 'rotation', keys: [{ time: 0.0, value: [-4, 0, 0] }, { time: 2.0, value: [5, 0, 0] }, { time: 4.0, value: [-4, 0, 0] }] },
-      { bone: 'arms_lower', channel: 'rotation', keys: [{ time: 0.0, value: [3, 0, 0] }, { time: 2.0, value: [-2, 0, 0] }, { time: 4.0, value: [3, 0, 0] }] },
+      { bone: 'arms_upper', channel: 'rotation', keys: [{ time: 0.0, value: [0, 0, 0] }, { time: 2.0, value: [5, 0, 0] }, { time: 4.0, value: [0, 0, 0] }] },
+      { bone: 'arms_lower', channel: 'rotation', keys: [{ time: 0.0, value: [0, 0, 0] }, { time: 2.0, value: [-5, 0, 0] }, { time: 4.0, value: [0, 0, 0] }] },
     ],
   });
 
@@ -661,8 +621,8 @@ function buildGhostSquid() {
 }
 
 // ============================================================================
-// MODEL 15: SILVER SEA SERPENT (`silver_sea_serpent` — Серебряный морской змей)
-// Biome: riftworld:maja_ocean
+// MODEL 15: SILVER SEA SERPENT / LEVIATHAN (`silver_sea_serpent` — Серебряный морской змей)
+// Biome: riftworld:maja_ocean — HIGH-DETAIL HYTALE LEVIATHAN SEA DRAGON!
 // ============================================================================
 function buildSilverSeaSerpent() {
   const b = new ModelBuilder({
@@ -675,53 +635,175 @@ function buildSilverSeaSerpent() {
     asymmetric: [],
   });
 
-  b.addGroup('serpent_root', [0, 5, -7], [0, 0, 0], null, null);
-  b.addGroup('neck', [0, 6.0, -9.0], [0, 0, 0], 'serpent_root', {
+  // Bone Hierarchy for Traveling Leviathan S-Wave + Hinged Jaw + Fore/Hind Flippers
+  b.addGroup('serpent_root', [0, 5.2, -5.0], [0, 0, 0], null, null);
+  b.addGroup('neck', [0, 6.2, -7.2], [0, 0, 0], 'serpent_root', {
     wave: 'sin', axis: 'x', speed: 0.10, amp: 0.06, phase: 0,
   });
-  b.addGroup('head', [0, 18.0, -13.5], [0, 0, 0], 'neck', {
-    wave: 'sin', axis: 'x', speed: 0.10, amp: -0.06, phase: 0,
+  b.addGroup('head', [0, 19.2, -14.2], [0, 0, 0], 'neck', {
+    wave: 'sin', axis: 'x', speed: 0.10, amp: -0.05, phase: 0,
   });
-  b.addGroup('body_arch', [0, 5.0, -3.5], [0, 0, 0], 'serpent_root', {
+  b.addGroup('jaw', [0, 17.2, -17.5], [0, 0, 0], 'head', {
+    wave: 'cos', axis: 'x', speed: 0.14, amp: 0.07, phase: 0.5,
+  });
+  b.addGroup('body_arch', [0, 6.2, 0.4], [0, 0, 0], 'serpent_root', {
     wave: 'sin', axis: 'x', speed: 0.12, amp: 0.08, phase: 0.9,
   });
-  b.addGroup('tail_dip', [0, 18.0, 12.5], [0, 0, 0], 'body_arch', {
+  b.addGroup('tail_dip', [0, 15.2, 17.0], [0, 0, 0], 'body_arch', {
     wave: 'sin', axis: 'x', speed: 0.12, amp: -0.10, phase: 1.8,
   });
-  b.addGroup('tail_tip', [0, 7.5, 22.0], [0, 0, 0], 'tail_dip', {
+  b.addGroup('tail_tip', [0, 8.2, 23.2], [0, 0, 0], 'tail_dip', {
     wave: 'sin', axis: 'x', speed: 0.12, amp: 0.14, phase: 2.7,
   });
 
-  // --- 1. SCULPTED DRACONIC HEAD, SWEPT SILVER HORNS, CHEEK FINS & CHIN BARBELS ---
-  b.addCenteredBox('head_skull', {
-    center: [0, 18.5, -16.0],
-    size: [7, 5, 7],
+  // =========================================================================
+  // 1. REALISTIC SCULPTED SEA-DRAGON HEAD, OPEN FANGED MAW, HORNS & GILL-FRILLS
+  // =========================================================================
+  // Armored Cranium & Occipital Crown
+  b.addCenteredBox('head_cranium', {
+    center: [0, 19.6, -16.8],
+    size: [7, 4, 7],
     parent: 'head',
     mat: 'serpent_head',
   });
-  b.addCenteredBox('snout_upper', {
-    center: [0, 18.0, -22.0],
+  b.addCenteredBox('head_occiput_crest', {
+    center: [0, 21.4, -15.0],
+    size: [5, 2, 4],
+    rotation: [14, 0, 0],
+    parent: 'head',
+    mat: 'serpent_dorsal_scute',
+  });
+
+  // Sloped Forehead-to-Snout Nasal Bridge Crest + Tapered Upper Maxilla
+  b.addSegmentBox('head_nasal_bridge', {
+    pStart: [0, 21.2, -17.8],
+    pEnd: [0, 19.6, -24.8],
+    width: 3,
+    depth: 2,
+    upHint: [0, 1, 0],
+    padStart: 0.6,
+    padEnd: 0.4,
+    parent: 'head',
+    mat: 'serpent_dorsal_scute',
+  });
+  b.addCenteredBox('snout_maxilla', {
+    center: [0, 18.7, -22.5],
     size: [5, 3, 6],
     parent: 'head',
     mat: 'serpent_snout',
   });
-  b.addCenteredBox('jaw_lower', {
-    center: [0, 15.8, -20.8],
-    size: [4, 2, 7],
+  b.addCenteredBox('snout_rostrum_tip', {
+    center: [0, 18.8, -25.8],
+    size: [3, 2, 2],
     parent: 'head',
-    mat: 'serpent_head',
+    mat: 'serpent_snout',
+  });
+  b.addCenteredBox('mouth_palate_upper', {
+    center: [0, 17.5, -21.2],
+    size: [4, 1, 6],
+    parent: 'head',
+    mat: 'serpent_mouth',
   });
 
+  // Articulated Hinged Lower Jaw (`jaw` bone — slightly open draconic roar!)
+  b.addSegmentBox('jaw_mandible', {
+    pStart: [0, 17.0, -17.2],
+    pEnd: [0, 15.6, -24.6],
+    width: 4,
+    depth: 2,
+    upHint: [0, 1, 0],
+    padStart: 0.6,
+    padEnd: 0.4,
+    parent: 'jaw',
+    mat: 'serpent_head',
+  });
+  b.addSegmentBox('jaw_chin_keel', {
+    pStart: [0, 16.0, -18.0],
+    pEnd: [0, 14.9, -23.2],
+    width: 2,
+    depth: 1,
+    upHint: [0, 1, 0],
+    padStart: 0.4,
+    padEnd: 0.3,
+    parent: 'jaw',
+    mat: 'serpent_dorsal_scute',
+  });
+
+  // Mirrored Facial Armor, Brow Ridges, Slit Eyes, Fangs, 2-Seg Horns, 3-Ray Gill Frills & Barbels
   b.addMirrored(() => {
+    // Sculpted Cheekbone / Jowl Armor (tucked behind eye so full glowing dragon eye shines!)
+    b.addCenteredBox('cheek_armor_l', {
+      center: [-3.3, 18.0, -15.6],
+      size: [2, 2, 4],
+      rotation: [0, -8, 0],
+      parent: 'head',
+      mat: 'serpent_head',
+    });
+
+    // Raised Nostril Boss on Snout
+    b.addCenteredBox('nostril_boss_l', {
+      center: [-1.4, 20.0, -24.2],
+      size: [2, 1, 2],
+      parent: 'head',
+      mat: 'serpent_snout',
+    });
+
+    // Fierce Angled Supraorbital Brow Ridge casting real 3D shadow over Eye
+    b.addSegmentBox('brow_ridge_l', {
+      pStart: [-2.4, 20.6, -20.0],
+      pEnd: [-3.6, 21.4, -15.6],
+      width: 2,
+      depth: 1,
+      upHint: [0, 1, 0],
+      padStart: 0.4,
+      padEnd: 0.4,
+      parent: 'head',
+      mat: 'serpent_brow',
+    });
+
+    // Prominent Glowing Cyan-Aqua Dragon Eye with Vertical Slit Pupil
     b.addCenteredBox('serpent_eye_l', {
-      center: [-2.8, 18.5, -17.0],
+      center: [-3.0, 19.4, -18.4],
       size: [2, 2, 3],
       parent: 'head',
       mat: 'serpent_eye',
     });
-    b.addSegmentBox('brow_horn_l', {
-      pStart: [-2.2, 20.2, -16.8],
-      pEnd: [-3.5, 24.4, -10.8],
+
+    // Sharp Gleaming Ivory-Silver Upper & Lower Fangs (`parent: head` & `parent: jaw`)
+    b.addCenteredBox('fang_upper_front_l', {
+      center: [-1.7, 17.0, -24.0],
+      size: [1, 2, 1],
+      parent: 'head',
+      mat: 'serpent_fang',
+    });
+    b.addCenteredBox('fang_upper_mid_l', {
+      center: [-1.8, 17.1, -21.5],
+      size: [1, 2, 1],
+      parent: 'head',
+      mat: 'serpent_fang',
+    });
+    b.addCenteredBox('fang_lower_front_l', {
+      center: [-1.3, 16.4, -23.4],
+      size: [1, 2, 1],
+      parent: 'jaw',
+      mat: 'serpent_fang',
+    });
+
+    // Swept 2-Segment Curved Frost-Silver Dragon Horns (`horn_base` -> `horn_tip`)
+    b.addSegmentBox('horn_l_base', {
+      pStart: [-2.4, 21.0, -16.2],
+      pEnd: [-3.8, 23.8, -12.0],
+      width: 2,
+      depth: 2,
+      upHint: [0, 1, 0],
+      padStart: 0.8,
+      padEnd: 0.6,
+      parent: 'head',
+      mat: 'serpent_horn',
+    });
+    b.addSegmentBox('horn_l_tip', {
+      pStart: [-3.8, 23.8, -12.0],
+      pEnd: [-4.9, 26.8, -7.2],
       width: 1,
       depth: 1,
       upHint: [0, 1, 0],
@@ -730,314 +812,320 @@ function buildSilverSeaSerpent() {
       parent: 'head',
       mat: 'serpent_horn',
     });
-    b.addSegmentBox('cheek_whisker_l', {
-      pStart: [-3.0, 17.8, -14.8],
-      pEnd: [-4.8, 19.4, -9.8],
-      width: 1,
-      depth: 2,
-      upHint: [0, 1, 0],
-      padStart: 0.8,
-      padEnd: 0.4,
+
+    // 3-Rayed Aquatic Sea-Dragon Gill-Frill Fan behind Cheek (`gill_web` + 3 fin spines!)
+    b.addPlate('gill_web_l', {
+      center: [-4.6, 18.8, -12.8],
+      width: 5,
+      thickness: 1,
+      length: 4,
+      uAxis: [-0.46, 0.16, 0.87],
+      nAxis: [-0.88, 0.0, -0.47],
       parent: 'head',
-      mat: 'serpent_horn',
+      mat: 'serpent_gill_web',
     });
-    b.addSegmentBox('chin_barbel_l', {
-      pStart: [-1.4, 15.4, -22.2],
-      pEnd: [-1.9, 11.4, -20.5],
+    b.addSegmentBox('gill_ray_upper_l', {
+      pStart: [-3.4, 19.6, -14.8],
+      pEnd: [-6.0, 21.4, -10.0],
+      width: 1,
+      depth: 1,
+      upHint: [0, 1, 0],
+      padStart: 0.6,
+      padEnd: 0.3,
+      parent: 'head',
+      mat: 'serpent_fin_ray',
+    });
+    b.addSegmentBox('gill_ray_mid_l', {
+      pStart: [-3.5, 18.6, -14.8],
+      pEnd: [-6.4, 18.9, -9.8],
+      width: 1,
+      depth: 1,
+      upHint: [0, 1, 0],
+      padStart: 0.6,
+      padEnd: 0.3,
+      parent: 'head',
+      mat: 'serpent_fin_ray',
+    });
+    b.addSegmentBox('gill_ray_lower_l', {
+      pStart: [-3.3, 17.6, -14.8],
+      pEnd: [-5.6, 16.6, -10.4],
+      width: 1,
+      depth: 1,
+      upHint: [0, 1, 0],
+      padStart: 0.6,
+      padEnd: 0.3,
+      parent: 'head',
+      mat: 'serpent_fin_ray',
+    });
+
+    // Flowing 2-Segment Sinuous Sensory Barbels trailing from Upper Snout
+    b.addSegmentBox('barbel_l_base', {
+      pStart: [-1.9, 17.8, -23.2],
+      pEnd: [-2.8, 14.4, -21.2],
       width: 1,
       depth: 1,
       upHint: [0, 0, 1],
       padStart: 0.8,
+      padEnd: 0.6,
+      parent: 'head',
+      mat: 'serpent_horn',
+    });
+    b.addSegmentBox('barbel_l_tip', {
+      pStart: [-2.8, 14.4, -21.2],
+      pEnd: [-3.5, 11.4, -18.2],
+      width: 1,
+      depth: 1,
+      upHint: [0, 0, 1],
+      padStart: 0.6,
       padEnd: 0.3,
       parent: 'head',
       mat: 'serpent_horn',
     });
   });
 
-  // --- 2. NECK ARCH (`head` -> `pectoral trough`) + TALL SCALLOPED NECK CREST ---
-  // `pStart` = TOP, `pEnd` = BOTTOM + `upHint` along dorsal normal so `south` = dorsal ridge & `north` = ribbed belly!
-  b.addSegmentBox('neck_upper_arch', {
-    pStart: [0, 18.5, -13.8],
-    pEnd: [0, 14.5, -10.5],
-    width: 6,
-    depth: 6,
-    upHint: [0, 0.75, 0.66],
-    padStart: 1.4,
-    padEnd: 1.2,
-    parent: 'neck',
-    mat: 'serpent_body',
-  });
-  b.addSegmentBox('neck_column', {
-    pStart: [0, 14.5, -10.5],
-    pEnd: [0, 6.2, -9.2],
-    width: 6,
-    depth: 6,
-    upHint: [0, 0.16, 0.99],
-    padStart: 1.4,
-    padEnd: 1.4,
-    parent: 'neck',
-    mat: 'serpent_body',
-  });
+  // =========================================================================
+  // 2. MUSCULAR 16-SEGMENT SINUOUS S-WAVE SPINE + ARMORED SCUTES + SAIL FIN
+  // =========================================================================
+  // Smooth monotonically-increasing-Z S-curve (`dz > 0` on ALL 16 segments -> zero twist, zero kinks!):
+  const stations = [
+    { p: [0, 19.0, -14.2], w: 6, d: 5, group: 'neck', finH: 4, ray: true },      // 0 -> 1
+    { p: [0, 16.6, -12.0], w: 6, d: 6, group: 'neck', finH: 4, ray: true },      // 1 -> 2
+    { p: [0, 12.6, -10.4], w: 6, d: 6, group: 'neck', finH: 4, ray: true },      // 2 -> 3
+    { p: [0, 8.4, -8.8],   w: 7, d: 6, group: 'neck', finH: 3, ray: false },     // 3 -> 4
+    { p: [0, 5.4, -6.6],   w: 7, d: 7, group: 'serpent_root', finH: 3, ray: true },  // 4 -> 5 (pectoral chest)
+    { p: [0, 4.4, -3.0],   w: 7, d: 7, group: 'serpent_root', finH: 3, ray: false }, // 5 -> 6 (sternum trough)
+    { p: [0, 6.2, 0.6],    w: 7, d: 6, group: 'body_arch', finH: 4, ray: true },     // 6 -> 7 (climb start)
+    { p: [0, 10.2, 3.8],   w: 6, d: 6, group: 'body_arch', finH: 5, ray: true },     // 7 -> 8 (mid climb)
+    { p: [0, 14.8, 6.8],   w: 6, d: 6, group: 'body_arch', finH: 5, ray: true },     // 8 -> 9 (upper climb)
+    { p: [0, 18.0, 10.0],  w: 6, d: 6, group: 'body_arch', finH: 5, ray: true },     // 9 -> 10 (arch crown 1)
+    { p: [0, 18.2, 13.6],  w: 5, d: 5, group: 'body_arch', finH: 5, ray: true },     // 10 -> 11 (arch crown 2)
+    { p: [0, 15.2, 17.0],  w: 5, d: 5, group: 'tail_dip', finH: 4, ray: true },      // 11 -> 12 (descent 1)
+    { p: [0, 11.0, 20.0],  w: 5, d: 5, group: 'tail_dip', finH: 3, ray: false },     // 12 -> 13 (descent 2)
+    { p: [0, 8.2, 23.4],   w: 4, d: 4, group: 'tail_tip', finH: 3, ray: true },      // 13 -> 14 (pelvic dip)
+    { p: [0, 9.0, 27.0],   w: 4, d: 4, group: 'tail_tip', finH: 4, ray: true },      // 14 -> 15 (caudal rise 1)
+    { p: [0, 12.2, 30.4],  w: 3, d: 3, group: 'tail_tip', finH: 4, ray: true },      // 15 -> 16 (caudal rise 2)
+    { p: [0, 16.2, 33.6],  w: 2, d: 2, group: 'tail_tip', finH: 0, ray: false },     // 16 (tail tip)
+  ];
 
-  // Tall Scalloped Translucent Seafoam Neck Fin Crest (`orig_15_serpent.png`!)
-  b.addSegmentBox('fin_crest_nape_1', {
-    pStart: [0, 21.8, -14.2],
-    pEnd: [0, 17.8, -8.8],
-    width: 1,
-    depth: 4,
-    upHint: [0, 0.80, 0.60],
-    padStart: 0.8,
-    padEnd: 0.8,
-    parent: 'neck',
-    mat: 'serpent_fin',
-  });
-  b.addSegmentBox('fin_crest_nape_2', {
-    pStart: [0, 18.2, -9.2],
-    pEnd: [0, 12.2, -6.4],
-    width: 1,
-    depth: 4,
-    upHint: [0, 0.35, 0.94],
-    padStart: 0.8,
-    padEnd: 0.8,
-    parent: 'neck',
-    mat: 'serpent_fin',
-  });
-  b.addSegmentBox('fin_crest_neck_low', {
-    pStart: [0, 12.5, -6.8],
-    pEnd: [0, 6.8, -5.2],
-    width: 1,
-    depth: 4,
-    upHint: [0, 0.25, 0.97],
-    padStart: 0.8,
-    padEnd: 0.8,
-    parent: 'neck',
-    mat: 'serpent_fin',
-  });
+  for (let i = 0; i < stations.length - 1; i++) {
+    const s0 = stations[i];
+    const s1 = stations[i + 1];
+    const prevGroup = i > 0 ? stations[i - 1].group : 'head';
+    const nextGroup = i + 2 < stations.length ? stations[i + 1].group : s0.group;
 
-  // --- 3. PECTORAL TROUGH & SPLAYED PADDLE FLIPPERS (`Y = 0` ground touch!) ---
-  b.addSegmentBox('body_trough_1', {
-    pStart: [0, 6.2, -9.2],
-    pEnd: [0, 4.2, -4.0],
-    width: 6,
-    depth: 6,
-    upHint: [0, 1, 0],
-    padStart: 1.5,
-    padEnd: 1.5,
-    parent: 'serpent_root',
-    mat: 'serpent_body',
-  });
+    const tang = vNorm(vSub(s1.p, s0.p)); // (0, ty, tz) with tz > 0 always!
+    const dorsalN = [0, tang[2], -tang[1]]; // exact outward dorsal normal in YZ plane!
 
+    // Keep cross-group joint pads tight (`0.55`) so `gateInterpenetration` is 0 warnings,
+    // and intra-group pads generous (`1.15`) so smooth curves have zero gaps!
+    const padS = s0.group !== prevGroup ? 0.55 : 1.15;
+    const padE = s0.group !== nextGroup ? 0.55 : 1.15;
+
+    const idxStr = String(i + 1).padStart(2, '0');
+    b.addSegmentBox(`spine_seg_${idxStr}`, {
+      pStart: s0.p,
+      pEnd: s1.p,
+      width: s0.w,
+      depth: s0.d,
+      upHint: dorsalN,
+      padStart: padS,
+      padEnd: padE,
+      parent: s0.group,
+      mat: 'serpent_body',
+    });
+
+    // Raised Frost-Silver & Deep-Teal Armored Dorsal Spine Scute on each segment
+    const midP = vScale(vAdd(s0.p, s1.p), 0.5);
+    const scuteBase = vAdd(midP, vScale(dorsalN, s0.d * 0.45));
+    const scuteW = Math.max(2, s0.w - 3);
+    b.addPlate(`dorsal_scute_${idxStr}`, {
+      center: scuteBase,
+      width: scuteW,
+      thickness: 1,
+      length: 3,
+      uAxis: [1, 0, 0],
+      nAxis: dorsalN,
+      parent: s0.group,
+      mat: 'serpent_dorsal_scute',
+    });
+
+    // Continuous Translucent Seafoam Dorsal Sail Fin Membrane + Angled Fin Spine Rays
+    if (s0.finH > 0) {
+      const finOffset = s0.d * 0.5 + s0.finH * 0.42 - 0.6;
+      const finS = vAdd(s0.p, vScale(dorsalN, finOffset));
+      const finE = vAdd(s1.p, vScale(dorsalN, finOffset));
+      b.addSegmentBox(`dorsal_sail_${idxStr}`, {
+        pStart: finS,
+        pEnd: finE,
+        width: 1,
+        depth: s0.finH,
+        upHint: dorsalN,
+        padStart: s0.group !== prevGroup ? 0.2 : 0.7,
+        padEnd: s0.group !== nextGroup ? 0.2 : 0.7,
+        parent: s0.group,
+        mat: 'serpent_fin',
+      });
+
+      if (s0.ray) {
+        const rayStart = vAdd(midP, vScale(dorsalN, s0.d * 0.38));
+        const rayDir = vNorm(vAdd(vScale(dorsalN, 0.84), vScale(tang, 0.54)));
+        const rayEnd = vAdd(rayStart, vScale(rayDir, s0.finH + 1.8));
+        b.addSegmentBox(`dorsal_ray_${idxStr}`, {
+          pStart: rayStart,
+          pEnd: rayEnd,
+          width: 1,
+          depth: 1,
+          upHint: [1, 0, 0],
+          padStart: 0.4,
+          padEnd: 0.3,
+          parent: s0.group,
+          mat: 'serpent_fin_ray',
+        });
+      }
+    }
+  }
+
+  // =========================================================================
+  // 3. WEBBED MULTI-RAYED FORE-FLIPPERS (`Y = 0` GROUND CONTACT) & HIND-FLIPPERS
+  // =========================================================================
   b.addMirrored(() => {
-    b.addGroup('flipper_l', [-3.0, 4.0, -5.5], [0, 0, 0], 'serpent_root', {
+    // Large Pectoral Fore-Flipper (`flipper_l` attached to `serpent_root` at chest station)
+    b.addGroup('flipper_l', [-3.4, 4.5, -4.4], [0, 0, 0], 'serpent_root', {
       wave: 'sin', axis: 'z', speed: 0.16, amp: 0.22, phase: 0,
     });
+    b.addCenteredBox('flipper_l_shoulder', {
+      center: [-4.0, 4.2, -4.4],
+      size: [3, 3, 4],
+      parent: 'flipper_l',
+      mat: 'serpent_flipper',
+    });
     b.addSegmentBox('flipper_l_arm', {
-      pStart: [-2.5, 4.0, -6.0],
-      pEnd: [-6.8, 1.2, -3.5],
+      pStart: [-4.5, 4.0, -4.6],
+      pEnd: [-8.6, 1.4, -1.8],
       width: 3,
       depth: 2,
       upHint: [0, 1, 0],
-      padStart: 1.2,
+      padStart: 0.8,
       padEnd: 0.6,
       parent: 'flipper_l',
       mat: 'serpent_flipper',
     });
-    b.addSegmentBox('flipper_l_blade_outer', {
-      pStart: [-5.6, 1.8, -4.2],
-      pEnd: [-9.6, 0.8, -1.5],
-      width: 2,
+    // Translucent Aquamarine Flipper Webbing Plate + 3 Splayed Fin Rays (touching `Y = 0`!)
+    b.addPlate('flipper_l_web', {
+      center: [-8.8, 1.2, -0.4],
+      width: 6,
+      thickness: 1,
+      length: 6,
+      uAxis: [-0.80, -0.22, 0.56],
+      nAxis: [-0.18, 0.97, 0.14],
+      parent: 'flipper_l',
+      mat: 'serpent_fin',
+    });
+    b.addSegmentBox('flipper_l_ray_1', {
+      pStart: [-7.2, 2.0, -2.8],
+      pEnd: [-12.2, 0.8, 0.2],
+      width: 1,
       depth: 1,
       upHint: [0, 1, 0],
       padStart: 0.8,
       padEnd: 0.3,
       parent: 'flipper_l',
-      mat: 'serpent_flipper',
+      mat: 'serpent_fin_ray',
     });
-    b.addSegmentBox('flipper_l_blade_inner', {
-      pStart: [-5.2, 1.5, -3.2],
-      pEnd: [-8.4, 0.5, 0.2],
-      width: 2,
+    b.addSegmentBox('flipper_l_ray_2', {
+      pStart: [-6.8, 1.8, -2.0],
+      pEnd: [-10.8, 0.5, 2.2],
+      width: 1,
       depth: 1,
       upHint: [0, 1, 0],
       padStart: 0.8,
       padEnd: 0.0,
       parent: 'flipper_l',
+      mat: 'serpent_fin_ray',
+    });
+    b.addSegmentBox('flipper_l_ray_3', {
+      pStart: [-6.0, 1.8, -1.4],
+      pEnd: [-8.6, 0.8, 3.4],
+      width: 1,
+      depth: 1,
+      upHint: [0, 1, 0],
+      padStart: 0.8,
+      padEnd: 0.2,
+      parent: 'flipper_l',
+      mat: 'serpent_fin_ray',
+    });
+
+    // Sleek Pelvic Hind-Flipper (`hind_flipper_l` tucked under `tail_dip` at Station 12-13)
+    b.addGroup('hind_flipper_l', [-2.4, 9.6, 20.8], [0, 0, 0], 'tail_dip', {
+      wave: 'sin', axis: 'z', speed: 0.16, amp: 0.18, phase: 1.4,
+    });
+    b.addSegmentBox('hind_flipper_l_arm', {
+      pStart: [-2.2, 9.6, 20.6],
+      pEnd: [-5.4, 7.2, 23.6],
+      width: 2,
+      depth: 2,
+      upHint: [0, 1, 0],
+      padStart: 0.6,
+      padEnd: 0.5,
+      parent: 'hind_flipper_l',
       mat: 'serpent_flipper',
     });
-  });
-
-  // --- 4. HIGH MID-BODY S-WAVE ARCH (`body_arch`) + TALL SCALLOPED FIN CREST ---
-  b.addSegmentBox('body_climb_1', {
-    pStart: [0, 4.2, -4.0],
-    pEnd: [0, 12.2, 1.8],
-    width: 6,
-    depth: 6,
-    upHint: [0, 0.65, -0.76],
-    padStart: 1.5,
-    padEnd: 1.4,
-    parent: 'body_arch',
-    mat: 'serpent_body',
-  });
-  b.addSegmentBox('body_climb_2', {
-    pStart: [0, 12.2, 1.8],
-    pEnd: [0, 19.2, 7.6],
-    width: 5,
-    depth: 5,
-    upHint: [0, 0.68, -0.73],
-    padStart: 1.4,
-    padEnd: 1.4,
-    parent: 'body_arch',
-    mat: 'serpent_body',
-  });
-  b.addSegmentBox('body_crest_peak', {
-    pStart: [0, 19.2, 7.6],
-    pEnd: [0, 18.2, 13.0],
-    width: 5,
-    depth: 5,
-    upHint: [0, 1, 0],
-    padStart: 1.4,
-    padEnd: 1.4,
-    parent: 'body_arch',
-    mat: 'serpent_body',
-  });
-
-  // Tall Scalloped Translucent Seafoam Dorsal Crest along Mid-Arch (`orig_15_serpent.png`!)
-  b.addSegmentBox('fin_crest_arch_1', {
-    pStart: [0, 7.2, -4.6],
-    pEnd: [0, 15.2, 0.6],
-    width: 1,
-    depth: 4,
-    upHint: [0, 0.65, -0.76],
-    padStart: 0.8,
-    padEnd: 0.8,
-    parent: 'body_arch',
-    mat: 'serpent_fin',
-  });
-  b.addSegmentBox('fin_crest_arch_2', {
-    pStart: [0, 15.2, 0.6],
-    pEnd: [0, 22.4, 6.8],
-    width: 1,
-    depth: 5,
-    upHint: [0, 0.68, -0.73],
-    padStart: 0.8,
-    padEnd: 0.8,
-    parent: 'body_arch',
-    mat: 'serpent_fin',
-  });
-  b.addSegmentBox('fin_crest_arch_3', {
-    pStart: [0, 22.4, 6.8],
-    pEnd: [0, 21.4, 13.4],
-    width: 1,
-    depth: 5,
-    upHint: [0, 1, 0],
-    padStart: 0.8,
-    padEnd: 0.8,
-    parent: 'body_arch',
-    mat: 'serpent_fin',
-  });
-  b.addSegmentBox('fin_crest_arch_4', {
-    pStart: [0, 21.0, 12.8],
-    pEnd: [0, 15.2, 18.0],
-    width: 1,
-    depth: 4,
-    upHint: [0, 0.82, 0.57],
-    padStart: 0.8,
-    padEnd: 0.8,
-    parent: 'body_arch',
-    mat: 'serpent_fin',
-  });
-
-  // Scalloped Dorsal Fin Spines jutting out along Mid-Arch & Neck (`orig_15_serpent.png`!)
-  for (const [nm, ps, pe, par] of [
-    ['fin_spike_nape_1', [0, 20.5, -13.0], [0, 23.8, -11.0], 'neck'],
-    ['fin_spike_nape_2', [0, 16.5, -9.0], [0, 19.5, -6.5], 'neck'],
-    ['fin_spike_arch_1', [0, 11.5, -1.8], [0, 15.8, -1.2], 'body_arch'],
-    ['fin_spike_arch_2', [0, 17.5, 2.8], [0, 22.2, 3.8], 'body_arch'],
-    ['fin_spike_arch_3', [0, 21.0, 7.8], [0, 25.4, 9.2], 'body_arch'],
-    ['fin_spike_arch_4', [0, 20.2, 11.8], [0, 24.2, 13.8], 'body_arch'],
-    ['fin_spike_tail_1', [0, 12.2, 24.8], [0, 16.2, 26.2], 'tail_tip'],
-    ['fin_spike_tail_2', [0, 16.2, 29.2], [0, 20.5, 31.2], 'tail_tip'],
-  ]) {
-    b.addSegmentBox(nm, {
-      pStart: ps,
-      pEnd: pe,
-      width: 1,
-      depth: 2,
-      upHint: [0, 0, 1],
-      padStart: 0.8,
-      padEnd: 0.3,
-      parent: par,
+    b.addPlate('hind_flipper_l_web', {
+      center: [-5.8, 6.8, 24.8],
+      width: 4,
+      thickness: 1,
+      length: 5,
+      uAxis: [-0.74, -0.32, 0.59],
+      nAxis: [-0.24, 0.94, 0.22],
+      parent: 'hind_flipper_l',
       mat: 'serpent_fin',
     });
-  }
-
-  // --- 5. SECOND WAVE DIP (`tail_dip`) & RISING TAPERED TAIL (`tail_tip`) ---
-  b.addSegmentBox('tail_descent_1', {
-    pStart: [0, 18.2, 13.0],
-    pEnd: [0, 11.2, 18.2],
-    width: 5,
-    depth: 5,
-    upHint: [0, 0.72, 0.69],
-    padStart: 1.4,
-    padEnd: 1.4,
-    parent: 'tail_dip',
-    mat: 'serpent_body',
-  });
-  b.addSegmentBox('tail_trough_2', {
-    pStart: [0, 11.2, 18.2],
-    pEnd: [0, 7.6, 22.8],
-    width: 4,
-    depth: 4,
-    upHint: [0, 0.85, 0.52],
-    padStart: 1.4,
-    padEnd: 1.2,
-    parent: 'tail_dip',
-    mat: 'serpent_body',
+    b.addSegmentBox('hind_flipper_l_ray', {
+      pStart: [-4.6, 7.8, 22.8],
+      pEnd: [-8.2, 5.8, 26.8],
+      width: 1,
+      depth: 1,
+      upHint: [0, 1, 0],
+      padStart: 0.6,
+      padEnd: 0.3,
+      parent: 'hind_flipper_l',
+      mat: 'serpent_fin_ray',
+    });
   });
 
-  b.addSegmentBox('tail_rise_1', {
-    pStart: [0, 7.6, 22.8],
-    pEnd: [0, 12.2, 27.8],
-    width: 4,
-    depth: 4,
-    upHint: [0, 0.76, -0.65],
-    padStart: 1.2,
-    padEnd: 1.0,
-    parent: 'tail_tip',
-    mat: 'serpent_body',
-  });
-  b.addSegmentBox('tail_rise_tip', {
-    pStart: [0, 12.2, 27.8],
-    pEnd: [0, 17.2, 32.5],
-    width: 3,
-    depth: 3,
-    upHint: [0, 0.76, -0.65],
-    padStart: 1.0,
+  // =========================================================================
+  // 4. FLARED 3-LOBED SEA-DRAGON CAUDAL TAIL FAN (`tail_tip`)
+  // =========================================================================
+  b.addSegmentBox('tail_fan_spine_center', {
+    pStart: [0, 15.6, 33.0],
+    pEnd: [0, 20.8, 38.4],
+    width: 1,
+    depth: 2,
+    upHint: [0, 0.72, -0.69],
+    padStart: 0.8,
     padEnd: 0.4,
     parent: 'tail_tip',
-    mat: 'serpent_body',
+    mat: 'serpent_fin_ray',
   });
-
-  // Tall Scalloped Translucent Seafoam Tail Fin Crest
-  b.addSegmentBox('fin_crest_tail_1', {
-    pStart: [0, 9.8, 22.2],
-    pEnd: [0, 15.0, 27.4],
+  b.addSegmentBox('tail_fan_lobe_upper', {
+    pStart: [0, 16.2, 32.8],
+    pEnd: [0, 22.8, 37.2],
     width: 1,
-    depth: 4,
-    upHint: [0, 0.76, -0.65],
+    depth: 3,
+    upHint: [0, 0.62, -0.78],
     padStart: 0.8,
-    padEnd: 0.8,
+    padEnd: 0.4,
     parent: 'tail_tip',
     mat: 'serpent_fin',
   });
-  b.addSegmentBox('fin_crest_tail_2', {
-    pStart: [0, 15.0, 27.4],
-    pEnd: [0, 20.0, 32.8],
+  b.addSegmentBox('tail_fan_lobe_lower', {
+    pStart: [0, 15.2, 33.2],
+    pEnd: [0, 18.2, 39.2],
     width: 1,
-    depth: 4,
-    upHint: [0, 0.76, -0.65],
+    depth: 3,
+    upHint: [0, 0.85, -0.52],
     padStart: 0.8,
-    padEnd: 0.6,
+    padEnd: 0.4,
     parent: 'tail_tip',
     mat: 'serpent_fin',
   });
@@ -1049,8 +1137,9 @@ function buildSilverSeaSerpent() {
     tracks: [
       { bone: 'neck', channel: 'rotation', keys: [{ time: 0.0, value: [-3, 0, 0] }, { time: 2.0, value: [3, 0, 0] }, { time: 4.0, value: [-3, 0, 0] }] },
       { bone: 'head', channel: 'rotation', keys: [{ time: 0.0, value: [3, 0, 0] }, { time: 2.0, value: [-3, 0, 0] }, { time: 4.0, value: [3, 0, 0] }] },
-      { bone: 'flipper_l', channel: 'rotation', keys: [{ time: 0.0, value: [0, 0, -6] }, { time: 2.0, value: [0, 0, 8] }, { time: 4.0, value: [0, 0, -6] }] },
-      { bone: 'flipper_r', channel: 'rotation', keys: [{ time: 0.0, value: [0, 0, 6] }, { time: 2.0, value: [0, 0, -8] }, { time: 4.0, value: [0, 0, 6] }] },
+      { bone: 'jaw', channel: 'rotation', keys: [{ time: 0.0, value: [0, 0, 0] }, { time: 2.0, value: [5, 0, 0] }, { time: 4.0, value: [0, 0, 0] }] },
+      { bone: 'flipper_l', channel: 'rotation', keys: [{ time: 0.0, value: [0, 0, 0] }, { time: 2.0, value: [0, 0, -8] }, { time: 4.0, value: [0, 0, 0] }] },
+      { bone: 'flipper_r', channel: 'rotation', keys: [{ time: 0.0, value: [0, 0, 0] }, { time: 2.0, value: [0, 0, 8] }, { time: 4.0, value: [0, 0, 0] }] },
       { bone: 'body_arch', channel: 'rotation', keys: [{ time: 0.0, value: [3, 0, 0] }, { time: 2.0, value: [-3, 0, 0] }, { time: 4.0, value: [3, 0, 0] }] },
       { bone: 'tail_tip', channel: 'rotation', keys: [{ time: 0.0, value: [-6, 0, 0] }, { time: 2.0, value: [6, 0, 0] }, { time: 4.0, value: [-6, 0, 0] }] },
     ],
@@ -1061,6 +1150,7 @@ function buildSilverSeaSerpent() {
     loop: 'loop',
     tracks: [
       { bone: 'neck', channel: 'rotation', keys: [{ time: 0.0, value: [-5, 0, 0] }, { time: 1.0, value: [5, 0, 0] }, { time: 2.0, value: [-5, 0, 0] }] },
+      { bone: 'jaw', channel: 'rotation', keys: [{ time: 0.0, value: [2, 0, 0] }, { time: 1.0, value: [7, 0, 0] }, { time: 2.0, value: [2, 0, 0] }] },
       { bone: 'body_arch', channel: 'rotation', keys: [{ time: 0.0, value: [6, 0, 0] }, { time: 1.0, value: [-6, 0, 0] }, { time: 2.0, value: [6, 0, 0] }] },
       { bone: 'tail_dip', channel: 'rotation', keys: [{ time: 0.0, value: [-7, 0, 0] }, { time: 1.0, value: [7, 0, 0] }, { time: 2.0, value: [-7, 0, 0] }] },
       { bone: 'tail_tip', channel: 'rotation', keys: [{ time: 0.0, value: [10, 0, 0] }, { time: 1.0, value: [-10, 0, 0] }, { time: 2.0, value: [10, 0, 0] }] },
@@ -1119,13 +1209,13 @@ async function main() {
       console.log(`[mcp-validate] ${builder.id} geometry:`, JSON.stringify(gSum));
       console.log(`[mcp-validate] ${builder.id} animations:`, JSON.stringify(aSum));
 
-      if (gSum.failed > 0 || gSum.warnings > 0) {
+      if (gSum.errors > 0 || gSum.warnings > 0) {
         console.error('GEOMETRY VALIDATION DETAILS:', JSON.stringify(mcpRes.geometry_validation.gates, null, 2));
-        if (gSum.failed > 0) throw new Error(`Geometry validation failed on ${builder.id}`);
+        if (gSum.errors > 0) throw new Error(`Geometry validation failed on ${builder.id}`);
       }
-      if (aSum.failed > 0 || aSum.warnings > 0) {
+      if (aSum.errors > 0 || aSum.warnings > 0) {
         console.error('ANIMATION VALIDATION DETAILS:', JSON.stringify(mcpRes.animation_validation.gates, null, 2));
-        if (aSum.failed > 0) throw new Error(`Animation validation failed on ${builder.id}`);
+        if (aSum.errors > 0) throw new Error(`Animation validation failed on ${builder.id}`);
       }
 
       validationSummary.push({
@@ -1153,7 +1243,7 @@ async function main() {
     path.join(reportDir, 'validation_report.json'),
     JSON.stringify({ generated_via: 'blockbench-mcp-plugin (official MCP server)', models: validationSummary }, null, 2) + '\n'
   );
-  console.log('\n[done] All 3 Batch 05 V2 models built & validated via Blockbench MCP!');
+  console.log('\n[done] All 3 Batch 05 V5 models built & validated via Blockbench MCP!');
 }
 
 main().catch((err) => {
