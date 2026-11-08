@@ -36,7 +36,13 @@ for material in ("aurite", "riftcrystal"):
     assert png_size(ASSETS / f"textures/models/armor/{material}_layer_2.png") == (64, 32)
 
 for path in (RES / "data/riftworld/recipes").glob("*.json"):
-    load(path)
+    recipe = load(path)
+    result = recipe.get("result", {})
+    result_id = result.get("item") if isinstance(result, dict) else result
+    if result_id and result_id.startswith("riftworld:") and result_id.split(":", 1)[1] in new_items:
+        if recipe.get("type") == "minecraft:crafting_shaped":
+            used = {symbol for row in recipe["pattern"] for symbol in row if symbol != " "}
+            assert used == set(recipe["key"]), f"unused/missing recipe symbols in {path.name}: {set(recipe['key']) ^ used}"
 load(RES / "data/riftworld/loot_tables/blocks/riftcrystal_ore.json")
 load(ASSETS / "blockstates/riftcrystal_ore.json")
 for locale in ("ru_ru", "en_us"):
