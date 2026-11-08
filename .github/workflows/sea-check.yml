@@ -38,6 +38,8 @@ jobs:
           java -cp /tmp/maja-unit MajaRulesTest
           python tools/rift/verify_v041_elisar_armory.py
       - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.8'
       - name: Compile and package both mods
         shell: bash
         run: |
@@ -45,7 +47,7 @@ jobs:
           cd mod
           chmod +x gradlew
           for attempt in 1 2 3; do
-            if ./gradlew jar dtJar majaSafetyCheck --no-daemon --console=plain 2>&1 | tee ../build-ci.log; then
+            if gradle jar dtJar majaSafetyCheck --no-daemon --console=plain 2>&1 | tee ../build-ci.log; then
               exit 0
             fi
             # A javac error is deterministic; retries are only for transient Maven errors.
@@ -58,7 +60,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          GRADLE_BIN=$(find "${GRADLE_USER_HOME:-$HOME/.gradle}/wrapper/dists" -path '*/gradle-8.8/bin/gradle' | head -1)
+          GRADLE_BIN=$(command -v gradle)
           test -x "$GRADLE_BIN"
           GRADLE_HOME_DIR=$(dirname "$(dirname "$GRADLE_BIN")")
           mkdir -p mod/build/gradle-dist
@@ -104,6 +106,8 @@ jobs:
           path: build-artifact
       - uses: gradle/actions/setup-gradle@v4
         if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[client-smoke]')
+        with:
+          gradle-version: '8.8'
       - name: Restore the client Gradle runtime without another network download
         if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[client-smoke]')
         shell: bash
