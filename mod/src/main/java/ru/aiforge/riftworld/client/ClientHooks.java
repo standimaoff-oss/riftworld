@@ -43,6 +43,7 @@ public final class ClientHooks {
     public static void layerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions e) {
         e.registerLayerDefinition(LiopleurodonBlockbenchModel.LAYER_LOCATION, LiopleurodonBlockbenchModel::createBodyLayer);
         e.registerLayerDefinition(PegasusBlockbenchModel.LAYER_LOCATION, PegasusBlockbenchModel::createBodyLayer);
+        ElisarFaunaRenderers.registerLayers(e);
     }
 
     @SubscribeEvent
@@ -78,6 +79,8 @@ public final class ClientHooks {
         e.registerEntityRenderer(ModEntities.ELISAR_VILLAGER.get(), c -> new ElisarFolkRenderer<>(c, "elisar_villager"));
         e.registerEntityRenderer(ModEntities.ELISAR_GUARD.get(), c -> new ElisarFolkRenderer<>(c, "elisar_guard"));
         e.registerEntityRenderer(ModEntities.ELISAR_ARCHER.get(), c -> new ElisarFolkRenderer<>(c, "elisar_archer"));
+        // v0.47.0: 15 существ биомной фауны Элисара (Blockbench MCP + многокостные анимации)
+        ElisarFaunaRenderers.registerRenderers(e);
     }
 
     @SubscribeEvent

@@ -62,8 +62,15 @@ public final class ModTabs {
                 out.accept(ModItems.DRAGON_WHISTLE.get());
                 out.accept(ModItems.LIOPLEURODON_TOOTH.get());
                 out.accept(ModItems.SEA_SCALE.get());
+                out.accept(ModItems.REEF_SEAHORSE_BUCKET.get());
+                out.accept(ModItems.PORCELAIN_FEATHER.get());
+                out.accept(ModItems.BASALT_SCUTE.get());
+                out.accept(ModItems.ASH_WING_DUST.get());
+                out.accept(ModItems.PHANTOM_FANG.get());
+                out.accept(ModItems.BONE_PINION.get());
+                out.accept(ModItems.ABYSSAL_INK_SAC.get());
 
-                // Все 16 яиц призыва мобов мода (включая Бумажного дракона и все 11 морских видов!)
+                // Все яйца призыва мобов мода (включая Бумажного дракона, 11 морских видов и 15 существ фауны v0.47.0!)
                 acceptAllSpawnEggs(out);
 
                 for (var b : ModBlocks.WITH_ITEM) {
@@ -102,6 +109,22 @@ public final class ModTabs {
         out.accept(ModItems.ELISAR_VILLAGER_EGG.get());
         out.accept(ModItems.ELISAR_GUARD_EGG.get());
         out.accept(ModItems.ELISAR_ARCHER_EGG.get());
+        // v0.47.0: 15 существ биомной фауны Элисара
+        out.accept(ModItems.PORCELAIN_CRANE_EGG.get());
+        out.accept(ModItems.BASALT_BEETLE_EGG.get());
+        out.accept(ModItems.ASH_MOTH_EGG.get());
+        out.accept(ModItems.AMETHYST_FOX_EGG.get());
+        out.accept(ModItems.SIZO_LEAFWING_EGG.get());
+        out.accept(ModItems.AZURE_FROG_EGG.get());
+        out.accept(ModItems.BLOSSOM_SNAIL_EGG.get());
+        out.accept(ModItems.PHANTOM_WOLF_EGG.get());
+        out.accept(ModItems.CRYSTAL_GECKO_EGG.get());
+        out.accept(ModItems.FACETED_OWL_EGG.get());
+        out.accept(ModItems.BONE_RAVEN_EGG.get());
+        out.accept(ModItems.CORAL_HERMIT_CRAB_EGG.get());
+        out.accept(ModItems.REEF_SEAHORSE_EGG.get());
+        out.accept(ModItems.GHOST_SQUID_EGG.get());
+        out.accept(ModItems.SILVER_SEA_SERPENT_EGG.get());
     }
 
     @SubscribeEvent

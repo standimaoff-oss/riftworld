@@ -132,6 +132,100 @@ public final class ModEntities {
                     .sized(0.85F, 2.45F).clientTrackingRange(10)
                     .build("riftworld:morok"));
 
+    // ==========================================================================================
+    // v0.47.0 «Фауна биомов Элисара» — 15 существ Hytale/Blockbench с многокостными анимациями:
+    // ==========================================================================================
+
+    public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.fauna.PorcelainCraneEntity>> PORCELAIN_CRANE =
+            TYPES.register("porcelain_crane", () -> EntityType.Builder
+                    .<ru.aiforge.riftworld.entity.fauna.PorcelainCraneEntity>of(
+                            ru.aiforge.riftworld.entity.fauna.PorcelainCraneEntity::new, MobCategory.CREATURE)
+                    .sized(0.65F, 1.80F).clientTrackingRange(10).build("riftworld:porcelain_crane"));
+
+    public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.fauna.BasaltBeetleEntity>> BASALT_BEETLE =
+            TYPES.register("basalt_beetle", () -> EntityType.Builder
+                    .<ru.aiforge.riftworld.entity.fauna.BasaltBeetleEntity>of(
+                            ru.aiforge.riftworld.entity.fauna.BasaltBeetleEntity::new, MobCategory.CREATURE)
+                    .sized(1.25F, 0.98F).fireImmune().clientTrackingRange(10).build("riftworld:basalt_beetle"));
+
+    public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.fauna.AshMothEntity>> ASH_MOTH =
+            TYPES.register("ash_moth", () -> EntityType.Builder
+                    .<ru.aiforge.riftworld.entity.fauna.AshMothEntity>of(
+                            ru.aiforge.riftworld.entity.fauna.AshMothEntity::new, MobCategory.MONSTER)
+                    .sized(0.85F, 0.75F).fireImmune().clientTrackingRange(10).build("riftworld:ash_moth"));
+
+    public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.fauna.AmethystFoxEntity>> AMETHYST_FOX =
+            TYPES.register("amethyst_fox", () -> EntityType.Builder
+                    .<ru.aiforge.riftworld.entity.fauna.AmethystFoxEntity>of(
+                            ru.aiforge.riftworld.entity.fauna.AmethystFoxEntity::new, MobCategory.CREATURE)
+                    .sized(0.65F, 0.80F).clientTrackingRange(10).build("riftworld:amethyst_fox"));
+
+    public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.fauna.SizoLeafwingEntity>> SIZO_LEAFWING =
+            TYPES.register("sizo_leafwing", () -> EntityType.Builder
+                    .<ru.aiforge.riftworld.entity.fauna.SizoLeafwingEntity>of(
+                            ru.aiforge.riftworld.entity.fauna.SizoLeafwingEntity::new, MobCategory.CREATURE)
+                    .sized(0.85F, 1.25F).clientTrackingRange(10).build("riftworld:sizo_leafwing"));
+
+    public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.fauna.AzureFrogEntity>> AZURE_FROG =
+            TYPES.register("azure_frog", () -> EntityType.Builder
+                    .<ru.aiforge.riftworld.entity.fauna.AzureFrogEntity>of(
+                            ru.aiforge.riftworld.entity.fauna.AzureFrogEntity::new, MobCategory.CREATURE)
+                    .sized(0.55F, 0.50F).clientTrackingRange(8).build("riftworld:azure_frog"));
+
+    public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.fauna.BlossomSnailEntity>> BLOSSOM_SNAIL =
+            TYPES.register("blossom_snail", () -> EntityType.Builder
+                    .<ru.aiforge.riftworld.entity.fauna.BlossomSnailEntity>of(
+                            ru.aiforge.riftworld.entity.fauna.BlossomSnailEntity::new, MobCategory.CREATURE)
+                    .sized(0.75F, 0.80F).clientTrackingRange(8).build("riftworld:blossom_snail"));
+
+    public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.fauna.PhantomWolfEntity>> PHANTOM_WOLF =
+            TYPES.register("phantom_wolf", () -> EntityType.Builder
+                    .<ru.aiforge.riftworld.entity.fauna.PhantomWolfEntity>of(
+                            ru.aiforge.riftworld.entity.fauna.PhantomWolfEntity::new, MobCategory.MONSTER)
+                    .sized(0.85F, 1.10F).clientTrackingRange(10).build("riftworld:phantom_wolf"));
+
+    public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.fauna.CrystalGeckoEntity>> CRYSTAL_GECKO =
+            TYPES.register("crystal_gecko", () -> EntityType.Builder
+                    .<ru.aiforge.riftworld.entity.fauna.CrystalGeckoEntity>of(
+                            ru.aiforge.riftworld.entity.fauna.CrystalGeckoEntity::new, MobCategory.CREATURE)
+                    .sized(0.65F, 0.50F).clientTrackingRange(8).build("riftworld:crystal_gecko"));
+
+    public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.fauna.FacetedOwlEntity>> FACETED_OWL =
+            TYPES.register("faceted_owl", () -> EntityType.Builder
+                    .<ru.aiforge.riftworld.entity.fauna.FacetedOwlEntity>of(
+                            ru.aiforge.riftworld.entity.fauna.FacetedOwlEntity::new, MobCategory.CREATURE)
+                    .sized(0.60F, 0.90F).clientTrackingRange(10).build("riftworld:faceted_owl"));
+
+    public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.fauna.BoneRavenEntity>> BONE_RAVEN =
+            TYPES.register("bone_raven", () -> EntityType.Builder
+                    .<ru.aiforge.riftworld.entity.fauna.BoneRavenEntity>of(
+                            ru.aiforge.riftworld.entity.fauna.BoneRavenEntity::new, MobCategory.MONSTER)
+                    .sized(0.65F, 0.75F).clientTrackingRange(12).build("riftworld:bone_raven"));
+
+    public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.fauna.CoralHermitCrabEntity>> CORAL_HERMIT_CRAB =
+            TYPES.register("coral_hermit_crab", () -> EntityType.Builder
+                    .<ru.aiforge.riftworld.entity.fauna.CoralHermitCrabEntity>of(
+                            ru.aiforge.riftworld.entity.fauna.CoralHermitCrabEntity::new, MobCategory.WATER_CREATURE)
+                    .sized(0.80F, 0.80F).clientTrackingRange(10).build("riftworld:coral_hermit_crab"));
+
+    public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.fauna.ReefSeahorseEntity>> REEF_SEAHORSE =
+            TYPES.register("reef_seahorse", () -> EntityType.Builder
+                    .<ru.aiforge.riftworld.entity.fauna.ReefSeahorseEntity>of(
+                            ru.aiforge.riftworld.entity.fauna.ReefSeahorseEntity::new, MobCategory.WATER_CREATURE)
+                    .sized(0.45F, 0.85F).clientTrackingRange(10).build("riftworld:reef_seahorse"));
+
+    public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.fauna.GhostSquidEntity>> GHOST_SQUID =
+            TYPES.register("ghost_squid", () -> EntityType.Builder
+                    .<ru.aiforge.riftworld.entity.fauna.GhostSquidEntity>of(
+                            ru.aiforge.riftworld.entity.fauna.GhostSquidEntity::new, MobCategory.WATER_CREATURE)
+                    .sized(0.85F, 1.15F).clientTrackingRange(12).build("riftworld:ghost_squid"));
+
+    public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.fauna.SilverSeaSerpentEntity>> SILVER_SEA_SERPENT =
+            TYPES.register("silver_sea_serpent", () -> EntityType.Builder
+                    .<ru.aiforge.riftworld.entity.fauna.SilverSeaSerpentEntity>of(
+                            ru.aiforge.riftworld.entity.fauna.SilverSeaSerpentEntity::new, MobCategory.WATER_CREATURE)
+                    .sized(1.75F, 1.45F).updateInterval(2).clientTrackingRange(20).build("riftworld:silver_sea_serpent"));
+
     private ModEntities() {
     }
 
@@ -153,5 +247,21 @@ public final class ModEntities {
         e.put(ELISAR_GUARD.get(), ru.aiforge.riftworld.entity.ElisarGuardEntity.attributes().build());
         e.put(ELISAR_ARCHER.get(), ru.aiforge.riftworld.entity.ElisarArcherEntity.attributes().build());
         e.put(MOROK.get(), ru.aiforge.riftworld.entity.MorokEntity.attributes().build());
+
+        e.put(PORCELAIN_CRANE.get(), ru.aiforge.riftworld.entity.fauna.PorcelainCraneEntity.attributes().build());
+        e.put(BASALT_BEETLE.get(), ru.aiforge.riftworld.entity.fauna.BasaltBeetleEntity.attributes().build());
+        e.put(ASH_MOTH.get(), ru.aiforge.riftworld.entity.fauna.AshMothEntity.attributes().build());
+        e.put(AMETHYST_FOX.get(), ru.aiforge.riftworld.entity.fauna.AmethystFoxEntity.attributes().build());
+        e.put(SIZO_LEAFWING.get(), ru.aiforge.riftworld.entity.fauna.SizoLeafwingEntity.attributes().build());
+        e.put(AZURE_FROG.get(), ru.aiforge.riftworld.entity.fauna.AzureFrogEntity.attributes().build());
+        e.put(BLOSSOM_SNAIL.get(), ru.aiforge.riftworld.entity.fauna.BlossomSnailEntity.attributes().build());
+        e.put(PHANTOM_WOLF.get(), ru.aiforge.riftworld.entity.fauna.PhantomWolfEntity.attributes().build());
+        e.put(CRYSTAL_GECKO.get(), ru.aiforge.riftworld.entity.fauna.CrystalGeckoEntity.attributes().build());
+        e.put(FACETED_OWL.get(), ru.aiforge.riftworld.entity.fauna.FacetedOwlEntity.attributes().build());
+        e.put(BONE_RAVEN.get(), ru.aiforge.riftworld.entity.fauna.BoneRavenEntity.attributes().build());
+        e.put(CORAL_HERMIT_CRAB.get(), ru.aiforge.riftworld.entity.fauna.CoralHermitCrabEntity.attributes().build());
+        e.put(REEF_SEAHORSE.get(), ru.aiforge.riftworld.entity.fauna.ReefSeahorseEntity.attributes().build());
+        e.put(GHOST_SQUID.get(), ru.aiforge.riftworld.entity.fauna.GhostSquidEntity.attributes().build());
+        e.put(SILVER_SEA_SERPENT.get(), ru.aiforge.riftworld.entity.fauna.SilverSeaSerpentEntity.attributes().build());
     }
 }

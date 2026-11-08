@@ -36,6 +36,7 @@ jobs:
           python reports/el_gran_maja_model/validate_el_gran_maja_model.py
           python reports/el_gran_maja_model/validate_collision_bounds.py
           python tools/rift/validate_reference_fauna.py
+          python tools/rift/validate_v047_fauna.py
           mkdir -p /tmp/maja-unit
           javac -d /tmp/maja-unit mod/src/main/java/ru/aiforge/riftworld/world/DeepOcean.java mod/src/main/java/ru/aiforge/riftworld/world/MajaSafetyPolicy.java tests/java/MajaRulesTest.java tests/java/DeepOceanCoreTest.java mod/src/main/java/ru/aiforge/riftworld/world/OceanWreck.java tests/java/OceanWreckTest.java mod/src/main/java/ru/aiforge/riftworld/world/MajaMotion.java tests/java/MajaMotionTest.java
           java -cp /tmp/maja-unit MajaRulesTest

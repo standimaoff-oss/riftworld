@@ -267,6 +267,87 @@ public final class ModItems {
     public static final RegistryObject<Item> ELISAR_ARCHER_EGG = ITEMS.register("elisar_archer_spawn_egg",
             () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.ELISAR_ARCHER, 0x6A493A, 0xD09873, new Item.Properties()));
 
+    // ==========================================================================================
+    // v0.47.0 «Фауна биомов Элисара» — 15 яиц призыва + ведро с морским коньком + 6 трофеев/даров
+    // ==========================================================================================
+
+    public static final RegistryObject<Item> PORCELAIN_CRANE_EGG = ITEMS.register("porcelain_crane_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.PORCELAIN_CRANE, 0xF7F4EC, 0xD4AF5A, new Item.Properties()));
+    public static final RegistryObject<Item> BASALT_BEETLE_EGG = ITEMS.register("basalt_beetle_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.BASALT_BEETLE, 0x25272C, 0xFF5A1F, new Item.Properties()));
+    public static final RegistryObject<Item> ASH_MOTH_EGG = airOrGroundEgg("ash_moth_spawn_egg", ModEntities.ASH_MOTH, 0x3E3B39, 0xFF7B29);
+    public static final RegistryObject<Item> AMETHYST_FOX_EGG = ITEMS.register("amethyst_fox_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.AMETHYST_FOX, 0x6E4CA8, 0xD5A8FF, new Item.Properties()));
+    public static final RegistryObject<Item> SIZO_LEAFWING_EGG = ITEMS.register("sizo_leafwing_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.SIZO_LEAFWING, 0x5D8E7F, 0xD9EAE2, new Item.Properties()));
+    public static final RegistryObject<Item> AZURE_FROG_EGG = ITEMS.register("azure_frog_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.AZURE_FROG, 0x1D8FD8, 0x78F2D0, new Item.Properties()));
+    public static final RegistryObject<Item> BLOSSOM_SNAIL_EGG = ITEMS.register("blossom_snail_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.BLOSSOM_SNAIL, 0xE8B4C8, 0xFAF4EA, new Item.Properties()));
+    public static final RegistryObject<Item> PHANTOM_WOLF_EGG = ITEMS.register("phantom_wolf_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.PHANTOM_WOLF, 0x26323F, 0x8FE8F5, new Item.Properties()));
+    public static final RegistryObject<Item> CRYSTAL_GECKO_EGG = ITEMS.register("crystal_gecko_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.CRYSTAL_GECKO, 0x7BE3F2, 0xE8FBFF, new Item.Properties()));
+    public static final RegistryObject<Item> FACETED_OWL_EGG = airOrGroundEgg("faceted_owl_spawn_egg", ModEntities.FACETED_OWL, 0xDCE6F2, 0x52D8F6);
+    public static final RegistryObject<Item> BONE_RAVEN_EGG = airOrGroundEgg("bone_raven_spawn_egg", ModEntities.BONE_RAVEN, 0x1E2024, 0xDCD4C4);
+    public static final RegistryObject<Item> CORAL_HERMIT_CRAB_EGG = ITEMS.register("coral_hermit_crab_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.CORAL_HERMIT_CRAB, 0xD95B43, 0xF2D3AC, new Item.Properties()));
+    public static final RegistryObject<Item> REEF_SEAHORSE_EGG = airOrGroundEgg("reef_seahorse_spawn_egg", ModEntities.REEF_SEAHORSE, 0xF28C38, 0xFCE28B);
+    public static final RegistryObject<Item> GHOST_SQUID_EGG = airOrGroundEgg("ghost_squid_spawn_egg", ModEntities.GHOST_SQUID, 0x1B2845, 0x6CF6FF);
+    public static final RegistryObject<Item> SILVER_SEA_SERPENT_EGG = airOrGroundEgg("silver_sea_serpent_spawn_egg", ModEntities.SILVER_SEA_SERPENT, 0xB8CDD9, 0x36D6E8);
+
+    public static final RegistryObject<Item> REEF_SEAHORSE_BUCKET = ITEMS.register("reef_seahorse_bucket",
+            () -> new net.minecraft.world.item.MobBucketItem(
+                    ModEntities.REEF_SEAHORSE,
+                    ModFluids.SOURCE,
+                    () -> net.minecraft.sounds.SoundEvents.BUCKET_EMPTY_FISH,
+                    new Item.Properties().stacksTo(1)));
+
+    public static final RegistryObject<Item> PORCELAIN_FEATHER = ITEMS.register("porcelain_feather",
+            () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> BASALT_SCUTE = ITEMS.register("basalt_scute",
+            () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON).fireResistant()));
+    public static final RegistryObject<Item> ASH_WING_DUST = ITEMS.register("ash_wing_dust",
+            () -> new Item(new Item.Properties()));
+    public static final RegistryObject<Item> PHANTOM_FANG = ITEMS.register("phantom_fang",
+            () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> BONE_PINION = ITEMS.register("bone_pinion",
+            () -> new Item(new Item.Properties()));
+    public static final RegistryObject<Item> ABYSSAL_INK_SAC = ITEMS.register("abyssal_ink_sac",
+            () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)));
+
+    private static <E extends net.minecraft.world.entity.Mob> RegistryObject<Item> airOrGroundEgg(
+            String id, java.util.function.Supplier<? extends net.minecraft.world.entity.EntityType<E>> typeSup,
+            int bg, int fg) {
+        return ITEMS.register(id, () -> new net.minecraftforge.common.ForgeSpawnEggItem(typeSup, bg, fg, new Item.Properties()) {
+            @Override
+            public net.minecraft.world.InteractionResultHolder<net.minecraft.world.item.ItemStack> use(
+                    net.minecraft.world.level.Level level,
+                    net.minecraft.world.entity.player.Player player,
+                    net.minecraft.world.InteractionHand hand) {
+                var res = super.use(level, player, hand);
+                if (res.getResult().consumesAction()) return res;
+                net.minecraft.world.item.ItemStack stack = player.getItemInHand(hand);
+                var hit = getPlayerPOVHitResult(level, player, net.minecraft.world.level.ClipContext.Fluid.ANY);
+                if (hit.getType() == net.minecraft.world.phys.HitResult.Type.MISS) {
+                    if (!level.isClientSide && level instanceof net.minecraft.server.level.ServerLevel sl) {
+                        net.minecraft.world.phys.Vec3 spawnPos = player.getEyePosition().add(player.getLookAngle().scale(4.0));
+                        var ent = typeSup.get().spawn(
+                                sl, stack, player, net.minecraft.core.BlockPos.containing(spawnPos),
+                                net.minecraft.world.entity.MobSpawnType.SPAWN_EGG, false, false);
+                        if (ent != null) {
+                            ent.moveTo(spawnPos.x, spawnPos.y, spawnPos.z, player.getYRot(), 0.0F);
+                            if (!player.getAbilities().instabuild) stack.shrink(1);
+                            player.awardStat(net.minecraft.stats.Stats.ITEM_USED.get(this));
+                        }
+                    }
+                    return net.minecraft.world.InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
+                }
+                return res;
+            }
+        });
+    }
+
     private static Item.Properties gear() {
         return new Item.Properties();
     }
