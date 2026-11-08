@@ -106,8 +106,6 @@ jobs:
           path: build-artifact
       - uses: gradle/actions/setup-gradle@v4
         if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[client-smoke]')
-        with:
-          gradle-version: '8.8'
       - name: Restore the client Gradle runtime without another network download
         if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[client-smoke]')
         shell: bash
