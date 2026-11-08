@@ -24,7 +24,7 @@ function arg(name, fallback) {
 
 const blockbenchRoot = path.resolve(arg('blockbench-root', process.env.BLOCKBENCH_ROOT || path.join(repoRoot, '../.cache/riftworld-blockbench/blockbench-5.2.2')));
 const outDir = path.resolve(arg('out', path.join(repoRoot, 'reports/blockbench_first_batch/photos')));
-const idsArg = arg('ids', 'porcelain_crane,basalt_beetle,ash_moth,amethyst_fox');
+const idsArg = arg('ids', 'porcelain_crane,basalt_beetle,ash_moth,amethyst_fox,sizo_leafwing,azure_frog');
 const ids = idsArg.split(',').map(s => s.trim()).filter(Boolean);
 const background = arg('background', '#f2f4f8');
 const view = arg('view', 'default');
@@ -36,7 +36,9 @@ const titles = {
   porcelain_crane: 'Фарфоровый журавль',
   basalt_beetle: 'Базальтовый жук-углеед',
   ash_moth: 'Пепельная моль',
-  amethyst_fox: 'Аметистовый лис'
+  amethyst_fox: 'Аметистовый лис',
+  sizo_leafwing: 'Сизый листокрыл',
+  azure_frog: 'Лазурный древесный лягуш'
 };
 
 if (!fs.existsSync(path.join(blockbenchRoot, 'dist/bundle.js'))) {
@@ -144,8 +146,10 @@ try {
     const cameraPositions = {
       porcelain_crane: [512, 512 * 0.55, -320],
       basalt_beetle: [-512, 512 * 0.6, -512],
-      ash_moth: [0, 420, -512],
-      amethyst_fox: [-512, 512 * 0.5, -512]
+      ash_moth: [0, 135, -512],
+      amethyst_fox: [-512, 220, -280],
+      sizo_leafwing: [-512, 250, -512],
+      azure_frog: [-512, 270, -512]
     };
     const offset = view === 'front' ? [0, 130, -512]
       : view === 'side' ? [512, 130, 0]
@@ -195,7 +199,9 @@ try {
       return { dataUrl, resolution: finalResolution, zoomPercent, cameraPreset };
     }, { bbmodel, cameraPreset, zoomPercent, finalResolution });
 
-    const filename = String(i + 1).padStart(2, '0') + '_' + id + '.png';
+    const order = Object.keys(titles).indexOf(id);
+    if (order < 0) throw new Error('Unknown model: ' + id);
+    const filename = String(order + 1).padStart(2, '0') + '_' + id + '.png';
     const file = path.join(outDir, filename);
     fs.writeFileSync(file, Buffer.from(shot.dataUrl.split(',')[1], 'base64'));
     execFileSync('convert', [file, '-background', background, '-alpha', 'remove', '-alpha', 'off', file]);
@@ -227,7 +233,7 @@ const montageArgs = ['-background', background, '-fill', '#20242c', '-font', 'De
 for (const photo of report.photos) {
   montageArgs.push('-label', photo.title_ru, path.join(repoRoot, photo.file));
 }
-montageArgs.push('-tile', '2x2', '-geometry', '800x600+14+14', overview);
+montageArgs.push('-tile', ids.length > 4 ? '3x2' : '2x2', '-geometry', '800x600+14+14', overview);
 execFileSync('montage', montageArgs);
 for (const extra of fs.readdirSync(outDir)) {
   if (/^00_all_models-\d+\.png$/.test(extra)) fs.rmSync(path.join(outDir, extra));

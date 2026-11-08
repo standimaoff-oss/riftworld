@@ -49,6 +49,21 @@
     crystal:      { base: [128, 74, 190],  noise: 6,  edge: -5, pattern: 'crystal' },
     crystal_hi:   { base: [190, 139, 235], noise: 5,  edge: -4, pattern: 'crystal' },
     crystal_lo:   { base: [83, 45, 133],   noise: 5,  edge: -5, pattern: 'crystal' },
+    mint:          { base: [139, 183, 172], noise: 4, edge: -4, pattern: 'fur' },
+    mint_hi:       { base: [190, 218, 207], noise: 3, edge: -3, pattern: 'fur' },
+    mint_lo:       { base: [91, 136, 132], noise: 4, edge: -4, pattern: 'fur' },
+    leaf_cream:    { base: [226, 233, 218], noise: 3, edge: -4, pattern: 'feather' },
+    leaf_green:    { base: [144, 180, 155], noise: 4, edge: -4, pattern: 'feather' },
+    branch:        { base: [99, 83, 69], noise: 4, edge: -4, pattern: 'basalt' },
+    flower_blue:   { base: [145, 126, 218], noise: 3, edge: -3, pattern: 'fur' },
+    amber:         { base: [206, 137, 45], noise: 5, edge: -4, pattern: 'metal' },
+    frog_teal:     { base: [45, 177, 174], noise: 5, edge: -4, pattern: 'frog_spots' },
+    frog_hi:       { base: [87, 207, 190], noise: 4, edge: -4, pattern: 'frog_spots' },
+    frog_dark:     { base: [27, 129, 147], noise: 5, edge: -4, pattern: 'frog_spots' },
+    frog_belly:    { base: [137, 215, 205], noise: 3, edge: -4, pattern: 'ceramic' },
+    petal_pink:    { base: [245, 170, 192], noise: 3, edge: -4, pattern: 'fur' },
+    petal_light:   { base: [255, 206, 215], noise: 3, edge: -3, pattern: 'fur' },
+    frog_toe:      { base: [166, 221, 169], noise: 3, edge: -4, pattern: 'fur' },
     eye:          { base: [18, 17, 21],    noise: 1,  edge: 0,  pattern: 'eye' },
     eye_light:    { base: [248, 246, 255], noise: 1,  edge: 0,  pattern: 'eye' }
   };
@@ -181,6 +196,12 @@
             else if (d < radius * 0.52) { r = 211; g = 207; b = 198; }
             else if (d < radius * 0.78) { r = 57; g = 55; b = 53; }
             else if (d < radius) { r = 122; g = 119; b = 114; }
+            break;
+          }
+          case 'frog_spots': {
+            const spot = fnv('frog:' + Math.floor(p[0] / 7) + ',' + Math.floor(p[1] / 7) + ',' + Math.floor(p[2] / 7));
+            if (spot > 0.82) { r += 43; g += 26; b -= 33; }
+            else if (spot < 0.12) { r -= 12; g -= 17; b += 8; }
             break;
           }
           case 'fur': {
@@ -409,7 +430,7 @@
         title_ru: this.spec.title_ru,
         biome: this.spec.biome,
         concept: this.spec.concept,
-        revision: ['porcelain_crane', 'basalt_beetle'].includes(this.id) ? 3 : 2,
+        revision: ['porcelain_crane', 'basalt_beetle', 'ash_moth', 'amethyst_fox'].includes(this.id) ? 3 : 1,
         generator: 'Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)',
         bones: this.bones.size,
         cubes: this.cubes.length,
@@ -727,170 +748,226 @@
 
   // ---------------------------------------------------------------- moth
 
+  // Moth: broad planar cuboids arranged as asymmetric layered wing plates.
   function buildAshMoth(b) {
-    b.bone('body', null, [0, 28, 0]);
-    ellipsoidShell(b, 'body', 'thorax_fuzz', [0, 30, -8], [9, 9, 12], 2, p => p[1] > 32 ? 'ash_hi' : 'ash');
-    ellipsoidShell(b, 'body', 'abdomen_fuzz', [0, 28, 12], [7, 7, 18], 2, p => Math.floor(p[2] / 4) % 2 ? 'ash' : 'ash_dark');
-    b.box('body', 'ember_band', [0, 28, 4], [12, 2, 4], 'ember');
-
-    b.bone('head', 'body', [0, 32, -20]);
-    b.box('head', 'head', [0, 33, -22], [12, 10, 10], 'ash_hi');
-    b.box('head', 'face', [0, 31, -28], [8, 6, 3], 'ash');
-    b.box('head', 'eye_left', [-6, 34, -25], [2, 5, 5], 'eye');
-    b.box('head', 'eye_right', [6, 34, -25], [2, 5, 5], 'eye');
+    b.bone('body', null, [0, 34, 0]);
+    b.box('body', 'thorax', [0, 34, -1], [24, 24, 28], 'ash');
+    b.box('body', 'fuzzy_collar', [0, 40, -8], [26, 16, 16], 'ash_hi');
+    b.box('body', 'abdomen', [0, 26, 20], [19, 22, 30], 'ash');
+    for (let i = 0; i < 3; i++) b.box('body', 'abdomen_band_' + i, [0, 26, 12 + 8*i], [20, 19, 2], 'ash_dark');
+    b.bone('head', 'body', [0, 41, -17]);
+    b.box('head', 'head', [0, 42, -20], [20, 17, 14], 'ash_hi');
+    b.box('head', 'face', [0, 39, -28], [12, 12, 4], 'ash');
     for (const side of [-1, 1]) {
+      b.box('head', 'eye_' + side, [side*9, 44, -28], [5, 7, 3], 'eye');
       const ant = side < 0 ? 'antenna_left' : 'antenna_right';
-      b.bone(ant, 'head', [side * 4, 38, -24]);
-      tubePath(b, ant, 'stalk', [[side * 4, 38, -24], [side * 8, 46, -28], [side * 12, 54, -30]], 2, 'ash_dark', 3);
-      for (let i = 0; i < 6; i++) {
-        const t = i / 5;
-        const p = [side * (5 + t * 8), 40 + t * 14, -25 - t * 5];
-        b.box(ant, 'barb_outer_' + i, [p[0] + side * 3, p[1], p[2]], [5, 1, 2], 'ash_dark');
-        b.box(ant, 'barb_inner_' + i, [p[0] - side * 2, p[1] + 1, p[2]], [4, 1, 2], 'ash');
+      const pivot = [side * 7, 49, -19];
+      b.bone(ant, 'head', pivot, [0, 0, side * -18]);
+      b.box(ant, 'stalk', [pivot[0], 62, pivot[2]], [3, 25, 4], 'ash_dark');
+      for (let i=0; i<5; i++) {
+        b.box(ant, 'barb_' + i, [pivot[0], 53 + i*4, pivot[2]], [11 - i, 2, 4], 'ash_dark');
       }
-      b.animate(ant, 'y', 5, 1.3, side < 0 ? 0 : Math.PI);
+      b.animate(ant, 'y', 3, 1.2, side < 0 ? 0 : Math.PI);
     }
-
     for (const side of [-1, 1]) {
       const fore = side < 0 ? 'wing_fore_left' : 'wing_fore_right';
       const hind = side < 0 ? 'wing_hind_left' : 'wing_hind_right';
-      b.bone(fore, 'body', [side * 6, 32, -8]);
-      // Tapered, stepped forewing with dihedral and orange tip.
-      for (let x = 6; x < 74; x += 2) {
-        const t = (x - 6) / 68;
-        const chord = Math.round(34 * (1 - t * 0.60));
-        const zLead = Math.round(-22 + t * 12);
-        const zTrail = zLead + chord;
-        const y = 32 + Math.floor(t * 28 / 2) * 2;
-        const mat = x > 56 ? (x > 68 ? 'lava_hi' : 'ember') : (Math.floor(x / 6) % 2 ? 'wing' : 'wing_hi');
-        b.cube(fore, 'membrane_' + x, [side < 0 ? side * (x + 2) : side * x, y, Math.min(zLead, zTrail)], [side < 0 ? side * x : side * (x + 2), y + 2, Math.max(zLead, zTrail)], mat);
-        if (x % 14 === 6 && x < 56) {
-          b.box(fore, 'vein_' + x, [side * (x + 1), y + 2, (zLead + zTrail) / 2], [1, 1, Math.abs(zTrail - zLead) - 2], 'wing_lo');
-        }
-      }
-      b.bone(hind, 'body', [side * 6, 28, 6]);
-      const eyeCenter = [side * 27, 18, 9];
-      for (let x = 6; x < 50; x += 2) {
-        const t = (x - 6) / 44;
-        const half = Math.round(15 * Math.sqrt(Math.max(0, 1 - Math.pow((t - 0.42) / 0.66, 2))));
-        if (half < 2) continue;
-        const yCenter = 20 - Math.floor(t * 6 / 2) * 2;
-        const z = 8 + Math.floor(t * 4 / 2) * 2;
-        b.cube(hind, 'membrane_' + x, [side < 0 ? side * (x + 2) : side * x, yCenter - half, z], [side < 0 ? side * x : side * (x + 2), yCenter + half, z + 2], 'eyespot',
-          { eyespot_center: eyeCenter, eyespot_radius: 12, eyespot_plane: 'xy' });
-        if (x % 14 === 6 && Math.abs(x - 27) > 13) b.box(hind, 'vein_' + x, [side * (x + 1), yCenter, z - 1], [1, half * 2 - 2, 1], 'wing_lo');
-      }
-      b.animate(fore, 'z', 10, 2.2, side < 0 ? 0 : Math.PI);
-      b.animate(hind, 'z', 7, 2.2, side < 0 ? 0.3 : Math.PI + 0.3);
+      const pivot = [side*10, 43, 1];
+      b.bone(fore, 'body', pivot, [0, 0, side*10]);
+      // Separate wide rectangles overlap: a thick leading edge, tapered inner
+      // sections and a glowing tip, rather than dozens of one-voxel strips.
+      const plates = [
+        [21, 44, 23, 24, 'wing'], [40, 46, 20, 28, 'wing_hi'],
+        [58, 49, 18, 25, 'wing'], [72, 52, 14, 20, 'wing_hi'],
+        [82, 55, 9, 15, 'ember']
+      ];
+      plates.forEach(([x,y,w,h,mat],i) => b.box(fore, 'fore_plate_'+i, [side*x,y,0], [w,h,3], mat));
+      plates.slice(0,4).forEach(([x,y,w,h], i) =>
+        b.box(fore, 'leading_edge_'+i, [side*x, y+h/2-1, -1], [w, 2, 4], 'ash_hi'));
+      b.box(fore, 'ember_tip', [side*85, 55, -1], [7, 14, 4], 'lava');
+      for (let i=0;i<3;i++) b.box(fore, 'rib_'+i, [side*(28+20*i), 44+i*3, -2], [2, 16, 1], 'wing_lo');
+      b.bone(hind, 'body', [side*10, 29, 4], [0, 0, side*-5]);
+      const eyeCenter = [side*33, 22, -3];
+      b.box(hind, 'lower_wing_base', [side*29, 22, 4], [38, 25, 3], 'eyespot',
+        {eyespot_center: eyeCenter, eyespot_radius: 10, eyespot_plane: 'xy'});
+      b.box(hind, 'lower_wing_tip', [side*49, 23, 4], [9, 18, 3], 'wing');
+      b.box(hind, 'lower_wing_bottom', [side*30, 9, 4], [29, 4, 3], 'wing_lo');
+      b.animate(fore, 'z', 7, 2.2, side < 0 ? 0 : Math.PI);
+      b.animate(hind, 'z', 5, 2.2, side < 0 ? 0.3 : Math.PI + 0.3);
     }
-
-    b.bone('legs', 'body', [0, 22, -6]);
-    for (const side of [-1, 1]) for (let i = 0; i < 3; i++) {
-      const z = -12 + i * 8;
-      b.box('legs', 'leg_' + side + '_' + i, [side * 5, 18, z], [2, 8, 2], 'ash_dark');
-      b.box('legs', 'foot_' + side + '_' + i, [side * 6, 14, z - 2], [3, 2, 4], 'ash_dark');
-    }
-    b.bone('ash_trail', 'body', [0, 20, 20]);
-    const motes = [[-8, 12, 24], [6, 10, 28], [-3, 6, 32], [10, 4, 36], [-10, 2, 40], [2, -2, 44]];
-    motes.forEach((p, i) => b.box('ash_trail', 'mote_' + i, p, [2 + i % 2, 2, 2], i % 2 ? 'ash' : 'ash_dark'));
-    b.animate('body', 'x', 2, 1.1, 0);
-    b.animate('head', 'x', 1.5, 1.1, 0.3);
-    b.animate('legs', 'x', 3, 1.1, 0);
-    b.animate('ash_trail', 'y', 4, 0.9, 0);
+    b.bone('legs', 'body', [0, 23, -6]);
+    for (const side of [-1,1]) for (let i=0;i<3;i++) b.box('legs', 'leg_'+side+'_'+i, [side*8, 17, -9+i*8], [2, 12, 2], 'ash_dark');
+    b.bone('ash_trail', 'body', [0, 14, 18]);
+    [[-14,6,16],[12,4,22],[-5,0,28],[20,1,30],[-20,3,34],[5,-3,38]].forEach((p,i) => b.box('ash_trail', 'mote_'+i, p, [3,3,3], 'ash_dark'));
+    b.animate('head','x',2,0.8,0);
   }
-
-  // ---------------------------------------------------------------- fox
 
   function buildAmethystFox(b) {
     b.bone('body', null, [0, 44, 0]);
-    ellipsoidShell(b, 'body', 'torso_fur', [0, 46, 2], [16, 16, 32], 4, p => {
-      if (p[1] > 54) return 'violet_hi';
-      if (p[1] < 38) return 'violet_lo';
-      return fnv('torso:' + Math.floor(p[0] / 4) + ',' + Math.floor(p[2] / 4)) > 0.55 ? 'lavender' : 'violet';
-    });
-    // White chest bib.
-    ellipsoidShell(b, 'body', 'chest_bib', [0, 40, -25], [12, 12, 8], 4, p => p[1] > 42 ? 'white_hi' : 'white');
-    // Shoulder and haunch muscles.
-    for (const side of [-1, 1]) {
-      b.box('body', 'shoulder_' + side, [side * 14, 44, -16], [8, 18, 16], 'violet_hi');
-      b.box('body', 'haunch_' + side, [side * 14, 46, 20], [10, 20, 18], 'lavender');
-    }
-
+    b.box('body', 'torso', [0, 45, 3], [28, 24, 53], 'violet');
+    b.box('body', 'back', [0, 58, 4], [26, 5, 46], 'violet_hi');
+    b.box('body', 'belly', [0, 34, 1], [23, 6, 44], 'white');
+    b.box('body', 'chest', [0, 41, -25], [23, 23, 9], 'white_hi');
     b.bone('head', 'body', [0, 58, -28]);
-    b.box('head', 'skull', [0, 62, -34], [22, 18, 20], 'violet_hi');
-    b.box('head', 'brow', [0, 68, -38], [24, 6, 14], 'lavender');
-    b.box('head', 'cheek_left', [-12, 58, -36], [6, 10, 12], 'white');
-    b.box('head', 'cheek_right', [12, 58, -36], [6, 10, 12], 'white');
-    b.box('head', 'muzzle', [0, 57, -48], [14, 8, 12], 'white_hi');
-    b.box('head', 'lower_jaw', [0, 53, -46], [12, 3, 10], 'white');
-    b.box('head', 'nose', [0, 60, -55], [6, 4, 3], 'violet_lo');
-    b.box('head', 'eye_left', [-11, 64, -42], [2, 4, 5], 'eye_light');
-    b.box('head', 'eye_right', [11, 64, -42], [2, 4, 5], 'eye_light');
-    b.box('head', 'eye_socket_left', [-12, 64, -42], [1, 6, 7], 'violet_lo');
-    b.box('head', 'eye_socket_right', [12, 64, -42], [1, 6, 7], 'violet_lo');
-    for (const side of [-1, 1]) {
+    b.box('head', 'skull', [0, 63, -32], [26, 21, 22], 'violet_hi');
+    b.box('head', 'brow', [0, 69, -40], [26, 7, 10], 'lavender');
+    b.box('head', 'muzzle', [0, 57, -48], [18, 8, 14], 'white');
+    b.box('head', 'nose', [0, 60, -56], [7, 4, 3], 'violet_lo');
+    for (const side of [-1,1]) {
+      b.box('head', 'cheek_'+side, [side*11, 57, -40], [7, 9, 13], 'white_hi');
+      b.box('head', 'eye_'+side, [side*8, 65, -44], [5, 5, 2], 'eye_light');
       const ear = side < 0 ? 'ear_left' : 'ear_right';
-      b.bone(ear, 'head', [side * 8, 70, -32]);
-      // Tall tapered ear with pale inner face and crystal tip.
-      b.box(ear, 'ear_base', [side * 8, 74, -32], [11, 7, 8], 'violet');
-      b.box(ear, 'ear_lower', [side * 8, 80, -32], [9, 6, 7], 'violet_hi');
-      b.box(ear, 'ear_mid', [side * 10, 86, -32], [7, 6, 6], 'lavender');
-      b.box(ear, 'ear_inner', [side * 10, 81, -35], [6, 12, 1], 'white');
-      b.box(ear, 'ear_upper', [side * 11, 92, -32], [5, 6, 4], 'violet_hi');
-      b.box(ear, 'ear_tip', [side * 12, 97, -32], [3, 5, 3], 'crystal_hi');
-      b.box(ear, 'ear_point', [side * 12, 101, -32], [1, 4, 1], 'crystal');
+      const p = [side*8, 72, -32];
+      b.bone(ear, 'head', p, [0, 0, side*-16]);
+      b.box(ear, 'ear_outer', [p[0], 84, p[2]], [9, 24, 7], 'violet');
+      b.box(ear, 'ear_inner', [p[0], 84, p[2]-4], [5, 19, 1], 'white');
+      b.box(ear, 'ear_tip', [p[0], 98, p[2]], [5, 6, 5], 'crystal_hi');
       b.animate(ear, 'y', 2, 1.0, side < 0 ? 0 : Math.PI);
     }
-
-    for (const side of [-1, 1]) {
-      const front = side < 0 ? 'leg_front_left' : 'leg_front_right';
-      const back = side < 0 ? 'leg_back_left' : 'leg_back_right';
-      b.bone(front, 'body', [side * 10, 38, -18]);
-      b.box(front, 'upper', [side * 10, 32, -18], [8, 14, 8], 'violet');
-      b.box(front, 'white_sock', [side * 10, 16, -18], [6, 20, 6], 'white');
-      b.box(front, 'paw', [side * 10, 3, -20], [8, 4, 10], 'white_hi');
-      b.box(front, 'toe_band', [side * 10, 1, -22], [8, 2, 4], 'lavender');
-      b.bone(back, 'body', [side * 10, 40, 20]);
-      b.box(back, 'thigh', [side * 11, 34, 20], [10, 16, 12], 'lavender');
-      b.box(back, 'hock', [side * 10, 24, 22], [6, 8, 6], 'violet');
-      b.box(back, 'white_sock', [side * 10, 14, 22], [6, 16, 6], 'white');
-      b.box(back, 'paw', [side * 10, 3, 20], [8, 4, 10], 'white_hi');
-      b.box(back, 'toe_band', [side * 10, 1, 18], [8, 2, 4], 'lavender');
-      b.animate(front, 'x', 5, 1.2, side < 0 ? 0 : Math.PI);
-      b.animate(back, 'x', 5, 1.2, side < 0 ? Math.PI : 0);
+    for (const side of [-1,1]) for (const back of [false,true]) {
+      const name = 'leg_' + (back ? 'back_' : 'front_') + (side<0?'left':'right');
+      const z = back ? 21 : -17;
+      b.bone(name, 'body', [side*10, 36, z]);
+      b.box(name, 'upper', [side*10, 28, z], [9, 19, 10], back ? 'lavender' : 'violet');
+      b.box(name, 'sock', [side*10, 13, z], [7, 17, 8], 'white');
+      b.box(name, 'paw', [side*10, 3, z-2], [9, 6, 12], 'white_hi');
+      b.box(name, 'toe', [side*10, 1, z-5], [9, 2, 5], 'lavender');
+      b.animate(name, 'x', 4, 1.2, (side<0) !== back ? 0 : Math.PI);
     }
-
-    // Bushy tail stepped downward toward the ground, ending in a crystal cluster.
-    b.bone('tail', 'body', [0, 48, 30]);
-    const tailPts = [[0, 48, 30], [0, 44, 42], [0, 38, 54], [0, 30, 66], [0, 22, 76]];
-    for (let i = 0; i < tailPts.length - 1; i++) {
-      const a = tailPts[i], c = tailPts[i + 1];
-      const center = [(a[0] + c[0]) / 2, (a[1] + c[1]) / 2, (a[2] + c[2]) / 2];
-      const w = 26 - i * 2;
-      b.box('tail', 'fur_' + i, center, [w, w, 18], i % 2 ? 'lavender' : 'violet_hi');
-      b.box('tail', 'fur_patch_' + i, [center[0] + w / 2, center[1] + 2, center[2]], [2, w - 4, 12], 'violet');
+    b.bone('tail', 'body', [0, 49, 28], [27, 0, 0]);
+    b.box('tail', 'root', [0, 47, 34], [19, 20, 14], 'violet_hi');
+    b.box('tail', 'bushy_tail', [0, 46, 52], [30, 30, 31], 'lavender');
+    b.box('tail', 'tip_fur', [0, 46, 70], [27, 27, 9], 'violet_hi');
+    for (let i=0;i<5;i++) {
+      const x=(i-2)*5;
+      const p=[x, 47, 74]; const n='tail_crystal_'+i;
+      // Fan the crystals outward in two single-axis groups; the bases start
+      // beyond the fur tip instead of being buried inside the tail.
+      b.bone(n,'tail',p,[0,0,(i-2)*13]);
+      const tilt=n+'_tilt'; b.bone(tilt,n,p,[55,0,0]);
+      crystal(b,tilt,'crystal',p,21+(2-Math.abs(i-2))*4,7,[0,0]);
     }
-    crystal(b, 'tail', 'tail_cluster_main', [0, 24, 78], 24, 12, [0, 0.22]);
-    crystal(b, 'tail', 'tail_cluster_left', [-9, 21, 76], 18, 8, [-0.22, 0.14]);
-    crystal(b, 'tail', 'tail_cluster_right', [9, 21, 76], 18, 8, [0.22, 0.14]);
-    crystal(b, 'tail', 'tail_cluster_back', [0, 18, 86], 16, 7, [0, 0.28]);
-    crystal(b, 'tail', 'tail_cluster_low_left', [-6, 14, 80], 12, 6, [-0.18, 0.2]);
-    crystal(b, 'tail', 'tail_cluster_low_right', [6, 14, 80], 12, 6, [0.18, 0.2]);
+    for (let i=0;i<4;i++) {
+      const z=-9+i*11, p=[i%2 ? 3 : -3, 58, z], n='back_crystal_'+i;
+      b.bone(n,'body',p,[i%2?-22:22,0,0]);
+      crystal(b,n,'crystal',p,13+(i%2)*4,7,[0,0]);
+    }
+    b.animate('head','x',2,0.8,0);
+    b.animate('tail','y',5,1.1,0);
+  }
 
-    // Dorsal crystal ridge, faceted stacks instead of square posts.
-    const ridge = [[-2, 60, -12, 12, 6], [2, 62, -2, 18, 8], [-1, 61, 10, 14, 7], [3, 58, 22, 11, 5]];
-    ridge.forEach((r, i) => crystal(b, 'body', 'spine_' + i, [r[0], r[1], r[2]], r[3], r[4], [i % 2 ? 0.1 : -0.08, 0.05]));
-    crystal(b, 'body', 'shoulder_crystal', [14, 54, -14], 10, 5, [0.14, 0]);
+  // Living woodland dragon, based on approved Sizo leafwing concept.
+  function buildSizoLeafwing(b) {
+    b.bone('body', null, [0, 38, 0]);
+    b.box('body','torso',[0,39,3],[27,23,47],'mint');
+    b.box('body','back',[0,51,3],[24,5,42],'mint_hi');
+    b.box('body','belly',[0,30,2],[22,7,37],'leaf_cream');
+    b.bone('neck','body',[0,49,-20],[-16,0,0]);
+    b.box('neck','neck',[0,57,-23],[19,26,19],'mint');
+    b.box('neck','bib',[0,55,-33],[15,22,4],'leaf_cream');
+    b.bone('head','neck',[0,70,-27]);
+    b.box('head','skull',[0,72,-31],[24,17,20],'mint_hi');
+    b.box('head','muzzle',[0,68,-44],[15,8,12],'mint');
+    b.box('head','nose',[0,70,-50],[8,3,3],'mint_lo');
+    for (const side of [-1,1]) {
+      b.box('head','eye_socket_'+side,[side*12,74,-37],[2,8,8],'branch');
+      b.box('head','amber_eye_'+side,[side*13,74,-37],[2,6,6],'amber');
+      b.box('head','eye_glint_'+side,[side*14,76,-39],[1,2,2],'white_hi');
+      b.box('head','ear_'+side,[side*15,76,-25],[9,6,10],'mint_hi');
+      b.box('head','cheek_'+side,[side*12,65,-30],[8,6,13],'leaf_cream');
+      const ant=side<0?'antler_left':'antler_right';const p=[side*8,79,-27];
+      b.bone(ant,'head',p,[0,0,side*-20]);
+      b.box(ant,'branch_main',[p[0],90,p[2]],[3,22,4],'branch');
+      b.box(ant,'branch_tip',[p[0],102,p[2]],[3,5,3],'branch');
+      const fork=ant+'_fork';b.bone(fork,ant,[p[0],91,p[2]],[0,0,side*-38]);
+      b.box(fork,'fork',[p[0],98,p[2]],[3,14,3],'branch');
+    }
+    for (const side of [-1,1]) {
+      const wing=side<0?'wing_left':'wing_right';const p=[side*12,49,4];
+      b.bone(wing,'body',p,[0,0,side*14]);
+      // White and mint leaves arranged as broad rectangles with ribs.
+      // Stepped leaf edges sweep upward and narrow at their tips. Pale
+      // inset panels keep a green border, with diagonal rather than rail-like veins.
+      const widths=[[23,28,31,60],[47,24,35,67],[68,19,28,74],[84,14,16,80]];
+      widths.forEach(([x,w,h,y],i)=>{
+        b.box(wing,'leaf_'+i,[side*x,y,9],[w,h,3],i%2?'leaf_cream':'leaf_green');
+        b.box(wing,'inner_leaf_'+i,[side*x,y+1,7],[Math.max(4,w-6),h-7,2],'leaf_cream');
+      });
+      b.box(wing,'leading_spar',[side*48,80,7],[76,3,4],'mint_lo');
+      for (let i=0;i<3;i++) {
+        const v=wing+'_vein_'+i, x=side*(26+i*20), y=58+i*7;
+        b.bone(v,wing,[x,y,6],[0,0,side*(20+i*9)]);
+        b.box(v,'diagonal_vein',[x,y,6],[2,24-i*4,2],'mint_lo');
+      }
+      b.animate(wing,'z',7,1.3,side<0?0:Math.PI);
+    }
+    for (const side of [-1,1]) for (const back of [false,true]) {
+      const n='leg_'+(back?'back_':'front_')+(side<0?'left':'right'); const z=back?19:-15;
+      b.bone(n,'body',[side*10,31,z]);
+      b.box(n,'upper',[side*11,23,z],[10,18,10],'mint');
+      b.box(n,'lower',[side*11,10,z-2],[7,13,7],'mint_hi');
+      b.box(n,'paw',[side*11,3,z-5],[10,6,12],'mint_lo');
+      for(let i=-1;i<=1;i++) b.box(n,'claw_'+i,[side*11+i*3,2,z-11],[2,3,4],'branch');
+      b.animate(n,'x',4,1.0,(side<0)!==back?0:Math.PI);
+    }
+    b.bone('tail','body',[0,39,26]);
+    const segments=[[0,37,34,12,13,19],[0,32,48,10,11,17],[0,27,61,8,9,15],[0,25,73,6,7,13],[0,30,82,5,12,6]];
+    segments.forEach(([x,y,z,w,h,d],i)=>b.box('tail','segment_'+i,[x,y,z],[w,h,d],i%2?'mint_hi':'mint'));
+    b.box('tail','leaf_tail',[0,35,87],[15,13,5],'leaf_green');
+    b.box('tail','leaf_vein',[0,35,90],[2,11,1],'mint_lo');
+    for(const side of [-1,1]) {
+      b.box('neck','flower_'+side,[side*10,58,-29],[5,5,2],'flower_blue');
+      b.box('neck','flower_dot_'+side,[side*10,58,-30],[2,2,2],'eye_light');
+    }
+    b.animate('tail','y',5,1.0,0); b.animate('head','x',2,0.8,0);
+  }
 
-    b.animate('head', 'x', 2, 0.8, 0);
-    b.animate('tail', 'y', 6, 1.3, 0);
+  function buildAzureFrog(b) {
+    b.bone('body',null,[0,24,2]);
+    ellipsoidSolid(b,'body','belly',[0,24,5],[27,21,28],4,'frog_teal');
+    b.box('body','belly_front',[0,20,-18],[34,22,6],'frog_belly');
+    b.box('body','back',[0,42,7],[37,8,38],'frog_dark');
+    b.bone('head','body',[0,40,-12]);
+    b.box('head','head',[0,45,-18],[43,22,30],'frog_hi');
+    b.box('head','snout',[0,40,-34],[35,13,9],'frog_teal');
+    b.box('head','chin',[0,33,-32],[31,5,8],'frog_belly');
+    b.box('head','mouth',[0,38,-39],[23,2,1],'frog_dark');
+    for(const side of [-1,1]) {
+      b.box('head','nostril_'+side,[side*9,46,-37],[3,2,1],'frog_dark');
+      b.box('head','eye_tower_'+side,[side*16,56,-26],[14,12,13],'frog_dark');
+      b.box('head','gold_eye_'+side,[side*16,57,-34],[12,11,3],'gold_hi');
+      b.box('head','pupil_'+side,[side*16,57,-36],[7,8,2],'eye');
+      b.box('head','eye_glint_'+side,[side*14,59,-39],[2,2,1],'white_hi');
+    }
+    // Petal collar: alternating raised, tilted rectangular petals, with buds.
+    for(const side of [-1,1]) for(let i=0;i<3;i++) {
+      const x=side*(13+i*10), y=31+i*3, n='petal_'+side+'_'+i;
+      b.bone(n,'body',[side*12,33,-36],[0,0,side*(18+i*12)]);
+      b.box(n,'petal',[x,y,-36],[13,8,3], i%2?'petal_light':'petal_pink');
+      b.box(n,'petal_tip',[x+side*5,y,-37],[5,6,3],'petal_light');
+    }
+    b.box('body','petal_center',[0,27,-39],[13,10,4],'petal_light');
+    b.box('body','petal_center_left',[-10,28,-38],[10,9,4],'petal_pink');
+    b.box('body','petal_center_right',[10,28,-38],[10,9,4],'petal_pink');
+    for(const side of [-1,1]) for(const back of [false,true]) {
+      const n='leg_'+(back?'back_':'front_')+(side<0?'left':'right'); const z=back?18:-12;
+      b.bone(n,'body',[side*20,21,z]);
+      b.box(n,'thigh',[side*25,19,z],[15,18,17],back?'frog_dark':'frog_teal');
+      b.box(n,'shin',[side*27,10,z-2],[9,14,10],'frog_hi');
+      b.box(n,'palm',[side*27,3,z-6],[14,6,12],'frog_teal');
+      for(let i=-1;i<=1;i++) b.box(n,'toe_'+i,[side*27+i*5,3,z-13],[4,4,8],'frog_toe');
+      b.animate(n,'x',3,0.9,(side<0)!==back?0:Math.PI);
+    }
+    b.animate('head','x',2,0.8,0);
   }
 
   const SPECS = [
     { id: 'porcelain_crane', title_ru: 'Фарфоровый журавль', biome: 'elisar_city', concept: 'reports/biome_mob_concepts/01_elisar_city_porcelain_crane.png', atlas: ATLAS, build: buildPorcelainCrane },
     { id: 'basalt_beetle', title_ru: 'Базальтовый жук-углеед', biome: 'ashen_lands', concept: 'reports/biome_mob_concepts/02_ashen_lands_basalt_beetle.png', atlas: ATLAS, build: buildBasaltBeetle },
     { id: 'ash_moth', title_ru: 'Пепельная моль', biome: 'ashen_lands', concept: 'reports/biome_mob_concepts/03_ashen_lands_ash_moth.png', atlas: ATLAS, build: buildAshMoth },
-    { id: 'amethyst_fox', title_ru: 'Аметистовый лис', biome: 'violet_hills', concept: 'reports/biome_mob_concepts/04_violet_hills_amethyst_fox.png', atlas: ATLAS, build: buildAmethystFox }
+    { id: 'amethyst_fox', title_ru: 'Аметистовый лис', biome: 'violet_hills', concept: 'reports/biome_mob_concepts/04_violet_hills_amethyst_fox.png', atlas: ATLAS, build: buildAmethystFox },
+    { id: 'sizo_leafwing', title_ru: 'Сизый листокрыл', biome: 'sizo_grove', concept: 'reports/biome_mob_concepts/05_sizo_grove_sizo_leafwing.png', atlas: ATLAS, build: buildSizoLeafwing },
+    { id: 'azure_frog', title_ru: 'Лазурный древесный лягуш', biome: 'waterfall_gardens', concept: 'reports/biome_mob_concepts/06_waterfall_gardens_azure_frog.png', atlas: ATLAS, build: buildAzureFrog }
   ];
 
   async function generateOne(spec) {
@@ -911,7 +988,7 @@
   }
 
   global.RiftworldFauna = {
-    version: '0.3.0',
+    version: '0.4.0',
     blockbench: '5.2.2',
     revision: 3,
     specs: SPECS.map(s => ({ id: s.id, title_ru: s.title_ru, biome: s.biome, concept: s.concept })),
@@ -928,7 +1005,7 @@
       title: 'Riftworld Fauna',
       author: 'Riftworld',
       icon: 'fa-cube',
-      version: '0.3.0',
+      version: '0.4.0',
       min_version: '5.2.0',
       variant: 'both',
       description: 'Reference-detail procedural Blockbench-API source for the first four Riftworld biome mobs.',

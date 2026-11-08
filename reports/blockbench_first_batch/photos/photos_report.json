@@ -66,14 +66,14 @@
         "name": "Riftworld reference view",
         "projection": "orthographic",
         "position": [
-          0,
-          448.5,
-          -505
+          0.5,
+          170.5,
+          -507
         ],
         "target": [
-          0,
-          28.5,
-          7
+          0.5,
+          35.5,
+          5
         ],
         "zoom": 0.5
       },
@@ -81,7 +81,7 @@
         1600,
         1200
       ],
-      "zoom_percent": 17.56756756756757
+      "zoom_percent": 14.689265536723164
     },
     {
       "id": "amethyst_fox",
@@ -94,13 +94,13 @@
         "projection": "orthographic",
         "position": [
           -512,
-          307.5,
-          -494.5
+          270.5,
+          -269.5
         ],
         "target": [
           0,
-          51.5,
-          17.5
+          50.5,
+          10.5
         ],
         "zoom": 0.5
       },
@@ -108,7 +108,61 @@
         1600,
         1200
       ],
-      "zoom_percent": 17.687074829931973
+      "zoom_percent": 19.25925925925926
+    },
+    {
+      "id": "sizo_leafwing",
+      "title_ru": "Сизый листокрыл",
+      "file": "reports/blockbench_first_batch/photos/05_sizo_leafwing.png",
+      "source": "blockbench/riftworld_fauna/sizo_leafwing.bbmodel",
+      "camera": "custom_reference_view",
+      "camera_preset": {
+        "name": "Riftworld reference view",
+        "projection": "orthographic",
+        "position": [
+          -512,
+          302.5,
+          -492
+        ],
+        "target": [
+          0,
+          52.5,
+          20
+        ],
+        "zoom": 0.5
+      },
+      "resolution": [
+        1600,
+        1200
+      ],
+      "zoom_percent": 14.285714285714286
+    },
+    {
+      "id": "azure_frog",
+      "title_ru": "Лазурный древесный лягуш",
+      "file": "reports/blockbench_first_batch/photos/06_azure_frog.png",
+      "source": "blockbench/riftworld_fauna/azure_frog.bbmodel",
+      "camera": "custom_reference_view",
+      "camera_preset": {
+        "name": "Riftworld reference view",
+        "projection": "orthographic",
+        "position": [
+          -511.5,
+          301.5,
+          -516
+        ],
+        "target": [
+          0.5,
+          31.5,
+          -4
+        ],
+        "zoom": 0.5
+      },
+      "resolution": [
+        1600,
+        1200
+      ],
+      "zoom_percent": 32.098765432098766
     }
   ],
   "overview": "reports/blockbench_first_batch/photos/00_all_models.png"

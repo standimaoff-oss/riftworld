@@ -1,45 +1,27 @@
-# Фотографии первых четырёх моделей Riftworld
+# Фотографии шести моделей Riftworld
 
-Снимки загруженных `.bbmodel`-проектов (журавль и жук — ревизия 3; моль и лис — ревизия 2), сделанные через Blockbench 5.2.2
-`Screencam.advancedScreenshot`. Разрешение отдельных фотографий — 1600 × 1200.
-Это виды редактора Blockbench, **не скриншоты Minecraft**.
+Снимки `.bbmodel` сделаны через Blockbench 5.2.2 `Screencam.advancedScreenshot`,
+1600 × 1200. Это виды редактора, **не скриншоты Minecraft**. Моль и лис переработаны;
+сизый листокрыл и лазурный древесный лягуш добавлены по утверждённым концептам.
 
-[Все четыре модели на одном изображении](00_all_models.png) ·
-[Сравнение с концептами](05_reference_comparison.png) ·
-[Описание моделей и проверки](../README.md) ·
-[Инструменты Blockbench API](../../../tools/blockbench/README.md)
+[Все шесть моделей](00_all_models.png) · [Сравнение с концептами](05_reference_comparison.png) ·
+[Описание и проверки](../README.md) · [Генератор Blockbench API](../../../tools/blockbench/README.md)
 
-![Фарфоровый журавль, базальтовый жук-углеед, пепельная моль и аметистовый лис](00_all_models.png)
-
-| Модель | Фотография | Редактируемый проект | Текстура |
+| Модель | Фото | Дополнительные ракурсы | Редактируемый проект |
 |---|---|---|---|
-| Фарфоровый журавль | [PNG, 1600 × 1200](01_porcelain_crane.png) | [`.bbmodel`](../../../blockbench/riftworld_fauna/porcelain_crane.bbmodel) | [PNG, 2048 × 2048](../../../mod/src/main/resources/assets/riftworld/textures/entity/porcelain_crane.png) |
-| Базальтовый жук-углеед | [PNG, 1600 × 1200](02_basalt_beetle.png) | [`.bbmodel`](../../../blockbench/riftworld_fauna/basalt_beetle.bbmodel) | [PNG, 2048 × 2048](../../../mod/src/main/resources/assets/riftworld/textures/entity/basalt_beetle.png) |
-| Пепельная моль | [PNG, 1600 × 1200](03_ash_moth.png) | [`.bbmodel`](../../../blockbench/riftworld_fauna/ash_moth.bbmodel) | [PNG, 2048 × 2048](../../../mod/src/main/resources/assets/riftworld/textures/entity/ash_moth.png) |
-| Аметистовый лис | [PNG, 1600 × 1200](04_amethyst_fox.png) | [`.bbmodel`](../../../blockbench/riftworld_fauna/amethyst_fox.bbmodel) | [PNG, 2048 × 2048](../../../mod/src/main/resources/assets/riftworld/textures/entity/amethyst_fox.png) |
+| Фарфоровый журавль | [PNG](01_porcelain_crane.png) | [Спереди](06_crane_front.png) · [Сбоку](07_crane_side.png) | [`.bbmodel`](../../../blockbench/riftworld_fauna/porcelain_crane.bbmodel) |
+| Базальтовый жук-углеед | [PNG](02_basalt_beetle.png) | [Спереди](08_beetle_front.png) · [Сбоку](09_beetle_side.png) | [`.bbmodel`](../../../blockbench/riftworld_fauna/basalt_beetle.bbmodel) |
+| Пепельная моль | [PNG](03_ash_moth.png) | [Спереди](ash_moth_front.png) · [Сбоку](ash_moth_side.png) | [`.bbmodel`](../../../blockbench/riftworld_fauna/ash_moth.bbmodel) |
+| Аметистовый лис | [PNG](04_amethyst_fox.png) | [Спереди](amethyst_fox_front.png) · [Сбоку](amethyst_fox_side.png) | [`.bbmodel`](../../../blockbench/riftworld_fauna/amethyst_fox.bbmodel) |
+| Сизый листокрыл | [PNG](05_sizo_leafwing.png) | [Спереди](sizo_leafwing_front.png) · [Сбоку](sizo_leafwing_side.png) | [`.bbmodel`](../../../blockbench/riftworld_fauna/sizo_leafwing.bbmodel) |
+| Лазурный древесный лягуш | [PNG](06_azure_frog.png) | [Спереди](azure_frog_front.png) · [Сбоку](azure_frog_side.png) | [`.bbmodel`](../../../blockbench/riftworld_fauna/azure_frog.bbmodel) |
 
-## Фарфоровый журавль
+## Общий вид
 
-![Фарфоровый журавль](01_porcelain_crane.png)
-
-[Спереди](06_crane_front.png) · [Сбоку](07_crane_side.png)
-
-## Базальтовый жук-углеед
-
-![Базальтовый жук-углеед](02_basalt_beetle.png)
-
-[Спереди](08_beetle_front.png) · [Сбоку](09_beetle_side.png)
-
-## Пепельная моль
-
-![Пепельная моль](03_ash_moth.png)
-
-## Аметистовый лис
-
-![Аметистовый лис](04_amethyst_fox.png)
+![Шесть моделей](00_all_models.png)
 
 ## Статус
 
-Опубликованы модели, текстуры, исходные Blockbench-проекты и генератор.
-Новые Java-сущности и регистрации пока не добавлены: эти четыре существа ещё не
-появляются в игре. Естественный спавн и баланс существующих мобов не изменены.
+Опубликованы модели, текстуры, исходные Blockbench-проекты и генератор. Сущности пока не
+зарегистрированы в Minecraft; игровые анимации и внешний вид в игре не проверены. Java-код,
+естественный спавн и баланс существующих мобов не изменялись.
