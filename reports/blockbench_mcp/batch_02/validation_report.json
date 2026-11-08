@@ -1,0 +1,338 @@
+{
+  "generated_via": "blockbench-mcp-plugin (official MCP server)",
+  "models": [
+    {
+      "id": "amethyst_fox",
+      "title_ru": "Аметистовый лис",
+      "biome": "riftworld:violet_hills",
+      "bbmodel": "blockbench/riftworld_fauna/amethyst_fox.bbmodel",
+      "bedrock_geo": "blockbench/riftworld_fauna/bedrock/amethyst_fox.geo.json",
+      "bedrock_animation": "blockbench/riftworld_fauna/bedrock/amethyst_fox.animation.json",
+      "riftworld_geo": "mod/src/main/resources/assets/riftworld/geo/amethyst_fox.json",
+      "texture": "mod/src/main/resources/assets/riftworld/textures/entity/amethyst_fox.png",
+      "info": {
+        "path": "/home/user/riftworld/blockbench/riftworld_fauna/amethyst_fox.bbmodel",
+        "revision": "6d290df18f71e059",
+        "name": "amethyst_fox",
+        "model_identifier": "riftworld.amethyst_fox",
+        "format": "bedrock",
+        "format_version": "5.0",
+        "box_uv": true,
+        "resolution": {
+          "width": 512,
+          "height": 512
+        },
+        "counts": {
+          "groups": 10,
+          "cubes": 52,
+          "meshes": 0,
+          "other_elements": 0,
+          "textures": 1,
+          "animations": 1
+        },
+        "bounds": {
+          "min": [
+            -9.288,
+            0,
+            -22.3
+          ],
+          "max": [
+            9.288,
+            44.645,
+            38.102
+          ],
+          "size": [
+            18.576,
+            44.645,
+            60.402
+          ]
+        },
+        "ai_used": true,
+        "notes": []
+      },
+      "geometry_validation": {
+        "errors": 0,
+        "warnings": 0,
+        "passed": true
+      },
+      "geometry_self_test": [
+        {
+          "gate": "outliner",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "(outliner): added a reference to a node that does not exist"
+        },
+        {
+          "gate": "unlisted_nodes",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "torso_front: removed it from the outliner"
+        },
+        {
+          "gate": "degenerate",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "torso_front: made it 0.05 units thick"
+        },
+        {
+          "gate": "block_limits",
+          "discriminates": null,
+          "clean_violations": 0,
+          "injected_violations": 0,
+          "impossible": "block_limits is disabled."
+        },
+        {
+          "gate": "floating",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "torso_front: moved it 1000 units away"
+        },
+        {
+          "gate": "interpenetration",
+          "discriminates": null,
+          "clean_violations": 0,
+          "injected_violations": 0,
+          "impossible": "Needs two unrotated cubes in different groups, one thicker than the penetration depth."
+        },
+        {
+          "gate": "mirror",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "dorsal_shard_l_1: shifted it 2 units on x (its mirror is dorsal_shard_r_1)"
+        }
+      ],
+      "animation_validation": {
+        "errors": 0,
+        "warnings": 0,
+        "passed": true
+      }
+    },
+    {
+      "id": "sizo_leafwing",
+      "title_ru": "Сизый листокрыл",
+      "biome": "riftworld:sizo_grove",
+      "bbmodel": "blockbench/riftworld_fauna/sizo_leafwing.bbmodel",
+      "bedrock_geo": "blockbench/riftworld_fauna/bedrock/sizo_leafwing.geo.json",
+      "bedrock_animation": "blockbench/riftworld_fauna/bedrock/sizo_leafwing.animation.json",
+      "riftworld_geo": "mod/src/main/resources/assets/riftworld/geo/sizo_leafwing.json",
+      "texture": "mod/src/main/resources/assets/riftworld/textures/entity/sizo_leafwing.png",
+      "info": {
+        "path": "/home/user/riftworld/blockbench/riftworld_fauna/sizo_leafwing.bbmodel",
+        "revision": "b522d78f843dedca",
+        "name": "sizo_leafwing",
+        "model_identifier": "riftworld.sizo_leafwing",
+        "format": "bedrock",
+        "format_version": "5.0",
+        "box_uv": true,
+        "resolution": {
+          "width": 512,
+          "height": 512
+        },
+        "counts": {
+          "groups": 12,
+          "cubes": 89,
+          "meshes": 0,
+          "other_elements": 0,
+          "textures": 1,
+          "animations": 1
+        },
+        "bounds": {
+          "min": [
+            -51.753,
+            0,
+            -20.015
+          ],
+          "max": [
+            51.753,
+            55.993,
+            39.57
+          ],
+          "size": [
+            103.505,
+            55.993,
+            59.585
+          ]
+        },
+        "ai_used": true,
+        "notes": []
+      },
+      "geometry_validation": {
+        "errors": 0,
+        "warnings": 0,
+        "passed": true
+      },
+      "geometry_self_test": [
+        {
+          "gate": "outliner",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "(outliner): added a reference to a node that does not exist"
+        },
+        {
+          "gate": "unlisted_nodes",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "pelvis_core: removed it from the outliner"
+        },
+        {
+          "gate": "degenerate",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "pelvis_core: made it 0.05 units thick"
+        },
+        {
+          "gate": "block_limits",
+          "discriminates": null,
+          "clean_violations": 0,
+          "injected_violations": 0,
+          "impossible": "block_limits is disabled."
+        },
+        {
+          "gate": "floating",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "pelvis_core: moved it 1000 units away"
+        },
+        {
+          "gate": "interpenetration",
+          "discriminates": null,
+          "clean_violations": 0,
+          "injected_violations": 0,
+          "impossible": "Needs two unrotated cubes in different groups, one thicker than the penetration depth."
+        },
+        {
+          "gate": "mirror",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "neck_flower_l_1: shifted it 2 units on x (its mirror is neck_flower_r_1)"
+        }
+      ],
+      "animation_validation": {
+        "errors": 0,
+        "warnings": 0,
+        "passed": true
+      }
+    },
+    {
+      "id": "azure_frog",
+      "title_ru": "Лазурный древесный лягуш",
+      "biome": "riftworld:waterfall_gardens",
+      "bbmodel": "blockbench/riftworld_fauna/azure_frog.bbmodel",
+      "bedrock_geo": "blockbench/riftworld_fauna/bedrock/azure_frog.geo.json",
+      "bedrock_animation": "blockbench/riftworld_fauna/bedrock/azure_frog.animation.json",
+      "riftworld_geo": "mod/src/main/resources/assets/riftworld/geo/azure_frog.json",
+      "texture": "mod/src/main/resources/assets/riftworld/textures/entity/azure_frog.png",
+      "info": {
+        "path": "/home/user/riftworld/blockbench/riftworld_fauna/azure_frog.bbmodel",
+        "revision": "d3a883a784f162eb",
+        "name": "azure_frog",
+        "model_identifier": "riftworld.azure_frog",
+        "format": "bedrock",
+        "format_version": "5.0",
+        "box_uv": true,
+        "resolution": {
+          "width": 512,
+          "height": 512
+        },
+        "counts": {
+          "groups": 8,
+          "cubes": 68,
+          "meshes": 0,
+          "other_elements": 0,
+          "textures": 1,
+          "animations": 1
+        },
+        "bounds": {
+          "min": [
+            -14.505,
+            -0.877,
+            -17.206
+          ],
+          "max": [
+            14.505,
+            28.277,
+            14.343
+          ],
+          "size": [
+            29.011,
+            29.154,
+            31.549
+          ]
+        },
+        "ai_used": true,
+        "notes": []
+      },
+      "geometry_validation": {
+        "errors": 0,
+        "warnings": 0,
+        "passed": true
+      },
+      "geometry_self_test": [
+        {
+          "gate": "outliner",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "(outliner): added a reference to a node that does not exist"
+        },
+        {
+          "gate": "unlisted_nodes",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "torso_core: removed it from the outliner"
+        },
+        {
+          "gate": "degenerate",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "torso_core: made it 0.05 units thick"
+        },
+        {
+          "gate": "block_limits",
+          "discriminates": null,
+          "clean_violations": 0,
+          "injected_violations": 0,
+          "impossible": "block_limits is disabled."
+        },
+        {
+          "gate": "floating",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "torso_core: moved it 1000 units away"
+        },
+        {
+          "gate": "interpenetration",
+          "discriminates": null,
+          "clean_violations": 0,
+          "injected_violations": 0,
+          "impossible": "Needs two unrotated cubes in different groups, one thicker than the penetration depth."
+        },
+        {
+          "gate": "mirror",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "petal_l_1: shifted it 2 units on x (its mirror is petal_r_1)"
+        }
+      ],
+      "animation_validation": {
+        "errors": 0,
+        "warnings": 0,
+        "passed": true
+      }
+    }
+  ]
+}
