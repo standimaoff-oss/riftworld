@@ -14,6 +14,7 @@ import numpy as np
 from PIL import Image
 from painter_batch_02 import paint_fox_face, paint_leafwing_face, paint_frog_face
 from painter_batch_03 import paint_snail_face, paint_wolf_face, paint_gecko_face
+from painter_batch_04 import paint_owl_face, paint_raven_face, paint_crab_face
 
 
 def hash_noise(ix, iy, seed=0):
@@ -544,6 +545,12 @@ def paint_atlas(spec_path, out_png_path):
         painter = paint_wolf_face
     elif model_id == 'crystal_gecko':
         painter = paint_gecko_face
+    elif model_id == 'faceted_owl':
+        painter = paint_owl_face
+    elif model_id == 'bone_raven':
+        painter = paint_raven_face
+    elif model_id == 'coral_hermit_crab':
+        painter = paint_crab_face
     else:
         raise ValueError(f'Unknown model_id for painter: {model_id}')
 

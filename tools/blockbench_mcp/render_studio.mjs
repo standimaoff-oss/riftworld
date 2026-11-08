@@ -35,6 +35,7 @@ const BATCH_DEFAULTS = {
   batch_01: 'porcelain_crane,basalt_beetle,ash_moth',
   batch_02: 'amethyst_fox,sizo_leafwing,azure_frog',
   batch_03: 'blossom_snail,phantom_wolf,crystal_gecko',
+  batch_04: 'faceted_owl,bone_raven,coral_hermit_crab',
 };
 
 const batchName = arg('batch', 'batch_01');
@@ -116,6 +117,30 @@ const CAMERA_RIGS = {
     heroDir: [-0.72, 0.22, -0.66],
     distMul: 1.98,
     targetBias: [0, 0, 2],
+  },
+  faceted_owl: {
+    num: '10',
+    titleRu: '10 — Гранёная сова',
+    refFile: '/tmp/inspect_prev/orig_10_owl.png',
+    heroDir: [-0.62, 0.14, -0.77],
+    distMul: 2.15,
+    targetBias: [0, 0, 0],
+  },
+  bone_raven: {
+    num: '11',
+    titleRu: '11 — Костяной ворон',
+    refFile: '/tmp/inspect_prev/orig_11_raven.png',
+    heroDir: [-0.58, 0.22, -0.78],
+    distMul: 1.54,
+    targetBias: [-1, -1, 0],
+  },
+  coral_hermit_crab: {
+    num: '12',
+    titleRu: '12 — Коралловый рак-отшельник',
+    refFile: '/tmp/inspect_prev/orig_12_crab.png',
+    heroDir: [-0.66, 0.22, -0.72],
+    distMul: 2.24,
+    targetBias: [0, -1, 1],
   },
 };
 

@@ -46,3 +46,18 @@
 
 Подробный отчёт Партии 3: **[`reports/blockbench_mcp/batch_03/README.md`](../../reports/blockbench_mcp/batch_03/README.md)**.
 
+---
+
+## Выпуск 4 (Модели 10–12)
+
+![Витрина моделей 10–12 (тёмный фон)](../../reports/blockbench_mcp/batch_04/00_batch_04_showcase_dark.png)
+
+| № | ID | Название | Биом | Кости | Прямоугольные элементы | Blockbench (`.bbmodel`) | Bedrock Geo & Anim | Riftworld Geo & Texture | MCP Валидация |
+| :-: | :--- | :--- | :--- | :-: | :-: | :--- | :--- | :--- | :-: |
+| **10** | `faceted_owl` | **Гранёная сова** | `riftworld:crystal_rifts` | 8 | 73 | [`faceted_owl.bbmodel`](./faceted_owl.bbmodel) | [`geo`](./bedrock/faceted_owl.geo.json) · [`anim`](./bedrock/faceted_owl.animation.json) | [`geo`](../../mod/src/main/resources/assets/riftworld/geo/faceted_owl.json) · [`png`](../../mod/src/main/resources/assets/riftworld/textures/entity/faceted_owl.png) | `0 errors / 0 warnings` |
+| **11** | `bone_raven` | **Костяной ворон** | `riftworld:morok_hollow` | 9 | 87 | [`bone_raven.bbmodel`](./bone_raven.bbmodel) | [`geo`](./bedrock/bone_raven.geo.json) · [`anim`](./bedrock/bone_raven.animation.json) | [`geo`](../../mod/src/main/resources/assets/riftworld/geo/bone_raven.json) · [`png`](../../mod/src/main/resources/assets/riftworld/textures/entity/bone_raven.png) | `0 errors / 0 warnings` |
+| **12** | `coral_hermit_crab` | **Коралловый рак-отшельник** | `riftworld:shallow_reef` | 13 | 94 | [`coral_hermit_crab.bbmodel`](./coral_hermit_crab.bbmodel) | [`geo`](./bedrock/coral_hermit_crab.geo.json) · [`anim`](./bedrock/coral_hermit_crab.animation.json) | [`geo`](../../mod/src/main/resources/assets/riftworld/geo/coral_hermit_crab.json) · [`png`](../../mod/src/main/resources/assets/riftworld/textures/entity/coral_hermit_crab.png) | `0 errors / 0 warnings` |
+
+Подробный отчёт Партии 4: **[`reports/blockbench_mcp/batch_04/README.md`](../../reports/blockbench_mcp/batch_04/README.md)**.
+
+
