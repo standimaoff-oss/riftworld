@@ -1,0 +1,47 @@
+[
+  {
+    "id": "porcelain_crane",
+    "titleRu": "01 — Фарфоровый журавль",
+    "heroLight": "reports/blockbench_mcp/batch_01/01_porcelain_crane.png",
+    "heroDark": "reports/blockbench_mcp/batch_01/01_porcelain_crane_dark.png",
+    "turntable": "reports/blockbench_mcp/batch_01/01_porcelain_crane_angles.png",
+    "localRefComparison": "/home/user/riftworld/reports/blockbench_mcp/batch_01/01_porcelain_crane_vs_ref.png",
+    "elementCount": 71,
+    "groupCount": 9,
+    "worldSize": [
+      20.19,
+      75.71,
+      54.3
+    ]
+  },
+  {
+    "id": "basalt_beetle",
+    "titleRu": "02 — Базальтовый жук-углеед",
+    "heroLight": "reports/blockbench_mcp/batch_01/02_basalt_beetle.png",
+    "heroDark": "reports/blockbench_mcp/batch_01/02_basalt_beetle_dark.png",
+    "turntable": "reports/blockbench_mcp/batch_01/02_basalt_beetle_angles.png",
+    "localRefComparison": "/home/user/riftworld/reports/blockbench_mcp/batch_01/02_basalt_beetle_vs_ref.png",
+    "elementCount": 99,
+    "groupCount": 13,
+    "worldSize": [
+      52.56,
+      38.73,
+      66.6
+    ]
+  },
+  {
+    "id": "ash_moth",
+    "titleRu": "03 — Пепельная моль",
+    "heroLight": "reports/blockbench_mcp/batch_01/03_ash_moth.png",
+    "heroDark": "reports/blockbench_mcp/batch_01/03_ash_moth_dark.png",
+    "turntable": "reports/blockbench_mcp/batch_01/03_ash_moth_angles.png",
+    "localRefComparison": "/home/user/riftworld/reports/blockbench_mcp/batch_01/03_ash_moth_vs_ref.png",
+    "elementCount": 69,
+    "groupCount": 12,
+    "worldSize": [
+      92.25,
+      45.37,
+      30.39
+    ]
+  }
+]

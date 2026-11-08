@@ -1,0 +1,338 @@
+{
+  "generated_via": "blockbench-mcp-plugin (official MCP server)",
+  "models": [
+    {
+      "id": "porcelain_crane",
+      "title_ru": "Фарфоровый журавль",
+      "biome": "riftworld:elisar_city",
+      "bbmodel": "blockbench/riftworld_fauna/porcelain_crane.bbmodel",
+      "bedrock_geo": "blockbench/riftworld_fauna/bedrock/porcelain_crane.geo.json",
+      "bedrock_animation": "blockbench/riftworld_fauna/bedrock/porcelain_crane.animation.json",
+      "riftworld_geo": "mod/src/main/resources/assets/riftworld/geo/porcelain_crane.json",
+      "texture": "mod/src/main/resources/assets/riftworld/textures/entity/porcelain_crane.png",
+      "info": {
+        "path": "/home/user/riftworld/blockbench/riftworld_fauna/porcelain_crane.bbmodel",
+        "revision": "3494bcd3cc0b9d6a",
+        "name": "porcelain_crane",
+        "model_identifier": "riftworld.porcelain_crane",
+        "format": "bedrock",
+        "format_version": "5.0",
+        "box_uv": true,
+        "resolution": {
+          "width": 512,
+          "height": 512
+        },
+        "counts": {
+          "groups": 9,
+          "cubes": 71,
+          "meshes": 0,
+          "other_elements": 0,
+          "textures": 1,
+          "animations": 1
+        },
+        "bounds": {
+          "min": [
+            -10.096,
+            0,
+            -29.228
+          ],
+          "max": [
+            10.096,
+            75.708,
+            25.071
+          ],
+          "size": [
+            20.192,
+            75.708,
+            54.298
+          ]
+        },
+        "ai_used": true,
+        "notes": []
+      },
+      "geometry_validation": {
+        "errors": 0,
+        "warnings": 0,
+        "passed": true
+      },
+      "geometry_self_test": [
+        {
+          "gate": "outliner",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "(outliner): added a reference to a node that does not exist"
+        },
+        {
+          "gate": "unlisted_nodes",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "torso_core: removed it from the outliner"
+        },
+        {
+          "gate": "degenerate",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "torso_core: made it 0.05 units thick"
+        },
+        {
+          "gate": "block_limits",
+          "discriminates": null,
+          "clean_violations": 0,
+          "injected_violations": 0,
+          "impossible": "block_limits is disabled."
+        },
+        {
+          "gate": "floating",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "torso_core: moved it 1000 units away"
+        },
+        {
+          "gate": "interpenetration",
+          "discriminates": null,
+          "clean_violations": 0,
+          "injected_violations": 0,
+          "impossible": "Needs two unrotated cubes in different groups, one thicker than the penetration depth."
+        },
+        {
+          "gate": "mirror",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "torso_flank_l: shifted it 2 units on x (its mirror is torso_flank_r)"
+        }
+      ],
+      "animation_validation": {
+        "errors": 0,
+        "warnings": 0,
+        "passed": true
+      }
+    },
+    {
+      "id": "basalt_beetle",
+      "title_ru": "Базальтовый жук-углеед",
+      "biome": "riftworld:ashen_lands",
+      "bbmodel": "blockbench/riftworld_fauna/basalt_beetle.bbmodel",
+      "bedrock_geo": "blockbench/riftworld_fauna/bedrock/basalt_beetle.geo.json",
+      "bedrock_animation": "blockbench/riftworld_fauna/bedrock/basalt_beetle.animation.json",
+      "riftworld_geo": "mod/src/main/resources/assets/riftworld/geo/basalt_beetle.json",
+      "texture": "mod/src/main/resources/assets/riftworld/textures/entity/basalt_beetle.png",
+      "info": {
+        "path": "/home/user/riftworld/blockbench/riftworld_fauna/basalt_beetle.bbmodel",
+        "revision": "72a7796fc765ed8e",
+        "name": "basalt_beetle",
+        "model_identifier": "riftworld.basalt_beetle",
+        "format": "bedrock",
+        "format_version": "5.0",
+        "box_uv": true,
+        "resolution": {
+          "width": 512,
+          "height": 512
+        },
+        "counts": {
+          "groups": 13,
+          "cubes": 99,
+          "meshes": 0,
+          "other_elements": 0,
+          "textures": 1,
+          "animations": 1
+        },
+        "bounds": {
+          "min": [
+            -26.28,
+            -0.276,
+            -38.853
+          ],
+          "max": [
+            26.28,
+            38.458,
+            27.751
+          ],
+          "size": [
+            52.56,
+            38.733,
+            66.605
+          ]
+        },
+        "ai_used": true,
+        "notes": []
+      },
+      "geometry_validation": {
+        "errors": 0,
+        "warnings": 0,
+        "passed": true
+      },
+      "geometry_self_test": [
+        {
+          "gate": "outliner",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "(outliner): added a reference to a node that does not exist"
+        },
+        {
+          "gate": "unlisted_nodes",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "magma_core_main: removed it from the outliner"
+        },
+        {
+          "gate": "degenerate",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "magma_core_main: made it 0.05 units thick"
+        },
+        {
+          "gate": "block_limits",
+          "discriminates": null,
+          "clean_violations": 0,
+          "injected_violations": 0,
+          "impossible": "block_limits is disabled."
+        },
+        {
+          "gate": "floating",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "magma_core_main: moved it 1000 units away"
+        },
+        {
+          "gate": "interpenetration",
+          "discriminates": null,
+          "clean_violations": 0,
+          "injected_violations": 0,
+          "impossible": "Needs two unrotated cubes in different groups, one thicker than the penetration depth."
+        },
+        {
+          "gate": "mirror",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "magma_core_flank_l: shifted it 2 units on x (its mirror is magma_core_flank_r)"
+        }
+      ],
+      "animation_validation": {
+        "errors": 0,
+        "warnings": 0,
+        "passed": true
+      }
+    },
+    {
+      "id": "ash_moth",
+      "title_ru": "Пепельная моль",
+      "biome": "riftworld:ashen_lands",
+      "bbmodel": "blockbench/riftworld_fauna/ash_moth.bbmodel",
+      "bedrock_geo": "blockbench/riftworld_fauna/bedrock/ash_moth.geo.json",
+      "bedrock_animation": "blockbench/riftworld_fauna/bedrock/ash_moth.animation.json",
+      "riftworld_geo": "mod/src/main/resources/assets/riftworld/geo/ash_moth.json",
+      "texture": "mod/src/main/resources/assets/riftworld/textures/entity/ash_moth.png",
+      "info": {
+        "path": "/home/user/riftworld/blockbench/riftworld_fauna/ash_moth.bbmodel",
+        "revision": "73af55fec9e28ba3",
+        "name": "ash_moth",
+        "model_identifier": "riftworld.ash_moth",
+        "format": "bedrock",
+        "format_version": "5.0",
+        "box_uv": true,
+        "resolution": {
+          "width": 512,
+          "height": 512
+        },
+        "counts": {
+          "groups": 12,
+          "cubes": 69,
+          "meshes": 0,
+          "other_elements": 0,
+          "textures": 1,
+          "animations": 1
+        },
+        "bounds": {
+          "min": [
+            -46.123,
+            3.419,
+            -17.449
+          ],
+          "max": [
+            46.123,
+            48.791,
+            12.945
+          ],
+          "size": [
+            92.246,
+            45.372,
+            30.394
+          ]
+        },
+        "ai_used": true,
+        "notes": []
+      },
+      "geometry_validation": {
+        "errors": 0,
+        "warnings": 0,
+        "passed": true
+      },
+      "geometry_self_test": [
+        {
+          "gate": "outliner",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "(outliner): added a reference to a node that does not exist"
+        },
+        {
+          "gate": "unlisted_nodes",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "thorax_core: removed it from the outliner"
+        },
+        {
+          "gate": "degenerate",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "thorax_core: made it 0.05 units thick"
+        },
+        {
+          "gate": "block_limits",
+          "discriminates": null,
+          "clean_violations": 0,
+          "injected_violations": 0,
+          "impossible": "block_limits is disabled."
+        },
+        {
+          "gate": "floating",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "thorax_core: moved it 1000 units away"
+        },
+        {
+          "gate": "interpenetration",
+          "discriminates": null,
+          "clean_violations": 0,
+          "injected_violations": 0,
+          "impossible": "Needs two unrotated cubes in different groups, one thicker than the penetration depth."
+        },
+        {
+          "gate": "mirror",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "collar_fluff_l: shifted it 2 units on x (its mirror is collar_fluff_r)"
+        }
+      ],
+      "animation_validation": {
+        "errors": 0,
+        "warnings": 0,
+        "passed": true
+      }
+    }
+  ]
+}
