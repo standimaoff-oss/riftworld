@@ -34,6 +34,7 @@ function arg(name, fallback) {
 const BATCH_DEFAULTS = {
   batch_01: 'porcelain_crane,basalt_beetle,ash_moth',
   batch_02: 'amethyst_fox,sizo_leafwing,azure_frog',
+  batch_03: 'blossom_snail,phantom_wolf,crystal_gecko',
 };
 
 const batchName = arg('batch', 'batch_01');
@@ -91,6 +92,30 @@ const CAMERA_RIGS = {
     heroDir: [0.62, 0.28, -0.73],
     distMul: 2.15,
     targetBias: [0, 0, -1],
+  },
+  blossom_snail: {
+    num: '07',
+    titleRu: '07 — Цветочная улитка',
+    refFile: '/tmp/inspect_prev/orig_07_snail.png',
+    heroDir: [-0.74, 0.20, -0.64],
+    distMul: 2.08,
+    targetBias: [0, 0, 0],
+  },
+  phantom_wolf: {
+    num: '08',
+    titleRu: '08 — Туманный волк-призрак',
+    refFile: '/tmp/inspect_prev/orig_08_wolf.png',
+    heroDir: [-0.74, 0.18, -0.65],
+    distMul: 2.08,
+    targetBias: [0, 0, 1],
+  },
+  crystal_gecko: {
+    num: '09',
+    titleRu: '09 — Кристальный ящер',
+    refFile: '/tmp/inspect_prev/orig_09_gecko.png',
+    heroDir: [-0.72, 0.22, -0.66],
+    distMul: 1.98,
+    targetBias: [0, 0, 2],
   },
 };
 

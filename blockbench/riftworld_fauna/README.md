@@ -31,3 +31,18 @@
 | **06** | `azure_frog` | **Лазурный древесный лягуш** | `riftworld:waterfall_gardens` | 8 | 68 | [`azure_frog.bbmodel`](./azure_frog.bbmodel) | [`geo`](./bedrock/azure_frog.geo.json) · [`anim`](./bedrock/azure_frog.animation.json) | [`geo`](../../mod/src/main/resources/assets/riftworld/geo/azure_frog.json) · [`png`](../../mod/src/main/resources/assets/riftworld/textures/entity/azure_frog.png) | `0 errors / 0 warnings` |
 
 Подробный отчёт Партии 2: **[`reports/blockbench_mcp/batch_02/README.md`](../../reports/blockbench_mcp/batch_02/README.md)**.
+
+---
+
+## Выпуск 3 (Модели 07–09)
+
+![Витрина моделей 07–09 (тёмный фон)](../../reports/blockbench_mcp/batch_03/00_batch_03_showcase_dark.png)
+
+| № | ID | Название | Биом | Кости | Прямоугольные элементы | Blockbench (`.bbmodel`) | Bedrock Geo & Anim | Riftworld Geo & Texture | MCP Валидация |
+| :-: | :--- | :--- | :--- | :-: | :-: | :--- | :--- | :--- | :-: |
+| **07** | `blossom_snail` | **Цветочная улитка** | `riftworld:waterfall_gardens` | 7 | 113 | [`blossom_snail.bbmodel`](./blossom_snail.bbmodel) | [`geo`](./bedrock/blossom_snail.geo.json) · [`anim`](./bedrock/blossom_snail.animation.json) | [`geo`](../../mod/src/main/resources/assets/riftworld/geo/blossom_snail.json) · [`png`](../../mod/src/main/resources/assets/riftworld/textures/entity/blossom_snail.png) | `0 errors / 0 warnings` |
+| **08** | `phantom_wolf` | **Туманный волк-призрак** | `riftworld:mist_keep` | 9 | 70 | [`phantom_wolf.bbmodel`](./phantom_wolf.bbmodel) | [`geo`](./bedrock/phantom_wolf.geo.json) · [`anim`](./bedrock/phantom_wolf.animation.json) | [`geo`](../../mod/src/main/resources/assets/riftworld/geo/phantom_wolf.json) · [`png`](../../mod/src/main/resources/assets/riftworld/textures/entity/phantom_wolf.png) | `0 errors / 0 warnings` |
+| **09** | `crystal_gecko` | **Кристальный ящер** | `riftworld:crystal_rifts` | 8 | 64 | [`crystal_gecko.bbmodel`](./crystal_gecko.bbmodel) | [`geo`](./bedrock/crystal_gecko.geo.json) · [`anim`](./bedrock/crystal_gecko.animation.json) | [`geo`](../../mod/src/main/resources/assets/riftworld/geo/crystal_gecko.json) · [`png`](../../mod/src/main/resources/assets/riftworld/textures/entity/crystal_gecko.png) | `0 errors / 0 warnings` |
+
+Подробный отчёт Партии 3: **[`reports/blockbench_mcp/batch_03/README.md`](../../reports/blockbench_mcp/batch_03/README.md)**.
+

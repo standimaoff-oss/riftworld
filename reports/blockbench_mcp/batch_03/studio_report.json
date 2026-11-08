@@ -1,0 +1,47 @@
+[
+  {
+    "id": "blossom_snail",
+    "titleRu": "07 — Цветочная улитка",
+    "heroLight": "reports/blockbench_mcp/batch_03/07_blossom_snail.png",
+    "heroDark": "reports/blockbench_mcp/batch_03/07_blossom_snail_dark.png",
+    "turntable": "reports/blockbench_mcp/batch_03/07_blossom_snail_angles.png",
+    "localRefComparison": "/home/user/riftworld/reports/blockbench_mcp/batch_03/07_blossom_snail_vs_ref.png",
+    "elementCount": 113,
+    "groupCount": 7,
+    "worldSize": [
+      20.2,
+      31.6,
+      35.47
+    ]
+  },
+  {
+    "id": "phantom_wolf",
+    "titleRu": "08 — Туманный волк-призрак",
+    "heroLight": "reports/blockbench_mcp/batch_03/08_phantom_wolf.png",
+    "heroDark": "reports/blockbench_mcp/batch_03/08_phantom_wolf_dark.png",
+    "turntable": "reports/blockbench_mcp/batch_03/08_phantom_wolf_angles.png",
+    "localRefComparison": "/home/user/riftworld/reports/blockbench_mcp/batch_03/08_phantom_wolf_vs_ref.png",
+    "elementCount": 70,
+    "groupCount": 9,
+    "worldSize": [
+      12.74,
+      40.49,
+      62.46
+    ]
+  },
+  {
+    "id": "crystal_gecko",
+    "titleRu": "09 — Кристальный ящер",
+    "heroLight": "reports/blockbench_mcp/batch_03/09_crystal_gecko.png",
+    "heroDark": "reports/blockbench_mcp/batch_03/09_crystal_gecko_dark.png",
+    "turntable": "reports/blockbench_mcp/batch_03/09_crystal_gecko_angles.png",
+    "localRefComparison": "/home/user/riftworld/reports/blockbench_mcp/batch_03/09_crystal_gecko_vs_ref.png",
+    "elementCount": 64,
+    "groupCount": 8,
+    "worldSize": [
+      30.66,
+      27.04,
+      56.86
+    ]
+  }
+]
