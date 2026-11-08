@@ -52,8 +52,12 @@ public abstract class ElisarCitizenEntity extends AbstractVillager {
     }
 
     @Override
-    public boolean removeWhenFarAway() {
+    public boolean removeWhenFarAway(double distanceSquared) {
         return false;
+    }
+
+    /** Combat residents deliberately have no trading stock; the ordinary citizen overrides this. */
+    public void updateTrades() {
     }
 
     @Override

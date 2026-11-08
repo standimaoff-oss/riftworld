@@ -41,6 +41,7 @@ public final class ElisarVillagerEntity extends ElisarCitizenEntity {
     }
 
     /** Called by the trading interaction; stock never rerolls when the menu is reopened. */
+    @Override
     public void updateTrades() {
         ensureOffers();
     }
