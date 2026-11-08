@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:blasting",
+  "ingredient": {
+    "item": "riftworld:riftcrystal_ore"
+  },
+  "result": "riftworld:riftcrystal",
+  "experience": 1.0,
+  "cookingtime": 120
+}

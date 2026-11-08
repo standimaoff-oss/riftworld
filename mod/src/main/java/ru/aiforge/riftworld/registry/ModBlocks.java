@@ -91,6 +91,11 @@ public final class ModBlocks {
     public static final RegistryObject<Block> EMERGENCY_LAMP = reg("emergency_lamp", () -> new LabLampBlock(stone().mapColor(MapColor.COLOR_RED).strength(1.0F)
             .lightLevel(s -> s.getValue(LabLampBlock.LIT) ? 7 : 0).sound(SoundType.GLASS)));
     public static final RegistryObject<Block> PIPE = reg("pipe", () -> new PipeBlock(metal().noOcclusion()));
+    // Three Elisar civic workstations anchor its merchant, guard and ranger villager professions.
+    public static final RegistryObject<Block> AURITE_EXCHANGE = cube("aurite_exchange", metal().mapColor(MapColor.GOLD));
+    public static final RegistryObject<Block> CITY_GUARD_POST = cube("city_guard_post", metal().mapColor(MapColor.COLOR_CYAN));
+    public static final RegistryObject<Block> RANGER_FLETCHING_TABLE = cube("ranger_fletching_table", BlockBehaviour.Properties.of()
+            .mapColor(MapColor.WOOD).strength(2.5F).sound(SoundType.WOOD));
 
     public static final RegistryObject<Block> DEBRIS = reg("debris", () -> new CarpetBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE)
             .strength(0.2F).sound(SoundType.GRAVEL).noOcclusion().pushReaction(PushReaction.DESTROY)));

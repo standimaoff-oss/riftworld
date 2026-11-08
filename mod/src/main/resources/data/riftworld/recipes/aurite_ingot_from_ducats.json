@@ -1,0 +1,35 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "riftworld:elisar_ducat"
+    },
+    {
+      "item": "riftworld:elisar_ducat"
+    },
+    {
+      "item": "riftworld:elisar_ducat"
+    },
+    {
+      "item": "riftworld:elisar_ducat"
+    },
+    {
+      "item": "riftworld:elisar_ducat"
+    },
+    {
+      "item": "riftworld:elisar_ducat"
+    },
+    {
+      "item": "riftworld:elisar_ducat"
+    },
+    {
+      "item": "riftworld:elisar_ducat"
+    },
+    {
+      "item": "riftworld:elisar_ducat"
+    }
+  ],
+  "result": {
+    "item": "riftworld:aurite_ingot"
+  }
+}
