@@ -1,0 +1,69 @@
+Summoning the three creatures on the disposable server and verifying their actual death drops.
+Summoned new Liopleurodon
+
+Killed Liopleurodon
+
+Observed liopleurodon_tooth drop from liopleurodon.
+Summoned new Pegasus
+
+Killed Pegasus
+
+Observed pegasus_feather drop from pegasus.
+Summoned new Wendigo
+
+Killed Wendigo
+
+Observed wendigo_antler drop from wendigo.
+OK: all three creature trophies dropped in a real Forge server.
+Summoning and ticking all 15 v0.47.0 Elisar biome fauna creatures on the live Forge server.
+Summoned new Porcelain Crane
+
+Summoned new Basalt Beetle
+
+Summoned new Ash Moth
+
+Summoned new Amethyst Fox
+
+Summoned new Sizo Leafwing
+
+Summoned new Azure Frog
+
+Summoned new Blossom Snail
+
+Summoned new Phantom Wolf
+
+Summoned new Crystal Gecko
+
+Summoned new Faceted Owl
+
+Summoned new Bone Raven
+
+Summoned new Coral Hermit Crab
+
+Summoned new Reef Seahorse
+
+Summoned new Ghost Squid
+
+Summoned new Silver Sea Serpent
+
+Summoned new Ash Moth
+
+Killed Ash Moth
+
+Observed ash_wing_dust drop from ash_moth.
+Summoned new Bone Raven
+
+Killed Bone Raven
+
+Observed bone_pinion drop from bone_raven.
+Summoned new Ghost Squid
+
+Killed Ghost Squid
+
+Observed abyssal_ink_sac drop from ghost_squid.
+Summoned new Silver Sea Serpent
+
+Killed Silver Sea Serpent
+
+Observed sea_scale drop from silver_sea_serpent.
+OK: all 15 v0.47.0 fauna entities spawned, ticked, and dropped trophies cleanly.
