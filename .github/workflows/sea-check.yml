@@ -53,6 +53,16 @@ jobs:
             sleep 15
           done
           exit 1
+      - name: Preserve the already downloaded Gradle runtime for the real client
+        if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[client-smoke]')
+        shell: bash
+        run: |
+          set -euo pipefail
+          GRADLE_BIN=$(find "${GRADLE_USER_HOME:-$HOME/.gradle}/wrapper/dists" -path '*/gradle-8.8/bin/gradle' | head -1)
+          test -x "$GRADLE_BIN"
+          GRADLE_HOME_DIR=$(dirname "$(dirname "$GRADLE_BIN")")
+          mkdir -p mod/build/gradle-dist
+          tar -C "$(dirname "$GRADLE_HOME_DIR")" -czf mod/build/gradle-dist/gradle-8.8.tar.gz "$(basename "$GRADLE_HOME_DIR")"
       - name: Expose compiler errors in check annotations
         if: failure()
         shell: bash
@@ -73,6 +83,7 @@ jobs:
           name: riftworld-build
           path: |
             mod/build/libs/*.jar
+            mod/build/gradle-dist/gradle-8.8.tar.gz
             build-ci.log
           if-no-files-found: warn
           retention-days: 14
@@ -93,6 +104,16 @@ jobs:
           path: build-artifact
       - uses: gradle/actions/setup-gradle@v4
         if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[client-smoke]')
+      - name: Restore the client Gradle runtime without another network download
+        if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[client-smoke]')
+        shell: bash
+        run: |
+          set -euo pipefail
+          ARCHIVE=$(find build-artifact -name 'gradle-8.8.tar.gz' | head -1)
+          test -s "$ARCHIVE"
+          mkdir -p "$RUNNER_TEMP/rift-gradle"
+          tar -xzf "$ARCHIVE" -C "$RUNNER_TEMP/rift-gradle"
+          echo "GRADLE_BIN=$RUNNER_TEMP/rift-gradle/gradle-8.8/bin/gradle" >> "$GITHUB_ENV"
       - name: Boot a real Forge server and probe it
         shell: bash
         env:

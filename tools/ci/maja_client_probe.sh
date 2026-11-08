@@ -53,7 +53,7 @@ xdpyinfo -display :99 >/dev/null 2>&1 || fail "No virtual display"
 (
   cd mod
   chmod +x gradlew
-  ./gradlew runClient --no-daemon --console=plain -PrunDir="$PWD/../$RUN" -PautoJoin=127.0.0.1:25565
+  "${GRADLE_BIN:-./gradlew}" runClient --no-daemon --console=plain -PrunDir="$PWD/../$RUN" -PautoJoin=127.0.0.1:25565
 ) > "$OUT/maja-client.log" 2>&1 &
 client=$!
 for _ in $(seq 1 180); do
