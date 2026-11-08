@@ -121,12 +121,12 @@
         "projection": "orthographic",
         "position": [
           -512,
-          302.5,
+          312,
           -492
         ],
         "target": [
           0,
-          52.5,
+          62,
           20
         ],
         "zoom": 0.5
@@ -135,7 +135,7 @@
         1600,
         1200
       ],
-      "zoom_percent": 14.285714285714286
+      "zoom_percent": 13
     },
     {
       "id": "azure_frog",
@@ -163,6 +163,114 @@
         1200
       ],
       "zoom_percent": 32.098765432098766
+    },
+    {
+      "id": "bone_raven",
+      "title_ru": "Костяной ворон",
+      "file": "reports/blockbench_first_batch/photos/07_bone_raven.png",
+      "source": "blockbench/riftworld_fauna/bone_raven.bbmodel",
+      "camera": "custom_reference_view",
+      "camera_preset": {
+        "name": "Riftworld reference view",
+        "projection": "orthographic",
+        "position": [
+          -399.5,
+          209.5,
+          -520.5
+        ],
+        "target": [
+          0.5,
+          49.5,
+          -8.5
+        ],
+        "zoom": 0.5
+      },
+      "resolution": [
+        1600,
+        1200
+      ],
+      "zoom_percent": 13.471502590673575
+    },
+    {
+      "id": "coral_hermit_crab",
+      "title_ru": "Коралловый рак-отшельник",
+      "file": "reports/blockbench_first_batch/photos/08_coral_hermit_crab.png",
+      "source": "blockbench/riftworld_fauna/coral_hermit_crab.bbmodel",
+      "camera": "custom_reference_view",
+      "camera_preset": {
+        "name": "Riftworld reference view",
+        "projection": "orthographic",
+        "position": [
+          -513,
+          281.5,
+          -517.5
+        ],
+        "target": [
+          -1,
+          41.5,
+          -5.5
+        ],
+        "zoom": 0.5
+      },
+      "resolution": [
+        1600,
+        1200
+      ],
+      "zoom_percent": 25.49019607843137
+    },
+    {
+      "id": "reef_seahorse",
+      "title_ru": "Рифовый морской конёк",
+      "file": "reports/blockbench_first_batch/photos/09_reef_seahorse.png",
+      "source": "blockbench/riftworld_fauna/reef_seahorse.bbmodel",
+      "camera": "custom_reference_view",
+      "camera_preset": {
+        "name": "Riftworld reference view",
+        "projection": "orthographic",
+        "position": [
+          -511.5,
+          242,
+          -322.5
+        ],
+        "target": [
+          0.5,
+          52,
+          -2.5
+        ],
+        "zoom": 0.5
+      },
+      "resolution": [
+        1600,
+        1200
+      ],
+      "zoom_percent": 24.074074074074073
+    },
+    {
+      "id": "ghost_squid",
+      "title_ru": "Глубоководный кальмар-призрак",
+      "file": "reports/blockbench_first_batch/photos/10_ghost_squid.png",
+      "source": "blockbench/riftworld_fauna/ghost_squid.bbmodel",
+      "camera": "custom_reference_view",
+      "camera_preset": {
+        "name": "Riftworld reference view",
+        "projection": "orthographic",
+        "position": [
+          -512,
+          404,
+          -532
+        ],
+        "target": [
+          0,
+          44,
+          -20
+        ],
+        "zoom": 0.5
+      },
+      "resolution": [
+        1600,
+        1200
+      ],
+      "zoom_percent": 13.131313131313131
     }
   ],
   "overview": "reports/blockbench_first_batch/photos/00_all_models.png"

@@ -1,11 +1,11 @@
-# Фотографии шести моделей Riftworld
+# Фотографии десяти моделей Riftworld
 
 Снимки `.bbmodel` сделаны через Blockbench 5.2.2 `Screencam.advancedScreenshot`,
-1600 × 1200. Это виды редактора, **не скриншоты Minecraft**. Моль и лис переработаны;
-сизый листокрыл и лазурный древесный лягуш добавлены по утверждённым концептам.
+1600 × 1200. Это виды редактора, **не скриншоты Minecraft**. Последнее обновление:
+переработаны крылья листокрыла, добавлены ворон, рак, морской конёк и кальмар.
 
-[Все шесть моделей](00_all_models.png) · [Сравнение с концептами](05_reference_comparison.png) ·
-[Описание и проверки](../README.md) · [Генератор Blockbench API](../../../tools/blockbench/README.md)
+[Все десять моделей](00_all_models.png) · [Последние пять: концепт / модель](11_latest_reference_comparison.png) ·
+[Все сравнения](05_reference_comparison.png) · [Описание и проверки](../README.md)
 
 | Модель | Фото | Дополнительные ракурсы | Редактируемый проект |
 |---|---|---|---|
@@ -15,13 +15,18 @@
 | Аметистовый лис | [PNG](04_amethyst_fox.png) | [Спереди](amethyst_fox_front.png) · [Сбоку](amethyst_fox_side.png) | [`.bbmodel`](../../../blockbench/riftworld_fauna/amethyst_fox.bbmodel) |
 | Сизый листокрыл | [PNG](05_sizo_leafwing.png) | [Спереди](sizo_leafwing_front.png) · [Сбоку](sizo_leafwing_side.png) | [`.bbmodel`](../../../blockbench/riftworld_fauna/sizo_leafwing.bbmodel) |
 | Лазурный древесный лягуш | [PNG](06_azure_frog.png) | [Спереди](azure_frog_front.png) · [Сбоку](azure_frog_side.png) | [`.bbmodel`](../../../blockbench/riftworld_fauna/azure_frog.bbmodel) |
+| Костяной ворон | [PNG](07_bone_raven.png) | [Спереди](bone_raven_front.png) · [Сбоку](bone_raven_side.png) | [`.bbmodel`](../../../blockbench/riftworld_fauna/bone_raven.bbmodel) |
+| Коралловый рак-отшельник | [PNG](08_coral_hermit_crab.png) | [Спереди](coral_hermit_crab_front.png) · [Сбоку](coral_hermit_crab_side.png) | [`.bbmodel`](../../../blockbench/riftworld_fauna/coral_hermit_crab.bbmodel) |
+| Рифовый морской конёк | [PNG](09_reef_seahorse.png) | [Спереди](reef_seahorse_front.png) · [Сбоку](reef_seahorse_side.png) | [`.bbmodel`](../../../blockbench/riftworld_fauna/reef_seahorse.bbmodel) |
+| Глубоководный кальмар-призрак | [PNG](10_ghost_squid.png) | [Спереди](ghost_squid_front.png) · [Сбоку](ghost_squid_side.png) | [`.bbmodel`](../../../blockbench/riftworld_fauna/ghost_squid.bbmodel) |
 
 ## Общий вид
 
-![Шесть моделей](00_all_models.png)
+![Десять моделей](00_all_models.png)
 
 ## Статус
 
 Опубликованы модели, текстуры, исходные Blockbench-проекты и генератор. Сущности пока не
-зарегистрированы в Minecraft; игровые анимации и внешний вид в игре не проверены. Java-код,
-естественный спавн и баланс существующих мобов не изменялись.
+зарегистрированы в Minecraft; игровые анимации и внешний вид в игре не проверены. Яркие точки
+кальмара не являются подтверждённым эффектом свечения. Java-код, естественный спавн и баланс
+существующих мобов не изменялись.

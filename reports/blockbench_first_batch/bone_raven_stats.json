@@ -1,0 +1,37 @@
+{
+  "id": "bone_raven",
+  "title_ru": "Костяной ворон",
+  "biome": "morok_hollow",
+  "concept": "reports/biome_mob_concepts/11_morok_hollow_bone_raven.png",
+  "revision": 1,
+  "generator": "Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)",
+  "bones": 66,
+  "cubes": 116,
+  "atlas": [
+    2048,
+    2048
+  ],
+  "units_per_block": 64,
+  "render_scale": 0.25,
+  "bounds_blockbench": {
+    "min": [
+      -96,
+      1,
+      -58
+    ],
+    "max": [
+      97,
+      98,
+      41
+    ]
+  },
+  "size_blocks": [
+    3.015625,
+    1.515625,
+    1.546875
+  ],
+  "animations": 5,
+  "bbmodel_bytes": 394162,
+  "geo_bones": 66,
+  "geo_cubes": 116
+}

@@ -199,10 +199,10 @@
         "title_ru": "Сизый листокрыл",
         "biome": "sizo_grove",
         "concept": "reports/biome_mob_concepts/05_sizo_grove_sizo_leafwing.png",
-        "revision": 1,
+        "revision": 2,
         "generator": "Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)",
-        "bones": 20,
-        "cubes": 83,
+        "bones": 66,
+        "cubes": 159,
         "atlas": [
           2048,
           2048
@@ -211,25 +211,25 @@
         "render_scale": 0.25,
         "bounds_blockbench": {
           "min": [
-            -91,
+            -100,
             0,
             -51
           ],
           "max": [
-            91,
-            105,
+            100,
+            124,
             91
           ]
         },
         "size_blocks": [
-          2.84375,
-          1.640625,
+          3.125,
+          1.9375,
           2.21875
         ],
         "animations": 8,
-        "bbmodel_bytes": 322004,
-        "geo_bones": 20,
-        "geo_cubes": 83
+        "bbmodel_bytes": 476889,
+        "geo_bones": 66,
+        "geo_cubes": 159
       },
       "structural_validation": "ok"
     },
@@ -278,6 +278,190 @@
         "geo_cubes": 159
       },
       "structural_validation": "ok"
+    },
+    {
+      "id": "bone_raven",
+      "title_ru": "Костяной ворон",
+      "biome": "morok_hollow",
+      "bbmodel": "blockbench/riftworld_fauna/bone_raven.bbmodel",
+      "geo": "mod/src/main/resources/assets/riftworld/geo/bone_raven.json",
+      "texture": "mod/src/main/resources/assets/riftworld/textures/entity/bone_raven.png",
+      "stats": {
+        "id": "bone_raven",
+        "title_ru": "Костяной ворон",
+        "biome": "morok_hollow",
+        "concept": "reports/biome_mob_concepts/11_morok_hollow_bone_raven.png",
+        "revision": 1,
+        "generator": "Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)",
+        "bones": 66,
+        "cubes": 116,
+        "atlas": [
+          2048,
+          2048
+        ],
+        "units_per_block": 64,
+        "render_scale": 0.25,
+        "bounds_blockbench": {
+          "min": [
+            -96,
+            1,
+            -58
+          ],
+          "max": [
+            97,
+            98,
+            41
+          ]
+        },
+        "size_blocks": [
+          3.015625,
+          1.515625,
+          1.546875
+        ],
+        "animations": 5,
+        "bbmodel_bytes": 394162,
+        "geo_bones": 66,
+        "geo_cubes": 116
+      },
+      "structural_validation": "ok"
+    },
+    {
+      "id": "coral_hermit_crab",
+      "title_ru": "Коралловый рак-отшельник",
+      "biome": "shallow_reef",
+      "bbmodel": "blockbench/riftworld_fauna/coral_hermit_crab.bbmodel",
+      "geo": "mod/src/main/resources/assets/riftworld/geo/coral_hermit_crab.json",
+      "texture": "mod/src/main/resources/assets/riftworld/textures/entity/coral_hermit_crab.png",
+      "stats": {
+        "id": "coral_hermit_crab",
+        "title_ru": "Коралловый рак-отшельник",
+        "biome": "shallow_reef",
+        "concept": "reports/biome_mob_concepts/12_shallow_reef_coral_hermit_crab.png",
+        "revision": 1,
+        "generator": "Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)",
+        "bones": 26,
+        "cubes": 78,
+        "atlas": [
+          2048,
+          2048
+        ],
+        "units_per_block": 64,
+        "render_scale": 0.25,
+        "bounds_blockbench": {
+          "min": [
+            -52,
+            0,
+            -46
+          ],
+          "max": [
+            50,
+            83,
+            35
+          ]
+        },
+        "size_blocks": [
+          1.59375,
+          1.296875,
+          1.265625
+        ],
+        "animations": 10,
+        "bbmodel_bytes": 329388,
+        "geo_bones": 26,
+        "geo_cubes": 78
+      },
+      "structural_validation": "ok"
+    },
+    {
+      "id": "reef_seahorse",
+      "title_ru": "Рифовый морской конёк",
+      "biome": "shallow_reef",
+      "bbmodel": "blockbench/riftworld_fauna/reef_seahorse.bbmodel",
+      "geo": "mod/src/main/resources/assets/riftworld/geo/reef_seahorse.json",
+      "texture": "mod/src/main/resources/assets/riftworld/textures/entity/reef_seahorse.png",
+      "stats": {
+        "id": "reef_seahorse",
+        "title_ru": "Рифовый морской конёк",
+        "biome": "shallow_reef",
+        "concept": "reports/biome_mob_concepts/13_shallow_reef_reef_seahorse.png",
+        "revision": 1,
+        "generator": "Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)",
+        "bones": 13,
+        "cubes": 50,
+        "atlas": [
+          2048,
+          2048
+        ],
+        "units_per_block": 64,
+        "render_scale": 0.25,
+        "bounds_blockbench": {
+          "min": [
+            -18,
+            -2,
+            -43
+          ],
+          "max": [
+            19,
+            106,
+            38
+          ]
+        },
+        "size_blocks": [
+          0.578125,
+          1.6875,
+          1.265625
+        ],
+        "animations": 5,
+        "bbmodel_bytes": 243333,
+        "geo_bones": 13,
+        "geo_cubes": 50
+      },
+      "structural_validation": "ok"
+    },
+    {
+      "id": "ghost_squid",
+      "title_ru": "Глубоководный кальмар-призрак",
+      "biome": "abyss",
+      "bbmodel": "blockbench/riftworld_fauna/ghost_squid.bbmodel",
+      "geo": "mod/src/main/resources/assets/riftworld/geo/ghost_squid.json",
+      "texture": "mod/src/main/resources/assets/riftworld/textures/entity/ghost_squid.png",
+      "stats": {
+        "id": "ghost_squid",
+        "title_ru": "Глубоководный кальмар-призрак",
+        "biome": "abyss",
+        "concept": "reports/biome_mob_concepts/14_abyss_ghost_squid.png",
+        "revision": 1,
+        "generator": "Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)",
+        "bones": 20,
+        "cubes": 85,
+        "atlas": [
+          2048,
+          2048
+        ],
+        "units_per_block": 64,
+        "render_scale": 0.25,
+        "bounds_blockbench": {
+          "min": [
+            -24,
+            31,
+            -119
+          ],
+          "max": [
+            24,
+            57,
+            79
+          ]
+        },
+        "size_blocks": [
+          0.75,
+          0.40625,
+          3.09375
+        ],
+        "animations": 11,
+        "bbmodel_bytes": 318865,
+        "geo_bones": 20,
+        "geo_cubes": 85
+      },
+      "structural_validation": "ok"
     }
   ],
   "roundtrip_validation": [
@@ -324,8 +508,8 @@
     {
       "id": "sizo_leafwing",
       "status": "ok",
-      "bones": 20,
-      "cubes": 83,
+      "bones": 66,
+      "cubes": 159,
       "texture_width": 2048,
       "texture_height": 2048,
       "texture_loaded": true,
@@ -336,6 +520,46 @@
       "status": "ok",
       "bones": 12,
       "cubes": 159,
+      "texture_width": 2048,
+      "texture_height": 2048,
+      "texture_loaded": true,
+      "animations": 1
+    },
+    {
+      "id": "bone_raven",
+      "status": "ok",
+      "bones": 66,
+      "cubes": 116,
+      "texture_width": 2048,
+      "texture_height": 2048,
+      "texture_loaded": true,
+      "animations": 1
+    },
+    {
+      "id": "coral_hermit_crab",
+      "status": "ok",
+      "bones": 26,
+      "cubes": 78,
+      "texture_width": 2048,
+      "texture_height": 2048,
+      "texture_loaded": true,
+      "animations": 1
+    },
+    {
+      "id": "reef_seahorse",
+      "status": "ok",
+      "bones": 13,
+      "cubes": 50,
+      "texture_width": 2048,
+      "texture_height": 2048,
+      "texture_loaded": true,
+      "animations": 1
+    },
+    {
+      "id": "ghost_squid",
+      "status": "ok",
+      "bones": 20,
+      "cubes": 85,
       "texture_width": 2048,
       "texture_height": 2048,
       "texture_loaded": true,

@@ -1,0 +1,37 @@
+{
+  "id": "coral_hermit_crab",
+  "title_ru": "Коралловый рак-отшельник",
+  "biome": "shallow_reef",
+  "concept": "reports/biome_mob_concepts/12_shallow_reef_coral_hermit_crab.png",
+  "revision": 1,
+  "generator": "Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)",
+  "bones": 26,
+  "cubes": 78,
+  "atlas": [
+    2048,
+    2048
+  ],
+  "units_per_block": 64,
+  "render_scale": 0.25,
+  "bounds_blockbench": {
+    "min": [
+      -52,
+      0,
+      -46
+    ],
+    "max": [
+      50,
+      83,
+      35
+    ]
+  },
+  "size_blocks": [
+    1.59375,
+    1.296875,
+    1.265625
+  ],
+  "animations": 10,
+  "bbmodel_bytes": 329388,
+  "geo_bones": 26,
+  "geo_cubes": 78
+}

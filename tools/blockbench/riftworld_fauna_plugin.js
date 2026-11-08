@@ -64,6 +64,25 @@
     petal_pink:    { base: [245, 170, 192], noise: 3, edge: -4, pattern: 'fur' },
     petal_light:   { base: [255, 206, 215], noise: 3, edge: -3, pattern: 'fur' },
     frog_toe:      { base: [166, 221, 169], noise: 3, edge: -4, pattern: 'fur' },
+    bone:          { base: [226, 222, 205], noise: 3, edge: -4, pattern: 'ceramic' },
+    bone_hi:       { base: [244, 241, 225], noise: 2, edge: -3, pattern: 'ceramic' },
+    bone_shadow:   { base: [173, 170, 155], noise: 4, edge: -4, pattern: 'ceramic' },
+    raven:         { base: [33, 37, 43], noise: 4, edge: -4, pattern: 'feather' },
+    raven_hi:      { base: [51, 55, 62], noise: 4, edge: -3, pattern: 'feather' },
+    coral:         { base: [236, 108, 111], noise: 5, edge: -4, pattern: 'fur' },
+    coral_hi:      { base: [255, 149, 147], noise: 4, edge: -4, pattern: 'fur' },
+    coral_orange:  { base: [234, 120, 61], noise: 5, edge: -4, pattern: 'fur' },
+    coral_pink:    { base: [249, 157, 177], noise: 4, edge: -4, pattern: 'fur' },
+    coral_purple:  { base: [167, 142, 214], noise: 4, edge: -4, pattern: 'crystal' },
+    sea_mint:      { base: [103, 196, 171], noise: 4, edge: -3, pattern: 'fur' },
+    sea_teal:      { base: [80, 156, 147], noise: 4, edge: -4, pattern: 'fur' },
+    shell_cream:   { base: [232, 220, 188], noise: 4, edge: -3, pattern: 'ceramic' },
+    shell_light:   { base: [249, 240, 216], noise: 3, edge: -3, pattern: 'ceramic' },
+    squid_navy:    { base: [20, 27, 57], noise: 4, edge: -4, pattern: 'basalt' },
+    squid_hi:      { base: [46, 55, 100], noise: 4, edge: -4, pattern: 'basalt' },
+    squid_edge:    { base: [95, 129, 183], noise: 3, edge: -3, pattern: 'metal' },
+    glow_cyan:     { base: [87, 238, 229], noise: 2, edge: -2, pattern: 'eye' },
+    squid_eye:     { base: [202, 200, 245], noise: 2, edge: -2, pattern: 'eye' },
     eye:          { base: [18, 17, 21],    noise: 1,  edge: 0,  pattern: 'eye' },
     eye_light:    { base: [248, 246, 255], noise: 1,  edge: 0,  pattern: 'eye' }
   };
@@ -430,7 +449,7 @@
         title_ru: this.spec.title_ru,
         biome: this.spec.biome,
         concept: this.spec.concept,
-        revision: ['porcelain_crane', 'basalt_beetle', 'ash_moth', 'amethyst_fox'].includes(this.id) ? 3 : 1,
+        revision: this.id === 'sizo_leafwing' ? 2 : ['porcelain_crane', 'basalt_beetle', 'ash_moth', 'amethyst_fox'].includes(this.id) ? 3 : 1,
         generator: 'Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)',
         bones: this.bones.size,
         cubes: this.cubes.length,
@@ -561,6 +580,25 @@
       const mat = i % 3 === 0 ? 'crystal_hi' : i % 3 === 1 ? 'crystal' : 'crystal_lo';
       b.box(bone, prefix + '_' + i, center, [w, h, w], mat);
     }
+  }
+
+  // A single cuboid along a segment in XY or YZ, with one static rotation
+  // axis per bone so the Minecraft runtime conversion is testable.
+  function barXY(b, parent, name, a, c, width, depth, material) {
+    const mid = a.map((v, i) => (v + c[i]) / 2);
+    const length = Math.max(1, Math.round(Math.hypot(c[0]-a[0], c[1]-a[1])));
+    const angle = Math.atan2(-(c[0]-a[0]), c[1]-a[1]) * 180 / Math.PI;
+    b.bone(name, parent, mid, [0, 0, angle]);
+    b.box(name, 'beam', mid, [width, length, depth], material);
+    return name;
+  }
+  function barYZ(b, parent, name, a, c, width, depth, material) {
+    const mid = a.map((v, i) => (v + c[i]) / 2);
+    const length = Math.max(1, Math.round(Math.hypot(c[1]-a[1], c[2]-a[2])));
+    const angle = Math.atan2(c[2]-a[2], c[1]-a[1]) * 180 / Math.PI;
+    b.bone(name, parent, mid, [angle, 0, 0]);
+    b.box(name, 'beam', mid, [width, length, depth], material);
+    return name;
   }
 
   // ---------------------------------------------------------------- crane
@@ -865,6 +903,7 @@
     b.bone('neck','body',[0,49,-20],[-16,0,0]);
     b.box('neck','neck',[0,57,-23],[19,26,19],'mint');
     b.box('neck','bib',[0,55,-33],[15,22,4],'leaf_cream');
+    for (let i=0;i<4;i++) b.box('neck','bib_feather_'+i,[(i-1.5)*4,43-i%2*2,-34],[4,7,3],i%2?'bone':'leaf_cream');
     b.bone('head','neck',[0,70,-27]);
     b.box('head','skull',[0,72,-31],[24,17,20],'mint_hi');
     b.box('head','muzzle',[0,68,-44],[15,8,12],'mint');
@@ -885,20 +924,27 @@
     for (const side of [-1,1]) {
       const wing=side<0?'wing_left':'wing_right';const p=[side*12,49,4];
       b.bone(wing,'body',p,[0,0,side*14]);
-      // White and mint leaves arranged as broad rectangles with ribs.
-      // Stepped leaf edges sweep upward and narrow at their tips. Pale
-      // inset panels keep a green border, with diagonal rather than rail-like veins.
-      const widths=[[23,28,31,60],[47,24,35,67],[68,19,28,74],[84,14,16,80]];
-      widths.forEach(([x,w,h,y],i)=>{
-        b.box(wing,'leaf_'+i,[side*x,y,9],[w,h,3],i%2?'leaf_cream':'leaf_green');
-        b.box(wing,'inner_leaf_'+i,[side*x,y+1,7],[Math.max(4,w-6),h-7,2],'leaf_cream');
-      });
-      b.box(wing,'leading_spar',[side*48,80,7],[76,3,4],'mint_lo');
-      for (let i=0;i<3;i++) {
-        const v=wing+'_vein_'+i, x=side*(26+i*20), y=58+i*7;
-        b.bone(v,wing,[x,y,6],[0,0,side*(20+i*9)]);
-        b.box(v,'diagonal_vein',[x,y,6],[2,24-i*4,2],'mint_lo');
+      // Joined leaf silhouette, built from contiguous long rectangular strips
+      // of varying height: no gap between strips and a tapered stepped edge.
+      for (let x=12; x<100; x+=4) {
+        const t=(x-12)/88;
+        const top=66 + 28*t;
+        const bottom=42 + 14*t + 30*t*t*t + 5*Math.abs(2*t-1);
+        const height=Math.max(4,Math.round(top-bottom));
+        b.box(wing,'leaf_strip_'+x,[side*(x+2),Math.round((top+bottom)/2),9],
+          [4,height,3], 'leaf_cream');
       }
+      // Join the lower green rim continuously, even on steep sections.
+      const lowerAt = t => 42 + 14*t + 30*t*t*t + 5*Math.abs(2*t-1);
+      for (let x=12; x<100; x+=4) {
+        const t=(x-12)/88, t2=(x+4-12)/88;
+        barXY(b,wing,wing+'_rim_'+x,[side*x,lowerAt(t),7],[side*(x+4),lowerAt(t2),7],3,2,'leaf_green');
+      }
+      // Branching ribs converge at the shoulder as in the approved artwork.
+      barXY(b,wing,wing+'_leading_rib',[side*12,64,6],[side*96,94,6],3,3,'mint_lo');
+      barXY(b,wing,wing+'_rib_a',[side*14,58,6],[side*56,80,6],2,2,'mint_lo');
+      barXY(b,wing,wing+'_rib_b',[side*15,56,6],[side*63,60,6],2,2,'mint_lo');
+      barXY(b,wing,wing+'_rib_c',[side*16,54,6],[side*44,49,6],2,2,'mint_lo');
       b.animate(wing,'z',7,1.3,side<0?0:Math.PI);
     }
     for (const side of [-1,1]) for (const back of [false,true]) {
@@ -961,13 +1007,202 @@
     b.animate('head','x',2,0.8,0);
   }
 
+  // Bone raven: hollow ribs, ivory skull and ragged black feather wings.
+  function buildBoneRaven(b) {
+    b.bone('body',null,[0,48,0]);
+    b.box('body','spine',[0,53,4],[7,7,40],'bone');
+    b.box('body','breastbone',[0,42,-7],[8,15,18],'bone_hi');
+    b.box('body','pelvis',[0,42,20],[17,10,10],'bone');
+    for (let i=0;i<4;i++) for (const side of [-1,1]) {
+      const z=-10+i*9, n='rib_'+side+'_'+i;
+      barXY(b,'body',n+'_upper',[side*3,54,z],[side*13,49,z],3,3,'bone_hi');
+      barXY(b,'body',n+'_lower',[side*13,49,z],[side*8,37,z],3,3,'bone');
+    }
+    b.bone('neck','body',[0,59,-16],[22,0,0]);
+    b.box('neck','neck_vertebrae',[0,65,-17],[7,15,8],'bone');
+    b.bone('head','neck',[0,72,-19]);
+    b.box('head','skull',[0,76,-23],[25,18,22],'bone_hi');
+    b.box('head','brow',[0,82,-27],[27,5,16],'bone');
+    b.box('head','upper_beak',[0,72,-41],[12,8,21],'bone_hi');
+    b.box('head','beak_tip',[0,70,-54],[8,6,8],'bone');
+    b.box('head','lower_beak',[0,67,-39],[10,3,18],'bone_shadow');
+    for (const side of [-1,1]) {
+      b.box('head','socket_'+side,[side*13,76,-27],[2,11,11],'eye');
+      b.box('head','ember_eye_'+side,[side*14,76,-27],[2,6,6],'amber');
+      b.box('head','nostril_'+side,[side*6,73,-43],[2,3,4],'eye');
+      const wing=side<0?'wing_left':'wing_right';
+      b.bone(wing,'body',[side*9,57,0],[0,0,side*8]);
+      // A connected dark feather surface with a ragged trailing edge.
+      for (let x=12;x<96;x+=6) {
+        const t=(x-12)/84, top=64+t*13, bottom=54-17*Math.sin(t*Math.PI*0.85)+5*t;
+        b.box(wing,'flight_surface_'+x,[side*(x+3),(top+bottom)/2,3],[6,Math.round(top-bottom),3],x%12?'raven':'raven_hi');
+        const extra=7+(Math.floor(x/6)%3)*3;
+        barXY(b,wing,wing+'_feather_'+x,[side*(x+2),bottom+3,3],
+          [side*(x+7),bottom-extra,3],4,3,'raven');
+      }
+      barXY(b,wing,wing+'_humerus',[side*10,58,-1],[side*46,72,-1],5,5,'bone');
+      barXY(b,wing,wing+'_forearm',[side*46,72,-1],[side*91,78,-1],4,4,'bone_hi');
+      for (let i=0;i<3;i++) barXY(b,wing,wing+'_finger_'+i,[side*46,71,-2],[side*(60+i*10),46+i*2,-2],3,3,'bone');
+      b.animate(wing,'z',7,1.3,side<0?0:Math.PI);
+      const leg=side<0?'leg_left':'leg_right';
+      b.bone(leg,'body',[side*7,38,14]);
+      barYZ(b,leg,leg+'_thigh',[side*7,38,14],[side*7,25,9],5,5,'bone');
+      barYZ(b,leg,leg+'_shin',[side*7,25,9],[side*7,6,2],4,4,'bone_hi');
+      b.box(leg,'ankle',[side*7,5,2],[5,5,5],'bone');
+      for(let i=-1;i<=1;i++) b.box(leg,'toe_'+i,[side*7+i*4,2,-4],[3,3,12],'bone_hi');
+      b.animate(leg,'x',3,1.0,side<0?0:Math.PI);
+    }
+    b.bone('tail','body',[0,45,22]);
+    for(let i=-3;i<=3;i++) b.box('tail','tail_feather_'+i,[i*4,42,31+Math.abs(i)],[4,3,20-Math.abs(i)*2],'raven');
+    b.animate('head','x',2,0.8,0);
+  }
+
+  function buildCoralHermitCrab(b) {
+    b.bone('body',null,[0,24,0]);
+    b.box('body','body',[0,26,-9],[37,20,31],'coral');
+    b.box('body','underbody',[0,19,-8],[31,10,28],'coral_orange');
+    b.box('body','front_face',[0,26,-26],[29,13,5],'coral_orange');
+    b.bone('shell','body',[0,30,8]);
+    // A bevelled layered shell: intersecting broad cuboids give clipped
+    // corners and a rounded taper, rather than a single rectangular box.
+    const layers=[
+      [0,31,9,51,12,49,'shell_cream'], [0,41,11,51,9,47,'shell_cream'],
+      [0,49,13,47,8,43,'shell_light'], [0,56,16,41,7,37,'shell_cream'],
+      [0,62,19,31,6,29,'shell_light'], [0,67,22,19,5,19,'shell_cream'],
+      [0,71,24,11,4,11,'shell_light']
+    ];
+    layers.forEach(([x,y,z,w,h,d,m],i)=>{
+      b.box('shell','shell_center_'+i,[x,y,z],[w-8,h,d],m);
+      b.box('shell','shell_sides_'+i,[x,y,z],[w,h,d-8],m);
+    });
+    // Coral sprays and anemone on the shell (not on a presentation pedestal).
+    const corals=[[-17,59,4,'coral_pink'],[1,67,14,'sea_mint'],[14,61,19,'coral_purple'],[-8,63,28,'coral_pink'],[18,55,31,'sea_mint']];
+    corals.forEach(([x,y,z,m],i)=>{
+      b.box('shell','coral_stem_'+i,[x,y+6,z],[4,12,4],m);
+      b.box('shell','coral_fork_l_'+i,[x-3,y+10,z],[4,5,4],m);
+      b.box('shell','coral_fork_r_'+i,[x+3,y+12,z],[4,5,4],m);
+      b.box('shell','coral_tip_'+i,[x,y+14,z],[4,4,4],m);
+    });
+    b.box('shell','anemone_base',[-26,47,11],[5,11,11],'sea_mint');
+    for(let i=0;i<8;i++) {
+      const angle=2*Math.PI*i/8, y=46+Math.sin(angle)*7, z=11+Math.cos(angle)*7;
+      b.box('shell','anemone_tentacle_'+i,[-30,y,z],[6,4,4],'sea_mint');
+    }
+    for(const side of [-1,1]) {
+      const eye=side<0?'eye_left':'eye_right';
+      b.bone(eye,'body',[side*9,35,-22]);
+      b.box(eye,'stalk',[side*9,42,-23],[4,17,4],'coral_orange');
+      b.box(eye,'eyeball',[side*9,52,-24],[8,8,7],'eye');
+      b.box(eye,'glint',[side*9-1,54,-28],[2,2,1],'eye_light');
+      b.animate(eye,'z',2,0.8,side<0?0:Math.PI);
+      const claw=side<0?'claw_left':'claw_right';
+      b.bone(claw,'body',[side*16,26,-15]);
+      barXY(b,claw,claw+'_arm',[side*16,26,-18],[side*34,22,-25],8,9,'coral');
+      const size=side<0?20:16, x=side*42;
+      b.box(claw,'palm',[x,22,-31],[size,14,18],'coral_hi');
+      b.box(claw,'upper_pincer',[x,23,-42],[size-4,7,9],'coral');
+      b.box(claw,'lower_pincer',[x,17,-41],[size-6,4,8],'coral_orange');
+      b.animate(claw,'y',4,1.0,side<0?0:Math.PI);
+      for(let i=0;i<3;i++) {
+        const leg='leg_'+side+'_'+i, z=-3+i*12, x0=side*19, x1=side*(35+i*3);
+        b.bone(leg,'body',[x0,20,z]);
+        barXY(b,leg,leg+'_upper',[x0,22,z],[x1,16,z],7,7,'coral');
+        barXY(b,leg,leg+'_lower',[x1,16,z],[x1+side*4,3,z],5,6,'coral_orange');
+        b.box(leg,'toe',[x1+side*4,2,z-1],[5,4,8],'coral_orange');
+        b.animate(leg,'x',4,1.3,(i+(side<0?0:1))*Math.PI/3);
+      }
+    }
+  }
+
+  function buildReefSeahorse(b) {
+    b.bone('body',null,[0,54,0]);
+    // Teal upright segmented body, pink ventral plates, head points toward -Z.
+    const segments=[
+      [0,75,-1,18,12,21],[0,64,2,23,12,25],[0,52,5,25,12,27],
+      [0,40,7,22,12,23],[0,29,8,17,11,19]
+    ];
+    segments.forEach(([x,y,z,w,h,d],i)=>{
+      b.box('body','body_section_'+i,[x,y,z],[w,h,d],i%2?'sea_mint':'sea_teal');
+      b.box('body','ventral_plate_'+i,[x,y,z-d/2-1],[w-4,h-2,4],i%2?'coral_pink':'coral');
+      b.box('body','ventral_highlight_'+i,[x,y,z-d/2-4],[w-8,h-5,2],'shell_light');
+    });
+    b.bone('head','body',[0,80,-3],[12,0,0]);
+    b.box('head','head',[0,85,-9],[22,17,22],'sea_mint');
+    b.box('head','snout',[0,81,-27],[9,8,22],'sea_teal');
+    b.box('head','snout_tip',[0,81,-40],[9,8,6],'coral');
+    b.box('head','jaw',[0,77,-30],[8,3,17],'shell_cream');
+    for(const side of [-1,1]) {
+      b.box('head','eye_rim_'+side,[side*11,86,-15],[3,10,10],'gold');
+      b.box('head','eye_'+side,[side*13,86,-16],[2,6,6],'eye');
+      b.box('head','ear_fin_'+side,[side*13,88,1],[3,11,10],'coral_pink');
+      b.box('head','coral_crown_'+side,[side*7,99,-4],[4,14,4],'coral');
+      b.box('head','coral_branch_'+side,[side*10,104,-4],[7,4,4],'coral_pink');
+      const fin=side<0?'fin_left':'fin_right';b.bone(fin,'body',[side*11,54,8],[0,0,side*-18]);
+      b.box(fin,'pectoral_fin',[side*16,54,8],[3,16,14],'shell_light');
+      b.box(fin,'fin_stripe',[side*18,54,8],[1,12,4],'coral_pink');
+      b.animate(fin,'z',6,1.8,side<0?0:Math.PI);
+    }
+    b.bone('dorsal_fin','body',[0,57,18]);
+    for(let i=0;i<4;i++) b.box('dorsal_fin','fin_lobe_'+i,[0,72-i*8,23+i*2],[3,8,12+i*2],i%2?'coral_pink':'shell_light');
+    b.animate('dorsal_fin','y',6,1.5,0);
+    // Square spiral tail in the sagittal YZ plane, joined at segment ends.
+    b.bone('tail','body',[0,25,8]);
+    const path=[[0,29,8],[0,17,12],[0,7,10],[0,4,-3],[0,4,-15],[0,12,-17],[0,17,-10],[0,12,-5]];
+    for(let i=0;i<path.length-1;i++) barYZ(b,'tail','tail_segment_'+i,path[i],path[i+1],6,6,i%2?'sea_mint':'coral');
+    for(let i=1;i<path.length-1;i++) b.box('tail','tail_joint_'+i,path[i],[8,8,8],i%2?'sea_mint':'coral');
+    b.animate('tail','x',4,1.0,0);
+    b.animate('head','x',2,0.8,0);
+  }
+
+  function buildGhostSquid(b) {
+    b.bone('body',null,[0,42,0]);
+    // Opaque navy approximates the reference: actual emissive/translucent
+    // rendering is intentionally not asserted by this asset-only batch.
+    b.box('body','mantle',[0,42,28],[27,23,64],'squid_navy');
+    b.box('body','mantle_top',[0,54,27],[24,3,57],'squid_hi');
+    b.box('body','mantle_tail',[0,42,66],[20,18,16],'squid_hi');
+    b.box('body','mantle_tip',[0,42,76],[12,12,6],'squid_navy');
+    for(const side of [-1,1]) {
+      const fin=side<0?'fin_left':'fin_right';
+      b.bone(fin,'body',[side*11,45,58],[0,0,side*-20]);
+      b.box(fin,'fin',[side*17,45,61],[14,3,23],'squid_hi');
+      b.box(fin,'fin_edge',[side*22,45,62],[4,4,18],'squid_edge');
+      b.animate(fin,'z',4,1.2,side<0?0:Math.PI);
+      for(let i=0;i<5;i++) b.box('body','side_light_'+side+'_'+i,[side*14,43,4+i*12],[2,3,3],'glow_cyan');
+    }
+    for(let i=0;i<6;i++) b.box('body','top_light_'+i,[0,56,1+i*11],[3,2,3],'glow_cyan');
+    b.bone('head','body',[0,42,-8]);
+    b.box('head','head',[0,42,-12],[23,20,20],'squid_hi');
+    for(const side of [-1,1]) {
+      b.box('head','eye_socket_'+side,[side*12,43,-15],[2,12,12],'squid_navy');
+      b.box('head','eye_'+side,[side*13,43,-15],[2,8,8],'squid_eye');
+    }
+    // Eight independently animated tentacles, splayed with two nested
+    // single-axis groups. Rectangular strips preserve the source silhouette.
+    for(let i=0;i<8;i++) {
+      const a=2*Math.PI*i/8, x=Math.cos(a)*7, y=42+Math.sin(a)*7;
+      const root='tentacle_'+i, pitch=root+'_pitch', length=i%3===0?91:72+(i%2)*10;
+      b.bone(root,'head',[x,y,-21],[0,Math.cos(a)*18,0]);
+      b.bone(pitch,root,[x,y,-21],[Math.sin(a)*18,0,0]);
+      b.box(pitch,'tentacle',[x,y,-21-length/2],[5,5,length],'squid_navy');
+      b.box(pitch,'tentacle_tip',[x,y,-21-length-3],[7,7,8],'squid_hi');
+      for(let j=0;j<5;j++) b.box(pitch,'luminous_dot_'+j,[x,y+3,-31-j*12],[3,1,4],'glow_cyan');
+      b.animate(root,'y',4,1.0,i*Math.PI/4);
+    }
+    b.animate('head','y',2,0.8,0);
+  }
+
   const SPECS = [
     { id: 'porcelain_crane', title_ru: 'Фарфоровый журавль', biome: 'elisar_city', concept: 'reports/biome_mob_concepts/01_elisar_city_porcelain_crane.png', atlas: ATLAS, build: buildPorcelainCrane },
     { id: 'basalt_beetle', title_ru: 'Базальтовый жук-углеед', biome: 'ashen_lands', concept: 'reports/biome_mob_concepts/02_ashen_lands_basalt_beetle.png', atlas: ATLAS, build: buildBasaltBeetle },
     { id: 'ash_moth', title_ru: 'Пепельная моль', biome: 'ashen_lands', concept: 'reports/biome_mob_concepts/03_ashen_lands_ash_moth.png', atlas: ATLAS, build: buildAshMoth },
     { id: 'amethyst_fox', title_ru: 'Аметистовый лис', biome: 'violet_hills', concept: 'reports/biome_mob_concepts/04_violet_hills_amethyst_fox.png', atlas: ATLAS, build: buildAmethystFox },
     { id: 'sizo_leafwing', title_ru: 'Сизый листокрыл', biome: 'sizo_grove', concept: 'reports/biome_mob_concepts/05_sizo_grove_sizo_leafwing.png', atlas: ATLAS, build: buildSizoLeafwing },
-    { id: 'azure_frog', title_ru: 'Лазурный древесный лягуш', biome: 'waterfall_gardens', concept: 'reports/biome_mob_concepts/06_waterfall_gardens_azure_frog.png', atlas: ATLAS, build: buildAzureFrog }
+    { id: 'azure_frog', title_ru: 'Лазурный древесный лягуш', biome: 'waterfall_gardens', concept: 'reports/biome_mob_concepts/06_waterfall_gardens_azure_frog.png', atlas: ATLAS, build: buildAzureFrog },
+    { id: 'bone_raven', title_ru: 'Костяной ворон', biome: 'morok_hollow', concept: 'reports/biome_mob_concepts/11_morok_hollow_bone_raven.png', atlas: ATLAS, build: buildBoneRaven },
+    { id: 'coral_hermit_crab', title_ru: 'Коралловый рак-отшельник', biome: 'shallow_reef', concept: 'reports/biome_mob_concepts/12_shallow_reef_coral_hermit_crab.png', atlas: ATLAS, build: buildCoralHermitCrab },
+    { id: 'reef_seahorse', title_ru: 'Рифовый морской конёк', biome: 'shallow_reef', concept: 'reports/biome_mob_concepts/13_shallow_reef_reef_seahorse.png', atlas: ATLAS, build: buildReefSeahorse },
+    { id: 'ghost_squid', title_ru: 'Глубоководный кальмар-призрак', biome: 'abyss', concept: 'reports/biome_mob_concepts/14_abyss_ghost_squid.png', atlas: ATLAS, build: buildGhostSquid }
   ];
 
   async function generateOne(spec) {
@@ -988,7 +1223,7 @@
   }
 
   global.RiftworldFauna = {
-    version: '0.4.0',
+    version: '0.5.0',
     blockbench: '5.2.2',
     revision: 3,
     specs: SPECS.map(s => ({ id: s.id, title_ru: s.title_ru, biome: s.biome, concept: s.concept })),
@@ -1005,10 +1240,10 @@
       title: 'Riftworld Fauna',
       author: 'Riftworld',
       icon: 'fa-cube',
-      version: '0.4.0',
+      version: '0.5.0',
       min_version: '5.2.0',
       variant: 'both',
-      description: 'Reference-detail procedural Blockbench-API source for the first four Riftworld biome mobs.',
+      description: 'Reference-detail procedural Blockbench-API source for ten Riftworld biome mobs.',
       onload() {},
       onunload() {}
     });

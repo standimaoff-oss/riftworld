@@ -24,7 +24,7 @@ function arg(name, fallback) {
 
 const blockbenchRoot = path.resolve(arg('blockbench-root', process.env.BLOCKBENCH_ROOT || path.join(repoRoot, '../.cache/riftworld-blockbench/blockbench-5.2.2')));
 const outDir = path.resolve(arg('out', path.join(repoRoot, 'reports/blockbench_first_batch/photos')));
-const idsArg = arg('ids', 'porcelain_crane,basalt_beetle,ash_moth,amethyst_fox,sizo_leafwing,azure_frog');
+const idsArg = arg('ids', 'porcelain_crane,basalt_beetle,ash_moth,amethyst_fox,sizo_leafwing,azure_frog,bone_raven,coral_hermit_crab,reef_seahorse,ghost_squid');
 const ids = idsArg.split(',').map(s => s.trim()).filter(Boolean);
 const background = arg('background', '#f2f4f8');
 const view = arg('view', 'default');
@@ -38,7 +38,11 @@ const titles = {
   ash_moth: 'Пепельная моль',
   amethyst_fox: 'Аметистовый лис',
   sizo_leafwing: 'Сизый листокрыл',
-  azure_frog: 'Лазурный древесный лягуш'
+  azure_frog: 'Лазурный древесный лягуш',
+  bone_raven: 'Костяной ворон',
+  coral_hermit_crab: 'Коралловый рак-отшельник',
+  reef_seahorse: 'Рифовый морской конёк',
+  ghost_squid: 'Глубоководный кальмар-призрак'
 };
 
 if (!fs.existsSync(path.join(blockbenchRoot, 'dist/bundle.js'))) {
@@ -149,7 +153,11 @@ try {
       ash_moth: [0, 135, -512],
       amethyst_fox: [-512, 220, -280],
       sizo_leafwing: [-512, 250, -512],
-      azure_frog: [-512, 270, -512]
+      azure_frog: [-512, 270, -512],
+      bone_raven: [-400, 160, -512],
+      coral_hermit_crab: [-512, 240, -512],
+      reef_seahorse: [-512, 190, -320],
+      ghost_squid: [-512, 360, -512]
     };
     const offset = view === 'front' ? [0, 130, -512]
       : view === 'side' ? [512, 130, 0]
@@ -233,7 +241,7 @@ const montageArgs = ['-background', background, '-fill', '#20242c', '-font', 'De
 for (const photo of report.photos) {
   montageArgs.push('-label', photo.title_ru, path.join(repoRoot, photo.file));
 }
-montageArgs.push('-tile', ids.length > 4 ? '3x2' : '2x2', '-geometry', '800x600+14+14', overview);
+montageArgs.push('-tile', ids.length > 6 ? '5x2' : ids.length > 4 ? '3x2' : '2x2', '-geometry', '800x600+14+14', overview);
 execFileSync('montage', montageArgs);
 for (const extra of fs.readdirSync(outDir)) {
   if (/^00_all_models-\d+\.png$/.test(extra)) fs.rmSync(path.join(outDir, extra));

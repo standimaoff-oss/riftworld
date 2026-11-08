@@ -13,7 +13,7 @@ import math
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-IDS = ('porcelain_crane', 'basalt_beetle', 'ash_moth', 'amethyst_fox', 'sizo_leafwing', 'azure_frog')
+IDS = ('porcelain_crane', 'basalt_beetle', 'ash_moth', 'amethyst_fox', 'sizo_leafwing', 'azure_frog', 'bone_raven', 'coral_hermit_crab', 'reef_seahorse', 'ghost_squid')
 
 
 def rotate(point, origin, degrees):
@@ -56,9 +56,11 @@ def load_model(id):
         group = groups[node['uuid']]
         bone = bones[group['name']]
         assert bone.get('parent') == (chain[-1]['name'] if chain else None)
-        assert bone['pivot'] == [-group['origin'][0], -group['origin'][1], group['origin'][2]]
+        # .bbmodel serialization rounds floats to five decimals; raw Bedrock
+        # compilation retains full precision. Allow only that tiny difference.
+        assert all(abs(a-b) < 1e-4 for a,b in zip(bone['pivot'], [-group['origin'][0], -group['origin'][1], group['origin'][2]]))
         bb_rot = group.get('rotation', [0, 0, 0])
-        assert bone.get('rotation', [0, 0, 0]) == [-bb_rot[0], -bb_rot[1], bb_rot[2]]
+        assert all(abs(a-b) < 1e-4 for a,b in zip(bone.get('rotation', [0, 0, 0]), [-bb_rot[0], -bb_rot[1], bb_rot[2]]))
         parent_chain = chain + [group]
         runtime_chain = [bones[g['name']] for g in parent_chain]
         children = [elements[c] for c in node['children'] if isinstance(c, str)]
@@ -77,7 +79,7 @@ def load_model(id):
                 bb_world = transformed(bbpoint, parent_chain)
                 rt_world = transformed(rtpoint, runtime_chain)
                 expected = [-bb_world[0], -bb_world[1], bb_world[2]]
-                assert all(abs(a - b) < 1e-6 for a, b in zip(rt_world, expected)), (id, group['name'], rt_world, expected)
+                assert all(abs(a - b) < 1e-4 for a, b in zip(rt_world, expected)), (id, group['name'], rt_world, expected)
             seen.add(element['uuid'])
         for child in node['children']:
             if isinstance(child, dict): walk(child, parent_chain)

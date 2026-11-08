@@ -1,6 +1,6 @@
 # Headless Blockbench API runner
 
-Генератор шести моделей Riftworld fauna через настоящий Blockbench API, а не через ручную сборку
+Генератор десяти моделей Riftworld fauna через настоящий Blockbench API, а не через ручную сборку
 `.bbmodel`/geo JSON.
 
 ## Состав
@@ -8,13 +8,13 @@
 - `riftworld_fauna_plugin.js` — плагин/библиотека Blockbench. Строит модели через `Group`, `Cube`,
   `Texture`, `Animation`, экспортирует `.bbmodel` через `Codecs.project.compile()` и Bedrock geometry
   через `Codecs.bedrock_old.compile({raw:true})`, затем конвертирует Bedrock Y-up в Riftworld Y-down.
-  Ревизия 3 использует наклонённые группы для прямоугольных пластин журавля и жука. Моль и лис также пересобраны; листокрыл и лягуш добавлены по концептам. Геометрия строится с шагом 64 единицы на блок и ставит `render_scale: 0.25`, сохраняя
+  Ревизия 3 использует наклонённые группы для прямоугольных пластин журавля и жука. Моль и лис пересобраны; листокрыл, лягуш, ворон, рак, конёк и кальмар добавлены по концептам. Геометрия строится с шагом 64 единицы на блок и ставит `render_scale: 0.25`, сохраняя
   целочисленные кубы для `GeoModel.java`; атласы 2048×2048.
 - `run_headless.mjs` — поднимает локальный HTTP-сервер для собранного Blockbench web, запускает
   headless Chromium, инжектит плагин, пишет артефакты и делает round-trip проверку `.bbmodel`.
 - `check_geometry.py` — проверяет координаты статически повёрнутых деталей geo и зазор усиков жука.
 - `take_photos.mjs` — открывает сохранённые проекты и снимает их через
-  `Screencam.advancedScreenshot`; создаёт шесть PNG 1600 × 1200 и общий лист.
+  `Screencam.advancedScreenshot`; создаёт десять PNG 1600 × 1200 и общий лист.
 - `package.json` / `package-lock.json` — зависимости runner: `puppeteer-core`, `@sparticuz/chromium`.
 
 ## Требования
