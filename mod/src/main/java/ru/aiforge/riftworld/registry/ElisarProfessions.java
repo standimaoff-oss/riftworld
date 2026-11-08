@@ -50,9 +50,12 @@ public final class ElisarProfessions {
 
     private static void setup(FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
-            PoiTypes.registerBlockStates(EXCHANGE_POI.get());
-            PoiTypes.registerBlockStates(GUARD_POI.get());
-            PoiTypes.registerBlockStates(RANGER_POI.get());
+            PoiTypes.registerBlockStates(EXCHANGE_POI.getHolder().orElseThrow(),
+                    ModBlocks.AURITE_EXCHANGE.get().getStateDefinition().getPossibleStates());
+            PoiTypes.registerBlockStates(GUARD_POI.getHolder().orElseThrow(),
+                    ModBlocks.CITY_GUARD_POST.get().getStateDefinition().getPossibleStates());
+            PoiTypes.registerBlockStates(RANGER_POI.getHolder().orElseThrow(),
+                    ModBlocks.RANGER_FLETCHING_TABLE.get().getStateDefinition().getPossibleStates());
         });
     }
 
