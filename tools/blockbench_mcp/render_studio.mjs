@@ -36,6 +36,7 @@ const BATCH_DEFAULTS = {
   batch_02: 'amethyst_fox,sizo_leafwing,azure_frog',
   batch_03: 'blossom_snail,phantom_wolf,crystal_gecko',
   batch_04: 'faceted_owl,bone_raven,coral_hermit_crab',
+  batch_05: 'reef_seahorse,ghost_squid,silver_sea_serpent',
 };
 
 const batchName = arg('batch', 'batch_01');
@@ -141,6 +142,30 @@ const CAMERA_RIGS = {
     heroDir: [-0.66, 0.22, -0.72],
     distMul: 2.24,
     targetBias: [0, -1, 1],
+  },
+  reef_seahorse: {
+    num: '13',
+    titleRu: '13 — Рифовый морской конёк',
+    refFile: '/tmp/inspect_prev/orig_13_seahorse.png',
+    heroDir: [-0.66, 0.18, -0.73],
+    distMul: 1.92,
+    targetBias: [0, 0, 0],
+  },
+  ghost_squid: {
+    num: '14',
+    titleRu: '14 — Глубоководный кальмар-призрак',
+    refFile: '/tmp/inspect_prev/orig_14_squid.png',
+    heroDir: [-0.55, 0.58, 0.60],
+    distMul: 1.90,
+    targetBias: [0, -1, 4],
+  },
+  silver_sea_serpent: {
+    num: '15',
+    titleRu: '15 — Серебряный морской змей',
+    refFile: '/tmp/inspect_prev/orig_15_serpent.png',
+    heroDir: [-0.66, 0.24, -0.71],
+    distMul: 1.64,
+    targetBias: [0, 0, 2],
   },
 };
 

@@ -15,6 +15,7 @@ from PIL import Image
 from painter_batch_02 import paint_fox_face, paint_leafwing_face, paint_frog_face
 from painter_batch_03 import paint_snail_face, paint_wolf_face, paint_gecko_face
 from painter_batch_04 import paint_owl_face, paint_raven_face, paint_crab_face
+from painter_batch_05 import paint_seahorse_face, paint_squid_face, paint_serpent_face
 
 
 def hash_noise(ix, iy, seed=0):
@@ -551,6 +552,12 @@ def paint_atlas(spec_path, out_png_path):
         painter = paint_raven_face
     elif model_id == 'coral_hermit_crab':
         painter = paint_crab_face
+    elif model_id == 'reef_seahorse':
+        painter = paint_seahorse_face
+    elif model_id == 'ghost_squid':
+        painter = paint_squid_face
+    elif model_id == 'silver_sea_serpent':
+        painter = paint_serpent_face
     else:
         raise ValueError(f'Unknown model_id for painter: {model_id}')
 

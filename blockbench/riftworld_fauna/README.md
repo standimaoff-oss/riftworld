@@ -60,4 +60,19 @@
 
 Подробный отчёт Партии 4: **[`reports/blockbench_mcp/batch_04/README.md`](../../reports/blockbench_mcp/batch_04/README.md)**.
 
+---
+
+## Выпуск 5 — Финал серии (Модели 13–15, 15/15 завершено)
+
+![Витрина моделей 13–15 (тёмный фон)](../../reports/blockbench_mcp/batch_05/00_batch_05_showcase_dark.png)
+
+| № | ID | Название | Биом | Кости | Прямоугольные элементы | Blockbench (`.bbmodel`) | Bedrock Geo & Anim | Riftworld Geo & Texture | MCP Валидация |
+| :-: | :--- | :--- | :--- | :-: | :-: | :--- | :--- | :--- | :-: |
+| **13** | `reef_seahorse` | **Рифовый морской конёк** | `riftworld:shallow_reef` | 9 | 44 | [`reef_seahorse.bbmodel`](./reef_seahorse.bbmodel) | [`geo`](./bedrock/reef_seahorse.geo.json) · [`anim`](./bedrock/reef_seahorse.animation.json) | [`geo`](../../mod/src/main/resources/assets/riftworld/geo/reef_seahorse.json) · [`png`](../../mod/src/main/resources/assets/riftworld/textures/entity/reef_seahorse.png) | `0 errors / 0 warnings` |
+| **14** | `ghost_squid` | **Глубоководный кальмар-призрак** | `riftworld:abyss` | 8 | 33 | [`ghost_squid.bbmodel`](./ghost_squid.bbmodel) | [`geo`](./bedrock/ghost_squid.geo.json) · [`anim`](./bedrock/ghost_squid.animation.json) | [`geo`](../../mod/src/main/resources/assets/riftworld/geo/ghost_squid.json) · [`png`](../../mod/src/main/resources/assets/riftworld/textures/entity/ghost_squid.png) | `0 errors / 0 warnings` |
+| **15** | `silver_sea_serpent` | **Серебряный морской змей** | `riftworld:maja_ocean` | 8 | 44 | [`silver_sea_serpent.bbmodel`](./silver_sea_serpent.bbmodel) | [`geo`](./bedrock/silver_sea_serpent.geo.json) · [`anim`](./bedrock/silver_sea_serpent.animation.json) | [`geo`](../../mod/src/main/resources/assets/riftworld/geo/silver_sea_serpent.json) · [`png`](../../mod/src/main/resources/assets/riftworld/textures/entity/silver_sea_serpent.png) | `0 errors / 0 warnings` |
+
+Подробный отчёт Партии 5: **[`reports/blockbench_mcp/batch_05/README.md`](../../reports/blockbench_mcp/batch_05/README.md)**.
+
+
 
