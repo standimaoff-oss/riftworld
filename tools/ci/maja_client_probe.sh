@@ -102,56 +102,48 @@ rq kill '@e[type=riftworld:elisar_villager]' >/dev/null || true
 rq kill '@e[type=riftworld:elisar_guard]' >/dev/null || true
 rq kill '@e[type=riftworld:elisar_archer]' >/dev/null || true
 rq kill '@e[type=minecraft:item_frame]' >/dev/null || true
+rq kill '@e[type=minecraft:armor_stand]' >/dev/null || true
+rq item replace entity TestPlayer weapon.mainhand with minecraft:air >/dev/null
+rq item replace entity TestPlayer weapon.offhand with minecraft:air >/dev/null
+for material in aurite riftcrystal; do
+  rq kill '@e[type=minecraft:armor_stand]' >/dev/null || true
+  rq summon minecraft:armor_stand 101 5 101 "{NoGravity:1b,ShowArms:1b,NoBasePlate:1b,Rotation:[0.0f,0.0f],ArmorItems:[{id:\"riftworld:${material}_boots\",Count:1b},{id:\"riftworld:${material}_leggings\",Count:1b},{id:\"riftworld:${material}_chestplate\",Count:1b},{id:\"riftworld:${material}_helmet\",Count:1b}],HandItems:[{id:\"riftworld:${material}_sword\",Count:1b},{id:\"riftworld:${material}_shield\",Count:1b}]}" >/dev/null
+  rq tp TestPlayer 101 6.1 104 facing 101 5.7 101 >/dev/null
+  sleep 7
+  import -window root "$OUT/elisar-armory-${material}.png"
+done
+# Photograph all three residents at close range after removing the armour display.
+rq kill '@e[type=minecraft:armor_stand]' >/dev/null || true
 rq summon riftworld:elisar_villager 97 5 101 '{PersistenceRequired:1b,NoAI:1b,Rotation:[0.0f,0.0f]}' >/dev/null
 rq summon riftworld:elisar_guard 101 5 100 '{PersistenceRequired:1b,NoAI:1b,Rotation:[0.0f,0.0f]}' >/dev/null
 rq summon riftworld:elisar_archer 105 5 101 '{PersistenceRequired:1b,NoAI:1b,Rotation:[0.0f,0.0f]}' >/dev/null
-for material in aurite riftcrystal; do
-  rq item replace entity TestPlayer armor.head with "riftworld:${material}_helmet" >/dev/null
-  rq item replace entity TestPlayer armor.chest with "riftworld:${material}_chestplate" >/dev/null
-  rq item replace entity TestPlayer armor.legs with "riftworld:${material}_leggings" >/dev/null
-  rq item replace entity TestPlayer armor.feet with "riftworld:${material}_boots" >/dev/null
-  rq item replace entity TestPlayer weapon.mainhand with "riftworld:${material}_sword" >/dev/null
-  rq item replace entity TestPlayer weapon.offhand with "riftworld:${material}_shield" >/dev/null
-  rq tp TestPlayer 101 5 104 0 5 >/dev/null
-  sleep 6
-  if [ "$material" = aurite ]; then
-    # First person -> third-person rear -> third-person front.
-    xdotool key --clearmodifiers F5
-    sleep 1
-    xdotool key --clearmodifiers F5
-  fi
-  sleep 3
-  import -window root "$OUT/elisar-armory-${material}.png"
-done
-# Return to first person and photograph all three residents at close range.
-xdotool key --clearmodifiers F5
-rq item replace entity TestPlayer weapon.mainhand with minecraft:air >/dev/null
-rq item replace entity TestPlayer weapon.offhand with minecraft:air >/dev/null
-rq tp TestPlayer 101 6.2 106 facing 101 5.8 100 >/dev/null
+rq tp TestPlayer 101 6.2 105 facing 101 5.8 100 >/dev/null
 sleep 6
 import -window root "$OUT/elisar-residents.png"
 # A close-up shows both ore textures in their real block models.
 rq kill '@e[type=riftworld:elisar_villager]' >/dev/null || true
 rq kill '@e[type=riftworld:elisar_guard]' >/dev/null || true
 rq kill '@e[type=riftworld:elisar_archer]' >/dev/null || true
-rq fill 97 5 97 105 8 97 minecraft:stone >/dev/null
+rq fill 98 5 97 103 8 97 minecraft:stone >/dev/null
 rq setblock 100 6 97 riftworld:riftcrystal_ore >/dev/null
-rq setblock 102 6 97 riftworld:deepslate_riftcrystal_ore >/dev/null
-rq tp TestPlayer 101 6.2 102 facing 101 6 97 >/dev/null
+rq setblock 101 6 97 riftworld:deepslate_riftcrystal_ore >/dev/null
+rq tp TestPlayer 100.5 6.2 100 facing 100.5 6 97 >/dev/null
 sleep 5
 import -window root "$OUT/elisar-riftcrystal-ores.png"
 # Every one of the eighteen items gets its own real item-frame slot, nine per material.
-rq fill 97 4 96 101 8 96 minecraft:polished_blackstone_bricks >/dev/null
+# Remove the ore wall first: the previous frames were occluded by overlapping blocks.
+rq fill 97 4 97 103 9 97 minecraft:air >/dev/null
+rq fill 97 4 97 101 8 97 minecraft:polished_blackstone_bricks >/dev/null
 for material in aurite riftcrystal; do
   rq kill '@e[type=minecraft:item_frame]' >/dev/null || true
   index=0
   for item in helmet chestplate leggings boots sword pickaxe war_axe bow shield; do
     x=$((98 + index % 3))
     y=$((7 - index / 3))
-    rq summon minecraft:item_frame "$x" "$y" 97 "{Facing:3b,Fixed:1b,Item:{id:\"riftworld:${material}_${item}\",Count:1b}}" >/dev/null
+    rq summon minecraft:item_frame "$x" "$y" 98 "{Facing:3b,Fixed:1b,Item:{id:\"riftworld:${material}_${item}\",Count:1b}}" >/dev/null
     index=$((index + 1))
   done
-  rq tp TestPlayer 99 6.5 102 facing 99 6 97 >/dev/null
+  rq tp TestPlayer 99 6.5 102 facing 99 6 98 >/dev/null
   sleep 5
   import -window root "$OUT/elisar-items-${material}.png"
 done
@@ -161,6 +153,10 @@ if grep -Ei 'Error while rendering entity|Exception.*ElGranMaja|Unable to load.*
 fi
 rq list | grep -q TestPlayer || fail "Client disconnected before the screenshot"
 echo "OK: real client joined the server; screenshot saved to $OUT/maja-client-front.png (requires visual review)."
+if [ "${ARMORY_ONLY:-0}" = "1" ]; then
+  echo "OK: release armory capture complete; the separate full ocean probe is not repeated"
+  exit 0
+fi
 
 # Exercise the actual custom dimension and the new biome, not just overworld registration.
 LOC=$(rq execute in riftworld:elisar positioned 0 54 0 run locate biome riftworld:maja_ocean)

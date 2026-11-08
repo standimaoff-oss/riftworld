@@ -134,6 +134,8 @@ jobs:
       - name: Real client rendering smoke test
         if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[client-smoke]')
         shell: bash
+        env:
+          ARMORY_ONLY: ${{ contains(github.event.head_commit.message, '[release]') && '1' || '0' }}
         run: bash tools/ci/maja_client_probe.sh
       - name: Stop the test server
         if: always()
