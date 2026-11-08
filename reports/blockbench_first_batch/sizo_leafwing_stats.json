@@ -3,10 +3,10 @@
   "title_ru": "Сизый листокрыл",
   "biome": "sizo_grove",
   "concept": "reports/biome_mob_concepts/05_sizo_grove_sizo_leafwing.png",
-  "revision": 2,
+  "revision": 3,
   "generator": "Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)",
-  "bones": 66,
-  "cubes": 159,
+  "bones": 44,
+  "cubes": 206,
   "atlas": [
     2048,
     2048
@@ -15,23 +15,23 @@
   "render_scale": 0.25,
   "bounds_blockbench": {
     "min": [
-      -100,
-      0,
-      -51
+      -144,
+      1,
+      -50
     ],
     "max": [
-      100,
-      124,
-      91
+      144,
+      166,
+      102
     ]
   },
   "size_blocks": [
-    3.125,
-    1.9375,
-    2.21875
+    4.5,
+    2.578125,
+    2.375
   ],
   "animations": 8,
-  "bbmodel_bytes": 476889,
-  "geo_bones": 66,
-  "geo_cubes": 159
+  "bbmodel_bytes": 558618,
+  "geo_bones": 44,
+  "geo_cubes": 206
 }

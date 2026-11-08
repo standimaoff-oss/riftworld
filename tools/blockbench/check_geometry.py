@@ -13,7 +13,7 @@ import math
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-IDS = ('porcelain_crane', 'basalt_beetle', 'ash_moth', 'amethyst_fox', 'sizo_leafwing', 'azure_frog', 'bone_raven', 'coral_hermit_crab', 'reef_seahorse', 'ghost_squid')
+IDS = ('porcelain_crane', 'basalt_beetle', 'ash_moth', 'amethyst_fox', 'sizo_leafwing', 'azure_frog', 'bone_raven', 'coral_hermit_crab', 'reef_seahorse', 'ghost_squid', 'silver_sea_serpent')
 
 
 def rotate(point, origin, degrees):

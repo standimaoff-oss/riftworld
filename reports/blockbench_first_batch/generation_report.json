@@ -199,10 +199,10 @@
         "title_ru": "Сизый листокрыл",
         "biome": "sizo_grove",
         "concept": "reports/biome_mob_concepts/05_sizo_grove_sizo_leafwing.png",
-        "revision": 2,
+        "revision": 3,
         "generator": "Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)",
-        "bones": 66,
-        "cubes": 159,
+        "bones": 44,
+        "cubes": 206,
         "atlas": [
           2048,
           2048
@@ -211,25 +211,25 @@
         "render_scale": 0.25,
         "bounds_blockbench": {
           "min": [
-            -100,
-            0,
-            -51
+            -144,
+            1,
+            -50
           ],
           "max": [
-            100,
-            124,
-            91
+            144,
+            166,
+            102
           ]
         },
         "size_blocks": [
-          3.125,
-          1.9375,
-          2.21875
+          4.5,
+          2.578125,
+          2.375
         ],
         "animations": 8,
-        "bbmodel_bytes": 476889,
-        "geo_bones": 66,
-        "geo_cubes": 159
+        "bbmodel_bytes": 558618,
+        "geo_bones": 44,
+        "geo_cubes": 206
       },
       "structural_validation": "ok"
     },
@@ -291,10 +291,10 @@
         "title_ru": "Костяной ворон",
         "biome": "morok_hollow",
         "concept": "reports/biome_mob_concepts/11_morok_hollow_bone_raven.png",
-        "revision": 1,
+        "revision": 2,
         "generator": "Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)",
-        "bones": 66,
-        "cubes": 116,
+        "bones": 77,
+        "cubes": 94,
         "atlas": [
           2048,
           2048
@@ -303,25 +303,25 @@
         "render_scale": 0.25,
         "bounds_blockbench": {
           "min": [
-            -96,
+            -95,
             1,
-            -58
+            -57
           ],
           "max": [
-            97,
-            98,
-            41
+            96,
+            111,
+            39
           ]
         },
         "size_blocks": [
-          3.015625,
-          1.515625,
-          1.546875
+          2.984375,
+          1.71875,
+          1.5
         ],
         "animations": 5,
-        "bbmodel_bytes": 394162,
-        "geo_bones": 66,
-        "geo_cubes": 116
+        "bbmodel_bytes": 374823,
+        "geo_bones": 77,
+        "geo_cubes": 94
       },
       "structural_validation": "ok"
     },
@@ -462,6 +462,52 @@
         "geo_cubes": 85
       },
       "structural_validation": "ok"
+    },
+    {
+      "id": "silver_sea_serpent",
+      "title_ru": "Серебряный морской змей",
+      "biome": "maja_ocean",
+      "bbmodel": "blockbench/riftworld_fauna/silver_sea_serpent.bbmodel",
+      "geo": "mod/src/main/resources/assets/riftworld/geo/silver_sea_serpent.json",
+      "texture": "mod/src/main/resources/assets/riftworld/textures/entity/silver_sea_serpent.png",
+      "stats": {
+        "id": "silver_sea_serpent",
+        "title_ru": "Серебряный морской змей",
+        "biome": "maja_ocean",
+        "concept": "reports/biome_mob_concepts/15_maja_ocean_silver_sea_serpent.png",
+        "revision": 1,
+        "generator": "Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)",
+        "bones": 54,
+        "cubes": 82,
+        "atlas": [
+          2048,
+          2048
+        ],
+        "units_per_block": 64,
+        "render_scale": 0.25,
+        "bounds_blockbench": {
+          "min": [
+            -29,
+            11,
+            -146
+          ],
+          "max": [
+            30,
+            122,
+            146
+          ]
+        },
+        "size_blocks": [
+          0.921875,
+          1.734375,
+          4.5625
+        ],
+        "animations": 3,
+        "bbmodel_bytes": 348542,
+        "geo_bones": 54,
+        "geo_cubes": 82
+      },
+      "structural_validation": "ok"
     }
   ],
   "roundtrip_validation": [
@@ -508,8 +554,8 @@
     {
       "id": "sizo_leafwing",
       "status": "ok",
-      "bones": 66,
-      "cubes": 159,
+      "bones": 44,
+      "cubes": 206,
       "texture_width": 2048,
       "texture_height": 2048,
       "texture_loaded": true,
@@ -528,8 +574,8 @@
     {
       "id": "bone_raven",
       "status": "ok",
-      "bones": 66,
-      "cubes": 116,
+      "bones": 77,
+      "cubes": 94,
       "texture_width": 2048,
       "texture_height": 2048,
       "texture_loaded": true,
@@ -560,6 +606,16 @@
       "status": "ok",
       "bones": 20,
       "cubes": 85,
+      "texture_width": 2048,
+      "texture_height": 2048,
+      "texture_loaded": true,
+      "animations": 1
+    },
+    {
+      "id": "silver_sea_serpent",
+      "status": "ok",
+      "bones": 54,
+      "cubes": 82,
       "texture_width": 2048,
       "texture_height": 2048,
       "texture_loaded": true,

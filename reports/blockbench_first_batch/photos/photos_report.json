@@ -120,14 +120,14 @@
         "name": "Riftworld reference view",
         "projection": "orthographic",
         "position": [
-          -512,
-          312,
-          -492
+          -360,
+          293.5,
+          -486
         ],
         "target": [
           0,
-          62,
-          20
+          83.5,
+          26
         ],
         "zoom": 0.5
       },
@@ -135,7 +135,7 @@
         1600,
         1200
       ],
-      "zoom_percent": 13
+      "zoom_percent": 11.11111111111111
     },
     {
       "id": "azure_frog",
@@ -175,13 +175,13 @@
         "projection": "orthographic",
         "position": [
           -399.5,
-          209.5,
-          -520.5
+          216,
+          -521
         ],
         "target": [
           0.5,
-          49.5,
-          -8.5
+          56,
+          -9
         ],
         "zoom": 0.5
       },
@@ -189,7 +189,7 @@
         1600,
         1200
       ],
-      "zoom_percent": 13.471502590673575
+      "zoom_percent": 13.612565445026178
     },
     {
       "id": "coral_hermit_crab",
@@ -271,6 +271,33 @@
         1200
       ],
       "zoom_percent": 13.131313131313131
+    },
+    {
+      "id": "silver_sea_serpent",
+      "title_ru": "Серебряный морской змей",
+      "file": "reports/blockbench_first_batch/photos/11_silver_sea_serpent.png",
+      "source": "blockbench/riftworld_fauna/silver_sea_serpent.bbmodel",
+      "camera": "custom_reference_view",
+      "camera_preset": {
+        "name": "Riftworld reference view",
+        "projection": "orthographic",
+        "position": [
+          -511.5,
+          176.5,
+          -100
+        ],
+        "target": [
+          0.5,
+          66.5,
+          0
+        ],
+        "zoom": 0.5
+      },
+      "resolution": [
+        1600,
+        1200
+      ],
+      "zoom_percent": 8.904109589041095
     }
   ],
   "overview": "reports/blockbench_first_batch/photos/00_all_models.png"

@@ -24,7 +24,7 @@ function arg(name, fallback) {
 
 const blockbenchRoot = path.resolve(arg('blockbench-root', process.env.BLOCKBENCH_ROOT || path.join(repoRoot, '../.cache/riftworld-blockbench/blockbench-5.2.2')));
 const outDir = path.resolve(arg('out', path.join(repoRoot, 'reports/blockbench_first_batch/photos')));
-const idsArg = arg('ids', 'porcelain_crane,basalt_beetle,ash_moth,amethyst_fox,sizo_leafwing,azure_frog,bone_raven,coral_hermit_crab,reef_seahorse,ghost_squid');
+const idsArg = arg('ids', 'porcelain_crane,basalt_beetle,ash_moth,amethyst_fox,sizo_leafwing,azure_frog,bone_raven,coral_hermit_crab,reef_seahorse,ghost_squid,silver_sea_serpent');
 const ids = idsArg.split(',').map(s => s.trim()).filter(Boolean);
 const background = arg('background', '#f2f4f8');
 const view = arg('view', 'default');
@@ -42,7 +42,8 @@ const titles = {
   bone_raven: 'Костяной ворон',
   coral_hermit_crab: 'Коралловый рак-отшельник',
   reef_seahorse: 'Рифовый морской конёк',
-  ghost_squid: 'Глубоководный кальмар-призрак'
+  ghost_squid: 'Глубоководный кальмар-призрак',
+  silver_sea_serpent: 'Серебряный морской змей'
 };
 
 if (!fs.existsSync(path.join(blockbenchRoot, 'dist/bundle.js'))) {
@@ -146,18 +147,19 @@ try {
     const extent = bounds.max.map((v, axis) => v - bounds.min[axis]);
     const maxExtent = Math.max(...extent, 1);
     // Fill the frame instead of keeping the old fixed zoom across 4x-sized projects.
-    const zoomPercent = Math.max(4, Math.min(42, 2600 / maxExtent));
+    const zoomPercent = Math.max(4, Math.min(42, (id === 'sizo_leafwing' ? 3200 : 2600) / maxExtent));
     const cameraPositions = {
       porcelain_crane: [512, 512 * 0.55, -320],
       basalt_beetle: [-512, 512 * 0.6, -512],
       ash_moth: [0, 135, -512],
       amethyst_fox: [-512, 220, -280],
-      sizo_leafwing: [-512, 250, -512],
+      sizo_leafwing: [-360, 210, -512],
       azure_frog: [-512, 270, -512],
       bone_raven: [-400, 160, -512],
       coral_hermit_crab: [-512, 240, -512],
       reef_seahorse: [-512, 190, -320],
-      ghost_squid: [-512, 360, -512]
+      ghost_squid: [-512, 360, -512],
+      silver_sea_serpent: [-512, 110, -100]
     };
     const offset = view === 'front' ? [0, 130, -512]
       : view === 'side' ? [512, 130, 0]
@@ -241,7 +243,7 @@ const montageArgs = ['-background', background, '-fill', '#20242c', '-font', 'De
 for (const photo of report.photos) {
   montageArgs.push('-label', photo.title_ru, path.join(repoRoot, photo.file));
 }
-montageArgs.push('-tile', ids.length > 6 ? '5x2' : ids.length > 4 ? '3x2' : '2x2', '-geometry', '800x600+14+14', overview);
+montageArgs.push('-tile', ids.length > 10 ? '4x3' : ids.length > 6 ? '5x2' : ids.length > 4 ? '3x2' : '2x2', '-geometry', '800x600+14+14', overview);
 execFileSync('montage', montageArgs);
 for (const extra of fs.readdirSync(outDir)) {
   if (/^00_all_models-\d+\.png$/.test(extra)) fs.rmSync(path.join(outDir, extra));

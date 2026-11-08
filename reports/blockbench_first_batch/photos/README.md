@@ -1,11 +1,11 @@
-# Фотографии десяти моделей Riftworld
+# Фотографии одиннадцати моделей Riftworld
 
 Снимки `.bbmodel` сделаны через Blockbench 5.2.2 `Screencam.advancedScreenshot`,
 1600 × 1200. Это виды редактора, **не скриншоты Minecraft**. Последнее обновление:
-переработаны крылья листокрыла, добавлены ворон, рак, морской конёк и кальмар.
+переработаны листокрыл и ворон, добавлен серебряный морской змей. Модели приближены к концептам, но не повторяют их буквально.
 
-[Все десять моделей](00_all_models.png) · [Последние пять: концепт / модель](11_latest_reference_comparison.png) ·
-[Все сравнения](05_reference_comparison.png) · [Описание и проверки](../README.md)
+[Все одиннадцать моделей](00_all_models.png) · [Последние пять: концепт / модель](11_latest_reference_comparison.png) ·
+[Новые три: концепт / модель](12_three_reference_comparison.png) · [Первые шесть: концепт / модель](05_reference_comparison.png) · [Описание и проверки](../README.md)
 
 | Модель | Фото | Дополнительные ракурсы | Редактируемый проект |
 |---|---|---|---|
@@ -19,10 +19,11 @@
 | Коралловый рак-отшельник | [PNG](08_coral_hermit_crab.png) | [Спереди](coral_hermit_crab_front.png) · [Сбоку](coral_hermit_crab_side.png) | [`.bbmodel`](../../../blockbench/riftworld_fauna/coral_hermit_crab.bbmodel) |
 | Рифовый морской конёк | [PNG](09_reef_seahorse.png) | [Спереди](reef_seahorse_front.png) · [Сбоку](reef_seahorse_side.png) | [`.bbmodel`](../../../blockbench/riftworld_fauna/reef_seahorse.bbmodel) |
 | Глубоководный кальмар-призрак | [PNG](10_ghost_squid.png) | [Спереди](ghost_squid_front.png) · [Сбоку](ghost_squid_side.png) | [`.bbmodel`](../../../blockbench/riftworld_fauna/ghost_squid.bbmodel) |
+| Серебряный морской змей | [PNG](11_silver_sea_serpent.png) | [Спереди](silver_sea_serpent_front.png) · [Сбоку](silver_sea_serpent_side.png) | [`.bbmodel`](../../../blockbench/riftworld_fauna/silver_sea_serpent.bbmodel) |
 
 ## Общий вид
 
-![Десять моделей](00_all_models.png)
+![Одиннадцать моделей](00_all_models.png)
 
 ## Статус
 
