@@ -74,6 +74,7 @@ jobs:
           name: riftworld-build
           path: |
             mod/build/libs/*.jar
+            reports/elisar_gear_catalog.png
             build-ci.log
           if-no-files-found: warn
           retention-days: 14
@@ -140,5 +141,6 @@ jobs:
         run: |
           mapfile -t jars < <(find release-artifact -type f -name '*.jar' -print)
           test "${#jars[@]}" -ge 1
-          gh release upload "$GITHUB_REF_NAME" "${jars[@]}" --repo "$GITHUB_REPOSITORY" --clobber
+          preview=$(find release-artifact -type f -name 'elisar_gear_catalog.png' -print -quit)
+          gh release upload "$GITHUB_REF_NAME" "${jars[@]}" ${preview:+"$preview"} --repo "$GITHUB_REPOSITORY" --clobber
           gh release edit "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --draft=false
