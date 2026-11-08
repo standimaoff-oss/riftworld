@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "checks": 213,
+  "equipment_per_material": 9,
+  "armour_pieces_total": 8,
+  "weapons_tools_total": 10,
+  "resident_types": 3,
+  "riftcrystal_biomes": [
+    "minecraft:deep_dark",
+    "minecraft:dripstone_caves",
+    "minecraft:lush_caves"
+  ]
+}

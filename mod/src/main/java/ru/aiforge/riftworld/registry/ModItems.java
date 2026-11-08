@@ -181,6 +181,14 @@ public final class ModItems {
     public static final RegistryObject<Item> BLOSSOM_STAG_EGG = ITEMS.register("blossom_stag_spawn_egg",
             () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.BLOSSOM_STAG, 0xFAF8F5, 0xF4B8C4, new Item.Properties()));
 
+    // v0.41.0: три жителя поселений Элисара — торговец, стражник и лучник.
+    public static final RegistryObject<Item> ELISAR_VILLAGER_EGG = ITEMS.register("elisar_villager_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.ELISAR_VILLAGER, 0x8F718E, 0xD8AD4C, new Item.Properties()));
+    public static final RegistryObject<Item> ELISAR_GUARD_EGG = ITEMS.register("elisar_guard_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.ELISAR_GUARD, 0x4E877F, 0xE0A83E, new Item.Properties()));
+    public static final RegistryObject<Item> ELISAR_ARCHER_EGG = ITEMS.register("elisar_archer_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.ELISAR_ARCHER, 0x477E78, 0x795347, new Item.Properties()));
+
     private static RegistryObject<Item> egg(String id, int variant, int back, int spots) {
         return ITEMS.register(id, () -> new ru.aiforge.riftworld.item.SeaEggItem(variant, new Item.Properties()));
     }

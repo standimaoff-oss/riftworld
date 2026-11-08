@@ -1,4 +1,8 @@
 {
   "replace": false,
-  "values": [ "riftworld:aurite_ore" ]
+  "values": [
+    "riftworld:aurite_ore",
+    "riftworld:ducat_ore",
+    "riftworld:deepslate_ducat_ore"
+  ]
 }

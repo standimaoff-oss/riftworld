@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "P P",
+    "PIP",
+    " P "
+  ],
+  "key": {
+    "P": {
+      "tag": "minecraft:planks"
+    },
+    "I": {
+      "item": "riftworld:aurite_ingot"
+    }
+  },
+  "result": {
+    "item": "riftworld:aurite_shield",
+    "count": 1
+  },
+  "show_notification": true
+}

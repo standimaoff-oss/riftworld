@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "DD",
+    "DD"
+  ],
+  "key": {
+    "D": {
+      "item": "riftworld:elisar_ducat"
+    }
+  },
+  "result": {
+    "item": "riftworld:aurite_ingot",
+    "count": 1
+  },
+  "show_notification": true
+}

@@ -1,0 +1,14 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "riftworld:item/riftcrystal_shield"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "blocking": 1
+      },
+      "model": "riftworld:item/riftcrystal_shield_blocking"
+    }
+  ]
+}

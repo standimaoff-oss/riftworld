@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "I I",
+    "III",
+    "III"
+  ],
+  "key": {
+    "I": {
+      "item": "riftworld:aurite_ingot"
+    }
+  },
+  "result": {
+    "item": "riftworld:aurite_chestplate",
+    "count": 1
+  },
+  "show_notification": true
+}

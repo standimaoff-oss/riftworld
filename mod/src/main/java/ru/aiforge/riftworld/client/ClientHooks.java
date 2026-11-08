@@ -67,6 +67,14 @@ public final class ClientHooks {
         e.registerEntityRenderer(ModEntities.WENDIGO.get(), WendigoRenderer::new);
         // v0.39.0: Морок — геометрия morok + СВЕТЯЩИЕСЯ глаза (geo/morok_eyes.json, RenderType.eyes)
         e.registerEntityRenderer(ModEntities.MOROK.get(), MorokRenderer::new);
+        e.registerEntityRenderer(ModEntities.ELISAR_VILLAGER.get(), ElisarCitizenRenderer::new);
+        e.registerEntityRenderer(ModEntities.ELISAR_GUARD.get(), ElisarCitizenRenderer::new);
+        e.registerEntityRenderer(ModEntities.ELISAR_ARCHER.get(), ElisarCitizenRenderer::new);
+    }
+
+    @SubscribeEvent
+    public static void layerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions e) {
+        e.registerLayerDefinition(ElisarCitizenRenderer.LAYER, ElisarCitizenModel::createBodyLayer);
     }
 
     @SubscribeEvent

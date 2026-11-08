@@ -23,6 +23,7 @@ public final class RiftWorld {
         ru.aiforge.riftworld.registry.EarlyRegistrations.registerFirst(bus, ModBlocks.BLOCKS);
         ru.aiforge.riftworld.registry.ModEntities.TYPES.register(bus);
         ModItems.ITEMS.register(bus);
+        ru.aiforge.riftworld.registry.ModEquipment.ITEMS.register(bus);
         ModFluids.TYPES.register(bus);
         ModFluids.FLUIDS.register(bus);
         ModFluids.ITEMS.register(bus);

@@ -3153,6 +3153,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
 
     @Override
     public void spawnOriginalMobs(WorldGenRegion region) {
+        // v0.41.0: население появляется ПОСЛЕ построек — на площадях города и в живых деревнях.
+        ElisarSettlementResidents.spawnOriginal(region);
     }
 
     @Override

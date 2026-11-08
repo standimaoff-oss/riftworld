@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "I I",
+    "I I"
+  ],
+  "key": {
+    "I": {
+      "item": "riftworld:aurite_ingot"
+    }
+  },
+  "result": {
+    "item": "riftworld:aurite_boots",
+    "count": 1
+  },
+  "show_notification": true
+}

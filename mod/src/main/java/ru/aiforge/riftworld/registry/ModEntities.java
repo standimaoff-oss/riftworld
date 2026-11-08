@@ -121,6 +121,20 @@ public final class ModEntities {
                     .sized(0.85F, 2.45F).clientTrackingRange(10)
                     .build("riftworld:morok"));
 
+    /** v0.41.0: обычный горожанин-торговец, стражник и лучник — три отдельных типа сущностей. */
+    public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.ElisarVillagerEntity>> ELISAR_VILLAGER =
+            TYPES.register("elisar_villager", () -> EntityType.Builder
+                    .<ru.aiforge.riftworld.entity.ElisarVillagerEntity>of(ru.aiforge.riftworld.entity.ElisarVillagerEntity::new, MobCategory.CREATURE)
+                    .sized(0.65F, 1.95F).clientTrackingRange(12).build("riftworld:elisar_villager"));
+    public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.ElisarGuardEntity>> ELISAR_GUARD =
+            TYPES.register("elisar_guard", () -> EntityType.Builder
+                    .<ru.aiforge.riftworld.entity.ElisarGuardEntity>of(ru.aiforge.riftworld.entity.ElisarGuardEntity::new, MobCategory.CREATURE)
+                    .sized(0.70F, 2.05F).clientTrackingRange(12).build("riftworld:elisar_guard"));
+    public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.ElisarArcherEntity>> ELISAR_ARCHER =
+            TYPES.register("elisar_archer", () -> EntityType.Builder
+                    .<ru.aiforge.riftworld.entity.ElisarArcherEntity>of(ru.aiforge.riftworld.entity.ElisarArcherEntity::new, MobCategory.CREATURE)
+                    .sized(0.65F, 1.95F).clientTrackingRange(12).build("riftworld:elisar_archer"));
+
     private ModEntities() {
     }
 
@@ -139,5 +153,8 @@ public final class ModEntities {
         e.put(PEGASUS.get(), ru.aiforge.riftworld.entity.PegasusEntity.attributes().build());
         e.put(WENDIGO.get(), ru.aiforge.riftworld.entity.WendigoEntity.attributes().build());
         e.put(MOROK.get(), ru.aiforge.riftworld.entity.MorokEntity.attributes().build());
+        e.put(ELISAR_VILLAGER.get(), ru.aiforge.riftworld.entity.ElisarVillagerEntity.attributes().build());
+        e.put(ELISAR_GUARD.get(), ru.aiforge.riftworld.entity.ElisarGuardEntity.attributes().build());
+        e.put(ELISAR_ARCHER.get(), ru.aiforge.riftworld.entity.ElisarArcherEntity.attributes().build());
     }
 }

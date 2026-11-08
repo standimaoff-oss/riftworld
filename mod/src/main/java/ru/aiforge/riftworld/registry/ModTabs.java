@@ -41,6 +41,7 @@ public final class ModTabs {
                 out.accept(ModItems.DRAGON_WHISTLE.get());
                 out.accept(ModItems.LIOPLEURODON_TOOTH.get());
                 out.accept(ModItems.SEA_SCALE.get());
+                ModEquipment.addToCreativeTab(out);
 
                 // Все 16 яиц призыва мобов мода (включая Бумажного дракона и все 11 морских видов!)
                 acceptAllSpawnEggs(out);
@@ -52,6 +53,9 @@ public final class ModTabs {
             }).build());
 
     private static void acceptAllSpawnEggs(CreativeModeTab.Output out) {
+        out.accept(ModItems.ELISAR_VILLAGER_EGG.get());
+        out.accept(ModItems.ELISAR_GUARD_EGG.get());
+        out.accept(ModItems.ELISAR_ARCHER_EGG.get());
         out.accept(ModItems.LIOPLEURODON_EGG.get());
         out.accept(ModItems.EL_GRAN_MAJA_EGG.get());
         out.accept(ModItems.BLOSSOM_STAG_EGG.get());

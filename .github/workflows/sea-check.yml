@@ -36,6 +36,7 @@ jobs:
           mkdir -p /tmp/maja-unit
           javac -d /tmp/maja-unit mod/src/main/java/ru/aiforge/riftworld/world/DeepOcean.java mod/src/main/java/ru/aiforge/riftworld/world/MajaSafetyPolicy.java tests/java/MajaRulesTest.java
           java -cp /tmp/maja-unit MajaRulesTest
+          python tools/rift/verify_v041_elisar_armory.py
       - uses: gradle/actions/setup-gradle@v4
       - name: Compile and package both mods
         shell: bash
