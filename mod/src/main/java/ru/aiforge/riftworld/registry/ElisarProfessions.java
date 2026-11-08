@@ -3,7 +3,6 @@ package ru.aiforge.riftworld.registry;
 import com.google.common.collect.ImmutableSet;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.ai.village.poi.PoiType;
-import net.minecraft.world.entity.ai.village.poi.PoiTypes;
 import net.minecraft.world.entity.npc.VillagerProfession;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -12,7 +11,6 @@ import net.minecraftforge.event.village.VillagerTradesEvent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.trading.MerchantOffer;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -45,18 +43,6 @@ public final class ElisarProfessions {
     public static void register(IEventBus bus) {
         POI_TYPES.register(bus);
         PROFESSIONS.register(bus);
-        bus.addListener(ElisarProfessions::setup);
-    }
-
-    private static void setup(FMLCommonSetupEvent event) {
-        event.enqueueWork(() -> {
-            PoiTypes.registerBlockStates(EXCHANGE_POI.getHolder().orElseThrow(),
-                    ImmutableSet.copyOf(ModBlocks.AURITE_EXCHANGE.get().getStateDefinition().getPossibleStates()));
-            PoiTypes.registerBlockStates(GUARD_POI.getHolder().orElseThrow(),
-                    ImmutableSet.copyOf(ModBlocks.CITY_GUARD_POST.get().getStateDefinition().getPossibleStates()));
-            PoiTypes.registerBlockStates(RANGER_POI.getHolder().orElseThrow(),
-                    ImmutableSet.copyOf(ModBlocks.RANGER_FLETCHING_TABLE.get().getStateDefinition().getPossibleStates()));
-        });
     }
 
     @SubscribeEvent
