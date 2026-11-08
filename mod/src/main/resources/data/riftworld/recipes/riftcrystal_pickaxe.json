@@ -1,19 +1,21 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    "MMM",
+    "III",
     " S ",
     " S "
   ],
   "key": {
-    "M": {
-      "item": "riftworld:riftcrystal"
+    "I": {
+      "item": "riftworld:riftcrystal_ingot"
     },
     "S": {
       "item": "minecraft:stick"
     }
   },
   "result": {
-    "item": "riftworld:riftcrystal_pickaxe"
-  }
+    "item": "riftworld:riftcrystal_pickaxe",
+    "count": 1
+  },
+  "show_notification": true
 }

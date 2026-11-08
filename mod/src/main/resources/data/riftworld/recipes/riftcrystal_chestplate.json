@@ -1,16 +1,18 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    "M M",
-    "MMM",
-    "MMM"
+    "I I",
+    "III",
+    "III"
   ],
   "key": {
-    "M": {
-      "item": "riftworld:riftcrystal"
+    "I": {
+      "item": "riftworld:riftcrystal_ingot"
     }
   },
   "result": {
-    "item": "riftworld:riftcrystal_chestplate"
-  }
+    "item": "riftworld:riftcrystal_chestplate",
+    "count": 1
+  },
+  "show_notification": true
 }

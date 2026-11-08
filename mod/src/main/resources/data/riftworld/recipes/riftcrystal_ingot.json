@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SGS",
+    "GDG",
+    "SGS"
+  ],
+  "key": {
+    "S": {
+      "item": "riftworld:riftcrystal_shard"
+    },
+    "G": {
+      "item": "minecraft:gold_ingot"
+    },
+    "D": {
+      "item": "minecraft:diamond"
+    }
+  },
+  "result": {
+    "item": "riftworld:riftcrystal_ingot",
+    "count": 1
+  },
+  "show_notification": true
+}

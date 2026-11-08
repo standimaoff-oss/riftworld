@@ -1,15 +1,17 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    "MMM",
-    "M M"
+    "III",
+    "I I"
   ],
   "key": {
-    "M": {
+    "I": {
       "item": "riftworld:aurite_ingot"
     }
   },
   "result": {
-    "item": "riftworld:aurite_helmet"
-  }
+    "item": "riftworld:aurite_helmet",
+    "count": 1
+  },
+  "show_notification": true
 }

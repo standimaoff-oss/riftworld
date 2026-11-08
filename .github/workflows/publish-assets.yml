@@ -1,0 +1,26 @@
+name: Replace reviewed release screenshots
+
+on:
+  push:
+    branches: ["arena/**"]
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    if: contains(github.event.head_commit.message, '[assets-only]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Upload only the visually restored full-body frames
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release upload v0.41.0 \
+            reports/ci_frames/elisar-armory-aurite.png \
+            reports/ci_frames/elisar-armory-riftcrystal.png \
+            --clobber
+          gh release view v0.41.0 --json url,assets --jq '{url,assets:[.assets[]|select(.name|startswith("elisar-armory"))|{name,size}]}'

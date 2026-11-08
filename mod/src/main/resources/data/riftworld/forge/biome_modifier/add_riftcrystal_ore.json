@@ -1,0 +1,10 @@
+{
+  "type": "forge:add_features",
+  "biomes": [
+    "minecraft:lush_caves",
+    "minecraft:dripstone_caves",
+    "minecraft:deep_dark"
+  ],
+  "features": "riftworld:ore_riftcrystal",
+  "step": "underground_ores"
+}

@@ -30,24 +30,6 @@ public final class ModTabs {
                 out.accept(ModItems.CRYSTAL_AEGIS.get());
                 out.accept(ModItems.ASTRAL_PRISM.get());
                 out.accept(ModItems.ELISAR_DUCAT.get());
-                out.accept(ModItems.AURITE_INGOT.get());
-                out.accept(ModItems.RIFTCRYSTAL.get());
-                out.accept(ModItems.AURITE_SWORD.get());
-                out.accept(ModItems.AURITE_PICKAXE.get());
-                out.accept(ModItems.AURITE_AXE.get());
-                out.accept(ModItems.AURITE_SHOVEL.get());
-                out.accept(ModItems.AURITE_HELMET.get());
-                out.accept(ModItems.AURITE_CHESTPLATE.get());
-                out.accept(ModItems.AURITE_LEGGINGS.get());
-                out.accept(ModItems.AURITE_BOOTS.get());
-                out.accept(ModItems.RIFTCRYSTAL_SWORD.get());
-                out.accept(ModItems.RIFTCRYSTAL_PICKAXE.get());
-                out.accept(ModItems.RIFTCRYSTAL_AXE.get());
-                out.accept(ModItems.RIFTCRYSTAL_SHOVEL.get());
-                out.accept(ModItems.RIFTCRYSTAL_HELMET.get());
-                out.accept(ModItems.RIFTCRYSTAL_CHESTPLATE.get());
-                out.accept(ModItems.RIFTCRYSTAL_LEGGINGS.get());
-                out.accept(ModItems.RIFTCRYSTAL_BOOTS.get());
                 out.accept(ModItems.BRIDGE_ROPE.get());
                 out.accept(ModItems.GILDED_PAPER.get());
                 out.accept(ModItems.EMERALD_PAPER.get());
@@ -59,6 +41,7 @@ public final class ModTabs {
                 out.accept(ModItems.DRAGON_WHISTLE.get());
                 out.accept(ModItems.LIOPLEURODON_TOOTH.get());
                 out.accept(ModItems.SEA_SCALE.get());
+                ModEquipment.addToCreativeTab(out);
 
                 // Все 16 яиц призыва мобов мода (включая Бумажного дракона и все 11 морских видов!)
                 acceptAllSpawnEggs(out);
@@ -70,6 +53,9 @@ public final class ModTabs {
             }).build());
 
     private static void acceptAllSpawnEggs(CreativeModeTab.Output out) {
+        out.accept(ModItems.ELISAR_VILLAGER_EGG.get());
+        out.accept(ModItems.ELISAR_GUARD_EGG.get());
+        out.accept(ModItems.ELISAR_ARCHER_EGG.get());
         out.accept(ModItems.LIOPLEURODON_EGG.get());
         out.accept(ModItems.EL_GRAN_MAJA_EGG.get());
         out.accept(ModItems.BLOSSOM_STAG_EGG.get());

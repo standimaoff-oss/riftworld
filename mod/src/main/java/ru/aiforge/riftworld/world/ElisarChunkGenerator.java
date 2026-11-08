@@ -1034,7 +1034,6 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         BlockState moss = st(ElisarBlocks.MOSS), crust = st(ElisarBlocks.CRUST);
         BlockState aurite = st(ElisarBlocks.AURITE_ORE);
         BlockState ducatOre = st(ElisarBlocks.DUCAT_ORE);
-        BlockState riftcrystalOre = st(ElisarBlocks.RIFTCRYSTAL_ORE);
         // Рев 14: у биома 07 своя зелёная палитра (референс — яркая трава и дубы, а не кремовый Элисар)
         BlockState gardenGrass = st(ElisarBlocks.GARDEN_GRASS);
         // Рев 15.4: газон Фиолетовых холмов — ВАНИЛЬНАЯ короткая трава: она тинтуется цветом
@@ -1272,17 +1271,6 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                     s = ducatOre;
                                 }
                             }
-                        }
-                        // Riftcrystal is intentionally confined to exactly three Elisar regions: Crystal Rifts,
-                        // Morok Hollow and Mist Keep. It replaces host rock at a very low frequency.
-                        boolean rareCrystalBiome = (c.isl != null && c.isl.kind == CrystalRifts.KIND)
-                                || MorokHollow.inside(x + 0.5, z + 0.5) || MistKeep.inside(x + 0.5, z + 0.5);
-                        if (rareCrystalBiome && y < c.top - 4
-                                && (s.is(net.minecraft.tags.BlockTags.BASE_STONE_OVERWORLD)
-                                    || s.is(ElisarBlocks.RIFT_SLATE.get()) || s.is(ElisarBlocks.RIFT_MARBLE.get())
-                                    || s.is(ElisarBlocks.RIFT_MARBLE_MOSSY.get()))
-                                && hash(x, z, y * 31 + 791) < 0.00055) {
-                            s = riftcrystalOre;
                         }
                         chunk.setBlockState(mp.set(x, y, z), s, false);
                     }
@@ -3165,6 +3153,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
 
     @Override
     public void spawnOriginalMobs(WorldGenRegion region) {
+        // v0.41.0: население появляется ПОСЛЕ построек — на площадях города и в живых деревнях.
+        ElisarSettlementResidents.spawnOriginal(region);
     }
 
     @Override

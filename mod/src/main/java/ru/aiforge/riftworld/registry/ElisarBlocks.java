@@ -100,9 +100,11 @@ public final class ElisarBlocks {
             () -> new Block(p(MapColor.GOLD, 3.0F, SoundType.STONE).requiresCorrectToolForDrops()));
     public static final RegistryObject<Block> DEEPSLATE_DUCAT_ORE = ModBlocks.reg("deepslate_ducat_ore",
             () -> new Block(p(MapColor.GOLD, 4.5F, SoundType.DEEPSLATE).requiresCorrectToolForDrops()));
-    /** Rare vein; natural generation is deliberately restricted to Crystal Rifts, Morok Hollow, and Mist Keep. */
+    // v0.41.0: редкая рифткристаллическая руда. Генерация строго в lush_caves, dripstone_caves и deep_dark.
     public static final RegistryObject<Block> RIFTCRYSTAL_ORE = ModBlocks.reg("riftcrystal_ore",
-            () -> new Block(p(MapColor.COLOR_CYAN, 5.0F, SoundType.AMETHYST).requiresCorrectToolForDrops()));
+            () -> new Block(p(MapColor.COLOR_CYAN, 4.0F, SoundType.AMETHYST).requiresCorrectToolForDrops().lightLevel(s -> 4)));
+    public static final RegistryObject<Block> DEEPSLATE_RIFTCRYSTAL_ORE = ModBlocks.reg("deepslate_riftcrystal_ore",
+            () -> new Block(p(MapColor.COLOR_PURPLE, 5.5F, SoundType.DEEPSLATE).requiresCorrectToolForDrops().lightLevel(s -> 4)));
     // мини-биом «Туманный данж» (рев 5): обломчатый серо-зелёный камень утёсов, частичные блоки для почти сломанной руины
     public static final RegistryObject<Block> KEEP_STONE = cube("keep_stone", MapColor.TERRACOTTA_LIGHT_GRAY, 2.2F, SoundType.STONE);
     public static final RegistryObject<Block> KEEP_STONE_CRACKED = cube("keep_stone_cracked", MapColor.TERRACOTTA_LIGHT_GRAY, 2.2F, SoundType.STONE);

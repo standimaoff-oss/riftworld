@@ -1,0 +1,15 @@
+{
+  "replace": false,
+  "values": [
+    "riftworld:aurite_ingot",
+    "riftworld:aurite_helmet",
+    "riftworld:aurite_chestplate",
+    "riftworld:aurite_leggings",
+    "riftworld:aurite_boots",
+    "riftworld:aurite_sword",
+    "riftworld:aurite_pickaxe",
+    "riftworld:aurite_war_axe",
+    "riftworld:aurite_bow",
+    "riftworld:aurite_shield"
+  ]
+}

@@ -1,15 +1,17 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    "M M",
-    "M M"
+    "I I",
+    "I I"
   ],
   "key": {
-    "M": {
-      "item": "riftworld:riftcrystal"
+    "I": {
+      "item": "riftworld:riftcrystal_ingot"
     }
   },
   "result": {
-    "item": "riftworld:riftcrystal_boots"
-  }
+    "item": "riftworld:riftcrystal_boots",
+    "count": 1
+  },
+  "show_notification": true
 }

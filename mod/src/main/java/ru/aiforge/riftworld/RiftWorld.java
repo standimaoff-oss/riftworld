@@ -23,6 +23,7 @@ public final class RiftWorld {
         ru.aiforge.riftworld.registry.EarlyRegistrations.registerFirst(bus, ModBlocks.BLOCKS);
         ru.aiforge.riftworld.registry.ModEntities.TYPES.register(bus);
         ModItems.ITEMS.register(bus);
+        ru.aiforge.riftworld.registry.ModEquipment.ITEMS.register(bus);
         ModFluids.TYPES.register(bus);
         ModFluids.FLUIDS.register(bus);
         ModFluids.ITEMS.register(bus);
@@ -32,7 +33,6 @@ public final class RiftWorld {
         ModWorldgen.PIECES.register(bus);
         ModBlockEntities.TYPES.register(bus);
         ModTabs.TABS.register(bus);
-        ru.aiforge.riftworld.registry.ElisarProfessions.register(bus);
         ru.aiforge.riftworld.registry.ModParticles.PARTICLES.register(bus);
         // Рев 14.41: аддон Dynamic Trees должен РЕАЛЬНО сажать деревья в нашем измерении —
         // для этого ему нужен свой поиск грунта (см. DtGround). Ставим здесь, пока DT ещё не

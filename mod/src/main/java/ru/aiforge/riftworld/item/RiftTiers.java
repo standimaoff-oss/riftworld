@@ -7,9 +7,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 public enum RiftTiers implements Tier {
     MORGRATH(2400, 9.0F, 0.0F, 4, 18),
     EMBER_IRON(420, 6.0F, 1.0F, 2, 10),
-    RIFT_CRYSTAL(780, 7.5F, 1.5F, 3, 15),
-    AURITE(780, 7.0F, 1.0F, 2, 22),
-    RIFTCRYSTAL(1850, 8.5F, 3.0F, 4, 26);
+    RIFT_CRYSTAL(780, 7.5F, 1.5F, 3, 15);
 
     private final int uses, level, ench;
     private final float speed, damage;
@@ -27,11 +25,5 @@ public enum RiftTiers implements Tier {
     @Override public float getAttackDamageBonus() { return damage; }
     @Override public int getLevel() { return level; }
     @Override public int getEnchantmentValue() { return ench; }
-    @Override public Ingredient getRepairIngredient() {
-        return switch (this) {
-            case AURITE -> Ingredient.of(ru.aiforge.riftworld.registry.ModItems.AURITE_INGOT.get());
-            case RIFTCRYSTAL -> Ingredient.of(ru.aiforge.riftworld.registry.ModItems.RIFTCRYSTAL.get());
-            default -> Ingredient.EMPTY;
-        };
-    }
+    @Override public Ingredient getRepairIngredient() { return Ingredient.EMPTY; }
 }

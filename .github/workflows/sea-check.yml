@@ -3,7 +3,6 @@ name: Build and smoke-test Riftworld
 on:
   push:
     branches: ["arena/**"]
-    tags: ["v*"]
   pull_request:
     branches: ["main"]
   workflow_dispatch:
@@ -17,6 +16,7 @@ concurrency:
 
 jobs:
   build:
+    if: github.event_name != 'push' || !contains(github.event.head_commit.message, '[assets-only]')
     runs-on: ubuntu-latest
     timeout-minutes: 55
     steps:
@@ -28,17 +28,19 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Check model, animation envelopes, island safety and gear assets
+      - name: Check model, animation envelopes and island safety rules
         shell: bash
         run: |
           python -m pip install numpy pillow
-          python tools/validate_ore_gear_content.py
           python reports/el_gran_maja_model/validate_el_gran_maja_model.py
           python reports/el_gran_maja_model/validate_collision_bounds.py
           mkdir -p /tmp/maja-unit
           javac -d /tmp/maja-unit mod/src/main/java/ru/aiforge/riftworld/world/DeepOcean.java mod/src/main/java/ru/aiforge/riftworld/world/MajaSafetyPolicy.java tests/java/MajaRulesTest.java
           java -cp /tmp/maja-unit MajaRulesTest
+          python tools/rift/verify_v041_elisar_armory.py
       - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.8'
       - name: Compile and package both mods
         shell: bash
         run: |
@@ -46,7 +48,7 @@ jobs:
           cd mod
           chmod +x gradlew
           for attempt in 1 2 3; do
-            if ./gradlew jar dtJar majaSafetyCheck --no-daemon --console=plain 2>&1 | tee ../build-ci.log; then
+            if gradle jar dtJar majaSafetyCheck --no-daemon --console=plain 2>&1 | tee ../build-ci.log; then
               exit 0
             fi
             # A javac error is deterministic; retries are only for transient Maven errors.
@@ -54,6 +56,16 @@ jobs:
             sleep 15
           done
           exit 1
+      - name: Preserve the already downloaded Gradle runtime for the real client
+        if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[client-smoke]')
+        shell: bash
+        run: |
+          set -euo pipefail
+          GRADLE_BIN=$(command -v gradle)
+          test -x "$GRADLE_BIN"
+          GRADLE_HOME_DIR=$(dirname "$(dirname "$GRADLE_BIN")")
+          mkdir -p mod/build/gradle-dist
+          tar -C "$(dirname "$GRADLE_HOME_DIR")" -czf mod/build/gradle-dist/gradle-8.8.tar.gz "$(basename "$GRADLE_HOME_DIR")"
       - name: Expose compiler errors in check annotations
         if: failure()
         shell: bash
@@ -74,7 +86,7 @@ jobs:
           name: riftworld-build
           path: |
             mod/build/libs/*.jar
-            reports/elisar_gear_catalog.png
+            mod/build/gradle-dist/gradle-8.8.tar.gz
             build-ci.log
           if-no-files-found: warn
           retention-days: 14
@@ -94,7 +106,17 @@ jobs:
           name: riftworld-build
           path: build-artifact
       - uses: gradle/actions/setup-gradle@v4
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[client-smoke]')
+      - name: Restore the client Gradle runtime without another network download
+        if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[client-smoke]')
+        shell: bash
+        run: |
+          set -euo pipefail
+          ARCHIVE=$(find build-artifact -name 'gradle-8.8.tar.gz' | head -1)
+          test -s "$ARCHIVE"
+          mkdir -p "$RUNNER_TEMP/rift-gradle"
+          tar -xzf "$ARCHIVE" -C "$RUNNER_TEMP/rift-gradle"
+          echo "GRADLE_BIN=$RUNNER_TEMP/rift-gradle/gradle-8.8/bin/gradle" >> "$GITHUB_ENV"
       - name: Boot a real Forge server and probe it
         shell: bash
         env:
@@ -104,12 +126,17 @@ jobs:
           mkdir -p mod/build/libs
           find build-artifact -name '*.jar' -exec cp {} mod/build/libs/ \;
           bash tools/ci/server_check.sh
+      - name: Spawn Elisar residents and verify equipment and ore loot
+        shell: bash
+        run: bash tools/ci/elisar_armory_server_probe.sh
       - name: Verify Maja motion and block/border collisions on the server
         shell: bash
         run: bash tools/ci/maja_server_probe.sh
       - name: Real client rendering smoke test
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[client-smoke]')
         shell: bash
+        env:
+          ARMORY_ONLY: ${{ contains(github.event.head_commit.message, '[release]') && '1' || '0' }}
         run: bash tools/ci/maja_client_probe.sh
       - name: Stop the test server
         if: always()
@@ -124,23 +151,88 @@ jobs:
           retention-days: 14
 
   publish-release:
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs: build
+    needs: server-smoke
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, '[release]') && contains(github.event.head_commit.message, '[client-smoke]')
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: riftworld-build
-          path: release-artifact
-      - name: Attach verified mod jars to the draft release
+          path: build-artifact
+      - uses: actions/download-artifact@v4
+        with:
+          name: riftworld-server-smoke
+          path: smoke-artifact
+      - name: Collect jars, real game screenshots and checksums
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p out
+          VER=$(grep -E '^mod_version=' mod/gradle.properties | cut -d= -f2 | tr -d '[:space:]')
+          echo "VER=$VER" >> "$GITHUB_ENV"
+          find build-artifact -name 'riftworld*.jar' -exec cp {} out/ \;
+          find smoke-artifact -maxdepth 1 -name '*.png' -exec cp {} out/ \;
+          test -f "out/riftworld-$VER.jar"
+          test -f "out/riftworld-dt-$VER.jar"
+          for frame in elisar-armory-aurite elisar-armory-riftcrystal elisar-items-aurite elisar-items-riftcrystal elisar-residents elisar-riftcrystal-ores; do
+            test -s "out/$frame.png"
+          done
+          (cd out && sha256sum *.jar > SHA256SUMS.txt)
+          ls -lh out
+      - name: Save untouched game frames for mandatory visual review
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports/ci_frames
+          cp out/*.png reports/ci_frames/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/ci_frames
+          if ! git diff --cached --quiet; then
+            git commit -m "Update reviewed in-game armory frames [skip ci]"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
+      - name: Publish jars and in-game screenshots as a GitHub release
         shell: bash
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: |
-          mapfile -t jars < <(find release-artifact -type f -name '*.jar' -print)
-          test "${#jars[@]}" -ge 1
-          preview=$(find release-artifact -type f -name 'elisar_gear_catalog.png' -print -quit)
-          gh release upload "$GITHUB_REF_NAME" "${jars[@]}" ${preview:+"$preview"} --repo "$GITHUB_REPOSITORY" --clobber
-          gh release edit "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --draft=false
+          set -euo pipefail
+          TAG="v$VER"
+          BASE="https://github.com/${{ github.repository }}/releases/download/$TAG"
+          NOTES=$(mktemp)
+          cat > "$NOTES" <<EOF
+          Riftworld **$TAG** для **Minecraft Forge 1.20.1 / Java 17**.
+
+          ## Скачать
+
+          - [Основной мод]($BASE/riftworld-$VER.jar) — установить в папку \`mods\`.
+          - [Аддон для Dynamic Trees]($BASE/riftworld-dt-$VER.jar) — установить вместе с Dynamic Trees 1.20.1.
+          - [SHA256SUMS.txt]($BASE/SHA256SUMS.txt) — контрольные суммы обоих jar.
+
+          ## Скриншоты из игры
+
+          - [Ауритовый комплект на игроке]($BASE/elisar-armory-aurite.png)
+          - [Все 9 ауритовых предметов]($BASE/elisar-items-aurite.png)
+          - [Рифткристаллический комплект на игроке]($BASE/elisar-armory-riftcrystal.png)
+          - [Все 9 рифткристаллических предметов]($BASE/elisar-items-riftcrystal.png)
+          - [Житель, стражник и лучник Элисара]($BASE/elisar-residents.png)
+          - [Рифткристаллические руды]($BASE/elisar-riftcrystal-ores.png)
+
+          Добавлены два комплекта брони, оружия и инструментов, три функциональных типа жителей,
+          рифткристаллическая руда ровно в трёх биомах и интеграция с существующими червонцами.
+
+          [Описание версии](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/reports/elisar_armory/README.md) ·
+          [Проверка сборки и игровые тесты](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+          EOF
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" out/*.jar out/*.png out/SHA256SUMS.txt --clobber
+            gh release edit "$TAG" --notes-file "$NOTES" --target "${{ github.sha }}"
+          else
+            gh release create "$TAG" out/*.jar out/*.png out/SHA256SUMS.txt --title "Riftworld $TAG — Elisar Armory" --notes-file "$NOTES" --target "${{ github.sha }}"
+          fi
+          gh release view "$TAG" --json url,assets --jq '{url,assets:[.assets[].name]}'

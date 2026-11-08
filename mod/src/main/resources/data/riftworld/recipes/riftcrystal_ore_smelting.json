@@ -3,7 +3,7 @@
   "ingredient": {
     "item": "riftworld:riftcrystal_ore"
   },
-  "result": "riftworld:riftcrystal",
-  "experience": 1.0,
-  "cookingtime": 240
+  "result": "riftworld:riftcrystal_shard",
+  "experience": 1.2,
+  "cookingtime": 200
 }
