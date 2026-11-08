@@ -102,6 +102,9 @@ jobs:
           mkdir -p mod/build/libs
           find build-artifact -name '*.jar' -exec cp {} mod/build/libs/ \;
           bash tools/ci/server_check.sh
+      - name: Spawn Elisar residents and verify equipment and ore loot
+        shell: bash
+        run: bash tools/ci/elisar_armory_server_probe.sh
       - name: Verify Maja motion and block/border collisions on the server
         shell: bash
         run: bash tools/ci/maja_server_probe.sh
