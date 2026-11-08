@@ -15,10 +15,10 @@
         "title_ru": "Фарфоровый журавль",
         "biome": "elisar_city",
         "concept": "reports/biome_mob_concepts/01_elisar_city_porcelain_crane.png",
-        "revision": 2,
+        "revision": 3,
         "generator": "Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)",
-        "bones": 12,
-        "cubes": 1231,
+        "bones": 27,
+        "cubes": 415,
         "atlas": [
           2048,
           2048
@@ -28,24 +28,24 @@
         "bounds_blockbench": {
           "min": [
             -25,
-            1,
+            4,
             -69
           ],
           "max": [
-            25,
+            26,
             159,
-            67
+            59
           ]
         },
         "size_blocks": [
-          0.78125,
-          2.46875,
-          2.125
+          0.796875,
+          2.421875,
+          2
         ],
         "animations": 7,
-        "bbmodel_bytes": 2158517,
-        "geo_bones": 12,
-        "geo_cubes": 1231
+        "bbmodel_bytes": 855287,
+        "geo_bones": 27,
+        "geo_cubes": 415
       },
       "structural_validation": "ok"
     },
@@ -61,10 +61,10 @@
         "title_ru": "Базальтовый жук-углеед",
         "biome": "ashen_lands",
         "concept": "reports/biome_mob_concepts/02_ashen_lands_basalt_beetle.png",
-        "revision": 2,
+        "revision": 3,
         "generator": "Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)",
-        "bones": 22,
-        "cubes": 1086,
+        "bones": 34,
+        "cubes": 186,
         "atlas": [
           2048,
           2048
@@ -73,25 +73,25 @@
         "render_scale": 0.25,
         "bounds_blockbench": {
           "min": [
-            -54,
-            0,
+            -46,
+            -1,
             -76
           ],
           "max": [
-            54,
-            76,
-            56
+            46,
+            77,
+            46
           ]
         },
         "size_blocks": [
-          1.6875,
-          1.1875,
-          2.0625
+          1.4375,
+          1.21875,
+          1.90625
         ],
         "animations": 9,
-        "bbmodel_bytes": 2235680,
-        "geo_bones": 22,
-        "geo_cubes": 1086
+        "bbmodel_bytes": 541356,
+        "geo_bones": 34,
+        "geo_cubes": 186
       },
       "structural_validation": "ok"
     },
@@ -192,8 +192,8 @@
     {
       "id": "porcelain_crane",
       "status": "ok",
-      "bones": 12,
-      "cubes": 1231,
+      "bones": 27,
+      "cubes": 415,
       "texture_width": 2048,
       "texture_height": 2048,
       "texture_loaded": true,
@@ -202,8 +202,8 @@
     {
       "id": "basalt_beetle",
       "status": "ok",
-      "bones": 22,
-      "cubes": 1086,
+      "bones": 34,
+      "cubes": 186,
       "texture_width": 2048,
       "texture_height": 2048,
       "texture_loaded": true,

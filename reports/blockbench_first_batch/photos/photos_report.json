@@ -12,14 +12,14 @@
         "name": "Riftworld reference view",
         "projection": "orthographic",
         "position": [
-          512,
-          361.6,
-          -321
+          512.5,
+          363.1,
+          -325
         ],
         "target": [
-          0,
-          80,
-          -1
+          0.5,
+          81.5,
+          -5
         ],
         "zoom": 0.5
       },
@@ -27,7 +27,7 @@
         1600,
         1200
       ],
-      "zoom_percent": 16.455696202531644
+      "zoom_percent": 16.774193548387096
     },
     {
       "id": "basalt_beetle",
@@ -41,12 +41,12 @@
         "position": [
           -512,
           345.2,
-          -522
+          -527
         ],
         "target": [
           0,
           38,
-          -10
+          -15
         ],
         "zoom": 0.5
       },
@@ -54,7 +54,7 @@
         1600,
         1200
       ],
-      "zoom_percent": 19.696969696969695
+      "zoom_percent": 21.311475409836067
     },
     {
       "id": "ash_moth",

@@ -1,4 +1,4 @@
-/* Riftworld Fauna — reference-detail Blockbench-API batch, revision 2.
+/* Riftworld Fauna — articulated plate Blockbench-API batch, revision 3.
  *
  * Builds editable Bedrock-entity projects through the public Blockbench API
  * (Group / Cube / Texture / Animation / Codecs). Geometry is authored at 64
@@ -356,7 +356,10 @@
         const out = { name };
         if (b.parent) out.parent = b.parent;
         out.pivot = [b.pivot[0], -b.pivot[1], b.pivot[2]];
-        if (b.rotation) out.rotation = [-b.rotation[0], b.rotation[1], -b.rotation[2]];
+        // BB -> runtime reflects both X and Y: D = diag(-1,-1,1).
+        // A rotation axis transforms as D for this proper 180-degree rotation.
+        // Bedrock's exported [-rx,-ry,rz] already has exactly those signs.
+        if (b.rotation) out.rotation = b.rotation.slice();
         const a = this.anims[name];
         if (a && a.amp) out.anim = { axis: a.axis, amp: a.amp, speed: a.speed, phase: a.phase };
         if (b.cubes) {
@@ -406,7 +409,7 @@
         title_ru: this.spec.title_ru,
         biome: this.spec.biome,
         concept: this.spec.concept,
-        revision: 2,
+        revision: ['porcelain_crane', 'basalt_beetle'].includes(this.id) ? 3 : 2,
         generator: 'Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)',
         bones: this.bones.size,
         cubes: this.cubes.length,
@@ -566,27 +569,44 @@
     b.box('head', 'eye_left', [-6, 154, -45], [1, 3, 3], 'eye');
     b.box('head', 'eye_right', [6, 154, -45], [1, 3, 3], 'eye');
 
+    // Side-view feather vanes are broad in Y and thin in X. Each is a long
+    // cuboid on a rotated group, rather than disconnected voxel dots.
     for (const side of [-1, 1]) {
       const wing = side < 0 ? 'wing_left' : 'wing_right';
       b.bone(wing, 'body', [side * 17, 100, 2]);
-      // Folded celadon wing coverts.
-      ellipsoidShell(b, wing, 'covert', [side * 18, 96, 6], [5, 14, 26], 4, p => p[1] > 100 ? 'celadon_hi' : 'celadon');
-      // Overlapping flight feathers fan toward the tail.
-      for (let i = 0; i < 6; i++) {
-        const root = [side * (19 + i % 2), 98 - i * 2, -8 + i * 5];
-        const tip = [side * (20 + i % 2), 82 - i * 3, 24 + i * 5];
-        feather(b, wing, 'flight_' + i, root, tip, 11 - i * 0.5, 2, i % 2 ? 'celadon' : 'celadon_hi', 'gold');
+      b.box(wing, 'shoulder', [side * 19, 99, -2], [5, 19, 23], 'porcelain_hi');
+      for (let i = 0; i < 5; i++) {
+        const pivot = [side * (21 + i % 2), 104 - i * 4, -10 + i * 4];
+        const vane = wing + '_vane_' + i;
+        const length = 35 + i * 2;
+        b.bone(vane, wing, pivot, [15 + i * 3, 0, 0]);
+        // Layered feathers overlap slightly; all stay outside the torso.
+        b.box(vane, 'feather_plate', [pivot[0], pivot[1] - 4, pivot[2] + length / 2],
+          [3, 11, length], i % 2 ? 'celadon' : 'celadon_hi');
+        b.box(vane, 'gold_shaft', [pivot[0] + side * 2, pivot[1] - 3, pivot[2] + length / 2],
+          [1, 1, length - 3], 'gold');
+        b.box(vane, 'tip', [pivot[0], pivot[1] - 5, pivot[2] + length + 2],
+          [2, 7, 5], i % 2 ? 'celadon_lo' : 'celadon');
       }
-      tubePath(b, wing, 'wing_gold_crack', [[side * 22, 104, -4], [side * 23, 96, 8], [side * 21, 88, 20]], 1, 'gold', 3);
+      // A short porcelain cover over the bases makes a coherent shoulder.
+      b.box(wing, 'covert_upper', [side * 24, 103, 0], [3, 8, 22], 'porcelain_hi');
+      b.box(wing, 'covert_lower', [side * 24, 96, 4], [3, 6, 26], 'celadon');
       b.animate(wing, 'z', 1.5, 0.8, side < 0 ? 0 : Math.PI);
     }
 
     b.bone('tail', 'body', [0, 88, 30]);
-    for (let i = 0; i < 9; i++) {
-      const spread = (i - 4) / 4;
-      const root = [spread * 8, 90 - Math.abs(spread) * 4, 30];
-      const tip = [spread * 22, 62 - Math.abs(spread) * 8, 58 + (1 - Math.abs(spread)) * 8];
-      feather(b, 'tail', 'tail_feather_' + i, root, tip, 12, 2, i % 2 ? 'porcelain_hi' : 'celadon_hi', 'gold');
+    // Short, broad overlapping tail fan, not a bundle of long loose strands.
+    for (let i = 0; i < 5; i++) {
+      const x = (i - 2) * 5;
+      const pivot = [x, 87 - Math.abs(i - 2), 29];
+      const vane = 'tail_vane_' + i;
+      b.bone(vane, 'tail', pivot, [24 + Math.abs(i - 2) * 4, 0, 0]);
+      const length = 25 - Math.abs(i - 2) * 2;
+      b.box(vane, 'tail_plate', [x, pivot[1] - 3, pivot[2] + length / 2],
+        [8, 5, length], i % 2 ? 'porcelain_hi' : 'celadon_hi');
+      b.box(vane, 'tail_tip', [x, pivot[1] - 3, pivot[2] + length + 2],
+        [6, 4, 5], i % 2 ? 'celadon' : 'celadon_lo');
+      b.box(vane, 'tail_gold', [x, pivot[1] + 1, pivot[2] + length / 2], [1, 1, length - 3], 'gold');
     }
 
     for (const side of [-1, 1]) {
@@ -601,10 +621,10 @@
       b.box(lower, 'shin', [x, 32, 2], [3, 48, 3], 'ivory');
       b.bone(foot, lower, [x, 8, 2]);
       b.box(foot, 'ankle', [x, 8, 2], [4, 4, 4], 'ivory');
-      b.box(foot, 'toe_front', [x, 2, -6], [2, 2, 14], 'ivory');
-      b.box(foot, 'toe_left', [x - 3, 2, -3], [2, 2, 10], 'ivory');
-      b.box(foot, 'toe_right', [x + 3, 2, -3], [2, 2, 10], 'ivory');
-      b.box(foot, 'toe_back', [x, 2, 8], [2, 2, 6], 'ivory');
+      b.box(foot, 'toe_front', [x, 5, -6], [2, 2, 14], 'ivory');
+      b.box(foot, 'toe_left', [x - 3, 5, -3], [2, 2, 10], 'ivory');
+      b.box(foot, 'toe_right', [x + 3, 5, -3], [2, 2, 10], 'ivory');
+      b.box(foot, 'toe_back', [x, 5, 8], [2, 2, 6], 'ivory');
       b.animate(upper, 'x', 2, 1.2, side < 0 ? 0 : Math.PI);
     }
     b.animate('neck_lower', 'x', 2, 0.6, 0);
@@ -618,26 +638,40 @@
 
   function buildBasaltBeetle(b) {
     b.bone('body', null, [0, 34, 4]);
-    // Glowing core under the separated basalt plates.
-    ellipsoidSolid(b, 'body', 'lava_core', [0, 46, 8], [43, 26, 47], 4, 'lava');
-    const seeds = [
-      [-0.55, 0.75, -0.35], [0.05, 0.95, -0.2], [0.6, 0.7, -0.3],
-      [-0.7, 0.45, 0.25], [-0.15, 0.8, 0.45], [0.45, 0.75, 0.5],
-      [0.75, 0.35, 0.1], [-0.35, 0.4, -0.75], [0.3, 0.45, -0.7]
+    // Faceted carapace built from large, overlapping armor plates. Taper the
+    // fore/aft sections and cover the glowing core, leaving only narrow seams.
+    b.box('body', 'shell_underside', [0, 42, 8], [68, 24, 76], 'basalt_lo');
+    b.box('body', 'core_glow', [0, 52, 8], [64, 7, 74], 'lava');
+    const rows = [
+      { z: -20, width: 28, length: 24 },
+      { z: 6, width: 36, length: 28 },
+      { z: 34, width: 28, length: 22 }
     ];
-    ellipsoidShell(b, 'body', 'basalt_plate', [0, 46, 8], [46, 30, 50], 4, (p) => {
-      const q = [(p[0] / 46), (p[1] - 46) / 30, (p[2] - 8) / 50];
-      let best = 0, second = 1;
-      let d0 = dist(q, seeds[0]), d1 = dist(q, seeds[1]);
-      if (d1 < d0) { best = 1; second = 0; [d0, d1] = [d1, d0]; }
-      for (let i = 2; i < seeds.length; i++) {
-        const d = dist(q, seeds[i]);
-        if (d < d0) { second = best; d1 = d0; best = i; d0 = d; }
-        else if (d < d1) { second = i; d1 = d; }
+    for (let row = 0; row < rows.length; row++) {
+      const {z, width, length} = rows[row];
+      b.box('body', 'central_plate_' + row, [0, 66, z], [width, 10, length], row === 1 ? 'basalt_hi' : 'basalt');
+      b.box('body', 'crown_plate_' + row, [0, 72, z], [width - 7, 3, length - 4], row === 1 ? 'basalt' : 'basalt_hi');
+      for (const side of [-1, 1]) {
+        const pivot = [side * (width / 2 - 2), 65, z];
+        const panel = 'shell_' + (side < 0 ? 'left_' : 'right_') + row;
+        b.bone(panel, 'body', pivot, [0, 0, side * -27]);
+        b.box(panel, 'sloped_plate', [side * (width / 2 + 8), 65, z],
+          [22, 9, length], row === 1 ? 'basalt_hi' : 'basalt');
+        b.box(panel, 'raised_facet', [side * (width / 2 + 8), 70, z],
+          [18, 2, length - 4], row === 1 ? 'basalt' : 'basalt_hi');
+        b.box('body', 'side_plate_' + side + '_' + row, [side * (width / 2 + 18), 48, z],
+          [7, 15, length], row === 1 ? 'basalt' : 'basalt_lo');
       }
-      if (d1 - d0 < 0.065) return nCrack(p) ? 'lava_hi' : 'lava';
-      return best % 3 === 0 ? 'basalt_hi' : best % 3 === 1 ? 'basalt' : 'basalt_lo';
-    }, { minY: 28 });
+    }
+    // Raised, thin segmented glowing cracks (not a bright orange belt).
+    for (const z of [-7, 21]) {
+      b.box('body', 'top_crack_' + z, [0, 74, z], [27, 1, 2], 'lava');
+      for (const side of [-1, 1]) {
+        const panel = 'shell_' + (side < 0 ? 'left_' : 'right_') + (z < 0 ? 0 : 1);
+        const x = side * (z < 0 ? 21 : 25);
+        b.box(panel, 'crack_line', [x, 71, z], [16, 1, 2], 'lava');
+      }
+    }
     // Thorax collar.
     ellipsoidShell(b, 'body', 'thorax', [0, 38, -38], [30, 18, 18], 4, p => p[1] > 44 ? 'basalt_hi' : 'basalt');
 
@@ -650,17 +684,25 @@
     b.box('head', 'mandible_right', [10, 24, -66], [10, 6, 12], 'basalt_lo');
     b.box('head', 'mandible_tip_left', [-13, 22, -73], [5, 4, 6], 'basalt');
     b.box('head', 'mandible_tip_right', [13, 22, -73], [5, 4, 6], 'basalt');
-    // Curved orange horns.
+    // Horns occupy the forward plane; antennae start behind them. The
+    // separation is kept even when the antennae sway about their pivots.
     for (const side of [-1, 1]) {
-      tubePath(b, 'head', 'horn_' + side, [[side * 12, 40, -56], [side * 18, 48, -60], [side * 20, 60, -62], [side * 16, 68, -60]],
-        t => t < 1 ? 9 : t < 2 ? 7 : 5, t => t < 2 ? 'ember' : 'lava_hi', 3);
+      const horn = side < 0 ? 'horn_left' : 'horn_right';
+      const pivot = [side * 13, 39, -69];
+      b.bone(horn, 'head', pivot, [-18, 0, 0]);
+      const hornTilt = horn + '_tilt';
+      b.bone(hornTilt, horn, pivot, [0, 0, side * -12]);
+      b.box(hornTilt, 'horn_base', [pivot[0], 47, pivot[2]], [9, 18, 9], 'ember');
+      b.box(hornTilt, 'horn_tip', [pivot[0], 58, pivot[2]], [6, 9, 6], 'lava_hi');
     }
     for (const side of [-1, 1]) {
       const ant = side < 0 ? 'antenna_left' : 'antenna_right';
-      b.bone(ant, 'head', [side * 10, 44, -54]);
-      tubePath(b, ant, 'segments', [[side * 10, 44, -54], [side * 16, 54, -60], [side * 22, 64, -66], [side * 28, 72, -70]],
-        t => t < 2 ? 5 : 4, 'basalt_lo', 4);
-      b.box(ant, 'club', [side * 29, 73, -71], [6, 6, 6], 'basalt');
+      const pivot = [side * 20, 45, -42];
+      b.bone(ant, 'head', pivot);
+      const stem = ant + '_stem';
+      b.bone(stem, ant, pivot, [0, 0, side * -30]);
+      b.box(stem, 'antenna_stem', [pivot[0], pivot[1] + 13, pivot[2]], [4, 26, 4], 'basalt_lo');
+      b.box(stem, 'antenna_club', [pivot[0], pivot[1] + 28, pivot[2]], [7, 7, 7], 'basalt');
       b.animate(ant, 'y', 4, 1.1, side < 0 ? 0 : Math.PI);
     }
 
@@ -673,12 +715,11 @@
       const hip = 'leg_' + name, knee = hip + '_lower', foot = hip + '_foot';
       b.bone(hip, 'body', [x, 30, z]);
       b.box(hip, 'coxa', [x + side * 5, 28, z], [12, 10, 12], 'basalt');
-      b.bone(knee, hip, [x + side * 10, 26, z]);
-      tubePath(b, knee, 'femur', [[x + side * 10, 26, z], [x + side * 16, 18, z + side * 3], [x + side * 18, 12, z + side * 4]], 10, 'basalt_hi', 3);
-      b.bone(foot, knee, [x + side * 18, 10, z + side * 3]);
-      tubePath(b, foot, 'tibia', [[x + side * 18, 12, z + side * 4], [x + side * 19, 4, z + side * 3]], 7, 'basalt', 3);
-      b.box(foot, 'claw', [x + side * 18, 2, z + side * 3 - 3], [12, 4, 14], 'basalt_lo');
-      b.box(foot, 'claw_tip', [x + side * 18, 1, z + side * 3 - 9], [8, 2, 5], 'basalt');
+      b.bone(knee, hip, [x + side * 10, 26, z], [0, 0, side * 28]);
+      b.box(knee, 'femur', [x + side * 10, 19, z], [10, 17, 11], 'basalt_hi');
+      b.bone(foot, knee, [x + side * 10, 11, z], [0, 0, side * -28]);
+      b.box(foot, 'tibia', [x + side * 10, 6, z], [7, 11, 8], 'basalt');
+      b.box(foot, 'claw', [x + side * 10, 1, z - 3], [12, 4, 14], 'basalt_lo');
       b.animate(hip, 'x', 4, 1.4, (legs.findIndex(l => l[0] === name) % 3) * Math.PI / 3);
     }
     b.animate('head', 'x', 1.5, 0.7, 0);
@@ -870,9 +911,9 @@
   }
 
   global.RiftworldFauna = {
-    version: '0.2.0',
+    version: '0.3.0',
     blockbench: '5.2.2',
-    revision: 2,
+    revision: 3,
     specs: SPECS.map(s => ({ id: s.id, title_ru: s.title_ru, biome: s.biome, concept: s.concept })),
     generateAll,
     generateOne: id => {
@@ -887,7 +928,7 @@
       title: 'Riftworld Fauna',
       author: 'Riftworld',
       icon: 'fa-cube',
-      version: '0.2.0',
+      version: '0.3.0',
       min_version: '5.2.0',
       variant: 'both',
       description: 'Reference-detail procedural Blockbench-API source for the first four Riftworld biome mobs.',

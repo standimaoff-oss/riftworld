@@ -3,10 +3,10 @@
   "title_ru": "Базальтовый жук-углеед",
   "biome": "ashen_lands",
   "concept": "reports/biome_mob_concepts/02_ashen_lands_basalt_beetle.png",
-  "revision": 2,
+  "revision": 3,
   "generator": "Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)",
-  "bones": 22,
-  "cubes": 1086,
+  "bones": 34,
+  "cubes": 186,
   "atlas": [
     2048,
     2048
@@ -15,23 +15,23 @@
   "render_scale": 0.25,
   "bounds_blockbench": {
     "min": [
-      -54,
-      0,
+      -46,
+      -1,
       -76
     ],
     "max": [
-      54,
-      76,
-      56
+      46,
+      77,
+      46
     ]
   },
   "size_blocks": [
-    1.6875,
-    1.1875,
-    2.0625
+    1.4375,
+    1.21875,
+    1.90625
   ],
   "animations": 9,
-  "bbmodel_bytes": 2235680,
-  "geo_bones": 22,
-  "geo_cubes": 1086
+  "bbmodel_bytes": 541356,
+  "geo_bones": 34,
+  "geo_cubes": 186
 }
