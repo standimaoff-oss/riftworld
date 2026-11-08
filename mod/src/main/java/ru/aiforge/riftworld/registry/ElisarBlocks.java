@@ -100,6 +100,11 @@ public final class ElisarBlocks {
             () -> new Block(p(MapColor.GOLD, 3.0F, SoundType.STONE).requiresCorrectToolForDrops()));
     public static final RegistryObject<Block> DEEPSLATE_DUCAT_ORE = ModBlocks.reg("deepslate_ducat_ore",
             () -> new Block(p(MapColor.GOLD, 4.5F, SoundType.DEEPSLATE).requiresCorrectToolForDrops()));
+    // v0.40.0: Рифт-кристалл — редкая руда СИЛЬНОЙ брони и сильных инструментов (референс 02).
+    // Встречается всего в 2–3 местах Элисара (Хрустальные разломы, глубинный камень, Фиолетовые холмы)
+    // и понемногу: отдельные гнёзда, а не жилы.
+    public static final RegistryObject<Block> RIFTCRYSTAL_ORE = ModBlocks.reg("riftcrystal_ore",
+            () -> new Block(p(MapColor.DIAMOND, 4.5F, SoundType.STONE).requiresCorrectToolForDrops().lightLevel(s -> 7)));
     // мини-биом «Туманный данж» (рев 5): обломчатый серо-зелёный камень утёсов, частичные блоки для почти сломанной руины
     public static final RegistryObject<Block> KEEP_STONE = cube("keep_stone", MapColor.TERRACOTTA_LIGHT_GRAY, 2.2F, SoundType.STONE);
     public static final RegistryObject<Block> KEEP_STONE_CRACKED = cube("keep_stone_cracked", MapColor.TERRACOTTA_LIGHT_GRAY, 2.2F, SoundType.STONE);

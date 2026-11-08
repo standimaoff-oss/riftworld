@@ -1,6 +1,7 @@
 package ru.aiforge.riftworld.world;
 
 import java.util.Random;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -23,7 +24,7 @@ import ru.aiforge.riftworld.registry.MorokBlocks;
 public final class MorokHollow {
     public static final int SUPER = 1240;
     private static final long FIXED = 0x4D4F524F4B48L;
-    private static final ConcurrentHashMap<Long, Region> CACHE = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Long, Optional<Region>> CACHE = new ConcurrentHashMap<>();
 
     /** Один массив суши: центр, радиус, семя. */
     public static final class Region {
@@ -42,7 +43,7 @@ public final class MorokHollow {
     }
 
     public static Region region(int sx, int sz) {
-        return CACHE.computeIfAbsent(((long) sx << 32) ^ (sz & 0xFFFFFFFFL), k -> gen(sx, sz));
+        return CACHE.computeIfAbsent(((long) sx << 32) ^ (sz & 0xFFFFFFFFL), k -> Optional.ofNullable(gen(sx, sz))).orElse(null);
     }
 
     private static Region gen(int sx, int sz) {

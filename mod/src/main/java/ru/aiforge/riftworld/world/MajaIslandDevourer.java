@@ -27,6 +27,10 @@ public final class MajaIslandDevourer {
     private record Bite(long pos, Block expectedBlock) {}
     private Job job;
     private int cooldown;
+    private String status = "idle";
+    private int blocksEaten;
+    public String status() { return status; }
+    public int blocksEaten() { return blocksEaten; }
 
     private static final class Job {
         final CityPlan.Island island;
@@ -46,20 +50,23 @@ public final class MajaIslandDevourer {
 
     /** @return true while preparing or eating, when the titan should hold position and open its jaw. */
     public boolean tick(ServerLevel level, ElGranMajaEntity maja) {
-        if (!MajaConfig.islandEatingEnabled()) { job = null; return false; }
+        if (!MajaConfig.islandEatingEnabled()) { job = null; status = "disabled"; return false; }
         if (cooldown > 0) --cooldown;
         if (job == null) {
             if (cooldown > 0 || maja.tickCount % 80 != 0) return false;
             CityPlan.Island island = findCandidate(level, maja);
             if (island == null) return false;
             job = new Job(island);
+            blocksEaten = 0;
+            status = "scanning";
             MajaWorldData.get(level).protectPlacedNear(island.cx, island.cz, island.maxReach() + 8, job.protectedCells);
         }
-        if (!safe(level, maja, job.island)) return cancel();
+        if (!safe(level, maja, job.island)) return cancel("unsafe");
         if (!job.scanComplete) {
-            if (!scan(level, job)) return cancel();
+            if (!scan(level, job)) return cancel("scan_blocked");
             if (!job.scanComplete) return true;
-            if (job.blocks.isEmpty()) return cancel();
+            if (job.blocks.isEmpty()) return cancel("empty");
+            status = "eating";
         }
         MajaWorldData data = MajaWorldData.get(level);
         // Refresh protection if someone placed blocks remotely between scan batches.
@@ -71,18 +78,20 @@ public final class MajaIslandDevourer {
             if (job.protectedCells.contains(p.asLong()) || data.wasPlaced(p)) continue;
             BlockState state = level.getBlockState(p);
             if (state.isAir()) continue;
-            if (state.hasBlockEntity() || !natural(state) || state.getBlock() != bite.expectedBlock()) return cancel();
-            if (!state.canEntityDestroy(level, p, maja) || !ForgeEventFactory.onEntityDestroyBlock(maja, p, state)) return cancel();
+            if (state.hasBlockEntity() || !natural(state) || state.getBlock() != bite.expectedBlock()) return cancel("changed_or_denied");
+            if (!state.canEntityDestroy(level, p, maja) || !ForgeEventFactory.onEntityDestroyBlock(maja, p, state)) return cancel("changed_or_denied");
             // A protection/event handler may itself replace a block or unload a chunk during the callback.
             if (level.getChunkSource().getChunkNow(p.getX() >> 4, p.getZ() >> 4) == null
-                    || level.getBlockState(p).getBlock() != bite.expectedBlock() || data.wasPlaced(p)) return cancel();
-            if (!level.destroyBlock(p, false, maja)) return cancel();
+                    || level.getBlockState(p).getBlock() != bite.expectedBlock() || data.wasPlaced(p)) return cancel("changed_or_denied");
+            if (!level.destroyBlock(p, false, maja)) return cancel("changed_or_denied");
+            blocksEaten++;
         }
-        if (job.consumeIndex >= job.blocks.size()) return cancel();
+        if (job.consumeIndex >= job.blocks.size()) return cancel("finished");
         return true;
     }
 
-    private boolean cancel() {
+    private boolean cancel(String why) {
+        status = why;
         job = null;
         cooldown = 300;
         return false;
@@ -165,10 +174,14 @@ public final class MajaIslandDevourer {
     }
 
     private static boolean natural(BlockState s) {
+        // v0.46.0: рифт-кристалл генерируется гнёздами прямо в коренном камне диких
+        // островов, поэтому пожиратель обязан считать его природной породой — иначе
+        // сканирование прерывается на первом же гнезде и остров остаётся несъеденным.
         return s.is(ElisarBlocks.STONE.get()) || s.is(ElisarBlocks.STONE_MOSSY.get())
                 || s.is(ElisarBlocks.GRASS.get()) || s.is(ElisarBlocks.SOIL.get())
                 || s.is(ElisarBlocks.CRUST.get()) || s.is(ElisarBlocks.MOSS.get())
-                || s.is(ElisarBlocks.DUCAT_ORE.get()) || s.is(ElisarBlocks.TALL_GRASS.get())
+                || s.is(ElisarBlocks.DUCAT_ORE.get()) || s.is(ElisarBlocks.RIFTCRYSTAL_ORE.get())
+                || s.is(ElisarBlocks.TALL_GRASS.get())
                 || s.is(ElisarBlocks.FLOWERS.get()) || s.is(ElisarBlocks.AMBRA_LOG.get())
                 || s.is(ElisarBlocks.AMBRA_LEAVES.get());
     }

@@ -19,7 +19,7 @@ import java.util.Map;
  */
 public final class CityPlan {
     public static final int CELL = 32;
-    private static CityPlan instance;
+    private static volatile CityPlan instance;
 
     public final int ocean;
     public final List<Island> islands = new ArrayList<>();
@@ -35,16 +35,24 @@ public final class CityPlan {
     private final Map<Long, Bucket> grid = new HashMap<>();
     private final double cityBoundSq;
 
-    public static synchronized CityPlan get() {
-        if (instance == null) {
-            try (InputStream in = CityPlan.class.getResourceAsStream("/data/riftworld/city/plan.json")) {
-                if (in == null) throw new IllegalStateException("plan.json missing");
-                instance = new CityPlan(JsonParser.parseReader(new InputStreamReader(in, StandardCharsets.UTF_8)).getAsJsonObject());
-            } catch (java.io.IOException e) {
-                throw new IllegalStateException(e);
+    public static CityPlan get() {
+        // Called for every biome sample/column: synchronize only the first load,
+        // not every parallel world-generation or client-render lookup.
+        CityPlan result = instance;
+        if (result != null) return result;
+        synchronized (CityPlan.class) {
+            result = instance;
+            if (result == null) {
+                try (InputStream in = CityPlan.class.getResourceAsStream("/data/riftworld/city/plan.json")) {
+                    if (in == null) throw new IllegalStateException("plan.json missing");
+                    result = new CityPlan(JsonParser.parseReader(new InputStreamReader(in, StandardCharsets.UTF_8)).getAsJsonObject());
+                    instance = result;
+                } catch (java.io.IOException e) {
+                    throw new IllegalStateException(e);
+                }
             }
         }
-        return instance;
+        return result;
     }
 
     // ------------------------------------------------------------------ data

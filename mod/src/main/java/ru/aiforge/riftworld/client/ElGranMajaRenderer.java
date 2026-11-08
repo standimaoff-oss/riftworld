@@ -3,7 +3,9 @@ package ru.aiforge.riftworld.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderer;
@@ -18,6 +20,38 @@ import ru.aiforge.riftworld.entity.ElGranMajaEntity;
 public final class ElGranMajaRenderer extends EntityRenderer<ElGranMajaEntity> {
     private static final ResourceLocation TEXTURE = new ResourceLocation("riftworld", "textures/entity/el_gran_maja.png");
     private static final double CENTER_Z = 104.6875; // midpoint of the 322-block model, in blocks
+
+    /** Суставы позвоночника от шеи к кончику хвоста (голова — корень, её крутим отдельно). */
+    private static final String[] SPINE = {
+            "neck_1", "neck_2", "trunk_1", "trunk_2", "trunk_3",
+            "tail_1", "tail_2", "tail_3", "tail_4", "tail_5", "tail_6"
+    };
+    /** Положение сустава вдоль тела: 0 — шея, 1 — кончик хвоста. */
+    private static final float[] SPINE_U = {
+            0.0000F, 0.0999F, 0.1998F, 0.3000F, 0.3999F, 0.4999F, 0.6001F, 0.7000F, 0.7999F, 0.8998F, 1.0000F
+    };
+    /**
+     * Доля общего изгиба, приходящаяся на сустав: кривизна растёт к хвосту (степень 1.55),
+     * поэтому тело складывается как хлыст — шея почти не гнётся, хвост уходит сильнее всего.
+     * Сумма = 1.
+     */
+    private static final float[] BEND_W = {
+            0.0000F, 0.0281F, 0.0543F, 0.0723F, 0.0869F, 0.0998F, 0.1117F, 0.1222F, 0.1322F, 0.1416F, 0.1510F
+    };
+    /** Постоянная кривизна для арки при выпрыгивании (сумма = 1). */
+    private static final float[] ARCH_W = {
+            0.0000F, 0.0999F, 0.0999F, 0.1002F, 0.0999F, 0.0999F, 0.1002F, 0.0999F, 0.0999F, 0.0999F, 0.1002F
+    };
+    /** Сколько градусов изгиба тела набирается на каждый градус/тик угловой скорости. */
+    private static final float TURN_BEND = 9.0F;
+    /** Предельный изгиб тела в повороте, градусов. */
+    private static final float MAX_BEND = 8.0F;
+    /** Голова заглядывает внутрь поворота — доля от общего изгиба. */
+    private static final float HEAD_LEAD = 0.34F;
+    /** Уход хвоста вглубь при выпрыгивании, градусов (нос поднимает MajaMotion). */
+    private static final float BREACH_ARCH = 4.0F;
+    /** Крейсерская скорость зверя, блоков за тик — для нормировки «насколько быстро плывёт». */
+    private static final float CRUISE = 0.42F;
 
     public ElGranMajaRenderer(EntityRendererProvider.Context context) {
         super(context);
@@ -50,12 +84,53 @@ public final class ElGranMajaRenderer extends EntityRenderer<ElGranMajaEntity> {
         // Reflect once here so the reference's dorsal side points upward.
         pose.scale(model.renderScale, -model.renderScale, model.renderScale);
         pose.translate(0.0, 0.0, -CENTER_Z);
-        model.animate(e.tickCount + partial);
+        // v0.45.0: the server now eases its heading, so a bank proportional to the
+        // per-tick yaw delta reads as a graceful carve instead of a snap. Roll is
+        // applied after centring the 322-block body, so it turns around its spine.
+        float yawRate = Mth.wrapDegrees(e.getYRot() - e.yRotO);
+        float swimTime = e.tickCount + partial;
+        float bank = Mth.clamp(-yawRate * 4.2F, -15.0F, 15.0F) + 1.1F * Mth.sin(swimTime * 0.012F);
+        float nosePitch = Mth.clamp((float) (-e.getDeltaMovement().y * 20.0), -7.0F, 7.0F);
+        pose.mulPose(Axis.ZP.rotationDegrees(bank));
+        pose.mulPose(Axis.XP.rotationDegrees(nosePitch));
+        // Faster travelling wave, with the original proven angular envelopes unchanged.
+        // Subtle variation in stroke cadence; angular ranges are unchanged,
+        // so the existing validated collision envelopes remain conservative.
+        model.animate(swimTime * 1.3F + 3.0F * Mth.sin(swimTime * 0.025F));
+        // In Y-up source coordinates: +8 is closed, -13 is fully open.
+        // ---------- физичная поза поверх синусов из geo-файла ----------
+        // Глобальный крен и дифферент уже поставлены выше; здесь — изгиб самого тела:
+        // зверь длиной 322 блока не может повернуть «целиком», он складывается.
+        float yawRateDeg = Mth.wrapDegrees(e.getYRot() - e.yRotO);
+        float swim = Mth.clamp(e.swimSpeed(partial) / CRUISE, 0.0F, 1.35F);
+        float breach = Mth.clamp(e.breachAmount(partial), 0.0F, 1.0F);
+        // Упёршись в берег зверь гасит скорость — вместе с ней гасим и изгиб,
+        // чтобы хвост не выходил за консервативный контур столкновений.
+        float bend = Mth.clamp(yawRateDeg * TURN_BEND * (0.30F + 0.70F * swim), -MAX_BEND, MAX_BEND);
+        ModelPart head = model.bone("head");
+        if (head != null) head.yRot += (float) Math.toRadians(-bend * HEAD_LEAD);
+        for (int i = 0; i < SPINE.length; ++i) {
+            ModelPart part = model.bone(SPINE[i]);
+            if (part == null) continue;
+            // Хвост отстаёт от головы: тело изгибается в сторону, противоположную повороту.
+            part.yRot += (float) Math.toRadians(-bend * BEND_W[i]);
+            // Арка при выпрыгивании: нос уходит вверх, хвост остаётся в глубине.
+            part.xRot += (float) Math.toRadians(-BREACH_ARCH * breach * ARCH_W[i]);
+            // Небольшое скручивание вдоль тела, чтобы крен не выглядел плоским.
+            part.zRot += (float) Math.toRadians(bank * BEND_W[i] * 0.55F);
+        }
+
         // In Y-up source coordinates: +8 is closed, -13 is fully open.
         float jawDegrees = Mth.lerp(e.jaw(partial), 8.0F, -13.0F);
         model.root.getChild("head").getChild("jaw").xRot = (float) Math.toRadians(-jawDegrees);
         // ModelPart.render recursively draws children; drawing getAllParts()
         // separately duplicates bones and loses their parent transformations.
+        // A subtle minimum on the creature only keeps its dark texture legible
+        // in the deep ocean without lighting terrain or changing server state.
+        if (e.getY() < ru.aiforge.riftworld.world.CityPlan.get().ocean
+                && e.level().getBiome(e.blockPosition()).is(ru.aiforge.riftworld.world.MajaOceanKeeper.BIOME)) {
+            light = LightTexture.pack(Math.max(12, LightTexture.block(light)), LightTexture.sky(light));
+        }
         model.root.render(pose, buffers.getBuffer(RenderType.entityCutoutNoCull(TEXTURE)), light, OverlayTexture.NO_OVERLAY);
         pose.popPose();
     }

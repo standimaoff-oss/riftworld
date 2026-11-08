@@ -621,8 +621,12 @@ public final class CrystalRifts {
             built = new Region(cx, cz, new Random(baseRnd.nextLong()));
             break;
         }
-        CACHE.put(key, Optional.ofNullable(built));
-        return built;
+        // Terrain code compares islands with the owning region by identity.
+        // Parallel workers may construct the same region concurrently, but
+        // they must all observe the one canonical winner.
+        Optional<Region> proposed = Optional.ofNullable(built);
+        Optional<Region> winner = CACHE.putIfAbsent(key, proposed);
+        return (winner == null ? proposed : winner).orElse(null);
     }
 
     private static boolean spotClear(int cx, int cz) {

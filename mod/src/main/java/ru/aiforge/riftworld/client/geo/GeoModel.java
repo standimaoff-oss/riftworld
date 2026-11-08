@@ -47,17 +47,25 @@ public final class GeoModel {
     public final float renderScale;
     public final boolean translucent;
     private final List<Bone> bones;
-    private final ModelPart[] allParts;
+    private final Map<String, ModelPart> byName;
 
-    private GeoModel(ModelPart root, int texWidth, int texHeight, float renderScale, boolean translucent, List<Bone> bones) {
+    private GeoModel(ModelPart root, int texWidth, int texHeight, float renderScale, boolean translucent, List<Bone> bones, Map<String, ModelPart> byName) {
         this.root = root;
         this.texWidth = texWidth;
         this.texHeight = texHeight;
         this.renderScale = renderScale;
         this.translucent = translucent;
         this.bones = bones;
-        this.allParts = root.getAllParts().toArray(ModelPart[]::new);
+        this.byName = byName;
     }
+
+    /**
+     * Вложенная кость по имени (или null). Рендерер пользуется этим, чтобы поверх синусов
+     * из geo-файла наложить свою позу: изгиб в повороте, волну по телу, арку при выпрыгивании.
+     * Порядок обязателен: сначала {@link #animate(float)}, потом правки — animate()
+     * каждый кадр сбрасывает кости на базовую позу из файла.
+     */
+    public ModelPart bone(String name) { return byName.get(name); }
 
     /** Покадровая анимация: сбрасываем позы костей и заново считаем синус. */
     public void animate(float time) {
@@ -75,14 +83,10 @@ public final class GeoModel {
         }
     }
 
-    /**
-     * Рисуем ВСЁ дерево костей: {@code ModelPart.render} рисует только собственные кубы и не спускается
-     * к детям — из-за этого раньше выходил один серый ящик вместо рыбы.
-     */
+    /** ModelPart.render recursively draws its children. Rendering every part separately
+     * both duplicated geometry and drew descendants without their parent's transform. */
     public void render(PoseStack pose, VertexConsumer vc, int light, int overlay) {
-        for (int i = 0, n = this.allParts.length; i < n; ++i) {
-            this.allParts[i].render(pose, vc, light, overlay, 1.0F, 1.0F, 1.0F, 1.0F);
-        }
+        root.render(pose, vc, light, overlay);
     }
 
     // ------------------------------------------------------------------ загрузка с диска
@@ -149,7 +153,8 @@ public final class GeoModel {
                         JsonArray size = c.getAsJsonArray("size");
                         JsonArray uv = c.getAsJsonArray("uv");
                         cubes.texOffs(uv.get(0).getAsInt(), uv.get(1).getAsInt());
-                        if (c.has("mirror") && c.get("mirror").getAsBoolean()) cubes.mirror();
+                        // CubeListBuilder retains this setting between boxes.
+                        cubes.mirror(c.has("mirror") && c.get("mirror").getAsBoolean());
                         // коробка задана в абсолютных координатах модели -> переводим в локальные координаты кости
                         cubes.addBox(org.get(0).getAsFloat() - pivot[0], org.get(1).getAsFloat() - pivot[1],
                                 org.get(2).getAsFloat() - pivot[2],
@@ -172,18 +177,21 @@ public final class GeoModel {
             ModelPart baked = LayerDefinition.create(mesh, tw, th).bakeRoot();
             // модель вложенная: кость лежит у своего родителя, поэтому путь собираем по цепочке родителей
             List<Bone> bones = new ArrayList<>();
+            Map<String, ModelPart> byName = new HashMap<>();
             for (JsonObject b : jsonBones) {
-                ModelPart part = resolve(baked, parents, b.get("name").getAsString());
+                String boneName = b.get("name").getAsString();
+                ModelPart part = resolve(baked, parents, boneName);
                 JsonObject anim = b.has("anim") ? b.getAsJsonObject("anim") : null;
                 char axis = anim != null && anim.has("axis") ? anim.get("axis").getAsString().charAt(0) : 'y';
                 float amp = anim != null && anim.has("amp") ? anim.get("amp").getAsFloat() : 0.0F;
                 float speed = anim != null && anim.has("speed") ? anim.get("speed").getAsFloat() : 1.0F;
                 float phase = anim != null && anim.has("phase") ? anim.get("phase").getAsFloat() : 0.0F;
                 bones.add(new Bone(part, part.xRot, part.yRot, part.zRot, axis, amp, speed, phase));
+                byName.put(boneName, part);
             }
             System.out.println("[riftworld] geo " + name + ": костей " + bones.size() + ", деталей "
                     + baked.getAllParts().count() + ", атлас " + tw + "x" + th);
-            return new GeoModel(baked, tw, th, scale, translucent, bones);
+            return new GeoModel(baked, tw, th, scale, translucent, bones, byName);
         } catch (Exception ex) {
             System.err.println("[riftworld] не удалось загрузить geo-модель " + name + ": " + ex);
             return null;

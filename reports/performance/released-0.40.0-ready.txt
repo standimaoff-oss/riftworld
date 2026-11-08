@@ -1,0 +1,121 @@
+Server JVM: 2390
+Generating/loading a 6x6 chunk square in a new Elisar ocean at 1715,2126.
+2390:
+Started recording 1.
+
+Use jcmd 2390 JFR.dump name=generation filename=FILEPATH to copy recording data to file.
+Marked [104, 129] chunks in riftworld:elisar from [104, 129] to [109, 134] to be force loaded
+
+Force-load command: exit=0, wall=34s (ticket creation, not full chunk completion).
+All 36 chunks FULL with bedrock: 1; wall=34s (from before forceload).
+Dim minecraft:overworld (minecraft:overworld): Mean tick time: 1.655 ms. Mean TPS: 20.000
+Dim minecraft:the_nether (minecraft:the_nether): Mean tick time: 0.061 ms. Mean TPS: 20.000
+Dim minecraft:the_end (minecraft:the_end): Mean tick time: 0.093 ms. Mean TPS: 20.000
+Dim riftworld:transit (riftworld:transit): Mean tick time: 0.033 ms. Mean TPS: 20.000
+Dim riftworld:elisar (riftworld:elisar): Mean tick time: 0.329 ms. Mean TPS: 20.000
+Overall: Mean tick time: 2.323 ms. Mean TPS: 20.000
+
+2390:
+Stopped recording "generation", 3.5 MB written to:
+
+/home/runner/work/riftworld/riftworld/ci-out/generation.jfr
+generation: total samples=2219; samples containing mod code=2125
+  inclusive 1625  ru.aiforge.riftworld.world.MorokHollow.regionAt
+  inclusive 1625  ru.aiforge.riftworld.world.MorokHollow.region
+  inclusive 1624  ru.aiforge.riftworld.world.MorokHollow.weight
+  inclusive 1613  ru.aiforge.riftworld.world.MorokHollow$$Lambda$7239+0x00007f70f8ecd478.1254259864.apply
+  inclusive 1613  ru.aiforge.riftworld.world.MorokHollow.gen
+  inclusive 1613  ru.aiforge.riftworld.world.MorokHollow.lambda$region$0
+  inclusive 1288  ru.aiforge.riftworld.world.MistKeep.region
+  inclusive 1288  ru.aiforge.riftworld.world.MistKeep.regionAt
+  inclusive 1283  ru.aiforge.riftworld.world.MistKeep.gen
+  inclusive 1283  ru.aiforge.riftworld.world.MistKeep.lambda$region$0
+  inclusive 1283  ru.aiforge.riftworld.world.MistKeep$$Lambda$7229+0x00007f70f8eca570.1706375662.apply
+  inclusive 1250  ru.aiforge.riftworld.world.ElisarChunkGenerator.m_213609_
+  top mod frames:
+     619  ru.aiforge.riftworld.world.EmberRuins.site
+     458  ru.aiforge.riftworld.world.AshenLands.region
+     130  ru.aiforge.riftworld.world.EmberRuins.nearest
+      95  ru.aiforge.riftworld.world.VioletHills.region
+      93  ru.aiforge.riftworld.world.AshenLands.blocks
+      79  ru.aiforge.riftworld.world.BlacktideCitadel.siteInCell
+      71  ru.aiforge.riftworld.world.ElisarSea.column
+      67  ru.aiforge.riftworld.world.WaterfallGardens.region
+::notice title=Profile generation::ru.aiforge.riftworld.world.MorokHollow.regionAt:1625, ru.aiforge.riftworld.world.MorokHollow.region:1625, ru.aiforge.riftworld.world.MorokHollow.weight:1624, ru.aiforge.riftworld.world.MorokHollow$$Lambda$7239+0x00007f70f8ecd478.1254259864.apply:1613, ru.aiforge.riftworld.world.MorokHollow.gen:1613
+Testing the full-size titan on a loaded flat world, then sampling its tick cost.
+Island eating is disabled by default.
+Force-loading a 253-chunk rectangle for the 322-block body...
+Marked [-5, -11] chunks in minecraft:overworld from [-5, -11] to [5, 11] to be force loaded
+
+Summoned new El Gran Maja
+
+majaReady=1b
+Placing a solid block inside the forward head envelope...
+Changed the block at 0, 200, 155
+
+majaReady=0b
+Changed the block at 0, 200, 155
+
+majaReady=1b
+A waterlogged solid must still block the full model...
+Changed the block at 0, 200, 155
+
+majaReady=0b
+Changed the block at 0, 200, 155
+
+majaReady=1b
+A waterlogged, no-collision sea decal must remain passable...
+Changed the block at 0, 200, 155
+
+majaReady=1b
+Changed the block at 0, 200, 155
+
+A world border smaller than the body must also reject it...
+Set the world border to 300.0 block(s) wide
+
+majaReady=0b
+Set the world border to 59999968.0 block(s) wide
+
+majaReady=1b
+Allowing AI: the anchor must actually move while the area is clear.
+Modified entity data of El Gran Maja
+
+Before motion: El Gran Maja has the following entity data: [0.5d, 200.0d, 0.5d]
+After motion: El Gran Maja has the following entity data: [2.095892874081699d, 177.78000000000011d, 16.571891607733562d]
+before: (0.5, 200.0, 0.5) after: (2.095892874081699, 177.78000000000011, 16.571891607733562) distance: 27.47
+Modified entity data of El Gran Maja
+
+Teleported El Gran Maja to 0.500000, 200.000000, 0.500000
+
+majaReady=1b
+OK: live server tested readiness, solid-block collision, border containment and movement.
+2390:
+Started recording 2.
+
+Use jcmd 2390 JFR.dump name=titan filename=FILEPATH to copy recording data to file.
+Dim minecraft:overworld (minecraft:overworld): Mean tick time: 0.874 ms. Mean TPS: 20.000
+Dim minecraft:the_nether (minecraft:the_nether): Mean tick time: 0.006 ms. Mean TPS: 20.000
+Dim minecraft:the_end (minecraft:the_end): Mean tick time: 0.005 ms. Mean TPS: 20.000
+Dim riftworld:transit (riftworld:transit): Mean tick time: 0.004 ms. Mean TPS: 20.000
+Dim riftworld:elisar (riftworld:elisar): Mean tick time: 0.168 ms. Mean TPS: 20.000
+Overall: Mean tick time: 1.076 ms. Mean TPS: 20.000
+
+2390:
+Stopped recording "titan", 466.0 kB written to:
+
+/home/runner/work/riftworld/riftworld/ci-out/titan.jfr
+titan: total samples=48; samples containing mod code=7
+  inclusive    6  ru.aiforge.riftworld.entity.ElGranMajaEntity.m_8119_
+  inclusive    3  ru.aiforge.riftworld.entity.MajaCollision.clearBox
+  inclusive    3  ru.aiforge.riftworld.entity.MajaCollision.clear
+  inclusive    1  ru.aiforge.riftworld.block.MosaicCoreBE.tick
+  inclusive    1  ru.aiforge.riftworld.block.MosaicCoreBE.evaluateCandlesAndTrigger
+  inclusive    1  ru.aiforge.riftworld.block.MosaicCoreBlock$$Lambda$7015+0x00007f70f8e88000.378544163.m_155252_
+  inclusive    1  ru.aiforge.riftworld.block.MosaicCoreBlock.lambda$getTicker$0
+  inclusive    1  ru.aiforge.riftworld.block.MosaicCoreBE.countCandles
+  top mod frames:
+       3  ru.aiforge.riftworld.entity.ElGranMajaEntity.m_8119_
+       3  ru.aiforge.riftworld.entity.MajaCollision.clearBox
+       1  ru.aiforge.riftworld.block.MosaicCoreBE.countCandles
+::notice title=Profile titan::ru.aiforge.riftworld.entity.ElGranMajaEntity.m_8119_:6, ru.aiforge.riftworld.entity.MajaCollision.clearBox:3, ru.aiforge.riftworld.entity.MajaCollision.clear:3, ru.aiforge.riftworld.block.MosaicCoreBE.tick:1, ru.aiforge.riftworld.block.MosaicCoreBE.evaluateCandlesAndTrigger:1
+Profiler finished. JFR samples are diagnostic, not an FPS or speedup claim.

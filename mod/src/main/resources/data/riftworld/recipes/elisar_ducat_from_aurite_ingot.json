@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "riftworld:aurite_ingot"
+    }
+  ],
+  "result": {
+    "item": "riftworld:elisar_ducat",
+    "count": 2
+  }
+}

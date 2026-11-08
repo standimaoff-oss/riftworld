@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smelting",
+  "ingredient": {
+    "item": "riftworld:riftcrystal_ore"
+  },
+  "result": "riftworld:riftcrystal",
+  "experience": 1.5,
+  "cookingtime": 200
+}

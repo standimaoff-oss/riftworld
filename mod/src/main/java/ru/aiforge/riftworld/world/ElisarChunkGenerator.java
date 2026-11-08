@@ -305,6 +305,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
 
     static Col column(CityPlan plan, int x, int z) {
         Col c = new Col();
+        if (DeepOcean.openCoreChunk(x, z)) return c;
         double px = x + 0.5, pz = z + 0.5;
         CityPlan.Bucket bk = plan.at(x, z);
         CityPlan.Island isl = plan.islandAt(px, pz);
@@ -640,7 +641,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 c.cityViaduct = true;
                 c.viaductBot = vBot;
                 c.viaductCenter = d <= 1.25;
-                c.viaductMosaic = d <= 0.68 && (step % 4 == 0);
+                c.viaductMosaic = false;   // v0.45.0: ritual mosaic removed from bridges
                 c.viaductKeystone = false;
             } else if (c.deckY == Integer.MIN_VALUE || (c.cityViaduct && c.rail)) {
                 c.deckY = y;
@@ -1018,9 +1019,36 @@ public class ElisarChunkGenerator extends ChunkGenerator {
 
     @Override
     public CompletableFuture<ChunkAccess> fillFromNoise(Executor exec, Blender blender, RandomState rs, StructureManager sm, ChunkAccess chunk) {
+        // The NOISE stage was previously generated synchronously in Minecraft's
+        // single worldgen mailbox, blocking unrelated chunks behind a long ocean
+        // fill. Match vanilla's background execution, then complete on the chunk
+        // mailbox. All mutable scratch state below is local to this chunk.
+        // ChunkAccess.setBlockState already uses the section's checked write;
+        // unlike vanilla's direct unchecked section writes, do not acquire the
+        // entire section around it (that would double-acquire the palette lock).
+        return CompletableFuture.supplyAsync(() -> fillElisarChunk(chunk), net.minecraft.Util.backgroundExecutor())
+                .whenCompleteAsync((result, error) -> { }, exec);
+    }
+
+    private ChunkAccess fillElisarChunk(ChunkAccess chunk) {
         CityPlan plan = CityPlan.get();
         BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
         int x0 = chunk.getPos().getMinBlockX(), z0 = chunk.getPos().getMinBlockZ();
+        if (DeepOcean.openCoreChunk(x0, z0)) {
+            // New terrain only: avoid island/structure placement above the
+            // open-water core; old chunk data is never cleared or rewritten.
+            int[][] floors = new int[16][16];
+            for (int dx = 0; dx < 16; dx++) for (int dz = 0; dz < 16; dz++) {
+                int x = x0 + dx, z = z0 + dz;
+                int floor = oceanFloor(plan, x, z);
+                floors[dx][dz] = floor;
+                ElisarSea.column(chunk, mp, x, z, floor, plan.ocean);
+            }
+            // The core keeps the whole 120-block water column unobstructed;
+            // reef structures remain outside the reserved swimming area.
+            Heightmap.primeHeightmaps(chunk, EnumSet.of(Heightmap.Types.OCEAN_FLOOR_WG, Heightmap.Types.WORLD_SURFACE_WG));
+            return chunk;
+        }
         BlockState water = st(ElisarBlocks.WATER);
         BlockState falling = water.setValue(LiquidBlock.LEVEL, 8);
         // Рев 14.23: вода Висячих садов — ВАНИЛЬНАЯ. Её цвет берётся из biome water_color,
@@ -1033,6 +1061,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         BlockState tall = st(ElisarBlocks.TALL_GRASS), flowers = st(ElisarBlocks.FLOWERS), log = st(ElisarBlocks.SIZO_LOG);
         BlockState moss = st(ElisarBlocks.MOSS), crust = st(ElisarBlocks.CRUST);
         BlockState aurite = st(ElisarBlocks.AURITE_ORE);
+        // v0.40.0: редкая руда рифт-кристалла — только 2–3 места в Элисаре и понемногу.
+        BlockState riftcrystalOre = st(ElisarBlocks.RIFTCRYSTAL_ORE);
         BlockState ducatOre = st(ElisarBlocks.DUCAT_ORE);
         // Рев 14: у биома 07 своя зелёная палитра (референс — яркая трава и дубы, а не кремовый Элисар)
         BlockState gardenGrass = st(ElisarBlocks.GARDEN_GRASS);
@@ -1245,6 +1275,10 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                         : hv < 0.86 ? riftMarbleMossy
                                         : riftSlate;
                             }
+                            // Гнёзда рифт-кристалла (место 1 из 3): в тёмном сланце нижней половины разлома.
+                            if (s.is(riftSlate.getBlock()) && vnoise(x * 0.42, z * 0.42 + y * 0.05, 727) > 0.955 && hash(x, y, z) < 0.16) {
+                                s = riftcrystalOre;
+                            }
                         } else if (c.isl.kind == 7) {
                             // Рев 15: обрыв яруса Фиолетовых холмов — каменная стенка террасы
                             // (на фото каждая ступень подпёрта кладкой). Верхний блок — земля,
@@ -1252,6 +1286,10 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                             s = y >= c.top - 5
                                     ? (hash(x, y, z) < 0.30 ? limeMossy : lime)
                                     : (hash(x, y, z) < 0.10 ? mossy : stone);
+                            // Гнёзда рифт-кристалла (место 2 из 3): в кладке террас Фиолетовых холмов.
+                            if (vnoise(x * 0.50, z * 0.50 - y * 0.07, 811) > 0.965 && hash(x, y, z) < 0.12) {
+                                s = riftcrystalOre;
+                            }
                         } else if (c.garden && y >= c.top - 14) {
                             // стены полок — светлый известняк пластами, а на глубине 3..7 встречаются умеренные жилы монетоносной руды!
                             if (y <= c.top - 3 && y >= c.top - 7
@@ -1270,6 +1308,11 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                 if (dv > 0.895 && hash(x, y, z) < 0.24) {
                                     s = ducatOre;
                                 }
+                            }
+                            // Гнёзда рифт-кристалла (место 3 из 3): глубоко в коренном камне диких островов.
+                            if (s.is(stone.getBlock()) && y <= c.bottom + 8
+                                    && vnoise(x * 0.38, z * 0.38 + y * 0.03, 907) > 0.972 && hash(x, y, z) < 0.10) {
+                                s = riftcrystalOre;
                             }
                         }
                         chunk.setBlockState(mp.set(x, y, z), s, false);
@@ -1554,7 +1597,6 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                         BlockState ashlar = st(CastleBlocks.ASHLAR);
                         BlockState ashlarSlab = st(CastleBlocks.ASHLAR_SLAB);
                         BlockState tFloor = st(TempleBlocks.FLOOR);
-                        BlockState tMosaic = st(TempleBlocks.MOSAIC);
                         BlockState tBricks = st(TempleBlocks.BRICKS);
                         BlockState tCol = st(TempleBlocks.GRAND_COLUMN);
                         BlockState tGold = st(TempleBlocks.GOLD);
@@ -1565,13 +1607,13 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                             BlockState vb;
                             if (y == c.deckY) {
                                 if (!c.rail) {
-                                    vb = c.viaductMosaic ? tMosaic
-                                            : (c.viaductCenter ? tFloor : (hash(x, z, 611) < 0.78 ? ashlar : tBricks));
+                                    vb = (c.viaductCenter || c.viaductMosaic) ? tFloor
+                                            : (hash(x, z, 611) < 0.78 ? ashlar : tBricks);
                                 } else {
-                                    vb = c.viaductKeystone ? tMosaic : ashlar;
+                                    vb = c.viaductKeystone ? tGold : ashlar;
                                 }
                             } else if (y == botY) {
-                                vb = c.viaductKeystone ? tMosaic : st(ElisarBlocks.BRICKS);
+                                vb = c.viaductKeystone ? tGold : st(ElisarBlocks.BRICKS);
                             } else {
                                 vb = hash(x, y, z) < 0.65 ? tBricks : ashlar;
                             }
@@ -1678,7 +1720,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 if (seaFloor[dx][dz] != Integer.MIN_VALUE)
                     ElisarSea.decorate(chunk, mp, x0 + dx, z0 + dz, seaFloor[dx][dz], plan.ocean);
         Heightmap.primeHeightmaps(chunk, EnumSet.of(Heightmap.Types.OCEAN_FLOOR_WG, Heightmap.Types.WORLD_SURFACE_WG));
-        return CompletableFuture.completedFuture(chunk);
+        return chunk;
     }
 
     /**
@@ -2230,10 +2272,37 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         }
     }
 
+    private static void placeOceanWreck(ChunkAccess chunk, int x0, int z0, int sea) {
+        DeepOcean.Region r = DeepOcean.regionAt(x0 + 8, z0 + 8);
+        int cx = r.x() + OceanWreck.OFFSET_X, cz = r.z();
+        if (x0 > cx + 28 || x0 + 15 < cx - 28 || z0 > cz + 9 || z0 + 15 < cz - 9) return;
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        for (int x = x0; x < x0 + 16; x++) for (int z = z0; z < z0 + 16; z++)
+            for (int y = sea - 6; y <= sea + 23; y++) {
+                int kind = OceanWreck.materialAt(x, y, z, sea);
+                if (kind == OceanWreck.NONE) continue;
+                pos.set(x, y, z);
+                BlockState existing = chunk.getBlockState(pos);
+                // Do not carve islands or other solid worldgen; preserve them if they overlap.
+                if (!existing.isAir() && existing.getFluidState().isEmpty()) continue;
+                BlockState state = switch (kind) {
+                    case OceanWreck.LOG -> Blocks.DARK_OAK_LOG.defaultBlockState();
+                    case OceanWreck.MOSS -> Blocks.MOSSY_COBBLESTONE.defaultBlockState();
+                    case OceanWreck.DARK_PLANK -> Blocks.DARK_OAK_PLANKS.defaultBlockState();
+                    case OceanWreck.RAIL -> Blocks.SPRUCE_FENCE.defaultBlockState()
+                            .setValue(FenceBlock.EAST, true).setValue(FenceBlock.WEST, true);
+                    default -> Blocks.SPRUCE_PLANKS.defaultBlockState();
+                };
+                chunk.setBlockState(pos, state, false);
+            }
+    }
+
     @Override
     public void applyBiomeDecoration(WorldGenLevel level, ChunkAccess chunk, StructureManager sm) {
         CityPlan plan = CityPlan.get();
         int x0 = chunk.getPos().getMinBlockX(), z0 = chunk.getPos().getMinBlockZ();
+        if (DeepOcean.openCoreChunk(x0, z0)) return;
+        placeOceanWreck(chunk, x0, z0, plan.ocean);
         BoundingBox box = new BoundingBox(x0, MIN_Y, z0, x0 + 15, MIN_Y + HEIGHT - 1, z0 + 15);
         morokTrees(level, chunk, x0, z0);
         StructureTemplateManager stm = level.getLevel().getServer().getStructureManager();
@@ -3176,6 +3245,11 @@ public class ElisarChunkGenerator extends ChunkGenerator {
 
     @Override
     public int getBaseHeight(int x, int z, Heightmap.Types type, LevelHeightAccessor level, RandomState rs) {
+        if (DeepOcean.openCoreChunk(x, z)) {
+            if (type == Heightmap.Types.OCEAN_FLOOR_WG || type == Heightmap.Types.OCEAN_FLOOR)
+                return oceanFloor(CityPlan.get(), x, z) + 1;
+            return CityPlan.get().ocean + 1;
+        }
         Col c = column(CityPlan.get(), x, z);
         if (c.spanTop != Integer.MIN_VALUE) {
             int base = c.isl == null ? CityPlan.get().ocean + 1 : c.top + 1;
@@ -3211,7 +3285,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
 
     @Override
     public void addDebugScreenInfo(List<String> info, RandomState rs, BlockPos pos) {
-        CityPlan.Island i = CityPlan.get().islandAt(pos.getX() + 0.5, pos.getZ() + 0.5);
+        CityPlan.Island i = DeepOcean.openCoreChunk(pos.getX(), pos.getZ())
+                ? null : CityPlan.get().islandAt(pos.getX() + 0.5, pos.getZ() + 0.5);
         info.add("Elisar: " + (i == null ? "open sky" : "island t=" + String.format("%.2f", i.t(pos.getX() + 0.5, pos.getZ() + 0.5))));
     }
 }

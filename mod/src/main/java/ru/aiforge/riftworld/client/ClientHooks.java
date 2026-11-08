@@ -10,6 +10,8 @@ import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import ru.aiforge.riftworld.RiftWorld;
+import ru.aiforge.riftworld.client.model.LiopleurodonBlockbenchModel;
+import ru.aiforge.riftworld.client.model.PegasusBlockbenchModel;
 import ru.aiforge.riftworld.registry.ModBlockEntities;
 import ru.aiforge.riftworld.registry.ModEntities;
 
@@ -38,6 +40,12 @@ public final class ClientHooks {
     }
 
     @SubscribeEvent
+    public static void layerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions e) {
+        e.registerLayerDefinition(LiopleurodonBlockbenchModel.LAYER_LOCATION, LiopleurodonBlockbenchModel::createBodyLayer);
+        e.registerLayerDefinition(PegasusBlockbenchModel.LAYER_LOCATION, PegasusBlockbenchModel::createBodyLayer);
+    }
+
+    @SubscribeEvent
     public static void renderers(EntityRenderersEvent.RegisterRenderers e) {
         e.registerBlockEntityRenderer(ModBlockEntities.MODEL.get(), ModelBER::new);
         e.registerBlockEntityRenderer(ModBlockEntities.CRATE.get(), ModelBER::new);
@@ -60,13 +68,16 @@ public final class ClientHooks {
         e.registerEntityRenderer(ModEntities.ICE_HAIL_BOULDER.get(), CrystalGeoRenderers.IceHailBoulder::new);
         e.registerEntityRenderer(ModEntities.SKY_DART_FISH.get(), PeacefulFaunaRenderers.SkyDartFish::new);
         e.registerEntityRenderer(ModEntities.BLOSSOM_STAG.get(), PeacefulFaunaRenderers.BlossomStag::new);
-        e.registerEntityRenderer(ModEntities.PEGASUS.get(),
-                ctx -> new GeoMobRenderer<>(ctx, "pegasus", "textures/entity/pegasus.png", 1.1F));
+        e.registerEntityRenderer(ModEntities.PEGASUS.get(), PegasusRenderer::new);
         // v0.39.3: Вендиго пересобран (костяной череп + светящиеся глазницы) — свой рендер,
         // как у Морока: тело cutout + глаза через RenderType.eyes.
         e.registerEntityRenderer(ModEntities.WENDIGO.get(), WendigoRenderer::new);
         // v0.39.0: Морок — геометрия morok + СВЕТЯЩИЕСЯ глаза (geo/morok_eyes.json, RenderType.eyes)
         e.registerEntityRenderer(ModEntities.MOROK.get(), MorokRenderer::new);
+        // v0.40.0: жители Элисара — житель, страж и лучник (референсы 05–07).
+        e.registerEntityRenderer(ModEntities.ELISAR_VILLAGER.get(), c -> new ElisarFolkRenderer<>(c, "elisar_villager"));
+        e.registerEntityRenderer(ModEntities.ELISAR_GUARD.get(), c -> new ElisarFolkRenderer<>(c, "elisar_guard"));
+        e.registerEntityRenderer(ModEntities.ELISAR_ARCHER.get(), c -> new ElisarFolkRenderer<>(c, "elisar_archer"));
     }
 
     @SubscribeEvent
