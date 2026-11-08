@@ -12,6 +12,7 @@ import sys
 from pathlib import Path
 import numpy as np
 from PIL import Image
+from painter_batch_02 import paint_fox_face, paint_leafwing_face, paint_frog_face
 
 
 def hash_noise(ix, iy, seed=0):
@@ -530,6 +531,12 @@ def paint_atlas(spec_path, out_png_path):
         painter = paint_beetle_face
     elif model_id == 'ash_moth':
         painter = paint_moth_face
+    elif model_id == 'amethyst_fox':
+        painter = paint_fox_face
+    elif model_id == 'sizo_leafwing':
+        painter = paint_leafwing_face
+    elif model_id == 'azure_frog':
+        painter = paint_frog_face
     else:
         raise ValueError(f'Unknown model_id for painter: {model_id}')
 

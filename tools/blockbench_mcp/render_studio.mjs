@@ -31,18 +31,21 @@ function arg(name, fallback) {
   return hit ? hit.slice(name.length + 3) : fallback;
 }
 
+const BATCH_DEFAULTS = {
+  batch_01: 'porcelain_crane,basalt_beetle,ash_moth',
+  batch_02: 'amethyst_fox,sizo_leafwing,azure_frog',
+};
+
+const batchName = arg('batch', 'batch_01');
 const blockbenchRoot = path.resolve(arg('blockbench-root', process.env.BLOCKBENCH_ROOT || '/tmp/blockbench-5.2.2'));
-const outDir = path.resolve(arg('out', path.join(repoRoot, 'reports/blockbench_mcp/batch_01')));
-const idsArg = arg('ids', 'porcelain_crane,basalt_beetle,ash_moth');
+const outDir = path.resolve(arg('out', path.join(repoRoot, 'reports/blockbench_mcp', batchName)));
+const idsArg = arg('ids', BATCH_DEFAULTS[batchName] || BATCH_DEFAULTS.batch_01);
 const ids = idsArg.split(',').map((s) => s.trim()).filter(Boolean);
 
 // Camera angles tailored to match the exact hero framing of each reference image!
-// Note: In Blockbench, creature faces -Z (North), +Y is Up, +X is viewer's left when looking at front (-Z -> +Z).
-// Looking at orig_01_crane.png: Crane faces RIGHT in image -> we view its RIGHT flank (-X side) slightly from front (-Z): camera at [-X, +Y, -Z]!
-// Looking at orig_02_beetle.png: Beetle faces LEFT in image -> we view its LEFT flank (+X side) from front (-Z): camera at [+X, +Y, -Z]!
-// Looking at orig_03_moth.png: Moth faces slightly LEFT & forward -> camera from front-above-left [+X, +Y, -Z]!
 const CAMERA_RIGS = {
   porcelain_crane: {
+    num: '01',
     titleRu: '01 — Фарфоровый журавль',
     refFile: '/tmp/inspect_prev/orig_01_crane.png',
     heroDir: [0.78, 0.18, -0.60],
@@ -50,6 +53,7 @@ const CAMERA_RIGS = {
     targetBias: [0, 2, -1],
   },
   basalt_beetle: {
+    num: '02',
     titleRu: '02 — Базальтовый жук-углеед',
     refFile: '/tmp/inspect_prev/orig_02_beetle.png',
     heroDir: [-0.74, 0.22, -0.64],
@@ -57,11 +61,36 @@ const CAMERA_RIGS = {
     targetBias: [0, 1, -2],
   },
   ash_moth: {
+    num: '03',
     titleRu: '03 — Пепельная моль',
     refFile: '/tmp/inspect_prev/orig_03_moth.png',
     heroDir: [-0.15, 0.08, -0.98],
     distMul: 1.72,
     targetBias: [0, 0, 0],
+  },
+  amethyst_fox: {
+    num: '04',
+    titleRu: '04 — Аметистовый лис',
+    refFile: '/tmp/inspect_prev/orig_04_fox.png',
+    heroDir: [-0.75, 0.20, -0.63],
+    distMul: 2.05,
+    targetBias: [0, 0, 1],
+  },
+  sizo_leafwing: {
+    num: '05',
+    titleRu: '05 — Сизый листокрыл',
+    refFile: '/tmp/inspect_prev/orig_05_leafwing.png',
+    heroDir: [0.62, 0.12, -0.77],
+    distMul: 1.82,
+    targetBias: [0, 0, 2],
+  },
+  azure_frog: {
+    num: '06',
+    titleRu: '06 — Лазурный древесный лягуш',
+    refFile: '/tmp/inspect_prev/orig_06_frog.png',
+    heroDir: [0.62, 0.28, -0.73],
+    distMul: 2.15,
+    targetBias: [0, 0, -1],
   },
 };
 
@@ -308,7 +337,7 @@ try {
       };
     }, { bbText, rig });
 
-    const numPrefix = String(idx + 1).padStart(2, '0');
+    const numPrefix = rig.num || String(idx + 1).padStart(2, '0');
     const rawHero = path.join(tmp, `${id}_hero_raw.png`);
     const rawFront = path.join(tmp, `${id}_front_raw.png`);
     const rawSide = path.join(tmp, `${id}_side_raw.png`);
@@ -395,8 +424,8 @@ try {
   }
 
   // Create Batch Showcase Sheets (Light Studio + Dark Hytale Showcase!)
-  const showcaseLight = path.join(outDir, '00_batch_01_showcase_light.png');
-  const showcaseDark = path.join(outDir, '00_batch_01_showcase_dark.png');
+  const showcaseLight = path.join(outDir, `00_${batchName}_showcase_light.png`);
+  const showcaseDark = path.join(outDir, `00_${batchName}_showcase_dark.png`);
 
   execFileSync('montage', [
     '-background', '#eef1f6',
