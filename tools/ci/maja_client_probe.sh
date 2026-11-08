@@ -87,7 +87,57 @@ fi
 WID=$(xdotool search --onlyvisible --name Minecraft | head -1 || true)
 [ -n "$WID" ] || fail "Minecraft window not found"
 xdotool windowraise "$WID" || true
+xdotool windowactivate --sync "$WID" || true
 import -window root "$OUT/maja-client-front.png"
+xdotool key --clearmodifiers F1
+
+# Stage the v0.41 armory in the same real client/server session. These are actual game
+# frames, not composited concepts, and are attached to the release by the publish job.
+rq gamemode creative TestPlayer >/dev/null
+rq fill 90 4 90 112 4 112 minecraft:smooth_stone >/dev/null
+rq fill 90 5 90 112 14 112 minecraft:air >/dev/null
+rq kill '@e[type=riftworld:elisar_villager]' >/dev/null || true
+rq kill '@e[type=riftworld:elisar_guard]' >/dev/null || true
+rq kill '@e[type=riftworld:elisar_archer]' >/dev/null || true
+rq summon riftworld:elisar_villager 97 5 100 '{PersistenceRequired:1b,NoAI:1b,Rotation:[0.0f,0.0f]}' >/dev/null
+rq summon riftworld:elisar_guard 101 5 99 '{PersistenceRequired:1b,NoAI:1b,Rotation:[0.0f,0.0f]}' >/dev/null
+rq summon riftworld:elisar_archer 105 5 100 '{PersistenceRequired:1b,NoAI:1b,Rotation:[0.0f,0.0f]}' >/dev/null
+for material in aurite riftcrystal; do
+  rq item replace entity TestPlayer armor.head with "riftworld:${material}_helmet" >/dev/null
+  rq item replace entity TestPlayer armor.chest with "riftworld:${material}_chestplate" >/dev/null
+  rq item replace entity TestPlayer armor.legs with "riftworld:${material}_leggings" >/dev/null
+  rq item replace entity TestPlayer armor.feet with "riftworld:${material}_boots" >/dev/null
+  rq item replace entity TestPlayer weapon.mainhand with "riftworld:${material}_sword" >/dev/null
+  rq item replace entity TestPlayer weapon.offhand with "riftworld:${material}_shield" >/dev/null
+  rq tp TestPlayer 101 5 104 0 8 >/dev/null
+  sleep 8
+  if [ "$material" = aurite ]; then
+    # First person -> third-person rear -> third-person front.
+    xdotool key --clearmodifiers F5
+    sleep 1
+    xdotool key --clearmodifiers F5
+  fi
+  sleep 3
+  import -window root "$OUT/elisar-armory-${material}.png"
+done
+# Return to first person and photograph all three residents without the player in front.
+xdotool key --clearmodifiers F5
+rq item replace entity TestPlayer weapon.mainhand with minecraft:air >/dev/null
+rq item replace entity TestPlayer weapon.offhand with minecraft:air >/dev/null
+rq tp TestPlayer 101 7 108 facing 101 6 99 >/dev/null
+sleep 8
+import -window root "$OUT/elisar-residents.png"
+# A separate close-up shows both ore textures in their real block models.
+rq kill '@e[type=riftworld:elisar_villager]' >/dev/null || true
+rq kill '@e[type=riftworld:elisar_guard]' >/dev/null || true
+rq kill '@e[type=riftworld:elisar_archer]' >/dev/null || true
+rq fill 97 5 97 105 8 97 minecraft:stone >/dev/null
+rq setblock 100 6 97 riftworld:riftcrystal_ore >/dev/null
+rq setblock 102 6 97 riftworld:deepslate_riftcrystal_ore >/dev/null
+rq tp TestPlayer 101 7 105 facing 101 6 97 >/dev/null
+sleep 6
+import -window root "$OUT/elisar-riftcrystal-ores.png"
+echo "OK: captured four real in-game Elisar armory frames"
 if grep -Ei 'Error while rendering entity|Exception.*ElGranMaja|Unable to load.*el_gran_maja|Failed to load.*el_gran_maja' "$OUT/maja-client.log"; then
   fail "Client log reports a Maja renderer/resource failure"
 fi

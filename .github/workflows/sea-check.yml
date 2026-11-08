@@ -123,3 +123,75 @@ jobs:
           path: ci-out/
           if-no-files-found: warn
           retention-days: 14
+
+  publish-release:
+    needs: server-smoke
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, '[release]') && contains(github.event.head_commit.message, '[client-smoke]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: riftworld-build
+          path: build-artifact
+      - uses: actions/download-artifact@v4
+        with:
+          name: riftworld-server-smoke
+          path: smoke-artifact
+      - name: Collect jars, real game screenshots and checksums
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p out
+          VER=$(grep -E '^mod_version=' mod/gradle.properties | cut -d= -f2 | tr -d '[:space:]')
+          echo "VER=$VER" >> "$GITHUB_ENV"
+          find build-artifact -name 'riftworld*.jar' -exec cp {} out/ \;
+          find smoke-artifact -maxdepth 1 -name '*.png' -exec cp {} out/ \;
+          test -f "out/riftworld-$VER.jar"
+          test -f "out/riftworld-dt-$VER.jar"
+          for frame in elisar-armory-aurite elisar-armory-riftcrystal elisar-residents elisar-riftcrystal-ores; do
+            test -s "out/$frame.png"
+          done
+          (cd out && sha256sum *.jar > SHA256SUMS.txt)
+          ls -lh out
+      - name: Publish jars and in-game screenshots as a GitHub release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="v$VER"
+          BASE="https://github.com/${{ github.repository }}/releases/download/$TAG"
+          NOTES=$(mktemp)
+          cat > "$NOTES" <<EOF
+          Riftworld **$TAG** для **Minecraft Forge 1.20.1 / Java 17**.
+
+          ## Скачать
+
+          - [Основной мод]($BASE/riftworld-$VER.jar) — установить в папку \`mods\`.
+          - [Аддон для Dynamic Trees]($BASE/riftworld-dt-$VER.jar) — установить вместе с Dynamic Trees 1.20.1.
+          - [SHA256SUMS.txt]($BASE/SHA256SUMS.txt) — контрольные суммы обоих jar.
+
+          ## Скриншоты из игры
+
+          - [Ауритовый комплект]($BASE/elisar-armory-aurite.png)
+          - [Рифткристаллический комплект]($BASE/elisar-armory-riftcrystal.png)
+          - [Житель, стражник и лучник Элисара]($BASE/elisar-residents.png)
+          - [Рифткристаллические руды]($BASE/elisar-riftcrystal-ores.png)
+
+          Добавлены два комплекта брони, оружия и инструментов, три функциональных типа жителей,
+          рифткристаллическая руда ровно в трёх биомах и интеграция с существующими червонцами.
+
+          [Описание версии](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/reports/elisar_armory/README.md) ·
+          [Проверка сборки и игровые тесты](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+          EOF
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" out/*.jar out/*.png out/SHA256SUMS.txt --clobber
+            gh release edit "$TAG" --notes-file "$NOTES" --target "${{ github.sha }}"
+          else
+            gh release create "$TAG" out/*.jar out/*.png out/SHA256SUMS.txt --title "Riftworld $TAG — Elisar Armory" --notes-file "$NOTES" --target "${{ github.sha }}"
+          fi
+          gh release view "$TAG" --json url,assets --jq '{url,assets:[.assets[].name]}'
