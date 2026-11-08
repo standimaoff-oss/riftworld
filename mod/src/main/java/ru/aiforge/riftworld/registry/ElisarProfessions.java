@@ -3,6 +3,7 @@ package ru.aiforge.riftworld.registry;
 import com.google.common.collect.ImmutableSet;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.ai.village.poi.PoiType;
+import net.minecraft.world.entity.ai.village.poi.PoiTypes;
 import net.minecraft.world.entity.npc.VillagerProfession;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -49,9 +50,9 @@ public final class ElisarProfessions {
 
     private static void setup(FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
-            PoiType.registerBlockStates(EXCHANGE_POI.get());
-            PoiType.registerBlockStates(GUARD_POI.get());
-            PoiType.registerBlockStates(RANGER_POI.get());
+            PoiTypes.registerBlockStates(EXCHANGE_POI.get());
+            PoiTypes.registerBlockStates(GUARD_POI.get());
+            PoiTypes.registerBlockStates(RANGER_POI.get());
         });
     }
 

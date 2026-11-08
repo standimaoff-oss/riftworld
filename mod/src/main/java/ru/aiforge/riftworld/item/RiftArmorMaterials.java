@@ -3,8 +3,8 @@ package ru.aiforge.riftworld.item;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.ArmorMaterial;
+import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.entity.EquipmentSlot;
 
 /** Armor materials themed after Elisar's coin-metal and the scarce rift crystal. */
 public enum RiftArmorMaterials implements ArmorMaterial {
@@ -28,11 +28,24 @@ public enum RiftArmorMaterials implements ArmorMaterial {
         this.knockback = knockback;
     }
 
-    @Override public int getDurabilityForType(EquipmentSlot slot) {
-        int[] multipliers = {13, 15, 16, 11};
-        return multipliers[slot.getIndex()] * durability;
+    @Override public int getDurabilityForType(ArmorItem.Type type) {
+        int multiplier = switch (type) {
+            case BOOTS -> 13;
+            case LEGGINGS -> 15;
+            case CHESTPLATE -> 16;
+            case HELMET -> 11;
+        };
+        return multiplier * durability;
     }
-    @Override public int getDefenseForType(EquipmentSlot slot) { return defense[slot.getIndex()]; }
+    @Override public int getDefenseForType(ArmorItem.Type type) {
+        int index = switch (type) {
+            case BOOTS -> 0;
+            case LEGGINGS -> 1;
+            case CHESTPLATE -> 2;
+            case HELMET -> 3;
+        };
+        return defense[index];
+    }
     @Override public int getEnchantmentValue() { return enchantment; }
     @Override public SoundEvent getEquipSound() { return equipSound; }
     @Override public Ingredient getRepairIngredient() {
