@@ -30,7 +30,7 @@ renderDistance:12
 simulationDistance:8
 maxFps:30
 guiScale:2
-fov:1.0
+fov:0.0
 graphicsMode:1
 renderClouds:false
 pauseOnLostFocus:false
@@ -94,14 +94,17 @@ xdotool key --clearmodifiers F1
 # Stage the v0.41 armory in the same real client/server session. These are actual game
 # frames, not composited concepts, and are attached to the release by the publish job.
 rq gamemode creative TestPlayer >/dev/null
-rq fill 90 4 90 112 4 112 minecraft:smooth_stone >/dev/null
+rq fill 90 4 90 112 4 112 minecraft:polished_blackstone_bricks >/dev/null
 rq fill 90 5 90 112 14 112 minecraft:air >/dev/null
+# Do not let the enormous Maja tail or old test entities contaminate the armory frames.
+rq kill '@e[type=riftworld:el_gran_maja]' >/dev/null || true
 rq kill '@e[type=riftworld:elisar_villager]' >/dev/null || true
 rq kill '@e[type=riftworld:elisar_guard]' >/dev/null || true
 rq kill '@e[type=riftworld:elisar_archer]' >/dev/null || true
-rq summon riftworld:elisar_villager 97 5 100 '{PersistenceRequired:1b,NoAI:1b,Rotation:[0.0f,0.0f]}' >/dev/null
-rq summon riftworld:elisar_guard 101 5 99 '{PersistenceRequired:1b,NoAI:1b,Rotation:[0.0f,0.0f]}' >/dev/null
-rq summon riftworld:elisar_archer 105 5 100 '{PersistenceRequired:1b,NoAI:1b,Rotation:[0.0f,0.0f]}' >/dev/null
+rq kill '@e[type=minecraft:item_frame]' >/dev/null || true
+rq summon riftworld:elisar_villager 97 5 101 '{PersistenceRequired:1b,NoAI:1b,Rotation:[0.0f,0.0f]}' >/dev/null
+rq summon riftworld:elisar_guard 101 5 100 '{PersistenceRequired:1b,NoAI:1b,Rotation:[0.0f,0.0f]}' >/dev/null
+rq summon riftworld:elisar_archer 105 5 101 '{PersistenceRequired:1b,NoAI:1b,Rotation:[0.0f,0.0f]}' >/dev/null
 for material in aurite riftcrystal; do
   rq item replace entity TestPlayer armor.head with "riftworld:${material}_helmet" >/dev/null
   rq item replace entity TestPlayer armor.chest with "riftworld:${material}_chestplate" >/dev/null
@@ -109,8 +112,8 @@ for material in aurite riftcrystal; do
   rq item replace entity TestPlayer armor.feet with "riftworld:${material}_boots" >/dev/null
   rq item replace entity TestPlayer weapon.mainhand with "riftworld:${material}_sword" >/dev/null
   rq item replace entity TestPlayer weapon.offhand with "riftworld:${material}_shield" >/dev/null
-  rq tp TestPlayer 101 5 104 0 8 >/dev/null
-  sleep 8
+  rq tp TestPlayer 101 5 104 0 5 >/dev/null
+  sleep 6
   if [ "$material" = aurite ]; then
     # First person -> third-person rear -> third-person front.
     xdotool key --clearmodifiers F5
@@ -120,24 +123,39 @@ for material in aurite riftcrystal; do
   sleep 3
   import -window root "$OUT/elisar-armory-${material}.png"
 done
-# Return to first person and photograph all three residents without the player in front.
+# Return to first person and photograph all three residents at close range.
 xdotool key --clearmodifiers F5
 rq item replace entity TestPlayer weapon.mainhand with minecraft:air >/dev/null
 rq item replace entity TestPlayer weapon.offhand with minecraft:air >/dev/null
-rq tp TestPlayer 101 7 108 facing 101 6 99 >/dev/null
-sleep 8
+rq tp TestPlayer 101 6.2 106 facing 101 5.8 100 >/dev/null
+sleep 6
 import -window root "$OUT/elisar-residents.png"
-# A separate close-up shows both ore textures in their real block models.
+# A close-up shows both ore textures in their real block models.
 rq kill '@e[type=riftworld:elisar_villager]' >/dev/null || true
 rq kill '@e[type=riftworld:elisar_guard]' >/dev/null || true
 rq kill '@e[type=riftworld:elisar_archer]' >/dev/null || true
 rq fill 97 5 97 105 8 97 minecraft:stone >/dev/null
 rq setblock 100 6 97 riftworld:riftcrystal_ore >/dev/null
 rq setblock 102 6 97 riftworld:deepslate_riftcrystal_ore >/dev/null
-rq tp TestPlayer 101 7 105 facing 101 6 97 >/dev/null
-sleep 6
+rq tp TestPlayer 101 6.2 102 facing 101 6 97 >/dev/null
+sleep 5
 import -window root "$OUT/elisar-riftcrystal-ores.png"
-echo "OK: captured four real in-game Elisar armory frames"
+# Every one of the eighteen items gets its own real item-frame slot, nine per material.
+rq fill 97 4 96 101 8 96 minecraft:polished_blackstone_bricks >/dev/null
+for material in aurite riftcrystal; do
+  rq kill '@e[type=minecraft:item_frame]' >/dev/null || true
+  index=0
+  for item in helmet chestplate leggings boots sword pickaxe war_axe bow shield; do
+    x=$((98 + index % 3))
+    y=$((7 - index / 3))
+    rq summon minecraft:item_frame "$x" "$y" 97 "{Facing:3b,Fixed:1b,Item:{id:\"riftworld:${material}_${item}\",Count:1b}}" >/dev/null
+    index=$((index + 1))
+  done
+  rq tp TestPlayer 99 6.5 102 facing 99 6 97 >/dev/null
+  sleep 5
+  import -window root "$OUT/elisar-items-${material}.png"
+done
+echo "OK: captured six close-up real in-game Elisar armory frames"
 if grep -Ei 'Error while rendering entity|Exception.*ElGranMaja|Unable to load.*el_gran_maja|Failed to load.*el_gran_maja' "$OUT/maja-client.log"; then
   fail "Client log reports a Maja renderer/resource failure"
 fi

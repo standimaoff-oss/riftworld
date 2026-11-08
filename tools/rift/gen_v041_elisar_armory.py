@@ -316,7 +316,7 @@ def make_spawn_egg(back: str, spots: str) -> Canvas:
     return im
 
 
-# ---- worn armour: actual vanilla 64x64 layer layout ---------------------------------
+# ---- worn armour: vanilla UV in 0..63 + custom geometric plates in a 128x128 atlas ----
 def box_faces(im: Canvas, x: int, y: int, w: int, h: int, d: int, p: dict, base="base") -> None:
     shades = [("dark", (x, y + d, d, h)), (base, (x + d, y + d, w, h)),
               ("shadow", (x + d + w, y + d, d, h)), ("dark", (x + d + w + d, y + d, w, h)),
@@ -325,18 +325,42 @@ def box_faces(im: Canvas, x: int, y: int, w: int, h: int, d: int, p: dict, base=
         im.rect(rx, ry, rx + rw - 1, ry + rh - 1, p[key])
 
 
+def armor_detail_box(im: Canvas, x: int, y: int, w: int, h: int, d: int, p: dict) -> None:
+    """Shaded cuboid UV with an inset face, metal edging, rivets and a small central gem."""
+    box_faces(im, x, y, w, h, d, p)
+    fx, fy = x + d, y + d
+    if w >= 3 and h >= 3:
+        im.line(fx, fy, fx + w - 1, fy, p["light"])
+        im.line(fx, fy, fx, fy + h - 1, p["light"])
+        im.line(fx, fy + h - 1, fx + w - 1, fy + h - 1, p["shadow"])
+        im.line(fx + w - 1, fy, fx + w - 1, fy + h - 1, p["shadow"])
+        if w >= 5 and h >= 4:
+            im.rect(fx + 1, fy + 2, fx + w - 2, fy + h - 2, p["dark"])
+            im.line(fx + 1, fy + 1, fx + w - 2, fy + 1, p["base"])
+            gem(im, fx + w // 2, fy + h // 2, p)
+        for rx, ry in ((fx + 1, fy + 1), (fx + w - 2, fy + 1),
+                       (fx + 1, fy + h - 2), (fx + w - 2, fy + h - 2)):
+            im.set(rx, ry, p["glint"])
+
+
 def make_armor_layer(material: str, layer: int) -> Canvas:
     p = AURITE if material == "aurite" else RIFT
-    im = Canvas(64, 64)
+    # The reference armour has dark under-mail with bright plates, not a solid cyan/gold body.
+    under = dict(p)
+    if material == "riftcrystal":
+        under.update(base=(39, 49, 62, 255), dark=(25, 31, 43, 255), light=p["base"])
+    else:
+        under.update(base=(105, 76, 47, 255), dark=(58, 46, 38, 255), light=p["base"])
+    plate = p if material == "aurite" else under
+    im = Canvas(128, 128)
     if layer == 1:
-        box_faces(im, 0, 0, 8, 8, 8, p)       # helmet
-        box_faces(im, 32, 0, 8, 8, 8, p)      # helmet overlay
-        box_faces(im, 16, 16, 8, 12, 4, p)    # chest
-        box_faces(im, 40, 16, 4, 12, 4, p)    # right arm
-        box_faces(im, 32, 48, 4, 12, 4, p)    # left arm
-        box_faces(im, 0, 16, 4, 12, 4, p)     # right boot
-        box_faces(im, 16, 48, 4, 12, 4, p)    # left boot
-        # Helmet brow, central crest and cheek guards.
+        box_faces(im, 0, 0, 8, 8, 8, under)       # helmet
+        box_faces(im, 32, 0, 8, 8, 8, under)      # helmet overlay
+        box_faces(im, 16, 16, 8, 12, 4, under)    # chest
+        box_faces(im, 40, 16, 4, 12, 4, under)    # right arm
+        box_faces(im, 32, 48, 4, 12, 4, under)    # left arm
+        box_faces(im, 0, 16, 4, 12, 4, under)     # right boot
+        box_faces(im, 16, 48, 4, 12, 4, under)    # left boot
         im.rect(8, 11, 15, 12, p["dark"])
         im.line(9, 9, 14, 9, p["light"])
         gem(im, 12, 9, p)
@@ -350,16 +374,27 @@ def make_armor_layer(material: str, layer: int) -> Canvas:
             im.rect(x, 26, x + 3, 31, p["dark"])
             im.line(x, 29, x + 3, 29, p["accent"])
     else:
-        box_faces(im, 16, 16, 8, 12, 4, p)    # waist
-        box_faces(im, 0, 16, 4, 12, 4, p)     # right legging
-        box_faces(im, 16, 48, 4, 12, 4, p)    # left legging
+        box_faces(im, 16, 16, 8, 12, 4, under)    # waist
+        box_faces(im, 0, 16, 4, 12, 4, under)     # right legging
+        box_faces(im, 16, 48, 4, 12, 4, under)    # left legging
         im.rect(20, 20, 27, 23, p["accent"])
         gem(im, 24, 22, p)
         for x in (4, 20):
             im.line(x, 20, x + 3, 20, p["light"])
             im.rect(x, 25, x + 3, 26, p["dark"])
             im.line(x, 28, x + 3, 28, p["accent"])
-    im.noise(4100 + layer + (0 if material == "aurite" else 50), 5)
+
+    # Exact UV regions used by ElisarArmorModel for raised geometry.
+    details = [
+        (64, 0, 9, 2, 1), (88, 0, 1, 5, 1), (96, 0, 2, 4, 2),
+        (64, 16, 9, 7, 1), (88, 16, 9, 7, 1), (64, 32, 9, 2, 1),
+        (64, 48, 6, 5, 7), (96, 48, 1, 5, 5), (64, 64, 5, 4, 5),
+        (88, 64, 5, 5, 1), (104, 64, 5, 3, 1), (64, 80, 5, 4, 5),
+        (88, 80, 5, 2, 2), (112, 80, 2, 4, 2),
+    ]
+    for args in details:
+        armor_detail_box(im, *args, plate)
+    im.noise(4100 + layer + (0 if material == "aurite" else 50), 4)
     return im
 
 

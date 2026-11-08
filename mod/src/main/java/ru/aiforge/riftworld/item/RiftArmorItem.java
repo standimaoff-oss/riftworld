@@ -1,12 +1,15 @@
 package ru.aiforge.riftworld.item;
 
 import java.util.List;
+import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import ru.aiforge.riftworld.client.ElisarArmorClientExtensions;
 import javax.annotation.Nullable;
 
 /** Adds a concise, localised full-set hint without replacing vanilla armour behaviour. */
@@ -16,6 +19,11 @@ public final class RiftArmorItem extends ArmorItem {
     public RiftArmorItem(RiftArmorMaterials material, Type type, Properties properties) {
         super(material, type, properties);
         this.riftcrystal = material == RiftArmorMaterials.RIFTCRYSTAL;
+    }
+
+    @Override
+    public void initializeClient(Consumer<IClientItemExtensions> consumer) {
+        consumer.accept(new ElisarArmorClientExtensions(this.riftcrystal));
     }
 
     @Override

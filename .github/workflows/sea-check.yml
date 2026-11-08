@@ -16,7 +16,6 @@ concurrency:
 
 jobs:
   build:
-    if: github.event_name != 'push' || !contains(github.event.head_commit.message, '[frames-only]')
     runs-on: ubuntu-latest
     timeout-minutes: 55
     steps:
@@ -174,11 +173,24 @@ jobs:
           find smoke-artifact -maxdepth 1 -name '*.png' -exec cp {} out/ \;
           test -f "out/riftworld-$VER.jar"
           test -f "out/riftworld-dt-$VER.jar"
-          for frame in elisar-armory-aurite elisar-armory-riftcrystal elisar-residents elisar-riftcrystal-ores; do
+          for frame in elisar-armory-aurite elisar-armory-riftcrystal elisar-items-aurite elisar-items-riftcrystal elisar-residents elisar-riftcrystal-ores; do
             test -s "out/$frame.png"
           done
           (cd out && sha256sum *.jar > SHA256SUMS.txt)
           ls -lh out
+      - name: Save untouched game frames for mandatory visual review
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports/ci_frames
+          cp out/*.png reports/ci_frames/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/ci_frames
+          if ! git diff --cached --quiet; then
+            git commit -m "Update reviewed in-game armory frames [skip ci]"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
       - name: Publish jars and in-game screenshots as a GitHub release
         shell: bash
         env:
@@ -199,8 +211,10 @@ jobs:
 
           ## Скриншоты из игры
 
-          - [Ауритовый комплект]($BASE/elisar-armory-aurite.png)
-          - [Рифткристаллический комплект]($BASE/elisar-armory-riftcrystal.png)
+          - [Ауритовый комплект на игроке]($BASE/elisar-armory-aurite.png)
+          - [Все 9 ауритовых предметов]($BASE/elisar-items-aurite.png)
+          - [Рифткристаллический комплект на игроке]($BASE/elisar-armory-riftcrystal.png)
+          - [Все 9 рифткристаллических предметов]($BASE/elisar-items-riftcrystal.png)
           - [Житель, стражник и лучник Элисара]($BASE/elisar-residents.png)
           - [Рифткристаллические руды]($BASE/elisar-riftcrystal-ores.png)
 

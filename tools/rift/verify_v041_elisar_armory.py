@@ -47,7 +47,7 @@ for material in MATERIALS:
             check(f"item.riftworld.{item}" in load(A / f"lang/{lang}.json"), f"{lang} translation: {item}")
     for layer in (1, 2):
         path = A / f"textures/models/armor/{material}_layer_{layer}.png"
-        check(png_size(path) == (64, 64), f"64x64 worn armour layer: {material} {layer}")
+        check(png_size(path) == (128, 128), f"128x128 geometric worn armour layer: {material} {layer}")
     bow = load(A / f"models/item/{material}_bow.json")
     check(len(bow.get("overrides", [])) == 3, f"three bow pull predicates: {material}")
     for stage in range(3):
@@ -102,6 +102,14 @@ for role in ("ELISAR_VILLAGER", "ELISAR_GUARD", "ELISAR_ARCHER"):
 check("ElisarSettlementResidents.spawnOriginal(region)" in generator, "custom generator populates residents after structures")
 check("StructureTags.VILLAGE" in residents, "vanilla village structure guard")
 check("getPersistentData().getBoolean(POPULATED)" in residents, "no duplicate vanilla companions after reload")
+
+armor_item = (ROOT / "mod/src/main/java/ru/aiforge/riftworld/item/RiftArmorItem.java").read_text()
+armor_model = (ROOT / "mod/src/main/java/ru/aiforge/riftworld/client/ElisarArmorModel.java").read_text()
+check("getHumanoidArmorModel" in (ROOT / "mod/src/main/java/ru/aiforge/riftworld/client/ElisarArmorClientExtensions.java").read_text()
+      and "initializeClient" in armor_item, "Forge client extension selects the worn armour model")
+check("LayerDefinition.create(mesh, 128, 128)" in armor_model
+      and all(part in armor_model for part in ("shoulder_shell", "breastplate", "knee_guard", "shoulder_crystal")),
+      "real 128x128 geometry includes shoulders, breastplate, knees and crystals")
 
 REPORT.mkdir(parents=True, exist_ok=True)
 result = {"status": "PASS", "checks": len(checks), "equipment_per_material": len(GEAR),
