@@ -92,7 +92,7 @@ jobs:
           name: riftworld-build
           path: build-artifact
       - uses: gradle/actions/setup-gradle@v4
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[client-smoke]')
       - name: Boot a real Forge server and probe it
         shell: bash
         env:
@@ -109,7 +109,7 @@ jobs:
         shell: bash
         run: bash tools/ci/maja_server_probe.sh
       - name: Real client rendering smoke test
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[client-smoke]')
         shell: bash
         run: bash tools/ci/maja_client_probe.sh
       - name: Stop the test server
