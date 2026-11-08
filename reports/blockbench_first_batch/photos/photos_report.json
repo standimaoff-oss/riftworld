@@ -1,0 +1,304 @@
+{
+  "generator": "Blockbench 5.2.2 Screencam.advancedScreenshot via headless Chromium",
+  "background": "#f2f4f8",
+  "photos": [
+    {
+      "id": "porcelain_crane",
+      "title_ru": "Фарфоровый журавль",
+      "file": "reports/blockbench_first_batch/photos/01_porcelain_crane.png",
+      "source": "blockbench/riftworld_fauna/porcelain_crane.bbmodel",
+      "camera": "custom_reference_view",
+      "camera_preset": {
+        "name": "Riftworld reference view",
+        "projection": "orthographic",
+        "position": [
+          512.5,
+          363.1,
+          -325
+        ],
+        "target": [
+          0.5,
+          81.5,
+          -5
+        ],
+        "zoom": 0.5
+      },
+      "resolution": [
+        1600,
+        1200
+      ],
+      "zoom_percent": 16.774193548387096
+    },
+    {
+      "id": "basalt_beetle",
+      "title_ru": "Базальтовый жук-углеед",
+      "file": "reports/blockbench_first_batch/photos/02_basalt_beetle.png",
+      "source": "blockbench/riftworld_fauna/basalt_beetle.bbmodel",
+      "camera": "custom_reference_view",
+      "camera_preset": {
+        "name": "Riftworld reference view",
+        "projection": "orthographic",
+        "position": [
+          -512,
+          345.2,
+          -527
+        ],
+        "target": [
+          0,
+          38,
+          -15
+        ],
+        "zoom": 0.5
+      },
+      "resolution": [
+        1600,
+        1200
+      ],
+      "zoom_percent": 21.311475409836067
+    },
+    {
+      "id": "ash_moth",
+      "title_ru": "Пепельная моль",
+      "file": "reports/blockbench_first_batch/photos/03_ash_moth.png",
+      "source": "blockbench/riftworld_fauna/ash_moth.bbmodel",
+      "camera": "custom_reference_view",
+      "camera_preset": {
+        "name": "Riftworld reference view",
+        "projection": "orthographic",
+        "position": [
+          0.5,
+          170.5,
+          -507
+        ],
+        "target": [
+          0.5,
+          35.5,
+          5
+        ],
+        "zoom": 0.5
+      },
+      "resolution": [
+        1600,
+        1200
+      ],
+      "zoom_percent": 14.689265536723164
+    },
+    {
+      "id": "amethyst_fox",
+      "title_ru": "Аметистовый лис",
+      "file": "reports/blockbench_first_batch/photos/04_amethyst_fox.png",
+      "source": "blockbench/riftworld_fauna/amethyst_fox.bbmodel",
+      "camera": "custom_reference_view",
+      "camera_preset": {
+        "name": "Riftworld reference view",
+        "projection": "orthographic",
+        "position": [
+          -512,
+          270.5,
+          -269.5
+        ],
+        "target": [
+          0,
+          50.5,
+          10.5
+        ],
+        "zoom": 0.5
+      },
+      "resolution": [
+        1600,
+        1200
+      ],
+      "zoom_percent": 19.25925925925926
+    },
+    {
+      "id": "sizo_leafwing",
+      "title_ru": "Сизый листокрыл",
+      "file": "reports/blockbench_first_batch/photos/05_sizo_leafwing.png",
+      "source": "blockbench/riftworld_fauna/sizo_leafwing.bbmodel",
+      "camera": "custom_reference_view",
+      "camera_preset": {
+        "name": "Riftworld reference view",
+        "projection": "orthographic",
+        "position": [
+          512,
+          278.5,
+          -274.5
+        ],
+        "target": [
+          0,
+          88.5,
+          25.5
+        ],
+        "zoom": 0.5
+      },
+      "resolution": [
+        1600,
+        1200
+      ],
+      "zoom_percent": 10.95890410958904
+    },
+    {
+      "id": "azure_frog",
+      "title_ru": "Лазурный древесный лягуш",
+      "file": "reports/blockbench_first_batch/photos/06_azure_frog.png",
+      "source": "blockbench/riftworld_fauna/azure_frog.bbmodel",
+      "camera": "custom_reference_view",
+      "camera_preset": {
+        "name": "Riftworld reference view",
+        "projection": "orthographic",
+        "position": [
+          -511.5,
+          301.5,
+          -516
+        ],
+        "target": [
+          0.5,
+          31.5,
+          -4
+        ],
+        "zoom": 0.5
+      },
+      "resolution": [
+        1600,
+        1200
+      ],
+      "zoom_percent": 32.098765432098766
+    },
+    {
+      "id": "bone_raven",
+      "title_ru": "Костяной ворон",
+      "file": "reports/blockbench_first_batch/photos/07_bone_raven.png",
+      "source": "blockbench/riftworld_fauna/bone_raven.bbmodel",
+      "camera": "custom_reference_view",
+      "camera_preset": {
+        "name": "Riftworld reference view",
+        "projection": "orthographic",
+        "position": [
+          -469.5,
+          289,
+          -429
+        ],
+        "target": [
+          0.5,
+          69,
+          -9
+        ],
+        "zoom": 0.5
+      },
+      "resolution": [
+        1600,
+        1200
+      ],
+      "zoom_percent": 11.552346570397113
+    },
+    {
+      "id": "coral_hermit_crab",
+      "title_ru": "Коралловый рак-отшельник",
+      "file": "reports/blockbench_first_batch/photos/08_coral_hermit_crab.png",
+      "source": "blockbench/riftworld_fauna/coral_hermit_crab.bbmodel",
+      "camera": "custom_reference_view",
+      "camera_preset": {
+        "name": "Riftworld reference view",
+        "projection": "orthographic",
+        "position": [
+          -513,
+          281.5,
+          -517.5
+        ],
+        "target": [
+          -1,
+          41.5,
+          -5.5
+        ],
+        "zoom": 0.5
+      },
+      "resolution": [
+        1600,
+        1200
+      ],
+      "zoom_percent": 25.49019607843137
+    },
+    {
+      "id": "reef_seahorse",
+      "title_ru": "Рифовый морской конёк",
+      "file": "reports/blockbench_first_batch/photos/09_reef_seahorse.png",
+      "source": "blockbench/riftworld_fauna/reef_seahorse.bbmodel",
+      "camera": "custom_reference_view",
+      "camera_preset": {
+        "name": "Riftworld reference view",
+        "projection": "orthographic",
+        "position": [
+          -511.5,
+          242,
+          -322.5
+        ],
+        "target": [
+          0.5,
+          52,
+          -2.5
+        ],
+        "zoom": 0.5
+      },
+      "resolution": [
+        1600,
+        1200
+      ],
+      "zoom_percent": 24.074074074074073
+    },
+    {
+      "id": "ghost_squid",
+      "title_ru": "Глубоководный кальмар-призрак",
+      "file": "reports/blockbench_first_batch/photos/10_ghost_squid.png",
+      "source": "blockbench/riftworld_fauna/ghost_squid.bbmodel",
+      "camera": "custom_reference_view",
+      "camera_preset": {
+        "name": "Riftworld reference view",
+        "projection": "orthographic",
+        "position": [
+          -512,
+          404,
+          -532
+        ],
+        "target": [
+          0,
+          44,
+          -20
+        ],
+        "zoom": 0.5
+      },
+      "resolution": [
+        1600,
+        1200
+      ],
+      "zoom_percent": 13.131313131313131
+    },
+    {
+      "id": "silver_sea_serpent",
+      "title_ru": "Серебряный морской змей",
+      "file": "reports/blockbench_first_batch/photos/11_silver_sea_serpent.png",
+      "source": "blockbench/riftworld_fauna/silver_sea_serpent.bbmodel",
+      "camera": "custom_reference_view",
+      "camera_preset": {
+        "name": "Riftworld reference view",
+        "projection": "orthographic",
+        "position": [
+          -512,
+          324,
+          -167.5
+        ],
+        "target": [
+          0,
+          64,
+          -7.5
+        ],
+        "zoom": 0.5
+      },
+      "resolution": [
+        1600,
+        1200
+      ],
+      "zoom_percent": 8.934707903780069
+    }
+  ],
+  "overview": "reports/blockbench_first_batch/photos/00_all_models.png"
+}

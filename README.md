@@ -9,6 +9,18 @@ CI собирает мод и проверяет геометрию, игров�
 предварительно удалив старый jar Riftworld. `riftworld-dt-0.40.0.jar` — отдельный необязательный аддон
 для Dynamic Trees; сам Dynamic Trees поставляется отдельно. Перед обновлением сделайте копию сохранения.
 
+## Новые модели биомов — одиннадцать моделей
+
+- [Фотогалерея на GitHub](reports/blockbench_first_batch/photos/README.md): фарфоровый журавль,
+  базальтовый жук-углеед, пепельная моль, аметистовый лис, сизый листокрыл, лазурный лягуш,
+  костяной ворон, коралловый рак, морской конёк, кальмар-призрак и серебряный морской змей; отдельные PNG 1600×1200, общий лист и
+  [сравнение с концептами](reports/blockbench_first_batch/photos/05_reference_comparison.png).
+- Переработаны костяной ворон и гребень серебряного морского змея: [сравнение](reports/blockbench_first_batch/photos/14_raven_serpent_comparison.png), [гребень с обеих сторон](reports/blockbench_first_batch/photos/15_serpent_two_sides.png). [Сравнение трёх моделей с концептами](reports/blockbench_first_batch/photos/12_three_reference_comparison.png) и [прошлая / новая версии](reports/blockbench_first_batch/photos/13_before_after_comparison.png). Это приближения, не точные копии. Атласы 2048×2048.
+- [Редактируемые Blockbench-проекты, генератор API и проверки](reports/blockbench_first_batch/README.md).
+- [Все 15 исходных концептов для 11 биомов](reports/biome_mob_concepts/README.md).
+- Это опубликованные модели и ассеты, ещё не зарегистрированные в игре сущности. Java-код,
+  естественный спавн и баланс существующих мобов не изменены; версия мода остаётся 0.40.0.
+
 ## v0.40.0 — El Gran Maja и его океан
 
 - В Элисар добавлен редкий океан `riftworld:maja_ocean`: пятна примерно через 4096 блоков, более глубокое дно

@@ -1,0 +1,37 @@
+{
+  "id": "porcelain_crane",
+  "title_ru": "Фарфоровый журавль",
+  "biome": "elisar_city",
+  "concept": "reports/biome_mob_concepts/01_elisar_city_porcelain_crane.png",
+  "revision": 3,
+  "generator": "Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)",
+  "bones": 27,
+  "cubes": 415,
+  "atlas": [
+    2048,
+    2048
+  ],
+  "units_per_block": 64,
+  "render_scale": 0.25,
+  "bounds_blockbench": {
+    "min": [
+      -25,
+      4,
+      -69
+    ],
+    "max": [
+      26,
+      159,
+      59
+    ]
+  },
+  "size_blocks": [
+    0.796875,
+    2.421875,
+    2
+  ],
+  "animations": 7,
+  "bbmodel_bytes": 855287,
+  "geo_bones": 27,
+  "geo_cubes": 415
+}

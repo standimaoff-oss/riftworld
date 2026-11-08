@@ -1,0 +1,629 @@
+{
+  "generator": "Blockbench 5.2.2 web API via headless Chromium",
+  "blockbench_root": "/home/user/.cache/riftworld-blockbench/blockbench-5.2.2",
+  "plugin": "tools/blockbench/riftworld_fauna_plugin.js",
+  "models": [
+    {
+      "id": "porcelain_crane",
+      "title_ru": "Фарфоровый журавль",
+      "biome": "elisar_city",
+      "bbmodel": "blockbench/riftworld_fauna/porcelain_crane.bbmodel",
+      "geo": "mod/src/main/resources/assets/riftworld/geo/porcelain_crane.json",
+      "texture": "mod/src/main/resources/assets/riftworld/textures/entity/porcelain_crane.png",
+      "stats": {
+        "id": "porcelain_crane",
+        "title_ru": "Фарфоровый журавль",
+        "biome": "elisar_city",
+        "concept": "reports/biome_mob_concepts/01_elisar_city_porcelain_crane.png",
+        "revision": 3,
+        "generator": "Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)",
+        "bones": 27,
+        "cubes": 415,
+        "atlas": [
+          2048,
+          2048
+        ],
+        "units_per_block": 64,
+        "render_scale": 0.25,
+        "bounds_blockbench": {
+          "min": [
+            -25,
+            4,
+            -69
+          ],
+          "max": [
+            26,
+            159,
+            59
+          ]
+        },
+        "size_blocks": [
+          0.796875,
+          2.421875,
+          2
+        ],
+        "animations": 7,
+        "bbmodel_bytes": 855287,
+        "geo_bones": 27,
+        "geo_cubes": 415
+      },
+      "structural_validation": "ok"
+    },
+    {
+      "id": "basalt_beetle",
+      "title_ru": "Базальтовый жук-углеед",
+      "biome": "ashen_lands",
+      "bbmodel": "blockbench/riftworld_fauna/basalt_beetle.bbmodel",
+      "geo": "mod/src/main/resources/assets/riftworld/geo/basalt_beetle.json",
+      "texture": "mod/src/main/resources/assets/riftworld/textures/entity/basalt_beetle.png",
+      "stats": {
+        "id": "basalt_beetle",
+        "title_ru": "Базальтовый жук-углеед",
+        "biome": "ashen_lands",
+        "concept": "reports/biome_mob_concepts/02_ashen_lands_basalt_beetle.png",
+        "revision": 3,
+        "generator": "Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)",
+        "bones": 34,
+        "cubes": 186,
+        "atlas": [
+          2048,
+          2048
+        ],
+        "units_per_block": 64,
+        "render_scale": 0.25,
+        "bounds_blockbench": {
+          "min": [
+            -46,
+            -1,
+            -76
+          ],
+          "max": [
+            46,
+            77,
+            46
+          ]
+        },
+        "size_blocks": [
+          1.4375,
+          1.21875,
+          1.90625
+        ],
+        "animations": 9,
+        "bbmodel_bytes": 541356,
+        "geo_bones": 34,
+        "geo_cubes": 186
+      },
+      "structural_validation": "ok"
+    },
+    {
+      "id": "ash_moth",
+      "title_ru": "Пепельная моль",
+      "biome": "ashen_lands",
+      "bbmodel": "blockbench/riftworld_fauna/ash_moth.bbmodel",
+      "geo": "mod/src/main/resources/assets/riftworld/geo/ash_moth.json",
+      "texture": "mod/src/main/resources/assets/riftworld/textures/entity/ash_moth.png",
+      "stats": {
+        "id": "ash_moth",
+        "title_ru": "Пепельная моль",
+        "biome": "ashen_lands",
+        "concept": "reports/biome_mob_concepts/03_ashen_lands_ash_moth.png",
+        "revision": 3,
+        "generator": "Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)",
+        "bones": 10,
+        "cubes": 66,
+        "atlas": [
+          2048,
+          2048
+        ],
+        "units_per_block": 64,
+        "render_scale": 0.25,
+        "bounds_blockbench": {
+          "min": [
+            -88,
+            -4,
+            -30
+          ],
+          "max": [
+            89,
+            75,
+            40
+          ]
+        },
+        "size_blocks": [
+          2.765625,
+          1.234375,
+          1.09375
+        ],
+        "animations": 7,
+        "bbmodel_bytes": 279351,
+        "geo_bones": 10,
+        "geo_cubes": 66
+      },
+      "structural_validation": "ok"
+    },
+    {
+      "id": "amethyst_fox",
+      "title_ru": "Аметистовый лис",
+      "biome": "violet_hills",
+      "bbmodel": "blockbench/riftworld_fauna/amethyst_fox.bbmodel",
+      "geo": "mod/src/main/resources/assets/riftworld/geo/amethyst_fox.json",
+      "texture": "mod/src/main/resources/assets/riftworld/textures/entity/amethyst_fox.png",
+      "stats": {
+        "id": "amethyst_fox",
+        "title_ru": "Аметистовый лис",
+        "biome": "violet_hills",
+        "concept": "reports/biome_mob_concepts/04_violet_hills_amethyst_fox.png",
+        "revision": 3,
+        "generator": "Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)",
+        "bones": 23,
+        "cubes": 91,
+        "atlas": [
+          2048,
+          2048
+        ],
+        "units_per_block": 64,
+        "render_scale": 0.25,
+        "bounds_blockbench": {
+          "min": [
+            -15,
+            0,
+            -57
+          ],
+          "max": [
+            15,
+            101,
+            78
+          ]
+        },
+        "size_blocks": [
+          0.46875,
+          1.578125,
+          2.109375
+        ],
+        "animations": 8,
+        "bbmodel_bytes": 335960,
+        "geo_bones": 23,
+        "geo_cubes": 91
+      },
+      "structural_validation": "ok"
+    },
+    {
+      "id": "sizo_leafwing",
+      "title_ru": "Сизый листокрыл",
+      "biome": "sizo_grove",
+      "bbmodel": "blockbench/riftworld_fauna/sizo_leafwing.bbmodel",
+      "geo": "mod/src/main/resources/assets/riftworld/geo/sizo_leafwing.json",
+      "texture": "mod/src/main/resources/assets/riftworld/textures/entity/sizo_leafwing.png",
+      "stats": {
+        "id": "sizo_leafwing",
+        "title_ru": "Сизый листокрыл",
+        "biome": "sizo_grove",
+        "concept": "reports/biome_mob_concepts/05_sizo_grove_sizo_leafwing.png",
+        "revision": 4,
+        "generator": "Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)",
+        "bones": 57,
+        "cubes": 519,
+        "atlas": [
+          2048,
+          2048
+        ],
+        "units_per_block": 64,
+        "render_scale": 0.25,
+        "bounds_blockbench": {
+          "min": [
+            -146,
+            1,
+            -55
+          ],
+          "max": [
+            146,
+            176,
+            106
+          ]
+        },
+        "size_blocks": [
+          4.5625,
+          2.734375,
+          2.515625
+        ],
+        "animations": 8,
+        "bbmodel_bytes": 1088155,
+        "geo_bones": 57,
+        "geo_cubes": 519
+      },
+      "structural_validation": "ok"
+    },
+    {
+      "id": "azure_frog",
+      "title_ru": "Лазурный древесный лягуш",
+      "biome": "waterfall_gardens",
+      "bbmodel": "blockbench/riftworld_fauna/azure_frog.bbmodel",
+      "geo": "mod/src/main/resources/assets/riftworld/geo/azure_frog.json",
+      "texture": "mod/src/main/resources/assets/riftworld/textures/entity/azure_frog.png",
+      "stats": {
+        "id": "azure_frog",
+        "title_ru": "Лазурный древесный лягуш",
+        "biome": "waterfall_gardens",
+        "concept": "reports/biome_mob_concepts/06_waterfall_gardens_azure_frog.png",
+        "revision": 1,
+        "generator": "Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)",
+        "bones": 12,
+        "cubes": 159,
+        "atlas": [
+          2048,
+          2048
+        ],
+        "units_per_block": 64,
+        "render_scale": 0.25,
+        "bounds_blockbench": {
+          "min": [
+            -40,
+            0,
+            -41
+          ],
+          "max": [
+            41,
+            63,
+            33
+          ]
+        },
+        "size_blocks": [
+          1.265625,
+          0.984375,
+          1.15625
+        ],
+        "animations": 5,
+        "bbmodel_bytes": 453280,
+        "geo_bones": 12,
+        "geo_cubes": 159
+      },
+      "structural_validation": "ok"
+    },
+    {
+      "id": "bone_raven",
+      "title_ru": "Костяной ворон",
+      "biome": "morok_hollow",
+      "bbmodel": "blockbench/riftworld_fauna/bone_raven.bbmodel",
+      "geo": "mod/src/main/resources/assets/riftworld/geo/bone_raven.json",
+      "texture": "mod/src/main/resources/assets/riftworld/textures/entity/bone_raven.png",
+      "stats": {
+        "id": "bone_raven",
+        "title_ru": "Костяной ворон",
+        "biome": "morok_hollow",
+        "concept": "reports/biome_mob_concepts/11_morok_hollow_bone_raven.png",
+        "revision": 4,
+        "generator": "Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)",
+        "bones": 119,
+        "cubes": 138,
+        "atlas": [
+          2048,
+          2048
+        ],
+        "units_per_block": 64,
+        "render_scale": 0.25,
+        "bounds_blockbench": {
+          "min": [
+            -138,
+            1,
+            -87
+          ],
+          "max": [
+            139,
+            137,
+            69
+          ]
+        },
+        "size_blocks": [
+          4.328125,
+          2.125,
+          2.4375
+        ],
+        "animations": 5,
+        "bbmodel_bytes": 518566,
+        "geo_bones": 119,
+        "geo_cubes": 138
+      },
+      "structural_validation": "ok"
+    },
+    {
+      "id": "coral_hermit_crab",
+      "title_ru": "Коралловый рак-отшельник",
+      "biome": "shallow_reef",
+      "bbmodel": "blockbench/riftworld_fauna/coral_hermit_crab.bbmodel",
+      "geo": "mod/src/main/resources/assets/riftworld/geo/coral_hermit_crab.json",
+      "texture": "mod/src/main/resources/assets/riftworld/textures/entity/coral_hermit_crab.png",
+      "stats": {
+        "id": "coral_hermit_crab",
+        "title_ru": "Коралловый рак-отшельник",
+        "biome": "shallow_reef",
+        "concept": "reports/biome_mob_concepts/12_shallow_reef_coral_hermit_crab.png",
+        "revision": 1,
+        "generator": "Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)",
+        "bones": 26,
+        "cubes": 78,
+        "atlas": [
+          2048,
+          2048
+        ],
+        "units_per_block": 64,
+        "render_scale": 0.25,
+        "bounds_blockbench": {
+          "min": [
+            -52,
+            0,
+            -46
+          ],
+          "max": [
+            50,
+            83,
+            35
+          ]
+        },
+        "size_blocks": [
+          1.59375,
+          1.296875,
+          1.265625
+        ],
+        "animations": 10,
+        "bbmodel_bytes": 329388,
+        "geo_bones": 26,
+        "geo_cubes": 78
+      },
+      "structural_validation": "ok"
+    },
+    {
+      "id": "reef_seahorse",
+      "title_ru": "Рифовый морской конёк",
+      "biome": "shallow_reef",
+      "bbmodel": "blockbench/riftworld_fauna/reef_seahorse.bbmodel",
+      "geo": "mod/src/main/resources/assets/riftworld/geo/reef_seahorse.json",
+      "texture": "mod/src/main/resources/assets/riftworld/textures/entity/reef_seahorse.png",
+      "stats": {
+        "id": "reef_seahorse",
+        "title_ru": "Рифовый морской конёк",
+        "biome": "shallow_reef",
+        "concept": "reports/biome_mob_concepts/13_shallow_reef_reef_seahorse.png",
+        "revision": 1,
+        "generator": "Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)",
+        "bones": 13,
+        "cubes": 50,
+        "atlas": [
+          2048,
+          2048
+        ],
+        "units_per_block": 64,
+        "render_scale": 0.25,
+        "bounds_blockbench": {
+          "min": [
+            -18,
+            -2,
+            -43
+          ],
+          "max": [
+            19,
+            106,
+            38
+          ]
+        },
+        "size_blocks": [
+          0.578125,
+          1.6875,
+          1.265625
+        ],
+        "animations": 5,
+        "bbmodel_bytes": 243333,
+        "geo_bones": 13,
+        "geo_cubes": 50
+      },
+      "structural_validation": "ok"
+    },
+    {
+      "id": "ghost_squid",
+      "title_ru": "Глубоководный кальмар-призрак",
+      "biome": "abyss",
+      "bbmodel": "blockbench/riftworld_fauna/ghost_squid.bbmodel",
+      "geo": "mod/src/main/resources/assets/riftworld/geo/ghost_squid.json",
+      "texture": "mod/src/main/resources/assets/riftworld/textures/entity/ghost_squid.png",
+      "stats": {
+        "id": "ghost_squid",
+        "title_ru": "Глубоководный кальмар-призрак",
+        "biome": "abyss",
+        "concept": "reports/biome_mob_concepts/14_abyss_ghost_squid.png",
+        "revision": 1,
+        "generator": "Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)",
+        "bones": 20,
+        "cubes": 85,
+        "atlas": [
+          2048,
+          2048
+        ],
+        "units_per_block": 64,
+        "render_scale": 0.25,
+        "bounds_blockbench": {
+          "min": [
+            -24,
+            31,
+            -119
+          ],
+          "max": [
+            24,
+            57,
+            79
+          ]
+        },
+        "size_blocks": [
+          0.75,
+          0.40625,
+          3.09375
+        ],
+        "animations": 11,
+        "bbmodel_bytes": 318865,
+        "geo_bones": 20,
+        "geo_cubes": 85
+      },
+      "structural_validation": "ok"
+    },
+    {
+      "id": "silver_sea_serpent",
+      "title_ru": "Серебряный морской змей",
+      "biome": "maja_ocean",
+      "bbmodel": "blockbench/riftworld_fauna/silver_sea_serpent.bbmodel",
+      "geo": "mod/src/main/resources/assets/riftworld/geo/silver_sea_serpent.json",
+      "texture": "mod/src/main/resources/assets/riftworld/textures/entity/silver_sea_serpent.png",
+      "stats": {
+        "id": "silver_sea_serpent",
+        "title_ru": "Серебряный морской змей",
+        "biome": "maja_ocean",
+        "concept": "reports/biome_mob_concepts/15_maja_ocean_silver_sea_serpent.png",
+        "revision": 3,
+        "generator": "Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)",
+        "bones": 53,
+        "cubes": 226,
+        "atlas": [
+          2048,
+          2048
+        ],
+        "units_per_block": 64,
+        "render_scale": 0.25,
+        "bounds_blockbench": {
+          "min": [
+            -35,
+            -4,
+            -153
+          ],
+          "max": [
+            35,
+            132,
+            138
+          ]
+        },
+        "size_blocks": [
+          1.09375,
+          2.125,
+          4.546875
+        ],
+        "animations": 3,
+        "bbmodel_bytes": 577472,
+        "geo_bones": 53,
+        "geo_cubes": 226
+      },
+      "structural_validation": "ok"
+    }
+  ],
+  "roundtrip_validation": [
+    {
+      "id": "porcelain_crane",
+      "status": "ok",
+      "bones": 27,
+      "cubes": 415,
+      "texture_width": 2048,
+      "texture_height": 2048,
+      "texture_loaded": true,
+      "animations": 1
+    },
+    {
+      "id": "basalt_beetle",
+      "status": "ok",
+      "bones": 34,
+      "cubes": 186,
+      "texture_width": 2048,
+      "texture_height": 2048,
+      "texture_loaded": true,
+      "animations": 1
+    },
+    {
+      "id": "ash_moth",
+      "status": "ok",
+      "bones": 10,
+      "cubes": 66,
+      "texture_width": 2048,
+      "texture_height": 2048,
+      "texture_loaded": true,
+      "animations": 1
+    },
+    {
+      "id": "amethyst_fox",
+      "status": "ok",
+      "bones": 23,
+      "cubes": 91,
+      "texture_width": 2048,
+      "texture_height": 2048,
+      "texture_loaded": true,
+      "animations": 1
+    },
+    {
+      "id": "sizo_leafwing",
+      "status": "ok",
+      "bones": 57,
+      "cubes": 519,
+      "texture_width": 2048,
+      "texture_height": 2048,
+      "texture_loaded": true,
+      "animations": 1
+    },
+    {
+      "id": "azure_frog",
+      "status": "ok",
+      "bones": 12,
+      "cubes": 159,
+      "texture_width": 2048,
+      "texture_height": 2048,
+      "texture_loaded": true,
+      "animations": 1
+    },
+    {
+      "id": "bone_raven",
+      "status": "ok",
+      "bones": 119,
+      "cubes": 138,
+      "texture_width": 2048,
+      "texture_height": 2048,
+      "texture_loaded": true,
+      "animations": 1
+    },
+    {
+      "id": "coral_hermit_crab",
+      "status": "ok",
+      "bones": 26,
+      "cubes": 78,
+      "texture_width": 2048,
+      "texture_height": 2048,
+      "texture_loaded": true,
+      "animations": 1
+    },
+    {
+      "id": "reef_seahorse",
+      "status": "ok",
+      "bones": 13,
+      "cubes": 50,
+      "texture_width": 2048,
+      "texture_height": 2048,
+      "texture_loaded": true,
+      "animations": 1
+    },
+    {
+      "id": "ghost_squid",
+      "status": "ok",
+      "bones": 20,
+      "cubes": 85,
+      "texture_width": 2048,
+      "texture_height": 2048,
+      "texture_loaded": true,
+      "animations": 1
+    },
+    {
+      "id": "silver_sea_serpent",
+      "status": "ok",
+      "bones": 53,
+      "cubes": 226,
+      "texture_width": 2048,
+      "texture_height": 2048,
+      "texture_loaded": true,
+      "animations": 1
+    }
+  ],
+  "benign_startup_errors": [
+    "Object: Object"
+  ],
+  "page_errors": []
+}

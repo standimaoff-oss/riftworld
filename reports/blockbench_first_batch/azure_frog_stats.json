@@ -1,0 +1,37 @@
+{
+  "id": "azure_frog",
+  "title_ru": "Лазурный древесный лягуш",
+  "biome": "waterfall_gardens",
+  "concept": "reports/biome_mob_concepts/06_waterfall_gardens_azure_frog.png",
+  "revision": 1,
+  "generator": "Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)",
+  "bones": 12,
+  "cubes": 159,
+  "atlas": [
+    2048,
+    2048
+  ],
+  "units_per_block": 64,
+  "render_scale": 0.25,
+  "bounds_blockbench": {
+    "min": [
+      -40,
+      0,
+      -41
+    ],
+    "max": [
+      41,
+      63,
+      33
+    ]
+  },
+  "size_blocks": [
+    1.265625,
+    0.984375,
+    1.15625
+  ],
+  "animations": 5,
+  "bbmodel_bytes": 453280,
+  "geo_bones": 12,
+  "geo_cubes": 159
+}

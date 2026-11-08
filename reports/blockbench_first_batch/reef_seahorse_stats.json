@@ -1,0 +1,37 @@
+{
+  "id": "reef_seahorse",
+  "title_ru": "Рифовый морской конёк",
+  "biome": "shallow_reef",
+  "concept": "reports/biome_mob_concepts/13_shallow_reef_reef_seahorse.png",
+  "revision": 1,
+  "generator": "Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)",
+  "bones": 13,
+  "cubes": 50,
+  "atlas": [
+    2048,
+    2048
+  ],
+  "units_per_block": 64,
+  "render_scale": 0.25,
+  "bounds_blockbench": {
+    "min": [
+      -18,
+      -2,
+      -43
+    ],
+    "max": [
+      19,
+      106,
+      38
+    ]
+  },
+  "size_blocks": [
+    0.578125,
+    1.6875,
+    1.265625
+  ],
+  "animations": 5,
+  "bbmodel_bytes": 243333,
+  "geo_bones": 13,
+  "geo_cubes": 50
+}

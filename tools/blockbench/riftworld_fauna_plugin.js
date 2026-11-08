@@ -1,0 +1,1464 @@
+/* Riftworld Fauna — articulated plate Blockbench-API batch, revision 3.
+ *
+ * Builds editable Bedrock-entity projects through the public Blockbench API
+ * (Group / Cube / Texture / Animation / Codecs). Geometry is authored at 64
+ * units per Minecraft block and exported with render_scale 0.25, so the custom
+ * Riftworld integer-cube loader keeps working while the visible voxel step is
+ * 1/32 block instead of the previous 1/16 block.
+ *
+ * Authoring space: Blockbench internal, Y up, ground y=0, nose toward -Z.
+ * Runtime space: Riftworld GeoModel, Y down, ground y=0, nose toward -Z.
+ */
+(function (global) {
+  'use strict';
+
+  const ATLAS = 2048;
+  const LOOP = 2.0;
+  const UNITS_PER_BLOCK = 64;
+  const RENDER_SCALE = 16 / UNITS_PER_BLOCK;
+
+  const MATERIALS = {
+    porcelain:    { base: [243, 240, 233], noise: 3,  edge: -4, pattern: 'ceramic' },
+    porcelain_hi: { base: [252, 250, 246], noise: 2,  edge: -3, pattern: 'ceramic' },
+    porcelain_lo: { base: [219, 216, 208], noise: 3,  edge: -4, pattern: 'ceramic' },
+    celadon:      { base: [151, 203, 188], noise: 4,  edge: -5, pattern: 'feather' },
+    celadon_hi:   { base: [185, 224, 211], noise: 3,  edge: -4, pattern: 'feather' },
+    celadon_lo:   { base: [112, 169, 156], noise: 4,  edge: -5, pattern: 'feather' },
+    gold:         { base: [196, 157, 66],  noise: 5,  edge: -6, pattern: 'metal' },
+    gold_hi:      { base: [232, 197, 106], noise: 4,  edge: -4, pattern: 'metal' },
+    ivory:        { base: [232, 226, 211], noise: 3,  edge: -4, pattern: 'ceramic' },
+    basalt:       { base: [42, 40, 43],    noise: 6,  edge: -6, pattern: 'basalt' },
+    basalt_hi:    { base: [61, 58, 62],    noise: 6,  edge: -6, pattern: 'basalt' },
+    basalt_lo:    { base: [28, 27, 30],    noise: 5,  edge: -5, pattern: 'basalt' },
+    lava:         { base: [255, 121, 22],  noise: 12, edge: -4, pattern: 'lava' },
+    lava_hi:      { base: [255, 190, 64],  noise: 10, edge: -3, pattern: 'lava' },
+    ember:        { base: [255, 145, 38],  noise: 9,  edge: -4, pattern: 'lava' },
+    ash:          { base: [158, 156, 151], noise: 6,  edge: -5, pattern: 'fuzz' },
+    ash_hi:       { base: [184, 181, 175], noise: 5,  edge: -4, pattern: 'fuzz' },
+    ash_dark:     { base: [105, 103, 100], noise: 5,  edge: -5, pattern: 'fuzz' },
+    wing:         { base: [172, 169, 163], noise: 5,  edge: -4, pattern: 'wing' },
+    wing_hi:      { base: [193, 190, 183], noise: 4,  edge: -3, pattern: 'wing' },
+    wing_lo:      { base: [135, 132, 127], noise: 5,  edge: -4, pattern: 'wing' },
+    eyespot:      { base: [164, 161, 155], noise: 4,  edge: -4, pattern: 'eyespot' },
+    violet:       { base: [137, 96, 184],  noise: 6,  edge: -5, pattern: 'fur' },
+    violet_hi:    { base: [172, 132, 214], noise: 5,  edge: -4, pattern: 'fur' },
+    violet_lo:    { base: [104, 68, 150],  noise: 5,  edge: -5, pattern: 'fur' },
+    lavender:     { base: [190, 160, 224], noise: 5,  edge: -4, pattern: 'fur' },
+    white:        { base: [241, 237, 228], noise: 3,  edge: -4, pattern: 'fur' },
+    white_hi:     { base: [252, 250, 245], noise: 2,  edge: -3, pattern: 'fur' },
+    crystal:      { base: [128, 74, 190],  noise: 6,  edge: -5, pattern: 'crystal' },
+    crystal_hi:   { base: [190, 139, 235], noise: 5,  edge: -4, pattern: 'crystal' },
+    crystal_lo:   { base: [83, 45, 133],   noise: 5,  edge: -5, pattern: 'crystal' },
+    mint:          { base: [139, 183, 172], noise: 4, edge: -4, pattern: 'fur' },
+    mint_hi:       { base: [190, 218, 207], noise: 3, edge: -3, pattern: 'fur' },
+    mint_lo:       { base: [91, 136, 132], noise: 4, edge: -4, pattern: 'fur' },
+    leaf_cream:    { base: [226, 233, 218], noise: 3, edge: -4, pattern: 'feather' },
+    leaf_vein:     { base: [105, 142, 153], noise: 3, edge: -3, pattern: 'ceramic' },
+    leaf_green:    { base: [144, 180, 155], noise: 4, edge: -4, pattern: 'feather' },
+    branch:        { base: [99, 83, 69], noise: 4, edge: -4, pattern: 'basalt' },
+    flower_blue:   { base: [145, 126, 218], noise: 3, edge: -3, pattern: 'fur' },
+    amber:         { base: [206, 137, 45], noise: 5, edge: -4, pattern: 'metal' },
+    frog_teal:     { base: [45, 177, 174], noise: 5, edge: -4, pattern: 'frog_spots' },
+    frog_hi:       { base: [87, 207, 190], noise: 4, edge: -4, pattern: 'frog_spots' },
+    frog_dark:     { base: [27, 129, 147], noise: 5, edge: -4, pattern: 'frog_spots' },
+    frog_belly:    { base: [137, 215, 205], noise: 3, edge: -4, pattern: 'ceramic' },
+    petal_pink:    { base: [245, 170, 192], noise: 3, edge: -4, pattern: 'fur' },
+    petal_light:   { base: [255, 206, 215], noise: 3, edge: -3, pattern: 'fur' },
+    frog_toe:      { base: [166, 221, 169], noise: 3, edge: -4, pattern: 'fur' },
+    bone:          { base: [226, 222, 205], noise: 2, edge: -3, pattern: 'bone_tiles' },
+    bone_hi:       { base: [244, 241, 225], noise: 2, edge: -3, pattern: 'bone_tiles' },
+    bone_shadow:   { base: [173, 170, 155], noise: 4, edge: -4, pattern: 'ceramic' },
+    raven:         { base: [33, 37, 43], noise: 4, edge: -4, pattern: 'feather' },
+    raven_hi:      { base: [51, 55, 62], noise: 4, edge: -3, pattern: 'feather' },
+    coral:         { base: [236, 108, 111], noise: 5, edge: -4, pattern: 'fur' },
+    coral_hi:      { base: [255, 149, 147], noise: 4, edge: -4, pattern: 'fur' },
+    coral_orange:  { base: [234, 120, 61], noise: 5, edge: -4, pattern: 'fur' },
+    coral_pink:    { base: [249, 157, 177], noise: 4, edge: -4, pattern: 'fur' },
+    coral_purple:  { base: [167, 142, 214], noise: 4, edge: -4, pattern: 'crystal' },
+    sea_mint:      { base: [103, 196, 171], noise: 4, edge: -3, pattern: 'fur' },
+    sea_teal:      { base: [80, 156, 147], noise: 4, edge: -4, pattern: 'fur' },
+    shell_cream:   { base: [232, 220, 188], noise: 4, edge: -3, pattern: 'ceramic' },
+    shell_light:   { base: [249, 240, 216], noise: 3, edge: -3, pattern: 'ceramic' },
+    squid_navy:    { base: [20, 27, 57], noise: 4, edge: -4, pattern: 'basalt' },
+    squid_hi:      { base: [46, 55, 100], noise: 4, edge: -4, pattern: 'basalt' },
+    squid_edge:    { base: [95, 129, 183], noise: 3, edge: -3, pattern: 'metal' },
+    glow_cyan:     { base: [87, 238, 229], noise: 2, edge: -2, pattern: 'eye' },
+    squid_eye:     { base: [202, 200, 245], noise: 2, edge: -2, pattern: 'eye' },
+    silver:        { base: [164, 186, 196], noise: 3, edge: -2, pattern: 'silver_scale' },
+    silver_hi:     { base: [198, 217, 222], noise: 3, edge: -2, pattern: 'silver_scale' },
+    silver_dark:   { base: [113, 145, 158], noise: 4, edge: -4, pattern: 'fur' },
+    serpent_teal:  { base: [54, 115, 120], noise: 3, edge: -4, pattern: 'fur' },
+    serpent_crest: { base: [221, 241, 231], noise: 0, edge: 0, pattern: 'crest_pixels' },
+    raven_ember:   { base: [157, 86, 30], noise: 0, edge: 0, pattern: 'solid' },
+    serpent_fin:   { base: [189, 222, 214], noise: 3, edge: -3, pattern: 'ceramic' },
+    serpent_eye:   { base: [199, 244, 226], noise: 2, edge: -2, pattern: 'eye' },
+    eye:          { base: [18, 17, 21],    noise: 1,  edge: 0,  pattern: 'eye' },
+    eye_light:    { base: [248, 246, 255], noise: 1,  edge: 0,  pattern: 'eye' }
+  };
+
+  function fnv(str) {
+    let h = 2166136261;
+    for (let i = 0; i < str.length; i++) {
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return (h >>> 0) / 4294967295;
+  }
+  function clamp8(v) { return Math.max(0, Math.min(255, Math.round(v))); }
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function dist(a, b) { return Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]); }
+
+  class Atlas {
+    constructor(size) {
+      this.size = size;
+      this.data = new Uint8ClampedArray(size * size * 4);
+      for (let i = 3; i < this.data.length; i += 4) this.data[i] = 255;
+    }
+    set(x, y, r, g, b) {
+      if (x < 0 || y < 0 || x >= this.size || y >= this.size) return;
+      const i = (y * this.size + x) * 4;
+      this.data[i] = clamp8(r);
+      this.data[i + 1] = clamp8(g);
+      this.data[i + 2] = clamp8(b);
+      this.data[i + 3] = 255;
+    }
+    toDataURL() {
+      const canvas = document.createElement('canvas');
+      canvas.width = this.size;
+      canvas.height = this.size;
+      const ctx = canvas.getContext('2d');
+      ctx.putImageData(new ImageData(this.data, this.size, this.size), 0, 0);
+      return canvas.toDataURL('image/png');
+    }
+  }
+
+  function faceRects(u, v, w, h, d) {
+    return {
+      up:    [u + d,         v,         w, d],
+      down:  [u + d + w,     v,         w, d],
+      east:  [u,             v + d,     d, h],
+      north: [u + d,         v + d,     w, h],
+      west:  [u + d + w,     v + d,     d, h],
+      south: [u + d + w + d, v + d,     w, h]
+    };
+  }
+
+  // Map a texel back to authoring-space coordinates so noise/veins/fur patches
+  // continue across neighbouring cubes instead of restarting on every face.
+  function worldTexel(face, lx, ly, from, to) {
+    switch (face) {
+      case 'up':    return [from[0] + lx + 0.5, to[1], from[2] + ly + 0.5];
+      case 'down':  return [from[0] + lx + 0.5, from[1], from[2] + ly + 0.5];
+      case 'north': return [from[0] + lx + 0.5, to[1] - ly - 0.5, from[2]];
+      case 'south': return [from[0] + lx + 0.5, to[1] - ly - 0.5, to[2]];
+      case 'east':  return [to[0], to[1] - ly - 0.5, from[2] + lx + 0.5];
+      case 'west':  return [from[0], to[1] - ly - 0.5, from[2] + lx + 0.5];
+      default:      return [from[0], from[1], from[2]];
+    }
+  }
+
+  function paintFace(atlas, rect, matKey, seed, face, cube, extra) {
+    const mat = MATERIALS[matKey] || MATERIALS.ash;
+    const [x0, y0, w, h] = rect;
+    for (let y = y0; y < y0 + h; y++) {
+      for (let x = x0; x < x0 + w; x++) {
+        const lx = x - x0, ly = y - y0;
+        const p = worldTexel(face, lx, ly, cube.from, cube.to);
+        const gx = Math.floor(p[0] / 2), gy = Math.floor(p[1] / 2), gz = Math.floor(p[2] / 2);
+        const n = fnv(matKey + ':' + gx + ',' + gy + ',' + gz);
+        let r = mat.base[0] + (n - 0.5) * 2 * mat.noise;
+        let g = mat.base[1] + (n - 0.5) * 2 * mat.noise;
+        let b = mat.base[2] + (n - 0.5) * 2 * mat.noise;
+        const border = (lx === 0 || ly === 0 || lx === w - 1 || ly === h - 1);
+        if (border && w > 2 && h > 2) { r += mat.edge; g += mat.edge; b += mat.edge; }
+        switch (mat.pattern) {
+          case 'ceramic':
+            if ((Math.floor(p[0] / 8) + Math.floor(p[1] / 8) + Math.floor(p[2] / 8)) % 9 === 0) {
+              r -= 7; g -= 7; b -= 6;
+            }
+            break;
+          case 'metal':
+            if ((Math.floor(p[0] / 2) + Math.floor(p[1] / 2) + Math.floor(p[2] / 2)) % 5 === 0) {
+              r += 22; g += 18; b += 8;
+            }
+            break;
+          case 'feather': {
+            const stripe = Math.floor((p[2] + p[0] * 0.35) / 4) % 4;
+            if (stripe === 0) { r -= 12; g -= 12; b -= 10; }
+            if (stripe === 1) { r += 8; g += 8; b += 7; }
+            break;
+          }
+          case 'basalt': {
+            const block = fnv(matKey + ':block:' + Math.floor(p[0] / 4) + ',' + Math.floor(p[1] / 4) + ',' + Math.floor(p[2] / 4));
+            const delta = (block - 0.5) * 22;
+            r += delta; g += delta; b += delta;
+            if (block > 0.86) { r += 12; g += 12; b += 13; }
+            break;
+          }
+          case 'lava':
+            if (n > 0.7) { r = 255; g = 195 + n * 45; b = 78; }
+            else if (n < 0.2) { r -= 55; g -= 42; b -= 16; }
+            break;
+          case 'fuzz':
+            if (n > 0.62) { r += 13; g += 13; b += 11; }
+            else if (n < 0.3) { r -= 11; g -= 11; b -= 10; }
+            break;
+          case 'wing': {
+            const vein = Math.floor((p[2] + Math.abs(p[0]) * 0.22) / 5) % 5;
+            if (vein === 0) { r -= 20; g -= 20; b -= 17; }
+            if (vein === 1) { r += 9; g += 9; b += 8; }
+            break;
+          }
+          case 'eyespot': {
+            if (extra && extra.eyespot_plane === 'xy' && face !== 'north' && face !== 'south') {
+              r = 150; g = 147; b = 141;
+              break;
+            }
+            // Rings are painted in the wing's local XZ plane, not per cube.
+            const c = extra && extra.eyespot_center ? extra.eyespot_center : [0, 0, 0];
+            const vertical = extra && extra.eyespot_plane === 'xy';
+            const dx = p[0] - c[0], dz = (vertical ? p[1] : p[2]) - c[vertical ? 1 : 2];
+            const d = Math.hypot(dx, dz);
+            const radius = extra && extra.eyespot_radius ? extra.eyespot_radius : 10;
+            if (d < radius * 0.34) { r = 34; g = 33; b = 32; }
+            else if (d < radius * 0.52) { r = 211; g = 207; b = 198; }
+            else if (d < radius * 0.78) { r = 57; g = 55; b = 53; }
+            else if (d < radius) { r = 122; g = 119; b = 114; }
+            break;
+          }
+          case 'frog_spots': {
+            const spot = fnv('frog:' + Math.floor(p[0] / 7) + ',' + Math.floor(p[1] / 7) + ',' + Math.floor(p[2] / 7));
+            if (spot > 0.82) { r += 43; g += 26; b -= 33; }
+            else if (spot < 0.12) { r -= 12; g -= 17; b += 8; }
+            break;
+          }
+          case 'crest_pixels': {
+            // Two broad faces use exactly the same Y/Z pattern, including on
+            // opposite sides. Opaque colour; the 1-unit sheet supplies shape.
+            const raw = Math.sin((Math.floor(p[1]/4)+1)*12.9898 + (Math.floor(p[2]/4)+1)*78.233)*43758.5453;
+            const t = raw-Math.floor(raw), delta = t>.78?13:t<.22?-11:0;
+            r=mat.base[0]+delta; g=mat.base[1]+delta; b=mat.base[2]+delta;
+            break;
+          }
+          case 'silver_scale':
+          case 'bone_tiles': {
+            // Coarse deliberate Minecraft pixels in local face coordinates,
+            // avoiding the old continuous horizontal bands on long limbs.
+            const raw = Math.sin((Math.floor(lx/5)+1)*12.9898 + (Math.floor(ly/5)+1)*78.233 + fnv(seed+face)*437.123)*43758.5453;
+            const tile = raw - Math.floor(raw);
+            const a = mat.pattern === 'silver_scale' ? (tile > .76 ? 23 : tile < .25 ? -17 : 0)
+              : (tile > .82 ? 8 : tile < .18 ? -9 : 0);
+            r += a; g += a; b += a;
+            break;
+          }
+          case 'fur': {
+            const patch = fnv(matKey + ':patch:' + Math.floor(p[0] / 4) + ',' + Math.floor(p[1] / 4) + ',' + Math.floor(p[2] / 4));
+            if (patch > 0.72) { r += 20; g += 16; b += 24; }
+            else if (patch < 0.24) { r -= 18; g -= 14; b -= 22; }
+            break;
+          }
+          case 'crystal':
+            if ((Math.floor(p[0] / 2) + Math.floor(p[1] / 2)) % 4 === 0) { r += 34; g += 26; b += 44; }
+            if ((Math.floor(p[2] / 2) + Math.floor(p[1] / 2)) % 5 === 0) { r -= 24; g -= 18; b -= 30; }
+            break;
+          case 'eye':
+            if (w > 2 && h > 2 && lx === 1 && ly === 1) { r = 250; g = 250; b = 255; }
+            break;
+        }
+        atlas.set(x, y, r, g, b);
+      }
+    }
+  }
+
+  class Builder {
+    constructor(spec) {
+      this.spec = spec;
+      this.id = spec.id;
+      this.size = spec.atlas || ATLAS;
+      this.bones = new Map();
+      this.boneOrder = [];
+      this.cubes = [];
+      this.anims = Object.create(null);
+
+      newProject(Formats.bedrock_old);
+      Project.name = this.id;
+      Project.geometry_name = this.id;
+      Project.texture_width = this.size;
+      Project.texture_height = this.size;
+      Project.box_uv = true;
+    }
+
+    bone(name, parent, pivot, rotation) {
+      if (this.bones.has(name)) throw new Error('duplicate bone ' + name);
+      const parentGroup = parent ? this.bones.get(parent) : null;
+      if (parent && !parentGroup) throw new Error('unknown parent ' + parent + ' for ' + name);
+      const g = new Group({
+        name,
+        origin: pivot.slice(),
+        rotation: rotation ? rotation.slice() : [0, 0, 0],
+        export: true,
+        visibility: true,
+        isOpen: true
+      });
+      if (parentGroup) g.addTo(parentGroup);
+      g.init();
+      this.bones.set(name, g);
+      this.boneOrder.push(name);
+      return g;
+    }
+
+    cube(bone, name, from, to, mat, extra) {
+      const g = this.bones.get(bone);
+      if (!g) throw new Error('unknown bone ' + bone);
+      const f = from.map(v => Math.round(v));
+      const t = to.map(v => Math.round(v));
+      for (let i = 0; i < 3; i++) {
+        if (!Number.isInteger(f[i]) || !Number.isInteger(t[i]) || t[i] <= f[i]) {
+          throw new Error('cube ' + name + ' needs integer from<to, got ' + JSON.stringify({ from: f, to: t }));
+        }
+      }
+      const c = new Cube({
+        name,
+        from: f,
+        to: t,
+        box_uv: true,
+        uv_offset: [0, 0],
+        mirror_uv: false,
+        inflate: 0,
+        export: true,
+        visibility: true
+      }).addTo(g).init();
+      this.cubes.push({ cube: c, mat, extra: extra || null, seed: this.id + '/' + bone + '/' + name + '/' + this.cubes.length });
+      return c;
+    }
+
+    box(bone, name, center, size, mat, extra) {
+      const half = size.map(v => v / 2);
+      return this.cube(bone, name,
+        [center[0] - half[0], center[1] - half[1], center[2] - half[2]],
+        [center[0] + half[0], center[1] + half[1], center[2] + half[2]], mat, extra);
+    }
+
+    animate(bone, axis, amp, speed, phase) {
+      if (!this.bones.has(bone)) throw new Error('unknown anim bone ' + bone);
+      this.anims[bone] = { axis, amp, speed, phase: phase || 0 };
+    }
+
+    packUV() {
+      const items = this.cubes.map(item => {
+        const [w, h, d] = item.cube.size();
+        return { item, w, h, d, uw: 2 * w + 2 * d, uh: h + d };
+      });
+      items.sort((a, b) => (b.uh - a.uh) || (b.uw - a.uw) || a.item.seed.localeCompare(b.item.seed));
+      let x = 0, y = 0, rowH = 0;
+      for (const it of items) {
+        if (x + it.uw > this.size) { x = 0; y += rowH + 1; rowH = 0; }
+        if (y + it.uh > this.size) throw new Error('atlas overflow for ' + this.id + ' at ' + it.item.seed);
+        it.item.cube.uv_offset = [x, y];
+        it.uv = [x, y];
+        x += it.uw + 1;
+        rowH = Math.max(rowH, it.uh);
+      }
+      this.uvItems = items;
+    }
+
+    paintAtlas() {
+      const atlas = new Atlas(this.size);
+      for (const it of this.uvItems) {
+        const rects = faceRects(it.uv[0], it.uv[1], it.w, it.h, it.d);
+        for (const face of Object.keys(rects)) {
+          paintFace(atlas, rects[face], it.item.mat, it.item.seed, face, it.item.cube, it.item.extra);
+        }
+      }
+      return atlas.toDataURL();
+    }
+
+    async addTexture(dataURL) {
+      const tex = new Texture({
+        name: this.id + '.png',
+        width: this.size,
+        height: this.size,
+        uv_width: this.size,
+        uv_height: this.size,
+        keep_size: true
+      }).fromDataURL(dataURL).add();
+      for (let i = 0; i < 150; i++) {
+        if (tex.width === this.size && tex.height === this.size && !tex.error) break;
+        await new Promise(r => setTimeout(r, 20));
+      }
+      if (tex.width !== this.size || tex.height !== this.size) {
+        throw new Error('texture failed to load for ' + this.id + ': ' + tex.width + 'x' + tex.height + ' error=' + tex.error);
+      }
+      if (tex.setAsDefaultTexture) tex.setAsDefaultTexture();
+      return tex;
+    }
+
+    addAnimations() {
+      const anim = new Animation({
+        name: 'animation.' + this.id + '.idle',
+        loop: 'loop',
+        length: LOOP,
+        snapping: 24
+      }).add();
+      const times = [0, 0.5, 1.0, 1.5, 2.0];
+      for (const boneName of Object.keys(this.anims)) {
+        const a = this.anims[boneName];
+        if (!a.amp) continue;
+        const ba = anim.getBoneAnimator(this.bones.get(boneName));
+        for (const t of times) {
+          const value = a.amp * Math.sin((2 * Math.PI * t) / LOOP + a.phase);
+          const dp = { x: 0, y: 0, z: 0 };
+          dp[a.axis] = Math.round(value * 1000) / 1000;
+          ba.addKeyframe({ time: t, channel: 'rotation', data_points: [dp], interpolation: 'linear' });
+        }
+      }
+      return anim;
+    }
+
+    toRiftworldGeo(bedrock) {
+      const byName = new Map(bedrock.bones.map(b => [b.name, b]));
+      const bones = [];
+      for (const name of this.boneOrder) {
+        const b = byName.get(name);
+        if (!b) throw new Error('bedrock export missing bone ' + name);
+        const out = { name };
+        if (b.parent) out.parent = b.parent;
+        out.pivot = [b.pivot[0], -b.pivot[1], b.pivot[2]];
+        // BB -> runtime reflects both X and Y: D = diag(-1,-1,1).
+        // A rotation axis transforms as D for this proper 180-degree rotation.
+        // Bedrock's exported [-rx,-ry,rz] already has exactly those signs.
+        if (b.rotation) out.rotation = b.rotation.slice();
+        const a = this.anims[name];
+        if (a && a.amp) out.anim = { axis: a.axis, amp: a.amp, speed: a.speed, phase: a.phase };
+        if (b.cubes) {
+          out.cubes = b.cubes.map(c => {
+            const cube = {
+              origin: [c.origin[0], -(c.origin[1] + c.size[1]), c.origin[2]],
+              size: c.size.slice(),
+              uv: c.uv.slice()
+            };
+            if (c.mirror) cube.mirror = true;
+            if (c.inflate) cube.inflate = c.inflate;
+            return cube;
+          });
+        }
+        bones.push(out);
+      }
+      return {
+        texture_width: this.size,
+        texture_height: this.size,
+        render_scale: RENDER_SCALE,
+        translucent: false,
+        bones
+      };
+    }
+
+    async finish() {
+      this.packUV();
+      const dataURL = this.paintAtlas();
+      await this.addTexture(dataURL);
+      this.addAnimations();
+
+      const bbmodelRaw = Codecs.project.compile();
+      const bbmodel = JSON.stringify(JSON.parse(bbmodelRaw), null, 2);
+      const bedrock = Codecs.bedrock_old.compile({ raw: true });
+      const geo = this.toRiftworldGeo(bedrock);
+
+      let minX = Infinity, minY = Infinity, minZ = Infinity;
+      let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+      for (const item of this.cubes) {
+        const f = item.cube.from, t = item.cube.to;
+        minX = Math.min(minX, f[0]); maxX = Math.max(maxX, t[0]);
+        minY = Math.min(minY, f[1]); maxY = Math.max(maxY, t[1]);
+        minZ = Math.min(minZ, f[2]); maxZ = Math.max(maxZ, t[2]);
+      }
+      const stats = {
+        id: this.id,
+        title_ru: this.spec.title_ru,
+        biome: this.spec.biome,
+        concept: this.spec.concept,
+        revision: this.id === 'sizo_leafwing' ? 4 : this.id === 'bone_raven' ? 4 : this.id === 'silver_sea_serpent' ? 3 : ['porcelain_crane', 'basalt_beetle', 'ash_moth', 'amethyst_fox'].includes(this.id) ? 3 : 1,
+        generator: 'Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)',
+        bones: this.bones.size,
+        cubes: this.cubes.length,
+        atlas: [this.size, this.size],
+        units_per_block: UNITS_PER_BLOCK,
+        render_scale: RENDER_SCALE,
+        bounds_blockbench: { min: [minX, minY, minZ], max: [maxX, maxY, maxZ] },
+        size_blocks: [
+          (maxX - minX) * RENDER_SCALE / 16,
+          (maxY - minY) * RENDER_SCALE / 16,
+          (maxZ - minZ) * RENDER_SCALE / 16
+        ],
+        animations: Object.keys(this.anims).length,
+        bbmodel_bytes: bbmodel.length,
+        geo_bones: geo.bones.length,
+        geo_cubes: geo.bones.reduce((n, b) => n + (b.cubes ? b.cubes.length : 0), 0)
+      };
+      return { id: this.id, title_ru: this.spec.title_ru, biome: this.spec.biome, concept: this.spec.concept, bbmodel, geo, texture: dataURL, bedrock, stats };
+    }
+  }
+
+  // ---------------------------------------------------------------- helpers
+
+  function ellipsoidSolid(b, bone, prefix, center, radii, step, mat) {
+    const [cx, cy, cz] = center, [rx, ry, rz] = radii;
+    let count = 0;
+    for (let y = Math.ceil((cy - ry) / step) * step; y < cy + ry; y += step) {
+      const yy = Math.min(1, Math.max(-1, (y + step / 2 - cy) / ry));
+      const sy = Math.sqrt(Math.max(0, 1 - yy * yy));
+      for (let x = Math.ceil((cx - rx * sy) / step) * step; x < cx + rx * sy; x += step) {
+        const xx = Math.min(1, Math.max(-1, (x + step / 2 - cx) / (rx * sy || 1)));
+        const sz = Math.sqrt(Math.max(0, 1 - xx * xx));
+        const z0 = Math.round(cz - rz * sy * sz), z1 = Math.round(cz + rz * sy * sz);
+        if (z1 <= z0) continue;
+        const x1 = Math.min(Math.round(cx + rx * sy), x + step);
+        if (x1 <= x) continue;
+        b.cube(bone, prefix + '_' + count++, [x, y, z0], [x1, y + step, z1], typeof mat === 'function' ? mat(x, y, z0) : mat);
+      }
+    }
+  }
+
+  function ellipsoidShell(b, bone, prefix, center, radii, step, matFn, opts) {
+    const options = opts || {};
+    const [cx, cy, cz] = center, [rx, ry, rz] = radii;
+    const i0 = Math.floor((cx - rx) / step), i1 = Math.ceil((cx + rx) / step);
+    const j0 = Math.floor((cy - ry) / step), j1 = Math.ceil((cy + ry) / step);
+    const k0 = Math.floor((cz - rz) / step), k1 = Math.ceil((cz + rz) / step);
+    const inside = (i, j, k) => {
+      const x = (i + 0.5) * step - cx, y = (j + 0.5) * step - cy, z = (k + 0.5) * step - cz;
+      if (options.minY != null && (j + 0.5) * step < options.minY) return false;
+      if (options.maxY != null && (j + 0.5) * step > options.maxY) return false;
+      return (x * x) / (rx * rx) + (y * y) / (ry * ry) + (z * z) / (rz * rz) <= 1;
+    };
+    const surface = new Map();
+    for (let j = j0; j < j1; j++) for (let k = k0; k < k1; k++) for (let i = i0; i < i1; i++) {
+      if (!inside(i, j, k)) continue;
+      const exposed = !inside(i + 1, j, k) || !inside(i - 1, j, k) || !inside(i, j + 1, k) ||
+        !inside(i, j - 1, k) || !inside(i, j, k + 1) || !inside(i, j, k - 1);
+      if (!exposed) continue;
+      const p = [(i + 0.5) * step, (j + 0.5) * step, (k + 0.5) * step];
+      const mat = typeof matFn === 'function' ? matFn(p, i, j, k) : matFn;
+      if (mat) surface.set(i + ',' + j + ',' + k, { i, j, k, mat });
+    }
+    let count = 0;
+    for (let j = j0; j < j1; j++) for (let k = k0; k < k1; k++) {
+      let i = i0;
+      while (i < i1) {
+        const cell = surface.get(i + ',' + j + ',' + k);
+        if (!cell) { i++; continue; }
+        let end = i + 1;
+        while (end < i1) {
+          const next = surface.get(end + ',' + j + ',' + k);
+          if (!next || next.mat !== cell.mat) break;
+          end++;
+        }
+        b.cube(bone, prefix + '_' + count++, [i * step, j * step, k * step], [end * step, (j + 1) * step, (k + 1) * step], cell.mat, cell.extra);
+        i = end;
+      }
+    }
+  }
+
+  function tubePath(b, bone, prefix, points, width, mat, step) {
+    const s = step || 4;
+    let count = 0;
+    for (let seg = 0; seg < points.length - 1; seg++) {
+      const a = points[seg], c = points[seg + 1];
+      const n = Math.max(1, Math.ceil(dist(a, c) / s));
+      for (let i = 0; i < n; i++) {
+        const t = i / n;
+        const p = [lerp(a[0], c[0], t), lerp(a[1], c[1], t), lerp(a[2], c[2], t)];
+        const w = typeof width === 'function' ? width(seg + t) : width;
+        b.box(bone, prefix + '_' + count++, p, [w, w, w], typeof mat === 'function' ? mat(seg + t, p) : mat);
+      }
+    }
+    const last = points[points.length - 1];
+    const w = typeof width === 'function' ? width(points.length - 1) : width;
+    b.box(bone, prefix + '_end', last, [w, w, w], typeof mat === 'function' ? mat(points.length - 1, last) : mat);
+  }
+
+  function feather(b, bone, prefix, root, tip, width, thickness, mat, veinMat) {
+    const length = dist(root, tip);
+    const n = Math.max(4, Math.ceil(length / 2));
+    for (let i = 0; i < n; i++) {
+      const t = (i + 0.5) / n;
+      const p = [lerp(root[0], tip[0], t), lerp(root[1], tip[1], t), lerp(root[2], tip[2], t)];
+      const w = Math.max(2, Math.round(width * (1 - t * 0.78)));
+      const dx = Math.abs(tip[0] - root[0]), dy = Math.abs(tip[1] - root[1]), dz = Math.abs(tip[2] - root[2]);
+      let size;
+      if (dz >= dx && dz >= dy) size = [w, thickness, 4];
+      else if (dx >= dy) size = [4, thickness, w];
+      else size = [w, 4, thickness];
+      b.box(bone, prefix + '_vane_' + i, p, size, mat);
+      if (veinMat && i % 2 === 0) {
+        const veinSize = dz >= dx && dz >= dy ? [1, thickness + 1, 3] : dx >= dy ? [3, thickness + 1, 1] : [1, 3, thickness + 1];
+        b.box(bone, prefix + '_vein_' + i, [p[0], p[1] + 0.5, p[2]], veinSize, veinMat);
+      }
+    }
+  }
+
+  function crystal(b, bone, prefix, base, height, width, lean) {
+    const tiers = 6;
+    const dx = lean ? lean[0] : 0, dz = lean ? lean[1] : 0;
+    for (let i = 0; i < tiers; i++) {
+      const t = i / (tiers - 1);
+      const w = Math.max(1, Math.round(width * (i === tiers - 1 ? 0.22 : i === tiers - 2 ? 0.48 : 1 - t * 0.45)));
+      const h = Math.max(1, Math.round(height / tiers));
+      const center = [base[0] + dx * t * height, base[1] + h * (i + 0.5), base[2] + dz * t * height];
+      const mat = i % 3 === 0 ? 'crystal_hi' : i % 3 === 1 ? 'crystal' : 'crystal_lo';
+      b.box(bone, prefix + '_' + i, center, [w, h, w], mat);
+    }
+  }
+
+  // A single cuboid along a segment in XY or YZ, with one static rotation
+  // axis per bone so the Minecraft runtime conversion is testable.
+  function barXY(b, parent, name, a, c, width, depth, material) {
+    const mid = a.map((v, i) => (v + c[i]) / 2);
+    const length = Math.max(1, Math.round(Math.hypot(c[0]-a[0], c[1]-a[1])));
+    const angle = Math.atan2(-(c[0]-a[0]), c[1]-a[1]) * 180 / Math.PI;
+    b.bone(name, parent, mid, [0, 0, angle]);
+    b.box(name, 'beam', mid, [width, length, depth], material);
+    return name;
+  }
+  function barYZ(b, parent, name, a, c, width, depth, material) {
+    const mid = a.map((v, i) => (v + c[i]) / 2);
+    const length = Math.max(1, Math.round(Math.hypot(c[1]-a[1], c[2]-a[2])));
+    const angle = Math.atan2(c[2]-a[2], c[1]-a[1]) * 180 / Math.PI;
+    b.bone(name, parent, mid, [angle, 0, 0]);
+    b.box(name, 'beam', mid, [width, length, depth], material);
+    return name;
+  }
+
+  // ---------------------------------------------------------------- crane
+
+  function buildPorcelainCrane(b) {
+    b.bone('body', null, [0, 88, 2]);
+    ellipsoidShell(b, 'body', 'porcelain_hull', [0, 90, 4], [19, 23, 34], 4, (p) => {
+      if (p[1] > 104 && Math.abs(p[0]) < 12) return 'porcelain_hi';
+      if (p[1] < 78) return 'porcelain_lo';
+      return 'porcelain';
+    });
+    // Kintsugi seams: thin raised gold geometry, not random yellow pixels.
+    tubePath(b, 'body', 'gold_seam_back', [[-8, 108, -12], [-2, 112, 0], [6, 108, 14], [10, 100, 26]], 1, 'gold', 3);
+    tubePath(b, 'body', 'gold_seam_breast', [[0, 96, -28], [4, 86, -30], [2, 76, -24]], 1, 'gold', 3);
+    tubePath(b, 'body', 'gold_seam_side', [[18, 94, -8], [19, 86, 4], [16, 78, 16]], 1, 'gold', 3);
+
+    b.bone('neck_lower', 'body', [0, 102, -22]);
+    const neck = [[0, 100, -20], [0, 114, -30], [0, 128, -27], [0, 142, -35], [0, 150, -40]];
+    tubePath(b, 'neck_lower', 'neck_porcelain', neck, t => t < 1 ? 10 : t < 3 ? 8 : 7, 'porcelain', 3);
+    tubePath(b, 'neck_lower', 'neck_gold', [[4, 104, -24], [4, 116, -31], [3, 128, -28], [3, 142, -36]], 1, 'gold', 2);
+    b.bone('head', 'neck_lower', [0, 148, -40]);
+    b.box('head', 'skull', [0, 152, -42], [12, 10, 16], 'porcelain_hi');
+    b.box('head', 'crown', [0, 158, -42], [8, 2, 10], 'porcelain');
+    b.box('head', 'beak_base', [0, 151, -53], [6, 4, 8], 'gold');
+    b.box('head', 'beak_mid', [0, 150, -60], [4, 3, 7], 'gold_hi');
+    b.box('head', 'beak_tip', [0, 149, -66], [2, 2, 6], 'gold');
+    b.box('head', 'eye_left', [-6, 154, -45], [1, 3, 3], 'eye');
+    b.box('head', 'eye_right', [6, 154, -45], [1, 3, 3], 'eye');
+
+    // Side-view feather vanes are broad in Y and thin in X. Each is a long
+    // cuboid on a rotated group, rather than disconnected voxel dots.
+    for (const side of [-1, 1]) {
+      const wing = side < 0 ? 'wing_left' : 'wing_right';
+      b.bone(wing, 'body', [side * 17, 100, 2]);
+      b.box(wing, 'shoulder', [side * 19, 99, -2], [5, 19, 23], 'porcelain_hi');
+      for (let i = 0; i < 5; i++) {
+        const pivot = [side * (21 + i % 2), 104 - i * 4, -10 + i * 4];
+        const vane = wing + '_vane_' + i;
+        const length = 35 + i * 2;
+        b.bone(vane, wing, pivot, [15 + i * 3, 0, 0]);
+        // Layered feathers overlap slightly; all stay outside the torso.
+        b.box(vane, 'feather_plate', [pivot[0], pivot[1] - 4, pivot[2] + length / 2],
+          [3, 11, length], i % 2 ? 'celadon' : 'celadon_hi');
+        b.box(vane, 'gold_shaft', [pivot[0] + side * 2, pivot[1] - 3, pivot[2] + length / 2],
+          [1, 1, length - 3], 'gold');
+        b.box(vane, 'tip', [pivot[0], pivot[1] - 5, pivot[2] + length + 2],
+          [2, 7, 5], i % 2 ? 'celadon_lo' : 'celadon');
+      }
+      // A short porcelain cover over the bases makes a coherent shoulder.
+      b.box(wing, 'covert_upper', [side * 24, 103, 0], [3, 8, 22], 'porcelain_hi');
+      b.box(wing, 'covert_lower', [side * 24, 96, 4], [3, 6, 26], 'celadon');
+      b.animate(wing, 'z', 1.5, 0.8, side < 0 ? 0 : Math.PI);
+    }
+
+    b.bone('tail', 'body', [0, 88, 30]);
+    // Short, broad overlapping tail fan, not a bundle of long loose strands.
+    for (let i = 0; i < 5; i++) {
+      const x = (i - 2) * 5;
+      const pivot = [x, 87 - Math.abs(i - 2), 29];
+      const vane = 'tail_vane_' + i;
+      b.bone(vane, 'tail', pivot, [24 + Math.abs(i - 2) * 4, 0, 0]);
+      const length = 25 - Math.abs(i - 2) * 2;
+      b.box(vane, 'tail_plate', [x, pivot[1] - 3, pivot[2] + length / 2],
+        [8, 5, length], i % 2 ? 'porcelain_hi' : 'celadon_hi');
+      b.box(vane, 'tail_tip', [x, pivot[1] - 3, pivot[2] + length + 2],
+        [6, 4, 5], i % 2 ? 'celadon' : 'celadon_lo');
+      b.box(vane, 'tail_gold', [x, pivot[1] + 1, pivot[2] + length / 2], [1, 1, length - 3], 'gold');
+    }
+
+    for (const side of [-1, 1]) {
+      const upper = side < 0 ? 'leg_left_upper' : 'leg_right_upper';
+      const lower = side < 0 ? 'leg_left_lower' : 'leg_right_lower';
+      const foot = side < 0 ? 'foot_left' : 'foot_right';
+      const x = side * 8;
+      b.bone(upper, 'body', [x, 72, 2]);
+      b.box(upper, 'thigh', [x, 66, 2], [6, 14, 6], 'porcelain_lo');
+      b.bone(lower, upper, [x, 58, 2]);
+      b.box(lower, 'knee', [x, 58, 2], [5, 5, 5], 'ivory');
+      b.box(lower, 'shin', [x, 32, 2], [3, 48, 3], 'ivory');
+      b.bone(foot, lower, [x, 8, 2]);
+      b.box(foot, 'ankle', [x, 8, 2], [4, 4, 4], 'ivory');
+      b.box(foot, 'toe_front', [x, 5, -6], [2, 2, 14], 'ivory');
+      b.box(foot, 'toe_left', [x - 3, 5, -3], [2, 2, 10], 'ivory');
+      b.box(foot, 'toe_right', [x + 3, 5, -3], [2, 2, 10], 'ivory');
+      b.box(foot, 'toe_back', [x, 5, 8], [2, 2, 6], 'ivory');
+      b.animate(upper, 'x', 2, 1.2, side < 0 ? 0 : Math.PI);
+    }
+    b.animate('neck_lower', 'x', 2, 0.6, 0);
+    b.animate('head', 'x', 2.5, 0.6, 0.5);
+    b.animate('tail', 'y', 3, 0.7, 0);
+  }
+
+  // ---------------------------------------------------------------- beetle
+
+  function nCrack(p) { return fnv('crack:' + Math.floor(p[0] / 4) + ',' + Math.floor(p[1] / 4) + ',' + Math.floor(p[2] / 4)) > 0.72; }
+
+  function buildBasaltBeetle(b) {
+    b.bone('body', null, [0, 34, 4]);
+    // Faceted carapace built from large, overlapping armor plates. Taper the
+    // fore/aft sections and cover the glowing core, leaving only narrow seams.
+    b.box('body', 'shell_underside', [0, 42, 8], [68, 24, 76], 'basalt_lo');
+    b.box('body', 'core_glow', [0, 52, 8], [64, 7, 74], 'lava');
+    const rows = [
+      { z: -20, width: 28, length: 24 },
+      { z: 6, width: 36, length: 28 },
+      { z: 34, width: 28, length: 22 }
+    ];
+    for (let row = 0; row < rows.length; row++) {
+      const {z, width, length} = rows[row];
+      b.box('body', 'central_plate_' + row, [0, 66, z], [width, 10, length], row === 1 ? 'basalt_hi' : 'basalt');
+      b.box('body', 'crown_plate_' + row, [0, 72, z], [width - 7, 3, length - 4], row === 1 ? 'basalt' : 'basalt_hi');
+      for (const side of [-1, 1]) {
+        const pivot = [side * (width / 2 - 2), 65, z];
+        const panel = 'shell_' + (side < 0 ? 'left_' : 'right_') + row;
+        b.bone(panel, 'body', pivot, [0, 0, side * -27]);
+        b.box(panel, 'sloped_plate', [side * (width / 2 + 8), 65, z],
+          [22, 9, length], row === 1 ? 'basalt_hi' : 'basalt');
+        b.box(panel, 'raised_facet', [side * (width / 2 + 8), 70, z],
+          [18, 2, length - 4], row === 1 ? 'basalt' : 'basalt_hi');
+        b.box('body', 'side_plate_' + side + '_' + row, [side * (width / 2 + 18), 48, z],
+          [7, 15, length], row === 1 ? 'basalt' : 'basalt_lo');
+      }
+    }
+    // Raised, thin segmented glowing cracks (not a bright orange belt).
+    for (const z of [-7, 21]) {
+      b.box('body', 'top_crack_' + z, [0, 74, z], [27, 1, 2], 'lava');
+      for (const side of [-1, 1]) {
+        const panel = 'shell_' + (side < 0 ? 'left_' : 'right_') + (z < 0 ? 0 : 1);
+        const x = side * (z < 0 ? 21 : 25);
+        b.box(panel, 'crack_line', [x, 71, z], [16, 1, 2], 'lava');
+      }
+    }
+    // Thorax collar.
+    ellipsoidShell(b, 'body', 'thorax', [0, 38, -38], [30, 18, 18], 4, p => p[1] > 44 ? 'basalt_hi' : 'basalt');
+
+    b.bone('head', 'body', [0, 34, -50]);
+    b.box('head', 'head_block', [0, 32, -56], [34, 20, 20], 'basalt');
+    b.box('head', 'face_plate', [0, 38, -62], [26, 8, 8], 'basalt_hi');
+    b.box('head', 'eye_left', [-17, 36, -60], [2, 6, 6], 'lava_hi');
+    b.box('head', 'eye_right', [17, 36, -60], [2, 6, 6], 'lava_hi');
+    b.box('head', 'mandible_left', [-10, 24, -66], [10, 6, 12], 'basalt_lo');
+    b.box('head', 'mandible_right', [10, 24, -66], [10, 6, 12], 'basalt_lo');
+    b.box('head', 'mandible_tip_left', [-13, 22, -73], [5, 4, 6], 'basalt');
+    b.box('head', 'mandible_tip_right', [13, 22, -73], [5, 4, 6], 'basalt');
+    // Horns occupy the forward plane; antennae start behind them. The
+    // separation is kept even when the antennae sway about their pivots.
+    for (const side of [-1, 1]) {
+      const horn = side < 0 ? 'horn_left' : 'horn_right';
+      const pivot = [side * 13, 39, -69];
+      b.bone(horn, 'head', pivot, [-18, 0, 0]);
+      const hornTilt = horn + '_tilt';
+      b.bone(hornTilt, horn, pivot, [0, 0, side * -12]);
+      b.box(hornTilt, 'horn_base', [pivot[0], 47, pivot[2]], [9, 18, 9], 'ember');
+      b.box(hornTilt, 'horn_tip', [pivot[0], 58, pivot[2]], [6, 9, 6], 'lava_hi');
+    }
+    for (const side of [-1, 1]) {
+      const ant = side < 0 ? 'antenna_left' : 'antenna_right';
+      const pivot = [side * 20, 45, -42];
+      b.bone(ant, 'head', pivot);
+      const stem = ant + '_stem';
+      b.bone(stem, ant, pivot, [0, 0, side * -30]);
+      b.box(stem, 'antenna_stem', [pivot[0], pivot[1] + 13, pivot[2]], [4, 26, 4], 'basalt_lo');
+      b.box(stem, 'antenna_club', [pivot[0], pivot[1] + 28, pivot[2]], [7, 7, 7], 'basalt');
+      b.animate(ant, 'y', 4, 1.1, side < 0 ? 0 : Math.PI);
+    }
+
+    const legs = [
+      ['front_left', -24, -34, -1], ['front_right', 24, -34, 1],
+      ['middle_left', -30, 2, -1], ['middle_right', 30, 2, 1],
+      ['back_left', -24, 36, -1], ['back_right', 24, 36, 1]
+    ];
+    for (const [name, x, z, side] of legs) {
+      const hip = 'leg_' + name, knee = hip + '_lower', foot = hip + '_foot';
+      b.bone(hip, 'body', [x, 30, z]);
+      b.box(hip, 'coxa', [x + side * 5, 28, z], [12, 10, 12], 'basalt');
+      b.bone(knee, hip, [x + side * 10, 26, z], [0, 0, side * 28]);
+      b.box(knee, 'femur', [x + side * 10, 19, z], [10, 17, 11], 'basalt_hi');
+      b.bone(foot, knee, [x + side * 10, 11, z], [0, 0, side * -28]);
+      b.box(foot, 'tibia', [x + side * 10, 6, z], [7, 11, 8], 'basalt');
+      b.box(foot, 'claw', [x + side * 10, 1, z - 3], [12, 4, 14], 'basalt_lo');
+      b.animate(hip, 'x', 4, 1.4, (legs.findIndex(l => l[0] === name) % 3) * Math.PI / 3);
+    }
+    b.animate('head', 'x', 1.5, 0.7, 0);
+  }
+
+  // ---------------------------------------------------------------- moth
+
+  // Moth: broad planar cuboids arranged as asymmetric layered wing plates.
+  function buildAshMoth(b) {
+    b.bone('body', null, [0, 34, 0]);
+    b.box('body', 'thorax', [0, 34, -1], [24, 24, 28], 'ash');
+    b.box('body', 'fuzzy_collar', [0, 40, -8], [26, 16, 16], 'ash_hi');
+    b.box('body', 'abdomen', [0, 26, 20], [19, 22, 30], 'ash');
+    for (let i = 0; i < 3; i++) b.box('body', 'abdomen_band_' + i, [0, 26, 12 + 8*i], [20, 19, 2], 'ash_dark');
+    b.bone('head', 'body', [0, 41, -17]);
+    b.box('head', 'head', [0, 42, -20], [20, 17, 14], 'ash_hi');
+    b.box('head', 'face', [0, 39, -28], [12, 12, 4], 'ash');
+    for (const side of [-1, 1]) {
+      b.box('head', 'eye_' + side, [side*9, 44, -28], [5, 7, 3], 'eye');
+      const ant = side < 0 ? 'antenna_left' : 'antenna_right';
+      const pivot = [side * 7, 49, -19];
+      b.bone(ant, 'head', pivot, [0, 0, side * -18]);
+      b.box(ant, 'stalk', [pivot[0], 62, pivot[2]], [3, 25, 4], 'ash_dark');
+      for (let i=0; i<5; i++) {
+        b.box(ant, 'barb_' + i, [pivot[0], 53 + i*4, pivot[2]], [11 - i, 2, 4], 'ash_dark');
+      }
+      b.animate(ant, 'y', 3, 1.2, side < 0 ? 0 : Math.PI);
+    }
+    for (const side of [-1, 1]) {
+      const fore = side < 0 ? 'wing_fore_left' : 'wing_fore_right';
+      const hind = side < 0 ? 'wing_hind_left' : 'wing_hind_right';
+      const pivot = [side*10, 43, 1];
+      b.bone(fore, 'body', pivot, [0, 0, side*10]);
+      // Separate wide rectangles overlap: a thick leading edge, tapered inner
+      // sections and a glowing tip, rather than dozens of one-voxel strips.
+      const plates = [
+        [21, 44, 23, 24, 'wing'], [40, 46, 20, 28, 'wing_hi'],
+        [58, 49, 18, 25, 'wing'], [72, 52, 14, 20, 'wing_hi'],
+        [82, 55, 9, 15, 'ember']
+      ];
+      plates.forEach(([x,y,w,h,mat],i) => b.box(fore, 'fore_plate_'+i, [side*x,y,0], [w,h,3], mat));
+      plates.slice(0,4).forEach(([x,y,w,h], i) =>
+        b.box(fore, 'leading_edge_'+i, [side*x, y+h/2-1, -1], [w, 2, 4], 'ash_hi'));
+      b.box(fore, 'ember_tip', [side*85, 55, -1], [7, 14, 4], 'lava');
+      for (let i=0;i<3;i++) b.box(fore, 'rib_'+i, [side*(28+20*i), 44+i*3, -2], [2, 16, 1], 'wing_lo');
+      b.bone(hind, 'body', [side*10, 29, 4], [0, 0, side*-5]);
+      const eyeCenter = [side*33, 22, -3];
+      b.box(hind, 'lower_wing_base', [side*29, 22, 4], [38, 25, 3], 'eyespot',
+        {eyespot_center: eyeCenter, eyespot_radius: 10, eyespot_plane: 'xy'});
+      b.box(hind, 'lower_wing_tip', [side*49, 23, 4], [9, 18, 3], 'wing');
+      b.box(hind, 'lower_wing_bottom', [side*30, 9, 4], [29, 4, 3], 'wing_lo');
+      b.animate(fore, 'z', 7, 2.2, side < 0 ? 0 : Math.PI);
+      b.animate(hind, 'z', 5, 2.2, side < 0 ? 0.3 : Math.PI + 0.3);
+    }
+    b.bone('legs', 'body', [0, 23, -6]);
+    for (const side of [-1,1]) for (let i=0;i<3;i++) b.box('legs', 'leg_'+side+'_'+i, [side*8, 17, -9+i*8], [2, 12, 2], 'ash_dark');
+    b.bone('ash_trail', 'body', [0, 14, 18]);
+    [[-14,6,16],[12,4,22],[-5,0,28],[20,1,30],[-20,3,34],[5,-3,38]].forEach((p,i) => b.box('ash_trail', 'mote_'+i, p, [3,3,3], 'ash_dark'));
+    b.animate('head','x',2,0.8,0);
+  }
+
+  function buildAmethystFox(b) {
+    b.bone('body', null, [0, 44, 0]);
+    b.box('body', 'torso', [0, 45, 3], [28, 24, 53], 'violet');
+    b.box('body', 'back', [0, 58, 4], [26, 5, 46], 'violet_hi');
+    b.box('body', 'belly', [0, 34, 1], [23, 6, 44], 'white');
+    b.box('body', 'chest', [0, 41, -25], [23, 23, 9], 'white_hi');
+    b.bone('head', 'body', [0, 58, -28]);
+    b.box('head', 'skull', [0, 63, -32], [26, 21, 22], 'violet_hi');
+    b.box('head', 'brow', [0, 69, -40], [26, 7, 10], 'lavender');
+    b.box('head', 'muzzle', [0, 57, -48], [18, 8, 14], 'white');
+    b.box('head', 'nose', [0, 60, -56], [7, 4, 3], 'violet_lo');
+    for (const side of [-1,1]) {
+      b.box('head', 'cheek_'+side, [side*11, 57, -40], [7, 9, 13], 'white_hi');
+      b.box('head', 'eye_'+side, [side*8, 65, -44], [5, 5, 2], 'eye_light');
+      const ear = side < 0 ? 'ear_left' : 'ear_right';
+      const p = [side*8, 72, -32];
+      b.bone(ear, 'head', p, [0, 0, side*-16]);
+      b.box(ear, 'ear_outer', [p[0], 84, p[2]], [9, 24, 7], 'violet');
+      b.box(ear, 'ear_inner', [p[0], 84, p[2]-4], [5, 19, 1], 'white');
+      b.box(ear, 'ear_tip', [p[0], 98, p[2]], [5, 6, 5], 'crystal_hi');
+      b.animate(ear, 'y', 2, 1.0, side < 0 ? 0 : Math.PI);
+    }
+    for (const side of [-1,1]) for (const back of [false,true]) {
+      const name = 'leg_' + (back ? 'back_' : 'front_') + (side<0?'left':'right');
+      const z = back ? 21 : -17;
+      b.bone(name, 'body', [side*10, 36, z]);
+      b.box(name, 'upper', [side*10, 28, z], [9, 19, 10], back ? 'lavender' : 'violet');
+      b.box(name, 'sock', [side*10, 13, z], [7, 17, 8], 'white');
+      b.box(name, 'paw', [side*10, 3, z-2], [9, 6, 12], 'white_hi');
+      b.box(name, 'toe', [side*10, 1, z-5], [9, 2, 5], 'lavender');
+      b.animate(name, 'x', 4, 1.2, (side<0) !== back ? 0 : Math.PI);
+    }
+    b.bone('tail', 'body', [0, 49, 28], [27, 0, 0]);
+    b.box('tail', 'root', [0, 47, 34], [19, 20, 14], 'violet_hi');
+    b.box('tail', 'bushy_tail', [0, 46, 52], [30, 30, 31], 'lavender');
+    b.box('tail', 'tip_fur', [0, 46, 70], [27, 27, 9], 'violet_hi');
+    for (let i=0;i<5;i++) {
+      const x=(i-2)*5;
+      const p=[x, 47, 74]; const n='tail_crystal_'+i;
+      // Fan the crystals outward in two single-axis groups; the bases start
+      // beyond the fur tip instead of being buried inside the tail.
+      b.bone(n,'tail',p,[0,0,(i-2)*13]);
+      const tilt=n+'_tilt'; b.bone(tilt,n,p,[55,0,0]);
+      crystal(b,tilt,'crystal',p,21+(2-Math.abs(i-2))*4,7,[0,0]);
+    }
+    for (let i=0;i<4;i++) {
+      const z=-9+i*11, p=[i%2 ? 3 : -3, 58, z], n='back_crystal_'+i;
+      b.bone(n,'body',p,[i%2?-22:22,0,0]);
+      crystal(b,n,'crystal',p,13+(i%2)*4,7,[0,0]);
+    }
+    b.animate('head','x',2,0.8,0);
+    b.animate('tail','y',5,1.1,0);
+  }
+
+  // Living woodland dragon, based on approved Sizo leafwing concept.
+  function buildSizoLeafwing(b) {
+    b.bone('body',null,[0,38,0]);
+    // Layered organic torso, distinctly separated haunches and chest.
+    b.box('body','torso',[0,37,5],[24,19,42],'mint');
+    b.box('body','back',[0,47,4],[22,5,39],'mint_hi');
+    b.box('body','lower_belly',[0,29,5],[19,6,34],'mint_lo');
+    b.box('body','rump',[0,36,22],[23,19,13],'mint');
+    b.bone('neck','body',[0,46,-15],[-18,0,0]);
+    b.box('neck','neck',[0,55,-21],[17,24,18],'mint');
+    b.box('neck','throat',[0,52,-31],[19,23,5],'leaf_cream');
+    for(let i=-2;i<=2;i++) { b.box('neck','breast_tuft_'+i,[i*4,40-Math.abs(i),-33],[4,10,5],i%2?'white':'leaf_cream'); }
+    for(const side of [-1,1]) {
+      b.box('neck','breast_side_'+side,[side*10,50,-27],[2,20,10],'leaf_cream');
+      for(let i=0;i<3;i++) b.box('neck','breast_side_tip_'+side+'_'+i,[side*10,40-i*2,-30+i*4],[2,8,4],i%2?'white':'leaf_cream');
+    }
+    for(let i=0;i<5;i++) b.box('neck','throat_tip_'+i,[(i-2)*3,40-Math.abs(i-2),-32],[3,8,3],i%2?'bone':'leaf_cream');
+    b.bone('head','neck',[0,68,-25]);
+    b.box('head','skull',[0,72,-29],[21,15,20],'mint_hi');
+    b.box('head','forehead',[0,77,-32],[18,4,16],'mint');
+    b.box('head','muzzle',[0,68,-42],[13,7,13],'mint_hi');
+    b.box('head','chin',[0,64,-41],[12,3,11],'leaf_cream');
+    b.box('head','nose',[0,70,-49],[7,3,3],'mint_lo');
+    for(const side of [-1,1]) {
+      b.box('head','socket_'+side,[side*11,73,-34],[2,8,9],'branch');
+      b.box('head','eye_'+side,[side*12,73,-34],[2,6,7],'amber');
+      b.box('head','pupil_'+side,[side*13,73,-35],[1,4,3],'eye');
+      b.box('head','eye_glint_'+side,[side*14,75,-37],[1,2,2],'white_hi');
+      b.box('head','cheek_'+side,[side*11,66,-29],[5,5,11],'leaf_cream');
+      const ear=side<0?'ear_left':'ear_right';
+      b.bone(ear,'head',[side*9,76,-23],[0,0,side*-30]);
+      b.box(ear,'ear_base',[side*10,80,-23],[8,9,5],'mint_hi');
+      b.box(ear,'ear_mid',[side*16,82,-23],[10,7,5],'mint');
+      b.box(ear,'ear_tip',[side*22,85,-23],[6,4,4],'mint_hi');
+      b.box(ear,'ear_inner',[side*16,82,-26],[10,3,1],'leaf_cream');
+      for(let t=0;t<3;t++) b.box('head','cheek_fur_'+side+'_'+t,[side*(11+t*2),65+t,-28+t*3],[4,4,5],'leaf_cream');
+      const ant=side<0?'antler_left':'antler_right';
+      b.bone(ant,'head',[side*7,79,-24]);
+      barXY(b,ant,ant+'_main',[side*7,79,-24],[side*13,101,-24],3,3,'branch');
+      barXY(b,ant,ant+'_fork1',[side*10,90,-24],[side*19,97,-24],3,3,'branch');
+      barXY(b,ant,ant+'_fork2',[side*13,99,-24],[side*18,108,-24],2,3,'branch');
+      barYZ(b,ant,ant+'_backbranch',[side*12,91,-24],[side*12,103,-13],3,3,'branch');
+      barYZ(b,ant,ant+'_backtip',[side*12,99,-18],[side*12,107,-19],2,2,'branch');
+    }
+    // Rasterise the actual leaf-like outline as cuboids rather than one
+    // triangle: three lobes and multiple discrete pale patches.
+    function intervalsAt(poly, x) {
+      const yy=[];
+      for(let i=0;i<poly.length;i++) {
+        const a=poly[i], c=poly[(i+1)%poly.length];
+        if((a[0]<=x && c[0]>x)||(c[0]<=x && a[0]>x)) yy.push(a[1]+(c[1]-a[1])*(x-a[0])/(c[0]-a[0]));
+      }
+      yy.sort((a,c)=>a-c); return yy;
+    }
+    const outline=[[12,53],[18,79],[47,105],[76,115],[146,124],[136,110],
+      [118,98],[140,96],[128,82],[106,75],[111,69],[99,58],[79,52],
+      [82,46],[66,37],[52,39],[39,45],[24,44]];
+    const patches=[
+      [[52,102],[78,110],[132,117],[119,105],[98,97],[76,98]],
+      [[51,99],[78,96],[121,92],[111,84],[94,80],[72,82]],
+      [[49,95],[70,80],[96,72],[94,63],[78,57],[62,60]],
+      [[43,85],[60,66],[72,59],[68,48],[56,46],[44,52],[31,57]]
+    ];
+    // Raise both leaf surfaces clear of the curled tail and shoulders.
+    outline.forEach(p=>p[1]+=12); patches.forEach(poly=>poly.forEach(p=>p[1]+=12));
+    for(const side of [-1,1]) {
+      const wing=side<0?'wing_left':'wing_right';
+      const pivot=[side*12,48,1];
+      b.bone(wing+'_yaw','body',pivot,[0,side<0?0:-12,0]);
+      b.bone(wing,wing+'_yaw',pivot,[0,0,side*4]);
+      for(let x=12;x<146;x+=2) {
+        const sample=x+1, yy=intervalsAt(outline,sample);
+        for(let q=0;q+1<yy.length;q+=2) {
+          const low=Math.round(yy[q]), high=Math.round(yy[q+1]);
+          if(high>low) b.box(wing,'leaf_'+x+'_'+q,[side*sample,(low+high)/2,5],[2,high-low,3],'leaf_green');
+        }
+        patches.forEach((poly,j)=>{
+          const p=intervalsAt(poly,sample);
+          for(let q=0;q+1<p.length;q+=2) {
+            const low=Math.round(p[q]), high=Math.round(p[q+1]);
+            if(high>low) b.box(wing,'pale_'+j+'_'+x+'_'+q,[side*sample,(low+high)/2,3],[2,high-low,2],'leaf_cream');
+          }
+        });
+      }
+      barXY(b,wing,wing+'_arm',[side*12,55,0],[side*47,116,0],5,4,'mint_hi');
+      barXY(b,wing,wing+'_leading',[side*47,116,0],[side*145,136,0],4,3,'leaf_vein');
+      [[126,112],[126,96],[103,78],[79,53],[51,43]].forEach(([x,y],i)=>
+        barXY(b,wing,wing+'_vein_'+i,[side*47,115,0],[side*x,y+12,0],2,2,'leaf_vein'));
+      b.animate(wing,'z',6,1.3,side<0?0:Math.PI);
+    }
+    for(const side of [-1,1]) for(const back of [false,true]) {
+      const n='leg_'+(back?'back_':'front_')+(side<0?'left':'right'), z=back?19:-12, x=side*10;
+      b.bone(n,'body',[x,32,z]);
+      b.box(n,'haunch',[x,28,z],[10,13,12],back?'mint':'mint_hi');
+      barYZ(b,n,n+'_upper',[x,28,z],[x,17,z+(back?8:-5)],7,7,'mint');
+      barYZ(b,n,n+'_lower',[x,17,z+(back?8:-5)],[x,5,z+(back?2:-13)],6,6,'mint_hi');
+      b.box(n,'paw',[x,3,z+(back?-2:-16)],[9,5,11],'mint_lo');
+      for(let i=-1;i<=1;i++) b.box(n,'claw_'+i,[x+i*3,2,z+(back?-8:-22)],[2,3,4],'branch');
+      b.animate(n,'x',3,1.0,(side<0)!==back?0:Math.PI);
+    }
+    b.bone('tail','body',[0,38,25]);
+    const tail=[[0,37,24],[0,28,44],[0,17,65],[0,13,83],[0,17,98],[0,27,104],[0,39,100],[0,44,91],[0,40,81]];
+    for(let i=0;i<tail.length-1;i++) barYZ(b,'tail','tail_curve_'+i,tail[i],tail[i+1],Math.max(6,12-i),Math.max(6,12-i),i%2?'mint_hi':'mint');
+    [[86,40,6],[82,37,12],[78,34,17],[74,31,14],[70,29,7]].forEach(([z,y,h],i)=>
+      b.box('tail','leaf_slice_'+i,[0,y,z],[4,h,4],i%2?'leaf_green':'mint_hi'));
+    barYZ(b,'tail','leaf_tip_vein',[3,40,87],[3,27,68],2,2,'leaf_vein');
+    for(const side of [-1,1]) {
+      b.box('neck','flower_'+side,[side*10,58,-29],[6,6,2],'flower_blue');
+      b.box('neck','flower_dot_'+side,[side*10,58,-31],[2,2,2],'eye_light');
+    }
+    b.animate('tail','y',4,1.0,0); b.animate('head','x',2,0.8,0);
+    // Scale the complete head subtree (including bone pivots) as one
+    // proportion change; leave the wing span and tail unchanged.
+    const head=b.bones.get('head'), pivot=[0,68,-25], factor=1.20;
+    function inHead(node) { while(node) { if(node===head) return true; node=node.parent; } return false; }
+    for(const item of b.cubes) if(inHead(item.cube.parent)) {
+      item.cube.from=item.cube.from.map((v,i)=>Math.round(pivot[i]+(v-pivot[i])*factor));
+      item.cube.to=item.cube.to.map((v,i)=>Math.max(item.cube.from[i]+1,Math.round(pivot[i]+(v-pivot[i])*factor)));
+    }
+    for(const group of b.bones.values()) if(inHead(group))
+      group.origin=group.origin.map((v,i)=>Math.round(pivot[i]+(v-pivot[i])*factor));
+  }
+
+  function buildAzureFrog(b) {
+    b.bone('body',null,[0,24,2]);
+    ellipsoidSolid(b,'body','belly',[0,24,5],[27,21,28],4,'frog_teal');
+    b.box('body','belly_front',[0,20,-18],[34,22,6],'frog_belly');
+    b.box('body','back',[0,42,7],[37,8,38],'frog_dark');
+    b.bone('head','body',[0,40,-12]);
+    b.box('head','head',[0,45,-18],[43,22,30],'frog_hi');
+    b.box('head','snout',[0,40,-34],[35,13,9],'frog_teal');
+    b.box('head','chin',[0,33,-32],[31,5,8],'frog_belly');
+    b.box('head','mouth',[0,38,-39],[23,2,1],'frog_dark');
+    for(const side of [-1,1]) {
+      b.box('head','nostril_'+side,[side*9,46,-37],[3,2,1],'frog_dark');
+      b.box('head','eye_tower_'+side,[side*16,56,-26],[14,12,13],'frog_dark');
+      b.box('head','gold_eye_'+side,[side*16,57,-34],[12,11,3],'gold_hi');
+      b.box('head','pupil_'+side,[side*16,57,-36],[7,8,2],'eye');
+      b.box('head','eye_glint_'+side,[side*14,59,-39],[2,2,1],'white_hi');
+    }
+    // Petal collar: alternating raised, tilted rectangular petals, with buds.
+    for(const side of [-1,1]) for(let i=0;i<3;i++) {
+      const x=side*(13+i*10), y=31+i*3, n='petal_'+side+'_'+i;
+      b.bone(n,'body',[side*12,33,-36],[0,0,side*(18+i*12)]);
+      b.box(n,'petal',[x,y,-36],[13,8,3], i%2?'petal_light':'petal_pink');
+      b.box(n,'petal_tip',[x+side*5,y,-37],[5,6,3],'petal_light');
+    }
+    b.box('body','petal_center',[0,27,-39],[13,10,4],'petal_light');
+    b.box('body','petal_center_left',[-10,28,-38],[10,9,4],'petal_pink');
+    b.box('body','petal_center_right',[10,28,-38],[10,9,4],'petal_pink');
+    for(const side of [-1,1]) for(const back of [false,true]) {
+      const n='leg_'+(back?'back_':'front_')+(side<0?'left':'right'); const z=back?18:-12;
+      b.bone(n,'body',[side*20,21,z]);
+      b.box(n,'thigh',[side*25,19,z],[15,18,17],back?'frog_dark':'frog_teal');
+      b.box(n,'shin',[side*27,10,z-2],[9,14,10],'frog_hi');
+      b.box(n,'palm',[side*27,3,z-6],[14,6,12],'frog_teal');
+      for(let i=-1;i<=1;i++) b.box(n,'toe_'+i,[side*27+i*5,3,z-13],[4,4,8],'frog_toe');
+      b.animate(n,'x',3,0.9,(side<0)!==back?0:Math.PI);
+    }
+    b.animate('head','x',2,0.8,0);
+  }
+
+  // Bone raven: hollow ribs, ivory skull and ragged black feather wings.
+  function buildBoneRaven(b) {
+    b.bone('body',null,[0,49,0]);
+    b.box('body','spine',[0,56,4],[7,7,47],'bone');
+    b.box('body','sternum',[0,43,-9],[11,21,23],'bone_hi');
+    b.box('body','pelvis',[0,43,23],[17,10,13],'bone');
+    // Each distinct curved rib wraps around an open, visibly hollow chest.
+    for(let i=0;i<4;i++) for(const side of [-1,1]) {
+      const z=-11+i*11, n='rib_'+side+'_'+i;
+      barXY(b,'body',n+'_upper',[side*3,57,z],[side*16,51,z],4,4,'bone_hi');
+      barXY(b,'body',n+'_lower',[side*16,51,z],[side*14,38,z],4,4,'bone');
+      barXY(b,'body',n+'_bottom',[side*14,38,z],[side*5,34,z],4,4,'bone_hi');
+    }
+    b.bone('neck','body',[0,59,-18],[-8,0,0]);
+    for(let i=0;i<3;i++) b.box('neck','vertebra_'+i,[0,63+i*4,-20-i*2],[10-i,4,9],'bone');
+    b.bone('head','neck',[0,75,-25]);
+    b.box('head','skull',[0,79,-29],[29,20,25],'bone_hi');
+    b.box('head','skull_top',[0,89,-29],[29,3,24],'bone');
+    b.box('head','cheekbone',[0,73,-35],[25,5,15],'bone');
+    b.box('head','beak_base',[0,73,-51],[16,10,33],'bone_hi');
+    b.box('head','beak_tip',[0,72,-68],[15,9,5],'bone');
+    b.box('head','lower_jaw',[0,63,-50],[8,3,28],'bone');
+    for(const side of [-1,1]) b.box('head','jaw_edge_'+side,[side*8,63,-50],[3,3,28],'bone');
+    b.box('head','jaw_hinge',[0,68,-36],[13,6,5],'bone_shadow');
+    for(const side of [-1,1]) {
+      // Small dark ember recessed inside a square skull socket. Heavy brow,
+      // long beak and a thinner nostril replace the toy-like bright eye.
+      b.box('head','socket_'+side,[side*15,79,-31],[2,12,13],'eye');
+      b.box('head','ember_'+side,[side*16,78,-30],[2,5,5],'raven_ember');
+      b.box('head','brow_'+side,[side*16,85,-31],[3,3,15],'bone_shadow');
+      b.box('head','nostril_'+side,[side*8,75,-51],[2,2,4],'eye');
+      const wing=side<0?'wing_left':'wing_right';
+      b.bone(wing,'body',[side*11,58,2],[0,0,side*3]);
+      // A raised elbow and long outer bone, with separate unequal primaries.
+      barXY(b,wing,wing+'_humerus',[side*11,58,1],[side*35,61,1],7,5,'bone');
+      barXY(b,wing,wing+'_elbow',[side*35,61,1],[side*40,96,1],6,6,'bone_hi');
+      barXY(b,wing,wing+'_forearm',[side*40,96,1],[side*105,83,1],6,5,'bone_hi');
+      b.box(wing,'elbow_cap',[side*40,96,1],[8,8,7],'bone_hi');
+      const tips=[[57,43],[65,32],[78,37],[86,26],[99,32],[108,27],[121,35],[131,31],[145,45],[156,40],[172,55]];
+      tips.forEach(([tx,ty],i)=>{
+        const rx=38+i*5.4, ry=90-i*1.1+(i%3===0?2:0);
+        barXY(b,wing,wing+'_flight_'+i,[side*rx,ry,5],[side*tx,ty,5],[7,5,8,6,7,5,8,6,7,5,7][i],3,i%3===0?'raven_hi':'raven');
+        // Secondary layered darker feathers rather than a uniform curtain.
+        if(i<8) barXY(b,wing,wing+'_secondary_'+i,[side*(rx-3),ry-7,8],[side*(tx-10),ty+7+(i%2)*3,8],6,3,'raven');
+      });
+      // Short overlapping coverts fill the wing root while longer primary
+      // feathers retain an irregular, separated silhouette at the edge.
+      for(let i=0;i<9;i++)
+        barXY(b,wing,wing+'_covert_'+i,[side*(38+i*6),86-i,10],
+          [side*(55+i*7),61-i+((i%3)-1)*3,10],7,3,i%2?'raven_hi':'raven');
+      [[59,51],[78,48],[98,48]].forEach(([tx,ty],i)=>
+        barXY(b,wing,wing+'_finger_'+i,[side*40,91,-1],[side*tx,ty,-1],4,3,'bone'));
+      b.animate(wing,'z',6,1.3,side<0?0:Math.PI);
+      const leg=side<0?'leg_left':'leg_right',x=side*9;
+      b.bone(leg,'body',[x,39,17]);
+      barYZ(b,leg,leg+'_thigh',[x,39,17],[x,26,24],6,6,'bone');
+      barYZ(b,leg,leg+'_shin',[x,26,24],[x,5,9],4,4,'bone_hi');
+      b.box(leg,'ankle',[x,5,9],[5,5,5],'bone');
+      for(let i=-1;i<=1;i++) {
+        const toe=leg+'_toe_'+(i+1), a=[x,2,8], c=[x+i*7,2,-9+(i===0?-3:0)];
+        const mid=a.map((v,k)=>(v+c[k])/2), angle=Math.atan2(c[0]-a[0],c[2]-a[2])*180/Math.PI;
+        b.bone(toe,leg,mid,[0,angle,0]);
+        b.box(toe,'toe',mid,[3,3,Math.round(Math.hypot(c[0]-a[0],c[2]-a[2]))],'bone_hi');
+      }
+      b.animate(leg,'x',3,1.0,side<0?0:Math.PI);
+    }
+    b.bone('tail','body',[0,44,25]);
+    for(let i=-4;i<=4;i++) {
+      const n='tail_feather_'+(i+4), x=i*3;
+      barYZ(b,'tail',n,[x,43,24],[x,23+i*2,82-Math.abs(i)*2],5,3,i%2?'raven':'raven_hi');
+    }
+    b.animate('head','x',2,0.8,0);
+    // The reference has a much larger skull, chest and feet in proportion to
+    // the span than the preceding draft. Scale anatomy, then move the wing
+    // roots with their complete subtrees to keep them attached to shoulders.
+    const wingL=b.bones.get('wing_left'), wingR=b.bones.get('wing_right');
+    function wingSide(node) { while(node) { if(node===wingL) return -1; if(node===wingR) return 1; node=node.parent; } return 0; }
+    function move(v,side) { return side ? [Math.round(v[0]+side*3),Math.round(v[1]+14),v[2]] : v.map(n=>Math.round(n*1.25)); }
+    for(const item of b.cubes) {
+      const side=wingSide(item.cube.parent);
+      item.cube.from=move(item.cube.from,side);
+      item.cube.to=move(item.cube.to,side).map((n,i)=>Math.max(n,item.cube.from[i]+1));
+    }
+    for(const group of b.bones.values()) group.origin=move(group.origin,wingSide(group));
+  }
+
+  function buildCoralHermitCrab(b) {
+    b.bone('body',null,[0,24,0]);
+    b.box('body','body',[0,26,-9],[37,20,31],'coral');
+    b.box('body','underbody',[0,19,-8],[31,10,28],'coral_orange');
+    b.box('body','front_face',[0,26,-26],[29,13,5],'coral_orange');
+    b.bone('shell','body',[0,30,8]);
+    // A bevelled layered shell: intersecting broad cuboids give clipped
+    // corners and a rounded taper, rather than a single rectangular box.
+    const layers=[
+      [0,31,9,51,12,49,'shell_cream'], [0,41,11,51,9,47,'shell_cream'],
+      [0,49,13,47,8,43,'shell_light'], [0,56,16,41,7,37,'shell_cream'],
+      [0,62,19,31,6,29,'shell_light'], [0,67,22,19,5,19,'shell_cream'],
+      [0,71,24,11,4,11,'shell_light']
+    ];
+    layers.forEach(([x,y,z,w,h,d,m],i)=>{
+      b.box('shell','shell_center_'+i,[x,y,z],[w-8,h,d],m);
+      b.box('shell','shell_sides_'+i,[x,y,z],[w,h,d-8],m);
+    });
+    // Coral sprays and anemone on the shell (not on a presentation pedestal).
+    const corals=[[-17,59,4,'coral_pink'],[1,67,14,'sea_mint'],[14,61,19,'coral_purple'],[-8,63,28,'coral_pink'],[18,55,31,'sea_mint']];
+    corals.forEach(([x,y,z,m],i)=>{
+      b.box('shell','coral_stem_'+i,[x,y+6,z],[4,12,4],m);
+      b.box('shell','coral_fork_l_'+i,[x-3,y+10,z],[4,5,4],m);
+      b.box('shell','coral_fork_r_'+i,[x+3,y+12,z],[4,5,4],m);
+      b.box('shell','coral_tip_'+i,[x,y+14,z],[4,4,4],m);
+    });
+    b.box('shell','anemone_base',[-26,47,11],[5,11,11],'sea_mint');
+    for(let i=0;i<8;i++) {
+      const angle=2*Math.PI*i/8, y=46+Math.sin(angle)*7, z=11+Math.cos(angle)*7;
+      b.box('shell','anemone_tentacle_'+i,[-30,y,z],[6,4,4],'sea_mint');
+    }
+    for(const side of [-1,1]) {
+      const eye=side<0?'eye_left':'eye_right';
+      b.bone(eye,'body',[side*9,35,-22]);
+      b.box(eye,'stalk',[side*9,42,-23],[4,17,4],'coral_orange');
+      b.box(eye,'eyeball',[side*9,52,-24],[8,8,7],'eye');
+      b.box(eye,'glint',[side*9-1,54,-28],[2,2,1],'eye_light');
+      b.animate(eye,'z',2,0.8,side<0?0:Math.PI);
+      const claw=side<0?'claw_left':'claw_right';
+      b.bone(claw,'body',[side*16,26,-15]);
+      barXY(b,claw,claw+'_arm',[side*16,26,-18],[side*34,22,-25],8,9,'coral');
+      const size=side<0?20:16, x=side*42;
+      b.box(claw,'palm',[x,22,-31],[size,14,18],'coral_hi');
+      b.box(claw,'upper_pincer',[x,23,-42],[size-4,7,9],'coral');
+      b.box(claw,'lower_pincer',[x,17,-41],[size-6,4,8],'coral_orange');
+      b.animate(claw,'y',4,1.0,side<0?0:Math.PI);
+      for(let i=0;i<3;i++) {
+        const leg='leg_'+side+'_'+i, z=-3+i*12, x0=side*19, x1=side*(35+i*3);
+        b.bone(leg,'body',[x0,20,z]);
+        barXY(b,leg,leg+'_upper',[x0,22,z],[x1,16,z],7,7,'coral');
+        barXY(b,leg,leg+'_lower',[x1,16,z],[x1+side*4,3,z],5,6,'coral_orange');
+        b.box(leg,'toe',[x1+side*4,2,z-1],[5,4,8],'coral_orange');
+        b.animate(leg,'x',4,1.3,(i+(side<0?0:1))*Math.PI/3);
+      }
+    }
+  }
+
+  function buildReefSeahorse(b) {
+    b.bone('body',null,[0,54,0]);
+    // Teal upright segmented body, pink ventral plates, head points toward -Z.
+    const segments=[
+      [0,75,-1,18,12,21],[0,64,2,23,12,25],[0,52,5,25,12,27],
+      [0,40,7,22,12,23],[0,29,8,17,11,19]
+    ];
+    segments.forEach(([x,y,z,w,h,d],i)=>{
+      b.box('body','body_section_'+i,[x,y,z],[w,h,d],i%2?'sea_mint':'sea_teal');
+      b.box('body','ventral_plate_'+i,[x,y,z-d/2-1],[w-4,h-2,4],i%2?'coral_pink':'coral');
+      b.box('body','ventral_highlight_'+i,[x,y,z-d/2-4],[w-8,h-5,2],'shell_light');
+    });
+    b.bone('head','body',[0,80,-3],[12,0,0]);
+    b.box('head','head',[0,85,-9],[22,17,22],'sea_mint');
+    b.box('head','snout',[0,81,-27],[9,8,22],'sea_teal');
+    b.box('head','snout_tip',[0,81,-40],[9,8,6],'coral');
+    b.box('head','jaw',[0,77,-30],[8,3,17],'shell_cream');
+    for(const side of [-1,1]) {
+      b.box('head','eye_rim_'+side,[side*11,86,-15],[3,10,10],'gold');
+      b.box('head','eye_'+side,[side*13,86,-16],[2,6,6],'eye');
+      b.box('head','ear_fin_'+side,[side*13,88,1],[3,11,10],'coral_pink');
+      b.box('head','coral_crown_'+side,[side*7,99,-4],[4,14,4],'coral');
+      b.box('head','coral_branch_'+side,[side*10,104,-4],[7,4,4],'coral_pink');
+      const fin=side<0?'fin_left':'fin_right';b.bone(fin,'body',[side*11,54,8],[0,0,side*-18]);
+      b.box(fin,'pectoral_fin',[side*16,54,8],[3,16,14],'shell_light');
+      b.box(fin,'fin_stripe',[side*18,54,8],[1,12,4],'coral_pink');
+      b.animate(fin,'z',6,1.8,side<0?0:Math.PI);
+    }
+    b.bone('dorsal_fin','body',[0,57,18]);
+    for(let i=0;i<4;i++) b.box('dorsal_fin','fin_lobe_'+i,[0,72-i*8,23+i*2],[3,8,12+i*2],i%2?'coral_pink':'shell_light');
+    b.animate('dorsal_fin','y',6,1.5,0);
+    // Square spiral tail in the sagittal YZ plane, joined at segment ends.
+    b.bone('tail','body',[0,25,8]);
+    const path=[[0,29,8],[0,17,12],[0,7,10],[0,4,-3],[0,4,-15],[0,12,-17],[0,17,-10],[0,12,-5]];
+    for(let i=0;i<path.length-1;i++) barYZ(b,'tail','tail_segment_'+i,path[i],path[i+1],6,6,i%2?'sea_mint':'coral');
+    for(let i=1;i<path.length-1;i++) b.box('tail','tail_joint_'+i,path[i],[8,8,8],i%2?'sea_mint':'coral');
+    b.animate('tail','x',4,1.0,0);
+    b.animate('head','x',2,0.8,0);
+  }
+
+  function buildGhostSquid(b) {
+    b.bone('body',null,[0,42,0]);
+    // Opaque navy approximates the reference: actual emissive/translucent
+    // rendering is intentionally not asserted by this asset-only batch.
+    b.box('body','mantle',[0,42,28],[27,23,64],'squid_navy');
+    b.box('body','mantle_top',[0,54,27],[24,3,57],'squid_hi');
+    b.box('body','mantle_tail',[0,42,66],[20,18,16],'squid_hi');
+    b.box('body','mantle_tip',[0,42,76],[12,12,6],'squid_navy');
+    for(const side of [-1,1]) {
+      const fin=side<0?'fin_left':'fin_right';
+      b.bone(fin,'body',[side*11,45,58],[0,0,side*-20]);
+      b.box(fin,'fin',[side*17,45,61],[14,3,23],'squid_hi');
+      b.box(fin,'fin_edge',[side*22,45,62],[4,4,18],'squid_edge');
+      b.animate(fin,'z',4,1.2,side<0?0:Math.PI);
+      for(let i=0;i<5;i++) b.box('body','side_light_'+side+'_'+i,[side*14,43,4+i*12],[2,3,3],'glow_cyan');
+    }
+    for(let i=0;i<6;i++) b.box('body','top_light_'+i,[0,56,1+i*11],[3,2,3],'glow_cyan');
+    b.bone('head','body',[0,42,-8]);
+    b.box('head','head',[0,42,-12],[23,20,20],'squid_hi');
+    for(const side of [-1,1]) {
+      b.box('head','eye_socket_'+side,[side*12,43,-15],[2,12,12],'squid_navy');
+      b.box('head','eye_'+side,[side*13,43,-15],[2,8,8],'squid_eye');
+    }
+    // Eight independently animated tentacles, splayed with two nested
+    // single-axis groups. Rectangular strips preserve the source silhouette.
+    for(let i=0;i<8;i++) {
+      const a=2*Math.PI*i/8, x=Math.cos(a)*7, y=42+Math.sin(a)*7;
+      const root='tentacle_'+i, pitch=root+'_pitch', length=i%3===0?91:72+(i%2)*10;
+      b.bone(root,'head',[x,y,-21],[0,Math.cos(a)*18,0]);
+      b.bone(pitch,root,[x,y,-21],[Math.sin(a)*18,0,0]);
+      b.box(pitch,'tentacle',[x,y,-21-length/2],[5,5,length],'squid_navy');
+      b.box(pitch,'tentacle_tip',[x,y,-21-length-3],[7,7,8],'squid_hi');
+      for(let j=0;j<5;j++) b.box(pitch,'luminous_dot_'+j,[x,y+3,-31-j*12],[3,1,4],'glow_cyan');
+      b.animate(root,'y',4,1.0,i*Math.PI/4);
+    }
+    b.animate('head','y',2,0.8,0);
+  }
+
+  function buildSilverSeaSerpent(b) {
+    b.bone('body',null,[0,50,0]);
+    // Reference has thick vertical neck, deep first trough, tall centre arch,
+    // shallow second trough and a tapered upturned tail.
+    const path=[[0,100,-108],[0,89,-89],[0,46,-86],[0,25,-71],[0,20,-57],
+      [0,31,-40],[0,69,-18],[0,103,5],[0,108,26],[0,96,43],
+      [0,65,57],[0,56,73],[0,59,91],[0,69,115],[0,85,141]];
+    const widths=[28,26,24,27,25,23,28,26,24,22,20,18,16,14];
+    let previousStripeEnd=null;
+    for(let i=0;i<path.length-1;i++) {
+      const a=path[i], c=path[i+1], w=widths[i], dy=c[1]-a[1], dz=c[2]-a[2], length=Math.hypot(dy,dz);
+      // Extend each beam slightly into its neighbours, while alternating width
+      // so coincident outer faces do not z-fight at the bends.
+      const ex=3/length, aa=[0,a[1]-dy*ex,a[2]-dz*ex], cc=[0,c[1]+dy*ex,c[2]+dz*ex];
+      barYZ(b,'body','curve_'+i,aa,cc,w,w,i%4===0?'silver_hi':'silver');
+      const ny=dz/length,nz=-dy/length, off=w/2+1;
+      const a2=[0,a[1]+ny*off,a[2]+nz*off],c2=[0,c[1]+ny*off,c[2]+nz*off];
+      barYZ(b,'body','dorsal_stripe_'+i,a2,c2,12,4,'serpent_teal');
+      if(previousStripeEnd && dist(previousStripeEnd,a2)>0.5)
+        barYZ(b,'body','dorsal_joint_'+i,previousStripeEnd,a2,11,4,'serpent_teal');
+      previousStripeEnd=c2;
+
+    }
+    // One connected dorsal silhouette in the YZ plane. It is a one-authoring-
+    // unit thick sheet (not a zero-thickness cube, which GeoModel rejects).
+    // The two large faces are separately painted with identical YZ pixels.
+    const polygons=[], joins=[];
+    function add(p,q,n,o) { return [p[1]+n[0]*o, p[2]+n[1]*o]; }
+    for(let i=0;i<path.length-1;i++) {
+      const a=path[i],c=path[i+1],dy=c[1]-a[1],dz=c[2]-a[2], len=Math.hypot(dy,dz);
+      const n=[dz/len,-dy/len], base=widths[i]/2-2, band=base+6;
+      const a0=add(a,c,n,base), a1=add(a,c,n,band), c0=add(c,a,n,base), c1=add(c,a,n,band);
+      polygons.push([a0,a1,c1,c0]);
+      const count=Math.max(1,Math.ceil(len/12));
+      for(let j=0;j<count;j++) {
+        const t0=j/count,t1=(j+1)/count,tm=(t0+t1)/2;
+        const q=t=>[0,a[1]+dy*t,a[2]+dz*t];
+        const height=7+((i*3+j)%3)*2;
+        polygons.push([add(q(t0),c,n,band-1),add(q(t0+(t1-t0)*.12),c,n,band+height),add(q(t0+(t1-t0)*.78),c,n,band+height),add(q(t1),c,n,band-1)]);
+      }
+      if(i>0) {
+        const previous=joins[joins.length-1].end;
+        joins.push({start:previous,end:a1});
+      }
+      joins.push({start:a1,end:c1});
+    }
+    function inside(poly,y,z) {
+      let hit=false;
+      for(let i=0,j=poly.length-1;i<poly.length;j=i++) {
+        const [yi,zi]=poly[i], [yj,zj]=poly[j];
+        if(((zi>z)!=(zj>z)) && y < (yj-yi)*(z-zi)/(zj-zi)+yi) hit=!hit;
+      }
+      return hit;
+    }
+    function nearLine(y,z,a,c,r) {
+      const dy=c[0]-a[0],dz=c[1]-a[1], denom=dy*dy+dz*dz;
+      const t=denom?Math.max(0,Math.min(1,((y-a[0])*dy+(z-a[1])*dz)/denom)):0;
+      return Math.hypot(y-(a[0]+t*dy),z-(a[1]+t*dz))<=r;
+    }
+    function covered(y,z) {
+      return polygons.some(p=>inside(p,y,z)) || joins.some(q=>nearLine(y,z,q.start,q.end,3));
+    }
+    // Merge contiguous pixels within each z-column, avoiding overlapping
+    // coplanar faces while keeping editability and an integer box-UV export.
+    for(let z=-160;z<170;z+=2) {
+      let start=null;
+      for(let y=0;y<=150;y+=2) {
+        const filled=y<150 && covered(y+1,z+1);
+        if(filled && start===null) start=y;
+        if(!filled && start!==null) {
+          b.cube('body','crest_slice_'+z+'_'+start,[-1,start,z],[0,y,z+2],'serpent_crest');
+          start=null;
+        }
+      }
+    }
+
+    b.bone('head','body',[0,100,-108]);
+    b.box('head','skull',[0,103,-118],[29,21,27],'silver');
+    b.box('head','forehead',[0,114,-118],[28,4,25],'silver_hi');
+    b.box('head','muzzle',[0,96,-137],[20,11,21],'silver_hi');
+    b.box('head','nose',[0,96,-150],[17,8,6],'silver_dark');
+    b.box('head','jaw',[0,90,-137],[18,4,20],'silver_dark');
+    for(const side of [-1,1]) {
+      b.box('head','eye_socket_'+side,[side*15,103,-123],[2,8,10],'silver_dark');
+      b.box('head','eye_'+side,[side*16,103,-123],[2,5,6],'serpent_eye');
+      b.box('head','horn_'+side,[side*9,119,-111],[4,4,24],'silver_hi');
+      b.box('head','nostril_'+side,[side*10,98,-144],[1,2,3],'serpent_teal');
+      barYZ(b,'head','whisker_'+side,[side*6,89,-139],[side*6,80,-135],2,2,'silver_dark');
+      for(let i=0;i<2;i++) b.box('head','tooth_'+side+'_'+i,[side*6,87,-143+i*6],[2,4,2],'silver_hi');
+      const fin=side<0?'fin_left':'fin_right';
+      b.bone(fin,'body',[side*10,21,-57],[0,0,side*25]);
+      b.box(fin,'fin_root',[side*18,20,-57],[19,4,13],'silver_dark');
+      b.box(fin,'fin_outer',[side*29,19,-57],[12,4,13],'silver_hi');
+      for(let j=-1;j<=1;j++) barYZ(b,fin,fin+'_ray_'+j,[side*18,18,-58+j*4],[side*18,4,-33+j*5],4,4,'silver_hi');
+      b.animate(fin,'z',4,1.2,side<0?0:Math.PI);
+    }
+    b.animate('head','y',2,0.8,0);
+  }
+
+  const SPECS = [
+    { id: 'porcelain_crane', title_ru: 'Фарфоровый журавль', biome: 'elisar_city', concept: 'reports/biome_mob_concepts/01_elisar_city_porcelain_crane.png', atlas: ATLAS, build: buildPorcelainCrane },
+    { id: 'basalt_beetle', title_ru: 'Базальтовый жук-углеед', biome: 'ashen_lands', concept: 'reports/biome_mob_concepts/02_ashen_lands_basalt_beetle.png', atlas: ATLAS, build: buildBasaltBeetle },
+    { id: 'ash_moth', title_ru: 'Пепельная моль', biome: 'ashen_lands', concept: 'reports/biome_mob_concepts/03_ashen_lands_ash_moth.png', atlas: ATLAS, build: buildAshMoth },
+    { id: 'amethyst_fox', title_ru: 'Аметистовый лис', biome: 'violet_hills', concept: 'reports/biome_mob_concepts/04_violet_hills_amethyst_fox.png', atlas: ATLAS, build: buildAmethystFox },
+    { id: 'sizo_leafwing', title_ru: 'Сизый листокрыл', biome: 'sizo_grove', concept: 'reports/biome_mob_concepts/05_sizo_grove_sizo_leafwing.png', atlas: ATLAS, build: buildSizoLeafwing },
+    { id: 'azure_frog', title_ru: 'Лазурный древесный лягуш', biome: 'waterfall_gardens', concept: 'reports/biome_mob_concepts/06_waterfall_gardens_azure_frog.png', atlas: ATLAS, build: buildAzureFrog },
+    { id: 'bone_raven', title_ru: 'Костяной ворон', biome: 'morok_hollow', concept: 'reports/biome_mob_concepts/11_morok_hollow_bone_raven.png', atlas: ATLAS, build: buildBoneRaven },
+    { id: 'coral_hermit_crab', title_ru: 'Коралловый рак-отшельник', biome: 'shallow_reef', concept: 'reports/biome_mob_concepts/12_shallow_reef_coral_hermit_crab.png', atlas: ATLAS, build: buildCoralHermitCrab },
+    { id: 'reef_seahorse', title_ru: 'Рифовый морской конёк', biome: 'shallow_reef', concept: 'reports/biome_mob_concepts/13_shallow_reef_reef_seahorse.png', atlas: ATLAS, build: buildReefSeahorse },
+    { id: 'ghost_squid', title_ru: 'Глубоководный кальмар-призрак', biome: 'abyss', concept: 'reports/biome_mob_concepts/14_abyss_ghost_squid.png', atlas: ATLAS, build: buildGhostSquid },
+    { id: 'silver_sea_serpent', title_ru: 'Серебряный морской змей', biome: 'maja_ocean', concept: 'reports/biome_mob_concepts/15_maja_ocean_silver_sea_serpent.png', atlas: ATLAS, build: buildSilverSeaSerpent }
+  ];
+
+  async function generateOne(spec) {
+    const builder = new Builder(spec);
+    spec.build(builder);
+    return await builder.finish();
+  }
+  async function generateAll(options) {
+    const opts = options || {};
+    const ids = opts.ids || SPECS.map(s => s.id);
+    const out = [];
+    for (const id of ids) {
+      const spec = SPECS.find(s => s.id === id);
+      if (!spec) throw new Error('unknown model id ' + id);
+      out.push(await generateOne(spec));
+    }
+    return out;
+  }
+
+  global.RiftworldFauna = {
+    version: '0.8.0',
+    blockbench: '5.2.2',
+    revision: 3,
+    specs: SPECS.map(s => ({ id: s.id, title_ru: s.title_ru, biome: s.biome, concept: s.concept })),
+    generateAll,
+    generateOne: id => {
+      const spec = SPECS.find(s => s.id === id);
+      if (!spec) throw new Error('unknown model id ' + id);
+      return generateOne(spec);
+    }
+  };
+
+  if (global.BBPlugin && global.BBPlugin.register) {
+    global.BBPlugin.register('riftworld_fauna', {
+      title: 'Riftworld Fauna',
+      author: 'Riftworld',
+      icon: 'fa-cube',
+      version: '0.8.0',
+      min_version: '5.2.0',
+      variant: 'both',
+      description: 'Reference-detail procedural Blockbench-API source for eleven Riftworld biome mobs.',
+      onload() {},
+      onunload() {}
+    });
+  }
+})(typeof window !== 'undefined' ? window : globalThis);

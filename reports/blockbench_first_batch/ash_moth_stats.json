@@ -1,0 +1,37 @@
+{
+  "id": "ash_moth",
+  "title_ru": "Пепельная моль",
+  "biome": "ashen_lands",
+  "concept": "reports/biome_mob_concepts/03_ashen_lands_ash_moth.png",
+  "revision": 3,
+  "generator": "Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)",
+  "bones": 10,
+  "cubes": 66,
+  "atlas": [
+    2048,
+    2048
+  ],
+  "units_per_block": 64,
+  "render_scale": 0.25,
+  "bounds_blockbench": {
+    "min": [
+      -88,
+      -4,
+      -30
+    ],
+    "max": [
+      89,
+      75,
+      40
+    ]
+  },
+  "size_blocks": [
+    2.765625,
+    1.234375,
+    1.09375
+  ],
+  "animations": 7,
+  "bbmodel_bytes": 279351,
+  "geo_bones": 10,
+  "geo_cubes": 66
+}
