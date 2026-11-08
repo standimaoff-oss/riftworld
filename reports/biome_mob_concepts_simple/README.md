@@ -1,10 +1,10 @@
 # Упрощённые ИИ-референсы фауны
 
-**Промежуточный результат: 10 из 15.** Для каждой иллюстрации ИИ использовал соответствующий исходный концепт и запрос на упрощение геометрии и деталей в духе Minecraft. Позиции 11–15 ещё не сгенерированы.
+**Все 15 готовы.** Для каждой иллюстрации ИИ использовал соответствующий исходный концепт и запрос на упрощение геометрии и деталей в духе Minecraft.
 
 Это новые концепт-иллюстрации, а не готовые модели или снимки из игры. [Исходные концепты](../biome_mob_concepts/README.md) сохранены без изменений. Существующие модели Blockbench пока не переделывались под новые референсы.
 
-[Общий лист 10 из 15](00_overview.png)
+[Общий лист всех 15](00_overview.png) · [Архив всех 15 изображений](riftworld_simple_concepts.zip)
 
 | № | Существо | Новый референс | Исходный референс |
 |---|---|---|---|
@@ -18,8 +18,8 @@
 | 08 | Туманный волк-призрак | [08_phantom_wolf.png](08_phantom_wolf.png) | [исходный](../biome_mob_concepts/08_mist_keep_phantom_wolf.png) |
 | 09 | Кристальный ящер | [09_crystal_gecko.png](09_crystal_gecko.png) | [исходный](../biome_mob_concepts/09_crystal_rifts_crystal_gecko.png) |
 | 10 | Гранёная сова | [10_faceted_owl.png](10_faceted_owl.png) | [исходный](../biome_mob_concepts/10_crystal_rifts_faceted_owl.png) |
-| 11 | Костяной ворон | ещё не создан | [исходный](../biome_mob_concepts/11_morok_hollow_bone_raven.png) |
-| 12 | Коралловый рак-отшельник | ещё не создан | [исходный](../biome_mob_concepts/12_shallow_reef_coral_hermit_crab.png) |
-| 13 | Рифовый морской конёк | ещё не создан | [исходный](../biome_mob_concepts/13_shallow_reef_reef_seahorse.png) |
-| 14 | Глубоководный кальмар-призрак | ещё не создан | [исходный](../biome_mob_concepts/14_abyss_ghost_squid.png) |
-| 15 | Серебряный морской змей | ещё не создан | [исходный](../biome_mob_concepts/15_maja_ocean_silver_sea_serpent.png) |
+| 11 | Костяной ворон | [11_bone_raven.png](11_bone_raven.png) | [исходный](../biome_mob_concepts/11_morok_hollow_bone_raven.png) |
+| 12 | Коралловый рак-отшельник | [12_coral_hermit_crab.png](12_coral_hermit_crab.png) | [исходный](../biome_mob_concepts/12_shallow_reef_coral_hermit_crab.png) |
+| 13 | Рифовый морской конёк | [13_reef_seahorse.png](13_reef_seahorse.png) | [исходный](../biome_mob_concepts/13_shallow_reef_reef_seahorse.png) |
+| 14 | Глубоководный кальмар-призрак | [14_ghost_squid.png](14_ghost_squid.png) | [исходный](../biome_mob_concepts/14_abyss_ghost_squid.png) |
+| 15 | Серебряный морской змей | [15_silver_sea_serpent.png](15_silver_sea_serpent.png) | [исходный](../biome_mob_concepts/15_maja_ocean_silver_sea_serpent.png) |
