@@ -108,7 +108,7 @@ rq item replace entity TestPlayer weapon.mainhand with minecraft:air >/dev/null
 rq item replace entity TestPlayer weapon.offhand with minecraft:air >/dev/null
 for material in aurite riftcrystal; do
   rq kill '@e[type=minecraft:armor_stand]' >/dev/null || true
-  rq summon minecraft:armor_stand 101 5 101 "{NoGravity:1b,ShowArms:1b,NoBasePlate:1b,Rotation:[180.0f,0.0f],Pose:{RightArm:[-25.0f,0.0f,-10.0f],LeftArm:[-25.0f,0.0f,10.0f]},ArmorItems:[{id:\"riftworld:${material}_boots\",Count:1b},{id:\"riftworld:${material}_leggings\",Count:1b},{id:\"riftworld:${material}_chestplate\",Count:1b},{id:\"riftworld:${material}_helmet\",Count:1b}],HandItems:[{id:\"riftworld:${material}_sword\",Count:1b},{id:\"riftworld:${material}_shield\",Count:1b}]}" >/dev/null
+  rq summon minecraft:armor_stand 101 5 101 "{NoGravity:1b,ShowArms:1b,NoBasePlate:1b,Rotation:[0.0f,0.0f],ArmorItems:[{id:\"riftworld:${material}_boots\",Count:1b},{id:\"riftworld:${material}_leggings\",Count:1b},{id:\"riftworld:${material}_chestplate\",Count:1b},{id:\"riftworld:${material}_helmet\",Count:1b}],HandItems:[{id:\"riftworld:${material}_sword\",Count:1b},{id:\"riftworld:${material}_shield\",Count:1b}]}" >/dev/null
   rq tp TestPlayer 101 6.1 104 facing 101 5.7 101 >/dev/null
   sleep 7
   import -window root "$OUT/elisar-armory-${material}.png"
