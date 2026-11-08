@@ -88,6 +88,8 @@
     silver_hi:     { base: [198, 217, 222], noise: 3, edge: -2, pattern: 'silver_scale' },
     silver_dark:   { base: [113, 145, 158], noise: 4, edge: -4, pattern: 'fur' },
     serpent_teal:  { base: [54, 115, 120], noise: 3, edge: -4, pattern: 'fur' },
+    serpent_crest: { base: [221, 241, 231], noise: 0, edge: 0, pattern: 'crest_pixels' },
+    raven_ember:   { base: [157, 86, 30], noise: 0, edge: 0, pattern: 'solid' },
     serpent_fin:   { base: [189, 222, 214], noise: 3, edge: -3, pattern: 'ceramic' },
     serpent_eye:   { base: [199, 244, 226], noise: 2, edge: -2, pattern: 'eye' },
     eye:          { base: [18, 17, 21],    noise: 1,  edge: 0,  pattern: 'eye' },
@@ -228,6 +230,14 @@
             const spot = fnv('frog:' + Math.floor(p[0] / 7) + ',' + Math.floor(p[1] / 7) + ',' + Math.floor(p[2] / 7));
             if (spot > 0.82) { r += 43; g += 26; b -= 33; }
             else if (spot < 0.12) { r -= 12; g -= 17; b += 8; }
+            break;
+          }
+          case 'crest_pixels': {
+            // Two broad faces use exactly the same Y/Z pattern, including on
+            // opposite sides. Opaque colour; the 1-unit sheet supplies shape.
+            const raw = Math.sin((Math.floor(p[1]/4)+1)*12.9898 + (Math.floor(p[2]/4)+1)*78.233)*43758.5453;
+            const t = raw-Math.floor(raw), delta = t>.78?13:t<.22?-11:0;
+            r=mat.base[0]+delta; g=mat.base[1]+delta; b=mat.base[2]+delta;
             break;
           }
           case 'silver_scale':
@@ -467,7 +477,7 @@
         title_ru: this.spec.title_ru,
         biome: this.spec.biome,
         concept: this.spec.concept,
-        revision: this.id === 'sizo_leafwing' ? 4 : this.id === 'bone_raven' ? 3 : this.id === 'silver_sea_serpent' ? 2 : ['porcelain_crane', 'basalt_beetle', 'ash_moth', 'amethyst_fox'].includes(this.id) ? 3 : 1,
+        revision: this.id === 'sizo_leafwing' ? 4 : this.id === 'bone_raven' ? 4 : this.id === 'silver_sea_serpent' ? 3 : ['porcelain_crane', 'basalt_beetle', 'ash_moth', 'amethyst_fox'].includes(this.id) ? 3 : 1,
         generator: 'Blockbench 5.2.2 API (Group/Cube/Texture/Animation/Codecs)',
         bones: this.bones.size,
         cubes: this.cubes.length,
@@ -1087,20 +1097,24 @@
       barXY(b,'body',n+'_lower',[side*16,51,z],[side*14,38,z],4,4,'bone');
       barXY(b,'body',n+'_bottom',[side*14,38,z],[side*5,34,z],4,4,'bone_hi');
     }
-    b.bone('neck','body',[0,59,-18],[18,0,0]);
+    b.bone('neck','body',[0,59,-18],[-8,0,0]);
     for(let i=0;i<3;i++) b.box('neck','vertebra_'+i,[0,63+i*4,-20-i*2],[10-i,4,9],'bone');
     b.bone('head','neck',[0,75,-25]);
     b.box('head','skull',[0,79,-29],[29,20,25],'bone_hi');
     b.box('head','skull_top',[0,89,-29],[29,3,24],'bone');
     b.box('head','cheekbone',[0,73,-35],[25,5,15],'bone');
-    b.box('head','beak_base',[0,73,-48],[16,10,22],'bone_hi');
-    b.box('head','beak_tip',[0,71,-63],[12,8,12],'bone');
-    b.box('head','beak_end',[0,69,-70],[9,6,4],'bone_shadow');
-    b.box('head','lower_jaw',[0,65,-50],[11,3,23],'bone');
+    b.box('head','beak_base',[0,73,-51],[16,10,33],'bone_hi');
+    b.box('head','beak_tip',[0,72,-68],[15,9,5],'bone');
+    b.box('head','lower_jaw',[0,63,-50],[8,3,28],'bone');
+    for(const side of [-1,1]) b.box('head','jaw_edge_'+side,[side*8,63,-50],[3,3,28],'bone');
+    b.box('head','jaw_hinge',[0,68,-36],[13,6,5],'bone_shadow');
     for(const side of [-1,1]) {
-      b.box('head','socket_'+side,[side*15,79,-31],[2,13,13],'eye');
-      b.box('head','ember_'+side,[side*16,79,-31],[2,7,7],'amber');
-      b.box('head','nostril_'+side,[side*8,75,-51],[2,3,5],'eye');
+      // Small dark ember recessed inside a square skull socket. Heavy brow,
+      // long beak and a thinner nostril replace the toy-like bright eye.
+      b.box('head','socket_'+side,[side*15,79,-31],[2,12,13],'eye');
+      b.box('head','ember_'+side,[side*16,78,-30],[2,5,5],'raven_ember');
+      b.box('head','brow_'+side,[side*16,85,-31],[3,3,15],'bone_shadow');
+      b.box('head','nostril_'+side,[side*8,75,-51],[2,2,4],'eye');
       const wing=side<0?'wing_left':'wing_right';
       b.bone(wing,'body',[side*11,58,2],[0,0,side*3]);
       // A raised elbow and long outer bone, with separate unequal primaries.
@@ -1108,13 +1122,18 @@
       barXY(b,wing,wing+'_elbow',[side*35,61,1],[side*40,96,1],6,6,'bone_hi');
       barXY(b,wing,wing+'_forearm',[side*40,96,1],[side*105,83,1],6,5,'bone_hi');
       b.box(wing,'elbow_cap',[side*40,96,1],[8,8,7],'bone_hi');
-      const tips=[[57,44],[68,41],[80,38],[92,38],[104,38],[116,40],[129,43],[141,48],[152,54],[162,60],[171,66]];
+      const tips=[[57,43],[65,32],[78,37],[86,26],[99,32],[108,27],[121,35],[131,31],[145,45],[156,40],[172,55]];
       tips.forEach(([tx,ty],i)=>{
-        const rx=39+i*5.5, ry=90-i*1.15;
-        barXY(b,wing,wing+'_flight_'+i,[side*rx,ry,5],[side*tx,ty,5],6+(i%2),3,i%3===0?'raven_hi':'raven');
+        const rx=38+i*5.4, ry=90-i*1.1+(i%3===0?2:0);
+        barXY(b,wing,wing+'_flight_'+i,[side*rx,ry,5],[side*tx,ty,5],[7,5,8,6,7,5,8,6,7,5,7][i],3,i%3===0?'raven_hi':'raven');
         // Secondary layered darker feathers rather than a uniform curtain.
-        if(i<7) barXY(b,wing,wing+'_secondary_'+i,[side*(rx-2),ry-5,7],[side*(tx-7),ty+5,7],6,3,'raven');
+        if(i<8) barXY(b,wing,wing+'_secondary_'+i,[side*(rx-3),ry-7,8],[side*(tx-10),ty+7+(i%2)*3,8],6,3,'raven');
       });
+      // Short overlapping coverts fill the wing root while longer primary
+      // feathers retain an irregular, separated silhouette at the edge.
+      for(let i=0;i<9;i++)
+        barXY(b,wing,wing+'_covert_'+i,[side*(38+i*6),86-i,10],
+          [side*(55+i*7),61-i+((i%3)-1)*3,10],7,3,i%2?'raven_hi':'raven');
       [[59,51],[78,48],[98,48]].forEach(([tx,ty],i)=>
         barXY(b,wing,wing+'_finger_'+i,[side*40,91,-1],[side*tx,ty,-1],4,3,'bone'));
       b.animate(wing,'z',6,1.3,side<0?0:Math.PI);
@@ -1123,7 +1142,12 @@
       barYZ(b,leg,leg+'_thigh',[x,39,17],[x,26,24],6,6,'bone');
       barYZ(b,leg,leg+'_shin',[x,26,24],[x,5,9],4,4,'bone_hi');
       b.box(leg,'ankle',[x,5,9],[5,5,5],'bone');
-      for(let i=-1;i<=1;i++) b.box(leg,'toe_'+i,[x+i*4,2,2],[3,3,16],'bone_hi');
+      for(let i=-1;i<=1;i++) {
+        const toe=leg+'_toe_'+(i+1), a=[x,2,8], c=[x+i*7,2,-9+(i===0?-3:0)];
+        const mid=a.map((v,k)=>(v+c[k])/2), angle=Math.atan2(c[0]-a[0],c[2]-a[2])*180/Math.PI;
+        b.bone(toe,leg,mid,[0,angle,0]);
+        b.box(toe,'toe',mid,[3,3,Math.round(Math.hypot(c[0]-a[0],c[2]-a[2]))],'bone_hi');
+      }
       b.animate(leg,'x',3,1.0,side<0?0:Math.PI);
     }
     b.bone('tail','body',[0,44,25]);
@@ -1289,6 +1313,7 @@
       [0,31,-40],[0,69,-18],[0,103,5],[0,108,26],[0,96,43],
       [0,65,57],[0,56,73],[0,59,91],[0,69,115],[0,85,141]];
     const widths=[28,26,24,27,25,23,28,26,24,22,20,18,16,14];
+    let previousStripeEnd=null;
     for(let i=0;i<path.length-1;i++) {
       const a=path[i], c=path[i+1], w=widths[i], dy=c[1]-a[1], dz=c[2]-a[2], length=Math.hypot(dy,dz);
       // Extend each beam slightly into its neighbours, while alternating width
@@ -1298,16 +1323,64 @@
       const ny=dz/length,nz=-dy/length, off=w/2+1;
       const a2=[0,a[1]+ny*off,a[2]+nz*off],c2=[0,c[1]+ny*off,c[2]+nz*off];
       barYZ(b,'body','dorsal_stripe_'+i,a2,c2,12,4,'serpent_teal');
-      // Broad, pale crest plates, not narrow spikes. Each overlaps next plate.
-      const crestOff=off+3.5;
-      const a3=[0,a[1]+ny*crestOff,a[2]+nz*crestOff],c3=[0,c[1]+ny*crestOff,c[2]+nz*crestOff];
-      barYZ(b,'body','crest_base_'+i,a3,c3,5,5,'serpent_fin');
-      for(let j=0;j<2;j++) {
-        const t=(j+.5)/2, py=a[1]+dy*t, pz=a[2]+dz*t;
-        barYZ(b,'body','crest_plate_'+i+'_'+j,[0,py+ny*(off+2),pz+nz*(off+2)],
-          [0,py+ny*(off+10),pz+nz*(off+10)],4,Math.max(5,Math.round(length/3)),'serpent_fin');
+      if(previousStripeEnd && dist(previousStripeEnd,a2)>0.5)
+        barYZ(b,'body','dorsal_joint_'+i,previousStripeEnd,a2,11,4,'serpent_teal');
+      previousStripeEnd=c2;
+
+    }
+    // One connected dorsal silhouette in the YZ plane. It is a one-authoring-
+    // unit thick sheet (not a zero-thickness cube, which GeoModel rejects).
+    // The two large faces are separately painted with identical YZ pixels.
+    const polygons=[], joins=[];
+    function add(p,q,n,o) { return [p[1]+n[0]*o, p[2]+n[1]*o]; }
+    for(let i=0;i<path.length-1;i++) {
+      const a=path[i],c=path[i+1],dy=c[1]-a[1],dz=c[2]-a[2], len=Math.hypot(dy,dz);
+      const n=[dz/len,-dy/len], base=widths[i]/2-2, band=base+6;
+      const a0=add(a,c,n,base), a1=add(a,c,n,band), c0=add(c,a,n,base), c1=add(c,a,n,band);
+      polygons.push([a0,a1,c1,c0]);
+      const count=Math.max(1,Math.ceil(len/12));
+      for(let j=0;j<count;j++) {
+        const t0=j/count,t1=(j+1)/count,tm=(t0+t1)/2;
+        const q=t=>[0,a[1]+dy*t,a[2]+dz*t];
+        const height=7+((i*3+j)%3)*2;
+        polygons.push([add(q(t0),c,n,band-1),add(q(t0+(t1-t0)*.12),c,n,band+height),add(q(t0+(t1-t0)*.78),c,n,band+height),add(q(t1),c,n,band-1)]);
+      }
+      if(i>0) {
+        const previous=joins[joins.length-1].end;
+        joins.push({start:previous,end:a1});
+      }
+      joins.push({start:a1,end:c1});
+    }
+    function inside(poly,y,z) {
+      let hit=false;
+      for(let i=0,j=poly.length-1;i<poly.length;j=i++) {
+        const [yi,zi]=poly[i], [yj,zj]=poly[j];
+        if(((zi>z)!=(zj>z)) && y < (yj-yi)*(z-zi)/(zj-zi)+yi) hit=!hit;
+      }
+      return hit;
+    }
+    function nearLine(y,z,a,c,r) {
+      const dy=c[0]-a[0],dz=c[1]-a[1], denom=dy*dy+dz*dz;
+      const t=denom?Math.max(0,Math.min(1,((y-a[0])*dy+(z-a[1])*dz)/denom)):0;
+      return Math.hypot(y-(a[0]+t*dy),z-(a[1]+t*dz))<=r;
+    }
+    function covered(y,z) {
+      return polygons.some(p=>inside(p,y,z)) || joins.some(q=>nearLine(y,z,q.start,q.end,3));
+    }
+    // Merge contiguous pixels within each z-column, avoiding overlapping
+    // coplanar faces while keeping editability and an integer box-UV export.
+    for(let z=-160;z<170;z+=2) {
+      let start=null;
+      for(let y=0;y<=150;y+=2) {
+        const filled=y<150 && covered(y+1,z+1);
+        if(filled && start===null) start=y;
+        if(!filled && start!==null) {
+          b.cube('body','crest_slice_'+z+'_'+start,[-1,start,z],[0,y,z+2],'serpent_crest');
+          start=null;
+        }
       }
     }
+
     b.bone('head','body',[0,100,-108]);
     b.box('head','skull',[0,103,-118],[29,21,27],'silver');
     b.box('head','forehead',[0,114,-118],[28,4,25],'silver_hi');
@@ -1363,7 +1436,7 @@
   }
 
   global.RiftworldFauna = {
-    version: '0.7.0',
+    version: '0.8.0',
     blockbench: '5.2.2',
     revision: 3,
     specs: SPECS.map(s => ({ id: s.id, title_ru: s.title_ru, biome: s.biome, concept: s.concept })),
@@ -1380,7 +1453,7 @@
       title: 'Riftworld Fauna',
       author: 'Riftworld',
       icon: 'fa-cube',
-      version: '0.7.0',
+      version: '0.8.0',
       min_version: '5.2.0',
       variant: 'both',
       description: 'Reference-detail procedural Blockbench-API source for eleven Riftworld biome mobs.',

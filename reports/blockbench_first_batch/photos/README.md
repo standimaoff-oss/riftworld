@@ -2,10 +2,10 @@
 
 Снимки `.bbmodel` сделаны через Blockbench 5.2.2 `Screencam.advancedScreenshot`,
 1600 × 1200. Это виды редактора, **не скриншоты Minecraft**. Последнее обновление:
-переработаны листокрыл и ворон, добавлен серебряный морской змей. Модели приближены к концептам, но не повторяют их буквально.
+переработаны ворон и гребень змея. Модели приближены к концептам, но не повторяют их буквально.
 
 [Все одиннадцать моделей](00_all_models.png) · [Последние пять: концепт / модель](11_latest_reference_comparison.png) ·
-[Новые три: концепт / модель](12_three_reference_comparison.png) · [Концепт / прошлая / новая версия](13_before_after_comparison.png) · [Первые шесть: концепт / модель](05_reference_comparison.png) · [Описание и проверки](../README.md)
+[Новые три: концепт / модель](12_three_reference_comparison.png) · [Прошлая итерация трёх моделей](13_before_after_comparison.png) · [Ворон и змей: до / после](14_raven_serpent_comparison.png) · [Змей с обеих сторон](15_serpent_two_sides.png) · [Первые шесть: концепт / модель](05_reference_comparison.png) · [Описание и проверки](../README.md)
 
 | Модель | Фото | Дополнительные ракурсы | Редактируемый проект |
 |---|---|---|---|
@@ -19,7 +19,7 @@
 | Коралловый рак-отшельник | [PNG](08_coral_hermit_crab.png) | [Спереди](coral_hermit_crab_front.png) · [Сбоку](coral_hermit_crab_side.png) | [`.bbmodel`](../../../blockbench/riftworld_fauna/coral_hermit_crab.bbmodel) |
 | Рифовый морской конёк | [PNG](09_reef_seahorse.png) | [Спереди](reef_seahorse_front.png) · [Сбоку](reef_seahorse_side.png) | [`.bbmodel`](../../../blockbench/riftworld_fauna/reef_seahorse.bbmodel) |
 | Глубоководный кальмар-призрак | [PNG](10_ghost_squid.png) | [Спереди](ghost_squid_front.png) · [Сбоку](ghost_squid_side.png) | [`.bbmodel`](../../../blockbench/riftworld_fauna/ghost_squid.bbmodel) |
-| Серебряный морской змей | [PNG](11_silver_sea_serpent.png) | [Спереди](silver_sea_serpent_front.png) · [Сбоку](silver_sea_serpent_side.png) | [`.bbmodel`](../../../blockbench/riftworld_fauna/silver_sea_serpent.bbmodel) |
+| Серебряный морской змей | [PNG](11_silver_sea_serpent.png) | [Спереди](silver_sea_serpent_front.png) · [Одна сторона](silver_sea_serpent_side.png) · [Другая сторона](silver_sea_serpent_opposite.png) | [`.bbmodel`](../../../blockbench/riftworld_fauna/silver_sea_serpent.bbmodel) |
 
 ## Общий вид
 

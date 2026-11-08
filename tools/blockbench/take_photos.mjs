@@ -28,7 +28,7 @@ const idsArg = arg('ids', 'porcelain_crane,basalt_beetle,ash_moth,amethyst_fox,s
 const ids = idsArg.split(',').map(s => s.trim()).filter(Boolean);
 const background = arg('background', '#f2f4f8');
 const view = arg('view', 'default');
-if (!['default', 'front', 'side'].includes(view)) throw new Error('Unknown view: ' + view);
+if (!['default', 'front', 'side', 'opposite'].includes(view)) throw new Error('Unknown view: ' + view);
 const resolutionArg = arg('resolution', '1600x1200').split('x').map(Number);
 const finalResolution = resolutionArg.length === 2 && resolutionArg.every(v => v > 0) ? resolutionArg : [1600, 1200];
 
@@ -155,7 +155,7 @@ try {
       amethyst_fox: [-512, 220, -280],
       sizo_leafwing: [512, 190, -300],
       azure_frog: [-512, 270, -512],
-      bone_raven: [-400, 160, -512],
+      bone_raven: [-470, 220, -420],
       coral_hermit_crab: [-512, 240, -512],
       reef_seahorse: [-512, 190, -320],
       ghost_squid: [-512, 360, -512],
@@ -163,6 +163,7 @@ try {
     };
     const offset = view === 'front' ? [0, 130, -512]
       : view === 'side' ? [512, 130, 0]
+      : view === 'opposite' ? [-512, 130, 0]
       : (cameraPositions[id] || [-512, 512 * 0.6, -512]);
     const cameraPreset = {
       name: 'Riftworld reference view',

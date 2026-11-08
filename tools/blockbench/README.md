@@ -12,7 +12,8 @@
   целочисленные кубы для `GeoModel.java`; атласы 2048×2048.
 - `run_headless.mjs` — поднимает локальный HTTP-сервер для собранного Blockbench web, запускает
   headless Chromium, инжектит плагин, пишет артефакты и делает round-trip проверку `.bbmodel`.
-- `check_geometry.py` — проверяет координаты статически повёрнутых деталей geo и зазор усиков жука.
+- `check_geometry.py` — проверяет координаты статически повёрнутых деталей geo, зазор усиков жука,
+  связность гребня змея, его соединение с полосой и телом и соответствие пикселей обеих сторон (ImageMagick).
 - `take_photos.mjs` — открывает сохранённые проекты и снимает их через
   `Screencam.advancedScreenshot`; создаёт одиннадцать PNG 1600 × 1200 и общий лист.
 - `package.json` / `package-lock.json` — зависимости runner: `puppeteer-core`, `@sparticuz/chromium`.
@@ -61,7 +62,7 @@ BLOCKBENCH_ROOT=/path/to/blockbench-5.2.2 node tools/blockbench/take_photos.mjs
 Снимки сохраняются в `reports/blockbench_first_batch/photos/`. Галерея с прямыми
 ссылками на PNG: [`reports/blockbench_first_batch/photos/README.md`](../../reports/blockbench_first_batch/photos/README.md).
 Фотографии делаются в Blockbench, а не в Minecraft. Для дополнительных ракурсов используйте
-`--ids=porcelain_crane,basalt_beetle --view=front --out=/tmp/rift-front` или `--view=side`.
+`--ids=porcelain_crane,basalt_beetle --view=front --out=/tmp/rift-front` или `--view=side` / `--view=opposite` для двух сторон.
 Проверка: `python3 tools/blockbench/check_geometry.py`. Геометрия в Minecraft ещё не проверялась.
 
 ## Ручное использование плагина

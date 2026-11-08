@@ -97,9 +97,85 @@ def z_interval(chain, elements, swing=None):
             points.append(transformed(corner, chain, swing)[2])
     return min(points), max(points)
 
+def overlap_yz(poly, rect):
+    """Convex quad/axis-aligned rectangle overlap in the YZ plane (SAT)."""
+    y0, z0, y1, z1 = rect
+    box = [(y0,z0), (y0,z1), (y1,z1), (y1,z0)]
+    axes = [(1,0), (0,1)]
+    for i in range(4):
+        a, b = poly[i], poly[(i+1) % 4]
+        axes.append((a[1]-b[1], b[0]-a[0]))
+    for ay, az in axes:
+        if abs(ay)+abs(az) < 1e-9:
+            continue
+        ps = [y*ay+z*az for y,z in poly]
+        qs = [y*ay+z*az for y,z in box]
+        if min(max(ps), max(qs)) - max(min(ps), min(qs)) <= 1e-7:
+            return False
+    return True
+
+
+def check_serpent_crest(groups):
+    import subprocess
+    from collections import deque
+    _, body = groups['body']
+    strips = [e for e in body if e['name'].startswith('crest_slice_')]
+    assert len(strips) > 20
+    cells = set()
+    rects = []
+    atlas = subprocess.check_output(['convert', str(ROOT / 'mod/src/main/resources/assets/riftworld/textures/entity/silver_sea_serpent.png'), '-depth', '8', 'rgba:-'])
+    assert len(atlas) == 2048 * 2048 * 4
+    pixels = 0
+    for e in strips:
+        f, t = e['from'], e['to']
+        assert f[0] == -1 and t[0] == 0 and t[2]-f[2] == 2
+        assert f[1] % 2 == t[1] % 2 == f[2] % 2 == 0
+        rects.append((f[1], f[2], t[1], t[2]))
+        for y in range(f[1],t[1],2):
+            for z in range(f[2],t[2],2):
+                assert (y,z) not in cells, 'overlapping coplanar crest slices'
+                cells.add((y,z))
+        # Standard box-UV: the two big +/-X faces have identical YZ pixels.
+        u,v = e['uv_offset']; d = t[2]-f[2]; h=t[1]-f[1]; w=1
+        for iy in range(h):
+            for iz in range(d):
+                a = 4*((v+d+iy)*2048+u+iz)
+                b = 4*((v+d+iy)*2048+u+d+w+iz)
+                assert atlas[a:a+4] == atlas[b:b+4], (e['name'],iy,iz)
+                assert atlas[a+3] == 255
+                pixels += 1
+    # A single 4-connected component means there are no floating fins.
+    pending = set(cells); queue = deque([pending.pop()]); count=0
+    while queue:
+        y,z=queue.popleft(); count+=1
+        for p in ((y+2,z),(y-2,z),(y,z+2),(y,z-2)):
+            if p in pending:
+                pending.remove(p); queue.append(p)
+    assert not pending, f'disconnected crest: {len(pending)} cells'
+    # Every dorsal stripe segment intersects the sheet, not just its neighbours.
+    stripes = [name for name in groups if name.startswith('dorsal_stripe_')]
+    assert len(stripes) == 14
+    for name in stripes:
+        chain, elements = groups[name]; assert len(elements) == 1
+        e = elements[0]; f,t=e['from'],e['to']; x=(f[0]+t[0])/2
+        points = [(f[1],f[2]), (f[1],t[2]), (t[1],t[2]), (t[1],f[2])]
+        quad = [(p[1],p[2]) for p in (transformed([x,y,z],chain) for y,z in points)]
+        assert any(overlap_yz(quad,r) for r in rects), name+' does not meet crest sheet'
+        # The curved body is rotated too. Transform the stripe's corners into
+        # the body's own local YZ frame and test the resulting convex quad.
+        body_chain, body_cubes = groups['curve_'+name.removeprefix('dorsal_stripe_')]
+        assert len(body_cubes) == 1
+        body_cube = body_cubes[0]; origin=body_chain[-1]['origin']; rot=body_chain[-1].get('rotation', [0,0,0])
+        local = [rotate([0,y,z],origin,[-v for v in rot]) for y,z in quad]
+        qlocal = [(p[1],p[2]) for p in local]
+        bf,bt=body_cube['from'],body_cube['to']
+        assert overlap_yz(qlocal,(bf[1],bf[2],bt[1],bt[2])), name+' misses body'
+    print(f'silver_sea_serpent crest: {len(strips)} thin slices, {count} connected cells, {pixels} matching face pixels, {len(stripes)} stripe/body intersections')
+
 
 if __name__ == '__main__':
     models = {id: load_model(id) for id in IDS}
+    check_serpent_crest(models['silver_sea_serpent'])
     groups = models['basalt_beetle']
     for side in ('left', 'right'):
         horn = groups[f'horn_{side}_tilt']
