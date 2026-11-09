@@ -48,6 +48,7 @@ import ru.aiforge.riftworld.world.ElisarWitness;
  * v0.48.0: Житель Элисара (референс 05_elisar_villager.png) — мирный горожанин и деревенский ремесленник
  * в сиренево-кремовом кафтане со скрещёнными руками. Торгует за дукаты Элисара и при нападении зовёт Стражей и Лучников.
  */
+@net.minecraftforge.fml.common.Mod.EventBusSubscriber(modid = ru.aiforge.riftworld.RiftWorld.MODID)
 public final class ElisarVillagerEntity extends PathfinderMob implements Npc, Merchant {
     @Nullable
     private Player tradingPlayer;
@@ -149,27 +150,31 @@ public final class ElisarVillagerEntity extends PathfinderMob implements Npc, Me
 
     /**
      * Житель умер. Если это видел кто-то из города, убийца попадает в розыск.
+     *
+     * <p>В 1.20.1 Forge нет {@code LivingEntity.DeadEntityReport}: смерть приходит
+     * событием {@link net.minecraftforge.event.entity.living.LivingDeathEvent},
+     * поэтому проверка «видел ли город» живёт здесь, а {@link #onDied}
+     * остаётся обычным хуком сущности.
      */
-    @Override
-    public void onDied(net.minecraft.world.entity.LivingEntity.DeadEntityReport report) {
-        super.onDied(report);
-        if (this.level() instanceof net.minecraft.server.level.ServerLevel level) {
-            Entity killer = report.getSource() == null ? null : report.getSource().getEntity();
-            if (killer != null && killer != this) {
-                int witnesses = ElisarWitness.countWitnesses(level, this, killer);
-                if (witnesses > 0 && killer instanceof net.minecraft.server.level.ServerPlayer player) {
-                    ElisarLaw law = ElisarLaw.get(level);
-                    law.reportCrime(level, player, witnesses, null);
-                    player.displayClientMessage(net.minecraft.network.chat.Component.literal(
-                            "\u00a7cВас увидели. Вы в розыске — стражи города ищут убийцу."), true);
-                    // Поднимаем тревогу: ближайшие стражи бросаются в погоню.
-                    var area = this.getBoundingBox().inflate(40.0, 16.0, 40.0);
-                    for (ElisarGuardEntity guard : level.getEntitiesOfClass(ElisarGuardEntity.class, area)) {
-                        guard.setAlarm(true);
-                        guard.setOnPatrol(false);
-                    }
-                }
-            }
+    @net.minecraftforge.eventbus.api.SubscribeEvent
+    public static void onVillagerDeath(net.minecraftforge.event.entity.living.LivingDeathEvent event) {
+        if (!(event.getEntity() instanceof ElisarVillagerEntity villager)) return;
+        if (!(villager.level() instanceof net.minecraft.server.level.ServerLevel level)) return;
+        Entity killer = event.getSource() == null ? null : event.getSource().getEntity();
+        if (killer == null || killer == villager) return;
+        int witnesses = ElisarWitness.countWitnesses(level, villager, killer);
+        if (witnesses <= 0) return;
+        if (killer instanceof net.minecraft.server.level.ServerPlayer player) {
+            ElisarLaw law = ElisarLaw.get(level);
+            law.reportCrime(level, player, witnesses, null);
+            player.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                    "\u00a7cВас увидели. Вы в розыске — стражи города ищут убийцу."), true);
+        }
+        // Поднимаем тревогу: ближайшие стражи бросаются в погоню.
+        var area = villager.getBoundingBox().inflate(40.0, 16.0, 40.0);
+        for (ElisarGuardEntity guard : level.getEntitiesOfClass(ElisarGuardEntity.class, area)) {
+            guard.setAlarm(true);
+            guard.setOnPatrol(false);
         }
     }
 
@@ -386,7 +391,7 @@ public final class ElisarVillagerEntity extends PathfinderMob implements Npc, Me
 
         public WorkGoal(ElisarVillagerEntity villager) {
             this.villager = villager;
-            this.setFlags(Goal.FLAG_MOVE);
+            this.setFlags(Goal.Flag.MOVE);
         }
 
         @Override
@@ -466,7 +471,7 @@ public final class ElisarVillagerEntity extends PathfinderMob implements Npc, Me
 
         public AlarmGoal(ElisarVillagerEntity villager) {
             this.villager = villager;
-            this.setFlags(Goal.FLAG_MOVE);
+            this.setFlags(Goal.Flag.MOVE);
         }
 
         @Override

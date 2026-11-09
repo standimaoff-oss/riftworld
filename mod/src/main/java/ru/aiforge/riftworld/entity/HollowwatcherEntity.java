@@ -74,8 +74,7 @@ public class HollowwatcherEntity extends Monster {
                 .add(Attributes.ATTACK_DAMAGE, 9.0D)
                 .add(Attributes.MOVEMENT_SPEED, 0.30D)
                 .add(Attributes.FOLLOW_RANGE, 40.0D)
-                .add(Attributes.KNOCKBACK_RESISTANCE, 0.45D)
-                .add(Attributes.STEP_HEIGHT, 1.2D);
+                .add(Attributes.KNOCKBACK_RESISTANCE, 0.45D);
     }
 
     @Override
@@ -152,7 +151,7 @@ public class HollowwatcherEntity extends Monster {
             double dist = this.watcher.distanceTo(t);
             if (this.watcher.wasWatched && dist <= LUNGE_RANGE && this.watcher.lungeTimer <= 0) {
                 this.watcher.lungeTimer = LUNGE_TICKS;
-                this.watcher.playSound(SoundEvents.ENDERMAN_TELEPORT, 0.6F, 0.42D);
+                this.watcher.playSound(SoundEvents.ENDERMAN_TELEPORT, 0.6F, 0.42F);
                 if (this.watcher.level() instanceof ServerLevel sl) {
                     sl.sendParticles(ParticleTypes.SOUL, this.watcher.getX(), this.watcher.getY() + 2.0D,
                             this.watcher.getZ(), 26, 0.5D, 1.1D, 0.5D, 0.03D);
@@ -195,7 +194,7 @@ public class HollowwatcherEntity extends Monster {
         super.tick();
         if (this.level().isClientSide) return;
         if (this.freezeTimer > 0 && this.getTarget() != null && this.tickCount % 34 == 0) {
-            this.playSound(SoundEvents.WARDEN_HEARTBEAT, 0.35F, 0.42D);
+            this.playSound(SoundEvents.WARDEN_HEARTBEAT, 0.35F, 0.42F);
         }
     }
 
@@ -205,7 +204,7 @@ public class HollowwatcherEntity extends Monster {
         if (hit && target instanceof LivingEntity living) {
             living.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 160, 1, false, false), this);
             living.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 90, 0, false, false), this);
-            this.playSound(SoundEvents.WARDEN_ROAR, 1.15F, 0.85D);
+            this.playSound(SoundEvents.WARDEN_ROAR, 1.15F, 0.85F);
         }
         return hit;
     }

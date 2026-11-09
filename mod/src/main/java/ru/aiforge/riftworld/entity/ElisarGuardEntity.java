@@ -436,7 +436,7 @@ public final class ElisarGuardEntity extends PathfinderMob {
         }
 
         @Override
-        protected void start() {
+        public void start() {
             if (!(this.guard.level() instanceof ServerLevel level)) {
                 return;
             }
@@ -458,7 +458,7 @@ public final class ElisarGuardEntity extends PathfinderMob {
 
         public PatrolGoal(ElisarGuardEntity guard) {
             this.guard = guard;
-            this.setFlags(net.minecraft.world.entity.ai.goal.Goal.FLAG_MOVE);
+            this.setFlags(net.minecraft.world.entity.ai.goal.Goal.Flag.MOVE);
         }
 
         @Override

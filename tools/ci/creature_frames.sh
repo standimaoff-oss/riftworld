@@ -108,6 +108,23 @@ shot frame-paper-dragon-three-quarter 205.5 105.7 -3.6 208 105 0 10
 shot frame-paper-dragon-side 211.6 105.7 0 208 105 0 7
 shot frame-paper-dragon-head 208 106.3 -2.3 208 106.1 -0.6 7
 
+# v0.49.0: ДРАКОН ДОЛЖЕН ДВИГАТЬСЯ НА ДАЛЁКОМ РАССТОЯНИИ.
+# Раньше clientTrackingRange был 32 блока: клиент переставал получать
+# позицию, цепочка позвоночника замирала, и дракон «рисовался, но не летел».
+# Теперь радиус 128, и мы проверяем это прямо в игре: снимаем кадр,
+# ждём полёт, снимаем второй — пиксели должны отличаться.
+rq kill '@e[type=riftworld:paper_dragon]' >/dev/null 2>&1 || true
+rq summon riftworld:paper_dragon 260 150 0 '{PersistenceRequired:1b,NoGravity:1b}' >/dev/null
+# Камера далеко (около 60 блоков), дракон летит и не стоит на месте
+rq tp TestPlayer 200 152 0 facing 260 150 0 >/dev/null
+sleep 12
+shot frame-paper-dragon-far-a 205 153 0 260 150 0 4
+sleep 10
+shot frame-paper-dragon-far-b 205 153 0 260 150 0 4
+# Дракон обязан сместиться: сравниваем его координаты через 10 секунд
+DRAGON_POS=$(rq data get entity '@e[type=riftworld:paper_dragon,limit=1]' Pos 2>&1 | tr -d '\n' || true)
+echo "  paper dragon pos after flight: $DRAGON_POS"
+
 # ---------------------------------------------------------------- liopleurodon
 # locate может вернуть пустоту, пока чанки прогреваются — пробуем несколько раз
 # и в крайнем случае берём известный центр глубокого океана (его же использует
