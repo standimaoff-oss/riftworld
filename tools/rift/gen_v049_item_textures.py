@@ -224,8 +224,6 @@ JOBS = [
     ("liopleurodon_tooth", "prismarine_crystals.png", [(0.0, "#143244"), (0.45, "#2E6C8A"), (0.8, "#62AEC8"), (1.0, "#C8EEF8")], None),
     # --- зелья/эликсиры
     ("elisar_tonic", "potion.png", ELISAR, None),
-    ("morok_draught", "potion.png", [(0.0, "#1C1024"), (0.45, "#462A50"), (0.8, "#7E4A88"), (1.0, "#C79AD0")], None),
-    ("garden_tonic", "potion.png", [(0.0, "#14301C"), (0.45, "#2E6838"), (0.8, "#5AAA62"), (1.0, "#A8E0AE")], None),
 ]
 
 # Ведро элисарской воды: обычная ванильная ТЕКСТУРА ведра, но в другом цвете.
@@ -235,6 +233,19 @@ BUCKET_TINT = "#3E8FD0"
 EMERALD_TINT = [(0.0, "#0A3A22"), (0.40, "#187A48"), (0.75, "#3FC77A"), (1.0, "#9CFFC0")]
 
 
+def is_voxel_item(name: str) -> bool:
+    """3D-модели (инструменты, броня) используют палитру; PNG у них — только
+    particle-ссылка и должен оставаться 32x32. Перекрашивать их нельзя."""
+    mp = ASSETS / "models/item" / f"{name}.json"
+    if not mp.exists():
+        return False
+    try:
+        d = json.loads(mp.read_text(encoding="utf-8"))
+    except Exception:
+        return False
+    return "elements" in d or d.get("parent") == "minecraft:item/generated" and False
+
+
 def main():
     if not CACHE.exists():
         print("!! нет кэша ванильных ассетов:", CACHE)
@@ -242,6 +253,10 @@ def main():
         return 1
     made, skipped = [], []
     for name, src, stops, extra in JOBS:
+        if is_voxel_item(name):
+            # 3D-модель: PNG — только particle-ссылка, трогать нельзя
+            skipped.append((name, "3d voxel model"))
+            continue
         px = vanilla(src)
         if px is None:
             skipped.append((name, src))
@@ -267,7 +282,7 @@ def main():
 
     # --- Riftcrystal: изумрудная текстура
     em = vanilla("emerald.png")
-    if em is not None:
+    if em is not None and not is_voxel_item("riftcrystal"):
         px = recolor(em, EMERALD_TINT)
         write_png(TEX / "riftcrystal.png", px)
         made.append("riftcrystal")
