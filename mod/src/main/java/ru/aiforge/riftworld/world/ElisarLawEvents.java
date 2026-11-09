@@ -131,7 +131,7 @@ public final class ElisarLawEvents {
             if (item == null || item == net.minecraft.world.item.Items.AIR) continue;
             ItemStack stack = new ItemStack(item, Math.max(1, rec.count()));
             // Если сундук полон — остаток падает рядом, чтобы вещи не пропали.
-            ItemStack left = net.minecraft.world.ContainerHelper.addItem(chest.getContainer(), stack);
+            ItemStack left = net.minecraft.world.ContainerHelper.addItem(chest, stack);
             if (!left.isEmpty()) {
                 net.minecraft.world.entity.item.ItemEntity dropped = new net.minecraft.world.entity.item.ItemEntity(
                         level, chestPos.getX() + 0.5D, chestPos.getY() + 1.0D, chestPos.getZ() + 0.5D, left);
