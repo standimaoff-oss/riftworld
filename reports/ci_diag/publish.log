@@ -1,64 +1,14 @@
-run 42669780363 / job server-smoke / ветвь arena/037a840e-riftworld
+run 42673786404 / job maja-feeding / ветвь arena/037a840e-riftworld
 == содержимое ci-out ==
-total 3512
-drwxr-xr-x  2 runner runner    4096 Nov  9 18:07 .
-drwxr-xr-x 14 runner runner    4096 Nov  9 18:01 ..
--rw-r--r--  1 runner runner    5268 Nov  9 18:07 client-commands.log
--rw-r--r--  1 runner runner    1569 Nov  9 18:03 deep-ocean.txt
--rw-r--r--  1 runner runner     134 Nov  9 18:02 done.txt
--rw-r--r--  1 runner runner       0 Nov  9 18:02 errors.txt
--rw-r--r--  1 runner runner  141480 Nov  9 18:07 fauna-liopleurodon-motion.png
--rw-r--r--  1 runner runner   74285 Nov  9 18:07 fauna-liopleurodon-side.png
--rw-r--r--  1 runner runner  137006 Nov  9 18:07 fauna-liopleurodon.png
--rw-r--r--  1 runner runner    1854 Nov  9 18:02 fauna-server-probes.txt
--rw-r--r--  1 runner runner 1194774 Nov  9 18:01 installer.log
--rw-r--r--  1 runner runner   11478 Nov  9 18:02 latest.log
--rw-r--r--  1 runner runner  500874 Nov  9 18:07 maja-breach-rise.png
--rw-r--r--  1 runner runner  408615 Nov  9 18:07 maja-breach-start.png
--rw-r--r--  1 runner runner  214772 Nov  9 18:06 maja-client-front.png
--rw-r--r--  1 runner runner  212003 Nov  9 18:06 maja-client-swim-motion.png
--rw-r--r--  1 runner runner  626116 Nov  9 18:07 maja-client.log
--rw-r--r--  1 runner runner      85 Nov  9 18:03 maja-openbox.log
--rw-r--r--  1 runner runner    1620 Nov  9 18:02 maja-probes.txt
--rw-r--r--  1 runner runner    1174 Nov  9 18:03 maja-xvfb.log
--rw-r--r--  1 runner runner     222 Nov  9 18:02 mods.txt
--rw-r--r--  1 runner runner     210 Nov  9 18:02 ocean-wreck.txt
--rw-r--r--  1 runner runner    1343 Nov  9 18:02 report_server.md
--rw-r--r--  1 runner runner     491 Nov  9 18:02 tps.txt
-попытка 1: To https://github.com/standimaoff-oss/riftworld
- ! [rejected]        HEAD -> arena/037a840e-riftworld (fetch first)
-error: failed to push some refs to 'https://github.com/standimaoff-oss/riftworld'
-hint: Updates were rejected because the remote contains work that you do not
-hint: have locally. This is usually caused by another repository pushing to
-hint: the same ref. If you want to integrate the remote changes, use
-hint: 'git pull' before pushing again.
-hint: See the 'Note about fast-forwards' in 'git push --help' for details.
-From https://github.com/standimaoff-oss/riftworld
- * branch            arena/037a840e-riftworld -> FETCH_HEAD
-   71fdb06..aa42961  arena/037a840e-riftworld -> origin/arena/037a840e-riftworld
-Unstaged changes after reset:
-M	reports/ci_diag/client-commands.log
-M	reports/ci_diag/deep-ocean.txt
-M	reports/ci_diag/done.txt
-M	reports/ci_diag/feeding-server-tail.log
-M	reports/ci_diag/installer.log
-M	reports/ci_diag/latest.log
-M	reports/ci_diag/maja-client.log
-M	reports/ci_diag/maja-feeding.txt
-M	reports/ci_diag/maja-openbox.log
-M	reports/ci_diag/maja-probes.txt
-M	reports/ci_diag/maja-xvfb.log
-M	reports/ci_diag/ocean-wreck.txt
-M	reports/ci_diag/publish.log
-M	reports/ci_diag/tps.txt
-M	reports/ci_frames/fauna-liopleurodon-motion.png
-M	reports/ci_frames/fauna-liopleurodon-side.png
-M	reports/ci_frames/fauna-liopleurodon.png
-M	reports/ci_frames/maja-breach-rise.png
-M	reports/ci_frames/maja-breach-start.png
-M	reports/ci_frames/maja-client-front.png
-M	reports/ci_frames/maja-client-swim-motion.png
-M	reports/ingame/0.49.0/frame-pegasus-head.png
-M	reports/ingame/0.49.0/frame-pegasus-side.png
-M	reports/ingame/0.49.0/frame-pegasus-three-quarter.png
-M	tools/ci/creature_frames.sh
+total 1236
+drwxr-xr-x  2 runner runner    4096 Nov  9 18:29 .
+drwxr-xr-x 14 runner runner    4096 Nov  9 18:28 ..
+-rw-r--r--  1 runner runner     134 Nov  9 18:28 done.txt
+-rw-r--r--  1 runner runner       0 Nov  9 18:28 errors.txt
+-rw-r--r--  1 runner runner   25604 Nov  9 18:29 feeding-server-tail.log
+-rw-r--r--  1 runner runner 1194775 Nov  9 18:28 installer.log
+-rw-r--r--  1 runner runner   10855 Nov  9 18:28 latest.log
+-rw-r--r--  1 runner runner    2517 Nov  9 18:29 maja-feeding.txt
+-rw-r--r--  1 runner runner     222 Nov  9 18:28 mods.txt
+-rw-r--r--  1 runner runner    1343 Nov  9 18:28 report_server.md
+-rw-r--r--  1 runner runner     491 Nov  9 18:28 tps.txt
