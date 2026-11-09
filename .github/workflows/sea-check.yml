@@ -173,7 +173,7 @@ jobs:
       - name: Verify 120-block ocean and submerged Maja on the server
         run: bash tools/ci/deep_ocean_probe.sh
       - name: Real client rendering smoke test
-        if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/arena/361da66e-riftworld' || github.ref == 'refs/heads/arena/b4294aa1-riftworld'
+        if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/arena/361da66e-riftworld' || github.ref == 'refs/heads/arena/b4294aa1-riftworld' || github.ref == 'refs/heads/arena/037a840e-riftworld'
         shell: bash
         run: bash tools/ci/maja_client_probe.sh
       - name: Stop the test server
