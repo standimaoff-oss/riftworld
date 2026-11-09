@@ -67,7 +67,7 @@ public final class ElisarSettlementKeeper {
     public static void onLevelTick(TickEvent.LevelTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
         if (!(event.level instanceof ServerLevel level)) return;
-        if (!level.dimension().equals(Flight.ELISAR)) return;
+        if (!level.dimension().equals(Flight.ELISAR_DIM)) return;
         if ((level.getGameTime() % 80L) != 23L) return;
 
         CityPlan plan = CityPlan.get();

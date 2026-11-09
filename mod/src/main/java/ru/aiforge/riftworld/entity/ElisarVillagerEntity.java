@@ -230,6 +230,10 @@ public final class ElisarVillagerEntity extends PathfinderMob implements Npc, Me
         return this.level().isClientSide;
     }
 
+    public int getUnhappyCounter() {
+        return 0;
+    }
+
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);

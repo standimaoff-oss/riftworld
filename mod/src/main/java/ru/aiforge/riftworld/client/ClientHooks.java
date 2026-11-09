@@ -108,10 +108,9 @@ public final class ClientHooks {
     public static void addLayers(EntityRenderersEvent.AddLayers e) {
         for (String skin : e.getSkins()) {
             var pr = e.getSkin(skin);
-            if (pr instanceof net.minecraft.client.renderer.entity.LivingEntityRenderer<?, ?> lr
-                    && lr.getModel() instanceof net.minecraft.client.model.HumanoidModel<?>) {
-                ((net.minecraft.client.renderer.entity.LivingEntityRenderer) lr)
-                        .addLayer(new RiftcrystalArmorGlowLayer((net.minecraft.client.renderer.entity.RenderLayerParent) lr));
+            if (pr != null && pr.getModel() instanceof net.minecraft.client.model.HumanoidModel<?>) {
+                ((net.minecraft.client.renderer.entity.LivingEntityRenderer) pr)
+                        .addLayer(new RiftcrystalArmorGlowLayer((net.minecraft.client.renderer.entity.RenderLayerParent) pr));
             }
         }
         var standRenderer = e.getRenderer(net.minecraft.world.entity.EntityType.ARMOR_STAND);
