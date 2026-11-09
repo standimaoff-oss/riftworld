@@ -1,16 +1,16 @@
-run 42507177831 / job server-smoke / ветвь arena/037a840e-riftworld
+run 42578103267 / job server-smoke / ветвь arena/037a840e-riftworld
 == содержимое ci-out ==
 total 1220
-drwxr-xr-x  2 runner runner    4096 Nov  8 17:56 .
-drwxr-xr-x 14 runner runner    4096 Nov  8 17:55 ..
--rw-r--r--  1 runner runner    1578 Nov  8 17:57 deep-ocean.txt
--rw-r--r--  1 runner runner     134 Nov  8 17:56 done.txt
--rw-r--r--  1 runner runner       0 Nov  8 17:56 errors.txt
--rw-r--r--  1 runner runner    1382 Nov  8 17:56 fauna-server-probes.txt
--rw-r--r--  1 runner runner 1194735 Nov  8 17:55 installer.log
--rw-r--r--  1 runner runner   11339 Nov  8 17:56 latest.log
--rw-r--r--  1 runner runner    1596 Nov  8 17:56 maja-probes.txt
--rw-r--r--  1 runner runner     222 Nov  8 17:56 mods.txt
--rw-r--r--  1 runner runner     210 Nov  8 17:56 ocean-wreck.txt
--rw-r--r--  1 runner runner    1343 Nov  8 17:56 report_server.md
--rw-r--r--  1 runner runner     491 Nov  8 17:56 tps.txt
+drwxr-xr-x  2 runner runner    4096 Nov  9 07:18 .
+drwxr-xr-x 14 runner runner    4096 Nov  9 07:17 ..
+-rw-r--r--  1 runner runner    1583 Nov  9 07:19 deep-ocean.txt
+-rw-r--r--  1 runner runner     134 Nov  9 07:18 done.txt
+-rw-r--r--  1 runner runner       0 Nov  9 07:18 errors.txt
+-rw-r--r--  1 runner runner    1854 Nov  9 07:18 fauna-server-probes.txt
+-rw-r--r--  1 runner runner 1194775 Nov  9 07:17 installer.log
+-rw-r--r--  1 runner runner   11339 Nov  9 07:18 latest.log
+-rw-r--r--  1 runner runner    1596 Nov  9 07:18 maja-probes.txt
+-rw-r--r--  1 runner runner     222 Nov  9 07:18 mods.txt
+-rw-r--r--  1 runner runner     210 Nov  9 07:18 ocean-wreck.txt
+-rw-r--r--  1 runner runner    1343 Nov  9 07:18 report_server.md
+-rw-r--r--  1 runner runner     491 Nov  9 07:18 tps.txt

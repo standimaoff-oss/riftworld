@@ -67,3 +67,12 @@ Killed Silver Sea Serpent
 
 Observed sea_scale drop from silver_sea_serpent.
 OK: all 15 v0.47.0 fauna entities spawned, ticked, and dropped trophies cleanly.
+Verifying v0.48.0 armory recipes, Villager ducat trades, Guard & Archer equipment, and live AI.
+v48_armory_probe: riftstruct kind=v48_armory_probe recipes_ok=true villager_offers=8 guard_equipped=true archer_equipped=true rare_ore_biomes=4(crystal_rifts,violet_hills,morok_hollow,mist_keep)
+Summoned new Elisar Villager
+
+Summoned new Elisar Guard
+
+Summoned new Elisar Archer
+
+OK: v0.48.0 armory, dual tool sets, and 3 Elisar settlement folk verified on live Forge server.
