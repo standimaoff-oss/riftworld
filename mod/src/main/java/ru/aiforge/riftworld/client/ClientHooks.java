@@ -39,7 +39,7 @@ public final class ClientHooks {
         };
     }
 
-    public static net.minecraftforge.client.extensions.common.IClientItemExtensions armorExt(boolean riftcrystal) {
+    public static net.minecraftforge.client.extensions.common.IClientItemExtensions armorExt() {
         return new net.minecraftforge.client.extensions.common.IClientItemExtensions() {
             @Override
             public net.minecraft.client.model.HumanoidModel<?> getHumanoidArmorModel(
@@ -47,8 +47,10 @@ public final class ClientHooks {
                     net.minecraft.world.item.ItemStack itemStack,
                     net.minecraft.world.entity.EquipmentSlot armorSlot,
                     net.minecraft.client.model.HumanoidModel<?> defaultModel) {
+                boolean rc = itemStack.getItem() instanceof ru.aiforge.riftworld.item.ElisarArmorItem a
+                        && a.isRiftcrystal();
                 return ru.aiforge.riftworld.client.model.ElisarArmorModels.getForSlot(
-                        riftcrystal
+                        rc
                                 ? ru.aiforge.riftworld.item.RiftArmorMaterials.RIFTCRYSTAL
                                 : ru.aiforge.riftworld.item.RiftArmorMaterials.AURITE,
                         armorSlot,

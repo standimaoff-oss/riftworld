@@ -926,20 +926,20 @@ def compile_voxel_elements(
 # ==============================================================================
 
 WEAPON_DISPLAY = {
-    "thirdperson_righthand": {"rotation": [0, -90, 10], "translation": [0, 3.6, 1.0], "scale": [0.92, 0.92, 0.92]},
-    "thirdperson_lefthand":  {"rotation": [0, 90, -10], "translation": [0, 3.6, 1.0], "scale": [0.92, 0.92, 0.92]},
-    "firstperson_righthand": {"rotation": [0, -90, -20], "translation": [1.13, 3.2, 1.13], "scale": [0.72, 0.72, 0.72]},
-    "firstperson_lefthand":  {"rotation": [0, 90, 20],  "translation": [1.13, 3.2, 1.13], "scale": [0.72, 0.72, 0.72]},
+    "thirdperson_righthand": {"rotation": [0, -90, -42], "translation": [0, 3.2, 1.8], "scale": [0.92, 0.92, 0.92]},
+    "thirdperson_lefthand":  {"rotation": [0, 90, 42],   "translation": [0, 3.2, 1.8], "scale": [0.92, 0.92, 0.92]},
+    "firstperson_righthand": {"rotation": [0, -90, 20],  "translation": [1.13, 3.2, 1.13], "scale": [0.72, 0.72, 0.72]},
+    "firstperson_lefthand":  {"rotation": [0, 90, -20],  "translation": [1.13, 3.2, 1.13], "scale": [0.72, 0.72, 0.72]},
     "ground": {"rotation": [0, 0, -35], "translation": [0, 3.0, 0], "scale": [0.65, 0.65, 0.65]},
     "gui":    {"rotation": [14, -22, -38], "translation": [0.0, 0.0, 0], "scale": [0.98, 0.98, 0.98]},
     "fixed":  {"rotation": [0, 0, 0], "translation": [0, 0, -0.5], "scale": [1.05, 1.05, 1.05]},
 }
 
 BOW_DISPLAY = {
-    "thirdperson_righthand": {"rotation": [0, -90, 20], "translation": [-1.0, -1.5, 2.0], "scale": [0.92, 0.92, 0.92]},
-    "thirdperson_lefthand":  {"rotation": [0, 90, -20], "translation": [-1.0, -1.5, 2.0], "scale": [0.92, 0.92, 0.92]},
-    "firstperson_righthand": {"rotation": [0, -90, 15], "translation": [1.13, 2.8, 1.13], "scale": [0.72, 0.72, 0.72]},
-    "firstperson_lefthand":  {"rotation": [0, 90, -15], "translation": [1.13, 2.8, 1.13], "scale": [0.72, 0.72, 0.72]},
+    "thirdperson_righthand": {"rotation": [80, 90, 0],   "translation": [-0.5, -2.0, 0.8], "scale": [0.95, 0.95, 0.95]},
+    "thirdperson_lefthand":  {"rotation": [80, -90, 0],  "translation": [-0.5, -2.0, 0.8], "scale": [0.95, 0.95, 0.95]},
+    "firstperson_righthand": {"rotation": [0, 90, -15],  "translation": [1.13, 2.8, 1.13], "scale": [0.72, 0.72, 0.72]},
+    "firstperson_lefthand":  {"rotation": [0, -90, 15],  "translation": [1.13, 2.8, 1.13], "scale": [0.72, 0.72, 0.72]},
     "ground": {"rotation": [0, 0, 0], "translation": [0, 2.5, 0], "scale": [0.65, 0.65, 0.65]},
     "gui":    {"rotation": [12, -20, -28], "translation": [0.0, 0.0, 0], "scale": [1.02, 1.02, 1.02]},
     "fixed":  {"rotation": [0, 0, 0], "translation": [0, 0, -0.5], "scale": [1.05, 1.05, 1.05]},
