@@ -332,9 +332,10 @@ look_shot() {
 # два сразу покажут, что потеряло текстуру — инструменты или броня.
 drop_row() {
   local z=$1; shift
-  local i=0 item
+  local i=0 item xpos
   for item in "$@"; do
-    rq execute in riftworld:elisar run summon item $((752 + i * 2)) 121 "$z" \
+    xpos=$(awk -v i="$i" 'BEGIN { printf "%.2f", 749.5 + i * 1.6 }')
+    rq execute in riftworld:elisar run summon item "$xpos" 119.5 "$z" \
       "{Item:{id:\"riftworld:$item\",Count:1b},PickupDelay:32767s,Age:-32768s}" >/dev/null
     i=$((i + 1))
   done
