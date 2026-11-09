@@ -10,7 +10,19 @@ RUN=${RUN:-ci/frames-run}
 FRAMES="$OUT/frames"
 mkdir -p "$OUT" "$FRAMES" "$RUN/client/config"
 fail() { echo "::error title=In-game frames::$*"; exit 1; }
-rq() { python3 tools/rcon.py --password "${RCON_PW:-riftci}" --log '' --timeout 90 "$@"; }
+# RCON drops the socket every now and then under a burst of commands; retry a
+# couple of times so a transient disconnect does not abort the whole capture.
+rq() {
+  local attempt=1 rc=0
+  while [ "$attempt" -le 4 ]; do
+    python3 tools/rcon.py --password "${RCON_PW:-riftci}" --log '' --timeout 90 "$@" && return 0
+    rc=$?
+    echo "::warning title=In-game frames::rcon attempt $attempt failed (rc=$rc), retrying"
+    sleep 3
+    attempt=$((attempt + 1))
+  done
+  return "$rc"
+}
 
 sudo apt-get update -qq
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq xvfb openbox x11-utils xdotool imagemagick \
@@ -188,41 +200,42 @@ capture_underwater frame-v049-tools-closeup
 # showcase floor and look straight down at them. This is the most direct proof
 # that the element models sample their palette textures correctly (the v0.49.0
 # regression rendered them as black noise).
-rq execute in riftworld:elisar run fill 754 117 756 768 117 762 minecraft:air >/dev/null
-for pair in \
-  "752 762.0 757.5 riftworld:aurite_sword" \
-  "753 762.0 757.5 riftworld:aurite_pickaxe" \
-  "754 762.0 757.5 riftworld:aurite_axe" \
-  "755 762.0 757.5 riftworld:aurite_shovel" \
-  "756 762.0 757.5 riftworld:aurite_hoe" \
-  "757 762.0 757.5 riftworld:aurite_bow" \
-  "758 762.0 757.5 riftworld:elisar_shield" \
-  "759 762.0 757.5 riftworld:riftcrystal_sword" \
-  "760 762.0 757.5 riftworld:riftcrystal_pickaxe" \
-  "761 762.0 757.5 riftworld:riftcrystal_axe" \
-  "762 762.0 757.5 riftworld:elisar_bow_pulling_0" \
-  "752 762.0 758.5 riftworld:aurite_helmet" \
-  "753 762.0 758.5 riftworld:aurite_chestplate" \
-  "754 762.0 758.5 riftworld:aurite_leggings" \
-  "755 762.0 758.5 riftworld:aurite_boots" \
-  "756 762.0 758.5 riftworld:riftcrystal_helmet" \
-  "757 762.0 758.5 riftworld:riftcrystal_chestplate" \
-  "758 762.0 758.5 riftworld:riftcrystal_leggings" \
-  "759 762.0 758.5 riftworld:riftcrystal_boots"; do
-  set -- $pair
-  rq execute in riftworld:elisar positioned "$1" 118 "$2" run summon item "$3" >/dev/null 2>&1 || true
-done
-sleep 6
-rq execute in riftworld:elisar run tp TestPlayer 757.5 121.0 763.6 facing 757.5 117.0 757.9 >/dev/null
+# Dropped-item showcase: lay the volumetric weapon/tool/armor models out on the
+# showcase floor and look straight down at them. This is the most direct proof
+# that the element models sample their palette textures correctly (the v0.49.0
+# regression rendered them as black noise).
+# PickupDelay keeps them on the floor, Age:-32768s freezes the idle bob.
+drop_row() {
+  local z=$1; shift
+  local i=0 item xpos
+  for item in "$@"; do
+    xpos=$(awk -v i="$i" 'BEGIN { printf "%.2f", 749.5 + i * 1.6 }')
+    rq execute in riftworld:elisar run summon item "$xpos" 119.5 "$z" \
+      "{Item:{id:\"riftworld:$item\",Count:1b},PickupDelay:32767s,Age:-32768s}" >/dev/null 2>&1 \
+      || echo "::warning title=In-game frames::could not summon $item"
+    i=$((i + 1))
+  done
+}
+drop_row 774 aurite_sword aurite_pickaxe aurite_axe aurite_shovel aurite_hoe \
+            riftcrystal_sword riftcrystal_pickaxe riftcrystal_axe riftcrystal_shovel riftcrystal_hoe \
+            elisar_bow elisar_shield
+sleep 4
+rq execute in riftworld:elisar run tp TestPlayer 761 121 767 facing 761 120 774 >/dev/null
 sleep 8
-capture_underwater frame-v049-items-dropped
+capture_underwater frame-v049-items-dropped-tools
+drop_row 782 aurite_helmet aurite_chestplate aurite_leggings aurite_boots \
+            riftcrystal_helmet riftcrystal_chestplate riftcrystal_leggings riftcrystal_boots
+sleep 4
+rq execute in riftworld:elisar run tp TestPlayer 759 121 775 facing 759 120 782 >/dev/null
+sleep 8
+capture_underwater frame-v049-items-dropped-armour
 
 rq execute in riftworld:elisar run tp TestPlayer 760.5 118.0 774.2 facing 760.5 119.0 767.6 >/dev/null
 sleep 10
 capture_underwater frame-v049-elisar-folk
 
 echo "captured $SHOT in-game frames"
-[ "$SHOT" -ge 7 ] || fail "Only $SHOT frames captured"
+[ "$SHOT" -ge 9 ] || fail "Only $SHOT frames captured"
 ls -l "$FRAMES"
 if grep -Ei 'Render thread/FATAL|Minecraft Crash Report|Error while rendering entity' "$OUT/frames-client.log"; then
   fail "Client reported a rendering failure while capturing frames"
