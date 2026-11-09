@@ -1,14 +1,14 @@
-run 42687217443 / job server-smoke / ветвь arena/037a840e-riftworld
+run 42687217443 / job maja-feeding / ветвь arena/037a840e-riftworld
 == содержимое ci-out ==
-total 1212
-drwxr-xr-x  2 runner runner    4096 Nov  9 19:54 .
-drwxr-xr-x 14 runner runner    4096 Nov  9 19:53 ..
+total 1236
+drwxr-xr-x  2 runner runner    4096 Nov  9 19:55 .
+drwxr-xr-x 14 runner runner    4096 Nov  9 19:54 ..
 -rw-r--r--  1 runner runner     134 Nov  9 19:54 done.txt
 -rw-r--r--  1 runner runner       0 Nov  9 19:54 errors.txt
--rw-r--r--  1 runner runner    1472 Nov  9 19:54 fauna-server-probes.txt
--rw-r--r--  1 runner runner 1194775 Nov  9 19:53 installer.log
--rw-r--r--  1 runner runner   11479 Nov  9 19:54 latest.log
--rw-r--r--  1 runner runner    1620 Nov  9 19:54 maja-probes.txt
+-rw-r--r--  1 runner runner   25017 Nov  9 19:55 feeding-server-tail.log
+-rw-r--r--  1 runner runner 1194778 Nov  9 19:54 installer.log
+-rw-r--r--  1 runner runner   11135 Nov  9 19:54 latest.log
+-rw-r--r--  1 runner runner    2362 Nov  9 19:55 maja-feeding.txt
 -rw-r--r--  1 runner runner     222 Nov  9 19:54 mods.txt
 -rw-r--r--  1 runner runner    1343 Nov  9 19:54 report_server.md
 -rw-r--r--  1 runner runner     491 Nov  9 19:54 tps.txt
@@ -22,15 +22,15 @@ hint: 'git pull' before pushing again.
 hint: See the 'Note about fast-forwards' in 'git push --help' for details.
 From https://github.com/standimaoff-oss/riftworld
  * branch            arena/037a840e-riftworld -> FETCH_HEAD
-   d267f01..605620e  arena/037a840e-riftworld -> origin/arena/037a840e-riftworld
+   d267f01..b78b0ed  arena/037a840e-riftworld -> origin/arena/037a840e-riftworld
 Unstaged changes after reset:
 M	mod/src/main/java/ru/aiforge/riftworld/world/SeaProbeCommand.java
-M	release/riftworld-0.49.0.jar
-M	release/riftworld-dt-0.49.0.jar
 M	reports/ci_diag/done.txt
 M	reports/ci_diag/fauna-server-probes.txt
+M	reports/ci_diag/feeding-server-tail.log
 M	reports/ci_diag/installer.log
 M	reports/ci_diag/latest.log
+M	reports/ci_diag/maja-feeding.txt
 M	reports/ci_diag/maja-probes.txt
 M	reports/ci_diag/publish.log
 M	reports/ci_diag/tps.txt
