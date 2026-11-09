@@ -458,7 +458,7 @@ public final class ElisarGuardEntity extends PathfinderMob {
 
         public PatrolGoal(ElisarGuardEntity guard) {
             this.guard = guard;
-            this.setFlags(net.minecraft.world.entity.ai.goal.Goal.Flag.MOVE);
+            this.setFlags(java.util.EnumSet.of(net.minecraft.world.entity.ai.goal.Goal.Flag.MOVE));
         }
 
         @Override

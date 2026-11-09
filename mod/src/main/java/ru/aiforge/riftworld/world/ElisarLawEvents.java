@@ -118,7 +118,7 @@ public final class ElisarLawEvents {
     /** Кладёт конфискованные вещи в сундук склада, создавая его при нужде. */
     private static void storeInChest(ServerLevel level, BlockPos chestPos, List<ElisarLaw.ItemRecord> records) {
         BlockState state = level.getBlockState(chestPos);
-        if (!state.is(ChestBlock.TYPE)) {
+        if (!state.is(net.minecraft.world.level.block.Blocks.CHEST)) {
             // Сундука нет (например, его сломали) — ставим новый.
             level.setBlock(chestPos, net.minecraft.world.level.block.Blocks.CHEST.defaultBlockState(), 3);
             state = level.getBlockState(chestPos);
@@ -131,7 +131,7 @@ public final class ElisarLawEvents {
             if (item == null || item == net.minecraft.world.item.Items.AIR) continue;
             ItemStack stack = new ItemStack(item, Math.max(1, rec.count()));
             // Если сундук полон — остаток падает рядом, чтобы вещи не пропали.
-            ItemStack left = chest.addItem(stack);
+            ItemStack left = net.minecraft.world.ContainerHelper.addItem(chest.getContainer(), stack);
             if (!left.isEmpty()) {
                 net.minecraft.world.entity.item.ItemEntity dropped = new net.minecraft.world.entity.item.ItemEntity(
                         level, chestPos.getX() + 0.5D, chestPos.getY() + 1.0D, chestPos.getZ() + 0.5D, left);
@@ -167,7 +167,7 @@ public final class ElisarLawEvents {
         // Вещи остаются в сундуке на складе: игрок забирает их сам, открыв сундук.
         // Но если сундука уже нет — возвращаем в инвентарь, чтобы не потерять.
         ElisarJail.Site site = ElisarJail.findNear(level, player.getX(), player.getZ(), 240.0);
-        boolean chestThere = site != null && level.getBlockState(site.chest()).is(ChestBlock.TYPE);
+        boolean chestThere = site != null && level.getBlockState(site.chest()).is(net.minecraft.world.level.block.Blocks.CHEST);
         if (chestThere) {
             player.displayClientMessage(Component.literal(
                     "\u00a7eВаши вещи ждут в сундуке на складе рядом с тюрьмой."), true);

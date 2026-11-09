@@ -114,17 +114,29 @@ public final class ElisarJail {
     public static Site findNear(ServerLevel level, double x, double z, double radius) {
         AABB box = new AABB(x - radius, level.getMinBuildHeight(), z - radius,
                 x + radius, level.getMaxBuildHeight(), z + radius);
-        for (net.minecraft.world.level.block.state.BlockState state : level.getBlockStates(box)) {
-            if (!state.is(Blocks.CHEST)) {
-                continue;
-            }
-            BlockPos p = state.getPos();
-            // Сундук склада стоит у клетки: ищем железные прутья в радиусе 6.
-            for (int dx = -6; dx <= 6; dx++) {
-                for (int dz = -6; dz <= 6; dz++) {
-                    BlockPos q = p.offset(dx, 0, dz);
-                    if (level.getBlockState(q).is(Blocks.IRON_BARS)) {
-                        return new Site(q, p);
+        // В 1.20.1 getBlockStates не отдаёт Iterable<BlockState> с позицией,
+        // поэтому обходим блоки сами — это и медленнее, и точнее.
+        int x0 = net.minecraft.util.Mth.floor(box.minX);
+        int y0 = net.minecraft.util.Mth.floor(box.minY);
+        int z0 = net.minecraft.util.Mth.floor(box.minZ);
+        int x1 = net.minecraft.util.Mth.floor(box.maxX);
+        int y1 = net.minecraft.util.Mth.floor(box.maxY);
+        int z1 = net.minecraft.util.Mth.floor(box.maxZ);
+        for (int bx = x0; bx <= x1; ++bx) {
+            for (int by = y0; by <= y1; ++by) {
+                for (int bz = z0; bz <= z1; ++bz) {
+                    BlockPos p = new BlockPos(bx, by, bz);
+                    if (!level.getBlockState(p).is(Blocks.CHEST)) {
+                        continue;
+                    }
+                    // Сундук склада стоит у клетки: ищем железные прутья в радиусе 6.
+                    for (int dx = -6; dx <= 6; dx++) {
+                        for (int dz = -6; dz <= 6; dz++) {
+                            BlockPos q = p.offset(dx, 0, dz);
+                            if (level.getBlockState(q).is(Blocks.IRON_BARS)) {
+                                return new Site(q, p);
+                            }
+                        }
                     }
                 }
             }

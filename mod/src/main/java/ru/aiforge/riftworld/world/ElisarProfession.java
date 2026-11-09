@@ -96,7 +96,7 @@ public enum ElisarProfession {
     FISHER("Рыбак", 0x3F6E7A, 0x2A4A54) {
         @Override
         public void dress(LivingEntity villager) {
-            villager.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.FISHING_BUCKET));
+            villager.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.FISHING_ROD));
             villager.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.FISHING_ROD));
         }
 
@@ -133,7 +133,7 @@ public enum ElisarProfession {
         @Override
         public void dress(LivingEntity villager) {
             villager.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.STONE_AXE));
-            villager.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.CHISEL));
+            villager.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_PICKAXE));
         }
 
         @Override

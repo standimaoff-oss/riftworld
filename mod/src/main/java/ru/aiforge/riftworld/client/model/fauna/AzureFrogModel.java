@@ -239,7 +239,7 @@ public class AzureFrogModel extends FaunaBaseModel<AzureFrogEntity> {
 			// на передние. Амплитуда заметная, чтобы шаг читался издалека.
 			float hop = limbSwing * 1.6F;
 			float bounce = Math.abs(Mth.sin(hop)) * move;
-			float swing = Math.sin(hop) * move;
+			float swing = (float) Math.sin(hop) * move;
 			// Тело подскакивает и наклоняется вперёд — без этого лягушка
 			// выглядит неподвижной.
 			addBbPos(this.body, 0.0F, bounce * 3.4F, 0.0F);

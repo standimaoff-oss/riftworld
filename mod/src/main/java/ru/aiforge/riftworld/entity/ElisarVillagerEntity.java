@@ -391,7 +391,7 @@ public final class ElisarVillagerEntity extends PathfinderMob implements Npc, Me
 
         public WorkGoal(ElisarVillagerEntity villager) {
             this.villager = villager;
-            this.setFlags(Goal.Flag.MOVE);
+            this.setFlags(java.util.EnumSet.of(Goal.Flag.MOVE));
         }
 
         @Override
@@ -471,7 +471,7 @@ public final class ElisarVillagerEntity extends PathfinderMob implements Npc, Me
 
         public AlarmGoal(ElisarVillagerEntity villager) {
             this.villager = villager;
-            this.setFlags(Goal.Flag.MOVE);
+            this.setFlags(java.util.EnumSet.of(Goal.Flag.MOVE));
         }
 
         @Override
