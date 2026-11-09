@@ -164,6 +164,10 @@ public final class MajaIslandDevourer {
      */
     public void breach(ServerLevel level, ElGranMajaEntity maja) {
         if (job == null) return;
+        // The surge belongs to the meal: while the titan is still SCANNING for a
+        // victim it must keep its submerged cruising depth (the ocean probe and the
+        // natural-spawn behaviour rely on that).
+        if (job.blocks.isEmpty()) return;
         if (breachTicks == 0) {
             // Lift the titan to a clear pose first; if that is impossible, the surge
             // still plays out (in place) and ends on the timer.
