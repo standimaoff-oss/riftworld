@@ -31,7 +31,11 @@ jobs:
         run: |
           cd mod
           chmod +x gradlew
-          ./gradlew jar dtJar --no-daemon --console=plain
+          for attempt in 1 2 3; do
+            ./gradlew jar dtJar --no-daemon --console=plain && exit 0
+            sleep 5
+          done
+          exit 1
       - name: Boot a disposable Forge server
         shell: bash
         env:
