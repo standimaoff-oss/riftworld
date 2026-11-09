@@ -1,14 +1,114 @@
-run 42653231040 / job maja-feeding / ветвь arena/037a840e-riftworld
+run 42653231040 / job server-smoke / ветвь arena/037a840e-riftworld
 == содержимое ci-out ==
-total 1236
-drwxr-xr-x  2 runner runner    4096 Nov  9 16:21 .
+total 13008
+drwxr-xr-x  2 runner runner    4096 Nov  9 16:35 .
 drwxr-xr-x 14 runner runner    4096 Nov  9 16:20 ..
+-rw-r--r--  1 runner runner   18194 Nov  9 16:36 client-commands.log
+-rw-r--r--  1 runner runner    1582 Nov  9 16:21 deep-ocean.txt
 -rw-r--r--  1 runner runner     134 Nov  9 16:20 done.txt
 -rw-r--r--  1 runner runner       0 Nov  9 16:20 errors.txt
--rw-r--r--  1 runner runner   25017 Nov  9 16:21 feeding-server-tail.log
--rw-r--r--  1 runner runner 1194771 Nov  9 16:20 installer.log
--rw-r--r--  1 runner runner   11135 Nov  9 16:20 latest.log
--rw-r--r--  1 runner runner    2362 Nov  9 16:21 maja-feeding.txt
+-rw-r--r--  1 runner runner  141975 Nov  9 16:26 fauna-liopleurodon-motion.png
+-rw-r--r--  1 runner runner   73059 Nov  9 16:26 fauna-liopleurodon-side.png
+-rw-r--r--  1 runner runner  136603 Nov  9 16:26 fauna-liopleurodon.png
+-rw-r--r--  1 runner runner   66466 Nov  9 16:26 fauna-pegasus-motion.png
+-rw-r--r--  1 runner runner   66466 Nov  9 16:26 fauna-pegasus-saddled.png
+-rw-r--r--  1 runner runner   59753 Nov  9 16:26 fauna-pegasus-side.png
+-rw-r--r--  1 runner runner   66787 Nov  9 16:26 fauna-pegasus-unsaddled.png
+-rw-r--r--  1 runner runner    1854 Nov  9 16:21 fauna-server-probes.txt
+-rw-r--r--  1 runner runner  103642 Nov  9 16:26 fauna-trophy-held.png
+-rw-r--r--  1 runner runner  114745 Nov  9 16:26 fauna-trophy-inventory.png
+-rw-r--r--  1 runner runner  587507 Nov  9 16:34 gear-armour-row.png
+-rw-r--r--  1 runner runner  542850 Nov  9 16:35 gear-closeup.png
+-rw-r--r--  1 runner runner 1547189 Nov  9 16:30 gear-dropped-armour.png
+-rw-r--r--  1 runner runner 1265282 Nov  9 16:30 gear-dropped-tools.png
+-rw-r--r--  1 runner runner  478405 Nov  9 16:34 gear-elisar-folk.png
+-rw-r--r--  1 runner runner  534594 Nov  9 16:35 gear-riftcrystal-night.png
+-rw-r--r--  1 runner runner  456646 Nov  9 16:31 gear-stands-armour.png
+-rw-r--r--  1 runner runner  476118 Nov  9 16:33 gear-stands-naked.png
+-rw-r--r--  1 runner runner  448029 Nov  9 16:32 gear-stands-nohands.png
+-rw-r--r--  1 runner runner  428358 Nov  9 16:32 gear-stands-tools.png
+-rw-r--r--  1 runner runner 1194778 Nov  9 16:20 installer.log
+-rw-r--r--  1 runner runner   11479 Nov  9 16:20 latest.log
+-rw-r--r--  1 runner runner  471148 Nov  9 16:25 maja-breach-rise.png
+-rw-r--r--  1 runner runner  393559 Nov  9 16:25 maja-breach-start.png
+-rw-r--r--  1 runner runner  218619 Nov  9 16:25 maja-client-front.png
+-rw-r--r--  1 runner runner  210233 Nov  9 16:25 maja-client-swim-motion.png
+-rw-r--r--  1 runner runner  627040 Nov  9 16:29 maja-client.log
+-rw-r--r--  1 runner runner  380604 Nov  9 16:28 maja-deep-ocean-swim.png
+-rw-r--r--  1 runner runner  667952 Nov  9 16:28 maja-deep-ocean.png
+-rw-r--r--  1 runner runner     256 Nov  9 16:27 maja-natural-diagnostic.txt
+-rw-r--r--  1 runner runner      83 Nov  9 16:21 maja-openbox.log
+-rw-r--r--  1 runner runner    1590 Nov  9 16:20 maja-probes.txt
+-rw-r--r--  1 runner runner    3522 Nov  9 16:21 maja-xvfb.log
 -rw-r--r--  1 runner runner     222 Nov  9 16:20 mods.txt
+-rw-r--r--  1 runner runner  895542 Nov  9 16:29 ocean-wreck-bow.png
+-rw-r--r--  1 runner runner  505446 Nov  9 16:28 ocean-wreck-overview.png
+-rw-r--r--  1 runner runner     210 Nov  9 16:21 ocean-wreck.txt
+-rw-r--r--  1 runner runner      62 Nov  9 16:26 predator-test.txt
 -rw-r--r--  1 runner runner    1343 Nov  9 16:20 report_server.md
 -rw-r--r--  1 runner runner     491 Nov  9 16:20 tps.txt
+попытка 1: To https://github.com/standimaoff-oss/riftworld
+ ! [rejected]        HEAD -> arena/037a840e-riftworld (fetch first)
+error: failed to push some refs to 'https://github.com/standimaoff-oss/riftworld'
+hint: Updates were rejected because the remote contains work that you do not
+hint: have locally. This is usually caused by another repository pushing to
+hint: the same ref. If you want to integrate the remote changes, use
+hint: 'git pull' before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+From https://github.com/standimaoff-oss/riftworld
+ * branch            arena/037a840e-riftworld -> FETCH_HEAD
+   5c42e64..d652239  arena/037a840e-riftworld -> origin/arena/037a840e-riftworld
+Unstaged changes after reset:
+M	reports/ci_diag/client-commands.log
+M	reports/ci_diag/deep-ocean.txt
+M	reports/ci_diag/done.txt
+M	reports/ci_diag/feeding-server-tail.log
+M	reports/ci_diag/installer.log
+M	reports/ci_diag/latest.log
+M	reports/ci_diag/maja-client.log
+M	reports/ci_diag/maja-feeding.txt
+M	reports/ci_diag/maja-openbox.log
+M	reports/ci_diag/maja-probes.txt
+M	reports/ci_diag/maja-xvfb.log
+M	reports/ci_diag/ocean-wreck.txt
+M	reports/ci_diag/publish.log
+M	reports/ci_diag/tps.txt
+M	reports/ci_frames/fauna-liopleurodon-motion.png
+M	reports/ci_frames/fauna-liopleurodon-side.png
+M	reports/ci_frames/fauna-liopleurodon.png
+M	reports/ci_frames/fauna-pegasus-motion.png
+M	reports/ci_frames/fauna-pegasus-saddled.png
+M	reports/ci_frames/fauna-pegasus-side.png
+M	reports/ci_frames/fauna-pegasus-unsaddled.png
+M	reports/ci_frames/fauna-trophy-held.png
+M	reports/ci_frames/fauna-trophy-inventory.png
+M	reports/ci_frames/gear-armour-row.png
+M	reports/ci_frames/gear-closeup.png
+M	reports/ci_frames/gear-dropped-armour.png
+M	reports/ci_frames/gear-dropped-tools.png
+M	reports/ci_frames/gear-elisar-folk.png
+M	reports/ci_frames/gear-riftcrystal-night.png
+M	reports/ci_frames/gear-stands-armour.png
+M	reports/ci_frames/gear-stands-naked.png
+M	reports/ci_frames/gear-stands-nohands.png
+M	reports/ci_frames/gear-stands-tools.png
+M	reports/ci_frames/maja-breach-rise.png
+M	reports/ci_frames/maja-breach-start.png
+M	reports/ci_frames/maja-client-front.png
+M	reports/ci_frames/maja-client-swim-motion.png
+M	reports/ci_frames/maja-deep-ocean-swim.png
+M	reports/ci_frames/maja-deep-ocean.png
+M	reports/ci_frames/ocean-wreck-bow.png
+M	reports/ci_frames/ocean-wreck-overview.png
+M	reports/ingame/0.49.0/frame-liopleurodon-head.png
+M	reports/ingame/0.49.0/frame-liopleurodon-side.png
+M	reports/ingame/0.49.0/frame-liopleurodon-swim.png
+M	reports/ingame/0.49.0/frame-maja-body.png
+M	reports/ingame/0.49.0/frame-maja-head.png
+M	reports/ingame/0.49.0/frame-pegasus-head.png
+M	reports/ingame/0.49.0/frame-pegasus-side.png
+M	reports/ingame/0.49.0/frame-pegasus-three-quarter.png
+M	reports/ingame/0.49.0/frame-v049-armors-closeup.png
+M	reports/ingame/0.49.0/frame-v049-elisar-folk.png
+M	reports/ingame/0.49.0/frame-v049-riftcrystal-night-glow.png
+M	reports/ingame/0.49.0/frame-v049-tools-closeup.png
