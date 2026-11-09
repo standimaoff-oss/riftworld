@@ -209,24 +209,24 @@ drop_row() {
   local z=$1; shift
   local i=0 item xpos
   for item in "$@"; do
-    xpos=$(awk -v i="$i" 'BEGIN { printf "%.2f", 749.5 + i * 1.6 }')
+    xpos=$(awk -v i="$i" 'BEGIN { printf "%.2f", 747.0 + i * 2.2 }')
     rq execute in riftworld:elisar run summon item "$xpos" 119.5 "$z" \
       "{Item:{id:\"riftworld:$item\",Count:1b},PickupDelay:32767s,Age:-32768s}" >/dev/null 2>&1 \
       || echo "::warning title=In-game frames::could not summon $item"
     i=$((i + 1))
   done
 }
-drop_row 774 aurite_sword aurite_pickaxe aurite_axe aurite_shovel aurite_hoe \
+drop_row 766 aurite_sword aurite_pickaxe aurite_axe aurite_shovel aurite_hoe \
             riftcrystal_sword riftcrystal_pickaxe riftcrystal_axe riftcrystal_shovel riftcrystal_hoe \
             elisar_bow elisar_shield
 sleep 4
-rq execute in riftworld:elisar run tp TestPlayer 761 121 767 facing 761 120 774 >/dev/null
+rq execute in riftworld:elisar run tp TestPlayer 759 120 772 facing 759 119 766 >/dev/null
 sleep 8
 capture_underwater frame-v049-items-dropped-tools
-drop_row 782 aurite_helmet aurite_chestplate aurite_leggings aurite_boots \
+drop_row 772 aurite_helmet aurite_chestplate aurite_leggings aurite_boots \
             riftcrystal_helmet riftcrystal_chestplate riftcrystal_leggings riftcrystal_boots
 sleep 4
-rq execute in riftworld:elisar run tp TestPlayer 759 121 775 facing 759 120 782 >/dev/null
+rq execute in riftworld:elisar run tp TestPlayer 756 120 778 facing 756 119 772 >/dev/null
 sleep 8
 capture_underwater frame-v049-items-dropped-armour
 
