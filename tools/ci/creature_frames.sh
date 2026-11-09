@@ -180,15 +180,49 @@ rq execute in riftworld:elisar run fill 750 118 758 761 123 765 minecraft:air >/
 rq execute in riftworld:elisar run time set noon >/dev/null
 rq execute in riftworld:elisar positioned 760 118 760 run riftstruct v40_gear >/dev/null
 sleep 6
-rq execute in riftworld:elisar run tp TestPlayer 764.25 118.0 764.2 facing 764.25 119.0 760.5 >/dev/null
+rq execute in riftworld:elisar run tp TestPlayer 764.25 118.0 763.0 facing 764.25 119.0 760.5 >/dev/null
 sleep 8
 capture_underwater frame-v049-tools-closeup
+
+# Dropped-item showcase: lay the volumetric weapon/tool/armor models out on the
+# showcase floor and look straight down at them. This is the most direct proof
+# that the element models sample their palette textures correctly (the v0.49.0
+# regression rendered them as black noise).
+rq execute in riftworld:elisar run fill 754 117 756 768 117 762 minecraft:air >/dev/null
+for pair in \
+  "752 762.0 757.5 riftworld:aurite_sword" \
+  "753 762.0 757.5 riftworld:aurite_pickaxe" \
+  "754 762.0 757.5 riftworld:aurite_axe" \
+  "755 762.0 757.5 riftworld:aurite_shovel" \
+  "756 762.0 757.5 riftworld:aurite_hoe" \
+  "757 762.0 757.5 riftworld:aurite_bow" \
+  "758 762.0 757.5 riftworld:elisar_shield" \
+  "759 762.0 757.5 riftworld:riftcrystal_sword" \
+  "760 762.0 757.5 riftworld:riftcrystal_pickaxe" \
+  "761 762.0 757.5 riftworld:riftcrystal_axe" \
+  "762 762.0 757.5 riftworld:elisar_bow_pulling_0" \
+  "752 762.0 758.5 riftworld:aurite_helmet" \
+  "753 762.0 758.5 riftworld:aurite_chestplate" \
+  "754 762.0 758.5 riftworld:aurite_leggings" \
+  "755 762.0 758.5 riftworld:aurite_boots" \
+  "756 762.0 758.5 riftworld:riftcrystal_helmet" \
+  "757 762.0 758.5 riftworld:riftcrystal_chestplate" \
+  "758 762.0 758.5 riftworld:riftcrystal_leggings" \
+  "759 762.0 758.5 riftworld:riftcrystal_boots"; do
+  set -- $pair
+  rq execute in riftworld:elisar positioned "$1" 118 "$2" run summon item "$3" >/dev/null 2>&1 || true
+done
+sleep 6
+rq execute in riftworld:elisar run tp TestPlayer 757.5 121.0 763.6 facing 757.5 117.0 757.9 >/dev/null
+sleep 8
+capture_underwater frame-v049-items-dropped
+
 rq execute in riftworld:elisar run tp TestPlayer 760.5 118.0 774.2 facing 760.5 119.0 767.6 >/dev/null
 sleep 10
 capture_underwater frame-v049-elisar-folk
 
 echo "captured $SHOT in-game frames"
-[ "$SHOT" -ge 6 ] || fail "Only $SHOT frames captured"
+[ "$SHOT" -ge 7 ] || fail "Only $SHOT frames captured"
 ls -l "$FRAMES"
 if grep -Ei 'Render thread/FATAL|Minecraft Crash Report|Error while rendering entity' "$OUT/frames-client.log"; then
   fail "Client reported a rendering failure while capturing frames"
