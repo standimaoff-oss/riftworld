@@ -36,9 +36,9 @@ Allowing AI: the anchor must actually move while the area is clear.
 Modified entity data of El Gran Maja
 
 Before motion: El Gran Maja has the following entity data: [0.5d, 200.0d, 0.5d]
-After motion: El Gran Maja has the following entity data: [4.545549553635588d, 173.12000000000057d, 48.242854344171626d]
-Breach before: El Gran Maja has the following entity data: [0.5d, 60.0d, 0.5d]
-Breach after: El Gran Maja has the following entity data: [0.18261122207978894d, 77.0049379595337d, 54.0529749552933d]
+After motion: El Gran Maja has the following entity data: [-4.398206225960381d, 167.6800000000007d, 41.36715601788352d]
+Breach before: El Gran Maja has the following entity data: [0.5d, 60.32d, 0.9199999999999999d]
+Breach after: El Gran Maja has the following entity data: [0.5d, 77.48544519033679d, 43.34000000000011d]
 Modified entity data of El Gran Maja
 
 Teleported El Gran Maja to 0.500000, 200.000000, 0.500000
