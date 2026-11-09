@@ -6,6 +6,10 @@ name: In-game creature frames
 on:
   push:
     branches: ["arena/**"]
+    paths-ignore:
+      # Same as in sea-check.yml: the frames job's own report commit must not
+      # queue another capture run and cancel the one that is still going.
+      - 'reports/ingame/**'
   workflow_dispatch:
 
 permissions:

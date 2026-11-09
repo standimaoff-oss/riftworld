@@ -5,6 +5,10 @@ on:
     branches: ["arena/**"]
     paths-ignore:
       - 'release/**'
+      # The frames job commits the captured PNGs back into the branch. Ignore
+      # those commits so they do not queue a second build that races the one
+      # already running (and cancel it via the concurrency group).
+      - 'reports/ingame/**'
   pull_request:
     branches: ["main"]
   workflow_dispatch:
