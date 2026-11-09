@@ -257,6 +257,45 @@ jobs:
           path: ci-out/
           if-no-files-found: warn
 
+  elisar-law:
+    needs: build
+    if: github.ref == 'refs/heads/arena/361da66e-riftworld' || github.ref == 'refs/heads/arena/b4294aa1-riftworld' || github.ref == 'refs/heads/arena/037a840e-riftworld'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/download-artifact@v4
+        with:
+          name: riftworld-build
+          path: build-artifact
+      - name: Boot a real Forge server and probe the Elisar city law
+        run: |
+          mkdir -p mod/build/libs ci/server/config
+          find build-artifact -name '*.jar' -exec cp {} mod/build/libs/ \;
+          KEEP=1 NORMAL_PROBE=0 bash tools/ci/server_check.sh
+      - name: Verify patrols, the non-lethal warning and the jail warehouse
+        run: bash tools/ci/elisar_law_probe.sh
+      - name: Save server diagnostics
+        if: always()
+        run: tail -500 ci/server/logs/latest.log > ci-out/elisar-law-server-tail.log || true
+      - name: Publish the law report to the working branch
+        if: always() && startsWith(github.ref, 'refs/heads/arena/')
+        shell: bash
+        run: bash tools/ci/publish_frames.sh
+      - name: Stop server
+        if: always()
+        run: python3 tools/rcon.py --password riftci --log '' --timeout 20 stop || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: riftworld-elisar-law
+          path: ci-out/
+          if-no-files-found: warn
+
   candidate-profile:
     needs: build
     if: github.ref == 'refs/heads/arena/361da66e-riftworld' || github.ref == 'refs/heads/arena/b4294aa1-riftworld'

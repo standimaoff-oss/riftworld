@@ -115,6 +115,37 @@ public final class ElisarLawEvents {
                 "\u00a7eВаши вещи сложены в сундук на складе рядом с тюрьмой."), true);
     }
 
+    /**
+     * Кладёт стопку в сундук. В 1.20.1 у {@link ChestBlockEntity} нет своего
+     * {@code addItem} и нет {@code ContainerHelper.addItem}, поэтому раскладываем
+     * по слотам вручную.
+     */
+    private static ItemStack addToChest(ChestBlockEntity chest, ItemStack stack) {
+        int size = chest.getContainerSize();
+        // сначала доливаем уже существующие стопки
+        for (int i = 0; i < size; ++i) {
+            if (stack.isEmpty()) return ItemStack.EMPTY;
+            ItemStack inSlot = chest.getItem(i);
+            if (!inSlot.isEmpty() && ItemStack.isSameItemSameTags(inSlot, stack)) {
+                int room = inSlot.getMaxStackSize() - inSlot.getCount();
+                if (room > 0) {
+                    int moved = Math.min(room, stack.getCount());
+                    inSlot.grow(moved);
+                    stack.shrink(moved);
+                    chest.setItem(i, inSlot);
+                }
+            }
+        }
+        // затем занимаем пустые слоты
+        for (int i = 0; i < size && !stack.isEmpty(); ++i) {
+            if (!chest.getItem(i).isEmpty()) continue;
+            int moved = Math.min(stack.getMaxStackSize(), stack.getCount());
+            chest.setItem(i, stack.copyWithCount(moved));
+            stack.shrink(moved);
+        }
+        return stack;
+    }
+
     /** Кладёт конфискованные вещи в сундук склада, создавая его при нужде. */
     private static void storeInChest(ServerLevel level, BlockPos chestPos, List<ElisarLaw.ItemRecord> records) {
         BlockState state = level.getBlockState(chestPos);
@@ -131,7 +162,7 @@ public final class ElisarLawEvents {
             if (item == null || item == net.minecraft.world.item.Items.AIR) continue;
             ItemStack stack = new ItemStack(item, Math.max(1, rec.count()));
             // Если сундук полон — остаток падает рядом, чтобы вещи не пропали.
-            ItemStack left = net.minecraft.world.ContainerHelper.addItem(chest, stack);
+            ItemStack left = addToChest(chest, stack);
             if (!left.isEmpty()) {
                 net.minecraft.world.entity.item.ItemEntity dropped = new net.minecraft.world.entity.item.ItemEntity(
                         level, chestPos.getX() + 0.5D, chestPos.getY() + 1.0D, chestPos.getZ() + 0.5D, left);

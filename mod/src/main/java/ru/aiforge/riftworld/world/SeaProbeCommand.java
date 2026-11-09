@@ -4324,6 +4324,54 @@ public final class SeaProbeCommand {
             return 1;
         }
 
+        if (k.equals("v49_elisar_law")) {
+            // v0.49.0: проверка городского закона Элисара в живой игре.
+            // Проба строит камеру тюрьмы и склад у ближайшей дороги и честно
+            // сообщает, что получилось: сколько прутьев клетки, есть ли сундук
+            // и насколько далеко он от камеры.
+            int px = 760, pz = 770;
+            int ground = 118;
+            CityPlan plan = CityPlan.get();
+            PatrolRoute route = PatrolRoute.nearestTo(plan, level, px, ground, pz, 300.0);
+            if (route == null) {
+                src.sendSuccess(() -> Component.literal(
+                        "riftstruct kind=v49_elisar_law error=no_road_near"), false);
+                return 0;
+            }
+            PatrolRoute.Waypoint wp = route.nearest(px, ground, pz);
+            Direction face = Direction.fromYRot(wp.yaw()).getOpposite();
+            ElisarJail.Site site = ElisarJail.build(level, wp.x(), wp.z(), face);
+            // Считаем, что реально стоит на месте.
+            int bars = 0;
+            BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
+            for (int dx = -5; dx <= 5; ++dx) {
+                for (int dy = 0; dy <= 5; ++dy) {
+                    for (int dz = -5; dz <= 5; ++dz) {
+                        if (level.getBlockState(mp.set(site.cell().getX() + dx,
+                                site.cell().getY() + dy, site.cell().getZ() + dz))
+                                .is(net.minecraft.world.level.block.Blocks.IRON_BARS)) {
+                            ++bars;
+                        }
+                    }
+                }
+            }
+            boolean chest = level.getBlockState(site.chest())
+                    .is(net.minecraft.world.level.block.Blocks.CHEST);
+            double cellToChest = Math.hypot(site.cell().getX() - site.chest().getX(),
+                    site.cell().getZ() - site.chest().getZ());
+            int metric = (bars >= 8 && chest) ? 1 : 0;
+            String line = "riftstruct kind=v49_elisar_law at=" + site.cell().getX() + ","
+                    + site.cell().getY() + "," + site.cell().getZ()
+                    + " jail=" + (bars >= 8 ? 1 : 0) + " bars=" + bars
+                    + " chest=" + (chest ? 1 : 0) + " cell_to_chest=" + (int) cellToChest
+                    + " blocks=" + metric + " sub_air=0"
+                    + " cam=" + (site.cell().getX() - 8) + "," + (site.cell().getY() + 5) + ","
+                    + (site.cell().getZ() + 8) + ":" + site.cell().getX() + ","
+                    + (site.cell().getY() + 2) + "," + site.cell().getZ();
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
         if (k.equals("v36_morok_biome")) {
             // v0.37.0: биом Пади НА МЕСТЕ. Ищем настоящий регион (morokSpot), ставим
             // аккуратную рощу (слоистые кроны, а не кубическая «каша»), мох, клыки и фонарь.
