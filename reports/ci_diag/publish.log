@@ -1,16 +1,34 @@
-run 42645013706 / job server-smoke / ветвь arena/037a840e-riftworld
+run 42645013706 / job maja-feeding / ветвь arena/037a840e-riftworld
 == содержимое ci-out ==
-total 1220
+total 1236
 drwxr-xr-x  2 runner runner    4096 Nov  9 15:32 .
 drwxr-xr-x 14 runner runner    4096 Nov  9 15:31 ..
--rw-r--r--  1 runner runner      95 Nov  9 15:32 deep-ocean.txt
--rw-r--r--  1 runner runner     134 Nov  9 15:32 done.txt
--rw-r--r--  1 runner runner       0 Nov  9 15:32 errors.txt
--rw-r--r--  1 runner runner    1854 Nov  9 15:32 fauna-server-probes.txt
--rw-r--r--  1 runner runner 1194768 Nov  9 15:31 installer.log
--rw-r--r--  1 runner runner   11479 Nov  9 15:32 latest.log
--rw-r--r--  1 runner runner    1573 Nov  9 15:32 maja-probes.txt
--rw-r--r--  1 runner runner     222 Nov  9 15:32 mods.txt
--rw-r--r--  1 runner runner     210 Nov  9 15:32 ocean-wreck.txt
--rw-r--r--  1 runner runner    1343 Nov  9 15:32 report_server.md
--rw-r--r--  1 runner runner     491 Nov  9 15:32 tps.txt
+-rw-r--r--  1 runner runner     134 Nov  9 15:31 done.txt
+-rw-r--r--  1 runner runner       0 Nov  9 15:31 errors.txt
+-rw-r--r--  1 runner runner   24876 Nov  9 15:32 feeding-server-tail.log
+-rw-r--r--  1 runner runner 1194778 Nov  9 15:31 installer.log
+-rw-r--r--  1 runner runner   10994 Nov  9 15:31 latest.log
+-rw-r--r--  1 runner runner    2362 Nov  9 15:32 maja-feeding.txt
+-rw-r--r--  1 runner runner     222 Nov  9 15:31 mods.txt
+-rw-r--r--  1 runner runner    1343 Nov  9 15:31 report_server.md
+-rw-r--r--  1 runner runner     491 Nov  9 15:31 tps.txt
+попытка 1: To https://github.com/standimaoff-oss/riftworld
+ ! [rejected]        HEAD -> arena/037a840e-riftworld (fetch first)
+error: failed to push some refs to 'https://github.com/standimaoff-oss/riftworld'
+hint: Updates were rejected because the remote contains work that you do not
+hint: have locally. This is usually caused by another repository pushing to
+hint: the same ref. If you want to integrate the remote changes, use
+hint: 'git pull' before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+From https://github.com/standimaoff-oss/riftworld
+ * branch            arena/037a840e-riftworld -> FETCH_HEAD
+   2a54a55..65db24b  arena/037a840e-riftworld -> origin/arena/037a840e-riftworld
+Unstaged changes after reset:
+M	reports/ci_diag/deep-ocean.txt
+M	reports/ci_diag/done.txt
+M	reports/ci_diag/installer.log
+M	reports/ci_diag/latest.log
+M	reports/ci_diag/maja-probes.txt
+M	reports/ci_diag/ocean-wreck.txt
+M	reports/ci_diag/publish.log
+M	reports/ci_diag/tps.txt
