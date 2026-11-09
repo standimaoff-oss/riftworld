@@ -11,6 +11,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -177,7 +178,10 @@ public final class MajaIslandDevourer {
             double jz = maja.getZ() + Math.cos(yaw) * 140.0;
             level.sendParticles(ParticleTypes.SPLASH, jx, sea + 0.4, jz, 24, 14.0, 0.6, 6.0, 0.28);
             level.sendParticles(ParticleTypes.CLOUD, jx, sea + 1.6, jz, 10, 10.0, 0.8, 3.0, 0.06);
-            level.sendParticles(ParticleTypes.BLOCK, jx, sea + 0.2, jz, 18, 12.0, 0.8, 4.0, 0.04);
+            // Debris of the chewed island: the block particle needs an explicit block state.
+            level.sendParticles(new net.minecraft.core.particles.BlockParticleOption(
+                    ParticleTypes.BLOCK, Blocks.GRAVEL.defaultBlockState()),
+                    jx, sea + 0.2, jz, 18, 12.0, 0.8, 4.0, 0.04);
         }
         if (Math.abs(maja.getY() - target) <= 1.0 || breachTicks > 400) {
             breached = true;
