@@ -5,10 +5,6 @@ on:
     branches: ["arena/**"]
     paths-ignore:
       - 'release/**'
-      # The frames job commits the captured PNGs back into the branch. Ignore
-      # those commits so they do not queue a second build that races the one
-      # already running (and cancel it via the concurrency group).
-      - 'reports/ingame/**'
   pull_request:
     branches: ["main"]
   workflow_dispatch:
@@ -18,7 +14,10 @@ permissions:
 
 concurrency:
   group: riftworld-check-${{ github.ref }}
-  cancel-in-progress: true
+  # Do NOT cancel in progress: the frames workflow commits the captured PNGs
+  # back into this branch while a build is still going, and cancelling there
+  # left the release without its jars.
+  cancel-in-progress: false
 
 jobs:
   build:
