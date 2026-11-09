@@ -167,9 +167,11 @@ public final class ModItems {
 
     /** v0.39.0: Морок — своё яйцо призыва (редкость UNCOMMON, как у хозяев чащи). */
     public static final RegistryObject<Item> MOROK_EGG = ITEMS.register("morok_spawn_egg",
-    public static final RegistryObject<Item> HOLLOWWATCHER_EGG = airOrGroundEgg("hollowwatcher_spawn_egg", ModEntities.HOLLOWWATCHER, 0x1B1E22, 0x7FE8F0);
             () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.MOROK, 0x15181C, 0xFF7A18,
                     new Item.Properties()));
+    /** v0.49.0: Смотритель Пращи — яйцо призыва нового хоррор-моба Пади. */
+    public static final RegistryObject<Item> HOLLOWWATCHER_EGG = airOrGroundEgg("hollowwatcher_spawn_egg",
+            ModEntities.HOLLOWWATCHER, 0x1B1E22, 0x7FE8F0);
     /** Трофей: раскалённый уголёк, который Морок носит вместо глаза. */
     public static final RegistryObject<Item> MOROK_EYE = ITEMS.register("morok_ember",
             () -> new Item(new Item.Properties().rarity(Rarity.RARE).fireResistant()));
