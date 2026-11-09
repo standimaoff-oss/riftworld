@@ -1,4 +1,4 @@
-Island eating is disabled by default.
+Island eating is enabled by default (v0.49.0 rare-event titan).
 Force-loading a 253-chunk rectangle for the 322-block body...
 Marked [-5, -11] chunks in minecraft:overworld from [-5, -11] to [5, 11] to be force loaded
 
@@ -36,8 +36,8 @@ Allowing AI: the anchor must actually move while the area is clear.
 Modified entity data of El Gran Maja
 
 Before motion: El Gran Maja has the following entity data: [0.5d, 200.0d, 0.5d]
-After motion: El Gran Maja has the following entity data: [6.310459946887803d, 168.00000000000068d, 40.513702376468565d]
-Breach before: El Gran Maja has the following entity data: [0.5d, 60.32d, 0.9199999999999999d]
+After motion: El Gran Maja has the following entity data: [-1.93979630038352d, 167.6800000000007d, 42.267081428251245d]
+Breach before: El Gran Maja has the following entity data: [0.5d, 60.0d, 0.5d]
 Breach after: El Gran Maja has the following entity data: [0.5d, 77.45898608371051d, 42.92000000000011d]
 Modified entity data of El Gran Maja
 
