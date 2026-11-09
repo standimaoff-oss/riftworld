@@ -1,16 +1,20 @@
-run 42579626450 / job server-smoke / ветвь arena/037a840e-riftworld
+run 42580494424 / job server-smoke / ветвь arena/037a840e-riftworld
 == содержимое ci-out ==
-total 1220
-drwxr-xr-x  2 runner runner    4096 Nov  9 07:33 .
-drwxr-xr-x 14 runner runner    4096 Nov  9 07:33 ..
--rw-r--r--  1 runner runner    1580 Nov  9 07:34 deep-ocean.txt
--rw-r--r--  1 runner runner     134 Nov  9 07:33 done.txt
--rw-r--r--  1 runner runner       0 Nov  9 07:33 errors.txt
--rw-r--r--  1 runner runner    1854 Nov  9 07:33 fauna-server-probes.txt
--rw-r--r--  1 runner runner 1194775 Nov  9 07:33 installer.log
--rw-r--r--  1 runner runner   11339 Nov  9 07:33 latest.log
--rw-r--r--  1 runner runner    1594 Nov  9 07:33 maja-probes.txt
--rw-r--r--  1 runner runner     222 Nov  9 07:33 mods.txt
--rw-r--r--  1 runner runner     210 Nov  9 07:33 ocean-wreck.txt
--rw-r--r--  1 runner runner    1343 Nov  9 07:33 report_server.md
--rw-r--r--  1 runner runner     491 Nov  9 07:33 tps.txt
+total 1236
+drwxr-xr-x  2 runner runner    4096 Nov  9 07:42 .
+drwxr-xr-x 14 runner runner    4096 Nov  9 07:40 ..
+-rw-r--r--  1 runner runner     350 Nov  9 07:42 client-commands.log
+-rw-r--r--  1 runner runner    1580 Nov  9 07:42 deep-ocean.txt
+-rw-r--r--  1 runner runner     134 Nov  9 07:41 done.txt
+-rw-r--r--  1 runner runner       0 Nov  9 07:41 errors.txt
+-rw-r--r--  1 runner runner    1854 Nov  9 07:41 fauna-server-probes.txt
+-rw-r--r--  1 runner runner 1194778 Nov  9 07:40 installer.log
+-rw-r--r--  1 runner runner   11339 Nov  9 07:41 latest.log
+-rw-r--r--  1 runner runner    1459 Nov  9 07:42 maja-client.log
+-rw-r--r--  1 runner runner      85 Nov  9 07:42 maja-openbox.log
+-rw-r--r--  1 runner runner    1593 Nov  9 07:41 maja-probes.txt
+-rw-r--r--  1 runner runner    1174 Nov  9 07:42 maja-xvfb.log
+-rw-r--r--  1 runner runner     222 Nov  9 07:41 mods.txt
+-rw-r--r--  1 runner runner     210 Nov  9 07:41 ocean-wreck.txt
+-rw-r--r--  1 runner runner    1343 Nov  9 07:41 report_server.md
+-rw-r--r--  1 runner runner     491 Nov  9 07:41 tps.txt

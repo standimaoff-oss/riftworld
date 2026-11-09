@@ -1,0 +1,18 @@
+Downloading https://services.gradle.org/distributions/gradle-8.8-bin.zip
+
+Exception in thread "main" java.io.IOException: Server returned HTTP response code: 504 for URL: https://github.com/gradle/gradle-distributions/releases/download/v8.8.0/gradle-8.8-bin.zip
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream0(HttpURLConnection.java:2059)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream(HttpURLConnection.java:1644)
+	at java.base/sun.net.www.protocol.https.HttpsURLConnectionImpl.getInputStream(HttpsURLConnectionImpl.java:224)
+	at org.gradle.wrapper.Download.downloadInternal(Download.java:109)
+	at org.gradle.wrapper.Download.download(Download.java:89)
+	at org.gradle.wrapper.Install.forceFetch(Install.java:171)
+	at org.gradle.wrapper.Install.fetchDistribution(Install.java:104)
+	at org.gradle.wrapper.Install.access$400(Install.java:46)
+	at org.gradle.wrapper.Install$1.call(Install.java:81)
+	at org.gradle.wrapper.Install$1.call(Install.java:68)
+	at org.gradle.wrapper.ExclusiveFileAccessManager.access(ExclusiveFileAccessManager.java:69)
+	at org.gradle.wrapper.Install.createDist(Install.java:68)
+	at org.gradle.wrapper.WrapperExecutor.execute(WrapperExecutor.java:109)
+	at org.gradle.wrapper.GradleWrapperMain.main(GradleWrapperMain.java:66)
+::error title=Client test failed::line 57, exit 1, command: ./gradlew runClient --no-daemon --console=plain -PrunDir="$PWD/../$RUN" -PautoJoin=127.0.0.1:25565
