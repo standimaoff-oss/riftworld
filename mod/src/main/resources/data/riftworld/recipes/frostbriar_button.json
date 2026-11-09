@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "group": "buttons",
+  "ingredients": [
+    {
+      "item": "riftworld:frostbriar_planks"
+    }
+  ],
+  "result": {
+    "item": "riftworld:frostbriar_button",
+    "count": 1
+  }
+}

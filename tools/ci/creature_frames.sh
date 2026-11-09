@@ -156,6 +156,16 @@ rq execute in riftworld:elisar run tp TestPlayer "$OX" 51.4 "$((OZ - 3))" facing
 sleep 6
 capture_underwater frame-liopleurodon-head
 
+# ---------------------------------------------------------------- hollowwatcher (v0.49.0)
+# Новый хоррор-моб Пади: Смотритель Пращи. Ставим на сушу Пади ночью.
+rq kill '@e[type=riftworld:hollowwatcher]' >/dev/null 2>&1 || true
+rq execute in riftworld:elisar run time set midnight >/dev/null
+rq summon riftworld:hollowwatcher 200 120 0 '{NoAI:1b,PersistenceRequired:1b}' >/dev/null
+sleep 6
+shot frame-hollowwatcher-three-quarter 197.5 121.7 -3.6 200 121 0 12
+shot frame-hollowwatcher-face 200 122.5 -2.0 200 122.2 -0.5 9
+shot frame-hollowwatcher-tall 204.0 121.5 0 200 121 0 8
+
 # ---------------------------------------------------------------- El Gran Maja
 rq kill '@e[type=riftworld:el_gran_maja]' >/dev/null 2>&1 || true
 rq forceload add -80 -176 80 176 >/dev/null 2>&1 || true

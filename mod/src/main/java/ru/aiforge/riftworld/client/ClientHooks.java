@@ -91,6 +91,7 @@ public final class ClientHooks {
         e.registerEntityRenderer(ModEntities.BLOSSOM_STAG.get(), PeacefulFaunaRenderers.BlossomStag::new);
         // v0.39.0: Морок — геометрия morok + СВЕТЯЩИЕСЯ глаза (geo/morok_eyes.json, RenderType.eyes)
         e.registerEntityRenderer(ModEntities.MOROK.get(), MorokRenderer::new);
+        e.registerEntityRenderer(ModEntities.HOLLOWWATCHER.get(), HollowwatcherRenderer::new);
         // v0.48.0: жители Элисара — житель, страж и лучник (референсы 05–07, собственные 128x128 модели и вооружение).
         e.registerEntityRenderer(ModEntities.ELISAR_VILLAGER.get(), ElisarFolkRenderers.Villager::new);
         e.registerEntityRenderer(ModEntities.ELISAR_GUARD.get(), ElisarFolkRenderers.Guard::new);

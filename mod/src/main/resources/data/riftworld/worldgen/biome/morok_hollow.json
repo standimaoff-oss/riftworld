@@ -37,9 +37,15 @@
     "monster": [
       {
         "type": "riftworld:morok",
-        "weight": 36,
+        "weight": 40,
         "minCount": 1,
         "maxCount": 2
+      },
+      {
+        "type": "riftworld:hollowwatcher",
+        "weight": 8,
+        "minCount": 1,
+        "maxCount": 1
       }
     ]
   },
@@ -47,6 +53,10 @@
     "riftworld:morok": {
       "energy_budget": 0.34,
       "charge": 1.2
+    },
+    "riftworld:hollowwatcher": {
+      "energy_budget": 0.42,
+      "charge": 1.4
     }
   },
   "carvers": {},

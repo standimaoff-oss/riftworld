@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "building",
+  "pattern": [
+    "PPP"
+  ],
+  "key": {
+    "P": {
+      "item": "riftworld:rotwood_planks"
+    }
+  },
+  "result": {
+    "item": "riftworld:rotwood_planks_slab",
+    "count": 6
+  }
+}

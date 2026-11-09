@@ -53,6 +53,8 @@ public final class PeacefulFaunaKeeper {
             // не было ни списка спавна, ни правил постановки на блок.
             // v0.39.0: Морок — хозяин чащи. Ставится только на мерзлоту Пади и только в темноте,
             // поэтому днём его почти не видно, а ночью он появляется сам, без всяких скриптов.
+            event.register(ModEntities.HOLLOWWATCHER.get(),
+                    SpawnPlacementRegisterEvent.Operation.REPLACE);
             event.register(ModEntities.MOROK.get(),
                     SpawnPlacements.Type.ON_GROUND,
                     Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,

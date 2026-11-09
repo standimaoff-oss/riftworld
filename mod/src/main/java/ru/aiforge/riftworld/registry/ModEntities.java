@@ -113,6 +113,14 @@ public final class ModEntities {
 
 
     /** v0.39.0: Морок — собственный хоррор-моб «Мороковой Пади» (быстрый, кружит, моргает). */
+    /** v0.49.0: Смотритель Пращи — новый хоррор-моб Мороковой Пади. */
+    public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.HollowwatcherEntity>> HOLLOWWATCHER =
+            TYPES.register("hollowwatcher", () -> EntityType.Builder
+                    .<ru.aiforge.riftworld.entity.HollowwatcherEntity>of(ru.aiforge.riftworld.entity.HollowwatcherEntity::new,
+                            MobCategory.MONSTER)
+                    .sized(0.95F, 3.40F).clientTrackingRange(64)
+                    .build("riftworld:hollowwatcher"));
+
     public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.MorokEntity>> MOROK =
             TYPES.register("morok", () -> EntityType.Builder
                     .<ru.aiforge.riftworld.entity.MorokEntity>of(ru.aiforge.riftworld.entity.MorokEntity::new,
@@ -228,6 +236,7 @@ public final class ModEntities {
         e.put(ELISAR_GUARD.get(), ru.aiforge.riftworld.entity.ElisarGuardEntity.attributes().build());
         e.put(ELISAR_ARCHER.get(), ru.aiforge.riftworld.entity.ElisarArcherEntity.attributes().build());
         e.put(MOROK.get(), ru.aiforge.riftworld.entity.MorokEntity.attributes().build());
+        e.put(HOLLOWWATCHER.get(), ru.aiforge.riftworld.entity.HollowwatcherEntity.attributes().build());
 
         e.put(PORCELAIN_CRANE.get(), ru.aiforge.riftworld.entity.fauna.PorcelainCraneEntity.attributes().build());
         e.put(BASALT_BEETLE.get(), ru.aiforge.riftworld.entity.fauna.BasaltBeetleEntity.attributes().build());

@@ -87,6 +87,7 @@ public final class ModTabs {
         out.accept(ModItems.EL_GRAN_MAJA_EGG.get());
         out.accept(ModItems.BLOSSOM_STAG_EGG.get());
         out.accept(ModItems.MOROK_EGG.get());
+        out.accept(ModItems.HOLLOWWATCHER_EGG.get());
         out.accept(ModItems.MOROK_EYE.get());
         out.accept(ModItems.SKY_DART_EGG.get());
         out.accept(ModItems.PAPER_DRAGON_EGG.get());

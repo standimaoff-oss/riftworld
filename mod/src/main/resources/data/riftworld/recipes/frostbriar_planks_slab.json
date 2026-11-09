@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "building",
+  "pattern": [
+    "PPP"
+  ],
+  "key": {
+    "P": {
+      "item": "riftworld:frostbriar_planks"
+    }
+  },
+  "result": {
+    "item": "riftworld:frostbriar_planks_slab",
+    "count": 6
+  }
+}

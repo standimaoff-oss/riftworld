@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "group": "planks",
+  "ingredients": [
+    {
+      "item": "riftworld:stripped_rotwood_wood"
+    }
+  ],
+  "result": {
+    "item": "riftworld:rotwood_planks",
+    "count": 4
+  }
+}

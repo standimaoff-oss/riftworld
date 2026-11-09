@@ -2131,6 +2131,13 @@ public class ElisarChunkGenerator extends ChunkGenerator {
     private static void morokTrees(WorldGenLevel level, ChunkAccess chunk, int x0, int z0) {
         BlockState log = MorokBlocks.MOROK_LOG.get().defaultBlockState();
         BlockState leaves = MorokBlocks.MOROK_LEAVES.get().defaultBlockState();
+        // v0.49.0: у Пади появились СВОИ деревья — гнилая роща и морозный
+        // терновник. Раньше весь бор был перекрашенной ванильной сосной, и лес
+        // читался как обычный берёзовый. Теперь видно три разных дерева.
+        BlockState rotLog = MorokBlocks.ROTWOOD_LOG.get().defaultBlockState();
+        BlockState rotLeaves = MorokBlocks.ROTWOOD_LEAVES.get().defaultBlockState();
+        BlockState briarLog = MorokBlocks.FROSTBRIAR_LOG.get().defaultBlockState();
+        BlockState briarLeaves = MorokBlocks.FROSTBRIAR_LEAVES.get().defaultBlockState();
         BlockState bramble = MorokBlocks.BONE_BRAMBLE.get().defaultBlockState();
         BlockState fang = MorokBlocks.ICE_FANG.get().defaultBlockState();
         BlockState carpet = MorokBlocks.PALE_MOSS_CARPET.get().defaultBlockState();
@@ -2156,6 +2163,11 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 int top = MorokHollow.groundOf(chunk, mp, x, z);
                 if (top == Integer.MIN_VALUE) continue;
 
+                int kind = MorokHollow.treeKind(x, z);
+                BlockState treeLog = kind == MorokHollow.TREE_ROTWOOD ? rotLog
+                        : kind == MorokHollow.TREE_FROSTBRIAR ? briarLog : log;
+                BlockState treeLeaves = kind == MorokHollow.TREE_ROTWOOD ? rotLeaves
+                        : kind == MorokHollow.TREE_FROSTBRIAR ? briarLeaves : leaves;
                 if (big) {
                     // 2x2 патриарх: ствол из четырёх колонн, крона из четырёх ярусов
                     int hh = MorokHollow.treeHeight(x, z) + 6;
@@ -2163,7 +2175,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                         for (int tz = 0; tz <= 1; ++tz) {
                             int cx = x + tx, cz = z + tz;
                             if (cx > x0 + 15 || cz > z0 + 15) continue;
-                            for (int y = 1; y <= hh; ++y) chunk.setBlockState(mp.set(cx, top + y, cz), log, false);
+                            for (int y = 1; y <= hh; ++y) chunk.setBlockState(mp.set(cx, top + y, cz), treeLog, false);
                         }
                     }
                     // крона-конус: ярусы через 2 блока, радиус 4 -> 1, рваная кромка
@@ -2178,7 +2190,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                 if (cx < x0 || cx > x0 + 15 || cz < z0 || cz > z0 + 15) continue;
                                 if (hash(cx * 3, cz * 5, 917 + layer) < 0.18) continue;
                                 BlockPos p = mp.set(cx, yy, cz);
-                                if (chunk.getBlockState(p).isAir()) chunk.setBlockState(p, leaves, false);
+                                if (chunk.getBlockState(p).isAir()) chunk.setBlockState(p, treeLeaves, false);
                             }
                         }
                     }
@@ -2186,7 +2198,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                 }
                 if (small) {
                     int hh = MorokHollow.treeHeight(x, z);
-                    for (int y = 1; y <= hh; ++y) chunk.setBlockState(mp.set(x, top + y, z), log, false);
+                    for (int y = 1; y <= hh; ++y) chunk.setBlockState(mp.set(x, top + y, z), treeLog, false);
                     int base = top + hh;
                     // крона-конус: ярусы через 2 блока, радиус 3 -> 1 (а не одна плоская плита)
                     int[] radii = {3, 3, 2, 2, 1};
@@ -2200,22 +2212,22 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                 if (cx < x0 || cx > x0 + 15 || cz < z0 || cz > z0 + 15) continue;
                                 if (hash(cx, cz, 918 + layer) < 0.16) continue;
                                 BlockPos p = mp.set(cx, yy, cz);
-                                if (chunk.getBlockState(p).isAir()) chunk.setBlockState(p, leaves, false);
+                                if (chunk.getBlockState(p).isAir()) chunk.setBlockState(p, treeLeaves, false);
                             }
                         }
                     }
-                    chunk.setBlockState(mp.set(x, top + hh + 1, z), leaves, false);   // макушка
+                    chunk.setBlockState(mp.set(x, top + hh + 1, z), treeLeaves, false);   // макушка
                     continue;
                 }
                 if (snag) {
                     int hh = 4 + (int) Math.round(hash(x, z, 919) * 5);
-                    for (int y = 1; y <= hh; ++y) chunk.setBlockState(mp.set(x, top + y, z), log, false);
+                    for (int y = 1; y <= hh; ++y) chunk.setBlockState(mp.set(x, top + y, z), rotLog, false);
                     if (hash(x, z, 920) < 0.5) {
                         int by = top + hh - 2;
                         int sx = hash(x, z, 921) < 0.5 ? 1 : -1;
                         int cx = x + sx;
                         if (cx >= x0 && cx <= x0 + 15) {
-                            chunk.setBlockState(mp.set(cx, by, z), log.setValue(net.minecraft.world.level.block.RotatedPillarBlock.AXIS,
+                            chunk.setBlockState(mp.set(cx, by, z), rotLog.setValue(net.minecraft.world.level.block.RotatedPillarBlock.AXIS,
                                     net.minecraft.core.Direction.Axis.X), false);
                         }
                     }

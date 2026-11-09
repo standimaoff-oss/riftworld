@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "group": "planks",
+  "ingredients": [
+    {
+      "item": "riftworld:stripped_frostbriar_log"
+    }
+  ],
+  "result": {
+    "item": "riftworld:frostbriar_planks",
+    "count": 4
+  }
+}
