@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " AS",
+    "K S",
+    " AS"
+  ],
+  "key": {
+    "A": {
+      "item": "riftworld:aurite_ingot"
+    },
+    "K": {
+      "item": "minecraft:stick"
+    },
+    "S": {
+      "item": "minecraft:string"
+    }
+  },
+  "result": {
+    "item": "riftworld:elisar_bow",
+    "count": 1
+  }
+}

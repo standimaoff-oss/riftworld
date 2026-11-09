@@ -340,7 +340,8 @@ drop_row() {
   done
 }
 drop_row 774 aurite_sword aurite_pickaxe aurite_axe aurite_shovel aurite_hoe \
-            riftcrystal_sword riftcrystal_pickaxe riftcrystal_axe riftcrystal_shovel riftcrystal_hoe
+            riftcrystal_sword riftcrystal_pickaxe riftcrystal_axe riftcrystal_shovel riftcrystal_hoe \
+            elisar_bow elisar_shield elisar_guard_sword elisar_guard_shield
 look_shot gear-dropped-tools 761 121 767 761 120 774 30
 drop_row 782 aurite_helmet aurite_chestplate aurite_leggings aurite_boots \
             riftcrystal_helmet riftcrystal_chestplate riftcrystal_leggings riftcrystal_boots
@@ -365,6 +366,9 @@ echo "showcase rebuilt: $GEAR_INFO"
 gear_shot gear-armour-row   cam_row   30
 gear_shot gear-elisar-folk  cam_folk  26
 gear_shot gear-closeup      cam_close 22
+rq execute in riftworld:elisar run time set midnight >/dev/null
+gear_shot gear-riftcrystal-night cam_close 18
+rq execute in riftworld:elisar run time set noon >/dev/null
 rq list | grep -q TestPlayer || fail 'Client disconnected during the gear showcase'
 [[ -z "${MAGENTA_BAD:-}" ]] \
   || fail "в кадрах есть текстура-заглушка «missing texture»:$MAGENTA_BAD"

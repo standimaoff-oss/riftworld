@@ -22,15 +22,15 @@ import net.minecraft.world.item.crafting.Ingredient;
  */
 public enum RiftArmorMaterials implements ArmorMaterial {
     AURITE("aurite",
-            new int[]{240, 275, 300, 210},   // boots, leggings, chestplate, helmet
-            new int[]{2, 5, 6, 2},
-            12, 1.0F, 0.0F, SoundEvents.ARMOR_EQUIP_IRON,
+            new int[]{275, 315, 340, 240},   // boots, leggings, chestplate, helmet (medium tier between Iron & Diamond)
+            new int[]{2, 5, 7, 3},
+            15, 1.5F, 0.05F, SoundEvents.ARMOR_EQUIP_GOLD,
             () -> Ingredient.of(ru.aiforge.riftworld.registry.ModItems.AURITE_INGOT.get())),
 
     RIFTCRYSTAL("riftcrystal",
-            new int[]{480, 545, 590, 420},
+            new int[]{520, 595, 640, 455},   // strong rare 4-biome crystal plate (Netherite+)
             new int[]{4, 7, 9, 4},
-            18, 3.5F, 0.15F, SoundEvents.ARMOR_EQUIP_DIAMOND,
+            20, 3.5F, 0.15F, SoundEvents.ARMOR_EQUIP_NETHERITE,
             () -> Ingredient.of(ru.aiforge.riftworld.registry.ModItems.RIFTCRYSTAL.get()));
 
     private final String name;

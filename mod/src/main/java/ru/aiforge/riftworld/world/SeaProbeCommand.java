@@ -425,11 +425,14 @@ public final class SeaProbeCommand {
         var stand = net.minecraft.world.entity.EntityType.ARMOR_STAND.create(sl);
         if (stand == null) return;
         stand.moveTo(x, y, z, yaw, 0.0F);
+        stand.setYRot(yaw);
+        stand.yBodyRot = yaw;
+        stand.yHeadRot = yaw;
         stand.setNoGravity(true);
         stand.setInvulnerable(true);
         stand.setSilent(true);
         stand.setShowArms(true);
-        stand.setNoBasePlate(true);
+        stand.setNoBasePlate(false);
         if (tools) {
             stand.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND,
                     new net.minecraft.world.item.ItemStack(
@@ -460,6 +463,10 @@ public final class SeaProbeCommand {
                     new net.minecraft.world.item.ItemStack(
                             (aurite ? ru.aiforge.riftworld.registry.ModItems.AURITE_SWORD
                                     : ru.aiforge.riftworld.registry.ModItems.RIFTCRYSTAL_SWORD).get()));
+            stand.setItemSlot(net.minecraft.world.entity.EquipmentSlot.OFFHAND,
+                    new net.minecraft.world.item.ItemStack(
+                            (aurite ? ru.aiforge.riftworld.registry.ModItems.ELISAR_SHIELD
+                                    : ru.aiforge.riftworld.registry.ModItems.ELISAR_BOW).get()));
         }
         sl.addFreshEntity(stand);
     }
@@ -4211,16 +4218,25 @@ public final class SeaProbeCommand {
                 sl.getEntitiesOfClass(ru.aiforge.riftworld.entity.ElisarArcherEntity.class, area)
                         .forEach(net.minecraft.world.entity.Entity::discard);
 
-                // Четыре стойки: аурит-доспех, рифт-кристалл-доспех, аурит-инструменты, рифт-инструменты.
-                v40Stand(sl, px - 7.0, py, pz + 0.5, 0.0F, true, false);
-                v40Stand(sl, px - 2.5, py, pz + 0.5, 0.0F, false, false);
-                v40Stand(sl, px + 2.0, py, pz + 0.5, 0.0F, true, true);
-                v40Stand(sl, px + 6.5, py, pz + 0.5, 0.0F, false, true);
+                // Четыре стойки: аурит-доспех + меч/щит, рифт-кристалл-доспех + меч/лук, аурит-инструменты, рифт-инструменты.
+                v40Stand(sl, px - 7.0, py, pz + 0.5, -18.0F, true, false);
+                v40Stand(sl, px - 2.5, py, pz + 0.5, 16.0F, false, false);
+                v40Stand(sl, px + 2.0, py, pz + 0.5, -16.0F, true, true);
+                v40Stand(sl, px + 6.5, py, pz + 0.5, 16.0F, false, true);
 
-                // Народ Элисара: житель, страж в аурите и лучник в рифт-кристалле.
+                // Рудные тумбы на заднем плане витрины (монетная/ауритовая руда и редкая руда рифт-кристалла).
+                sl.setBlock(new BlockPos(px - 8, py, pz - 2), ElisarBlocks.DUCAT_ORE.get().defaultBlockState(), 2);
+                sl.setBlock(new BlockPos(px - 7, py, pz - 2), ElisarBlocks.AURITE_ORE.get().defaultBlockState(), 2);
+                sl.setBlock(new BlockPos(px - 2, py, pz - 2), ElisarBlocks.RIFTCRYSTAL_ORE.get().defaultBlockState(), 2);
+                sl.setBlock(new BlockPos(px - 1, py, pz - 2), ElisarBlocks.RIFT_SLATE.get().defaultBlockState(), 2);
+
+                // Народ Элисара в точном обличье референсов 05, 06 и 07 (без перекрытия их голов шлемами игрока!).
                 var villager = ru.aiforge.riftworld.registry.ModEntities.ELISAR_VILLAGER.get().create(sl);
                 if (villager != null) {
-                    villager.moveTo(px - 6.0, py, pz + 7.5, 0.0F, 0.0F);
+                    villager.moveTo(px - 5.0, py, pz + 7.5, -18.0F, 0.0F);
+                    villager.setYRot(-18.0F);
+                    villager.yBodyRot = -18.0F;
+                    villager.yHeadRot = -12.0F;
                     villager.setNoAi(true);
                     villager.setInvulnerable(true);
                     villager.setSilent(true);
@@ -4228,44 +4244,32 @@ public final class SeaProbeCommand {
                 }
                 var guard = ru.aiforge.riftworld.registry.ModEntities.ELISAR_GUARD.get().create(sl);
                 if (guard != null) {
-                    guard.moveTo(px + 0.5, py, pz + 8.0, 0.0F, 0.0F);
+                    guard.moveTo(px + 0.5, py, pz + 7.8, -18.0F, 0.0F);
+                    guard.setYRot(-18.0F);
+                    guard.yBodyRot = -18.0F;
+                    guard.yHeadRot = -12.0F;
+                    guard.equipDefaultArmament();
                     guard.setNoAi(true);
                     guard.setInvulnerable(true);
                     guard.setSilent(true);
                     sl.addFreshEntity(guard);
-                    guard.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD,
-                            new net.minecraft.world.item.ItemStack(ru.aiforge.riftworld.registry.ModItems.AURITE_HELMET.get()));
-                    guard.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST,
-                            new net.minecraft.world.item.ItemStack(ru.aiforge.riftworld.registry.ModItems.AURITE_CHESTPLATE.get()));
-                    guard.setItemSlot(net.minecraft.world.entity.EquipmentSlot.LEGS,
-                            new net.minecraft.world.item.ItemStack(ru.aiforge.riftworld.registry.ModItems.AURITE_LEGGINGS.get()));
-                    guard.setItemSlot(net.minecraft.world.entity.EquipmentSlot.FEET,
-                            new net.minecraft.world.item.ItemStack(ru.aiforge.riftworld.registry.ModItems.AURITE_BOOTS.get()));
-                    guard.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND,
-                            new net.minecraft.world.item.ItemStack(ru.aiforge.riftworld.registry.ModItems.AURITE_SWORD.get()));
                 }
                 var archer = ru.aiforge.riftworld.registry.ModEntities.ELISAR_ARCHER.get().create(sl);
                 if (archer != null) {
-                    archer.moveTo(px + 7.0, py, pz + 7.5, 0.0F, 0.0F);
+                    archer.moveTo(px + 6.0, py, pz + 7.5, -18.0F, 0.0F);
+                    archer.setYRot(-18.0F);
+                    archer.yBodyRot = -18.0F;
+                    archer.yHeadRot = -12.0F;
+                    archer.equipDefaultBow();
                     archer.setNoAi(true);
                     archer.setInvulnerable(true);
                     archer.setSilent(true);
                     sl.addFreshEntity(archer);
-                    archer.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD,
-                            new net.minecraft.world.item.ItemStack(ru.aiforge.riftworld.registry.ModItems.RIFTCRYSTAL_HELMET.get()));
-                    archer.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST,
-                            new net.minecraft.world.item.ItemStack(ru.aiforge.riftworld.registry.ModItems.RIFTCRYSTAL_CHESTPLATE.get()));
-                    archer.setItemSlot(net.minecraft.world.entity.EquipmentSlot.LEGS,
-                            new net.minecraft.world.item.ItemStack(ru.aiforge.riftworld.registry.ModItems.RIFTCRYSTAL_LEGGINGS.get()));
-                    archer.setItemSlot(net.minecraft.world.entity.EquipmentSlot.FEET,
-                            new net.minecraft.world.item.ItemStack(ru.aiforge.riftworld.registry.ModItems.RIFTCRYSTAL_BOOTS.get()));
-                    archer.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND,
-                            new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.BOW));
                 }
             }
-            double[] camRow = poseCam(px + 0.5, py + 2.0, pz + 0.5, 0.0F, 0.0, 0.0, 0.0, 9.5, 0.0, 2.2);
-            double[] camFolk = poseCam(px + 0.5, py + 1.6, pz + 7.5, 0.0F, 0.0, 0.0, 0.0, 11.0, 0.0, 1.6);
-            double[] camClose = poseCam(px - 4.75, py + 1.4, pz + 0.5, 0.0F, 0.0, 0.0, 0.0, 4.2, 0.0, 0.7);
+            double[] camRow = poseCam(px - 0.25, py + 1.5, pz + 0.5, 0.0F, 0.0, 0.0, 0.0, 9.2, 0.0, 1.4);
+            double[] camFolk = poseCam(px + 0.5, py + 1.35, pz + 7.6, 0.0F, 0.0, 0.0, 0.0, 9.2, 0.0, 1.1);
+            double[] camClose = poseCam(px - 4.75, py + 1.25, pz + 0.5, 0.0F, 0.0, 0.0, 0.0, 4.3, 0.0, 0.55);
             String line = "riftstruct kind=v40_gear"
                     + " stands=4 folk=3 materials=aurite,riftcrystal"
                     + " cam_row=" + r3(camRow[0]) + "," + r3(camRow[1]) + "," + r3(camRow[2])
@@ -4276,6 +4280,56 @@ public final class SeaProbeCommand {
                     + ":" + r3(camClose[3]) + "," + r3(camClose[4]) + "," + r3(camClose[5]);
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
+        }
+
+        if (k.equals("v48_armory_probe")) {
+            var rm = level.getRecipeManager();
+            var regAcc = level.registryAccess();
+            java.util.function.Function<net.minecraft.world.item.Item[], net.minecraft.world.item.ItemStack> eval3x3 = grid -> {
+                var menu = new net.minecraft.world.inventory.AbstractContainerMenu(null, -1) {
+                    @Override public net.minecraft.world.item.ItemStack quickMoveStack(net.minecraft.world.entity.player.Player p, int i) { return net.minecraft.world.item.ItemStack.EMPTY; }
+                    @Override public boolean stillValid(net.minecraft.world.entity.player.Player p) { return true; }
+                };
+                var inv = new net.minecraft.world.inventory.TransientCraftingContainer(menu, 3, 3);
+                for (int i = 0; i < 9; ++i) {
+                    if (grid[i] != null) inv.setItem(i, new net.minecraft.world.item.ItemStack(grid[i]));
+                }
+                return rm.getRecipeFor(net.minecraft.world.item.crafting.RecipeType.CRAFTING, inv, level)
+                        .map(r -> r.assemble(inv, regAcc))
+                        .orElse(net.minecraft.world.item.ItemStack.EMPTY);
+            };
+            var ducat = ru.aiforge.riftworld.registry.ModItems.ELISAR_DUCAT.get();
+            var aurIngot = ru.aiforge.riftworld.registry.ModItems.AURITE_INGOT.get();
+            var stick = net.minecraft.world.item.Items.STICK;
+            var str = net.minecraft.world.item.Items.STRING;
+            var plank = ElisarBlocks.SIZO_PLANKS.get().asItem();
+
+            var toIngot = eval3x3.apply(new net.minecraft.world.item.Item[]{ducat, ducat, null, null, null, null, null, null, null});
+            var toDucats = eval3x3.apply(new net.minecraft.world.item.Item[]{aurIngot, null, null, null, null, null, null, null, null});
+            var craftBow = eval3x3.apply(new net.minecraft.world.item.Item[]{null, aurIngot, str, stick, null, str, null, aurIngot, str});
+            var craftShield = eval3x3.apply(new net.minecraft.world.item.Item[]{aurIngot, plank, aurIngot, aurIngot, aurIngot, aurIngot, null, aurIngot, null});
+
+            var vil = ru.aiforge.riftworld.registry.ModEntities.ELISAR_VILLAGER.get().create(level);
+            var grd = ru.aiforge.riftworld.registry.ModEntities.ELISAR_GUARD.get().create(level);
+            var arc = ru.aiforge.riftworld.registry.ModEntities.ELISAR_ARCHER.get().create(level);
+            int offers = vil != null ? vil.getOffers().size() : 0;
+            boolean grdOk = grd != null && grd.isLeftHanded()
+                    && grd.getMainHandItem().is(ru.aiforge.riftworld.registry.ModItems.ELISAR_GUARD_SWORD.get())
+                    && grd.getOffhandItem().is(ru.aiforge.riftworld.registry.ModItems.ELISAR_GUARD_SHIELD.get());
+            boolean arcOk = arc != null && arc.isLeftHanded()
+                    && arc.getMainHandItem().is(ru.aiforge.riftworld.registry.ModItems.ELISAR_BOW.get());
+            boolean recOk = toIngot.is(aurIngot) && toIngot.getCount() == 1
+                    && toDucats.is(ducat) && toDucats.getCount() == 2
+                    && craftBow.is(ru.aiforge.riftworld.registry.ModItems.ELISAR_BOW.get())
+                    && craftShield.is(ru.aiforge.riftworld.registry.ModItems.ELISAR_SHIELD.get());
+            String line = "riftstruct kind=v48_armory_probe"
+                    + " recipes_ok=" + recOk
+                    + " villager_offers=" + offers
+                    + " guard_equipped=" + grdOk
+                    + " archer_equipped=" + arcOk
+                    + " rare_ore_biomes=4(crystal_rifts,violet_hills,morok_hollow,mist_keep)";
+            src.sendSuccess(() -> Component.literal(line), false);
+            return (recOk && offers >= 6 && grdOk && arcOk) ? 1 : 0;
         }
 
         if (k.equals("v39_morok")) {

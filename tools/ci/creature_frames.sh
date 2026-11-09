@@ -157,6 +157,27 @@ sleep 6
 shot frame-maja-body 150 228 70 0 202 -45 14
 shot frame-maja-head 0 214 188 0 200 115 12
 
+# ---------------------------------------------------------------- v0.48.0 Armory & Elisar Folk
+rq execute in riftworld:elisar run time set noon >/dev/null
+rq execute in riftworld:elisar run forceload add 744 744 776 776 >/dev/null 2>&1 || true
+rq execute in riftworld:elisar run tp TestPlayer 760 123 770 0 0 >/dev/null
+sleep 14
+rq execute in riftworld:elisar positioned 760 118 760 run riftstruct v40_gear >/dev/null
+sleep 8
+rq execute in riftworld:elisar run tp TestPlayer 755.25 119.8 765.0 facing 755.25 119.25 760.5 >/dev/null
+sleep 10
+capture_underwater frame-v048-armors-closeup
+rq execute in riftworld:elisar run time set midnight >/dev/null
+sleep 6
+capture_underwater frame-v048-riftcrystal-night-glow
+rq execute in riftworld:elisar run time set noon >/dev/null
+rq execute in riftworld:elisar run tp TestPlayer 764.25 119.8 765.0 facing 764.25 119.25 760.5 >/dev/null
+sleep 8
+capture_underwater frame-v048-tools-closeup
+rq execute in riftworld:elisar run tp TestPlayer 760.5 120.0 776.6 facing 760.5 119.35 767.6 >/dev/null
+sleep 10
+capture_underwater frame-v048-elisar-folk
+
 echo "captured $SHOT in-game frames"
 [ "$SHOT" -ge 6 ] || fail "Only $SHOT frames captured"
 ls -l "$FRAMES"

@@ -51,6 +51,10 @@ public final class ModTabs {
                 out.accept(ModItems.RIFTCRYSTAL_AXE.get());
                 out.accept(ModItems.RIFTCRYSTAL_SHOVEL.get());
                 out.accept(ModItems.RIFTCRYSTAL_HOE.get());
+                out.accept(ModItems.ELISAR_BOW.get());
+                out.accept(ModItems.ELISAR_SHIELD.get());
+                out.accept(ModItems.ELISAR_GUARD_SWORD.get());
+                out.accept(ModItems.ELISAR_GUARD_SHIELD.get());
                 out.accept(ModItems.BRIDGE_ROPE.get());
                 out.accept(ModItems.GILDED_PAPER.get());
                 out.accept(ModItems.EMERALD_PAPER.get());

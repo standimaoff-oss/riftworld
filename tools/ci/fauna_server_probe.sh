@@ -53,3 +53,19 @@ for entry in 'ash_moth:ash_wing_dust' 'bone_raven:bone_pinion' 'ghost_squid:abys
   rq kill "@e[type=minecraft:item,nbt={Item:{id:\"riftworld:$item\"}}]" >/dev/null || true
 done
 log 'OK: all 15 v0.47.0 fauna entities spawned, ticked, and dropped trophies cleanly.'
+
+log 'Verifying v0.48.0 armory recipes, Villager ducat trades, Guard & Archer equipment, and live AI.'
+ARMORY_PROBE=$(rq execute in minecraft:overworld run riftstruct v48_armory_probe)
+log "v48_armory_probe: $ARMORY_PROBE"
+[[ "$ARMORY_PROBE" == *"recipes_ok=true"* ]] || fail "v0.48.0 recipes check failed: $ARMORY_PROBE"
+[[ "$ARMORY_PROBE" == *"guard_equipped=true"* ]] || fail "v0.48.0 guard equipment failed: $ARMORY_PROBE"
+[[ "$ARMORY_PROBE" == *"archer_equipped=true"* ]] || fail "v0.48.0 archer equipment failed: $ARMORY_PROBE"
+for folk in elisar_villager elisar_guard elisar_archer; do
+  rq summon "riftworld:$folk" 40 200 0 '{PersistenceRequired:1b,NoGravity:1b,Tags:["v048_folk"]}' | tee -a "$LOG"
+  sleep 0.3
+  chk=$(rq execute if entity "@e[type=riftworld:$folk,tag=v048_folk]" 2>&1 || true)
+  [[ "$chk" == *'Test passed'* ]] || fail "v0.48.0 folk $folk failed to spawn or tick"
+  rq tp "@e[type=riftworld:$folk,tag=v048_folk]" 40 -200 0 >/dev/null || true
+  rq kill "@e[type=riftworld:$folk,tag=v048_folk]" >/dev/null || true
+done
+log 'OK: v0.48.0 armory, dual tool sets, and 3 Elisar settlement folk verified on live Forge server.'

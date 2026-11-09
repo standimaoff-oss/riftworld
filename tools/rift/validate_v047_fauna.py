@@ -52,7 +52,8 @@ GLOW_IDS = [
 ]
 
 props = (MOD / "gradle.properties").read_text(encoding="utf-8")
-assert "mod_version=0.47.0" in props, "mod_version must be 0.47.0"
+m_ver = re.search(r"^mod_version=(\d+)\.(\d+)\.(\d+)", props, re.M)
+assert m_ver and tuple(map(int, m_ver.groups())) >= (0, 47, 0), "mod_version must be >= 0.47.0"
 
 en = json.loads((ASSETS / "lang/en_us.json").read_text(encoding="utf-8"))
 ru = json.loads((ASSETS / "lang/ru_ru.json").read_text(encoding="utf-8"))

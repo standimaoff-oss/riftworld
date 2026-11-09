@@ -39,10 +39,30 @@ public final class ClientHooks {
         };
     }
 
+    public static net.minecraftforge.client.extensions.common.IClientItemExtensions armorExt(boolean riftcrystal) {
+        return new net.minecraftforge.client.extensions.common.IClientItemExtensions() {
+            @Override
+            public net.minecraft.client.model.HumanoidModel<?> getHumanoidArmorModel(
+                    net.minecraft.world.entity.LivingEntity entity,
+                    net.minecraft.world.item.ItemStack itemStack,
+                    net.minecraft.world.entity.EquipmentSlot armorSlot,
+                    net.minecraft.client.model.HumanoidModel<?> defaultModel) {
+                return ru.aiforge.riftworld.client.model.ElisarArmorModels.getForSlot(
+                        riftcrystal
+                                ? ru.aiforge.riftworld.item.RiftArmorMaterials.RIFTCRYSTAL
+                                : ru.aiforge.riftworld.item.RiftArmorMaterials.AURITE,
+                        armorSlot,
+                        defaultModel);
+            }
+        };
+    }
+
     @SubscribeEvent
     public static void layerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions e) {
         e.registerLayerDefinition(LiopleurodonBlockbenchModel.LAYER_LOCATION, LiopleurodonBlockbenchModel::createBodyLayer);
         e.registerLayerDefinition(PegasusBlockbenchModel.LAYER_LOCATION, PegasusBlockbenchModel::createBodyLayer);
+        ru.aiforge.riftworld.client.model.ElisarArmorModels.registerLayers(e);
+        ru.aiforge.riftworld.client.model.ElisarFolkModels.registerLayers(e);
         ElisarFaunaRenderers.registerLayers(e);
     }
 
@@ -75,18 +95,55 @@ public final class ClientHooks {
         e.registerEntityRenderer(ModEntities.WENDIGO.get(), WendigoRenderer::new);
         // v0.39.0: Морок — геометрия morok + СВЕТЯЩИЕСЯ глаза (geo/morok_eyes.json, RenderType.eyes)
         e.registerEntityRenderer(ModEntities.MOROK.get(), MorokRenderer::new);
-        // v0.40.0: жители Элисара — житель, страж и лучник (референсы 05–07).
-        e.registerEntityRenderer(ModEntities.ELISAR_VILLAGER.get(), c -> new ElisarFolkRenderer<>(c, "elisar_villager"));
-        e.registerEntityRenderer(ModEntities.ELISAR_GUARD.get(), c -> new ElisarFolkRenderer<>(c, "elisar_guard"));
-        e.registerEntityRenderer(ModEntities.ELISAR_ARCHER.get(), c -> new ElisarFolkRenderer<>(c, "elisar_archer"));
+        // v0.48.0: жители Элисара — житель, страж и лучник (референсы 05–07, собственные 128x128 модели и вооружение).
+        e.registerEntityRenderer(ModEntities.ELISAR_VILLAGER.get(), ElisarFolkRenderers.Villager::new);
+        e.registerEntityRenderer(ModEntities.ELISAR_GUARD.get(), ElisarFolkRenderers.Guard::new);
+        e.registerEntityRenderer(ModEntities.ELISAR_ARCHER.get(), ElisarFolkRenderers.Archer::new);
         // v0.47.0: 15 существ биомной фауны Элисара (Blockbench MCP + многокостные анимации)
         ElisarFaunaRenderers.registerRenderers(e);
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SubscribeEvent
+    public static void addLayers(EntityRenderersEvent.AddLayers e) {
+        for (String skin : e.getSkins()) {
+            var pr = e.getSkin(skin);
+            if (pr instanceof net.minecraft.client.renderer.entity.LivingEntityRenderer<?, ?> lr
+                    && lr.getModel() instanceof net.minecraft.client.model.HumanoidModel<?>) {
+                ((net.minecraft.client.renderer.entity.LivingEntityRenderer) lr)
+                        .addLayer(new RiftcrystalArmorGlowLayer((net.minecraft.client.renderer.entity.RenderLayerParent) lr));
+            }
+        }
+        var standRenderer = e.getRenderer(net.minecraft.world.entity.EntityType.ARMOR_STAND);
+        if (standRenderer != null) {
+            ((net.minecraft.client.renderer.entity.LivingEntityRenderer) standRenderer)
+                    .addLayer(new RiftcrystalArmorGlowLayer((net.minecraft.client.renderer.entity.RenderLayerParent) standRenderer));
+        }
     }
 
     @SubscribeEvent
     public static void setup(net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent e) {
         e.enqueueWork(ComboClient::init);
         e.enqueueWork(() -> {
+            // v0.48.0: ItemProperties для натяжения рифт-лука и состояния блокирования щитов
+            var bow = ru.aiforge.riftworld.registry.ModItems.ELISAR_BOW.get();
+            net.minecraft.client.renderer.item.ItemProperties.register(bow,
+                    new net.minecraft.resources.ResourceLocation("pull"),
+                    (stack, lvl, ent, seed) -> {
+                        if (ent == null) return 0.0F;
+                        return ent.getUseItem() != stack ? 0.0F
+                                : (float) (stack.getUseDuration() - ent.getUseItemRemainingTicks()) / 20.0F;
+                    });
+            net.minecraft.client.renderer.item.ItemProperties.register(bow,
+                    new net.minecraft.resources.ResourceLocation("pulling"),
+                    (stack, lvl, ent, seed) -> ent != null && ent.isUsingItem() && ent.getUseItem() == stack ? 1.0F : 0.0F);
+            for (var shieldRo : java.util.List.of(
+                    ru.aiforge.riftworld.registry.ModItems.ELISAR_SHIELD,
+                    ru.aiforge.riftworld.registry.ModItems.ELISAR_GUARD_SHIELD)) {
+                net.minecraft.client.renderer.item.ItemProperties.register(shieldRo.get(),
+                        new net.minecraft.resources.ResourceLocation("blocking"),
+                        (stack, lvl, ent, seed) -> ent != null && ent.isUsingItem() && ent.getUseItem() == stack ? 1.0F : 0.0F);
+            }
             net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(ru.aiforge.riftworld.registry.ModFluids.SOURCE.get(), net.minecraft.client.renderer.RenderType.translucent());
             net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(ru.aiforge.riftworld.registry.ModFluids.FLOWING.get(), net.minecraft.client.renderer.RenderType.translucent());
             net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(ru.aiforge.riftworld.registry.ModFluids.GARDEN_SOURCE.get(), net.minecraft.client.renderer.RenderType.translucent());
@@ -183,6 +240,9 @@ public final class ClientHooks {
 
     @SubscribeEvent
     public static void reload(RegisterClientReloadListenersEvent e) {
-        e.registerReloadListener((PreparableReloadListener) (ResourceManagerReloadListener) rm -> GlbAssets.clear());
+        e.registerReloadListener((PreparableReloadListener) (ResourceManagerReloadListener) rm -> {
+            GlbAssets.clear();
+            ru.aiforge.riftworld.client.model.ElisarArmorModels.clearCache();
+        });
     }
 }

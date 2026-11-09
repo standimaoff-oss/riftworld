@@ -1125,6 +1125,11 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                 BlockState s = y == top
                                         ? (hash(x, z, 887) < 0.30 ? mossRock : rock)
                                         : (hash(x, y, z) < 0.10 ? cracked : (hash(x, y, z) < 0.14 ? mossRock : rock));
+                                // Гнёзда рифт-кристалла (строго биом 4 из 4 — Туманная цитадель, глубоко в основании столбов).
+                                if (y < top - 2 && y <= floor + 10
+                                        && vnoise(x * 0.44, z * 0.44 + y * 0.06, 941) > 0.960 && hash(x, y, z) < 0.14) {
+                                    s = riftcrystalOre;
+                                }
                                 chunk.setBlockState(mp.set(x, y, z), s, false);
                             }
                         }
@@ -1309,9 +1314,9 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                                     s = ducatOre;
                                 }
                             }
-                            // Гнёзда рифт-кристалла (место 3 из 3): глубоко в коренном камне диких островов.
-                            if (s.is(stone.getBlock()) && y <= c.bottom + 8
-                                    && vnoise(x * 0.38, z * 0.38 + y * 0.03, 907) > 0.972 && hash(x, y, z) < 0.10) {
+                            // Гнёзда рифт-кристалла (строго биом 3 из 4 — ТОЛЬКО Мороковая Падь, никогда в обычных островах/городе!).
+                            if (morok && s.is(stone.getBlock()) && y <= c.bottom + 9
+                                    && vnoise(x * 0.38, z * 0.38 + y * 0.03, 907) > 0.962 && hash(x, y, z) < 0.14) {
                                 s = riftcrystalOre;
                             }
                         }
@@ -3222,6 +3227,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
 
     @Override
     public void spawnOriginalMobs(WorldGenRegion region) {
+        ElisarSettlementKeeper.populateChunkRegion(region);
     }
 
     @Override
