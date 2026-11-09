@@ -166,14 +166,14 @@ rq execute in riftworld:elisar positioned 760 118 760 run riftstruct v40_gear >/
 sleep 8
 rq execute in riftworld:elisar run tp TestPlayer 755.25 118.0 764.2 facing 755.25 119.0 760.5 >/dev/null
 sleep 10
-capture_underwater frame-v048-armors-closeup
+capture_underwater frame-v049-armors-closeup
 
 # Pitch-dark rift-slate vault to verify full-bright emissive Riftcrystal armor glow at zero sky/block light
 rq execute in riftworld:elisar run time set midnight >/dev/null
 rq execute in riftworld:elisar run fill 750 117 758 761 123 765 riftworld:rift_slate hollow >/dev/null
 rq execute in riftworld:elisar run tp TestPlayer 757.3 118.0 763.3 facing 757.5 119.0 760.5 >/dev/null
 sleep 8
-capture_underwater frame-v048-riftcrystal-night-glow
+capture_underwater frame-v049-riftcrystal-night-glow
 
 # Restore open daylight showcase for tools & settlement folk closeups
 rq execute in riftworld:elisar run fill 750 118 758 761 123 765 minecraft:air >/dev/null
@@ -182,10 +182,10 @@ rq execute in riftworld:elisar positioned 760 118 760 run riftstruct v40_gear >/
 sleep 6
 rq execute in riftworld:elisar run tp TestPlayer 764.25 118.0 764.2 facing 764.25 119.0 760.5 >/dev/null
 sleep 8
-capture_underwater frame-v048-tools-closeup
+capture_underwater frame-v049-tools-closeup
 rq execute in riftworld:elisar run tp TestPlayer 760.5 118.0 774.2 facing 760.5 119.0 767.6 >/dev/null
 sleep 10
-capture_underwater frame-v048-elisar-folk
+capture_underwater frame-v049-elisar-folk
 
 echo "captured $SHOT in-game frames"
 [ "$SHOT" -ge 6 ] || fail "Only $SHOT frames captured"
