@@ -17,13 +17,13 @@ public final class MajaRulesTest {
             check(DeepOcean.weight(region.x() + region.radius() - 90, region.z()) < 1.0, "smooth edge range");
             check(!region.equals(DeepOcean.region(cx + 1, cz)), "different neighbouring cells");
         }
-        for (int count = 0; count < 5; count++) {
-            check(MajaSafetyPolicy.mayDevour(true, count, false, true), "0..4 allowed");
-            check(!MajaSafetyPolicy.mayDevour(true, count, true, true), "nearby player blocks feeding");
-            check(!MajaSafetyPolicy.mayDevour(false, count, false, true), "unknown/unloaded chunks block feeding");
-            check(!MajaSafetyPolicy.mayDevour(true, count, false, false), "mobGriefing disabled");
-        }
+        // v0.49.0: a SINGLE recorded player placement aborts the feeding (fail-closed).
+        check(MajaSafetyPolicy.mayDevour(true, 0, false, true), "no placements allowed");
+        check(!MajaSafetyPolicy.mayDevour(true, 1, false, true), "one player block blocks feeding");
         check(!MajaSafetyPolicy.mayDevour(true, 5, false, true), "five player blocks block feeding");
+        check(!MajaSafetyPolicy.mayDevour(true, 0, true, true), "nearby player blocks feeding");
+        check(!MajaSafetyPolicy.mayDevour(false, 0, false, true), "unknown/unloaded chunks block feeding");
+        check(!MajaSafetyPolicy.mayDevour(true, 0, false, false), "mobGriefing disabled");
         check(!MajaSafetyPolicy.mayDevour(true, -1, false, true), "invalid count fails closed");
         System.out.println("OK: ocean regions, negative coordinates, coast blending, and island safety gates");
     }

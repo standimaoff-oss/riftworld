@@ -20,8 +20,9 @@ trap on_error EXIT
 
 CONFIG=ci/server/config/riftworld-maja.toml
 [ -f "$CONFIG" ] || fail "Maja config missing"
-grep -Eq 'allowIslandEating[[:space:]]*=[[:space:]]*false' "$CONFIG" || fail "Island eating must be disabled by default"
-log "Island eating is disabled by default."
+# v0.49.0: island eating is ENABLED by default (the titan is a rare, always-on event).
+grep -Eq 'allowIslandEating[[:space:]]*=[[:space:]]*true' "$CONFIG" || fail "Island eating must be enabled by default in v0.49.0"
+log "Island eating is enabled by default (v0.49.0 rare-event titan)."
 log "Force-loading a 253-chunk rectangle for the 322-block body..."
 rq forceload add -80 -176 80 176 | tee -a "$LOG"
 rq summon riftworld:el_gran_maja 0 200 0 '{NoAI:1b,PersistenceRequired:1b}' | tee -a "$LOG"

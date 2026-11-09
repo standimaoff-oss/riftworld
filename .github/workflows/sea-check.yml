@@ -201,7 +201,7 @@ jobs:
     # прав на contents git push из джобы отказывается с 403.
     permissions:
       contents: write
-    if: github.ref == 'refs/heads/arena/361da66e-riftworld' || github.ref == 'refs/heads/arena/b4294aa1-riftworld'
+    if: github.ref == 'refs/heads/arena/361da66e-riftworld' || github.ref == 'refs/heads/arena/b4294aa1-riftworld' || github.ref == 'refs/heads/arena/037a840e-riftworld'
     runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:
@@ -214,10 +214,12 @@ jobs:
         with:
           name: riftworld-build
           path: build-artifact
-      - name: Enable experimental feeding only on a disposable server
+      - name: Run the always-enabled feeding titan on a disposable server
         run: |
           mkdir -p mod/build/libs ci/server/config
           find build-artifact -name '*.jar' -exec cp {} mod/build/libs/ \;
+          # v0.49.0: island eating is enabled by default; the probe still pins it
+          # explicitly so the CI result does not depend on the generated default.
           printf '[maja]\nallowIslandEating = true\n' > ci/server/config/riftworld-maja.toml
           KEEP=1 NORMAL_PROBE=0 bash tools/ci/server_check.sh
       - name: Test a real medium island and mobGriefing gate

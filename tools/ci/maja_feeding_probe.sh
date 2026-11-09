@@ -69,6 +69,9 @@ for _ in $(seq 1 90); do
   READY=$(rq execute in riftworld:elisar run data get entity "$SEL" majaReady 2>&1 || true)
   log "$STATE; $COUNT; $READY"
   [[ "$STATE" == *'finished'* ]] && break
+  # v0.49.0: 'breaching' is the transient water-breach surge between the last bite
+  # and the end of the meal — it is NOT a cancellation.
+  [[ "$STATE" == *'breaching'* ]] && { log 'breach surge observed'; sleep 4; continue; }
   [[ "$STATE" == *'scan_blocked'* || "$STATE" == *'changed_or_denied'* || "$STATE" == *'unsafe'* ]] && fail 'feeding cancelled'
   sleep 4
 done
@@ -79,3 +82,24 @@ m=re.search(r':\s*(\d+)\s*$',sys.argv[1])
 assert m and int(m.group(1)) > 1000, sys.argv[1]
 PY
 log 'OK: full medium island job completed with mobGriefing enabled; disabled gate preserved blocks.'
+
+# v0.49.0: a SINGLE recorded player placement must abort the meal (fail-closed gate).
+log 'Testing the player-placement gate (one placed block must stop the titan)...'
+rq execute in riftworld:elisar run kill "$SEL" >/dev/null 2>&1 || true
+sleep 3
+rq execute in riftworld:elisar run summon riftworld:el_gran_maja "$AX" "$AY" "$AZ" '{PersistenceRequired:1b,majaMotionTick:500}' | tee -a "$LOG"
+sleep 10
+# One single block placed by the operator on the island must be journalled and block the meal.
+rq execute in riftworld:elisar run setblock "$IX" "$BASE" "$IZ" minecraft:stone | tee -a "$LOG"
+PLACED=0
+for _ in $(seq 1 60); do
+  STATE=$(rq execute in riftworld:elisar run data get entity "$SEL" majaFeedStatus 2>&1 || true)
+  COUNT=$(rq execute in riftworld:elisar run data get entity "$SEL" majaBlocksEaten 2>&1 || true)
+  log "placement gate: $STATE; $COUNT"
+  if [[ "$STATE" == *'unsafe'* || "$STATE" == *'empty'* || "$STATE" == *'changed_or_denied'* || "$STATE" == *'scan_blocked'* ]]; then
+    PLACED=1; break
+  fi
+  sleep 4
+done
+[[ "$PLACED" = 1 ]] || fail 'the titan kept eating after a single player placement'
+log 'OK: a single player placement aborted the meal.'

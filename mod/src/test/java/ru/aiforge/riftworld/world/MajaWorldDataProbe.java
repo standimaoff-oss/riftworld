@@ -12,7 +12,7 @@ public final class MajaWorldDataProbe {
         if (!condition) throw new AssertionError(what);
     }
     public static void main(String[] args) {
-        check(!MajaConfig.islandEatingEnabled(), "unloaded or default config must fail closed");
+        check(MajaConfig.islandEatingEnabled(), "island eating is enabled by default in v0.49.0");
         MajaWorldData data = new MajaWorldData();
         data.markNewChunk(-1, -1, 0);
         data.markNewChunk(0, 0, 0);

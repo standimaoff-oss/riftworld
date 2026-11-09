@@ -117,6 +117,10 @@ public final class ElGranMajaEntity extends Mob {
             setDeltaMovement(Vec3.ZERO);
             // Chewing stays inside the validated jaw envelope and is interpolated on clients.
             entityData.set(JAW, 0.70F + 0.28F * Mth.sin(tickCount * 0.16F));
+            // v0.49.0: while it feeds, the titan breaches upward out of the ocean with a
+            // wide jaw chomp. The horizontal position and yaw are held; only the vertical
+            // pose moves, and only through collision-validated poses.
+            devourer.breach(server, this);
             if (!MajaCollision.clear(server, position(), getYRot())) entityData.set(READY, false);
             return;
         }

@@ -11,11 +11,21 @@ import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import ru.aiforge.riftworld.RiftWorld;
 
 /**
- * v0.48.0: 3D multi-layered armor item for Aurite (medium) and Riftcrystal (strong, emissive).
- * Routes client armor rendering to {@code ElisarArmorModels} (128x128 non-overlapping Box-UV)
- * while staying 100% dedicated-server classload safe.
+ * v0.49.0: 3D multi-layered armor item for Aurite (medium) and Riftcrystal (strong, emissive).
  *
- * Note: {@link #initializeClient} runs inside {@code super(material, type, props)} before subclass
+ * <p>The worn armor is 2x HD: {@code ElisarArmorModels} bakes a 256x256 non-overlapping
+ * Box-UV atlas with a nested {@code "hd"} child bone scaled to 0.5 units per texel, so the
+ * plates keep the reference silhouette instead of the v0.48 blockiness.
+ *
+ * <p>The DROPPED / inventory / GUI representation is a TRUE volumetric 3D item model
+ * (a standalone {@code models/item/<id>.json} element model with a 32x32 sprite and a
+ * 64x64 palette atlas) — not a flat {@code item/generated} sprite — so the helmet,
+ * cuirass, greaves and sabatons read as real objects in the hotbar and on the ground.
+ *
+ * <p>Rendering routes through {@code ClientHooks.armorExt()} while staying 100%
+ * dedicated-server classload safe.
+ *
+ * <p>Note: {@link #initializeClient} runs inside {@code super(material, type, props)} before subclass
  * fields are initialized, so {@link #isRiftcrystal()} derives directly from {@link #getMaterial()}
  * and {@code ClientHooks.armorExt()} inspects the live {@link ItemStack} at render time.
  */
