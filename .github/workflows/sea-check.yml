@@ -123,6 +123,11 @@ jobs:
           - \`riftworld-dt-$VER.jar\` — аддон к Dynamic Trees, только вместе с DT.
           - \`SHA256SUMS.txt\` — контрольные суммы.
 
+          ### Концепт-референсы (AI)
+          - \`01_elisar_sky_skiff_airship.png\` — небесный скифф Элисара над облачным морем (вариант 2 из 2).
+          - \`02_riftcrystal_colossus_guardian.png\` — Рифткристальный колосс-страж с алебардой (вариант 1 из 2).
+          - \`03_astral_forge_sanctum.png\` — кузня Астральной Кузни под звёздным куполом (вариант 2 из 2).
+
           Подробности версии — в [README](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/README.md).
           Сборка и серверные пробы: [run ${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}).
           EOF
@@ -131,6 +136,12 @@ jobs:
             gh release edit "$TAG" --notes-file "$NOTES"
           else
             gh release create "$TAG" out/*.jar out/SHA256SUMS.txt --title "$TAG" --notes-file "$NOTES" --target "${{ github.sha }}"
+          fi
+          # v0.49.0: the three selected AI concept sheets are part of the release
+          # deliverables — ship them next to the jars.
+          if [ -d reports/concept_refs_v049 ]; then
+            gh release upload "$TAG" reports/concept_refs_v049/*.png --clobber || \
+              echo "::warning::could not upload the concept reference sheets"
           fi
 
   server-smoke:
