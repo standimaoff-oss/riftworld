@@ -152,7 +152,7 @@ jobs:
           name: riftworld-build
           path: build-artifact
       - uses: gradle/actions/setup-gradle@v4
-        if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/arena/361da66e-riftworld' || github.ref == 'refs/heads/arena/b4294aa1-riftworld'
+        if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/arena/361da66e-riftworld' || github.ref == 'refs/heads/arena/b4294aa1-riftworld' || github.ref == 'refs/heads/arena/037a840e-riftworld'
       - name: Boot a real Forge server and probe it
         shell: bash
         env:
