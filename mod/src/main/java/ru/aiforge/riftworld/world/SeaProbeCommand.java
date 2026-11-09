@@ -4339,7 +4339,7 @@ public final class SeaProbeCommand {
                 return 0;
             }
             PatrolRoute.Waypoint wp = route.nearest(px, ground, pz);
-            Direction face = Direction.fromYRot(wp.yaw()).getOpposite();
+            net.minecraft.core.Direction face = net.minecraft.core.Direction.fromYRot(wp.yaw()).getOpposite();
             ElisarJail.Site site = ElisarJail.build(level, wp.x(), wp.z(), face);
             // Считаем, что реально стоит на месте.
             int bars = 0;
