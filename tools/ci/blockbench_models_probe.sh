@@ -160,24 +160,22 @@ capture_cam "$LIO_INFO" "cam_jaws"   "04_ingame_liopleurodon_jaws.png"   12
 capture_cam "$LIO_INFO" "cam_dorsal" "05_ingame_liopleurodon_dorsal.png" 12
 
 # ==============================================================================
-# 2) PEGASUS IN ELISAR GARDEN TERRACE & SKY (Wild, Royal Saddled, Flight)
+# 2) PAPER DRAGON OVER ELISAR (v0.49.0 — the Pegasus was removed from the mod)
 # ==============================================================================
-echo "== Staging Blockbench Pegasus in riftworld:elisar sunlit meadow & sky =="
+echo "== Staging the paper dragon over riftworld:elisar sunlit meadow & sky =="
 rq effect clear TestPlayer >/dev/null
 rq execute in riftworld:elisar run time set 4500 >/dev/null
 rq execute in riftworld:elisar run tp TestPlayer 520 112 520 40 0 >/dev/null
 sleep 14
-PEG_INFO=$(rq execute in riftworld:elisar positioned 520 108 520 run riftstruct bb_pegasus_showcase)
+PEG_INFO=$(rq execute in riftworld:elisar positioned 520 108 520 run riftstruct bb_paper_dragon_showcase)
 echo "  $PEG_INFO"
-[[ "$PEG_INFO" == *"model_boxes=179"* ]] || fail "Expected Pegasus model_boxes=179, got: $PEG_INFO"
-[[ "$PEG_INFO" == *"bones=37"* ]] || fail "Expected Pegasus bones=37, got: $PEG_INFO"
-[[ "$PEG_INFO" == *"atlas=512"* ]] || fail "Expected Pegasus atlas=512, got: $PEG_INFO"
+[[ "$PEG_INFO" == *"spawned=1"* ]] || fail "Expected the paper dragon to spawn, got: $PEG_INFO"
 
-capture_cam "$PEG_INFO" "cam_wild"   "06_ingame_pegasus_wild_folded.png"    18
-capture_cam "$PEG_INFO" "cam_saddle" "07_ingame_pegasus_saddled_folded.png" 12
-capture_cam "$PEG_INFO" "cam_flight" "08_ingame_pegasus_flight_flap.png"    12
-capture_cam "$PEG_INFO" "cam_glide"  "09_ingame_pegasus_banking_glide.png"  12
-capture_cam "$PEG_INFO" "cam_hover"  "10_ingame_pegasus_hover.png"          12
+capture_cam "$PEG_INFO" "cam_wild"   "06_ingame_paper_dragon_far.png"        18
+capture_cam "$PEG_INFO" "cam_saddle" "07_ingame_paper_dragon_close.png"     12
+capture_cam "$PEG_INFO" "cam_flight" "08_ingame_paper_dragon_motion.png"    12
+capture_cam "$PEG_INFO" "cam_glide"  "09_ingame_paper_dragon_side.png"      12
+capture_cam "$PEG_INFO" "cam_hover"  "10_ingame_paper_dragon_hover.png"     12
 
 # ==============================================================================
 # 3) ELISAR GEAR & FOLK (v0.40.0): armour stands + villager / guard / archer
@@ -205,13 +203,12 @@ capture_cam "$GEAR_INFO" "cam_close" "13_ingame_gear_closeup.png"  22
 # 4) Verify client logs & renderer health
 # ==============================================================================
 grep -F '[riftworld] geo' "$OUT/bb-client.log" > "$SHOT_DIR/geo_loaded.txt" || true
-grep -Ei 'Error while rendering entity|Exception.*(Liopleurodon|Pegasus)|Failed to load.*(liopleurodon|pegasus)' "$OUT/bb-client.log" > "$SHOT_DIR/render_diagnostics.txt" || true
+grep -Ei 'Error while rendering entity|Exception.*(Liopleurodon)|Failed to load.*(liopleurodon)' "$OUT/bb-client.log" > "$SHOT_DIR/render_diagnostics.txt" || true
 
 grep -Fq '[riftworld] geo liopleurodon:' "$OUT/bb-client.log" || fail "Liopleurodon geo log missing"
-grep -Fq '[riftworld] geo pegasus:' "$OUT/bb-client.log" || fail "Pegasus geo log missing"
 
-if grep -Ei 'Error while rendering entity.*(liopleurodon|pegasus)|Exception.*(LiopleurodonRenderer|PegasusRenderer|LiopleurodonBlockbench|PegasusBlockbench)|Failed to load texture.*(liopleurodon|pegasus)' "$OUT/bb-client.log"; then
-  grep -Ei 'Error while rendering entity.*(liopleurodon|pegasus)|Exception.*(Liopleurodon|Pegasus)|Failed to load.*(liopleurodon|pegasus)' "$OUT/bb-client.log" | head -5 | while IFS= read -r l; do
+if grep -Ei 'Error while rendering entity.*liopleurodon|Exception.*(LiopleurodonRenderer|LiopleurodonBlockbench)|Failed to load texture.*liopleurodon' "$OUT/bb-client.log"; then
+  grep -Ei 'Error while rendering entity.*liopleurodon|Exception.*(Liopleurodon|Pegasus)|Failed to load.*liopleurodon' "$OUT/bb-client.log" | head -5 | while IFS= read -r l; do
     echo "::error title=Model render error::${l:0:450}"
   done
   fail "Client log contains Liopleurodon/Pegasus entity rendering errors"

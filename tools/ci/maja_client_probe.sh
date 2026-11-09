@@ -138,39 +138,36 @@ import -window root "$OUT/fauna-liopleurodon-motion.png"
 rq tp TestPlayer -12 201 0 facing 0 200 0 >/dev/null
 sleep 4
 import -window root "$OUT/fauna-liopleurodon-side.png"
-rq summon riftworld:pegasus 32 200 0 '{NoAI:1b,NoGravity:1b,PersistenceRequired:1b}' >/dev/null
+# v0.49.0: the Pegasus was removed from the mod, so the visual block now
+# photographs the paper dragon instead (the same far-flight rig).
+rq summon riftworld:paper_dragon 32 200 0 '{NoAI:1b,NoGravity:1b,PersistenceRequired:1b}' >/dev/null
 rq tp TestPlayer 27 203 6 facing 32 202 0 >/dev/null
 sleep 15
-grep -Fq '[riftworld] geo pegasus:' "$OUT/maja-client.log" || fail 'Pegasus model was not loaded by the real client'
-import -window root "$OUT/fauna-pegasus-unsaddled.png"
+grep -Fq '[riftworld] geo paper_dragon:' "$OUT/maja-client.log" || fail 'Paper dragon model was not loaded by the real client'
+import -window root "$OUT/fauna-paper-dragon.png"
 sleep 1
-import -window root "$OUT/fauna-pegasus-motion.png"
+import -window root "$OUT/fauna-paper-dragon-motion.png"
 rq tp TestPlayer 20 202 0 facing 32 202 0 >/dev/null
 sleep 4
-import -window root "$OUT/fauna-pegasus-side.png"
-rq tp TestPlayer 27 203 6 facing 32 202 0 >/dev/null
-rq data merge entity '@e[type=riftworld:pegasus,limit=1]' '{Tamed:1b,Saddle:1b}' >/dev/null
-rq data get entity '@e[type=riftworld:pegasus,limit=1]' Saddle | grep -q '1b' || fail 'Pegasus saddle was not synchronized'
-sleep 5
-import -window root "$OUT/fauna-pegasus-saddled.png"
+import -window root "$OUT/fauna-paper-dragon-side.png"
 # Photograph a trophy in hand and the creative inventory. Pixel-level visual
 # review is still required; the server probe separately verifies actual drops.
 rq fill 44 199 7 50 199 13 minecraft:stone >/dev/null
 rq gamemode creative TestPlayer >/dev/null
 rq tp TestPlayer 47 200 10 facing 32 202 0 >/dev/null
-for item in wendigo_antler pegasus_feather liopleurodon_tooth; do rq give TestPlayer "riftworld:$item" 1 >/dev/null; done
-rq item replace entity TestPlayer weapon.mainhand with riftworld:wendigo_antler >/dev/null
+for item in sea_scale abyssal_ink_sac liopleurodon_tooth; do rq give TestPlayer "riftworld:$item" 1 >/dev/null; done
+rq item replace entity TestPlayer weapon.mainhand with riftworld:sea_scale >/dev/null
 sleep 5
 import -window root "$OUT/fauna-trophy-held.png"
 xdotool key --window "$WID" e
 sleep 3
 import -window root "$OUT/fauna-trophy-inventory.png"
 xdotool key --window "$WID" e
-if grep -Ei 'не удалось загрузить geo-модель (pegasus|liopleurodon)|Error while rendering entity|Unable to load.*(pegasus|liopleurodon)|Failed to load.*(pegasus|liopleurodon)' "$OUT/maja-client.log"; then
+if grep -Ei 'не удалось загрузить geo-модель (paper_dragon|liopleurodon)|Error while rendering entity|Unable to load.*(paper_dragon|liopleurodon)|Failed to load.*(paper_dragon|liopleurodon)' "$OUT/maja-client.log"; then
   fail 'Client log reports a rebuilt fauna renderer/resource failure'
 fi
 rq list | grep -q TestPlayer || fail 'Client disconnected during the fauna visual test'
-echo "OK: real client loaded both fauna rigs and photographed unsaddled/saddled Pegasus plus trophies (screenshots require review)."
+echo "OK: real client loaded both fauna rigs and photographed the paper dragon plus trophies (screenshots require review)."
 
 # A real survival player in Elisar water must take damage from the predator.
 # These are disposable coordinates; never run this script in a player world.

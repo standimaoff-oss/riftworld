@@ -318,15 +318,19 @@ public class SilverSeaSerpentModel extends FaunaBaseModel<SilverSeaSerpentEntity
 		// Travelling pelagic S-wave from neck through tail fluke
 		float slapBoost = slapping ? Mth.sin(ageInTicks * 0.95F) * 34.0F : 0.0F;
 		addBbDeg(this.serpent_root, Mth.sin(wave * 0.5F) * 2.5F, Mth.sin(wave) * 6.0F * effort, Mth.cos(wave * 0.5F) * 3.5F);
-		addBbDeg(this.neck, Mth.sin(wave + 0.5F) * 3.0F - (biting ? 10.0F : 0.0F),
-				-Mth.sin(wave - 0.4F) * 7.5F * effort + Mth.clamp(netHeadYaw, -30.0F, 30.0F) * 0.35F, 0.0F);
+		addBbDeg(this.neck, Mth.sin(wave + 0.5F) * 4.5F * effort - (biting ? 10.0F : 0.0F),
+				-Mth.sin(wave - 0.4F) * 2.5F * effort + Mth.clamp(netHeadYaw, -30.0F, 30.0F) * 0.35F, 0.0F);
 		addBbDeg(this.head, -Mth.clamp(headPitch, -22.0F, 22.0F) * 0.45F - (biting ? 8.0F : 0.0F),
 				-Mth.sin(wave + 0.3F) * 5.0F + Mth.clamp(netHeadYaw, -30.0F, 30.0F) * 0.4F, 0.0F);
 		addBbDeg(this.jaw, biting ? (28.0F + Mth.sin(ageInTicks * 0.8F) * 6.0F) : (2.5F + Mth.sin(ageInTicks * 0.07F) * 1.8F), 0.0F, 0.0F);
 
-		addBbDeg(this.body_arch, Mth.sin(wave - 0.9F) * 3.0F, Mth.sin(wave - 0.95F) * 12.0F * effort + slapBoost * 0.4F, 0.0F);
-		addBbDeg(this.tail_dip, Mth.sin(wave - 1.8F) * 4.0F, Mth.sin(wave - 1.90F) * 18.0F * effort + slapBoost * 0.75F, 0.0F);
-		addBbDeg(this.tail_tip, Mth.sin(wave - 2.6F) * 5.0F, Mth.sin(wave - 2.85F) * 25.0F * effort + slapBoost, 0.0F);
+		// v0.49.0: хвост двигается НАПРЯМУЮ (вверх-вниз по вертикали), а не
+		// виляет вбок. Боковое рыскание читалось как «змея едет задом вперёд».
+		// Теперь изгиб идёт по вертикали: корпус кивает, а хвост описывает
+		// дугу вверх-вниз, как у настоящей морской змеи.
+		addBbDeg(this.body_arch, Mth.sin(wave - 0.9F) * 7.0F * effort, Mth.sin(wave - 0.95F) * 3.5F * effort + slapBoost * 0.25F, 0.0F);
+		addBbDeg(this.tail_dip, Mth.sin(wave - 1.55F) * 9.0F * effort + slapBoost * 0.5F, Mth.sin(wave - 1.80F) * 4.0F * effort, 0.0F);
+		addBbDeg(this.tail_tip, Mth.sin(wave - 2.15F) * 12.0F * effort + slapBoost, Mth.sin(wave - 2.45F) * 5.0F * effort, 0.0F);
 
 		// 4-flipper hydrofoil rowing: fore-flippers lead, hind-flippers follow with phase lag
 		float foreLift = Mth.sin(wave) * 24.0F * effort;

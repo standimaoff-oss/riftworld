@@ -276,7 +276,6 @@ public final class ModItems {
     public static final RegistryObject<Item> CRYSTAL_GECKO_EGG = ITEMS.register("crystal_gecko_spawn_egg",
             () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.CRYSTAL_GECKO, 0x7BE3F2, 0xE8FBFF, new Item.Properties()));
     public static final RegistryObject<Item> FACETED_OWL_EGG = airOrGroundEgg("faceted_owl_spawn_egg", ModEntities.FACETED_OWL, 0xDCE6F2, 0x52D8F6);
-    public static final RegistryObject<Item> BONE_RAVEN_EGG = airOrGroundEgg("bone_raven_spawn_egg", ModEntities.BONE_RAVEN, 0x1E2024, 0xDCD4C4);
     public static final RegistryObject<Item> CORAL_HERMIT_CRAB_EGG = ITEMS.register("coral_hermit_crab_spawn_egg",
             () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.CORAL_HERMIT_CRAB, 0xD95B43, 0xF2D3AC, new Item.Properties()));
     public static final RegistryObject<Item> REEF_SEAHORSE_EGG = airOrGroundEgg("reef_seahorse_spawn_egg", ModEntities.REEF_SEAHORSE, 0xF28C38, 0xFCE28B);
@@ -298,8 +297,6 @@ public final class ModItems {
             () -> new Item(new Item.Properties()));
     public static final RegistryObject<Item> PHANTOM_FANG = ITEMS.register("phantom_fang",
             () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)));
-    public static final RegistryObject<Item> BONE_PINION = ITEMS.register("bone_pinion",
-            () -> new Item(new Item.Properties()));
     public static final RegistryObject<Item> ABYSSAL_INK_SAC = ITEMS.register("abyssal_ink_sac",
             () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)));
 

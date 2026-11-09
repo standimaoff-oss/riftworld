@@ -1334,8 +1334,6 @@ biome_section() {
   # стоявшие в конце очереди, не снялись вообще. Модели мобов — то, что владелец просил переделать,
   # поэтому их кадры снимаем ДО тяжёлой генерации архипелага.
   echo "== v0.33–v0.36 (сразу): Пегас, Вендиго, биом Мороковая Падь =="
-  probe_and_shot_struct "v34_pegasus"                800 "147_v34_pegasus_winged_steed"            0 0 6
-  probe_and_shot_struct "v35_wendigo"                800 "148_v35_wendigo_antlered_horror"         0 0 6
   probe_and_shot_struct "v36_morok_biome"            800 "149_v36_morok_hollow_fog_forest"        0 0 6
 
   # ---------- Новый биом: Хрустальные разломы (riftworld:crystal_rifts, 02_crystal_sanctum.png) ----------
@@ -1505,7 +1503,6 @@ biome_section() {
   NAT_LEAVES=$(printf '%s' "$NAT" | sed -n 's/.* leaves=\([0-9]*\).*/\1/p' | tail -1)
   NAT_BRAM=$(printf '%s' "$NAT" | sed -n 's/.* brambles=\([0-9]*\).*/\1/p' | tail -1)
   NAT_FANG=$(printf '%s' "$NAT" | sed -n 's/.* fangs=\([0-9]*\).*/\1/p' | tail -1)
-  NAT_WEN=$(printf '%s' "$NAT" | sed -n 's/.* spawn_wendigo=\([0-9]*\).*/\1/p' | tail -1)
   NAT_BIOME=$(printf '%s' "$NAT" | sed -n 's/.* biome=\([a-z:_]*\).*/\1/p' | tail -1)
   if [ "${NAT_TREES:-0}" -ge 6 ] && [ "${NAT_LEAVES:-0}" -ge 120 ]; then
     log "  OK   лес Пади растёт САМ: деревьев ${NAT_TREES}, листвы ${NAT_LEAVES}, колючек ${NAT_BRAM:-0}, клыков ${NAT_FANG:-0}"
@@ -1521,11 +1518,6 @@ biome_section() {
     log "  OK   биом в точке пробы = riftworld:morok_hollow"
   else
     log "  FAIL биом в точке пробы = ${NAT_BIOME:-?} (ожидался riftworld:morok_hollow)"; FAILS=$((FAILS + 1))
-  fi
-  if [ "${NAT_WEN:-0}" -ge 1 ]; then
-    log "  OK   спавнеры биома живы: riftworld:wendigo weight=${NAT_WEN} (было "spawners": {})"
-  else
-    log "  FAIL спавнеры биома пусты: wendigo weight=${NAT_WEN:-0}"; FAILS=$((FAILS + 1))
   fi
 
   # ---------- v0.32.0: Лиоплевродон — модель, текстура, поведение в глубокой воде ----------

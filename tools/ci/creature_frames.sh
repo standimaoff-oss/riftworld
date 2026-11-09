@@ -99,13 +99,14 @@ shot() {
   echo "captured $name"
 }
 
-# ---------------------------------------------------------------- pegasus
+# ---------------------------------------------------------------- paper dragon
+# v0.49.0: Пегас удалён из мода, кадры перенесены на Бумажного дракона.
 rq fill 190 99 -24 226 99 24 minecraft:grass_block >/dev/null
-rq kill '@e[type=riftworld:pegasus]' >/dev/null 2>&1 || true
-rq summon riftworld:pegasus 208 100 0 '{NoAI:1b,PersistenceRequired:1b}' >/dev/null
-shot frame-pegasus-three-quarter 205.5 101.7 -3.6 208 101 0 10
-shot frame-pegasus-side 211.6 101.7 0 208 101 0 7
-shot frame-pegasus-head 208 102.3 -2.3 208 102.1 -0.6 7
+rq kill '@e[type=riftworld:paper_dragon]' >/dev/null 2>&1 || true
+rq summon riftworld:paper_dragon 208 104 0 '{NoAI:1b,PersistenceRequired:1b}' >/dev/null
+shot frame-paper-dragon-three-quarter 205.5 105.7 -3.6 208 105 0 10
+shot frame-paper-dragon-side 211.6 105.7 0 208 105 0 7
+shot frame-paper-dragon-head 208 106.3 -2.3 208 106.1 -0.6 7
 
 # ---------------------------------------------------------------- liopleurodon
 # locate может вернуть пустоту, пока чанки прогреваются — пробуем несколько раз

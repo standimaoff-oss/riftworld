@@ -3387,6 +3387,33 @@ public final class SeaProbeCommand {
             return 1;
         }
 
+        if (k.equals("bb_paper_dragon_showcase")) {
+            // v0.49.0: Пегас удалён из мода, поэтому витрина Blockbench-пробы
+            // теперь ставит Бумажного дракона — ту же воздушную дистанцию
+            // и тот же солнечный склон, чтобы кадры оставались сопоставимыми.
+            int dx = 520, dy = 108, dz = 520;
+            int spawned = 0;
+            if (level.hasChunk(dx >> 4, dz >> 4)) {
+                for (var old : level.getEntitiesOfClass(ru.aiforge.riftworld.entity.PaperDragonEntity.class,
+                        new net.minecraft.world.phys.AABB(new BlockPos(dx, dy, dz)).inflate(90.0))) {
+                    old.discard();
+                }
+                var dragon = ru.aiforge.riftworld.registry.ModEntities.PAPER_DRAGON.get().create(level);
+                if (dragon != null) {
+                    dragon.setPos(dx + 0.5D, dy + 18.0D, dz + 0.5D);
+                    dragon.setNoGravity(false);
+                    level.addFreshEntity(dragon);
+                    spawned = 1;
+                }
+            }
+            String line = "riftstruct kind=bb_paper_dragon_showcase at=" + dx + "," + dy + "," + dz
+                    + " model_boxes=0 bones=0 atlas=256 spawned=" + spawned + " blocks=0 sub_air=0"
+                    + " cam=" + (dx - 22) + "," + (dy + 8) + "," + (dz + 22)
+                    + ":" + dx + "," + (dy + 12) + "," + dz;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
         if (k.equals("spawn_eggs_audit")) {
             String[] eggIds = {
                     "blossom_stag_spawn_egg", "sky_dart_fish_spawn_egg",

@@ -7,7 +7,7 @@
 (каждая грань получает свой оттенок) и самопроверку.
 
 Используется генераторами `gen_v033_liopleurodon_model.py`, `gen_v034_pegasus_model.py`,
-`gen_v035_wendigo_model.py`.
+the generator scripts that used to live next to it.
 """
 import json
 import pathlib

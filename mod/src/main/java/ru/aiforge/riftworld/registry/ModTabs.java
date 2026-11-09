@@ -71,7 +71,6 @@ public final class ModTabs {
                 out.accept(ModItems.BASALT_SCUTE.get());
                 out.accept(ModItems.ASH_WING_DUST.get());
                 out.accept(ModItems.PHANTOM_FANG.get());
-                out.accept(ModItems.BONE_PINION.get());
                 out.accept(ModItems.ABYSSAL_INK_SAC.get());
 
                 // Все яйца призыва мобов мода (включая Бумажного дракона, 11 морских видов и 15 существ фауны v0.47.0!)
@@ -120,7 +119,6 @@ public final class ModTabs {
         out.accept(ModItems.PHANTOM_WOLF_EGG.get());
         out.accept(ModItems.CRYSTAL_GECKO_EGG.get());
         out.accept(ModItems.FACETED_OWL_EGG.get());
-        out.accept(ModItems.BONE_RAVEN_EGG.get());
         out.accept(ModItems.CORAL_HERMIT_CRAB_EGG.get());
         out.accept(ModItems.REEF_SEAHORSE_EGG.get());
         out.accept(ModItems.GHOST_SQUID_EGG.get());

@@ -180,7 +180,13 @@ public class SilverSeaSerpentEntity extends PathfinderMob {
             Vec3 vel = this.getDeltaMovement();
             if (vel.horizontalDistanceSqr() > 0.001D) {
                 float targetYaw = (float) (Mth.atan2(vel.z, vel.x) * (180.0D / Math.PI)) - 90.0F;
-                this.setYRot(Mth.rotLerp(0.14F, this.getYRot(), targetYaw));
+                // v0.49.0: поворот был резким (0.14 за тик = ~8°/тик), змея
+                // дёргалась при смене курса. Скорость поворота теперь падает
+                // с величиной ошибки курса: чем круче разворот, тем плавнее
+                // он проходится, и длинное тело не складывается пополам.
+                float yawError = Mth.wrapDegrees(targetYaw - this.getYRot());
+                float turnLerp = Mth.clamp(0.055F + Math.abs(yawError) * 0.00055F, 0.055F, 0.14F);
+                this.setYRot(Mth.rotLerp(turnLerp, this.getYRot(), targetYaw));
                 this.yBodyRot = this.getYRot();
                 float targetPitch = Mth.clamp((float) (-vel.y * 45.0D), -28.0F, 28.0F);
                 this.setXRot(Mth.lerp(0.18F, this.getXRot(), targetPitch));

@@ -30,6 +30,14 @@ public class AzureFrogModel extends FaunaBaseModel<AzureFrogEntity> {
 	private final ModelPart leg_back_l;
 	private final ModelPart leg_front_r;
 	private final ModelPart leg_back_r;
+	private final ModelPart fore_front_l;
+	private final ModelPart upper_front_l;
+	private final ModelPart fore_front_r;
+	private final ModelPart upper_front_r;
+	private final ModelPart calf_back_l;
+	private final ModelPart thigh_back_l;
+	private final ModelPart calf_back_r;
+	private final ModelPart thigh_back_r;
 
 	public AzureFrogModel(ModelPart root) {
 		this.root = root.getChild("root");
@@ -40,7 +48,19 @@ public class AzureFrogModel extends FaunaBaseModel<AzureFrogEntity> {
 		this.leg_back_l = this.root.getChild("leg_back_l");
 		this.leg_front_r = this.root.getChild("leg_front_r");
 		this.leg_back_r = this.root.getChild("leg_back_r");
-		captureRestPoses(this.root, this.body, this.collar, this.head, this.leg_front_l, this.leg_back_l, this.leg_front_r, this.leg_back_r);
+		// Sub-joints: a frog walks on its upper/fore leg joints, not by
+		// swinging the whole root-level leg box away from the body.
+		this.fore_front_l = this.leg_front_l.getChild("leg_front_l_fore_r1");
+		this.upper_front_l = this.leg_front_l.getChild("leg_front_l_upper_r1");
+		this.fore_front_r = this.leg_front_r.getChild("leg_front_r_fore_r1");
+		this.upper_front_r = this.leg_front_r.getChild("leg_front_r_upper_r1");
+		this.calf_back_l = this.leg_back_l.getChild("leg_back_l_calf_r1");
+		this.thigh_back_l = this.leg_back_l.getChild("leg_back_l_thigh_r1");
+		this.calf_back_r = this.leg_back_r.getChild("leg_back_r_calf_r1");
+		this.thigh_back_r = this.leg_back_r.getChild("leg_back_r_thigh_r1");
+		captureRestPoses(this.root, this.body, this.collar, this.head, this.leg_front_l, this.leg_back_l, this.leg_front_r, this.leg_back_r,
+				this.fore_front_l, this.upper_front_l, this.fore_front_r, this.upper_front_r,
+				this.calf_back_l, this.thigh_back_l, this.calf_back_r, this.thigh_back_r);
 	}
 
 	public static LayerDefinition createBodyLayer() {
@@ -202,20 +222,39 @@ public class AzureFrogModel extends FaunaBaseModel<AzureFrogEntity> {
 		this.collar.yScale *= (1.0F + 0.08F * throatPulse + 0.12F * tongue);
 
 		if (leaping) {
-			addBbDeg(this.body, -24.0F, 0.0F, 0.0F);
-			addBbDeg(this.leg_back_l, 52.0F, 0.0F, 0.0F);
-			addBbDeg(this.leg_back_r, 52.0F, 0.0F, 0.0F);
-			addBbDeg(this.leg_front_l, -34.0F, 0.0F, 0.0F);
-			addBbDeg(this.leg_front_r, -34.0F, 0.0F, 0.0F);
+			// В прыжке тело вытягивается вперёд, задние лапы поджимаются,
+			// передние вытягиваются — всё вокруг СВОИХ суставов, иначе ноги
+			// улетают от тела и лягушку почти не видно.
+			addBbDeg(this.body, -26.0F, 0.0F, 0.0F);
+			addBbDeg(this.thigh_back_l, 46.0F, 0.0F, 0.0F);
+			addBbDeg(this.thigh_back_r, 46.0F, 0.0F, 0.0F);
+			addBbDeg(this.calf_back_l, -58.0F, 0.0F, 0.0F);
+			addBbDeg(this.calf_back_r, -58.0F, 0.0F, 0.0F);
+			addBbDeg(this.upper_front_l, -30.0F, 0.0F, 0.0F);
+			addBbDeg(this.upper_front_r, -30.0F, 0.0F, 0.0F);
+			addBbDeg(this.fore_front_l, 26.0F, 0.0F, 0.0F);
+			addBbDeg(this.fore_front_r, 26.0F, 0.0F, 0.0F);
 		} else {
-			float hop = limbSwing * 0.9F;
+			// Ходьба: лягушка подпрыгивает на задних лапах и переносит вес
+			// на передние. Амплитуда заметная, чтобы шаг читался издалека.
+			float hop = limbSwing * 1.6F;
 			float bounce = Math.abs(Mth.sin(hop)) * move;
-			addBbPos(this.body, 0.0F, bounce * 2.2F, 0.0F);
-			addBbDeg(this.body, -bounce * 12.0F, 0.0F, 0.0F);
-			addBbDeg(this.leg_back_l, bounce * 34.0F, 0.0F, 0.0F);
-			addBbDeg(this.leg_back_r, bounce * 34.0F, 0.0F, 0.0F);
-			addBbDeg(this.leg_front_l, -bounce * 22.0F, 0.0F, 0.0F);
-			addBbDeg(this.leg_front_r, -bounce * 22.0F, 0.0F, 0.0F);
+			float swing = Math.sin(hop) * move;
+			// Тело подскакивает и наклоняется вперёд — без этого лягушка
+			// выглядит неподвижной.
+			addBbPos(this.body, 0.0F, bounce * 3.4F, 0.0F);
+			addBbDeg(this.body, -bounce * 16.0F, 0.0F, 0.0F);
+			addBbPos(this.body, 0.0F, 0.0F, swing * 1.2F);
+			// Задние лапы: сильное сгибание при отталкивании.
+			addBbDeg(this.thigh_back_l, bounce * 40.0F, 0.0F, 0.0F);
+			addBbDeg(this.thigh_back_r, bounce * 40.0F, 0.0F, 0.0F);
+			addBbDeg(this.calf_back_l, -bounce * 46.0F, 0.0F, 0.0F);
+			addBbDeg(this.calf_back_r, -bounce * 46.0F, 0.0F, 0.0F);
+			// Передние лапы принимают вес: сгибаются по ходу шага.
+			addBbDeg(this.upper_front_l, -bounce * 26.0F + swing * 6.0F, 0.0F, 0.0F);
+			addBbDeg(this.upper_front_r, -bounce * 26.0F - swing * 6.0F, 0.0F, 0.0F);
+			addBbDeg(this.fore_front_l, bounce * 30.0F, 0.0F, 0.0F);
+			addBbDeg(this.fore_front_r, bounce * 30.0F, 0.0F, 0.0F);
 		}
 
 		addBbDeg(this.head, -Mth.clamp(headPitch, -20.0F, 20.0F) * 0.45F - tongue * 18.0F,

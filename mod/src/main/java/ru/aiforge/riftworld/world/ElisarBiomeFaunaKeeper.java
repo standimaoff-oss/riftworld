@@ -24,7 +24,6 @@ import ru.aiforge.riftworld.entity.fauna.AshMothEntity;
 import ru.aiforge.riftworld.entity.fauna.AzureFrogEntity;
 import ru.aiforge.riftworld.entity.fauna.BasaltBeetleEntity;
 import ru.aiforge.riftworld.entity.fauna.BlossomSnailEntity;
-import ru.aiforge.riftworld.entity.fauna.BoneRavenEntity;
 import ru.aiforge.riftworld.entity.fauna.CoralHermitCrabEntity;
 import ru.aiforge.riftworld.entity.fauna.CrystalGeckoEntity;
 import ru.aiforge.riftworld.entity.fauna.ElisarFaunaUtil;
@@ -66,7 +65,6 @@ public final class ElisarBiomeFaunaKeeper {
             regGround(e, ModEntities.PHANTOM_WOLF.get());
             regGround(e, ModEntities.CRYSTAL_GECKO.get());
             regAir(e, ModEntities.FACETED_OWL.get());
-            regAir(e, ModEntities.BONE_RAVEN.get());
             regAny(e, ModEntities.CORAL_HERMIT_CRAB.get());
             regAny(e, ModEntities.REEF_SEAHORSE.get());
             regAny(e, ModEntities.GHOST_SQUID.get());
@@ -254,11 +252,6 @@ public final class ElisarBiomeFaunaKeeper {
                         && spawnOne(level, ModEntities.CRYSTAL_GECKO.get(),
                         ground.getX() + 0.5D, ground.getY() + 1.0D, ground.getZ() + 0.5D);
             }
-
-            case "morok_hollow" -> !peaceful
-                    && level.getEntitiesOfClass(BoneRavenEntity.class, box).size() < 2
-                    && spawnOne(level, ModEntities.BONE_RAVEN.get(),
-                    ground.getX() + 0.5D, ground.getY() + 5.5D, ground.getZ() + 0.5D);
 
             default -> false;
         };

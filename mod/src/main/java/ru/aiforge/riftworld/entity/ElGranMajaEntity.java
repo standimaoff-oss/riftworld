@@ -128,19 +128,24 @@ public final class ElGranMajaEntity extends Mob {
         if (--directionTicks <= 0) {
             // Wide, lazy course changes instead of constant small zig-zags:
             // the old ±22° every 12 s read as an almost stationary titan.
-            desiredYaw = getYRot() + (random.nextFloat() - 0.5F) * 96.0F;
-            directionTicks = 300 + random.nextInt(300);
+            // v0.49.0: the titan is 322 blocks long, so a sharp course change
+            // snapped its whole body around and looked like a spinning toy.
+            // The course now changes rarely, by a wide arc, and the hull
+            // swings round slowly.
+            desiredYaw = getYRot() + (random.nextFloat() - 0.5F) * 64.0F;
+            directionTicks = 700 + random.nextInt(600);
         }
         // Eased steering: the commanded rate is limited by the heading error and
         // by an angular acceleration, so a turn eases in and out instead of
-        // snapping to a new direction.
+        // snapping to a new direction. The rate cap is deliberately low: a
+        // titan-sized hull must not pirouette.
         float error = Mth.wrapDegrees(desiredYaw - getYRot());
-        float wantedRate = Mth.clamp(error * 0.055F, -0.85F, 0.85F);
-        float maxStep = 0.028F;
+        float wantedRate = Mth.clamp(error * 0.030F, -0.32F, 0.32F);
+        float maxStep = 0.010F;
         turnRate += Mth.clamp(wantedRate - turnRate, -maxStep, maxStep);
-        turnRate = Mth.clamp(turnRate, -0.85F, 0.85F);
+        turnRate = Mth.clamp(turnRate, -0.32F, 0.32F);
         // slow down slightly while carving a turn, speed up on the straight
-        float wantedSpeed = 1.0F - 0.28F * Math.min(1.0F, Math.abs(turnRate) / 0.85F);
+        float wantedSpeed = 1.0F - 0.16F * Math.min(1.0F, Math.abs(turnRate) / 0.32F);
         speedFactor += Mth.clamp(wantedSpeed - speedFactor, -0.02F, 0.02F);
         float nextYaw = getYRot() + turnRate;
         if (motionTick < 0) motionTick = Math.floorMod(getUUID().hashCode(), MajaMotion.PERIOD);
@@ -150,9 +155,9 @@ public final class ElGranMajaEntity extends Mob {
         double vertical = MajaMotion.verticalSpeed(getY(), MajaMotion.targetY(sea, motionTick));
         double oldY = getY();
         double rad = Math.toRadians(nextYaw);
-        // 0.42 blocks/tick (~8.4 blocks/s): the titan visibly cruises instead of
+        // 0.60 blocks/tick (~12 blocks/s): the titan visibly cruises instead of
         // drifting; the 6-block collision margin still covers one tick of travel.
-        double cruise = 0.42 * speedFactor;
+        double cruise = 0.60 * speedFactor;
         Vec3 motion = new Vec3(-Math.sin(rad) * cruise, vertical, Math.cos(rad) * cruise);
         Vec3 next = position().add(motion);
         if (MajaCollision.clear(server, next, nextYaw)) {
@@ -172,8 +177,8 @@ public final class ElGranMajaEntity extends Mob {
             if (!MajaCollision.clear(server, position(), getYRot())) entityData.set(READY, false);
             if (tickCount % 30 == 0) {
                 // blocked: pick a gentler escape course, still eased by turnRate
-                desiredYaw = getYRot() + (random.nextBoolean() ? 52.0F : -52.0F);
-                directionTicks = 160;
+                desiredYaw = getYRot() + (random.nextBoolean() ? 34.0F : -34.0F);
+                directionTicks = 260;
             }
         }
         // A restrained trail follows the moving head underwater. Do not query

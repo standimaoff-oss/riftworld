@@ -21,7 +21,6 @@ import ru.aiforge.riftworld.client.model.fauna.AshMothModel;
 import ru.aiforge.riftworld.client.model.fauna.AzureFrogModel;
 import ru.aiforge.riftworld.client.model.fauna.BasaltBeetleModel;
 import ru.aiforge.riftworld.client.model.fauna.BlossomSnailModel;
-import ru.aiforge.riftworld.client.model.fauna.BoneRavenModel;
 import ru.aiforge.riftworld.client.model.fauna.CoralHermitCrabModel;
 import ru.aiforge.riftworld.client.model.fauna.CrystalGeckoModel;
 import ru.aiforge.riftworld.client.model.fauna.FacetedOwlModel;
@@ -37,7 +36,6 @@ import ru.aiforge.riftworld.entity.fauna.AshMothEntity;
 import ru.aiforge.riftworld.entity.fauna.AzureFrogEntity;
 import ru.aiforge.riftworld.entity.fauna.BasaltBeetleEntity;
 import ru.aiforge.riftworld.entity.fauna.BlossomSnailEntity;
-import ru.aiforge.riftworld.entity.fauna.BoneRavenEntity;
 import ru.aiforge.riftworld.entity.fauna.CoralHermitCrabEntity;
 import ru.aiforge.riftworld.entity.fauna.CrystalGeckoEntity;
 import ru.aiforge.riftworld.entity.fauna.FacetedOwlEntity;
@@ -67,7 +65,6 @@ public final class ElisarFaunaRenderers {
         e.registerLayerDefinition(PhantomWolfModel.LAYER_LOCATION, PhantomWolfModel::createBodyLayer);
         e.registerLayerDefinition(CrystalGeckoModel.LAYER_LOCATION, CrystalGeckoModel::createBodyLayer);
         e.registerLayerDefinition(FacetedOwlModel.LAYER_LOCATION, FacetedOwlModel::createBodyLayer);
-        e.registerLayerDefinition(BoneRavenModel.LAYER_LOCATION, BoneRavenModel::createBodyLayer);
         e.registerLayerDefinition(CoralHermitCrabModel.LAYER_LOCATION, CoralHermitCrabModel::createBodyLayer);
         e.registerLayerDefinition(ReefSeahorseModel.LAYER_LOCATION, ReefSeahorseModel::createBodyLayer);
         e.registerLayerDefinition(GhostSquidModel.LAYER_LOCATION, GhostSquidModel::createBodyLayer);
@@ -115,9 +112,6 @@ public final class ElisarFaunaRenderers {
                 new BaseRenderer<>(c, new FacetedOwlModel(c.bakeLayer(FacetedOwlModel.LAYER_LOCATION)),
                         "faceted_owl", 0.38F, 0.32F, false, true, false));
 
-        e.registerEntityRenderer(ModEntities.BONE_RAVEN.get(), c ->
-                new BaseRenderer<>(c, new BoneRavenModel(c.bakeLayer(BoneRavenModel.LAYER_LOCATION)),
-                        "bone_raven", 0.36F, 0.30F, false, true, true));
 
         e.registerEntityRenderer(ModEntities.CORAL_HERMIT_CRAB.get(), c ->
                 new BaseRenderer<>(c, new CoralHermitCrabModel(c.bakeLayer(CoralHermitCrabModel.LAYER_LOCATION)),
@@ -129,7 +123,7 @@ public final class ElisarFaunaRenderers {
 
         e.registerEntityRenderer(ModEntities.GHOST_SQUID.get(), c ->
                 new BaseRenderer<>(c, new GhostSquidModel(c.bakeLayer(GhostSquidModel.LAYER_LOCATION)),
-                        "ghost_squid", 0.55F, 0.45F, true, true, true));
+                        "ghost_squid", 0.86F, 0.60F, true, true, true));
 
         e.registerEntityRenderer(ModEntities.SILVER_SEA_SERPENT.get(), c ->
                 new SerpentRenderer(c));

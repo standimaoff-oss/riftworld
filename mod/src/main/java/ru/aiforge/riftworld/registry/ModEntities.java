@@ -184,11 +184,6 @@ public final class ModEntities {
                             ru.aiforge.riftworld.entity.fauna.FacetedOwlEntity::new, MobCategory.CREATURE)
                     .sized(0.60F, 0.90F).clientTrackingRange(64).build("riftworld:faceted_owl"));
 
-    public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.fauna.BoneRavenEntity>> BONE_RAVEN =
-            TYPES.register("bone_raven", () -> EntityType.Builder
-                    .<ru.aiforge.riftworld.entity.fauna.BoneRavenEntity>of(
-                            ru.aiforge.riftworld.entity.fauna.BoneRavenEntity::new, MobCategory.MONSTER)
-                    .sized(0.65F, 0.75F).clientTrackingRange(64).build("riftworld:bone_raven"));
 
     public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.fauna.CoralHermitCrabEntity>> CORAL_HERMIT_CRAB =
             TYPES.register("coral_hermit_crab", () -> EntityType.Builder
@@ -206,13 +201,13 @@ public final class ModEntities {
             TYPES.register("ghost_squid", () -> EntityType.Builder
                     .<ru.aiforge.riftworld.entity.fauna.GhostSquidEntity>of(
                             ru.aiforge.riftworld.entity.fauna.GhostSquidEntity::new, MobCategory.WATER_CREATURE)
-                    .sized(0.85F, 1.15F).clientTrackingRange(64).build("riftworld:ghost_squid"));
+                    .sized(1.30F, 1.75F).clientTrackingRange(64).build("riftworld:ghost_squid"));
 
     public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.fauna.SilverSeaSerpentEntity>> SILVER_SEA_SERPENT =
             TYPES.register("silver_sea_serpent", () -> EntityType.Builder
                     .<ru.aiforge.riftworld.entity.fauna.SilverSeaSerpentEntity>of(
                             ru.aiforge.riftworld.entity.fauna.SilverSeaSerpentEntity::new, MobCategory.WATER_CREATURE)
-                    .sized(1.75F, 1.45F).updateInterval(2).clientTrackingRange(64).build("riftworld:silver_sea_serpent"));
+                    .sized(1.25F, 1.85F).updateInterval(2).clientTrackingRange(64).build("riftworld:silver_sea_serpent"));
 
     private ModEntities() {
     }
@@ -244,7 +239,6 @@ public final class ModEntities {
         e.put(PHANTOM_WOLF.get(), ru.aiforge.riftworld.entity.fauna.PhantomWolfEntity.attributes().build());
         e.put(CRYSTAL_GECKO.get(), ru.aiforge.riftworld.entity.fauna.CrystalGeckoEntity.attributes().build());
         e.put(FACETED_OWL.get(), ru.aiforge.riftworld.entity.fauna.FacetedOwlEntity.attributes().build());
-        e.put(BONE_RAVEN.get(), ru.aiforge.riftworld.entity.fauna.BoneRavenEntity.attributes().build());
         e.put(CORAL_HERMIT_CRAB.get(), ru.aiforge.riftworld.entity.fauna.CoralHermitCrabEntity.attributes().build());
         e.put(REEF_SEAHORSE.get(), ru.aiforge.riftworld.entity.fauna.ReefSeahorseEntity.attributes().build());
         e.put(GHOST_SQUID.get(), ru.aiforge.riftworld.entity.fauna.GhostSquidEntity.attributes().build());
