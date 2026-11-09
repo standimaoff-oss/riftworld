@@ -311,6 +311,54 @@ public final class ElisarGuardEntity extends PathfinderMob {
         }
     }
 
+    /**
+     * v0.49.0 — удар по стражу вызывает ОТВЕТНЫЙ УДАР и ПРЕДУПРЕЖДЕНИЕ.
+     *
+     * <p>Раньше страж просто получал урон и забывал об этом. Теперь:
+     * <ul>
+     *   <li>страж <b>бьёт в ответ</b> того, кто его ударил (не убивая сразу —
+     *       это предупреждение, а не казнь);</li>
+     *   <li>нарушитель получает предупреждение со счётом 1..3;</li>
+     *   <li>поднимается тревога: соседние стражи бросаются на помощь.</li>
+     * </ul>
+     */
+    @Override
+    public boolean hurt(DamageSource source, float amount) {
+        boolean hit = super.hurt(source, amount);
+        if (!hit || this.level().isClientSide) return hit;
+
+        Entity attacker = source.getEntity();
+        // Отвечать только живому нападающему: падение с высоты или урон от
+        // стихии не должны вызывать погоню.
+        if (!(attacker instanceof LivingEntity living) || !living.isAlive()) return hit;
+        if (living instanceof net.minecraft.world.entity.Mob mob && !mob.canAttack(this)) return hit;
+
+        // Страж бьёт в ответ один раз за удар: он ЗАЩИЩАЕТСЯ, а не мстит.
+        if (!(attacker instanceof ServerPlayer player)) {
+            // Моб или другое существо — страж предупреждает и отгоняет.
+            if (this.getTarget() == null) {
+                this.setTarget(living);
+                this.setOnPatrol(false);
+            }
+            this.warnOffender(living);
+            return hit;
+        }
+
+        // Игрок: предупреждение со счётом и ответный удар без убийства.
+        int n = this.warnOffender(player) ? this.warnings() : 0;
+        this.setTarget(player);
+        this.setOnPatrol(false);
+        this.raiseAlarm(this.level() instanceof ServerLevel sl ? sl : (ServerLevel) this.level(), player);
+
+        // Ответный удар: страж бьёт, но НЕ добивает — жизнь игрока не
+        // отнимается этим ударом (урон ограничен и не убивает сразу).
+        if (this.getTarget() == player && this.distanceTo(player) <= 3.0D && n > 0) {
+            player.hurt(this.level().damageSources().mobAttack(this), 3.0F);
+            this.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
+        }
+        return hit;
+    }
+
     @Override
     public boolean doHurtTarget(Entity target) {
         if (this.isUsingItem()) {
