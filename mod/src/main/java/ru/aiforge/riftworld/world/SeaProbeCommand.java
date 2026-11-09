@@ -4240,6 +4240,8 @@ public final class SeaProbeCommand {
                 natural = true;
             }
             int logs = 0, leaves = 0, brambles = 0, fangs = 0, carpets = 0, rime = 0, soil = 0;
+            // v0.49.0: счётчики своих деревьев Пади
+            int rotLogs = 0, rotLeaves = 0, briarLogs = 0, briarLeaves = 0;
             int trunks = 0;   // колонн ствола = число деревьев/сухостоя (патриарх даёт 4)
             BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
             int rad = 32;
@@ -4262,6 +4264,11 @@ public final class SeaProbeCommand {
                         if (st.isAir()) continue;
                         if (st.is(MorokBlocks.MOROK_LOG.get())) ++logs;
                         else if (st.is(MorokBlocks.MOROK_LEAVES.get())) ++leaves;
+                        // v0.49.0: свои деревья Пади — гнилая роща и морозный терновник
+                        else if (st.is(MorokBlocks.ROTWOOD_LOG.get())) ++rotLogs;
+                        else if (st.is(MorokBlocks.ROTWOOD_LEAVES.get())) ++rotLeaves;
+                        else if (st.is(MorokBlocks.FROSTBRIAR_LOG.get())) ++briarLogs;
+                        else if (st.is(MorokBlocks.FROSTBRIAR_LEAVES.get())) ++briarLeaves;
                         else if (st.is(MorokBlocks.BONE_BRAMBLE.get())) ++brambles;
                         else if (st.is(MorokBlocks.ICE_FANG.get())) ++fangs;
                         else if (st.is(MorokBlocks.PALE_MOSS_CARPET.get())) ++carpets;
@@ -4274,7 +4281,11 @@ public final class SeaProbeCommand {
                     // а мерзлота под ним на y-1. Раньше проверялось y+1 → стволов всегда 0.
                     // v0.39.4: окно стволов тоже расширено — лес на склонах ниже точки пробы
                     for (int y = ground - 22; y <= ground + 28; ++y) {
-                        if (level.getBlockState(mp.set(x, y, z)).is(MorokBlocks.MOROK_LOG.get())
+                        BlockState logHere = level.getBlockState(mp.set(x, y, z));
+                        boolean isLog = logHere.is(MorokBlocks.MOROK_LOG.get())
+                                || logHere.is(MorokBlocks.ROTWOOD_LOG.get())
+                                || logHere.is(MorokBlocks.FROSTBRIAR_LOG.get());
+                        if (isLog
                                 && (level.getBlockState(mp.set(x, y - 1, z)).is(MorokBlocks.RIME_GRASS.get())
                                     || level.getBlockState(mp.set(x, y - 1, z)).is(MorokBlocks.FROZEN_SOIL.get())
                                     || level.getBlockState(mp.set(x, y - 1, z)).is(MorokBlocks.PALE_MOSS_BLOCK.get()))) {
@@ -4314,6 +4325,8 @@ public final class SeaProbeCommand {
                     + " regions=" + scan[0] + " land_regions=" + scan[1]
                     + " search=[" + ru.aiforge.riftworld.world.MorokHollow.LAST_SEARCH.replace(' ', ',') + "]"
                     + " trees=" + trunks + " logs=" + logs + " leaves=" + leaves
+                    + " rot_logs=" + rotLogs + " rot_leaves=" + rotLeaves
+                    + " briar_logs=" + briarLogs + " briar_leaves=" + briarLeaves
                     + " brambles=" + brambles + " fangs=" + fangs + " carpets=" + carpets
                     + " rime=" + rime + " soil=" + soil
                    

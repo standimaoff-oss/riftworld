@@ -1509,6 +1509,16 @@ biome_section() {
   else
     log "  FAIL лес Пади: деревьев ${NAT_TREES:-0} (нужно >=6), листвы ${NAT_LEAVES:-0} (нужно >=120)"; FAILS=$((FAILS + 1))
   fi
+  # v0.49.0: у Пади теперь СВОИ деревья — гнилая роща и морозный терновник.
+  NAT_ROT=$(printf '%s' "$NAT" | sed -n 's/.* rot_logs=\([0-9]*\).*/\1/p' | tail -1)
+  NAT_BRIAR=$(printf '%s' "$NAT" | sed -n 's/.* briar_logs=\([0-9]*\).*/\1/p' | tail -1)
+  NAT_ROTLEAF=$(printf '%s' "$NAT" | sed -n 's/.* rot_leaves=\([0-9]*\).*/\1/p' | tail -1)
+  NAT_BRIARLEAF=$(printf '%s' "$NAT" | sed -n 's/.* briar_leaves=\([0-9]*\).*/\1/p' | tail -1)
+  if [ "${NAT_ROT:-0}" -ge 1 ] && [ "${NAT_BRIAR:-0}" -ge 1 ]; then
+    log "  OK   свои деревья Пади растут: гнилой рощи стволов ${NAT_ROT}, терновника ${NAT_BRIAR}, листвы ${NAT_ROTLEAF:-0}/${NAT_BRIARLEAF:-0}"
+  else
+    log "  FAIL свои деревья Пади: гнилой рощи стволов ${NAT_ROT:-0} (нужно >=1), терновника ${NAT_BRIAR:-0} (нужно >=1)"; FAILS=$((FAILS + 1))
+  fi
   if [ "${NAT_BRAM:-0}" -ge 3 ] && [ "${NAT_FANG:-0}" -ge 2 ]; then
     log "  OK   подлесок Пади на месте: колючки ${NAT_BRAM}, ледяные клыки ${NAT_FANG}"
   else
