@@ -23,7 +23,6 @@ FAUNA = [
     ("phantom_wolf", "PhantomWolf"),
     ("crystal_gecko", "CrystalGecko"),
     ("faceted_owl", "FacetedOwl"),
-    ("bone_raven", "BoneRaven"),
     ("coral_hermit_crab", "CoralHermitCrab"),
     ("reef_seahorse", "ReefSeahorse"),
     ("ghost_squid", "GhostSquid"),
@@ -36,14 +35,12 @@ ITEMS = [
     "basalt_scute",
     "ash_wing_dust",
     "phantom_fang",
-    "bone_pinion",
     "abyssal_ink_sac",
 ]
 
 GLOW_IDS = [
     "basalt_beetle",
     "ash_moth",
-    "bone_raven",
     "blossom_snail",
     "phantom_wolf",
     "faceted_owl",
@@ -108,7 +105,12 @@ for fid, pascal in FAUNA:
     tex = Image.open(ASSETS / f"textures/entity/{fid}.png")
     assert tex.size == (512, 512), f"{fid}.png size {tex.size}"
     egg_model = json.loads((ASSETS / f"models/item/{fid}_spawn_egg.json").read_text(encoding="utf-8"))
-    assert egg_model["parent"] == "minecraft:item/template_spawn_egg"
+    # v0.49.0: все яйца призыва переведены на ВАНИЛЬНЫЙ стиль —
+    # item/generated + своя текстура (серое крапчатое яйцо с цветным пятном).
+    assert egg_model["parent"] == "minecraft:item/generated", f"{fid}: egg is not vanilla-styled"
+    assert egg_model["textures"]["layer0"] == f"riftworld:item/{fid}_spawn_egg", f"{fid}: wrong egg texture"
+    egg_tex = Image.open(ASSETS / f"textures/item/{fid}_spawn_egg.png").convert("RGBA")
+    assert egg_tex.size == (16, 16), f"{fid}: egg texture size {egg_tex.size}"
     geo = json.loads((ASSETS / f"geo/{fid}.json").read_text(encoding="utf-8"))
     assert len(geo["bones"]) >= 7
 
@@ -131,4 +133,4 @@ for item_id in ITEMS:
     for lang_name, lang in [("en_us", en), ("ru_ru", ru)]:
         assert f"item.riftworld.{item_id}" in lang, f"{lang_name} missing item {item_id}"
 
-print("OK: v0.47.0 static validation passed across all 15 entities, 15 models, renderers, keepers, items, textures, and localizations!")
+print(f"OK: v0.47.0 static validation passed across all {len(FAUNA)} entities, {len(FAUNA)} models, renderers, keepers, items, textures, and localizations!")

@@ -73,16 +73,21 @@ def main():
     # v0.45.0 rigs (rebuilt from reports/reference_fauna/refs_v2)
     check_model('liopleurodon', {'body_front','body_mid','body_rear','tail_1','tail_2','neck','head','jaw',
                                  'flipper_front_l','flipper_front_r','flipper_rear_l','flipper_rear_r'})
-    check_model('pegasus', {'body','neck_low','neck_up','head','ear_l','ear_r','mane_1','mane_2','mane_3',
-                            'leg_front_l','leg_front_l_low','leg_front_r','leg_front_r_low',
-                            'leg_rear_l','leg_rear_l_low','leg_rear_r','leg_rear_r_low',
-                            'wing_l','wing_l_mid','wing_l_tip','wing_r','wing_r_mid','wing_r_tip',
-                            'tail_1','tail_2','tail_3','saddle'})
-    for name in ('liopleurodon_tooth','sea_scale','pegasus_feather','wendigo_antler','morok_ember'):
+    # v0.49.0: Пегас и Вендиго удалены из мода, их пробы убраны.
+    # Вместо них проверяем новый хоррор-моб Пади — Смотрителя Пращи.
+    # Смотритель — тонкая, высокая фигура: кубов намеренно меньше, чем у Лиоплевродона.
+    check_model('hollowwatcher', {'root','shroud','neck','head','arm_l','arm_r','leg_l','leg_r'}, min_cubes=40)
+    for name in ('liopleurodon_tooth','sea_scale','morok_ember'):
         check_item(name)
-    for name in ('liopleurodon','pegasus','wendigo'):
+    for name in ('liopleurodon','hollowwatcher'):
         item = json.loads((ASSET/'models/item'/f'{name}_spawn_egg.json').read_text())
-        require(item.get('parent') == 'minecraft:item/template_spawn_egg', f'{name}: missing egg model')
+        # v0.49.0: ванильные яйца рисуются через item/generated + своя текстура
+        # (раньше был template_spawn_egg с окраской сущности).
+        require(item.get('parent') in ('minecraft:item/template_spawn_egg', 'minecraft:item/generated'),
+                f'{name}: missing egg model')
+        if item.get('parent') == 'minecraft:item/generated':
+            require(item['textures']['layer0'] == f'riftworld:item/{name}_spawn_egg',
+                    f'{name}: wrong egg texture reference')
     print('Loot and spawn-egg model/texture references are present.')
 
 if __name__ == '__main__':

@@ -380,6 +380,13 @@ def main():
     print(f"  рецептов: {r}")
     l = gen_lang()
     print(f"  записей lang: {l}")
+    # Клонирование шаблонов может затянуть за собой модели предметов, которых
+    # в моде нет (morok_sapling -> *_spawn_egg, morok_ember -> *_ember).
+    # Удаляем всё, чего нет в реестре предметов.
+    for wood in ("rotwood", "frostbriar"):
+        for bogus in (MI / f"{wood}_spawn_egg.json", MI / f"{wood}_ember.json"):
+            if bogus.exists():
+                bogus.unlink()
     print("OK.")
 
 
