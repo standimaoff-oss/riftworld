@@ -87,10 +87,6 @@ public final class ModTabs {
         out.accept(ModItems.LIOPLEURODON_EGG.get());
         out.accept(ModItems.EL_GRAN_MAJA_EGG.get());
         out.accept(ModItems.BLOSSOM_STAG_EGG.get());
-        out.accept(ModItems.PEGASUS_EGG.get());
-        out.accept(ModItems.WENDIGO_EGG.get());
-        out.accept(ModItems.PEGASUS_FEATHER.get());
-        out.accept(ModItems.WENDIGO_ANTLER.get());
         out.accept(ModItems.MOROK_EGG.get());
         out.accept(ModItems.MOROK_EYE.get());
         out.accept(ModItems.SKY_DART_EGG.get());

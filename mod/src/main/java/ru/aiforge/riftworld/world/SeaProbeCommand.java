@@ -3910,71 +3910,6 @@ public final class SeaProbeCommand {
             return 1;
         }
 
-        if (k.equals("v34_pegasus")) {
-            // v0.37.0: Пегас — в настоящей «Мороковой Пади» (или на ближней мерзлоте),
-            // камера вплотную, чтобы было видно крылья и седло.
-            int px = 1160, py = 140, pz = 800;
-            String where = "spot";
-            if (level != null) {
-                ServerLevel sl = level;
-                int[] spot = morokSpot(level, 1160, 800, 8);
-                if (spot != null) {
-                    px = spot[0];
-                    py = spot[1] + 1;
-                    pz = spot[2];
-                    where = "morok_hollow";
-                }
-                level.setBlock(new BlockPos(px, py - 1, pz), MorokBlocks.RIME_GRASS.get().defaultBlockState(), 2);
-            }
-            int alive = 0, tamed = 0;
-            boolean spawned = false;
-            if (level instanceof ServerLevel) {
-                // v0.38.6: Пегас — летающая тварь: без NoAI он улетал из кадра, а если точка
-                // попала под крону — задыхался в блоках. Чистим карман 3x3x3 и фиксируем позу.
-                for (int dx = -1; dx <= 1; ++dx) {
-                    for (int dz = -1; dz <= 1; ++dz) {
-                        for (int dy = 0; dy <= 2; ++dy) {
-                            level.setBlock(new BlockPos(px + dx, py + dy, pz + dz),
-                                    net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 2);
-                        }
-                        level.setBlock(new BlockPos(px + dx, py - 1, pz + dz),
-                                MorokBlocks.RIME_GRASS.get().defaultBlockState(), 2);
-                    }
-                }
-                if (level.getBlockState(new BlockPos(px, py - 1, pz)).isAir()) {
-                    level.setBlock(new BlockPos(px, py - 1, pz),
-                            MorokBlocks.RIME_GRASS.get().defaultBlockState(), 2);
-                }
-                var pg = ru.aiforge.riftworld.registry.ModEntities.PEGASUS.get().create((ServerLevel) level);
-                if (pg != null) {
-                    pg.moveTo(px + 0.5, py, pz + 0.5, 210.0F, 0.0F);
-                    pg.setYRot(210.0F);
-                    pg.yBodyRot = 210.0F;
-                    pg.setNoAi(true);
-                    pg.setSilent(true);
-                    spawned = ((ServerLevel) level).addFreshEntity(pg);
-                    if (pg.isAlive()) ++alive;      // проверка по ССЫЛКЕ, а не по AABB
-                    if (pg.isTamed()) ++tamed;
-                }
-            }
-            for (var e : level.getEntitiesOfClass(ru.aiforge.riftworld.entity.PegasusEntity.class,
-                    new net.minecraft.world.phys.AABB(px - 12, py - 8, pz - 12, px + 12, py + 10, pz + 12))) {
-                if (e.isAlive() && alive == 0) ++alive;
-                if (e.isTamed()) ++tamed;
-            }
-            int[] cam34 = (level != null)
-                    ? closeSpot(level, px, py + 1, pz, new int[]{6, 7, 8, 9}, py + 1)
-                    : new int[]{px - 3, py + 2, pz + 4};
-            int metric = alive > 0 ? 900 : 0;
-            String line = "riftstruct kind=v34_pegasus at=" + px + "," + (py + 2) + "," + pz
-                    + " alive=" + alive + " tamed=" + tamed + " where=" + where + " spawned=" + spawned
-                    + " saddleable=true saddle_seat=1.15"
-                    + " blocks=" + metric + " sub_air=0"
-                    + " cam=" + cam34[0] + "," + cam34[1] + "," + cam34[2] + ":" + px + "," + (py + 1) + "," + pz;
-            src.sendSuccess(() -> Component.literal(line), false);
-            return 1;
-        }
-
         if (k.equals("bb_liopleurodon_showcase")) {
             int px = 696, py = 36, pz = 696;
             if (level != null) {
@@ -4036,150 +3971,6 @@ public final class SeaProbeCommand {
                     + ":" + r3(camJaws[3]) + "," + r3(camJaws[4]) + "," + r3(camJaws[5])
                     + " cam_dorsal=" + r3(camDorsal[0]) + "," + r3(camDorsal[1]) + "," + r3(camDorsal[2])
                     + ":" + r3(camDorsal[3]) + "," + r3(camDorsal[4]) + "," + r3(camDorsal[5]);
-            src.sendSuccess(() -> Component.literal(line), false);
-            return 1;
-        }
-
-        if (k.equals("bb_pegasus_showcase")) {
-            int px = 520, py = 118, pz = 520;
-            if (level != null) {
-                ServerLevel sl = level;
-                for (int cx = (px - 28) >> 4; cx <= (px + 44) >> 4; ++cx) {
-                    for (int cz = (pz - 28) >> 4; cz <= (pz + 28) >> 4; ++cz) {
-                        if (!sl.hasChunk(cx, cz)) sl.getChunk(cx, cz);
-                    }
-                }
-                sl.getEntitiesOfClass(ru.aiforge.riftworld.entity.PegasusEntity.class,
-                        new net.minecraft.world.phys.AABB(px - 36, py - 28, pz - 36, px + 60, py + 32, pz + 36))
-                        .forEach(net.minecraft.world.entity.Entity::discard);
-
-                // Clear any natural floating canopy/island remnants in the vista above y=114
-                for (int dx = -22; dx <= 44; ++dx) {
-                    for (int dz = -22; dz <= 22; ++dz) {
-                        for (int dy = -3; dy <= 18; ++dy) {
-                            sl.setBlock(new BlockPos(px + dx, py + dy, pz + dz),
-                                    net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 2);
-                        }
-                    }
-                }
-
-                // Build a clean sunlit Elisar garden terrace with moss marble, grass, white lilies & celadon ferns
-                for (int dx = -12; dx <= 34; ++dx) {
-                    for (int dz = -12; dz <= 12; ++dz) {
-                        double edge = Math.hypot(Math.max(0, Math.abs(dx - 11) - 13), Math.max(0, Math.abs(dz) - 4));
-                        if (edge > 9.5) continue;
-                        sl.setBlock(new BlockPos(px + dx, py - 2, pz + dz),
-                                ElisarBlocks.RIFT_MARBLE_MOSSY.get().defaultBlockState(), 2);
-                        sl.setBlock(new BlockPos(px + dx, py - 1, pz + dz),
-                                ElisarBlocks.GARDEN_GRASS.get().defaultBlockState(), 2);
-                        if (((dx * 7 + dz * 13) & 15) == 3 && Math.hypot(dx, dz) > 3.5 && Math.hypot(dx - 22, dz) > 3.5) {
-                            sl.setBlock(new BlockPos(px + dx, py, pz + dz),
-                                    (((dx + dz) & 1) == 0 ? ElisarBlocks.WHITE_LILY_CLUSTER.get() : ElisarBlocks.CELADON_FERN.get()).defaultBlockState(), 2);
-                        }
-                    }
-                }
-
-                // 1) Wild Pegasus on ground (folded swan-wings, pure celestial white coat)
-                var wild = ru.aiforge.riftworld.registry.ModEntities.PEGASUS.get().create(sl);
-                if (wild != null) {
-                    wild.moveTo(px + 0.5, py, pz + 0.5, 40.0F, 0.0F);
-                    wild.setYRot(40.0F);
-                    wild.yBodyRot = 40.0F;
-                    wild.yHeadRot = 40.0F;
-                    wild.setOnGround(true);
-                    wild.setNoAi(true);
-                    wild.setInvulnerable(true);
-                    wild.setSilent(true);
-                    sl.addFreshEntity(wild);
-                    wild.setShowcasePose(ru.aiforge.riftworld.entity.PegasusEntity.POSE_GROUND_FOLDED);
-                }
-
-                // 2) Tamed & Royal Saddled Pegasus on ground (Elisar mahogany-gold saddle + jeweled bridle)
-                var royal = ru.aiforge.riftworld.registry.ModEntities.PEGASUS.get().create(sl);
-                if (royal != null) {
-                    royal.moveTo(px + 22.5, py, pz + 0.5, 52.0F, 0.0F);
-                    royal.setYRot(52.0F);
-                    royal.yBodyRot = 52.0F;
-                    royal.yHeadRot = 52.0F;
-                    royal.setTamed(true);
-                    royal.setSaddled(true);
-                    royal.setOnGround(true);
-                    royal.setNoAi(true);
-                    royal.setInvulnerable(true);
-                    royal.setSilent(true);
-                    sl.addFreshEntity(royal);
-                    royal.setShowcasePose(ru.aiforge.riftworld.entity.PegasusEntity.POSE_GROUND_FOLDED);
-                }
-
-                // 3) Airborne Soaring Pegasus in Elisar sky (full 3-tiered feathered wingspan, flapping)
-                var flyer = ru.aiforge.riftworld.registry.ModEntities.PEGASUS.get().create(sl);
-                if (flyer != null) {
-                    flyer.moveTo(px + 11.5, py + 7.0, pz + 0.5, 38.0F, -6.0F);
-                    flyer.setYRot(38.0F);
-                    flyer.yBodyRot = 38.0F;
-                    flyer.yHeadRot = 38.0F;
-                    flyer.setOnGround(false);
-                    flyer.setFlyingState(true);
-                    flyer.setNoAi(true);
-                    flyer.setInvulnerable(true);
-                    flyer.setSilent(true);
-                    sl.addFreshEntity(flyer);
-                    flyer.setShowcasePose(ru.aiforge.riftworld.entity.PegasusEntity.POSE_FLY_FLAP);
-                }
-
-                // 4) High soaring Pegasus: banking glide (12° roll) + stationary hover showcase
-                var glider = ru.aiforge.riftworld.registry.ModEntities.PEGASUS.get().create(sl);
-                if (glider != null) {
-                    glider.moveTo(px + 30.5, py + 12.5, pz - 6.5, 24.0F, -4.0F);
-                    glider.setYRot(24.0F);
-                    glider.yBodyRot = 24.0F;
-                    glider.yHeadRot = 24.0F;
-                    glider.setOnGround(false);
-                    glider.setFlyingState(true);
-                    glider.setNoAi(true);
-                    glider.setInvulnerable(true);
-                    glider.setSilent(true);
-                    sl.addFreshEntity(glider);
-                    glider.setShowcasePose(ru.aiforge.riftworld.entity.PegasusEntity.POSE_FLY_GLIDE);
-                }
-                var hoverer = ru.aiforge.riftworld.registry.ModEntities.PEGASUS.get().create(sl);
-                if (hoverer != null) {
-                    hoverer.moveTo(px - 12.5, py + 15.0, pz - 9.5, 8.0F, -2.0F);
-                    hoverer.setYRot(8.0F);
-                    hoverer.yBodyRot = 8.0F;
-                    hoverer.yHeadRot = 8.0F;
-                    hoverer.setOnGround(false);
-                    hoverer.setFlyingState(true);
-                    hoverer.setNoAi(true);
-                    hoverer.setInvulnerable(true);
-                    hoverer.setSilent(true);
-                    sl.addFreshEntity(hoverer);
-                    hoverer.setShowcasePose(ru.aiforge.riftworld.entity.PegasusEntity.POSE_FLY_HOVER);
-                }
-            }
-            int[] geo = geoStats("pegasus");
-            double[] camWild = poseCam(px + 0.5, py, pz + 0.5, 40.0F,
-                    0.10, 0.0, 1.02, 3.65, 3.35, -1.02);
-            double[] camSaddle = poseCam(px + 22.5, py, pz + 0.5, 52.0F,
-                    0.05, 0.0, 1.02, 3.25, 3.55, -0.95);
-            double[] camFlight = poseCam(px + 11.5, py + 7.0, pz + 0.5, 38.0F,
-                    0.10, 0.0, 1.15, 4.35, 3.55, -0.70);
-            double[] camGlide = poseCam(px + 30.5, py + 12.5, pz - 6.5, 24.0F,
-                    0.15, 0.0, 1.10, 4.60, 3.20, 0.55);
-            double[] camHover = poseCam(px - 12.5, py + 15.0, pz - 9.5, 8.0F,
-                    0.15, 0.0, 1.05, 4.10, 3.40, 0.20);
-            String line = "riftstruct kind=bb_pegasus_showcase"
-                    + " model_boxes=" + geo[0] + " bones=" + geo[1] + " atlas=" + geo[2]
-                    + " cam_wild=" + r3(camWild[0]) + "," + r3(camWild[1]) + "," + r3(camWild[2])
-                    + ":" + r3(camWild[3]) + "," + r3(camWild[4]) + "," + r3(camWild[5])
-                    + " cam_saddle=" + r3(camSaddle[0]) + "," + r3(camSaddle[1]) + "," + r3(camSaddle[2])
-                    + ":" + r3(camSaddle[3]) + "," + r3(camSaddle[4]) + "," + r3(camSaddle[5])
-                    + " cam_flight=" + r3(camFlight[0]) + "," + r3(camFlight[1]) + "," + r3(camFlight[2])
-                    + ":" + r3(camFlight[3]) + "," + r3(camFlight[4]) + "," + r3(camFlight[5])
-                    + " cam_glide=" + r3(camGlide[0]) + "," + r3(camGlide[1]) + "," + r3(camGlide[2])
-                    + ":" + r3(camGlide[3]) + "," + r3(camGlide[4]) + "," + r3(camGlide[5])
-                    + " cam_hover=" + r3(camHover[0]) + "," + r3(camHover[1]) + "," + r3(camHover[2])
-                    + ":" + r3(camHover[3]) + "," + r3(camHover[4]) + "," + r3(camHover[5]);
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
         }
@@ -4374,7 +4165,7 @@ public final class SeaProbeCommand {
             int[] geo = geoStats("morok");
             int[] eyes = geoStats("morok_eyes");
             // спавнеры биома: есть ли Морок в списке монстров
-            int spawnMorok = 0, spawnWendigo = 0;
+            int spawnMorok = 0;
             String biome = "?";
             try {
                 var holder = level.getBiome(new BlockPos(px, ground + 1, pz));
@@ -4383,7 +4174,6 @@ public final class SeaProbeCommand {
                 for (var sp : holder.value().getMobSettings()
                         .getMobs(net.minecraft.world.entity.MobCategory.MONSTER).unwrap()) {
                     if (sp.type == ru.aiforge.riftworld.registry.ModEntities.MOROK.get()) spawnMorok = 1;
-                    if (sp.type == ru.aiforge.riftworld.registry.ModEntities.WENDIGO.get()) spawnWendigo = 1;
                 }
             } catch (Throwable ignored) {
             }
@@ -4395,7 +4185,7 @@ public final class SeaProbeCommand {
                     + " alive=" + alive + " spawned=" + spawned
                     + " model_boxes=" + geo[0] + " bones=" + geo[1] + " atlas=" + geo[2]
                     + " eye_boxes=" + eyes[0] + " eye_atlas=" + eyes[2] + " glowing_eyes=" + eyeGlow
-                    + " spawn_morok=" + spawnMorok + " spawn_wendigo=" + spawnWendigo
+                    + " spawn_morok=" + spawnMorok
                     + " day_chance=0.05 night_chance=0.45"
                     + " stalk=true dash=true blink=true hp=42 dmg=7 speed=0.37"
                     + " blocks=" + metric + " sub_air=0"
@@ -4403,45 +4193,6 @@ public final class SeaProbeCommand {
                     + ":" + r3(pc[3]) + "," + r3(pc[4]) + "," + r3(pc[5]);
             src.sendSuccess(() -> Component.literal(line), false);
             if (oldTime >= 0) level.setDayTime(oldTime);   // возвращаем время: ночь нужна была только для кадра
-            return 1;
-        }
-
-        if (k.equals("v35_wendigo")) {
-            // v0.37.0: Вендиго — в чаще Пади, камера в 6 блоках: силуэт с рогами должен занимать кадр.
-            int px = 1180, py = 140, pz = 800;
-            if (level != null) {
-                ServerLevel sl = level;
-                int[] spot = morokSpot(level, 1180, 800, 8);
-                if (spot != null) {
-                    px = spot[0];
-                    py = spot[1] + 1;
-                    pz = spot[2];
-                }
-                level.setBlock(new BlockPos(px, py - 1, pz), MorokBlocks.RIME_GRASS.get().defaultBlockState(), 2);
-            }
-            int alive = 0;
-            if (level instanceof ServerLevel) {
-                var wd = ru.aiforge.riftworld.registry.ModEntities.WENDIGO.get().create((ServerLevel) level);
-                if (wd != null) {
-                    wd.moveTo(px + 0.5, py, pz + 0.5, 200.0F, 0.0F);
-                    wd.setYRot(200.0F);
-                    wd.yBodyRot = 200.0F;
-                    ((ServerLevel) level).addFreshEntity(wd);
-                }
-            }
-            for (var e : level.getEntitiesOfClass(ru.aiforge.riftworld.entity.WendigoEntity.class,
-                    new net.minecraft.world.phys.AABB(px - 8, py - 8, pz - 8, px + 8, py + 8, pz + 8))) {
-                if (e.isAlive()) ++alive;
-            }
-            int[] cam35 = (level != null)
-                    ? closeSpot(level, px, py + 2, pz, new int[]{7, 8, 9, 10}, py + 2)
-                    : new int[]{px - 4, py + 3, pz + 5};
-            int metric = alive > 0 ? 900 : 0;
-            String line = "riftstruct kind=v35_wendigo at=" + px + "," + (py + 2) + "," + pz
-                    + " alive=" + alive + " hp=64 darkness_on_hit=true antlers=6"
-                    + " blocks=" + metric + " sub_air=0"
-                    + " cam=" + cam35[0] + "," + cam35[1] + "," + cam35[2] + ":" + px + "," + (py + 2) + "," + pz;
-            src.sendSuccess(() -> Component.literal(line), false);
             return 1;
         }
 
@@ -4507,7 +4258,7 @@ public final class SeaProbeCommand {
                 }
             }
             String biome = "?";
-            int spawnWendigo = 0, spawnPegasus = 0, spawnMonsterTotal = 0, spawnCreatureTotal = 0;
+            int spawnMonsterTotal = 0, spawnCreatureTotal = 0;
             try {
                 var holder = level.getBiome(new BlockPos(px, ground + 1, pz));
                 var key = holder.unwrapKey();
@@ -4520,11 +4271,9 @@ public final class SeaProbeCommand {
                 int catMonster = 0, catCreature = 0;
                 for (var sp : mobs.getMobs(net.minecraft.world.entity.MobCategory.MONSTER).unwrap()) {
                     ++catMonster;
-                    if (sp.type == ru.aiforge.riftworld.registry.ModEntities.WENDIGO.get()) spawnWendigo = 1;
                 }
                 for (var sp : mobs.getMobs(net.minecraft.world.entity.MobCategory.CREATURE).unwrap()) {
                     ++catCreature;
-                    if (sp.type == ru.aiforge.riftworld.registry.ModEntities.PEGASUS.get()) spawnPegasus = 1;
                 }
                 spawnMonsterTotal = catMonster;
                 spawnCreatureTotal = catCreature;
@@ -4540,7 +4289,7 @@ public final class SeaProbeCommand {
                     + " trees=" + trunks + " logs=" + logs + " leaves=" + leaves
                     + " brambles=" + brambles + " fangs=" + fangs + " carpets=" + carpets
                     + " rime=" + rime + " soil=" + soil
-                    + " spawn_wendigo=" + spawnWendigo + " spawn_pegasus=" + spawnPegasus
+                   
                     + " spawn_monster=" + spawnMonsterTotal + " spawn_creature=" + spawnCreatureTotal
                     + " blocks=" + metric + " sub_air=0"
                     + " cam=" + cam[0] + "," + cam[1] + "," + cam[2] + ":" + px + "," + (ground + 7) + "," + pz;

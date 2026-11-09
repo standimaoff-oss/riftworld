@@ -165,13 +165,6 @@ public final class ModItems {
     public static final RegistryObject<Item> SEA_SCALE = ITEMS.register("sea_scale",
             () -> new Item(new Item.Properties()));
 
-    // v0.34.0: Пегас (земля/воздух) и Вендиго (Мороковая Падь)
-    public static final RegistryObject<Item> PEGASUS_EGG = ITEMS.register("pegasus_spawn_egg",
-            () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.PEGASUS, 0xF2F0EC, 0xCFCBC4,
-                    new Item.Properties()));
-    public static final RegistryObject<Item> WENDIGO_EGG = ITEMS.register("wendigo_spawn_egg",
-            () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.WENDIGO, 0x2B2622, 0x8FF0F0,
-                    new Item.Properties()));
     /** v0.39.0: Морок — своё яйцо призыва (редкость UNCOMMON, как у хозяев чащи). */
     public static final RegistryObject<Item> MOROK_EGG = ITEMS.register("morok_spawn_egg",
             () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.MOROK, 0x15181C, 0xFF7A18,
@@ -179,11 +172,6 @@ public final class ModItems {
     /** Трофей: раскалённый уголёк, который Морок носит вместо глаза. */
     public static final RegistryObject<Item> MOROK_EYE = ITEMS.register("morok_ember",
             () -> new Item(new Item.Properties().rarity(Rarity.RARE).fireResistant()));
-
-    public static final RegistryObject<Item> PEGASUS_FEATHER = ITEMS.register("pegasus_feather",
-            () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)));
-    public static final RegistryObject<Item> WENDIGO_ANTLER = ITEMS.register("wendigo_antler",
-            () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)));
 
     public static final RegistryObject<Item> BLOSSOM_STAG_EGG = ITEMS.register("blossom_stag_spawn_egg",
             () -> new net.minecraftforge.common.ForgeSpawnEggItem(ModEntities.BLOSSOM_STAG, 0xFAF8F5, 0xF4B8C4, new Item.Properties()));

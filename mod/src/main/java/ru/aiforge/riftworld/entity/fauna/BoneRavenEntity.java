@@ -29,14 +29,13 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import ru.aiforge.riftworld.entity.MorokEntity;
-import ru.aiforge.riftworld.entity.WendigoEntity;
 import ru.aiforge.riftworld.registry.ModItems;
 
 /**
  * 11. Костяной ворон ({@code bone_raven}) — падальщик-разведчик Мороковой Пади.
  *
  * <p>Строго пикирующий противник (КД 8 с, 4.5 урона, никакого непрерывного «зависания с уроном»!).
- * Если рядом ({@code <= 24} блоков) за игроком уже охотится {@link MorokEntity} или {@link WendigoEntity},
+ * Если рядом ({@code <= 24} блоков) за игроком уже охотится {@link MorokEntity},
  * ворон держится высоко в небе и зловеще каркает, не мешая дуэли с хозяевами Пади!
  */
 public class BoneRavenEntity extends Monster {
@@ -171,9 +170,7 @@ public class BoneRavenEntity extends Monster {
         List<MorokEntity> moroks = this.level().getEntitiesOfClass(
                 MorokEntity.class, target.getBoundingBox().inflate(24.0D), m -> m.isAlive() && m.getTarget() != null);
         if (!moroks.isEmpty()) return true;
-        List<WendigoEntity> wendigos = this.level().getEntitiesOfClass(
-                WendigoEntity.class, target.getBoundingBox().inflate(24.0D), w -> w.isAlive() && w.getTarget() != null);
-        return !wendigos.isEmpty();
+        return false;
     }
 
     private void steerToward(Vec3 goal, double accel) {
