@@ -215,21 +215,24 @@ public final class ElisarVillagerEntity extends PathfinderMob implements Npc, Me
         MerchantOffers list = new MerchantOffers();
         ItemStack ducat = new ItemStack(ModItems.ELISAR_DUCAT.get());
         // Базовый набор — то, что есть у любого горожанина.
+        // Внимание: конструктор MerchantOffer(costA, costB, result, maxUses, xp, price)
+        // — ШЕСТЬ аргументов. Пятиаргументная форма (costA, result, ...) продаёт
+        // ВТОРОЙ предмет, поэтому цену и товар нельзя путать местами.
         list.add(new MerchantOffer(
-                new ItemStack(ElisarBlocks.SIZO_PLANKS.get(), 12),
-                ducat.copyWithCount(1), 16, 2, 0.05F));
+                ducat.copyWithCount(1), ItemStack.EMPTY,
+                new ItemStack(ElisarBlocks.SIZO_PLANKS.get(), 12), 16, 2, 0.05F));
         list.add(new MerchantOffer(
-                ducat.copyWithCount(2),
+                ducat.copyWithCount(2), ItemStack.EMPTY,
                 new ItemStack(ModItems.AURITE_INGOT.get(), 1), 24, 3, 0.05F));
         list.add(new MerchantOffer(
-                ducat.copyWithCount(3),
+                ducat.copyWithCount(3), ItemStack.EMPTY,
                 new ItemStack(Items.BREAD, 5), 16, 2, 0.05F));
         // Товары профессии: у каждого ремесленника свой набор.
         int idx = 0;
         for (ItemStack goods : this.profession.goods()) {
             int price = 3 + idx * 3;
             list.add(new MerchantOffer(
-                    ducat.copyWithCount(price),
+                    ducat.copyWithCount(price), ItemStack.EMPTY,
                     goods.copy(), 12 + idx * 2, 4 + idx, 0.08F));
             idx++;
         }

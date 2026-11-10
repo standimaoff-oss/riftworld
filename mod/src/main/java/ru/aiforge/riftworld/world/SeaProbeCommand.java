@@ -1966,7 +1966,38 @@ public final class SeaProbeCommand {
         return false;
     }
 
+    /**
+     * Обёртка проб структур: любое исключение печатается в консоль и в вывод
+     * команды вместе со стеком, а не превращается в безликое «An unexpected
+     * error occurred» от бригадира. Именно так в CI ловились краши проб.
+     */
     private static int probeStruct(CommandSourceStack src, String rawKind) {
+        try {
+            return probeStructInner(src, rawKind);
+        } catch (Throwable t) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("riftstruct kind=").append(rawKind)
+              .append(" error=").append(t.getClass().getSimpleName())
+              .append(" msg=").append(String.valueOf(t.getMessage()).replace('\n', ' '));
+            Throwable cause = t.getCause();
+            if (cause != null && cause != t) {
+                sb.append(" cause=").append(cause.getClass().getSimpleName())
+                  .append(" cause_msg=").append(String.valueOf(cause.getMessage()).replace('\n', ' '));
+            }
+            StackTraceElement[] st = t.getStackTrace();
+            for (int i = 0; i < Math.min(st.length, 8); ++i) {
+                sb.append(" | ").append(st[i].getClassName()).append('#')
+                  .append(st[i].getMethodName()).append(':').append(st[i].getLineNumber());
+            }
+            String line = sb.toString();
+            org.slf4j.LoggerFactory.getLogger(SeaProbeCommand.class)
+                    .error("[riftstruct] {}", line, t);
+            src.sendFailure(Component.literal(line));
+            return 0;
+        }
+    }
+
+    private static int probeStructInner(CommandSourceStack src, String rawKind) {
         ServerLevel level = src.getLevel();
         BlockPos at = BlockPos.containing(src.getPosition());
         String k = rawKind == null ? "" : rawKind.toLowerCase(java.util.Locale.ROOT);
@@ -4342,13 +4373,30 @@ public final class SeaProbeCommand {
             // Проба строит камеру тюрьмы и склад у ближайшей дороги и честно
             // сообщает, что получилось: сколько прутьев клетки, есть ли сундук
             // и насколько далеко он от камеры.
-            int px = 760, pz = 770;
-            int ground = 118;
+            //
+            // Точка поиска — НАСТОЯЩИЙ город Элисара: дороги лежат в радиусе
+            // ~230 блоков от нуля, а не в сотнях. Держим список площадей
+            // плана и берём ту, до которой дорога действительно есть.
             CityPlan plan = CityPlan.get();
-            PatrolRoute route = PatrolRoute.nearestTo(plan, level, px, ground, pz, 300.0);
-            if (route == null) {
+            double px = Double.NaN, pz = Double.NaN;
+            if (!plan.plazas.isEmpty()) {
+                CityPlan.Plaza plaza = plan.plazas.get(0);
+                px = plaza.x();
+                pz = plaza.z();
+            }
+            if (Double.isNaN(px)) {
                 src.sendSuccess(() -> Component.literal(
-                        "riftstruct kind=v49_elisar_law error=no_road_near"), false);
+                        "riftstruct kind=v49_elisar_law error=no_plaza_in_plan"), false);
+                return 0;
+            }
+            double ground = level.getHeight(
+                    net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                    net.minecraft.util.Mth.floor(px), net.minecraft.util.Mth.floor(pz));
+            PatrolRoute route = PatrolRoute.nearestTo(plan, level, px, ground, pz, 120.0);
+            if (route == null || route.isEmpty()) {
+                src.sendSuccess(() -> Component.literal(
+                        "riftstruct kind=v49_elisar_law error=no_road_near at="
+                                + (int) px + "," + (int) pz), false);
                 return 0;
             }
             PatrolRoute.Waypoint wp = route.nearest(px, ground, pz);

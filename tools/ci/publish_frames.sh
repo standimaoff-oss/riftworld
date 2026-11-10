@@ -23,9 +23,16 @@ if ls "$OUT"/*.png >/dev/null 2>&1; then
 fi
 # Текстовые отчёты probe-скриптов: единственный способ прочитать, какая именно
 # проверка не прошла, когда логи джобы недоступны.
+# Имя файла начинается с имени джобы — иначе параллельные джобы затирают отчёты
+# друг друга, и падение одной пробы невозможно расследовать.
 if ls "$OUT"/*.txt "$OUT"/*.log >/dev/null 2>&1; then
-    cp -a "$OUT"/*.txt reports/ci_diag/ 2>/dev/null || true
-    cp -a "$OUT"/*.log reports/ci_diag/ 2>/dev/null || true
+    job=${GITHUB_JOB:-job}
+    for f in "$OUT"/*.txt "$OUT"/*.log; do
+        [ -e "$f" ] || continue
+        base=$(basename "$f")
+        cp -a "$f" "reports/ci_diag/${job}__${base}" 2>/dev/null || true
+        cp -a "$f" "reports/ci_diag/${base}" 2>/dev/null || true
+    done
     changed=1
 fi
 if ls mod/build/libs/*.jar >/dev/null 2>&1; then
@@ -64,7 +71,10 @@ for try in 1 2 3 4 5; do
     # Полный refspec и FETCH_HEAD: короткое имя ветки не обновляет
     # refs/remotes/origin/*, и reset ушёл бы на устаревший коммит.
     git fetch origin "refs/heads/$BRANCH" >>"$DIAG" 2>&1 || echo "fetch не удался" >>"$DIAG"
-    git reset --mixed FETCH_HEAD >>"$DIAG" 2>&1 || echo "reset не удался" >>"$DIAG"
+    # Ветвь могли обновить параллельные джобы: забираем их коммиты, но НЕ
+    # трогаем наши файлы (reset --mixed стирает рабочие изменения).
+    git checkout FETCH_HEAD -- . >>"$DIAG" 2>&1 || true
+    git reset --soft FETCH_HEAD >>"$DIAG" 2>&1 || echo "reset не удался" >>"$DIAG"
     add_all
     if git diff --cached --quiet; then
         echo "после синхронизации нечего публиковать" >>"$DIAG"
