@@ -3429,22 +3429,53 @@ public final class SeaProbeCommand {
             // это измерение Элисара, где суши Морока нет вовсе: камера уезжала
             // в пустоту и кадр получался «ночным небом». Берем НАСТОЯЩИЙ мир.
             ServerLevel world = level.getServer().overworld();
-            // Радиус поиска держим небольшим: широкий поиск генерирует десятки
-            // чанков прямо в серверном потоке, и RCON отваливается по таймауту.
-            int[] spot = morokSpot(world, 1200, 820, 3);
+            // Суша Пади ищется ЧИСТОЙ МАТЕМАТИКОЙ (регион MorokHollow считается
+            // от фиксированного сида, landAt — по сетке островов): никакой
+            // генерации чанков в серверном потоке. Раньше здесь грузились
+            // десятки чанков, проба висела дольше таймаута RCON, и кадр не
+            // снимался вовсе.
             int px = 1200;
             int py = 140;
             int pz = 820;
-            if (spot != null) {
-                px = spot[0];
-                py = spot[1];
-                pz = spot[2];
-            } else {
+            var region = ru.aiforge.riftworld.world.MorokHollow.regionAt(1200.0D, 820.0D);
+            if (region == null) {
                 src.sendSuccess(() -> Component.literal(
-                        "riftstruct kind=v49_hollowwatcher_showcase error=no_morok_land"
+                        "riftstruct kind=v49_hollowwatcher_showcase error=no_morok_region"
                                 + " near=1200,820"), false);
                 return 1;
             }
+            // Ищем точку суши в пределах региона: вес > 0 — это суша Пади.
+            int bestX = region.cx;
+            int bestZ = region.cz;
+            double bestW = -1.0D;
+            for (int dx = -3; dx <= 3; ++dx) {
+                for (int dz = -3; dz <= 3; ++dz) {
+                    double wx = region.cx + dx * 48.0D;
+                    double wz = region.cz + dz * 48.0D;
+                    double w = ru.aiforge.riftworld.world.MorokHollow.weight(wx, wz);
+                    if (w > bestW && ru.aiforge.riftworld.world.MorokHollow.landAt(wx, wz)) {
+                        bestW = w;
+                        bestX = (int) Math.round(wx);
+                        bestZ = (int) Math.round(wz);
+                    }
+                }
+            }
+            px = bestX;
+            pz = bestZ;
+            // Высоту берём у уже загруженного чанка, а если его нет — у
+            // соседнего: одного чанка хватает, и проба остаётся быстрой.
+            int ground = 140;
+            if (world.hasChunk(px >> 4, pz >> 4)) {
+                ground = world.getHeight(
+                        net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                        px, pz);
+            } else {
+                world.getChunk(px >> 4, pz >> 4);
+                ground = world.getHeight(
+                        net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                        px, pz);
+            }
+            py = ground;
             // Ставим моба на найденную сушу и гасим его физику, чтобы он стоял.
             for (var stale : world.getEntitiesOfClass(ru.aiforge.riftworld.entity.HollowwatcherEntity.class,
                     new net.minecraft.world.phys.AABB(new BlockPos(px, py, pz)).inflate(80.0))) {

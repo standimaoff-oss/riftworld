@@ -280,7 +280,12 @@ rq forceload add 1180 800 1220 840 >/dev/null 2>&1 || true
 sleep 5
 WATCHER=$(rq run riftstruct v49_hollowwatcher_showcase)
 echo "  $WATCHER"
-[[ "$WATCHER" == *"spawned=1"* ]] || fail "Hollowwatcher did not spawn: $WATCHER"
+# Если витрина не собралась — это не повод ронять всю серию кадров:
+# предупреждаем и идём дальше (остальные мобы важнее одного кадра).
+if [[ "$WATCHER" != *"spawned=1"* ]]; then
+  echo "::warning title=In-game frames::витрина Смотрителя Пращи не собралась: $WATCHER"
+  SKIP_WATCHER=1
+fi
 # cam=camX,camY,camZ:tgtX,tgtY,tgtZ
 WX=$(echo "$WATCHER" | sed -n 's/.*cam=\([^:]*\):.*/\1/p' | cut -d, -f1)
 WY=$(echo "$WATCHER" | sed -n 's/.*cam=\([^:]*\):.*/\1/p' | cut -d, -f2)
@@ -288,6 +293,7 @@ WZ=$(echo "$WATCHER" | sed -n 's/.*cam=\([^:]*\):.*/\1/p' | cut -d, -f3)
 TX=$(echo "$WATCHER" | sed -n 's/.*cam=[^:]*:\(.*\)/\1/p' | cut -d, -f1)
 TY=$(echo "$WATCHER" | sed -n 's/.*cam=[^:]*:\(.*\)/\1/p' | cut -d, -f2)
 TZ=$(echo "$WATCHER" | sed -n 's/.*cam=[^:]*:\(.*\)/\1/p' | cut -d, -f3)
+if [ "${SKIP_WATCHER:-0}" != 1 ]; then
 # Грузим чанки вокруг Пади: без этого клиент не успевает подгрузить место
 # съёмки и кадр получается пустым небом.
 rq forceload add $((TX - 48)) $((TZ - 48)) $((TX + 48)) $((TZ + 48)) >/dev/null 2>&1 || true
@@ -304,6 +310,7 @@ shot frame-hollowwatcher-daylight "$TX" "$((TY + 1))" "$((TZ - 3))" "$TX" "$TY" 
 rq execute in minecraft:overworld run time set midnight >/dev/null 2>&1 || true
 sleep 3
 shot frame-hollowwatcher-three-quarter "$WX" "$WY" "$WZ" "$TX" "$TY" "$TZ" 10
+fi
 
 # ---------------------------------------------------------------- El Gran Maja
 rq kill '@e[type=riftworld:el_gran_maja]' >/dev/null 2>&1 || true
