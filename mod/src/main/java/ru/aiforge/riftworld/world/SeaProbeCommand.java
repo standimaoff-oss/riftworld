@@ -3428,112 +3428,32 @@ public final class SeaProbeCommand {
             // 'execute in riftworld:elisar run riftstruct ...', поэтому level здесь —
             // это измерение Элисара, где суши Морока нет вовсе: камера уезжала
             // в пустоту и кадр получался «ночным небом». Берем НАСТОЯЩИЙ мир.
-            ServerLevel world = level.getServer().overworld();
-            // Суша Пади ищется ЧИСТОЙ МАТЕМАТИКОЙ (регион MorokHollow считается
-            // от фиксированного сида, landAt — по сетке островов): никакой
-            // генерации чанков в серверном потоке. Раньше здесь грузились
-            // десятки чанков, проба висела дольше таймаута RCON, и кадр не
-            // снимался вовсе.
-            int px = 1200;
-            int py = 140;
-            int pz = 820;
-            var region = ru.aiforge.riftworld.world.MorokHollow.regionAt(1200.0D, 820.0D);
-            if (region == null) {
-                // Региона Пади в этом мире нет (на CI-сервере мир flat), и
-                // площадка в обычном мире оказывалась за две тысячи блоков от
-                // игрока: клиент не успевал подгрузить чанки, и кадр выходил
-                // совершенно чёрным. Поэтому строим площадку ТУТ ЖЕ, в городе
-                // Элисара — рядом с игроком, со светом и загруженными чанками.
+            // Настоящей суши Пади в этом мире нет: регион Пади считается
+            // чистой математикой и существует всегда, а вот LAND там — нет
+            // (на CI-сервере мир flat, дно океана на Y=-60). Площадка
+            // строится в городе Элисара, рядом с игроком: клиент видит её
+            // сразу, со светом и загруженными чанками. Раньше камера уезжала
+            // за две тысячи блоков от игрока, и кадр получался совершенно
+            // чёрным.
+            {
                 ServerLevel city = level.getServer().getLevel(ru.aiforge.riftworld.flight.Flight.ELISAR_DIM);
-                if (city != null) {
-                    int cx = -28;
-                    int cz = 50;
-                    int cy = buildHollowwatcherStage(city, cx, cz);
-                    spawnHollowwatcher(city, cx, cy, cz);
+                if (city == null) {
                     src.sendSuccess(() -> Component.literal(
-                            "riftstruct kind=v49_hollowwatcher_showcase at=" + cx + "," + cy + "," + cz
-                                    + " spawned=1 blocks=1 sub_air=1 staged=1"
-                                    + " dim=" + city.dimension().location()
-                                    + " cam=" + (cx - 4.5) + "," + (cy + 2.4) + "," + (cz - 3.5)
-                                    + ":" + cx + "," + (cy + 1.7) + "," + cz), false);
+                            "riftstruct kind=v49_hollowwatcher_showcase error=no_city"), false);
                     return 1;
                 }
-                // Региона Пади в этом мире нет: на CI-сервере стоит flat-мир,
-                // где Падь не генерируется. Раньше витрина на этом просто
-                // отказывалась работать, и кадров Смотрителя Пращи не было
-                // вовсе. Теперь строим площадку сами: земля, деревья и
-                // мглистый воздух — моб получится в кадре в любом мире.
-                int sx = 1200;
-                int sz = 820;
-                int sy = buildHollowwatcherStage(world, sx, sz);
-                spawnHollowwatcher(world, sx, sy, sz);
+                int cx = -28;
+                int cz = 50;
+                int cy = buildHollowwatcherStage(city, cx, cz);
+                spawnHollowwatcher(city, cx, cy, cz);
                 src.sendSuccess(() -> Component.literal(
-                        "riftstruct kind=v49_hollowwatcher_showcase at=" + sx + "," + sy + "," + sz
+                        "riftstruct kind=v49_hollowwatcher_showcase at=" + cx + "," + cy + "," + cz
                                 + " spawned=1 blocks=1 sub_air=1 staged=1"
-                                + " dim=" + world.dimension().location()
-                                + " cam=" + (sx - 4.5) + "," + (sy + 2.4) + "," + (sz - 3.5)
-                                + ":" + sx + "," + (sy + 1.7) + "," + sz), false);
+                                + " dim=" + city.dimension().location()
+                                + " cam=" + (cx - 4.5) + "," + (cy + 2.4) + "," + (cz - 3.5)
+                                + ":" + cx + "," + (cy + 1.7) + "," + cz), false);
                 return 1;
             }
-            // Ищем точку суши в пределах региона: вес > 0 — это суша Пади.
-            int bestX = region.cx;
-            int bestZ = region.cz;
-            double bestW = -1.0D;
-            for (int dx = -3; dx <= 3; ++dx) {
-                for (int dz = -3; dz <= 3; ++dz) {
-                    double wx = region.cx + dx * 48.0D;
-                    double wz = region.cz + dz * 48.0D;
-                    double w = ru.aiforge.riftworld.world.MorokHollow.weight(wx, wz);
-                    if (w > bestW && ru.aiforge.riftworld.world.MorokHollow.landAt(wx, wz)) {
-                        bestW = w;
-                        bestX = (int) Math.round(wx);
-                        bestZ = (int) Math.round(wz);
-                    }
-                }
-            }
-            px = bestX;
-            pz = bestZ;
-            // Высоту берём у уже загруженного чанка, а если его нет — у
-            // соседнего: одного чанка хватает, и проба остаётся быстрой.
-            int ground = 140;
-            if (world.hasChunk(px >> 4, pz >> 4)) {
-                ground = world.getHeight(
-                        net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-                        px, pz);
-            } else {
-                world.getChunk(px >> 4, pz >> 4);
-                ground = world.getHeight(
-                        net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-                        px, pz);
-            }
-            py = ground;
-            // Ставим моба на найденную сушу и гасим его физику, чтобы он стоял.
-            for (var stale : world.getEntitiesOfClass(ru.aiforge.riftworld.entity.HollowwatcherEntity.class,
-                    new net.minecraft.world.phys.AABB(new BlockPos(px, py, pz)).inflate(80.0))) {
-                stale.discard();
-            }
-            int spawned = 0;
-            var watcher = ru.aiforge.riftworld.registry.ModEntities.HOLLOWWATCHER.get().create(world);
-            if (watcher != null) {
-                watcher.setPos(px + 0.5D, py + 0.05D, pz + 0.5D);
-                watcher.setNoGravity(true);
-                watcher.setNoAi(true);
-                watcher.setInvulnerable(true);
-                watcher.setSilent(true);
-                // Смотрит на юг, чтобы кадр «в лицо» был удачным.
-                watcher.setYRot(0.0F);
-                watcher.yHeadRot = 0.0F;
-                watcher.yBodyRot = 0.0F;
-                world.addFreshEntity(watcher);
-                spawned = 1;
-            }
-            String line = "riftstruct kind=v49_hollowwatcher_showcase at=" + px + "," + py + "," + pz
-                    + " spawned=" + spawned + " blocks=0 sub_air=0"
-                    + " dim=" + world.dimension().location()
-                    + " cam=" + (px - 4.5) + "," + (py + 2.4) + "," + (pz - 3.5)
-                    + ":" + px + "," + (py + 1.7) + "," + pz;
-            src.sendSuccess(() -> Component.literal(line), false);
-            return 1;
         }
 
         if (k.equals("bb_paper_dragon_showcase")) {
