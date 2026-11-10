@@ -26,7 +26,7 @@ captured frame-paper-dragon-side
 ::warning title=In-game frames::кадр frame-paper-dragon-head слишком тёмный, переснимаем (4/4)
 ::warning title=In-game frames::кадр frame-paper-dragon-head остался тёмным после четырёх попыток
 captured frame-paper-dragon-head
-  paper dragon at 231,145,128
+  paper dragon at 193,145,128
 ::warning title=In-game frames::кадр frame-paper-dragon-far-a слишком тёмный, переснимаем (1/4)
 ::warning title=In-game frames::кадр frame-paper-dragon-far-a слишком тёмный, переснимаем (2/4)
 ::warning title=In-game frames::кадр frame-paper-dragon-far-a слишком тёмный, переснимаем (3/4)
@@ -45,7 +45,7 @@ captured frame-paper-dragon-far-close
 ::warning title=In-game frames::кадр frame-paper-dragon-far-b слишком тёмный, переснимаем (4/4)
 ::warning title=In-game frames::кадр frame-paper-dragon-far-b остался тёмным после четырёх попыток
 captured frame-paper-dragon-far-b
-  paper dragon pos after flight: Paper Dragon has the following entity data: [384.1493441534508d, 141.0851939820434d, 282.8702976971627d]
+  paper dragon pos after flight: Paper Dragon has the following entity data: [15.8931139322279d, 140.26568720600721d, 303.36768201005464d]
 ocean attempt 1: The nearest riftworld:maja_ocean is at [1115, 54, 1526] (1889 blocks away)
 ocean centre: 1115 1526
 captured frame-liopleurodon-swim
@@ -70,30 +70,7 @@ No entity was found
 ::warning title=In-game frames::кадр frame-hollowwatcher-three-quarter слишком тёмный, переснимаем (4/4)
 ::warning title=In-game frames::кадр frame-hollowwatcher-three-quarter остался тёмным после четырёх попыток
 captured frame-hollowwatcher-three-quarter
-::warning title=In-game frames::кадр frame-hollowwatcher-face слишком тёмный, переснимаем (1/4)
-::warning title=In-game frames::кадр frame-hollowwatcher-face слишком тёмный, переснимаем (2/4)
-::warning title=In-game frames::кадр frame-hollowwatcher-face слишком тёмный, переснимаем (3/4)
-::warning title=In-game frames::кадр frame-hollowwatcher-face слишком тёмный, переснимаем (4/4)
-::warning title=In-game frames::кадр frame-hollowwatcher-face остался тёмным после четырёх попыток
-captured frame-hollowwatcher-face
-::warning title=In-game frames::кадр frame-hollowwatcher-tall слишком тёмный, переснимаем (1/4)
-::warning title=In-game frames::кадр frame-hollowwatcher-tall слишком тёмный, переснимаем (2/4)
-::warning title=In-game frames::кадр frame-hollowwatcher-tall слишком тёмный, переснимаем (3/4)
-::warning title=In-game frames::кадр frame-hollowwatcher-tall слишком тёмный, переснимаем (4/4)
-::warning title=In-game frames::кадр frame-hollowwatcher-tall остался тёмным после четырёх попыток
-captured frame-hollowwatcher-tall
-::warning title=In-game frames::кадр frame-hollowwatcher-daylight слишком тёмный, переснимаем (1/4)
-::warning title=In-game frames::кадр frame-hollowwatcher-daylight слишком тёмный, переснимаем (2/4)
-::warning title=In-game frames::кадр frame-hollowwatcher-daylight слишком тёмный, переснимаем (3/4)
-::warning title=In-game frames::кадр frame-hollowwatcher-daylight слишком тёмный, переснимаем (4/4)
-::warning title=In-game frames::кадр frame-hollowwatcher-daylight остался тёмным после четырёх попыток
-captured frame-hollowwatcher-daylight
-::warning title=In-game frames::кадр frame-hollowwatcher-night слишком тёмный, переснимаем (1/4)
-::warning title=In-game frames::кадр frame-hollowwatcher-night слишком тёмный, переснимаем (2/4)
-::warning title=In-game frames::кадр frame-hollowwatcher-night слишком тёмный, переснимаем (3/4)
-::warning title=In-game frames::кадр frame-hollowwatcher-night слишком тёмный, переснимаем (4/4)
-::warning title=In-game frames::кадр frame-hollowwatcher-night остался тёмным после четырёх попыток
-captured frame-hollowwatcher-night
+tools/ci/creature_frames.sh: line 375: 105.7: syntax error: invalid arithmetic operator (error token is ".7")
 ::warning title=In-game frames::кадр frame-maja-body слишком тёмный, переснимаем (1/4)
 ::warning title=In-game frames::кадр frame-maja-body слишком тёмный, переснимаем (2/4)
 ::warning title=In-game frames::кадр frame-maja-body слишком тёмный, переснимаем (3/4)
@@ -112,28 +89,24 @@ captured frame-v049-tools-closeup
 captured frame-v049-items-dropped-tools
 captured frame-v049-items-dropped-armour
 captured frame-v049-elisar-folk
-captured 22 in-game frames
-total 8824
--rw-r--r-- 1 runner runner 465680 Nov 10 23:14 frame-hollowwatcher-daylight.png
--rw-r--r-- 1 runner runner 492608 Nov 10 23:10 frame-hollowwatcher-face.png
--rw-r--r-- 1 runner runner 988500 Nov 10 23:15 frame-hollowwatcher-night.png
--rw-r--r-- 1 runner runner 564033 Nov 10 23:12 frame-hollowwatcher-tall.png
--rw-r--r-- 1 runner runner 879855 Nov 10 23:08 frame-hollowwatcher-three-quarter.png
--rw-r--r-- 1 runner runner 711554 Nov 10 23:05 frame-liopleurodon-head.png
--rw-r--r-- 1 runner runner 666311 Nov 10 23:05 frame-liopleurodon-side.png
--rw-r--r-- 1 runner runner 469548 Nov 10 23:05 frame-liopleurodon-swim.png
--rw-r--r-- 1 runner runner 153973 Nov 10 23:18 frame-maja-body.png
--rw-r--r-- 1 runner runner 139729 Nov 10 23:20 frame-maja-head.png
--rw-r--r-- 1 runner runner 129716 Nov 10 23:02 frame-paper-dragon-far-a.png
--rw-r--r-- 1 runner runner 134783 Nov 10 23:04 frame-paper-dragon-far-b.png
--rw-r--r-- 1 runner runner 191425 Nov 10 23:03 frame-paper-dragon-far-close.png
--rw-r--r-- 1 runner runner 238520 Nov 10 23:00 frame-paper-dragon-head.png
--rw-r--r-- 1 runner runner 137608 Nov 10 22:59 frame-paper-dragon-side.png
--rw-r--r-- 1 runner runner 469904 Nov 10 22:57 frame-paper-dragon-three-quarter.png
--rw-r--r-- 1 runner runner 297296 Nov 10 23:20 frame-v049-armors-closeup.png
--rw-r--r-- 1 runner runner 312733 Nov 10 23:21 frame-v049-elisar-folk.png
--rw-r--r-- 1 runner runner 467346 Nov 10 23:21 frame-v049-items-dropped-armour.png
--rw-r--r-- 1 runner runner 488096 Nov 10 23:21 frame-v049-items-dropped-tools.png
--rw-r--r-- 1 runner runner 231250 Nov 10 23:20 frame-v049-riftcrystal-night-glow.png
--rw-r--r-- 1 runner runner 363447 Nov 10 23:21 frame-v049-tools-closeup.png
+captured 18 in-game frames
+total 8976
+-rw-r--r-- 1 runner runner  876624 Nov 10 21:14 frame-hollowwatcher-three-quarter.png
+-rw-r--r-- 1 runner runner  738662 Nov 10 21:11 frame-liopleurodon-head.png
+-rw-r--r-- 1 runner runner  553387 Nov 10 21:11 frame-liopleurodon-side.png
+-rw-r--r-- 1 runner runner  556085 Nov 10 21:11 frame-liopleurodon-swim.png
+-rw-r--r-- 1 runner runner  588334 Nov 10 21:16 frame-maja-body.png
+-rw-r--r-- 1 runner runner  686787 Nov 10 21:18 frame-maja-head.png
+-rw-r--r-- 1 runner runner  149524 Nov 10 21:07 frame-paper-dragon-far-a.png
+-rw-r--r-- 1 runner runner  131637 Nov 10 21:10 frame-paper-dragon-far-b.png
+-rw-r--r-- 1 runner runner  202806 Nov 10 21:09 frame-paper-dragon-far-close.png
+-rw-r--r-- 1 runner runner  236991 Nov 10 21:06 frame-paper-dragon-head.png
+-rw-r--r-- 1 runner runner  137608 Nov 10 21:05 frame-paper-dragon-side.png
+-rw-r--r-- 1 runner runner  470314 Nov 10 21:03 frame-paper-dragon-three-quarter.png
+-rw-r--r-- 1 runner runner  314249 Nov 10 21:19 frame-v049-armors-closeup.png
+-rw-r--r-- 1 runner runner  837342 Nov 10 21:20 frame-v049-elisar-folk.png
+-rw-r--r-- 1 runner runner 1035296 Nov 10 21:20 frame-v049-items-dropped-armour.png
+-rw-r--r-- 1 runner runner 1044883 Nov 10 21:19 frame-v049-items-dropped-tools.png
+-rw-r--r-- 1 runner runner  231287 Nov 10 21:19 frame-v049-riftcrystal-night-glow.png
+-rw-r--r-- 1 runner runner  363665 Nov 10 21:19 frame-v049-tools-closeup.png
 OK: real client frames saved to ci-out/frames
