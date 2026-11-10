@@ -11,17 +11,47 @@ No VM guests are running outdated hypervisor (qemu) binaries on this host.
 captured frame-paper-dragon-three-quarter
 captured frame-paper-dragon-side
 captured frame-paper-dragon-head
-  paper dragon at 215,144,111
+  paper dragon at 260,145,144
 captured frame-paper-dragon-far-a
 captured frame-paper-dragon-far-b
-  paper dragon pos after flight: Paper Dragon has the following entity data: [99.41800623162952d, 138.27112563854348d, -133.78771547438186d]
+  paper dragon pos after flight: Paper Dragon has the following entity data: [491.57364144578486d, 139.56683229795203d, 309.09262353595284d]
 ocean attempt 1: The nearest riftworld:maja_ocean is at [1115, 54, 1526] (1889 blocks away)
 ocean centre: 1115 1526
 captured frame-liopleurodon-swim
 captured frame-liopleurodon-side
 captured frame-liopleurodon-head
-  riftstruct kind=v49_hollowwatcher_showcase error=no_morok_region near=1200,820
-::warning title=In-game frames::витрина Смотрителя Пращи не собралась: riftstruct kind=v49_hollowwatcher_showcase error=no_morok_region near=1200,820
+  Unknown or incomplete command, see below for error
+run riftstruct v49_hollowwatcher_showcase<--[HERE]
+
+::warning title=In-game frames::rcon attempt 1 failed (rc=4), retrying
+Unknown or incomplete command, see below for error
+run riftstruct v49_hollowwatcher_showcase<--[HERE]
+
+::warning title=In-game frames::rcon attempt 2 failed (rc=4), retrying
+Unknown or incomplete command, see below for error
+run riftstruct v49_hollowwatcher_showcase<--[HERE]
+
+::warning title=In-game frames::rcon attempt 3 failed (rc=4), retrying
+Unknown or incomplete command, see below for error
+run riftstruct v49_hollowwatcher_showcase<--[HERE]
+
+::warning title=In-game frames::rcon attempt 4 failed (rc=4), retrying
+::warning title=In-game frames::витрина Смотрителя Пращи не собралась: Unknown or incomplete command, see below for error
+run riftstruct v49_hollowwatcher_showcase<--[HERE]
+
+::warning title=In-game frames::rcon attempt 1 failed (rc=4), retrying
+Unknown or incomplete command, see below for error
+run riftstruct v49_hollowwatcher_showcase<--[HERE]
+
+::warning title=In-game frames::rcon attempt 2 failed (rc=4), retrying
+Unknown or incomplete command, see below for error
+run riftstruct v49_hollowwatcher_showcase<--[HERE]
+
+::warning title=In-game frames::rcon attempt 3 failed (rc=4), retrying
+Unknown or incomplete command, see below for error
+run riftstruct v49_hollowwatcher_showcase<--[HERE]
+
+::warning title=In-game frames::rcon attempt 4 failed (rc=4), retrying
 captured frame-maja-body
 captured frame-maja-head
 captured frame-v049-armors-closeup
@@ -31,21 +61,21 @@ captured frame-v049-items-dropped-tools
 captured frame-v049-items-dropped-armour
 captured frame-v049-elisar-folk
 captured 16 in-game frames
-total 5076
--rw-r--r-- 1 runner runner 776354 Nov 10 12:29 frame-liopleurodon-head.png
--rw-r--r-- 1 runner runner 592808 Nov 10 12:29 frame-liopleurodon-side.png
--rw-r--r-- 1 runner runner 550337 Nov 10 12:29 frame-liopleurodon-swim.png
--rw-r--r-- 1 runner runner 198920 Nov 10 12:30 frame-maja-body.png
--rw-r--r-- 1 runner runner 185236 Nov 10 12:30 frame-maja-head.png
--rw-r--r-- 1 runner runner  18033 Nov 10 12:28 frame-paper-dragon-far-a.png
--rw-r--r-- 1 runner runner  38533 Nov 10 12:29 frame-paper-dragon-far-b.png
--rw-r--r-- 1 runner runner 132768 Nov 10 12:28 frame-paper-dragon-head.png
--rw-r--r-- 1 runner runner 175600 Nov 10 12:28 frame-paper-dragon-side.png
--rw-r--r-- 1 runner runner 136563 Nov 10 12:27 frame-paper-dragon-three-quarter.png
--rw-r--r-- 1 runner runner 309849 Nov 10 12:31 frame-v049-armors-closeup.png
--rw-r--r-- 1 runner runner 302426 Nov 10 12:32 frame-v049-elisar-folk.png
--rw-r--r-- 1 runner runner 433271 Nov 10 12:32 frame-v049-items-dropped-armour.png
--rw-r--r-- 1 runner runner 448180 Nov 10 12:31 frame-v049-items-dropped-tools.png
--rw-r--r-- 1 runner runner 535099 Nov 10 12:31 frame-v049-riftcrystal-night-glow.png
--rw-r--r-- 1 runner runner 333590 Nov 10 12:31 frame-v049-tools-closeup.png
+total 4896
+-rw-r--r-- 1 runner runner 738211 Nov 10 10:38 frame-liopleurodon-head.png
+-rw-r--r-- 1 runner runner 548966 Nov 10 10:37 frame-liopleurodon-side.png
+-rw-r--r-- 1 runner runner 504264 Nov 10 10:37 frame-liopleurodon-swim.png
+-rw-r--r-- 1 runner runner 116222 Nov 10 10:38 frame-maja-body.png
+-rw-r--r-- 1 runner runner 185696 Nov 10 10:39 frame-maja-head.png
+-rw-r--r-- 1 runner runner  38449 Nov 10 10:36 frame-paper-dragon-far-a.png
+-rw-r--r-- 1 runner runner  36486 Nov 10 10:37 frame-paper-dragon-far-b.png
+-rw-r--r-- 1 runner runner 131960 Nov 10 10:36 frame-paper-dragon-head.png
+-rw-r--r-- 1 runner runner 175307 Nov 10 10:36 frame-paper-dragon-side.png
+-rw-r--r-- 1 runner runner 141077 Nov 10 10:36 frame-paper-dragon-three-quarter.png
+-rw-r--r-- 1 runner runner 309817 Nov 10 10:39 frame-v049-armors-closeup.png
+-rw-r--r-- 1 runner runner 299659 Nov 10 10:40 frame-v049-elisar-folk.png
+-rw-r--r-- 1 runner runner 433697 Nov 10 10:40 frame-v049-items-dropped-armour.png
+-rw-r--r-- 1 runner runner 447840 Nov 10 10:40 frame-v049-items-dropped-tools.png
+-rw-r--r-- 1 runner runner 534624 Nov 10 10:39 frame-v049-riftcrystal-night-glow.png
+-rw-r--r-- 1 runner runner 333986 Nov 10 10:40 frame-v049-tools-closeup.png
 OK: real client frames saved to ci-out/frames
