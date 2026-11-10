@@ -4615,7 +4615,9 @@ public final class SeaProbeCommand {
             // розыск -> смерть -> тюрьма -> вещи в сундуке склада.
             ServerPlayer target = null;
             double bestD = Double.MAX_VALUE;
-            for (ServerPlayer p : level.players()) {
+            // Ищем по ВСЕМ измерениям: после смерти игрок может возродиться
+            // в обычном мире, и проба в измерении Элисара его не видела.
+            for (ServerPlayer p : level.getServer().getPlayerList().getPlayers()) {
                 double d = p.distanceToSqr(src.getPosition());
                 if (d < bestD) {
                     bestD = d;
@@ -4627,8 +4629,11 @@ public final class SeaProbeCommand {
                         "riftstruct kind=v49_law_state error=no_player"), false);
                 return 0;
             }
-            ElisarLaw law = ElisarLaw.get(level);
-            boolean wanted = law.isWanted(level, target);
+            // Закон и тюрьма живут в измерении Элисара, но после смерти игрок
+            // мог возродиться в обычном мире — тогда проверяем там, где он есть.
+            ServerLevel targetLevel = target.level();
+            ElisarLaw law = ElisarLaw.get(targetLevel);
+            boolean wanted = law.isWanted(targetLevel, target);
             int warnings = law.warnings(target);
             var held = law.peek(target.getUUID());
             int heldCount = 0;
@@ -4636,14 +4641,14 @@ public final class SeaProbeCommand {
                 heldCount += Math.max(0, r.count());
             }
             // Где игрок: в камере или на свободе.
-            ElisarJail.Site near = ElisarJail.findNear(level, target.getX(), target.getZ(), 24.0);
+            ElisarJail.Site near = ElisarJail.findNear(targetLevel, target.getX(), target.getZ(), 24.0);
             boolean jailed = near != null
                     && Math.hypot(target.getX() - near.cell().getX(),
                                  target.getZ() - near.cell().getZ()) < 6.0;
             // Что лежит в сундуке склада рядом.
             int chestItems = 0;
             if (near != null) {
-                if (level.getBlockEntity(near.chest())
+                if (targetLevel.getBlockEntity(near.chest())
                         instanceof net.minecraft.world.level.block.entity.ChestBlockEntity chest) {
                     for (int i = 0; i < chest.getContainerSize(); ++i) {
                         if (!chest.getItem(i).isEmpty()) {

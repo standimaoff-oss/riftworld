@@ -215,6 +215,12 @@ fi
 # Убиваем самого игрока: он должен очнуться в камере, а вещи — в сундуке.
 # Игрок тоже в измерении Элисара.
 rq execute in riftworld:elisar run damage TestPlayer 1000 minecraft:player_attack by TestPlayer >/dev/null 2>&1 || true
+# Возрождение игрока занимает время: ждём, пока он снова появится в мире.
+for _ in $(seq 1 20); do
+  ALIVE=$(rq execute in riftworld:elisar as TestPlayer run data get entity @s Pos 2>&1 | tr -d '\n' || true)
+  [[ "$ALIVE" == *"entity data"* ]] && break
+  sleep 1
+done
 sleep 4
 LAW2=$(rq execute in riftworld:elisar positioned "$CITY_X" "$CITY_Y" "$CITY_Z" run riftstruct v49_law_state 2>&1 | tr '\r\n' '  ' || true)
 log "   после смерти -> ${LAW2:0:400}"
