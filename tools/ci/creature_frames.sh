@@ -59,6 +59,11 @@ mipmapLevels:4
 entityDistanceScaling:2.0
 OPTS
 
+# Суша Пади Морока генерируется ДО старта клиента: её чанки с плотным лесом
+# и своими деревьями создаются минуту, и проба витрины Смотрителя Пращи
+# зависала на них, пока RCON не отваливался по таймауту.
+rq forceload add 1180 800 1220 840 >/dev/null 2>&1 || true
+
 export DISPLAY=:99 LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe MESA_GL_VERSION_OVERRIDE=3.3
 Xvfb :99 -screen 0 1600x900x24 -nolisten tcp >"$OUT/frames-xvfb.log" 2>&1 &
 openbox >"$OUT/frames-openbox.log" 2>&1 &
@@ -238,6 +243,13 @@ capture_underwater frame-liopleurodon-head
 # неё, а камера берёт координаты прямо из пробы.
 # Падь Морока живёт в обычном мире, поэтому витрину спрашиваем ИМЕННО в нём.
 rq execute in riftworld:elisar run time set midnight >/dev/null
+# Суша Пади должна быть сгенерирована ДО пробы: иначе проба сама генерирует
+# чанки и занимает серверный поток на десятки секунд — RCON отваливается по
+# таймауту, и кадр не снимается вовсе.
+# forceload-ом держим сушу Пади загруженной, пока снимаем остальные кадры:
+# тогда к моменту витрины чанки уже сгенерированы и проба отвечает мгновенно.
+rq forceload add 1180 800 1220 840 >/dev/null 2>&1 || true
+sleep 5
 WATCHER=$(rq run riftstruct v49_hollowwatcher_showcase)
 echo "  $WATCHER"
 [[ "$WATCHER" == *"spawned=1"* ]] || fail "Hollowwatcher did not spawn: $WATCHER"
