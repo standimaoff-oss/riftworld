@@ -75,6 +75,12 @@ overrideHeight:600
 mipmapLevels:0
 entityDistanceScaling:1.0
 OPTS
+  # Сервер должен быть готов принимать игрока: клиент, подключившийся
+  # раньше, чем сервер закончил старт, сразу отваливается.
+  for _ in $(seq 1 40); do
+    rq list >/dev/null 2>&1 && break
+    sleep 2
+  done
   export DISPLAY=:99 LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe MESA_GL_VERSION_OVERRIDE=3.3
   Xvfb :99 -screen 0 800x600x24 -nolisten tcp >ci-out/law-xvfb.log 2>&1 &
   openbox >ci-out/law-openbox.log 2>&1 &
