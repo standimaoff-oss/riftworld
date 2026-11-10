@@ -3439,9 +3439,21 @@ public final class SeaProbeCommand {
             int pz = 820;
             var region = ru.aiforge.riftworld.world.MorokHollow.regionAt(1200.0D, 820.0D);
             if (region == null) {
+                // Региона Пади в этом мире нет: на CI-сервере стоит flat-мир,
+                // где Падь не генерируется. Раньше витрина на этом просто
+                // отказывалась работать, и кадров Смотрителя Пращи не было
+                // вовсе. Теперь строим площадку сами: земля, деревья и
+                // мглистый воздух — моб получится в кадре в любом мире.
+                px = 1200;
+                pz = 820;
+                py = buildHollowwatcherStage(world, px, pz);
+                spawnHollowwatcher(world, px, py, pz);
                 src.sendSuccess(() -> Component.literal(
-                        "riftstruct kind=v49_hollowwatcher_showcase error=no_morok_region"
-                                + " near=1200,820"), false);
+                        "riftstruct kind=v49_hollowwatcher_showcase at=" + px + "," + py + "," + pz
+                                + " spawned=1 blocks=1 sub_air=1 staged=1"
+                                + " dim=" + world.dimension().location()
+                                + " cam=" + (px - 4.5) + "," + (py + 2.4) + "," + (pz - 3.5)
+                                + ":" + px + "," + (py + 1.7) + "," + pz), false);
                 return 1;
             }
             // Ищем точку суши в пределах региона: вес > 0 — это суша Пади.
@@ -5892,4 +5904,79 @@ public final class SeaProbeCommand {
         src.sendFailure(Component.literal("riftportal: unknown mode " + mode));
         return 0;
     }
+
+    /**
+     * Строит площадку Пади Морока для витрины Смотрителя Пращи.
+     *
+     * <p>Нужна там, где настоящей Пади нет: на CI-сервере мир flat, и
+     * регион Морока в нём не появляется. Площадка собирает из тех же
+     * блоков, что и сам биом, — чтобы кадр читался как Падь, а не как
+     * пустое небо.</p>
+     */
+    private static int buildHollowwatcherStage(ServerLevel world, int px, int pz) {
+        world.getChunk(px >> 4, pz >> 4);
+        int ground = world.getHeight(
+                net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                px, pz);
+        // Земля: промёрзшая почва и снежный мох.
+        for (int dx = -9; dx <= 9; ++dx) {
+            for (int dz = -9; dz <= 9; ++dz) {
+                world.setBlock(new BlockPos(px + dx, ground - 1, pz + dz),
+                        MorokBlocks.FROZEN_SOIL.get().defaultBlockState(), 2);
+                world.setBlock(new BlockPos(px + dx, ground, pz + dz),
+                        MorokBlocks.RIME_GRASS.get().defaultBlockState(), 2);
+            }
+        }
+        // Собственные деревья Морока: Rotwood (тёмное бревно) и Frostbriar.
+        BlockState log = MorokBlocks.ROTWOOD_LOG.get().defaultBlockState();
+        BlockState leaves = MorokBlocks.ROTWOOD_LEAVES.get().defaultBlockState();
+        int[] treeAt = {-6, -5, 5, 4, -7, 3, 6, -3};
+        for (int i = 0; i + 1 < treeAt.length; i += 2) {
+            int tx = px + treeAt[i];
+            int tz = pz + treeAt[i + 1];
+            int h = 5 + (i / 2) % 3;
+            for (int y = 1; y <= h; ++y) {
+                world.setBlock(new BlockPos(tx, ground + y, tz), log, 2);
+            }
+            // Крона: три слоя, сверху уже.
+            for (int dy = h - 2; dy <= h + 1; ++dy) {
+                int r = dy >= h + 1 ? 1 : 2;
+                for (int dx = -r; dx <= r; ++dx) {
+                    for (int dz = -r; dz <= r; ++dz) {
+                        if (Math.abs(dx) == r && Math.abs(dz) == r && dy != h + 1) continue;
+                        if (dy == h + 1 && Math.abs(dx) + Math.abs(dz) > 1) continue;
+                        world.setBlock(new BlockPos(tx + dx, ground + dy, tz + dz), leaves, 2);
+                    }
+                }
+            }
+        }
+        // Пни и камни — чтобы земля не выглядела пустой площадкой.
+        for (int i = 0; i < 6; ++i) {
+            int bx = px - 8 + i * 3;
+            int bz = pz + 7 - (i % 2) * 4;
+            world.setBlock(new BlockPos(bx, ground + 1, bz),
+                    MorokBlocks.ROTWOOD_LOG.get().defaultBlockState(), 2);
+        }
+        return ground;
+    }
+
+    /** Ставит Смотрителя Пращи на площадку и гасит его физику. */
+    private static void spawnHollowwatcher(ServerLevel world, int px, int py, int pz) {
+        for (var stale : world.getEntitiesOfClass(ru.aiforge.riftworld.entity.HollowwatcherEntity.class,
+                new net.minecraft.world.phys.AABB(new BlockPos(px, py, pz)).inflate(80.0))) {
+            stale.discard();
+        }
+        var watcher = ru.aiforge.riftworld.registry.ModEntities.HOLLOWWATCHER.get().create(world);
+        if (watcher == null) return;
+        watcher.setPos(px + 0.5D, py + 0.05D, pz + 0.5D);
+        watcher.setNoGravity(true);
+        watcher.setNoAi(true);
+        watcher.setInvulnerable(true);
+        watcher.setSilent(true);
+        watcher.setYRot(0.0F);
+        watcher.yHeadRot = 0.0F;
+        watcher.yBodyRot = 0.0F;
+        world.addFreshEntity(watcher);
+    }
+
 }

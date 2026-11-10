@@ -197,6 +197,16 @@ CX=$((DX - 9)); CZ=$((DZ + 3)); CY=$((DY + 1))
 rq execute in minecraft:overworld run tp TestPlayer "$CX" "$CY" "$CZ" facing "$DX" "$DY" "$DZ" >/dev/null
 sleep 6
 shot frame-paper-dragon-far-a "$CX" "$CY" "$CZ" "$DX" "$DY" "$DZ" 4
+# Крупный кадр: тот же дракон, но с 5 блоков. «Дальний» кадр выше
+# доказывает, что дракон виден за пределами зоны симуляции, а этот — что
+# модель при этом выглядит правильно, а не «точкой в небе».
+CX3=$((DX - 4)); CZ3=$((DZ + 2)); CY3=$((DY + 1))
+rq execute in minecraft:overworld run tp TestPlayer "$CX3" "$CY3" "$CZ3" facing "$DX" "$DY" "$DZ" >/dev/null
+sleep 4
+shot frame-paper-dragon-far-close "$CX3" "$CY3" "$CZ3" "$DX" "$DY" "$DZ" 4
+# Возвращаем камеру на дальнюю точку для второго «дальнего» кадра.
+rq execute in minecraft:overworld run tp TestPlayer "$CX" "$CY" "$CZ" facing "$DX" "$DY" "$DZ" >/dev/null
+sleep 3
 # Движение проверяем ЧЕСТНО: сдвигаем дракона по серверу (телепорт) и снимаем
 # снова. Так кадры обязаны отличаться, а «дальность» остаётся той же.
 rq execute in minecraft:overworld run tp '@e[type=riftworld:paper_dragon,limit=1]' $((DX + 5)) "$DY" $((DZ + 5)) >/dev/null 2>&1 || true
