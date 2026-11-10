@@ -146,6 +146,22 @@ jobs:
             gh release upload "$TAG" reports/concept_refs_v049/*.png --clobber || \
               echo "::warning::could not upload the concept reference sheets"
           fi
+          # Настоящие кадры из игры — тоже часть релиза. Сначала убираем
+          # устаревшие (например, кадры удалённого Пегаса), потом грузим
+          # актуальные, иначе в релизе останутся картинки несуществующих мобов.
+          if [ -d reports/ingame/0.49.0 ]; then
+            for old_asset in $(gh release view "$TAG" --json assets --jq '.assets[].name' 2>/dev/null || true); do
+              case "$old_asset" in
+                frame-*.png)
+                  if [ ! -f "reports/ingame/0.49.0/$old_asset" ]; then
+                    gh release delete-asset "$TAG" "$old_asset" -y || true
+                  fi
+                  ;;
+              esac
+            done
+            gh release upload "$TAG" reports/ingame/0.49.0/*.png --clobber || \
+              echo "::warning::could not upload the in-game frames"
+          fi
 
   server-smoke:
     needs: build
