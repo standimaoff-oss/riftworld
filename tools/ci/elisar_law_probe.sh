@@ -79,15 +79,28 @@ sleep 8
 rq execute in riftworld:elisar run kill '@e[type=riftworld:elisar_guard]' >/dev/null 2>&1 || true
 # Ставим стражей прямо на городскую площадь: витрина v40_gear стоит на 760,760
 # (вне города) и для проверки патруля не годится.
-for i in 1 2 3; do
-  rq execute in riftworld:elisar positioned "$CITY_X" "$CITY_Y" "$CITY_Z" \
-    run summon riftworld:elisar_guard '{NoGravity:1b,PersistenceRequired:1b}' >/dev/null 2>&1 || true
-  sleep 0.5
+# Пробуем несколько высот: если земля ниже, страж провалится и не появится.
+SPAWNED=0
+for dy in 0 1 2 3 4 -1 -2; do
+  SY=$((CITY_Y + dy))
+  for i in 1 2 3; do
+    rq execute in riftworld:elisar positioned "$CITY_X" "$SY" "$CITY_Z" \
+      run summon riftworld:elisar_guard '{NoGravity:1b,PersistenceRequired:1b}' >/dev/null 2>&1 || true
+    sleep 0.4
+  done
+  sleep 2
+  GUARDS=$(rq execute in riftworld:elisar positioned "$CITY_X" "$SY" "$CITY_Z" \
+    if entity '@e[type=riftworld:elisar_guard,distance=..32]' 2>&1 || true)
+  if [[ "$GUARDS" == *'Test passed'* ]]; then
+    SPAWNED=1
+    CITY_Y=$SY
+    break
+  fi
 done
-sleep 4
-GUARDS=$(rq execute in riftworld:elisar if entity '@e[type=riftworld:elisar_guard]' 2>&1 || true)
-[[ "$GUARDS" == *'Test passed'* ]] || fail "Не удалось заспавнить стражей: $GUARDS"
-log '   стражей рядом: 1+ (проверено)'
+if [ "$SPAWNED" != 1 ]; then
+  fail "Не удалось заспавнить стражей ни на одной высоте около $CITY_X,$CITY_Y,$CITY_Z"
+fi
+log "   стражей рядом: 1+ (высота $CITY_Y)"
 
 # Позиция стража до и через 10 секунд: он обязан ДВИГАТЬСЯ по маршруту.
 POS1=$(rq execute in riftworld:elisar run data get entity '@e[type=riftworld:elisar_guard,limit=1]' Pos 2>&1 | tr -d '\n' || true)
