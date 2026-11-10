@@ -11,41 +11,8 @@ No VM guests are running outdated hypervisor (qemu) binaries on this host.
 captured frame-paper-dragon-three-quarter
 captured frame-paper-dragon-side
 captured frame-paper-dragon-head
-  paper dragon at 187,144,115
+  paper dragon at 217,145,144
 captured frame-paper-dragon-far-a
 captured frame-paper-dragon-far-b
-  paper dragon pos after flight: Paper Dragon has the following entity data: [-38.88966130042772d, 138.21575355908158d, 213.83972427159603d]
-ocean attempt 1: The nearest riftworld:maja_ocean is at [1115, 54, 1526] (1889 blocks away)
-ocean centre: 1115 1526
-captured frame-liopleurodon-swim
-captured frame-liopleurodon-side
-captured frame-liopleurodon-head
-  riftstruct kind=v49_hollowwatcher_showcase error=no_morok_region near=1200,820
-::warning title=In-game frames::витрина Смотрителя Пращи не собралась: riftstruct kind=v49_hollowwatcher_showcase error=no_morok_region near=1200,820
-captured frame-maja-body
-captured frame-maja-head
-captured frame-v049-armors-closeup
-captured frame-v049-riftcrystal-night-glow
-captured frame-v049-tools-closeup
-captured frame-v049-items-dropped-tools
-captured frame-v049-items-dropped-armour
-captured frame-v049-elisar-folk
-captured 16 in-game frames
-total 5032
--rw-r--r-- 1 runner runner 716789 Nov 10 14:06 frame-liopleurodon-head.png
--rw-r--r-- 1 runner runner 615822 Nov 10 14:06 frame-liopleurodon-side.png
--rw-r--r-- 1 runner runner 547163 Nov 10 14:06 frame-liopleurodon-swim.png
--rw-r--r-- 1 runner runner 198724 Nov 10 14:07 frame-maja-body.png
--rw-r--r-- 1 runner runner 185405 Nov 10 14:07 frame-maja-head.png
--rw-r--r-- 1 runner runner  18033 Nov 10 14:05 frame-paper-dragon-far-a.png
--rw-r--r-- 1 runner runner  35966 Nov 10 14:05 frame-paper-dragon-far-b.png
--rw-r--r-- 1 runner runner 132329 Nov 10 14:05 frame-paper-dragon-head.png
--rw-r--r-- 1 runner runner 175144 Nov 10 14:04 frame-paper-dragon-side.png
--rw-r--r-- 1 runner runner 136442 Nov 10 14:04 frame-paper-dragon-three-quarter.png
--rw-r--r-- 1 runner runner 309951 Nov 10 14:08 frame-v049-armors-closeup.png
--rw-r--r-- 1 runner runner 301525 Nov 10 14:09 frame-v049-elisar-folk.png
--rw-r--r-- 1 runner runner 434473 Nov 10 14:08 frame-v049-items-dropped-armour.png
--rw-r--r-- 1 runner runner 444533 Nov 10 14:08 frame-v049-items-dropped-tools.png
--rw-r--r-- 1 runner runner 534781 Nov 10 14:08 frame-v049-riftcrystal-night-glow.png
--rw-r--r-- 1 runner runner 334015 Nov 10 14:08 frame-v049-tools-closeup.png
-OK: real client frames saved to ci-out/frames
+  paper dragon pos after flight: Paper Dragon has the following entity data: [-39.89855758226388d, 139.25674865296537d, 301.9821134694857d]
+::error title=In-game frames::Paper dragon did not move beyond the simulation range (identical frames)
