@@ -11,8 +11,41 @@ No VM guests are running outdated hypervisor (qemu) binaries on this host.
 captured frame-paper-dragon-three-quarter
 captured frame-paper-dragon-side
 captured frame-paper-dragon-head
-  paper dragon at 217,145,144
+  paper dragon at 236,145,128
 captured frame-paper-dragon-far-a
 captured frame-paper-dragon-far-b
-  paper dragon pos after flight: Paper Dragon has the following entity data: [-39.89855758226388d, 139.25674865296537d, 301.9821134694857d]
-::error title=In-game frames::Paper dragon did not move beyond the simulation range (identical frames)
+  paper dragon pos after flight: Paper Dragon has the following entity data: [70.00431772499101d, 141.73858451969386d, 88.4715319815164d]
+ocean attempt 1: The nearest riftworld:maja_ocean is at [1115, 54, 1526] (1889 blocks away)
+ocean centre: 1115 1526
+captured frame-liopleurodon-swim
+captured frame-liopleurodon-side
+captured frame-liopleurodon-head
+  riftstruct kind=v49_hollowwatcher_showcase error=no_morok_region near=1200,820
+::warning title=In-game frames::витрина Смотрителя Пращи не собралась: riftstruct kind=v49_hollowwatcher_showcase error=no_morok_region near=1200,820
+captured frame-maja-body
+captured frame-maja-head
+captured frame-v049-armors-closeup
+captured frame-v049-riftcrystal-night-glow
+captured frame-v049-tools-closeup
+captured frame-v049-items-dropped-tools
+captured frame-v049-items-dropped-armour
+captured frame-v049-elisar-folk
+captured 16 in-game frames
+total 5320
+-rw-r--r-- 1 runner runner 519823 Nov 10 14:46 frame-liopleurodon-head.png
+-rw-r--r-- 1 runner runner 548846 Nov 10 14:45 frame-liopleurodon-side.png
+-rw-r--r-- 1 runner runner 515006 Nov 10 14:45 frame-liopleurodon-swim.png
+-rw-r--r-- 1 runner runner 203666 Nov 10 14:46 frame-maja-body.png
+-rw-r--r-- 1 runner runner 176852 Nov 10 14:47 frame-maja-head.png
+-rw-r--r-- 1 runner runner 129195 Nov 10 14:45 frame-paper-dragon-far-a.png
+-rw-r--r-- 1 runner runner 124539 Nov 10 14:45 frame-paper-dragon-far-b.png
+-rw-r--r-- 1 runner runner 208057 Nov 10 14:44 frame-paper-dragon-head.png
+-rw-r--r-- 1 runner runner 264966 Nov 10 14:44 frame-paper-dragon-side.png
+-rw-r--r-- 1 runner runner 220224 Nov 10 14:44 frame-paper-dragon-three-quarter.png
+-rw-r--r-- 1 runner runner 301484 Nov 10 14:47 frame-v049-armors-closeup.png
+-rw-r--r-- 1 runner runner 327016 Nov 10 14:48 frame-v049-elisar-folk.png
+-rw-r--r-- 1 runner runner 475905 Nov 10 14:48 frame-v049-items-dropped-armour.png
+-rw-r--r-- 1 runner runner 497619 Nov 10 14:48 frame-v049-items-dropped-tools.png
+-rw-r--r-- 1 runner runner 535100 Nov 10 14:47 frame-v049-riftcrystal-night-glow.png
+-rw-r--r-- 1 runner runner 376381 Nov 10 14:48 frame-v049-tools-closeup.png
+OK: real client frames saved to ci-out/frames
