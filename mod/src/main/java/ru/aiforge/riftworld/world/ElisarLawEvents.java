@@ -86,13 +86,34 @@ public final class ElisarLawEvents {
         }
         law.confiscate(player.getUUID(), records);
 
-        // 2) тюрьма: находим (или строим) камеру и склад
-        ElisarJail.Site site = ElisarJail.findNear(level, player.getX(), player.getZ(), 240.0);
+        // 2) тюрьма: находим (или строим) камеру и склад.
+        // Тюрьма всегда в городе Элисар, а игрок мог умереть где угодно —
+        // поэтому ищем и строим именно в городе.
+        ServerLevel city = player.getServer().getLevel(ru.aiforge.riftworld.flight.Flight.ELISAR_DIM);
+        if (city == null) city = level;
+        ElisarJail.Site site = ElisarJail.findNear(city, player.getX(), player.getZ(), 240.0);
         if (site == null) {
-            // Нет тюрьмы рядом — строим новую у ближайшей дороги.
-            var road = nearestRoad(level, player.getX(), player.getZ());
-            if (road != null) {
-                site = ElisarJail.build(level, road.x, road.z, road.face);
+            // Игрок мог умереть далеко от города (например, в обычном мире) —
+            // тогда ищем тюрьму рядом с ближайшей городской площадью, а не
+            // с точкой смерти.
+            double bx = player.getX();
+            double bz = player.getZ();
+            double best = Double.MAX_VALUE;
+            for (var plaza : CityPlan.get().plazas) {
+                double d = Math.hypot(plaza.x() - bx, plaza.z() - bz);
+                if (d < best) {
+                    best = d;
+                    bx = plaza.x();
+                    bz = plaza.z();
+                }
+            }
+            site = ElisarJail.findNear(city, bx, bz, 240.0);
+            if (site == null) {
+                // Нет тюрьмы рядом — строим новую у ближайшей дороги.
+                var road = nearestRoad(city, bx, bz);
+                if (road != null) {
+                    site = ElisarJail.build(city, road.x, road.z, road.face);
+                }
             }
         }
         if (site == null) {
@@ -103,7 +124,7 @@ public final class ElisarLawEvents {
 
         // 3) сундук на складе: конфискованные вещи кладём в СУНДУК, а не в AIR
         if (!records.isEmpty()) {
-            storeInChest(level, site.chest(), records);
+            storeInChest(city, site.chest(), records);
         }
 
         // 4) запоминаем клетку: игрок окажется в ней при ВОЗРОЖДЕНИИ.
@@ -196,7 +217,16 @@ public final class ElisarLawEvents {
         // Разыскиваемого после смерти сажают в клетку городской тюрьмы.
         BlockPos cell = law.takeJail(player.getUUID());
         if (cell != null) {
-            player.teleportTo(cell.getX() + 0.5D, cell.getY() + 1.0D, cell.getZ() + 0.5D);
+            // Клетка стоит в Элисаре, а игрок возрождается в обычном мире.
+            // Телепорт без указания измерения бросил бы игрока в воздух над
+            // обычным миром, поэтому указываем измерение явно.
+            ServerLevel city = player.getServer().getLevel(ru.aiforge.riftworld.flight.Flight.ELISAR_DIM);
+            if (city != null) {
+                player.teleportTo(city, cell.getX() + 0.5D, cell.getY() + 1.0D, cell.getZ() + 0.5D,
+                        player.getYRot(), player.getXRot());
+            } else {
+                player.teleportTo(cell.getX() + 0.5D, cell.getY() + 1.0D, cell.getZ() + 0.5D);
+            }
             player.setDeltaMovement(0, 0, 0);
             player.setHealth(player.getMaxHealth());
             player.clearFire();
@@ -206,18 +236,26 @@ public final class ElisarLawEvents {
                     "\u00a7eВаши вещи сложены в сундук на складе рядом с тюрьмой."), true);
         }
 
-        List<ElisarLaw.ItemRecord> records = law.release(player.getUUID());
+        // Вещи остаются в сундуке склада: игрок забирает их сам, открыв сундук.
+        // Список конфискованного НЕ забираем здесь — он нужен, чтобы сундук
+        // можно было наполнить заново и чтобы состояние не пропало.
+        // Возвращаем в инвентарь только если сундука уже нет (его сломали).
+        List<ElisarLaw.ItemRecord> records = law.peek(player.getUUID());
         if (records.isEmpty()) return;
-        // Вещи остаются в сундуке на складе: игрок забирает их сам, открыв сундук.
-        // Но если сундука уже нет — возвращаем в инвентарь, чтобы не потерять.
-        ElisarJail.Site site = ElisarJail.findNear(level, player.getX(), player.getZ(), 240.0);
-        boolean chestThere = site != null && level.getBlockState(site.chest()).is(net.minecraft.world.level.block.Blocks.CHEST);
+        ServerLevel cityLevel = player.getServer().getLevel(ru.aiforge.riftworld.flight.Flight.ELISAR_DIM);
+        if (cityLevel == null) return;
+        ElisarJail.Site site = ElisarJail.findNear(cityLevel, cell != null ? cell.getX() : player.getX(),
+                cell != null ? cell.getZ() : player.getZ(), 240.0);
+        boolean chestThere = site != null
+                && cityLevel.getBlockState(site.chest()).is(net.minecraft.world.level.block.Blocks.CHEST);
         if (chestThere) {
             player.displayClientMessage(Component.literal(
                     "\u00a7eВаши вещи ждут в сундуке на складе рядом с тюрьмой."), true);
             return;
         }
-        for (ElisarLaw.ItemRecord rec : records) {
+        // Сундука нет — отдаём вещи обратно, чтобы они не пропали.
+        List<ElisarLaw.ItemRecord> taken = law.release(player.getUUID());
+        for (ElisarLaw.ItemRecord rec : taken) {
             var id = net.minecraft.resources.ResourceLocation.tryParse(rec.itemId());
             if (id == null) continue;
             var item = net.minecraft.core.registries.BuiltInRegistries.ITEM.get(id);

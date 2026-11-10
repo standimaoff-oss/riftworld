@@ -122,8 +122,10 @@ public final class ElisarJail {
         int z1 = net.minecraft.util.Mth.floor(z + radius);
         int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 net.minecraft.util.Mth.floor(x), net.minecraft.util.Mth.floor(z));
-        // Проверяем уровень земли и пару блоков вокруг него.
-        for (int dy = -2; dy <= 2; ++dy) {
+        // Проверяем уровень земли и блоки вокруг него. Диапазон широкий:
+        // игрок стоит ВНУТРИ клетки, и «земля» по его координатам — это
+        // крыша клетки на пару блоков выше сундука склада.
+        for (int dy = -5; dy <= 3; ++dy) {
             for (int bx = x0; bx <= x1; ++bx) {
                 for (int bz = z0; bz <= z1; ++bz) {
                     BlockPos p = new BlockPos(bx, y + dy, bz);

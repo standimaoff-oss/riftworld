@@ -288,13 +288,24 @@ fi
 # Убиваем самого игрока: он должен очнуться в камере, а вещи — в сундуке.
 # Игрок тоже в измерении Элисара.
 # Перед смертью убеждаемся, что игрок ЖИВ и стоит в городе: если он уже
-# погиб от падения или от руки стража, команда damage не сделает ничего, и
+# погиб от падения или от руки стража, команда kill не сделает ничего, и
 # цепочка закона молча развалится.
 PLIVE=$(rq execute in riftworld:elisar as TestPlayer run data get entity @s Health 2>&1 | tr -d '\n' || true)
 PPOS=$(rq execute in riftworld:elisar as TestPlayer run data get entity @s Pos 2>&1 | tr -d '\n' || true)
 log "   игрок перед смертью: hp=$PLIVE pos=$PPOS"
 if [[ "$PLIVE" == *"entity data"* ]]; then
-  rq execute in riftworld:elisar run damage TestPlayer 1000 minecraft:player_attack by TestPlayer >/dev/null 2>&1 || true
+  # Сначала кладём вещи в инвентарь: конфискация берёт то, что у игрока
+  # реально есть. Пустой инвентарь означал бы held=0 при полностью рабочей
+  # цепочке закона — и проба проверяла бы не то.
+  rq execute in riftworld:elisar as TestPlayer run give @s riftworld:aurite_ingot 5 >/dev/null 2>&1 || true
+  rq execute in riftworld:elisar as TestPlayer run give @s riftworld:elisar_ducat 3 >/dev/null 2>&1 || true
+  sleep 1
+  PINV=$(rq execute in riftworld:elisar as TestPlayer run data get entity @s Inventory 2>&1 | tr -d '\n' || true)
+  log "   инвентарь перед смертью: ${PINV:0:160}"
+  # Убиваем через kill: команда damage с player_attack от самого игрока
+  # отвергается сервером (самоубийство), игрок остаётся живым, и событие
+  # смерти не наступает. kill работает так же, как для стражей выше.
+  rq execute in riftworld:elisar run kill '@e[type=minecraft:player,name=TestPlayer]' >/dev/null 2>&1 || true
 else
   fail "Игрок уже мёртв перед проверкой тюрьмы: $PLIVE"
 fi
