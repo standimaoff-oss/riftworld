@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Real Minecraft 1.20.1 Forge `runClient` visual probe under Xvfb + Mesa llvmpipe (1920x1080)
-# Captures 11 Full HD in-game screenshots: Liopleurodon, Pegasus (5 poses) and the
-# v0.40.0 Elisar gear & folk showcase.
+# Captures 11 Full HD in-game screenshots: Liopleurodon, the paper dragon (5 poses)
+# and the v0.40.0 Elisar gear & folk showcase.
 set -euo pipefail
 
 OUT=${OUT:-ci-out}
@@ -167,15 +167,15 @@ rq effect clear TestPlayer >/dev/null
 rq execute in riftworld:elisar run time set 4500 >/dev/null
 rq execute in riftworld:elisar run tp TestPlayer 520 112 520 40 0 >/dev/null
 sleep 14
-PEG_INFO=$(rq execute in riftworld:elisar positioned 520 108 520 run riftstruct bb_paper_dragon_showcase)
-echo "  $PEG_INFO"
-[[ "$PEG_INFO" == *"spawned=1"* ]] || fail "Expected the paper dragon to spawn, got: $PEG_INFO"
+DRAGON_INFO=$(rq execute in riftworld:elisar positioned 520 108 520 run riftstruct bb_paper_dragon_showcase)
+echo "  $DRAGON_INFO"
+[[ "$DRAGON_INFO" == *"spawned=1"* ]] || fail "Expected the paper dragon to spawn, got: $DRAGON_INFO"
 
-capture_cam "$PEG_INFO" "cam_wild"   "06_ingame_paper_dragon_far.png"        18
-capture_cam "$PEG_INFO" "cam_saddle" "07_ingame_paper_dragon_close.png"     12
-capture_cam "$PEG_INFO" "cam_flight" "08_ingame_paper_dragon_motion.png"    12
-capture_cam "$PEG_INFO" "cam_glide"  "09_ingame_paper_dragon_side.png"      12
-capture_cam "$PEG_INFO" "cam_hover"  "10_ingame_paper_dragon_hover.png"     12
+capture_cam "$DRAGON_INFO" "cam_wild"   "06_ingame_paper_dragon_far.png"        18
+capture_cam "$DRAGON_INFO" "cam_saddle" "07_ingame_paper_dragon_close.png"     12
+capture_cam "$DRAGON_INFO" "cam_flight" "08_ingame_paper_dragon_motion.png"    12
+capture_cam "$DRAGON_INFO" "cam_glide"  "09_ingame_paper_dragon_side.png"      12
+capture_cam "$DRAGON_INFO" "cam_hover"  "10_ingame_paper_dragon_hover.png"     12
 
 # ==============================================================================
 # 3) ELISAR GEAR & FOLK (v0.40.0): armour stands + villager / guard / archer
@@ -208,10 +208,10 @@ grep -Ei 'Error while rendering entity|Exception.*(Liopleurodon)|Failed to load.
 grep -Fq '[riftworld] geo liopleurodon:' "$OUT/bb-client.log" || fail "Liopleurodon geo log missing"
 
 if grep -Ei 'Error while rendering entity.*liopleurodon|Exception.*(LiopleurodonRenderer|LiopleurodonBlockbench)|Failed to load texture.*liopleurodon' "$OUT/bb-client.log"; then
-  grep -Ei 'Error while rendering entity.*liopleurodon|Exception.*(Liopleurodon|Pegasus)|Failed to load.*liopleurodon' "$OUT/bb-client.log" | head -5 | while IFS= read -r l; do
+  grep -Ei 'Error while rendering entity.*liopleurodon|Exception.*(Liopleurodon|PaperDragon)|Failed to load.*liopleurodon' "$OUT/bb-client.log" | head -5 | while IFS= read -r l; do
     echo "::error title=Model render error::${l:0:450}"
   done
-  fail "Client log contains Liopleurodon/Pegasus entity rendering errors"
+  fail "Client log contains Liopleurodon/PaperDragon entity rendering errors"
 fi
 
 rq list | grep -q TestPlayer || fail "Client disconnected before finishing captures"

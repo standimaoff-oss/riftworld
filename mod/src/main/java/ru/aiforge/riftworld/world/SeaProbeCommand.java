@@ -4378,17 +4378,14 @@ public final class SeaProbeCommand {
             // ~230 блоков от нуля, а не в сотнях. Держим список площадей
             // плана и берём ту, до которой дорога действительно есть.
             CityPlan plan = CityPlan.get();
-            double px = Double.NaN, pz = Double.NaN;
-            if (!plan.plazas.isEmpty()) {
-                CityPlan.Plaza plaza = plan.plazas.get(0);
-                px = plaza.x();
-                pz = plaza.z();
-            }
-            if (Double.isNaN(px)) {
+            if (plan.plazas.isEmpty()) {
                 src.sendSuccess(() -> Component.literal(
                         "riftstruct kind=v49_elisar_law error=no_plaza_in_plan"), false);
                 return 0;
             }
+            CityPlan.Plaza plaza = plan.plazas.get(0);
+            final double px = plaza.x();
+            final double pz = plaza.z();
             double ground = level.getHeight(
                     net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                     net.minecraft.util.Mth.floor(px), net.minecraft.util.Mth.floor(pz));
