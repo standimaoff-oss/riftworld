@@ -70,17 +70,40 @@ openbox >"$OUT/frames-openbox.log" 2>&1 &
 for _ in $(seq 1 30); do xdpyinfo -display :99 >/dev/null 2>&1 && break; sleep 1; done
 xdpyinfo -display :99 >/dev/null 2>&1 || fail "No virtual display"
 
-(
-  cd mod
-  chmod +x gradlew
-  ./gradlew runClient --no-daemon --console=plain -PrunDir="$PWD/../$RUN" -PautoJoin=127.0.0.1:25565
-) > "$OUT/frames-client.log" 2>&1 &
-client=$!
+# Клиент на программном OpenGL иногда падает прямо при создании окна
+# («We died but didn't somehow?»). Это случайность окружения, а не сборки,
+# поэтому клиент запускаем заново: без этого одна такая случайность уводила
+# всю серию кадров.
+start_client() {
+  # Лог клиента перезаписывается на каждой попытке: иначе маркер падения
+  # «We died but didn't somehow» от прошлой попытки прячет новое падение.
+  : > "$OUT/frames-client.log"
+  (
+    cd mod
+    chmod +x gradlew
+    ./gradlew runClient --no-daemon --console=plain -PrunDir="$PWD/../$RUN" -PautoJoin=127.0.0.1:25565
+  ) >> "$OUT/frames-client.log" 2>&1 &
+  client=$!
+}
 
-for _ in $(seq 1 200); do
+start_client
+attempt=1
+players=""
+for _ in $(seq 1 240); do
   players=$(rq list 2>&1 || true)
   [[ "$players" == *TestPlayer* ]] && break
   if ! kill -0 "$client" 2>/dev/null; then
+    # Раннее окно Forge на программном OpenGL иногда не поднимает GL-контекст
+    # («We died but didn't somehow»). Это случайность окружения, а не сборки,
+    # поэтому клиент запускаем заново: без этого одна такая случайность
+    # уводила всю серию кадров.
+    if [ "$attempt" -lt 3 ] && grep -Fqi "We died but didn't somehow" "$OUT/frames-client.log"; then
+      echo "::warning title=In-game frames::раннее окно Forge упало при старте, перезапуск ($attempt/3)"
+      attempt=$((attempt + 1))
+      start_client
+      sleep 5
+      continue
+    fi
     tail -40 "$OUT/frames-client.log" | while IFS= read -r line; do echo "::error title=client::${line:0:350}"; done
     fail "Client exited before joining"
   fi
@@ -110,6 +133,11 @@ shot() {
   xdotool windowraise "$wid" >/dev/null 2>&1 || true
   xdotool windowactivate "$wid" >/dev/null 2>&1 || true
   sleep 1
+  # Клиент мог развалиться посреди серии: тогда окно ещё есть, а снимок
+  # будет мусором. Проверяем, что игрок ещё в игре.
+  if ! rq list 2>&1 | grep -q TestPlayer; then
+    fail "The client lost the player before the frame $name"
+  fi
   # 'import' возвращает 4, если окно не найдено или снимок не удался.
   # Раньше это роняло всю съёмку кадров: терялся даже список уже снятых.
   local rc=0
