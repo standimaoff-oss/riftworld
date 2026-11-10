@@ -41,6 +41,12 @@ fail() {
   # Причина падения — в текстовый отчёт, иначе её не увидеть снаружи.
   { echo "FAIL: $*"; echo "--- конец отчёта пробы ---"; } >> "$DIRECT" 2>/dev/null || true
   { echo "FAIL: $*"; echo "--- конец отчёта пробы ---"; } >> "$LOG" 2>/dev/null || true
+  # Весь отчёт пробы — в аннотацию CI: их читает API без всяких логов.
+  if [ -s "$DIRECT" ]; then
+    while IFS= read -r line; do
+      echo "::error title=Отчёт пробы закона::${line:0:200}"
+    done < "$DIRECT"
+  fi
   exit 1
 }
 log() {
@@ -221,3 +227,9 @@ fi
 
 log 'OK: городской закон Элисара проверен на живом сервере.'
 echo '--- конец отчёта пробы ---' >> "$DIRECT" 2>/dev/null || true
+# Отчёт — в аннотации CI: их читает API, в отличие от логов джобы.
+if [ -s "$DIRECT" ]; then
+  while IFS= read -r line; do
+    echo "::notice title=Отчёт пробы закона::${line:0:200}"
+  done < "$DIRECT"
+fi
