@@ -7,7 +7,9 @@ BRANCH=${BRANCH:-${GITHUB_REF_NAME:-}}
 OUT=${OUT:-ci-out}
 [ -n "$BRANCH" ] || { echo 'BRANCH is empty, нечего публиковать'; exit 1; }
 
-DIAG=reports/ci_diag/publish.log
+# Журнал публикации — на каждую джобу свой: иначе параллельные джобы
+# затирают друг друга и в ветке виден только журнал последней.
+DIAG="reports/ci_diag/publish-${GITHUB_JOB:-job}.log"
 mkdir -p reports/ci_diag
 {
     echo "run ${GITHUB_RUN_ID:-?} / job ${GITHUB_JOB:-?} / ветвь $BRANCH"
@@ -72,6 +74,9 @@ add_all() {
     for d in reports/ci_frames reports/ci_diag release; do
         [ -d "$d" ] && git add -A "$d"
     done
+    # Отчёт пробы пишется прямо в reports/ci_diag — добавляем его явно,
+    # чтобы он не потерялся из-за чужих коммитов в ветке.
+    [ -f reports/ci_diag/elisar-law__probe.txt ] && git add -f reports/ci_diag/elisar-law__probe.txt
     return 0
 }
 
@@ -96,8 +101,15 @@ for try in 1 2 3 4 5; do
     # трогаем наши файлы (reset --mixed стирает рабочие изменения).
     # Сначала сохраняем свежие копии отчётов, потом подтягиваем чужое, потом
     # возвращаем наши файлы поверх — так ничего не теряется.
+    # checkout затирает наши свежие отчёты, поэтому сначала копируем их в
+    # отдельную папку, а после синхронизации кладём обратно.
+    rm -rf /tmp/publish_keep && mkdir -p /tmp/publish_keep
+    if [ -d reports/ci_diag ]; then cp -a reports/ci_diag /tmp/publish_keep/; fi
     git checkout FETCH_HEAD -- . >>"$DIAG" 2>&1 || true
     git reset --soft FETCH_HEAD >>"$DIAG" 2>&1 || echo "reset не удался" >>"$DIAG"
+    if [ -d /tmp/publish_keep/ci_diag ]; then
+        cp -a /tmp/publish_keep/ci_diag/. reports/ci_diag/ 2>/dev/null || true
+    fi
     publish_files
     add_all
     if git diff --cached --quiet; then

@@ -125,7 +125,7 @@ shot() {
   # Измерение для съёмки: Смотритель Пращи стоит в обычном мире (Падь Морока),
   # а игрок по умолчанию в измерении Элисара — телепорт без указания мира
   # увозил камеру в океан, и кадр получался пустым небом.
-  rq execute in "${SHOT_DIM:-minecraft:overworld}" run tp TestPlayer "$cx" "$cy" "$cz" facing "$lx" "$ly" "$lz" >/dev/null
+  rq execute in "${SHOT_DIM:-minecraft:overworld}" run tp TestPlayer "$cx" "$cy" "$cz" facing "$lx" "$ly" "$lz" >/dev/null || true
   sleep "$wait"
   local wid
   wid=$(xdotool search --onlyvisible --name Minecraft | head -1 || true)
@@ -185,7 +185,7 @@ dragon_pos() {
   raw=$(rq data get entity '@e[type=riftworld:paper_dragon,limit=1]' Pos 2>&1 | tr -d '\n' || true)
   echo "$raw" | sed -n 's/.*\[\(.*\)\].*/\1/p'
 }
-DP=$(dragon_pos)
+DP=$(dragon_pos || true)
 DX=$(echo "$DP" | cut -d, -f1 | tr -d ' ' | cut -d. -f1)
 DY=$(echo "$DP" | cut -d, -f2 | tr -d ' ' | cut -d. -f1)
 DZ=$(echo "$DP" | cut -d, -f3 | tr -d ' ' | cut -d. -f1)
@@ -200,7 +200,7 @@ rq tp TestPlayer "$CX" "$CY" "$CZ" facing "$DX" "$DY" "$DZ" >/dev/null
 sleep 5
 shot frame-paper-dragon-far-a "$CX" "$CY" "$CZ" "$DX" "$DY" "$DZ" 4
 sleep 10
-DP2=$(dragon_pos)
+DP2=$(dragon_pos || true)
 DX2=$(echo "$DP2" | cut -d, -f1 | tr -d ' ' | cut -d. -f1)
 DY2=$(echo "$DP2" | cut -d, -f2 | tr -d ' ' | cut -d. -f1)
 DZ2=$(echo "$DP2" | cut -d, -f3 | tr -d ' ' | cut -d. -f1)
@@ -278,7 +278,10 @@ rq execute in riftworld:elisar run time set midnight >/dev/null
 # тогда к моменту витрины чанки уже сгенерированы и проба отвечает мгновенно.
 rq forceload add 1180 800 1220 840 >/dev/null 2>&1 || true
 sleep 5
-WATCHER=$(rq run riftstruct v49_hollowwatcher_showcase)
+# 'set -e' убивает весь скрипт, если команда вернёт ненулевой код. Проба
+# витрины может отвалиться по таймауту RCON — тогда съёмка продолжается без
+# неё, а не обрывается целиком.
+WATCHER=$(rq run riftstruct v49_hollowwatcher_showcase 2>&1 || true)
 echo "  $WATCHER"
 # Если витрина не собралась — это не повод ронять всю серию кадров:
 # предупреждаем и идём дальше (остальные мобы важнее одного кадра).
