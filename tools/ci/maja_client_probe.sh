@@ -4,7 +4,17 @@ set -Eeuo pipefail
 OUT=${OUT:-ci-out}
 RUN=${RUN:-ci/maja-run}
 mkdir -p "$OUT" "$RUN/client/config"
-fail() { echo "::error title=Maja client probe::$*"; exit 1; }
+# Каждый шаг пишется в отчёт: по нему видно, где именно клиентский тест
+# остановился, даже если логи джобы недоступны снаружи.
+TRACE="$OUT/maja-client-steps.txt"
+mkdir -p "$OUT"
+: > "$TRACE"
+step() { echo "[$(date -u +%H:%M:%S)] $*" | tee -a "$TRACE"; }
+fail() {
+  echo "::error title=Maja client probe::$*"
+  echo "[$(date -u +%H:%M:%S)] FAIL: $*" >> "$TRACE"
+  exit 1
+}
 on_error() {
   code=$?
   if [ "$code" -ne 0 ]; then
@@ -17,7 +27,7 @@ on_error() {
   fi
 }
 trap on_error EXIT
-trap 'code=$?; echo "::error title=Client test failed::line $LINENO, exit $code, command: $BASH_COMMAND"' ERR
+trap 'code=$?; echo "::error title=Client test failed::line $LINENO, exit $code, command: $BASH_COMMAND"; echo "[$(date -u +%H:%M:%S)] ERR line $LINENO exit $code: $BASH_COMMAND" >> "$TRACE"' ERR
 rq() { python3 tools/rcon.py --password "${RCON_PW:-riftci}" --log "$OUT/client-commands.log" --timeout 90 "$@"; }
 
 sudo apt-get update -qq
@@ -95,7 +105,8 @@ PY
 # Head is about 156 blocks forward (+Z). Camera is just in front, within tracking distance.
 rq tp TestPlayer "$X" "$(( ${Y%.*} + 14 ))" "$(( ${Z%.*} + 188 ))" facing "$X" "$Y" "$(( ${Z%.*} + 115 ))" >/dev/null
 sleep 35
-if ! grep -Fq '[riftworld] geo el_gran_maja:' "$OUT/maja-client.log"; then
+if ! step "клиент загрузил модель Маджа"
+grep -Fq '[riftworld] geo el_gran_maja:' "$OUT/maja-client.log"; then
   fail "The Maja renderer never loaded its model at the test camera position"
 fi
 WID=$(xdotool search --onlyvisible --name Minecraft | head -1 || true)
@@ -131,6 +142,7 @@ rq kill '@e[type=riftworld:el_gran_maja]' >/dev/null
 rq summon riftworld:liopleurodon 0 200 0 '{NoAI:1b,NoGravity:1b,PersistenceRequired:1b}' >/dev/null
 rq tp TestPlayer -5 202 7 facing 0 200 0 >/dev/null
 sleep 15
+step "клиент загрузил лиоплеуродона"
 grep -Fq '[riftworld] geo liopleurodon:' "$OUT/maja-client.log" || fail 'Liopleurodon model was not loaded by the real client'
 import -window root "$OUT/fauna-liopleurodon.png"
 sleep 1
@@ -145,6 +157,7 @@ rq tp TestPlayer 27 203 6 facing 32 202 0 >/dev/null
 sleep 15
 # Бумажный дракон рисуется процедурно (без GeoModel), поэтому проверяем его
 # собственный отпечаток, а не '[riftworld] geo paper_dragon:'.
+step "клиент отрисовал бумажного дракона"
 grep -Fq '[riftworld] paper dragon:' "$OUT/maja-client.log" || fail 'Paper dragon was not rendered by the real client'
 import -window root "$OUT/fauna-paper-dragon.png"
 sleep 1
@@ -187,6 +200,7 @@ for _ in $(seq 1 15); do
   if echo "$health" | grep -Eq ': ([0-9](\.[0-9]+)?|1[0-9](\.[0-9]+)?)f$'; then hit=1; break; fi
   sleep 1
 done
+step "лиоплеуродон нанёс урон игроку"
 [ "$hit" = 1 ] || fail 'Liopleurodon did not damage the survival player in Elisar water'
 rq kill '@e[type=riftworld:liopleurodon]' >/dev/null || true
 rq gamemode creative TestPlayer >/dev/null
@@ -218,6 +232,7 @@ for _ in $(seq 1 24); do
   sleep 5
 done
 echo "Ocean biome check: $BIOME"
+step "биом океана подтверждён"
 [[ "$BIOME" == *"Test passed"* ]] || fail "Ocean at $OX,54,$OZ; locate=$LOC; check=$BIOME"
 # Natural spawning is probabilistic and clearance-sensitive: report the observation without
 # equating a timeout to an absence of support. The collision and build gates remain mandatory.
@@ -229,6 +244,7 @@ for _ in $(seq 1 24); do
 done
 rq execute as TestPlayer at TestPlayer run riftmajacheck | tee "$OUT/maja-natural-diagnostic.txt" || true
 if [ "$seen" = 1 ]; then echo "::notice title=Natural Maja spawn::Observed in a real new Elisar ocean."
+step "натуральный спавн Маджа проверен"
 else fail "Natural Maja did not spawn in the open core within two minutes; see maja-natural-diagnostic.txt"; fi
 if grep -Ei 'Render thread/FATAL|Minecraft Crash Report|Error while rendering|NullPointerException' "$OUT/maja-client.log"; then
   fail "Client crashed or reported a rendering exception after entering the ocean"
@@ -376,6 +392,7 @@ gear_shot gear-armour-row   cam_row   30
 gear_shot gear-elisar-folk  cam_folk  26
 gear_shot gear-closeup      cam_close 22
 rq execute in riftworld:elisar run time set midnight >/dev/null
+step "снимаем витрину брони и жителей"
 gear_shot gear-riftcrystal-night cam_close 18
 rq execute in riftworld:elisar run time set noon >/dev/null
 rq list | grep -q TestPlayer || fail 'Client disconnected during the gear showcase'
