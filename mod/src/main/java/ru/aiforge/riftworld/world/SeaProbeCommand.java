@@ -4625,8 +4625,17 @@ public final class SeaProbeCommand {
                 }
             }
             if (target == null) {
+                // Сколько игроков на сервере и где они — иначе падение
+                // «нет игрока» невозможно расследовать.
+                StringBuilder where = new StringBuilder();
+                for (ServerPlayer p : level.getServer().getPlayerList().getPlayers()) {
+                    where.append(p.getGameProfile().getName()).append('@')
+                            .append(p.level().dimension().location().getPath()).append(' ');
+                }
                 src.sendSuccess(() -> Component.literal(
-                        "riftstruct kind=v49_law_state error=no_player"), false);
+                        "riftstruct kind=v49_law_state error=no_player online=["
+                                + where.toString().trim() + "] dim="
+                                + level.dimension().location()), false);
                 return 0;
             }
             // Закон и тюрьма живут в измерении Элисара, но после смерти игрок
