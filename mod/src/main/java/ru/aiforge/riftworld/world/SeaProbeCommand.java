@@ -3449,10 +3449,20 @@ public final class SeaProbeCommand {
                 int cz = 50;
                 int cy = buildHollowwatcherStage(city, cx, cz);
                 spawnHollowwatcher(city, cx, cy, cz);
+                // Диагностика в самом ответе: по журналу CI видно, что
+                // витрина собралась и где именно стоит моб — иначе провал
+                // кадра приходится угадывать.
+                String groundBlock = city.getBlockState(new BlockPos(cx, cy - 1, cz)).getBlock().getName().getString();
+                String mobCount = String.valueOf(city.getEntitiesOfClass(
+                        ru.aiforge.riftworld.entity.HollowwatcherEntity.class,
+                        new net.minecraft.world.phys.AABB(new BlockPos(cx, cy, cz)).inflate(48.0)).size());
                 src.sendSuccess(() -> Component.literal(
                         "riftstruct kind=v49_hollowwatcher_showcase at=" + cx + "," + cy + "," + cz
-                                + " spawned=1 blocks=1 sub_air=1 staged=1"
+                                + " spawned=" + mobCount + " blocks=1 sub_air=1 staged=1"
                                 + " dim=" + city.dimension().location()
+                                + " ground=" + groundBlock
+                                + " sky=" + (city.canSeeSky(new BlockPos(cx, cy + 1, cz)) ? 1 : 0)
+                                + " time=" + city.getDayTime() % 24000L
                                 + " cam=" + (cx - 5.5) + "," + (cy + 3.2) + "," + (cz - 4.5)
                                 + ":" + cx + "," + (cy + 1.7) + "," + cz), false);
                 return 1;

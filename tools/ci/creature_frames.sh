@@ -151,8 +151,51 @@ shot() {
     echo "::warning title=In-game frames::кадр $name пуст — продолжаем съёмку дальше"
     return 0
   fi
+  # Кадр может быть технически удачным, но чёрным: клиент ещё не подгрузил
+  # чанки измерения (город Элисара генерируется долго), и на экране просто
+  # ночное небо. Раньше такой кадр молча уходил в релиз — и кадр Смотрителя
+  # Пращи был чёрным. Теперь проверяем яркость и переснимаем с большей паузой.
+  local dark=1 attempt=0
+  while [ "$attempt" -lt 4 ]; do
+    if ! frame_is_dark "$FRAMES/$name.png"; then dark=0; break; fi
+    attempt=$((attempt + 1))
+    echo "::warning title=In-game frames::кадр $name слишком тёмный, переснимаем ($attempt/4)"
+    sleep $((wait + 10))
+    xdotool windowraise "$wid" >/dev/null 2>&1 || true
+    xdotool windowactivate "$wid" >/dev/null 2>&1 || true
+    sleep 2
+    import -window root "$FRAMES/$name.png" || true
+  done
+  if [ "$dark" = 1 ]; then
+    echo "::warning title=In-game frames::кадр $name остался тёмным после четырёх попыток"
+  fi
   SHOT=$((SHOT + 1))
   echo "captured $name"
+}
+
+# frame_is_dark <file> — 0, если в кадре есть освещённая сцена.
+# Критерий тот же, что и в tools/rift/validate_v049_frames.py: сумма каналов
+# ярче 90 у менее чем 5% пикселей означает «ночное небо», а не объект.
+frame_is_dark() {
+  python3 - "$1" <<'PYCODE'
+import sys
+try:
+    from PIL import Image
+except ImportError:
+    raise SystemExit(0)  # без Pillow не судим: лучше лишний кадр, чем ложная тревога
+try:
+    with Image.open(sys.argv[1]) as im:
+        small = im.convert("RGB").resize((160, 90), Image.BILINEAR)
+        data = small.tobytes()
+except Exception:
+    raise SystemExit(0)
+bright = 0
+for i in range(0, len(data), 3):
+    if data[i] + data[i + 1] + data[i + 2] > 90:
+        bright += 1
+total = len(data) // 3
+raise SystemExit(1 if total and bright / total < 0.05 else 0)
+PYCODE
 }
 
 # ---------------------------------------------------------------- paper dragon
@@ -319,8 +362,16 @@ rq execute in riftworld:elisar run forceload add $((TX - 8)) $((TZ - 8)) $((TX +
 # блоков от клиента, и кадр получался совершенно чёрным — клиент не
 # успевал подгрузить чанки.
 SHOT_DIM=riftworld:elisar
-sleep 8
-shot frame-hollowwatcher-three-quarter "$WX" "$WY" "$WZ" "$TX" "$TY" "$TZ" 14
+# Город Элисара генерируется долго: клиент успевает получить блоки, но
+# рендер ещё не догнал. Ждём дольше и прогреваем чанки вокруг камеры.
+sleep 20
+# Проверяем, что моб вообще стоит там, куда смотрит камера: если его нет
+# или он уехал, снимок бесполезен — и об этом лучше узнать из лога.
+WPOS=$(rq data get entity '@e[type=riftworld:hollowwatcher,limit=1]' Pos 2>&1 || true)
+echo "  hollowwatcher pos: $WPOS"
+# Камера встаёт на точку съёмки и смотрит на моба: если моб есть, но кадр
+# всё равно пустой, значит витрина стоит не там, где её видит клиент.
+shot frame-hollowwatcher-three-quarter "$WX" "$WY" "$WZ" "$TX" "$TY" "$TZ" 20
 shot frame-hollowwatcher-face "$TX" "$((TY + 1))" "$((TZ - 2))" "$TX" "$TY" "$TZ" 10
 shot frame-hollowwatcher-tall "$((TX + 4))" "$TY" "$TZ" "$TX" "$TY" "$TZ" 10
 # Дневной кадр: в полночь силуэт моба не читается, поэтому светим.
