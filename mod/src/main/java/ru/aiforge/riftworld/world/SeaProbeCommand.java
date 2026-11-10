@@ -4631,7 +4631,7 @@ public final class SeaProbeCommand {
             }
             // Закон и тюрьма живут в измерении Элисара, но после смерти игрок
             // мог возродиться в обычном мире — тогда проверяем там, где он есть.
-            ServerLevel targetLevel = target.level();
+            ServerLevel targetLevel = (ServerLevel) target.level();
             ElisarLaw law = ElisarLaw.get(targetLevel);
             boolean wanted = law.isWanted(targetLevel, target);
             int warnings = law.warnings(target);

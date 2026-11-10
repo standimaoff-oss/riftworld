@@ -70,7 +70,9 @@ jobs:
           if p.exists():
               lines = p.read_text(errors='replace').splitlines()
               for i, line in enumerate(lines):
-                  if ' error:' in line or line.startswith('FAILURE:') or 'What went wrong:' in line:
+                  if (' error:' in line or ' error: ' in line
+                          or line.startswith('FAILURE:') or 'What went wrong:' in line
+                          or 'symbol:' in line or 'location:' in line):
                       text = ' | '.join(lines[i:i+4]).replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
                       print('::error title=Build diagnostic::' + text[:3000])
           PYCODE
