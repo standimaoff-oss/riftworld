@@ -1,6 +1,8 @@
 
 # локальный venv для оффлайн-генераторов текстур (tools/rift/*.py)
 .venv-tools/
+# локальные python-зависимости генераторов (pillow/numpy), ставится через pip3 --target
+.pylibs/
 
 .cache/
 __pycache__/

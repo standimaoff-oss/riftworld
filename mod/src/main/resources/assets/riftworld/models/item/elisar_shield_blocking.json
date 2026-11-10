@@ -1,0 +1,124 @@
+{
+  "parent": "riftworld:item/elisar_shield",
+  "display": {
+    "thirdperson_righthand": {
+      "rotation": [
+        90,
+        170,
+        0
+      ],
+      "translation": [
+        -2.5,
+        3.0,
+        2.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [
+        90,
+        170,
+        0
+      ],
+      "translation": [
+        -2.5,
+        3.0,
+        2.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        0,
+        178,
+        -5
+      ],
+      "translation": [
+        -4.5,
+        1.0,
+        2.0
+      ],
+      "scale": [
+        0.92,
+        0.92,
+        0.92
+      ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [
+        0,
+        178,
+        -5
+      ],
+      "translation": [
+        -4.5,
+        1.0,
+        2.0
+      ],
+      "scale": [
+        0.92,
+        0.92,
+        0.92
+      ]
+    },
+    "ground": {
+      "rotation": [
+        15,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        3.0,
+        0
+      ],
+      "scale": [
+        0.68,
+        0.68,
+        0.68
+      ]
+    },
+    "gui": {
+      "rotation": [
+        12,
+        -24,
+        0
+      ],
+      "translation": [
+        0,
+        0.2,
+        0
+      ],
+      "scale": [
+        0.96,
+        0.96,
+        0.96
+      ]
+    },
+    "fixed": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        -0.5
+      ],
+      "scale": [
+        1.05,
+        1.05,
+        1.05
+      ]
+    }
+  }
+}
