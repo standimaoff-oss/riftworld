@@ -4567,6 +4567,7 @@ public final class SeaProbeCommand {
             String line = "riftstruct kind=v49_city_ground plaza=" + (int) px + "," + (int) pz
                     + " ground=" + ground
                     + " road=" + (int) rx + "," + rg + "," + (int) rz
+                    + " spot=" + (int) px + "," + ground + "," + (int) pz
                     + " under=" + under
                     + " route=" + (route == null ? "none" : route.kind().name())
                     + " points=" + (route == null ? 0 : route.size());

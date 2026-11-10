@@ -51,10 +51,25 @@ log() {
 log '== v0.49.0: проверка городского закона Элисара на живом сервере =='
 rq gamerule doMobLoot true >/dev/null
 
+# ВАЖНО: без загруженных чанков getHeight отдаёт высоту генератора (дно
+# океана, Y≈62), и страж, поставленный на такую точку, просто не появляется.
+# Поэтому сначала держим центр города загруженным.
+rq execute in riftworld:elisar run forceload add -96 16 -96 96 >/dev/null 2>&1 || true
+rq execute in riftworld:elisar run forceload add -64 16 16 96 >/dev/null 2>&1 || true
+sleep 6
+
 # Спрашиваем у сервера настоящую точку дороги и высоту земли.
 GROUND_INFO=$(rq execute in riftworld:elisar run riftstruct v49_city_ground 2>&1 | tr '\r\n' '  ' || true)
 log "   v49_city_ground -> ${GROUND_INFO:0:300}"
-if [[ "$GROUND_INFO" == *"road="* ]]; then
+if [[ "$GROUND_INFO" == *"spot="* ]]; then
+  # spot= — центр площади с настоящей высотой земли: там гарантированно
+  # твёрдый грунт, а не дно океана.
+  SPOT=$(echo "$GROUND_INFO" | sed -n 's/.*spot=\([^ ]*\).*/\1/p')
+  CITY_X=$(echo "$SPOT" | cut -d, -f1)
+  CITY_Y=$(echo "$SPOT" | cut -d, -f2)
+  CITY_Z=$(echo "$SPOT" | cut -d, -f3)
+  log "   площадь города: $CITY_X,$CITY_Y,$CITY_Z (дорога: $(echo "$GROUND_INFO" | sed -n 's/.*road=\([^ ]*\).*/\1/p'))"
+elif [[ "$GROUND_INFO" == *"road="* ]]; then
   ROAD=$(echo "$GROUND_INFO" | sed -n 's/.*road=\([^ ]*\).*/\1/p')
   CITY_X=$(echo "$ROAD" | cut -d, -f1)
   CITY_Y=$(echo "$ROAD" | cut -d, -f2)
