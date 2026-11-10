@@ -357,27 +357,20 @@ public final class ElisarLawEvents {
         double dz = player.getZ() - (cell.getZ() + 0.5D);
         double dist = Math.hypot(dx, dz);
         // Заключённый внутри камеры — всё в порядке.
-        if (dist <= 3.0D) return;
-        boolean inCity = player.level().dimension()
-                .equals(ru.aiforge.riftworld.flight.Flight.ELISAR_DIM);
-        if (!inCity) {
-            // Игрок ещё не в городе: он возродился в обычном мире, и клетка
-            // его ждёт. Раньше клетка стиралась здесь — игрок возрождался
-            // на спавне обычного мира, расстояние до камеры оказывалось
-            // больше 64 блоков, и клетка забывалась ДО посадки. Игрок
-            // оказывался на свободе, а розыск при этом снимался.
-            seatInCell(player, cell, city);
+        if (dist <= 3.0D) {
+            law.markSeated(player.getUUID());
             return;
         }
-        // Игрок в городе, но не в камере: сажаем его. Это страховка на
-        // случай, когда PlayerRespawnEvent не сработал или сервер после него
-        // вернул игрока на точку появления.
-        if (dist <= 24.0D) {
-            seatInCell(player, cell, city);
+        boolean seatedBefore = law.wasSeated(player.getUUID());
+        if (seatedBefore && dist > 24.0D) {
+            // Заключённый уже сидел и ушёл из города — он свободен.
+            law.clearJail(player.getUUID());
             return;
         }
-        // Ушёл из города — заключённый свободен: клетка больше не нужна.
-        law.clearJail(player.getUUID());
+        // Ещё не сидел (только что воскресли или сервер вернул на спавн) —
+        // сажаем в камеру. Это и есть основной путь: событие возрождения в
+        // этом окружении приходит не всегда.
+        seatInCell(player, cell, city);
     }
 
     /** Счётчик тиков для проверки заключённых раз в секунду. */

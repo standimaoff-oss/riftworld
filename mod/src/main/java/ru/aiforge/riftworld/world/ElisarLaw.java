@@ -179,6 +179,24 @@ public final class ElisarLaw extends net.minecraft.world.level.saveddata.SavedDa
         if (jailCells.remove(player) != null) {
             setDirty();
         }
+        if (jailedOnce.remove(player) != null) {
+            setDirty();
+        }
+    }
+
+    /** Заключённый уже сидел в этой клетке — значит, выход из неё осознанный. */
+    private final Map<UUID, Boolean> jailedOnce = new HashMap<>();
+
+    /** Пометить: игрок побывал в камере. */
+    public void markSeated(UUID player) {
+        if (jailedOnce.put(player, Boolean.TRUE) == null) {
+            setDirty();
+        }
+    }
+
+    /** Сидел ли игрок в камере? */
+    public boolean wasSeated(UUID player) {
+        return jailedOnce.containsKey(player);
     }
 
     /** Забрать отложенные предметы (когда игрок выходит из тюрьмы). */

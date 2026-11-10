@@ -314,15 +314,37 @@ fi
 #
 # ВАЖНО: клиент в CI не нажимает «Возродиться» сам — он остаётся на экране
 # смерти, и событие возрождения не наступает. Поэтому проба сама жмёт кнопку
-# (она в центре экрана) и ждёт, пока игрок снова окажется в мире.
-for _ in $(seq 1 30); do
+# (она в центре экрана), а если не помогло — воскрешает игрока сервером
+# (v49_revive сбрасывает счётчик смерти и возвращает здоровье).
+for _ in $(seq 1 12); do
   ALIVE=$(rq execute in riftworld:elisar as TestPlayer run data get entity @s Pos 2>&1 | tr -d '\n' || true)
   [[ "$ALIVE" == *"entity data"* ]] && break
+  # Кнопка «Возродиться» в центре экрана. Окно сначала поднимаем и
+  # активируем: клик в неактивное окно Minecraft не доходит.
   WID=$(xdotool search --onlyvisible --name Minecraft 2>/dev/null | head -1 || true)
   if [ -n "$WID" ]; then
-    xdotool mousemove --window "$WID" 400 300 click 1 >/dev/null 2>&1 || true
-    xdotool key --window "$WID" space >/dev/null 2>&1 || true
+    xdotool windowraise "$WID" >/dev/null 2>&1 || true
+    xdotool windowactivate "$WID" >/dev/null 2>&1 || true
+    sleep 0.4
+    for _ in $(seq 1 4); do
+      xdotool mousemove --window "$WID" 400 330 click 1 >/dev/null 2>&1 || true
+      sleep 0.3
+      xdotool mousemove --window "$WID" 400 260 click 1 >/dev/null 2>&1 || true
+      sleep 0.3
+    done
+  else
+    log '   окно Minecraft не найдено — некому нажать «Возродиться»'
   fi
+  sleep 1
+done
+# Серверное воскрешение: клиент в CI безгласый, кнопку нажать некому.
+REVIVE=$(rq execute in riftworld:elisar run riftstruct v49_revive 2>&1 | tr '\r\n' '  ' || true)
+log "   воскрешение -> ${REVIVE:0:200}"
+sleep 2
+# Теперь игрок снова в мире: ждём, пока закон посадит его в камеру.
+for _ in $(seq 1 10); do
+  ALIVE=$(rq execute in riftworld:elisar as TestPlayer run data get entity @s Pos 2>&1 | tr -d '\n' || true)
+  [[ "$ALIVE" == *"entity data"* ]] && break
   sleep 1
 done
 sleep 4

@@ -4622,6 +4622,33 @@ public final class SeaProbeCommand {
             return 1;
         }
 
+        if (k.equals("v49_revive")) {
+            // v0.49.0: воскресить игрока сервером.
+            //
+            // Зачем: клиент в CI не нажимает «Возродиться» и остаётся на
+            // экране смерти. Без воскрешения событие возрождения не
+            // наступает и цепочку «смерть -> тюрьма» нечем проверять.
+            ServerPlayer target = null;
+            for (ServerPlayer p : level.getServer().getPlayerList().getPlayers()) {
+                target = p;
+                break;
+            }
+            if (target == null) {
+                src.sendSuccess(() -> Component.literal(
+                        "riftstruct kind=v49_revive error=no_player"), false);
+                return 0;
+            }
+            // revive() снимает флаг смерти и возвращает полное здоровье.
+            target.revive();
+            target.setHealth(target.getMaxHealth());
+            target.clearFire();
+            src.sendSuccess(() -> Component.literal(
+                    "riftstruct kind=v49_revive player=" + target.getGameProfile().getName()
+                            + " hp=" + target.getHealth()
+                            + " alive=" + target.isAlive()), false);
+            return 1;
+        }
+
         if (k.equals("v49_law_state")) {
             // v0.49.0: состояние городского закона для ближайшего игрока.
             // Проба нужна CI, чтобы проверить ВСЮ цепочку закона:
