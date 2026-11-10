@@ -49,8 +49,17 @@ publish_files() {
             base=$(basename "$f")
             # Собственный журнал публикации не затираем старой копией из ci-out.
             [ "$base" = "publish.log" ] && continue
+            # Имя с номером прогона: без него отчёт свежего прогона
+            # затирался отчётом предыдущего, и в ветке лежал старый текст.
+            cp -a "$f" "reports/ci_diag/${job}__${GITHUB_RUN_ID:-norun}__${base}" 2>/dev/null || true
             cp -a "$f" "reports/ci_diag/${job}__${base}" 2>/dev/null || true
-            cp -a "$f" "reports/ci_diag/${base}" 2>/dev/null || true
+            # Общее имя НЕ перезаписываем: параллельные джобы затирали друг
+            # друга, и в ветке оставался старый frames-capture.log вместо
+            # свежего — по нему диагностика вела в тупик. Общее имя заполняем
+            # только если его ещё нет.
+            if [ ! -e "reports/ci_diag/${base}" ]; then
+                cp -a "$f" "reports/ci_diag/${base}" 2>/dev/null || true
+            fi
         done
         changed=1
     fi
