@@ -6,6 +6,32 @@
 
 ## v0.49.0 — 2× HD броня, объёмные предметы и всегда включённый Эль Гран Маджа
 
+### Смотреть картинки и файлы (GitHub)
+
+**Кадры из игры (настоящий клиент Minecraft):**
+
+- Смотритель Пращи — хоррор-моб Пади Морока, три четверти: ++**[https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/ingame/0.49.0/frame-hollowwatcher-three-quarter.png](https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/ingame/0.49.0/frame-hollowwatcher-three-quarter.png)**++
+- Смотритель Пращи — анфас: ++**[https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/ingame/0.49.0/frame-hollowwatcher-face.png](https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/ingame/0.49.0/frame-hollowwatcher-face.png)**++
+- Бумажный дракон вдали (за пределами зоны симуляции): ++**[https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/ingame/0.49.0/frame-paper-dragon-far-a.png](https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/ingame/0.49.0/frame-paper-dragon-far-a.png)**++
+- Эль Гран Маджа — корпус: ++**[https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/ingame/0.49.0/frame-maja-body.png](https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/ingame/0.49.0/frame-maja-body.png)**++
+- Лиоплеуродон — голова: ++**[https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/ingame/0.49.0/frame-liopleurodon-head.png](https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/ingame/0.49.0/frame-liopleurodon-head.png)**++
+- Броня Aurite и Riftcrystal вблизи: ++**[https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/ingame/0.49.0/frame-v049-armors-closeup.png](https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/ingame/0.49.0/frame-v049-armors-closeup.png)**++
+- Инструменты Aurite: ++**[https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/ingame/0.49.0/frame-v049-tools-closeup.png](https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/ingame/0.49.0/frame-v049-tools-closeup.png)**++
+- Рифткристал ночью: ++**[https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/ingame/0.49.0/frame-v049-riftcrystal-night-glow.png](https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/ingame/0.49.0/frame-v049-riftcrystal-night-glow.png)**++
+- Жители Элисара: ++**[https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/ingame/0.49.0/frame-v049-elisar-folk.png](https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/ingame/0.49.0/frame-v049-elisar-folk.png)**++
+
+**Концепт-референсы (AI):**
+
+- Небесный скифф Элисара: ++**[https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/concept_refs_v049/01_elisar_sky_skiff_airship.png](https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/concept_refs_v049/01_elisar_sky_skiff_airship.png)**++
+- Рифткристальный колосс-страж: ++**[https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/concept_refs_v049/02_riftcrystal_colossus_guardian.png](https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/concept_refs_v049/02_riftcrystal_colossus_guardian.png)**++
+- Кузня Астральной Кузни: ++**[https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/concept_refs_v049/03_astral_forge_sanctum.png](https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/concept_refs_v049/03_astral_forge_sanctum.png)**++
+
+**Файлы релиза:**
+
+- Дерево релиза: ++**[https://github.com/standimaoff-oss/riftworld/tree/arena/037a840e-riftworld](https://github.com/standimaoff-oss/riftworld/tree/arena/037a840e-riftworld)**++
+- Все кадры из игры: ++**[https://github.com/standimaoff-oss/riftworld/tree/arena/037a840e-riftworld/reports/ingame/0.49.0](https://github.com/standimaoff-oss/riftworld/tree/arena/037a840e-riftworld/reports/ingame/0.49.0)**++
+- Концепт-листы: ++**[https://github.com/standimaoff-oss/riftworld/tree/arena/037a840e-riftworld/reports/concept_refs_v049](https://github.com/standimaoff-oss/riftworld/tree/arena/037a840e-riftworld/reports/concept_refs_v049)**++
+
 ### Концепт-референсы (AI)
 
 Три выбранных концепт-листа лежат в `reports/concept_refs_v049/` (см. `README.md` там же):
@@ -67,10 +93,14 @@
   (`world/ElisarLawEvents.java`, `world/ElisarLaw.java`, `world/ElisarJail.java`).
   Розыск, клетка и вещи на складе — это `SavedData`, поэтому переживают
   перезапуск сервера: обойти наказание перезаходом в игру нельзя.
-- **Перенос в тюрьму — при возрождении**: мёртвого игрока телепортировать
-  бессмысленно (возрождение всё равно ставит его на точку спавна), поэтому при
-  смерти конфискуются вещи и запоминается клетка, а перенос происходит в
-  `PlayerRespawnEvent` — игрок просыпается уже в камере.
+- **Перенос в тюрьму**: мёртвого игрока телепортировать бессмысленно
+  (возрождение всё равно ставит его на точку спавна), поэтому при смерти
+  конфискуются вещи и запоминается клетка, а перенос происходит при
+  возрождении — игрок просыпается уже в камере. Посадку держит тик-событие:
+  пока у игрока назначена клетка, он сидит в ней, а клетка забывается, когда
+  заключённый вышел из города. Именно так цепочка «убил стража → розыск →
+  смерть → тюрьма → вещи в сундуке склада» проверяется вживую в CI
+  (`tools/ci/elisar_law_probe.sh`).
 
 ### Перестройка Мороковой Пади: свои деревья и новый хоррор-моб
 
