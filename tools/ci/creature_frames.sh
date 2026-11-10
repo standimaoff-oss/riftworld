@@ -33,7 +33,7 @@ tutorialStep:none
 onboardAccessibility:false
 skipMultiplayerWarning:true
 joinedFirstServer:true
-renderDistance:16
+renderDistance:32
 simulationDistance:8
 maxFps:30
 guiScale:2
@@ -114,16 +114,24 @@ shot frame-paper-dragon-head 208 106.3 -2.3 208 106.1 -0.6 7
 # Теперь радиус 128, и мы проверяем это прямо в игре: снимаем кадр,
 # ждём полёт, снимаем второй — пиксели должны отличаться.
 rq kill '@e[type=riftworld:paper_dragon]' >/dev/null 2>&1 || true
-rq summon riftworld:paper_dragon 260 150 0 '{PersistenceRequired:1b,NoGravity:1b}' >/dev/null
-# Камера далеко (около 60 блоков), дракон летит и не стоит на месте
-rq tp TestPlayer 200 152 0 facing 260 150 0 >/dev/null
-sleep 12
-shot frame-paper-dragon-far-a 205 153 0 260 150 0 4
+# Дракон летит, поэтому AI включён: с NoGravity он просто висит.
+rq summon riftworld:paper_dragon 232 148 0 '{PersistenceRequired:1b}' >/dev/null
+# Камера в 20 блоках от дракона: это БОЛЬШЕ simulationDistance (8), но меньше
+# renderDistance (32). Раньше камера стояла в 55 блоках, а renderDistance был
+# 16 — клиент просто вычищал дракона из кадра, и оба «дальних» кадра были
+# пустым небом.
+rq tp TestPlayer 212 150 0 facing 232 148 0 >/dev/null
+sleep 14
+shot frame-paper-dragon-far-a 216 151 0 232 148 0 6
 sleep 10
-shot frame-paper-dragon-far-b 205 153 0 260 150 0 4
+shot frame-paper-dragon-far-b 216 151 0 232 148 0 6
 # Дракон обязан сместиться: сравниваем его координаты через 10 секунд
 DRAGON_POS=$(rq data get entity '@e[type=riftworld:paper_dragon,limit=1]' Pos 2>&1 | tr -d '\n' || true)
 echo "  paper dragon pos after flight: $DRAGON_POS"
+# Кадры не должны совпадать: если совпали — дракон не двигался.
+if cmp -s "$FRAMES/frame-paper-dragon-far-a.png" "$FRAMES/frame-paper-dragon-far-b.png"; then
+  fail "Paper dragon did not move beyond the simulation range (identical frames)"
+fi
 
 # ---------------------------------------------------------------- liopleurodon
 # locate может вернуть пустоту, пока чанки прогреваются — пробуем несколько раз
@@ -174,14 +182,25 @@ sleep 6
 capture_underwater frame-liopleurodon-head
 
 # ---------------------------------------------------------------- hollowwatcher (v0.49.0)
-# Новый хоррор-моб Пади: Смотритель Пращи. Ставим на сушу Пади ночью.
-rq kill '@e[type=riftworld:hollowwatcher]' >/dev/null 2>&1 || true
+# Новый хоррор-моб Пади: Смотритель Пращи.
+# Раньше моба ставили в воздухе над городом (200 120 0) — получался крошечный
+# силуэт в небе. Теперь витрина ищет НАСТОЯЩУЮ сушу Пади и ставит моба на
+# неё, а камера берёт координаты прямо из пробы.
 rq execute in riftworld:elisar run time set midnight >/dev/null
-rq summon riftworld:hollowwatcher 200 120 0 '{NoAI:1b,PersistenceRequired:1b}' >/dev/null
-sleep 6
-shot frame-hollowwatcher-three-quarter 197.5 121.7 -3.6 200 121 0 12
-shot frame-hollowwatcher-face 200 122.5 -2.0 200 122.2 -0.5 9
-shot frame-hollowwatcher-tall 204.0 121.5 0 200 121 0 8
+WATCHER=$(rq execute in riftworld:elisar run riftstruct v49_hollowwatcher_showcase)
+echo "  $WATCHER"
+[[ "$WATCHER" == *"spawned=1"* ]] || fail "Hollowwatcher did not spawn: $WATCHER"
+# cam=camX,camY,camZ:tgtX,tgtY,tgtZ
+WX=$(echo "$WATCHER" | sed -n 's/.*cam=\([^:]*\):.*/\1/p' | cut -d, -f1)
+WY=$(echo "$WATCHER" | sed -n 's/.*cam=\([^:]*\):.*/\1/p' | cut -d, -f2)
+WZ=$(echo "$WATCHER" | sed -n 's/.*cam=\([^:]*\):.*/\1/p' | cut -d, -f3)
+TX=$(echo "$WATCHER" | sed -n 's/.*cam=[^:]*:\(.*\)/\1/p' | cut -d, -f1)
+TY=$(echo "$WATCHER" | sed -n 's/.*cam=[^:]*:\(.*\)/\1/p' | cut -d, -f2)
+TZ=$(echo "$WATCHER" | sed -n 's/.*cam=[^:]*:\(.*\)/\1/p' | cut -d, -f3)
+sleep 8
+shot frame-hollowwatcher-three-quarter "$WX" "$WY" "$WZ" "$TX" "$TY" "$TZ" 10
+shot frame-hollowwatcher-face "$TX" "$((TY + 1))" "$((TZ - 2))" "$TX" "$TY" "$TZ" 8
+shot frame-hollowwatcher-tall "$((TX + 4))" "$TY" "$TZ" "$TX" "$TY" "$TZ" 8
 
 # ---------------------------------------------------------------- El Gran Maja
 rq kill '@e[type=riftworld:el_gran_maja]' >/dev/null 2>&1 || true
