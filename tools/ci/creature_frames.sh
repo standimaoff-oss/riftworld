@@ -94,7 +94,10 @@ SHOT=0
 # shot <name> <camX> <camY> <camZ> <lookX> <lookY> <lookZ> [wait]
 shot() {
   local name=$1 cx=$2 cy=$3 cz=$4 lx=$5 ly=$6 lz=$7 wait=${8:-6}
-  rq tp TestPlayer "$cx" "$cy" "$cz" facing "$lx" "$ly" "$lz" >/dev/null
+  # Измерение для съёмки: Смотритель Пращи стоит в обычном мире (Падь Морока),
+  # а игрок по умолчанию в измерении Элисара — телепорт без указания мира
+  # увозил камеру в океан, и кадр получался пустым небом.
+  rq execute in "${SHOT_DIM:-minecraft:overworld}" run tp TestPlayer "$cx" "$cy" "$cz" facing "$lx" "$ly" "$lz" >/dev/null
   sleep "$wait"
   local wid
   wid=$(xdotool search --onlyvisible --name Minecraft | head -1 || true)
@@ -248,15 +251,17 @@ TZ=$(echo "$WATCHER" | sed -n 's/.*cam=[^:]*:\(.*\)/\1/p' | cut -d, -f3)
 # Грузим чанки вокруг Пади: без этого клиент не успевает подгрузить место
 # съёмки и кадр получается пустым небом.
 rq forceload add $((TX - 48)) $((TZ - 48)) $((TX + 48)) $((TZ + 48)) >/dev/null 2>&1 || true
+# Снимки Пади снимаются в обычном мире.
+SHOT_DIM=minecraft:overworld
 sleep 8
 shot frame-hollowwatcher-three-quarter "$WX" "$WY" "$WZ" "$TX" "$TY" "$TZ" 14
 shot frame-hollowwatcher-face "$TX" "$((TY + 1))" "$((TZ - 2))" "$TX" "$TY" "$TZ" 10
 shot frame-hollowwatcher-tall "$((TX + 4))" "$TY" "$TZ" "$TX" "$TY" "$TZ" 10
 # Вертушка даёт ночное небо, а для хоррор-кадра нужен читаемый силуэт.
-rq time set noon >/dev/null 2>&1 || true
+rq execute in minecraft:overworld run time set noon >/dev/null 2>&1 || true
 sleep 3
 shot frame-hollowwatcher-daylight "$TX" "$((TY + 1))" "$((TZ - 3))" "$TX" "$TY" "$TZ" 10
-rq time set midnight >/dev/null 2>&1 || true
+rq execute in minecraft:overworld run time set midnight >/dev/null 2>&1 || true
 sleep 3
 shot frame-hollowwatcher-three-quarter "$WX" "$WY" "$WZ" "$TX" "$TY" "$TZ" 10
 
