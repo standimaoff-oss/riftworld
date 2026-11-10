@@ -4531,9 +4531,16 @@ public final class SeaProbeCommand {
             CityPlan.Plaza plaza = plan.plazas.get(0);
             final double px = plaza.x();
             final double pz = plaza.z();
+            // Чанк площади должен быть ЗАГРУЖЕН: для незагруженного чанка
+            // getHeight отдаёт мусор (Y = -64), и страж там не появляется.
+            int pcx = net.minecraft.util.Mth.floor(px);
+            int pcz = net.minecraft.util.Mth.floor(pz);
+            if (!level.hasChunk(pcx >> 4, pcz >> 4)) {
+                level.getChunk(pcx >> 4, pcz >> 4);
+            }
             int ground = level.getHeight(
                     net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-                    net.minecraft.util.Mth.floor(px), net.minecraft.util.Mth.floor(pz));
+                    pcx, pcz);
             PatrolRoute route = PatrolRoute.nearestTo(plan, level, px, ground, pz, 120.0);
             double rx = px;
             double rz = pz;
@@ -4545,10 +4552,16 @@ public final class SeaProbeCommand {
                 // Высоту берём у САМОЙ точки, а не у её соседа: у маршрута
                 // соседние точки иногда лежат на краю острова, где земли нет,
                 // и страж там просто не появляется.
+                int rcx = net.minecraft.util.Mth.floor(rx);
+                int rcz = net.minecraft.util.Mth.floor(rz);
+                if (!level.hasChunk(rcx >> 4, rcz >> 4)) {
+                    level.getChunk(rcx >> 4, rcz >> 4);
+                }
                 int here = level.getHeight(
                         net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-                        net.minecraft.util.Mth.floor(rx), net.minecraft.util.Mth.floor(rz));
-                rg = here > 0 ? here : (int) Math.floor(wp.y());
+                        rcx, rcz);
+                // Высота ниже уровня моря — это не земля, а дно океана.
+                rg = here > 1 ? here : (int) Math.floor(wp.y());
             }
             // Что реально лежит под точкой: без этого проба не отличает
             // «землю» от «дна океана», и страж просто не появляется.
