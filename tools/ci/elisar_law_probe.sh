@@ -82,6 +82,7 @@ OPTS
     sleep 2
   done
   export DISPLAY=:99 LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe MESA_GL_VERSION_OVERRIDE=3.3
+  export DISPLAY
   Xvfb :99 -screen 0 800x600x24 -nolisten tcp >ci-out/law-xvfb.log 2>&1 &
   openbox >ci-out/law-openbox.log 2>&1 &
   for _ in $(seq 1 30); do xdpyinfo -display :99 >/dev/null 2>&1 && break; sleep 1; done
@@ -310,12 +311,26 @@ else
   fail "Игрок уже мёртв перед проверкой тюрьмы: $PLIVE"
 fi
 # Возрождение игрока занимает время: ждём, пока он снова появится в мире.
-for _ in $(seq 1 20); do
+#
+# ВАЖНО: клиент в CI не нажимает «Возродиться» сам — он остаётся на экране
+# смерти, и событие возрождения не наступает. Поэтому проба сама жмёт кнопку
+# (она в центре экрана) и ждёт, пока игрок снова окажется в мире.
+for _ in $(seq 1 30); do
   ALIVE=$(rq execute in riftworld:elisar as TestPlayer run data get entity @s Pos 2>&1 | tr -d '\n' || true)
   [[ "$ALIVE" == *"entity data"* ]] && break
+  WID=$(xdotool search --onlyvisible --name Minecraft 2>/dev/null | head -1 || true)
+  if [ -n "$WID" ]; then
+    xdotool mousemove --window "$WID" 400 300 click 1 >/dev/null 2>&1 || true
+    xdotool key --window "$WID" space >/dev/null 2>&1 || true
+  fi
   sleep 1
 done
 sleep 4
+# Состояние игрока: важно понимать, ЖИВ он после нажатия «Возродиться» или
+# всё ещё висит на экране смерти.
+PSTATE=$(rq execute in riftworld:elisar as TestPlayer run data get entity @s Health 2>&1 | tr -d '\n' || true)
+PPOS2=$(rq execute in riftworld:elisar as TestPlayer run data get entity @s Pos 2>&1 | tr -d '\n' || true)
+log "   игрок после смерти: hp=$PSTATE pos=$PPOS2"
 LAW2=$(rq execute in riftworld:elisar positioned "$CITY_X" "$CITY_Y" "$CITY_Z" run riftstruct v49_law_state 2>&1 | tr '\r\n' '  ' || true)
 log "   после смерти -> ${LAW2:0:400}"
 if [[ "$LAW2" == *"jailed=1"* ]]; then
