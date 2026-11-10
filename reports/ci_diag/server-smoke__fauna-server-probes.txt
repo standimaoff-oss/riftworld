@@ -61,4 +61,11 @@ Killed Silver Sea Serpent
 Observed sea_scale drop from silver_sea_serpent.
 OK: all 15 v0.47.0 fauna entities spawned, ticked, and dropped trophies cleanly.
 Verifying v0.48.0 armory recipes, Villager ducat trades, Guard & Archer equipment, and live AI.
-v48_armory_probe: riftstruct kind=v48_armory_probe error=NullPointerException msg=Cannot invoke "net.minecraft.network.syncher.SynchedEntityData$DataItem.m_135403_()" because "dataitem" is null | net.minecraft.network.syncher.SynchedEntityData#m_276349_:129 | net.minecraft.network.syncher.SynchedEntityData#m_135381_:124 | ru.aiforge.riftworld.entity.ElisarGuardEntity#m_8097_:118 | net.minecraft.world.entity.Entity#<init>:259 | net.minecraft.world.entity.LivingEntity#<init>:233 | net.minecraft.world.entity.Mob#<init>:123 | net.minecraft.world.entity.PathfinderMob#<init>:14 | ru.aiforge.riftworld.entity.ElisarGuardEntity#<init>:84
+v48_armory_probe: riftstruct kind=v48_armory_probe recipes_ok=true villager_offers=7 guard_equipped=true archer_equipped=true rare_ore_biomes=4(crystal_rifts,violet_hills,morok_hollow,mist_keep)
+Summoned new Elisar Villager
+
+Summoned new Elisar Guard
+
+Summoned new Elisar Archer
+
+OK: v0.48.0 armory, dual tool sets, and 3 Elisar settlement folk verified on live Forge server.
