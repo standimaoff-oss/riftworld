@@ -16,6 +16,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -281,6 +282,9 @@ public final class ElisarLawEvents {
                 }
             });
         }
+        // Общая проверка: на случай, если событие возрождения в этом
+        // окружении не придёт вовсе.
+        enforceJail(player);
 
         // Вещи остаются в сундуке склада: игрок забирает их сам, открыв сундук.
         // Список конфискованного НЕ забираем здесь — он нужен, чтобы сундук
@@ -318,9 +322,27 @@ public final class ElisarLawEvents {
      * забывается, и в следующий раз посадка не сработает.</p>
      */
     @SubscribeEvent
-    public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
+    public static void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
-        if (!(event.player instanceof ServerPlayer player)) return;
+        // Проверяем заключённых раз в секунду: так дешевле, чем каждый тик,
+        // и задержки в пару кадров никто не заметит.
+        if (++jailTick % 20 != 0) return;
+        var server = event.getServer();
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            enforceJail(player);
+        }
+    }
+
+    /**
+     * Держит заключённого в камере.
+     *
+     * <p>Вызывается и при входе игрока в мир, и раз в секунду по тикам
+     * сервера. Раньше посадка висела только на PlayerTickEvent, и в этом
+     * окружении событие не приходило вовсе: игрок после смерти оказывался
+     * на спавне города, клетка была записана, а заключённого в неё не
+     * переносили.</p>
+     */
+    private static void enforceJail(ServerPlayer player) {
         ServerLevel level = (ServerLevel) player.level();
         // Закон лежит в данных обычного мира, а заключённый — в городе.
         // Поэтому проверяем измерение ИГРОКА отдельно от измерения закона.
@@ -356,6 +378,29 @@ public final class ElisarLawEvents {
         }
         // Ушёл из города — заключённый свободен: клетка больше не нужна.
         law.clearJail(player.getUUID());
+    }
+
+    /** Счётчик тиков для проверки заключённых раз в секунду. */
+    private static int jailTick = 0;
+
+    /**
+     * Игрок вошёл в мир — после возрождения это самый надёжный момент,
+     * чтобы посадить его в камеру.
+     */
+    @SubscribeEvent
+    public static void onEntityJoin(EntityJoinLevelEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) return;
+        // Вход в мир бывает и при смене измерения, и при заходе на сервер:
+        // в обоих случаях посадка нужна, если у игрока есть клетка.
+        // Но прямо в событии игрок ещё не стоит в новом мире, поэтому
+        // переносим его следующим тиком.
+        var server = player.getServer();
+        if (server == null) return;
+        server.execute(() -> {
+            if (player.isAlive()) {
+                enforceJail(player);
+            }
+        });
     }
 
     /** Сохраняемое состояние розыска при перезагрузке мира. */
