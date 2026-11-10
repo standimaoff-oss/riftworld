@@ -3444,16 +3444,16 @@ public final class SeaProbeCommand {
                 // отказывалась работать, и кадров Смотрителя Пращи не было
                 // вовсе. Теперь строим площадку сами: земля, деревья и
                 // мглистый воздух — моб получится в кадре в любом мире.
-                px = 1200;
-                pz = 820;
-                py = buildHollowwatcherStage(world, px, pz);
-                spawnHollowwatcher(world, px, py, pz);
+                int sx = 1200;
+                int sz = 820;
+                int sy = buildHollowwatcherStage(world, sx, sz);
+                spawnHollowwatcher(world, sx, sy, sz);
                 src.sendSuccess(() -> Component.literal(
-                        "riftstruct kind=v49_hollowwatcher_showcase at=" + px + "," + py + "," + pz
+                        "riftstruct kind=v49_hollowwatcher_showcase at=" + sx + "," + sy + "," + sz
                                 + " spawned=1 blocks=1 sub_air=1 staged=1"
                                 + " dim=" + world.dimension().location()
-                                + " cam=" + (px - 4.5) + "," + (py + 2.4) + "," + (pz - 3.5)
-                                + ":" + px + "," + (py + 1.7) + "," + pz), false);
+                                + " cam=" + (sx - 4.5) + "," + (sy + 2.4) + "," + (sz - 3.5)
+                                + ":" + sx + "," + (sy + 1.7) + "," + sz), false);
                 return 1;
             }
             // Ищем точку суши в пределах региона: вес > 0 — это суша Пади.
