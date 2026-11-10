@@ -8,15 +8,4 @@ No containers need to be restarted.
 No user sessions are running outdated binaries.
 
 No VM guests are running outdated hypervisor (qemu) binaries on this host.
-captured frame-paper-dragon-three-quarter
-captured frame-paper-dragon-side
-captured frame-paper-dragon-head
-  paper dragon at 254,145,144
-captured frame-paper-dragon-far-a
-captured frame-paper-dragon-far-b
-  paper dragon pos after flight: Paper Dragon has the following entity data: [466.02134628034395d, 139.6997252886606d, 215.0930652557398d]
-ocean attempt 1: The nearest riftworld:maja_ocean is at [1115, 54, 1526] (1889 blocks away)
-ocean centre: 1115 1526
-captured frame-liopleurodon-swim
-captured frame-liopleurodon-side
-captured frame-liopleurodon-head
+::error title=In-game frames::Client did not join the test server
