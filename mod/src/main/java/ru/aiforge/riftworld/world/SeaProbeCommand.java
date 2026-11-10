@@ -4700,6 +4700,13 @@ public final class SeaProbeCommand {
                     + " at=" + (int) target.getX() + "," + (int) target.getY() + "," + (int) target.getZ()
                     + " cell=" + (near == null ? "-" : near.cell().getX() + "," + near.cell().getY()
                             + "," + near.cell().getZ())
+                    // Назначенная клетка в законе: она должна совпадать с той,
+                    // что нашли по сундуку. Если она пуста — клетка не была
+                    // сохранена при смерти.
+                    + " jail=" + (law.peekJail(target.getUUID()) == null ? "-" :
+                            law.peekJail(target.getUUID()).getX() + ","
+                            + law.peekJail(target.getUUID()).getY() + ","
+                            + law.peekJail(target.getUUID()).getZ())
                     + " chest=" + (near == null ? "-" : near.chest().getX() + "," + near.chest().getY()
                             + "," + near.chest().getZ());
             src.sendSuccess(() -> Component.literal(line), false);

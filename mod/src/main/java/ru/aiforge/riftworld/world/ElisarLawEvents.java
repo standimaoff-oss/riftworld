@@ -134,6 +134,13 @@ public final class ElisarLawEvents {
         // PlayerRespawnEvent (см. onRespawn).
         law.setJail(player.getUUID(), site.cell());
         law.clear(player);
+        // Диагностика: клетка обязана сохраниться, иначе заключённого некуда
+        // сажать. Если она пропала сразу после setJail — значит закон и
+        // обработчик работают с разными экземплярами состояния.
+        BlockPos saved = law.peekJail(player.getUUID());
+        player.displayClientMessage(Component.literal(
+                "\u00a78[закон] клетка сохранена: " + (saved == null ? "НЕТ" : saved.toShortString())
+                        + ", розыск снят: " + !law.isWanted(level, player)), true);
     }
 
     /**
@@ -329,14 +336,25 @@ public final class ElisarLawEvents {
         double dist = Math.hypot(dx, dz);
         // Заключённый внутри камеры — всё в порядке.
         if (dist <= 3.0D) return;
-        // Игрок в городе, но не в камере: сажаем его. Это страховка на
-        // случай, когда PlayerRespawnEvent не сработал или сервер после него
-        // вернул игрока на точку появления.
-        if (dist <= 64.0D) {
+        boolean inCity = player.level().dimension()
+                .equals(ru.aiforge.riftworld.flight.Flight.ELISAR_DIM);
+        if (!inCity) {
+            // Игрок ещё не в городе: он возродился в обычном мире, и клетка
+            // его ждёт. Раньше клетка стиралась здесь — игрок возрождался
+            // на спавне обычного мира, расстояние до камеры оказывалось
+            // больше 64 блоков, и клетка забывалась ДО посадки. Игрок
+            // оказывался на свободе, а розыск при этом снимался.
             seatInCell(player, cell, city);
             return;
         }
-        // Совсем далеко — считаем, что заключённый вышел и ушёл из города.
+        // Игрок в городе, но не в камере: сажаем его. Это страховка на
+        // случай, когда PlayerRespawnEvent не сработал или сервер после него
+        // вернул игрока на точку появления.
+        if (dist <= 24.0D) {
+            seatInCell(player, cell, city);
+            return;
+        }
+        // Ушёл из города — заключённый свободен: клетка больше не нужна.
         law.clearJail(player.getUUID());
     }
 
