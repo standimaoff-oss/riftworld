@@ -224,6 +224,15 @@ if [[ -z "$HP_AFTER" || "$HP_AFTER" == *"error"* || "$HP_AFTER" == *"Invalid"* ]
 fi
 log '   OK: страж выжил и предупредил'
 
+# Игрок должен остаться жив: если он погиб раньше (падение, ответный удар
+# стража), команда смерти ниже не сработает и цепочка закона развалится
+# молча.
+PLAYER_HP=$(rq execute in riftworld:elisar as TestPlayer run data get entity @s Health 2>&1 | tr -d '\n' || true)
+log "   здоровье игрока после удара: $PLAYER_HP"
+if [[ "$PLAYER_HP" != *"entity data"* ]]; then
+  fail "Игрок погиб до проверки тюрьмы: $PLAYER_HP"
+fi
+
 # ---------------------------------------------------------------- 3. тюрьма и склад
 log '-- 3) камера тюрьмы и склад строятся рядом с дорогой'
 PRISON=$(rq execute in riftworld:elisar positioned "$CITY_X" "$CITY_Y" "$CITY_Z" run riftstruct v49_elisar_law 2>&1 | tr '\r\n' '  ' || true)
@@ -272,7 +281,17 @@ fi
 
 # Убиваем самого игрока: он должен очнуться в камере, а вещи — в сундуке.
 # Игрок тоже в измерении Элисара.
-rq execute in riftworld:elisar run damage TestPlayer 1000 minecraft:player_attack by TestPlayer >/dev/null 2>&1 || true
+# Перед смертью убеждаемся, что игрок ЖИВ и стоит в городе: если он уже
+# погиб от падения или от руки стража, команда damage не сделает ничего, и
+# цепочка закона молча развалится.
+PLIVE=$(rq execute in riftworld:elisar as TestPlayer run data get entity @s Health 2>&1 | tr -d '\n' || true)
+PPOS=$(rq execute in riftworld:elisar as TestPlayer run data get entity @s Pos 2>&1 | tr -d '\n' || true)
+log "   игрок перед смертью: hp=$PLIVE pos=$PPOS"
+if [[ "$PLIVE" == *"entity data"* ]]; then
+  rq execute in riftworld:elisar run damage TestPlayer 1000 minecraft:player_attack by TestPlayer >/dev/null 2>&1 || true
+else
+  fail "Игрок уже мёртв перед проверкой тюрьмы: $PLIVE"
+fi
 # Возрождение игрока занимает время: ждём, пока он снова появится в мире.
 for _ in $(seq 1 20); do
   ALIVE=$(rq execute in riftworld:elisar as TestPlayer run data get entity @s Pos 2>&1 | tr -d '\n' || true)
