@@ -5957,6 +5957,17 @@ public final class SeaProbeCommand {
             world.setBlock(new BlockPos(bx, ground + 1, bz),
                     MorokBlocks.ROTWOOD_LOG.get().defaultBlockState(), 2);
         }
+        // Свет: Падь тёмная, и без фонарей моб в кадре был чёрным пятном.
+        // Фонари стоят по краям площадки — они дают читаемый силуэт и
+        // одновременно работают как «маяки» в лесу.
+        for (int[] lamp : new int[][]{{-4, -4}, {4, -4}, {-4, 4}, {4, 4}}) {
+            int lx = px + lamp[0];
+            int lz = pz + lamp[1];
+            world.setBlock(new BlockPos(lx, ground, lz),
+                    net.minecraft.world.level.block.Blocks.LANTERN.defaultBlockState(), 2);
+            world.setBlock(new BlockPos(lx, ground + 1, lz),
+                    net.minecraft.world.level.block.Blocks.LANTERN.defaultBlockState(), 2);
+        }
         return ground;
     }
 
