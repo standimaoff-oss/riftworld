@@ -6030,7 +6030,7 @@ public final class SeaProbeCommand {
             server.execute(() -> {
                 watcher.setPos(px + 0.5D, py + 0.05D, pz + 0.5D);
                 world.getChunk(px >> 4, pz >> 4);
-                watcher.hasChanged = true;
+                watcher.setDeltaMovement(0, 0, 0);
             });
         }
     }
