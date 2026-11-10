@@ -88,6 +88,12 @@ jobs:
           done
           echo "НЕ УДАЛОСЬ запушить кадры за 5 попыток"
           exit 1
+      - name: Publish the frames diagnostics to the working branch
+        # Артефакты джобы читать неудобно: журналы и отчёты проб кладём в ветвь,
+        # чтобы падение кадра можно было расследовать по тексту.
+        if: always() && startsWith(github.ref, 'refs/heads/arena/')
+        shell: bash
+        run: bash tools/ci/publish_frames.sh || true
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -95,6 +101,7 @@ jobs:
           path: |
             ci-out/frames/
             ci-out/frames-client.log
+            ci-out/*.txt
           if-no-files-found: warn
           retention-days: 14
       - name: Stop the test server

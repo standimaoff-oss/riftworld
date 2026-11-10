@@ -3424,7 +3424,12 @@ public final class SeaProbeCommand {
             // Моб должен стоять на НАСТОЯЩЕЙ суше Мороковой Пади, а не в
             // воздухе над городом: раньше кадр получался «маленький силуэт
             // в небе», и mob совсем не читался.
-            int[] spot = morokSpot(level, 1200, 820, 10);
+            // ВАЖНО: Падь Морока живёт в обычном мире. Проба вызывается как
+            // 'execute in riftworld:elisar run riftstruct ...', поэтому level здесь —
+            // это измерение Элисара, где суши Морока нет вовсе: камера уезжала
+            // в пустоту и кадр получался «ночным небом». Берем НАСТОЯЩИЙ мир.
+            ServerLevel world = level.getServer().overworld();
+            int[] spot = morokSpot(world, 1200, 820, 10);
             int px = 1200;
             int py = 140;
             int pz = 820;
@@ -3432,14 +3437,19 @@ public final class SeaProbeCommand {
                 px = spot[0];
                 py = spot[1];
                 pz = spot[2];
+            } else {
+                src.sendSuccess(() -> Component.literal(
+                        "riftstruct kind=v49_hollowwatcher_showcase error=no_morok_land"
+                                + " near=1200,820"), false);
+                return 1;
             }
             // Ставим моба на найденную сушу и гасим его физику, чтобы он стоял.
-            for (var old : level.getEntitiesOfClass(ru.aiforge.riftworld.entity.HollowwatcherEntity.class,
+            for (var stale : world.getEntitiesOfClass(ru.aiforge.riftworld.entity.HollowwatcherEntity.class,
                     new net.minecraft.world.phys.AABB(new BlockPos(px, py, pz)).inflate(80.0))) {
-                old.discard();
+                stale.discard();
             }
             int spawned = 0;
-            var watcher = ru.aiforge.riftworld.registry.ModEntities.HOLLOWWATCHER.get().create(level);
+            var watcher = ru.aiforge.riftworld.registry.ModEntities.HOLLOWWATCHER.get().create(world);
             if (watcher != null) {
                 watcher.setPos(px + 0.5D, py + 0.05D, pz + 0.5D);
                 watcher.setNoGravity(true);
@@ -3450,11 +3460,12 @@ public final class SeaProbeCommand {
                 watcher.setYRot(0.0F);
                 watcher.yHeadRot = 0.0F;
                 watcher.yBodyRot = 0.0F;
-                level.addFreshEntity(watcher);
+                world.addFreshEntity(watcher);
                 spawned = 1;
             }
             String line = "riftstruct kind=v49_hollowwatcher_showcase at=" + px + "," + py + "," + pz
                     + " spawned=" + spawned + " blocks=0 sub_air=0"
+                    + " dim=" + world.dimension().location()
                     + " cam=" + (px - 4.5) + "," + (py + 2.4) + "," + (pz - 3.5)
                     + ":" + px + "," + (py + 1.7) + "," + pz;
             src.sendSuccess(() -> Component.literal(line), false);

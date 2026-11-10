@@ -122,9 +122,36 @@ rq summon riftworld:paper_dragon 232 148 0 '{PersistenceRequired:1b}' >/dev/null
 # пустым небом.
 rq tp TestPlayer 212 150 0 facing 232 148 0 >/dev/null
 sleep 14
-shot frame-paper-dragon-far-a 216 151 0 232 148 0 6
+# Дракон ЛЕТИТ, поэтому снимать надо по его НАСТОЯЩЕЙ позиции: камера вслепую
+# смотрит в точку спавна и промахивается мимо. Позицию читаем с сервера.
+dragon_pos() {
+  local raw
+  raw=$(rq data get entity '@e[type=riftworld:paper_dragon,limit=1]' Pos 2>&1 | tr -d '\n' || true)
+  echo "$raw" | sed -n 's/.*\[\(.*\)\].*/\1/p'
+}
+DP=$(dragon_pos)
+DX=$(echo "$DP" | cut -d, -f1 | tr -d ' ' | cut -d. -f1)
+DY=$(echo "$DP" | cut -d, -f2 | tr -d ' ' | cut -d. -f1)
+DZ=$(echo "$DP" | cut -d, -f3 | tr -d ' ' | cut -d. -f1)
+if [[ -z "$DX" ]]; then
+  fail "Paper dragon position could not be read: $DP"
+fi
+echo "  paper dragon at $DX,$DY,$DZ"
+# Камера в 18 блоках от дракона: это дальше simulationDistance (8), но ближе
+# renderDistance (32) — дракон обязан быть виден и при этом двигаться.
+CX=$((DX - 17)); CZ=$((DZ + 4)); CY=$((DY + 2))
+rq tp TestPlayer "$CX" "$CY" "$CZ" facing "$DX" "$DY" "$DZ" >/dev/null
+sleep 5
+shot frame-paper-dragon-far-a "$CX" "$CY" "$CZ" "$DX" "$DY" "$DZ" 4
 sleep 10
-shot frame-paper-dragon-far-b 216 151 0 232 148 0 6
+DP2=$(dragon_pos)
+DX2=$(echo "$DP2" | cut -d, -f1 | tr -d ' ' | cut -d. -f1)
+DY2=$(echo "$DP2" | cut -d, -f2 | tr -d ' ' | cut -d. -f1)
+DZ2=$(echo "$DP2" | cut -d, -f3 | tr -d ' ' | cut -d. -f1)
+CX2=$((DX2 - 17)); CZ2=$((DZ2 + 4)); CY2=$((DY2 + 2))
+rq tp TestPlayer "$CX2" "$CY2" "$CZ2" facing "$DX2" "$DY2" "$DZ2" >/dev/null
+sleep 4
+shot frame-paper-dragon-far-b "$CX2" "$CY2" "$CZ2" "$DX2" "$DY2" "$DZ2" 4
 # Дракон обязан сместиться: сравниваем его координаты через 10 секунд
 DRAGON_POS=$(rq data get entity '@e[type=riftworld:paper_dragon,limit=1]' Pos 2>&1 | tr -d '\n' || true)
 echo "  paper dragon pos after flight: $DRAGON_POS"
@@ -186,8 +213,9 @@ capture_underwater frame-liopleurodon-head
 # Раньше моба ставили в воздухе над городом (200 120 0) — получался крошечный
 # силуэт в небе. Теперь витрина ищет НАСТОЯЩУЮ сушу Пади и ставит моба на
 # неё, а камера берёт координаты прямо из пробы.
+# Падь Морока живёт в обычном мире, поэтому витрину спрашиваем ИМЕННО в нём.
 rq execute in riftworld:elisar run time set midnight >/dev/null
-WATCHER=$(rq execute in riftworld:elisar run riftstruct v49_hollowwatcher_showcase)
+WATCHER=$(rq run riftstruct v49_hollowwatcher_showcase)
 echo "  $WATCHER"
 [[ "$WATCHER" == *"spawned=1"* ]] || fail "Hollowwatcher did not spawn: $WATCHER"
 # cam=camX,camY,camZ:tgtX,tgtY,tgtZ
@@ -197,10 +225,20 @@ WZ=$(echo "$WATCHER" | sed -n 's/.*cam=\([^:]*\):.*/\1/p' | cut -d, -f3)
 TX=$(echo "$WATCHER" | sed -n 's/.*cam=[^:]*:\(.*\)/\1/p' | cut -d, -f1)
 TY=$(echo "$WATCHER" | sed -n 's/.*cam=[^:]*:\(.*\)/\1/p' | cut -d, -f2)
 TZ=$(echo "$WATCHER" | sed -n 's/.*cam=[^:]*:\(.*\)/\1/p' | cut -d, -f3)
+# Грузим чанки вокруг Пади: без этого клиент не успевает подгрузить место
+# съёмки и кадр получается пустым небом.
+rq forceload add $((TX - 48)) $((TZ - 48)) $((TX + 48)) $((TZ + 48)) >/dev/null 2>&1 || true
 sleep 8
+shot frame-hollowwatcher-three-quarter "$WX" "$WY" "$WZ" "$TX" "$TY" "$TZ" 14
+shot frame-hollowwatcher-face "$TX" "$((TY + 1))" "$((TZ - 2))" "$TX" "$TY" "$TZ" 10
+shot frame-hollowwatcher-tall "$((TX + 4))" "$TY" "$TZ" "$TX" "$TY" "$TZ" 10
+# Вертушка даёт ночное небо, а для хоррор-кадра нужен читаемый силуэт.
+rq time set noon >/dev/null 2>&1 || true
+sleep 3
+shot frame-hollowwatcher-daylight "$TX" "$((TY + 1))" "$((TZ - 3))" "$TX" "$TY" "$TZ" 10
+rq time set midnight >/dev/null 2>&1 || true
+sleep 3
 shot frame-hollowwatcher-three-quarter "$WX" "$WY" "$WZ" "$TX" "$TY" "$TZ" 10
-shot frame-hollowwatcher-face "$TX" "$((TY + 1))" "$((TZ - 2))" "$TX" "$TY" "$TZ" 8
-shot frame-hollowwatcher-tall "$((TX + 4))" "$TY" "$TZ" "$TX" "$TY" "$TZ" 8
 
 # ---------------------------------------------------------------- El Gran Maja
 rq kill '@e[type=riftworld:el_gran_maja]' >/dev/null 2>&1 || true
