@@ -1,0 +1,192 @@
+[22:54:41] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:54:44] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:54:48] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:54:51] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:54:54] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:54:57] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:55:00] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:55:03] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:55:06] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:55:09] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:55:12] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:55:15] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:55:18] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:55:21] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:55:24] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:55:27] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:55:30] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:55:33] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:55:36] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:55:39] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:55:42] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:55:45] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:55:48] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:55:51] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:55:54] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:55:57] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:56:00] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:56:04] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:56:07] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:56:10] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:56:13] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:56:16] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:56:19] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:56:22] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:56:25] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:56:28] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:56:31] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:56:34] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:56:37] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:56:40] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:56:43] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:56:46] exit=0 > list
+There are 0 of a max of 5 players online: 
+
+
+[22:56:49] exit=0 > list
+There are 1 of a max of 5 players online: TestPlayer
+
+
+[22:56:49] exit=0 > gamemode spectator TestPlayer
+Set TestPlayer's game mode to Spectator Mode
+
+
+[22:56:50] exit=0 > weather clear
+Set the weather to clear
+
+
+[22:56:50] exit=0 > time set noon
+Set the time to 6000
+
+
+[22:56:50] exit=0 > data get entity @e[type=riftworld:el_gran_maja,limit=1] Pos
+El Gran Maja has the following entity data: [0.5d, 200.0d, 0.5d]
+
+
+[22:56:50] exit=0 > tp TestPlayer 0.5 214 188 facing 0.5 200.0 115
+Teleported TestPlayer to 0.500000, 214.000000, 188.500000
+
+
