@@ -288,7 +288,6 @@ public final class ElisarGuardEntity extends PathfinderMob {
         return witnesses;
     }
 
-    @Override
     /**
      * Страж погиб. Если убийцу видели другие горожане или стражи — начинается
      * розыск: стражи переходят в погоню, а после смерти игрок окажется в
