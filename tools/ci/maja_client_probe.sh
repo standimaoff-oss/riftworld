@@ -104,9 +104,16 @@ PY
 )
 # Head is about 156 blocks forward (+Z). Camera is just in front, within tracking distance.
 rq tp TestPlayer "$X" "$(( ${Y%.*} + 14 ))" "$(( ${Z%.*} + 188 ))" facing "$X" "$Y" "$(( ${Z%.*} + 115 ))" >/dev/null
-sleep 35
-if ! step "клиент загрузил модель Маджа"
-grep -Fq '[riftworld] geo el_gran_maja:' "$OUT/maja-client.log"; then
+# Модель грузится при ПЕРВОМ рендере, а первый кадр титана в поле зрения
+# клиента появляется не сразу: раньше проверка ждала ровно 35 секунд и
+# падала, хотя модель грузилась через минуту. Ждём по-настоящему.
+loaded=0
+for _ in $(seq 1 24); do
+  if grep -Fq '[riftworld] geo el_gran_maja:' "$OUT/maja-client.log"; then loaded=1; break; fi
+  sleep 5
+done
+step "модель Маджа: loaded=$loaded"
+if [ "$loaded" != 1 ]; then
   fail "The Maja renderer never loaded its model at the test camera position"
 fi
 WID=$(xdotool search --onlyvisible --name Minecraft | head -1 || true)
