@@ -36,6 +36,61 @@ CITY_Z=50
 CITY_Y=118
 
 rq() { python3 tools/rcon.py --password "${RCON_PW:-riftci}" --log '' --timeout 90 "$@"; }
+
+# Пробе нужен ИГРОК в мире: ударить стража, умереть и сесть в тюрьму нельзя
+# без настоящего игрока. В джобе sea-check клиент уже поднят визуальным
+# прогоном, а в отдельной рабочей петле его надо поднять здесь.
+ensure_player() {
+  local players
+  players=$(rq list 2>&1 || true)
+  if [[ "$players" == *TestPlayer* ]]; then
+    log '   игрок TestPlayer уже в игре'
+    return 0
+  fi
+  log '   игрока в игре нет — поднимаем клиент'
+  sudo apt-get update -qq
+  sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq xvfb openbox x11-utils xdotool \
+    libgl1 libglx-mesa0 libxi6 libxxf86vm1 libxfixes3 libxrender1 libxkbcommon0 libsm6 libopenal1 >/dev/null
+  mkdir -p ci/law-run/client/config
+  cat > ci/law-run/client/options.txt <<'OPTS'
+tutorialStep:none
+onboardAccessibility:false
+skipMultiplayerWarning:true
+joinedFirstServer:true
+renderDistance:12
+simulationDistance:8
+maxFps:30
+guiScale:2
+graphicsMode:1
+renderClouds:false
+pauseOnLostFocus:false
+narrator:0
+soundCategory_master:0.0
+fullscreen:true
+gamma:1.0
+hideGui:true
+bobView:false
+overrideWidth:800
+overrideHeight:600
+mipmapLevels:0
+entityDistanceScaling:1.0
+OPTS
+  export DISPLAY=:99 LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe MESA_GL_VERSION_OVERRIDE=3.3
+  Xvfb :99 -screen 0 800x600x24 -nolisten tcp >ci-out/law-xvfb.log 2>&1 &
+  openbox >ci-out/law-openbox.log 2>&1 &
+  for _ in $(seq 1 30); do xdpyinfo -display :99 >/dev/null 2>&1 && break; sleep 1; done
+  ( cd mod
+    chmod +x gradlew
+    ./gradlew runClient --no-daemon --console=plain -PrunDir="$PWD/../ci/law-run" -PautoJoin=127.0.0.1:25565
+  ) >ci-out/law-client.log 2>&1 &
+  for _ in $(seq 1 200); do
+    players=$(rq list 2>&1 || true)
+    [[ "$players" == *TestPlayer* ]] && break
+    sleep 3
+  done
+  [[ "${players:-}" == *TestPlayer* ]] || fail "Клиент не подключился: без игрока проба закона бессмысленна"
+  log '   клиент подключился'
+}
 fail() {
   echo "::error title=Elisar law probe::$*"
   # Причина падения — в текстовый отчёт, иначе её не увидеть снаружи.
@@ -55,6 +110,7 @@ log() {
 }
 
 log '== v0.49.0: проверка городского закона Элисара на живом сервере =='
+ensure_player
 rq gamerule doMobLoot true >/dev/null
 
 # ВАЖНО: без загруженных чанков getHeight отдаёт высоту генератора (дно

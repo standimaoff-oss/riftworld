@@ -207,6 +207,13 @@ jobs:
         if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/arena/361da66e-riftworld' || github.ref == 'refs/heads/arena/b4294aa1-riftworld' || github.ref == 'refs/heads/arena/037a840e-riftworld'
         shell: bash
         run: bash tools/ci/maja_client_probe.sh
+      - name: Verify patrols, the non-lethal warning and the jail warehouse
+        # Проба идёт сразу после визуального прогона: настоящий клиент уже
+        # запущен, а без игрока в мире нельзя ни ударить стража, ни умереть,
+        # ни сесть в тюрьму.
+        if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/arena/361da66e-riftworld' || github.ref == 'refs/heads/arena/b4294aa1-riftworld' || github.ref == 'refs/heads/arena/037a840e-riftworld'
+        shell: bash
+        run: bash tools/ci/elisar_law_probe.sh
       - name: Stop the test server
         if: always()
         shell: bash
