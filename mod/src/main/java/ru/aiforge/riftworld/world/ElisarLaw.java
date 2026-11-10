@@ -33,7 +33,7 @@ import ru.aiforge.riftworld.RiftWorld;
  * <p>Состояние хранится в мире, поэтому розыск и содержимое склада переживают
  * перезапуск.</p>
  */
-public final class ElisarLaw {
+public final class ElisarLaw extends net.minecraft.world.level.saveddata.SavedData {
 
     public static final String ID = RiftWorld.MODID + "_law";
 
@@ -64,10 +64,17 @@ public final class ElisarLaw {
     /** Вещи, отложенные в складе при аресте: игрок -> предметы. */
     private final Map<UUID, List<ItemRecord>> confiscated = new HashMap<>();
 
-    private static final Map<String, ElisarLaw> HOLDERS = new HashMap<>();
+    /** Имя файла сохранения в мире. */
+    private static final String DATA_NAME = RiftWorld.MODID + "_law";
 
+    /**
+     * Закон города живёт в данных мира: и розыск, и вещи на складе должны
+     * пережить перезапуск сервера, иначе игрок может обойти наказание,
+     * просто перезайдя в игру.
+     */
     public static ElisarLaw get(ServerLevel level) {
-        return HOLDERS.computeIfAbsent(level.dimension().location().toString(), k -> new ElisarLaw());
+        return level.getServer().overworld().getDataStorage().computeIfAbsent(
+                ElisarLaw::load, ElisarLaw::new, DATA_NAME);
     }
 
     // ------------------------------------------------------------------
@@ -81,6 +88,7 @@ public final class ElisarLaw {
         w.since = level.getGameTime();
         w.expiresAt = level.getGameTime() + 5L * 60L * 20L;
         w.jail = jail;
+        setDirty();
     }
 
     /** Розыск активен? */
@@ -91,6 +99,7 @@ public final class ElisarLaw {
         }
         if (!w.active(level.getGameTime())) {
             wanted.remove(player.getUUID());
+            setDirty();
             return false;
         }
         return true;
@@ -104,13 +113,16 @@ public final class ElisarLaw {
 
     /** Снять розыск. */
     public void clear(ServerPlayer player) {
-        wanted.remove(player.getUUID());
+        if (wanted.remove(player.getUUID()) != null) {
+            setDirty();
+        }
     }
 
     /** Выдать предупреждение. Возвращает номер предупреждения. */
     public int warn(ServerPlayer player) {
         Wanted w = wanted.computeIfAbsent(player.getUUID(), k -> new Wanted());
         w.warnings++;
+        setDirty();
         return w.warnings;
     }
 
@@ -129,11 +141,15 @@ public final class ElisarLaw {
             return;
         }
         confiscated.computeIfAbsent(player, k -> new ArrayList<>()).addAll(items);
+        setDirty();
     }
 
     /** Забрать отложенные предметы (когда игрок выходит из тюрьмы). */
     public List<ItemRecord> release(UUID player) {
         List<ItemRecord> out = confiscated.remove(player);
+        if (out != null) {
+            setDirty();
+        }
         return out == null ? List.of() : out;
     }
 
@@ -146,6 +162,7 @@ public final class ElisarLaw {
     // Сохранение
     // ------------------------------------------------------------------
 
+    @Override
     public CompoundTag save(CompoundTag tag) {
         net.minecraft.nbt.ListTag list = new net.minecraft.nbt.ListTag();
         for (Map.Entry<UUID, Wanted> e : wanted.entrySet()) {
@@ -182,7 +199,13 @@ public final class ElisarLaw {
         return tag;
     }
 
-    public void load(CompoundTag tag) {
+    public static ElisarLaw load(CompoundTag tag) {
+        ElisarLaw law = new ElisarLaw();
+        law.readFrom(tag);
+        return law;
+    }
+
+    private void readFrom(CompoundTag tag) {
         wanted.clear();
         confiscated.clear();
         net.minecraft.nbt.ListTag list = tag.getList("wanted", 10);

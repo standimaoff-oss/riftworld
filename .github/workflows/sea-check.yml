@@ -41,6 +41,7 @@ jobs:
           python tools/rift/validate_reference_fauna.py
           python tools/rift/validate_v047_fauna.py
           python tools/rift/validate_v048_armory_and_folk.py
+          python tools/rift/validate_v049_synched_data.py
           mkdir -p /tmp/maja-unit
           javac -d /tmp/maja-unit mod/src/main/java/ru/aiforge/riftworld/world/DeepOcean.java mod/src/main/java/ru/aiforge/riftworld/world/MajaSafetyPolicy.java tests/java/MajaRulesTest.java tests/java/DeepOceanCoreTest.java mod/src/main/java/ru/aiforge/riftworld/world/OceanWreck.java tests/java/OceanWreckTest.java mod/src/main/java/ru/aiforge/riftworld/world/MajaMotion.java tests/java/MajaMotionTest.java
           java -cp /tmp/maja-unit MajaRulesTest
@@ -299,9 +300,11 @@ jobs:
         if: always()
         run: tail -500 ci/server/logs/latest.log > ci-out/elisar-law-server-tail.log || true
       - name: Publish the law report to the working branch
+        # Публикация не должна ронять джобу: главный результат пробы — это её
+        # собственный вердикт, а не успех пуша отчёта в ветвь.
         if: always() && startsWith(github.ref, 'refs/heads/arena/')
         shell: bash
-        run: bash tools/ci/publish_frames.sh
+        run: bash tools/ci/publish_frames.sh || true
       - name: Stop server
         if: always()
         run: python3 tools/rcon.py --password riftci --log '' --timeout 20 stop || true

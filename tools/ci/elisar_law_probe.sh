@@ -14,7 +14,10 @@ set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$ROOT"
-LOG="${LOG:-/tmp/elisar-law-probe.log}"
+# Отчёт пишем в ci-out: его потом публикует publish_frames.sh, и по тексту
+# видно, какая именно проверка не прошла (логи джобы извне недоступны).
+mkdir -p ci-out
+LOG="${LOG:-ci-out/elisar-law-probe.txt}"
 : > "$LOG"
 
 # Площадь и дорога центрального города Элисара (см. data/riftworld/city/plan.json).

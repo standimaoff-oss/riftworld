@@ -116,9 +116,13 @@ public final class ElisarGuardEntity extends PathfinderMob {
     @Override
     protected void defineSynchedData() {
         super.defineSynchedData();
-        this.entityData.set(ON_PATROL, Boolean.TRUE);
-        this.entityData.set(WARNINGS, 0);
-        this.entityData.set(ALARM, Boolean.FALSE);
+        // ВАЖНО: значения синхронизированных данных нужно СНАЧАЛА зарегистрировать
+        // через define(), и только потом ставить. Без define() обращение к
+        // несуществующему ключу даёт NullPointerException прямо в конструкторе
+        // сущности — страж просто не появляется в игре.
+        this.entityData.define(ON_PATROL, Boolean.TRUE);
+        this.entityData.define(WARNINGS, 0);
+        this.entityData.define(ALARM, Boolean.FALSE);
     }
 
     @Override
