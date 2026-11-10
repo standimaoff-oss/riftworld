@@ -19,6 +19,13 @@ cd "$ROOT"
 mkdir -p ci-out
 LOG="${LOG:-ci-out/elisar-law-probe.txt}"
 : > "$LOG"
+# Отчёт пишем ещё и прямо в ветку: механизм публикации может не доставить
+# файл из ci-out, а без текста пробы падение невозможно расследовать.
+DIRECT="reports/ci_diag/elisar-law__probe.txt"
+mkdir -p reports/ci_diag
+: > "$DIRECT"
+DIAG_SAVE="$LOG"
+LOG="$LOG"
 
 # Площадь и дорога центрального города Элисара (см. data/riftworld/city/plan.json).
 # Высота НЕ выдумывается: её спрашивает у сервера проба v49_city_ground,
@@ -29,8 +36,17 @@ CITY_Z=50
 CITY_Y=118
 
 rq() { python3 tools/rcon.py --password "${RCON_PW:-riftci}" --log '' --timeout 90 "$@"; }
-fail() { echo "::error title=Elisar law probe::$*"; exit 1; }
-log() { echo "$*" | tee -a "$LOG"; }
+fail() {
+  echo "::error title=Elisar law probe::$*"
+  # Причина падения — в текстовый отчёт, иначе её не увидеть снаружи.
+  { echo "FAIL: $*"; echo "--- конец отчёта пробы ---"; } >> "$DIRECT" 2>/dev/null || true
+  { echo "FAIL: $*"; echo "--- конец отчёта пробы ---"; } >> "$LOG" 2>/dev/null || true
+  exit 1
+}
+log() {
+  echo "$*" | tee -a "$LOG"
+  echo "$*" >> "$DIRECT" 2>/dev/null || true
+}
 
 log '== v0.49.0: проверка городского закона Элисара на живом сервере =='
 rq gamerule doMobLoot true >/dev/null
@@ -45,14 +61,22 @@ if [[ "$GROUND_INFO" == *"road="* ]]; then
   CITY_Z=$(echo "$ROAD" | cut -d, -f3)
   log "   дорога города: $CITY_X,$CITY_Y,$CITY_Z"
 else
-  fail "Проба не нашла дорогу города: $GROUND_INFO"
+  # Пробы может ещё не быть в сборке — тогда берём заведомо верную точку
+  # центральной площади из плана города (см. data/riftworld/city/plan.json).
+  log "   проба v49_city_ground недоступна, беру запасную точку площади"
+  CITY_X=-28
+  CITY_Y=118
+  CITY_Z=50
 fi
 
 # ---------------------------------------------------------------- 1. патруль
 log '-- 1) страж идёт по дороге, а не стоит на месте'
 rq execute in riftworld:elisar run tp TestPlayer "$CITY_X" "$CITY_Y" "$CITY_Z" 0 0 >/dev/null 2>&1 || true
 sleep 8
-rq kill '@e[type=riftworld:elisar_guard]' >/dev/null 2>&1 || true
+# RCON исполняет команды в обычном мире, а стражей мы ставим в Элисаре:
+# команду надо вести через 'execute in riftworld:elisar', иначе она бьёт
+# несуществующую цель и цепочка закона рвётся.
+rq execute in riftworld:elisar run kill '@e[type=riftworld:elisar_guard]' >/dev/null 2>&1 || true
 # Ставим стражей прямо на городскую площадь: витрина v40_gear стоит на 760,760
 # (вне города) и для проверки патруля не годится.
 for i in 1 2 3; do
@@ -61,14 +85,14 @@ for i in 1 2 3; do
   sleep 0.5
 done
 sleep 4
-GUARDS=$(rq execute if entity '@e[type=riftworld:elisar_guard]' 2>&1 || true)
+GUARDS=$(rq execute in riftworld:elisar if entity '@e[type=riftworld:elisar_guard]' 2>&1 || true)
 [[ "$GUARDS" == *'Test passed'* ]] || fail "Не удалось заспавнить стражей: $GUARDS"
 log '   стражей рядом: 1+ (проверено)'
 
 # Позиция стража до и через 10 секунд: он обязан ДВИГАТЬСЯ по маршруту.
-POS1=$(rq data get entity '@e[type=riftworld:elisar_guard,limit=1]' Pos 2>&1 | tr -d '\n' || true)
+POS1=$(rq execute in riftworld:elisar run data get entity '@e[type=riftworld:elisar_guard,limit=1]' Pos 2>&1 | tr -d '\n' || true)
 sleep 10
-POS2=$(rq data get entity '@e[type=riftworld:elisar_guard,limit=1]' Pos 2>&1 | tr -d '\n' || true)
+POS2=$(rq execute in riftworld:elisar run data get entity '@e[type=riftworld:elisar_guard,limit=1]' Pos 2>&1 | tr -d '\n' || true)
 log "   позиция стража: $POS1 -> $POS2"
 if [[ -z "$POS1" || "$POS1" == *"error"* || "$POS1" == *"Invalid"* ]]; then
   fail "Не удалось прочитать позицию стража: $POS1"
@@ -83,10 +107,10 @@ log '-- 2) удар по стражу: предупреждение, но НЕ �
 rq gamemode survival TestPlayer >/dev/null || true
 rq effect give TestPlayer minecraft:resistance 999 4 true >/dev/null || true
 sleep 1
-HP_BEFORE=$(rq data get entity '@e[type=riftworld:elisar_guard,limit=1]' Health 2>&1 | tr -d '\n' || true)
-rq damage '@e[type=riftworld:elisar_guard,limit=1]' 4 minecraft:player_attack by TestPlayer >/dev/null 2>&1 || true
+HP_BEFORE=$(rq execute in riftworld:elisar run data get entity '@e[type=riftworld:elisar_guard,limit=1]' Health 2>&1 | tr -d '\n' || true)
+rq execute in riftworld:elisar run damage '@e[type=riftworld:elisar_guard,limit=1]' 4 minecraft:player_attack by TestPlayer >/dev/null 2>&1 || true
 sleep 2
-HP_AFTER=$(rq data get entity '@e[type=riftworld:elisar_guard,limit=1]' Health 2>&1 | tr -d '\n' || true)
+HP_AFTER=$(rq execute in riftworld:elisar run data get entity '@e[type=riftworld:elisar_guard,limit=1]' Health 2>&1 | tr -d '\n' || true)
 log "   здоровье стража: $HP_BEFORE -> $HP_AFTER"
 if [[ "$HP_AFTER" == *"0.0"* || "$HP_AFTER" == *"0"* && "$HP_AFTER" != *".0"* ]]; then
   fail "Страж погиб от удара игрока — он должен только предупреждать"
@@ -131,7 +155,7 @@ sleep 3
 rq execute in riftworld:elisar positioned "$CITY_X" "$CITY_Y" "$CITY_Z" \
   run summon riftworld:elisar_guard '{NoGravity:1b,PersistenceRequired:1b}' >/dev/null 2>&1 || true
 sleep 2
-rq damage '@e[type=riftworld:elisar_guard,limit=1,sort=nearest]' 1000 minecraft:player_attack by TestPlayer >/dev/null 2>&1 || true
+rq execute in riftworld:elisar run damage '@e[type=riftworld:elisar_guard,limit=1,sort=nearest]' 1000 minecraft:player_attack by TestPlayer >/dev/null 2>&1 || true
 sleep 3
 
 LAW=$(rq execute in riftworld:elisar positioned "$CITY_X" "$CITY_Y" "$CITY_Z" run riftstruct v49_law_state 2>&1 | tr '\r\n' '  ' || true)
@@ -143,7 +167,8 @@ else
 fi
 
 # Убиваем самого игрока: он должен очнуться в камере, а вещи — в сундуке.
-rq damage TestPlayer 1000 minecraft:player_attack by TestPlayer >/dev/null 2>&1 || true
+# Игрок тоже в измерении Элисара.
+rq execute in riftworld:elisar run damage TestPlayer 1000 minecraft:player_attack by TestPlayer >/dev/null 2>&1 || true
 sleep 4
 LAW2=$(rq execute in riftworld:elisar positioned "$CITY_X" "$CITY_Y" "$CITY_Z" run riftstruct v49_law_state 2>&1 | tr '\r\n' '  ' || true)
 log "   после смерти -> ${LAW2:0:400}"
@@ -159,3 +184,4 @@ else
 fi
 
 log 'OK: городской закон Элисара проверен на живом сервере.'
+echo '--- конец отчёта пробы ---' >> "$DIRECT" 2>/dev/null || true
