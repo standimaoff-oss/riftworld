@@ -108,7 +108,7 @@ for dy in 0 1 2 3 4 -1 -2; do
     # Ответ сервера на summon — в отчёт: по нему видно, что именно не так
     # («Неизвестный тип сущности», «Не удалось создать» и т.п.).
     SUM=$(rq execute in riftworld:elisar run summon riftworld:elisar_guard \
-      "$CITY_X" "$SY" "$CITY_Z" '{NoGravity:1b,PersistenceRequired:1b}' 2>&1 | tr '\r\n' ' ' || true)
+      "$CITY_X" "$SY" "$CITY_Z" '{PersistenceRequired:1b}' 2>&1 | tr '\r\n' ' ' || true)
     log "   summon на высоте $SY -> ${SUM:0:170}"
     sleep 0.4
   done
@@ -131,10 +131,14 @@ if [ "$SPAWNED" != 1 ]; then
 fi
 log "   стражей рядом: 1+ (высота $CITY_Y)"
 
-# Позиция стража до и через 10 секунд: он обязан ДВИГАТЬСЯ по маршруту.
+# Позиция стража до и через 15 секунд: он обязан ДВИГАТЬСЯ по маршруту.
 POS1=$(rq execute in riftworld:elisar run data get entity '@e[type=riftworld:elisar_guard,limit=1]' Pos 2>&1 | tr -d '\n' || true)
-sleep 10
+PATROL1=$(rq execute in riftworld:elisar run riftstruct v49_guard_patrol 2>&1 | tr '\r\n' '  ' || true)
+log "   состояние стража: ${PATROL1:0:300}"
+sleep 15
 POS2=$(rq execute in riftworld:elisar run data get entity '@e[type=riftworld:elisar_guard,limit=1]' Pos 2>&1 | tr -d '\n' || true)
+PATROL2=$(rq execute in riftworld:elisar run riftstruct v49_guard_patrol 2>&1 | tr '\r\n' '  ' || true)
+log "   состояние стража: ${PATROL2:0:300}"
 log "   позиция стража: $POS1 -> $POS2"
 if [[ -z "$POS1" || "$POS1" == *"error"* || "$POS1" == *"Invalid"* ]]; then
   fail "Не удалось прочитать позицию стража: $POS1"
@@ -189,13 +193,13 @@ sleep 1
 # Ставим НЕСКОЛЬКО стражей рядом: один убит, остальные видят убийство.
 for i in 1 2 3; do
   rq execute in riftworld:elisar run summon riftworld:elisar_guard \
-    "$CITY_X" "$CITY_Y" "$CITY_Z" '{NoGravity:1b,PersistenceRequired:1b}' >/dev/null 2>&1 || true
+    "$CITY_X" "$CITY_Y" "$CITY_Z" '{PersistenceRequired:1b}' >/dev/null 2>&1 || true
   sleep 0.5
 done
 sleep 3
 # Убиваем ОДНОГО стража от руки игрока: остальные — свидетели.
 rq execute in riftworld:elisar run summon riftworld:elisar_guard \
-  "$CITY_X" "$CITY_Y" "$CITY_Z" '{NoGravity:1b,PersistenceRequired:1b}' >/dev/null 2>&1 || true
+  "$CITY_X" "$CITY_Y" "$CITY_Z" '{PersistenceRequired:1b}' >/dev/null 2>&1 || true
 sleep 2
 rq execute in riftworld:elisar run damage '@e[type=riftworld:elisar_guard,limit=1,sort=nearest]' 1000 minecraft:player_attack by TestPlayer >/dev/null 2>&1 || true
 sleep 3

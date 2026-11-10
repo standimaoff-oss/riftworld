@@ -4575,6 +4575,35 @@ public final class SeaProbeCommand {
             return 1;
         }
 
+        if (k.equals("v49_guard_patrol")) {
+            // v0.49.0: что страж делает на самом деле — есть ли у него
+            // маршрут, куда он идёт и куда смотрит.
+            var guard = level.getEntitiesOfClass(
+                    ru.aiforge.riftworld.entity.ElisarGuardEntity.class,
+                    src.getPosition().inflate(48.0)).stream().findFirst();
+            if (guard.isEmpty()) {
+                src.sendSuccess(() -> Component.literal(
+                        "riftstruct kind=v49_guard_patrol error=no_guard"), false);
+                return 1;
+            }
+            var g = guard.get();
+            var route = g.route();
+            src.sendSuccess(() -> Component.literal(
+                    "riftstruct kind=v49_guard_patrol"
+                            + " pos=" + (int) g.getX() + "," + (int) g.getY() + "," + (int) g.getZ()
+                            + " onPatrol=" + (g.onPatrol() ? 1 : 0)
+                            + " route=" + (route == null ? "none"
+                                    : route.kind().name() + "/" + route.size())
+                            + " index=" + g.routeIndex()
+                            + " target=" + (g.patrolTarget() == null ? "none"
+                                    : g.patrolTarget().getX() + ","
+                                      + g.patrolTarget().getY() + ","
+                                      + g.patrolTarget().getZ())
+                            + " nav=" + (g.getNavigation().isDone() ? "idle" : "moving")
+                            + " ai=" + (g.isNoAi() ? "off" : "on")), false);
+            return 1;
+        }
+
         if (k.equals("v49_law_state")) {
             // v0.49.0: состояние городского закона для ближайшего игрока.
             // Проба нужна CI, чтобы проверить ВСЮ цепочку закона:
