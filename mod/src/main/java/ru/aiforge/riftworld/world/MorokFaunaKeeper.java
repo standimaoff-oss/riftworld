@@ -11,9 +11,8 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import ru.aiforge.riftworld.RiftWorld;
-import ru.aiforge.riftworld.entity.PegasusEntity;
+import ru.aiforge.riftworld.entity.HollowwatcherEntity;
 import ru.aiforge.riftworld.entity.MorokEntity;
-import ru.aiforge.riftworld.entity.WendigoEntity;
 import ru.aiforge.riftworld.flight.Flight;
 import ru.aiforge.riftworld.registry.ModEntities;
 
@@ -31,13 +30,13 @@ import ru.aiforge.riftworld.registry.ModEntities;
  */
 @Mod.EventBusSubscriber(modid = RiftWorld.MODID)
 public final class MorokFaunaKeeper {
-    private static final int WENDIGO_PER_PLAYER = 1;
-    private static final int WENDIGO_WORLD_CAP = 5;
     // v0.39.0: Морок — главный хоррор Пади. Ночью часто, днём редко.
     private static final int MOROK_PER_PLAYER = 3;
     private static final int MOROK_WORLD_CAP = 14;
-    private static final int PEGASUS_PER_PLAYER = 2;
-    private static final int PEGASUS_WORLD_CAP = 10;
+    // v0.49.0: Смотритель Пращи — РЕДКИЙ, но самый страшный. Днём почти не появляется
+    // (2 %), ночью — 18 %, и не больше одного на игрока: одного такого хватает.
+    private static final int WATCHER_PER_PLAYER = 1;
+    private static final int WATCHER_WORLD_CAP = 5;
     private static int failsafe = 0;
 
     private MorokFaunaKeeper() {
@@ -72,25 +71,18 @@ public final class MorokFaunaKeeper {
                         && countMorok(sl) < MOROK_WORLD_CAP) {
                     spawnMorok(sl, sp);
                 }
-            }
 
-            // ---------------- Вендиго: только в тумане Пади
-            if (MorokHollow.inside(sp.getX(), sp.getZ())) {
-                List<WendigoEntity> near = sl.getEntitiesOfClass(WendigoEntity.class, sp.getBoundingBox().inflate(96.0));
-                double chance = night ? 0.30 : 0.10;
-                if (near.size() < WENDIGO_PER_PLAYER && r.nextDouble() < chance
-                        && countWendigo(sl) < WENDIGO_WORLD_CAP) {
-                    spawnWendigo(sl, sp);
+                // ---------------- Смотритель Пращи: страшный «стоитель», ждущий, пока отвернёшься
+                List<HollowwatcherEntity> nearWatchers =
+                        sl.getEntitiesOfClass(HollowwatcherEntity.class, sp.getBoundingBox().inflate(120.0));
+                double watcherChance = night ? 0.18 : 0.02;
+                if (nearWatchers.size() < WATCHER_PER_PLAYER && r.nextDouble() < watcherChance
+                        && countWatchers(sl) < WATCHER_WORLD_CAP) {
+                    spawnWatcher(sl, sp);
                 }
             }
 
-            // ---------------- Пегас: живые биомы
-            if (liveBiomeAt(sp.getX(), sp.getZ())) {
-                List<PegasusEntity> near = sl.getEntitiesOfClass(PegasusEntity.class, sp.getBoundingBox().inflate(96.0));
-                if (near.size() < PEGASUS_PER_PLAYER && r.nextDouble() < 0.12 && countPegasus(sl) < PEGASUS_WORLD_CAP) {
-                    spawnPegasus(sl, sp);
-                }
-            }
+
         }
     }
 
@@ -98,17 +90,16 @@ public final class MorokFaunaKeeper {
         return VioletHills.inside(x, z) || SizoGrove.inside(x, z) || WaterfallGardens.inside(x, z);
     }
 
+    private static int countWatchers(ServerLevel sl) {
+        return sl.getEntitiesOfClass(HollowwatcherEntity.class,
+                new net.minecraft.world.phys.AABB(-30000, -64, -30000, 30000, 320, 30000)).size();
+    }
+
     private static int countMorok(ServerLevel sl) {
         return sl.getEntitiesOfClass(MorokEntity.class, new net.minecraft.world.phys.AABB(-30000, -64, -30000, 30000, 320, 30000)).size();
     }
 
-    private static int countWendigo(ServerLevel sl) {
-        return sl.getEntitiesOfClass(WendigoEntity.class, new net.minecraft.world.phys.AABB(-30000, -64, -30000, 30000, 320, 30000)).size();
-    }
 
-    private static int countPegasus(ServerLevel sl) {
-        return sl.getEntitiesOfClass(PegasusEntity.class, new net.minecraft.world.phys.AABB(-30000, -64, -30000, 30000, 320, 30000)).size();
-    }
 
     private static void spawnMorok(ServerLevel sl, ServerPlayer sp) {
         ThreadLocalRandom r = ThreadLocalRandom.current();
@@ -135,41 +126,35 @@ public final class MorokFaunaKeeper {
         }
     }
 
-    private static void spawnWendigo(ServerLevel sl, ServerPlayer sp) {
+
+
+    /**
+     * v0.49.0: Смотритель появляется ВЫШЕ — между стволами Гнилой рощи, а не на земле.
+     * Он стоит в полусотне блоков от игрока и ждёт, пока на него посмотрят.
+     */
+    private static void spawnWatcher(ServerLevel sl, ServerPlayer sp) {
         ThreadLocalRandom r = ThreadLocalRandom.current();
         for (int attempt = 0; attempt < 14; ++attempt) {
-            int px = (int) sp.getX() + r.nextInt(72) - 36;
-            int pz = (int) sp.getZ() + r.nextInt(72) - 36;
+            int px = (int) sp.getX() + r.nextInt(80) - 40;
+            int pz = (int) sp.getZ() + r.nextInt(80) - 40;
             if (!sl.hasChunk(px >> 4, pz >> 4)) continue;
             if (!MorokHollow.inside(px + 0.5, pz + 0.5)) continue;
+            double d = Math.hypot(px + 0.5 - sp.getX(), pz + 0.5 - sp.getZ());
+            if (d < 18.0) continue;
             BlockPos ground = groundAt(sl, px, pz);
             if (ground == null) continue;
-            WendigoEntity w = ModEntities.WENDIGO.get().create(sl);
+            HollowwatcherEntity w = ModEntities.HOLLOWWATCHER.get().create(sl);
             if (w == null) return;
             w.moveTo(ground.getX() + 0.5, ground.getY(), ground.getZ() + 0.5, r.nextFloat() * 360.0F, 0.0F);
             w.finalizeSpawn(sl, sl.getCurrentDifficultyAt(ground), MobSpawnType.NATURAL, null, null);
             sl.addFreshEntity(w);
+            // Тишина — часть страха: слышно только сердцебиение вдалеке.
+            sl.playSound(null, ground, net.minecraft.sounds.SoundEvents.WARDEN_HEARTBEAT,
+                    net.minecraft.sounds.SoundSource.HOSTILE, 0.7F, 0.5F);
             return;
         }
     }
 
-    private static void spawnPegasus(ServerLevel sl, ServerPlayer sp) {
-        ThreadLocalRandom r = ThreadLocalRandom.current();
-        for (int attempt = 0; attempt < 16; ++attempt) {
-            int px = (int) sp.getX() + r.nextInt(96) - 48;
-            int pz = (int) sp.getZ() + r.nextInt(96) - 48;
-            if (!sl.hasChunk(px >> 4, pz >> 4)) continue;
-            if (!liveBiomeAt(px + 0.5, pz + 0.5)) continue;
-            BlockPos ground = groundAt(sl, px, pz);
-            if (ground == null) continue;
-            PegasusEntity pg = ModEntities.PEGASUS.get().create(sl);
-            if (pg == null) return;
-            pg.moveTo(ground.getX() + 0.5, ground.getY(), ground.getZ() + 0.5, r.nextFloat() * 360.0F, 0.0F);
-            pg.finalizeSpawn(sl, sl.getCurrentDifficultyAt(ground), MobSpawnType.NATURAL, null, null);
-            sl.addFreshEntity(pg);
-            return;
-        }
-    }
 
     /** Ищет твёрдую землю сверху вниз (первый непроходимый блок, над которым воздух). */
     private static BlockPos groundAt(ServerLevel sl, int x, int z) {

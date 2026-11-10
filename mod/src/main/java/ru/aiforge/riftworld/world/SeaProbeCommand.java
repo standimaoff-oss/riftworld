@@ -7,6 +7,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -38,8 +39,56 @@ public final class SeaProbeCommand {
     private SeaProbeCommand() {
     }
 
+    private static int majaPose(CommandSourceStack src) {
+        StringBuilder why = new StringBuilder();
+        boolean clear = ru.aiforge.riftworld.entity.MajaCollision.clear(src.getLevel(), src.getPosition(), src.getRotation().y, why);
+        String message = "maja_pose clear=" + clear + " reason=" + (clear ? "none" : why);
+        src.sendSuccess(() -> Component.literal(message), false);
+        return clear ? 1 : 0;
+    }
+
+    /** Read-only diagnostic: never generates or loads chunks. */
+    private static int majaIsland(CommandSourceStack src) {
+        if (!src.getLevel().dimension().equals(Flight.ELISAR_DIM)) {
+            src.sendFailure(Component.literal("Use /execute in riftworld:elisar positioned <x> <y> <z> run riftmajaisland"));
+            return 0;
+        }
+        int ox = (int) Math.floor(src.getPosition().x), oz = (int) Math.floor(src.getPosition().z);
+        int cx = Math.floorDiv(ox, WildIslands.CELL), cz = Math.floorDiv(oz, WildIslands.CELL);
+        CityPlan.Island best = null;
+        double score = Double.POSITIVE_INFINITY;
+        for (int x = cx - 7; x <= cx + 7; x++) for (int z = cz - 7; z <= cz + 7; z++) {
+            for (CityPlan.Island island : WildIslands.cell(x, z).islands) {
+                if (island.kind != 2 || island.R > 24.0 || !DeepOcean.contains((int)island.cx, (int)island.cz)) continue;
+                DeepOcean.Region ocean = DeepOcean.regionAt((int)island.cx, (int)island.cz);
+                double d = Math.hypot(island.cx - ocean.x(), island.cz - ocean.z());
+                // The core suppresses islands, and an island crossing its edge is incomplete.
+                if (d < 384 + island.maxReach() * 1.5 + 32 || d + island.maxReach() + 16 >= ocean.radius()) continue;
+                if (ElisarChunkGenerator.column(CityPlan.get(), (int)island.cx, (int)island.cz).isl != island) continue;
+                double q = Math.hypot(island.cx - ox, island.cz - oz);
+                if (q < score) { score = q; best = island; }
+            }
+        }
+        if (best == null) { src.sendFailure(Component.literal("No suitable medium ocean island nearby")); return 0; }
+        int ix = (int)Math.floor(best.cx), iz = (int)Math.floor(best.cz);
+        int ax = ix, az = (int)Math.floor(best.cz - 156 - best.maxReach() - 20);
+        int ay = (int)Math.max(67, Math.min(85, best.base - 38));
+        String message = String.format(java.util.Locale.ROOT,
+                "maja_island x=%d z=%d radius=%.2f reach=%.2f base=%.2f anchor_x=%d anchor_y=%d anchor_z=%d",
+                ix, iz, best.R, best.maxReach(), best.base, ax, ay, az);
+        src.sendSuccess(() -> Component.literal(message), false);
+        return 1;
+    }
+
+
     @SubscribeEvent
     public static void register(RegisterCommandsEvent e) {
+        e.getDispatcher().register(Commands.literal("riftmajapose").requires(s -> s.hasPermission(2))
+                .executes(c -> majaPose(c.getSource())));
+        e.getDispatcher().register(Commands.literal("riftmajaisland").requires(s -> s.hasPermission(2))
+                .executes(c -> majaIsland(c.getSource())));
+        e.getDispatcher().register(Commands.literal("riftmajacheck").requires(s -> s.hasPermission(2))
+                .executes(c -> majaCheck(c.getSource())));
         e.getDispatcher().register(Commands.literal("riftsea").requires(s -> s.hasPermission(2))
                 .executes(c -> run(c.getSource())));
         // Рев 11: /rifttree — ближайшее дерево Элисара и сколько у него ВЕТВЕЙ (проверка «не квадрат»)
@@ -134,6 +183,34 @@ public final class SeaProbeCommand {
      * сколько у дерева ВЕТВЕЙ (брёвен вне ствола) и листвы. Именно так CI проверяет, что дерево
      * не «сплошной квадрат», а растёт с ветками.
      */
+    /** Non-loading diagnostic for operators: why can't Maja spawn at this player? */
+    private static int majaCheck(CommandSourceStack src) {
+        ServerLevel level = src.getLevel();
+        var pos = src.getPosition();
+        int x = (int) Math.floor(pos.x), z = (int) Math.floor(pos.z);
+        int sea = CityPlan.get().ocean;
+        DeepOcean.Region region = DeepOcean.regionAt(x, z);
+        StringBuilder out = new StringBuilder("maja_check dimension=").append(level.dimension().location())
+                .append(" x=").append(x).append(" z=").append(z)
+                .append(" ocean=").append(DeepOcean.contains(x, z))
+                .append(" biome=").append(level.getBiome(new BlockPos(x, sea - 8, z)).is(MajaOceanKeeper.BIOME))
+                .append(" spawned=").append(MajaWorldData.get(level).hasSpawned(region.key()));
+        double cx = ((x >> 4) << 4) + 8.0, cz = ((z >> 4) << 4) + 8.0;
+        for (int rise = 0; rise <= 40; rise += 8) {
+            out.append(" y").append(sea - 13 + rise).append('=');
+            for (int i = 0; i < 4; i++) {
+                StringBuilder why = new StringBuilder();
+                boolean ok = ru.aiforge.riftworld.entity.MajaCollision.clear(level,
+                        new net.minecraft.world.phys.Vec3(cx, sea - 13.0 + rise, cz), 45.0F + i * 90, why);
+                if (i > 0) out.append('/');
+                out.append(ok ? "clear" : why);
+            }
+        }
+        String line = out.toString();
+        src.sendSuccess(() -> Component.literal(line), false);
+        return 1;
+    }
+
     private static int tree(CommandSourceStack src, String kindFilter) {
         ServerLevel level = src.getLevel();
         if (level.dimension() != Flight.ELISAR_DIM) {
@@ -338,6 +415,61 @@ public final class SeaProbeCommand {
         double camZ = gz + fz * distAlong + rz * distSide;
         double camY = gy + distUp;
         return new double[]{camX, camY, camZ, gx, gy, gz};
+    }
+
+    /**
+     * v0.40.0: стойка с полным комплектом брони (или с парой инструментов в руках).
+     * Стойки — самый честный способ показать доспехи в игре: они носят их как игрок.
+     */
+    private static void v40Stand(ServerLevel sl, double x, double y, double z, float yaw,
+                                boolean aurite, boolean tools) {
+        var stand = net.minecraft.world.entity.EntityType.ARMOR_STAND.create(sl);
+        if (stand == null) return;
+        stand.moveTo(x, y, z, yaw, 0.0F);
+        stand.setYRot(yaw);
+        stand.yBodyRot = yaw;
+        stand.yHeadRot = yaw;
+        stand.setNoGravity(true);
+        stand.setInvulnerable(true);
+        stand.setSilent(true);
+        stand.setShowArms(true);
+        stand.setNoBasePlate(false);
+        if (tools) {
+            stand.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND,
+                    new net.minecraft.world.item.ItemStack(
+                            (aurite ? ru.aiforge.riftworld.registry.ModItems.AURITE_PICKAXE
+                                    : ru.aiforge.riftworld.registry.ModItems.RIFTCRYSTAL_PICKAXE).get()));
+            stand.setItemSlot(net.minecraft.world.entity.EquipmentSlot.OFFHAND,
+                    new net.minecraft.world.item.ItemStack(
+                            (aurite ? ru.aiforge.riftworld.registry.ModItems.AURITE_AXE
+                                    : ru.aiforge.riftworld.registry.ModItems.RIFTCRYSTAL_AXE).get()));
+        } else {
+            stand.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD,
+                    new net.minecraft.world.item.ItemStack(
+                            (aurite ? ru.aiforge.riftworld.registry.ModItems.AURITE_HELMET
+                                    : ru.aiforge.riftworld.registry.ModItems.RIFTCRYSTAL_HELMET).get()));
+            stand.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST,
+                    new net.minecraft.world.item.ItemStack(
+                            (aurite ? ru.aiforge.riftworld.registry.ModItems.AURITE_CHESTPLATE
+                                    : ru.aiforge.riftworld.registry.ModItems.RIFTCRYSTAL_CHESTPLATE).get()));
+            stand.setItemSlot(net.minecraft.world.entity.EquipmentSlot.LEGS,
+                    new net.minecraft.world.item.ItemStack(
+                            (aurite ? ru.aiforge.riftworld.registry.ModItems.AURITE_LEGGINGS
+                                    : ru.aiforge.riftworld.registry.ModItems.RIFTCRYSTAL_LEGGINGS).get()));
+            stand.setItemSlot(net.minecraft.world.entity.EquipmentSlot.FEET,
+                    new net.minecraft.world.item.ItemStack(
+                            (aurite ? ru.aiforge.riftworld.registry.ModItems.AURITE_BOOTS
+                                    : ru.aiforge.riftworld.registry.ModItems.RIFTCRYSTAL_BOOTS).get()));
+            stand.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND,
+                    new net.minecraft.world.item.ItemStack(
+                            (aurite ? ru.aiforge.riftworld.registry.ModItems.AURITE_SWORD
+                                    : ru.aiforge.riftworld.registry.ModItems.RIFTCRYSTAL_SWORD).get()));
+            stand.setItemSlot(net.minecraft.world.entity.EquipmentSlot.OFFHAND,
+                    new net.minecraft.world.item.ItemStack(
+                            (aurite ? ru.aiforge.riftworld.registry.ModItems.ELISAR_SHIELD
+                                    : ru.aiforge.riftworld.registry.ModItems.ELISAR_BOW).get()));
+        }
+        sl.addFreshEntity(stand);
     }
 
     private static int[] geoStats(String name) {
@@ -1835,7 +1967,38 @@ public final class SeaProbeCommand {
         return false;
     }
 
+    /**
+     * Обёртка проб структур: любое исключение печатается в консоль и в вывод
+     * команды вместе со стеком, а не превращается в безликое «An unexpected
+     * error occurred» от бригадира. Именно так в CI ловились краши проб.
+     */
     private static int probeStruct(CommandSourceStack src, String rawKind) {
+        try {
+            return probeStructInner(src, rawKind);
+        } catch (Throwable t) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("riftstruct kind=").append(rawKind)
+              .append(" error=").append(t.getClass().getSimpleName())
+              .append(" msg=").append(String.valueOf(t.getMessage()).replace('\n', ' '));
+            Throwable cause = t.getCause();
+            if (cause != null && cause != t) {
+                sb.append(" cause=").append(cause.getClass().getSimpleName())
+                  .append(" cause_msg=").append(String.valueOf(cause.getMessage()).replace('\n', ' '));
+            }
+            StackTraceElement[] st = t.getStackTrace();
+            for (int i = 0; i < Math.min(st.length, 8); ++i) {
+                sb.append(" | ").append(st[i].getClassName()).append('#')
+                  .append(st[i].getMethodName()).append(':').append(st[i].getLineNumber());
+            }
+            String line = sb.toString();
+            org.slf4j.LoggerFactory.getLogger(SeaProbeCommand.class)
+                    .error("[riftstruct] {}", line, t);
+            src.sendFailure(Component.literal(line));
+            return 0;
+        }
+    }
+
+    private static int probeStructInner(CommandSourceStack src, String rawKind) {
         ServerLevel level = src.getLevel();
         BlockPos at = BlockPos.containing(src.getPosition());
         String k = rawKind == null ? "" : rawKind.toLowerCase(java.util.Locale.ROOT);
@@ -3256,6 +3419,88 @@ public final class SeaProbeCommand {
             return 1;
         }
 
+        if (k.equals("v49_hollowwatcher_showcase")) {
+            // v0.49.0: витрина Смотрителя Пращи.
+            // Моб должен стоять на НАСТОЯЩЕЙ суше Мороковой Пади, а не в
+            // воздухе над городом: раньше кадр получался «маленький силуэт
+            // в небе», и mob совсем не читался.
+            // ВАЖНО: Падь Морока живёт в обычном мире. Проба вызывается как
+            // 'execute in riftworld:elisar run riftstruct ...', поэтому level здесь —
+            // это измерение Элисара, где суши Морока нет вовсе: камера уезжала
+            // в пустоту и кадр получался «ночным небом». Берем НАСТОЯЩИЙ мир.
+            ServerLevel world = level.getServer().overworld();
+            // Радиус поиска держим небольшим: широкий поиск генерирует десятки
+            // чанков прямо в серверном потоке, и RCON отваливается по таймауту.
+            int[] spot = morokSpot(world, 1200, 820, 3);
+            int px = 1200;
+            int py = 140;
+            int pz = 820;
+            if (spot != null) {
+                px = spot[0];
+                py = spot[1];
+                pz = spot[2];
+            } else {
+                src.sendSuccess(() -> Component.literal(
+                        "riftstruct kind=v49_hollowwatcher_showcase error=no_morok_land"
+                                + " near=1200,820"), false);
+                return 1;
+            }
+            // Ставим моба на найденную сушу и гасим его физику, чтобы он стоял.
+            for (var stale : world.getEntitiesOfClass(ru.aiforge.riftworld.entity.HollowwatcherEntity.class,
+                    new net.minecraft.world.phys.AABB(new BlockPos(px, py, pz)).inflate(80.0))) {
+                stale.discard();
+            }
+            int spawned = 0;
+            var watcher = ru.aiforge.riftworld.registry.ModEntities.HOLLOWWATCHER.get().create(world);
+            if (watcher != null) {
+                watcher.setPos(px + 0.5D, py + 0.05D, pz + 0.5D);
+                watcher.setNoGravity(true);
+                watcher.setNoAi(true);
+                watcher.setInvulnerable(true);
+                watcher.setSilent(true);
+                // Смотрит на юг, чтобы кадр «в лицо» был удачным.
+                watcher.setYRot(0.0F);
+                watcher.yHeadRot = 0.0F;
+                watcher.yBodyRot = 0.0F;
+                world.addFreshEntity(watcher);
+                spawned = 1;
+            }
+            String line = "riftstruct kind=v49_hollowwatcher_showcase at=" + px + "," + py + "," + pz
+                    + " spawned=" + spawned + " blocks=0 sub_air=0"
+                    + " dim=" + world.dimension().location()
+                    + " cam=" + (px - 4.5) + "," + (py + 2.4) + "," + (pz - 3.5)
+                    + ":" + px + "," + (py + 1.7) + "," + pz;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.equals("bb_paper_dragon_showcase")) {
+            // v0.49.0: Пегас удалён из мода, поэтому витрина Blockbench-пробы
+            // теперь ставит Бумажного дракона — ту же воздушную дистанцию
+            // и тот же солнечный склон, чтобы кадры оставались сопоставимыми.
+            int dx = 520, dy = 108, dz = 520;
+            int spawned = 0;
+            if (level.hasChunk(dx >> 4, dz >> 4)) {
+                for (var old : level.getEntitiesOfClass(ru.aiforge.riftworld.entity.PaperDragonEntity.class,
+                        new net.minecraft.world.phys.AABB(new BlockPos(dx, dy, dz)).inflate(90.0))) {
+                    old.discard();
+                }
+                var dragon = ru.aiforge.riftworld.registry.ModEntities.PAPER_DRAGON.get().create(level);
+                if (dragon != null) {
+                    dragon.setPos(dx + 0.5D, dy + 18.0D, dz + 0.5D);
+                    dragon.setNoGravity(false);
+                    level.addFreshEntity(dragon);
+                    spawned = 1;
+                }
+            }
+            String line = "riftstruct kind=bb_paper_dragon_showcase at=" + dx + "," + dy + "," + dz
+                    + " model_boxes=0 bones=0 atlas=256 spawned=" + spawned + " blocks=0 sub_air=0"
+                    + " cam=" + (dx - 22) + "," + (dy + 8) + "," + (dz + 22)
+                    + ":" + dx + "," + (dy + 12) + "," + dz;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
         if (k.equals("spawn_eggs_audit")) {
             String[] eggIds = {
                     "blossom_stag_spawn_egg", "sky_dart_fish_spawn_egg",
@@ -3779,69 +4024,217 @@ public final class SeaProbeCommand {
             return 1;
         }
 
-        if (k.equals("v34_pegasus")) {
-            // v0.37.0: Пегас — в настоящей «Мороковой Пади» (или на ближней мерзлоте),
-            // камера вплотную, чтобы было видно крылья и седло.
-            int px = 1160, py = 140, pz = 800;
-            String where = "spot";
+        if (k.equals("bb_liopleurodon_showcase")) {
+            int px = 696, py = 36, pz = 696;
             if (level != null) {
                 ServerLevel sl = level;
-                int[] spot = morokSpot(level, 1160, 800, 8);
-                if (spot != null) {
-                    px = spot[0];
-                    py = spot[1] + 1;
-                    pz = spot[2];
-                    where = "morok_hollow";
-                }
-                level.setBlock(new BlockPos(px, py - 1, pz), MorokBlocks.RIME_GRASS.get().defaultBlockState(), 2);
-            }
-            int alive = 0, tamed = 0;
-            boolean spawned = false;
-            if (level instanceof ServerLevel) {
-                // v0.38.6: Пегас — летающая тварь: без NoAI он улетал из кадра, а если точка
-                // попала под крону — задыхался в блоках. Чистим карман 3x3x3 и фиксируем позу.
-                for (int dx = -1; dx <= 1; ++dx) {
-                    for (int dz = -1; dz <= 1; ++dz) {
-                        for (int dy = 0; dy <= 2; ++dy) {
-                            level.setBlock(new BlockPos(px + dx, py + dy, pz + dz),
-                                    net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 2);
-                        }
-                        level.setBlock(new BlockPos(px + dx, py - 1, pz + dz),
-                                MorokBlocks.RIME_GRASS.get().defaultBlockState(), 2);
+                for (int cx = (px - 24) >> 4; cx <= (px + 24) >> 4; ++cx) {
+                    for (int cz = (pz - 24) >> 4; cz <= (pz + 24) >> 4; ++cz) {
+                        if (!sl.hasChunk(cx, cz)) sl.getChunk(cx, cz);
                     }
                 }
-                if (level.getBlockState(new BlockPos(px, py - 1, pz)).isAir()) {
-                    level.setBlock(new BlockPos(px, py - 1, pz),
-                            MorokBlocks.RIME_GRASS.get().defaultBlockState(), 2);
+                // Ensure pure open Elisar ocean water in the camera & creature volume (leaving coral seafloor below y=31 intact!)
+                for (int dx = -12; dx <= 12; ++dx) {
+                    for (int dz = -12; dz <= 12; ++dz) {
+                        for (int dy = -3; dy <= 7; ++dy) {
+                            BlockPos wp = new BlockPos(px + dx, py + dy, pz + dz);
+                            if (!sl.getBlockState(wp).is(ElisarBlocks.WATER.get())) {
+                                sl.setBlock(wp, ElisarBlocks.WATER.get().defaultBlockState(), 2);
+                            }
+                        }
+                    }
                 }
-                var pg = ru.aiforge.riftworld.registry.ModEntities.PEGASUS.get().create((ServerLevel) level);
-                if (pg != null) {
-                    pg.moveTo(px + 0.5, py, pz + 0.5, 210.0F, 0.0F);
-                    pg.setYRot(210.0F);
-                    pg.yBodyRot = 210.0F;
-                    pg.setNoAi(true);
-                    pg.setSilent(true);
-                    spawned = ((ServerLevel) level).addFreshEntity(pg);
-                    if (pg.isAlive()) ++alive;      // проверка по ССЫЛКЕ, а не по AABB
-                    if (pg.isTamed()) ++tamed;
-                }
+                sl.getEntitiesOfClass(ru.aiforge.riftworld.entity.LiopleurodonEntity.class,
+                        new net.minecraft.world.phys.AABB(px - 48, py - 24, pz - 48, px + 48, py + 32, pz + 48))
+                        .forEach(net.minecraft.world.entity.Entity::discard);
+
+                var hero = ru.aiforge.riftworld.entity.LiopleurodonEntity.spawn(
+                        sl, new net.minecraft.world.phys.Vec3(px + 0.5, py, pz + 0.5));
+                hero.setNoAi(true);
+                hero.setInvulnerable(true);
+                hero.setSilent(true);
+                hero.setNoGravity(true);
+                hero.setXRot(0.0F);
+                hero.setYRot(90.0F);
+                hero.yBodyRot = 90.0F;
+                hero.yHeadRot = 90.0F;
+
+                var mate = ru.aiforge.riftworld.entity.LiopleurodonEntity.spawn(
+                        sl, new net.minecraft.world.phys.Vec3(px - 15.5, py + 3.0, pz - 12.5));
+                mate.setNoAi(true);
+                mate.setInvulnerable(true);
+                mate.setSilent(true);
+                mate.setNoGravity(true);
+                mate.setXRot(4.0F);
+                mate.setYRot(112.0F);
+                mate.yBodyRot = 112.0F;
+                mate.yHeadRot = 112.0F;
             }
-            for (var e : level.getEntitiesOfClass(ru.aiforge.riftworld.entity.PegasusEntity.class,
-                    new net.minecraft.world.phys.AABB(px - 12, py - 8, pz - 12, px + 12, py + 10, pz + 12))) {
-                if (e.isAlive() && alive == 0) ++alive;
-                if (e.isTamed()) ++tamed;
-            }
-            int[] cam34 = (level != null)
-                    ? closeSpot(level, px, py + 1, pz, new int[]{6, 7, 8, 9}, py + 1)
-                    : new int[]{px - 3, py + 2, pz + 4};
-            int metric = alive > 0 ? 900 : 0;
-            String line = "riftstruct kind=v34_pegasus at=" + px + "," + (py + 2) + "," + pz
-                    + " alive=" + alive + " tamed=" + tamed + " where=" + where + " spawned=" + spawned
-                    + " saddleable=true saddle_seat=1.15"
-                    + " blocks=" + metric + " sub_air=0"
-                    + " cam=" + cam34[0] + "," + cam34[1] + "," + cam34[2] + ":" + px + "," + (py + 1) + "," + pz;
+            int[] geo = geoStats("liopleurodon");
+            double[] camHero = poseCam(px + 0.5, py, pz + 0.5, 90.0F,
+                    0.7, 0.0, 1.15, 7.2, 7.8, 0.35);
+            double[] camJaws = poseCam(px + 0.5, py, pz + 0.5, 90.0F,
+                    4.30, 0.0, 1.15, 2.75, 2.55, -1.25);
+            double[] camDorsal = poseCam(px + 0.5, py, pz + 0.5, 90.0F,
+                    0.35, 0.0, 1.15, 5.8, -7.2, 3.8);
+            String line = "riftstruct kind=bb_liopleurodon_showcase"
+                    + " model_boxes=" + geo[0] + " bones=" + geo[1] + " atlas=" + geo[2]
+                    + " cam_hero=" + r3(camHero[0]) + "," + r3(camHero[1]) + "," + r3(camHero[2])
+                    + ":" + r3(camHero[3]) + "," + r3(camHero[4]) + "," + r3(camHero[5])
+                    + " cam_jaws=" + r3(camJaws[0]) + "," + r3(camJaws[1]) + "," + r3(camJaws[2])
+                    + ":" + r3(camJaws[3]) + "," + r3(camJaws[4]) + "," + r3(camJaws[5])
+                    + " cam_dorsal=" + r3(camDorsal[0]) + "," + r3(camDorsal[1]) + "," + r3(camDorsal[2])
+                    + ":" + r3(camDorsal[3]) + "," + r3(camDorsal[4]) + "," + r3(camDorsal[5]);
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
+        }
+
+        if (k.equals("v40_gear")) {
+            // v0.40.0 — снаряжение и люди Элисара: два комплекта брони, два комплекта
+            // инструментов/оружия на стойках и три жителя города в полной экипировке.
+            int px = 760, py = 118, pz = 760;
+            if (level != null) {
+                ServerLevel sl = level;
+                for (int cx = (px - 24) >> 4; cx <= (px + 24) >> 4; ++cx) {
+                    for (int cz = (pz - 24) >> 4; cz <= (pz + 24) >> 4; ++cz) {
+                        if (!sl.hasChunk(cx, cz)) sl.getChunk(cx, cz);
+                    }
+                }
+                for (int dx = -20; dx <= 20; ++dx) {
+                    for (int dz = -14; dz <= 14; ++dz) {
+                        for (int dy = -2; dy <= 13; ++dy) {
+                            sl.setBlock(new BlockPos(px + dx, py + dy, pz + dz),
+                                    net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 2);
+                        }
+                        sl.setBlock(new BlockPos(px + dx, py - 2, pz + dz),
+                                ElisarBlocks.RIFT_MARBLE_MOSSY.get().defaultBlockState(), 2);
+                        sl.setBlock(new BlockPos(px + dx, py - 1, pz + dz),
+                                ElisarBlocks.GARDEN_GRASS.get().defaultBlockState(), 2);
+                    }
+                }
+                net.minecraft.world.phys.AABB area =
+                        new net.minecraft.world.phys.AABB(px - 40, py - 8, pz - 40, px + 40, py + 18, pz + 40);
+                sl.getEntitiesOfClass(net.minecraft.world.entity.decoration.ArmorStand.class, area)
+                        .forEach(net.minecraft.world.entity.Entity::discard);
+                sl.getEntitiesOfClass(ru.aiforge.riftworld.entity.ElisarVillagerEntity.class, area)
+                        .forEach(net.minecraft.world.entity.Entity::discard);
+                sl.getEntitiesOfClass(ru.aiforge.riftworld.entity.ElisarGuardEntity.class, area)
+                        .forEach(net.minecraft.world.entity.Entity::discard);
+                sl.getEntitiesOfClass(ru.aiforge.riftworld.entity.ElisarArcherEntity.class, area)
+                        .forEach(net.minecraft.world.entity.Entity::discard);
+
+                // Четыре стойки: аурит-доспех + меч/щит, рифт-кристалл-доспех + меч/лук, аурит-инструменты, рифт-инструменты.
+                v40Stand(sl, px - 7.0, py, pz + 0.5, -18.0F, true, false);
+                v40Stand(sl, px - 2.5, py, pz + 0.5, 16.0F, false, false);
+                v40Stand(sl, px + 2.0, py, pz + 0.5, -16.0F, true, true);
+                v40Stand(sl, px + 6.5, py, pz + 0.5, 16.0F, false, true);
+
+                // Рудные тумбы на заднем плане витрины (монетная/ауритовая руда и редкая руда рифт-кристалла).
+                sl.setBlock(new BlockPos(px - 8, py, pz - 2), ElisarBlocks.DUCAT_ORE.get().defaultBlockState(), 2);
+                sl.setBlock(new BlockPos(px - 7, py, pz - 2), ElisarBlocks.AURITE_ORE.get().defaultBlockState(), 2);
+                sl.setBlock(new BlockPos(px - 2, py, pz - 2), ElisarBlocks.RIFTCRYSTAL_ORE.get().defaultBlockState(), 2);
+                sl.setBlock(new BlockPos(px - 1, py, pz - 2), ElisarBlocks.RIFT_SLATE.get().defaultBlockState(), 2);
+
+                // Народ Элисара в точном обличье референсов 05, 06 и 07 (без перекрытия их голов шлемами игрока!).
+                var villager = ru.aiforge.riftworld.registry.ModEntities.ELISAR_VILLAGER.get().create(sl);
+                if (villager != null) {
+                    villager.moveTo(px - 5.0, py, pz + 7.5, -18.0F, 0.0F);
+                    villager.setYRot(-18.0F);
+                    villager.yBodyRot = -18.0F;
+                    villager.yHeadRot = -12.0F;
+                    villager.setNoAi(true);
+                    villager.setInvulnerable(true);
+                    villager.setSilent(true);
+                    sl.addFreshEntity(villager);
+                }
+                var guard = ru.aiforge.riftworld.registry.ModEntities.ELISAR_GUARD.get().create(sl);
+                if (guard != null) {
+                    guard.moveTo(px + 0.5, py, pz + 7.8, -18.0F, 0.0F);
+                    guard.setYRot(-18.0F);
+                    guard.yBodyRot = -18.0F;
+                    guard.yHeadRot = -12.0F;
+                    guard.equipDefaultArmament();
+                    guard.setNoAi(true);
+                    guard.setInvulnerable(true);
+                    guard.setSilent(true);
+                    sl.addFreshEntity(guard);
+                }
+                var archer = ru.aiforge.riftworld.registry.ModEntities.ELISAR_ARCHER.get().create(sl);
+                if (archer != null) {
+                    archer.moveTo(px + 6.0, py, pz + 7.5, -18.0F, 0.0F);
+                    archer.setYRot(-18.0F);
+                    archer.yBodyRot = -18.0F;
+                    archer.yHeadRot = -12.0F;
+                    archer.equipDefaultBow();
+                    archer.setNoAi(true);
+                    archer.setInvulnerable(true);
+                    archer.setSilent(true);
+                    sl.addFreshEntity(archer);
+                }
+            }
+            double[] camRow = poseCam(px - 0.25, py + 1.5, pz + 0.5, 0.0F, 0.0, 0.0, 0.0, 9.2, 0.0, 1.4);
+            double[] camFolk = poseCam(px + 0.5, py + 1.35, pz + 7.6, 0.0F, 0.0, 0.0, 0.0, 9.2, 0.0, 1.1);
+            double[] camClose = poseCam(px - 4.75, py + 1.25, pz + 0.5, 0.0F, 0.0, 0.0, 0.0, 4.3, 0.0, 0.55);
+            String line = "riftstruct kind=v40_gear"
+                    + " stands=4 folk=3 materials=aurite,riftcrystal"
+                    + " cam_row=" + r3(camRow[0]) + "," + r3(camRow[1]) + "," + r3(camRow[2])
+                    + ":" + r3(camRow[3]) + "," + r3(camRow[4]) + "," + r3(camRow[5])
+                    + " cam_folk=" + r3(camFolk[0]) + "," + r3(camFolk[1]) + "," + r3(camFolk[2])
+                    + ":" + r3(camFolk[3]) + "," + r3(camFolk[4]) + "," + r3(camFolk[5])
+                    + " cam_close=" + r3(camClose[0]) + "," + r3(camClose[1]) + "," + r3(camClose[2])
+                    + ":" + r3(camClose[3]) + "," + r3(camClose[4]) + "," + r3(camClose[5]);
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.equals("v48_armory_probe")) {
+            var rm = level.getRecipeManager();
+            var regAcc = level.registryAccess();
+            java.util.function.Function<net.minecraft.world.item.Item[], net.minecraft.world.item.ItemStack> eval3x3 = grid -> {
+                var menu = new net.minecraft.world.inventory.AbstractContainerMenu(null, -1) {
+                    @Override public net.minecraft.world.item.ItemStack quickMoveStack(net.minecraft.world.entity.player.Player p, int i) { return net.minecraft.world.item.ItemStack.EMPTY; }
+                    @Override public boolean stillValid(net.minecraft.world.entity.player.Player p) { return true; }
+                };
+                var inv = new net.minecraft.world.inventory.TransientCraftingContainer(menu, 3, 3);
+                for (int i = 0; i < 9; ++i) {
+                    if (grid[i] != null) inv.setItem(i, new net.minecraft.world.item.ItemStack(grid[i]));
+                }
+                return rm.getRecipeFor(net.minecraft.world.item.crafting.RecipeType.CRAFTING, inv, level)
+                        .map(r -> r.assemble(inv, regAcc))
+                        .orElse(net.minecraft.world.item.ItemStack.EMPTY);
+            };
+            var ducat = ru.aiforge.riftworld.registry.ModItems.ELISAR_DUCAT.get();
+            var aurIngot = ru.aiforge.riftworld.registry.ModItems.AURITE_INGOT.get();
+            var stick = net.minecraft.world.item.Items.STICK;
+            var str = net.minecraft.world.item.Items.STRING;
+            var plank = ElisarBlocks.SIZO_PLANKS.get().asItem();
+
+            var toIngot = eval3x3.apply(new net.minecraft.world.item.Item[]{ducat, ducat, null, null, null, null, null, null, null});
+            var toDucats = eval3x3.apply(new net.minecraft.world.item.Item[]{aurIngot, null, null, null, null, null, null, null, null});
+            var craftBow = eval3x3.apply(new net.minecraft.world.item.Item[]{null, aurIngot, str, stick, null, str, null, aurIngot, str});
+            var craftShield = eval3x3.apply(new net.minecraft.world.item.Item[]{aurIngot, plank, aurIngot, aurIngot, aurIngot, aurIngot, null, aurIngot, null});
+
+            var vil = ru.aiforge.riftworld.registry.ModEntities.ELISAR_VILLAGER.get().create(level);
+            var grd = ru.aiforge.riftworld.registry.ModEntities.ELISAR_GUARD.get().create(level);
+            var arc = ru.aiforge.riftworld.registry.ModEntities.ELISAR_ARCHER.get().create(level);
+            int offers = vil != null ? vil.getOffers().size() : 0;
+            boolean grdOk = grd != null && grd.isLeftHanded()
+                    && grd.getMainHandItem().is(ru.aiforge.riftworld.registry.ModItems.ELISAR_GUARD_SWORD.get())
+                    && grd.getOffhandItem().is(ru.aiforge.riftworld.registry.ModItems.ELISAR_GUARD_SHIELD.get());
+            boolean arcOk = arc != null && arc.isLeftHanded()
+                    && arc.getMainHandItem().is(ru.aiforge.riftworld.registry.ModItems.ELISAR_BOW.get());
+            boolean recOk = toIngot.is(aurIngot) && toIngot.getCount() == 1
+                    && toDucats.is(ducat) && toDucats.getCount() == 2
+                    && craftBow.is(ru.aiforge.riftworld.registry.ModItems.ELISAR_BOW.get())
+                    && craftShield.is(ru.aiforge.riftworld.registry.ModItems.ELISAR_SHIELD.get());
+            String line = "riftstruct kind=v48_armory_probe"
+                    + " recipes_ok=" + recOk
+                    + " villager_offers=" + offers
+                    + " guard_equipped=" + grdOk
+                    + " archer_equipped=" + arcOk
+                    + " rare_ore_biomes=4(crystal_rifts,violet_hills,morok_hollow,mist_keep)";
+            src.sendSuccess(() -> Component.literal(line), false);
+            return (recOk && offers >= 6 && grdOk && arcOk) ? 1 : 0;
         }
 
         if (k.equals("v39_morok")) {
@@ -3886,7 +4279,7 @@ public final class SeaProbeCommand {
             int[] geo = geoStats("morok");
             int[] eyes = geoStats("morok_eyes");
             // спавнеры биома: есть ли Морок в списке монстров
-            int spawnMorok = 0, spawnWendigo = 0;
+            int spawnMorok = 0;
             String biome = "?";
             try {
                 var holder = level.getBiome(new BlockPos(px, ground + 1, pz));
@@ -3895,7 +4288,6 @@ public final class SeaProbeCommand {
                 for (var sp : holder.value().getMobSettings()
                         .getMobs(net.minecraft.world.entity.MobCategory.MONSTER).unwrap()) {
                     if (sp.type == ru.aiforge.riftworld.registry.ModEntities.MOROK.get()) spawnMorok = 1;
-                    if (sp.type == ru.aiforge.riftworld.registry.ModEntities.WENDIGO.get()) spawnWendigo = 1;
                 }
             } catch (Throwable ignored) {
             }
@@ -3907,7 +4299,7 @@ public final class SeaProbeCommand {
                     + " alive=" + alive + " spawned=" + spawned
                     + " model_boxes=" + geo[0] + " bones=" + geo[1] + " atlas=" + geo[2]
                     + " eye_boxes=" + eyes[0] + " eye_atlas=" + eyes[2] + " glowing_eyes=" + eyeGlow
-                    + " spawn_morok=" + spawnMorok + " spawn_wendigo=" + spawnWendigo
+                    + " spawn_morok=" + spawnMorok
                     + " day_chance=0.05 night_chance=0.45"
                     + " stalk=true dash=true blink=true hp=42 dmg=7 speed=0.37"
                     + " blocks=" + metric + " sub_air=0"
@@ -3915,45 +4307,6 @@ public final class SeaProbeCommand {
                     + ":" + r3(pc[3]) + "," + r3(pc[4]) + "," + r3(pc[5]);
             src.sendSuccess(() -> Component.literal(line), false);
             if (oldTime >= 0) level.setDayTime(oldTime);   // возвращаем время: ночь нужна была только для кадра
-            return 1;
-        }
-
-        if (k.equals("v35_wendigo")) {
-            // v0.37.0: Вендиго — в чаще Пади, камера в 6 блоках: силуэт с рогами должен занимать кадр.
-            int px = 1180, py = 140, pz = 800;
-            if (level != null) {
-                ServerLevel sl = level;
-                int[] spot = morokSpot(level, 1180, 800, 8);
-                if (spot != null) {
-                    px = spot[0];
-                    py = spot[1] + 1;
-                    pz = spot[2];
-                }
-                level.setBlock(new BlockPos(px, py - 1, pz), MorokBlocks.RIME_GRASS.get().defaultBlockState(), 2);
-            }
-            int alive = 0;
-            if (level instanceof ServerLevel) {
-                var wd = ru.aiforge.riftworld.registry.ModEntities.WENDIGO.get().create((ServerLevel) level);
-                if (wd != null) {
-                    wd.moveTo(px + 0.5, py, pz + 0.5, 200.0F, 0.0F);
-                    wd.setYRot(200.0F);
-                    wd.yBodyRot = 200.0F;
-                    ((ServerLevel) level).addFreshEntity(wd);
-                }
-            }
-            for (var e : level.getEntitiesOfClass(ru.aiforge.riftworld.entity.WendigoEntity.class,
-                    new net.minecraft.world.phys.AABB(px - 8, py - 8, pz - 8, px + 8, py + 8, pz + 8))) {
-                if (e.isAlive()) ++alive;
-            }
-            int[] cam35 = (level != null)
-                    ? closeSpot(level, px, py + 2, pz, new int[]{7, 8, 9, 10}, py + 2)
-                    : new int[]{px - 4, py + 3, pz + 5};
-            int metric = alive > 0 ? 900 : 0;
-            String line = "riftstruct kind=v35_wendigo at=" + px + "," + (py + 2) + "," + pz
-                    + " alive=" + alive + " hp=64 darkness_on_hit=true antlers=6"
-                    + " blocks=" + metric + " sub_air=0"
-                    + " cam=" + cam35[0] + "," + cam35[1] + "," + cam35[2] + ":" + px + "," + (py + 2) + "," + pz;
-            src.sendSuccess(() -> Component.literal(line), false);
             return 1;
         }
 
@@ -3974,6 +4327,8 @@ public final class SeaProbeCommand {
                 natural = true;
             }
             int logs = 0, leaves = 0, brambles = 0, fangs = 0, carpets = 0, rime = 0, soil = 0;
+            // v0.49.0: счётчики своих деревьев Пади
+            int rotLogs = 0, rotLeaves = 0, briarLogs = 0, briarLeaves = 0;
             int trunks = 0;   // колонн ствола = число деревьев/сухостоя (патриарх даёт 4)
             BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
             int rad = 32;
@@ -3996,6 +4351,11 @@ public final class SeaProbeCommand {
                         if (st.isAir()) continue;
                         if (st.is(MorokBlocks.MOROK_LOG.get())) ++logs;
                         else if (st.is(MorokBlocks.MOROK_LEAVES.get())) ++leaves;
+                        // v0.49.0: свои деревья Пади — гнилая роща и морозный терновник
+                        else if (st.is(MorokBlocks.ROTWOOD_LOG.get())) ++rotLogs;
+                        else if (st.is(MorokBlocks.ROTWOOD_LEAVES.get())) ++rotLeaves;
+                        else if (st.is(MorokBlocks.FROSTBRIAR_LOG.get())) ++briarLogs;
+                        else if (st.is(MorokBlocks.FROSTBRIAR_LEAVES.get())) ++briarLeaves;
                         else if (st.is(MorokBlocks.BONE_BRAMBLE.get())) ++brambles;
                         else if (st.is(MorokBlocks.ICE_FANG.get())) ++fangs;
                         else if (st.is(MorokBlocks.PALE_MOSS_CARPET.get())) ++carpets;
@@ -4008,7 +4368,11 @@ public final class SeaProbeCommand {
                     // а мерзлота под ним на y-1. Раньше проверялось y+1 → стволов всегда 0.
                     // v0.39.4: окно стволов тоже расширено — лес на склонах ниже точки пробы
                     for (int y = ground - 22; y <= ground + 28; ++y) {
-                        if (level.getBlockState(mp.set(x, y, z)).is(MorokBlocks.MOROK_LOG.get())
+                        BlockState logHere = level.getBlockState(mp.set(x, y, z));
+                        boolean isLog = logHere.is(MorokBlocks.MOROK_LOG.get())
+                                || logHere.is(MorokBlocks.ROTWOOD_LOG.get())
+                                || logHere.is(MorokBlocks.FROSTBRIAR_LOG.get());
+                        if (isLog
                                 && (level.getBlockState(mp.set(x, y - 1, z)).is(MorokBlocks.RIME_GRASS.get())
                                     || level.getBlockState(mp.set(x, y - 1, z)).is(MorokBlocks.FROZEN_SOIL.get())
                                     || level.getBlockState(mp.set(x, y - 1, z)).is(MorokBlocks.PALE_MOSS_BLOCK.get()))) {
@@ -4019,7 +4383,7 @@ public final class SeaProbeCommand {
                 }
             }
             String biome = "?";
-            int spawnWendigo = 0, spawnPegasus = 0, spawnMonsterTotal = 0, spawnCreatureTotal = 0;
+            int spawnMonsterTotal = 0, spawnCreatureTotal = 0;
             try {
                 var holder = level.getBiome(new BlockPos(px, ground + 1, pz));
                 var key = holder.unwrapKey();
@@ -4032,11 +4396,9 @@ public final class SeaProbeCommand {
                 int catMonster = 0, catCreature = 0;
                 for (var sp : mobs.getMobs(net.minecraft.world.entity.MobCategory.MONSTER).unwrap()) {
                     ++catMonster;
-                    if (sp.type == ru.aiforge.riftworld.registry.ModEntities.WENDIGO.get()) spawnWendigo = 1;
                 }
                 for (var sp : mobs.getMobs(net.minecraft.world.entity.MobCategory.CREATURE).unwrap()) {
                     ++catCreature;
-                    if (sp.type == ru.aiforge.riftworld.registry.ModEntities.PEGASUS.get()) spawnPegasus = 1;
                 }
                 spawnMonsterTotal = catMonster;
                 spawnCreatureTotal = catCreature;
@@ -4050,12 +4412,166 @@ public final class SeaProbeCommand {
                     + " regions=" + scan[0] + " land_regions=" + scan[1]
                     + " search=[" + ru.aiforge.riftworld.world.MorokHollow.LAST_SEARCH.replace(' ', ',') + "]"
                     + " trees=" + trunks + " logs=" + logs + " leaves=" + leaves
+                    + " rot_logs=" + rotLogs + " rot_leaves=" + rotLeaves
+                    + " briar_logs=" + briarLogs + " briar_leaves=" + briarLeaves
                     + " brambles=" + brambles + " fangs=" + fangs + " carpets=" + carpets
                     + " rime=" + rime + " soil=" + soil
-                    + " spawn_wendigo=" + spawnWendigo + " spawn_pegasus=" + spawnPegasus
+                   
                     + " spawn_monster=" + spawnMonsterTotal + " spawn_creature=" + spawnCreatureTotal
                     + " blocks=" + metric + " sub_air=0"
                     + " cam=" + cam[0] + "," + cam[1] + "," + cam[2] + ":" + px + "," + (ground + 7) + "," + pz;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.equals("v49_elisar_law")) {
+            // v0.49.0: проверка городского закона Элисара в живой игре.
+            // Проба строит камеру тюрьмы и склад у ближайшей дороги и честно
+            // сообщает, что получилось: сколько прутьев клетки, есть ли сундук
+            // и насколько далеко он от камеры.
+            //
+            // Точка поиска — НАСТОЯЩИЙ город Элисара: дороги лежат в радиусе
+            // ~230 блоков от нуля, а не в сотнях. Держим список площадей
+            // плана и берём ту, до которой дорога действительно есть.
+            CityPlan plan = CityPlan.get();
+            if (plan.plazas.isEmpty()) {
+                src.sendSuccess(() -> Component.literal(
+                        "riftstruct kind=v49_elisar_law error=no_plaza_in_plan"), false);
+                return 0;
+            }
+            CityPlan.Plaza plaza = plan.plazas.get(0);
+            final double px = plaza.x();
+            final double pz = plaza.z();
+            double ground = level.getHeight(
+                    net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                    net.minecraft.util.Mth.floor(px), net.minecraft.util.Mth.floor(pz));
+            PatrolRoute route = PatrolRoute.nearestTo(plan, level, px, ground, pz, 120.0);
+            if (route == null || route.isEmpty()) {
+                src.sendSuccess(() -> Component.literal(
+                        "riftstruct kind=v49_elisar_law error=no_road_near at="
+                                + (int) px + "," + (int) pz), false);
+                return 0;
+            }
+            PatrolRoute.Waypoint wp = route.nearest(px, ground, pz);
+            net.minecraft.core.Direction face = net.minecraft.core.Direction.fromYRot(wp.yaw()).getOpposite();
+            ElisarJail.Site site = ElisarJail.build(level, wp.x(), wp.z(), face);
+            // Считаем, что реально стоит на месте.
+            int bars = 0;
+            BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
+            for (int dx = -5; dx <= 5; ++dx) {
+                for (int dy = 0; dy <= 5; ++dy) {
+                    for (int dz = -5; dz <= 5; ++dz) {
+                        if (level.getBlockState(mp.set(site.cell().getX() + dx,
+                                site.cell().getY() + dy, site.cell().getZ() + dz))
+                                .is(net.minecraft.world.level.block.Blocks.IRON_BARS)) {
+                            ++bars;
+                        }
+                    }
+                }
+            }
+            boolean chest = level.getBlockState(site.chest())
+                    .is(net.minecraft.world.level.block.Blocks.CHEST);
+            double cellToChest = Math.hypot(site.cell().getX() - site.chest().getX(),
+                    site.cell().getZ() - site.chest().getZ());
+            int metric = (bars >= 8 && chest) ? 1 : 0;
+            String line = "riftstruct kind=v49_elisar_law at=" + site.cell().getX() + ","
+                    + site.cell().getY() + "," + site.cell().getZ()
+                    + " jail=" + (bars >= 8 ? 1 : 0) + " bars=" + bars
+                    + " chest=" + (chest ? 1 : 0) + " cell_to_chest=" + (int) cellToChest
+                    + " blocks=" + metric + " sub_air=0"
+                    + " cam=" + (site.cell().getX() - 8) + "," + (site.cell().getY() + 5) + ","
+                    + (site.cell().getZ() + 8) + ":" + site.cell().getX() + ","
+                    + (site.cell().getY() + 2) + "," + site.cell().getZ();
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.equals("v49_city_ground")) {
+            // v0.49.0: где в городе Элисара реально стоит земля и где можно
+            // поставить стража. Проба нужна CI: координаты площади заданы
+            // числами, а высота поверхности зависит от рельефа, и страж,
+            // поставленный в воздухе, падает и не появляется.
+            CityPlan plan = CityPlan.get();
+            if (plan.plazas.isEmpty()) {
+                src.sendSuccess(() -> Component.literal(
+                        "riftstruct kind=v49_city_ground error=no_plaza_in_plan"), false);
+                return 0;
+            }
+            CityPlan.Plaza plaza = plan.plazas.get(0);
+            final double px = plaza.x();
+            final double pz = plaza.z();
+            int ground = level.getHeight(
+                    net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                    net.minecraft.util.Mth.floor(px), net.minecraft.util.Mth.floor(pz));
+            PatrolRoute route = PatrolRoute.nearestTo(plan, level, px, ground, pz, 120.0);
+            double rx = px;
+            double rz = pz;
+            int rg = ground;
+            if (route != null && !route.isEmpty()) {
+                PatrolRoute.Waypoint wp = route.nearest(px, ground, pz);
+                rx = wp.x();
+                rz = wp.z();
+                rg = (int) Math.floor(wp.y());
+            }
+            String line = "riftstruct kind=v49_city_ground plaza=" + (int) px + "," + (int) pz
+                    + " ground=" + ground
+                    + " road=" + (int) rx + "," + rg + "," + (int) rz
+                    + " route=" + (route == null ? "none" : route.kind().name())
+                    + " points=" + (route == null ? 0 : route.size());
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.equals("v49_law_state")) {
+            // v0.49.0: состояние городского закона для ближайшего игрока.
+            // Проба нужна CI, чтобы проверить ВСЮ цепочку закона:
+            // розыск -> смерть -> тюрьма -> вещи в сундуке склада.
+            ServerPlayer target = null;
+            double bestD = Double.MAX_VALUE;
+            for (ServerPlayer p : level.players()) {
+                double d = p.distanceToSqr(src.getPosition());
+                if (d < bestD) {
+                    bestD = d;
+                    target = p;
+                }
+            }
+            if (target == null) {
+                src.sendSuccess(() -> Component.literal(
+                        "riftstruct kind=v49_law_state error=no_player"), false);
+                return 0;
+            }
+            ElisarLaw law = ElisarLaw.get(level);
+            boolean wanted = law.isWanted(level, target);
+            int warnings = law.warnings(target);
+            var held = law.peek(target.getUUID());
+            int heldCount = 0;
+            for (ElisarLaw.ItemRecord r : held) {
+                heldCount += Math.max(0, r.count());
+            }
+            // Где игрок: в камере или на свободе.
+            ElisarJail.Site near = ElisarJail.findNear(level, target.getX(), target.getZ(), 24.0);
+            boolean jailed = near != null
+                    && Math.hypot(target.getX() - near.cell().getX(),
+                                 target.getZ() - near.cell().getZ()) < 6.0;
+            // Что лежит в сундуке склада рядом.
+            int chestItems = 0;
+            if (near != null) {
+                if (level.getBlockEntity(near.chest())
+                        instanceof net.minecraft.world.level.block.entity.ChestBlockEntity chest) {
+                    for (int i = 0; i < chest.getContainerSize(); ++i) {
+                        if (!chest.getItem(i).isEmpty()) {
+                            ++chestItems;
+                        }
+                    }
+                }
+            }
+            String line = "riftstruct kind=v49_law_state player=" + target.getGameProfile().getName()
+                    + " wanted=" + (wanted ? 1 : 0)
+                    + " warnings=" + warnings
+                    + " jailed=" + (jailed ? 1 : 0)
+                    + " held=" + heldCount
+                    + " chest_items=" + chestItems
+                    + " inv=" + target.getInventory().getContainerSize();
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
         }

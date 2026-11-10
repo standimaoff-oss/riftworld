@@ -27,7 +27,7 @@ public final class MajaOceanKeeper {
     @SubscribeEvent
     public static void tick(TickEvent.LevelTickEvent event) {
         if (event.phase != TickEvent.Phase.END || !(event.level instanceof ServerLevel level)
-                || !level.dimension().equals(Flight.ELISAR_DIM) || level.getGameTime() % 120 != 0) return;
+                || !level.dimension().equals(Flight.ELISAR_DIM) || level.getGameTime() % 40 != 0) return;
         MajaWorldData data = MajaWorldData.get(level);
         int sea = CityPlan.get().ocean;
         for (ServerPlayer player : level.players()) {
@@ -35,18 +35,35 @@ public final class MajaOceanKeeper {
             int px = floor(player.getX()), pz = floor(player.getZ());
             DeepOcean.Region region = DeepOcean.regionAt(px, pz);
             if (!DeepOcean.contains(px, pz) || data.hasSpawned(region.key())) continue;
-            if (!level.getBiome(new BlockPos(px, sea - 8, pz)).is(BIOME)) continue;
-            // Stay close to the loading player: the complete model must fit in loaded chunks.
-            for (int attempt = 0; attempt < 3; ++attempt) {
-                double x = player.getX() + (level.random.nextDouble() - 0.5) * 20;
-                double z = player.getZ() + (level.random.nextDouble() - 0.5) * 20;
-                Vec3 at = new Vec3(x, sea - 13.0, z);
-                float yaw = level.random.nextFloat() * 360.0F;
-                if (!MajaCollision.clear(level, at, yaw)) continue;
-                ElGranMajaEntity maja = new ElGranMajaEntity(ModEntities.EL_GRAN_MAJA.get(), level);
-                maja.moveTo(at.x, at.y, at.z, yaw, 0.0F);
-                if (level.addFreshEntity(maja)) data.recordSpawn(region.key());
-                break;
+            // Saved pre-0.40 dimension codecs lack deep_ocean and fall back to
+            // abyss. Keep those worlds eligible based on region + real clearance,
+            // rather than making natural spawning impossible forever.
+            var biomeSource = level.getChunkSource().getGenerator().getBiomeSource();
+            boolean legacy = biomeSource instanceof ElisarBiomeSource source && !source.hasDeepOceanBiome();
+            if (!legacy && !level.getBiome(new BlockPos(px, sea - 8, pz)).is(BIOME)) continue;
+            // The 322-block animal has to fit in *already loaded* chunks.
+            // Centre it within the player's chunk and try diagonals first:
+            // these reduce its maximum X/Z reach, whereas three random angles
+            // and offsets often had no chance of fitting at normal view distance.
+            double x = ((px >> 4) << 4) + 8.0;
+            double z = ((pz >> 4) << 4) + 8.0;
+            int first = level.random.nextInt(4);
+            boolean spawned = false;
+            // Prefer a fully submerged anchor in the new 120-block basin.
+            // Existing worlds retain shallower fallbacks and identical safety checks.
+            for (int rise = 0; rise <= 56 && !spawned; rise += 8) {
+                Vec3 at = new Vec3(x, sea - 32.0 + rise, z);
+                for (int attempt = 0; attempt < 4; ++attempt) {
+                    float yaw = 45.0F + ((first + attempt) & 3) * 90.0F;
+                    if (!MajaCollision.clear(level, at, yaw)) continue;
+                    ElGranMajaEntity maja = new ElGranMajaEntity(ModEntities.EL_GRAN_MAJA.get(), level);
+                    maja.moveTo(at.x, at.y, at.z, yaw, 0.0F);
+                    if (level.addFreshEntity(maja)) {
+                        data.recordSpawn(region.key());
+                        spawned = true;
+                    }
+                    break;
+                }
             }
         }
     }

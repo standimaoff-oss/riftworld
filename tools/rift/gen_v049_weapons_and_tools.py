@@ -664,14 +664,27 @@ GUARD_SWORD_DEPTH = SWORD_DEPTH
 # ==============================================================================
 
 def build_palette_png_and_uv_map(pal: Dict[str, RGBA], out_png: Path) -> Dict[str, List[float]]:
+    """Builds the 64x64 palette atlas and the UV map for every palette key.
+
+    Minecraft's element models use NORMALISED 0..16 UV coordinates, not absolute
+    texture pixels: the value is scaled by (texture_width / 16). Writing raw
+    pixel indices into the model made every weapon render as black noise, so
+    the atlas pixels are converted to the 0..16 grid here (64 px / 16 = 4 px
+    per UV unit).
+    """
     img = np.zeros((64, 64, 4), dtype=np.uint8)
     img[:, :] = pal[list(pal.keys())[0]]
     uv_map: Dict[str, List[float]] = {}
+    # 64x64 atlas -> the model's 0..16 UV grid, so 1 UV unit == 4 atlas pixels.
+    scale = 16.0 / 64.0
     for idx, k in enumerate(pal.keys()):
         gx = (idx % 8) * 8
         gy = (idx // 8) * 8
         img[gy:gy + 8, gx:gx + 8] = pal[k]
-        uv_map[k] = [(gx + 2), (gy + 2), (gx + 6), (gy + 6)]
+        uv_map[k] = [
+            round((gx + 2) * scale, 4), round((gy + 2) * scale, 4),
+            round((gx + 6) * scale, 4), round((gy + 6) * scale, 4),
+        ]
     out_png.parent.mkdir(parents=True, exist_ok=True)
     Image.fromarray(img, "RGBA").save(out_png)
     return uv_map

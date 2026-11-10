@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "group": "buttons",
+  "ingredients": [
+    {
+      "item": "riftworld:rotwood_planks"
+    }
+  ],
+  "result": {
+    "item": "riftworld:rotwood_button",
+    "count": 1
+  }
+}

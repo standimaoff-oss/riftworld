@@ -123,8 +123,14 @@ public final class SeaLifeKeeper {
     }
 
     private static int countLiopleurodons(ServerLevel sl) {
-        return sl.getEntitiesOfClass(ru.aiforge.riftworld.entity.LiopleurodonEntity.class,
-                new net.minecraft.world.phys.AABB(-30000, -64, -30000, 30000, 320, 30000)).size();
+        // A 60,000-block AABB makes EntitySectionStorage iterate thousands of
+        // empty X-sections. Count the already loaded entities instead and stop
+        // as soon as the world cap is reached; never load additional chunks.
+        int count = 0;
+        for (var entity : sl.getAllEntities()) {
+            if (entity instanceof ru.aiforge.riftworld.entity.LiopleurodonEntity && ++count >= LIO_WORLD_CAP) break;
+        }
+        return count;
     }
 
     /** Ищет глубокую воду вокруг игрока (дно минимум в 20 блоках ниже поверхности) и ставит туда хищника. */

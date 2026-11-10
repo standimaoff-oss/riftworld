@@ -1,0 +1,338 @@
+{
+  "generated_via": "blockbench-mcp-plugin (official MCP server)",
+  "models": [
+    {
+      "id": "reef_seahorse",
+      "title_ru": "Рифовый морской конёк",
+      "biome": "riftworld:shallow_reef",
+      "bbmodel": "blockbench/riftworld_fauna/reef_seahorse.bbmodel",
+      "bedrock_geo": "blockbench/riftworld_fauna/bedrock/reef_seahorse.geo.json",
+      "bedrock_animation": "blockbench/riftworld_fauna/bedrock/reef_seahorse.animation.json",
+      "riftworld_geo": "mod/src/main/resources/assets/riftworld/geo/reef_seahorse.json",
+      "texture": "mod/src/main/resources/assets/riftworld/textures/entity/reef_seahorse.png",
+      "info": {
+        "path": "/home/user/riftworld/blockbench/riftworld_fauna/reef_seahorse.bbmodel",
+        "revision": "fd05b071b070647d",
+        "name": "reef_seahorse",
+        "model_identifier": "riftworld.reef_seahorse",
+        "format": "bedrock",
+        "format_version": "5.0",
+        "box_uv": true,
+        "resolution": {
+          "width": 512,
+          "height": 512
+        },
+        "counts": {
+          "groups": 9,
+          "cubes": 43,
+          "meshes": 0,
+          "other_elements": 0,
+          "textures": 1,
+          "animations": 2
+        },
+        "bounds": {
+          "min": [
+            -4.91,
+            0,
+            -9.863
+          ],
+          "max": [
+            4.91,
+            33.883,
+            11.2
+          ],
+          "size": [
+            9.821,
+            33.883,
+            21.063
+          ]
+        },
+        "ai_used": true,
+        "notes": []
+      },
+      "geometry_validation": {
+        "errors": 0,
+        "warnings": 0,
+        "passed": true
+      },
+      "geometry_self_test": [
+        {
+          "gate": "outliner",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "(outliner): added a reference to a node that does not exist"
+        },
+        {
+          "gate": "unlisted_nodes",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "trunk_lower_core: removed it from the outliner"
+        },
+        {
+          "gate": "degenerate",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "trunk_lower_core: made it 0.05 units thick"
+        },
+        {
+          "gate": "block_limits",
+          "discriminates": null,
+          "clean_violations": 0,
+          "injected_violations": 0,
+          "impossible": "block_limits is disabled."
+        },
+        {
+          "gate": "floating",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "trunk_lower_core: moved it 1000 units away"
+        },
+        {
+          "gate": "interpenetration",
+          "discriminates": null,
+          "clean_violations": 0,
+          "injected_violations": 0,
+          "impossible": "Needs two unrotated cubes in different groups, one thicker than the penetration depth."
+        },
+        {
+          "gate": "mirror",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "trunk_fin_l_blade: shifted it 2 units on x (its mirror is trunk_fin_r_blade)"
+        }
+      ],
+      "animation_validation": {
+        "errors": 0,
+        "warnings": 0,
+        "passed": true
+      }
+    },
+    {
+      "id": "ghost_squid",
+      "title_ru": "Глубоководный кальмар-призрак",
+      "biome": "riftworld:abyss",
+      "bbmodel": "blockbench/riftworld_fauna/ghost_squid.bbmodel",
+      "bedrock_geo": "blockbench/riftworld_fauna/bedrock/ghost_squid.geo.json",
+      "bedrock_animation": "blockbench/riftworld_fauna/bedrock/ghost_squid.animation.json",
+      "riftworld_geo": "mod/src/main/resources/assets/riftworld/geo/ghost_squid.json",
+      "texture": "mod/src/main/resources/assets/riftworld/textures/entity/ghost_squid.png",
+      "info": {
+        "path": "/home/user/riftworld/blockbench/riftworld_fauna/ghost_squid.bbmodel",
+        "revision": "d507dcc14b3276f6",
+        "name": "ghost_squid",
+        "model_identifier": "riftworld.ghost_squid",
+        "format": "bedrock",
+        "format_version": "5.0",
+        "box_uv": true,
+        "resolution": {
+          "width": 512,
+          "height": 512
+        },
+        "counts": {
+          "groups": 8,
+          "cubes": 41,
+          "meshes": 0,
+          "other_elements": 0,
+          "textures": 1,
+          "animations": 2
+        },
+        "bounds": {
+          "min": [
+            -10.642,
+            -0.186,
+            -24.867
+          ],
+          "max": [
+            10.642,
+            28.264,
+            31.966
+          ],
+          "size": [
+            21.284,
+            28.45,
+            56.833
+          ]
+        },
+        "ai_used": true,
+        "notes": []
+      },
+      "geometry_validation": {
+        "errors": 0,
+        "warnings": 0,
+        "passed": true
+      },
+      "geometry_self_test": [
+        {
+          "gate": "outliner",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "(outliner): added a reference to a node that does not exist"
+        },
+        {
+          "gate": "unlisted_nodes",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "mantle_main_box: removed it from the outliner"
+        },
+        {
+          "gate": "degenerate",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "mantle_main_box: made it 0.05 units thick"
+        },
+        {
+          "gate": "block_limits",
+          "discriminates": null,
+          "clean_violations": 0,
+          "injected_violations": 0,
+          "impossible": "block_limits is disabled."
+        },
+        {
+          "gate": "floating",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 2,
+          "injected": "mantle_main_box: moved it 1000 units away"
+        },
+        {
+          "gate": "interpenetration",
+          "discriminates": null,
+          "clean_violations": 0,
+          "injected_violations": 0,
+          "impossible": "Needs two unrotated cubes in different groups, one thicker than the penetration depth."
+        },
+        {
+          "gate": "mirror",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "mantle_cone_flank_l: shifted it 2 units on x (its mirror is mantle_cone_flank_r)"
+        }
+      ],
+      "animation_validation": {
+        "errors": 0,
+        "warnings": 0,
+        "passed": true
+      }
+    },
+    {
+      "id": "silver_sea_serpent",
+      "title_ru": "Серебряный морской змей",
+      "biome": "riftworld:maja_ocean",
+      "bbmodel": "blockbench/riftworld_fauna/silver_sea_serpent.bbmodel",
+      "bedrock_geo": "blockbench/riftworld_fauna/bedrock/silver_sea_serpent.geo.json",
+      "bedrock_animation": "blockbench/riftworld_fauna/bedrock/silver_sea_serpent.animation.json",
+      "riftworld_geo": "mod/src/main/resources/assets/riftworld/geo/silver_sea_serpent.json",
+      "texture": "mod/src/main/resources/assets/riftworld/textures/entity/silver_sea_serpent.png",
+      "info": {
+        "path": "/home/user/riftworld/blockbench/riftworld_fauna/silver_sea_serpent.bbmodel",
+        "revision": "2962d940bb65cb8b",
+        "name": "silver_sea_serpent",
+        "model_identifier": "riftworld.silver_sea_serpent",
+        "format": "bedrock",
+        "format_version": "5.0",
+        "box_uv": true,
+        "resolution": {
+          "width": 512,
+          "height": 512
+        },
+        "counts": {
+          "groups": 11,
+          "cubes": 120,
+          "meshes": 0,
+          "other_elements": 0,
+          "textures": 1,
+          "animations": 2
+        },
+        "bounds": {
+          "min": [
+            -13.01,
+            -0.044,
+            -26.8
+          ],
+          "max": [
+            13.01,
+            27.453,
+            40.311
+          ],
+          "size": [
+            26.019,
+            27.497,
+            67.111
+          ]
+        },
+        "ai_used": true,
+        "notes": []
+      },
+      "geometry_validation": {
+        "errors": 0,
+        "warnings": 0,
+        "passed": true
+      },
+      "geometry_self_test": [
+        {
+          "gate": "outliner",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "(outliner): added a reference to a node that does not exist"
+        },
+        {
+          "gate": "unlisted_nodes",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "head_cranium: removed it from the outliner"
+        },
+        {
+          "gate": "degenerate",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "head_cranium: made it 0.05 units thick"
+        },
+        {
+          "gate": "block_limits",
+          "discriminates": null,
+          "clean_violations": 0,
+          "injected_violations": 0,
+          "impossible": "block_limits is disabled."
+        },
+        {
+          "gate": "floating",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "head_cranium: moved it 1000 units away"
+        },
+        {
+          "gate": "interpenetration",
+          "discriminates": null,
+          "clean_violations": 0,
+          "injected_violations": 0,
+          "impossible": "Needs two unrotated cubes in different groups, one thicker than the penetration depth."
+        },
+        {
+          "gate": "mirror",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "cheek_armor_l: shifted it 2 units on x (its mirror is cheek_armor_r)"
+        }
+      ],
+      "animation_validation": {
+        "errors": 0,
+        "warnings": 0,
+        "passed": true
+      }
+    }
+  ]
+}

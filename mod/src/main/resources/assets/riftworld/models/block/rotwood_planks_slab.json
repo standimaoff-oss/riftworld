@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/slab",
+  "textures": {
+    "bottom": "riftworld:block/rotwood_planks",
+    "top": "riftworld:block/rotwood_planks",
+    "side": "riftworld:block/rotwood_planks"
+  }
+}

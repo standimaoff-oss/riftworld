@@ -51,19 +51,6 @@ public final class PeacefulFaunaKeeper {
             // v0.38.0: без регистрации плейсмента ванильный NaturalSpawner НИКОГДА не берёт
             // моба из spawners биома — поэтому «Мороковая Падь» до этого была пустой: в JSON
             // не было ни списка спавна, ни правил постановки на блок.
-            event.register(ModEntities.WENDIGO.get(),
-                    SpawnPlacements.Type.ON_GROUND,
-                    Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-                    (type, level, spawnType, pos, random) -> {
-                        if (spawnType == MobSpawnType.SPAWN_EGG || spawnType == MobSpawnType.COMMAND) return true;
-                        BlockState below = level.getBlockState(pos.below());
-                        // хозяин чащи ходит только по мерзлоте Пади и в темноте
-                        return (below.is(ru.aiforge.riftworld.registry.MorokBlocks.RIME_GRASS.get())
-                                || below.is(ru.aiforge.riftworld.registry.MorokBlocks.PALE_MOSS_BLOCK.get())
-                                || below.is(ru.aiforge.riftworld.registry.MorokBlocks.FROZEN_SOIL.get()))
-                                && level.getRawBrightness(pos, 0) <= 7;
-                    },
-                    SpawnPlacementRegisterEvent.Operation.REPLACE);
             // v0.39.0: Морок — хозяин чащи. Ставится только на мерзлоту Пади и только в темноте,
             // поэтому днём его почти не видно, а ночью он появляется сам, без всяких скриптов.
             event.register(ModEntities.MOROK.get(),
@@ -78,16 +65,19 @@ public final class PeacefulFaunaKeeper {
                                 && level.getRawBrightness(pos, 0) <= 6;
                     },
                     SpawnPlacementRegisterEvent.Operation.REPLACE);
-            event.register(ModEntities.PEGASUS.get(),
+            // v0.49.0: Смотритель Пращи — новый хоррор Пади. Ставится так же, как
+            // Морок: на мерзлоту, только в темноте. Без регистрации плейсмента
+            // ванильный NaturalSpawner не берёт моба из spawners биома.
+            event.register(ModEntities.HOLLOWWATCHER.get(),
                     SpawnPlacements.Type.ON_GROUND,
                     Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                     (type, level, spawnType, pos, random) -> {
                         if (spawnType == MobSpawnType.SPAWN_EGG || spawnType == MobSpawnType.COMMAND) return true;
                         BlockState below = level.getBlockState(pos.below());
-                        // скакун появляется на живой траве/мху, при свете и только поодиночке
-                        boolean ground = below.is(ElisarBlocks.GRASS.get()) || below.is(ElisarBlocks.BLOSSOM_MOSS.get())
-                                || below.is(ru.aiforge.riftworld.registry.MorokBlocks.RIME_GRASS.get());
-                        return ground && level.getRawBrightness(pos, 0) >= 8;
+                        return (below.is(ru.aiforge.riftworld.registry.MorokBlocks.RIME_GRASS.get())
+                                || below.is(ru.aiforge.riftworld.registry.MorokBlocks.PALE_MOSS_BLOCK.get())
+                                || below.is(ru.aiforge.riftworld.registry.MorokBlocks.FROZEN_SOIL.get()))
+                                && level.getRawBrightness(pos, 0) <= 4;
                     },
                     SpawnPlacementRegisterEvent.Operation.REPLACE);
         }

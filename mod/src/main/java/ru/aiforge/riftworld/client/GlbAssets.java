@@ -17,6 +17,8 @@ import org.slf4j.Logger;
 public final class GlbAssets {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final Map<ResourceLocation, Loaded> CACHE = new HashMap<ResourceLocation, Loaded>();
+    /** Счётчик загрузок: каждая регистрация текстуры получает уникальный путь. */
+    private static int generation = 0;
     private static final Loaded FAILED = new Loaded(null, new ResourceLocation[0]);
 
     private GlbAssets() {
@@ -58,7 +60,10 @@ public final class GlbAssets {
             ResourceLocation[] tex = new ResourceLocation[model.images.size()];
             for (int i = 0; i < tex.length; ++i) {
                 NativeImage img = GlbAssets.decode(model.images.get(i));
-                ResourceLocation id = new ResourceLocation("riftworld", "glb/" + path.getPath().replaceAll("[^a-z0-9_./-]", "_").replace('/', '_') + "_" + i);
+                // Путь уникален для каждой загрузки: если перезагрузчик ресурсов
+                // вытеснил прошлую запись, TextureManager.bind() иначе молча
+                // подставит текстуру-заглушку «missing texture».
+                ResourceLocation id = new ResourceLocation("riftworld", "glb/" + path.getPath().replaceAll("[^a-z0-9_./-]", "_").replace('/', '_') + "_" + i + "_" + (++generation));
                 mc.getTextureManager().register(id, (AbstractTexture)new DynamicTexture(img));
                 tex[i] = id;
             }

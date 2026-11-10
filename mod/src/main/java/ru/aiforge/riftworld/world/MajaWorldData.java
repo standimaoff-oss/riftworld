@@ -111,7 +111,8 @@ public final class MajaWorldData extends SavedData {
         for (long packed : placementsNear(x, z, radius)) {
             BlockPos pos = BlockPos.of(packed);
             double dx = pos.getX() + 0.5 - x, dz = pos.getZ() + 0.5 - z;
-            if (dx * dx + dz * dz <= radius2 && ++count >= 5) return count;
+            // v0.49.0: the exact count matters now — a SINGLE player placement aborts the meal.
+            if (dx * dx + dz * dz <= radius2) ++count;
         }
         return count;
     }

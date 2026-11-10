@@ -16,7 +16,6 @@ import ru.aiforge.riftworld.client.geo.GeoModel;
 
 /**
  * v0.34.0 — общий рендер «моб из JSON»: одна и та же геометрия {@link GeoModel}
- * для Пегаса ({@code geo/pegasus.json}) и Вендиго ({@code geo/wendigo.json}).
  * Анимации костей считаются на клиенте, пакетов не тратит.
  */
 public class GeoMobRenderer<T extends LivingEntity> extends EntityRenderer<T> {

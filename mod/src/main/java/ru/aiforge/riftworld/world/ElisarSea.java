@@ -105,9 +105,11 @@ public final class ElisarSea {
         f += boulder(x, z);                        // редкие валуны на дне
         f -= trenchDepth(x, z);
         f -= pitDepth(x, z);
-        // The new basin is deeper but joins the old seabed gradually, without a hard wall.
-        f -= (int) Math.round(12.0 * DeepOcean.weight(x, z));
-        return Math.max(DEEPEST_FLOOR, f);
+        // Preserve old sea-floor noise outside the basin and blend to exactly
+        // 120 water blocks over the region, tapering outside its boundary.
+        int ordinary = Math.max(DEEPEST_FLOOR, f);
+        double blend = DeepOcean.floorBlend(x, z);
+        return (int) Math.round(ordinary + (DeepOcean.deepFloor(sea) - ordinary) * blend);
     }
 
     /**
@@ -347,6 +349,114 @@ public final class ElisarSea {
         return false;
     }
 
+    /**
+     * Memoized view of one seabed column. The old generator recalculated the
+     * same 3-D cave noise and looked up all nine exit cells for every Y (and
+     * again when checking the ceiling). This object lives only for a single
+     * column, so it is thread-safe and cannot grow as the world is explored.
+     * The analytical rules below deliberately match cave/blueHole/seaCaveExit
+     * and dryPocket exactly, including their boundary conditions.
+     */
+    static final class CaveColumn {
+        private final int x, z, floor;
+        private final byte[] caves, open;
+        private final boolean bluePresent;
+        private final int blueDepth;
+        private final double blueDistance, blueRadius;
+        private SeaExit[] exits;
+
+        CaveColumn(int x, int z, int floor) {
+            this.x = x;
+            this.z = z;
+            this.floor = floor;
+            int size = Math.max(0, floor - 6 - (BOTTOM + 2) + 1);
+            caves = new byte[size];
+            open = new byte[size];
+            int gx = Math.floorDiv(x, 26), gz = Math.floorDiv(z, 26);
+            bluePresent = hash(gx, gz, 441) >= 0.40;
+            if (bluePresent) {
+                double cx = gx * 26 + 5 + hash(gx, gz, 442) * 16;
+                double cz = gz * 26 + 5 + hash(gx, gz, 443) * 16;
+                blueRadius = 2.0 + hash(gx, gz, 444) * 2.4;
+                blueDepth = 12 + (int) (hash(gx, gz, 445) * 14);
+                blueDistance = Math.hypot(x + 0.5 - cx, z + 0.5 - cz);
+            } else {
+                blueDepth = 0;
+                blueDistance = 0;
+                blueRadius = 0;
+            }
+        }
+
+        boolean caveAt(int y) {
+            if (y <= BOTTOM + 1 || y > floor - 6) return false;
+            int i = y - (BOTTOM + 2);
+            if (caves[i] == 0) caves[i] = (byte) (caveValue(x, y, z, floor) > 0 ? 2 : 1);
+            return caves[i] == 2;
+        }
+
+        boolean blueAt(int y) {
+            if (!bluePresent || y > floor || y < floor - blueDepth - 6) return false;
+            if (blueDistance <= blueRadius) return true;
+            return y < floor - blueDepth && blueDistance <= blueRadius + 3.8 && y > floor - blueDepth - 6;
+        }
+
+        boolean exitAt(int y) {
+            if (y > floor || y < floor - 16) return false;
+            if (exits == null) {
+                int gx = Math.floorDiv(x, EXIT_CELL), gz = Math.floorDiv(z, EXIT_CELL);
+                int sea = CityPlan.get().ocean;
+                java.util.ArrayList<SeaExit> candidates = new java.util.ArrayList<>(2);
+                for (int ox = -1; ox <= 1; ++ox) for (int oz = -1; oz <= 1; ++oz) {
+                    SeaExit ex = seaExitInCell(gx + ox, gz + oz, sea);
+                    if (ex != null && Math.abs(x - ex.cx) <= 12 && Math.abs(z - ex.cz) <= 12)
+                        candidates.add(ex);
+                }
+                exits = candidates.toArray(SeaExit[]::new);
+            }
+            int depth = Math.max(0, floor - y);
+            for (SeaExit ex : exits) {
+                double throatX = ex.cx + ex.dx * depth;
+                double throatZ = ex.cz + ex.dz * depth;
+                double wob = 0.55 * Math.sin(x * 0.45 + z * 0.35 + y * 0.30);
+                double rAllow;
+                if (depth <= 2) rAllow = ex.lipR + (2 - depth) * 0.75;
+                else if (depth <= 7) rAllow = Math.max(2.6, ex.lipR - 0.22 * (depth - 2));
+                else rAllow = ex.lipR + 1.15;
+                if (Math.hypot((x + 0.5) - throatX, (z + 0.5) - throatZ) <= rAllow + wob) return true;
+            }
+            return false;
+        }
+
+        boolean shaftAt(int y) { return blueAt(y) || exitAt(y); }
+
+        private boolean openAboveAt(int y) {
+            int i = y - (BOTTOM + 2);
+            if (open[i] != 0) return open[i] == 2;
+            int top = floor - 6, next = y + 1;
+            boolean result;
+            if (next <= top) {
+                result = shaftAt(next) || (caveAt(next) && openAboveAt(next));
+            } else {
+                result = roofOpen(x, z, floor) || blueAt(top + 1) || exitAt(top + 1);
+            }
+            open[i] = (byte) (result ? 2 : 1);
+            return result;
+        }
+
+        boolean pocketAt(int y) {
+            if (openAboveAt(y)) return false;
+            boolean down = caveAt(y - 4), up = caveAt(y + 4);
+            if (down && !up) return false;
+            int gap = 99;
+            for (int d = 1; d <= 3; ++d) {
+                if (!caveAt(y + d)) { gap = d - 1; break; }
+            }
+            if (gap > 3) return false;
+            if (up && !down) return true;
+            return up ? ceilingPocket(x, y, z) : airPocket(x, y, z);
+        }
+    }
+
     // ------------------------------------------------------------------ материалы
     private static BlockState st(RegistryObject<? extends Block> b) {
         return b.get().defaultBlockState();
@@ -395,36 +505,34 @@ public final class ElisarSea {
      */
     public static void column(ChunkAccess chunk, BlockPos.MutableBlockPos mp, int x, int z, int floor, int sea) {
         double reef = reefness(x, z);
-        for (int y = BOTTOM; y <= floor; ++y) chunk.setBlockState(mp.set(x, y, z), rock(x, y, z, floor, reef), false);
-        // бедрок: два блока у самого низа мира
-        for (int y = BOTTOM - 2; y < BOTTOM; ++y) chunk.setBlockState(mp.set(x, y, z), Blocks.BEDROCK.defaultBlockState(), false);
-
-        // пещеры: вырезаем и затопляем. Воздушные карманы — только у сводов, отдельным шумом,
-        // поэтому решение не зависит от соседних колонок и на границах чанков не рвётся.
         BlockState water = st(ElisarBlocks.WATER);
+        CaveColumn caves = new CaveColumn(x, z, floor);
         boolean holeColumn = false;
-        for (int y = BOTTOM; y <= floor - 6; ++y) {
-            boolean shaft = blueHole(x, y, z, floor) || seaCaveExit(x, y, z, floor);
-            if (!shaft && !cave(x, y, z, floor)) continue;
-            if (shaft) holeColumn = true;
-            boolean pocket = !shaft && dryPocket(x, y, z, floor);
-            chunk.setBlockState(mp.set(x, y, z), pocket ? Blocks.AIR.defaultBlockState() : water, false);
-        }
-
-        // v0.26.0: редкие затопленные выходы подводных пещер прорезают кровлю дна (floor-5 .. floor) прямо в открытое море!
-        for (int y = Math.max(BOTTOM, floor - 5); y <= floor; ++y) {
-            if (seaCaveExit(x, y, z, floor)) {
-                chunk.setBlockState(mp.set(x, y, z), water, false);
+        // Set each final state once: formerly every carved block was first
+        // painted as rock (including expensive ore noise), then overwritten.
+        for (int y = BOTTOM; y <= floor; ++y) {
+            BlockState result;
+            if (y <= floor - 6) {
+                boolean shaft = caves.shaftAt(y);
+                boolean carved = shaft || caves.caveAt(y);
+                if (shaft) holeColumn = true;
+                result = carved ? (!shaft && caves.pocketAt(y) ? Blocks.AIR.defaultBlockState() : water)
+                        : rock(x, y, z, floor, reef);
+            } else if (caves.exitAt(y)) {
                 holeColumn = true;
-            }
+                result = water;
+            } else result = rock(x, y, z, floor, reef);
+            chunk.setBlockState(mp.set(x, y, z), result, false);
         }
+        for (int y = BOTTOM - 2; y < BOTTOM; ++y)
+            chunk.setBlockState(mp.set(x, y, z), Blocks.BEDROCK.defaultBlockState(), false);
 
-        // свод над полостью: «синяя дыра» всегда пробивает дно, обычная пещера — примерно в половине мест
+        // Preserve the original roof opening rule and later water level exactly.
         if (floor > BOTTOM + 4) {
-            boolean belowCarved = blueHole(x, floor - 1, z, floor) || cave(x, floor - 1, z, floor);
-            if (belowCarved && (holeColumn || hash(x, z, 454) < 0.18)) chunk.setBlockState(mp.set(x, floor, z), water, false);
+            boolean belowCarved = caves.blueAt(floor - 1) || caves.caveAt(floor - 1);
+            if (belowCarved && (holeColumn || hash(x, z, 454) < 0.18))
+                chunk.setBlockState(mp.set(x, floor, z), water, false);
         }
-
         for (int y = floor + 1; y <= sea; ++y) chunk.setBlockState(mp.set(x, y, z), water, false);
     }
 

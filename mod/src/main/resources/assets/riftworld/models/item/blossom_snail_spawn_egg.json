@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "riftworld:item/blossom_snail_spawn_egg"
+  }
+}

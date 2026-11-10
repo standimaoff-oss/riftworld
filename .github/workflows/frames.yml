@@ -1,0 +1,110 @@
+name: In-game creature frames
+
+# Real Minecraft-client screenshots of the rebuilt creatures. The frames are
+# captured with the shipped jars on a disposable Forge server and published as
+# release assets, so they can be linked from the report.
+on:
+  push:
+    branches: ["arena/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: riftworld-frames-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  frames:
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: temurin
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Build the same jars the release ships
+        shell: bash
+        run: |
+          cd mod
+          chmod +x gradlew
+          for attempt in 1 2 3; do
+            ./gradlew jar dtJar --no-daemon --console=plain && exit 0
+            sleep 5
+          done
+          exit 1
+      - name: Boot a disposable Forge server
+        shell: bash
+        env:
+          KEEP: '1'
+          NORMAL_PROBE: '0'
+        run: bash tools/ci/server_check.sh
+      - name: Capture in-game frames
+        shell: bash
+        run: bash tools/ci/creature_frames.sh
+      - name: Publish the frames next to the jar
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          VER=$(grep -E '^mod_version=' mod/gradle.properties | cut -d= -f2 | tr -d '[:space:]')
+          ls -l ci-out/frames || true
+          if ls ci-out/frames/*.png >/dev/null 2>&1; then
+            if ! gh release view "v$VER" >/dev/null 2>&1; then
+              gh release create "v$VER" --title "v$VER" \
+                --notes "Сборка Riftworld v$VER (Minecraft Forge 1.20.1)." --target "${{ github.sha }}"
+            fi
+            gh release upload "v$VER" ci-out/frames/*.png --clobber
+          fi
+      - name: Commit the frames into the branch for review
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          VER=$(grep -E '^mod_version=' mod/gradle.properties | cut -d= -f2 | tr -d '[:space:]')
+          if ! ls ci-out/frames/*.png >/dev/null 2>&1; then echo "no frames to commit"; exit 0; fi
+          mkdir -p "reports/ingame/$VER"
+          cp ci-out/frames/*.png "reports/ingame/$VER/"
+          git config user.name "riftworld-ci"
+          git config user.email "ci@riftworld.invalid"
+          git add "reports/ingame/$VER"
+          git diff --cached --quiet && { echo "nothing new"; exit 0; }
+          git commit -m "Capture v$VER in-game frames [skip ci]"
+          # Одновременно с нами в ветвь пушат джобы sea-check: принимаем их
+          # состояние и пересоздаём коммит на новой базе.
+          for try in 1 2 3 4 5; do
+            git push origin "HEAD:${{ github.ref_name }}" && exit 0
+            sleep 10
+            git fetch origin "refs/heads/${{ github.ref_name }}"
+            git reset --mixed FETCH_HEAD
+            git add -A "reports/ingame/$VER"
+            git diff --cached --quiet && { echo "nothing new"; exit 0; }
+            git commit -m "Capture v$VER in-game frames [skip ci]"
+          done
+          echo "НЕ УДАЛОСЬ запушить кадры за 5 попыток"
+          exit 1
+      - name: Publish the frames diagnostics to the working branch
+        # Артефакты джобы читать неудобно: журналы и отчёты проб кладём в ветвь,
+        # чтобы падение кадра можно было расследовать по тексту.
+        if: always() && startsWith(github.ref, 'refs/heads/arena/')
+        shell: bash
+        run: bash tools/ci/publish_frames.sh || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: riftworld-frames
+          path: |
+            ci-out/frames/
+            ci-out/frames-client.log
+            ci-out/frames-capture.log
+            ci-out/*.txt
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Stop the test server
+        if: always()
+        run: python3 tools/rcon.py --password riftci --log '' --timeout 20 stop || true

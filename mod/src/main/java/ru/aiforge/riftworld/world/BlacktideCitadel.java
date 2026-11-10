@@ -136,8 +136,8 @@ public final class BlacktideCitadel {
             return cached.orElse(null);
         }
         Optional<Site> built = Optional.ofNullable(gen(sx, sz));
-        CACHE.putIfAbsent(k, built);
-        return built.orElse(null);
+        Optional<Site> winner = CACHE.putIfAbsent(k, built);
+        return (winner == null ? built : winner).orElse(null);
     }
 
     @Nullable

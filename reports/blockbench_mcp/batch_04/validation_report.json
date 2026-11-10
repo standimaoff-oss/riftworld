@@ -1,0 +1,338 @@
+{
+  "generated_via": "blockbench-mcp-plugin (official MCP server)",
+  "models": [
+    {
+      "id": "faceted_owl",
+      "title_ru": "Гранёная сова",
+      "biome": "riftworld:crystal_rifts",
+      "bbmodel": "blockbench/riftworld_fauna/faceted_owl.bbmodel",
+      "bedrock_geo": "blockbench/riftworld_fauna/bedrock/faceted_owl.geo.json",
+      "bedrock_animation": "blockbench/riftworld_fauna/bedrock/faceted_owl.animation.json",
+      "riftworld_geo": "mod/src/main/resources/assets/riftworld/geo/faceted_owl.json",
+      "texture": "mod/src/main/resources/assets/riftworld/textures/entity/faceted_owl.png",
+      "info": {
+        "path": "/home/user/riftworld/blockbench/riftworld_fauna/faceted_owl.bbmodel",
+        "revision": "d3c634a8cdd5a5aa",
+        "name": "faceted_owl",
+        "model_identifier": "riftworld.faceted_owl",
+        "format": "bedrock",
+        "format_version": "5.0",
+        "box_uv": true,
+        "resolution": {
+          "width": 512,
+          "height": 512
+        },
+        "counts": {
+          "groups": 8,
+          "cubes": 73,
+          "meshes": 0,
+          "other_elements": 0,
+          "textures": 1,
+          "animations": 1
+        },
+        "bounds": {
+          "min": [
+            -10.485,
+            0,
+            -9.055
+          ],
+          "max": [
+            10.485,
+            38.147,
+            11.97
+          ],
+          "size": [
+            20.97,
+            38.147,
+            21.025
+          ]
+        },
+        "ai_used": true,
+        "notes": []
+      },
+      "geometry_validation": {
+        "errors": 0,
+        "warnings": 0,
+        "passed": true
+      },
+      "geometry_self_test": [
+        {
+          "gate": "outliner",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "(outliner): added a reference to a node that does not exist"
+        },
+        {
+          "gate": "unlisted_nodes",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "torso_core: removed it from the outliner"
+        },
+        {
+          "gate": "degenerate",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "torso_core: made it 0.05 units thick"
+        },
+        {
+          "gate": "block_limits",
+          "discriminates": null,
+          "clean_violations": 0,
+          "injected_violations": 0,
+          "impossible": "block_limits is disabled."
+        },
+        {
+          "gate": "floating",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "torso_core: moved it 1000 units away"
+        },
+        {
+          "gate": "interpenetration",
+          "discriminates": null,
+          "clean_violations": 0,
+          "injected_violations": 0,
+          "impossible": "Needs two unrotated cubes in different groups, one thicker than the penetration depth."
+        },
+        {
+          "gate": "mirror",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "chest_diamond_inner_l: shifted it 2 units on x (its mirror is chest_diamond_inner_r)"
+        }
+      ],
+      "animation_validation": {
+        "errors": 0,
+        "warnings": 0,
+        "passed": true
+      }
+    },
+    {
+      "id": "bone_raven",
+      "title_ru": "Костяной ворон",
+      "biome": "riftworld:morok_hollow",
+      "bbmodel": "blockbench/riftworld_fauna/bone_raven.bbmodel",
+      "bedrock_geo": "blockbench/riftworld_fauna/bedrock/bone_raven.geo.json",
+      "bedrock_animation": "blockbench/riftworld_fauna/bedrock/bone_raven.animation.json",
+      "riftworld_geo": "mod/src/main/resources/assets/riftworld/geo/bone_raven.json",
+      "texture": "mod/src/main/resources/assets/riftworld/textures/entity/bone_raven.png",
+      "info": {
+        "path": "/home/user/riftworld/blockbench/riftworld_fauna/bone_raven.bbmodel",
+        "revision": "1557f46eaafa8872",
+        "name": "bone_raven",
+        "model_identifier": "riftworld.bone_raven",
+        "format": "bedrock",
+        "format_version": "5.0",
+        "box_uv": true,
+        "resolution": {
+          "width": 512,
+          "height": 512
+        },
+        "counts": {
+          "groups": 9,
+          "cubes": 87,
+          "meshes": 0,
+          "other_elements": 0,
+          "textures": 1,
+          "animations": 1
+        },
+        "bounds": {
+          "min": [
+            -38.495,
+            0,
+            -21.057
+          ],
+          "max": [
+            38.495,
+            31.145,
+            19.17
+          ],
+          "size": [
+            76.989,
+            31.145,
+            40.226
+          ]
+        },
+        "ai_used": true,
+        "notes": []
+      },
+      "geometry_validation": {
+        "errors": 0,
+        "warnings": 0,
+        "passed": true
+      },
+      "geometry_self_test": [
+        {
+          "gate": "outliner",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "(outliner): added a reference to a node that does not exist"
+        },
+        {
+          "gate": "unlisted_nodes",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "spine_front: removed it from the outliner"
+        },
+        {
+          "gate": "degenerate",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "spine_front: made it 0.05 units thick"
+        },
+        {
+          "gate": "block_limits",
+          "discriminates": null,
+          "clean_violations": 0,
+          "injected_violations": 0,
+          "impossible": "block_limits is disabled."
+        },
+        {
+          "gate": "floating",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "spine_front: moved it 1000 units away"
+        },
+        {
+          "gate": "interpenetration",
+          "discriminates": null,
+          "clean_violations": 0,
+          "injected_violations": 0,
+          "impossible": "Needs two unrotated cubes in different groups, one thicker than the penetration depth."
+        },
+        {
+          "gate": "mirror",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "rib_up_l_1: shifted it 2 units on x (its mirror is rib_up_r_1)"
+        }
+      ],
+      "animation_validation": {
+        "errors": 0,
+        "warnings": 0,
+        "passed": true
+      }
+    },
+    {
+      "id": "coral_hermit_crab",
+      "title_ru": "Коралловый рак-отшельник",
+      "biome": "riftworld:shallow_reef",
+      "bbmodel": "blockbench/riftworld_fauna/coral_hermit_crab.bbmodel",
+      "bedrock_geo": "blockbench/riftworld_fauna/bedrock/coral_hermit_crab.geo.json",
+      "bedrock_animation": "blockbench/riftworld_fauna/bedrock/coral_hermit_crab.animation.json",
+      "riftworld_geo": "mod/src/main/resources/assets/riftworld/geo/coral_hermit_crab.json",
+      "texture": "mod/src/main/resources/assets/riftworld/textures/entity/coral_hermit_crab.png",
+      "info": {
+        "path": "/home/user/riftworld/blockbench/riftworld_fauna/coral_hermit_crab.bbmodel",
+        "revision": "baa72a08cb36d4f9",
+        "name": "coral_hermit_crab",
+        "model_identifier": "riftworld.coral_hermit_crab",
+        "format": "bedrock",
+        "format_version": "5.0",
+        "box_uv": true,
+        "resolution": {
+          "width": 512,
+          "height": 512
+        },
+        "counts": {
+          "groups": 13,
+          "cubes": 94,
+          "meshes": 0,
+          "other_elements": 0,
+          "textures": 1,
+          "animations": 1
+        },
+        "bounds": {
+          "min": [
+            -13.367,
+            0,
+            -20.718
+          ],
+          "max": [
+            16.679,
+            30.352,
+            16.504
+          ],
+          "size": [
+            30.046,
+            30.352,
+            37.222
+          ]
+        },
+        "ai_used": true,
+        "notes": []
+      },
+      "geometry_validation": {
+        "errors": 0,
+        "warnings": 0,
+        "passed": true
+      },
+      "geometry_self_test": [
+        {
+          "gate": "outliner",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "(outliner): added a reference to a node that does not exist"
+        },
+        {
+          "gate": "unlisted_nodes",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "carapace_main: removed it from the outliner"
+        },
+        {
+          "gate": "degenerate",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "carapace_main: made it 0.05 units thick"
+        },
+        {
+          "gate": "block_limits",
+          "discriminates": null,
+          "clean_violations": 0,
+          "injected_violations": 0,
+          "impossible": "block_limits is disabled."
+        },
+        {
+          "gate": "floating",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 2,
+          "injected": "carapace_main: moved it 1000 units away"
+        },
+        {
+          "gate": "interpenetration",
+          "discriminates": null,
+          "clean_violations": 0,
+          "injected_violations": 0,
+          "impossible": "Needs two unrotated cubes in different groups, one thicker than the penetration depth."
+        },
+        {
+          "gate": "mirror",
+          "discriminates": true,
+          "clean_violations": 0,
+          "injected_violations": 1,
+          "injected": "eyestalk_shaft_l: shifted it 2 units on x (its mirror is eyestalk_shaft_r)"
+        }
+      ],
+      "animation_validation": {
+        "errors": 0,
+        "warnings": 0,
+        "passed": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+[
+  {
+    "id": "amethyst_fox",
+    "titleRu": "04 — Аметистовый лис",
+    "heroLight": "reports/blockbench_mcp/batch_02/04_amethyst_fox.png",
+    "heroDark": "reports/blockbench_mcp/batch_02/04_amethyst_fox_dark.png",
+    "turntable": "reports/blockbench_mcp/batch_02/04_amethyst_fox_angles.png",
+    "localRefComparison": "/home/user/riftworld/reports/blockbench_mcp/batch_02/04_amethyst_fox_vs_ref.png",
+    "elementCount": 52,
+    "groupCount": 10,
+    "worldSize": [
+      18.58,
+      44.65,
+      60.4
+    ]
+  },
+  {
+    "id": "sizo_leafwing",
+    "titleRu": "05 — Сизый листокрыл",
+    "heroLight": "reports/blockbench_mcp/batch_02/05_sizo_leafwing.png",
+    "heroDark": "reports/blockbench_mcp/batch_02/05_sizo_leafwing_dark.png",
+    "turntable": "reports/blockbench_mcp/batch_02/05_sizo_leafwing_angles.png",
+    "localRefComparison": "/home/user/riftworld/reports/blockbench_mcp/batch_02/05_sizo_leafwing_vs_ref.png",
+    "elementCount": 89,
+    "groupCount": 12,
+    "worldSize": [
+      103.51,
+      55.99,
+      59.59
+    ]
+  },
+  {
+    "id": "azure_frog",
+    "titleRu": "06 — Лазурный древесный лягуш",
+    "heroLight": "reports/blockbench_mcp/batch_02/06_azure_frog.png",
+    "heroDark": "reports/blockbench_mcp/batch_02/06_azure_frog_dark.png",
+    "turntable": "reports/blockbench_mcp/batch_02/06_azure_frog_angles.png",
+    "localRefComparison": "/home/user/riftworld/reports/blockbench_mcp/batch_02/06_azure_frog_vs_ref.png",
+    "elementCount": 68,
+    "groupCount": 8,
+    "worldSize": [
+      29.01,
+      29.15,
+      31.55
+    ]
+  }
+]

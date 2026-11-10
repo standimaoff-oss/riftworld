@@ -11,6 +11,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -29,8 +30,8 @@ import ru.aiforge.riftworld.registry.ElisarBlocks;
  * <p>v0.49.0 — the titan became a rare but ALWAYS-ENABLED event:
  * <ul>
  *   <li>whole small islands (kind 2/3/4 with {@code R <= 28}) are devoured completely,
- *       including their bare stone rims ({@code S_BARE}) and the natural trees that
- *       the Dynamic Trees addon grows on them;</li>
+ *       including their bare stone rims ({@code S_BARE}), their cobbled edges and the
+ *       natural trees that the Dynamic Trees addon grows on them;</li>
  *   <li>larger organic islands (kind 1/2 with {@code R > 28}) are bitten instead: the
  *       titan chews an organic jagged chunk out of the rim that borders the deep ocean;</li>
  *   <li>after every meal the titan waits for a long, rare cooldown before hunting again;</li>
@@ -50,10 +51,12 @@ public final class MajaIslandDevourer {
     public static final double MAX_WHOLE_ISLAND_RADIUS = 28.0;
     /** Radius of the organic chunk bitten out of a large island rim. */
     private static final double BITE_RADIUS = 18.0;
-    /** Rare: how many feeding attempts may be skipped before the next hunt. */
+    /** Rare event: the long pause after a meal before the titan hunts again. */
     private static final int MEAL_COOLDOWN = 2400;
     /** Minimum number of quiet ticks between two candidate searches. */
     private static final int SEARCH_INTERVAL = 80;
+    /** How long the water-breach surge lasts; the meal always ends when it is over. */
+    private static final int BREACH_TICKS = 120;
 
     private record Bite(long pos, Block expectedBlock) {}
 
@@ -143,6 +146,10 @@ public final class MajaIslandDevourer {
             }
             return cancel("finished");
         }
+        // The titan surfaces WHILE it chews: the breach is the dramatic entrance of
+        // the event, not a farewell gesture. The surge plays out on its own timer and
+        // the meal completes as soon as the last block is gone.
+        status = breachTicks > 0 ? "breaching" : "eating";
         return true;
     }
 
@@ -150,12 +157,21 @@ public final class MajaIslandDevourer {
      * Raises the titan out of the water while it chews. The horizontal position and yaw
      * are held; only the vertical pose changes, and every candidate pose is validated
      * with the conservative collision envelope before it is accepted.
+     *
+     * <p>v0.49.0: the surge is a TIMED effect. It ends after {@link #BREACH_TICKS} ticks
+     * whether or not the titan reached the surface — the meal must never be held hostage
+     * by the conservative collision envelope. A blocked surge simply plays out in place.
      */
     public void breach(ServerLevel level, ElGranMajaEntity maja) {
         if (job == null) return;
+        // The surge belongs to the meal: while the titan is still SCANNING for a
+        // victim it must keep its submerged cruising depth (the ocean probe and the
+        // natural-spawn behaviour rely on that).
+        if (job.blocks.isEmpty()) return;
         if (breachTicks == 0) {
-            // Lift the titan to a clear pose first; if that is impossible, stay hidden.
-            if (!riseSafely(level, maja, 0.35)) return;
+            // Lift the titan to a clear pose first; if that is impossible, the surge
+            // still plays out (in place) and ends on the timer.
+            surgeSafely(level, maja, 0.35);
             breachTicks = 1;
         }
         breachTicks++;
@@ -165,11 +181,9 @@ public final class MajaIslandDevourer {
         double target = sea + 42.0;
         double step = Math.max(-0.85, Math.min(0.85, (target - maja.getY()) * 0.10));
         if (Math.abs(step) < 0.05) step = 0.05;
-        if (!riseSafely(level, maja, step)) {
+        if (!surgeSafely(level, maja, step)) {
             // Collision blocked the surge: fall back to the previous validated pose.
             riseSafely(level, maja, -step);
-            breachTicks = 1;
-            return;
         }
         if (maja.tickCount % 2 == 0) {
             double yaw = Math.toRadians(maja.getYRot());
@@ -177,9 +191,12 @@ public final class MajaIslandDevourer {
             double jz = maja.getZ() + Math.cos(yaw) * 140.0;
             level.sendParticles(ParticleTypes.SPLASH, jx, sea + 0.4, jz, 24, 14.0, 0.6, 6.0, 0.28);
             level.sendParticles(ParticleTypes.CLOUD, jx, sea + 1.6, jz, 10, 10.0, 0.8, 3.0, 0.06);
-            level.sendParticles(ParticleTypes.BLOCK, jx, sea + 0.2, jz, 18, 12.0, 0.8, 4.0, 0.04);
+            // Debris of the chewed island: the block particle needs an explicit block state.
+            level.sendParticles(new net.minecraft.core.particles.BlockParticleOption(
+                    ParticleTypes.BLOCK, Blocks.GRAVEL.defaultBlockState()),
+                    jx, sea + 0.2, jz, 18, 12.0, 0.8, 4.0, 0.04);
         }
-        if (Math.abs(maja.getY() - target) <= 1.0 || breachTicks > 400) {
+        if (Math.abs(maja.getY() - target) <= 1.0 || breachTicks > BREACH_TICKS) {
             breached = true;
             // Settle back down to the validated cruising depth.
             riseSafely(level, maja, -Math.min(1.2, Math.max(0.25, (maja.getY() - sea + 32.0) * 0.12)));
@@ -198,6 +215,53 @@ public final class MajaIslandDevourer {
         // vertical pose was actually reached (x and z must never change).
         if (Math.abs(maja.getY() - next.y) > 1e-4) maja.setPos(maja.getX(), next.y, maja.getZ());
         return Math.abs(maja.getY() - oldY) > 1e-6 || Math.abs(delta) < 1e-6;
+    }
+
+    /**
+     * The water-breach surge. Unlike {@link #riseSafely} this move is allowed through
+     * water: the titan is swimming, so the 322-block body may sweep through the ocean
+     * column on its way up. It still refuses to enter solid rock — the horizontal
+     * position and the yaw never change, so the body can only ever move straight up
+     * or straight down.
+     */
+    private static boolean surgeSafely(ServerLevel level, ElGranMajaEntity maja, double delta) {
+        if (delta <= 0.0) return riseSafely(level, maja, delta);
+        double oldY = maja.getY();
+        Vec3 next = maja.position().add(0.0, delta, 0.0);
+        if (!MajaCollision.clear(level, next, maja.getYRot())) {
+            // The conservative envelope is blocked. Water is not an obstacle for a
+            // swimmer, so only solid blocks may veto the upward surge.
+            if (!waterColumn(level, maja.getX(), maja.getZ(), oldY, next.y)) return false;
+            maja.setPos(maja.getX(), next.y, maja.getZ());
+            maja.setDeltaMovement(0.0, delta, 0.0);
+            return true;
+        }
+        return riseSafely(level, maja, delta);
+    }
+
+    /**
+     * True when the vertical band between two heights contains no solid block in the
+     * column under the titan's head. This is a narrow, conservative test: it only
+     * looks at the few columns the moving jaw actually sweeps through.
+     */
+    private static boolean waterColumn(ServerLevel level, double x, double z, double fromY, double toY) {
+        int minY = (int) Math.floor(Math.min(fromY, toY));
+        int maxY = (int) Math.ceil(Math.max(fromY, toY));
+        if (maxY - minY > 64) return false;
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        for (int dy = minY; dy <= maxY; ++dy) {
+            for (int ox = -2; ox <= 2; ++ox) for (int oz = -2; oz <= 2; ++oz) {
+                pos.set((int) Math.floor(x) + ox, dy, (int) Math.floor(z) + oz);
+                BlockState state = level.getBlockState(pos);
+                if (state.isAir()) continue;
+                // Water is not an obstacle for a swimmer.
+                if (!state.getFluidState().isEmpty()) continue;
+                // Plants, torches and snow do not block a 322-block swimmer either.
+                if (!state.blocksMotion()) continue;
+                return false;
+            }
+        }
+        return true;
     }
 
     private boolean cancel(String why) {

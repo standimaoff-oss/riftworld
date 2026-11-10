@@ -4,5 +4,12 @@
 # локальные python-зависимости генераторов (pillow/numpy), ставится через pip3 --target
 .pylibs/
 
+# локальный site-packages для генераторов (pillow + numpy), ставится через
+# pip3 install --target .pylibs pillow numpy; в репозиторий не попадает.
+.pylibs/
+
 .cache/
 __pycache__/
+
+# локальный venv (официальный .venv-tools/ переименован в .venv генераторами)
+.venv/

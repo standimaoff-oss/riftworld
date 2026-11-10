@@ -2,6 +2,9 @@ package ru.aiforge.riftworld.entity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
@@ -28,13 +31,24 @@ import ru.aiforge.riftworld.registry.ModEntities;
  *   <li>патрулирует на глубине (≥ 30 блоков воды) вокруг своей точки дома;</li>
  *   <li>игрока в воде в радиусе 24 блоков берёт в прицел и делает рывок (до 9 блок/с);</li>
  *   <li>укус — 6 ❤, хватает и тянет вниз на 2 с (медленность + «утопление» темпа);</li>
- *   <li>слепнет от света: при освещении > 10 рядом с игроком теряет цель;</li>
  *   <li>вне воды не живёт: без воды плавно тонет и через 20 с исчезает;</li>
  *   <li>никаких надписей в чате — только звук.</li>
  * </ul>
  * Физика как у морских рыб мода: без гравитации, поворот корпуса с ограничением угловой скорости.
  */
 public class LiopleurodonEntity extends Mob {
+    private static final EntityDataAccessor<Boolean> DATA_BITING =
+            SynchedEntityData.defineId(LiopleurodonEntity.class, EntityDataSerializers.BOOLEAN);
+    private int biteAnimationTicks;
+
+    @Override
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(DATA_BITING, false);
+    }
+
+    public boolean isBiting() { return this.entityData.get(DATA_BITING); }
+
     /** Точка дома: хищник не уходит из своей впадины через весь океан. */
     private Vec3 home;
     private Vec3 way;
@@ -43,8 +57,6 @@ public class LiopleurodonEntity extends Mob {
     private int grabTicks;
     private Vec3 heading;
     private double speed;
-    /** Пауза после «слепоты от света», чтобы не дёргался каждый тик. */
-    private int blindCd;
     private int outOfWater;
 
     private static final double TURN_HUNT = 3.2D;
@@ -70,7 +82,7 @@ public class LiopleurodonEntity extends Mob {
     }
 
     public boolean inWater() {
-        return elisarWater(level(), blockPosition()) || elisarWater(level(), blockPosition().above());
+        return isInWaterOrBubble() || elisarWater(level(), blockPosition()) || elisarWater(level(), blockPosition().above());
     }
 
     @Override
@@ -81,11 +93,12 @@ public class LiopleurodonEntity extends Mob {
         }
         if (home == null) home = position();
         if (attackCd > 0) --attackCd;
-        if (blindCd > 0) --blindCd;
+        if (biteAnimationTicks > 0 && --biteAnimationTicks == 0) this.entityData.set(DATA_BITING, false);
         if (grabTicks > 0) --grabTicks;
 
-        if (isNoAi()) {                                   // витрина: только покачивание
-            setDeltaMovement(0, Math.sin(tickCount * 0.05) * 0.004, 0);
+        if (isNoAi()) {                                   // витрина: фиксируем точку дома против плавучести жидкости
+            setDeltaMovement(Vec3.ZERO);
+            setPos(home.x, home.y + Math.sin(tickCount * 0.05) * 0.04, home.z);
             return;
         }
 
@@ -96,20 +109,27 @@ public class LiopleurodonEntity extends Mob {
         }
         outOfWater = 0;
 
-        Player prey = level().getNearestPlayer(this, 24.0D);
-        if (prey != null && (prey.isCreative() || prey.isSpectator())) prey = null;
-        // слепнет от света: у яркого фонаря жертву не видит
-        if (prey != null && blindCd <= 0
-                && level().getMaxLocalRawBrightness(prey.blockPosition()) > 10) {
-            prey = null;
-            blindCd = 60;
+        Player prey = null;
+        double nearest = 24.0D * 24.0D;
+        for (Player candidate : level().players()) {
+            double d2 = distanceToSqr(candidate);
+            if (candidate.isAlive() && !candidate.isCreative() && !candidate.isSpectator() && d2 < nearest) {
+                nearest = d2;
+                prey = candidate;
+            }
         }
-        if (prey != null && (prey.isInWater() || prey.isSwimming())) {
+        // Elisar has its own liquid; vanilla isInWater() alone does not
+        // necessarily recognise a player swimming in it. Daylight must not
+        // suppress hunting in the open ocean.
+        boolean preyInWater = prey != null && (prey.isInWaterOrBubble() || prey.isSwimming()
+                || elisarWater(level(), prey.blockPosition())
+                || elisarWater(level(), prey.blockPosition().above()));
+        if (preyInWater) {
             Vec3 to = prey.position().add(0, 0.8, 0).subtract(position());
             double d = to.length();
             if (d < 24) {
                 chase(to.normalize(), d < 8 ? 0.62 : 0.45);
-                if (d < 3.6 && attackCd <= 0) {
+                if (d < 7.0 && attackCd <= 0 && hasLineOfSight(prey)) {
                     bite(prey);
                 }
                 faceTravel();
@@ -141,6 +161,8 @@ public class LiopleurodonEntity extends Mob {
     private void bite(Player prey) {
         prey.hurt(damageSources().mobAttack(this), 12.0F);
         attackCd = 50;
+        biteAnimationTicks = 12;
+        this.entityData.set(DATA_BITING, true);
         grabTicks = 40;
         level().playSound(null, blockPosition(), SoundEvents.GUARDIAN_ATTACK, SoundSource.HOSTILE, 1.0F, 0.55F);
         prey.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, 2));

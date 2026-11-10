@@ -822,7 +822,7 @@ def emit_java(aur_outer: Model, aur_inner: Model, rc_outer: Model, rc_inner: Mod
                 ih = int(round(cube.h + 2 * cube.inflate))
                 idp = int(round(cube.d + 2 * cube.inflate))
                 u, v = offsets[id(cube)]
-                deform = f", new CubeDeformation({cube.inflate:.2F})"
+                deform = f", new CubeDeformation({cube.inflate:.2F}F)"
                 a(f"                .texOffs({u}, {v}).addBox({cube.x:.2F}F, {cube.y:.2F}F, {cube.z:.2F}F, "
                   f"{iw}.0F, {ih}.0F, {idp}.0F{deform})")
             a(f"                , PartPose.offsetAndRotation({bone.px:.2F}F, {bone.py:.2F}F, {bone.pz:.2F}F, "
@@ -1206,7 +1206,15 @@ def draw_cube(canvas, zbuf, cube: Cube, parent_pos, parent_rot, world, ox, hd):
     for k, v in faces.items():
         arr = np.array(v, dtype=np.float32)
         op = arr[:, :, 3] > 0
-        avg[k] = arr[op, :3].mean(axis=0) if op.any() else np.array([128.0, 128.0, 128.0], dtype=np.float32)
+        if not op.any():
+            avg[k] = np.array([128.0, 128.0, 128.0], dtype=np.float32)
+            continue
+        px = arr[op, :3]
+        # Blend the dominant plate colour with the brightest accent so that the
+        # crystal trim, chevrons and gold edging stay readable in the preview.
+        lum = px.max(axis=1)
+        acc = px[lum >= np.percentile(lum, 92)]
+        avg[k] = 0.68 * px.mean(axis=0) + 0.32 * acc.mean(axis=0)
     cx, cy, cz = parent_pos
     rx, ry, rz = parent_rot
     k = 0.5 if hd else 1.0
@@ -1231,20 +1239,24 @@ def draw_cube(canvas, zbuf, cube: Cube, parent_pos, parent_rot, world, ox, hd):
     proj = [(ox + p[0] * scale, oy - p[1] * scale, -p[2]) for p in pts]
 
     quads = [
-        (0, 1, 2, 3, "north"),
-        (5, 4, 7, 6, "south"),
-        (1, 5, 6, 2, "east"),
-        (4, 0, 3, 7, "west"),
+        (0, 1, 2, 3, "front"),
+        (5, 4, 7, 6, "back"),
+        (1, 5, 6, 2, "right"),
+        (4, 0, 3, 7, "left"),
         (4, 5, 1, 0, "up"),
         (3, 2, 6, 7, "down"),
     ]
     for a, b, c, d, fname in quads:
         col = avg.get(fname, (120, 120, 120, 255))
         shade = 1.0
-        if fname in ("north", "back"):
+        if fname == "front":
+            shade = 1.0
+        elif fname == "back":
             shade = 0.72
-        elif fname in ("east", "left"):
+        elif fname == "right":
             shade = 0.85
+        elif fname == "left":
+            shade = 0.78
         elif fname == "down":
             shade = 0.60
         elif fname == "up":

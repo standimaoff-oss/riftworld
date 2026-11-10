@@ -134,6 +134,60 @@ public final class MorokBlocks {
     public static final RegistryObject<PlantBlock> MOROK_SAPLING =
             ModBlocks.reg("morok_sapling", () -> new PlantBlock(plantProps()));
 
+    // ------------------------------------------------------------------ v0.49.0: два своих дерева Пади
+    // «Гнилая роща» (Rotwood): тёмное, узловатое, с чёрной древесиной и густой
+    // кроной — основа ночного леса Пади. «Морозный терновник» (Frostbriar):
+    // скрученный, колючий кустарник с ледяной листвой — растёт по краям болот.
+    // Своё дерево нужно, чтобы лес читался как МОСТРОЕ место, а не как обычный
+    // берёзовый лес с перекрашенной землёй.
+    public static final RegistryObject<RotatedPillarBlock> STRIPPED_ROTWOOD_LOG =
+            woodPillar("stripped_rotwood_log", MapColor.COLOR_BLACK);
+    public static final RegistryObject<RotatedPillarBlock> STRIPPED_ROTWOOD_WOOD =
+            woodPillar("stripped_rotwood_wood", MapColor.COLOR_BLACK);
+    public static final RegistryObject<RotatedPillarBlock> ROTWOOD_LOG =
+            strippableWood("rotwood_log", MapColor.COLOR_BLACK, STRIPPED_ROTWOOD_LOG);
+    public static final RegistryObject<RotatedPillarBlock> ROTWOOD_WOOD =
+            strippableWood("rotwood_wood", MapColor.COLOR_BLACK, STRIPPED_ROTWOOD_WOOD);
+
+    public static final RegistryObject<Block> ROTWOOD_PLANKS = cube("rotwood_planks", MapColor.COLOR_BLACK, 2.0F, SoundType.WOOD);
+    public static final RegistryObject<StairBlock> ROTWOOD_STAIRS = stairs("rotwood_planks_stairs", ROTWOOD_PLANKS);
+    public static final RegistryObject<SlabBlock> ROTWOOD_SLAB = slab("rotwood_planks_slab", MapColor.COLOR_BLACK, SoundType.WOOD);
+    public static final RegistryObject<FenceBlock> ROTWOOD_FENCE = woodFence("rotwood_fence", MapColor.COLOR_BLACK);
+    public static final RegistryObject<FenceGateBlock> ROTWOOD_FENCE_GATE = woodGate("rotwood_fence_gate", MapColor.COLOR_BLACK);
+    public static final RegistryObject<DoorBlock> ROTWOOD_DOOR = woodDoor("rotwood_door", MapColor.COLOR_BLACK);
+    public static final RegistryObject<TrapDoorBlock> ROTWOOD_TRAPDOOR = woodTrapdoor("rotwood_trapdoor", MapColor.COLOR_BLACK);
+    public static final RegistryObject<PressurePlateBlock> ROTWOOD_PRESSURE_PLATE =
+            woodPlate("rotwood_pressure_plate", MapColor.COLOR_BLACK);
+    public static final RegistryObject<ButtonBlock> ROTWOOD_BUTTON = woodButton("rotwood_button", MapColor.COLOR_BLACK);
+    public static final RegistryObject<LeavesBlock> ROTWOOD_LEAVES =
+            ModBlocks.reg("rotwood_leaves", () -> new LeavesBlock(leavesProps(MapColor.COLOR_BLACK)));
+    public static final RegistryObject<PlantBlock> ROTWOOD_SAPLING =
+            ModBlocks.reg("rotwood_sapling", () -> new PlantBlock(plantProps()));
+
+    public static final RegistryObject<RotatedPillarBlock> STRIPPED_FROSTBRIAR_LOG =
+            woodPillar("stripped_frostbriar_log", MapColor.COLOR_LIGHT_GRAY);
+    public static final RegistryObject<RotatedPillarBlock> STRIPPED_FROSTBRIAR_WOOD =
+            woodPillar("stripped_frostbriar_wood", MapColor.COLOR_LIGHT_GRAY);
+    public static final RegistryObject<RotatedPillarBlock> FROSTBRIAR_LOG =
+            strippableWood("frostbriar_log", MapColor.COLOR_LIGHT_GRAY, STRIPPED_FROSTBRIAR_LOG);
+    public static final RegistryObject<RotatedPillarBlock> FROSTBRIAR_WOOD =
+            strippableWood("frostbriar_wood", MapColor.COLOR_LIGHT_GRAY, STRIPPED_FROSTBRIAR_WOOD);
+
+    public static final RegistryObject<Block> FROSTBRIAR_PLANKS = cube("frostbriar_planks", MapColor.COLOR_LIGHT_GRAY, 2.0F, SoundType.WOOD);
+    public static final RegistryObject<StairBlock> FROSTBRIAR_STAIRS = stairs("frostbriar_planks_stairs", FROSTBRIAR_PLANKS);
+    public static final RegistryObject<SlabBlock> FROSTBRIAR_SLAB = slab("frostbriar_planks_slab", MapColor.COLOR_LIGHT_GRAY, SoundType.WOOD);
+    public static final RegistryObject<FenceBlock> FROSTBRIAR_FENCE = woodFence("frostbriar_fence", MapColor.COLOR_LIGHT_GRAY);
+    public static final RegistryObject<FenceGateBlock> FROSTBRIAR_FENCE_GATE = woodGate("frostbriar_fence_gate", MapColor.COLOR_LIGHT_GRAY);
+    public static final RegistryObject<DoorBlock> FROSTBRIAR_DOOR = woodDoor("frostbriar_door", MapColor.COLOR_LIGHT_GRAY);
+    public static final RegistryObject<TrapDoorBlock> FROSTBRIAR_TRAPDOOR = woodTrapdoor("frostbriar_trapdoor", MapColor.COLOR_LIGHT_GRAY);
+    public static final RegistryObject<PressurePlateBlock> FROSTBRIAR_PRESSURE_PLATE =
+            woodPlate("frostbriar_pressure_plate", MapColor.COLOR_LIGHT_GRAY);
+    public static final RegistryObject<ButtonBlock> FROSTBRIAR_BUTTON = woodButton("frostbriar_button", MapColor.COLOR_LIGHT_GRAY);
+    public static final RegistryObject<LeavesBlock> FROSTBRIAR_LEAVES =
+            ModBlocks.reg("frostbriar_leaves", () -> new LeavesBlock(leavesProps(MapColor.COLOR_LIGHT_GRAY)));
+    public static final RegistryObject<PlantBlock> FROSTBRIAR_SAPLING =
+            ModBlocks.reg("frostbriar_sapling", () -> new PlantBlock(plantProps()));
+
     // ------------------------------------------------------------------ земля
     public static final RegistryObject<Block> FROZEN_SOIL = cube("frozen_soil", MapColor.COLOR_BLACK, 0.5F, SoundType.GRAVEL);
     public static final RegistryObject<Block> RIME_GRASS = cube("rime_grass", MapColor.COLOR_LIGHT_GREEN, 0.6F, SoundType.GRASS);

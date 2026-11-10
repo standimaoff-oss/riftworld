@@ -1,0 +1,17 @@
+run 42781457470 / job frames / ветвь arena/037a840e-riftworld
+== содержимое ci-out ==
+total 1804
+drwxr-xr-x  3 runner runner    4096 Nov 10 08:23 .
+drwxr-xr-x 13 runner runner    4096 Nov 10 08:21 ..
+-rw-r--r--  1 runner runner     134 Nov 10 08:21 done.txt
+-rw-r--r--  1 runner runner       0 Nov 10 08:21 errors.txt
+drwxr-xr-x  2 runner runner    4096 Nov 10 08:26 frames
+-rw-r--r--  1 runner runner     797 Nov 10 08:26 frames-capture.log
+-rw-r--r--  1 runner runner  597104 Nov 10 08:26 frames-client.log
+-rw-r--r--  1 runner runner      85 Nov 10 08:23 frames-openbox.log
+-rw-r--r--  1 runner runner    1174 Nov 10 08:23 frames-xvfb.log
+-rw-r--r--  1 runner runner 1194775 Nov 10 08:20 installer.log
+-rw-r--r--  1 runner runner   11340 Nov 10 08:21 latest.log
+-rw-r--r--  1 runner runner     222 Nov 10 08:21 mods.txt
+-rw-r--r--  1 runner runner    1343 Nov 10 08:21 report_server.md
+-rw-r--r--  1 runner runner     491 Nov 10 08:21 tps.txt

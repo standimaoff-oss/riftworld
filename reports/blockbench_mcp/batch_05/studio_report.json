@@ -1,0 +1,47 @@
+[
+  {
+    "id": "reef_seahorse",
+    "titleRu": "13 — Рифовый морской конёк",
+    "heroLight": "reports/blockbench_mcp/batch_05/13_reef_seahorse.png",
+    "heroDark": "reports/blockbench_mcp/batch_05/13_reef_seahorse_dark.png",
+    "turntable": "reports/blockbench_mcp/batch_05/13_reef_seahorse_angles.png",
+    "localRefComparison": "/home/user/riftworld/reports/blockbench_mcp/batch_05/13_reef_seahorse_vs_ref.png",
+    "elementCount": 43,
+    "groupCount": 9,
+    "worldSize": [
+      9.82,
+      33.88,
+      21.06
+    ]
+  },
+  {
+    "id": "ghost_squid",
+    "titleRu": "14 — Глубоководный кальмар-призрак",
+    "heroLight": "reports/blockbench_mcp/batch_05/14_ghost_squid.png",
+    "heroDark": "reports/blockbench_mcp/batch_05/14_ghost_squid_dark.png",
+    "turntable": "reports/blockbench_mcp/batch_05/14_ghost_squid_angles.png",
+    "localRefComparison": "/home/user/riftworld/reports/blockbench_mcp/batch_05/14_ghost_squid_vs_ref.png",
+    "elementCount": 41,
+    "groupCount": 8,
+    "worldSize": [
+      21.28,
+      28.45,
+      56.83
+    ]
+  },
+  {
+    "id": "silver_sea_serpent",
+    "titleRu": "15 — Серебряный морской змей",
+    "heroLight": "reports/blockbench_mcp/batch_05/15_silver_sea_serpent.png",
+    "heroDark": "reports/blockbench_mcp/batch_05/15_silver_sea_serpent_dark.png",
+    "turntable": "reports/blockbench_mcp/batch_05/15_silver_sea_serpent_angles.png",
+    "localRefComparison": "/home/user/riftworld/reports/blockbench_mcp/batch_05/15_silver_sea_serpent_vs_ref.png",
+    "elementCount": 120,
+    "groupCount": 11,
+    "worldSize": [
+      26.02,
+      27.5,
+      67.11
+    ]
+  }
+]

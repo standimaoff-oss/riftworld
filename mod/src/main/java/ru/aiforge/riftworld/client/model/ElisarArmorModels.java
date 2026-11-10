@@ -63,17 +63,17 @@ public final class ElisarArmorModels {
         PartDefinition p2 = root.addOrReplaceChild("hat", CubeListBuilder.create(), PartPose.offsetAndRotation(0.00F, 0.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         PartDefinition p3 = root.addOrReplaceChild("body", CubeListBuilder.create(), PartPose.offsetAndRotation(0.00F, 0.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         PartDefinition p4 = p3.addOrReplaceChild("hd", CubeListBuilder.create()
-                .texOffs(0, 140).addBox(-8.00F, 14.00F, -4.00F, 17.0F, 9.0F, 9.0F, new CubeDeformation(0.50))
+                .texOffs(0, 140).addBox(-8.00F, 14.00F, -4.00F, 17.0F, 9.0F, 9.0F, new CubeDeformation(0.50F))
                 , PartPose.offsetAndRotation(0.00F, 0.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         PartDefinition p5 = root.addOrReplaceChild("right_arm", CubeListBuilder.create(), PartPose.offsetAndRotation(-5.00F, 2.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         PartDefinition p6 = root.addOrReplaceChild("left_arm", CubeListBuilder.create(), PartPose.offsetAndRotation(5.00F, 2.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         PartDefinition p7 = root.addOrReplaceChild("right_leg", CubeListBuilder.create(), PartPose.offsetAndRotation(-1.90F, 12.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         PartDefinition p8 = p7.addOrReplaceChild("hd", CubeListBuilder.create()
-                .texOffs(53, 140).addBox(-4.00F, -24.00F, -4.00F, 9.0F, 25.0F, 9.0F, new CubeDeformation(0.55))
+                .texOffs(53, 140).addBox(-4.00F, -24.00F, -4.00F, 9.0F, 25.0F, 9.0F, new CubeDeformation(0.55F))
                 , PartPose.offsetAndRotation(0.00F, 0.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         PartDefinition p9 = root.addOrReplaceChild("left_leg", CubeListBuilder.create(), PartPose.offsetAndRotation(1.90F, 12.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         PartDefinition p10 = p9.addOrReplaceChild("hd", CubeListBuilder.create()
-                .texOffs(90, 140).addBox(-4.00F, -24.00F, -4.00F, 9.0F, 25.0F, 9.0F, new CubeDeformation(0.55))
+                .texOffs(90, 140).addBox(-4.00F, -24.00F, -4.00F, 9.0F, 25.0F, 9.0F, new CubeDeformation(0.55F))
                 , PartPose.offsetAndRotation(0.00F, 0.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         return LayerDefinition.create(mesh, 256, 256);
     }
@@ -82,48 +82,48 @@ public final class ElisarArmorModels {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
         PartDefinition p11 = root.addOrReplaceChild("head", CubeListBuilder.create()
-                .texOffs(0, 0).addBox(-8.00F, -8.00F, -8.00F, 17.0F, 17.0F, 17.0F, new CubeDeformation(0.26))
-                .texOffs(69, 0).addBox(-9.00F, -8.00F, -9.00F, 18.0F, 7.0F, 18.0F, new CubeDeformation(0.18))
-                .texOffs(142, 0).addBox(-9.00F, -4.00F, -1.00F, 18.0F, 10.0F, 10.0F, new CubeDeformation(0.16))
-                .texOffs(199, 0).addBox(-4.00F, -9.00F, -9.00F, 8.0F, 8.0F, 8.0F, new CubeDeformation(0.16))
-                .texOffs(0, 35).addBox(1.00F, -4.00F, -9.00F, 7.0F, 8.0F, 8.0F, new CubeDeformation(0.16))
-                .texOffs(31, 35).addBox(-5.00F, -7.00F, -3.00F, 2.0F, 4.0F, 9.0F, new CubeDeformation(0.05))
-                .texOffs(54, 35).addBox(3.00F, -7.00F, -3.00F, 2.0F, 4.0F, 9.0F, new CubeDeformation(0.05))
+                .texOffs(0, 0).addBox(-8.00F, -8.00F, -8.00F, 17.0F, 17.0F, 17.0F, new CubeDeformation(0.26F))
+                .texOffs(69, 0).addBox(-9.00F, -8.00F, -9.00F, 18.0F, 7.0F, 18.0F, new CubeDeformation(0.18F))
+                .texOffs(142, 0).addBox(-9.00F, -4.00F, -1.00F, 18.0F, 10.0F, 10.0F, new CubeDeformation(0.16F))
+                .texOffs(199, 0).addBox(-4.00F, -9.00F, -9.00F, 8.0F, 8.0F, 8.0F, new CubeDeformation(0.16F))
+                .texOffs(0, 35).addBox(1.00F, -4.00F, -9.00F, 7.0F, 8.0F, 8.0F, new CubeDeformation(0.16F))
+                .texOffs(31, 35).addBox(-5.00F, -7.00F, -3.00F, 2.0F, 4.0F, 9.0F, new CubeDeformation(0.05F))
+                .texOffs(54, 35).addBox(3.00F, -7.00F, -3.00F, 2.0F, 4.0F, 9.0F, new CubeDeformation(0.05F))
                 , PartPose.offsetAndRotation(0.00F, 0.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         PartDefinition p12 = root.addOrReplaceChild("body", CubeListBuilder.create()
-                .texOffs(77, 35).addBox(-8.00F, 0.00F, -4.00F, 16.0F, 24.0F, 8.0F, new CubeDeformation(0.20))
-                .texOffs(126, 35).addBox(-7.00F, 2.00F, -6.00F, 14.0F, 12.0F, 2.0F, new CubeDeformation(0.10))
-                .texOffs(159, 35).addBox(-8.00F, 22.00F, -4.00F, 17.0F, 5.0F, 9.0F, new CubeDeformation(0.38))
+                .texOffs(77, 35).addBox(-8.00F, 0.00F, -4.00F, 16.0F, 24.0F, 8.0F, new CubeDeformation(0.20F))
+                .texOffs(126, 35).addBox(-7.00F, 2.00F, -6.00F, 14.0F, 12.0F, 2.0F, new CubeDeformation(0.10F))
+                .texOffs(159, 35).addBox(-8.00F, 22.00F, -4.00F, 17.0F, 5.0F, 9.0F, new CubeDeformation(0.38F))
                 , PartPose.offsetAndRotation(0.00F, 0.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         PartDefinition p13 = root.addOrReplaceChild("right_arm", CubeListBuilder.create(), PartPose.offsetAndRotation(-5.00F, 2.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         PartDefinition p14 = p13.addOrReplaceChild("hd", CubeListBuilder.create()
-                .texOffs(212, 35).addBox(-4.00F, -24.00F, -4.00F, 9.0F, 25.0F, 9.0F, new CubeDeformation(0.45))
+                .texOffs(212, 35).addBox(-4.00F, -24.00F, -4.00F, 9.0F, 25.0F, 9.0F, new CubeDeformation(0.45F))
                 , PartPose.offsetAndRotation(0.00F, 0.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         PartDefinition p15 = p14.addOrReplaceChild("pauldron_r", CubeListBuilder.create()
-                .texOffs(0, 70).addBox(-6.00F, -2.00F, -6.00F, 12.0F, 9.0F, 12.0F, new CubeDeformation(0.22))
-                .texOffs(49, 70).addBox(-5.00F, -4.00F, -5.00F, 10.0F, 3.0F, 10.0F, new CubeDeformation(0.14))
+                .texOffs(0, 70).addBox(-6.00F, -2.00F, -6.00F, 12.0F, 9.0F, 12.0F, new CubeDeformation(0.22F))
+                .texOffs(49, 70).addBox(-5.00F, -4.00F, -5.00F, 10.0F, 3.0F, 10.0F, new CubeDeformation(0.14F))
                 , PartPose.offsetAndRotation(-3.00F, -2.00F, 0.00F, 0.0000F, 0.0000F, -0.1400F));
         PartDefinition p16 = root.addOrReplaceChild("left_arm", CubeListBuilder.create(), PartPose.offsetAndRotation(5.00F, 2.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         PartDefinition p17 = p16.addOrReplaceChild("hd", CubeListBuilder.create()
-                .texOffs(90, 70).addBox(-4.00F, -24.00F, -4.00F, 9.0F, 25.0F, 9.0F, new CubeDeformation(0.45))
+                .texOffs(90, 70).addBox(-4.00F, -24.00F, -4.00F, 9.0F, 25.0F, 9.0F, new CubeDeformation(0.45F))
                 , PartPose.offsetAndRotation(0.00F, 0.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         PartDefinition p18 = p17.addOrReplaceChild("pauldron_l", CubeListBuilder.create()
-                .texOffs(127, 70).addBox(-6.00F, -2.00F, -6.00F, 12.0F, 9.0F, 12.0F, new CubeDeformation(0.22))
-                .texOffs(176, 70).addBox(-5.00F, -4.00F, -5.00F, 10.0F, 3.0F, 10.0F, new CubeDeformation(0.14))
+                .texOffs(127, 70).addBox(-6.00F, -2.00F, -6.00F, 12.0F, 9.0F, 12.0F, new CubeDeformation(0.22F))
+                .texOffs(176, 70).addBox(-5.00F, -4.00F, -5.00F, 10.0F, 3.0F, 10.0F, new CubeDeformation(0.14F))
                 , PartPose.offsetAndRotation(3.00F, -2.00F, 0.00F, 0.0000F, 0.0000F, 0.1400F));
         PartDefinition p19 = root.addOrReplaceChild("right_leg", CubeListBuilder.create(), PartPose.offsetAndRotation(-1.90F, 12.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         PartDefinition p20 = p19.addOrReplaceChild("hd", CubeListBuilder.create()
-                .texOffs(217, 70).addBox(-4.00F, -24.00F, -4.00F, 9.0F, 25.0F, 9.0F, new CubeDeformation(0.55))
-                .texOffs(0, 105).addBox(-7.00F, -22.00F, -5.00F, 3.0F, 11.0F, 10.0F, new CubeDeformation(0.14))
-                .texOffs(27, 105).addBox(-3.00F, -13.00F, -6.00F, 6.0F, 6.0F, 3.0F, new CubeDeformation(0.18))
-                .texOffs(46, 105).addBox(-4.00F, -12.00F, -4.00F, 10.0F, 14.0F, 10.0F, new CubeDeformation(0.88))
+                .texOffs(217, 70).addBox(-4.00F, -24.00F, -4.00F, 9.0F, 25.0F, 9.0F, new CubeDeformation(0.55F))
+                .texOffs(0, 105).addBox(-7.00F, -22.00F, -5.00F, 3.0F, 11.0F, 10.0F, new CubeDeformation(0.14F))
+                .texOffs(27, 105).addBox(-3.00F, -13.00F, -6.00F, 6.0F, 6.0F, 3.0F, new CubeDeformation(0.18F))
+                .texOffs(46, 105).addBox(-4.00F, -12.00F, -4.00F, 10.0F, 14.0F, 10.0F, new CubeDeformation(0.88F))
                 , PartPose.offsetAndRotation(0.00F, 0.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         PartDefinition p21 = root.addOrReplaceChild("left_leg", CubeListBuilder.create(), PartPose.offsetAndRotation(1.90F, 12.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         PartDefinition p22 = p21.addOrReplaceChild("hd", CubeListBuilder.create()
-                .texOffs(87, 105).addBox(-4.00F, -24.00F, -4.00F, 9.0F, 25.0F, 9.0F, new CubeDeformation(0.55))
-                .texOffs(124, 105).addBox(4.00F, -22.00F, -5.00F, 3.0F, 11.0F, 10.0F, new CubeDeformation(0.14))
-                .texOffs(151, 105).addBox(-3.00F, -13.00F, -6.00F, 6.0F, 6.0F, 3.0F, new CubeDeformation(0.18))
-                .texOffs(170, 105).addBox(-4.00F, -12.00F, -4.00F, 10.0F, 14.0F, 10.0F, new CubeDeformation(0.88))
+                .texOffs(87, 105).addBox(-4.00F, -24.00F, -4.00F, 9.0F, 25.0F, 9.0F, new CubeDeformation(0.55F))
+                .texOffs(124, 105).addBox(4.00F, -22.00F, -5.00F, 3.0F, 11.0F, 10.0F, new CubeDeformation(0.14F))
+                .texOffs(151, 105).addBox(-3.00F, -13.00F, -6.00F, 6.0F, 6.0F, 3.0F, new CubeDeformation(0.18F))
+                .texOffs(170, 105).addBox(-4.00F, -12.00F, -4.00F, 10.0F, 14.0F, 10.0F, new CubeDeformation(0.88F))
                 , PartPose.offsetAndRotation(0.00F, 0.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         PartDefinition p23 = root.addOrReplaceChild("hat", CubeListBuilder.create(), PartPose.offsetAndRotation(0.00F, 0.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         return LayerDefinition.create(mesh, 256, 256);
@@ -136,17 +136,17 @@ public final class ElisarArmorModels {
         PartDefinition p25 = root.addOrReplaceChild("hat", CubeListBuilder.create(), PartPose.offsetAndRotation(0.00F, 0.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         PartDefinition p26 = root.addOrReplaceChild("body", CubeListBuilder.create(), PartPose.offsetAndRotation(0.00F, 0.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         PartDefinition p27 = p26.addOrReplaceChild("hd", CubeListBuilder.create()
-                .texOffs(41, 140).addBox(-8.00F, 14.00F, -4.00F, 17.0F, 9.0F, 9.0F, new CubeDeformation(0.50))
+                .texOffs(41, 140).addBox(-8.00F, 14.00F, -4.00F, 17.0F, 9.0F, 9.0F, new CubeDeformation(0.50F))
                 , PartPose.offsetAndRotation(0.00F, 0.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         PartDefinition p28 = root.addOrReplaceChild("right_arm", CubeListBuilder.create(), PartPose.offsetAndRotation(-5.00F, 2.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         PartDefinition p29 = root.addOrReplaceChild("left_arm", CubeListBuilder.create(), PartPose.offsetAndRotation(5.00F, 2.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         PartDefinition p30 = root.addOrReplaceChild("right_leg", CubeListBuilder.create(), PartPose.offsetAndRotation(-1.90F, 12.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         PartDefinition p31 = p30.addOrReplaceChild("hd", CubeListBuilder.create()
-                .texOffs(94, 140).addBox(-4.00F, -24.00F, -4.00F, 9.0F, 25.0F, 9.0F, new CubeDeformation(0.55))
+                .texOffs(94, 140).addBox(-4.00F, -24.00F, -4.00F, 9.0F, 25.0F, 9.0F, new CubeDeformation(0.55F))
                 , PartPose.offsetAndRotation(0.00F, 0.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         PartDefinition p32 = root.addOrReplaceChild("left_leg", CubeListBuilder.create(), PartPose.offsetAndRotation(1.90F, 12.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         PartDefinition p33 = p32.addOrReplaceChild("hd", CubeListBuilder.create()
-                .texOffs(131, 140).addBox(-4.00F, -24.00F, -4.00F, 9.0F, 25.0F, 9.0F, new CubeDeformation(0.55))
+                .texOffs(131, 140).addBox(-4.00F, -24.00F, -4.00F, 9.0F, 25.0F, 9.0F, new CubeDeformation(0.55F))
                 , PartPose.offsetAndRotation(0.00F, 0.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         return LayerDefinition.create(mesh, 256, 256);
     }
@@ -155,60 +155,60 @@ public final class ElisarArmorModels {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
         PartDefinition p34 = root.addOrReplaceChild("head", CubeListBuilder.create()
-                .texOffs(0, 0).addBox(-8.00F, -8.00F, -8.00F, 17.0F, 17.0F, 17.0F, new CubeDeformation(0.26))
-                .texOffs(69, 0).addBox(-9.00F, -8.00F, -9.00F, 18.0F, 7.0F, 18.0F, new CubeDeformation(0.18))
-                .texOffs(142, 0).addBox(-9.00F, -4.00F, -1.00F, 18.0F, 10.0F, 10.0F, new CubeDeformation(0.16))
-                .texOffs(199, 0).addBox(-4.00F, -9.00F, -9.00F, 8.0F, 8.0F, 8.0F, new CubeDeformation(0.16))
-                .texOffs(0, 35).addBox(1.00F, -4.00F, -9.00F, 7.0F, 8.0F, 8.0F, new CubeDeformation(0.16))
+                .texOffs(0, 0).addBox(-8.00F, -8.00F, -8.00F, 17.0F, 17.0F, 17.0F, new CubeDeformation(0.26F))
+                .texOffs(69, 0).addBox(-9.00F, -8.00F, -9.00F, 18.0F, 7.0F, 18.0F, new CubeDeformation(0.18F))
+                .texOffs(142, 0).addBox(-9.00F, -4.00F, -1.00F, 18.0F, 10.0F, 10.0F, new CubeDeformation(0.16F))
+                .texOffs(199, 0).addBox(-4.00F, -9.00F, -9.00F, 8.0F, 8.0F, 8.0F, new CubeDeformation(0.16F))
+                .texOffs(0, 35).addBox(1.00F, -4.00F, -9.00F, 7.0F, 8.0F, 8.0F, new CubeDeformation(0.16F))
                 , PartPose.offsetAndRotation(0.00F, 0.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         PartDefinition p35 = p34.addOrReplaceChild("rc_horn_r", CubeListBuilder.create()
-                .texOffs(31, 35).addBox(-1.50F, -4.50F, -1.50F, 3.0F, 9.0F, 9.0F, new CubeDeformation(0.06))
+                .texOffs(31, 35).addBox(-1.50F, -4.50F, -1.50F, 3.0F, 9.0F, 9.0F, new CubeDeformation(0.06F))
                 , PartPose.offsetAndRotation(-8.50F, -14.50F, -2.50F, -0.4200F, 0.0000F, -0.2800F));
         PartDefinition p36 = p34.addOrReplaceChild("rc_horn_l", CubeListBuilder.create()
-                .texOffs(56, 35).addBox(-1.50F, -4.50F, -1.50F, 3.0F, 9.0F, 9.0F, new CubeDeformation(0.06))
+                .texOffs(56, 35).addBox(-1.50F, -4.50F, -1.50F, 3.0F, 9.0F, 9.0F, new CubeDeformation(0.06F))
                 , PartPose.offsetAndRotation(8.50F, -14.50F, -2.50F, -0.4200F, 0.0000F, 0.2800F));
         PartDefinition p37 = root.addOrReplaceChild("body", CubeListBuilder.create()
-                .texOffs(81, 35).addBox(-8.00F, 0.00F, -4.00F, 16.0F, 24.0F, 8.0F, new CubeDeformation(0.20))
-                .texOffs(130, 35).addBox(-7.00F, 2.00F, -6.00F, 14.0F, 12.0F, 2.0F, new CubeDeformation(0.10))
-                .texOffs(163, 35).addBox(-8.00F, 22.00F, -4.00F, 17.0F, 5.0F, 9.0F, new CubeDeformation(0.38))
+                .texOffs(81, 35).addBox(-8.00F, 0.00F, -4.00F, 16.0F, 24.0F, 8.0F, new CubeDeformation(0.20F))
+                .texOffs(130, 35).addBox(-7.00F, 2.00F, -6.00F, 14.0F, 12.0F, 2.0F, new CubeDeformation(0.10F))
+                .texOffs(163, 35).addBox(-8.00F, 22.00F, -4.00F, 17.0F, 5.0F, 9.0F, new CubeDeformation(0.38F))
                 , PartPose.offsetAndRotation(0.00F, 0.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         PartDefinition p38 = root.addOrReplaceChild("right_arm", CubeListBuilder.create(), PartPose.offsetAndRotation(5.00F, 2.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         PartDefinition p39 = p38.addOrReplaceChild("hd", CubeListBuilder.create()
-                .texOffs(216, 35).addBox(-4.00F, -24.00F, -4.00F, 9.0F, 25.0F, 9.0F, new CubeDeformation(0.45))
-                .texOffs(0, 70).addBox(-6.00F, -24.00F, -4.00F, 9.0F, 25.0F, 9.0F, new CubeDeformation(0.62))
-                .texOffs(37, 70).addBox(-8.00F, -20.00F, -2.00F, 2.0F, 10.0F, 3.0F, new CubeDeformation(0.08))
+                .texOffs(216, 35).addBox(-4.00F, -24.00F, -4.00F, 9.0F, 25.0F, 9.0F, new CubeDeformation(0.45F))
+                .texOffs(0, 70).addBox(-6.00F, -24.00F, -4.00F, 9.0F, 25.0F, 9.0F, new CubeDeformation(0.62F))
+                .texOffs(37, 70).addBox(-8.00F, -20.00F, -2.00F, 2.0F, 10.0F, 3.0F, new CubeDeformation(0.08F))
                 , PartPose.offsetAndRotation(0.00F, 0.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         PartDefinition p40 = p39.addOrReplaceChild("rc_pauldron_right_arm", CubeListBuilder.create()
-                .texOffs(48, 70).addBox(-6.00F, -2.00F, -6.00F, 12.0F, 9.0F, 12.0F, new CubeDeformation(0.22))
+                .texOffs(48, 70).addBox(-6.00F, -2.00F, -6.00F, 12.0F, 9.0F, 12.0F, new CubeDeformation(0.22F))
                 , PartPose.offsetAndRotation(-3.00F, -2.00F, 0.00F, 0.0000F, 0.0000F, -0.1600F));
         PartDefinition p41 = p40.addOrReplaceChild("rc_shard_right_arm", CubeListBuilder.create()
-                .texOffs(97, 70).addBox(-1.50F, -7.00F, -2.00F, 3.0F, 9.0F, 4.0F, new CubeDeformation(0.08))
+                .texOffs(97, 70).addBox(-1.50F, -7.00F, -2.00F, 3.0F, 9.0F, 4.0F, new CubeDeformation(0.08F))
                 , PartPose.offsetAndRotation(-5.00F, -1.00F, -1.00F, 0.0000F, 0.0000F, -0.3600F));
         PartDefinition p42 = root.addOrReplaceChild("left_arm", CubeListBuilder.create(), PartPose.offsetAndRotation(-5.00F, 2.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         PartDefinition p43 = p42.addOrReplaceChild("hd", CubeListBuilder.create()
-                .texOffs(112, 70).addBox(-4.00F, -24.00F, -4.00F, 9.0F, 25.0F, 9.0F, new CubeDeformation(0.45))
-                .texOffs(149, 70).addBox(-2.00F, -24.00F, -4.00F, 9.0F, 25.0F, 9.0F, new CubeDeformation(0.62))
-                .texOffs(186, 70).addBox(4.00F, -20.00F, -2.00F, 2.0F, 10.0F, 3.0F, new CubeDeformation(0.08))
+                .texOffs(112, 70).addBox(-4.00F, -24.00F, -4.00F, 9.0F, 25.0F, 9.0F, new CubeDeformation(0.45F))
+                .texOffs(149, 70).addBox(-2.00F, -24.00F, -4.00F, 9.0F, 25.0F, 9.0F, new CubeDeformation(0.62F))
+                .texOffs(186, 70).addBox(4.00F, -20.00F, -2.00F, 2.0F, 10.0F, 3.0F, new CubeDeformation(0.08F))
                 , PartPose.offsetAndRotation(0.00F, 0.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         PartDefinition p44 = p43.addOrReplaceChild("rc_pauldron_left_arm", CubeListBuilder.create()
-                .texOffs(197, 70).addBox(-6.00F, -2.00F, -6.00F, 12.0F, 9.0F, 12.0F, new CubeDeformation(0.22))
+                .texOffs(197, 70).addBox(-6.00F, -2.00F, -6.00F, 12.0F, 9.0F, 12.0F, new CubeDeformation(0.22F))
                 , PartPose.offsetAndRotation(3.00F, -2.00F, 0.00F, 0.0000F, 0.0000F, 0.1600F));
         PartDefinition p45 = p44.addOrReplaceChild("rc_shard_left_arm", CubeListBuilder.create()
-                .texOffs(0, 105).addBox(-1.50F, -7.00F, -2.00F, 3.0F, 9.0F, 4.0F, new CubeDeformation(0.08))
+                .texOffs(0, 105).addBox(-1.50F, -7.00F, -2.00F, 3.0F, 9.0F, 4.0F, new CubeDeformation(0.08F))
                 , PartPose.offsetAndRotation(5.00F, -1.00F, -1.00F, 0.0000F, 0.0000F, 0.3600F));
         PartDefinition p46 = root.addOrReplaceChild("right_leg", CubeListBuilder.create(), PartPose.offsetAndRotation(-1.90F, 12.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         PartDefinition p47 = p46.addOrReplaceChild("hd", CubeListBuilder.create()
-                .texOffs(15, 105).addBox(-4.00F, -24.00F, -4.00F, 9.0F, 25.0F, 9.0F, new CubeDeformation(0.55))
-                .texOffs(52, 105).addBox(-7.00F, -22.00F, -5.00F, 3.0F, 11.0F, 10.0F, new CubeDeformation(0.14))
-                .texOffs(79, 105).addBox(-3.00F, -13.00F, -6.00F, 6.0F, 6.0F, 3.0F, new CubeDeformation(0.18))
-                .texOffs(98, 105).addBox(-4.00F, -12.00F, -4.00F, 10.0F, 14.0F, 10.0F, new CubeDeformation(0.88))
+                .texOffs(15, 105).addBox(-4.00F, -24.00F, -4.00F, 9.0F, 25.0F, 9.0F, new CubeDeformation(0.55F))
+                .texOffs(52, 105).addBox(-7.00F, -22.00F, -5.00F, 3.0F, 11.0F, 10.0F, new CubeDeformation(0.14F))
+                .texOffs(79, 105).addBox(-3.00F, -13.00F, -6.00F, 6.0F, 6.0F, 3.0F, new CubeDeformation(0.18F))
+                .texOffs(98, 105).addBox(-4.00F, -12.00F, -4.00F, 10.0F, 14.0F, 10.0F, new CubeDeformation(0.88F))
                 , PartPose.offsetAndRotation(0.00F, 0.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         PartDefinition p48 = root.addOrReplaceChild("left_leg", CubeListBuilder.create(), PartPose.offsetAndRotation(1.90F, 12.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         PartDefinition p49 = p48.addOrReplaceChild("hd", CubeListBuilder.create()
-                .texOffs(139, 105).addBox(-4.00F, -24.00F, -4.00F, 9.0F, 25.0F, 9.0F, new CubeDeformation(0.55))
-                .texOffs(176, 105).addBox(4.00F, -22.00F, -5.00F, 3.0F, 11.0F, 10.0F, new CubeDeformation(0.14))
-                .texOffs(203, 105).addBox(-3.00F, -13.00F, -6.00F, 6.0F, 6.0F, 3.0F, new CubeDeformation(0.18))
-                .texOffs(0, 140).addBox(-4.00F, -12.00F, -4.00F, 10.0F, 14.0F, 10.0F, new CubeDeformation(0.88))
+                .texOffs(139, 105).addBox(-4.00F, -24.00F, -4.00F, 9.0F, 25.0F, 9.0F, new CubeDeformation(0.55F))
+                .texOffs(176, 105).addBox(4.00F, -22.00F, -5.00F, 3.0F, 11.0F, 10.0F, new CubeDeformation(0.14F))
+                .texOffs(203, 105).addBox(-3.00F, -13.00F, -6.00F, 6.0F, 6.0F, 3.0F, new CubeDeformation(0.18F))
+                .texOffs(0, 140).addBox(-4.00F, -12.00F, -4.00F, 10.0F, 14.0F, 10.0F, new CubeDeformation(0.88F))
                 , PartPose.offsetAndRotation(0.00F, 0.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         PartDefinition p50 = root.addOrReplaceChild("hat", CubeListBuilder.create(), PartPose.offsetAndRotation(0.00F, 0.00F, 0.00F, 0.0000F, 0.0000F, 0.0000F));
         return LayerDefinition.create(mesh, 256, 256);

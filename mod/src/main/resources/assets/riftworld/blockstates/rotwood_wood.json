@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "axis=y": {
+      "model": "riftworld:block/rotwood_wood"
+    },
+    "axis=z": {
+      "model": "riftworld:block/rotwood_wood_horizontal",
+      "x": 90
+    },
+    "axis=x": {
+      "model": "riftworld:block/rotwood_wood_horizontal",
+      "x": 90,
+      "y": 90
+    }
+  }
+}

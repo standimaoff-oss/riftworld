@@ -1,0 +1,39 @@
+name: Profile released 0.40.0 baseline
+on:
+  push:
+    branches: ['arena/361da66e-riftworld']
+    paths:
+      - '.github/workflows/performance-baseline.yml'
+      - 'tools/ci/perf_probe.sh'
+permissions:
+  contents: read
+jobs:
+  profile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Boot the already released jar
+        shell: bash
+        env:
+          KEEP: '1'
+          NORMAL_PROBE: '0'
+        run: |
+          mkdir -p mod/build/libs
+          cp release/riftworld-0.40.0.jar mod/build/libs/
+          bash tools/ci/server_check.sh
+      - name: Profile old generation and collision
+        run: bash tools/ci/perf_probe.sh
+      - name: Stop server
+        if: always()
+        run: python3 tools/rcon.py --password riftci --log '' --timeout 20 stop || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: released-performance-profile
+          path: ci-out/
+          if-no-files-found: warn

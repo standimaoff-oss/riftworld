@@ -19,7 +19,7 @@ public final class MajaConfig {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
         b.push("maja");
         ISLAND_EATING = b.comment(
-                "Allow El Gran Maja to consume eligible wild islands (always enabled by default in v0.49.0).",
+                "Allow El Gran Maja to consume eligible wild islands (always enabled by default since v0.49.0).",
                 "Make a world backup first. Other mods can change blocks without Forge player-placement events.",
                 "Unjournalled chunks, nearby players, ANY player-placed block, block entities and",
                 "mobGriefing=false all stop eating. Set to false to disable the titan entirely.")

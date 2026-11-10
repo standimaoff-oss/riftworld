@@ -1,6 +1,7 @@
 package ru.aiforge.riftworld.world;
 
 import java.util.Random;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -23,7 +24,7 @@ import ru.aiforge.riftworld.registry.MorokBlocks;
 public final class MorokHollow {
     public static final int SUPER = 1240;
     private static final long FIXED = 0x4D4F524F4B48L;
-    private static final ConcurrentHashMap<Long, Region> CACHE = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Long, Optional<Region>> CACHE = new ConcurrentHashMap<>();
 
     /** Один массив суши: центр, радиус, семя. */
     public static final class Region {
@@ -42,7 +43,7 @@ public final class MorokHollow {
     }
 
     public static Region region(int sx, int sz) {
-        return CACHE.computeIfAbsent(((long) sx << 32) ^ (sz & 0xFFFFFFFFL), k -> gen(sx, sz));
+        return CACHE.computeIfAbsent(((long) sx << 32) ^ (sz & 0xFFFFFFFFL), k -> Optional.ofNullable(gen(sx, sz))).orElse(null);
     }
 
     private static Region gen(int sx, int sz) {
@@ -232,6 +233,12 @@ public final class MorokHollow {
             // при живом лесе. Теперь «свои» растения Пади просто пропускаем и ищем землю ниже.
             if (st.is(MorokBlocks.MOROK_LEAVES.get()) || st.is(MorokBlocks.MOROK_LOG.get())
                     || st.is(MorokBlocks.STRIPPED_MOROK_LOG.get())
+                    // v0.49.0: свои деревья Пади — их стволы и листва тоже
+                    // «свои», и под сомкнутым пологом новые деревья должны расти.
+                    || st.is(MorokBlocks.ROTWOOD_LEAVES.get()) || st.is(MorokBlocks.ROTWOOD_LOG.get())
+                    || st.is(MorokBlocks.STRIPPED_ROTWOOD_LOG.get())
+                    || st.is(MorokBlocks.FROSTBRIAR_LEAVES.get()) || st.is(MorokBlocks.FROSTBRIAR_LOG.get())
+                    || st.is(MorokBlocks.STRIPPED_FROSTBRIAR_LOG.get())
                     || st.is(MorokBlocks.BONE_BRAMBLE.get()) || st.is(MorokBlocks.ICE_FANG.get())
                     || st.is(MorokBlocks.PALE_MOSS_CARPET.get()) || st.canBeReplaced()) {
                 continue;
@@ -338,12 +345,43 @@ public final class MorokHollow {
     public static boolean treeHere(int x, int z) {
         if (!inside(x + 0.5, z + 0.5)) return false;
         // v0.39.1: решётка 5x5 вместо 7x7. При 7x7 в круге радиуса 32 вырастало два дерева —
-        // это не бор, а «три палки в тумане» (гейт trees >= 6 не проходил). 5x5 даёт ~80 стволов.
-        if (Math.floorMod(x, 5) != 2 || Math.floorMod(z, 5) != 2) return false;
-        return ElisarChunkGenerator.hash(x, z, 913) < 0.62;
+        // это не бор, а «три палки в тумане» (гейт trees >= 6 не проходил).
+        // v0.49.0: «перестройка» Пади — сетка 3x3 вместо 5x5 и почти без пропусков.
+        // Прежний лес был разреженным и светлым: из-за редких стволов сквозь кроны
+        // было видно небо, а Падя читалась как обычный берёзовый лес. Теперь стволы
+        // стоят в 3 раза чаще, и кроны смыкаются в сплошной тёмный полог.
+        if (Math.floorMod(x, 3) != 1 || Math.floorMod(z, 3) != 1) return false;
+        return ElisarChunkGenerator.hash(x, z, 913) < 0.88;
     }
 
-    /** Высота ствола бледной сосны (9–17 блоков). */
+    /**
+     * v0.49.0: КАКОЕ дерево растёт в этой точке Пади.
+     *
+     * <p>Раньше всё было одной бледной сосной. Теперь у биома есть собственная
+     * древесина, и вид зависит от рельефа:
+     * <ul>
+     *   <li>{@link #TREE_ROTWOOD} — гнилая роща, чёрное узловатое дерево; основа
+     *       ночного леса, растёт в глубине;</li>
+     *   <li>{@link #TREE_FROSTBRIAR} — морозный терновник, ледяная листва; растёт
+     *       по краям и на склонах;</li>
+     *   <li>{@link #TREE_PALE} — старая бледная сосна, осталась как редкая
+     *       светлая прожилка, чтобы лес не был однообразным.</li>
+     * </ul>
+     */
+    public static final int TREE_ROTWOOD = 0;
+    public static final int TREE_FROSTBRIAR = 1;
+    public static final int TREE_PALE = 2;
+
+    public static int treeKind(int x, int z) {
+        double h = ElisarChunkGenerator.hash(x, z, 924);
+        // Терновник тянется к краю Пади (там ветер и наст), гнилая роща — к центру.
+        double edge = 1.0 - Math.min(1.0, weight(x + 0.5, z + 0.5) / 0.85);
+        if (h < 0.30 + edge * 0.34) return TREE_FROSTBRIAR;
+        if (h < 0.90) return TREE_ROTWOOD;
+        return TREE_PALE;
+    }
+
+    /** Высота ствола (9–17 блоков). */
     public static int treeHeight(int x, int z) {
         return 9 + (int) Math.round(ElisarChunkGenerator.hash(x, z, 914) * 8);
     }

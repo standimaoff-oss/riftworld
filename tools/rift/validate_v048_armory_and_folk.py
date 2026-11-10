@@ -116,8 +116,11 @@ def check_3d_item_model(path: Path, min_elements: int, max_elements: int) -> dic
         for face in faces.values():
             uv = face.get("uv")
             assert uv and len(uv) == 4, f"{path.name}: bad uv {uv}"
-            # Element-model UVs are absolute texture pixels (the palette atlas is 64x64).
-            assert 0.0 <= uv[0] <= uv[2] <= 64.0 and 0.0 <= uv[1] <= uv[3] <= 64.0, f"{path.name}: uv out of range {uv}"
+            # Element-model UVs are NORMALISED 0..16, NOT absolute texture pixels.
+            # Minecraft scales them by (texture_width / 16), so absolute pixel
+            # indices make every model render as black noise.
+            assert 0.0 <= uv[0] <= uv[2] <= 16.0 and 0.0 <= uv[1] <= uv[3] <= 16.0, (
+                f"{path.name}: uv out of the 0..16 grid {uv}")
             assert uv[2] > uv[0] and uv[3] > uv[1], f"{path.name}: degenerate uv {uv}"
     display = mjson.get("display", {})
     for key in ("thirdperson_righthand", "thirdperson_lefthand", "firstperson_righthand", "gui", "ground"):

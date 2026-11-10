@@ -1,0 +1,47 @@
+[
+  {
+    "id": "faceted_owl",
+    "titleRu": "10 — Гранёная сова",
+    "heroLight": "reports/blockbench_mcp/batch_04/10_faceted_owl.png",
+    "heroDark": "reports/blockbench_mcp/batch_04/10_faceted_owl_dark.png",
+    "turntable": "reports/blockbench_mcp/batch_04/10_faceted_owl_angles.png",
+    "localRefComparison": "/home/user/riftworld/reports/blockbench_mcp/batch_04/10_faceted_owl_vs_ref.png",
+    "elementCount": 73,
+    "groupCount": 8,
+    "worldSize": [
+      20.97,
+      38.15,
+      21.03
+    ]
+  },
+  {
+    "id": "bone_raven",
+    "titleRu": "11 — Костяной ворон",
+    "heroLight": "reports/blockbench_mcp/batch_04/11_bone_raven.png",
+    "heroDark": "reports/blockbench_mcp/batch_04/11_bone_raven_dark.png",
+    "turntable": "reports/blockbench_mcp/batch_04/11_bone_raven_angles.png",
+    "localRefComparison": "/home/user/riftworld/reports/blockbench_mcp/batch_04/11_bone_raven_vs_ref.png",
+    "elementCount": 87,
+    "groupCount": 9,
+    "worldSize": [
+      76.99,
+      31.14,
+      40.23
+    ]
+  },
+  {
+    "id": "coral_hermit_crab",
+    "titleRu": "12 — Коралловый рак-отшельник",
+    "heroLight": "reports/blockbench_mcp/batch_04/12_coral_hermit_crab.png",
+    "heroDark": "reports/blockbench_mcp/batch_04/12_coral_hermit_crab_dark.png",
+    "turntable": "reports/blockbench_mcp/batch_04/12_coral_hermit_crab_angles.png",
+    "localRefComparison": "/home/user/riftworld/reports/blockbench_mcp/batch_04/12_coral_hermit_crab_vs_ref.png",
+    "elementCount": 94,
+    "groupCount": 13,
+    "worldSize": [
+      30.05,
+      30.35,
+      37.22
+    ]
+  }
+]

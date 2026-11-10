@@ -30,6 +30,31 @@ public final class ModTabs {
                 out.accept(ModItems.CRYSTAL_AEGIS.get());
                 out.accept(ModItems.ASTRAL_PRISM.get());
                 out.accept(ModItems.ELISAR_DUCAT.get());
+                // v0.40.0: снаряжение Элисара — металлы, броня, инструменты и оружие.
+                out.accept(ModItems.AURITE_INGOT.get());
+                out.accept(ModItems.RIFTCRYSTAL.get());
+                out.accept(ModItems.AURITE_HELMET.get());
+                out.accept(ModItems.AURITE_CHESTPLATE.get());
+                out.accept(ModItems.AURITE_LEGGINGS.get());
+                out.accept(ModItems.AURITE_BOOTS.get());
+                out.accept(ModItems.RIFTCRYSTAL_HELMET.get());
+                out.accept(ModItems.RIFTCRYSTAL_CHESTPLATE.get());
+                out.accept(ModItems.RIFTCRYSTAL_LEGGINGS.get());
+                out.accept(ModItems.RIFTCRYSTAL_BOOTS.get());
+                out.accept(ModItems.AURITE_SWORD.get());
+                out.accept(ModItems.AURITE_PICKAXE.get());
+                out.accept(ModItems.AURITE_AXE.get());
+                out.accept(ModItems.AURITE_SHOVEL.get());
+                out.accept(ModItems.AURITE_HOE.get());
+                out.accept(ModItems.RIFTCRYSTAL_SWORD.get());
+                out.accept(ModItems.RIFTCRYSTAL_PICKAXE.get());
+                out.accept(ModItems.RIFTCRYSTAL_AXE.get());
+                out.accept(ModItems.RIFTCRYSTAL_SHOVEL.get());
+                out.accept(ModItems.RIFTCRYSTAL_HOE.get());
+                out.accept(ModItems.ELISAR_BOW.get());
+                out.accept(ModItems.ELISAR_SHIELD.get());
+                out.accept(ModItems.ELISAR_GUARD_SWORD.get());
+                out.accept(ModItems.ELISAR_GUARD_SHIELD.get());
                 out.accept(ModItems.BRIDGE_ROPE.get());
                 out.accept(ModItems.GILDED_PAPER.get());
                 out.accept(ModItems.EMERALD_PAPER.get());
@@ -41,8 +66,14 @@ public final class ModTabs {
                 out.accept(ModItems.DRAGON_WHISTLE.get());
                 out.accept(ModItems.LIOPLEURODON_TOOTH.get());
                 out.accept(ModItems.SEA_SCALE.get());
+                out.accept(ModItems.REEF_SEAHORSE_BUCKET.get());
+                out.accept(ModItems.PORCELAIN_FEATHER.get());
+                out.accept(ModItems.BASALT_SCUTE.get());
+                out.accept(ModItems.ASH_WING_DUST.get());
+                out.accept(ModItems.PHANTOM_FANG.get());
+                out.accept(ModItems.ABYSSAL_INK_SAC.get());
 
-                // Все 16 яиц призыва мобов мода (включая Бумажного дракона и все 11 морских видов!)
+                // Все яйца призыва мобов мода (включая Бумажного дракона, 11 морских видов и 15 существ фауны v0.47.0!)
                 acceptAllSpawnEggs(out);
 
                 for (var b : ModBlocks.WITH_ITEM) {
@@ -55,11 +86,8 @@ public final class ModTabs {
         out.accept(ModItems.LIOPLEURODON_EGG.get());
         out.accept(ModItems.EL_GRAN_MAJA_EGG.get());
         out.accept(ModItems.BLOSSOM_STAG_EGG.get());
-        out.accept(ModItems.PEGASUS_EGG.get());
-        out.accept(ModItems.WENDIGO_EGG.get());
-        out.accept(ModItems.PEGASUS_FEATHER.get());
-        out.accept(ModItems.WENDIGO_ANTLER.get());
         out.accept(ModItems.MOROK_EGG.get());
+        out.accept(ModItems.HOLLOWWATCHER_EGG.get());
         out.accept(ModItems.MOROK_EYE.get());
         out.accept(ModItems.SKY_DART_EGG.get());
         out.accept(ModItems.PAPER_DRAGON_EGG.get());
@@ -78,6 +106,24 @@ public final class ModTabs {
         out.accept(ModItems.EGG_TURTLE.get());
         out.accept(ModItems.EGG_GLOOM.get());
         out.accept(ModItems.EGG_STING.get());
+        out.accept(ModItems.ELISAR_VILLAGER_EGG.get());
+        out.accept(ModItems.ELISAR_GUARD_EGG.get());
+        out.accept(ModItems.ELISAR_ARCHER_EGG.get());
+        // v0.47.0: 15 существ биомной фауны Элисара
+        out.accept(ModItems.PORCELAIN_CRANE_EGG.get());
+        out.accept(ModItems.BASALT_BEETLE_EGG.get());
+        out.accept(ModItems.ASH_MOTH_EGG.get());
+        out.accept(ModItems.AMETHYST_FOX_EGG.get());
+        out.accept(ModItems.SIZO_LEAFWING_EGG.get());
+        out.accept(ModItems.AZURE_FROG_EGG.get());
+        out.accept(ModItems.BLOSSOM_SNAIL_EGG.get());
+        out.accept(ModItems.PHANTOM_WOLF_EGG.get());
+        out.accept(ModItems.CRYSTAL_GECKO_EGG.get());
+        out.accept(ModItems.FACETED_OWL_EGG.get());
+        out.accept(ModItems.CORAL_HERMIT_CRAB_EGG.get());
+        out.accept(ModItems.REEF_SEAHORSE_EGG.get());
+        out.accept(ModItems.GHOST_SQUID_EGG.get());
+        out.accept(ModItems.SILVER_SEA_SERPENT_EGG.get());
     }
 
     @SubscribeEvent

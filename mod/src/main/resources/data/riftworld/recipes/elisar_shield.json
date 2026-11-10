@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "APA",
+    "AAA",
+    " A "
+  ],
+  "key": {
+    "A": {
+      "item": "riftworld:aurite_ingot"
+    },
+    "P": {
+      "tag": "minecraft:planks"
+    }
+  },
+  "result": {
+    "item": "riftworld:elisar_shield",
+    "count": 1
+  }
+}

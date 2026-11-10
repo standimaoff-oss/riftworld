@@ -38,6 +38,9 @@ public class PaperDragonRenderer extends EntityRenderer<PaperDragonEntity> {
     private static final int FORELEG_SEG = 15;
     private static final int HINDLEG_SEG = 44;
 
+    /** Флаг: отпечаток о первом отрисованном драконе (для CI-проверки). */
+    private static boolean loggedOnce = false;
+
     private static final int CR_R = 252, CR_G = 249, CR_B = 241;
     private static final int FL_R = 240, FL_G = 234, FL_B = 221;
     private static final int SH_R = 219, SH_G = 211, SH_B = 195;
@@ -83,6 +86,15 @@ public class PaperDragonRenderer extends EntityRenderer<PaperDragonEntity> {
 
     @Override
     public void render(PaperDragonEntity e, float entityYaw, float pt, PoseStack ps, MultiBufferSource buf, int packedLight) {
+        // Один раз на сущность печатаем, что позвоночник действительно рисуется.
+        // Раньше CI ждал строку '[riftworld] geo paper_dragon:', но дракон
+        // рисуется процедурно (GeoModel тут не используется) — и такая проверка
+        // не могла пройти никогда.
+        if (!loggedOnce) {
+            loggedOnce = true;
+            System.out.println("[riftworld] paper dragon: позвоночник из " + SEGS
+                    + " узлов рисуется, сегментов на кольцо " + MODULES_PER_RING);
+        }
         int blockL = Math.max(LightTexture.block(packedLight), 10);
         int skyL = Math.max(LightTexture.sky(packedLight), 14);
         int warmLight = LightTexture.pack(blockL, skyL);

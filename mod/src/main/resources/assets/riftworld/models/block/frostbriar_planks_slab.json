@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/slab",
+  "textures": {
+    "bottom": "riftworld:block/frostbriar_planks",
+    "top": "riftworld:block/frostbriar_planks",
+    "side": "riftworld:block/frostbriar_planks"
+  }
+}
