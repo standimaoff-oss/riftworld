@@ -99,14 +99,22 @@ SPAWNED=0
 for dy in 0 1 2 3 4 -1 -2; do
   SY=$((CITY_Y + dy))
   for i in 1 2 3; do
-    rq execute in riftworld:elisar positioned "$CITY_X" "$SY" "$CITY_Z" \
-      run summon riftworld:elisar_guard '{NoGravity:1b,PersistenceRequired:1b}' >/dev/null 2>&1 || true
+    # Ответ сервера на summon — в отчёт: по нему видно, что именно не так
+    # («Неизвестный тип сущности», «Не удалось создать» и т.п.).
+    SUM=$(rq execute in riftworld:elisar positioned "$CITY_X" "$SY" "$CITY_Z" \
+      run summon riftworld:elisar_guard '{NoGravity:1b,PersistenceRequired:1b}' 2>&1 | tr '\r\n' ' ' || true)
+    log "   summon на высоте $SY -> ${SUM:0:170}"
     sleep 0.4
   done
   sleep 2
-  GUARDS=$(rq execute in riftworld:elisar positioned "$CITY_X" "$SY" "$CITY_Z" \
-    if entity '@e[type=riftworld:elisar_guard,distance=..32]' 2>&1 || true)
-  if [[ "$GUARDS" == *'Test passed'* ]]; then
+  # Считаем стражей через 'execute as @e[...] run data get entity @s Pos':
+  # селектор берёт ВСЕХ стражей измерения, а не только тех, кто попал в
+  # радиус позиции команды (ради 'if entity' без distance — три блока).
+  COUNT=$(rq execute in riftworld:elisar as @e[type=riftworld:elisar_guard] \
+    run data get entity @s Pos 2>&1 | grep -c 'entity data' || true)
+  GUARDS="guards=$COUNT"
+  log "   найдено стражей: $COUNT"
+  if [ "${COUNT:-0}" -ge 1 ]; then
     SPAWNED=1
     CITY_Y=$SY
     break

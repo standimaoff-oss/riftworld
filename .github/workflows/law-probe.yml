@@ -1,0 +1,76 @@
+name: Быстрая проба городского закона Элисара
+
+# Отдельная, короткая рабочая петля для городского закона Элисара.
+#
+# Зачем она нужна: полный sea-check прогон занимает 15–20 минут, потому что
+# в нём есть клиент Minecraft со снятием кадров. А падение закона — это одна
+# строка в пробе, и ждать ради неё двадцать минут неразумно. Эта рабочая
+# петля делает ровно одно: собирает jar, поднимает сервер, гоняет пробу
+# закона и публикует её отчёт в ветку.
+#
+# Она НЕ блокирует релиз: полный sea-check всё равно проверяет закон перед
+# публикацией.
+on:
+  push:
+    branches: ["arena/**"]
+    paths-ignore:
+      - 'reports/ingame/**'
+      - 'release/**'
+  pull_request:
+    branches: ["main"]
+    paths-ignore:
+      - 'reports/ingame/**'
+      - 'release/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: riftworld-law-${{ github.ref }}
+  # Не отменяем текущий прогон: джобы публикуют отчёты в ту же ветвь.
+  cancel-in-progress: false
+
+jobs:
+  law:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Build the jar
+        shell: bash
+        run: |
+          cd mod
+          chmod +x gradlew
+          for attempt in 1 2 3; do
+            ./gradlew jar --no-daemon --console=plain && exit 0
+            sleep 5
+          done
+          exit 1
+      - name: Boot a real Forge server and probe the Elisar city law
+        shell: bash
+        run: |
+          mkdir -p mod/build/libs ci/server/config
+          KEEP=1 NORMAL_PROBE=0 bash tools/ci/server_check.sh
+      - name: Verify patrols, the non-lethal warning and the jail warehouse
+        run: bash tools/ci/elisar_law_probe.sh
+      - name: Save server diagnostics
+        if: always()
+        run: tail -500 ci/server/logs/latest.log > ci-out/elisar-law-server-tail.log || true
+      - name: Publish the law report to the working branch
+        if: always() && startsWith(github.ref, 'refs/heads/arena/')
+        shell: bash
+        run: bash tools/ci/publish_frames.sh || true
+      - name: Stop server
+        if: always()
+        run: python3 tools/rcon.py --password riftci --log '' --timeout 20 stop || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: riftworld-law-probe
+          path: ci-out/
+          if-no-files-found: warn
