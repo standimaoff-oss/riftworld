@@ -33,14 +33,14 @@ Executing steps
  > Running 'listLibraries'
  > Running 'rename'
 Stopping at requested step: /home/runner/.gradle/caches/forge_gradle/mcp_repo/de/oceanlabs/mcp/mcp_config/1.20.1-20230612.114412/joined/rename/output.jar
-[10:13:21] [main/INFO]: Writing debug log file accesstransform.log
-[10:13:21] [main/INFO]: Access Transformer processor running version 8.2.14
-[10:13:21] [main/INFO]: Command line arguments [--inJar, /home/runner/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.23/forge-1.20.1-47.4.23-injected.jar, --outJar, /home/runner/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.23_mapped_official_1.20.1/forge-1.20.1-47.4.23_mapped_official_1.20.1.jar, --logFile, accesstransform.log, --atFile, /home/runner/work/riftworld/riftworld/mod/build/_atJar_4/parent_at.cfg]
-[10:13:21] [main/INFO]: Reading from /home/runner/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.23/forge-1.20.1-47.4.23-injected.jar
-[10:13:21] [main/INFO]: Writing to /home/runner/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.23_mapped_official_1.20.1/forge-1.20.1-47.4.23_mapped_official_1.20.1.jar
-[10:13:21] [main/INFO]: Transformer file /home/runner/work/riftworld/riftworld/mod/build/_atJar_4/parent_at.cfg
-[10:13:21] [main/WARN]: Found existing output jar /home/runner/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.23_mapped_official_1.20.1/forge-1.20.1-47.4.23_mapped_official_1.20.1.jar, overwriting
-[10:13:25] [main/INFO]: JAR transformation complete /home/runner/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.23_mapped_official_1.20.1/forge-1.20.1-47.4.23_mapped_official_1.20.1.jar
+[08:54:43] [main/INFO]: Writing debug log file accesstransform.log
+[08:54:43] [main/INFO]: Access Transformer processor running version 8.2.14
+[08:54:43] [main/INFO]: Command line arguments [--inJar, /home/runner/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.23/forge-1.20.1-47.4.23-injected.jar, --outJar, /home/runner/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.23_mapped_official_1.20.1/forge-1.20.1-47.4.23_mapped_official_1.20.1.jar, --logFile, accesstransform.log, --atFile, /home/runner/work/riftworld/riftworld/mod/build/_atJar_4/parent_at.cfg]
+[08:54:43] [main/INFO]: Reading from /home/runner/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.23/forge-1.20.1-47.4.23-injected.jar
+[08:54:43] [main/INFO]: Writing to /home/runner/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.23_mapped_official_1.20.1/forge-1.20.1-47.4.23_mapped_official_1.20.1.jar
+[08:54:43] [main/INFO]: Transformer file /home/runner/work/riftworld/riftworld/mod/build/_atJar_4/parent_at.cfg
+[08:54:43] [main/WARN]: Found existing output jar /home/runner/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.23_mapped_official_1.20.1/forge-1.20.1-47.4.23_mapped_official_1.20.1.jar, overwriting
+[08:54:47] [main/INFO]: JAR transformation complete /home/runner/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.23_mapped_official_1.20.1/forge-1.20.1-47.4.23_mapped_official_1.20.1.jar
 Creating SRG -> MCP TSRG
 /home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/RiftConfig.java:55: warning: [removal] get() in ModLoadingContext has been deprecated and marked for removal
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, CLIENT_SPEC, "riftworld-atmosphere.toml");
@@ -354,8 +354,8 @@ Note: Some input files additionally use or override a deprecated API that is mar
 > Task :createSrgToMcp
 > Task :downloadMCMeta
 Downloading: https://resources.download.minecraft.net/b6/b62ca8ec10d07e6bf5ac8dae0c8c1d2e6a1e3356 Asset: icons/icon_128x128.png
-Downloading: https://resources.download.minecraft.net/5f/5ff04807c356f1beed0b86ccf659b44b9983e3fa Asset: icons/icon_16x16.png
 Downloading: https://resources.download.minecraft.net/80/8030dd9dc315c0381d52c4782ea36c6baf6e8135 Asset: icons/icon_256x256.png
+Downloading: https://resources.download.minecraft.net/5f/5ff04807c356f1beed0b86ccf659b44b9983e3fa Asset: icons/icon_16x16.png
 Downloading: https://resources.download.minecraft.net/af/af96f55a90eaf11b327f1b5f8834a051027dc506 Asset: icons/icon_32x32.png
 Downloading: https://resources.download.minecraft.net/b8/b80b6e9ff01c78c624df5429e1d3dcd3d5130834 Asset: icons/icon_48x48.png
 Downloading: https://resources.download.minecraft.net/f0/f00657542252858a721e715a2e888a9226404e35 Asset: icons/minecraft.icns
@@ -384,16 +384,16 @@ Downloading: https://resources.download.minecraft.net/cd/cdd6721cfa7d0f78057543a
 Downloading: https://resources.download.minecraft.net/55/55ff75271d4183089edabdffa97aff5739627b1b Asset: minecraft/lang/cv_cu.json
 Downloading: https://resources.download.minecraft.net/43/43ae14c084fb32fc002e0e0a329a596c330c2367 Asset: minecraft/lang/cy_gb.json
 Downloading: https://resources.download.minecraft.net/00/004b3033be46deb8180251d480d8af6a299ec222 Asset: minecraft/lang/da_dk.json
-Downloading: https://resources.download.minecraft.net/c6/c636322a503395e17d1162ad4b5d6c4c7a443eef Asset: minecraft/lang/de_ch.json
 Downloading: https://resources.download.minecraft.net/08/08593496f83b8d46b931b689dc660a57511a2f8b Asset: minecraft/lang/de_at.json
+Downloading: https://resources.download.minecraft.net/c6/c636322a503395e17d1162ad4b5d6c4c7a443eef Asset: minecraft/lang/de_ch.json
 Downloading: https://resources.download.minecraft.net/86/86244795322131be70a64cd8ab2963a6ffb54d17 Asset: minecraft/lang/de_de.json
 Downloading: https://resources.download.minecraft.net/31/31a541f1894bfd946dd87d1a96ec6c20f26338f9 Asset: minecraft/lang/el_gr.json
 Downloading: https://resources.download.minecraft.net/bc/bc7d1f078d542e5cf26a06d2152f163d9ea87405 Asset: minecraft/lang/en_au.json
 Downloading: https://resources.download.minecraft.net/4d/4d7febd5ebe53bd1227fc2def189f5b3cac868a8 Asset: minecraft/lang/en_ca.json
 Downloading: https://resources.download.minecraft.net/48/486213c7f54a0637beabeb4eaaf7d139caba38e8 Asset: minecraft/lang/en_gb.json
 Downloading: https://resources.download.minecraft.net/f8/f85e273e92999ed7dcd402f55f90ae32e5b5036c Asset: minecraft/lang/en_nz.json
-Downloading: https://resources.download.minecraft.net/3a/3a3945e9e2a2066bb67ede778e787631dc92886b Asset: minecraft/lang/en_ud.json
 Downloading: https://resources.download.minecraft.net/38/38b55e681b3fd13ff2f637f803a75793a9a581fc Asset: minecraft/lang/en_pt.json
+Downloading: https://resources.download.minecraft.net/3a/3a3945e9e2a2066bb67ede778e787631dc92886b Asset: minecraft/lang/en_ud.json
 Downloading: https://resources.download.minecraft.net/42/4285545c8eb84c08f579f94731659abae0c82da3 Asset: minecraft/lang/enp.json
 Downloading: https://resources.download.minecraft.net/5e/5e9954f0c91cb5a1b89e4e5e169dca5588dbc0ab Asset: minecraft/lang/enws.json
 Downloading: https://resources.download.minecraft.net/b4/b4d91c0ed7ccbe1a7ad02e307f4363d5fde008f7 Asset: minecraft/lang/eo_uy.json
@@ -405,8 +405,8 @@ Downloading: https://resources.download.minecraft.net/39/393bf2cedbc9c2209d1038d
 Downloading: https://resources.download.minecraft.net/7d/7db8f550b6139fda6cf610839028034ea5864845 Asset: minecraft/lang/es_uy.json
 Downloading: https://resources.download.minecraft.net/60/601e18b71277ed0c6dc7d9262660f60f524490e9 Asset: minecraft/lang/es_ve.json
 Downloading: https://resources.download.minecraft.net/f2/f2a9fdcd9486eae0fc2ab7288a2c5b15bc39532e Asset: minecraft/lang/esan.json
-Downloading: https://resources.download.minecraft.net/ff/ff1a2958d19d18d59c4bc25337fbc5bf52d57411 Asset: minecraft/lang/eu_es.json
 Downloading: https://resources.download.minecraft.net/4d/4d00bb5e0cfc708999d1467d47508b5321a0f9e8 Asset: minecraft/lang/et_ee.json
+Downloading: https://resources.download.minecraft.net/ff/ff1a2958d19d18d59c4bc25337fbc5bf52d57411 Asset: minecraft/lang/eu_es.json
 Downloading: https://resources.download.minecraft.net/50/50fde8743f545e9fc18a6642ddbcbb9703da81f3 Asset: minecraft/lang/fa_ir.json
 Downloading: https://resources.download.minecraft.net/f0/f0e916b146b1aba8e429def6d73df74f74262033 Asset: minecraft/lang/fi_fi.json
 Downloading: https://resources.download.minecraft.net/c7/c7947094dede9b7f2558b023ed1ea40d07d1f702 Asset: minecraft/lang/fil_ph.json
@@ -440,8 +440,8 @@ Downloading: https://resources.download.minecraft.net/66/663562f7de56982679f55d6
 Downloading: https://resources.download.minecraft.net/1d/1db65bc2bd327c04e3f90ceeda835acb86d87bcf Asset: minecraft/lang/jbo_en.json
 Downloading: https://resources.download.minecraft.net/05/0514516d1f7966aaa0075e96cefcecce6c860c2d Asset: minecraft/lang/ka_ge.json
 Downloading: https://resources.download.minecraft.net/30/305dac984617f1eacd4a309807f0f04b7db5eaa3 Asset: minecraft/lang/kk_kz.json
-Downloading: https://resources.download.minecraft.net/3e/3e7a6ef2169bbd15fc92718b5d802e8a138b366b Asset: minecraft/lang/kn_in.json
 Downloading: https://resources.download.minecraft.net/00/0034cfb1225b76fe54a5a80267d26c9ea73532bc Asset: minecraft/lang/ko_kr.json
+Downloading: https://resources.download.minecraft.net/3e/3e7a6ef2169bbd15fc92718b5d802e8a138b366b Asset: minecraft/lang/kn_in.json
 Downloading: https://resources.download.minecraft.net/e7/e7e5f253c91304432913e3373f885b9b8ab2f8e7 Asset: minecraft/lang/ksh.json
 Downloading: https://resources.download.minecraft.net/66/663bbb2f61c07a546f667d016e16f6999f3f9918 Asset: minecraft/lang/kw_gb.json
 Downloading: https://resources.download.minecraft.net/cb/cbdb703eb0d5585500068ef49b8b65fac5564fc5 Asset: minecraft/lang/ky_kg.json
@@ -480,15 +480,15 @@ Downloading: https://resources.download.minecraft.net/c8/c800b6b514c149b4fceb82f
 Downloading: https://resources.download.minecraft.net/2e/2e58a129c3a82c83e2f19d74851196e212548879 Asset: minecraft/lang/sah_sah.json
 Downloading: https://resources.download.minecraft.net/4a/4a0c322eeaff2532db9faa1284a651c30a16ab7e Asset: minecraft/lang/se_no.json
 Downloading: https://resources.download.minecraft.net/f4/f43a96de0c76970fc6d682ccc80b819044a102af Asset: minecraft/lang/sk_sk.json
+Downloading: https://resources.download.minecraft.net/e8/e8442c5882478c7584d5da061cfa87e0eeb4ad9c Asset: minecraft/lang/sl_si.json
 Downloading: https://resources.download.minecraft.net/20/208f60e0a794d2fd287ac8a68d52112d4754b950 Asset: minecraft/lang/so_so.json
 Downloading: https://resources.download.minecraft.net/fa/fae2fae78a8fe68ef908ffa65ff824b23ccf23b2 Asset: minecraft/lang/sq_al.json
 Downloading: https://resources.download.minecraft.net/44/449b4d19107a79796ca67975f96d99f836579ba8 Asset: minecraft/lang/sr_cs.json
-Downloading: https://resources.download.minecraft.net/e8/e8442c5882478c7584d5da061cfa87e0eeb4ad9c Asset: minecraft/lang/sl_si.json
 Downloading: https://resources.download.minecraft.net/a9/a9cd09a95c06826356709a2e9f0cb6e213c234c5 Asset: minecraft/lang/sr_sp.json
 Downloading: https://resources.download.minecraft.net/8c/8c11692a060a23562c4a55a27938b76eae4afb8d Asset: minecraft/lang/sv_se.json
 Downloading: https://resources.download.minecraft.net/c1/c1595e741ac2bedf9f81ea1b1c2c24377050aac8 Asset: minecraft/lang/sxu.json
-Downloading: https://resources.download.minecraft.net/dd/ddd14f494d81d0d805b5fdbfe7c4eb01db81122d Asset: minecraft/lang/szl.json
 Downloading: https://resources.download.minecraft.net/4e/4e5afec522cf59811d6abbb96fd112dbdcc9b4ca Asset: minecraft/lang/ta_in.json
+Downloading: https://resources.download.minecraft.net/dd/ddd14f494d81d0d805b5fdbfe7c4eb01db81122d Asset: minecraft/lang/szl.json
 Downloading: https://resources.download.minecraft.net/ed/ed5bb68b3fba74d3bd0747da72ead87d3b8ae5e6 Asset: minecraft/lang/th_th.json
 Downloading: https://resources.download.minecraft.net/71/719a9bfda9bb216c9278cfa7b805c5f7c13ba894 Asset: minecraft/lang/tl_ph.json
 Downloading: https://resources.download.minecraft.net/8a/8a23a6ee81bb1f357aa941ffb97a9524a14dae69 Asset: minecraft/lang/tlh_aa.json
@@ -502,10 +502,10 @@ Downloading: https://resources.download.minecraft.net/61/619803d578cd785f0c49e73
 Downloading: https://resources.download.minecraft.net/eb/ebaa752b756082dc1f1e3a5bd73a2daed2a0bf3c Asset: minecraft/lang/vec_it.json
 Downloading: https://resources.download.minecraft.net/ca/ca1da1c44ed81fe9158f1c7a86ab76128dcc838e Asset: minecraft/lang/vi_vn.json
 Downloading: https://resources.download.minecraft.net/bb/bb9d542f33be7c4cb29134442f99dcc8fcd5f7bb Asset: minecraft/lang/vp_vl.json
+Downloading: https://resources.download.minecraft.net/80/80eb6ae92af7b4426a198426f4ed52850455a0fe Asset: minecraft/lang/vro.json
 Downloading: https://resources.download.minecraft.net/a7/a79720ee97cc3150691f30bce3f13e673d339ed6 Asset: minecraft/lang/yi_de.json
 Downloading: https://resources.download.minecraft.net/a8/a80c8d64bcd9605f4e6289f724b8f695558bc92d Asset: minecraft/lang/yo_ng.json
 Downloading: https://resources.download.minecraft.net/bd/bd3b3df108c1eaf78b6b8904c9f0842a7b110d5c Asset: minecraft/lang/zh_cn.json
-Downloading: https://resources.download.minecraft.net/80/80eb6ae92af7b4426a198426f4ed52850455a0fe Asset: minecraft/lang/vro.json
 Downloading: https://resources.download.minecraft.net/55/55525a859bde16668d24c9c663cbd882313d0762 Asset: minecraft/lang/zh_hk.json
 Downloading: https://resources.download.minecraft.net/78/78d3e3ed6960fb921186c58576e9c1690ce4018a Asset: minecraft/lang/zh_tw.json
 Downloading: https://resources.download.minecraft.net/c3/c30d5044c3d4a3432fd57f1755b8df6557eef775 Asset: minecraft/lang/zlm_arab.json
@@ -562,8 +562,8 @@ Downloading: https://resources.download.minecraft.net/55/55806e7597c378deac9b308
 Downloading: https://resources.download.minecraft.net/70/70e1ffd8134ea42cbe26fe0e88ebabc40865e233 Asset: minecraft/sounds/ambient/nether/basalt_deltas/twist2.ogg
 Downloading: https://resources.download.minecraft.net/08/081ace8eafec0b668fd5d164f2a91e9ce84b5d41 Asset: minecraft/sounds/ambient/nether/basalt_deltas/twist3.ogg
 Downloading: https://resources.download.minecraft.net/eb/ebbc874bd5ae40539b98b3fd2a9b9a3f6feb1be6 Asset: minecraft/sounds/ambient/nether/basalt_deltas/twist4.ogg
-Downloading: https://resources.download.minecraft.net/75/7510fee7d1d2d990a89acad1aed3c4e755259a31 Asset: minecraft/sounds/ambient/nether/crimson_forest/addition1.ogg
 Downloading: https://resources.download.minecraft.net/ac/ac2c0dbc87e926779820d74082a213b4ea569694 Asset: minecraft/sounds/ambient/nether/crimson_forest/addition2.ogg
+Downloading: https://resources.download.minecraft.net/75/7510fee7d1d2d990a89acad1aed3c4e755259a31 Asset: minecraft/sounds/ambient/nether/crimson_forest/addition1.ogg
 Downloading: https://resources.download.minecraft.net/41/41212571c9437823afb6a5995b8d130ff1ecb3c7 Asset: minecraft/sounds/ambient/nether/crimson_forest/addition3.ogg
 Downloading: https://resources.download.minecraft.net/51/51fdfccc9a4d0e0d92f4a6aaafa68d8257c1d50e Asset: minecraft/sounds/ambient/nether/crimson_forest/ambience.ogg
 Downloading: https://resources.download.minecraft.net/1a/1a5be8c9fcdc86fd6ebefc01b030c2c8f26ca3fd Asset: minecraft/sounds/ambient/nether/crimson_forest/mood1.ogg
@@ -601,11 +601,11 @@ Downloading: https://resources.download.minecraft.net/8b/8b1aae456bca0e2f786393c
 Downloading: https://resources.download.minecraft.net/79/791295e1d7031a17949eb24553cadc06faf04f9a Asset: minecraft/sounds/ambient/nether/nether_wastes/mood2.ogg
 Downloading: https://resources.download.minecraft.net/47/47e483a57a6058c7e5b5bb6a7667876c4a70dcd7 Asset: minecraft/sounds/ambient/nether/nether_wastes/mood3.ogg
 Downloading: https://resources.download.minecraft.net/96/96d044e3f8628dc9f6fae6a660e53c15cab0c442 Asset: minecraft/sounds/ambient/nether/nether_wastes/mood4.ogg
-Downloading: https://resources.download.minecraft.net/03/03c93b66376d940531b9dab0a938987766a971d9 Asset: minecraft/sounds/ambient/nether/nether_wastes/mood5.ogg
 Downloading: https://resources.download.minecraft.net/9a/9a4c3dd0d2069830b6fa3f673858d3ecb0805b02 Asset: minecraft/sounds/ambient/nether/soulsand_valley/ambience.ogg
 Downloading: https://resources.download.minecraft.net/9f/9f9ffac1600ecdc078e135c92903e6506cf8db58 Asset: minecraft/sounds/ambient/nether/soulsand_valley/mood1.ogg
 Downloading: https://resources.download.minecraft.net/55/55b674d88ee9b6969ef58c3941b033099f95f45f Asset: minecraft/sounds/ambient/nether/soulsand_valley/mood2.ogg
 Downloading: https://resources.download.minecraft.net/19/194fc2da93cfac5e6f17e7fb2abc90894f5214a4 Asset: minecraft/sounds/ambient/nether/soulsand_valley/mood3.ogg
+Downloading: https://resources.download.minecraft.net/03/03c93b66376d940531b9dab0a938987766a971d9 Asset: minecraft/sounds/ambient/nether/nether_wastes/mood5.ogg
 Downloading: https://resources.download.minecraft.net/5f/5f8e4d7bdbe3f6758b109d1662cd55c926616d6f Asset: minecraft/sounds/ambient/nether/soulsand_valley/mood4.ogg
 Downloading: https://resources.download.minecraft.net/6c/6cb590a472d5a22867950463758381b1c7df23b9 Asset: minecraft/sounds/ambient/nether/soulsand_valley/sand1.ogg
 Downloading: https://resources.download.minecraft.net/97/97967f640bcafe4a1c9f50cf9ae29acc2bb2d6e5 Asset: minecraft/sounds/ambient/nether/soulsand_valley/sand2.ogg
@@ -622,8 +622,8 @@ Downloading: https://resources.download.minecraft.net/bf/bfe75d6429abfb4e2e4b49d
 Downloading: https://resources.download.minecraft.net/d3/d3670f32f5fc4684d963c6240c4125eb0d550b4f Asset: minecraft/sounds/ambient/nether/soulsand_valley/whisper5.ogg
 Downloading: https://resources.download.minecraft.net/dd/dd79f117c11f01a41e8d930be7230d7fba89d1d3 Asset: minecraft/sounds/ambient/nether/soulsand_valley/whisper6.ogg
 Downloading: https://resources.download.minecraft.net/76/76440d134c908d9c0114aecc9ffbb63cd3b18106 Asset: minecraft/sounds/ambient/nether/soulsand_valley/whisper7.ogg
-Downloading: https://resources.download.minecraft.net/62/62fd99a57efdc72ed0a552628c9704bb92a3d10f Asset: minecraft/sounds/ambient/nether/soulsand_valley/wind1.ogg
 Downloading: https://resources.download.minecraft.net/94/944ff41b69a9c9765269a3e3bada8007b312d36a Asset: minecraft/sounds/ambient/nether/soulsand_valley/whisper8.ogg
+Downloading: https://resources.download.minecraft.net/62/62fd99a57efdc72ed0a552628c9704bb92a3d10f Asset: minecraft/sounds/ambient/nether/soulsand_valley/wind1.ogg
 Downloading: https://resources.download.minecraft.net/21/218cd5a0087f2955c8e2cd0ec8777343e204474c Asset: minecraft/sounds/ambient/nether/soulsand_valley/wind2.ogg
 Downloading: https://resources.download.minecraft.net/80/80122c5aecf0b3d1dd1be5fc840d8739012f3b98 Asset: minecraft/sounds/ambient/nether/soulsand_valley/wind3.ogg
 Downloading: https://resources.download.minecraft.net/72/72714e65a0dcf0e39b0bc96e31ff89434f4d932b Asset: minecraft/sounds/ambient/nether/soulsand_valley/wind4.ogg
@@ -653,14 +653,14 @@ Downloading: https://resources.download.minecraft.net/ae/ae25e94125f21221a867cc3
 Downloading: https://resources.download.minecraft.net/ce/ce557b6621be88fd30650bbd7625384216cabe02 Asset: minecraft/sounds/ambient/nether/warped_forest/mood3.ogg
 Downloading: https://resources.download.minecraft.net/4d/4dfdc01898b95663dc1ddd0abdb259dd61b4b4d8 Asset: minecraft/sounds/ambient/nether/warped_forest/mood4.ogg
 Downloading: https://resources.download.minecraft.net/f1/f1183f0ef201b9e1f909b649dd93234db873f06b Asset: minecraft/sounds/ambient/nether/warped_forest/mood5.ogg
-Downloading: https://resources.download.minecraft.net/ca/ca5162095dcf1d5795866795566a12032adadc85 Asset: minecraft/sounds/ambient/nether/warped_forest/mood6.ogg
-Downloading: https://resources.download.minecraft.net/e6/e6f35b4c2f3584351e0d487cdbdd1fc0300c5593 Asset: minecraft/sounds/ambient/nether/warped_forest/mood7.ogg
 Downloading: https://resources.download.minecraft.net/62/62ffa5f85aeefcee4a9aa98290beb14bdd84e68d Asset: minecraft/sounds/ambient/nether/warped_forest/mood8.ogg
+Downloading: https://resources.download.minecraft.net/e6/e6f35b4c2f3584351e0d487cdbdd1fc0300c5593 Asset: minecraft/sounds/ambient/nether/warped_forest/mood7.ogg
 Downloading: https://resources.download.minecraft.net/84/845a813d61b345669e9cbc3c4014ddf2298580e9 Asset: minecraft/sounds/ambient/nether/warped_forest/mood9.ogg
 Downloading: https://resources.download.minecraft.net/fd/fdb3d7893ae483f851ea0b20148de2baf4dd8d84 Asset: minecraft/sounds/ambient/underwater/additions/animal1.ogg
+Downloading: https://resources.download.minecraft.net/ca/ca5162095dcf1d5795866795566a12032adadc85 Asset: minecraft/sounds/ambient/nether/warped_forest/mood6.ogg
 Downloading: https://resources.download.minecraft.net/1b/1be6e84cfd3b27ef0578f84f03abbdc3ca45d381 Asset: minecraft/sounds/ambient/underwater/additions/animal2.ogg
-Downloading: https://resources.download.minecraft.net/bd/bd36dad15f2799d601cf459c2cf2275918ef0bfa Asset: minecraft/sounds/ambient/underwater/additions/bass_whale1.ogg
 Downloading: https://resources.download.minecraft.net/1f/1feb74db490a786a656387fc2ac8d682730228e2 Asset: minecraft/sounds/ambient/underwater/additions/bass_whale2.ogg
+Downloading: https://resources.download.minecraft.net/bd/bd36dad15f2799d601cf459c2cf2275918ef0bfa Asset: minecraft/sounds/ambient/underwater/additions/bass_whale1.ogg
 Downloading: https://resources.download.minecraft.net/e0/e0d4d43735c09b82d3ec1027ac667dc314b9c158 Asset: minecraft/sounds/ambient/underwater/additions/bubbles1.ogg
 Downloading: https://resources.download.minecraft.net/d0/d0f0a5e0928729c83679f9c54cfa924795231e13 Asset: minecraft/sounds/ambient/underwater/additions/bubbles2.ogg
 Downloading: https://resources.download.minecraft.net/0a/0a0bc1ffa05ac5ff00eb2b1bb9093818a35b85b9 Asset: minecraft/sounds/ambient/underwater/additions/bubbles3.ogg
@@ -682,9 +682,9 @@ Downloading: https://resources.download.minecraft.net/95/9579b9b2dc9d2be2fe1d6a8
 Downloading: https://resources.download.minecraft.net/9b/9bbc6019f9fafa16239f603ea788fce721b7f601 Asset: minecraft/sounds/ambient/underwater/enter2.ogg
 Downloading: https://resources.download.minecraft.net/8c/8c7fa514148b39ddb4929f3caf1d4b6ab4330e5c Asset: minecraft/sounds/ambient/underwater/enter3.ogg
 Downloading: https://resources.download.minecraft.net/75/751fec52a10bb2a5309a765fc622727422556a64 Asset: minecraft/sounds/ambient/underwater/exit1.ogg
-Downloading: https://resources.download.minecraft.net/d3/d3f646d9e0d0a198644229f76da0141893159b0b Asset: minecraft/sounds/ambient/underwater/exit2.ogg
 Downloading: https://resources.download.minecraft.net/2c/2c6a5e15b4a84fc5a631ddc2eedf9868dd520f39 Asset: minecraft/sounds/ambient/underwater/exit3.ogg
 Downloading: https://resources.download.minecraft.net/e3/e34da9807a08eb38b8ab60936f2ce965be04a106 Asset: minecraft/sounds/ambient/underwater/underwater_ambience.ogg
+Downloading: https://resources.download.minecraft.net/d3/d3f646d9e0d0a198644229f76da0141893159b0b Asset: minecraft/sounds/ambient/underwater/exit2.ogg
 Downloading: https://resources.download.minecraft.net/94/941611aed1eb6888f6ad998af22d2d2ef2efc4aa Asset: minecraft/sounds/ambient/weather/rain1.ogg
 Downloading: https://resources.download.minecraft.net/6c/6cf5c9f78a221f9a9576753fa5ca6cf3563c352a Asset: minecraft/sounds/ambient/weather/rain2.ogg
 Downloading: https://resources.download.minecraft.net/61/61dba25ce75a25e7920bcb210408fc6b6a2c92f0 Asset: minecraft/sounds/ambient/weather/rain3.ogg
@@ -699,8 +699,8 @@ Downloading: https://resources.download.minecraft.net/9e/9ead5c928f9122e3c2f5fc4
 Downloading: https://resources.download.minecraft.net/d9/d99ea9a1bcd14d24f9a83d09fb07be81fcf30570 Asset: minecraft/sounds/block/amethyst/break1.ogg
 Downloading: https://resources.download.minecraft.net/ba/bae694eddcf4766fa100552fddd5bc463a4edbff Asset: minecraft/sounds/block/amethyst/break2.ogg
 Downloading: https://resources.download.minecraft.net/6e/6ef376d7623fac03bc15caf95ffeae9d192d46f4 Asset: minecraft/sounds/block/amethyst/break3.ogg
-Downloading: https://resources.download.minecraft.net/27/271f0b289d320620d5f8b4742867a4d0b1d24643 Asset: minecraft/sounds/block/amethyst/place1.ogg
 Downloading: https://resources.download.minecraft.net/5c/5c39dec69b8093f9accf712fe21f9f8bae102991 Asset: minecraft/sounds/block/amethyst/break4.ogg
+Downloading: https://resources.download.minecraft.net/27/271f0b289d320620d5f8b4742867a4d0b1d24643 Asset: minecraft/sounds/block/amethyst/place1.ogg
 Downloading: https://resources.download.minecraft.net/ec/ece0b0833c26076209e1c1395571f8a5da5fa012 Asset: minecraft/sounds/block/amethyst/place2.ogg
 Downloading: https://resources.download.minecraft.net/fd/fd8e2fbd111d5f4f2a07650a37163cb956566777 Asset: minecraft/sounds/block/amethyst/place3.ogg
 Downloading: https://resources.download.minecraft.net/f5/f5da4e2f7a3ef17e713e302190f63ad51f6e1654 Asset: minecraft/sounds/block/amethyst/place4.ogg
@@ -730,8 +730,8 @@ Downloading: https://resources.download.minecraft.net/c4/c4380743ab08e60bafad7ff
 Downloading: https://resources.download.minecraft.net/f5/f57c74bb3b583bbbbb78529203ff8dee72f1052f Asset: minecraft/sounds/block/amethyst_cluster/place1.ogg
 Downloading: https://resources.download.minecraft.net/b5/b57f215084d00503c884c327f2617ce563bf2e3c Asset: minecraft/sounds/block/amethyst_cluster/place2.ogg
 Downloading: https://resources.download.minecraft.net/4a/4af9c72df6f67060c0dbff10feeb9aa13767b560 Asset: minecraft/sounds/block/amethyst_cluster/place3.ogg
-Downloading: https://resources.download.minecraft.net/42/421df41daff74f216d5e37e9b2e34396f08be9e1 Asset: minecraft/sounds/block/ancient_debris/break1.ogg
 Downloading: https://resources.download.minecraft.net/7f/7f31942ce140138141d4873ff36acd9a51f4f496 Asset: minecraft/sounds/block/amethyst_cluster/place4.ogg
+Downloading: https://resources.download.minecraft.net/42/421df41daff74f216d5e37e9b2e34396f08be9e1 Asset: minecraft/sounds/block/ancient_debris/break1.ogg
 Downloading: https://resources.download.minecraft.net/e0/e0197d9108758c42df710b3729e080dbebc74d5e Asset: minecraft/sounds/block/ancient_debris/break2.ogg
 Downloading: https://resources.download.minecraft.net/93/937c8c7f88cefa5c9b5d849580b350b10c721340 Asset: minecraft/sounds/block/ancient_debris/break3.ogg
 Downloading: https://resources.download.minecraft.net/a1/a14ce68a05bf194e30846abe0d1c5514c777f50a Asset: minecraft/sounds/block/ancient_debris/break4.ogg
@@ -743,8 +743,8 @@ Downloading: https://resources.download.minecraft.net/34/34a9a0058caceecb2f5af49
 Downloading: https://resources.download.minecraft.net/8c/8c672b90dcc04c6ae601291389b6420b2534f7bf Asset: minecraft/sounds/block/azalea/break5.ogg
 Downloading: https://resources.download.minecraft.net/13/135d05bbc2d29449d64f7c01ab5899bc909057e6 Asset: minecraft/sounds/block/azalea/break6.ogg
 Downloading: https://resources.download.minecraft.net/5b/5bad2e5f2b36e7f81d048dee12e3ccf4fd2902a0 Asset: minecraft/sounds/block/azalea/step1.ogg
-Downloading: https://resources.download.minecraft.net/b9/b9d0b284a592b7cf4aefcc33dae69553427263c5 Asset: minecraft/sounds/block/azalea/step3.ogg
 Downloading: https://resources.download.minecraft.net/b2/b2901a46b95163774af8a8495c8c00e59eb18031 Asset: minecraft/sounds/block/azalea/step2.ogg
+Downloading: https://resources.download.minecraft.net/b9/b9d0b284a592b7cf4aefcc33dae69553427263c5 Asset: minecraft/sounds/block/azalea/step3.ogg
 Downloading: https://resources.download.minecraft.net/97/972535bb942eccdba2465285e21dc8c34f8e4ca2 Asset: minecraft/sounds/block/azalea/step4.ogg
 Downloading: https://resources.download.minecraft.net/bd/bdcd738569dc17f6e5c15686801c4d5446bb036e Asset: minecraft/sounds/block/azalea/step5.ogg
 Downloading: https://resources.download.minecraft.net/9c/9c7e6c4a991755710512cdf5e707d9470238d861 Asset: minecraft/sounds/block/azalea/step6.ogg
@@ -802,11 +802,11 @@ Downloading: https://resources.download.minecraft.net/c8/c8118021f93a6fad75cbb84
 Downloading: https://resources.download.minecraft.net/5a/5aeca4ea83856cb034b6e3a5e3e89ba8f8d51b20 Asset: minecraft/sounds/block/bamboo_wood_fence/toggle1.ogg
 Downloading: https://resources.download.minecraft.net/a3/a3bc38acc39bc46a60e898198fed9a72e558357b Asset: minecraft/sounds/block/bamboo_wood_fence/toggle2.ogg
 Downloading: https://resources.download.minecraft.net/cf/cf86f59e613b14c6613ae3ded2cee54ea3a9fee5 Asset: minecraft/sounds/block/bamboo_wood_fence/toggle3.ogg
-Downloading: https://resources.download.minecraft.net/bd/bd58021f2a66566eaa169d5847a47e334b6ed62e Asset: minecraft/sounds/block/bamboo_wood_hanging_sign/break1.ogg
 Downloading: https://resources.download.minecraft.net/ac/ac01c4ca5d02703c0f1c450fbc976aa12324804f Asset: minecraft/sounds/block/bamboo_wood_fence/toggle4.ogg
+Downloading: https://resources.download.minecraft.net/bd/bd58021f2a66566eaa169d5847a47e334b6ed62e Asset: minecraft/sounds/block/bamboo_wood_hanging_sign/break1.ogg
 Downloading: https://resources.download.minecraft.net/54/542e425cc25aca4e3be5ab3c55c64f55a4ea0faf Asset: minecraft/sounds/block/bamboo_wood_hanging_sign/break2.ogg
-Downloading: https://resources.download.minecraft.net/0d/0ddd6d05032fb79fcaab212baffc2df7d862a81f Asset: minecraft/sounds/block/bamboo_wood_hanging_sign/break4.ogg
 Downloading: https://resources.download.minecraft.net/1f/1fa5512b2716f07b61dce51fb478b550f862e82a Asset: minecraft/sounds/block/bamboo_wood_hanging_sign/break3.ogg
+Downloading: https://resources.download.minecraft.net/0d/0ddd6d05032fb79fcaab212baffc2df7d862a81f Asset: minecraft/sounds/block/bamboo_wood_hanging_sign/break4.ogg
 Downloading: https://resources.download.minecraft.net/15/153ba5b4a11fce37475b859dacae266d1366c8f4 Asset: minecraft/sounds/block/bamboo_wood_hanging_sign/step1.ogg
 Downloading: https://resources.download.minecraft.net/61/61ece0b224e4ee791e0c980368fb2c8c884502a1 Asset: minecraft/sounds/block/bamboo_wood_hanging_sign/step2.ogg
 Downloading: https://resources.download.minecraft.net/67/678f2973656a3677ceda6dd1a7a627009e7826fa Asset: minecraft/sounds/block/bamboo_wood_hanging_sign/step3.ogg
@@ -815,8 +815,8 @@ Downloading: https://resources.download.minecraft.net/f5/f5d11e6fbcf2f6c7a9cfcfb
 Downloading: https://resources.download.minecraft.net/f9/f952435fe498a16b50688fd485ee4122b15db98b Asset: minecraft/sounds/block/bamboo_wood_trapdoor/toggle2.ogg
 Downloading: https://resources.download.minecraft.net/04/041f0695d89cb8ae810e6fa8c968828c7b6f14f2 Asset: minecraft/sounds/block/bamboo_wood_trapdoor/toggle3.ogg
 Downloading: https://resources.download.minecraft.net/cf/cf35358b1ef2b2a2cca95d4fe12ff449333bad45 Asset: minecraft/sounds/block/bamboo_wood_trapdoor/toggle4.ogg
-Downloading: https://resources.download.minecraft.net/61/61e6dd472994567359f850973bef350c1e7dd930 Asset: minecraft/sounds/block/barrel/open1.ogg
 Downloading: https://resources.download.minecraft.net/fb/fb9da3e4f5ef68c7f2f51152bbf3770d052bef8a Asset: minecraft/sounds/block/barrel/close.ogg
+Downloading: https://resources.download.minecraft.net/61/61e6dd472994567359f850973bef350c1e7dd930 Asset: minecraft/sounds/block/barrel/open1.ogg
 Downloading: https://resources.download.minecraft.net/40/408ed2c778ee54d75c772ceca260554add920a85 Asset: minecraft/sounds/block/barrel/open2.ogg
 Downloading: https://resources.download.minecraft.net/de/ded8cd2d9d1835b1868b7c740f47cb02e7cf51f2 Asset: minecraft/sounds/block/basalt/break1.ogg
 Downloading: https://resources.download.minecraft.net/47/47676e0ac57616b21d42e7d805a5ff8a5fa1305b Asset: minecraft/sounds/block/basalt/break2.ogg
@@ -914,14 +914,14 @@ Downloading: https://resources.download.minecraft.net/39/39ec9f647dc54c66f72dcaf
 Downloading: https://resources.download.minecraft.net/2c/2ccf6ef5fc880ccd57a6e550c443700e6d748e3c Asset: minecraft/sounds/block/calcite/place1.ogg
 Downloading: https://resources.download.minecraft.net/54/54d86634de079d8e52cc0129fa7cfe269a8fec17 Asset: minecraft/sounds/block/calcite/place2.ogg
 Downloading: https://resources.download.minecraft.net/64/64aedc68cc012df8336801a50e617b4fd09343fd Asset: minecraft/sounds/block/calcite/place3.ogg
-Downloading: https://resources.download.minecraft.net/24/240d7af9ddb309e5e6b30f5b69b163bda9f43d8e Asset: minecraft/sounds/block/calcite/place4.ogg
 Downloading: https://resources.download.minecraft.net/f9/f929049bb7d6cd5ab7cfbb51e55ea3cee52e5729 Asset: minecraft/sounds/block/calcite/step1.ogg
+Downloading: https://resources.download.minecraft.net/24/240d7af9ddb309e5e6b30f5b69b163bda9f43d8e Asset: minecraft/sounds/block/calcite/place4.ogg
 Downloading: https://resources.download.minecraft.net/b2/b2b85858191c452aa27d1ea790edf2c9c497e0d5 Asset: minecraft/sounds/block/calcite/step2.ogg
 Downloading: https://resources.download.minecraft.net/a8/a8729aeadb4f8303d16366e2896098cc7926da67 Asset: minecraft/sounds/block/calcite/step3.ogg
 Downloading: https://resources.download.minecraft.net/0e/0e5029467ce047b3146be7ac3c25325301e223dd Asset: minecraft/sounds/block/calcite/step4.ogg
 Downloading: https://resources.download.minecraft.net/f3/f3e93920147eef76105c0f47f845fb53de202a45 Asset: minecraft/sounds/block/calcite/step5.ogg
-Downloading: https://resources.download.minecraft.net/6b/6bb45e31e1939487f58f5fd4be1e7487b1fa16be Asset: minecraft/sounds/block/calcite/step6.ogg
 Downloading: https://resources.download.minecraft.net/5c/5cc75e9e824a6ae798e657282694cc4174bfdd15 Asset: minecraft/sounds/block/campfire/crackle1.ogg
+Downloading: https://resources.download.minecraft.net/6b/6bb45e31e1939487f58f5fd4be1e7487b1fa16be Asset: minecraft/sounds/block/calcite/step6.ogg
 Downloading: https://resources.download.minecraft.net/c0/c076377ba38821a3b050ebcf333043cb4cf59b81 Asset: minecraft/sounds/block/campfire/crackle2.ogg
 Downloading: https://resources.download.minecraft.net/f1/f1a2ede27259b0b2321e36b2d70c2fd63d82e862 Asset: minecraft/sounds/block/campfire/crackle3.ogg
 Downloading: https://resources.download.minecraft.net/d6/d696e2d6640747987a056319dfd6e15c25e75191 Asset: minecraft/sounds/block/campfire/crackle4.ogg
@@ -963,8 +963,8 @@ Downloading: https://resources.download.minecraft.net/6b/6bc3dcea8da81eb0c892f7c
 Downloading: https://resources.download.minecraft.net/12/12965f48483c25d58bad1950e55cfcc77eb14364 Asset: minecraft/sounds/block/chain/break4.ogg
 Downloading: https://resources.download.minecraft.net/05/057ab504f5f407ecca355b4b79a0e1c1f75060cf Asset: minecraft/sounds/block/chain/step1.ogg
 Downloading: https://resources.download.minecraft.net/57/574374a17842b530c5932bea1f13066aeeb9c382 Asset: minecraft/sounds/block/chain/step2.ogg
-Downloading: https://resources.download.minecraft.net/e3/e3e7e9911e1d24f0225bc565810a58ea81c70f77 Asset: minecraft/sounds/block/chain/step4.ogg
 Downloading: https://resources.download.minecraft.net/da/da72608522eaea87e6ac5a79d4d2eec8d04eff15 Asset: minecraft/sounds/block/chain/step3.ogg
+Downloading: https://resources.download.minecraft.net/e3/e3e7e9911e1d24f0225bc565810a58ea81c70f77 Asset: minecraft/sounds/block/chain/step4.ogg
 Downloading: https://resources.download.minecraft.net/87/873f73538c8ea67b86f5edf642db8a1c8bbfadd0 Asset: minecraft/sounds/block/chain/step5.ogg
 Downloading: https://resources.download.minecraft.net/85/85b43aa402a60adf087632be25d35a4e3c354ca3 Asset: minecraft/sounds/block/chain/step6.ogg
 Downloading: https://resources.download.minecraft.net/f1/f1143e5adcd07dc885ed44d949886ce6fd870398 Asset: minecraft/sounds/block/cherry_leaves/break1.ogg
@@ -1043,12 +1043,12 @@ Downloading: https://resources.download.minecraft.net/64/64ea3da2bfe8f994308140c
 Downloading: https://resources.download.minecraft.net/aa/aa10d6c0b4941f35b7129ee0b9905536826f2422 Asset: minecraft/sounds/block/chorus_flower/death3.ogg
 Downloading: https://resources.download.minecraft.net/07/07373cce0250d335443998231c8a9e3ef7531e9f Asset: minecraft/sounds/block/chorus_flower/grow1.ogg
 Downloading: https://resources.download.minecraft.net/f2/f23941bd42028d6fac79a142cb913522f05998c2 Asset: minecraft/sounds/block/chorus_flower/grow2.ogg
-Downloading: https://resources.download.minecraft.net/7e/7e163e93b0799fc8373baa3fdbf44bffcbe540b4 Asset: minecraft/sounds/block/chorus_flower/grow3.ogg
 Downloading: https://resources.download.minecraft.net/a2/a2c1116d40b879a0abccc2f02c0471be91bb6b30 Asset: minecraft/sounds/block/chorus_flower/grow4.ogg
-Downloading: https://resources.download.minecraft.net/b9/b97899f3c27ab46d7bab3edd0d1d73fecf5469e3 Asset: minecraft/sounds/block/composter/empty1.ogg
+Downloading: https://resources.download.minecraft.net/7e/7e163e93b0799fc8373baa3fdbf44bffcbe540b4 Asset: minecraft/sounds/block/chorus_flower/grow3.ogg
 Downloading: https://resources.download.minecraft.net/77/77109350e5cf7cfaa0cc1543294dde3d76324645 Asset: minecraft/sounds/block/composter/empty2.ogg
 Downloading: https://resources.download.minecraft.net/e7/e76c482f23201967692b2b8442dd0a52aac48701 Asset: minecraft/sounds/block/composter/empty3.ogg
 Downloading: https://resources.download.minecraft.net/4b/4b9469a8a151cba0d28f14d87723244d8de74950 Asset: minecraft/sounds/block/composter/fill1.ogg
+Downloading: https://resources.download.minecraft.net/b9/b97899f3c27ab46d7bab3edd0d1d73fecf5469e3 Asset: minecraft/sounds/block/composter/empty1.ogg
 Downloading: https://resources.download.minecraft.net/8a/8a930adbadfc8fe0168595302c03d3117dc60e0e Asset: minecraft/sounds/block/composter/fill2.ogg
 Downloading: https://resources.download.minecraft.net/0c/0c6bb010b1b50f592881a1f858d5db5f0a181f22 Asset: minecraft/sounds/block/composter/fill3.ogg
 Downloading: https://resources.download.minecraft.net/9a/9afc4d2fafd6dc6d779dd8cbf4b23bb50c165dc4 Asset: minecraft/sounds/block/composter/fill4.ogg
@@ -1084,9 +1084,9 @@ Downloading: https://resources.download.minecraft.net/d8/d87ff5f9736c6b86f3445fa
 Downloading: https://resources.download.minecraft.net/0a/0abfb8f19f7bdc0dd211f4a46e392ca1dac2d531 Asset: minecraft/sounds/block/copper/step3.ogg
 Downloading: https://resources.download.minecraft.net/ce/ce467337da42a96332befcdf961e2981e1c61682 Asset: minecraft/sounds/block/copper/step4.ogg
 Downloading: https://resources.download.minecraft.net/85/85ac3c677b8cba25063bf0c9575eea4dcd669d8e Asset: minecraft/sounds/block/copper/step5.ogg
-Downloading: https://resources.download.minecraft.net/63/63417f028c4720bd91b1974ef67c93546ac4f3b6 Asset: minecraft/sounds/block/copper/step6.ogg
 Downloading: https://resources.download.minecraft.net/5c/5c84f54276722bea66088e2774e0fcd00929ae58 Asset: minecraft/sounds/block/decorated_pot/break1.ogg
 Downloading: https://resources.download.minecraft.net/98/98fe2b2b0c6bcc3f921c1ae8ec0686b719569e70 Asset: minecraft/sounds/block/decorated_pot/break2.ogg
+Downloading: https://resources.download.minecraft.net/63/63417f028c4720bd91b1974ef67c93546ac4f3b6 Asset: minecraft/sounds/block/copper/step6.ogg
 Downloading: https://resources.download.minecraft.net/1e/1e37a7e44e34d5a0e338c2d57424eaab4ba8eb46 Asset: minecraft/sounds/block/decorated_pot/break3.ogg
 Downloading: https://resources.download.minecraft.net/af/af6b7387f6d3140d630060c8efe5d25493d9e69c Asset: minecraft/sounds/block/decorated_pot/break4.ogg
 Downloading: https://resources.download.minecraft.net/aa/aab5cf806b0948e7cf0b858fa36385913a2e486f Asset: minecraft/sounds/block/decorated_pot/shatter1.ogg
@@ -1104,8 +1104,8 @@ Downloading: https://resources.download.minecraft.net/bb/bb709bbfde582e0b261b4f8
 Downloading: https://resources.download.minecraft.net/d8/d80d4bd2f28318f7291baa4fec3f00b4bd56066a Asset: minecraft/sounds/block/deepslate/break2.ogg
 Downloading: https://resources.download.minecraft.net/16/16f63773f4258b983891136c54c32735c59b2c05 Asset: minecraft/sounds/block/deepslate/break3.ogg
 Downloading: https://resources.download.minecraft.net/a7/a7ff95731dd1668bff61898362091cce9c49cdf1 Asset: minecraft/sounds/block/deepslate/break4.ogg
-Downloading: https://resources.download.minecraft.net/a1/a181d87822808974392cd7bf081121523687cd3d Asset: minecraft/sounds/block/deepslate/place1.ogg
 Downloading: https://resources.download.minecraft.net/a2/a24c6e7d083b8e69caf5de24eb698611b304fc87 Asset: minecraft/sounds/block/deepslate/place2.ogg
+Downloading: https://resources.download.minecraft.net/a1/a181d87822808974392cd7bf081121523687cd3d Asset: minecraft/sounds/block/deepslate/place1.ogg
 Downloading: https://resources.download.minecraft.net/36/36c387db12975376921f130e0971f52bd0bd573a Asset: minecraft/sounds/block/deepslate/place3.ogg
 Downloading: https://resources.download.minecraft.net/3a/3a7888bdd0e2803a2b08d2505e4ff99c707df1f9 Asset: minecraft/sounds/block/deepslate/place4.ogg
 Downloading: https://resources.download.minecraft.net/bd/bdece9f83ab1959684fd51b8b806dce647012dcc Asset: minecraft/sounds/block/deepslate/place5.ogg
@@ -1134,8 +1134,8 @@ Downloading: https://resources.download.minecraft.net/0e/0e58e087ad105373cf75ca8
 Downloading: https://resources.download.minecraft.net/0e/0e497ca437eeac5cee56a91c43da2631092e7477 Asset: minecraft/sounds/block/dripstone/break5.ogg
 Downloading: https://resources.download.minecraft.net/2c/2c114bff9b73abccb54f0aec7e09ad1ff4cb4dc6 Asset: minecraft/sounds/block/dripstone/step1.ogg
 Downloading: https://resources.download.minecraft.net/3a/3a9a56e15aeb25ad049f0d64a343fabcc3ce4de0 Asset: minecraft/sounds/block/dripstone/step2.ogg
-Downloading: https://resources.download.minecraft.net/67/67a35cb0a87ef67f252330d7b5b84df4e433fb59 Asset: minecraft/sounds/block/dripstone/step4.ogg
 Downloading: https://resources.download.minecraft.net/c1/c13629f57d801f0938ceae15ec152ff79cc3a6a4 Asset: minecraft/sounds/block/dripstone/step3.ogg
+Downloading: https://resources.download.minecraft.net/67/67a35cb0a87ef67f252330d7b5b84df4e433fb59 Asset: minecraft/sounds/block/dripstone/step4.ogg
 Downloading: https://resources.download.minecraft.net/d7/d71243817c63f4c27af938ec8750cf84f0531b06 Asset: minecraft/sounds/block/dripstone/step5.ogg
 Downloading: https://resources.download.minecraft.net/f7/f7cd826d43ac13e7e84befb58a9ca42acef68402 Asset: minecraft/sounds/block/dripstone/step6.ogg
 Downloading: https://resources.download.minecraft.net/f0/f05f55328f2b98b3c7d881fcdef7e7964d8082fa Asset: minecraft/sounds/block/enchantment_table/enchant1.ogg
@@ -1281,8 +1281,8 @@ Downloading: https://resources.download.minecraft.net/01/01d108e23f5c3a0b6905de5
 Downloading: https://resources.download.minecraft.net/55/5533b88fcbc575b8a7a83c2a281c59979824fd57 Asset: minecraft/sounds/block/moss/step4.ogg
 Downloading: https://resources.download.minecraft.net/11/1191b013d40cd3119c67934fa7aca81262709247 Asset: minecraft/sounds/block/moss/step5.ogg
 Downloading: https://resources.download.minecraft.net/3d/3d911ca2ea3c00ae0611a3a899689b417317e238 Asset: minecraft/sounds/block/moss/step6.ogg
-Downloading: https://resources.download.minecraft.net/9c/9c7b77108d8c1ea3fcf201e4d06f6e717409842c Asset: minecraft/sounds/block/mud/break1.ogg
 Downloading: https://resources.download.minecraft.net/67/6752e578433d584b1b92630b539a9bf4f93121bb Asset: minecraft/sounds/block/mud/break2.ogg
+Downloading: https://resources.download.minecraft.net/9c/9c7b77108d8c1ea3fcf201e4d06f6e717409842c Asset: minecraft/sounds/block/mud/break1.ogg
 Downloading: https://resources.download.minecraft.net/4a/4a551fdc68b6cb6b486655c2f6e78c8decc6ad6f Asset: minecraft/sounds/block/mud/break3.ogg
 Downloading: https://resources.download.minecraft.net/bd/bdfcec5d56d112855c31754d116cff9122d47d1c Asset: minecraft/sounds/block/mud/break4.ogg
 Downloading: https://resources.download.minecraft.net/ff/ff6de5c4cb5515d65b594172556823fe5a23a7eb Asset: minecraft/sounds/block/mud/break5.ogg
@@ -1378,8 +1378,8 @@ Downloading: https://resources.download.minecraft.net/3a/3a48d36cc6bd2b1d5c7dbdc
 Downloading: https://resources.download.minecraft.net/fa/faa6ab35a1f6d20e8e7738341265b36c140bc42d Asset: minecraft/sounds/block/nether_wood_trapdoor/toggle3.ogg
 Downloading: https://resources.download.minecraft.net/b3/b332519d27bebece8b03079d104bd11b96d14999 Asset: minecraft/sounds/block/nether_wood_trapdoor/toggle4.ogg
 Downloading: https://resources.download.minecraft.net/d1/d10147b5114fb55a1d3a2705cef3022ea59e0cc3 Asset: minecraft/sounds/block/netherite/break1.ogg
-Downloading: https://resources.download.minecraft.net/00/00c4daa73f67f90bb994c0009dd35d02a3c413b4 Asset: minecraft/sounds/block/netherite/break2.ogg
 Downloading: https://resources.download.minecraft.net/54/546fddb67d3e27c613d236d210baef4224c3dbc5 Asset: minecraft/sounds/block/netherite/break3.ogg
+Downloading: https://resources.download.minecraft.net/00/00c4daa73f67f90bb994c0009dd35d02a3c413b4 Asset: minecraft/sounds/block/netherite/break2.ogg
 Downloading: https://resources.download.minecraft.net/ce/ce45c82f140e19a9688aebb53afc61e9664bb735 Asset: minecraft/sounds/block/netherite/break4.ogg
 Downloading: https://resources.download.minecraft.net/73/73d282fd17857eba131e7150f3f7a2fb1bf30c5a Asset: minecraft/sounds/block/netherite/step1.ogg
 Downloading: https://resources.download.minecraft.net/43/43e15f44cf8c5e02591246685e968e0612aa1dd4 Asset: minecraft/sounds/block/netherite/step2.ogg
@@ -1389,8 +1389,8 @@ Downloading: https://resources.download.minecraft.net/55/556e7d997332a802ac74328
 Downloading: https://resources.download.minecraft.net/4a/4a7ddf2a0a3e52ed407a37fe4e021212eea3ef39 Asset: minecraft/sounds/block/netherite/step6.ogg
 Downloading: https://resources.download.minecraft.net/6a/6a4796fec25e83aa2d0151f0ddd86e6ce86bb48a Asset: minecraft/sounds/block/netherrack/break1.ogg
 Downloading: https://resources.download.minecraft.net/49/49d5826555c9f00e36c1e2e0386118f4e0a27c4f Asset: minecraft/sounds/block/netherrack/break2.ogg
-Downloading: https://resources.download.minecraft.net/50/5066b310fd288cf443497dd362ff151923525213 Asset: minecraft/sounds/block/netherrack/break3.ogg
 Downloading: https://resources.download.minecraft.net/1d/1d488970ff2dd9d19a397c8bd593b82bd061b655 Asset: minecraft/sounds/block/netherrack/break4.ogg
+Downloading: https://resources.download.minecraft.net/50/5066b310fd288cf443497dd362ff151923525213 Asset: minecraft/sounds/block/netherrack/break3.ogg
 Downloading: https://resources.download.minecraft.net/b2/b2eff3be4927ad66e197d91699609bd354320bef Asset: minecraft/sounds/block/netherrack/break5.ogg
 Downloading: https://resources.download.minecraft.net/c5/c57a387a15458219f9bbc02be71a61bdb49bf214 Asset: minecraft/sounds/block/netherrack/break6.ogg
 Downloading: https://resources.download.minecraft.net/19/198ab0290fa4593eba3327588f80859470204392 Asset: minecraft/sounds/block/netherrack/step1.ogg
@@ -1482,9 +1482,9 @@ Downloading: https://resources.download.minecraft.net/50/50775dd4c91553d43b7c9c1
 Downloading: https://resources.download.minecraft.net/d8/d86bd0068709f9bacdb694a1ea3f1b321dbd4e44 Asset: minecraft/sounds/block/powder_snow/step1.ogg
 Downloading: https://resources.download.minecraft.net/19/192e2f57b6d878465f7baa500493fb11a5ccb220 Asset: minecraft/sounds/block/powder_snow/step10.ogg
 Downloading: https://resources.download.minecraft.net/fd/fd5a0ea09e1643206c9a33592440e0f87a556455 Asset: minecraft/sounds/block/powder_snow/step2.ogg
-Downloading: https://resources.download.minecraft.net/34/34bd6800e8fc87778b8aed0e3616566ad51d7ff5 Asset: minecraft/sounds/block/powder_snow/step3.ogg
 Downloading: https://resources.download.minecraft.net/d0/d06ea8fa95da528b0113f6ad0ff50bc0a5d49cd9 Asset: minecraft/sounds/block/powder_snow/step4.ogg
 Downloading: https://resources.download.minecraft.net/f8/f857fcb908528ca66c51b4b8608d7c76b178cb92 Asset: minecraft/sounds/block/powder_snow/step5.ogg
+Downloading: https://resources.download.minecraft.net/34/34bd6800e8fc87778b8aed0e3616566ad51d7ff5 Asset: minecraft/sounds/block/powder_snow/step3.ogg
 Downloading: https://resources.download.minecraft.net/56/5628a7a3a5ce397716dc8f4bab5d2a998af0eff0 Asset: minecraft/sounds/block/powder_snow/step6.ogg
 Downloading: https://resources.download.minecraft.net/01/015f37d3f2adec2f62dfea46fa1cb9dc1262900d Asset: minecraft/sounds/block/powder_snow/step7.ogg
 Downloading: https://resources.download.minecraft.net/45/4556ec1597a31dd58289580a933cbaa9375ad272 Asset: minecraft/sounds/block/powder_snow/step8.ogg
@@ -1522,8 +1522,8 @@ Downloading: https://resources.download.minecraft.net/62/627986868ad27e85f53e1e8
 Downloading: https://resources.download.minecraft.net/64/64397c108f51882304e4012219b0782bbadb6056 Asset: minecraft/sounds/block/roots/step2.ogg
 Downloading: https://resources.download.minecraft.net/59/595b687c4da88dfafee324b6c500e1df7dead0eb Asset: minecraft/sounds/block/roots/step3.ogg
 Downloading: https://resources.download.minecraft.net/de/de7b3af61600660442e2ad6af224d48b7bf37030 Asset: minecraft/sounds/block/roots/step4.ogg
-Downloading: https://resources.download.minecraft.net/e5/e54f93b413612f82ac995c4d3be9d4a0be0b86b8 Asset: minecraft/sounds/block/scaffold/place1.ogg
 Downloading: https://resources.download.minecraft.net/61/6164117445e8dfd29379e9bb97108ec0b7126270 Asset: minecraft/sounds/block/roots/step5.ogg
+Downloading: https://resources.download.minecraft.net/e5/e54f93b413612f82ac995c4d3be9d4a0be0b86b8 Asset: minecraft/sounds/block/scaffold/place1.ogg
 Downloading: https://resources.download.minecraft.net/fb/fbc96020d3410733cd97cbfa99ed8471ace343ef Asset: minecraft/sounds/block/scaffold/place2.ogg
 Downloading: https://resources.download.minecraft.net/e1/e13cd6eaea8057ab3c7b637af4c58a2165d84c42 Asset: minecraft/sounds/block/scaffold/place3.ogg
 Downloading: https://resources.download.minecraft.net/1b/1b33ca18f1e7d8e9427ab9bd7246bb1ff58812a7 Asset: minecraft/sounds/block/scaffold/place4.ogg
@@ -1572,8 +1572,8 @@ Downloading: https://resources.download.minecraft.net/5b/5b59d46c9b78386f262be9f
 Downloading: https://resources.download.minecraft.net/16/16c37d334f31ee347ad69f73ab3d8b2c941b4c37 Asset: minecraft/sounds/block/sculk_catalyst/break7.ogg
 Downloading: https://resources.download.minecraft.net/b3/b37f30d3b64d3ee11354f226b43ce1ddcf084c45 Asset: minecraft/sounds/block/sculk_catalyst/break8.ogg
 Downloading: https://resources.download.minecraft.net/2f/2f85290ce9935b32b14ae0b6d9fe6855d82e439e Asset: minecraft/sounds/block/sculk_catalyst/break9.ogg
-Downloading: https://resources.download.minecraft.net/2d/2d2cd57e1e268d86c371ae859ced93fc3bbbc57e Asset: minecraft/sounds/block/sculk_catalyst/place1.ogg
 Downloading: https://resources.download.minecraft.net/30/3076a766ef67150cc7350a1f0ecd65087b7479f9 Asset: minecraft/sounds/block/sculk_catalyst/place2.ogg
+Downloading: https://resources.download.minecraft.net/2d/2d2cd57e1e268d86c371ae859ced93fc3bbbc57e Asset: minecraft/sounds/block/sculk_catalyst/place1.ogg
 Downloading: https://resources.download.minecraft.net/ea/ea42d202eb9de2f22586db7c3556c28f5204febd Asset: minecraft/sounds/block/sculk_catalyst/place3.ogg
 Downloading: https://resources.download.minecraft.net/6d/6dc84d0fa333baa626fcd9b568b4ca6fcfadd759 Asset: minecraft/sounds/block/sculk_catalyst/place4.ogg
 Downloading: https://resources.download.minecraft.net/21/21cbb828c74cc59abca03e14579c7ab9e93240a3 Asset: minecraft/sounds/block/sculk_catalyst/place5.ogg
@@ -1583,8 +1583,8 @@ Downloading: https://resources.download.minecraft.net/f4/f49d73d158c39ae49e8c63d
 Downloading: https://resources.download.minecraft.net/f6/f652e2ffc2709185f909d09f3612b2a787563d72 Asset: minecraft/sounds/block/sculk_catalyst/step4.ogg
 Downloading: https://resources.download.minecraft.net/39/390ce719ead59e8615b91c7368253a9931c4ea06 Asset: minecraft/sounds/block/sculk_catalyst/step5.ogg
 Downloading: https://resources.download.minecraft.net/af/afc011b003310c434cd1369386196a1fab8a6bb4 Asset: minecraft/sounds/block/sculk_catalyst/step6.ogg
-Downloading: https://resources.download.minecraft.net/6c/6cd0ca85879d0ff4e81ca032f788c50094f67c1f Asset: minecraft/sounds/block/sculk_sensor/break1.ogg
 Downloading: https://resources.download.minecraft.net/87/87ce1f5ccb92dd22d826637deaa1bae2b7e2244e Asset: minecraft/sounds/block/sculk_sensor/break2.ogg
+Downloading: https://resources.download.minecraft.net/6c/6cd0ca85879d0ff4e81ca032f788c50094f67c1f Asset: minecraft/sounds/block/sculk_sensor/break1.ogg
 Downloading: https://resources.download.minecraft.net/0d/0d1862217e8aa9f56768053fa2dabb7956ba9b3a Asset: minecraft/sounds/block/sculk_sensor/break3.ogg
 Downloading: https://resources.download.minecraft.net/a0/a0d4e9ee0c1a5e3655c0d4b1671f489156ae3190 Asset: minecraft/sounds/block/sculk_sensor/break4.ogg
 Downloading: https://resources.download.minecraft.net/5b/5b5b74b0cd579484d68b432ce9ae119f60dfdda2 Asset: minecraft/sounds/block/sculk_sensor/break5.ogg
@@ -1635,13 +1635,13 @@ Downloading: https://resources.download.minecraft.net/cf/cfd917a0e8f184865fd5bd1
 Downloading: https://resources.download.minecraft.net/b0/b0cf74066c092372c4aa838d394e5a6fefe9c219 Asset: minecraft/sounds/block/shroomlight/step3.ogg
 Downloading: https://resources.download.minecraft.net/64/6470f26b44f011663decad9c07776ce057c9b194 Asset: minecraft/sounds/block/shroomlight/step4.ogg
 Downloading: https://resources.download.minecraft.net/bf/bfdd747ba6e4cb2e7fc15b2ee476aea6d65cb297 Asset: minecraft/sounds/block/shroomlight/step5.ogg
-Downloading: https://resources.download.minecraft.net/06/0609325e1813f45bf6ba112172faa174f277c2ad Asset: minecraft/sounds/block/shroomlight/step6.ogg
 Downloading: https://resources.download.minecraft.net/d6/d673dd1dae8c1dc80b53917cf454a52386256132 Asset: minecraft/sounds/block/shulker_box/close.ogg
+Downloading: https://resources.download.minecraft.net/06/0609325e1813f45bf6ba112172faa174f277c2ad Asset: minecraft/sounds/block/shroomlight/step6.ogg
 Downloading: https://resources.download.minecraft.net/0f/0fadce9827b247d2da715d8e5a8213db83fbe44f Asset: minecraft/sounds/block/shulker_box/open.ogg
 Downloading: https://resources.download.minecraft.net/fd/fdccd564ca6278c4e670235bab60bfaf561907fd Asset: minecraft/sounds/block/sign/waxed_interact_fail1.ogg
 Downloading: https://resources.download.minecraft.net/d7/d732fca96cca70dcf5ceebbd629cb8a02f2ef9eb Asset: minecraft/sounds/block/sign/waxed_interact_fail2.ogg
-Downloading: https://resources.download.minecraft.net/22/222cd346222e0145d21ced318a7a293bfbe7ba79 Asset: minecraft/sounds/block/smithing_table/smithing_table1.ogg
 Downloading: https://resources.download.minecraft.net/4a/4a578ad692287e7114cc7a726dd969b9aadfb2fe Asset: minecraft/sounds/block/sign/waxed_interact_fail3.ogg
+Downloading: https://resources.download.minecraft.net/22/222cd346222e0145d21ced318a7a293bfbe7ba79 Asset: minecraft/sounds/block/smithing_table/smithing_table1.ogg
 Downloading: https://resources.download.minecraft.net/b3/b3581bc0f5d1b450feaac02cea4d676f421baf64 Asset: minecraft/sounds/block/smithing_table/smithing_table2.ogg
 Downloading: https://resources.download.minecraft.net/b8/b861e4cf448c870a4f2e21dc3322a77ce3693065 Asset: minecraft/sounds/block/smithing_table/smithing_table3.ogg
 Downloading: https://resources.download.minecraft.net/38/3823be0610bf07a50494227faaa32e1c24e029c9 Asset: minecraft/sounds/block/smoker/smoker1.ogg
@@ -1719,9 +1719,9 @@ Downloading: https://resources.download.minecraft.net/78/784891ecc861171b9fc9397
 Downloading: https://resources.download.minecraft.net/a7/a7ffd93b890ffa30cc881d3280a66051210b6c3b Asset: minecraft/sounds/block/suspicious_sand/break6.ogg
 Downloading: https://resources.download.minecraft.net/cc/cc8b36813bb1701d9933109f7107e81753b0f7d2 Asset: minecraft/sounds/block/suspicious_sand/place1.ogg
 Downloading: https://resources.download.minecraft.net/b7/b7970d1be71e3b0f8dc48a7b0a3ce88d9332f345 Asset: minecraft/sounds/block/suspicious_sand/place2.ogg
-Downloading: https://resources.download.minecraft.net/a6/a614902cf90159fd9d1e5fc86af68479534a5ed5 Asset: minecraft/sounds/block/suspicious_sand/place3.ogg
-Downloading: https://resources.download.minecraft.net/41/41f5ff104a1d3ab88c363fbe8d4a0614cb016ea4 Asset: minecraft/sounds/block/suspicious_sand/place4.ogg
 Downloading: https://resources.download.minecraft.net/bc/bcc872aebdacf04a0c7e4e510e82c93f72a307da Asset: minecraft/sounds/block/suspicious_sand/place5.ogg
+Downloading: https://resources.download.minecraft.net/41/41f5ff104a1d3ab88c363fbe8d4a0614cb016ea4 Asset: minecraft/sounds/block/suspicious_sand/place4.ogg
+Downloading: https://resources.download.minecraft.net/a6/a614902cf90159fd9d1e5fc86af68479534a5ed5 Asset: minecraft/sounds/block/suspicious_sand/place3.ogg
 Downloading: https://resources.download.minecraft.net/55/55f06c5d247175cd1b819b53360f8c99f670a722 Asset: minecraft/sounds/block/suspicious_sand/step1.ogg
 Downloading: https://resources.download.minecraft.net/7b/7bc0bbd5a259c1d2aacff9d3e07543a9d1caaaca Asset: minecraft/sounds/block/suspicious_sand/step2.ogg
 Downloading: https://resources.download.minecraft.net/88/880d5e1ebb517f95a560b352ab28e22c28b5a8fa Asset: minecraft/sounds/block/suspicious_sand/step3.ogg
@@ -1730,11 +1730,11 @@ Downloading: https://resources.download.minecraft.net/61/611f5163b6ba7c995d1ff98
 Downloading: https://resources.download.minecraft.net/8e/8eaa189e42aad889310e03cc26de676dc8431345 Asset: minecraft/sounds/block/sweet_berry_bush/break1.ogg
 Downloading: https://resources.download.minecraft.net/a6/a67784e3903cb1e3a2005e7c36c648279b97edd8 Asset: minecraft/sounds/block/sweet_berry_bush/break2.ogg
 Downloading: https://resources.download.minecraft.net/35/350a9a9620efabf6edf91e75762957953bf6cb81 Asset: minecraft/sounds/block/sweet_berry_bush/break3.ogg
-Downloading: https://resources.download.minecraft.net/a9/a9d3b12ba323f0b14a2adbf92f597a803831d6a4 Asset: minecraft/sounds/block/sweet_berry_bush/break4.ogg
 Downloading: https://resources.download.minecraft.net/6d/6d6128196a44038658da3ff257ec2597114cd6c0 Asset: minecraft/sounds/block/sweet_berry_bush/place1.ogg
 Downloading: https://resources.download.minecraft.net/27/27d8af498c6e1a7f5ea26ab746866d10a6230419 Asset: minecraft/sounds/block/sweet_berry_bush/place2.ogg
 Downloading: https://resources.download.minecraft.net/d6/d6545aef9a74893f3ee2ced6b18afd52b4a17825 Asset: minecraft/sounds/block/sweet_berry_bush/place3.ogg
 Downloading: https://resources.download.minecraft.net/8c/8c1fd5b4accebff5dda35ef8acb762b92f4c1851 Asset: minecraft/sounds/block/sweet_berry_bush/place4.ogg
+Downloading: https://resources.download.minecraft.net/a9/a9d3b12ba323f0b14a2adbf92f597a803831d6a4 Asset: minecraft/sounds/block/sweet_berry_bush/break4.ogg
 Downloading: https://resources.download.minecraft.net/71/71b473c255837982015662f3f4e9e65981666390 Asset: minecraft/sounds/block/sweet_berry_bush/place5.ogg
 Downloading: https://resources.download.minecraft.net/40/40e5da14b4608b138ec3cc8706e45d6ffb18c405 Asset: minecraft/sounds/block/sweet_berry_bush/place6.ogg
 Downloading: https://resources.download.minecraft.net/a7/a7f06223dd9eaaaba4f65ce00154016054a4fbe0 Asset: minecraft/sounds/block/tuff/break1.ogg
@@ -1760,8 +1760,8 @@ Downloading: https://resources.download.minecraft.net/8c/8c931b5195bf445110f54b2
 Downloading: https://resources.download.minecraft.net/a8/a8d5525b3304a47c138579e46c5dc525bba193dd Asset: minecraft/sounds/block/waterlily/place1.ogg
 Downloading: https://resources.download.minecraft.net/ba/ba72e7707b095d24af0cb9c267b9c5b92efa3e70 Asset: minecraft/sounds/block/waterlily/place2.ogg
 Downloading: https://resources.download.minecraft.net/ce/ceade9b1b4c759e442d6903ddd9102c22401168d Asset: minecraft/sounds/block/waterlily/place3.ogg
-Downloading: https://resources.download.minecraft.net/6e/6e0d43b064fb69f7b63e0704d99a38bb2ebc19e0 Asset: minecraft/sounds/block/wooden_door/close1.ogg
 Downloading: https://resources.download.minecraft.net/54/5488a01c534a16c2138c2f7072343d4179695477 Asset: minecraft/sounds/block/waterlily/place4.ogg
+Downloading: https://resources.download.minecraft.net/6e/6e0d43b064fb69f7b63e0704d99a38bb2ebc19e0 Asset: minecraft/sounds/block/wooden_door/close1.ogg
 Downloading: https://resources.download.minecraft.net/4c/4cf6992a99518dfac836228cffbbc7e8344d969b Asset: minecraft/sounds/block/wooden_door/close2.ogg
 Downloading: https://resources.download.minecraft.net/73/73a3bfcb37099c49ac22e6fa308ca14a6e4f8347 Asset: minecraft/sounds/block/wooden_door/close3.ogg
 Downloading: https://resources.download.minecraft.net/d2/d2ba0797ca24fcf15d105c88899089e4af5cb9f4 Asset: minecraft/sounds/block/wooden_door/open1.ogg
@@ -1770,8 +1770,8 @@ Downloading: https://resources.download.minecraft.net/15/159697af99ef2640f870bee
 Downloading: https://resources.download.minecraft.net/5e/5e49444266bf88c2006233a811561272ad8f157f Asset: minecraft/sounds/block/wooden_trapdoor/close2.ogg
 Downloading: https://resources.download.minecraft.net/c9/c9a5510420292be670d0020b7123ca0fef1f6087 Asset: minecraft/sounds/block/wooden_trapdoor/close3.ogg
 Downloading: https://resources.download.minecraft.net/9e/9eb0c3c8c34bcf83db451c12f24edd756908d265 Asset: minecraft/sounds/block/wooden_trapdoor/open1.ogg
-Downloading: https://resources.download.minecraft.net/a4/a410f82debee252f1399a8c391bef261ab42d07c Asset: minecraft/sounds/block/wooden_trapdoor/open2.ogg
 Downloading: https://resources.download.minecraft.net/37/37c0ff8ac56889125bb0d11be7225f453e1e4098 Asset: minecraft/sounds/block/wooden_trapdoor/open3.ogg
+Downloading: https://resources.download.minecraft.net/a4/a410f82debee252f1399a8c391bef261ab42d07c Asset: minecraft/sounds/block/wooden_trapdoor/open2.ogg
 Downloading: https://resources.download.minecraft.net/f7/f756c39f4ca9565c359a66d33b5a4f9d886e5479 Asset: minecraft/sounds/block/wooden_trapdoor/open4.ogg
 Downloading: https://resources.download.minecraft.net/3a/3a05ef3ce1827538f54ba4b3262eaee438da4217 Asset: minecraft/sounds/block/wooden_trapdoor/open5.ogg
 Downloading: https://resources.download.minecraft.net/1d/1d183c36f596e85c4fb564ff2667332211e49659 Asset: minecraft/sounds/damage/fallbig.ogg
@@ -1823,9 +1823,9 @@ Downloading: https://resources.download.minecraft.net/17/17971c954653dab1e8a3adf
 Downloading: https://resources.download.minecraft.net/de/dea18386186cf549385af87f3dd768cf03fd084e Asset: minecraft/sounds/enchant/soulspeed/soulspeed2.ogg
 Downloading: https://resources.download.minecraft.net/e8/e8269fbb811a2b27faf8e76146383db076c87685 Asset: minecraft/sounds/enchant/soulspeed/soulspeed3.ogg
 Downloading: https://resources.download.minecraft.net/ea/ea7439281fef4cc62b47ef360929a57ec0429af1 Asset: minecraft/sounds/enchant/soulspeed/soulspeed4.ogg
+Downloading: https://resources.download.minecraft.net/82/8295545fc25a424563095fbe171123c5ae90fe5c Asset: minecraft/sounds/enchant/soulspeed/soulspeed5.ogg
 Downloading: https://resources.download.minecraft.net/46/4696189415397c951c0ec1656af648fc06d62330 Asset: minecraft/sounds/enchant/soulspeed/soulspeed6.ogg
 Downloading: https://resources.download.minecraft.net/4c/4c0fdad0f1b2462f5a0defbefd5d859f27e2342a Asset: minecraft/sounds/enchant/soulspeed/soulspeed7.ogg
-Downloading: https://resources.download.minecraft.net/82/8295545fc25a424563095fbe171123c5ae90fe5c Asset: minecraft/sounds/enchant/soulspeed/soulspeed5.ogg
 Downloading: https://resources.download.minecraft.net/d2/d2c8cfdaa72305648c28bbd00a61e1891bb80a18 Asset: minecraft/sounds/enchant/soulspeed/soulspeed8.ogg
 Downloading: https://resources.download.minecraft.net/b7/b7af765da37a4774fde952d56c9992cf9ead4236 Asset: minecraft/sounds/enchant/soulspeed/soulspeed9.ogg
 Downloading: https://resources.download.minecraft.net/53/539fe34036caba1b247df3360c688960e4defd81 Asset: minecraft/sounds/enchant/thorns/hit1.ogg
@@ -1885,10 +1885,6 @@ Downloading: https://resources.download.minecraft.net/ba/ba14427ced6e424f8605e4e
 Downloading: https://resources.download.minecraft.net/51/511d6f0a49cfeb40ed90b473147534a5402054c7 Asset: minecraft/sounds/entity/glow_squid/ambient3.ogg
 Downloading: https://resources.download.minecraft.net/3d/3dac66ea4a25ea3553b13d51603d2767e1eb7a41 Asset: minecraft/sounds/entity/glow_squid/ambient4.ogg
 Downloading: https://resources.download.minecraft.net/39/39c7ff87060cb39186488850886e9d2e68a31a26 Asset: minecraft/sounds/entity/glow_squid/ambient5.ogg
-
-> Task :downloadAssets
-Downloading: https://piston-meta.mojang.com/v1/packages/ada52cc672270e8dc69e912b2ba0ea9c141ed664/5.json
-
 Downloading: https://resources.download.minecraft.net/a6/a658b49495eceb84f3fb52b320b7d6692accbf44 Asset: minecraft/sounds/entity/glow_squid/death1.ogg
 Downloading: https://resources.download.minecraft.net/6b/6beda54a8559a32ef478c45e584c229bf196ca9e Asset: minecraft/sounds/entity/glow_squid/death2.ogg
 Downloading: https://resources.download.minecraft.net/bf/bf1996432349951e1638a9a5fb4fc05ba9619623 Asset: minecraft/sounds/entity/glow_squid/death3.ogg
@@ -1957,12 +1953,12 @@ Downloading: https://resources.download.minecraft.net/fd/fd20e1cd8c69bc2f037de95
 Downloading: https://resources.download.minecraft.net/c9/c9534f4d840470b3c6efbcb84cff23c57baa3393 Asset: minecraft/sounds/entity/player/attack/sweep2.ogg
 Downloading: https://resources.download.minecraft.net/4c/4c26fd4c2774e7afcbda1e293a27595e04e87c47 Asset: minecraft/sounds/entity/player/attack/sweep3.ogg
 Downloading: https://resources.download.minecraft.net/ae/ae9bb7a332e3e3d3665f282b60b296ec01be97df Asset: minecraft/sounds/entity/player/attack/sweep4.ogg
-Downloading: https://resources.download.minecraft.net/50/50a317f837b0604c3ebe8224951c1a0d7a94516a Asset: minecraft/sounds/entity/player/attack/sweep5.ogg
 Downloading: https://resources.download.minecraft.net/39/39077d824a27e8040b0e1f2b4707d81149830d11 Asset: minecraft/sounds/entity/player/attack/sweep6.ogg
 Downloading: https://resources.download.minecraft.net/e8/e8d0df494880f2067bb64d08a7428a78239c9a29 Asset: minecraft/sounds/entity/player/attack/sweep7.ogg
-Downloading: https://resources.download.minecraft.net/f2/f26ab58dc70ce7a3f4d16b5bb31620894b0b8812 Asset: minecraft/sounds/entity/player/attack/weak1.ogg
 Downloading: https://resources.download.minecraft.net/8d/8d56863e83e0e114937522d3a4a7e124528c65b4 Asset: minecraft/sounds/entity/player/attack/weak2.ogg
+Downloading: https://resources.download.minecraft.net/f2/f26ab58dc70ce7a3f4d16b5bb31620894b0b8812 Asset: minecraft/sounds/entity/player/attack/weak1.ogg
 Downloading: https://resources.download.minecraft.net/5d/5d78e883f8bf8123261a5b05cf90cb5cc020fa6e Asset: minecraft/sounds/entity/player/attack/weak3.ogg
+Downloading: https://resources.download.minecraft.net/50/50a317f837b0604c3ebe8224951c1a0d7a94516a Asset: minecraft/sounds/entity/player/attack/sweep5.ogg
 Downloading: https://resources.download.minecraft.net/5f/5fa52f2e49e446e466b721937cc168bba734ef33 Asset: minecraft/sounds/entity/player/attack/weak4.ogg
 Downloading: https://resources.download.minecraft.net/d2/d2aa32d74df0cfcdcb7b36862206762dc5f16d5c Asset: minecraft/sounds/entity/player/hurt/berrybush_hurt1.ogg
 Downloading: https://resources.download.minecraft.net/bd/bde0f483fb36757e6207767d65d02bd8a190c685 Asset: minecraft/sounds/entity/player/hurt/berrybush_hurt2.ogg
@@ -1972,8 +1968,8 @@ Downloading: https://resources.download.minecraft.net/66/66057f99ba11a223e1824ce
 Downloading: https://resources.download.minecraft.net/d7/d7637457a9290d5e10d965f3bea4a4e19937f87b Asset: minecraft/sounds/entity/player/hurt/drown4.ogg
 Downloading: https://resources.download.minecraft.net/6c/6c5e816813bc17b1d7b65676e1ee29496d88015b Asset: minecraft/sounds/entity/player/hurt/fire_hurt1.ogg
 Downloading: https://resources.download.minecraft.net/ee/ee8edac9e045dbc0417c4f8bec83d291df40da61 Asset: minecraft/sounds/entity/player/hurt/fire_hurt2.ogg
-Downloading: https://resources.download.minecraft.net/d5/d5a6435947ff3b0b2a161cc37d419cd7c49cf8b4 Asset: minecraft/sounds/entity/player/hurt/fire_hurt3.ogg
 Downloading: https://resources.download.minecraft.net/e7/e7b80d7e20d07be914d7361b5ff71a3c3193ef4c Asset: minecraft/sounds/entity/player/hurt/freeze_hurt1.ogg
+Downloading: https://resources.download.minecraft.net/d5/d5a6435947ff3b0b2a161cc37d419cd7c49cf8b4 Asset: minecraft/sounds/entity/player/hurt/fire_hurt3.ogg
 Downloading: https://resources.download.minecraft.net/67/67cee209f2c06f4bc08d7e165fa7371557d4e261 Asset: minecraft/sounds/entity/player/hurt/freeze_hurt2.ogg
 Downloading: https://resources.download.minecraft.net/c2/c2d7c39f05beb02e6e6ea7bc703925fa3b965b76 Asset: minecraft/sounds/entity/player/hurt/freeze_hurt3.ogg
 Downloading: https://resources.download.minecraft.net/50/50b8c5f86880ac8ae12edf9e5ca21c857c187589 Asset: minecraft/sounds/entity/player/hurt/freeze_hurt4.ogg
@@ -2120,17 +2116,17 @@ Downloading: https://resources.download.minecraft.net/fb/fb9ee08207b57f93cab9392
 Downloading: https://resources.download.minecraft.net/eb/ebe259bc9b07c4ae6a08471e86dc0e6d8d4d04c2 Asset: minecraft/sounds/item/armor/equip_leather1.ogg
 Downloading: https://resources.download.minecraft.net/08/0811423a3fb1a8e53010b1d9a4994aa8a9fe714f Asset: minecraft/sounds/item/armor/equip_leather2.ogg
 Downloading: https://resources.download.minecraft.net/10/10e3ea2313752eab2cd14fc9125001756da121dc Asset: minecraft/sounds/item/armor/equip_leather3.ogg
-Downloading: https://resources.download.minecraft.net/8c/8ccd1c57f2982182699073f47d8ec4875c45249c Asset: minecraft/sounds/item/armor/equip_leather5.ogg
 Downloading: https://resources.download.minecraft.net/64/64a8e6a57b4ff89d6d8c90916c412389166e3ea1 Asset: minecraft/sounds/item/armor/equip_leather4.ogg
+Downloading: https://resources.download.minecraft.net/8c/8ccd1c57f2982182699073f47d8ec4875c45249c Asset: minecraft/sounds/item/armor/equip_leather5.ogg
 Downloading: https://resources.download.minecraft.net/74/74c2c4cd3ccc69adae111b684d8620ce59c305ba Asset: minecraft/sounds/item/armor/equip_leather6.ogg
 Downloading: https://resources.download.minecraft.net/d1/d1c98c672f1a4039accf2f396ebc78fd0403e1e9 Asset: minecraft/sounds/item/armor/equip_netherite1.ogg
 Downloading: https://resources.download.minecraft.net/43/4352b68f2bf2baf46e6ea07be4a7688efdf5b29d Asset: minecraft/sounds/item/armor/equip_netherite2.ogg
 Downloading: https://resources.download.minecraft.net/4d/4d6fbd39a70f04444eb76f2c873de7c524e13fc7 Asset: minecraft/sounds/item/armor/equip_netherite3.ogg
 Downloading: https://resources.download.minecraft.net/1f/1ffc6f4549c2a00c29ebe5cd54d907ea9345df9e Asset: minecraft/sounds/item/armor/equip_netherite4.ogg
 Downloading: https://resources.download.minecraft.net/e9/e91db11f0dbb7580b1e9e57483827f6724018049 Asset: minecraft/sounds/item/axe/scrape1.ogg
-Downloading: https://resources.download.minecraft.net/35/35329e58679fe3c986c258b9722553c3be3cc2bc Asset: minecraft/sounds/item/axe/scrape2.ogg
 Downloading: https://resources.download.minecraft.net/4b/4be3b65372d2c36ea6579d5b87145714dc934480 Asset: minecraft/sounds/item/axe/scrape3.ogg
 Downloading: https://resources.download.minecraft.net/42/42b2964c08f50be3fda62257202efe42f262c005 Asset: minecraft/sounds/item/axe/strip1.ogg
+Downloading: https://resources.download.minecraft.net/35/35329e58679fe3c986c258b9722553c3be3cc2bc Asset: minecraft/sounds/item/axe/scrape2.ogg
 Downloading: https://resources.download.minecraft.net/38/38044a5747fd72dc26f3c0a37bef44ffa3744078 Asset: minecraft/sounds/item/axe/strip2.ogg
 Downloading: https://resources.download.minecraft.net/a8/a84dafa90faa56556346437e5f27ad047dc584ea Asset: minecraft/sounds/item/axe/strip3.ogg
 Downloading: https://resources.download.minecraft.net/76/7621881ced7901c92236f386c26cd678aaf9ba49 Asset: minecraft/sounds/item/axe/strip4.ogg
@@ -2146,25 +2142,25 @@ Downloading: https://resources.download.minecraft.net/1b/1bd5a33c1b50627d5fd45a4
 Downloading: https://resources.download.minecraft.net/ee/eefec8ea4c0e3a2cf4357226bdcc1b2b7919e8ac Asset: minecraft/sounds/item/book/close_put2.ogg
 Downloading: https://resources.download.minecraft.net/23/234d6a686516c264a370ea834b87d47ae7334ef7 Asset: minecraft/sounds/item/book/open_flip1.ogg
 Downloading: https://resources.download.minecraft.net/c7/c7d1608c706d75df8f074fd04da027fdbf9ec5c1 Asset: minecraft/sounds/item/book/open_flip2.ogg
-Downloading: https://resources.download.minecraft.net/95/95f697cb272bb10a744a5062463a6e737a1c4ec2 Asset: minecraft/sounds/item/book/open_flip3.ogg
 Downloading: https://resources.download.minecraft.net/07/072397f08683ce80e7ab2511b19bbc8f4816f125 Asset: minecraft/sounds/item/bottle/drink_honey1.ogg
 Downloading: https://resources.download.minecraft.net/2d/2d8f504deed070027dd587a2db213acbc88e01e7 Asset: minecraft/sounds/item/bottle/drink_honey2.ogg
+Downloading: https://resources.download.minecraft.net/95/95f697cb272bb10a744a5062463a6e737a1c4ec2 Asset: minecraft/sounds/item/book/open_flip3.ogg
 Downloading: https://resources.download.minecraft.net/13/1389244058c7257571f36d6aaa4f861821cf6066 Asset: minecraft/sounds/item/bottle/drink_honey3.ogg
 Downloading: https://resources.download.minecraft.net/d6/d6b740955d317b31644397ff1b2049f6343c862d Asset: minecraft/sounds/item/bottle/empty1.ogg
 Downloading: https://resources.download.minecraft.net/09/09e8b2079bc363d287fe85d5687af142d5fa0f82 Asset: minecraft/sounds/item/bottle/empty2.ogg
-Downloading: https://resources.download.minecraft.net/4d/4dbe4df94e8c2433b4e046b0493b47db1272b995 Asset: minecraft/sounds/item/bottle/fill1.ogg
 Downloading: https://resources.download.minecraft.net/8a/8ade85479752442bc6f00db4d924e88f9f8591e9 Asset: minecraft/sounds/item/bottle/fill2.ogg
+Downloading: https://resources.download.minecraft.net/4d/4dbe4df94e8c2433b4e046b0493b47db1272b995 Asset: minecraft/sounds/item/bottle/fill1.ogg
 Downloading: https://resources.download.minecraft.net/66/66a1c766a70f18978ddbcb3d1861e10e6b2722fa Asset: minecraft/sounds/item/bottle/fill3.ogg
 Downloading: https://resources.download.minecraft.net/8f/8f9e605a2e7895b480b5691cc460e41eedacbd58 Asset: minecraft/sounds/item/bottle/fill4.ogg
-Downloading: https://resources.download.minecraft.net/e5/e56f9472bd8b2894115337b211857366e916966d Asset: minecraft/sounds/item/bottle/fill_dragonbreath2.ogg
 Downloading: https://resources.download.minecraft.net/cc/cc6d28540b6033f5d420f7cd81a77f17619c0a2a Asset: minecraft/sounds/item/bottle/fill_dragonbreath1.ogg
+Downloading: https://resources.download.minecraft.net/e5/e56f9472bd8b2894115337b211857366e916966d Asset: minecraft/sounds/item/bottle/fill_dragonbreath2.ogg
 Downloading: https://resources.download.minecraft.net/74/7425e3e9082b34174bc803a0b5b639c45b9f6631 Asset: minecraft/sounds/item/brush/brush_sand_complete1.ogg
 Downloading: https://resources.download.minecraft.net/d4/d4cf3c6c0ba86fbeedda0460dd25dce4f4762ee5 Asset: minecraft/sounds/item/brush/brush_sand_complete2.ogg
 Downloading: https://resources.download.minecraft.net/33/33bab73536ccde1205b5c77001b55f9289769e1f Asset: minecraft/sounds/item/brush/brush_sand_complete3.ogg
 Downloading: https://resources.download.minecraft.net/bf/bfd094a7e9c3c6f3bda315596ae97de16c4bce15 Asset: minecraft/sounds/item/brush/brush_sand_complete4.ogg
 Downloading: https://resources.download.minecraft.net/6c/6c53b74f97c248f4a293da24a67bae27baf0b5fe Asset: minecraft/sounds/item/brush/brush_sand_complete5.ogg
-Downloading: https://resources.download.minecraft.net/5f/5fd434e7b4c26ed4367ef44f606ac34f7c9c35f2 Asset: minecraft/sounds/item/brush/brushing_generic1.ogg
 Downloading: https://resources.download.minecraft.net/10/10417d85fa38d22906d61194594c966f98a653a1 Asset: minecraft/sounds/item/brush/brushing_generic2.ogg
+Downloading: https://resources.download.minecraft.net/5f/5fd434e7b4c26ed4367ef44f606ac34f7c9c35f2 Asset: minecraft/sounds/item/brush/brushing_generic1.ogg
 Downloading: https://resources.download.minecraft.net/6c/6cee4fa5a9ea86491c529ecf9eec09e45b9a7e5b Asset: minecraft/sounds/item/brush/brushing_generic3.ogg
 Downloading: https://resources.download.minecraft.net/9d/9d90cbdc849a42e46c4daa0d1f41f01595cabb7a Asset: minecraft/sounds/item/brush/brushing_generic4.ogg
 Downloading: https://resources.download.minecraft.net/5c/5cb45773f1d399db399d0214efc75f3ade0f81d5 Asset: minecraft/sounds/item/brush/brushing_gravel1.ogg
@@ -2174,8 +2170,8 @@ Downloading: https://resources.download.minecraft.net/44/44fd98a98f08ff8ff436f2f
 Downloading: https://resources.download.minecraft.net/21/2158a1374fc76bce3fe8ce175d836edd8d17216b Asset: minecraft/sounds/item/brush/brushing_gravel_complete1.ogg
 Downloading: https://resources.download.minecraft.net/fe/fe4f948c6186e20321dea4d6fb7afb3d09ddc5db Asset: minecraft/sounds/item/brush/brushing_gravel_complete2.ogg
 Downloading: https://resources.download.minecraft.net/5a/5a8e96c767176eed1659a3a66b557f01b23a5563 Asset: minecraft/sounds/item/brush/brushing_gravel_complete3.ogg
-Downloading: https://resources.download.minecraft.net/0b/0b97573206cd326fb704f0bd2ba1ae8038ac2091 Asset: minecraft/sounds/item/brush/brushing_gravel_complete4.ogg
 Downloading: https://resources.download.minecraft.net/ff/ffa8d698ddccefba63cb8236219ca17a369fbb91 Asset: minecraft/sounds/item/brush/brushing_sand1.ogg
+Downloading: https://resources.download.minecraft.net/0b/0b97573206cd326fb704f0bd2ba1ae8038ac2091 Asset: minecraft/sounds/item/brush/brushing_gravel_complete4.ogg
 Downloading: https://resources.download.minecraft.net/b2/b28c3865582868f63f1efe6e6e78a28b7e3f9e3f Asset: minecraft/sounds/item/brush/brushing_sand2.ogg
 Downloading: https://resources.download.minecraft.net/cb/cb5c412cf4108cfaa7b5642e6a34294d85efcf55 Asset: minecraft/sounds/item/brush/brushing_sand3.ogg
 Downloading: https://resources.download.minecraft.net/99/992b7f42a7e4f3b55e64658c10619f55a2e3802e Asset: minecraft/sounds/item/brush/brushing_sand4.ogg
@@ -2221,9 +2217,9 @@ Downloading: https://resources.download.minecraft.net/36/361810bfeaae39c4c73b74e
 Downloading: https://resources.download.minecraft.net/07/070f6bd78bcbf7a504a340870c713bfddbe030d6 Asset: minecraft/sounds/item/crossbow/loading_start.ogg
 Downloading: https://resources.download.minecraft.net/c3/c327427d1c2813ea014c5fcc2f994314761038eb Asset: minecraft/sounds/item/crossbow/quick_charge/quick1_1.ogg
 Downloading: https://resources.download.minecraft.net/d3/d300b2789106ec5f2a0d17cb1d959dde34a83212 Asset: minecraft/sounds/item/crossbow/quick_charge/quick1_2.ogg
+Downloading: https://resources.download.minecraft.net/ce/ce6a719ad8efbf76e66f01dd97db1807a0fc76e6 Asset: minecraft/sounds/item/crossbow/quick_charge/quick1_3.ogg
 Downloading: https://resources.download.minecraft.net/52/520aa25be86567d4b6f22aebd2a6add3aad7943d Asset: minecraft/sounds/item/crossbow/quick_charge/quick2_1.ogg
 Downloading: https://resources.download.minecraft.net/42/421afa0cb2bf71e67f204ade30b024884bcf1446 Asset: minecraft/sounds/item/crossbow/quick_charge/quick2_2.ogg
-Downloading: https://resources.download.minecraft.net/ce/ce6a719ad8efbf76e66f01dd97db1807a0fc76e6 Asset: minecraft/sounds/item/crossbow/quick_charge/quick1_3.ogg
 Downloading: https://resources.download.minecraft.net/1b/1b7075285317276654bfa1eef36bebb8f5f50f00 Asset: minecraft/sounds/item/crossbow/quick_charge/quick2_3.ogg
 Downloading: https://resources.download.minecraft.net/46/465bed441f8f55052cd382621a2eeac8b4524a44 Asset: minecraft/sounds/item/crossbow/quick_charge/quick3_1.ogg
 Downloading: https://resources.download.minecraft.net/9f/9f98eb48a47834f40e18da5fd41c0369ba682220 Asset: minecraft/sounds/item/crossbow/quick_charge/quick3_2.ogg
@@ -2232,8 +2228,8 @@ Downloading: https://resources.download.minecraft.net/84/84b9b4ee188b1fc3395c9b7
 Downloading: https://resources.download.minecraft.net/19/1938466779870e47c016bec9b78f277ceba6c079 Asset: minecraft/sounds/item/crossbow/shoot2.ogg
 Downloading: https://resources.download.minecraft.net/4f/4f844e1bc49fde5ea93fa45958761b50c50c0dad Asset: minecraft/sounds/item/crossbow/shoot3.ogg
 Downloading: https://resources.download.minecraft.net/92/92dae4cc2ca5d8c5e33239db039ba1d6df56697f Asset: minecraft/sounds/item/dye/dye.ogg
-Downloading: https://resources.download.minecraft.net/90/90d599a1760137a7c4d7a52c77f5c65c02f137d4 Asset: minecraft/sounds/item/elytra/elytra_loop.ogg
 Downloading: https://resources.download.minecraft.net/83/83f1f1942162c2f164b5746fe5acda1e673a9673 Asset: minecraft/sounds/item/goat_horn/call0.ogg
+Downloading: https://resources.download.minecraft.net/90/90d599a1760137a7c4d7a52c77f5c65c02f137d4 Asset: minecraft/sounds/item/elytra/elytra_loop.ogg
 Downloading: https://resources.download.minecraft.net/74/74affd16eb79df36389bfcfe11ba6e06e0429f1f Asset: minecraft/sounds/item/goat_horn/call1.ogg
 Downloading: https://resources.download.minecraft.net/5f/5fcc56a307bcb273fc844aa7ca0e7fd449411704 Asset: minecraft/sounds/item/goat_horn/call2.ogg
 Downloading: https://resources.download.minecraft.net/cd/cd5c53f69663f3fdcdb4cd43f4d1e187cd2906c4 Asset: minecraft/sounds/item/goat_horn/call3.ogg
@@ -2246,9 +2242,9 @@ Downloading: https://resources.download.minecraft.net/46/46dd1e5e0f90bb72261e298
 Downloading: https://resources.download.minecraft.net/d7/d75f19c657e1f22b47d2060fd3495c444f35a477 Asset: minecraft/sounds/item/hoe/till3.ogg
 Downloading: https://resources.download.minecraft.net/cb/cb95637a9d5e9b0cb36a2516f0dfac30fed9d720 Asset: minecraft/sounds/item/hoe/till4.ogg
 Downloading: https://resources.download.minecraft.net/4a/4a73e322395e001dd4e47da97ebd47600240e00b Asset: minecraft/sounds/item/honeycomb/wax_on1.ogg
-Downloading: https://resources.download.minecraft.net/0c/0c7bc9616e7cb18b994e01642be868b5e05fd8a3 Asset: minecraft/sounds/item/honeycomb/wax_on2.ogg
 Downloading: https://resources.download.minecraft.net/c7/c7f1331e81208196026edef71721e9cdaf8a0425 Asset: minecraft/sounds/item/honeycomb/wax_on3.ogg
 Downloading: https://resources.download.minecraft.net/48/48159596cd2e3df35587b2e99031af71ae45290e Asset: minecraft/sounds/item/ink_sac/ink_sac1.ogg
+Downloading: https://resources.download.minecraft.net/0c/0c7bc9616e7cb18b994e01642be868b5e05fd8a3 Asset: minecraft/sounds/item/honeycomb/wax_on2.ogg
 Downloading: https://resources.download.minecraft.net/f0/f0f67682c9f1f36d42a5b5202ee08f9c4ee06b56 Asset: minecraft/sounds/item/ink_sac/ink_sac2.ogg
 Downloading: https://resources.download.minecraft.net/52/525fd849fade3a4f769c11acf0ef96a4ebca9a9f Asset: minecraft/sounds/item/ink_sac/ink_sac3.ogg
 Downloading: https://resources.download.minecraft.net/63/632c93324d6342c23fe229287ff86ad3170cd5fe Asset: minecraft/sounds/item/plant/crop1.ogg
@@ -2307,8 +2303,8 @@ Downloading: https://resources.download.minecraft.net/34/34a8626957250f7d60ed3af
 Downloading: https://resources.download.minecraft.net/98/98f0b58f75b0bbbdd609b35b46c05656ded22a94 Asset: minecraft/sounds/liquid/swim15.ogg
 Downloading: https://resources.download.minecraft.net/d5/d5cf493c3c24bff9abc4e122cd9afa72e6c0d1a8 Asset: minecraft/sounds/liquid/swim16.ogg
 Downloading: https://resources.download.minecraft.net/6a/6a0b196f6911af249cab7d1b3ff03bea80ec76c1 Asset: minecraft/sounds/liquid/swim17.ogg
-Downloading: https://resources.download.minecraft.net/38/38b0fa011c55c2b15e10a8f1b032b3e545b1a63f Asset: minecraft/sounds/liquid/swim18.ogg
 Downloading: https://resources.download.minecraft.net/5b/5b66f85f4091d100117bd6ea7f49543f7bb682e0 Asset: minecraft/sounds/liquid/swim5.ogg
+Downloading: https://resources.download.minecraft.net/38/38b0fa011c55c2b15e10a8f1b032b3e545b1a63f Asset: minecraft/sounds/liquid/swim18.ogg
 Downloading: https://resources.download.minecraft.net/95/95a646b2a6d24a431cace49c00481455477e9a44 Asset: minecraft/sounds/liquid/swim6.ogg
 Downloading: https://resources.download.minecraft.net/3a/3a395719dac4db21f2092558c28afcf35b833d99 Asset: minecraft/sounds/liquid/swim7.ogg
 Downloading: https://resources.download.minecraft.net/e1/e1687542340bef3e6edf3ed8245261596496734f Asset: minecraft/sounds/liquid/swim8.ogg
@@ -2398,12 +2394,12 @@ Downloading: https://resources.download.minecraft.net/cb/cb1cf4b405d930ad27f09ea
 Downloading: https://resources.download.minecraft.net/00/00b38fae5d28d99514a3e73a913af16359b12b7a Asset: minecraft/sounds/mob/blaze/hit2.ogg
 Downloading: https://resources.download.minecraft.net/97/97e09d51c82b78ab82fb3a4dbbb8cd701b2d0aeb Asset: minecraft/sounds/mob/blaze/hit3.ogg
 Downloading: https://resources.download.minecraft.net/3f/3f447f3e331b59ad014d9bd4a6536f98cf3a08c3 Asset: minecraft/sounds/mob/blaze/hit4.ogg
-Downloading: https://resources.download.minecraft.net/45/450e6ae5f90c21a8317eb7d1e76e427a7b765233 Asset: minecraft/sounds/mob/camel/ambient1.ogg
 Downloading: https://resources.download.minecraft.net/cf/cfd8a8479455286ae466faa132864746b15547c0 Asset: minecraft/sounds/mob/camel/ambient2.ogg
 Downloading: https://resources.download.minecraft.net/97/97507df0101f8d5e6b610511eefc5260057295e4 Asset: minecraft/sounds/mob/camel/ambient3.ogg
 Downloading: https://resources.download.minecraft.net/17/17eb9af9222182888ecb67f07d89bd20de9c0aae Asset: minecraft/sounds/mob/camel/ambient4.ogg
 Downloading: https://resources.download.minecraft.net/3a/3a080cb3bc9ebd940a07f15af76751023d3ce811 Asset: minecraft/sounds/mob/camel/ambient5.ogg
 Downloading: https://resources.download.minecraft.net/a3/a3ab1d3e5e3eb9ef4d29e2f82987404164887df4 Asset: minecraft/sounds/mob/camel/ambient6.ogg
+Downloading: https://resources.download.minecraft.net/45/450e6ae5f90c21a8317eb7d1e76e427a7b765233 Asset: minecraft/sounds/mob/camel/ambient1.ogg
 Downloading: https://resources.download.minecraft.net/8e/8e8abdcb0998a62bb8c8a02935f2ad1b47102c01 Asset: minecraft/sounds/mob/camel/ambient7.ogg
 Downloading: https://resources.download.minecraft.net/a5/a58aafc75747e7ca17d03c8b719b3eaf052852f2 Asset: minecraft/sounds/mob/camel/ambient8.ogg
 Downloading: https://resources.download.minecraft.net/b6/b61ddbf1a1168b20bd8468b011439825d34c96ef Asset: minecraft/sounds/mob/camel/dash1.ogg
@@ -2502,11 +2498,11 @@ Downloading: https://resources.download.minecraft.net/09/0979bf115d081d70a985f1c
 Downloading: https://resources.download.minecraft.net/85/85c860ea8c55984bf6cabb75354c78f3a603f98d Asset: minecraft/sounds/mob/creeper/say4.ogg
 Downloading: https://resources.download.minecraft.net/8f/8fd770ac5a5727ee5bb56a1714f0f59491824551 Asset: minecraft/sounds/mob/dolphin/attack1.ogg
 Downloading: https://resources.download.minecraft.net/e6/e6601b7808697980946a1bed4c75c7b5909cad40 Asset: minecraft/sounds/mob/dolphin/attack2.ogg
-Downloading: https://resources.download.minecraft.net/a2/a22843a2c23161efc3000a4df669e3bf2e60c39a Asset: minecraft/sounds/mob/dolphin/attack3.ogg
-Downloading: https://resources.download.minecraft.net/fd/fdb68edb27c9316374d070ff69fbf9de08b10c55 Asset: minecraft/sounds/mob/dolphin/blowhole1.ogg
 Downloading: https://resources.download.minecraft.net/ca/ca9ec799358bdcea9723d99c1c3ff57827402896 Asset: minecraft/sounds/mob/dolphin/blowhole2.ogg
+Downloading: https://resources.download.minecraft.net/fd/fdb68edb27c9316374d070ff69fbf9de08b10c55 Asset: minecraft/sounds/mob/dolphin/blowhole1.ogg
 Downloading: https://resources.download.minecraft.net/f5/f5b9a9bd7a0a4b48dcdf64a4b4222fa96b7a7dc3 Asset: minecraft/sounds/mob/dolphin/death1.ogg
 Downloading: https://resources.download.minecraft.net/5e/5e8bc6feae574a7c03b76e15def990a0312e8dfa Asset: minecraft/sounds/mob/dolphin/death2.ogg
+Downloading: https://resources.download.minecraft.net/a2/a22843a2c23161efc3000a4df669e3bf2e60c39a Asset: minecraft/sounds/mob/dolphin/attack3.ogg
 Downloading: https://resources.download.minecraft.net/1d/1d355313b9da07fc2e5c5fb9f3869e9390ec739a Asset: minecraft/sounds/mob/dolphin/eat1.ogg
 Downloading: https://resources.download.minecraft.net/03/0350e909da2d06ff930e61307f019e029d7dff0f Asset: minecraft/sounds/mob/dolphin/eat2.ogg
 Downloading: https://resources.download.minecraft.net/34/3474596da23898033a4fc7dbd376de65db928c0a Asset: minecraft/sounds/mob/dolphin/eat3.ogg
@@ -2588,8 +2584,8 @@ Downloading: https://resources.download.minecraft.net/75/753a88c1d9b3b46210c18ff
 Downloading: https://resources.download.minecraft.net/cf/cf60aefd0b742c3fa15e808c1a0c33aebd534cc5 Asset: minecraft/sounds/mob/endermen/hit2.ogg
 Downloading: https://resources.download.minecraft.net/aa/aaa8f1705c873ebc05da460657c8b83fa01ffd57 Asset: minecraft/sounds/mob/endermen/hit3.ogg
 Downloading: https://resources.download.minecraft.net/6e/6e0f9074e049a6c30402d70cc75a5da99042e00c Asset: minecraft/sounds/mob/endermen/hit4.ogg
-Downloading: https://resources.download.minecraft.net/28/281b87984ddf8e94324bc86911a36c971cb3d831 Asset: minecraft/sounds/mob/endermen/idle1.ogg
 Downloading: https://resources.download.minecraft.net/9c/9c7aaf49b3096a69a2d6ca62c1067400a2b70814 Asset: minecraft/sounds/mob/endermen/idle2.ogg
+Downloading: https://resources.download.minecraft.net/28/281b87984ddf8e94324bc86911a36c971cb3d831 Asset: minecraft/sounds/mob/endermen/idle1.ogg
 Downloading: https://resources.download.minecraft.net/bc/bc4c2e76d3b5a0e6f9d5837fe82ed26e808aa918 Asset: minecraft/sounds/mob/endermen/idle3.ogg
 Downloading: https://resources.download.minecraft.net/40/405e2f82caef7f79eb9e26886520711e446366ce Asset: minecraft/sounds/mob/endermen/idle4.ogg
 Downloading: https://resources.download.minecraft.net/e7/e746ec4574aaa047be3076729753c2c75fd34630 Asset: minecraft/sounds/mob/endermen/idle5.ogg
@@ -2633,8 +2629,8 @@ Downloading: https://resources.download.minecraft.net/84/84cb1412eef14915234afd4
 Downloading: https://resources.download.minecraft.net/bb/bb861b65ddc45cd04859e1532492193a66f58373 Asset: minecraft/sounds/mob/fox/eat3.ogg
 Downloading: https://resources.download.minecraft.net/95/9562404ee0e24467f7d2c0d715b1c5dfa16fa9e8 Asset: minecraft/sounds/mob/fox/hurt1.ogg
 Downloading: https://resources.download.minecraft.net/4f/4f3a2c3edf64d8559d3ecd79b0cd14d54ec3d51f Asset: minecraft/sounds/mob/fox/hurt2.ogg
-Downloading: https://resources.download.minecraft.net/d7/d7aa6f32a21b10577d9f8a33a0c67560b9d8131d Asset: minecraft/sounds/mob/fox/hurt3.ogg
 Downloading: https://resources.download.minecraft.net/aa/aaea02b509aae02a380a2e90dd8a6c66b0bccb25 Asset: minecraft/sounds/mob/fox/hurt4.ogg
+Downloading: https://resources.download.minecraft.net/d7/d7aa6f32a21b10577d9f8a33a0c67560b9d8131d Asset: minecraft/sounds/mob/fox/hurt3.ogg
 Downloading: https://resources.download.minecraft.net/7a/7ab9e39691e28779fd0e9744c56a1054e9614baa Asset: minecraft/sounds/mob/fox/idle1.ogg
 Downloading: https://resources.download.minecraft.net/8b/8b84ab7d590fbffbdb6daae5864628e4a3faa4c6 Asset: minecraft/sounds/mob/fox/idle2.ogg
 Downloading: https://resources.download.minecraft.net/2d/2d73def4b1d72718b659c3507e63b4aa468b9ca0 Asset: minecraft/sounds/mob/fox/idle3.ogg
@@ -2706,8 +2702,8 @@ Downloading: https://resources.download.minecraft.net/a0/a0e62d86e5899405df4e796
 Downloading: https://resources.download.minecraft.net/57/57008a7f564443d563968fd040fc13ab226fc8d1 Asset: minecraft/sounds/mob/ghast/scream2.ogg
 Downloading: https://resources.download.minecraft.net/8f/8f23820fa28830dd031188c20acb35af044aedb5 Asset: minecraft/sounds/mob/ghast/scream3.ogg
 Downloading: https://resources.download.minecraft.net/ed/edbc9e9cb9dfeabef93207fc0bdee6ceee5df7bc Asset: minecraft/sounds/mob/ghast/scream4.ogg
-Downloading: https://resources.download.minecraft.net/77/77a7b79d4f2ada27640866ece1020b631f5bdc54 Asset: minecraft/sounds/mob/ghast/scream5.ogg
 Downloading: https://resources.download.minecraft.net/fc/fca37ba6e37f6d91440d4a5d523bb5bd89273853 Asset: minecraft/sounds/mob/goat/death1.ogg
+Downloading: https://resources.download.minecraft.net/77/77a7b79d4f2ada27640866ece1020b631f5bdc54 Asset: minecraft/sounds/mob/ghast/scream5.ogg
 Downloading: https://resources.download.minecraft.net/7f/7f78ac6c5ea9f9416e6cbbd737fe712105bb6a72 Asset: minecraft/sounds/mob/goat/death2.ogg
 Downloading: https://resources.download.minecraft.net/d2/d25ffe625146c99cdf5b3cf33bd7f410436cd9c8 Asset: minecraft/sounds/mob/goat/death3.ogg
 Downloading: https://resources.download.minecraft.net/3c/3cc522ebe4e5c1b70a4481c4992d395e8b483f9e Asset: minecraft/sounds/mob/goat/death4.ogg
@@ -2850,10 +2846,10 @@ Downloading: https://resources.download.minecraft.net/95/9580708c276c3ad24703ea7
 Downloading: https://resources.download.minecraft.net/dd/dd1846c866f5ef87e056a3f14ac156959b637726 Asset: minecraft/sounds/mob/horse/donkey/hit2.ogg
 Downloading: https://resources.download.minecraft.net/40/4081b6ba7b4e345a0c48d791c54b6f59c1e2e1dc Asset: minecraft/sounds/mob/horse/donkey/hit3.ogg
 Downloading: https://resources.download.minecraft.net/d2/d2cd73933fb1f6dbcb0dd170fde6fc8a49d709b9 Asset: minecraft/sounds/mob/horse/donkey/idle1.ogg
-Downloading: https://resources.download.minecraft.net/6d/6d7eeba0ba69cd68acf1e2ed5ae488c5aabbc9bf Asset: minecraft/sounds/mob/horse/donkey/idle2.ogg
 Downloading: https://resources.download.minecraft.net/be/be565339d494ce6ff788480a462bce0ec69c8ded Asset: minecraft/sounds/mob/horse/donkey/idle3.ogg
-Downloading: https://resources.download.minecraft.net/b4/b489c51eb82814562b6e288a889e36ccd018928c Asset: minecraft/sounds/mob/horse/gallop1.ogg
+Downloading: https://resources.download.minecraft.net/6d/6d7eeba0ba69cd68acf1e2ed5ae488c5aabbc9bf Asset: minecraft/sounds/mob/horse/donkey/idle2.ogg
 Downloading: https://resources.download.minecraft.net/24/2433e0f1cfd53dab77422aca9f60f3d9a86d9991 Asset: minecraft/sounds/mob/horse/gallop2.ogg
+Downloading: https://resources.download.minecraft.net/b4/b489c51eb82814562b6e288a889e36ccd018928c Asset: minecraft/sounds/mob/horse/gallop1.ogg
 Downloading: https://resources.download.minecraft.net/cf/cf601e6c603b4186919f49462594da6e66edb7a2 Asset: minecraft/sounds/mob/horse/gallop3.ogg
 Downloading: https://resources.download.minecraft.net/11/11b2b7b9cac527ce8cfb1cee41285c163ad75869 Asset: minecraft/sounds/mob/horse/gallop4.ogg
 Downloading: https://resources.download.minecraft.net/dc/dc6b3831d315eedb3e97823c9ab1ae5092dcecbd Asset: minecraft/sounds/mob/horse/hit1.ogg
@@ -2964,8 +2960,8 @@ Downloading: https://resources.download.minecraft.net/c1/c10fd6127207673fa43ef93
 Downloading: https://resources.download.minecraft.net/15/1584417fc341cc7a34f2de0a5f6e8249684cf1f1 Asset: minecraft/sounds/mob/llama/idle3.ogg
 Downloading: https://resources.download.minecraft.net/a9/a9e0a8b4237387f40008b6f0227915c5dd8281fd Asset: minecraft/sounds/mob/llama/idle4.ogg
 Downloading: https://resources.download.minecraft.net/af/af1519b9429688e8cebc6d7edd8ac5cfc8d1a6af Asset: minecraft/sounds/mob/llama/idle5.ogg
-Downloading: https://resources.download.minecraft.net/36/361c8d76dce6157713e24e77c7feb20868ae0e38 Asset: minecraft/sounds/mob/llama/spit1.ogg
 Downloading: https://resources.download.minecraft.net/a7/a783e772d25d52b7e3d4d9a58458bdc23e94efdc Asset: minecraft/sounds/mob/llama/spit2.ogg
+Downloading: https://resources.download.minecraft.net/36/361c8d76dce6157713e24e77c7feb20868ae0e38 Asset: minecraft/sounds/mob/llama/spit1.ogg
 Downloading: https://resources.download.minecraft.net/75/7584883d3969a771716a29f55a695acad068c9c8 Asset: minecraft/sounds/mob/llama/step1.ogg
 Downloading: https://resources.download.minecraft.net/20/20ddc6a5fec1f7be2d92c73ffed513855fe7a906 Asset: minecraft/sounds/mob/llama/step2.ogg
 Downloading: https://resources.download.minecraft.net/d3/d380b144db2faf356520919d646ab95863cbf51e Asset: minecraft/sounds/mob/llama/step3.ogg
@@ -3034,8 +3030,8 @@ Downloading: https://resources.download.minecraft.net/23/2384f3fe4459fd2b28caf21
 Downloading: https://resources.download.minecraft.net/65/6502ebb0102c62f04e062273f51731617533691e Asset: minecraft/sounds/mob/panda/idle4.ogg
 Downloading: https://resources.download.minecraft.net/b7/b71c0d327fff6aa56c469ca4682ec64d84b6fb20 Asset: minecraft/sounds/mob/panda/nosebreath1.ogg
 Downloading: https://resources.download.minecraft.net/dc/dc1e7951a2cf59be3f7d0693e87579f4155744f1 Asset: minecraft/sounds/mob/panda/nosebreath2.ogg
-Downloading: https://resources.download.minecraft.net/0b/0ba37fea9597cd0ea0e42de4b35f52792f4bc630 Asset: minecraft/sounds/mob/panda/nosebreath3.ogg
 Downloading: https://resources.download.minecraft.net/18/185a3f078f752d5f5eca27913b7fc6c27f0a21cc Asset: minecraft/sounds/mob/panda/pant1.ogg
+Downloading: https://resources.download.minecraft.net/0b/0ba37fea9597cd0ea0e42de4b35f52792f4bc630 Asset: minecraft/sounds/mob/panda/nosebreath3.ogg
 Downloading: https://resources.download.minecraft.net/81/810cabb4ba6ff19ea43f413f30473fa1b40743f7 Asset: minecraft/sounds/mob/panda/pant2.ogg
 Downloading: https://resources.download.minecraft.net/3e/3eb8034123b85bafb06708740611791839e44355 Asset: minecraft/sounds/mob/panda/pre_sneeze.ogg
 Downloading: https://resources.download.minecraft.net/5e/5ec2f9a4b99b837305ba36eff204dc60614206ba Asset: minecraft/sounds/mob/panda/sneeze1.ogg
@@ -3045,8 +3041,8 @@ Downloading: https://resources.download.minecraft.net/72/72e37a7fd294aedfc51e026
 Downloading: https://resources.download.minecraft.net/69/69d128e741956899750edb40ed742e225a838c5a Asset: minecraft/sounds/mob/panda/step2.ogg
 Downloading: https://resources.download.minecraft.net/80/80b44a271d273b3cdf7c4854c707bde64fa572a8 Asset: minecraft/sounds/mob/panda/step3.ogg
 Downloading: https://resources.download.minecraft.net/e8/e81e2941f3f5e74239a333cf39df92825cd916f8 Asset: minecraft/sounds/mob/panda/step4.ogg
-Downloading: https://resources.download.minecraft.net/4b/4bcc89bcd50c84f794a65ff740a4783b130281d4 Asset: minecraft/sounds/mob/panda/step5.ogg
 Downloading: https://resources.download.minecraft.net/15/15beaa4b980e4cdd87ecd2c573f04b3f196e3b8c Asset: minecraft/sounds/mob/panda/worried/worried1.ogg
+Downloading: https://resources.download.minecraft.net/4b/4bcc89bcd50c84f794a65ff740a4783b130281d4 Asset: minecraft/sounds/mob/panda/step5.ogg
 Downloading: https://resources.download.minecraft.net/e9/e9101fe5fd43e6fca4722a2697e6f4425164ef69 Asset: minecraft/sounds/mob/panda/worried/worried2.ogg
 Downloading: https://resources.download.minecraft.net/69/6932d144f711c9082f8a9741a4285342b886ff6e Asset: minecraft/sounds/mob/panda/worried/worried3.ogg
 Downloading: https://resources.download.minecraft.net/0a/0acf467b3abe89eec11864cf2c3211224a018601 Asset: minecraft/sounds/mob/panda/worried/worried4.ogg
@@ -3108,8 +3104,8 @@ Downloading: https://resources.download.minecraft.net/a9/a99bf88163bcb576e31e6e2
 Downloading: https://resources.download.minecraft.net/ab/ab615a912fb8ea06648836e0ec1cbeeefe117da6 Asset: minecraft/sounds/mob/pig/say2.ogg
 Downloading: https://resources.download.minecraft.net/58/58efedf302e0203a6ff9e59a6535d300286c5594 Asset: minecraft/sounds/mob/pig/say3.ogg
 Downloading: https://resources.download.minecraft.net/05/05baaf5ed0cbdab08292b3962e1b1385e13b9dba Asset: minecraft/sounds/mob/pig/step1.ogg
-Downloading: https://resources.download.minecraft.net/62/6226903c5dfd8ac388f9d64a5fa9968680ed3507 Asset: minecraft/sounds/mob/pig/step3.ogg
 Downloading: https://resources.download.minecraft.net/a6/a69a66bfda52a42ea8cf712eb1caa8830046c14f Asset: minecraft/sounds/mob/pig/step2.ogg
+Downloading: https://resources.download.minecraft.net/62/6226903c5dfd8ac388f9d64a5fa9968680ed3507 Asset: minecraft/sounds/mob/pig/step3.ogg
 Downloading: https://resources.download.minecraft.net/f5/f5e1ba4ac271b4c2feee86a4d04e32279ea99c10 Asset: minecraft/sounds/mob/pig/step4.ogg
 Downloading: https://resources.download.minecraft.net/56/56d6fd65958fb25bf9b4033a87655b591e222005 Asset: minecraft/sounds/mob/pig/step5.ogg
 Downloading: https://resources.download.minecraft.net/2b/2b74d5b8a848140282c049e707450275d02adda3 Asset: minecraft/sounds/mob/piglin/admire1.ogg
@@ -3216,8 +3212,8 @@ Downloading: https://resources.download.minecraft.net/46/461436665544dc44e12f79c
 Downloading: https://resources.download.minecraft.net/c4/c4456c473ff44786c6f9d7e6c91f652ca0a7f7d4 Asset: minecraft/sounds/mob/rabbit/hop4.ogg
 Downloading: https://resources.download.minecraft.net/9b/9b6a19ab1865d88b1adb2acafa9080ba9fa1b8e0 Asset: minecraft/sounds/mob/rabbit/hurt1.ogg
 Downloading: https://resources.download.minecraft.net/4d/4da9f12f979eba012c6f62e0820ca58cc49d8834 Asset: minecraft/sounds/mob/rabbit/hurt2.ogg
-Downloading: https://resources.download.minecraft.net/b8/b8e867c43f0a7f3f3f96c238d99c619aa237bc15 Asset: minecraft/sounds/mob/rabbit/hurt4.ogg
 Downloading: https://resources.download.minecraft.net/ac/acbf6f286ce5b0250573656c7570669db42f86c5 Asset: minecraft/sounds/mob/rabbit/hurt3.ogg
+Downloading: https://resources.download.minecraft.net/b8/b8e867c43f0a7f3f3f96c238d99c619aa237bc15 Asset: minecraft/sounds/mob/rabbit/hurt4.ogg
 Downloading: https://resources.download.minecraft.net/9f/9f61bdb718755ad41f71202c8fef5e993769c028 Asset: minecraft/sounds/mob/rabbit/idle1.ogg
 Downloading: https://resources.download.minecraft.net/bd/bde8c9c94b1a27db0c4b49cbe88251e220b5ee29 Asset: minecraft/sounds/mob/rabbit/idle2.ogg
 Downloading: https://resources.download.minecraft.net/89/8906199918a85564590c7a01e854c3820853533e Asset: minecraft/sounds/mob/rabbit/idle3.ogg
@@ -3317,8 +3313,8 @@ Downloading: https://resources.download.minecraft.net/9d/9d2eb3170a480cc94803ff3
 Downloading: https://resources.download.minecraft.net/86/860e9f0bd465ef7b412cc9be1a33025cc6b07050 Asset: minecraft/sounds/mob/sniffer/idle10.ogg
 Downloading: https://resources.download.minecraft.net/fe/fefda515e0371929a93b598217f883ae23ae4185 Asset: minecraft/sounds/mob/sniffer/idle11.ogg
 Downloading: https://resources.download.minecraft.net/20/204b51ed92fafc4fe90a275d012db53583a3671b Asset: minecraft/sounds/mob/sniffer/idle2.ogg
-Downloading: https://resources.download.minecraft.net/38/3828914a60e52512a43117b31498528c19e5d37e Asset: minecraft/sounds/mob/sniffer/idle4.ogg
 Downloading: https://resources.download.minecraft.net/ed/ed9a80e163332bdbc928db7ec551d4a1c1a5283e Asset: minecraft/sounds/mob/sniffer/idle3.ogg
+Downloading: https://resources.download.minecraft.net/38/3828914a60e52512a43117b31498528c19e5d37e Asset: minecraft/sounds/mob/sniffer/idle4.ogg
 Downloading: https://resources.download.minecraft.net/7b/7b3d4e56ae5ba12e8a89a85fe434752908706936 Asset: minecraft/sounds/mob/sniffer/idle5.ogg
 Downloading: https://resources.download.minecraft.net/0f/0f7fd126dd60ebd66a2d4466502c223e4c0f4975 Asset: minecraft/sounds/mob/sniffer/idle6.ogg
 Downloading: https://resources.download.minecraft.net/0c/0cc9405f93aa5b409e27cf2428c828e7d55edf74 Asset: minecraft/sounds/mob/sniffer/idle7.ogg
@@ -3334,10 +3330,14 @@ Downloading: https://resources.download.minecraft.net/be/be24e53e92f17787b16dbc0
 Downloading: https://resources.download.minecraft.net/60/606487eb2de7bc4821b0016bda277e03890cb8b0 Asset: minecraft/sounds/mob/sniffer/searching3.ogg
 Downloading: https://resources.download.minecraft.net/1e/1e947fb99bc5f2403724c239a8a7ad5e0f1369dd Asset: minecraft/sounds/mob/sniffer/searching4.ogg
 Downloading: https://resources.download.minecraft.net/b4/b48f11e52050efa71764d793122b98ac2d54ddea Asset: minecraft/sounds/mob/sniffer/searching5.ogg
+
+> Task :downloadAssets
+Downloading: https://piston-meta.mojang.com/v1/packages/ada52cc672270e8dc69e912b2ba0ea9c141ed664/5.json
+
 Downloading: https://resources.download.minecraft.net/b2/b29af237376cb8030891da0af1d12e505012a393 Asset: minecraft/sounds/mob/sniffer/searching6.ogg
 Downloading: https://resources.download.minecraft.net/a0/a0862a1cc7d31dd37e33854f95958a9276d4fe0b Asset: minecraft/sounds/mob/sniffer/sniffing1.ogg
-Downloading: https://resources.download.minecraft.net/e4/e4702a4cb07def56ffa9da0c105c0241ad3bd826 Asset: minecraft/sounds/mob/sniffer/sniffing2.ogg
 Downloading: https://resources.download.minecraft.net/e1/e1524bcf630bcc9e04f7bb9cf9c3eaf353634a0a Asset: minecraft/sounds/mob/sniffer/sniffing3.ogg
+Downloading: https://resources.download.minecraft.net/e4/e4702a4cb07def56ffa9da0c105c0241ad3bd826 Asset: minecraft/sounds/mob/sniffer/sniffing2.ogg
 Downloading: https://resources.download.minecraft.net/4d/4d56986efbd9f0c9f6c8a2c4916f17d863456d06 Asset: minecraft/sounds/mob/sniffer/step1.ogg
 Downloading: https://resources.download.minecraft.net/44/44361b4a737ed88adf39ed223388c2e5fa1d5e5c Asset: minecraft/sounds/mob/sniffer/step2.ogg
 Downloading: https://resources.download.minecraft.net/8d/8d83fef778b1c4a7df04355ced9638f4216a48c7 Asset: minecraft/sounds/mob/sniffer/step3.ogg
@@ -3410,8 +3410,8 @@ Downloading: https://resources.download.minecraft.net/34/34ba5df38b450a7ccfbb272
 Downloading: https://resources.download.minecraft.net/3c/3c364e117468d3232cb75c67777120d98b4b89f4 Asset: minecraft/sounds/mob/strider/step_lava6.ogg
 Downloading: https://resources.download.minecraft.net/43/43c8e9976ed061cf7780d080c15a9f446965540a Asset: minecraft/sounds/mob/tadpole/death1.ogg
 Downloading: https://resources.download.minecraft.net/83/8372b935027c0fcc318f4100a49c2ce535215ea6 Asset: minecraft/sounds/mob/tadpole/death2.ogg
-Downloading: https://resources.download.minecraft.net/44/4463a33cbae36dfbfce9fae056cbe51b178d104e Asset: minecraft/sounds/mob/tadpole/hurt2.ogg
 Downloading: https://resources.download.minecraft.net/c4/c4a2f95fa55bdfe47ed87bbfd632a3dba44d5a56 Asset: minecraft/sounds/mob/tadpole/hurt1.ogg
+Downloading: https://resources.download.minecraft.net/44/4463a33cbae36dfbfce9fae056cbe51b178d104e Asset: minecraft/sounds/mob/tadpole/hurt2.ogg
 Downloading: https://resources.download.minecraft.net/59/597b939d2fc17a6746d854b38b6f020a09d607c5 Asset: minecraft/sounds/mob/tadpole/hurt3.ogg
 Downloading: https://resources.download.minecraft.net/43/433ebc43b76a0da8643efbfb8c5c05ef697fef9a Asset: minecraft/sounds/mob/tadpole/hurt4.ogg
 Downloading: https://resources.download.minecraft.net/18/18e070182052d63ec9b28ccec571a64db9137341 Asset: minecraft/sounds/mob/turtle/armor.ogg
@@ -3506,8 +3506,8 @@ Downloading: https://resources.download.minecraft.net/c7/c746d34624269a4a709e772
 Downloading: https://resources.download.minecraft.net/51/517d2ef3d3c8d5352a12552430603aff1addce22 Asset: minecraft/sounds/mob/wandering_trader/disappeared2.ogg
 Downloading: https://resources.download.minecraft.net/ae/aed47ecee3a02ab6085bd43e136be5cd2efba379 Asset: minecraft/sounds/mob/wandering_trader/drink_milk1.ogg
 Downloading: https://resources.download.minecraft.net/27/27639caa436a2372f2a278f4166c42210ce5f025 Asset: minecraft/sounds/mob/wandering_trader/drink_milk2.ogg
-Downloading: https://resources.download.minecraft.net/1b/1b89d175802fd1a24ca927f76fe41d7e8fe882e0 Asset: minecraft/sounds/mob/wandering_trader/drink_milk3.ogg
 Downloading: https://resources.download.minecraft.net/ed/ed850d693885e848e74c4819974e0e4787e13c59 Asset: minecraft/sounds/mob/wandering_trader/drink_milk4.ogg
+Downloading: https://resources.download.minecraft.net/1b/1b89d175802fd1a24ca927f76fe41d7e8fe882e0 Asset: minecraft/sounds/mob/wandering_trader/drink_milk3.ogg
 Downloading: https://resources.download.minecraft.net/43/439571a5c08fb8cf12d2001ddf4b9cfc5c0521ec Asset: minecraft/sounds/mob/wandering_trader/drink_milk5.ogg
 Downloading: https://resources.download.minecraft.net/f0/f0194d3dcf61e81446cc5efd554d8811cf66faf3 Asset: minecraft/sounds/mob/wandering_trader/drink_potion.ogg
 Downloading: https://resources.download.minecraft.net/5d/5d5921f03b10ef767eaf5f4edb9f3b1643b8f84d Asset: minecraft/sounds/mob/wandering_trader/haggle1.ogg
@@ -3547,8 +3547,8 @@ Downloading: https://resources.download.minecraft.net/19/19d7681e0cb082cb9e0df31
 Downloading: https://resources.download.minecraft.net/d1/d1a9b643d303acd5d4a2833fa108b1b6e9d1993d Asset: minecraft/sounds/mob/warden/ambient_3.ogg
 Downloading: https://resources.download.minecraft.net/55/55794468b06bc08bd9d817b38591e7a0dad346b8 Asset: minecraft/sounds/mob/warden/ambient_4.ogg
 Downloading: https://resources.download.minecraft.net/4c/4cf4080d1730f61584808e8d0afa916a6f0332ca Asset: minecraft/sounds/mob/warden/ambient_5.ogg
-Downloading: https://resources.download.minecraft.net/f1/f13b1ba705f23930fc839d41c7cde18c59051583 Asset: minecraft/sounds/mob/warden/ambient_6.ogg
 Downloading: https://resources.download.minecraft.net/0f/0f3e208b8149b71fdccf1792f4533bd45f0f207d Asset: minecraft/sounds/mob/warden/ambient_7.ogg
+Downloading: https://resources.download.minecraft.net/f1/f13b1ba705f23930fc839d41c7cde18c59051583 Asset: minecraft/sounds/mob/warden/ambient_6.ogg
 Downloading: https://resources.download.minecraft.net/a2/a2d53ff09cd03c0919670a2034a8646137797881 Asset: minecraft/sounds/mob/warden/ambient_8.ogg
 Downloading: https://resources.download.minecraft.net/6a/6a1af6f55d85797fdc25ad9f9a79c039f3cf97b7 Asset: minecraft/sounds/mob/warden/ambient_9.ogg
 Downloading: https://resources.download.minecraft.net/e9/e99133adaf45802402f96625ced21564b16f9714 Asset: minecraft/sounds/mob/warden/angry_1.ogg
@@ -3568,8 +3568,8 @@ Downloading: https://resources.download.minecraft.net/8f/8f302a31d11dc0e23d574db
 Downloading: https://resources.download.minecraft.net/42/42e712606676d97f9bca5c641a2d92d7c86717ca Asset: minecraft/sounds/mob/warden/heartbeat_3.ogg
 Downloading: https://resources.download.minecraft.net/d6/d6b078490e9cd8cef0795dfb4188de64deca2b7b Asset: minecraft/sounds/mob/warden/heartbeat_4.ogg
 Downloading: https://resources.download.minecraft.net/90/900d36028e1fc285b8b0de5525aaf9cccfbb10ad Asset: minecraft/sounds/mob/warden/hurt_1.ogg
-Downloading: https://resources.download.minecraft.net/9f/9f7a20eb13651875546ba4f461c8b12a87a3e91c Asset: minecraft/sounds/mob/warden/hurt_2.ogg
 Downloading: https://resources.download.minecraft.net/ee/ee1baab117ecd677668728d83caf606b6ea22f77 Asset: minecraft/sounds/mob/warden/hurt_3.ogg
+Downloading: https://resources.download.minecraft.net/9f/9f7a20eb13651875546ba4f461c8b12a87a3e91c Asset: minecraft/sounds/mob/warden/hurt_2.ogg
 Downloading: https://resources.download.minecraft.net/90/90a81a62b2da5ff26ee2e06e93704e5ef96bec2a Asset: minecraft/sounds/mob/warden/hurt_4.ogg
 Downloading: https://resources.download.minecraft.net/65/6579fee8e39e6de596dfa58f1c0fa155d3642d2b Asset: minecraft/sounds/mob/warden/listening_1.ogg
 Downloading: https://resources.download.minecraft.net/3a/3ac40ab47211d5469607227981f5b5f20ee2e72c Asset: minecraft/sounds/mob/warden/listening_2.ogg
@@ -3667,8 +3667,8 @@ Downloading: https://resources.download.minecraft.net/eb/eb2feb643b4fa9cca75e2d8
 Downloading: https://resources.download.minecraft.net/7d/7dda6ffb34caad97b8f1c619c46311c8eba4336f Asset: minecraft/sounds/mob/zoglin/hurt1.ogg
 Downloading: https://resources.download.minecraft.net/03/03252f780f1e85ac6202567fca515f7afebc9cf0 Asset: minecraft/sounds/mob/zoglin/hurt2.ogg
 Downloading: https://resources.download.minecraft.net/d9/d9191c272475d12f49449bd7cfc8598efecc0f8d Asset: minecraft/sounds/mob/zoglin/hurt3.ogg
-Downloading: https://resources.download.minecraft.net/a5/a54881d00895a69386a3e9cf6e41132078aae07d Asset: minecraft/sounds/mob/zoglin/idle2.ogg
 Downloading: https://resources.download.minecraft.net/af/af5a563107caf981a48a05527217dc4fef1bc2d2 Asset: minecraft/sounds/mob/zoglin/idle1.ogg
+Downloading: https://resources.download.minecraft.net/a5/a54881d00895a69386a3e9cf6e41132078aae07d Asset: minecraft/sounds/mob/zoglin/idle2.ogg
 Downloading: https://resources.download.minecraft.net/b6/b604d77d2fd1564db1d184a79088fbddca126cb9 Asset: minecraft/sounds/mob/zoglin/idle3.ogg
 Downloading: https://resources.download.minecraft.net/21/21a77376a2b2e2cc2cb8dcd75f718a1a5d6cdb92 Asset: minecraft/sounds/mob/zoglin/idle4.ogg
 Downloading: https://resources.download.minecraft.net/21/2119d7381d136b43a9ba78b1325de275d549f50e Asset: minecraft/sounds/mob/zoglin/idle5.ogg
@@ -3734,8 +3734,8 @@ Downloading: https://resources.download.minecraft.net/62/6254527d626a2c7d80901cc
 Downloading: https://resources.download.minecraft.net/a0/a0ad97718ec427d5651ef602331ebda9c91bc906 Asset: minecraft/sounds/music/game/crescent_dunes.ogg
 Downloading: https://resources.download.minecraft.net/a4/a40303dd9d4bfbb0986e66fc93553a0755621880 Asset: minecraft/sounds/music/game/echo_in_the_wind.ogg
 Downloading: https://resources.download.minecraft.net/b9/b9eef13c2337a6335c4523858619ca560dff4496 Asset: minecraft/sounds/music/game/end/boss.ogg
-Downloading: https://resources.download.minecraft.net/47/47800737d078e751698df291054adc596ba8195a Asset: minecraft/sounds/music/game/end/end.ogg
 Downloading: https://resources.download.minecraft.net/27/27fcacc68bb77f01b23ea9c9d36d9018f8509cdf Asset: minecraft/sounds/music/game/end/credits.ogg
+Downloading: https://resources.download.minecraft.net/47/47800737d078e751698df291054adc596ba8195a Asset: minecraft/sounds/music/game/end/end.ogg
 Downloading: https://resources.download.minecraft.net/45/45bdfe06cc8c375dc507e59527c9a89105980085 Asset: minecraft/sounds/music/game/floating_dream.ogg
 Downloading: https://resources.download.minecraft.net/df/df1ff11b79757432c5c3f279e5ecde7b63ceda64 Asset: minecraft/sounds/music/game/hal1.ogg
 Downloading: https://resources.download.minecraft.net/ce/ceaaaa1d57dfdfbb0bd4da5ea39628b42897a687 Asset: minecraft/sounds/music/game/hal2.ogg
@@ -3807,8 +3807,8 @@ Downloading: https://resources.download.minecraft.net/ec/ec4f4d122ab7c5d44e48419
 Downloading: https://resources.download.minecraft.net/2f/2fe092579d9637e2d160319820ee08e60a237bb7 Asset: minecraft/sounds/random/click_stereo.ogg
 Downloading: https://resources.download.minecraft.net/9e/9ea8a9e105321891bda18b9007b383b40aa7c076 Asset: minecraft/sounds/random/door_close.ogg
 Downloading: https://resources.download.minecraft.net/5b/5bb5a04e776d69ca12b1d7bc369975f9bf62e741 Asset: minecraft/sounds/random/door_open.ogg
-Downloading: https://resources.download.minecraft.net/85/857b75738992d25e338dee640ab191323bcbf798 Asset: minecraft/sounds/random/drink.ogg
 Downloading: https://resources.download.minecraft.net/df/dfee39084c771182f6b9e7cfb8c8bc4e255747bc Asset: minecraft/sounds/random/eat1.ogg
+Downloading: https://resources.download.minecraft.net/85/857b75738992d25e338dee640ab191323bcbf798 Asset: minecraft/sounds/random/drink.ogg
 Downloading: https://resources.download.minecraft.net/d2/d26bde554d88f0ca156baf471c44ce2c0e68176c Asset: minecraft/sounds/random/eat2.ogg
 Downloading: https://resources.download.minecraft.net/9f/9f2c4bab5ed55f1714fffa223985c81babc8f6c0 Asset: minecraft/sounds/random/eat3.ogg
 Downloading: https://resources.download.minecraft.net/cd/cd46e41023887558b134547e28327de6e7df189a Asset: minecraft/sounds/random/explode1.ogg
@@ -3932,54 +3932,280 @@ Downloading: https://resources.download.minecraft.net/c0/c05cbd8c88b587870389815
 Downloading: https://resources.download.minecraft.net/09/09fc4bb8b59416d1bd941aa1f3cda0e58d8b1e38 Asset: realms/textures/gui/images/7.png
 Downloading: https://resources.download.minecraft.net/a4/a449a2395b194c67b17ce2cba15b1e2958130f11 Asset: realms/textures/gui/images/8.png
 Downloading: https://resources.download.minecraft.net/c1/c106e5ef000809049ce7d56e858898255cff9223 Asset: realms/textures/gui/images/9.png
-minecraft/sounds/mob/piglin_brute/death2.ogg Failed.
-java.net.SocketTimeoutException: Read timed out
-	at java.base/sun.nio.ch.NioSocketImpl.timedRead(NioSocketImpl.java:288)
-	at java.base/sun.nio.ch.NioSocketImpl.implRead(NioSocketImpl.java:314)
-	at java.base/sun.nio.ch.NioSocketImpl.read(NioSocketImpl.java:355)
-	at java.base/sun.nio.ch.NioSocketImpl$1.read(NioSocketImpl.java:808)
-	at java.base/java.net.Socket$SocketInputStream.read(Socket.java:966)
-	at java.base/sun.security.ssl.SSLSocketInputRecord.read(SSLSocketInputRecord.java:484)
-	at java.base/sun.security.ssl.SSLSocketInputRecord.readHeader(SSLSocketInputRecord.java:478)
-	at java.base/sun.security.ssl.SSLSocketInputRecord.bytesInCompletePacket(SSLSocketInputRecord.java:70)
-	at java.base/sun.security.ssl.SSLSocketImpl.readApplicationRecord(SSLSocketImpl.java:1464)
-	at java.base/sun.security.ssl.SSLSocketImpl$AppInputStream.read(SSLSocketImpl.java:1069)
-	at java.base/java.io.BufferedInputStream.fill(BufferedInputStream.java:244)
-	at java.base/java.io.BufferedInputStream.read1(BufferedInputStream.java:284)
-	at java.base/java.io.BufferedInputStream.read(BufferedInputStream.java:343)
-	at java.base/sun.net.www.http.HttpClient.parseHTTPHeader(HttpClient.java:834)
-	at java.base/sun.net.www.http.HttpClient.parseHTTP(HttpClient.java:769)
-	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream0(HttpURLConnection.java:1750)
-	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream(HttpURLConnection.java:1644)
-	at java.base/sun.net.www.protocol.https.HttpsURLConnectionImpl.getInputStream(HttpsURLConnectionImpl.java:224)
-	at org.apache.commons.io.FileUtils.copyURLToFile(FileUtils.java:1097)
-	at net.minecraftforge.gradle.common.tasks.DownloadAssets.lambda$run$0(DownloadAssets.java:64)
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
-	at java.base/java.lang.Thread.run(Thread.java:840)
 
-> Task :downloadAssets FAILED
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_6-1794305531267.json
+> Task :extractNatives
+> Task :makeSrcDirs
+> Task :prepareRuns
+> Task :prepareRunClient
+> Task :prepareRunClientCompile
 
-FAILURE: Build failed with an exception.
+> Task :runClient
+2026-11-10 08:55:27,900 main WARN Advanced terminal features are not available in this environment
+[08:55:28] [main/INFO] [cp.mo.mo.Launcher/MODLAUNCHER]: ModLauncher running: args [--launchTarget, forgeclientuserdev, --version, MOD_DEV, --assetIndex, 5, --assetsDir, /home/runner/.gradle/caches/forge_gradle/assets, --gameDir, ., --fml.forgeVersion, 47.4.23, --fml.mcVersion, 1.20.1, --fml.forgeGroup, net.minecraftforge, --fml.mcpVersion, 20230612.114412, --username, TestPlayer, --width, 1920, --height, 1080, --quickPlayMultiplayer, 127.0.0.1:25565]
+[08:55:28] [main/INFO] [cp.mo.mo.Launcher/MODLAUNCHER]: ModLauncher 10.0.9+10.0.9+main.dcd20f30 starting: java version 17.0.21 by Eclipse Adoptium; OS Linux arch amd64 version 7.0.0-1017-azure
+[08:55:28] [main/WARN] [ne.mi.fm.lo.FMLConfig/CORE]: Configuration file /home/runner/work/riftworld/riftworld/ci/maja-run/client/config/fml.toml is not correct. Correcting
+[08:55:28] [main/INFO] [ne.mi.fm.lo.FMLConfig/CORE]: Incorrect key [earlyWindowSkipGLVersions] was corrected from null to []
+[08:55:28] [main/INFO] [ne.mi.fm.lo.FMLConfig/CORE]: Incorrect key [earlyWindowLogHelpMessage] was corrected from null to true
+[08:55:28] [main/INFO] [ne.mi.fm.lo.FMLConfig/CORE]: Incorrect key [earlyWindowSquir] was corrected from null to false
+[08:55:28] [main/INFO] [ne.mi.fm.lo.FMLConfig/CORE]: Incorrect key [earlyWindowShowCPU] was corrected from null to false
+[08:55:28] [main/INFO] [ne.mi.fm.lo.ImmediateWindowHandler/]: Loading ImmediateWindowProvider fmlearlywindow
+[08:55:28] [main/INFO] [EARLYDISPLAY/]: Trying GL version 4.6
+[08:55:28] [main/INFO] [EARLYDISPLAY/]: If this message is the only thing at the bottom of your log before a crash, you probably have a driver issue.
 
-* What went wrong:
-Execution failed for task ':downloadAssets'.
-> Failed to get asset: minecraft/sounds/mob/piglin_brute/death2.ogg
-  Some assets failed to download or validate, try running the task again.
+Possible solutions:
+A) Make sure Minecraft is set to prefer high performance graphics in the OS and/or driver control panel
+B) Check for driver updates on the graphics brand's website
+C) Try reinstalling your graphics drivers
+D) If still not working after trying all of the above, ask for further help on the Forge forums or Discord
 
-* Try:
-> Run with --stacktrace option to get the stack trace.
-> Run with --info or --debug option to get more log output.
-> Run with --scan to get full insights.
-> Get more help at https://help.gradle.org.
-
-Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
-
-You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
-
-For more on this, please refer to https://docs.gradle.org/8.8/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
-
-BUILD FAILED in 2m 12s
-7 actionable tasks: 7 executed
-::error title=Client test failed::line 57, exit 1, command: ./gradlew runClient --no-daemon --console=plain -PrunDir="$PWD/../$RUN" -PautoJoin=127.0.0.1:25565
+You can safely ignore this message if the game starts up successfully.
+[08:55:31] [main/INFO] [EARLYDISPLAY/]: Trying GL version 4.5
+[08:55:31] [main/INFO] [EARLYDISPLAY/]: Trying GL version 4.4
+[08:55:31] [main/INFO] [EARLYDISPLAY/]: Trying GL version 4.3
+[08:55:31] [main/INFO] [EARLYDISPLAY/]: Trying GL version 4.2
+[08:55:31] [main/INFO] [EARLYDISPLAY/]: Trying GL version 4.1
+[08:55:31] [main/INFO] [EARLYDISPLAY/]: Trying GL version 4.0
+[08:55:31] [main/INFO] [EARLYDISPLAY/]: Trying GL version 3.3
+[08:55:32] [main/INFO] [EARLYDISPLAY/]: Requested GL version 3.3 got version 3.3
+[08:55:32] [main/INFO] [mixin/]: SpongePowered MIXIN Subsystem Version=0.8.5 Source=union:/home/runner/.gradle/caches/modules-2/files-2.1/org.spongepowered/mixin/0.8.5/9d1c0c3a304ae6697ecd477218fa61b850bf57fc/mixin-0.8.5.jar%23120!/ Service=ModLauncher Env=CLIENT
+[08:55:32] [pool-2-thread-1/INFO] [EARLYDISPLAY/]: GL info: llvmpipe (LLVM 20.1.2, 256 bits) GL version 3.3 (Core Profile) Mesa 25.2.8-0ubuntu0.24.04.4, Mesa
+[08:55:33] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file /home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/javafmllanguage/1.20.1-47.4.23/103ee0ecf6e5e4a971ee1ae68384e96fd73b097f/javafmllanguage-1.20.1-47.4.23.jar is missing mods.toml file
+[08:55:33] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file /home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/lowcodelanguage/1.20.1-47.4.23/2531b2da1460bc09c8ec3bf946e641de664b460d/lowcodelanguage-1.20.1-47.4.23.jar is missing mods.toml file
+[08:55:33] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file /home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/mclanguage/1.20.1-47.4.23/eebf4eae01f6fde63717bb38b77f9b6b1b50f8/mclanguage-1.20.1-47.4.23.jar is missing mods.toml file
+[08:55:33] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file /home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/fmlcore/1.20.1-47.4.23/ef56cfb608a4356c3f99dd6a4fa81ce33029bcde/fmlcore-1.20.1-47.4.23.jar is missing mods.toml file
+[08:55:33] [main/INFO] [ne.mi.fm.lo.mo.JarInJarDependencyLocator/]: No dependencies to load found. Skipping!
+[08:55:35] [main/INFO] [cp.mo.mo.LaunchServiceHandler/MODLAUNCHER]: Launching target 'forgeclientuserdev' with arguments [--version, MOD_DEV, --gameDir, ., --assetsDir, /home/runner/.gradle/caches/forge_gradle/assets, --assetIndex, 5, --username, TestPlayer, --width, 1920, --height, 1080, --quickPlayMultiplayer, 127.0.0.1:25565]
+[08:55:39] [Datafixer Bootstrap/INFO] [mojang/DataFixerBuilder]: 188 Datafixer optimizations took 212 milliseconds
+[08:55:41] [Render thread/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/home/runner/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.23_mapped_official_1.20.1/forge-1.20.1-47.4.23_mapped_official_1.20.1.jar%23181!/assets/.mcassetsroot' uses unexpected schema
+[08:55:41] [Render thread/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/home/runner/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.23_mapped_official_1.20.1/forge-1.20.1-47.4.23_mapped_official_1.20.1.jar%23181!/data/.mcassetsroot' uses unexpected schema
+[08:55:41] [Render thread/INFO] [mojang/YggdrasilAuthenticationService]: Environment: authHost='https://authserver.mojang.com', accountsHost='https://api.mojang.com', sessionHost='https://sessionserver.mojang.com', servicesHost='https://api.minecraftservices.com', name='PROD'
+[08:55:41] [Render thread/INFO] [minecraft/Minecraft]: Setting user: TestPlayer
+[08:55:41] [Render thread/INFO] [minecraft/Minecraft]: Backend library: LWJGL version 3.3.1 build 7
+[08:55:41] [modloading-worker-0/INFO] [ne.mi.co.ForgeMod/FORGEMOD]: Forge mod loading, version 47.4.23, for MC 1.20.1 with MCP 20230612.114412
+[08:55:41] [modloading-worker-0/INFO] [ne.mi.co.MinecraftForge/FORGE]: MinecraftForge v47.4.23 Initialized
+[08:55:43] [Render thread/INFO] [ne.mi.ga.ForgeGameTestHooks/]: Enabled Gametest Namespaces: [riftworld]
+[08:55:43] [Render thread/ERROR] [mojang/Narrator]: Error while loading the narrator
+com.mojang.text2speech.Narrator$InitializeException: Failed to load library flite
+	at com.mojang.text2speech.NarratorLinux$FliteLibrary.loadNative(NarratorLinux.java:69) ~[text2speech-1.17.9.jar:?] {}
+	at com.mojang.text2speech.NarratorLinux.<init>(NarratorLinux.java:18) ~[text2speech-1.17.9.jar:?] {}
+	at com.mojang.text2speech.Narrator.getNarrator(Narrator.java:41) ~[text2speech-1.17.9.jar:?] {}
+	at net.minecraft.client.GameNarrator.<init>(GameNarrator.java:19) ~[forge-1.20.1-47.4.23_mapped_official_1.20.1.jar:?] {re:classloading}
+	at net.minecraft.client.Minecraft.<init>(Minecraft.java:553) ~[forge-1.20.1-47.4.23_mapped_official_1.20.1.jar:?] {re:classloading,pl:accesstransformer:B}
+	at net.minecraft.client.main.Main.main(Main.java:182) ~[forge-1.20.1-47.4.23_mapped_official_1.20.1.jar:?] {re:classloading}
+	at jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[?:?] {}
+	at jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77) ~[?:?] {}
+	at jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[?:?] {}
+	at java.lang.reflect.Method.invoke(Method.java:569) ~[?:?] {}
+	at net.minecraftforge.fml.loading.targets.CommonLaunchHandler.runTarget(CommonLaunchHandler.java:111) ~[fmlloader-1.20.1-47.4.23.jar:?] {}
+	at net.minecraftforge.fml.loading.targets.CommonLaunchHandler.clientService(CommonLaunchHandler.java:99) ~[fmlloader-1.20.1-47.4.23.jar:?] {}
+	at net.minecraftforge.fml.loading.targets.ForgeClientUserdevLaunchHandler.devService(ForgeClientUserdevLaunchHandler.java:19) ~[fmlloader-1.20.1-47.4.23.jar:?] {}
+	at net.minecraftforge.fml.loading.targets.CommonDevLaunchHandler.lambda$makeService$7(CommonDevLaunchHandler.java:135) ~[fmlloader-1.20.1-47.4.23.jar:?] {}
+	at cpw.mods.modlauncher.LaunchServiceHandlerDecorator.launch(LaunchServiceHandlerDecorator.java:30) ~[modlauncher-10.0.9.jar:?] {}
+	at cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:53) ~[modlauncher-10.0.9.jar:?] {}
+	at cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:71) ~[modlauncher-10.0.9.jar:?] {}
+	at cpw.mods.modlauncher.Launcher.run(Launcher.java:108) ~[modlauncher-10.0.9.jar:?] {}
+	at cpw.mods.modlauncher.Launcher.main(Launcher.java:78) ~[modlauncher-10.0.9.jar:?] {}
+	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:26) ~[modlauncher-10.0.9.jar:?] {}
+	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:23) ~[modlauncher-10.0.9.jar:?] {}
+	at cpw.mods.bootstraplauncher.BootstrapLauncher.main(BootstrapLauncher.java:141) ~[bootstraplauncher-1.1.2.jar:?] {}
+Caused by: java.lang.UnsatisfiedLinkError: Unable to load library 'flite':
+libflite.so: cannot open shared object file: No such file or directory
+libflite.so: cannot open shared object file: No such file or directory
+Native library (linux-x86-64/libflite.so) not found in resource path (/home/runner/work/riftworld/riftworld/mod/build/classes/java/main:/home/runner/work/riftworld/riftworld/mod/build/resources/main:/home/runner/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.23_mapped_official_1.20.1/forge-1.20.1-47.4.23_mapped_official_1.20.1.jar:/home/runner/.gradle/caches/forge_gradle/minecraft_repo/versions/1.20.1/client-extra.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/fmlearlydisplay/1.20.1-47.4.23/b552f4a1a9115ce2d1c588984c7c69ee5202c1/fmlearlydisplay-1.20.1-47.4.23.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/javafmllanguage/1.20.1-47.4.23/103ee0ecf6e5e4a971ee1ae68384e96fd73b097f/javafmllanguage-1.20.1-47.4.23.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/lowcodelanguage/1.20.1-47.4.23/2531b2da1460bc09c8ec3bf946e641de664b460d/lowcodelanguage-1.20.1-47.4.23.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/mclanguage/1.20.1-47.4.23/eebf4eae01f6fde63717bb38b77f9b6b1b50f8/mclanguage-1.20.1-47.4.23.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/fmlcore/1.20.1-47.4.23/ef56cfb608a4356c3f99dd6a4fa81ce33029bcde/fmlcore-1.20.1-47.4.23.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/fmlloader/1.20.1-47.4.23/95b709a7bdd7057da0ddcdd002d51096ad58e2a6/fmlloader-1.20.1-47.4.23.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/JarJarSelector/0.3.19/376cc9c8ea60720cf027c01fc033de915699801c/JarJarSelector-0.3.19.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/JarJarMetadata/0.3.19/83feaa9b770e6ac0e96ee4fc23fa89325c5fe2/JarJarMetadata-0.3.19.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.mojang/authlib/4.0.43/2ff9d747a77570a07a60d32ac77eb6162ad2a2d9/authlib-4.0.43.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.mojang/datafixerupper/6.0.8/3ba4a30557a9b057760af4011f909ba619fc5125/datafixerupper-6.0.8.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.mojang/patchy/2.2.10/da05971b07cbb379d002cf7eaec6a2048211fefc/patchy-2.2.10.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.mojang/text2speech/1.17.9/3cad216e3a7f0c19b4b394388bc9ffc446f13b14/text2speech-1.17.9.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.google.guava/guava/31.1-jre/60458f877d055d0c9114d9e1a2efb737b4bc282c/guava-31.1-jre.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.google.code.findbugs/jsr305/3.0.2/25ea2e8b0c338a877313bd4672d3fe056ea78f0d/jsr305-3.0.2.jar:/home/runner/.gradle/caches/modules-2/files-2.1/ca.weblite/java-objc-bridge/1.1/1227f9e0666314f9de41477e3ec277e542ed7f7b/java-objc-bridge-1.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/forgespi/7.0.1/3b4972a0cdb135853dba219be61a79b22cff1309/forgespi-7.0.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/mergetool/1.1.5/f3da18e12c696d35a47c82cbb2cc8b5aa15e1154/mergetool-1.1.5-api.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.jetbrains/annotations/24.0.1/13c5c75c4206580aa4d683bffee658caae6c9f43/annotations-24.0.1.jar:/home/runner/.gradle/caches/forge_gradle/mcp_repo/net/minecraft/mapping/1.20.1/mapping-1.20.1-mapping.zip:/home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/accesstransformers/8.0.4/272d240aa73f42195b2a68e2ebd8b701ecf41f63/accesstransformers-8.0.4.jar:/home/runner/.gradle/caches/modules-2/files-2.1/cpw.mods/modlauncher/10.0.9/6d9443f56f50bb85cea383686ff9c867391458b/modlauncher-10.0.9.jar:/home/runner/.gradle/caches/modules-2/files-2.1/cpw.mods/bootstraplauncher/1.1.2/c546e00443d8432cda6baa1c860346980742628/bootstraplauncher-1.1.2.jar:/home/runner/.gradle/caches/modules-2/files-2.1/cpw.mods/securejarhandler/2.1.10/51e6a22c6c716beb11e244bf5b8be480f51dd6b5/securejarhandler-2.1.10.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/eventbus/6.2.33/3fae69cfa9c5095bcc25c0a8a3ed9b26c156f922/eventbus-6.2.33.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/coremods/5.2.4/e30bab269d896613e38396274711410b3a0e4b87/coremods-5.2.4.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.openjdk.nashorn/nashorn-core/15.4/f67f5ffaa5f5130cf6fb9b133da00c7df3b532a5/nashorn-core-15.4.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.ow2.asm/asm-commons/9.9.1/ab35de4c537184a09339069f1a3b3aacf2289149/asm-commons-9.9.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.ow2.asm/asm-util/9.9.1/e51f5b0ae0b0c1960687ae970a2a3434d39d8abb/asm-util-9.9.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.ow2.asm/asm-analysis/9.9.1/1ab8d9316ef7a67240087919a708246c37ed1660/asm-analysis-9.9.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.ow2.asm/asm-tree/9.9.1/b6b1b3366296163b4b1f540731aad0a2baa484d8/asm-tree-9.9.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.ow2.asm/asm/9.9.1/2ceea6ab43bcae1979b2a6d85fc0ca429877e5ab/asm-9.9.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.antlr/antlr4/4.9.1/e92af8ab33e428461927b484e90bb155a4f3a052/antlr4-4.9.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.antlr/antlr4-runtime/4.9.1/428664f05d2b7f7b7610204b5aa7c1763f62011a/antlr4-runtime-4.9.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/unsafe/0.2.0/54d7a0a5e8fdb71b973025caa46f341ae5904f39/unsafe-0.2.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.electronwill.night-config/toml/3.6.4/51d6cefb2b55ee55ee26b16391212fb2c7dfb4f4/toml-3.6.4.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.electronwill.night-config/core/3.6.4/510f174abbf1c947494db50ef2445683bd52c230/core-3.6.4.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.apache.maven/maven-artifact/3.8.5/4433f50c07debefaed0553bd0068f4f48d449313/maven-artifact-3.8.5.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.jodah/typetools/0.6.3/a01aaa6ddaea9ec07ec4f209487b7a46a526283a/typetools-0.6.3.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.minecrell/terminalconsoleappender/1.2.0/96d02cd3b384ff015a8fef4223bcb4ccf1717c95/terminalconsoleappender-1.2.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.jline/jline-reader/3.12.1/4382ab1382c7b6f379377ed5f665dc2f6e1218bc/jline-reader-3.12.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.jline/jline-terminal/3.12.1/c777448314e050d980a6b697c140f3bfe9eb7416/jline-terminal-3.12.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.spongepowered/mixin/0.8.5/9d1c0c3a304ae6697ecd477218fa61b850bf57fc/mixin-0.8.5.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/JarJarFileSystems/0.3.19/2464eb7d6b9ddb9db36a82cf8a95193e5c6fe020/JarJarFileSystems-0.3.19.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.github.oshi/oshi-core/6.2.2/54f5efc19bca95d709d9a37d19ffcbba3d21c1a6/oshi-core-6.2.2.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.google.code.gson/gson/2.10/dd9b193aef96e973d5a11ab13cd17430c2e4306b/gson-2.10.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.google.guava/failureaccess/1.0.1/1dcf1de382a0bf95a3d8b0849546c88bac1292c9/failureaccess-1.0.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.ibm.icu/icu4j/71.1/9e7d3304c23f9ba5cb71915f7cce23231a57a445/icu4j-71.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.mojang/blocklist/1.0.10/5c685c5ffa94c4cd39496c7184c1d122e515ecef/blocklist-1.0.10.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.mojang/brigadier/1.1.8/5244ce82c3337bba4a196a3ce858bfaecc74404a/brigadier-1.1.8.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.mojang/logging/1.1.1/832b8e6674a9b325a5175a3a6267dfaf34c85139/logging-1.1.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.apache.httpcomponents/httpclient/4.5.13/e5f6cae5ca7ecaac1ec2827a9e2d65ae2869cada/httpclient-4.5.13.jar:/home/runner/.gradle/caches/modules-2/files-2.1/commons-codec/commons-codec/1.15/49d94806b6e3dc933dacbd8acb0fdbab8ebd1e5d/commons-codec-1.15.jar:/home/runner/.gradle/caches/modules-2/files-2.1/commons-io/commons-io/2.11.0/a2503f302b11ebde7ebc3df41daebe0e4eea3689/commons-io-2.11.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/commons-logging/commons-logging/1.2/4bfc12adfe4842bf07b657f0369c4cb522955686/commons-logging-1.2.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-handler/4.1.82.Final/644041d1fa96a5d3130a29e8978630d716d76e38/netty-handler-4.1.82.Final.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-codec/4.1.82.Final/b77200379acb345a9ffdece1c605e591ac3e4e0a/netty-codec-4.1.82.Final.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-transport-native-epoll/4.1.82.Final/476409d6255001ca53a55f65b01c13822f8dc93a/netty-transport-native-epoll-4.1.82.Final-linux-aarch_64.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-transport-native-epoll/4.1.82.Final/c7350a71920f3ae9142945e25fed4846cce53374/netty-transport-native-epoll-4.1.82.Final-linux-x86_64.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-transport-classes-epoll/4.1.82.Final/e7c7dd18deac93105797f30057c912651ea76521/netty-transport-classes-epoll-4.1.82.Final.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-transport-native-unix-common/4.1.82.Final/3e895b35ca1b8a0eca56cacff4c2dde5d2c6abce/netty-transport-native-unix-common-4.1.82.Final.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-transport/4.1.82.Final/e431a218d91acb6476ccad5f5aafde50aa3945ca/netty-transport-4.1.82.Final.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-buffer/4.1.82.Final/a544270cf1ae8b8077082f5036436a9a9971ea71/netty-buffer-4.1.82.Final.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-resolver/4.1.82.Final/38f665ae8dcd29032eea31245ba7806bed2e0fa8/netty-resolver-4.1.82.Final.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-common/4.1.82.Final/22d148e85c3f5ebdacc0ce1f5aabb1d420f73f3/netty-common-4.1.82.Final.jar:/home/runner/.gradle/caches/modules-2/files-2.1/it.unimi.dsi/fastutil/8.5.9/bb7ea75ecdb216654237830b3a96d87ad91f8cc5/fastutil-8.5.9.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna-platform/5.12.1/97406a297c852f4a41e688a176ec675f72e8329/jna-platform-5.12.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/5.12.1/b1e93a735caea94f503e95e6fe79bf9cdc1e985d/jna-5.12.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.sf.jopt-simple/jopt-simple/5.0.4/4fdac2fbe92dfad86aa6e9301736f6b4342a3f5c/jopt-simple-5.0.4.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.apache.commons/commons-compress/1.21/4ec95b60d4e86b5c95a0e919cb172a0af98011ef/commons-compress-1.21.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.apache.commons/commons-lang3/3.12.0/c6842c86792ff03b9f1d1fe2aab8dc23aa6c6f0e/commons-lang3-3.12.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.apache.httpcomponents/httpcore/4.4.15/7f2e0c573eaa7a74bac2e89b359e1f73d92a0a1d/httpcore-4.4.15.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.apache.logging.log4j/log4j-core/2.19.0/3b6eeb4de4c49c0fe38a4ee27188ff5fee44d0bb/log4j-core-2.19.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.apache.logging.log4j/log4j-slf4j2-impl/2.19.0/5c04bfdd63ce9dceb2e284b81e96b6a70010ee10/log4j-slf4j2-impl-2.19.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.apache.logging.log4j/log4j-api/2.19.0/ea1b37f38c327596b216542bc636cfdc0b8036fa/log4j-api-2.19.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.joml/joml/1.10.5/22566d58af70ad3d72308bab63b8339906deb649/joml-1.10.5.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-glfw/3.3.1/cbac1b8d30cb4795149c1ef540f912671a8616d0/lwjgl-glfw-3.3.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-glfw/3.3.1/81716978214ecbda15050ca394b06ef61501a49e/lwjgl-glfw-3.3.1-natives-linux.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-jemalloc/3.3.1/a817bcf213db49f710603677457567c37d53e103/lwjgl-jemalloc-3.3.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-jemalloc/3.3.1/33dbb017b6ed6b25f993ad9d56741a49e7937718/lwjgl-jemalloc-3.3.1-natives-linux.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-openal/3.3.1/2623a6b8ae1dfcd880738656a9f0243d2e6840bd/lwjgl-openal-3.3.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-openal/3.3.1/f906b6439f6daa66001182ea7727e3467a93681b/lwjgl-openal-3.3.1-natives-linux.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-opengl/3.3.1/831a5533a21a5f4f81bbc51bb13e9899319b5411/lwjgl-opengl-3.3.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-opengl/3.3.1/ab9ab6fde3743e3550fa5d46d785ecb45b047d99/lwjgl-opengl-3.3.1-natives-linux.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-stb/3.3.1/b119297cf8ed01f247abe8685857f8e7fcf5980f/lwjgl-stb-3.3.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-stb/3.3.1/3ee7aec8686e52867677110415566a5342a80230/lwjgl-stb-3.3.1-natives-linux.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-tinyfd/3.3.1/ff1914111ef2e3e0110ef2dabc8d8cdaad82347/lwjgl-tinyfd-3.3.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-tinyfd/3.3.1/a35110b9471bea8cde826ab297550ee8c22f5035/lwjgl-tinyfd-3.3.1-natives-linux.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl/3.3.1/ae58664f88e18a9bb2c77b063833ca7aaec484cb/lwjgl-3.3.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl/3.3.1/1de885aba434f934201b99f2f1afb142036ac189/lwjgl-3.3.1-natives-linux.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.machinezoo.noexception/noexception/1.7.1/b65330c98e38a1f915fa54a6e5eca496505e3f0a/noexception-1.7.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.slf4j/slf4j-simple/1.7.30/e606eac955f55ecf1d8edcccba04eb8ac98088dd/slf4j-simple-1.7.30.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.slf4j/slf4j-api/2.0.1/f48d81adce2abf5ad3cfe463df517952749e03bc/slf4j-api-2.0.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/srgutils/0.4.11/fbad1341ffdb47d276bbdc40ecb06da49e053e74/srgutils-0.4.11.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.codehaus.plexus/plexus-utils/3.3.0/cf43b5391de623b36fe066a21127baef82c64022/plexus-utils-3.3.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.google.guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/b421526c5f297295adef1c886e5246c39d4ac629/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.checkerframework/checker-qual/3.12.0/d5692f0526415fcc6de94bb5bfbd3afd9dd3b3e5/checker-qual-3.12.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.google.errorprone/error_prone_annotations/2.11.0/c5a0ace696d3f8b1c1d8cc036d8c03cc0cbe6b69/error_prone_annotations-2.11.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.google.j2objc/j2objc-annotations/1.3/ba035118bc8bac37d7eff77700720999acd9986d/j2objc-annotations-1.3.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.antlr/ST4/4.3/92f2c1ad8d84abcbeead6cf7f2c53a04166293c2/ST4-4.3.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.antlr/antlr-runtime/3.5.2/cd9cd41361c155f3af0f653009dcecb08d8b4afd/antlr-runtime-3.5.2.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.abego.treelayout/org.abego.treelayout.core/1.0.3/457216e8e6578099ae63667bb1e4439235892028/org.abego.treelayout.core-1.0.3.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.glassfish/javax.json/1.0.4/3178f73569fd7a1e5ffc464e680f7a8cc784b85a/javax.json-1.0.4.jar)
+	at com.sun.jna.NativeLibrary.loadLibrary(NativeLibrary.java:307) ~[jna-5.12.1.jar:5.12.1 (b0)] {}
+	at com.sun.jna.NativeLibrary.getInstance(NativeLibrary.java:467) ~[jna-5.12.1.jar:5.12.1 (b0)] {}
+	at com.sun.jna.NativeLibrary.getInstance(NativeLibrary.java:409) ~[jna-5.12.1.jar:5.12.1 (b0)] {}
+	at com.mojang.text2speech.NarratorLinux$FliteLibrary.loadNative(NarratorLinux.java:67) ~[text2speech-1.17.9.jar:?] {}
+	... 21 more
+	Suppressed: java.lang.UnsatisfiedLinkError: libflite.so: cannot open shared object file: No such file or directory
+		at com.sun.jna.Native.open(Native Method) ~[jna-5.12.1.jar:5.12.1 (b0)] {}
+		at com.sun.jna.NativeLibrary.loadLibrary(NativeLibrary.java:197) ~[jna-5.12.1.jar:5.12.1 (b0)] {}
+		at com.sun.jna.NativeLibrary.getInstance(NativeLibrary.java:467) ~[jna-5.12.1.jar:5.12.1 (b0)] {}
+		at com.sun.jna.NativeLibrary.getInstance(NativeLibrary.java:409) ~[jna-5.12.1.jar:5.12.1 (b0)] {}
+		at com.mojang.text2speech.NarratorLinux$FliteLibrary.loadNative(NarratorLinux.java:67) ~[text2speech-1.17.9.jar:?] {}
+		at com.mojang.text2speech.NarratorLinux.<init>(NarratorLinux.java:18) ~[text2speech-1.17.9.jar:?] {}
+		at com.mojang.text2speech.Narrator.getNarrator(Narrator.java:41) ~[text2speech-1.17.9.jar:?] {}
+		at net.minecraft.client.GameNarrator.<init>(GameNarrator.java:19) ~[forge-1.20.1-47.4.23_mapped_official_1.20.1.jar:?] {re:classloading}
+		at net.minecraft.client.Minecraft.<init>(Minecraft.java:553) ~[forge-1.20.1-47.4.23_mapped_official_1.20.1.jar:?] {re:classloading,pl:accesstransformer:B}
+		at net.minecraft.client.main.Main.main(Main.java:182) ~[forge-1.20.1-47.4.23_mapped_official_1.20.1.jar:?] {re:classloading}
+		at jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[?:?] {}
+		at jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77) ~[?:?] {}
+		at jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[?:?] {}
+		at java.lang.reflect.Method.invoke(Method.java:569) ~[?:?] {}
+		at net.minecraftforge.fml.loading.targets.CommonLaunchHandler.runTarget(CommonLaunchHandler.java:111) ~[fmlloader-1.20.1-47.4.23.jar:?] {}
+		at net.minecraftforge.fml.loading.targets.CommonLaunchHandler.clientService(CommonLaunchHandler.java:99) ~[fmlloader-1.20.1-47.4.23.jar:?] {}
+		at net.minecraftforge.fml.loading.targets.ForgeClientUserdevLaunchHandler.devService(ForgeClientUserdevLaunchHandler.java:19) ~[fmlloader-1.20.1-47.4.23.jar:?] {}
+		at net.minecraftforge.fml.loading.targets.CommonDevLaunchHandler.lambda$makeService$7(CommonDevLaunchHandler.java:135) ~[fmlloader-1.20.1-47.4.23.jar:?] {}
+		at cpw.mods.modlauncher.LaunchServiceHandlerDecorator.launch(LaunchServiceHandlerDecorator.java:30) ~[modlauncher-10.0.9.jar:?] {}
+		at cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:53) ~[modlauncher-10.0.9.jar:?] {}
+		at cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:71) ~[modlauncher-10.0.9.jar:?] {}
+		at cpw.mods.modlauncher.Launcher.run(Launcher.java:108) ~[modlauncher-10.0.9.jar:?] {}
+		at cpw.mods.modlauncher.Launcher.main(Launcher.java:78) ~[modlauncher-10.0.9.jar:?] {}
+		at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:26) ~[modlauncher-10.0.9.jar:?] {}
+		at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:23) ~[modlauncher-10.0.9.jar:?] {}
+		at cpw.mods.bootstraplauncher.BootstrapLauncher.main(BootstrapLauncher.java:141) ~[bootstraplauncher-1.1.2.jar:?] {}
+	Suppressed: java.lang.UnsatisfiedLinkError: libflite.so: cannot open shared object file: No such file or directory
+		at com.sun.jna.Native.open(Native Method) ~[jna-5.12.1.jar:5.12.1 (b0)] {}
+		at com.sun.jna.NativeLibrary.loadLibrary(NativeLibrary.java:210) ~[jna-5.12.1.jar:5.12.1 (b0)] {}
+		at com.sun.jna.NativeLibrary.getInstance(NativeLibrary.java:467) ~[jna-5.12.1.jar:5.12.1 (b0)] {}
+		at com.sun.jna.NativeLibrary.getInstance(NativeLibrary.java:409) ~[jna-5.12.1.jar:5.12.1 (b0)] {}
+		at com.mojang.text2speech.NarratorLinux$FliteLibrary.loadNative(NarratorLinux.java:67) ~[text2speech-1.17.9.jar:?] {}
+		at com.mojang.text2speech.NarratorLinux.<init>(NarratorLinux.java:18) ~[text2speech-1.17.9.jar:?] {}
+		at com.mojang.text2speech.Narrator.getNarrator(Narrator.java:41) ~[text2speech-1.17.9.jar:?] {}
+		at net.minecraft.client.GameNarrator.<init>(GameNarrator.java:19) ~[forge-1.20.1-47.4.23_mapped_official_1.20.1.jar:?] {re:classloading}
+		at net.minecraft.client.Minecraft.<init>(Minecraft.java:553) ~[forge-1.20.1-47.4.23_mapped_official_1.20.1.jar:?] {re:classloading,pl:accesstransformer:B}
+		at net.minecraft.client.main.Main.main(Main.java:182) ~[forge-1.20.1-47.4.23_mapped_official_1.20.1.jar:?] {re:classloading}
+		at jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[?:?] {}
+		at jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77) ~[?:?] {}
+		at jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[?:?] {}
+		at java.lang.reflect.Method.invoke(Method.java:569) ~[?:?] {}
+		at net.minecraftforge.fml.loading.targets.CommonLaunchHandler.runTarget(CommonLaunchHandler.java:111) ~[fmlloader-1.20.1-47.4.23.jar:?] {}
+		at net.minecraftforge.fml.loading.targets.CommonLaunchHandler.clientService(CommonLaunchHandler.java:99) ~[fmlloader-1.20.1-47.4.23.jar:?] {}
+		at net.minecraftforge.fml.loading.targets.ForgeClientUserdevLaunchHandler.devService(ForgeClientUserdevLaunchHandler.java:19) ~[fmlloader-1.20.1-47.4.23.jar:?] {}
+		at net.minecraftforge.fml.loading.targets.CommonDevLaunchHandler.lambda$makeService$7(CommonDevLaunchHandler.java:135) ~[fmlloader-1.20.1-47.4.23.jar:?] {}
+		at cpw.mods.modlauncher.LaunchServiceHandlerDecorator.launch(LaunchServiceHandlerDecorator.java:30) ~[modlauncher-10.0.9.jar:?] {}
+		at cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:53) ~[modlauncher-10.0.9.jar:?] {}
+		at cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:71) ~[modlauncher-10.0.9.jar:?] {}
+		at cpw.mods.modlauncher.Launcher.run(Launcher.java:108) ~[modlauncher-10.0.9.jar:?] {}
+		at cpw.mods.modlauncher.Launcher.main(Launcher.java:78) ~[modlauncher-10.0.9.jar:?] {}
+		at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:26) ~[modlauncher-10.0.9.jar:?] {}
+		at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:23) ~[modlauncher-10.0.9.jar:?] {}
+		at cpw.mods.bootstraplauncher.BootstrapLauncher.main(BootstrapLauncher.java:141) ~[bootstraplauncher-1.1.2.jar:?] {}
+	Suppressed: java.io.IOException: Native library (linux-x86-64/libflite.so) not found in resource path (/home/runner/work/riftworld/riftworld/mod/build/classes/java/main:/home/runner/work/riftworld/riftworld/mod/build/resources/main:/home/runner/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.23_mapped_official_1.20.1/forge-1.20.1-47.4.23_mapped_official_1.20.1.jar:/home/runner/.gradle/caches/forge_gradle/minecraft_repo/versions/1.20.1/client-extra.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/fmlearlydisplay/1.20.1-47.4.23/b552f4a1a9115ce2d1c588984c7c69ee5202c1/fmlearlydisplay-1.20.1-47.4.23.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/javafmllanguage/1.20.1-47.4.23/103ee0ecf6e5e4a971ee1ae68384e96fd73b097f/javafmllanguage-1.20.1-47.4.23.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/lowcodelanguage/1.20.1-47.4.23/2531b2da1460bc09c8ec3bf946e641de664b460d/lowcodelanguage-1.20.1-47.4.23.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/mclanguage/1.20.1-47.4.23/eebf4eae01f6fde63717bb38b77f9b6b1b50f8/mclanguage-1.20.1-47.4.23.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/fmlcore/1.20.1-47.4.23/ef56cfb608a4356c3f99dd6a4fa81ce33029bcde/fmlcore-1.20.1-47.4.23.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/fmlloader/1.20.1-47.4.23/95b709a7bdd7057da0ddcdd002d51096ad58e2a6/fmlloader-1.20.1-47.4.23.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/JarJarSelector/0.3.19/376cc9c8ea60720cf027c01fc033de915699801c/JarJarSelector-0.3.19.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/JarJarMetadata/0.3.19/83feaa9b770e6ac0e96ee4fc23fa89325c5fe2/JarJarMetadata-0.3.19.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.mojang/authlib/4.0.43/2ff9d747a77570a07a60d32ac77eb6162ad2a2d9/authlib-4.0.43.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.mojang/datafixerupper/6.0.8/3ba4a30557a9b057760af4011f909ba619fc5125/datafixerupper-6.0.8.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.mojang/patchy/2.2.10/da05971b07cbb379d002cf7eaec6a2048211fefc/patchy-2.2.10.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.mojang/text2speech/1.17.9/3cad216e3a7f0c19b4b394388bc9ffc446f13b14/text2speech-1.17.9.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.google.guava/guava/31.1-jre/60458f877d055d0c9114d9e1a2efb737b4bc282c/guava-31.1-jre.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.google.code.findbugs/jsr305/3.0.2/25ea2e8b0c338a877313bd4672d3fe056ea78f0d/jsr305-3.0.2.jar:/home/runner/.gradle/caches/modules-2/files-2.1/ca.weblite/java-objc-bridge/1.1/1227f9e0666314f9de41477e3ec277e542ed7f7b/java-objc-bridge-1.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/forgespi/7.0.1/3b4972a0cdb135853dba219be61a79b22cff1309/forgespi-7.0.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/mergetool/1.1.5/f3da18e12c696d35a47c82cbb2cc8b5aa15e1154/mergetool-1.1.5-api.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.jetbrains/annotations/24.0.1/13c5c75c4206580aa4d683bffee658caae6c9f43/annotations-24.0.1.jar:/home/runner/.gradle/caches/forge_gradle/mcp_repo/net/minecraft/mapping/1.20.1/mapping-1.20.1-mapping.zip:/home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/accesstransformers/8.0.4/272d240aa73f42195b2a68e2ebd8b701ecf41f63/accesstransformers-8.0.4.jar:/home/runner/.gradle/caches/modules-2/files-2.1/cpw.mods/modlauncher/10.0.9/6d9443f56f50bb85cea383686ff9c867391458b/modlauncher-10.0.9.jar:/home/runner/.gradle/caches/modules-2/files-2.1/cpw.mods/bootstraplauncher/1.1.2/c546e00443d8432cda6baa1c860346980742628/bootstraplauncher-1.1.2.jar:/home/runner/.gradle/caches/modules-2/files-2.1/cpw.mods/securejarhandler/2.1.10/51e6a22c6c716beb11e244bf5b8be480f51dd6b5/securejarhandler-2.1.10.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/eventbus/6.2.33/3fae69cfa9c5095bcc25c0a8a3ed9b26c156f922/eventbus-6.2.33.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/coremods/5.2.4/e30bab269d896613e38396274711410b3a0e4b87/coremods-5.2.4.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.openjdk.nashorn/nashorn-core/15.4/f67f5ffaa5f5130cf6fb9b133da00c7df3b532a5/nashorn-core-15.4.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.ow2.asm/asm-commons/9.9.1/ab35de4c537184a09339069f1a3b3aacf2289149/asm-commons-9.9.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.ow2.asm/asm-util/9.9.1/e51f5b0ae0b0c1960687ae970a2a3434d39d8abb/asm-util-9.9.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.ow2.asm/asm-analysis/9.9.1/1ab8d9316ef7a67240087919a708246c37ed1660/asm-analysis-9.9.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.ow2.asm/asm-tree/9.9.1/b6b1b3366296163b4b1f540731aad0a2baa484d8/asm-tree-9.9.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.ow2.asm/asm/9.9.1/2ceea6ab43bcae1979b2a6d85fc0ca429877e5ab/asm-9.9.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.antlr/antlr4/4.9.1/e92af8ab33e428461927b484e90bb155a4f3a052/antlr4-4.9.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.antlr/antlr4-runtime/4.9.1/428664f05d2b7f7b7610204b5aa7c1763f62011a/antlr4-runtime-4.9.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/unsafe/0.2.0/54d7a0a5e8fdb71b973025caa46f341ae5904f39/unsafe-0.2.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.electronwill.night-config/toml/3.6.4/51d6cefb2b55ee55ee26b16391212fb2c7dfb4f4/toml-3.6.4.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.electronwill.night-config/core/3.6.4/510f174abbf1c947494db50ef2445683bd52c230/core-3.6.4.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.apache.maven/maven-artifact/3.8.5/4433f50c07debefaed0553bd0068f4f48d449313/maven-artifact-3.8.5.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.jodah/typetools/0.6.3/a01aaa6ddaea9ec07ec4f209487b7a46a526283a/typetools-0.6.3.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.minecrell/terminalconsoleappender/1.2.0/96d02cd3b384ff015a8fef4223bcb4ccf1717c95/terminalconsoleappender-1.2.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.jline/jline-reader/3.12.1/4382ab1382c7b6f379377ed5f665dc2f6e1218bc/jline-reader-3.12.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.jline/jline-terminal/3.12.1/c777448314e050d980a6b697c140f3bfe9eb7416/jline-terminal-3.12.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.spongepowered/mixin/0.8.5/9d1c0c3a304ae6697ecd477218fa61b850bf57fc/mixin-0.8.5.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/JarJarFileSystems/0.3.19/2464eb7d6b9ddb9db36a82cf8a95193e5c6fe020/JarJarFileSystems-0.3.19.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.github.oshi/oshi-core/6.2.2/54f5efc19bca95d709d9a37d19ffcbba3d21c1a6/oshi-core-6.2.2.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.google.code.gson/gson/2.10/dd9b193aef96e973d5a11ab13cd17430c2e4306b/gson-2.10.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.google.guava/failureaccess/1.0.1/1dcf1de382a0bf95a3d8b0849546c88bac1292c9/failureaccess-1.0.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.ibm.icu/icu4j/71.1/9e7d3304c23f9ba5cb71915f7cce23231a57a445/icu4j-71.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.mojang/blocklist/1.0.10/5c685c5ffa94c4cd39496c7184c1d122e515ecef/blocklist-1.0.10.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.mojang/brigadier/1.1.8/5244ce82c3337bba4a196a3ce858bfaecc74404a/brigadier-1.1.8.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.mojang/logging/1.1.1/832b8e6674a9b325a5175a3a6267dfaf34c85139/logging-1.1.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.apache.httpcomponents/httpclient/4.5.13/e5f6cae5ca7ecaac1ec2827a9e2d65ae2869cada/httpclient-4.5.13.jar:/home/runner/.gradle/caches/modules-2/files-2.1/commons-codec/commons-codec/1.15/49d94806b6e3dc933dacbd8acb0fdbab8ebd1e5d/commons-codec-1.15.jar:/home/runner/.gradle/caches/modules-2/files-2.1/commons-io/commons-io/2.11.0/a2503f302b11ebde7ebc3df41daebe0e4eea3689/commons-io-2.11.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/commons-logging/commons-logging/1.2/4bfc12adfe4842bf07b657f0369c4cb522955686/commons-logging-1.2.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-handler/4.1.82.Final/644041d1fa96a5d3130a29e8978630d716d76e38/netty-handler-4.1.82.Final.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-codec/4.1.82.Final/b77200379acb345a9ffdece1c605e591ac3e4e0a/netty-codec-4.1.82.Final.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-transport-native-epoll/4.1.82.Final/476409d6255001ca53a55f65b01c13822f8dc93a/netty-transport-native-epoll-4.1.82.Final-linux-aarch_64.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-transport-native-epoll/4.1.82.Final/c7350a71920f3ae9142945e25fed4846cce53374/netty-transport-native-epoll-4.1.82.Final-linux-x86_64.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-transport-classes-epoll/4.1.82.Final/e7c7dd18deac93105797f30057c912651ea76521/netty-transport-classes-epoll-4.1.82.Final.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-transport-native-unix-common/4.1.82.Final/3e895b35ca1b8a0eca56cacff4c2dde5d2c6abce/netty-transport-native-unix-common-4.1.82.Final.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-transport/4.1.82.Final/e431a218d91acb6476ccad5f5aafde50aa3945ca/netty-transport-4.1.82.Final.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-buffer/4.1.82.Final/a544270cf1ae8b8077082f5036436a9a9971ea71/netty-buffer-4.1.82.Final.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-resolver/4.1.82.Final/38f665ae8dcd29032eea31245ba7806bed2e0fa8/netty-resolver-4.1.82.Final.jar:/home/runner/.gradle/caches/modules-2/files-2.1/io.netty/netty-common/4.1.82.Final/22d148e85c3f5ebdacc0ce1f5aabb1d420f73f3/netty-common-4.1.82.Final.jar:/home/runner/.gradle/caches/modules-2/files-2.1/it.unimi.dsi/fastutil/8.5.9/bb7ea75ecdb216654237830b3a96d87ad91f8cc5/fastutil-8.5.9.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna-platform/5.12.1/97406a297c852f4a41e688a176ec675f72e8329/jna-platform-5.12.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/5.12.1/b1e93a735caea94f503e95e6fe79bf9cdc1e985d/jna-5.12.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.sf.jopt-simple/jopt-simple/5.0.4/4fdac2fbe92dfad86aa6e9301736f6b4342a3f5c/jopt-simple-5.0.4.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.apache.commons/commons-compress/1.21/4ec95b60d4e86b5c95a0e919cb172a0af98011ef/commons-compress-1.21.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.apache.commons/commons-lang3/3.12.0/c6842c86792ff03b9f1d1fe2aab8dc23aa6c6f0e/commons-lang3-3.12.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.apache.httpcomponents/httpcore/4.4.15/7f2e0c573eaa7a74bac2e89b359e1f73d92a0a1d/httpcore-4.4.15.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.apache.logging.log4j/log4j-core/2.19.0/3b6eeb4de4c49c0fe38a4ee27188ff5fee44d0bb/log4j-core-2.19.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.apache.logging.log4j/log4j-slf4j2-impl/2.19.0/5c04bfdd63ce9dceb2e284b81e96b6a70010ee10/log4j-slf4j2-impl-2.19.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.apache.logging.log4j/log4j-api/2.19.0/ea1b37f38c327596b216542bc636cfdc0b8036fa/log4j-api-2.19.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.joml/joml/1.10.5/22566d58af70ad3d72308bab63b8339906deb649/joml-1.10.5.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-glfw/3.3.1/cbac1b8d30cb4795149c1ef540f912671a8616d0/lwjgl-glfw-3.3.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-glfw/3.3.1/81716978214ecbda15050ca394b06ef61501a49e/lwjgl-glfw-3.3.1-natives-linux.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-jemalloc/3.3.1/a817bcf213db49f710603677457567c37d53e103/lwjgl-jemalloc-3.3.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-jemalloc/3.3.1/33dbb017b6ed6b25f993ad9d56741a49e7937718/lwjgl-jemalloc-3.3.1-natives-linux.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-openal/3.3.1/2623a6b8ae1dfcd880738656a9f0243d2e6840bd/lwjgl-openal-3.3.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-openal/3.3.1/f906b6439f6daa66001182ea7727e3467a93681b/lwjgl-openal-3.3.1-natives-linux.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-opengl/3.3.1/831a5533a21a5f4f81bbc51bb13e9899319b5411/lwjgl-opengl-3.3.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-opengl/3.3.1/ab9ab6fde3743e3550fa5d46d785ecb45b047d99/lwjgl-opengl-3.3.1-natives-linux.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-stb/3.3.1/b119297cf8ed01f247abe8685857f8e7fcf5980f/lwjgl-stb-3.3.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-stb/3.3.1/3ee7aec8686e52867677110415566a5342a80230/lwjgl-stb-3.3.1-natives-linux.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-tinyfd/3.3.1/ff1914111ef2e3e0110ef2dabc8d8cdaad82347/lwjgl-tinyfd-3.3.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl-tinyfd/3.3.1/a35110b9471bea8cde826ab297550ee8c22f5035/lwjgl-tinyfd-3.3.1-natives-linux.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl/3.3.1/ae58664f88e18a9bb2c77b063833ca7aaec484cb/lwjgl-3.3.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.lwjgl/lwjgl/3.3.1/1de885aba434f934201b99f2f1afb142036ac189/lwjgl-3.3.1-natives-linux.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.machinezoo.noexception/noexception/1.7.1/b65330c98e38a1f915fa54a6e5eca496505e3f0a/noexception-1.7.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.slf4j/slf4j-simple/1.7.30/e606eac955f55ecf1d8edcccba04eb8ac98088dd/slf4j-simple-1.7.30.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.slf4j/slf4j-api/2.0.1/f48d81adce2abf5ad3cfe463df517952749e03bc/slf4j-api-2.0.1.jar:/home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/srgutils/0.4.11/fbad1341ffdb47d276bbdc40ecb06da49e053e74/srgutils-0.4.11.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.codehaus.plexus/plexus-utils/3.3.0/cf43b5391de623b36fe066a21127baef82c64022/plexus-utils-3.3.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.google.guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/b421526c5f297295adef1c886e5246c39d4ac629/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.checkerframework/checker-qual/3.12.0/d5692f0526415fcc6de94bb5bfbd3afd9dd3b3e5/checker-qual-3.12.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.google.errorprone/error_prone_annotations/2.11.0/c5a0ace696d3f8b1c1d8cc036d8c03cc0cbe6b69/error_prone_annotations-2.11.0.jar:/home/runner/.gradle/caches/modules-2/files-2.1/com.google.j2objc/j2objc-annotations/1.3/ba035118bc8bac37d7eff77700720999acd9986d/j2objc-annotations-1.3.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.antlr/ST4/4.3/92f2c1ad8d84abcbeead6cf7f2c53a04166293c2/ST4-4.3.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.antlr/antlr-runtime/3.5.2/cd9cd41361c155f3af0f653009dcecb08d8b4afd/antlr-runtime-3.5.2.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.abego.treelayout/org.abego.treelayout.core/1.0.3/457216e8e6578099ae63667bb1e4439235892028/org.abego.treelayout.core-1.0.3.jar:/home/runner/.gradle/caches/modules-2/files-2.1/org.glassfish/javax.json/1.0.4/3178f73569fd7a1e5ffc464e680f7a8cc784b85a/javax.json-1.0.4.jar)
+		at com.sun.jna.Native.extractFromResourcePath(Native.java:1145) ~[jna-5.12.1.jar:5.12.1 (b0)] {}
+		at com.sun.jna.NativeLibrary.loadLibrary(NativeLibrary.java:281) ~[jna-5.12.1.jar:5.12.1 (b0)] {}
+		at com.sun.jna.NativeLibrary.getInstance(NativeLibrary.java:467) ~[jna-5.12.1.jar:5.12.1 (b0)] {}
+		at com.sun.jna.NativeLibrary.getInstance(NativeLibrary.java:409) ~[jna-5.12.1.jar:5.12.1 (b0)] {}
+		at com.mojang.text2speech.NarratorLinux$FliteLibrary.loadNative(NarratorLinux.java:67) ~[text2speech-1.17.9.jar:?] {}
+		at com.mojang.text2speech.NarratorLinux.<init>(NarratorLinux.java:18) ~[text2speech-1.17.9.jar:?] {}
+		at com.mojang.text2speech.Narrator.getNarrator(Narrator.java:41) ~[text2speech-1.17.9.jar:?] {}
+		at net.minecraft.client.GameNarrator.<init>(GameNarrator.java:19) ~[forge-1.20.1-47.4.23_mapped_official_1.20.1.jar:?] {re:classloading}
+		at net.minecraft.client.Minecraft.<init>(Minecraft.java:553) ~[forge-1.20.1-47.4.23_mapped_official_1.20.1.jar:?] {re:classloading,pl:accesstransformer:B}
+		at net.minecraft.client.main.Main.main(Main.java:182) ~[forge-1.20.1-47.4.23_mapped_official_1.20.1.jar:?] {re:classloading}
+		at jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[?:?] {}
+		at jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77) ~[?:?] {}
+		at jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[?:?] {}
+		at java.lang.reflect.Method.invoke(Method.java:569) ~[?:?] {}
+		at net.minecraftforge.fml.loading.targets.CommonLaunchHandler.runTarget(CommonLaunchHandler.java:111) ~[fmlloader-1.20.1-47.4.23.jar:?] {}
+		at net.minecraftforge.fml.loading.targets.CommonLaunchHandler.clientService(CommonLaunchHandler.java:99) ~[fmlloader-1.20.1-47.4.23.jar:?] {}
+		at net.minecraftforge.fml.loading.targets.ForgeClientUserdevLaunchHandler.devService(ForgeClientUserdevLaunchHandler.java:19) ~[fmlloader-1.20.1-47.4.23.jar:?] {}
+		at net.minecraftforge.fml.loading.targets.CommonDevLaunchHandler.lambda$makeService$7(CommonDevLaunchHandler.java:135) ~[fmlloader-1.20.1-47.4.23.jar:?] {}
+		at cpw.mods.modlauncher.LaunchServiceHandlerDecorator.launch(LaunchServiceHandlerDecorator.java:30) ~[modlauncher-10.0.9.jar:?] {}
+		at cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:53) ~[modlauncher-10.0.9.jar:?] {}
+		at cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:71) ~[modlauncher-10.0.9.jar:?] {}
+		at cpw.mods.modlauncher.Launcher.run(Launcher.java:108) ~[modlauncher-10.0.9.jar:?] {}
+		at cpw.mods.modlauncher.Launcher.main(Launcher.java:78) ~[modlauncher-10.0.9.jar:?] {}
+		at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:26) ~[modlauncher-10.0.9.jar:?] {}
+		at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:23) ~[modlauncher-10.0.9.jar:?] {}
+		at cpw.mods.bootstraplauncher.BootstrapLauncher.main(BootstrapLauncher.java:141) ~[bootstraplauncher-1.1.2.jar:?] {}
+[08:55:43] [Render thread/INFO] [minecraft/ReloadableResourceManager]: Reloading ResourceManager: vanilla, mod_resources
+[08:55:43] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Configuration file /home/runner/work/riftworld/riftworld/ci/maja-run/client/config/riftworld-atmosphere.toml is not correct. Correcting
+[08:55:43] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key morok was corrected from null to its default, SimpleCommentedConfig:{}. 
+[08:55:43] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key morok.fogNearBlocks was corrected from null to its default, 6.5. 
+[08:55:43] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key morok.fogFarBlocks was corrected from null to its default, 54.0. 
+[08:55:43] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key morok.color was corrected from null to its default, #C9D6D8. 
+[08:55:43] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key morok.colorStrength was corrected from null to its default, 0.94. 
+[08:55:43] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Configuration file /home/runner/work/riftworld/riftworld/ci/maja-run/client/config/forge-client.toml is not correct. Correcting
+[08:55:43] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key client was corrected from null to its default, SimpleCommentedConfig:{}. 
+[08:55:43] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key client.alwaysSetupTerrainOffThread was corrected from null to its default, false. 
+[08:55:43] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key client.experimentalForgeLightPipelineEnabled was corrected from null to its default, false. 
+[08:55:43] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key client.showLoadWarnings was corrected from null to its default, true. 
+[08:55:43] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key client.useCombinedDepthStencilAttachment was corrected from null to its default, false. 
+[08:55:43] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key client.compressLanIPv6Addresses was corrected from null to its default, true. 
+[08:55:43] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key client.calculateAllNormals was corrected from null to its default, false. 
+[08:55:43] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key client.stabilizeDirectionGetNearest was corrected from null to its default, true. 
+[08:55:43] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key client.allowMipmapLowering was corrected from null to its default, false. 
+[08:55:44] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Configuration file /home/runner/work/riftworld/riftworld/ci/maja-run/client/config/riftworld-maja.toml is not correct. Correcting
+[08:55:44] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key maja was corrected from null to its default, SimpleCommentedConfig:{}. 
+[08:55:44] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key maja.allowIslandEating was corrected from null to its default, true. 
+[08:55:44] [Worker-Main-3/INFO] [minecraft/UnihexProvider]: Found unifont_all_no_pua-15.0.06.hex, loading
+[08:55:45] [Forge Version Check/INFO] [ne.mi.fm.VersionChecker/]: [forge] Starting version check at https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json
+[08:55:46] [Forge Version Check/INFO] [ne.mi.fm.VersionChecker/]: [forge] Found status: OUTDATED Current: 47.4.23 Target: 47.4.28
+[08:55:46] [riftworld-blacktide-warmup/INFO] [RiftWorld/Blacktide/]: Loaded blacktide.nbt (248x176x228) in 1041 ms
+[08:55:48] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:stripped_frostbriar_wood#inventory:
+    minecraft:textures/atlas/blocks.png:riftworld:block/stripped_frostbriar_wood
+    minecraft:textures/atlas/blocks.png:riftworld:block/stripped_frostbriar_wood_top
+[08:55:48] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:stripped_frostbriar_wood#axis=y:
+    minecraft:textures/atlas/blocks.png:riftworld:block/stripped_frostbriar_wood
+    minecraft:textures/atlas/blocks.png:riftworld:block/stripped_frostbriar_wood_top
+[08:55:48] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:stripped_frostbriar_wood#axis=z:
+    minecraft:textures/atlas/blocks.png:riftworld:block/stripped_frostbriar_wood
+    minecraft:textures/atlas/blocks.png:riftworld:block/stripped_frostbriar_wood_top
+[08:55:48] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:stripped_frostbriar_wood#axis=x:
+    minecraft:textures/atlas/blocks.png:riftworld:block/stripped_frostbriar_wood
+    minecraft:textures/atlas/blocks.png:riftworld:block/stripped_frostbriar_wood_top
+[08:55:48] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:rotwood_door#inventory:
+    minecraft:textures/atlas/blocks.png:riftworld:item/rotwood_door
+[08:55:48] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:frostbriar_door#inventory:
+    minecraft:textures/atlas/blocks.png:riftworld:item/frostbriar_door
+[08:55:48] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:rotwood_wood#inventory:
+    minecraft:textures/atlas/blocks.png:riftworld:block/rotwood_wood
+    minecraft:textures/atlas/blocks.png:riftworld:block/rotwood_wood_top
+[08:55:48] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:frostbriar_wood#axis=z:
+    minecraft:textures/atlas/blocks.png:riftworld:block/frostbriar_wood
+    minecraft:textures/atlas/blocks.png:riftworld:block/frostbriar_wood_top
+[08:55:48] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:frostbriar_wood#axis=y:
+    minecraft:textures/atlas/blocks.png:riftworld:block/frostbriar_wood
+    minecraft:textures/atlas/blocks.png:riftworld:block/frostbriar_wood_top
+[08:55:48] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:rotwood_wood#axis=x:
+    minecraft:textures/atlas/blocks.png:riftworld:block/rotwood_wood
+    minecraft:textures/atlas/blocks.png:riftworld:block/rotwood_wood_top
+[08:55:48] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:stripped_rotwood_wood#axis=z:
+    minecraft:textures/atlas/blocks.png:riftworld:block/stripped_rotwood_wood
+    minecraft:textures/atlas/blocks.png:riftworld:block/stripped_rotwood_wood_top
+[08:55:48] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:stripped_rotwood_wood#inventory:
+    minecraft:textures/atlas/blocks.png:riftworld:block/stripped_rotwood_wood
+    minecraft:textures/atlas/blocks.png:riftworld:block/stripped_rotwood_wood_top
+[08:55:48] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:frostbriar_wood#axis=x:
+    minecraft:textures/atlas/blocks.png:riftworld:block/frostbriar_wood
+    minecraft:textures/atlas/blocks.png:riftworld:block/frostbriar_wood_top
+[08:55:48] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:stripped_rotwood_wood#axis=y:
+    minecraft:textures/atlas/blocks.png:riftworld:block/stripped_rotwood_wood
+    minecraft:textures/atlas/blocks.png:riftworld:block/stripped_rotwood_wood_top
+[08:55:48] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:rotwood_wood#axis=z:
+    minecraft:textures/atlas/blocks.png:riftworld:block/rotwood_wood
+    minecraft:textures/atlas/blocks.png:riftworld:block/rotwood_wood_top
+[08:55:48] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:stripped_rotwood_wood#axis=x:
+    minecraft:textures/atlas/blocks.png:riftworld:block/stripped_rotwood_wood
+    minecraft:textures/atlas/blocks.png:riftworld:block/stripped_rotwood_wood_top
+[08:55:48] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:frostbriar_wood#inventory:
+    minecraft:textures/atlas/blocks.png:riftworld:block/frostbriar_wood
+    minecraft:textures/atlas/blocks.png:riftworld:block/frostbriar_wood_top
+[08:55:48] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:rotwood_wood#axis=y:
+    minecraft:textures/atlas/blocks.png:riftworld:block/rotwood_wood
+    minecraft:textures/atlas/blocks.png:riftworld:block/rotwood_wood_top
+[08:55:50] [Render thread/WARN] [minecraft/SoundEngine]: Missing sound for event: minecraft:item.goat_horn.play
+[08:55:50] [Render thread/WARN] [minecraft/SoundEngine]: Missing sound for event: minecraft:entity.goat.screaming.horn_break
+[ALSOFT] (EE) Failed to set real-time priority for thread: Operation not permitted (1)
+[08:55:50] [Render thread/INFO] [mojang/Library]: OpenAL initialized on device No Output
+[08:55:50] [Render thread/INFO] [minecraft/SoundEngine]: Sound engine started
+[08:55:50] [Render thread/INFO] [minecraft/TextureAtlas]: Created: 1024x1024x0 minecraft:textures/atlas/blocks.png-atlas
+[08:55:50] [Render thread/INFO] [minecraft/TextureAtlas]: Created: 256x256x0 minecraft:textures/atlas/signs.png-atlas
+[08:55:50] [Render thread/INFO] [minecraft/TextureAtlas]: Created: 512x512x0 minecraft:textures/atlas/shield_patterns.png-atlas
+[08:55:50] [Render thread/INFO] [minecraft/TextureAtlas]: Created: 512x512x0 minecraft:textures/atlas/banner_patterns.png-atlas
+[08:55:50] [Render thread/INFO] [minecraft/TextureAtlas]: Created: 1024x1024x0 minecraft:textures/atlas/armor_trims.png-atlas
+[08:55:50] [Render thread/INFO] [minecraft/TextureAtlas]: Created: 128x64x0 minecraft:textures/atlas/decorated_pot.png-atlas
+[08:55:50] [Render thread/INFO] [minecraft/TextureAtlas]: Created: 256x256x0 minecraft:textures/atlas/chest.png-atlas
+[08:55:50] [Render thread/INFO] [minecraft/TextureAtlas]: Created: 512x256x0 minecraft:textures/atlas/shulker_boxes.png-atlas
+[08:55:50] [Render thread/INFO] [minecraft/TextureAtlas]: Created: 512x256x0 minecraft:textures/atlas/beds.png-atlas
+[08:55:51] [Render thread/WARN] [minecraft/ShaderInstance]: Shader rendertype_entity_translucent_emissive could not find sampler named Sampler2 in the specified shader program.
+[08:55:51] [Render thread/INFO] [minecraft/TextureAtlas]: Created: 256x256x0 minecraft:textures/atlas/particles.png-atlas
+[08:55:51] [Render thread/INFO] [minecraft/TextureAtlas]: Created: 256x256x0 minecraft:textures/atlas/paintings.png-atlas
+[08:55:51] [Render thread/INFO] [minecraft/TextureAtlas]: Created: 128x128x0 minecraft:textures/atlas/mob_effects.png-atlas
+[08:55:51] [Render thread/INFO] [minecraft/ConnectScreen]: Connecting to 127.0.0.1, 25565
+[08:55:53] [Render thread/INFO] [ne.mi.re.GameData/REGISTRIES]: Injecting existing registry data into this CLIENT instance
+[08:55:54] [Netty Epoll Client IO #0/INFO] [ne.mi.ne.NetworkHooks/]: Connected to a modded server.
+[08:55:56] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 2 advancements
+[08:55:56] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Your game mode has been updated to Spectator Mode
+[riftworld] geo el_gran_maja: костей 13, деталей 14, атлас 4096x4096
+[riftworld] geo liopleurodon: костей 16, деталей 17, атлас 1024x1024
+[riftworld] paper dragon: позвоночник из 72 узлов рисуется, сегментов на кольцо 14
+[08:57:36] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Your game mode has been updated to Creative Mode
+[08:57:46] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Your game mode has been updated to Survival Mode
+[08:57:47] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Your game mode has been updated to Creative Mode
+[riftworld] geo turtle: костей 11, деталей 12, атлас 128x128
+[riftworld] geo jelly: костей 20, деталей 21, атлас 128x128
+[riftworld] geo surgeon: костей 9, деталей 10, атлас 128x128
+[08:58:49] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Your game mode has been updated to Spectator Mode
+[riftworld] geo silver: костей 9, деталей 10, атлас 128x128
+[09:00:04] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Your game mode has been updated to Creative Mode
