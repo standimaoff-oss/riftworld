@@ -216,11 +216,15 @@ public final class ElisarLawEvents {
      * поэтому измерение указываем явно.</p>
      */
     private static void seatInCell(ServerPlayer player, BlockPos cell, ServerLevel city) {
+        // Клетка: пол стоит на cell.getY() - 1, стены — на cell.getY() и выше.
+        // Заключённого сажаем на пол, а не на уровень стен: иначе он падает
+        // с верхнего ряда прутьев и оказывается ВНЕ камеры.
+        double seatY = cell.getY();
         if (city != null) {
-            player.teleportTo(city, cell.getX() + 0.5D, cell.getY() + 1.0D, cell.getZ() + 0.5D,
+            player.teleportTo(city, cell.getX() + 0.5D, seatY, cell.getZ() + 0.5D,
                     player.getYRot(), player.getXRot());
         } else {
-            player.teleportTo(cell.getX() + 0.5D, cell.getY() + 1.0D, cell.getZ() + 0.5D);
+            player.teleportTo(cell.getX() + 0.5D, seatY, cell.getZ() + 0.5D);
         }
         player.setDeltaMovement(0, 0, 0);
         player.setHealth(player.getMaxHealth());
