@@ -21,6 +21,9 @@ LOG="${LOG:-ci-out/elisar-law-probe.txt}"
 : > "$LOG"
 
 # Площадь и дорога центрального города Элисара (см. data/riftworld/city/plan.json).
+# Высота НЕ выдумывается: её спрашивает у сервера проба v49_city_ground,
+# потому что рельеф города меняется, а страж, поставленный в воздухе, падает
+# и не появляется — проба честно падала «не удалось заспавнить стражей».
 CITY_X=-28
 CITY_Z=50
 CITY_Y=118
@@ -32,6 +35,19 @@ log() { echo "$*" | tee -a "$LOG"; }
 log '== v0.49.0: проверка городского закона Элисара на живом сервере =='
 rq gamerule doMobLoot true >/dev/null
 
+# Спрашиваем у сервера настоящую точку дороги и высоту земли.
+GROUND_INFO=$(rq execute in riftworld:elisar run riftstruct v49_city_ground 2>&1 | tr '\r\n' '  ' || true)
+log "   v49_city_ground -> ${GROUND_INFO:0:300}"
+if [[ "$GROUND_INFO" == *"road="* ]]; then
+  ROAD=$(echo "$GROUND_INFO" | sed -n 's/.*road=\([^ ]*\).*/\1/p')
+  CITY_X=$(echo "$ROAD" | cut -d, -f1)
+  CITY_Y=$(echo "$ROAD" | cut -d, -f2)
+  CITY_Z=$(echo "$ROAD" | cut -d, -f3)
+  log "   дорога города: $CITY_X,$CITY_Y,$CITY_Z"
+else
+  fail "Проба не нашла дорогу города: $GROUND_INFO"
+fi
+
 # ---------------------------------------------------------------- 1. патруль
 log '-- 1) страж идёт по дороге, а не стоит на месте'
 rq execute in riftworld:elisar run tp TestPlayer "$CITY_X" "$CITY_Y" "$CITY_Z" 0 0 >/dev/null 2>&1 || true
@@ -40,7 +56,8 @@ rq kill '@e[type=riftworld:elisar_guard]' >/dev/null 2>&1 || true
 # Ставим стражей прямо на городскую площадь: витрина v40_gear стоит на 760,760
 # (вне города) и для проверки патруля не годится.
 for i in 1 2 3; do
-  rq execute in riftworld:elisar positioned "$CITY_X" "$CITY_Y" "$CITY_Z" run summon riftworld:elisar_guard >/dev/null 2>&1 || true
+  rq execute in riftworld:elisar positioned "$CITY_X" "$CITY_Y" "$CITY_Z" \
+    run summon riftworld:elisar_guard '{NoGravity:1b,PersistenceRequired:1b}' >/dev/null 2>&1 || true
   sleep 0.5
 done
 sleep 4
@@ -105,12 +122,14 @@ sleep 1
 
 # Ставим НЕСКОЛЬКО стражей рядом: один убит, остальные видят убийство.
 for i in 1 2 3; do
-  rq execute in riftworld:elisar positioned "$CITY_X" "$CITY_Y" "$CITY_Z" run summon riftworld:elisar_guard >/dev/null 2>&1 || true
+  rq execute in riftworld:elisar positioned "$CITY_X" "$CITY_Y" "$CITY_Z" \
+    run summon riftworld:elisar_guard '{NoGravity:1b,PersistenceRequired:1b}' >/dev/null 2>&1 || true
   sleep 0.5
 done
 sleep 3
 # Убиваем ОДНОГО стража от руки игрока: остальные — свидетели.
-rq execute in riftworld:elisar positioned "$CITY_X" "$CITY_Y" "$CITY_Z" run summon riftworld:elisar_guard >/dev/null 2>&1 || true
+rq execute in riftworld:elisar positioned "$CITY_X" "$CITY_Y" "$CITY_Z" \
+  run summon riftworld:elisar_guard '{NoGravity:1b,PersistenceRequired:1b}' >/dev/null 2>&1 || true
 sleep 2
 rq damage '@e[type=riftworld:elisar_guard,limit=1,sort=nearest]' 1000 minecraft:player_attack by TestPlayer >/dev/null 2>&1 || true
 sleep 3

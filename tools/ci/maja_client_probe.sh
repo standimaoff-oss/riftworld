@@ -143,7 +143,9 @@ import -window root "$OUT/fauna-liopleurodon-side.png"
 rq summon riftworld:paper_dragon 32 200 0 '{NoAI:1b,NoGravity:1b,PersistenceRequired:1b}' >/dev/null
 rq tp TestPlayer 27 203 6 facing 32 202 0 >/dev/null
 sleep 15
-grep -Fq '[riftworld] geo paper_dragon:' "$OUT/maja-client.log" || fail 'Paper dragon model was not loaded by the real client'
+# Бумажный дракон рисуется процедурно (без GeoModel), поэтому проверяем его
+# собственный отпечаток, а не '[riftworld] geo paper_dragon:'.
+grep -Fq '[riftworld] paper dragon:' "$OUT/maja-client.log" || fail 'Paper dragon was not rendered by the real client'
 import -window root "$OUT/fauna-paper-dragon.png"
 sleep 1
 import -window root "$OUT/fauna-paper-dragon-motion.png"

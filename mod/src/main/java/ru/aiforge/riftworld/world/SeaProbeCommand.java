@@ -4473,6 +4473,42 @@ public final class SeaProbeCommand {
             return 1;
         }
 
+        if (k.equals("v49_city_ground")) {
+            // v0.49.0: где в городе Элисара реально стоит земля и где можно
+            // поставить стража. Проба нужна CI: координаты площади заданы
+            // числами, а высота поверхности зависит от рельефа, и страж,
+            // поставленный в воздухе, падает и не появляется.
+            CityPlan plan = CityPlan.get();
+            if (plan.plazas.isEmpty()) {
+                src.sendSuccess(() -> Component.literal(
+                        "riftstruct kind=v49_city_ground error=no_plaza_in_plan"), false);
+                return 0;
+            }
+            CityPlan.Plaza plaza = plan.plazas.get(0);
+            final double px = plaza.x();
+            final double pz = plaza.z();
+            int ground = level.getHeight(
+                    net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                    net.minecraft.util.Mth.floor(px), net.minecraft.util.Mth.floor(pz));
+            PatrolRoute route = PatrolRoute.nearestTo(plan, level, px, ground, pz, 120.0);
+            double rx = px;
+            double rz = pz;
+            int rg = ground;
+            if (route != null && !route.isEmpty()) {
+                PatrolRoute.Waypoint wp = route.nearest(px, ground, pz);
+                rx = wp.x();
+                rz = wp.z();
+                rg = (int) Math.floor(wp.y());
+            }
+            String line = "riftstruct kind=v49_city_ground plaza=" + (int) px + "," + (int) pz
+                    + " ground=" + ground
+                    + " road=" + (int) rx + "," + rg + "," + (int) rz
+                    + " route=" + (route == null ? "none" : route.kind().name())
+                    + " points=" + (route == null ? 0 : route.size());
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
         if (k.equals("v49_law_state")) {
             // v0.49.0: состояние городского закона для ближайшего игрока.
             // Проба нужна CI, чтобы проверить ВСЮ цепочку закона:

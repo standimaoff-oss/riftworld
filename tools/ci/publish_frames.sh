@@ -35,6 +35,8 @@ publish_files() {
         for f in "$OUT"/*.txt "$OUT"/*.log; do
             [ -e "$f" ] || continue
             base=$(basename "$f")
+            # Собственный журнал публикации не затираем старой копией из ci-out.
+            [ "$base" = "publish.log" ] && continue
             cp -a "$f" "reports/ci_diag/${job}__${base}" 2>/dev/null || true
             cp -a "$f" "reports/ci_diag/${base}" 2>/dev/null || true
         done
