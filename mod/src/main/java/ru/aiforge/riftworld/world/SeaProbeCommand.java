@@ -4580,7 +4580,12 @@ public final class SeaProbeCommand {
             // маршрут, куда он идёт и куда смотрит.
             var guard = level.getEntitiesOfClass(
                     ru.aiforge.riftworld.entity.ElisarGuardEntity.class,
-                    src.getPosition().inflate(48.0)).stream().findFirst();
+                    new net.minecraft.world.phys.AABB(
+                            src.getPosition().x - 48.0D, src.getPosition().y - 48.0D,
+                            src.getPosition().z - 48.0D,
+                            src.getPosition().x + 48.0D, src.getPosition().y + 48.0D,
+                            src.getPosition().z + 48.0D))
+                    .stream().findFirst();
             if (guard.isEmpty()) {
                 src.sendSuccess(() -> Component.literal(
                         "riftstruct kind=v49_guard_patrol error=no_guard"), false);
