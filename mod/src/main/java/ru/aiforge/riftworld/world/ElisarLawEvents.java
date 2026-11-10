@@ -225,11 +225,26 @@ public final class ElisarLawEvents {
         player.setDeltaMovement(0, 0, 0);
         player.setHealth(player.getMaxHealth());
         player.clearFire();
-        player.displayClientMessage(Component.literal(
-                "\u00a7cВас посадили в городскую тюрьму: убийство видели горожане."), true);
-        player.displayClientMessage(Component.literal(
-                "\u00a7eВаши вещи сложены в сундук на складе рядом с тюрьмой."), true);
+        // Сообщение показываем не каждый тик: посадку подтверждает и тик, и
+        // событие возрождения, и без защиты чат засорялся бы.
+        long now = level_gameTime(player);
+        if (now - lastSeatNotice.getOrDefault(player.getUUID(), Long.MIN_VALUE) > 40L) {
+            lastSeatNotice.put(player.getUUID(), now);
+            player.displayClientMessage(Component.literal(
+                    "\u00a7cВас посадили в городскую тюрьму: убийство видели горожане."), true);
+            player.displayClientMessage(Component.literal(
+                    "\u00a7eВаши вещи сложены в сундук на складе рядом с тюрьмой."), true);
+        }
     }
+
+    /** Время мира для защиты от спама сообщений. */
+    private static long level_gameTime(ServerPlayer player) {
+        return player.level().getGameTime();
+    }
+
+    /** Когда игроку последний раз сообщали о посадке в клетку. */
+    private static final java.util.Map<java.util.UUID, Long> lastSeatNotice =
+            new java.util.concurrent.ConcurrentHashMap<>();
 
     /** После возрождения в тюрьме — вернуть конфискованные вещи из сундука. */
     @SubscribeEvent
@@ -296,16 +311,29 @@ public final class ElisarLawEvents {
         if (event.phase != TickEvent.Phase.END) return;
         if (!(event.player instanceof ServerPlayer player)) return;
         ServerLevel level = (ServerLevel) player.level();
-        if (level.dimension() != ru.aiforge.riftworld.flight.Flight.ELISAR_DIM) return;
+        // Закон лежит в данных обычного мира, а заключённый — в городе.
+        // Поэтому проверяем измерение ИГРОКА отдельно от измерения закона.
         ElisarLaw law = ElisarLaw.get(level);
         BlockPos cell = law.peekJail(player.getUUID());
         if (cell == null) return;
-        // В клетке — сидим; снаружи — отпускаем.
+        // Игрок мёртв (между смертью и респавном) — ждём.
+        if (!player.isAlive()) return;
+        ServerLevel city = player.getServer().getLevel(ru.aiforge.riftworld.flight.Flight.ELISAR_DIM);
+        if (city == null) return;
         double dx = player.getX() - (cell.getX() + 0.5D);
         double dz = player.getZ() - (cell.getZ() + 0.5D);
-        if (Math.hypot(dx, dz) > 8.0D) {
-            law.clearJail(player.getUUID());
+        double dist = Math.hypot(dx, dz);
+        // Заключённый внутри камеры — всё в порядке.
+        if (dist <= 3.0D) return;
+        // Игрок в городе, но не в камере: сажаем его. Это страховка на
+        // случай, когда PlayerRespawnEvent не сработал или сервер после него
+        // вернул игрока на точку появления.
+        if (dist <= 64.0D) {
+            seatInCell(player, cell, city);
+            return;
         }
+        // Совсем далеко — считаем, что заключённый вышел и ушёл из города.
+        law.clearJail(player.getUUID());
     }
 
     /** Сохраняемое состояние розыска при перезагрузке мира. */
