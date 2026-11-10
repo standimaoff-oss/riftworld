@@ -319,11 +319,24 @@ jobs:
           mkdir -p mod/build/libs ci/server/config
           find build-artifact -name '*.jar' -exec cp {} mod/build/libs/ \;
           KEEP=1 NORMAL_PROBE=0 bash tools/ci/server_check.sh
+      - name: Install the packages the headless client needs
+        # Без Xvfb, Openbox, xdotool и графических библиотек клиент не
+        # запустится: проба закона поднимает его сама, если в мире ещё нет
+        # игрока. Раньше эти пакеты ставились только в соседней джобе, и
+        # проба падала с «Клиент не подключился».
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
+            xvfb openbox x11-utils xdotool imagemagick \
+            libgl1 libglx-mesa0 libxi6 libxxf86vm1 libxfixes3 libxrender1 \
+            libxkbcommon0 libsm6 libopenal1 >/dev/null
       - name: Verify patrols, the non-lethal warning and the jail warehouse
         run: bash tools/ci/elisar_law_probe.sh
       - name: Save server diagnostics
         if: always()
-        run: tail -500 ci/server/logs/latest.log > ci-out/elisar-law-server-tail.log || true
+        run: |
+          tail -500 ci/server/logs/latest.log > ci-out/elisar-law-server-tail.log || true
+          tail -300 ci-out/law-client.log > ci-out/elisar-law-client-tail.log || true
       - name: Publish the law report to the working branch
         # Публикация не должна ронять джобу: главный результат пробы — это её
         # собственный вердикт, а не успех пуша отчёта в ветвь.
