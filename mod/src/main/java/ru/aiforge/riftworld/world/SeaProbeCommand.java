@@ -4550,9 +4550,24 @@ public final class SeaProbeCommand {
                         net.minecraft.util.Mth.floor(rx), net.minecraft.util.Mth.floor(rz));
                 rg = here > 0 ? here : (int) Math.floor(wp.y());
             }
+            // Что реально лежит под точкой: без этого проба не отличает
+            // «землю» от «дна океана», и страж просто не появляется.
+            int bi = (int) Math.floor(rx);
+            int bj = (int) Math.floor(rz);
+            String under = "?";
+            if (level.hasChunk(bi >> 4, bj >> 4)) {
+                net.minecraft.world.level.block.state.BlockState st =
+                        level.getBlockState(new BlockPos(bi, rg - 1, bj));
+                String above = level.getBlockState(new BlockPos(bi, rg, bj))
+                        .getBlock().getName().getString().replace("minecraft:", "");
+                under = st.getBlock().getName().getString().replace("minecraft:", "") + "/" + above;
+            } else {
+                under = "chunk_not_loaded";
+            }
             String line = "riftstruct kind=v49_city_ground plaza=" + (int) px + "," + (int) pz
                     + " ground=" + ground
                     + " road=" + (int) rx + "," + rg + "," + (int) rz
+                    + " under=" + under
                     + " route=" + (route == null ? "none" : route.kind().name())
                     + " points=" + (route == null ? 0 : route.size());
             src.sendSuccess(() -> Component.literal(line), false);
