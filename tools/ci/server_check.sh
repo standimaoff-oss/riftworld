@@ -118,7 +118,11 @@ server-ip=
 level-type=minecraft\:flat
 generator-settings={"biome":"minecraft:plains","layers":[{"block":"minecraft:bedrock","height":1},{"block":"minecraft:dirt","height":2},{"block":"minecraft:grass_block","height":1}],"lakes":false,"features":false,"structure_overrides":["riftworld:overgrown_temple"]}
 level-seed=21122
-view-distance=12
+# view-distance ДОЛЖЕН быть больше simulation-distance: именно в этом зазоре
+# живёт «дальний» случай — сервер уже не симулирует сущность, но ещё
+# отправляет её клиенту (tracking range), и клиент рисует её. При
+# view-distance=12 дракон в 20 блоках был дальше рендера и исчезал.
+view-distance=16
 simulation-distance=8
 max-players=5
 spawn-protection=0

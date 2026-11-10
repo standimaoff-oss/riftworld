@@ -26,10 +26,10 @@ except ImportError:  # pragma: no cover - зависит от окружения
     sys.exit(2)
 
 # Кадры, где в кадре законно почти ничего нет (ночь, далёкий горизонт).
-ALLOW_FLAT = {
-    "frame-paper-dragon-far-a.png",
-    "frame-paper-dragon-far-b.png",
-}
+# Список ПУСТ: «дальние» кадры бумажного дракона исключались отсюда, и
+# провал «дракон не виден дальше зоны симуляции» проходил незамеченным. Теперь
+# они проверяются наравне со всеми — именно они и ловят старый баг.
+ALLOW_FLAT: set[str] = set()
 
 
 def analyse(path: pathlib.Path) -> tuple[bool, str]:

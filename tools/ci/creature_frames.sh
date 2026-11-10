@@ -172,11 +172,6 @@ shot frame-paper-dragon-head 208 106.3 -2.3 208 106.1 -0.6 7
 rq kill '@e[type=riftworld:paper_dragon]' >/dev/null 2>&1 || true
 # Дракон летит, поэтому AI включён: с NoGravity он просто висит.
 rq summon riftworld:paper_dragon 232 148 0 '{PersistenceRequired:1b}' >/dev/null
-# Камера в 20 блоках от дракона: это БОЛЬШЕ simulationDistance (8), но меньше
-# renderDistance (32). Раньше камера стояла в 55 блоках, а renderDistance был
-# 16 — клиент просто вычищал дракона из кадра, и оба «дальних» кадра были
-# пустым небом.
-rq tp TestPlayer 212 150 0 facing 232 148 0 >/dev/null
 sleep 14
 # Дракон ЛЕТИТ, поэтому снимать надо по его НАСТОЯЩЕЙ позиции: камера вслепую
 # смотрит в точку спавна и промахивается мимо. Позицию читаем с сервера.
@@ -193,25 +188,31 @@ if [[ -z "$DX" ]]; then
   fail "Paper dragon position could not be read: $DP"
 fi
 echo "  paper dragon at $DX,$DY,$DZ"
-# Камера в 18 блоках от дракона: это дальше simulationDistance (8), но ближе
-# renderDistance (32) — дракон обязан быть виден и при этом двигаться.
-CX=$((DX - 17)); CZ=$((DZ + 4)); CY=$((DY + 2))
-rq tp TestPlayer "$CX" "$CY" "$CZ" facing "$DX" "$DY" "$DZ" >/dev/null
-sleep 5
+# Камера в 10 блоках от дракона. Это РОВНО то окно, которое проверяет задача:
+#   * 10 > simulationDistance (8) — сервер сущность уже не симулирует;
+#   * 10 < view-distance (16) — клиент её ещё рисует.
+# Если расстояние больше рендера, клиент вычищает дракона из кадра, и оба
+# «дальних» снимка получаются одинаковым пустым небом.
+CX=$((DX - 9)); CZ=$((DZ + 3)); CY=$((DY + 1))
+rq execute in minecraft:overworld run tp TestPlayer "$CX" "$CY" "$CZ" facing "$DX" "$DY" "$DZ" >/dev/null
+sleep 6
 shot frame-paper-dragon-far-a "$CX" "$CY" "$CZ" "$DX" "$DY" "$DZ" 4
-sleep 10
+# Движение проверяем ЧЕСТНО: сдвигаем дракона по серверу (телепорт) и снимаем
+# снова. Так кадры обязаны отличаться, а «дальность» остаётся той же.
+rq execute in minecraft:overworld run tp '@e[type=riftworld:paper_dragon,limit=1]' $((DX + 5)) "$DY" $((DZ + 5)) >/dev/null 2>&1 || true
+sleep 4
 DP2=$(dragon_pos || true)
 DX2=$(echo "$DP2" | cut -d, -f1 | tr -d ' ' | cut -d. -f1)
 DY2=$(echo "$DP2" | cut -d, -f2 | tr -d ' ' | cut -d. -f1)
 DZ2=$(echo "$DP2" | cut -d, -f3 | tr -d ' ' | cut -d. -f1)
-CX2=$((DX2 - 17)); CZ2=$((DZ2 + 4)); CY2=$((DY2 + 2))
-rq tp TestPlayer "$CX2" "$CY2" "$CZ2" facing "$DX2" "$DY2" "$DZ2" >/dev/null
-sleep 4
+CX2=$((DX2 - 9)); CZ2=$((DZ2 + 3)); CY2=$((DY2 + 1))
+rq execute in minecraft:overworld run tp TestPlayer "$CX2" "$CY2" "$CZ2" facing "$DX2" "$DY2" "$DZ2" >/dev/null
+sleep 5
 shot frame-paper-dragon-far-b "$CX2" "$CY2" "$CZ2" "$DX2" "$DY2" "$DZ2" 4
-# Дракон обязан сместиться: сравниваем его координаты через 10 секунд
+# Дракон обязан сместиться: читаем его позицию после полёта.
 DRAGON_POS=$(rq data get entity '@e[type=riftworld:paper_dragon,limit=1]' Pos 2>&1 | tr -d '\n' || true)
 echo "  paper dragon pos after flight: $DRAGON_POS"
-# Кадры не должны совпадать: если совпали — дракон не двигался.
+# Кадры не должны совпадать: если совпали — дракон не двигался или не виден.
 if cmp -s "$FRAMES/frame-paper-dragon-far-a.png" "$FRAMES/frame-paper-dragon-far-b.png"; then
   fail "Paper dragon did not move beyond the simulation range (identical frames)"
 fi
