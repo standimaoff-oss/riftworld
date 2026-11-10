@@ -9,6 +9,12 @@ OUT=${OUT:-ci-out}
 RUN=${RUN:-ci/frames-run}
 FRAMES="$OUT/frames"
 mkdir -p "$OUT" "$FRAMES" "$RUN/client/config"
+
+# Свой журнал съёмки: без него падение видно только по коду возврата, а сам
+# отчёт публикуется в ветку и остаётся читаемым.
+SCRIPT_LOG="$OUT/frames-capture.log"
+: > "$SCRIPT_LOG"
+exec > >(tee -a "$SCRIPT_LOG") 2>&1
 fail() { echo "::error title=In-game frames::$*"; exit 1; }
 # RCON drops the socket every now and then under a burst of commands; retry a
 # couple of times so a transient disconnect does not abort the whole capture.
@@ -94,7 +100,21 @@ shot() {
   wid=$(xdotool search --onlyvisible --name Minecraft | head -1 || true)
   [ -n "$wid" ] || fail "Minecraft window not found"
   xdotool windowraise "$wid" >/dev/null 2>&1 || true
-  import -window root "$FRAMES/$name.png"
+  xdotool windowactivate "$wid" >/dev/null 2>&1 || true
+  sleep 1
+  # 'import' возвращает 4, если окно не найдено или снимок не удался.
+  # Раньше это роняло всю съёмку кадров: терялся даже список уже снятых.
+  local rc=0
+  import -window root "$FRAMES/$name.png" || rc=$?
+  if [ "$rc" != 0 ] || [ ! -s "$FRAMES/$name.png" ]; then
+    echo "::warning title=In-game frames::не удалось снять кадр $name (rc=$rc), пробуем ещё раз"
+    sleep 3
+    import -window root "$FRAMES/$name.png" || true
+  fi
+  if [ ! -s "$FRAMES/$name.png" ]; then
+    echo "::warning title=In-game frames::кадр $name пуст — продолжаем съёмку дальше"
+    return 0
+  fi
   SHOT=$((SHOT + 1))
   echo "captured $name"
 }

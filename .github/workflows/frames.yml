@@ -101,6 +101,7 @@ jobs:
           path: |
             ci-out/frames/
             ci-out/frames-client.log
+            ci-out/frames-capture.log
             ci-out/*.txt
           if-no-files-found: warn
           retention-days: 14
