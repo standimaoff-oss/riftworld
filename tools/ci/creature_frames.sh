@@ -325,13 +325,21 @@ sleep 8
 shot frame-hollowwatcher-three-quarter "$WX" "$WY" "$WZ" "$TX" "$TY" "$TZ" 14
 shot frame-hollowwatcher-face "$TX" "$((TY + 1))" "$((TZ - 2))" "$TX" "$TY" "$TZ" 10
 shot frame-hollowwatcher-tall "$((TX + 4))" "$TY" "$TZ" "$TX" "$TY" "$TZ" 10
-# Вертушка даёт ночное небо, а для хоррор-кадра нужен читаемый силуэт.
+# Дневной кадр: в полночь силуэт моба не читается, поэтому светим.
 rq execute in minecraft:overworld run time set noon >/dev/null 2>&1 || true
 sleep 3
 shot frame-hollowwatcher-daylight "$TX" "$((TY + 1))" "$((TZ - 3))" "$TX" "$TY" "$TZ" 10
-rq execute in minecraft:overworld run time set midnight >/dev/null 2>&1 || true
-sleep 3
-shot frame-hollowwatcher-three-quarter "$WX" "$WY" "$WZ" "$TX" "$TY" "$TZ" 10
+# Ночной кадр снимаем ОТДЕЛЬНЫМ файлом: раньше он перезаписывал дневной
+# three-quarter, и в релиз попадал чёрный кадр вместо читаемого. Падь —
+# тёмное место, поэтому ночной кадр оставляем только там, где моб освещён
+# фонарями (витрина строит их сама).
+if [[ "$WATCHER" == *"staged=1"* ]]; then
+  rq execute in minecraft:overworld run time set midnight >/dev/null 2>&1 || true
+  sleep 3
+  shot frame-hollowwatcher-night "$WX" "$WY" "$WZ" "$TX" "$TY" "$TZ" 10
+  rq execute in minecraft:overworld run time set noon >/dev/null 2>&1 || true
+  sleep 2
+fi
 fi
 
 # ---------------------------------------------------------------- El Gran Maja
