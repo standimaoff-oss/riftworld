@@ -132,18 +132,63 @@ public final class ElisarJail {
                     if (!level.getBlockState(p).is(Blocks.CHEST)) {
                         continue;
                     }
-                    // Сундук склада стоит у клетки: ищем железные прутья в радиусе 6.
-                    for (int dx = -6; dx <= 6; dx++) {
-                        for (int dz = -6; dz <= 6; dz++) {
-                            BlockPos q = p.offset(dx, 0, dz);
-                            if (level.getBlockState(q).is(Blocks.IRON_BARS)) {
-                                return new Site(q, p);
-                            }
-                        }
+                    // Сундук склада стоит у клетки. Ищем не «какую-нибудь
+                    // прутьевую блок��», а ЦЕНТР клетки: раньше здесь
+                    // возвращалась первая попавшаяся позиция с прутьями, то
+                    // есть край клетки. Игрока телепортировали в стену, а не
+                    // внутрь камеры — и проба видела jailed=0.
+                    BlockPos center = findCellCenter(level, p);
+                    if (center != null) {
+                        return new Site(center, p);
                     }
                 }
             }
         }
         return null;
+    }
+
+    /**
+     * Находит ЦЕНТР клетки по её сундуку склада.
+     *
+     * <p>Клетка устроена как кольцо из железных прутьев 5x5 (периметр 16
+     * блоков) с проёмом со стороны дороги. Центр — это единственная позиция,
+     * вокруг которой такое кольцо собирается.</p>
+     */
+    private static BlockPos findCellCenter(ServerLevel level, BlockPos chest) {
+        // Проём в стене клетки: одно из колец не полное, поэтому проверяем
+        // не полный периметр, а остальные 15 позиций.
+        for (int dx = -5; dx <= 5; ++dx) {
+            for (int dz = -5; dz <= 5; ++dz) {
+                for (int dy = -2; dy <= 2; ++dy) {
+                    BlockPos c = chest.offset(dx, dy, dz);
+                    if (isCellRing(level, c)) {
+                        return c;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    /** Похоже ли кольцо прутьев вокруг точки на клетку 5x5? */
+    private static boolean isCellRing(ServerLevel level, BlockPos center) {
+        int bars = 0;
+        int r = 2;
+        for (int dx = -r; dx <= r; ++dx) {
+            for (int dz = -r; dz <= r; ++dz) {
+                boolean edge = Math.abs(dx) == r || Math.abs(dz) == r;
+                if (!edge) continue;
+                if (!level.getBlockState(center.offset(dx, 0, dz)).is(Blocks.IRON_BARS)) {
+                    continue;
+                }
+                ++bars;
+            }
+        }
+        // Проём — это одна-две позиции, поэтому 14-16 прутьев достаточно.
+        if (bars < 14) {
+            return false;
+        }
+        // Центр клетки должен быть пустым (там стоит заключённый).
+        return level.getBlockState(center).isAir();
     }
 }
