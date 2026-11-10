@@ -5978,9 +5978,10 @@ public final class SeaProbeCommand {
             world.setBlock(new BlockPos(bx, ground + 1, bz),
                     MorokBlocks.ROTWOOD_LOG.get().defaultBlockState(), 2);
         }
-        // Свет: Падь тёмная, и без фонарей моб в кадре был чёрным пятном.
-        // Фонари стоят по краям площадки — они дают читаемый силуэт и
-        // одновременно работают как «маяки» в лесу.
+        // Свет и контраст. Падь тёмная, и без освещения моб в кадре был
+        // чёрным пятном: читался только силуэт земли. Теперь по краям
+        // площадки стоят фонари, а на земле — светокамни: они дают яркие
+        // пятна, и на них тёмный Смотритель Пращи виден отчётливо.
         for (int[] lamp : new int[][]{{-4, -4}, {4, -4}, {-4, 4}, {4, 4}}) {
             int lx = px + lamp[0];
             int lz = pz + lamp[1];
@@ -5988,6 +5989,16 @@ public final class SeaProbeCommand {
                     net.minecraft.world.level.block.Blocks.LANTERN.defaultBlockState(), 2);
             world.setBlock(new BlockPos(lx, ground + 1, lz),
                     net.minecraft.world.level.block.Blocks.LANTERN.defaultBlockState(), 2);
+        }
+        // Светокамни кольцом вокруг моба: земля под ними светится, и моб
+        // читается как тёмный силуэт на светлом пятне.
+        for (int dx = -3; dx <= 3; ++dx) {
+            for (int dz = -3; dz <= 3; ++dz) {
+                if (Math.abs(dx) <= 1 && Math.abs(dz) <= 1) continue;
+                if (Math.abs(dx) == 3 && Math.abs(dz) == 3) continue;
+                world.setBlock(new BlockPos(px + dx, ground, pz + dz),
+                        net.minecraft.world.level.block.Blocks.SEA_LANTERN.defaultBlockState(), 2);
+            }
         }
         return ground;
     }
@@ -6009,6 +6020,19 @@ public final class SeaProbeCommand {
         watcher.yHeadRot = 0.0F;
         watcher.yBodyRot = 0.0F;
         world.addFreshEntity(watcher);
+        // Моба надо ДОЖДАТЬ: только что созданная сущность ещё не разошлась
+        // по игрокам. Камера снимает кадр сразу, и клиент мог не увидеть моба
+        // вовсе — кадр выходил пустым. Поэтому ждём пару секунд и просим
+        // сервер пересчитать трекинг.
+        watcher.getPersistentData().putBoolean("riftworldShowcase", true);
+        var server = world.getServer();
+        if (server != null) {
+            server.execute(() -> {
+                watcher.setPos(px + 0.5D, py + 0.05D, pz + 0.5D);
+                world.getChunk(px >> 4, pz >> 4);
+                watcher.hasChanged = true;
+            });
+        }
     }
 
 }
