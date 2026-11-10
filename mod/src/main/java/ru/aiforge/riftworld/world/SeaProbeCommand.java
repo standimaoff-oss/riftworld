@@ -3439,6 +3439,25 @@ public final class SeaProbeCommand {
             int pz = 820;
             var region = ru.aiforge.riftworld.world.MorokHollow.regionAt(1200.0D, 820.0D);
             if (region == null) {
+                // Региона Пади в этом мире нет (на CI-сервере мир flat), и
+                // площадка в обычном мире оказывалась за две тысячи блоков от
+                // игрока: клиент не успевал подгрузить чанки, и кадр выходил
+                // совершенно чёрным. Поэтому строим площадку ТУТ ЖЕ, в городе
+                // Элисара — рядом с игроком, со светом и загруженными чанками.
+                ServerLevel city = level.getServer().getLevel(ru.aiforge.riftworld.flight.Flight.ELISAR_DIM);
+                if (city != null) {
+                    int cx = -28;
+                    int cz = 50;
+                    int cy = buildHollowwatcherStage(city, cx, cz);
+                    spawnHollowwatcher(city, cx, cy, cz);
+                    src.sendSuccess(() -> Component.literal(
+                            "riftstruct kind=v49_hollowwatcher_showcase at=" + cx + "," + cy + "," + cz
+                                    + " spawned=1 blocks=1 sub_air=1 staged=1"
+                                    + " dim=" + city.dimension().location()
+                                    + " cam=" + (cx - 4.5) + "," + (cy + 2.4) + "," + (cz - 3.5)
+                                    + ":" + cx + "," + (cy + 1.7) + "," + cz), false);
+                    return 1;
+                }
                 // Региона Пади в этом мире нет: на CI-сервере стоит flat-мир,
                 // где Падь не генерируется. Раньше витрина на этом просто
                 // отказывалась работать, и кадров Смотрителя Пращи не было

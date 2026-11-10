@@ -286,7 +286,7 @@ capture_underwater frame-liopleurodon-head
 # Время в обычном мире: съёмка Пади идёт именно там. Раньше здесь стояло
 # «time set midnight» в измерении Элисара — то есть в мире, где снимают,
 # время не менялось, и кадр выходил чёрным: моба не видно.
-rq execute in minecraft:overworld run time set noon >/dev/null 2>&1 || true
+rq execute in riftworld:elisar run time set noon >/dev/null 2>&1 || true
 # Суша Пади должна быть сгенерирована ДО пробы: иначе проба сама генерирует
 # чанки и занимает серверный поток на десятки секунд — RCON отваливается по
 # таймауту, и кадр не снимается вовсе.
@@ -318,15 +318,18 @@ TZ=$(echo "$WATCHER" | sed -n 's/.*cam=[^:]*:\(.*\)/\1/p' | cut -d, -f3)
 if [ "${SKIP_WATCHER:-0}" != 1 ]; then
 # Грузим чанки вокруг Пади: без этого клиент не успевает подгрузить место
 # съёмки и кадр получается пустым небом.
-rq forceload add $((TX - 48)) $((TZ - 48)) $((TX + 48)) $((TZ + 48)) >/dev/null 2>&1 || true
-# Снимки Пади снимаются в обычном мире.
-SHOT_DIM=minecraft:overworld
+rq execute in riftworld:elisar run forceload add $((TX - 8)) $((TZ - 8)) $((TX + 8)) $((TZ + 8)) >/dev/null 2>&1 || true
+# Снимки Пади снимаются в городе Элисара: площадка Пади строится там же,
+# рядом с игроком. Раньше камера уезжала в обычный мир, за две тысячи
+# блоков от клиента, и кадр получался совершенно чёрным — клиент не
+# успевал подгрузить чанки.
+SHOT_DIM=riftworld:elisar
 sleep 8
 shot frame-hollowwatcher-three-quarter "$WX" "$WY" "$WZ" "$TX" "$TY" "$TZ" 14
 shot frame-hollowwatcher-face "$TX" "$((TY + 1))" "$((TZ - 2))" "$TX" "$TY" "$TZ" 10
 shot frame-hollowwatcher-tall "$((TX + 4))" "$TY" "$TZ" "$TX" "$TY" "$TZ" 10
 # Дневной кадр: в полночь силуэт моба не читается, поэтому светим.
-rq execute in minecraft:overworld run time set noon >/dev/null 2>&1 || true
+rq execute in riftworld:elisar run time set noon >/dev/null 2>&1 || true
 sleep 3
 shot frame-hollowwatcher-daylight "$TX" "$((TY + 1))" "$((TZ - 3))" "$TX" "$TY" "$TZ" 10
 # Ночной кадр снимаем ОТДЕЛЬНЫМ файлом: раньше он перезаписывал дневной
@@ -334,12 +337,14 @@ shot frame-hollowwatcher-daylight "$TX" "$((TY + 1))" "$((TZ - 3))" "$TX" "$TY" 
 # тёмное место, поэтому ночной кадр оставляем только там, где моб освещён
 # фонарями (витрина строит их сама).
 if [[ "$WATCHER" == *"staged=1"* ]]; then
-  rq execute in minecraft:overworld run time set midnight >/dev/null 2>&1 || true
+  rq execute in riftworld:elisar run time set midnight >/dev/null 2>&1 || true
   sleep 3
   shot frame-hollowwatcher-night "$WX" "$WY" "$WZ" "$TX" "$TY" "$TZ" 10
-  rq execute in minecraft:overworld run time set noon >/dev/null 2>&1 || true
+  rq execute in riftworld:elisar run time set noon >/dev/null 2>&1 || true
   sleep 2
 fi
+# Остальные мобы снимаются в обычном мире.
+SHOT_DIM=minecraft:overworld
 fi
 
 # ---------------------------------------------------------------- El Gran Maja
