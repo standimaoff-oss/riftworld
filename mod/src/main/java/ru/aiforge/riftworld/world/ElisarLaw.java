@@ -63,6 +63,8 @@ public final class ElisarLaw extends net.minecraft.world.level.saveddata.SavedDa
     private final Map<UUID, Wanted> wanted = new HashMap<>();
     /** Вещи, отложенные в складе при аресте: игрок -> предметы. */
     private final Map<UUID, List<ItemRecord>> confiscated = new HashMap<>();
+    /** Клетка, в которую надо посадить игрока после смерти: игрок -> клетка. */
+    private final Map<UUID, BlockPos> jailCells = new HashMap<>();
 
     /** Имя файла сохранения в мире. */
     private static final String DATA_NAME = RiftWorld.MODID + "_law";
@@ -144,6 +146,22 @@ public final class ElisarLaw extends net.minecraft.world.level.saveddata.SavedDa
         setDirty();
     }
 
+    /** Запомнить клетку, в которую игрок должен очнуться после смерти. */
+    public void setJail(UUID player, BlockPos cell) {
+        jailCells.put(player, cell);
+        setDirty();
+    }
+
+    /** Забрать клетку (и забыть её): клетка нужна ровно один раз — при возрождении. */
+    @Nullable
+    public BlockPos takeJail(UUID player) {
+        BlockPos cell = jailCells.remove(player);
+        if (cell != null) {
+            setDirty();
+        }
+        return cell;
+    }
+
     /** Забрать отложенные предметы (когда игрок выходит из тюрьмы). */
     public List<ItemRecord> release(UUID player) {
         List<ItemRecord> out = confiscated.remove(player);
@@ -196,6 +214,17 @@ public final class ElisarLaw extends net.minecraft.world.level.saveddata.SavedDa
             conf.add(t);
         }
         tag.put("confiscated", conf);
+
+        net.minecraft.nbt.ListTag jails = new net.minecraft.nbt.ListTag();
+        for (Map.Entry<UUID, BlockPos> e : jailCells.entrySet()) {
+            CompoundTag t = new CompoundTag();
+            t.putUUID("id", e.getKey());
+            t.putInt("jx", e.getValue().getX());
+            t.putInt("jy", e.getValue().getY());
+            t.putInt("jz", e.getValue().getZ());
+            jails.add(t);
+        }
+        tag.put("jails", jails);
         return tag;
     }
 
@@ -208,6 +237,7 @@ public final class ElisarLaw extends net.minecraft.world.level.saveddata.SavedDa
     private void readFrom(CompoundTag tag) {
         wanted.clear();
         confiscated.clear();
+        jailCells.clear();
         net.minecraft.nbt.ListTag list = tag.getList("wanted", 10);
         for (int i = 0; i < list.size(); i++) {
             CompoundTag t = list.getCompound(i);
@@ -231,6 +261,12 @@ public final class ElisarLaw extends net.minecraft.world.level.saveddata.SavedDa
                 items.add(new ItemRecord(it.getString("i"), it.getInt("c")));
             }
             confiscated.put(t.getUUID("id"), items);
+        }
+        net.minecraft.nbt.ListTag jails = tag.getList("jails", 10);
+        for (int i = 0; i < jails.size(); i++) {
+            CompoundTag t = jails.getCompound(i);
+            jailCells.put(t.getUUID("id"),
+                    new BlockPos(t.getInt("jx"), t.getInt("jy"), t.getInt("jz")));
         }
     }
 }

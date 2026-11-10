@@ -44,20 +44,16 @@ public final class ElisarLawEvents {
     }
 
     /**
-     * Игрок умер и попал на respawn. Если он в розыске — его ждёт камера.
+     * Игрок умер и попал на respawn.
+     *
+     * <p>Розыск живёт в данных мира ({@link ElisarLaw} — SavedData), поэтому
+     * переносить его на клона НЕ нужно: он и так остаётся в силе. Клон того
+     * же игрока имеет тот же UUID, а состояние закона и так хранится по
+     * UUID. Копировать розыск заново значило бы обнулять его срок.</p>
      */
     @SubscribeEvent
     public static void onPlayerClone(PlayerEvent.Clone event) {
-        if (!(event.getOriginal() instanceof ServerPlayer original)) return;
-        if (event.getEntity() instanceof ServerPlayer clone) {
-            // Персонаж-клон — это новый игрок после смерти: переносим розыск.
-            ElisarLaw law = ElisarLaw.get((ServerLevel) clone.level());
-            ElisarLaw.Wanted w = law.wanted(original);
-            if (w != null) {
-                law.reportCrime((ServerLevel) clone.level(), clone, Math.max(1, w.witnesses), w.jail);
-                law.warnings(original);
-            }
-        }
+        // Розыск и клетка переживают смерть сами: см. ElisarLaw (SavedData).
     }
 
     /**
@@ -103,16 +99,12 @@ public final class ElisarLawEvents {
             storeInChest(level, site.chest(), records);
         }
 
-        // 4) сам игрок оказывается в камере
-        player.teleportTo(site.cell().getX() + 0.5D, site.cell().getY() + 1.0D, site.cell().getZ() + 0.5D);
-        player.setDeltaMovement(0, 0, 0);
-        player.setHealth(player.getMaxHealth());
-        player.clearFire();
+        // 4) запоминаем клетку: игрок окажется в ней при ВОЗРОЖДЕНИИ.
+        // Телепортировать мёртвого игрока бессмысленно — возрождение всё
+        // равно поставит его на точку спавна, поэтому перенос делаем в
+        // PlayerRespawnEvent (см. onRespawn).
+        law.setJail(player.getUUID(), site.cell());
         law.clear(player);
-        player.displayClientMessage(Component.literal(
-                "\u00a7cВас посадили в городскую тюрьму за убийство, witnessed горожданами."), true);
-        player.displayClientMessage(Component.literal(
-                "\u00a7eВаши вещи сложены в сундук на складе рядом с тюрьмой."), true);
     }
 
     /**
@@ -193,6 +185,20 @@ public final class ElisarLawEvents {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         ServerLevel level = (ServerLevel) player.level();
         ElisarLaw law = ElisarLaw.get(level);
+
+        // Разыскиваемого после смерти сажают в клетку городской тюрьмы.
+        BlockPos cell = law.takeJail(player.getUUID());
+        if (cell != null) {
+            player.teleportTo(cell.getX() + 0.5D, cell.getY() + 1.0D, cell.getZ() + 0.5D);
+            player.setDeltaMovement(0, 0, 0);
+            player.setHealth(player.getMaxHealth());
+            player.clearFire();
+            player.displayClientMessage(Component.literal(
+                    "\u00a7cВас посадили в городскую тюрьму: убийство видели горожане."), true);
+            player.displayClientMessage(Component.literal(
+                    "\u00a7eВаши вещи сложены в сундук на складе рядом с тюрьмой."), true);
+        }
+
         List<ElisarLaw.ItemRecord> records = law.release(player.getUUID());
         if (records.isEmpty()) return;
         // Вещи остаются в сундуке на складе: игрок забирает их сам, открыв сундук.
