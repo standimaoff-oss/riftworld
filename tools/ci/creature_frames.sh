@@ -176,26 +176,32 @@ shot() {
 # frame_is_dark <file> — 0, если в кадре есть освещённая сцена.
 # Критерий тот же, что и в tools/rift/validate_v049_frames.py: сумма каналов
 # ярче 90 у менее чем 5% пикселей означает «ночное небо», а не объект.
+# Считаем через ImageMagick: он в CI есть всегда, а Pillow может отсутствовать
+# (и тогда проверка молча ничего не проверяла, пропуская чёрные кадры).
 frame_is_dark() {
-  python3 - "$1" <<'PYCODE'
-import sys
-try:
-    from PIL import Image
-except ImportError:
-    raise SystemExit(0)  # без Pillow не судим: лучше лишний кадр, чем ложная тревога
-try:
-    with Image.open(sys.argv[1]) as im:
-        small = im.convert("RGB").resize((160, 90), Image.BILINEAR)
-        data = small.tobytes()
-except Exception:
-    raise SystemExit(0)
-bright = 0
-for i in range(0, len(data), 3):
-    if data[i] + data[i + 1] + data[i + 2] > 90:
-        bright += 1
-total = len(data) // 3
-raise SystemExit(1 if total and bright / total < 0.05 else 0)
-PYCODE
+  local file=$1 bright=0 total=0
+  [ -s "$file" ] || return 0
+  if command -v convert >/dev/null 2>&1; then
+    # Доля пикселей, у которых сумма каналов больше 90.
+    bright=$(convert "$file" -colorspace sRGB -resize 160x90! \
+      -fx "((r+g+b)>(90/255))?1:0" -format '%[fx:mean]' info: 2>/dev/null || echo 1)
+    total=1
+  elif command -v identify >/dev/null 2>&1; then
+    # Запасной путь: средняя яркость кадра. Ночное небо даёт единицы, а
+    # освещённая сцена — десятки.
+    local mean
+    mean=$(convert "$file" -colorspace Gray -format '%[fx:mean*255]' info: 2>/dev/null || echo 255)
+    total=1
+    if awk -v m="$mean" 'BEGIN { exit !(m + 0 < 12) }'; then bright=1; fi
+  else
+    return 0   # без ImageMagick не судим: лучше лишний кадр, чем ложная тревога
+  fi
+  [ "$total" = 1 ] || return 0
+  # bright — доля освещённых пикселей; кадр тёмный, если она меньше 5%.
+  if awk -v b="$bright" 'BEGIN { exit !(b + 0 < 0.05) }'; then
+    return 1
+  fi
+  return 0
 }
 
 # ---------------------------------------------------------------- paper dragon
@@ -376,13 +382,17 @@ WPOS=$(rq data get entity '@e[type=riftworld:hollowwatcher,limit=1]' Pos 2>&1 ||
 echo "  hollowwatcher pos: $WPOS"
 # Камера встаёт на точку съёмки и смотрит на моба: если моб есть, но кадр
 # всё равно пустой, значит витрина стоит не там, где её видит клиент.
+# Координаты цели из витрины: TY дробное ('105.7'), и арифметика $((TY + 1))
+# на нём падала с 'syntax error: invalid arithmetic operator'. Из-за этого
+# все кадры Смотрителя Пращи, кроме первого, вообще не снимались.
+TYI=${TY%%.*}
 shot frame-hollowwatcher-three-quarter "$WX" "$WY" "$WZ" "$TX" "$TY" "$TZ" 20
-shot frame-hollowwatcher-face "$TX" "$((TY + 1))" "$((TZ - 2))" "$TX" "$TY" "$TZ" 10
+shot frame-hollowwatcher-face "$TX" "$((TYI + 1))" "$((TZ - 2))" "$TX" "$TY" "$TZ" 10
 shot frame-hollowwatcher-tall "$((TX + 4))" "$TY" "$TZ" "$TX" "$TY" "$TZ" 10
 # Дневной кадр: в полночь силуэт моба не читается, поэтому светим.
 rq execute in riftworld:elisar run time set noon >/dev/null 2>&1 || true
 sleep 3
-shot frame-hollowwatcher-daylight "$TX" "$((TY + 1))" "$((TZ - 3))" "$TX" "$TY" "$TZ" 10
+shot frame-hollowwatcher-daylight "$TX" "$((TYI + 1))" "$((TZ - 3))" "$TX" "$TY" "$TZ" 10
 # Ночной кадр снимаем ОТДЕЛЬНЫМ файлом: раньше он перезаписывал дневной
 # three-quarter, и в релиз попадал чёрный кадр вместо читаемого. Падь —
 # тёмное место, поэтому ночной кадр оставляем только там, где моб освещён
