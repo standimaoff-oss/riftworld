@@ -1,0 +1,18 @@
+== v0.49.0: проверка городского закона Элисара на живом сервере ==
+   игрок TestPlayer уже в игре
+   v49_city_ground -> riftstruct kind=v49_city_ground plaza=-28,50 ground=104 road=-36,104,57 spot=-28,104,50 under=Road Cobblestone/Air route=PLAZA points=8  
+   площадь города: -28,104,50 (дорога: -36,104,57)
+-- 1) страж идёт по дороге, а не стоит на месте
+   summon на высоте 104 -> Summoned new Elisar Guard  
+   summon на высоте 104 -> Summoned new Elisar Guard  
+   summon на высоте 104 -> Summoned new Elisar Guard  
+   найдено стражей: 7
+   стражей рядом: 1+ (высота 104)
+   состояние стража: riftstruct kind=v49_guard_patrol error=no_guard  
+   состояние стража: riftstruct kind=v49_guard_patrol error=no_guard  
+   позиция стража: Elisar Guard has the following entity data: [-38.096270981110244d, 104.0d, 50.812910178429306d] -> Elisar Guard has the following entity data: [-37.94511435947088d, 104.0d, 50.895238565790784d]
+   OK: страж идёт по патрулю
+-- 2) удар по стражу: предупреждение, но НЕ смерть
+   здоровье стража: Elisar Guard has the following entity data: 44.0f -> Elisar Guard has the following entity data: 40.96f
+FAIL: Страж погиб от удара игрока — он должен только предупреждать
+--- конец отчёта пробы ---
