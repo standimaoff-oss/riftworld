@@ -64,6 +64,13 @@ public final class ElisarLawEvents {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         ServerLevel level = (ServerLevel) player.level();
         ElisarLaw law = ElisarLaw.get(level);
+        // Отпечаток в чат: видно, что обработчик вообще вызвался и что он
+        // думает о розыске. Раньше падение выглядело как «ничего не случилось».
+        player.displayClientMessage(Component.literal(
+                "\u00a79[закон] смерть игрока, розыск активен: "
+                        + law.isWanted(level, player)
+                        + ", gameTime=" + level.getGameTime()
+                        + ", dim=" + level.dimension().location().getPath()), true);
         if (!law.isWanted(level, player)) return;
 
         // 1) конфискация: вещи уходят на склад при тюрьме
