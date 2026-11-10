@@ -338,6 +338,11 @@ sleep 2
 # 'run' — это подкоманда execute, а не самостоятельная команда: без
 # 'execute in ...' сервер отвечал «Incorrect argument for command» и витрина
 # никогда не собиралась.
+# Игрок должен ОКАЗАТЬСЯ в Элисаре ДО создания моба: пока игрок в обычном
+# мире, мобы вокруг сцены деспавнятся (рядом нет игрока) — и кадр получается
+# пустым. Поэтому сначала переносим игрока на площадку, потом строим витрину.
+rq execute in riftworld:elisar run tp TestPlayer -35 106 45 facing -35 105 50 >/dev/null 2>&1 || true
+sleep 4
 WATCHER=$(rq execute in riftworld:elisar run riftstruct v49_hollowwatcher_showcase 2>&1 || true)
 echo "  $WATCHER"
 # Если витрина не собралась — это не повод ронять всю серию кадров:
