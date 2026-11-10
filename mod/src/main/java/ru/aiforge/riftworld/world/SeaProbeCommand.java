@@ -4628,20 +4628,21 @@ public final class SeaProbeCommand {
             // Зачем: клиент в CI не нажимает «Возродиться» и остаётся на
             // экране смерти. Без воскрешения событие возрождения не
             // наступает и цепочку «смерть -> тюрьма» нечем проверять.
-            ServerPlayer target = null;
+            ServerPlayer found = null;
             for (ServerPlayer p : level.getServer().getPlayerList().getPlayers()) {
-                target = p;
+                found = p;
                 break;
             }
-            if (target == null) {
+            if (found == null) {
                 src.sendSuccess(() -> Component.literal(
                         "riftstruct kind=v49_revive error=no_player"), false);
                 return 0;
             }
             // revive() снимает флаг смерти и возвращает полное здоровье.
-            target.revive();
-            target.setHealth(target.getMaxHealth());
-            target.clearFire();
+            found.revive();
+            found.setHealth(found.getMaxHealth());
+            found.clearFire();
+            final ServerPlayer target = found;
             src.sendSuccess(() -> Component.literal(
                     "riftstruct kind=v49_revive player=" + target.getGameProfile().getName()
                             + " hp=" + target.getHealth()
