@@ -5915,9 +5915,30 @@ public final class SeaProbeCommand {
      */
     private static int buildHollowwatcherStage(ServerLevel world, int px, int pz) {
         world.getChunk(px >> 4, pz >> 4);
-        int ground = world.getHeight(
-                net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-                px, pz);
+        // Площадка ставится на СВОЙ уровень, а не по высоте мира. На CI-сервере
+        // мир flat, и «земля» там — дно океана на Y=-60: моб уезжал под воду,
+        // и кадр получался чёрным. Уровень 104 — тот же, что и у города
+        // Элисара, поэтому сцена выглядит сушей.
+        int ground = 104;
+        // Убираем всё, что оказалось выше площадки.
+        for (int dx = -10; dx <= 10; ++dx) {
+            for (int dz = -10; dz <= 10; ++dz) {
+                for (int dy = 1; dy <= 12; ++dy) {
+                    world.setBlock(new BlockPos(px + dx, ground + dy, pz + dz),
+                            net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 2);
+                }
+            }
+        }
+        // Опорная платформа: камень до самого низа, чтобы сцена не висела в
+        // воздухе и со стороны не было пустоты.
+        for (int dx = -10; dx <= 10; ++dx) {
+            for (int dz = -10; dz <= 10; ++dz) {
+                for (int dy = -6; dy < 0; ++dy) {
+                    world.setBlock(new BlockPos(px + dx, ground + dy, pz + dz),
+                            net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(), 2);
+                }
+            }
+        }
         // Земля: промёрзшая почва и снежный мох.
         for (int dx = -9; dx <= 9; ++dx) {
             for (int dz = -9; dz <= 9; ++dz) {
