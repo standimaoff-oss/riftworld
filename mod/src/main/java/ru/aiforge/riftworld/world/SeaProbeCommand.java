@@ -3442,7 +3442,10 @@ public final class SeaProbeCommand {
                             "riftstruct kind=v49_hollowwatcher_showcase error=no_city"), false);
                     return 1;
                 }
-                int cx = -28;
+                // Сцена стоит на КРАЮ городской площади, а не в её центре:
+                // площадь в Элисаре — открытое место, и сцена радиусом 10
+                // блоков не должна заливать мостовую в центре города.
+                int cx = -35;
                 int cz = 50;
                 int cy = buildHollowwatcherStage(city, cx, cz);
                 spawnHollowwatcher(city, cx, cy, cz);
@@ -3450,7 +3453,7 @@ public final class SeaProbeCommand {
                         "riftstruct kind=v49_hollowwatcher_showcase at=" + cx + "," + cy + "," + cz
                                 + " spawned=1 blocks=1 sub_air=1 staged=1"
                                 + " dim=" + city.dimension().location()
-                                + " cam=" + (cx - 4.5) + "," + (cy + 2.4) + "," + (cz - 3.5)
+                                + " cam=" + (cx - 5.5) + "," + (cy + 3.2) + "," + (cz - 4.5)
                                 + ":" + cx + "," + (cy + 1.7) + "," + cz), false);
                 return 1;
             }
@@ -5890,7 +5893,10 @@ public final class SeaProbeCommand {
         // Собственные деревья Морока: Rotwood (тёмное бревно) и Frostbriar.
         BlockState log = MorokBlocks.ROTWOOD_LOG.get().defaultBlockState();
         BlockState leaves = MorokBlocks.ROTWOOD_LEAVES.get().defaultBlockState();
-        int[] treeAt = {-6, -5, 5, 4, -7, 3, 6, -3};
+        // Деревья НЕ ставим между камерой и мобом: камера смотрит из
+        // (-5.5, -4.5) в центр площадки, и крона прямо перед объективом
+        // закрывала Смотрителя Пращи полностью — в кадре было только небо.
+        int[] treeAt = {-8, -7, 7, 7, -8, 4, 8, 1};
         for (int i = 0; i + 1 < treeAt.length; i += 2) {
             int tx = px + treeAt[i];
             int tz = pz + treeAt[i + 1];

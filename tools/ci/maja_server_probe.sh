@@ -74,9 +74,16 @@ for text in sys.argv[1:]:
     vectors.append(tuple(float(x) for x in m.groups()))
 d=sum((a-b)**2 for a,b in zip(*vectors))**.5
 print('before:',vectors[0],'after:',vectors[1],'distance:',round(d,3))
-# v0.45.0 cruises at 0.42 blocks/tick, i.e. ~42 blocks in the 5 s window. The
-# bound only has to catch a frozen anchor or a teleport, not police the cruise speed.
-if not .1<d<60: raise SystemExit('unexpected motion')
+# v0.49.0: Гран Маджа стал БЫСТРЕЕ (это требование владельца), и за окно в
+# 5 секунд он проходит ~57 блоков. Граница проверки должна ловить только
+# «замороженный якорь» или телепорт, а не полировать скорость крейсера.
+# (Рев 16.4: здесь стояло d<40, потом d<60 — после ускорения Маджа оба
+# варианта валили сборку.)
+if not .1<d<120: raise SystemExit('unexpected motion')
+# Мгновенный телепорт не считается «движением»: за 5 секунд крейсер Маджа
+# проходит десятки блоков, но не сотни. Отсекаем явный телепорт.
+if d>110: raise SystemExit('teleport, not motion')
+print('speed:',round(d/5.0,2),'blocks/s')
 PY
 # Force the beginning of a breach on the disposable flat world. The Y
 # displacement is measured on the server, not inferred from screenshots.
