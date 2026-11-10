@@ -107,8 +107,8 @@ for dy in 0 1 2 3 4 -1 -2; do
   for i in 1 2 3; do
     # Ответ сервера на summon — в отчёт: по нему видно, что именно не так
     # («Неизвестный тип сущности», «Не удалось создать» и т.п.).
-    SUM=$(rq execute in riftworld:elisar positioned "$CITY_X" "$SY" "$CITY_Z" \
-      run summon riftworld:elisar_guard '{NoGravity:1b,PersistenceRequired:1b}' 2>&1 | tr '\r\n' ' ' || true)
+    SUM=$(rq execute in riftworld:elisar run summon riftworld:elisar_guard \
+      "$CITY_X" "$SY" "$CITY_Z" '{NoGravity:1b,PersistenceRequired:1b}' 2>&1 | tr '\r\n' ' ' || true)
     log "   summon на высоте $SY -> ${SUM:0:170}"
     sleep 0.4
   done
@@ -188,14 +188,14 @@ sleep 1
 
 # Ставим НЕСКОЛЬКО стражей рядом: один убит, остальные видят убийство.
 for i in 1 2 3; do
-  rq execute in riftworld:elisar positioned "$CITY_X" "$CITY_Y" "$CITY_Z" \
-    run summon riftworld:elisar_guard '{NoGravity:1b,PersistenceRequired:1b}' >/dev/null 2>&1 || true
+  rq execute in riftworld:elisar run summon riftworld:elisar_guard \
+    "$CITY_X" "$CITY_Y" "$CITY_Z" '{NoGravity:1b,PersistenceRequired:1b}' >/dev/null 2>&1 || true
   sleep 0.5
 done
 sleep 3
 # Убиваем ОДНОГО стража от руки игрока: остальные — свидетели.
-rq execute in riftworld:elisar positioned "$CITY_X" "$CITY_Y" "$CITY_Z" \
-  run summon riftworld:elisar_guard '{NoGravity:1b,PersistenceRequired:1b}' >/dev/null 2>&1 || true
+rq execute in riftworld:elisar run summon riftworld:elisar_guard \
+  "$CITY_X" "$CITY_Y" "$CITY_Z" '{NoGravity:1b,PersistenceRequired:1b}' >/dev/null 2>&1 || true
 sleep 2
 rq execute in riftworld:elisar run damage '@e[type=riftworld:elisar_guard,limit=1,sort=nearest]' 1000 minecraft:player_attack by TestPlayer >/dev/null 2>&1 || true
 sleep 3
