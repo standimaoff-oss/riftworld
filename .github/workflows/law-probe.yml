@@ -47,10 +47,33 @@ jobs:
           cd mod
           chmod +x gradlew
           for attempt in 1 2 3; do
-            ./gradlew jar --no-daemon --console=plain && exit 0
-            sleep 5
+            if ./gradlew jar --no-daemon --console=plain 2>&1 | tee ../build-ci.log; then
+              exit 0
+            fi
+            # Ошибка javac детерминирована: повторять нужно только временные
+            # сбои загрузки зависимостей.
+            grep -q 'Task :compileJava FAILED' ../build-ci.log && exit 1
+            sleep 10
           done
           exit 1
+      - name: Expose compiler errors in check annotations
+        # Логи джобы через API отдают EOF, поэтому ошибки компиляции
+        # выкладываем в аннотации — их читать можно.
+        if: failure()
+        shell: bash
+        run: |
+          python - <<'PYCODE'
+          from pathlib import Path
+          p = Path('build-ci.log')
+          if not p.exists():
+              p = Path('mod/build-ci.log')
+          if p.exists():
+              lines = p.read_text(errors='replace').splitlines()
+              for i, line in enumerate(lines):
+                  if ' error:' in line or line.startswith('FAILURE:') or 'What went wrong:' in line:
+                      text = ' | '.join(lines[i:i+4]).replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+                      print('::error title=Build diagnostic::' + text[:3000])
+          PYCODE
       - name: Boot a real Forge server and probe the Elisar city law
         shell: bash
         run: |
