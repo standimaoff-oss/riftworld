@@ -4542,7 +4542,13 @@ public final class SeaProbeCommand {
                 PatrolRoute.Waypoint wp = route.nearest(px, ground, pz);
                 rx = wp.x();
                 rz = wp.z();
-                rg = (int) Math.floor(wp.y());
+                // Высоту берём у САМОЙ точки, а не у её соседа: у маршрута
+                // соседние точки иногда лежат на краю острова, где земли нет,
+                // и страж там просто не появляется.
+                int here = level.getHeight(
+                        net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                        net.minecraft.util.Mth.floor(rx), net.minecraft.util.Mth.floor(rz));
+                rg = here > 0 ? here : (int) Math.floor(wp.y());
             }
             String line = "riftstruct kind=v49_city_ground plaza=" + (int) px + "," + (int) pz
                     + " ground=" + ground

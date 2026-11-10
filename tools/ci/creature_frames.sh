@@ -281,7 +281,10 @@ sleep 5
 # 'set -e' убивает весь скрипт, если команда вернёт ненулевой код. Проба
 # витрины может отвалиться по таймауту RCON — тогда съёмка продолжается без
 # неё, а не обрывается целиком.
-WATCHER=$(rq run riftstruct v49_hollowwatcher_showcase 2>&1 || true)
+# 'run' — это подкоманда execute, а не самостоятельная команда: без
+# 'execute in ...' сервер отвечал «Incorrect argument for command» и витрина
+# никогда не собиралась.
+WATCHER=$(rq execute in minecraft:overworld run riftstruct v49_hollowwatcher_showcase 2>&1 || true)
 echo "  $WATCHER"
 # Если витрина не собралась — это не повод ронять всю серию кадров:
 # предупреждаем и идём дальше (остальные мобы важнее одного кадра).
