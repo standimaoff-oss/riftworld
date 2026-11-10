@@ -188,7 +188,8 @@ public final class ElisarJail {
         if (bars < 14) {
             return false;
         }
-        // Центр клетки должен быть пустым (там стоит заключённый).
-        return level.getBlockState(center).isAir();
+        // Центр клетки не обязан быть воздухом: там может стоять заключённый.
+        // Достаточно, чтобы это не был сам блок стены.
+        return !level.getBlockState(center).is(Blocks.IRON_BARS);
     }
 }
