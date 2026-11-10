@@ -6,7 +6,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.phys.AABB;
 
 import ru.aiforge.riftworld.registry.ElisarBlocks;
 
@@ -112,20 +111,22 @@ public final class ElisarJail {
      * которого рядом стоят железные прутья клетки.
      */
     public static Site findNear(ServerLevel level, double x, double z, double radius) {
-        AABB box = new AABB(x - radius, level.getMinBuildHeight(), z - radius,
-                x + radius, level.getMaxBuildHeight(), z + radius);
         // В 1.20.1 getBlockStates не отдаёт Iterable<BlockState> с позицией,
-        // поэтому обходим блоки сами — это и медленнее, и точнее.
-        int x0 = net.minecraft.util.Mth.floor(box.minX);
-        int y0 = net.minecraft.util.Mth.floor(box.minY);
-        int z0 = net.minecraft.util.Mth.floor(box.minZ);
-        int x1 = net.minecraft.util.Mth.floor(box.maxX);
-        int y1 = net.minecraft.util.Mth.floor(box.maxY);
-        int z1 = net.minecraft.util.Mth.floor(box.maxZ);
-        for (int bx = x0; bx <= x1; ++bx) {
-            for (int by = y0; by <= y1; ++by) {
+        // поэтому обходим блоки сами. Но обход всего объёма (высота мира ×
+        // радиус²) — это десятки миллионов проверок и подвисание сервера.
+        // Поэтому ищем сундук ТОЛЬКО на уровне земли: тюрьма всегда стоит на
+        // поверхности дороги, и сундук склада рядом с ней.
+        int x0 = net.minecraft.util.Mth.floor(x - radius);
+        int z0 = net.minecraft.util.Mth.floor(z - radius);
+        int x1 = net.minecraft.util.Mth.floor(x + radius);
+        int z1 = net.minecraft.util.Mth.floor(z + radius);
+        int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                net.minecraft.util.Mth.floor(x), net.minecraft.util.Mth.floor(z));
+        // Проверяем уровень земли и пару блоков вокруг него.
+        for (int dy = -2; dy <= 2; ++dy) {
+            for (int bx = x0; bx <= x1; ++bx) {
                 for (int bz = z0; bz <= z1; ++bz) {
-                    BlockPos p = new BlockPos(bx, by, bz);
+                    BlockPos p = new BlockPos(bx, y + dy, bz);
                     if (!level.getBlockState(p).is(Blocks.CHEST)) {
                         continue;
                     }

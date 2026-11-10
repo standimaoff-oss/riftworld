@@ -91,4 +91,49 @@ else
   fail "Сундук склада не построен: $PRISON"
 fi
 
+# ---------------------------------------------------------------- 4. вся цепочка
+# Убил стража, город видел -> розыск -> смерть -> тюрьма -> вещи в сундуке.
+log '-- 4) полная цепочка: убийство при свидетелях -> розыск -> тюрьма -> сундук'
+rq gamemode survival TestPlayer >/dev/null || true
+# Кладём игроку вещи: после ареста их не должно остаться в инвентаре.
+rq give TestPlayer riftworld:aurite_ingot 5 >/dev/null 2>&1 || true
+rq give TestPlayer riftworld:elisar_ducat 3 >/dev/null 2>&1 || true
+sleep 1
+
+# Ставим НЕСКОЛЬКО стражей рядом: один убит, остальные видят убийство.
+for i in 1 2 3; do
+  rq execute in riftworld:elisar positioned "$CITY_X" "$CITY_Y" "$CITY_Z" run summon riftworld:elisar_guard >/dev/null 2>&1 || true
+  sleep 0.5
+done
+sleep 3
+# Убиваем ОДНОГО стража от руки игрока: остальные — свидетели.
+rq execute in riftworld:elisar positioned "$CITY_X" "$CITY_Y" "$CITY_Z" run summon riftworld:elisar_guard >/dev/null 2>&1 || true
+sleep 2
+rq damage '@e[type=riftworld:elisar_guard,limit=1,sort=nearest]' 1000 minecraft:player_attack by TestPlayer >/dev/null 2>&1 || true
+sleep 3
+
+LAW=$(rq execute in riftworld:elisar positioned "$CITY_X" "$CITY_Y" "$CITY_Z" run riftstruct v49_law_state 2>&1 | tr '\r\n' '  ' || true)
+log "   riftstruct v49_law_state -> ${LAW:0:400}"
+if [[ "$LAW" == *"wanted=1"* ]]; then
+  log '   OK: игрок в розыске (город видел убийство)'
+else
+  fail "Игрок не попал в розыск после убийства стража при свидетелях: $LAW"
+fi
+
+# Убиваем самого игрока: он должен очнуться в камере, а вещи — в сундуке.
+rq damage TestPlayer 1000 minecraft:player_attack by TestPlayer >/dev/null 2>&1 || true
+sleep 4
+LAW2=$(rq execute in riftworld:elisar positioned "$CITY_X" "$CITY_Y" "$CITY_Z" run riftstruct v49_law_state 2>&1 | tr '\r\n' '  ' || true)
+log "   после смерти -> ${LAW2:0:400}"
+if [[ "$LAW2" == *"jailed=1"* ]]; then
+  log '   OK: игрок в городской тюрьме'
+else
+  fail "Игрок не оказался в тюрьме после смерти в розыске: $LAW2"
+fi
+if [[ "$LAW2" == *"chest_items=1"* || "$LAW2" == *"chest_items=2"* || "$LAW2" == *"chest_items=3"* ]]; then
+  log '   OK: вещи игрока лежат в сундуке склада рядом с тюрьмой'
+else
+  fail "Вещи игрока не оказались в сундуке склада: $LAW2"
+fi
+
 log 'OK: городской закон Элисара проверен на живом сервере.'

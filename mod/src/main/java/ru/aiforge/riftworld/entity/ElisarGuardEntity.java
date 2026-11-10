@@ -60,6 +60,7 @@ import ru.aiforge.riftworld.world.PatrolRoute;
  *       убийца попадает в розыск: стражи переходят в погоню.</li>
  * </ul>
  */
+@net.minecraftforge.fml.common.Mod.EventBusSubscriber(modid = ru.aiforge.riftworld.RiftWorld.MODID)
 public final class ElisarGuardEntity extends PathfinderMob {
 
     private static final EntityDataAccessor<Boolean> ON_PATROL =
@@ -284,6 +285,39 @@ public final class ElisarGuardEntity extends PathfinderMob {
     }
 
     @Override
+    /**
+     * Страж погиб. Если убийцу видели другие горожане или стражи — начинается
+     * розыск: стражи переходят в погоню, а после смерти игрок окажется в
+     * городской тюрьме, а его вещи — в сундуке склада рядом с ней.
+     *
+     * <p>В 1.20.1 Forge нет {@code LivingEntity.DeadEntityReport}: смерть приходит
+     * событием {@link net.minecraftforge.event.entity.living.LivingDeathEvent},
+     * поэтому проверка «видел ли город» живёт в обработчике события, а этот
+     * метод остаётся обычным хуком сущности.
+     */
+    @net.minecraftforge.eventbus.api.SubscribeEvent
+    public static void onGuardDeath(net.minecraftforge.event.entity.living.LivingDeathEvent event) {
+        if (!(event.getEntity() instanceof ElisarGuardEntity guard)) return;
+        if (!(guard.level() instanceof ServerLevel level)) return;
+        Entity killer = event.getSource() == null ? null : event.getSource().getEntity();
+        if (killer == null || killer == guard) return;
+        int witnesses = ElisarWitness.countWitnesses(level, guard, killer);
+        if (witnesses <= 0) return;
+        if (killer instanceof ServerPlayer player) {
+            ElisarLaw law = ElisarLaw.get(level);
+            law.reportCrime(level, player, witnesses, null);
+            player.displayClientMessage(Component.literal(
+                    "\u00a7cВас увидели. Вы в розыске — стражи города ищут убийцу."), true);
+            // Тревога: соседние стражи бросаются в погоню за убийцей.
+            var area = guard.getBoundingBox().inflate(48.0, 20.0, 48.0);
+            for (ElisarGuardEntity other : level.getEntitiesOfClass(ElisarGuardEntity.class, area)) {
+                other.setAlarm(true);
+                other.setOnPatrol(false);
+                other.setTarget(player);
+            }
+        }
+    }
+
     public void aiStep() {
         super.aiStep();
         if (!this.level().isClientSide) {

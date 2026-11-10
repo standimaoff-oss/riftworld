@@ -7,6 +7,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -4426,6 +4427,60 @@ public final class SeaProbeCommand {
                     + " cam=" + (site.cell().getX() - 8) + "," + (site.cell().getY() + 5) + ","
                     + (site.cell().getZ() + 8) + ":" + site.cell().getX() + ","
                     + (site.cell().getY() + 2) + "," + site.cell().getZ();
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
+        if (k.equals("v49_law_state")) {
+            // v0.49.0: состояние городского закона для ближайшего игрока.
+            // Проба нужна CI, чтобы проверить ВСЮ цепочку закона:
+            // розыск -> смерть -> тюрьма -> вещи в сундуке склада.
+            ServerPlayer target = null;
+            double bestD = Double.MAX_VALUE;
+            for (ServerPlayer p : level.players()) {
+                double d = p.distanceToSqr(src.getPosition());
+                if (d < bestD) {
+                    bestD = d;
+                    target = p;
+                }
+            }
+            if (target == null) {
+                src.sendSuccess(() -> Component.literal(
+                        "riftstruct kind=v49_law_state error=no_player"), false);
+                return 0;
+            }
+            ElisarLaw law = ElisarLaw.get(level);
+            boolean wanted = law.isWanted(level, target);
+            int warnings = law.warnings(target);
+            var held = law.peek(target.getUUID());
+            int heldCount = 0;
+            for (ElisarLaw.ItemRecord r : held) {
+                heldCount += Math.max(0, r.count());
+            }
+            // Где игрок: в камере или на свободе.
+            ElisarJail.Site near = ElisarJail.findNear(level, target.getX(), target.getZ(), 24.0);
+            boolean jailed = near != null
+                    && Math.hypot(target.getX() - near.cell().getX(),
+                                 target.getZ() - near.cell().getZ()) < 6.0;
+            // Что лежит в сундуке склада рядом.
+            int chestItems = 0;
+            if (near != null) {
+                if (level.getBlockEntity(near.chest())
+                        instanceof net.minecraft.world.level.block.entity.ChestBlockEntity chest) {
+                    for (int i = 0; i < chest.getContainerSize(); ++i) {
+                        if (!chest.getItem(i).isEmpty()) {
+                            ++chestItems;
+                        }
+                    }
+                }
+            }
+            String line = "riftstruct kind=v49_law_state player=" + target.getGameProfile().getName()
+                    + " wanted=" + (wanted ? 1 : 0)
+                    + " warnings=" + warnings
+                    + " jailed=" + (jailed ? 1 : 0)
+                    + " held=" + heldCount
+                    + " chest_items=" + chestItems
+                    + " inv=" + target.getInventory().getContainerSize();
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
         }
