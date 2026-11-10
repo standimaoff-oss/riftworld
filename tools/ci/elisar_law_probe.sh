@@ -96,11 +96,10 @@ fail() {
   # Причина падения — в текстовый отчёт, иначе её не увидеть снаружи.
   { echo "FAIL: $*"; echo "--- конец отчёта пробы ---"; } >> "$DIRECT" 2>/dev/null || true
   { echo "FAIL: $*"; echo "--- конец отчёта пробы ---"; } >> "$LOG" 2>/dev/null || true
-  # Весь отчёт пробы — в аннотацию CI: их читает API без всяких логов.
+  # Весь отчёт пробы — ОДНОЙ аннотацией CI: API отдаёт limited список, и
+  # по одной строке на аннотацию половина отчёта терялась.
   if [ -s "$DIRECT" ]; then
-    while IFS= read -r line; do
-      echo "::error title=Отчёт пробы закона::${line:0:200}"
-    done < "$DIRECT"
+    echo "::error title=Отчёт пробы закона::$(head -c 1800 "$DIRECT" | tr '\r\n' ' ' | tr '%' '%25')"
   fi
   exit 1
 }
@@ -214,8 +213,11 @@ rq execute in riftworld:elisar run damage '@e[type=riftworld:elisar_guard,limit=
 sleep 2
 HP_AFTER=$(rq execute in riftworld:elisar run data get entity '@e[type=riftworld:elisar_guard,limit=1]' Health 2>&1 | tr -d '\n' || true)
 log "   здоровье стража: $HP_BEFORE -> $HP_AFTER"
-if [[ "$HP_AFTER" == *"0.0"* || "$HP_AFTER" == *"0"* && "$HP_AFTER" != *".0"* ]]; then
-  fail "Страж погиб от удара игрока — он должен только предупреждать"
+# Здоровье сравниваем ЧИСЛОМ: подстрока '0.0' встречается и в живом
+# здоровье '40.0f', и проверка на смерть срабатывала ложно.
+HP_NUM=$(echo "$HP_AFTER" | sed -n 's/.*\[\([0-9.]*\)f\].*/\1/p')
+if [[ -n "$HP_NUM" ]] && awk "BEGIN{exit !($HP_NUM <= 0)}"; then
+  fail "Страж погиб от удара игрока — он должен только предупреждать (hp=$HP_NUM)"
 fi
 if [[ -z "$HP_AFTER" || "$HP_AFTER" == *"error"* || "$HP_AFTER" == *"Invalid"* ]]; then
   fail "Не удалось прочитать здоровье стража: $HP_AFTER"
@@ -285,8 +287,9 @@ if [[ "$LAW2" == *"jailed=1"* ]]; then
 else
   fail "Игрок не оказался в тюрьме после смерти в розыске: $LAW2"
 fi
-if [[ "$LAW2" == *"chest_items=1"* || "$LAW2" == *"chest_items=2"* || "$LAW2" == *"chest_items=3"* ]]; then
-  log '   OK: вещи игрока лежат в сундуке склада рядом с тюрьмой'
+CHEST=$(echo "$LAW2" | sed -n 's/.*chest_items=\([0-9]*\).*/\1/p')
+if [[ -n "$CHEST" ]] && [ "$CHEST" -ge 1 ]; then
+  log "   OK: вещи игрока лежат в сундуке склада рядом с тюрьмой (стаков: $CHEST)"
 else
   fail "Вещи игрока не оказались в сундуке склада: $LAW2"
 fi
@@ -295,7 +298,5 @@ log 'OK: городской закон Элисара проверен на жи
 echo '--- конец отчёта пробы ---' >> "$DIRECT" 2>/dev/null || true
 # Отчёт — в аннотации CI: их читает API, в отличие от логов джобы.
 if [ -s "$DIRECT" ]; then
-  while IFS= read -r line; do
-    echo "::notice title=Отчёт пробы закона::${line:0:200}"
-  done < "$DIRECT"
+  echo "::notice title=Отчёт пробы закона::$(head -c 1800 "$DIRECT" | tr '\r\n' ' ' | tr '%' '%25')"
 fi
