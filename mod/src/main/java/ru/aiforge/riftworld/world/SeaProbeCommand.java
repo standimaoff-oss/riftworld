@@ -4679,9 +4679,17 @@ public final class SeaProbeCommand {
                     }
                 }
             }
+            // Печатаем время мира и срок розыска: измерения в городе и в
+            // обычном мире считают время по-разному, и розыск может «истечь»
+            // между убийством стража и смертью игрока.
+            var wantedInfo = law.wanted(target);
             String line = "riftstruct kind=v49_law_state player=" + target.getGameProfile().getName()
                     + " wanted=" + (wanted ? 1 : 0)
                     + " warnings=" + warnings
+                    + " gameTime=" + targetLevel.getGameTime()
+                    + " dim=" + targetLevel.dimension().location().getPath()
+                    + " expiresAt=" + (wantedInfo == null ? "-" : Long.toString(wantedInfo.expiresAt))
+                    + " since=" + (wantedInfo == null ? "-" : Long.toString(wantedInfo.since))
                     + " jailed=" + (jailed ? 1 : 0)
                     + " held=" + heldCount
                     + " chest_items=" + chestItems
