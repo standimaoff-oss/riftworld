@@ -5974,12 +5974,11 @@ public final class SeaProbeCommand {
         watcher.setYRot(0.0F);
         watcher.yHeadRot = 0.0F;
         watcher.yBodyRot = 0.0F;
-        // Моб не должен исчезать, пока снимается кадр. По умолчанию мобы
+        // Моб не должен исчезать, пока снимается кадр: по умолчанию мобы
         // деспавнятся, если рядом нет игрока, а во время съёмки игрок стоит
-        // в обычном мире: витрина в Элисаре осталась бы пустой (в журнале CI
-        // так и было — 'spawned=1', а через двадцать секунд моба уже нет).
-        watcher.setPersistenceRequired(true);
-        watcher.setRemoveWhenFarAway(false);
+        // в обычном мире. Forge 1.20.1: setPersistenceRequired() без
+        // аргументов, а setRemoveWhenFarAway() в Mob нет вовсе.
+        watcher.setPersistenceRequired();
         world.addFreshEntity(watcher);
         // Моба надо ДОЖДАТЬ: только что созданная сущность ещё не разошлась
         // по игрокам. Камера снимает кадр сразу, и клиент мог не увидеть моба
