@@ -4693,7 +4693,15 @@ public final class SeaProbeCommand {
                     + " jailed=" + (jailed ? 1 : 0)
                     + " held=" + heldCount
                     + " chest_items=" + chestItems
-                    + " inv=" + target.getInventory().getContainerSize();
+                    + " inv=" + target.getInventory().getContainerSize()
+                    // Где стоит игрок и где, по мнению проверки, клетка: без этого
+                    // «jailed=0» невозможно было понять — телепорт не сработал
+                    // или нашлась не та клетка.
+                    + " at=" + (int) target.getX() + "," + (int) target.getY() + "," + (int) target.getZ()
+                    + " cell=" + (near == null ? "-" : near.cell().getX() + "," + near.cell().getY()
+                            + "," + near.cell().getZ())
+                    + " chest=" + (near == null ? "-" : near.chest().getX() + "," + near.chest().getY()
+                            + "," + near.chest().getZ());
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
         }

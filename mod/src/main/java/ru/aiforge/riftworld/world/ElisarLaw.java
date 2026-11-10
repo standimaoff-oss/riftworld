@@ -162,6 +162,25 @@ public final class ElisarLaw extends net.minecraft.world.level.saveddata.SavedDa
         return cell;
     }
 
+    /**
+     * Посмотреть клетку, не забирая её.
+     *
+     * <p>Клетку нельзя забирать сразу при респавне: событие возрождения в
+     * Forge может прийти в два захода, а игрока переносить в камеру нужно
+     * каждый раз. Поэтому клетка живёт, пока заключённый из неё не вышел.</p>
+     */
+    @Nullable
+    public BlockPos peekJail(UUID player) {
+        return jailCells.get(player);
+    }
+
+    /** Забыть клетку: заключённый вышел и клетка ему больше не нужна. */
+    public void clearJail(UUID player) {
+        if (jailCells.remove(player) != null) {
+            setDirty();
+        }
+    }
+
     /** Забрать отложенные предметы (когда игрок выходит из тюрьмы). */
     public List<ItemRecord> release(UUID player) {
         List<ItemRecord> out = confiscated.remove(player);

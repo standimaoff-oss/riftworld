@@ -15,6 +15,7 @@ import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -207,33 +208,52 @@ public final class ElisarLawEvents {
         return new RoadPoint(wp.x(), wp.z(), face);
     }
 
+    /**
+     * Посадить заключённого в клетку городской тюрьмы.
+     *
+     * <p>Клетка стоит в Элисаре, а игрок возрождается в обычном мире: телепорт
+     * без указания измерения бросил бы игрока в воздух над обычным миром,
+     * поэтому измерение указываем явно.</p>
+     */
+    private static void seatInCell(ServerPlayer player, BlockPos cell, ServerLevel city) {
+        if (city != null) {
+            player.teleportTo(city, cell.getX() + 0.5D, cell.getY() + 1.0D, cell.getZ() + 0.5D,
+                    player.getYRot(), player.getXRot());
+        } else {
+            player.teleportTo(cell.getX() + 0.5D, cell.getY() + 1.0D, cell.getZ() + 0.5D);
+        }
+        player.setDeltaMovement(0, 0, 0);
+        player.setHealth(player.getMaxHealth());
+        player.clearFire();
+        player.displayClientMessage(Component.literal(
+                "\u00a7cВас посадили в городскую тюрьму: убийство видели горожане."), true);
+        player.displayClientMessage(Component.literal(
+                "\u00a7eВаши вещи сложены в сундук на складе рядом с тюрьмой."), true);
+    }
+
     /** После возрождения в тюрьме — вернуть конфискованные вещи из сундука. */
     @SubscribeEvent
     public static void onRespawn(PlayerEvent.PlayerRespawnEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         ServerLevel level = (ServerLevel) player.level();
         ElisarLaw law = ElisarLaw.get(level);
+        // Тюрьма стоит в городе Элисар, а игрок возрождается в обычном мире.
+        ServerLevel city = player.getServer().getLevel(ru.aiforge.riftworld.flight.Flight.ELISAR_DIM);
 
         // Разыскиваемого после смерти сажают в клетку городской тюрьмы.
-        BlockPos cell = law.takeJail(player.getUUID());
+        // Клетку НЕ забираем: событие возрождения может прийти в два захода,
+        // и посадка нужна каждый раз. Клетка забывается, когда заключённый
+        // вышел (см. releaseFromJail).
+        BlockPos cell = law.peekJail(player.getUUID());
         if (cell != null) {
-            // Клетка стоит в Элисаре, а игрок возрождается в обычном мире.
-            // Телепорт без указания измерения бросил бы игрока в воздух над
-            // обычным миром, поэтому указываем измерение явно.
-            ServerLevel city = player.getServer().getLevel(ru.aiforge.riftworld.flight.Flight.ELISAR_DIM);
-            if (city != null) {
-                player.teleportTo(city, cell.getX() + 0.5D, cell.getY() + 1.0D, cell.getZ() + 0.5D,
-                        player.getYRot(), player.getXRot());
-            } else {
-                player.teleportTo(cell.getX() + 0.5D, cell.getY() + 1.0D, cell.getZ() + 0.5D);
-            }
-            player.setDeltaMovement(0, 0, 0);
-            player.setHealth(player.getMaxHealth());
-            player.clearFire();
-            player.displayClientMessage(Component.literal(
-                    "\u00a7cВас посадили в городскую тюрьму: убийство видели горожане."), true);
-            player.displayClientMessage(Component.literal(
-                    "\u00a7eВаши вещи сложены в сундук на складе рядом с тюрьмой."), true);
+            seatInCell(player, cell, city);
+            // Страховка: сервер после респавна может дописать свою точку
+            // появления, поэтому переносим ещё раз через тик.
+            player.getServer().execute(() -> {
+                if (player.isAlive() && law.peekJail(player.getUUID()) != null) {
+                    seatInCell(player, cell, city);
+                }
+            });
         }
 
         // Вещи остаются в сундуке склада: игрок забирает их сам, открыв сундук.
@@ -261,6 +281,30 @@ public final class ElisarLawEvents {
             var item = net.minecraft.core.registries.BuiltInRegistries.ITEM.get(id);
             if (item == null || item == net.minecraft.world.item.Items.AIR) continue;
             player.getInventory().add(new ItemStack(item, Math.max(1, rec.count())));
+        }
+    }
+
+    /**
+     * Выход из тюрьмы.
+     *
+     * <p>Пока заключённый сидит в клетке, его клетка помнится в законе. Как
+     * только он вышел (например, сломал прутья или дошёл до выхода) — клетка
+     * забывается, и в следующий раз посадка не сработает.</p>
+     */
+    @SubscribeEvent
+    public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
+        if (!(event.player instanceof ServerPlayer player)) return;
+        ServerLevel level = (ServerLevel) player.level();
+        if (level.dimension() != ru.aiforge.riftworld.flight.Flight.ELISAR_DIM) return;
+        ElisarLaw law = ElisarLaw.get(level);
+        BlockPos cell = law.peekJail(player.getUUID());
+        if (cell == null) return;
+        // В клетке — сидим; снаружи — отпускаем.
+        double dx = player.getX() - (cell.getX() + 0.5D);
+        double dz = player.getZ() - (cell.getZ() + 0.5D);
+        if (Math.hypot(dx, dz) > 8.0D) {
+            law.clearJail(player.getUUID());
         }
     }
 
