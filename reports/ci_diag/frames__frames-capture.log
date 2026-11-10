@@ -11,8 +11,12 @@ No VM guests are running outdated hypervisor (qemu) binaries on this host.
 captured frame-paper-dragon-three-quarter
 captured frame-paper-dragon-side
 captured frame-paper-dragon-head
-  paper dragon at 216,144,132
+  paper dragon at 280,145,144
 captured frame-paper-dragon-far-a
 captured frame-paper-dragon-far-b
-  paper dragon pos after flight: Paper Dragon has the following entity data: [-1.9541869190241132d, 138.75839993780824d, 268.88137855704747d]
-::error title=In-game frames::Paper dragon did not move beyond the simulation range (identical frames)
+  paper dragon pos after flight: Paper Dragon has the following entity data: [491.8140670298762d, 139.0020370874406d, -35.04928823163463d]
+ocean attempt 1: The nearest riftworld:maja_ocean is at [1115, 54, 1526] (1889 blocks away)
+ocean centre: 1115 1526
+captured frame-liopleurodon-swim
+captured frame-liopleurodon-side
+captured frame-liopleurodon-head
