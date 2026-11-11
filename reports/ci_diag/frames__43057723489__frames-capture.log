@@ -1,0 +1,18 @@
+W: Failed to fetch mirror+file:/etc/apt/apt-mirrors.txt/dists/noble/InRelease  Temporary failure resolving 'azure.archive.ubuntu.com'
+W: Failed to fetch mirror+file:/etc/apt/apt-mirrors.txt/dists/noble-updates/InRelease  Temporary failure resolving 'azure.archive.ubuntu.com'
+W: Failed to fetch mirror+file:/etc/apt/apt-mirrors.txt/dists/noble-backports/InRelease  Temporary failure resolving 'azure.archive.ubuntu.com'
+W: Failed to fetch mirror+file:/etc/apt/apt-mirrors.txt/dists/noble-security/InRelease  Temporary failure resolving 'azure.archive.ubuntu.com'
+W: Some index files failed to download. They have been ignored, or old ones used instead.
+E: Failed to fetch https://security.ubuntu.com/ubuntu/pool/main/f/fonts-android/fonts-droid-fallback_6.0.1r16-1.1build1_all.deb  Temporary failure resolving 'azure.archive.ubuntu.com'
+E: Failed to fetch https://security.ubuntu.com/ubuntu/pool/main/p/poppler-data/poppler-data_0.4.12-1_all.deb  Temporary failure resolving 'azure.archive.ubuntu.com'
+E: Failed to fetch https://security.ubuntu.com/ubuntu/pool/main/f/fonts-noto/fonts-noto-mono_20201225-2_all.deb  Temporary failure resolving 'azure.archive.ubuntu.com'
+E: Failed to fetch https://security.ubuntu.com/ubuntu/pool/main/x/xfonts-encodings/xfonts-encodings_1.0.5-0ubuntu2_all.deb  Temporary failure resolving 'azure.archive.ubuntu.com'
+E: Failed to fetch https://security.ubuntu.com/ubuntu/pool/main/x/xfonts-utils/xfonts-utils_7.7%2b6build3_amd64.deb  Temporary failure resolving 'azure.archive.ubuntu.com'
+E: Failed to fetch https://security.ubuntu.com/ubuntu/pool/main/f/fonts-urw-base35/fonts-urw-base35_20200910-8_all.deb  Temporary failure resolving 'azure.archive.ubuntu.com'
+E: Failed to fetch mirror+file:/etc/apt/apt-mirrors.txt/pool/main/g/ghostscript/libgs-common_10.02.1%7edfsg1-0ubuntu7.10_all.deb  Temporary failure resolving 'azure.archive.ubuntu.com'
+E: Failed to fetch mirror+file:/etc/apt/apt-mirrors.txt/pool/main/g/ghostscript/libgs10-common_10.02.1%7edfsg1-0ubuntu7.10_all.deb  Temporary failure resolving 'azure.archive.ubuntu.com'
+E: Failed to fetch mirror+file:/etc/apt/apt-mirrors.txt/pool/main/libi/libidn/libidn12_1.42-1ubuntu0.1_amd64.deb  Temporary failure resolving 'azure.archive.ubuntu.com'
+E: Failed to fetch https://security.ubuntu.com/ubuntu/pool/main/i/ijs/libijs-0.35_0.35-15.1build1_amd64.deb  Temporary failure resolving 'azure.archive.ubuntu.com'
+E: Failed to fetch mirror+file:/etc/apt/apt-mirrors.txt/pool/main/j/jbig2dec/libjbig2dec0_0.20-1ubuntu0.24.04.1_amd64.deb  Temporary failure resolving 'azure.archive.ubuntu.com'
+E: Failed to fetch https://security.ubuntu.com/ubuntu/pool/main/libp/libpaper/libpaper1_1.1.29build1_amd64.deb  Temporary failure resolving 'azure.archive.ubuntu.com'
+E: Unable to fetch some archives, maybe run apt-get update or try with --fix-missing?
