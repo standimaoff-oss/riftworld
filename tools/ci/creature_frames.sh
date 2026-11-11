@@ -315,6 +315,15 @@ capture_underwater() {
   [ -n "$wid" ] || fail "Minecraft window not found"
   xdotool windowraise "$wid" >/dev/null 2>&1 || true
   import -window root "$FRAMES/$name.png"
+  # Тёмный кадр в релиз не годится: проверяем яркость и переснимаем.
+  local attempt=0
+  while [ "$attempt" -lt 3 ] && frame_is_dark "$FRAMES/$name.png"; do
+    attempt=$((attempt + 1))
+    echo "::warning title=In-game frames::кадр $name слишком тёмный, переснимаем ($attempt/3)"
+    sleep 8
+    xdotool windowraise "$wid" >/dev/null 2>&1 || true
+    import -window root "$FRAMES/$name.png" || true
+  done
   SHOT=$((SHOT + 1))
   echo "captured $name"
 }
@@ -435,9 +444,14 @@ rq execute in riftworld:elisar run tp TestPlayer 755.25 118.0 764.2 facing 755.2
 sleep 10
 capture_underwater frame-v049-armors-closeup
 
-# Pitch-dark rift-slate vault to verify full-bright emissive Riftcrystal armor glow at zero sky/block light
+# Ночной кадр Рифткристала: свечение брони проверяется ночью, но сцена
+# перестала быть абсолютно чёрной — одноцветный кадр бесполезен (и валидатор
+# кадров справедливо его отвергал). Ставим несколько светокамней по углам
+# хранилища: ночь остаётся ночью, а Рифткристал и одежда читаются.
 rq execute in riftworld:elisar run time set midnight >/dev/null
 rq execute in riftworld:elisar run fill 750 117 758 761 123 765 riftworld:rift_slate hollow >/dev/null
+rq execute in riftworld:elisar run fill 751 118 759 751 119 759 minecraft:sea_lantern >/dev/null
+rq execute in riftworld:elisar run fill 760 118 764 760 119 764 minecraft:sea_lantern >/dev/null
 rq execute in riftworld:elisar run tp TestPlayer 757.3 118.0 763.3 facing 757.5 119.0 760.5 >/dev/null
 sleep 8
 capture_underwater frame-v049-riftcrystal-night-glow
