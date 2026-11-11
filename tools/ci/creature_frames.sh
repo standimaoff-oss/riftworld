@@ -213,6 +213,15 @@ shot frame-paper-dragon-three-quarter 205.5 105.7 -3.6 208 105 0 10
 shot frame-paper-dragon-side 211.6 105.7 0 208 105 0 7
 shot frame-paper-dragon-head 208 106.3 -2.3 208 106.1 -0.6 7
 
+# ---------------------------------------------------------------- bone raven
+# v0.50.0: КОСТЯНОЙ ВОРОН ВОЗВРАЩЁН в мод (пользователь отменил удаление).
+# Летит над Падью Морока, поэтому снимаем его в воздухе с безопасной дистанции.
+rq kill '@e[type=riftworld:bone_raven]' >/dev/null 2>&1 || true
+rq summon riftworld:bone_raven 208 112 0 '{NoAI:1b,PersistenceRequired:1b}' >/dev/null
+shot frame-bone-raven-three-quarter 205.5 113.7 -3.6 208 113 0 8
+shot frame-bone-raven-side 211.6 113.7 0 208 113 0 6
+shot frame-bone-raven-head 208 114.3 -2.3 208 114.1 -0.6 6
+
 # v0.49.0: ДРАКОН ДОЛЖЕН ДВИГАТЬСЯ НА ДАЛЁКОМ РАССТОЯНИИ.
 # Раньше clientTrackingRange был 32 блока: клиент переставал получать
 # позицию, цепочка позвоночника замирала, и дракон «рисовался, но не летел».

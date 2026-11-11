@@ -25,6 +25,7 @@ import ru.aiforge.riftworld.client.model.fauna.CoralHermitCrabModel;
 import ru.aiforge.riftworld.client.model.fauna.CrystalGeckoModel;
 import ru.aiforge.riftworld.client.model.fauna.FacetedOwlModel;
 import ru.aiforge.riftworld.client.model.fauna.FaunaBaseModel;
+import ru.aiforge.riftworld.client.model.fauna.BoneRavenModel;
 import ru.aiforge.riftworld.client.model.fauna.GhostSquidModel;
 import ru.aiforge.riftworld.client.model.fauna.PhantomWolfModel;
 import ru.aiforge.riftworld.client.model.fauna.PorcelainCraneModel;
@@ -121,6 +122,11 @@ public final class ElisarFaunaRenderers {
                 new BaseRenderer<>(c, new ReefSeahorseModel(c.bakeLayer(ReefSeahorseModel.LAYER_LOCATION)),
                         "reef_seahorse", 0.42F, 0.20F, false, false, false));
 
+        // Ворон вернулся в v0.49.0: костяной ворон Пади снова летает.
+        e.registerLayerDefinition(BoneRavenModel.LAYER_LOCATION, BoneRavenModel::createBodyLayer);
+        e.registerEntityRenderer(ModEntities.BONE_RAVEN.get(), c ->
+                new BaseRenderer<>(c, new BoneRavenModel(c.bakeLayer(BoneRavenModel.LAYER_LOCATION)),
+                        "bone_raven", 0.36F, 0.30F, false, true, true, false));
         e.registerEntityRenderer(ModEntities.GHOST_SQUID.get(), c ->
                 new BaseRenderer<>(c, new GhostSquidModel(c.bakeLayer(GhostSquidModel.LAYER_LOCATION)),
                         "ghost_squid", 0.86F, 0.60F, true, true, true));

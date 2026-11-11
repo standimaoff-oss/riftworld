@@ -122,6 +122,8 @@ public final class ModTabs {
         out.accept(ModItems.FACETED_OWL_EGG.get());
         out.accept(ModItems.CORAL_HERMIT_CRAB_EGG.get());
         out.accept(ModItems.REEF_SEAHORSE_EGG.get());
+        out.accept(ModItems.BONE_PINION.get());
+        out.accept(ModItems.BONE_RAVEN_EGG.get());
         out.accept(ModItems.GHOST_SQUID_EGG.get());
         out.accept(ModItems.SILVER_SEA_SERPENT_EGG.get());
     }

@@ -205,6 +205,14 @@ public final class ModEntities {
                             ru.aiforge.riftworld.entity.fauna.ReefSeahorseEntity::new, MobCategory.WATER_CREATURE)
                     .sized(0.45F, 0.85F).clientTrackingRange(64).build("riftworld:reef_seahorse"));
 
+    // Ворон вернулся в v0.49.0 по просьбе владельца. Костяной ворон — самая
+    // крупная птица Пади: размах крыльев, длинный хвост и светящиеся глаза.
+    public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.fauna.BoneRavenEntity>> BONE_RAVEN =
+            TYPES.register("bone_raven", () -> EntityType.Builder
+                    .<ru.aiforge.riftworld.entity.fauna.BoneRavenEntity>of(
+                            ru.aiforge.riftworld.entity.fauna.BoneRavenEntity::new, MobCategory.MONSTER)
+                    .sized(0.65F, 0.75F).clientTrackingRange(64).build("riftworld:bone_raven"));
+
     public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.fauna.GhostSquidEntity>> GHOST_SQUID =
             TYPES.register("ghost_squid", () -> EntityType.Builder
                     .<ru.aiforge.riftworld.entity.fauna.GhostSquidEntity>of(
@@ -250,6 +258,7 @@ public final class ModEntities {
         e.put(FACETED_OWL.get(), ru.aiforge.riftworld.entity.fauna.FacetedOwlEntity.attributes().build());
         e.put(CORAL_HERMIT_CRAB.get(), ru.aiforge.riftworld.entity.fauna.CoralHermitCrabEntity.attributes().build());
         e.put(REEF_SEAHORSE.get(), ru.aiforge.riftworld.entity.fauna.ReefSeahorseEntity.attributes().build());
+        e.put(BONE_RAVEN.get(), ru.aiforge.riftworld.entity.fauna.BoneRavenEntity.attributes().build());
         e.put(GHOST_SQUID.get(), ru.aiforge.riftworld.entity.fauna.GhostSquidEntity.attributes().build());
         e.put(SILVER_SEA_SERPENT.get(), ru.aiforge.riftworld.entity.fauna.SilverSeaSerpentEntity.attributes().build());
     }

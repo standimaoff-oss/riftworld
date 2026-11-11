@@ -28,6 +28,7 @@ import ru.aiforge.riftworld.entity.fauna.CoralHermitCrabEntity;
 import ru.aiforge.riftworld.entity.fauna.CrystalGeckoEntity;
 import ru.aiforge.riftworld.entity.fauna.ElisarFaunaUtil;
 import ru.aiforge.riftworld.entity.fauna.FacetedOwlEntity;
+import ru.aiforge.riftworld.entity.fauna.BoneRavenEntity;
 import ru.aiforge.riftworld.entity.fauna.GhostSquidEntity;
 import ru.aiforge.riftworld.entity.fauna.PhantomWolfEntity;
 import ru.aiforge.riftworld.entity.fauna.PorcelainCraneEntity;
@@ -65,6 +66,8 @@ public final class ElisarBiomeFaunaKeeper {
             regGround(e, ModEntities.PHANTOM_WOLF.get());
             regGround(e, ModEntities.CRYSTAL_GECKO.get());
             regAir(e, ModEntities.FACETED_OWL.get());
+            // Ворон вернулся в v0.49.0: он снова парит над Падью.
+            regAir(e, ModEntities.BONE_RAVEN.get());
             regAny(e, ModEntities.CORAL_HERMIT_CRAB.get());
             regAny(e, ModEntities.REEF_SEAHORSE.get());
             regAny(e, ModEntities.GHOST_SQUID.get());
