@@ -239,9 +239,19 @@ else
   SHOT_DIM=riftworld:elisar
   # Камера стоит в шести блоках от птицы: ворон маленький (0,65 × 0,75),
   # и с прежней дистанции он занимал несколько пикселей.
+  # Перед КАЖДЫМ кадром витрина ставит птицу заново: ворон летает, и пока
+  # шла пауза съёмки, он уходил из кадра. Камера стоит в четырёх-пяти
+  # блоках — ворон маленький (0,65 × 0,75), и с прежней дистанции он
+  # занимал в кадре несколько пикселей.
+  place_raven() {
+    rq execute in riftworld:elisar positioned 560 108 560 run riftstruct bb_bone_raven_showcase >/dev/null 2>&1 || true
+  }
+  place_raven
   shot frame-bone-raven-three-quarter "$RX" "$RY" "$RZ" "$TX" "$TY" "$TZ" 8
-  shot frame-bone-raven-side "$((TX + 7))" "$((TY + 1))" "$((TZ + 1))" "$TX" "$TY" "$TZ" 6
-  shot frame-bone-raven-head "$((TX + 1))" "$((TY + 1))" "$((TZ - 5))" "$TX" "$TY" "$TZ" 6
+  place_raven
+  shot frame-bone-raven-side "$((TX + 5))" "$((TY + 1))" "$((TZ + 1))" "$TX" "$TY" "$TZ" 6
+  place_raven
+  shot frame-bone-raven-head "$((TX + 1))" "$((TY + 1))" "$((TZ - 4))" "$TX" "$TY" "$TZ" 6
 fi
 
 # v0.49.0: ДРАКОН ДОЛЖЕН ДВИГАТЬСЯ НА ДАЛЁКОМ РАССТОЯНИИ.

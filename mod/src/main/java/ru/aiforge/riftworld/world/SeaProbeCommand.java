@@ -3532,18 +3532,25 @@ public final class SeaProbeCommand {
                 }
                 var raven = ru.aiforge.riftworld.registry.ModEntities.BONE_RAVEN.get().create(level);
                 if (raven != null) {
-                    raven.setPos(dx + 0.5D, dy + 0.6D, dz + 0.5D);
-                    // Птица тяжёлая и сразу падает — на съёмке она должна висеть.
+                    // Птица летит: без заморозки она уходит из кадра за секунды.
+                    // Ставим её в воздух над площадкой, отключаем гравитацию и
+                    // AI, и обнуляем движение — ракурсы снимаются по очереди,
+                    // и перед каждым витрина ставит птицу заново.
+                    raven.setPos(dx + 0.5D, dy + 1.2D, dz + 0.5D);
                     raven.setNoGravity(true);
-                    raven.setNoGravity(false);
                     raven.setNoAi(true);
+                    raven.setDeltaMovement(0.0D, 0.0D, 0.0D);
+                    raven.setYRot(35.0F);
+                    raven.setYBodyRot(35.0F);
+                    raven.setXRot(0.0F);
+                    raven.hurtMarked = false;
                     level.addFreshEntity(raven);
                     spawned = 1;
                 }
             }
             String line = "riftstruct kind=bb_bone_raven_showcase at=" + dx + "," + dy + "," + dz
                     + " model_boxes=0 bones=0 atlas=256 spawned=" + spawned + " blocks=0 sub_air=0"
-                    + " cam=" + (dx - 6) + "," + (dy + 2) + "," + (dz + 6)
+                    + " cam=" + (dx - 4) + "," + (dy + 2) + "," + (dz + 4)
                     + ":" + dx + "," + (dy + 1) + "," + dz;
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
