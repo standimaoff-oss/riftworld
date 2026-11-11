@@ -30,9 +30,10 @@ rq() {
   return "$rc"
 }
 
-sudo apt-get update -qq
-sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq xvfb openbox x11-utils xdotool imagemagick \
-  libgl1 libglx-mesa0 libxi6 libxxf86vm1 libxfixes3 libxrender1 libxkbcommon0 libsm6 libopenal1 >/dev/null
+# Пакеты для headless-клиента ставим общим скриптом с ретраями: сеть apt на
+# runner'е периодически отваливается, и раньше из-за этого съёмка падала
+# целиком, а не пыталась переустановить зеркала.
+bash tools/ci/install_client_packages.sh
 
 cat > "$RUN/client/options.txt" <<'OPTS'
 tutorialStep:none

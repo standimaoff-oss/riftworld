@@ -324,12 +324,7 @@ jobs:
         # запустится: проба закона поднимает его сама, если в мире ещё нет
         # игрока. Раньше эти пакеты ставились только в соседней джобе, и
         # проба падала с «Клиент не подключился».
-        run: |
-          sudo apt-get update -qq
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
-            xvfb openbox x11-utils xdotool imagemagick \
-            libgl1 libglx-mesa0 libxi6 libxxf86vm1 libxfixes3 libxrender1 \
-            libxkbcommon0 libsm6 libopenal1 >/dev/null
+        run: bash tools/ci/install_client_packages.sh
       - name: Verify patrols, the non-lethal warning and the jail warehouse
         run: bash tools/ci/elisar_law_probe.sh
       - name: Save server diagnostics
