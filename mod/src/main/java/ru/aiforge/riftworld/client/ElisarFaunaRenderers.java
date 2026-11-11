@@ -57,6 +57,7 @@ public final class ElisarFaunaRenderers {
 
     public static void registerLayers(EntityRenderersEvent.RegisterLayerDefinitions e) {
         e.registerLayerDefinition(PorcelainCraneModel.LAYER_LOCATION, PorcelainCraneModel::createBodyLayer);
+        e.registerLayerDefinition(BoneRavenModel.LAYER_LOCATION, BoneRavenModel::createBodyLayer);
         e.registerLayerDefinition(BasaltBeetleModel.LAYER_LOCATION, BasaltBeetleModel::createBodyLayer);
         e.registerLayerDefinition(AshMothModel.LAYER_LOCATION, AshMothModel::createBodyLayer);
         e.registerLayerDefinition(AmethystFoxModel.LAYER_LOCATION, AmethystFoxModel::createBodyLayer);
@@ -123,7 +124,6 @@ public final class ElisarFaunaRenderers {
                         "reef_seahorse", 0.42F, 0.20F, false, false, false));
 
         // Ворон вернулся в v0.49.0: костяной ворон Пади снова летает.
-        e.registerLayerDefinition(BoneRavenModel.LAYER_LOCATION, BoneRavenModel::createBodyLayer);
         e.registerEntityRenderer(ModEntities.BONE_RAVEN.get(), c ->
                 new BaseRenderer<>(c, new BoneRavenModel(c.bakeLayer(BoneRavenModel.LAYER_LOCATION)),
                         "bone_raven", 0.36F, 0.30F, false, true, true));

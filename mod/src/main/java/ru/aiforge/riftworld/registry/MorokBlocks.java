@@ -160,7 +160,7 @@ public final class MorokBlocks {
             woodPlate("rotwood_pressure_plate", MapColor.COLOR_BLACK);
     public static final RegistryObject<ButtonBlock> ROTWOOD_BUTTON = woodButton("rotwood_button", MapColor.COLOR_BLACK);
     public static final RegistryObject<LeavesBlock> ROTWOOD_LEAVES =
-            ModBlocks.reg("rotwood_leaves", () -> new LeavesBlock(leavesProps(MapColor.COLOR_DARK_GREEN)));
+            ModBlocks.reg("rotwood_leaves", () -> new LeavesBlock(leavesProps(MapColor.COLOR_GREEN)));
     public static final RegistryObject<PlantBlock> ROTWOOD_SAPLING =
             ModBlocks.reg("rotwood_sapling", () -> new PlantBlock(plantProps()));
 
