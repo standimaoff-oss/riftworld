@@ -958,9 +958,9 @@ def build_aurite_outer() -> Model:
 
     # ---- head (HD: 16 x 16 x 16 centred on the neck pivot) ----
     head = m.root("head")
-    head.cubes.append(Cube("aur_head", -8.0, -8.0, -8.0, 16, 16, 16, 0.26, paint_aur_head))
-    head.cubes.append(Cube("aur_brow", -9.0, -8.0, -9.0, 18, 7, 18, 0.18, paint_aur_head))
-    head.cubes.append(Cube("aur_jaw", -9.0, -4.0, -1.0, 18, 10, 10, 0.16, paint_aur_head))
+    head.cubes.append(Cube("aur_head", -8.0, -8.0, -8.0, 16, 19, 16, 0.26, paint_aur_head))
+    head.cubes.append(Cube("aur_brow", -9.0, -8.0, -9.0, 18, 9, 18, 0.18, paint_aur_head))
+    head.cubes.append(Cube("aur_jaw", -9.0, -4.0, -1.0, 18, 12, 10, 0.16, paint_aur_head))
     head.cubes.append(Cube("aur_crest", -4.0, -9.0, -9.0, 8, 8, 8, 0.16, paint_aur_head))
     head.cubes.append(Cube("aur_crest_r", 1.0, -4.0, -9.0, 7, 8, 8, 0.16, paint_aur_head))
     head.cubes.append(Cube("aur_horn_r", -5.0, -7.0, -3.0, 2, 4, 9, 0.05, paint_aur_head))
@@ -968,45 +968,45 @@ def build_aurite_outer() -> Model:
 
     # ---- body (HD: 16 x 24 x 8, pivot at the hips) ----
     body = m.root("body")
-    body.cubes.append(Cube("aur_cuirass", -8.0, 0.0, -4.0, 16, 24, 8, 0.20, paint_aur_body))
-    body.cubes.append(Cube("aur_plastron", -7.0, 2.0, -6.0, 14, 12, 2, 0.10, paint_aur_body))
-    body.cubes.append(Cube("aur_collar", -8.0, 22.0, -4.0, 16, 4, 8, 0.38, paint_aur_body))
+    body.cubes.append(Cube("aur_cuirass", -8.0, 0.0, -4.0, 16, 29, 8, 0.20, paint_aur_body))
+    body.cubes.append(Cube("aur_plastron", -7.0, 2.0, -6.0, 14, 15, 2, 0.10, paint_aur_body))
+    body.cubes.append(Cube("aur_collar", -8.0, 22.0, -4.0, 16, 6, 8, 0.38, paint_aur_body))
 
     # ---- arms (HD: 8 x 24 x 8, pivot at the shoulder) ----
     right_arm = m.root("right_arm", -5.0, 2.0, 0.0)
     hd_r = Bone("hd")
     right_arm.children.append(hd_r)
-    hd_r.cubes.append(Cube("aur_arm_r", -4.0, -24.0, -4.0, 8, 24, 8, 0.45, paint_aur_arm))
+    hd_r.cubes.append(Cube("aur_arm_r", -4.0, -29.0, -4.0, 8, 29, 8, 0.45, paint_aur_arm))
     pauldron_r = Bone("pauldron_r", -3.0, -2.0, 0.0, 0.0, 0.0, -0.14)
     hd_r.children.append(pauldron_r)
-    pauldron_r.cubes.append(Cube("aur_pauldron_r", -6.0, -2.0, -6.0, 12, 9, 12, 0.22, paint_aur_pauldron_main))
+    pauldron_r.cubes.append(Cube("aur_pauldron_r", -6.0, -2.0, -6.0, 13, 11, 13, 0.22, paint_aur_pauldron_main))
     pauldron_r.cubes.append(Cube("aur_pauldron_cap_r", -5.0, -4.0, -5.0, 10, 3, 10, 0.14, paint_aur_pauldron_cap))
 
     left_arm = m.root("left_arm", 5.0, 2.0, 0.0)
     hd_l = Bone("hd")
     left_arm.children.append(hd_l)
-    hd_l.cubes.append(Cube("aur_arm_l", -4.0, -24.0, -4.0, 8, 24, 8, 0.45, paint_aur_arm))
+    hd_l.cubes.append(Cube("aur_arm_l", -4.0, -29.0, -4.0, 8, 29, 8, 0.45, paint_aur_arm))
     pauldron_l = Bone("pauldron_l", 3.0, -2.0, 0.0, 0.0, 0.0, 0.14)
     hd_l.children.append(pauldron_l)
-    pauldron_l.cubes.append(Cube("aur_pauldron_l", -6.0, -2.0, -6.0, 12, 9, 12, 0.22, paint_aur_pauldron_main))
+    pauldron_l.cubes.append(Cube("aur_pauldron_l", -6.0, -2.0, -6.0, 13, 11, 13, 0.22, paint_aur_pauldron_main))
     pauldron_l.cubes.append(Cube("aur_pauldron_cap_l", -5.0, -4.0, -5.0, 10, 3, 10, 0.14, paint_aur_pauldron_cap))
 
     # ---- legs (HD: 8 x 24 x 8, pivot at the hips) ----
     right_leg = m.root("right_leg", -1.9, 12.0, 0.0)
     hd_rl = Bone("hd")
     right_leg.children.append(hd_rl)
-    hd_rl.cubes.append(Cube("aur_leg_r", -4.0, -24.0, -4.0, 8, 24, 8, 0.55, paint_aur_leg))
-    hd_rl.cubes.append(Cube("aur_tasset_r", -7.0, -22.0, -5.0, 3, 11, 10, 0.14, paint_aur_leg))
-    hd_rl.cubes.append(Cube("aur_rondel_r", -3.0, -13.0, -6.0, 6, 6, 3, 0.18, paint_aur_leg))
-    hd_rl.cubes.append(Cube("aur_boot_r", -4.0, -12.0, -4.0, 8, 12, 8, 0.88, paint_aur_boot))
+    hd_rl.cubes.append(Cube("aur_leg_r", -4.0, -29.0, -4.0, 8, 29, 8, 0.55, paint_aur_leg))
+    hd_rl.cubes.append(Cube("aur_tasset_r", -7.0, -25.0, -5.0, 3, 14, 10, 0.14, paint_aur_leg))
+    hd_rl.cubes.append(Cube("aur_rondel_r", -3.0, -15.0, -6.0, 6, 8, 3, 0.18, paint_aur_leg))
+    hd_rl.cubes.append(Cube("aur_boot_r", -4.0, -15.0, -4.0, 8, 15, 8, 0.88, paint_aur_boot))
 
     left_leg = m.root("left_leg", 1.9, 12.0, 0.0)
     hd_ll = Bone("hd")
     left_leg.children.append(hd_ll)
-    hd_ll.cubes.append(Cube("aur_leg_l", -4.0, -24.0, -4.0, 8, 24, 8, 0.55, paint_aur_leg))
-    hd_ll.cubes.append(Cube("aur_tasset_l", 4.0, -22.0, -5.0, 3, 11, 10, 0.14, paint_aur_leg))
-    hd_ll.cubes.append(Cube("aur_rondel_l", -3.0, -13.0, -6.0, 6, 6, 3, 0.18, paint_aur_leg))
-    hd_ll.cubes.append(Cube("aur_boot_l", -4.0, -12.0, -4.0, 8, 12, 8, 0.88, paint_aur_boot))
+    hd_ll.cubes.append(Cube("aur_leg_l", -4.0, -29.0, -4.0, 8, 29, 8, 0.55, paint_aur_leg))
+    hd_ll.cubes.append(Cube("aur_tasset_l", 4.0, -25.0, -5.0, 3, 14, 10, 0.14, paint_aur_leg))
+    hd_ll.cubes.append(Cube("aur_rondel_l", -3.0, -15.0, -6.0, 6, 8, 3, 0.18, paint_aur_leg))
+    hd_ll.cubes.append(Cube("aur_boot_l", -4.0, -15.0, -4.0, 8, 15, 8, 0.88, paint_aur_boot))
 
     m.root("hat")
     return m
@@ -1019,63 +1019,63 @@ def build_aurite_inner() -> Model:
     body = m.root("body")
     hd = Bone("hd")
     body.children.append(hd)
-    hd.cubes.append(Cube("aur_undersuit", -8.0, 14.0, -4.0, 16, 8, 8, 0.50, paint_aur_inner))
+    hd.cubes.append(Cube("aur_undersuit", -8.0, 14.0, -4.0, 16, 12, 8, 0.50, paint_aur_inner))
     m.root("right_arm", -5.0, 2.0, 0.0)
     m.root("left_arm", 5.0, 2.0, 0.0)
     for leg_name, sign in (("right_leg", -1), ("left_leg", 1)):
         leg = m.root(leg_name, 1.9 * sign, 12.0, 0.0)
         hd2 = Bone("hd")
         leg.children.append(hd2)
-        hd2.cubes.append(Cube(f"aur_leg_inner_{leg_name}", -4.0, -24.0, -4.0, 8, 24, 8, 0.55, paint_aur_inner))
+        hd2.cubes.append(Cube(f"aur_leg_inner_{leg_name}", -4.0, -29.0, -4.0, 8, 29, 8, 0.55, paint_aur_inner))
     return m
 
 
 def build_rc_outer() -> Model:
     m = Model(256)
     head = m.root("head")
-    head.cubes.append(Cube("rc_head", -8.0, -8.0, -8.0, 16, 16, 16, 0.26, paint_rc_head, glow_rc_head))
-    head.cubes.append(Cube("rc_brow", -9.0, -8.0, -9.0, 18, 7, 18, 0.18, paint_rc_head, glow_rc_head))
-    head.cubes.append(Cube("rc_jaw", -9.0, -4.0, -1.0, 18, 10, 10, 0.16, paint_rc_head, glow_rc_head))
+    head.cubes.append(Cube("rc_head", -8.0, -8.0, -8.0, 16, 19, 16, 0.26, paint_rc_head, glow_rc_head))
+    head.cubes.append(Cube("rc_brow", -9.0, -8.0, -9.0, 18, 9, 18, 0.18, paint_rc_head, glow_rc_head))
+    head.cubes.append(Cube("rc_jaw", -9.0, -4.0, -1.0, 18, 12, 10, 0.16, paint_rc_head, glow_rc_head))
     head.cubes.append(Cube("rc_crest", -4.0, -9.0, -9.0, 8, 8, 8, 0.16, paint_rc_head, glow_rc_head))
     head.cubes.append(Cube("rc_crest_r", 1.0, -4.0, -9.0, 7, 8, 8, 0.16, paint_rc_head, glow_rc_head))
 
     horn_r = Bone("rc_horn_r", -8.5, -14.5, -2.5, -0.42, 0.0, -0.28)
     head.children.append(horn_r)
-    horn_r.cubes.append(Cube("rc_horn_r_spike", -1.5, -4.5, -1.5, 3, 9, 9, 0.06, paint_rc_crystal_shard, glow_rc_crystal))
+    horn_r.cubes.append(Cube("rc_horn_r_spike", -1.5, -6.5, -1.5, 3, 13, 9, 0.06, paint_rc_crystal_shard, glow_rc_crystal))
     horn_l = Bone("rc_horn_l", 8.5, -14.5, -2.5, -0.42, 0.0, 0.28)
     head.children.append(horn_l)
-    horn_l.cubes.append(Cube("rc_horn_l_spike", -1.5, -4.5, -1.5, 3, 9, 9, 0.06, paint_rc_crystal_shard, glow_rc_crystal))
+    horn_l.cubes.append(Cube("rc_horn_l_spike", -1.5, -6.5, -1.5, 3, 13, 9, 0.06, paint_rc_crystal_shard, glow_rc_crystal))
 
     body = m.root("body")
-    body.cubes.append(Cube("rc_cuirass", -8.0, 0.0, -4.0, 16, 24, 8, 0.20, paint_rc_body, glow_rc_body))
-    body.cubes.append(Cube("rc_sternum", -7.0, 2.0, -6.0, 14, 12, 2, 0.10, paint_rc_body, glow_rc_body))
-    body.cubes.append(Cube("rc_collar", -8.0, 22.0, -4.0, 16, 4, 8, 0.38, paint_rc_body, glow_rc_body))
+    body.cubes.append(Cube("rc_cuirass", -8.0, 0.0, -4.0, 16, 29, 8, 0.20, paint_rc_body, glow_rc_body))
+    body.cubes.append(Cube("rc_sternum", -7.0, 2.0, -6.0, 14, 15, 2, 0.10, paint_rc_body, glow_rc_body))
+    body.cubes.append(Cube("rc_collar", -8.0, 22.0, -4.0, 16, 6, 8, 0.38, paint_rc_body, glow_rc_body))
 
     for arm_name, sign in (("right_arm", -1), ("left_arm", 1)):
         arm = m.root(arm_name, -5.0 * sign, 2.0, 0.0)
         hd = Bone("hd")
         arm.children.append(hd)
-        hd.cubes.append(Cube(f"rc_arm_{arm_name}", -4.0, -24.0, -4.0, 8, 24, 8, 0.45, paint_rc_vambrace, glow_rc_vambrace))
+        hd.cubes.append(Cube(f"rc_arm_{arm_name}", -4.0, -29.0, -4.0, 8, 29, 8, 0.45, paint_rc_vambrace, glow_rc_vambrace))
         pauldron = Bone(f"rc_pauldron_{arm_name}", 3.0 * sign, -2.0, 0.0, 0.0, 0.0, 0.16 * sign)
         hd.children.append(pauldron)
         px0 = -6.0 if sign < 0 else -6.0
-        pauldron.cubes.append(Cube(f"rc_pauldron_{arm_name}", px0, -2.0, -6.0, 12, 9, 12, 0.22, paint_rc_pauldron, glow_rc_pauldron))
+        pauldron.cubes.append(Cube(f"rc_pauldron_{arm_name}", px0, -2.0, -6.0, 13, 11, 13, 0.22, paint_rc_pauldron, glow_rc_pauldron))
         shard = Bone(f"rc_shard_{arm_name}", -5.0 if sign < 0 else 5.0, -1.0, -1.0, 0.0, 0.0, 0.36 * sign)
         pauldron.children.append(shard)
         shard.cubes.append(Cube(f"rc_shard_{arm_name}", -1.5, -7.0, -2.0, 3, 9, 4, 0.08, paint_rc_crystal_shard, glow_rc_crystal))
-        hd.cubes.append(Cube(f"rc_vambrace_{arm_name}", -6.0 if sign < 0 else -2.0, -24.0, -4.0, 8, 24, 8, 0.62, paint_rc_vambrace, glow_rc_vambrace))
+        hd.cubes.append(Cube(f"rc_vambrace_{arm_name}", -6.0 if sign < 0 else -2.0, -29.0, -4.0, 8, 29, 8, 0.62, paint_rc_vambrace, glow_rc_vambrace))
         fin_ox = -8.0 if sign < 0 else 4.0
-        hd.cubes.append(Cube(f"rc_fin_{arm_name}", fin_ox, -20.0, -2.0, 2, 10, 3, 0.08, paint_rc_crystal_shard, glow_rc_crystal))
+        hd.cubes.append(Cube(f"rc_fin_{arm_name}", fin_ox, -23.0, -2.0, 2, 10, 3, 0.08, paint_rc_crystal_shard, glow_rc_crystal))
 
     for leg_name, sign in (("right_leg", -1), ("left_leg", 1)):
         leg = m.root(leg_name, 1.9 * sign, 12.0, 0.0)
         hd = Bone("hd")
         leg.children.append(hd)
-        hd.cubes.append(Cube(f"rc_leg_{leg_name}", -4.0, -24.0, -4.0, 8, 24, 8, 0.55, paint_rc_leg, glow_rc_leg))
+        hd.cubes.append(Cube(f"rc_leg_{leg_name}", -4.0, -29.0, -4.0, 8, 29, 8, 0.55, paint_rc_leg, glow_rc_leg))
         tasset_x = -7.0 if sign < 0 else 4.0
-        hd.cubes.append(Cube(f"rc_tasset_{leg_name}", tasset_x, -22.0, -5.0, 3, 11, 10, 0.14, paint_rc_leg, glow_rc_leg))
-        hd.cubes.append(Cube(f"rc_knee_{leg_name}", -3.0, -13.0, -6.0, 6, 6, 3, 0.18, paint_rc_leg, glow_rc_leg))
-        hd.cubes.append(Cube(f"rc_boot_{leg_name}", -4.0, -12.0, -4.0, 8, 12, 8, 0.88, paint_rc_boot, glow_rc_boot))
+        hd.cubes.append(Cube(f"rc_tasset_{leg_name}", tasset_x, -25.0, -5.0, 3, 14, 10, 0.14, paint_rc_leg, glow_rc_leg))
+        hd.cubes.append(Cube(f"rc_knee_{leg_name}", -3.0, -15.0, -6.0, 6, 8, 3, 0.18, paint_rc_leg, glow_rc_leg))
+        hd.cubes.append(Cube(f"rc_boot_{leg_name}", -4.0, -15.0, -4.0, 8, 15, 8, 0.88, paint_rc_boot, glow_rc_boot))
 
     m.root("hat")
     return m
@@ -1088,14 +1088,14 @@ def build_rc_inner() -> Model:
     body = m.root("body")
     hd = Bone("hd")
     body.children.append(hd)
-    hd.cubes.append(Cube("rc_undersuit", -8.0, 14.0, -4.0, 16, 8, 8, 0.50, paint_rc_inner))
+    hd.cubes.append(Cube("rc_undersuit", -8.0, 14.0, -4.0, 16, 12, 8, 0.50, paint_rc_inner))
     m.root("right_arm", -5.0, 2.0, 0.0)
     m.root("left_arm", 5.0, 2.0, 0.0)
     for leg_name, sign in (("right_leg", -1), ("left_leg", 1)):
         leg = m.root(leg_name, 1.9 * sign, 12.0, 0.0)
         hd2 = Bone("hd")
         leg.children.append(hd2)
-        hd2.cubes.append(Cube(f"rc_leg_inner_{leg_name}", -4.0, -24.0, -4.0, 8, 24, 8, 0.55, paint_rc_inner))
+        hd2.cubes.append(Cube(f"rc_leg_inner_{leg_name}", -4.0, -29.0, -4.0, 8, 29, 8, 0.55, paint_rc_inner))
     return m
 
 
