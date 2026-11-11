@@ -6,9 +6,13 @@ rq() { python3 tools/rcon.py --password "${RCON_PW:-riftci}" --log '' --timeout 
 report=ci-out/deep-ocean.txt
 rq execute in riftworld:elisar run forceload add 1645 1956 1785 2296 | tee "$report"
 # Wait for actual full chunks, not just the forceload ticket.
-for _ in $(seq 1 120); do
+# Сервер только что поднялся, и иногда генератор не успевает за отведённое
+# время: колонка остаётся пустой, и проба падала вслепую. Поэтому ждём дольше
+# и повторяем форсированную загрузку — ticket мог не дойти до генератора.
+for _ in $(seq 1 180); do
   result=$(rq execute in riftworld:elisar if block 1715 -64 2126 minecraft:bedrock run time query gametime 2>&1 || true)
   [[ "$result" == *'The time is'* ]] && break
+  rq execute in riftworld:elisar run forceload add 1645 1956 1785 2296 >/dev/null 2>&1 || true
   sleep 2
 done
 [[ "$result" == *'The time is'* ]] || { echo '::error::Deep ocean chunk did not load'; exit 1; }
