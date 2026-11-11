@@ -1,0 +1,35 @@
+== v0.49.0: проверка городского закона Элисара на живом сервере ==
+   игрок TestPlayer уже в игре
+   v49_city_ground -> <unreachable: [Errno 111] Connection refused> 
+   проба v49_city_ground недоступна, беру запасную точку площади
+-- 1) страж идёт по дороге, а не стоит на месте
+   summon на высоте 118 -> <unreachable: [Errno 111] Connection refused> 
+   summon на высоте 118 -> <unreachable: [Errno 111] Connection refused> 
+   summon на высоте 118 -> <unreachable: [Errno 111] Connection refused> 
+   найдено стражей: 0
+   summon на высоте 119 -> <unreachable: [Errno 111] Connection refused> 
+   summon на высоте 119 -> <unreachable: [Errno 111] Connection refused> 
+   summon на высоте 119 -> <unreachable: [Errno 111] Connection refused> 
+   найдено стражей: 0
+   summon на высоте 120 -> <unreachable: [Errno 111] Connection refused> 
+   summon на высоте 120 -> <unreachable: [Errno 111] Connection refused> 
+   summon на высоте 120 -> <unreachable: [Errno 111] Connection refused> 
+   найдено стражей: 0
+   summon на высоте 121 -> <unreachable: [Errno 111] Connection refused> 
+   summon на высоте 121 -> <unreachable: [Errno 111] Connection refused> 
+   summon на высоте 121 -> <unreachable: [Errno 111] Connection refused> 
+   найдено стражей: 0
+   summon на высоте 122 -> <unreachable: [Errno 111] Connection refused> 
+   summon на высоте 122 -> <unreachable: [Errno 111] Connection refused> 
+   summon на высоте 122 -> <unreachable: [Errno 111] Connection refused> 
+   найдено стражей: 0
+   summon на высоте 117 -> <unreachable: [Errno 111] Connection refused> 
+   summon на высоте 117 -> <unreachable: [Errno 111] Connection refused> 
+   summon на высоте 117 -> <unreachable: [Errno 111] Connection refused> 
+   найдено стражей: 0
+   summon на высоте 116 -> <unreachable: [Errno 111] Connection refused> 
+   summon на высоте 116 -> <unreachable: [Errno 111] Connection refused> 
+   summon на высоте 116 -> <unreachable: [Errno 111] Connection refused> 
+   найдено стражей: 0
+FAIL: Не удалось заспавнить стражей ни на одной высоте около -28,118,50
+--- конец отчёта пробы ---
