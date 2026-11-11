@@ -6,6 +6,11 @@ name: In-game creature frames
 on:
   push:
     branches: ["arena/**"]
+    # Пуши, которые трогают только собранные jar, не требуют новой съёмки:
+    # без этого frames коммитит кадры обратно в ветку, его коммит снова
+    # запускает frames, и проверка sea-check не доходит до конца.
+    paths-ignore:
+      - 'release/**'
   workflow_dispatch:
 
 permissions:
