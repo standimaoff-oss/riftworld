@@ -387,12 +387,14 @@ echo "  hollowwatcher pos: $WPOS"
 # все кадры Смотрителя Пращи, кроме первого, вообще не снимались.
 TYI=${TY%%.*}
 shot frame-hollowwatcher-three-quarter "$WX" "$WY" "$WZ" "$TX" "$TY" "$TZ" 20
-shot frame-hollowwatcher-face "$TX" "$((TYI + 1))" "$((TZ - 2))" "$TX" "$TY" "$TZ" 10
-shot frame-hollowwatcher-tall "$((TX + 4))" "$TY" "$TZ" "$TX" "$TY" "$TZ" 10
+# Анфас: камера отходит на шесть блоков и чуть вбок, иначе моб (3.4 блока
+# высотой) целиком не влезает в кадр и снимается пустой город.
+shot frame-hollowwatcher-face "$((TX - 1))" "$((TYI + 1))" "$((TZ - 6))" "$TX" "$((TYI + 1))" "$TZ" 12
+shot frame-hollowwatcher-tall "$((TX + 5))" "$((TYI + 1))" "$((TZ + 3))" "$TX" "$((TYI + 1))" "$TZ" 12
 # Дневной кадр: в полночь силуэт моба не читается, поэтому светим.
 rq execute in riftworld:elisar run time set noon >/dev/null 2>&1 || true
 sleep 3
-shot frame-hollowwatcher-daylight "$TX" "$((TYI + 1))" "$((TZ - 3))" "$TX" "$TY" "$TZ" 10
+shot frame-hollowwatcher-daylight "$((TX - 2))" "$((TYI + 2))" "$((TZ - 5))" "$TX" "$((TYI + 1))" "$TZ" 12
 # Ночной кадр снимаем ОТДЕЛЬНЫМ файлом: раньше он перезаписывал дневной
 # three-quarter, и в релиз попадал чёрный кадр вместо читаемого. Падь —
 # тёмное место, поэтому ночной кадр оставляем только там, где моб освещён
