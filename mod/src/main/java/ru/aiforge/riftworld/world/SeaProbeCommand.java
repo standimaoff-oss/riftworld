@@ -3527,7 +3527,7 @@ public final class SeaProbeCommand {
                 }
                 var raven = ru.aiforge.riftworld.registry.ModEntities.BONE_RAVEN.get().create(level);
                 if (raven != null) {
-                    raven.setPos(dx + 0.5D, dy + 12.0D, dz + 0.5D);
+                    raven.setPos(dx + 0.5D, dy + 2.0D, dz + 0.5D);
                     raven.setNoGravity(false);
                     raven.setNoAi(true);
                     level.addFreshEntity(raven);
@@ -3536,8 +3536,8 @@ public final class SeaProbeCommand {
             }
             String line = "riftstruct kind=bb_bone_raven_showcase at=" + dx + "," + dy + "," + dz
                     + " model_boxes=0 bones=0 atlas=256 spawned=" + spawned + " blocks=0 sub_air=0"
-                    + " cam=" + (dx - 16) + "," + (dy + 6) + "," + (dz + 16)
-                    + ":" + dx + "," + (dy + 11) + "," + dz;
+                    + " cam=" + (dx - 6) + "," + (dy + 3) + "," + (dz + 6)
+                    + ":" + dx + "," + (dy + 2) + "," + dz;
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
         }

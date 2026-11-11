@@ -224,7 +224,11 @@ if [[ "$RAVEN_INFO" != *"spawned=1"* ]]; then
   echo "::warning title=In-game frames::витрина ворона не собралась: $RAVEN_INFO"
 else
   rq execute in riftworld:elisar run forceload add 552 552 568 568 >/dev/null 2>&1 || true
-  rq execute in riftworld:elisar run time set 4500 >/dev/null || true
+  # Полдень: ворон тёмный, и на ночном небе он читался чёрным силуэтом —
+  # кадр уходил в пересъёмку и в итоге оставался тёмным. Днём силуэт
+  # контрастирует со светлым небом, и объект видно.
+  rq execute in riftworld:elisar run time set 6000 >/dev/null || true
+  rq execute in riftworld:elisar run weather clear >/dev/null 2>&1 || true
   sleep 16
   RX=$(echo "$RAVEN_INFO" | sed -n 's/.*cam=\([^:]*\):.*/\1/p' | cut -d, -f1)
   RY=$(echo "$RAVEN_INFO" | sed -n 's/.*cam=\([^:]*\):.*/\1/p' | cut -d, -f2)
@@ -233,9 +237,11 @@ else
   TY=$(echo "$RAVEN_INFO" | sed -n 's/.*cam=[^:]*:\(.*\)/\1/p' | cut -d, -f2)
   TZ=$(echo "$RAVEN_INFO" | sed -n 's/.*cam=[^:]*:\(.*\)/\1/p' | cut -d, -f3)
   SHOT_DIM=riftworld:elisar
+  # Камера стоит в шести блоках от птицы: ворон маленький (0,65 × 0,75),
+  # и с прежней дистанции он занимал несколько пикселей.
   shot frame-bone-raven-three-quarter "$RX" "$RY" "$RZ" "$TX" "$TY" "$TZ" 8
-  shot frame-bone-raven-side "$((TX + 14))" "$RY" "$((TZ + 2))" "$TX" "$TY" "$TZ" 6
-  shot frame-bone-raven-head "$TX" "$((TY + 2))" "$((TZ - 5))" "$TX" "$TY" "$TZ" 6
+  shot frame-bone-raven-side "$((TX + 7))" "$((TY + 1))" "$((TZ + 1))" "$TX" "$TY" "$TZ" 6
+  shot frame-bone-raven-head "$((TX + 1))" "$((TY + 1))" "$((TZ - 5))" "$TX" "$TY" "$TZ" 6
 fi
 
 # v0.49.0: ДРАКОН ДОЛЖЕН ДВИГАТЬСЯ НА ДАЛЁКОМ РАССТОЯНИИ.
