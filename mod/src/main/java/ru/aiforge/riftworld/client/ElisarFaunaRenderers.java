@@ -126,7 +126,7 @@ public final class ElisarFaunaRenderers {
         e.registerLayerDefinition(BoneRavenModel.LAYER_LOCATION, BoneRavenModel::createBodyLayer);
         e.registerEntityRenderer(ModEntities.BONE_RAVEN.get(), c ->
                 new BaseRenderer<>(c, new BoneRavenModel(c.bakeLayer(BoneRavenModel.LAYER_LOCATION)),
-                        "bone_raven", 0.36F, 0.30F, false, true, true, false));
+                        "bone_raven", 0.36F, 0.30F, false, true, true));
         e.registerEntityRenderer(ModEntities.GHOST_SQUID.get(), c ->
                 new BaseRenderer<>(c, new GhostSquidModel(c.bakeLayer(GhostSquidModel.LAYER_LOCATION)),
                         "ghost_squid", 0.86F, 0.60F, true, true, true));
