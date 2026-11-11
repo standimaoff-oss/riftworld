@@ -35,7 +35,31 @@ CITY_X=-28
 CITY_Z=50
 CITY_Y=118
 
-rq() { python3 tools/rcon.py --password "${RCON_PW:-riftci}" --log '' --timeout 90 "$@"; }
+# RCON на живом сервере периодически рвёт соединение («connection closed»):
+# запрос не доходит, а проба падает на нём, хотя мод здесь ни при чём.
+# Повторяем оборванный запрос — обрыв связи не повод ронять проверку.
+rq() {
+  local attempt=1 out
+  while [ "$attempt" -le 3 ]; do
+    out=$(python3 tools/rcon.py --password "${RCON_PW:-riftci}" --log '' --timeout 90 "$@" 2>&1) && {
+      printf '%s\n' "$out"
+      return 0
+    }
+    case "$out" in
+      *"connection closed"*|*"Broken pipe"*|*"Connection reset"*)
+        log "   RCON оборвался (попытка $attempt/3), повторяем"
+        sleep 3
+        attempt=$((attempt + 1))
+        ;;
+      *)
+        printf '%s\n' "$out"
+        return 1
+        ;;
+    esac
+  done
+  printf '%s\n' "$out"
+  return 1
+}
 
 # Пробе нужен ИГРОК в мире: ударить стража, умереть и сесть в тюрьму нельзя
 # без настоящего игрока. В джобе sea-check клиент уже поднят визуальным
