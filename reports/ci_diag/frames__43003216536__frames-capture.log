@@ -1,0 +1,166 @@
+
+Running kernel seems to be up-to-date.
+
+No services need to be restarted.
+
+No containers need to be restarted.
+
+No user sessions are running outdated binaries.
+
+No VM guests are running outdated hypervisor (qemu) binaries on this host.
+::warning title=In-game frames::кадр frame-paper-dragon-three-quarter слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-paper-dragon-three-quarter слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-paper-dragon-three-quarter слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-paper-dragon-three-quarter слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-paper-dragon-three-quarter остался тёмным после четырёх попыток
+captured frame-paper-dragon-three-quarter
+::warning title=In-game frames::кадр frame-paper-dragon-side слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-paper-dragon-side слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-paper-dragon-side слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-paper-dragon-side слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-paper-dragon-side остался тёмным после четырёх попыток
+captured frame-paper-dragon-side
+::warning title=In-game frames::кадр frame-paper-dragon-head слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-paper-dragon-head слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-paper-dragon-head слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-paper-dragon-head слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-paper-dragon-head остался тёмным после четырёх попыток
+captured frame-paper-dragon-head
+  paper dragon at 149,144,98
+::warning title=In-game frames::кадр frame-paper-dragon-far-a слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-paper-dragon-far-a слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-paper-dragon-far-a слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-paper-dragon-far-a слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-paper-dragon-far-a остался тёмным после четырёх попыток
+captured frame-paper-dragon-far-a
+::warning title=In-game frames::кадр frame-paper-dragon-far-close слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-paper-dragon-far-close слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-paper-dragon-far-close слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-paper-dragon-far-close слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-paper-dragon-far-close остался тёмным после четырёх попыток
+captured frame-paper-dragon-far-close
+::warning title=In-game frames::кадр frame-paper-dragon-far-b слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-paper-dragon-far-b слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-paper-dragon-far-b слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-paper-dragon-far-b слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-paper-dragon-far-b остался тёмным после четырёх попыток
+captured frame-paper-dragon-far-b
+  paper dragon pos after flight: Paper Dragon has the following entity data: [336.18450335712475d, 140.11841722972054d, 194.45150221259618d]
+ocean attempt 1: The nearest riftworld:maja_ocean is at [1115, 54, 1526] (1889 blocks away)
+ocean centre: 1115 1526
+::warning title=In-game frames::кадр frame-liopleurodon-swim слишком тёмный, переснимаем (1/3)
+::warning title=In-game frames::кадр frame-liopleurodon-swim слишком тёмный, переснимаем (2/3)
+::warning title=In-game frames::кадр frame-liopleurodon-swim слишком тёмный, переснимаем (3/3)
+captured frame-liopleurodon-swim
+::warning title=In-game frames::кадр frame-liopleurodon-side слишком тёмный, переснимаем (1/3)
+::warning title=In-game frames::кадр frame-liopleurodon-side слишком тёмный, переснимаем (2/3)
+::warning title=In-game frames::кадр frame-liopleurodon-side слишком тёмный, переснимаем (3/3)
+captured frame-liopleurodon-side
+::warning title=In-game frames::кадр frame-liopleurodon-head слишком тёмный, переснимаем (1/3)
+::warning title=In-game frames::кадр frame-liopleurodon-head слишком тёмный, переснимаем (2/3)
+::warning title=In-game frames::кадр frame-liopleurodon-head слишком тёмный, переснимаем (3/3)
+captured frame-liopleurodon-head
+  riftstruct kind=v49_hollowwatcher_showcase at=-35,104,50 spawned=1 blocks=1 sub_air=1 staged=1 dim=riftworld:elisar ground=Frozen Soil sky=1 time=6000 cam=-40.5,107.2,45.5:-35,105.7,50
+  hollowwatcher pos: No entity was found
+
+::warning title=In-game frames::rcon attempt 1 failed (rc=4), retrying
+No entity was found
+
+::warning title=In-game frames::rcon attempt 2 failed (rc=4), retrying
+No entity was found
+
+::warning title=In-game frames::rcon attempt 3 failed (rc=4), retrying
+No entity was found
+
+::warning title=In-game frames::rcon attempt 4 failed (rc=4), retrying
+::warning title=In-game frames::кадр frame-hollowwatcher-three-quarter слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-three-quarter слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-three-quarter слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-three-quarter слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-three-quarter остался тёмным после четырёх попыток
+captured frame-hollowwatcher-three-quarter
+::warning title=In-game frames::кадр frame-hollowwatcher-face слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-face слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-face слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-face слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-face остался тёмным после четырёх попыток
+captured frame-hollowwatcher-face
+::warning title=In-game frames::кадр frame-hollowwatcher-tall слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-tall слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-tall слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-tall слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-tall остался тёмным после четырёх попыток
+captured frame-hollowwatcher-tall
+::warning title=In-game frames::кадр frame-hollowwatcher-daylight слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-daylight слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-daylight слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-daylight слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-daylight остался тёмным после четырёх попыток
+captured frame-hollowwatcher-daylight
+::warning title=In-game frames::кадр frame-hollowwatcher-night слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-night слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-night слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-night слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-night остался тёмным после четырёх попыток
+captured frame-hollowwatcher-night
+::warning title=In-game frames::кадр frame-maja-body слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-maja-body слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-maja-body слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-maja-body слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-maja-body остался тёмным после четырёх попыток
+captured frame-maja-body
+::warning title=In-game frames::кадр frame-maja-head слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-maja-head слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-maja-head слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-maja-head слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-maja-head остался тёмным после четырёх попыток
+captured frame-maja-head
+::warning title=In-game frames::кадр frame-v049-armors-closeup слишком тёмный, переснимаем (1/3)
+::warning title=In-game frames::кадр frame-v049-armors-closeup слишком тёмный, переснимаем (2/3)
+::warning title=In-game frames::кадр frame-v049-armors-closeup слишком тёмный, переснимаем (3/3)
+captured frame-v049-armors-closeup
+::warning title=In-game frames::кадр frame-v049-riftcrystal-night-glow слишком тёмный, переснимаем (1/3)
+::warning title=In-game frames::кадр frame-v049-riftcrystal-night-glow слишком тёмный, переснимаем (2/3)
+::warning title=In-game frames::кадр frame-v049-riftcrystal-night-glow слишком тёмный, переснимаем (3/3)
+captured frame-v049-riftcrystal-night-glow
+::warning title=In-game frames::кадр frame-v049-tools-closeup слишком тёмный, переснимаем (1/3)
+::warning title=In-game frames::кадр frame-v049-tools-closeup слишком тёмный, переснимаем (2/3)
+::warning title=In-game frames::кадр frame-v049-tools-closeup слишком тёмный, переснимаем (3/3)
+captured frame-v049-tools-closeup
+::warning title=In-game frames::кадр frame-v049-items-dropped-tools слишком тёмный, переснимаем (1/3)
+::warning title=In-game frames::кадр frame-v049-items-dropped-tools слишком тёмный, переснимаем (2/3)
+::warning title=In-game frames::кадр frame-v049-items-dropped-tools слишком тёмный, переснимаем (3/3)
+captured frame-v049-items-dropped-tools
+::warning title=In-game frames::кадр frame-v049-items-dropped-armour слишком тёмный, переснимаем (1/3)
+::warning title=In-game frames::кадр frame-v049-items-dropped-armour слишком тёмный, переснимаем (2/3)
+::warning title=In-game frames::кадр frame-v049-items-dropped-armour слишком тёмный, переснимаем (3/3)
+captured frame-v049-items-dropped-armour
+::warning title=In-game frames::кадр frame-v049-elisar-folk слишком тёмный, переснимаем (1/3)
+::warning title=In-game frames::кадр frame-v049-elisar-folk слишком тёмный, переснимаем (2/3)
+::warning title=In-game frames::кадр frame-v049-elisar-folk слишком тёмный, переснимаем (3/3)
+captured frame-v049-elisar-folk
+captured 22 in-game frames
+total 10156
+-rw-r--r-- 1 runner runner 813319 Nov 11 10:47 frame-hollowwatcher-daylight.png
+-rw-r--r-- 1 runner runner 559174 Nov 11 10:43 frame-hollowwatcher-face.png
+-rw-r--r-- 1 runner runner 987488 Nov 11 10:49 frame-hollowwatcher-night.png
+-rw-r--r-- 1 runner runner 720725 Nov 11 10:45 frame-hollowwatcher-tall.png
+-rw-r--r-- 1 runner runner 876454 Nov 11 10:41 frame-hollowwatcher-three-quarter.png
+-rw-r--r-- 1 runner runner 813588 Nov 11 10:38 frame-liopleurodon-head.png
+-rw-r--r-- 1 runner runner 672315 Nov 11 10:38 frame-liopleurodon-side.png
+-rw-r--r-- 1 runner runner 787073 Nov 11 10:37 frame-liopleurodon-swim.png
+-rw-r--r-- 1 runner runner 150243 Nov 11 10:51 frame-maja-body.png
+-rw-r--r-- 1 runner runner 150729 Nov 11 10:53 frame-maja-head.png
+-rw-r--r-- 1 runner runner 138302 Nov 11 10:33 frame-paper-dragon-far-a.png
+-rw-r--r-- 1 runner runner 163354 Nov 11 10:36 frame-paper-dragon-far-b.png
+-rw-r--r-- 1 runner runner 194110 Nov 11 10:35 frame-paper-dragon-far-close.png
+-rw-r--r-- 1 runner runner 237755 Nov 11 10:32 frame-paper-dragon-head.png
+-rw-r--r-- 1 runner runner 137608 Nov 11 10:30 frame-paper-dragon-side.png
+-rw-r--r-- 1 runner runner 469344 Nov 11 10:29 frame-paper-dragon-three-quarter.png
+-rw-r--r-- 1 runner runner 322696 Nov 11 10:54 frame-v049-armors-closeup.png
+-rw-r--r-- 1 runner runner 314045 Nov 11 10:57 frame-v049-elisar-folk.png
+-rw-r--r-- 1 runner runner 467139 Nov 11 10:57 frame-v049-items-dropped-armour.png
+-rw-r--r-- 1 runner runner 478575 Nov 11 10:56 frame-v049-items-dropped-tools.png
+-rw-r--r-- 1 runner runner 569513 Nov 11 10:55 frame-v049-riftcrystal-night-glow.png
+-rw-r--r-- 1 runner runner 334335 Nov 11 10:55 frame-v049-tools-closeup.png
+OK: real client frames saved to ci-out/frames
