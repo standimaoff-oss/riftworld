@@ -1,0 +1,33 @@
+== v0.49.0: проверка городского закона Элисара на живом сервере ==
+   игрок TestPlayer уже в игре
+   v49_city_ground -> riftstruct kind=v49_city_ground plaza=-28,50 ground=104 road=-36,104,57 spot=-28,104,50 under=Road Cobblestone/Air route=PLAZA points=8  
+   площадь города: -28,104,50 (дорога: -36,104,57)
+-- 1) страж идёт по дороге, а не стоит на месте
+   summon на высоте 104 -> Summoned new Elisar Guard  
+   summon на высоте 104 -> Summoned new Elisar Guard  
+   summon на высоте 104 -> Summoned new Elisar Guard  
+   найдено стражей: 4
+   стражей рядом: 1+ (высота 104)
+   состояние стража: riftstruct kind=v49_guard_patrol error=no_guard  
+   состояние стража: riftstruct kind=v49_guard_patrol error=no_guard  
+   позиция стража: Elisar Guard has the following entity data: [-25.01442679985801d, 104.5d, 60.01047059411776d] -> Elisar Guard has the following entity data: [-19.226494638570237d, 105.0d, 51.22755598464972d]
+   OK: страж идёт по патрулю
+-- 2) удар по стражу: предупреждение, но НЕ смерть
+   здоровье стража: Elisar Guard has the following entity data: 44.0f -> Elisar Guard has the following entity data: 40.96f
+   OK: страж выжил и предупредил
+   здоровье игрока после удара: TestPlayer has the following entity data: 13.333334f
+-- 3) камера тюрьмы и склад строятся рядом с дорогой
+   riftstruct v49_elisar_law -> riftstruct kind=v49_elisar_law at=-41,104,57 jail=1 bars=47 chest=1 cell_to_chest=2 blocks=1 sub_air=0 cam=-49,109,65:-41,106,57  
+   OK: камера построена
+   OK: сундук склада построен
+-- 4) полная цепочка: убийство при свидетелях -> розыск -> тюрьма -> сундук
+   riftstruct v49_law_state -> riftstruct kind=v49_law_state player=TestPlayer wanted=1 warnings=2 gameTime=16355 dim=elisar expiresAt=22295 since=16295 jailed=0 held=0 chest_items=0 inv=41 at=-41,103,40 cell=-41,104,57 jail=- chest=-41,104,59  
+   OK: игрок в розыске (город видел убийство)
+   игрок перед смертью: hp=TestPlayer has the following entity data: 13.333334f pos=TestPlayer has the following entity data: [-41.438468378189015d, 103.0d, 40.85194441058449d]
+   инвентарь перед смертью: TestPlayer has the following entity data: [{Slot: 0b, id: "riftworld:sea_scale", Count: 1b}, {Slot: 1b, id: "riftworld:abyssal_ink_sac", Count: 1b}, {Slot: 2b, 
+   воскрешение -> riftstruct kind=v49_revive player=TestPlayer hp=20.0 alive=true  
+   игрок после смерти: hp=TestPlayer has the following entity data: 20.0f pos=TestPlayer has the following entity data: [-40.5d, 104.0d, 57.5d]
+   после смерти -> riftstruct kind=v49_law_state player=TestPlayer wanted=0 warnings=0 gameTime=16513 dim=elisar expiresAt=- since=- jailed=1 held=19 chest_items=5 inv=41 at=-40,104,57 cell=-41,104,57 jail=-41,104,57 chest=-41,104,59  
+   OK: игрок в городской тюрьме
+   OK: вещи игрока лежат в сундуке склада рядом с тюрьмой (стаков: 5)
+OK: городской закон Элисара проверен на живом сервере.
