@@ -26,7 +26,7 @@ captured frame-paper-dragon-side
 ::warning title=In-game frames::кадр frame-paper-dragon-head слишком тёмный, переснимаем (4/4)
 ::warning title=In-game frames::кадр frame-paper-dragon-head остался тёмным после четырёх попыток
 captured frame-paper-dragon-head
-  paper dragon at 133,144,104
+  paper dragon at 312,144,49
 ::warning title=In-game frames::кадр frame-paper-dragon-far-a слишком тёмный, переснимаем (1/4)
 ::warning title=In-game frames::кадр frame-paper-dragon-far-a слишком тёмный, переснимаем (2/4)
 ::warning title=In-game frames::кадр frame-paper-dragon-far-a слишком тёмный, переснимаем (3/4)
@@ -45,7 +45,7 @@ captured frame-paper-dragon-far-close
 ::warning title=In-game frames::кадр frame-paper-dragon-far-b слишком тёмный, переснимаем (4/4)
 ::warning title=In-game frames::кадр frame-paper-dragon-far-b остался тёмным после четырёх попыток
 captured frame-paper-dragon-far-b
-  paper dragon pos after flight: Paper Dragon has the following entity data: [129.26249830646066d, 138.9888268086977d, 272.2490459311009d]
+  paper dragon pos after flight: Paper Dragon has the following entity data: [496.00896334400215d, 140.58354269720053d, 9.93913550571593d]
 ocean attempt 1: The nearest riftworld:maja_ocean is at [1115, 54, 1526] (1889 blocks away)
 ocean centre: 1115 1526
 captured frame-liopleurodon-swim
@@ -113,27 +113,27 @@ captured frame-v049-items-dropped-tools
 captured frame-v049-items-dropped-armour
 captured frame-v049-elisar-folk
 captured 22 in-game frames
-total 8776
--rw-r--r-- 1 runner runner 472139 Nov 10 23:44 frame-hollowwatcher-daylight.png
--rw-r--r-- 1 runner runner 492063 Nov 10 23:41 frame-hollowwatcher-face.png
--rw-r--r-- 1 runner runner 994879 Nov 10 23:46 frame-hollowwatcher-night.png
--rw-r--r-- 1 runner runner 563087 Nov 10 23:43 frame-hollowwatcher-tall.png
--rw-r--r-- 1 runner runner 878736 Nov 10 23:39 frame-hollowwatcher-three-quarter.png
--rw-r--r-- 1 runner runner 717913 Nov 10 23:36 frame-liopleurodon-head.png
--rw-r--r-- 1 runner runner 618575 Nov 10 23:36 frame-liopleurodon-side.png
--rw-r--r-- 1 runner runner 474652 Nov 10 23:36 frame-liopleurodon-swim.png
--rw-r--r-- 1 runner runner 152374 Nov 10 23:48 frame-maja-body.png
--rw-r--r-- 1 runner runner 140331 Nov 10 23:50 frame-maja-head.png
--rw-r--r-- 1 runner runner 131060 Nov 10 23:32 frame-paper-dragon-far-a.png
--rw-r--r-- 1 runner runner 126588 Nov 10 23:35 frame-paper-dragon-far-b.png
--rw-r--r-- 1 runner runner 184109 Nov 10 23:34 frame-paper-dragon-far-close.png
--rw-r--r-- 1 runner runner 237026 Nov 10 23:31 frame-paper-dragon-head.png
--rw-r--r-- 1 runner runner 137608 Nov 10 23:29 frame-paper-dragon-side.png
--rw-r--r-- 1 runner runner 469994 Nov 10 23:28 frame-paper-dragon-three-quarter.png
--rw-r--r-- 1 runner runner 293852 Nov 10 23:51 frame-v049-armors-closeup.png
--rw-r--r-- 1 runner runner 308548 Nov 10 23:52 frame-v049-elisar-folk.png
--rw-r--r-- 1 runner runner 467211 Nov 10 23:52 frame-v049-items-dropped-armour.png
--rw-r--r-- 1 runner runner 488157 Nov 10 23:52 frame-v049-items-dropped-tools.png
--rw-r--r-- 1 runner runner 231446 Nov 10 23:51 frame-v049-riftcrystal-night-glow.png
--rw-r--r-- 1 runner runner 364164 Nov 10 23:51 frame-v049-tools-closeup.png
+total 9072
+-rw-r--r-- 1 runner runner 813124 Nov 11 06:47 frame-hollowwatcher-daylight.png
+-rw-r--r-- 1 runner runner 562131 Nov 11 06:43 frame-hollowwatcher-face.png
+-rw-r--r-- 1 runner runner 987182 Nov 11 06:48 frame-hollowwatcher-night.png
+-rw-r--r-- 1 runner runner 724396 Nov 11 06:45 frame-hollowwatcher-tall.png
+-rw-r--r-- 1 runner runner 877939 Nov 11 06:41 frame-hollowwatcher-three-quarter.png
+-rw-r--r-- 1 runner runner 541000 Nov 11 06:38 frame-liopleurodon-head.png
+-rw-r--r-- 1 runner runner 566868 Nov 11 06:38 frame-liopleurodon-side.png
+-rw-r--r-- 1 runner runner 572130 Nov 11 06:38 frame-liopleurodon-swim.png
+-rw-r--r-- 1 runner runner 149752 Nov 11 06:51 frame-maja-body.png
+-rw-r--r-- 1 runner runner 150958 Nov 11 06:53 frame-maja-head.png
+-rw-r--r-- 1 runner runner 125803 Nov 11 06:34 frame-paper-dragon-far-a.png
+-rw-r--r-- 1 runner runner 127646 Nov 11 06:37 frame-paper-dragon-far-b.png
+-rw-r--r-- 1 runner runner 180528 Nov 11 06:36 frame-paper-dragon-far-close.png
+-rw-r--r-- 1 runner runner 207472 Nov 11 06:33 frame-paper-dragon-head.png
+-rw-r--r-- 1 runner runner 262287 Nov 11 06:32 frame-paper-dragon-side.png
+-rw-r--r-- 1 runner runner 206896 Nov 11 06:30 frame-paper-dragon-three-quarter.png
+-rw-r--r-- 1 runner runner 320462 Nov 11 06:53 frame-v049-armors-closeup.png
+-rw-r--r-- 1 runner runner 313521 Nov 11 06:54 frame-v049-elisar-folk.png
+-rw-r--r-- 1 runner runner 466512 Nov 11 06:54 frame-v049-items-dropped-armour.png
+-rw-r--r-- 1 runner runner 489654 Nov 11 06:54 frame-v049-items-dropped-tools.png
+-rw-r--r-- 1 runner runner 231339 Nov 11 06:53 frame-v049-riftcrystal-night-glow.png
+-rw-r--r-- 1 runner runner 364047 Nov 11 06:54 frame-v049-tools-closeup.png
 OK: real client frames saved to ci-out/frames
