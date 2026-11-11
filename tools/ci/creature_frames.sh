@@ -249,9 +249,9 @@ else
   place_raven
   shot frame-bone-raven-three-quarter "$RX" "$RY" "$RZ" "$TX" "$TY" "$TZ" 8
   place_raven
-  shot frame-bone-raven-side "$((TX + 5))" "$((TY + 1))" "$((TZ + 1))" "$TX" "$TY" "$TZ" 6
+  shot frame-bone-raven-side "$((TX + 3))" "$((TY + 1))" "$((TZ + 1))" "$TX" "$TY" "$TZ" 6
   place_raven
-  shot frame-bone-raven-head "$((TX + 1))" "$((TY + 1))" "$((TZ - 4))" "$TX" "$TY" "$TZ" 6
+  shot frame-bone-raven-head "$((TX + 1))" "$((TY + 1))" "$((TZ - 2))" "$TX" "$TY" "$TZ" 6
 fi
 
 # v0.49.0: ДРАКОН ДОЛЖЕН ДВИГАТЬСЯ НА ДАЛЁКОМ РАССТОЯНИИ.

@@ -3548,9 +3548,12 @@ public final class SeaProbeCommand {
                     spawned = 1;
                 }
             }
+            // rev= печатает версию кода витрины: по нему видно, какой jar
+            // реально стоит на сервере, если сборка вдруг отдаст старый.
             String line = "riftstruct kind=bb_bone_raven_showcase at=" + dx + "," + dy + "," + dz
                     + " model_boxes=0 bones=0 atlas=256 spawned=" + spawned + " blocks=0 sub_air=0"
-                    + " cam=" + (dx - 4) + "," + (dy + 2) + "," + (dz + 4)
+                    + " rev=stage105-frozen-1.2"
+                    + " cam=" + (dx - 2) + "," + (dy + 2) + "," + (dz + 2)
                     + ":" + dx + "," + (dy + 1) + "," + dz;
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;

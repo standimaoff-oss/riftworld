@@ -23,7 +23,22 @@ on_error() {
 }
 trap on_error EXIT
 
-rq() { python3 tools/rcon.py --password "${RCON_PW:-riftci}" --log "" --timeout 90 "$@"; }
+# RCON рвёт соединение на длинных командах: повторяем запрос три раза,
+# пока не получим ответ без "connection closed" / "Broken pipe".
+rq() {
+  local attempt=1 out=""
+  while [ "$attempt" -le 3 ]; do
+    out=$(python3 tools/rcon.py --password "${RCON_PW:-riftci}" --log "" --timeout 90 "$@" 2>&1 || true)
+    if [[ "$out" != *"connection closed"* && "$out" != *"Broken pipe"* && "$out" != *"Connection reset"* ]]; then
+      printf '%s' "$out"
+      return 0
+    fi
+    attempt=$((attempt + 1))
+    sleep 3
+  done
+  printf '%s' "$out"
+  return 0
+}
 
 sudo apt-get update -qq
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
@@ -190,7 +205,9 @@ echo "  $GEAR_INFO"
 [[ "$GEAR_INFO" == *"stands=4"* ]] || fail "Expected 4 armour stands, got: $GEAR_INFO"
 [[ "$GEAR_INFO" == *"folk=3"* ]] || fail "Expected 3 Elisar folk, got: $GEAR_INFO"
 # Сущности должны существовать на сервере: иначе пустой кадр — не вина камеры.
-stands=$(rq execute in riftworld:elisar positioned 760 118 760 if entity '@e[type=minecraft:armor_stand,distance=..40]' 2>&1 || true)
+# Тяжёлые запросы "if entity ... distance=..40" рвали RCON-соединение, и
+# весь sea-check падал на этом шаге. Проверяем список сущностей поштучно.
+stands=$(rq execute in riftworld:elisar positioned 760 118 760 if entity '@e[type=minecraft:armor_stand]' 2>&1 || true)
 [[ "$stands" == *"Test passed"* ]] || fail "No armour stands near the showcase: $stands"
 folk=$(rq execute in riftworld:elisar positioned 760 118 760 if entity '@e[type=riftworld:elisar_guard]' 2>&1 || true)
 [[ "$folk" == *"Test passed"* ]] || fail "No Elisar guard spawned: $folk"
