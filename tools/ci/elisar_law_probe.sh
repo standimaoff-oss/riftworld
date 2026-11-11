@@ -106,7 +106,8 @@ fail() {
   # Весь отчёт пробы — ОДНОЙ аннотацией CI: API отдаёт limited список, и
   # по одной строке на аннотацию половина отчёта терялась.
   if [ -s "$DIRECT" ]; then
-    echo "::error title=Отчёт пробы закона::$(head -c 1800 "$DIRECT" | tr '\r\n' ' ' | tr '%' '%25')"
+    NOTICE=$(head -c 1800 "$DIRECT" | tr '\r\n' ' ' || true)
+    echo "::error title=Отчёт пробы закона::$(printf '%s' "$NOTICE" | tr '%' '%25' || true)"
   fi
   exit 1
 }
@@ -371,5 +372,12 @@ log 'OK: городской закон Элисара проверен на жи
 echo '--- конец отчёта пробы ---' >> "$DIRECT" 2>/dev/null || true
 # Отчёт — в аннотации CI: их читает API, в отличие от логов джобы.
 if [ -s "$DIRECT" ]; then
-  echo "::notice title=Отчёт пробы закона::$(head -c 1800 "$DIRECT" | tr '\r\n' ' ' | tr '%' '%25')"
+  # head -c обрывает конвейер, и tr ловит SIGPIPE: с pipefail это даёт код 141,
+  # и шаг CI падал с «failure», хотя все проверки закона прошли. Поэтому
+  # отчёт режем без конвейера, а в конце скрипта стоит явный exit 0.
+  NOTICE=$(head -c 1800 "$DIRECT" | tr '\r\n' ' ' || true)
+  echo "::notice title=Отчёт пробы закона::$(printf '%s' "$NOTICE" | tr '%' '%25' || true)"
 fi
+
+# Все проверки выше прошли — выходим с успехом явно.
+exit 0
