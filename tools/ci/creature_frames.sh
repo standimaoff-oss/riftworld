@@ -215,12 +215,27 @@ shot frame-paper-dragon-head 208 106.3 -2.3 208 106.1 -0.6 7
 
 # ---------------------------------------------------------------- bone raven
 # v0.50.0: КОСТЯНОЙ ВОРОН ВОЗВРАЩЁН в мод (пользователь отменил удаление).
-# Летит над Падью Морока, поэтому снимаем его в воздухе с безопасной дистанции.
-rq kill '@e[type=riftworld:bone_raven]' >/dev/null 2>&1 || true
-rq summon riftworld:bone_raven 208 112 0 '{NoAI:1b,PersistenceRequired:1b}' >/dev/null
-shot frame-bone-raven-three-quarter 205.5 113.7 -3.6 208 113 0 8
-shot frame-bone-raven-side 211.6 113.7 0 208 113 0 6
-shot frame-bone-raven-head 208 114.3 -2.3 208 114.1 -0.6 6
+# Снимаем его в городе Элисара: площадка ставится серверной командой, чтобы
+# камера не уезжала за две тысячи блоков от клиента (иначе кадр чёрный).
+RAVEN_INFO=$(rq execute in riftworld:elisar positioned 560 108 560 run riftstruct bb_bone_raven_showcase 2>&1 | tr -d '\r')
+echo "  $RAVEN_INFO"
+if [[ "$RAVEN_INFO" != *"spawned=1"* ]]; then
+  echo "::warning title=In-game frames::витрина ворона не собралась: $RAVEN_INFO"
+else
+  rq execute in riftworld:elisar run forceload add 552 552 568 568 >/dev/null 2>&1 || true
+  rq execute in riftworld:elisar run time set 4500 >/dev/null || true
+  sleep 16
+  RX=$(echo "$RAVEN_INFO" | sed -n 's/.*cam=\([^:]*\):.*/\1/p' | cut -d, -f1)
+  RY=$(echo "$RAVEN_INFO" | sed -n 's/.*cam=\([^:]*\):.*/\1/p' | cut -d, -f2)
+  RZ=$(echo "$RAVEN_INFO" | sed -n 's/.*cam=\([^:]*\):.*/\1/p' | cut -d, -f3)
+  TX=$(echo "$RAVEN_INFO" | sed -n 's/.*cam=[^:]*:\(.*\)/\1/p' | cut -d, -f1)
+  TY=$(echo "$RAVEN_INFO" | sed -n 's/.*cam=[^:]*:\(.*\)/\1/p' | cut -d, -f2)
+  TZ=$(echo "$RAVEN_INFO" | sed -n 's/.*cam=[^:]*:\(.*\)/\1/p' | cut -d, -f3)
+  SHOT_DIM=riftworld:elisar
+  shot frame-bone-raven-three-quarter "$RX" "$RY" "$RZ" "$TX" "$TY" "$TZ" 8
+  shot frame-bone-raven-side "$((TX + 14))" "$RY" "$((TZ + 2))" "$TX" "$TY" "$TZ" 6
+  shot frame-bone-raven-head "$TX" "$((TY + 2))" "$((TZ - 5))" "$TX" "$TY" "$TZ" 6
+fi
 
 # v0.49.0: ДРАКОН ДОЛЖЕН ДВИГАТЬСЯ НА ДАЛЁКОМ РАССТОЯНИИ.
 # Раньше clientTrackingRange был 32 блока: клиент переставал получать
