@@ -3503,7 +3503,24 @@ public final class SeaProbeCommand {
             // чтобы кадры читались одинаково.
             int dx = 560, dy = 108, dz = 560;
             int spawned = 0;
-            if (level.hasChunk(dx >> 4, dz >> 4)) {
+            // Площадка съёмки находится в далёком углу города, и её чанк часто
+            // ещё не загружен: витрина молча возвращала spawned=0, и кадров
+            // ворона не было. Форсируем загрузку и ждём её.
+            int cx = dx >> 4, cz = dz >> 4;
+            try {
+                level.getChunk(cx, cz);
+            } catch (Exception ignored) {
+                // Чанк не успел сгенерироваться — ниже витрина честно вернёт spawned=0.
+            }
+            for (int wait = 0; wait < 40 && !level.hasChunk(cx, cz); wait++) {
+                try {
+                    Thread.sleep(250L);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+            if (level.hasChunk(cx, cz)) {
                 for (var old : level.getEntitiesOfClass(ru.aiforge.riftworld.entity.fauna.BoneRavenEntity.class,
                         new net.minecraft.world.phys.AABB(new BlockPos(dx, dy, dz)).inflate(90.0))) {
                     old.discard();
