@@ -17,7 +17,7 @@ captured frame-paper-dragon-side
 ::warning title=In-game frames::кадр frame-paper-dragon-head слишком тёмный, переснимаем (4/4)
 ::warning title=In-game frames::кадр frame-paper-dragon-head остался тёмным после четырёх попыток
 captured frame-paper-dragon-head
-  riftstruct kind=bb_bone_raven_showcase at=560,108,560 model_boxes=0 bones=0 atlas=256 spawned=1 blocks=0 sub_air=0 cam=554,111,566:560,110,560
+  riftstruct kind=bb_bone_raven_showcase at=560,105,560 model_boxes=0 bones=0 atlas=256 spawned=1 blocks=0 sub_air=0 cam=554,107,566:560,106,560
 ::warning title=In-game frames::кадр frame-bone-raven-three-quarter слишком тёмный, переснимаем (1/4)
 ::warning title=In-game frames::кадр frame-bone-raven-three-quarter слишком тёмный, переснимаем (2/4)
 ::warning title=In-game frames::кадр frame-bone-raven-three-quarter слишком тёмный, переснимаем (3/4)
