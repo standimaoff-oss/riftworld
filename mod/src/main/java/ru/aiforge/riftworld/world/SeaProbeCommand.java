@@ -3501,7 +3501,12 @@ public final class SeaProbeCommand {
             // снова нужна для съёмки его кадров. Ставим птицу в воздухе над
             // солнечным склоном Элисара — там же, где снимается бумажный дракон,
             // чтобы кадры читались одинаково.
-            int dx = 560, dy = 108, dz = 560;
+            // Площадка съёмки — собственная, на уровне города. На отметке 108
+            // там скалы и руины: камера оказывалась внутри блока, и кадр
+            // выходил чёрным. Площадка выравнивается по той же схеме, что и
+            // у Смотрителя Пращи, но без деревьев перед объективом.
+            int dx = 560, dz = 560;
+            int dy = buildRavenStage(level, dx, dz);
             int spawned = 0;
             // Площадка съёмки находится в далёком углу города, и её чанк часто
             // ещё не загружен: витрина молча возвращала spawned=0, и кадров
@@ -3527,7 +3532,9 @@ public final class SeaProbeCommand {
                 }
                 var raven = ru.aiforge.riftworld.registry.ModEntities.BONE_RAVEN.get().create(level);
                 if (raven != null) {
-                    raven.setPos(dx + 0.5D, dy + 2.0D, dz + 0.5D);
+                    raven.setPos(dx + 0.5D, dy + 0.6D, dz + 0.5D);
+                    // Птица тяжёлая и сразу падает — на съёмке она должна висеть.
+                    raven.setNoGravity(true);
                     raven.setNoGravity(false);
                     raven.setNoAi(true);
                     level.addFreshEntity(raven);
@@ -3536,8 +3543,8 @@ public final class SeaProbeCommand {
             }
             String line = "riftstruct kind=bb_bone_raven_showcase at=" + dx + "," + dy + "," + dz
                     + " model_boxes=0 bones=0 atlas=256 spawned=" + spawned + " blocks=0 sub_air=0"
-                    + " cam=" + (dx - 6) + "," + (dy + 3) + "," + (dz + 6)
-                    + ":" + dx + "," + (dy + 2) + "," + dz;
+                    + " cam=" + (dx - 6) + "," + (dy + 2) + "," + (dz + 6)
+                    + ":" + dx + "," + (dy + 1) + "," + dz;
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
         }
@@ -5911,6 +5918,40 @@ public final class SeaProbeCommand {
      * блоков, что и сам биом, — чтобы кадр читался как Падь, а не как
      * пустое небо.</p>
      */
+    /** Площадка съёмки костяного ворона: ровная земля на уровне города. */
+    private static int buildRavenStage(ServerLevel world, int px, int pz) {
+        world.getChunk(px >> 4, pz >> 4);
+        int ground = 104;
+        // Убираем всё выше площадки: иначе камера оказывается внутри руин.
+        for (int dx = -10; dx <= 10; ++dx) {
+            for (int dz = -10; dz <= 10; ++dz) {
+                for (int dy = 1; dy <= 12; ++dy) {
+                    world.setBlock(new BlockPos(px + dx, ground + dy, pz + dz),
+                            net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 2);
+                }
+            }
+        }
+        // Опора: камень до самого низа, чтобы сцена не висела в пустоте.
+        for (int dx = -10; dx <= 10; ++dx) {
+            for (int dz = -10; dz <= 10; ++dz) {
+                for (int dy = -6; dy < 0; ++dy) {
+                    world.setBlock(new BlockPos(px + dx, ground + dy, pz + dz),
+                            net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(), 2);
+                }
+            }
+        }
+        // Земля: промёрзшая почва и снежный мох — как в лесу Морока.
+        for (int dx = -9; dx <= 9; ++dx) {
+            for (int dz = -9; dz <= 9; ++dz) {
+                world.setBlock(new BlockPos(px + dx, ground - 1, pz + dz),
+                        MorokBlocks.FROZEN_SOIL.get().defaultBlockState(), 2);
+                world.setBlock(new BlockPos(px + dx, ground, pz + dz),
+                        MorokBlocks.RIME_GRASS.get().defaultBlockState(), 2);
+            }
+        }
+        return ground + 1;
+    }
+
     private static int buildHollowwatcherStage(ServerLevel world, int px, int pz) {
         world.getChunk(px >> 4, pz >> 4);
         // Площадка ставится на СВОЙ уровень, а не по высоте мира. На CI-сервере
