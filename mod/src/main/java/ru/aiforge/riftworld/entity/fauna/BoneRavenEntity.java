@@ -21,7 +21,7 @@ import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
-import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -38,7 +38,7 @@ import ru.aiforge.riftworld.registry.ModItems;
  * Если рядом ({@code <= 24} блоков) за игроком уже охотится {@link MorokEntity},
  * ворон держится высоко в небе и зловеще каркает, не мешая дуэли с хозяевами Пади!
  */
-public class BoneRavenEntity extends Animal {
+public class BoneRavenEntity extends net.minecraft.world.entity.Mob {
     private static final EntityDataAccessor<Integer> DATA_DIVE_TICKS =
             SynchedEntityData.defineId(BoneRavenEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> DATA_DEFERRING =
@@ -68,7 +68,7 @@ public class BoneRavenEntity extends Animal {
     }
 
     public static AttributeSupplier.Builder attributes() {
-        return Animal.createAnimalAttributes()
+        return Mob.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, 16.0D)
                 .add(Attributes.MOVEMENT_SPEED, 0.28D)
                 .add(Attributes.FLYING_SPEED, 0.44D)
