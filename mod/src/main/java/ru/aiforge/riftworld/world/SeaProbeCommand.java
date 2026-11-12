@@ -3474,6 +3474,7 @@ public final class SeaProbeCommand {
             // теперь ставит Бумажного дракона — ту же воздушную дистанцию
             // и тот же солнечный склон, чтобы кадры оставались сопоставимыми.
             int dx = 520, dy = 108, dz = 520;
+            int spawned = 0;
             if (level.hasChunk(dx >> 4, dz >> 4)) {
                 for (var old : level.getEntitiesOfClass(ru.aiforge.riftworld.entity.PaperDragonEntity.class,
                         new net.minecraft.world.phys.AABB(new BlockPos(dx, dy, dz)).inflate(90.0))) {
@@ -3488,7 +3489,7 @@ public final class SeaProbeCommand {
                 }
             }
             String line = "riftstruct kind=bb_paper_dragon_showcase at=" + dx + "," + dy + "," + dz
-                    + " model_boxes=0 bones=0 atlas=256 stage=ready blocks=0 sub_air=0"
+                    + " model_boxes=0 bones=0 atlas=256 spawned=" + spawned + " blocks=0 sub_air=0"
                     + " cam=" + (dx - 22) + "," + (dy + 8) + "," + (dz + 22)
                     + ":" + dx + "," + (dy + 12) + "," + dz;
             src.sendSuccess(() -> Component.literal(line), false);
@@ -3552,7 +3553,7 @@ public final class SeaProbeCommand {
             // rev= печатает версию кода витрины: по нему видно, какой jar
             // реально стоит на сервере, если сборка вдруг отдаст старый.
             String line = "riftstruct kind=bb_bone_raven_showcase at=" + dx + "," + dy + "," + dz
-                    + " model_boxes=0 bones=0 atlas=256 stage=ready  blocks=0 sub_air=0"
+                    + " model_boxes=0 bones=0 atlas=256 stage=ready blocks=0 sub_air=0"
                     + " rev=stage119-high"
                     // Камера стоит в двух блоках по диагонали от птицы и смотрит
                     // точно на её уровень (птица висит на dy + 1,2).
