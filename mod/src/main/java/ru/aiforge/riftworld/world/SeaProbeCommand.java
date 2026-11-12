@@ -3474,7 +3474,6 @@ public final class SeaProbeCommand {
             // теперь ставит Бумажного дракона — ту же воздушную дистанцию
             // и тот же солнечный склон, чтобы кадры оставались сопоставимыми.
             int dx = 520, dy = 108, dz = 520;
-            int spawned = 0;
             if (level.hasChunk(dx >> 4, dz >> 4)) {
                 for (var old : level.getEntitiesOfClass(ru.aiforge.riftworld.entity.PaperDragonEntity.class,
                         new net.minecraft.world.phys.AABB(new BlockPos(dx, dy, dz)).inflate(90.0))) {
@@ -3489,7 +3488,7 @@ public final class SeaProbeCommand {
                 }
             }
             String line = "riftstruct kind=bb_paper_dragon_showcase at=" + dx + "," + dy + "," + dz
-                    + " model_boxes=0 bones=0 atlas=256 spawned=" + spawned + " blocks=0 sub_air=0"
+                    + " model_boxes=0 bones=0 atlas=256 stage=ready blocks=0 sub_air=0"
                     + " cam=" + (dx - 22) + "," + (dy + 8) + "," + (dz + 22)
                     + ":" + dx + "," + (dy + 12) + "," + dz;
             src.sendSuccess(() -> Component.literal(line), false);
@@ -3507,7 +3506,6 @@ public final class SeaProbeCommand {
             // у Смотрителя Пращи, но без деревьев перед объективом.
             int dx = 560, dz = 560;
             int dy = buildRavenStage(level, dx, dz);
-            int spawned = 0;
             String ravenPos = "none";
             int ravenAlive = -1;
             // Площадка съёмки находится в далёком углу города, и её чанк часто
@@ -3528,84 +3526,40 @@ public final class SeaProbeCommand {
                 }
             }
             if (level.hasChunk(cx, cz)) {
+                // Старых воронов убираем: на площадке должен быть ровно один.
                 for (var old : level.getEntitiesOfClass(ru.aiforge.riftworld.entity.fauna.BoneRavenEntity.class,
                         new net.minecraft.world.phys.AABB(new BlockPos(dx, dy, dz)).inflate(90.0))) {
                     old.discard();
                 }
-                var raven = ru.aiforge.riftworld.registry.ModEntities.BONE_RAVEN.get().create(level);
-                if (raven != null) {
-                    // Птица летит: без заморозки она уходит из кадра за секунды.
-                    // Ставим её в воздух над площадкой, отключаем гравитацию и
-                    // AI, и обнуляем движение — ракурсы снимаются по очереди,
-                    // и перед каждым витрина ставит птицу заново.
-                    raven.setPos(dx + 0.5D, (double) (dy + 2), dz + 0.5D);
-                    raven.setNoGravity(true);
-                    raven.setNoAi(true);
-                    // Заморозка: без неё ворон каждые 35 тиков улетал на
-                    // случайную точку и через пару секунд исчезал из кадра.
-                    raven.setFrozen(true);
-                    raven.setDeltaMovement(0.0D, 0.0D, 0.0D);
-                    raven.setYRot(35.0F);
-                    raven.setYBodyRot(35.0F);
-                    raven.setXRot(0.0F);
-                    raven.hurtMarked = false;
-                    level.addFreshEntity(raven);
-                    spawned = 1;
-                    raven.setPersistenceRequired();
-                    // Только что созданная сущность ещё не разошлась по
-                    // игрокам: камера снимает кадр сразу, и клиент мог не
-                    // увидеть ворона вовсе. Поэтому переставляем его
-                    // отложенно, через серверную очередь — к тому моменту
-                    // сущность уже в мире и трекинг пересчитан.
-                    raven.getPersistentData().putBoolean("riftworldShowcase", true);
-                    var ravenServer = level.getServer();
-                    if (ravenServer != null) {
-                        final double fx = dx + 0.5D;
-                        final double fy = (double) (dy + 2);
-                        final double fz = dz + 0.5D;
-                        ravenServer.execute(() -> {
-                            raven.setPos(fx, fy, fz);
-                            raven.setDeltaMovement(0.0D, 0.0D, 0.0D);
-                            // Якорь задаём явно: контроллер полёта мог сдвинуть
-                            // птицу в этом же тике, и якорь из updateAnchor()
-                            // указал бы на неверное место.
-                            raven.setAnchor(fx, fy, fz);
-                            level.getChunk(dx >> 4, dz >> 4);
-                        });
-                    // Считаем птиц в мире: если их ноль, значит ворон не
-                    // добавился или сразу исчез, и никакая камера его не
-                    // покажет. Число печатается рядом с остальным отчётом.
-                    try {
-                        int alive = level.getEntitiesOfClass(
-                                ru.aiforge.riftworld.entity.fauna.BoneRavenEntity.class,
-                                new net.minecraft.world.phys.AABB(
-                                        new BlockPos(dx, dy, dz)).inflate(40.0D)).size();
-                        ravenAlive = alive;
-                    } catch (Exception ignored) {
-                        ravenAlive = -1;
-                    }
-                    }
-                    // Проверяем сразу: ворон мог не появиться в мире вовсе.
-                    // Через тик обычный деспавн монстра убирает его, если он
-                    // не привязан к игроку и не нужен как PersistentCreature.
-                    raven.setPersistenceRequired();
-                    // Печатаем фактическое положение птицы: по нему видно,
-                    // стоит ли ворон там, куда целится камера.
-                    ravenPos = String.format("%.2f,%.2f,%.2f",
-                            raven.getX(), raven.getY(), raven.getZ());
+                // Птицу создаёт клиентский скрипт командой /summon: сущность,
+                // добавленная через addFreshEntity, до клиента доходила не
+                // всегда, и в кадре вместо ворона был пустой подиум.
+                // Здесь только считаем, сколько воронов сейчас в мире.
+                try {
+                    int alive = level.getEntitiesOfClass(
+                            ru.aiforge.riftworld.entity.fauna.BoneRavenEntity.class,
+                            new net.minecraft.world.phys.AABB(
+                                    new BlockPos(dx, dy, dz)).inflate(40.0D)).size();
+                    ravenAlive = alive;
+                } catch (Exception ignored) {
+                    ravenAlive = -1;
                 }
+                // raven_pos — где должен стоять ворон: скрипт ставит его
+                // туда командой /summon.
+                ravenPos = String.format("%.2f,%.2f,%.2f",
+                        dx + 0.5D, (double) (dy + 1), dz + 0.5D);
             }
             // rev= печатает версию кода витрины: по нему видно, какой jar
             // реально стоит на сервере, если сборка вдруг отдаст старый.
             String line = "riftstruct kind=bb_bone_raven_showcase at=" + dx + "," + dy + "," + dz
-                    + " model_boxes=0 bones=0 atlas=256 spawned=" + spawned + " blocks=0 sub_air=0"
+                    + " model_boxes=0 bones=0 atlas=256 stage=ready  blocks=0 sub_air=0"
                     + " rev=stage119-high"
                     // Камера стоит в двух блоках по диагонали от птицы и смотрит
                     // точно на её уровень (птица висит на dy + 1,2).
-                    + " cam=" + (dx - 4) + "," + (dy + 4) + "," + (dz - 4)
-                    + ":" + dx + "," + (dy + 2) + "," + dz
+                    + " cam=" + (dx - 2) + "," + (dy + 2) + "," + (dz - 2)
+                    + ":" + dx + "," + (dy + 1) + "," + dz
                     // look= — цель камеры с десятичной точкой (центр птицы).
-                    + " look=" + dx + "," + (dy + 2) + "," + dz
+                    + " look=" + dx + "," + (dy + 1) + "," + dz
                     + " raven_pos=" + ravenPos
                     + " alive=" + ravenAlive;
             src.sendSuccess(() -> Component.literal(line), false);

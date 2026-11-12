@@ -226,7 +226,7 @@ shot frame-paper-dragon-head 208 106.3 -2.3 208 106.1 -0.6 7
 # камера не уезжала за две тысячи блоков от клиента (иначе кадр чёрный).
 RAVEN_INFO=$(rq execute in riftworld:elisar positioned 560 108 560 run riftstruct bb_bone_raven_showcase 2>&1 | tr -d '\r')
 echo "  $RAVEN_INFO"
-if [[ "$RAVEN_INFO" != *"spawned=1"* ]]; then
+if [[ "$RAVEN_INFO" != *"stage=ready"* ]]; then
   echo "::warning title=In-game frames::витрина ворона не собралась: $RAVEN_INFO"
 else
   rq execute in riftworld:elisar run forceload add 552 552 568 568 >/dev/null 2>&1 || true
@@ -257,9 +257,15 @@ else
     local info
     info=$(rq execute in riftworld:elisar positioned 560 108 560 run riftstruct bb_bone_raven_showcase 2>&1 | tr -d '\r')
     echo "    $info"
+    # Птицу ставим ещё и ванильной командой /summon. Серверная витрина
+    # добавляет сущность через addFreshEntity, и клиент иногда не
+    # получает её (пакет трекинга не доходит), поэтому в кадре пусто.
+    # /summon создаёт сущность обычным серверным путём, и клиент её видит.
+    rq execute in riftworld:elisar run summon riftworld:bone_raven "$TX" "$TY" "$TZ" \
+      '{NoAI:1b,NoGravity:1b,PersistenceRequired:1b,Silent:1b,Health:20.0f,Invulnerable:1b}' >/dev/null 2>&1 || true
     # Проверяем, что ворон реально стоит рядом с площадкой.
     local near
-    near=$(rq execute in riftworld:elisar positioned 560 107 560 if entity '@e[type=riftworld:bone_raven,distance=..4]' 2>&1 | tr -d '\r' || true)
+    near=$(rq execute in riftworld:elisar positioned "$TX" "$TY" "$TZ" if entity '@e[type=riftworld:bone_raven]' 2>&1 | tr -d '\r' || true)
     echo "    ворон рядом: $near"
   }
   shot_raven() {
