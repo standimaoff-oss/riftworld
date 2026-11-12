@@ -30,7 +30,7 @@ import ru.aiforge.riftworld.entity.fauna.BoneRavenEntity;
  */
 public final class BoneRavenRenderer extends EntityRenderer<BoneRavenEntity> {
     private static final ResourceLocation TEXTURE =
-            new ResourceLocation("minecraft", "textures/entity/pig/pig.png");
+            new ResourceLocation(RiftWorld.MODID, "textures/entity/bone_raven.png");
 
     /** Дополнительный масштаб поверх render_scale из geo-файла. */
     private static final float EXTRA_SCALE = 2.0F;
