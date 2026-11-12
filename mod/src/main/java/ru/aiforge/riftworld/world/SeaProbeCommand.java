@@ -2018,13 +2018,18 @@ public final class SeaProbeCommand {
         player.teleportTo(level, x + 0.5D, y, z + 0.5D, yaw, pitch);
         player.setYHeadRot(yaw);
         player.setYBodyRot(yaw);
-        // Поворот дублируем и в текущие углы: клиент подхватывает их из
-        // серверного пакета позиции, а не из отдельного пакета поворота.
         player.setYRot(yaw);
         player.setXRot(pitch);
         // ClientboundPlayerLookAtPacket — тот самый пакет, которым ванильный
-        // /teleport ... facing разворачивает клиентскую камеру. В 1.20.1
-        // отдельного пакета поворота нет, поэтому шлём «посмотреть на точку».
+        // /teleport ... facing разворачивает клиентскую камеру. Шлём его
+        // после телепорта: клиент считает направление от позиции, которую
+        // он уже знает, и пакет, пришедший раньше телепорта, разворачивал
+        // камеру от старой точки.
+        player.connection.send(new net.minecraft.network.protocol.game.ClientboundPlayerLookAtPacket(
+                net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,
+                lx + 0.5D, ly + 0.5D, lz + 0.5D));
+        // И ещё раз следующим тиком: к этому моменту клиент уже принял
+        // телепорт, и поворот считается от правильной точки.
         player.connection.send(new net.minecraft.network.protocol.game.ClientboundPlayerLookAtPacket(
                 net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,
                 lx + 0.5D, ly + 0.5D, lz + 0.5D));
@@ -3624,7 +3629,7 @@ public final class SeaProbeCommand {
                     + " rev=stage105-frozen-1.2"
                     // Камера стоит в двух блоках по диагонали от птицы и смотрит
                     // точно на её уровень (птица висит на dy + 1,2).
-                    + " cam=" + (dx - 2) + "," + (dy + 3) + "," + (dz + 2)
+                    + " cam=" + (dx - 3) + "," + (dy + 3) + "," + (dz - 3)
                     + ":" + dx + "," + (dy + 1) + "," + dz
                     // look= — цель камеры с десятичной точкой (центр птицы).
                     + " look=" + dx + "," + (dy + 2) + "," + dz
@@ -6031,6 +6036,18 @@ public final class SeaProbeCommand {
                         MorokBlocks.FROZEN_SOIL.get().defaultBlockState(), 2);
                 world.setBlock(new BlockPos(px + dx, ground, pz + dz),
                         MorokBlocks.RIME_GRASS.get().defaultBlockState(), 2);
+            }
+        }
+        // Постамент камеры: игрок на время постановки камеры переключается из
+        // режима наблюдателя в обычный (в наблюдателе сервер не шлёт угол
+        // камеры, и клиент держит прежний взгляд), а в обычном режиме он
+        // падает. С постаментом он стоит на месте, не мешая ворону.
+        for (int dx = -4; dx <= -2; ++dx) {
+            for (int dz = -4; dz <= -2; ++dz) {
+                world.setBlock(new BlockPos(px + dx, ground + 3, pz + dz),
+                        net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(), 2);
+                world.setBlock(new BlockPos(px + dx, ground + 2, pz + dz),
+                        net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(), 2);
             }
         }
         return ground + 1;

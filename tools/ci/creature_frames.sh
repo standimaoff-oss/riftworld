@@ -268,12 +268,20 @@ else
     # "tp ... facing" для игрока-наблюдателя поворачивает не всегда, и в кадр
     # попадало не то. Команда печатает yaw/pitch — по ним видно, что поворот
     # состоялся.
+    # Клиент снимает кадры из режима наблюдателя, а в этом режиме сервер не
+    # шлёт угол камеры в пакете позиции: клиент держит прежний взгляд, и в
+    # кадр попадает не ворон. Поэтому на время постановки камеры игрок
+    # переключается в обычный режим (там угол едет в пакете), а потом
+    # возвращается в наблюдателя.
     local tp_out
+    rq gamemode creative TestPlayer >/dev/null 2>&1 || true
     tp_out=$(rq execute in "${SHOT_DIM:-minecraft:overworld}" run riftcam "$cx" "$cy" "$cz" "$lx" "$ly" "$lz" 2>&1 | tr -d '\r')
     echo "    $tp_out"
     if [[ "$tp_out" != *"riftcam at="* ]]; then
       echo "::warning title=In-game frames::камера для $name не поставлена: $tp_out"
     fi
+    sleep 2
+    rq gamemode spectator TestPlayer >/dev/null 2>&1 || true
     sleep "$wait"
     place_raven
     sleep 3
