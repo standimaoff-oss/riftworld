@@ -273,19 +273,27 @@ else
     # кадр попадает не ворон. Поэтому на время постановки камеры игрок
     # переключается в обычный режим (там угол едет в пакете), а потом
     # возвращается в наблюдателя.
+    # В режиме наблюдателя сервер не кладёт угол камеры в пакет позиции:
+    # клиент держит прежний взгляд, и в кадр попадало не то. Поэтому на время
+    # постановки камеры игрок переключается в обычный режим (там угол едет в
+    # пакете), а после снимка возвращается в наблюдателя.
     local tp_out
     rq gamemode creative TestPlayer >/dev/null 2>&1 || true
-    tp_out=$(rq execute in "${SHOT_DIM:-minecraft:overworld}" run riftcam "$cx" "$cy" "$cz" "$lx" "$ly" "$lz" 2>&1 | tr -d '\r')
+    tp_out=$(rq execute in "${SHOT_DIM:-minecraft:overworld}" run tp TestPlayer "$cx" "$cy" "$cz" facing "$lx" "$ly" "$lz" 2>&1 | tr -d '\r')
     echo "    $tp_out"
-    if [[ "$tp_out" != *"riftcam at="* ]]; then
-      echo "::warning title=In-game frames::камера для $name не поставлена: $tp_out"
+    if [[ "$tp_out" != *"Teleported"* && "$tp_out" != *"Test passed"* && -n "$tp_out" ]]; then
+      echo "::warning title=In-game frames::телепорт камеры для $name не удался: $tp_out"
     fi
-    sleep 2
-    rq gamemode spectator TestPlayer >/dev/null 2>&1 || true
     sleep "$wait"
+    # Птицу ставим после того, как клиент встал на постамент: если она
+    # появится раньше, клиент успеет уйти из чанка, и сервер перестанет
+    # отправлять ему птицу — в кадре её не будет.
     place_raven
     sleep 3
+    # Снимок делаем в обычном режиме: в режиме наблюдателя сервер не шлёт
+    # угол камеры, и клиент держит прежний взгляд.
     capture "$name" 1
+    rq gamemode spectator TestPlayer >/dev/null 2>&1 || true
   }
   # Цель камеры во всех ракурсах — сам ворон (TX,TY,TZ); отличается только
   # точка, откуда смотрим.
