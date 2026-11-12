@@ -3603,7 +3603,7 @@ public final class SeaProbeCommand {
             // реально стоит на сервере, если сборка вдруг отдаст старый.
             String line = "riftstruct kind=bb_bone_raven_showcase at=" + dx + "," + dy + "," + dz
                     + " model_boxes=0 bones=0 atlas=256 spawned=" + spawned + " blocks=0 sub_air=0"
-                    + " rev=stage127-geo"
+                    + " rev=stage128-marker"
                     // Камера стоит в двух блоках по диагонали от птицы и смотрит
                     // точно на её уровень (птица висит на dy + 1,2).
                     + " cam=" + (dx - 2) + "," + (dy + 1) + "," + (dz - 2)
@@ -6011,6 +6011,14 @@ public final class SeaProbeCommand {
                     world.setBlock(new BlockPos(px + dx, ground + dy, pz + dz),
                             net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(), 2);
                 }
+            }
+        }
+        // Красный маркер перед камерой: он виден в кадре как ориентир, что
+        // съёмка вообще обновляется и камера стоит там, где задумано.
+        for (int dx = -1; dx <= 1; ++dx) {
+            for (int dz = -1; dz <= 1; ++dz) {
+                world.setBlock(new BlockPos(px + dx - 2, ground + 1, pz + dz - 2),
+                        net.minecraft.world.level.block.Blocks.RED_CONCRETE.defaultBlockState(), 2);
             }
         }
         // Земля: светлый камень и промёрзшая почва. Светлая площадка нужна,

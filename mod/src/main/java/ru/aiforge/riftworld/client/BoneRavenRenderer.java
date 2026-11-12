@@ -33,7 +33,7 @@ public final class BoneRavenRenderer extends EntityRenderer<BoneRavenEntity> {
             new ResourceLocation(RiftWorld.MODID, "textures/entity/bone_raven.png");
 
     /** Дополнительный масштаб поверх render_scale из geo-файла. */
-    private static final float EXTRA_SCALE = 1.0F;
+    private static final float EXTRA_SCALE = 4.0F;
 
     public BoneRavenRenderer(EntityRendererProvider.Context ctx) {
         super(ctx);
