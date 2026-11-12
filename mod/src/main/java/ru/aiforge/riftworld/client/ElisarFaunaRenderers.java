@@ -182,51 +182,6 @@ public final class ElisarFaunaRenderers {
         }
 
         @Override
-        public ResourceLocation getTextureLocation(T entity) {
-            return this.tex;
-        }
-
-        /** Отладочный куб: рисуется вместо модели, если у сущности взведён флаг. */
-        @Override
-        public void render(T entity, float yaw, float partialTick, PoseStack poseStack,
-                           MultiBufferSource buffer, int packedLight) {
-            if (entity instanceof ru.aiforge.riftworld.entity.fauna.BoneRavenEntity raven
-                    && raven.isShowcaseDebugCube()) {
-                poseStack.pushPose();
-                poseStack.translate(0.0F, 0.5F, 0.0F);
-                PoseStack cubePose = poseStack;
-                com.mojang.blaze3d.vertex.VertexConsumer vc =
-                        buffer.getBuffer(RenderType.entitySolid(new ResourceLocation(RiftWorld.MODID,
-                                "textures/entity/bone_raven.png")));
-                // Отладочный квад: четыре вершины вручную, без ModelPart —
-                // так видно, доходит ли сущность до рендера вообще.
-                float q = 0.5F;
-                com.mojang.blaze3d.vertex.PoseStack qp = cubePose;
-                com.mojang.blaze3d.vertex.VertexConsumer qv = vc;
-                qp.pushPose();
-                qp.translate(0.0F, 0.5F, 0.0F);
-                org.joml.Matrix4f mtx = qp.last().pose();
-                // передняя грань
-                qv.vertex(mtx, -q, -q, 0.0F).color(1.0F, 0.15F, 0.15F, 1.0F).uv(0.0F, 1.0F)
-                        .overlayCoords(net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY)
-                        .uv2(packedLight).endVertex();
-                qv.vertex(mtx,  q, -q, 0.0F).color(1.0F, 0.15F, 0.15F, 1.0F).uv(1.0F, 1.0F)
-                        .overlayCoords(net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY)
-                        .uv2(packedLight).endVertex();
-                qv.vertex(mtx,  q,  q, 0.0F).color(1.0F, 0.15F, 0.15F, 1.0F).uv(1.0F, 0.0F)
-                        .overlayCoords(net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY)
-                        .uv2(packedLight).endVertex();
-                qv.vertex(mtx, -q,  q, 0.0F).color(1.0F, 0.15F, 0.15F, 1.0F).uv(0.0F, 0.0F)
-                        .overlayCoords(net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY)
-                        .uv2(packedLight).endVertex();
-                qp.popPose();
-                poseStack.popPose();
-                return;
-            }
-            super.render(entity, yaw, partialTick, poseStack, buffer, packedLight);
-        }
-
-        @Override
         protected void scale(T entity, PoseStack poseStack, float partialTick) {
             poseStack.scale(this.modelScale, this.modelScale, this.modelScale);
         }
