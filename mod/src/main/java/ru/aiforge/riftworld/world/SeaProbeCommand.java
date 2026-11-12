@@ -3599,10 +3599,10 @@ public final class SeaProbeCommand {
             // реально стоит на сервере, если сборка вдруг отдаст старый.
             String line = "riftstruct kind=bb_bone_raven_showcase at=" + dx + "," + dy + "," + dz
                     + " model_boxes=0 bones=0 atlas=256 spawned=" + spawned + " blocks=0 sub_air=0"
-                    + " rev=stage121-body"
+                    + " rev=stage122-scale25"
                     // Камера стоит в двух блоках по диагонали от птицы и смотрит
                     // точно на её уровень (птица висит на dy + 1,2).
-                    + " cam=" + (dx - 2) + "," + (dy + 2) + "," + (dz - 2)
+                    + " cam=" + (dx - 1) + "," + (dy + 2) + "," + (dz - 1)
                     + ":" + dx + "," + (dy + 1) + "," + dz
                     // look= — цель камеры: тело ворона (точка +0.56 блока).
                     + " look=" + dx + "," + (dy + 1) + "," + dz
