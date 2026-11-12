@@ -232,7 +232,6 @@ public class BoneRavenModel extends FaunaBaseModel<BoneRavenEntity> {
 		return LayerDefinition.create(meshdefinition, 512, 512);
 	}
 
-	@Override
 	/**
 	 * Корень модели для прямой отрисовки собственным рендерером.
 	 * LivingEntityRenderer не подходит: он зовёт setupAnim и рисует модель
