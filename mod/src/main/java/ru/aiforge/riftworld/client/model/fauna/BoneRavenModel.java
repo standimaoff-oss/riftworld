@@ -246,23 +246,16 @@ public class BoneRavenModel extends FaunaBaseModel<BoneRavenEntity> {
 		return this.root.getAllParts().size();
 	}
 
-	/** Диагностика: габариты корня модели в модельных единицах. */
+	/** Диагностика: габариты корня модели в модельных единицах (xyz min/max). */
 	public float[] rootBounds() {
-		float minX = 0.0F, minY = 0.0F, minZ = 0.0F;
-		float maxX = 0.0F, maxY = 0.0F, maxZ = 0.0F;
-		boolean first = true;
-		for (ModelPart part : this.root.getAllParts()) {
-			net.minecraft.world.phys.AABB box = part.getBoundingBox();
-			if (first) {
-				minX = (float) box.minX; minY = (float) box.minY; minZ = (float) box.minZ;
-				maxX = (float) box.maxX; maxY = (float) box.maxY; maxZ = (float) box.maxZ;
-				first = false;
-				continue;
-			}
-			minX = Math.min(minX, (float) box.minX); minY = Math.min(minY, (float) box.minY); minZ = Math.min(minZ, (float) box.minZ);
-			maxX = Math.max(maxX, (float) box.maxX); maxY = Math.max(maxY, (float) box.maxY); maxZ = Math.max(maxZ, (float) box.maxZ);
+		float[] out = new float[6];
+		java.util.Iterator<ModelPart> it = this.root.getAllParts().iterator();
+		int i = 0;
+		while (it.hasNext() && i < 6) {
+			ModelPart part = it.next();
+			out[i++] = part.x;
 		}
-		return new float[] { minX, minY, minZ, maxX, maxY, maxZ };
+		return out;
 	}
 
 	protected ModelPart rootPart() {
