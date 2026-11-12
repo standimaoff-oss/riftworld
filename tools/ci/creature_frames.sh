@@ -295,8 +295,8 @@ else
   # Цель камеры во всех ракурсах — сам ворон (TX,TY,TZ); отличается только
   # точка, откуда смотрим.
   shot_raven frame-bone-raven-three-quarter "$RX" "$RY" "$RZ" "$TX" "$TY" "$TZ" 8
-  shot_raven frame-bone-raven-side "$((AX + 2))" "$((AY + 1))" "$((AZ + 1))" "$TX" "$TY" "$TZ" 8
-  shot_raven frame-bone-raven-head "$((AX + 1))" "$((AY + 1))" "$((AZ - 2))" "$TX" "$TY" "$TZ" 8
+  shot_raven frame-bone-raven-side "$((AX + 1))" "$((AY + 1))" "$((AZ + 1))" "$TX" "$TY" "$TZ" 8
+  shot_raven frame-bone-raven-head "$((AX + 1))" "$((AY + 1))" "$((AZ - 1))" "$TX" "$TY" "$TZ" 8
 fi
 
 # v0.49.0: ДРАКОН ДОЛЖЕН ДВИГАТЬСЯ НА ДАЛЁКОМ РАССТОЯНИИ.
