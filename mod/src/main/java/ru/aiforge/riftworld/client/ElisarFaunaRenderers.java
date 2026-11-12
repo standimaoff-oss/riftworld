@@ -136,11 +136,11 @@ public final class ElisarFaunaRenderers {
     }
 
     private static final class EmissiveGlowLayer<T extends Mob, M extends FaunaBaseModel<T>> extends RenderLayer<T, M> {
-        private final RenderType glowType;
+        private final ResourceLocation glowTex;
 
         EmissiveGlowLayer(MobRenderer<T, M> parent, ResourceLocation glowTex) {
             super(parent);
-            this.glowType = RenderType.eyes(glowTex);
+            this.glowTex = glowTex;
         }
 
         @Override
@@ -148,7 +148,12 @@ public final class ElisarFaunaRenderers {
                            float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks,
                            float netHeadYaw, float headPitch) {
             if (entity.isInvisible()) return;
-            VertexConsumer vc = buffer.getBuffer(this.glowType);
+            // ВАЖНО: RenderType.eyes() в 1.20.1 не смешивает прозрачность
+            // (NO_TRANSPARENCY). Полностью прозрачная glow-текстура закрашивала
+            // модель чёрным прямо поверх основного прохода — существо было видно
+            // как чёрный силуэт или не видно вовсе. entityTranslucent смешивает
+            // по альфе и ничего не закрашивает.
+            VertexConsumer vc = buffer.getBuffer(RenderType.entityTranslucent(this.glowTex));
             this.getParentModel().renderToBuffer(poseStack, vc, 15728640, OverlayTexture.NO_OVERLAY,
                     1.0F, 1.0F, 1.0F, 1.0F);
         }

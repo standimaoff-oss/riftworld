@@ -117,8 +117,12 @@ public final class BoneRavenRenderer extends EntityRenderer<BoneRavenEntity> {
                 buffer.getBuffer(RenderType.entityCutoutNoCull(TEXTURE)), light,
                 OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
         // Свечение: рисуем ту же геометрию в режиме глаз (полная яркость).
+        // ВАЖНО: RenderType.eyes() в 1.20.1 работает БЕЗ прозрачности
+        // (NO_TRANSPARENCY), поэтому полностью прозрачная glow-текстура
+        // закрашивала модель чёрным. Рисуем через entityTranslucent —
+        // он смешивает по альфе и ничего не закрашивает.
         this.model.rootModel().render(poseStack,
-                buffer.getBuffer(RenderType.eyes(GLOW_TEXTURE)), 15728640,
+                buffer.getBuffer(RenderType.entityTranslucent(GLOW_TEXTURE)), 15728640,
                 OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
         poseStack.popPose();
     }
