@@ -1,17 +1,17 @@
-run 43260190443 / job frames / ветвь arena/037a840e-riftworld
+run 43263453697 / job frames / ветвь arena/037a840e-riftworld
 == содержимое ci-out ==
 total 1808
-drwxr-xr-x  3 runner runner    4096 Nov 12 16:37 .
-drwxr-xr-x 13 runner runner    4096 Nov 12 16:37 ..
--rw-r--r--  1 runner runner     134 Nov 12 16:37 done.txt
--rw-r--r--  1 runner runner       0 Nov 12 16:37 errors.txt
-drwxr-xr-x  2 runner runner    4096 Nov 12 16:46 frames
--rw-r--r--  1 runner runner    6539 Nov 12 16:48 frames-capture.log
--rw-r--r--  1 runner runner  597453 Nov 12 16:43 frames-client.log
--rw-r--r--  1 runner runner      85 Nov 12 16:37 frames-openbox.log
--rw-r--r--  1 runner runner    1174 Nov 12 16:37 frames-xvfb.log
--rw-r--r--  1 runner runner 1194775 Nov 12 16:37 installer.log
--rw-r--r--  1 runner runner   11339 Nov 12 16:37 latest.log
--rw-r--r--  1 runner runner     222 Nov 12 16:37 mods.txt
--rw-r--r--  1 runner runner    1343 Nov 12 16:37 report_server.md
--rw-r--r--  1 runner runner     491 Nov 12 16:37 tps.txt
+drwxr-xr-x  3 runner runner    4096 Nov 12 16:56 .
+drwxr-xr-x 13 runner runner    4096 Nov 12 16:55 ..
+-rw-r--r--  1 runner runner     134 Nov 12 16:56 done.txt
+-rw-r--r--  1 runner runner       0 Nov 12 16:56 errors.txt
+drwxr-xr-x  2 runner runner    4096 Nov 12 17:05 frames
+-rw-r--r--  1 runner runner    6551 Nov 12 17:07 frames-capture.log
+-rw-r--r--  1 runner runner  597280 Nov 12 16:57 frames-client.log
+-rw-r--r--  1 runner runner      85 Nov 12 16:56 frames-openbox.log
+-rw-r--r--  1 runner runner    1174 Nov 12 16:56 frames-xvfb.log
+-rw-r--r--  1 runner runner 1194735 Nov 12 16:55 installer.log
+-rw-r--r--  1 runner runner   11478 Nov 12 16:56 latest.log
+-rw-r--r--  1 runner runner     222 Nov 12 16:56 mods.txt
+-rw-r--r--  1 runner runner    1343 Nov 12 16:56 report_server.md
+-rw-r--r--  1 runner runner     491 Nov 12 16:56 tps.txt
