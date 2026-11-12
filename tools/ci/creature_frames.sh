@@ -239,25 +239,39 @@ else
   RX=$(echo "$RAVEN_INFO" | sed -n 's/.*cam=\([^:]*\):.*/\1/p' | cut -d, -f1)
   RY=$(echo "$RAVEN_INFO" | sed -n 's/.*cam=\([^:]*\):.*/\1/p' | cut -d, -f2)
   RZ=$(echo "$RAVEN_INFO" | sed -n 's/.*cam=\([^:]*\):.*/\1/p' | cut -d, -f3)
-  # Цель камеры — центр птицы: в витрине она печатается полем look=.
+  # Цель камеры — птица: в витрине она печатается полем look= (целые
+  # координаты: ванильная команда /facing разбирает только целые).
   TX=$(echo "$RAVEN_INFO" | sed -n 's/.*look=\([^ ]*\).*/\1/p' | cut -d, -f1)
   TY=$(echo "$RAVEN_INFO" | sed -n 's/.*look=\([^ ]*\).*/\1/p' | cut -d, -f2)
   TZ=$(echo "$RAVEN_INFO" | sed -n 's/.*look=\([^ ]*\).*/\1/p' | cut -d, -f3)
-  # Для целочисленных смещений нужен целый якорь птицы.
-  AX=$(( ${TX%.*} ))
-  AY=$(( ${TY%.*} ))
-  AZ=$(( ${TZ%.*} ))
+  AX=$TX
+  AY=$TY
+  AZ=$TZ
+  echo "  цель камеры: $TX,$TY,$TZ; ворон: $(echo "$RAVEN_INFO" | sed -n 's/.*raven_pos=\([^ ]*\).*/\1/p')"
   SHOT_DIM=riftworld:elisar
   # Порядок важен: сначала клиент телепортируется и подгружает чанк
   # площадки, потом витрина ставит птицу, и только потом снимается кадр.
   # Если ворона поставить до телепорта, клиент успевает уйти из чанка,
   # и сервер перестаёт отправлять ему птицу — в кадре её нет.
   place_raven() {
-    rq execute in riftworld:elisar positioned 560 108 560 run riftstruct bb_bone_raven_showcase >/dev/null 2>&1 || true
+    local info
+    info=$(rq execute in riftworld:elisar positioned 560 108 560 run riftstruct bb_bone_raven_showcase 2>&1 | tr -d '\r')
+    echo "    $info"
+    # Проверяем, что ворон реально стоит там, куда смотрит камера.
+    local near
+    near=$(rq execute in riftworld:elisar positioned 560 106 560 if entity '@e[type=riftworld:bone_raven]' 2>&1 | tr -d '\r' || true)
+    echo "    ворон рядом: $near"
   }
   shot_raven() {
     local name=$1 cx=$2 cy=$3 cz=$4 lx=$5 ly=$6 lz=$7 wait=${8:-8}
-    rq execute in "${SHOT_DIM:-minecraft:overworld}" run tp TestPlayer "$cx" "$cy" "$cz" facing "$lx" "$ly" "$lz" >/dev/null || true
+    # Телепорт с поворотом: /facing разбирает только целые координаты, и при
+    # дробных команда падает — игрок остаётся на старом месте, и в кадре
+    # снимается не то. Проверяем ответ сервера.
+    local tp_out
+    tp_out=$(rq execute in "${SHOT_DIM:-minecraft:overworld}" run tp TestPlayer "$cx" "$cy" "$cz" facing "$lx" "$ly" "$lz" 2>&1 | tr -d '\r')
+    if [[ "$tp_out" != *"Teleported"* && "$tp_out" != *"Test passed"* && -n "$tp_out" ]]; then
+      echo "::warning title=In-game frames::телепорт камеры для $name не удался: $tp_out"
+    fi
     sleep "$wait"
     place_raven
     sleep 3

@@ -3508,6 +3508,7 @@ public final class SeaProbeCommand {
             int dx = 560, dz = 560;
             int dy = buildRavenStage(level, dx, dz);
             int spawned = 0;
+            String ravenPos = "none";
             // Площадка съёмки находится в далёком углу города, и её чанк часто
             // ещё не загружен: витрина молча возвращала spawned=0, и кадров
             // ворона не было. Форсируем загрузку и ждём её.
@@ -3536,7 +3537,7 @@ public final class SeaProbeCommand {
                     // Ставим её в воздух над площадкой, отключаем гравитацию и
                     // AI, и обнуляем движение — ракурсы снимаются по очереди,
                     // и перед каждым витрина ставит птицу заново.
-                    raven.setPos(dx + 0.5D, dy + 1.2D, dz + 0.5D);
+                    raven.setPos(dx + 0.5D, (double) (dy + 1), dz + 0.5D);
                     raven.setNoGravity(true);
                     raven.setNoAi(true);
                     raven.setDeltaMovement(0.0D, 0.0D, 0.0D);
@@ -3546,6 +3547,10 @@ public final class SeaProbeCommand {
                     raven.hurtMarked = false;
                     level.addFreshEntity(raven);
                     spawned = 1;
+                    // Печатаем фактическое положение птицы: по нему видно,
+                    // стоит ли ворон там, куда целится камера.
+                    ravenPos = String.format("%.2f,%.2f,%.2f",
+                            raven.getX(), raven.getY(), raven.getZ());
                 }
             }
             // rev= печатает версию кода витрины: по нему видно, какой jar
@@ -3558,7 +3563,8 @@ public final class SeaProbeCommand {
                     + " cam=" + (dx - 1) + "," + (dy + 2) + "," + (dz + 1)
                     + ":" + dx + "," + (dy + 1) + "," + dz
                     // look= — цель камеры с десятичной точкой (центр птицы).
-                    + " look=" + (dx + 0.5D) + "," + (dy + 1.2D) + "," + (dz + 0.5D);
+                    + " look=" + dx + "," + (dy + 1) + "," + dz
+                    + " raven_pos=" + ravenPos;
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
         }
