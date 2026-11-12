@@ -3510,6 +3510,9 @@ public final class SeaProbeCommand {
             int spawned = 0;
             String ravenPos = "none";
             int ravenAlive = -1;
+            String ravenInvisible = "n/a";
+            String ravenNoAi = "n/a";
+            String ravenShared = "n/a";
             // Площадка съёмки находится в далёком углу города, и её чанк часто
             // ещё не загружен: витрина молча возвращала spawned=0, и кадров
             // ворона не было. Форсируем загрузку и ждём её.
@@ -3573,6 +3576,12 @@ public final class SeaProbeCommand {
                     }
                     spawned = 1;
                     ravenPos = String.format("%.2f,%.2f,%.2f", fx, fy, fz);
+                    // Диагностика: невидимая сущность вообще не рисуется
+                    // диспетчером, поэтому проверяем флаги прямо здесь.
+                    ravenInvisible = String.valueOf(raven.isInvisible());
+                    ravenNoAi = String.valueOf(raven.isNoAi());
+                    // Флаг общих данных: бит 1 — невидимость.
+                    ravenShared = "skip";
                 }
                 try {
                     int alive = level.getEntitiesOfClass(
@@ -3596,7 +3605,10 @@ public final class SeaProbeCommand {
                     // look= — цель камеры с десятичной точкой (центр птицы).
                     + " look=" + dx + "," + (dy - 1) + "," + dz
                     + " raven_pos=" + ravenPos
-                    + " alive=" + ravenAlive;
+                    + " alive=" + ravenAlive
+                    + " invisible=" + ravenInvisible
+                    + " noai=" + ravenNoAi
+                    + " shared=" + ravenShared;
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
         }
