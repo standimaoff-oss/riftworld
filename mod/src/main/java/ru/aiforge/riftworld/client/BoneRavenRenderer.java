@@ -38,7 +38,7 @@ public final class BoneRavenRenderer extends EntityRenderer<BoneRavenEntity> {
             new ResourceLocation(RiftWorld.MODID, "textures/entity/bone_raven_glow.png");
 
     /** Размер модели: 1.0 = ванильный блок на 16 модельных единиц. */
-    private static final float MODEL_SCALE = 4.0F;
+    private static final float MODEL_SCALE = 2.2F;
 
     /**
      * Вертикальное смещение точки отрисовки (в блоках, вверх положительно).
@@ -104,9 +104,12 @@ public final class BoneRavenRenderer extends EntityRenderer<BoneRavenEntity> {
         poseStack.mulPose(Axis.YP.rotationDegrees(180.0F - bodyYaw));
         poseStack.mulPose(Axis.XP.rotationDegrees(pitch * 0.6F));
         poseStack.mulPose(Axis.ZP.rotationDegrees(Mth.clamp(yawDelta * 1.4F, -16.0F, 16.0F)));
-        poseStack.scale(MODEL_SCALE, -MODEL_SCALE, MODEL_SCALE);
-        // Вертикальное смещение модели (см. VERTICAL_OFFSET).
+        // Вертикальное смещение модели (см. VERTICAL_OFFSET). ВАЖНО: перенос
+        // делается ДО масштабирования — иначе он умножается на MODEL_SCALE, и
+        // при масштабе 4 птица улетала на 2.4 блока вверх, за верхний край
+        // кадра, и её не было видно.
         poseStack.translate(0.0D, VERTICAL_OFFSET, 0.0D);
+        poseStack.scale(MODEL_SCALE, -MODEL_SCALE, MODEL_SCALE);
 
         int light = LightTexture.pack(Math.max(4, LightTexture.block(packedLight)),
                 LightTexture.sky(packedLight));
