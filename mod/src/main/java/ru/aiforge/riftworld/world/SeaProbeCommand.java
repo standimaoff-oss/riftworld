@@ -2022,10 +2022,12 @@ public final class SeaProbeCommand {
         // серверного пакета позиции, а не из отдельного пакета поворота.
         player.setYRot(yaw);
         player.setXRot(pitch);
-        // forceSetRotation — ванильный способ развернуть клиентскую камеру:
-        // в spectator-режиме серверный пакет позиции угол не всегда
-        // применяет, и камера оставалась с прежним взглядом.
-        player.forceSetRotation(yaw, pitch);
+        // ClientboundPlayerLookAtPacket — тот самый пакет, которым ванильный
+        // /teleport ... facing разворачивает клиентскую камеру. В 1.20.1
+        // отдельного пакета поворота нет, поэтому шлём «посмотреть на точку».
+        player.connection.send(new net.minecraft.network.protocol.game.ClientboundPlayerLookAtPacket(
+                net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,
+                lx + 0.5D, ly + 0.5D, lz + 0.5D));
         String line = "riftcam at=" + x + "," + y + "," + z
                 + " look=" + lx + "," + ly + "," + lz
                 + " yaw=" + String.format("%.1f", yaw)
