@@ -197,7 +197,7 @@ public final class ElisarFaunaRenderers {
                                 "textures/entity/bone_raven.png")));
                 // Простой куб 1x1x1 из ModelPart не нужен: рисуем через ModelPart.
                 net.minecraft.client.model.geom.ModelPart box =
-                        net.minecraft.client.model.quads.CubeListBuilder.create()
+                        net.minecraft.client.model.geom.builders.CubeListBuilder.create()
                                 .texOffs(0, 0)
                                 .addBox(-0.5F, -0.5F, -0.5F, 1.0F, 1.0F, 1.0F,
                                         new net.minecraft.client.model.geom.builders.CubeDeformation(0.0F))
