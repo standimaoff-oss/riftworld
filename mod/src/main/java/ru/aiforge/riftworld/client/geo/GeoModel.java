@@ -189,8 +189,9 @@ public final class GeoModel {
                 bones.add(new Bone(part, part.xRot, part.yRot, part.zRot, axis, amp, speed, phase));
                 byName.put(boneName, part);
             }
+            long cubeCount = baked.getAllParts().map(part -> (long) part.cubes.size()).sum();
             System.out.println("[riftworld] geo " + name + ": костей " + bones.size() + ", деталей "
-                    + baked.getAllParts().count() + ", атлас " + tw + "x" + th);
+                    + baked.getAllParts().count() + ", кубов " + cubeCount + ", атлас " + tw + "x" + th);
             return new GeoModel(baked, tw, th, scale, translucent, bones, byName);
         } catch (Exception ex) {
             System.err.println("[riftworld] не удалось загрузить geo-модель " + name + ": " + ex);
