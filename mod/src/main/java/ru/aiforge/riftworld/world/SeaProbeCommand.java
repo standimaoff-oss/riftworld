@@ -3565,7 +3565,10 @@ public final class SeaProbeCommand {
                         ravenServer.execute(() -> {
                             raven.setPos(fx, fy, fz);
                             raven.setDeltaMovement(0.0D, 0.0D, 0.0D);
-                            raven.updateAnchor();
+                            // Якорь задаём явно: контроллер полёта мог сдвинуть
+                            // птицу в этом же тике, и якорь из updateAnchor()
+                            // указал бы на неверное место.
+                            raven.setAnchor(fx, fy, fz);
                             level.getChunk(dx >> 4, dz >> 4);
                         });
                     }

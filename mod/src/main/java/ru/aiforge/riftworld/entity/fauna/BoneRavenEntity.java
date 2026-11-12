@@ -118,6 +118,13 @@ public class BoneRavenEntity extends Monster {
         this.anchorZ = this.getZ();
     }
 
+    /** Якорь замороженной птицы — в этой точке она и стоит. */
+    public void setAnchor(double x, double y, double z) {
+        this.anchorX = x;
+        this.anchorY = y;
+        this.anchorZ = z;
+    }
+
     /** Заморожена ли птица. */
     public boolean isFrozen() {
         return this.frozen;
