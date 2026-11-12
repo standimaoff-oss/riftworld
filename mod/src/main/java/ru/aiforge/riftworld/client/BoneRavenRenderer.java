@@ -67,7 +67,13 @@ public final class BoneRavenRenderer extends EntityRenderer<BoneRavenEntity> {
 
     @Override
     public boolean shouldRender(BoneRavenEntity entity, Frustum frustum, double x, double y, double z) {
-        return frustum.isVisible(entity.getBoundingBoxForCulling().inflate(2.0D, 2.0D, 2.0D));
+        // ВНИМАНИЕ: у ворона в витрине выставлен setNoGravity(true), а
+        // Entity#getBoundingBoxForCulling() при noGravity возвращает AABB.ZERO.
+        // Фрустум по такому боксу ничего не видит — и рендерер вообще не
+        // вызывался, птица не попадала в кадр. Поэтому проверяем
+        // расстояние вручную, а не по боксу сущности.
+        double maxDistance = 96.0D;
+        return entity.distanceToSqr(x, y, z) <= maxDistance * maxDistance;
     }
 
     @Override

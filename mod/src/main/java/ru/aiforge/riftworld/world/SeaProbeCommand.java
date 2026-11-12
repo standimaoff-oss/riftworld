@@ -3549,12 +3549,16 @@ public final class SeaProbeCommand {
                     final double fx = dx + 0.5D;
                     // Точка сущности: собственный рендерер ворона (BoneRavenRenderer)
                     // ставит тело на +0.04 блока выше точки сущности, лапы — на
-                    // -0.33. Чтобы птица целиком стояла над площадкой (верх на
-                    // 119), точку ставим на dy + 0.6: тело на 119.64, лапы 119.27.
-                    final double fy = (double) dy + 0.6D;
+                    // -0.33. Точку поднимаем до dy + 1.2, чтобы после падения на
+                    // площадку (без noGravity) птица стояла над камнем: тело
+                    // примерно на 0.6 блока выше поверхности.
+                    final double fy = (double) dy + 1.2D;
                     final double fz = dz + 0.5D;
                     raven.setPos(fx, fy, fz);
-                    raven.setNoGravity(true);
+                    // Без setNoGravity: при noGravity Entity#getBoundingBoxForCulling()
+                    // возвращает AABB.ZERO, и клиентский фрустум отсекает птицу —
+                    // рендерер не вызывается вовсе. Ворон без AI просто стоит
+                    // на площадке, а setFrozen(true) не даёт ему сменить цель.
                     raven.setNoAi(true);
                     raven.setFrozen(true);
                     raven.setDeltaMovement(0.0D, 0.0D, 0.0D);
@@ -3598,7 +3602,7 @@ public final class SeaProbeCommand {
             // реально стоит на сервере, если сборка вдруг отдаст старый.
             String line = "riftstruct kind=bb_bone_raven_showcase at=" + dx + "," + dy + "," + dz
                     + " model_boxes=0 bones=0 atlas=256 spawned=" + spawned + " blocks=0 sub_air=0"
-                    + " rev=stage123-ownrenderer"
+                    + " rev=stage124-gravity"
                     // Камера стоит в двух блоках по диагонали от птицы и смотрит
                     // точно на её уровень (птица висит на dy + 1,2).
                     + " cam=" + (dx - 2) + "," + (dy + 1) + "," + (dz - 2)
