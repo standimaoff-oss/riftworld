@@ -3547,12 +3547,12 @@ public final class SeaProbeCommand {
                     // вверх (root +24, body -15 модельных единиц = +0.56 блока),
                     // поэтому тушка целиком оказывается над площадкой.
                     final double fx = dx + 0.5D;
-                    // Точка сущности: собственный рендерер ворона (BoneRavenRenderer)
-                    // ставит тело на +0.04 блока выше точки сущности, лапы — на
-                    // -0.33. Точку поднимаем до dy + 1.2, чтобы после падения на
-                    // площадку (без noGravity) птица стояла над камнем: тело
-                    // примерно на 0.6 блока выше поверхности.
-                    final double fy = (double) dy + 1.2D;
+                    // Точка сущности: geo-модель ворона (bone_raven.json) с
+                    // pivot корня (0,0,0) и телом на -15 по Y-down, поэтому в
+                    // мире тело оказывается на 0.94 блока выше точки сущности.
+                    // Ставим точку на dy + 0.2: тело примерно на уровне камеры
+                    // (dy + 1), и птица целиком читается в кадре.
+                    final double fy = (double) dy + 0.2D;
                     final double fz = dz + 0.5D;
                     raven.setPos(fx, fy, fz);
                     // Без noGravity: при noGravity Entity#getBoundingBoxForCulling()
@@ -3603,7 +3603,7 @@ public final class SeaProbeCommand {
             // реально стоит на сервере, если сборка вдруг отдаст старый.
             String line = "riftstruct kind=bb_bone_raven_showcase at=" + dx + "," + dy + "," + dz
                     + " model_boxes=0 bones=0 atlas=256 spawned=" + spawned + " blocks=0 sub_air=0"
-                    + " rev=stage126-anchor"
+                    + " rev=stage127-geo"
                     // Камера стоит в двух блоках по диагонали от птицы и смотрит
                     // точно на её уровень (птица висит на dy + 1,2).
                     + " cam=" + (dx - 2) + "," + (dy + 1) + "," + (dz - 2)
