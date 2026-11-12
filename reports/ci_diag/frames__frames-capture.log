@@ -17,23 +17,12 @@ captured frame-paper-dragon-side
 ::warning title=In-game frames::кадр frame-paper-dragon-head слишком тёмный, переснимаем (4/4)
 ::warning title=In-game frames::кадр frame-paper-dragon-head остался тёмным после четырёх попыток
 captured frame-paper-dragon-head
-  riftstruct kind=bb_bone_raven_showcase at=560,119,560 model_boxes=0 bones=0 atlas=256 spawned=1 blocks=0 sub_air=0 rev=stage131-near cam=558,120,558:560,119,560 look=560,119,560 raven_pos=559.50,119.60,559.50 alive=1 invisible=false noai=true
-  цель камеры: 560,119,560; ворон: 559.50,119.60,559.50
+  riftstruct kind=bb_bone_raven_showcase at=560,119,560 model_boxes=0 bones=0 atlas=256 spawned=1 blocks=0 sub_air=0 rev=stage132-animal cam=558,120,558:560,119,560 look=560,119,560 raven_pos=559.50,120.50,559.50 alive=1 invisible=false noai=true
+  цель камеры: 560,119,560; ворон: 559.50,120.50,559.50
     Teleported TestPlayer to 558.500000, 120.000000, 558.500000
-    riftstruct kind=bb_bone_raven_showcase at=560,119,560 model_boxes=0 bones=0 atlas=256 spawned=1 blocks=0 sub_air=0 rev=stage131-near cam=558,120,558:560,119,560 look=560,119,560 raven_pos=559.50,119.60,559.50 alive=1 invisible=false noai=true
+    riftstruct kind=bb_bone_raven_showcase at=560,119,560 model_boxes=0 bones=0 atlas=256 spawned=1 blocks=0 sub_air=0 rev=stage132-animal cam=558,120,558:560,119,560 look=560,119,560 raven_pos=559.50,120.50,559.50 alive=1 invisible=false noai=true
     Summoned new Bone Raven
-    ворон рядом: Test failed
-
-::warning title=In-game frames::rcon attempt 1 failed (rc=4), retrying
-Test failed
-
-::warning title=In-game frames::rcon attempt 2 failed (rc=4), retrying
-Test failed
-
-::warning title=In-game frames::rcon attempt 3 failed (rc=4), retrying
-Test failed
-
-::warning title=In-game frames::rcon attempt 4 failed (rc=4), retrying
+    ворон рядом: Test passed, count: 2
 ::warning title=In-game frames::кадр frame-bone-raven-three-quarter слишком тёмный, переснимаем (1/4)
 ::warning title=In-game frames::кадр frame-bone-raven-three-quarter слишком тёмный, переснимаем (2/4)
 ::warning title=In-game frames::кадр frame-bone-raven-three-quarter слишком тёмный, переснимаем (3/4)
@@ -41,20 +30,9 @@ Test failed
 ::warning title=In-game frames::кадр frame-bone-raven-three-quarter остался тёмным после четырёх попыток
 captured frame-bone-raven-three-quarter
     Teleported TestPlayer to 561.500000, 120.000000, 561.500000
-    riftstruct kind=bb_bone_raven_showcase at=560,119,560 model_boxes=0 bones=0 atlas=256 spawned=1 blocks=0 sub_air=0 rev=stage131-near cam=558,120,558:560,119,560 look=560,119,560 raven_pos=559.50,119.60,559.50 alive=1 invisible=false noai=true
+    riftstruct kind=bb_bone_raven_showcase at=560,119,560 model_boxes=0 bones=0 atlas=256 spawned=1 blocks=0 sub_air=0 rev=stage132-animal cam=558,120,558:560,119,560 look=560,119,560 raven_pos=559.50,120.50,559.50 alive=1 invisible=false noai=true
     Summoned new Bone Raven
-    ворон рядом: Test failed
-
-::warning title=In-game frames::rcon attempt 1 failed (rc=4), retrying
-Test failed
-
-::warning title=In-game frames::rcon attempt 2 failed (rc=4), retrying
-Test failed
-
-::warning title=In-game frames::rcon attempt 3 failed (rc=4), retrying
-Test failed
-
-::warning title=In-game frames::rcon attempt 4 failed (rc=4), retrying
+    ворон рядом: Test passed, count: 2
 ::warning title=In-game frames::кадр frame-bone-raven-side слишком тёмный, переснимаем (1/4)
 ::warning title=In-game frames::кадр frame-bone-raven-side слишком тёмный, переснимаем (2/4)
 ::warning title=In-game frames::кадр frame-bone-raven-side слишком тёмный, переснимаем (3/4)
@@ -62,20 +40,9 @@ Test failed
 ::warning title=In-game frames::кадр frame-bone-raven-side остался тёмным после четырёх попыток
 captured frame-bone-raven-side
     Teleported TestPlayer to 561.500000, 120.000000, 559.500000
-    riftstruct kind=bb_bone_raven_showcase at=560,119,560 model_boxes=0 bones=0 atlas=256 spawned=1 blocks=0 sub_air=0 rev=stage131-near cam=558,120,558:560,119,560 look=560,119,560 raven_pos=559.50,119.60,559.50 alive=1 invisible=false noai=true
+    riftstruct kind=bb_bone_raven_showcase at=560,119,560 model_boxes=0 bones=0 atlas=256 spawned=1 blocks=0 sub_air=0 rev=stage132-animal cam=558,120,558:560,119,560 look=560,119,560 raven_pos=559.50,120.50,559.50 alive=1 invisible=false noai=true
     Summoned new Bone Raven
-    ворон рядом: Test failed
-
-::warning title=In-game frames::rcon attempt 1 failed (rc=4), retrying
-Test failed
-
-::warning title=In-game frames::rcon attempt 2 failed (rc=4), retrying
-Test failed
-
-::warning title=In-game frames::rcon attempt 3 failed (rc=4), retrying
-Test failed
-
-::warning title=In-game frames::rcon attempt 4 failed (rc=4), retrying
+    ворон рядом: Test passed, count: 2
 ::warning title=In-game frames::кадр frame-bone-raven-head слишком тёмный, переснимаем (1/4)
 ::warning title=In-game frames::кадр frame-bone-raven-head слишком тёмный, переснимаем (2/4)
 ::warning title=In-game frames::кадр frame-bone-raven-head слишком тёмный, переснимаем (3/4)
