@@ -271,22 +271,23 @@ else
     if [[ "$tp_out" != *"Teleported"* && "$tp_out" != *"Test passed"* && -n "$tp_out" ]]; then
       echo "::warning title=In-game frames::телепорт камеры для $name не удался: $tp_out"
     fi
+    sleep 2
+    # Клиент уже принял позицию с углом, поэтому возвращаем наблюдателя:
+    # в нём не видно руки игрока и хотбара, а взгляд остаётся прежним.
+    rq gamemode spectator TestPlayer >/dev/null 2>&1 || true
     sleep "$wait"
     # Птицу ставим после того, как клиент встал на постамент: если она
     # появится раньше, клиент успеет уйти из чанка, и сервер перестанет
     # отправлять ему птицу — в кадре её не будет.
     place_raven
     sleep 3
-    # Снимок делаем в обычном режиме: в режиме наблюдателя сервер не шлёт
-    # угол камеры, и клиент держит прежний взгляд.
     capture "$name" 1
-    rq gamemode spectator TestPlayer >/dev/null 2>&1 || true
   }
   # Цель камеры во всех ракурсах — сам ворон (TX,TY,TZ); отличается только
   # точка, откуда смотрим.
   shot_raven frame-bone-raven-three-quarter "$RX" "$RY" "$RZ" "$TX" "$TY" "$TZ" 8
-  shot_raven frame-bone-raven-side "$((AX + 4))" "$((AY + 1))" "$((AZ + 1))" "$TX" "$TY" "$TZ" 8
-  shot_raven frame-bone-raven-head "$((AX + 1))" "$((AY + 1))" "$((AZ - 4))" "$TX" "$TY" "$TZ" 8
+  shot_raven frame-bone-raven-side "$((AX + 2))" "$((AY + 1))" "$((AZ + 1))" "$TX" "$TY" "$TZ" 8
+  shot_raven frame-bone-raven-head "$((AX + 1))" "$((AY + 1))" "$((AZ - 2))" "$TX" "$TY" "$TZ" 8
 fi
 
 # v0.49.0: ДРАКОН ДОЛЖЕН ДВИГАТЬСЯ НА ДАЛЁКОМ РАССТОЯНИИ.

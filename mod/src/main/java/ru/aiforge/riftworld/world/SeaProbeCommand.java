@@ -3563,7 +3563,7 @@ public final class SeaProbeCommand {
                     + " rev=stage105-frozen-1.2"
                     // Камера стоит в двух блоках по диагонали от птицы и смотрит
                     // точно на её уровень (птица висит на dy + 1,2).
-                    + " cam=" + (dx - 3) + "," + (dy + 3) + "," + (dz - 3)
+                    + " cam=" + (dx - 2) + "," + (dy + 3) + "," + (dz - 2)
                     + ":" + dx + "," + (dy + 1) + "," + dz
                     // look= — цель камеры с десятичной точкой (центр птицы).
                     + " look=" + dx + "," + (dy + 2) + "," + dz
@@ -5976,8 +5976,8 @@ public final class SeaProbeCommand {
         // режима наблюдателя в обычный (в наблюдателе сервер не шлёт угол
         // камеры, и клиент держит прежний взгляд), а в обычном режиме он
         // падает. С постаментом он стоит на месте, не мешая ворону.
-        for (int dx = -4; dx <= -2; ++dx) {
-            for (int dz = -4; dz <= -2; ++dz) {
+        for (int dx = -3; dx <= -1; ++dx) {
+            for (int dz = -3; dz <= -1; ++dz) {
                 world.setBlock(new BlockPos(px + dx, ground + 3, pz + dz),
                         net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(), 2);
                 world.setBlock(new BlockPos(px + dx, ground + 2, pz + dz),

@@ -129,7 +129,7 @@ public final class ElisarFaunaRenderers {
                         // v0.50.0: ворон был микроскопическим (0,36 × 0,30) — в кадре
                         // он читался как несколько пикселей. Теперь модель в
                         // размер птицы, и ворон виден глазом в игре и на фото.
-                        "bone_raven", 0.85F, 0.72F, false, true, true));
+                        "bone_raven", 1.15F, 0.95F, false, true, true));
         e.registerEntityRenderer(ModEntities.GHOST_SQUID.get(), c ->
                 new BaseRenderer<>(c, new GhostSquidModel(c.bakeLayer(GhostSquidModel.LAYER_LOCATION)),
                         "ghost_squid", 0.86F, 0.60F, true, true, true));
