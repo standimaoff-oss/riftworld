@@ -210,7 +210,7 @@ public final class ModEntities {
     public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.fauna.BoneRavenEntity>> BONE_RAVEN =
             TYPES.register("bone_raven", () -> EntityType.Builder
                     .<ru.aiforge.riftworld.entity.fauna.BoneRavenEntity>of(
-                            ru.aiforge.riftworld.entity.fauna.BoneRavenEntity::new, MobCategory.MONSTER)
+                            ru.aiforge.riftworld.entity.fauna.BoneRavenEntity::new, MobCategory.CREATURE)
                     .sized(0.65F, 0.75F).clientTrackingRange(64).build("riftworld:bone_raven"));
 
     public static final RegistryObject<EntityType<ru.aiforge.riftworld.entity.fauna.GhostSquidEntity>> GHOST_SQUID =
