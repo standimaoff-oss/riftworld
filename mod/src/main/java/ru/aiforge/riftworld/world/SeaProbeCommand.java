@@ -3540,12 +3540,17 @@ public final class SeaProbeCommand {
                 // он улетал точно так же.
                 var raven = ru.aiforge.riftworld.registry.ModEntities.BONE_RAVEN.get().create(level);
                 if (raven != null) {
-                    // Точка сущности на один блок ниже площадки: тело модели
-                    // смещено вверх (root +24, body -15 модельных единиц),
-                    // и при dy + 1 ворон оказывался выше камеры и уходил
-                    // из верхнего края кадра.
+                    // Точка сущности — ровно на уровне поверхности площадки (dy
+                    // = buildRavenStage() = ground + 1). Раньше ставили dy - 1, то
+                    // есть на блок НИЖЕ пола: ворон целиком оказывался внутри
+                    // блока и в кадре не было видно ничего. Тело модели смещено
+                    // вверх (root +24, body -15 модельных единиц = +0.56 блока),
+                    // поэтому тушка целиком оказывается над площадкой.
                     final double fx = dx + 0.5D;
-                    final double fy = (double) (dy - 1);
+                    // +0.4 блока: тело модели на +0.56, лапы на +0.56-0.76 =
+                    // -0.20. При fy = dy лапы уходили в пол, поэтому чуть
+                    // приподнимаем точку — вся птица оказывается над камнем.
+                    final double fy = (double) dy + 0.4D;
                     final double fz = dz + 0.5D;
                     raven.setPos(fx, fy, fz);
                     raven.setNoGravity(true);
@@ -3592,13 +3597,13 @@ public final class SeaProbeCommand {
             // реально стоит на сервере, если сборка вдруг отдаст старый.
             String line = "riftstruct kind=bb_bone_raven_showcase at=" + dx + "," + dy + "," + dz
                     + " model_boxes=0 bones=0 atlas=256 spawned=" + spawned + " blocks=0 sub_air=0"
-                    + " rev=stage119-high"
+                    + " rev=stage120-lifted"
                     // Камера стоит в двух блоках по диагонали от птицы и смотрит
                     // точно на её уровень (птица висит на dy + 1,2).
-                    + " cam=" + (dx - 1) + "," + (dy + 1) + "," + (dz - 1)
-                    + ":" + dx + "," + (dy - 1) + "," + dz
-                    // look= — цель камеры с десятичной точкой (центр птицы).
-                    + " look=" + dx + "," + (dy - 1) + "," + dz
+                    + " cam=" + (dx - 2) + "," + (dy + 2) + "," + (dz - 2)
+                    + ":" + dx + "," + (dy + 1) + "," + dz
+                    // look= — цель камеры: тело ворона (точка +0.56 блока).
+                    + " look=" + dx + "," + (dy + 1) + "," + dz
                     + " raven_pos=" + ravenPos
                     + " alive=" + ravenAlive
                     + " invisible=" + ravenInvisible
