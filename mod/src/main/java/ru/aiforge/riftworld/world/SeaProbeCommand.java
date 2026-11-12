@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -108,24 +107,6 @@ public final class SeaProbeCommand {
                 .then(Commands.argument("kind", com.mojang.brigadier.arguments.StringArgumentType.word())
                         .executes(c -> probeStruct(c.getSource(),
                                 com.mojang.brigadier.arguments.StringArgumentType.getString(c, "kind")))));
-        // v0.50.0: /riftcam x y z lx ly lz — поставить камеру и повернуть её.
-        // Ванильный "tp ... facing" для игрока-наблюдателя поворачивает не
-        // всегда: клиент снимал не то, куда целились. Серверный lookAt
-        // поворачивает надёжно, и команда печатает, где оказалась камера.
-        e.getDispatcher().register(Commands.literal("riftcam").requires(s2 -> s2.hasPermission(2))
-                .then(Commands.argument("x", IntegerArgumentType.integer())
-                        .then(Commands.argument("y", IntegerArgumentType.integer())
-                                .then(Commands.argument("z", IntegerArgumentType.integer())
-                                        .then(Commands.argument("lx", IntegerArgumentType.integer())
-                                                .then(Commands.argument("ly", IntegerArgumentType.integer())
-                                                        .then(Commands.argument("lz", IntegerArgumentType.integer())
-                                                                .executes(c -> camera(c.getSource(),
-                                                                        IntegerArgumentType.getInteger(c, "x"),
-                                                                        IntegerArgumentType.getInteger(c, "y"),
-                                                                        IntegerArgumentType.getInteger(c, "z"),
-                                                                        IntegerArgumentType.getInteger(c, "lx"),
-                                                                        IntegerArgumentType.getInteger(c, "ly"),
-                                                                        IntegerArgumentType.getInteger(c, "lz"))))))))));
         // Рев 13.6: /riftdtat — что DT реально поставил в точке посадки. Один вызов RCON вместо
         // сотен «execute if block»: считает все блоки аддона вокруг корня.
         e.getDispatcher().register(Commands.literal("riftdtat").requires(s2 -> s2.hasPermission(2))
@@ -1991,56 +1972,6 @@ public final class SeaProbeCommand {
      * команды вместе со стеком, а не превращается в безликое «An unexpected
      * error occurred» от бригадира. Именно так в CI ловились краши проб.
      */
-    /**
-     * Ставит камеру (игрока TestPlayer) в точку и поворачивает её на цель.
-     * Клиент снимает кадры через настоящий игровой клиент, поэтому важно,
-     * чтобы сервер сам развернул камеру: ванильный {@code tp ... facing}
-     * для игрока в режиме наблюдателя отрабатывает через раз, и в кадр
-     * попадало не то, что задумано.
-     */
-    private static int camera(CommandSourceStack src, int x, int y, int z,
-                              int lx, int ly, int lz) {
-        ServerLevel level = src.getLevel();
-        ServerPlayer player = src.getServer() == null
-                ? null
-                : src.getServer().getPlayerList().getPlayerByName("TestPlayer");
-        if (player == null) {
-            src.sendFailure(Component.literal("riftcam: игрок TestPlayer не найден"));
-            return 0;
-        }
-        // Поворот считаем сами: yaw — азимут на цель, pitch — наклон.
-        double dx = (lx + 0.5D) - (x + 0.5D);
-        double dy = (ly + 0.5D) - y;
-        double dz = (lz + 0.5D) - (z + 0.5D);
-        double horiz = Math.sqrt(dx * dx + dz * dz);
-        float yaw = (float) (Math.toDegrees(Math.atan2(dz, dx)) - 90.0D);
-        float pitch = (float) (-Math.toDegrees(Math.atan2(dy, horiz)));
-        player.teleportTo(level, x + 0.5D, y, z + 0.5D, yaw, pitch);
-        player.setYHeadRot(yaw);
-        player.setYBodyRot(yaw);
-        player.setYRot(yaw);
-        player.setXRot(pitch);
-        // ClientboundPlayerLookAtPacket — тот самый пакет, которым ванильный
-        // /teleport ... facing разворачивает клиентскую камеру. Шлём его
-        // после телепорта: клиент считает направление от позиции, которую
-        // он уже знает, и пакет, пришедший раньше телепорта, разворачивал
-        // камеру от старой точки.
-        player.connection.send(new net.minecraft.network.protocol.game.ClientboundPlayerLookAtPacket(
-                net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,
-                lx + 0.5D, ly + 0.5D, lz + 0.5D));
-        // И ещё раз следующим тиком: к этому моменту клиент уже принял
-        // телепорт, и поворот считается от правильной точки.
-        player.connection.send(new net.minecraft.network.protocol.game.ClientboundPlayerLookAtPacket(
-                net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,
-                lx + 0.5D, ly + 0.5D, lz + 0.5D));
-        String line = "riftcam at=" + x + "," + y + "," + z
-                + " look=" + lx + "," + ly + "," + lz
-                + " yaw=" + String.format("%.1f", yaw)
-                + " pitch=" + String.format("%.1f", pitch);
-        src.sendSuccess(() -> Component.literal(line), false);
-        return 1;
-    }
-
     private static int probeStruct(CommandSourceStack src, String rawKind) {
         try {
             return probeStructInner(src, rawKind);
