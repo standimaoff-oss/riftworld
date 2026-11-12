@@ -2022,6 +2022,10 @@ public final class SeaProbeCommand {
         // серверного пакета позиции, а не из отдельного пакета поворота.
         player.setYRot(yaw);
         player.setXRot(pitch);
+        // Отдельный пакет поворота: серверный пакет позиции в spectator-режиме
+        // клиент не всегда применяет, и камера оставалась с прежним взглядом.
+        player.connection.send(new net.minecraft.network.protocol.game.ClientboundPlayerRotationPacket(
+                yaw, pitch, player.onGround()));
         String line = "riftcam at=" + x + "," + y + "," + z
                 + " look=" + lx + "," + ly + "," + lz
                 + " yaw=" + String.format("%.1f", yaw)
@@ -3595,7 +3599,7 @@ public final class SeaProbeCommand {
                     // Ставим её в воздух над площадкой, отключаем гравитацию и
                     // AI, и обнуляем движение — ракурсы снимаются по очереди,
                     // и перед каждым витрина ставит птицу заново.
-                    raven.setPos(dx + 0.5D, (double) (dy + 1), dz + 0.5D);
+                    raven.setPos(dx + 0.5D, (double) (dy + 2), dz + 0.5D);
                     raven.setNoGravity(true);
                     raven.setNoAi(true);
                     raven.setDeltaMovement(0.0D, 0.0D, 0.0D);
@@ -3618,10 +3622,10 @@ public final class SeaProbeCommand {
                     + " rev=stage105-frozen-1.2"
                     // Камера стоит в двух блоках по диагонали от птицы и смотрит
                     // точно на её уровень (птица висит на dy + 1,2).
-                    + " cam=" + (dx - 1) + "," + (dy + 2) + "," + (dz + 1)
+                    + " cam=" + (dx - 2) + "," + (dy + 3) + "," + (dz + 2)
                     + ":" + dx + "," + (dy + 1) + "," + dz
                     // look= — цель камеры с десятичной точкой (центр птицы).
-                    + " look=" + dx + "," + (dy + 1) + "," + dz
+                    + " look=" + dx + "," + (dy + 2) + "," + dz
                     + " raven_pos=" + ravenPos;
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
