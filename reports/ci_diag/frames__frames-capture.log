@@ -19,6 +19,7 @@ captured frame-paper-dragon-side
 captured frame-paper-dragon-head
   riftstruct kind=bb_bone_raven_showcase at=560,105,560 model_boxes=0 bones=0 atlas=256 spawned=1 blocks=0 sub_air=0 rev=stage105-frozen-1.2 cam=559,107,561:560,106,560 look=560,106,560 raven_pos=560.50,106.00,560.50
   цель камеры: 560,106,560; ворон: 560.50,106.00,560.50
+    riftcam at=559,107,561 look=560,106,560 yaw=-135.0 pitch=19.5
     riftstruct kind=bb_bone_raven_showcase at=560,105,560 model_boxes=0 bones=0 atlas=256 spawned=1 blocks=0 sub_air=0 rev=stage105-frozen-1.2 cam=559,107,561:560,106,560 look=560,106,560 raven_pos=560.50,106.00,560.50
     ворон рядом: Test failed
 
@@ -38,6 +39,7 @@ Test failed
 ::warning title=In-game frames::кадр frame-bone-raven-three-quarter слишком тёмный, переснимаем (4/4)
 ::warning title=In-game frames::кадр frame-bone-raven-three-quarter остался тёмным после четырёх попыток
 captured frame-bone-raven-three-quarter
+    riftcam at=563,107,561 look=560,106,560 yaw=-251.6 pitch=9.0
     riftstruct kind=bb_bone_raven_showcase at=560,105,560 model_boxes=0 bones=0 atlas=256 spawned=1 blocks=0 sub_air=0 rev=stage105-frozen-1.2 cam=559,107,561:560,106,560 look=560,106,560 raven_pos=560.50,106.00,560.50
     ворон рядом: Test failed
 
@@ -57,6 +59,7 @@ Test failed
 ::warning title=In-game frames::кадр frame-bone-raven-side слишком тёмный, переснимаем (4/4)
 ::warning title=In-game frames::кадр frame-bone-raven-side остался тёмным после четырёх попыток
 captured frame-bone-raven-side
+    riftcam at=561,107,558 look=560,106,560 yaw=26.6 pitch=12.6
     riftstruct kind=bb_bone_raven_showcase at=560,105,560 model_boxes=0 bones=0 atlas=256 spawned=1 blocks=0 sub_air=0 rev=stage105-frozen-1.2 cam=559,107,561:560,106,560 look=560,106,560 raven_pos=560.50,106.00,560.50
     ворон рядом: Test failed
 
