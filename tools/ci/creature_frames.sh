@@ -264,13 +264,15 @@ else
   }
   shot_raven() {
     local name=$1 cx=$2 cy=$3 cz=$4 lx=$5 ly=$6 lz=$7 wait=${8:-8}
-    # Телепорт с поворотом: /facing разбирает только целые координаты, и при
-    # дробных команда падает — игрок остаётся на старом месте, и в кадре
-    # снимается не то. Проверяем ответ сервера.
+    # Камеру ставит и поворачивает серверная команда riftcam: ванильный
+    # "tp ... facing" для игрока-наблюдателя поворачивает не всегда, и в кадр
+    # попадало не то. Команда печатает yaw/pitch — по ним видно, что поворот
+    # состоялся.
     local tp_out
-    tp_out=$(rq execute in "${SHOT_DIM:-minecraft:overworld}" run tp TestPlayer "$cx" "$cy" "$cz" facing "$lx" "$ly" "$lz" 2>&1 | tr -d '\r')
-    if [[ "$tp_out" != *"Teleported"* && "$tp_out" != *"Test passed"* && -n "$tp_out" ]]; then
-      echo "::warning title=In-game frames::телепорт камеры для $name не удался: $tp_out"
+    tp_out=$(rq execute in "${SHOT_DIM:-minecraft:overworld}" run riftcam "$cx" "$cy" "$cz" "$lx" "$ly" "$lz" 2>&1 | tr -d '\r')
+    echo "    $tp_out"
+    if [[ "$tp_out" != *"riftcam at="* ]]; then
+      echo "::warning title=In-game frames::камера для $name не поставлена: $tp_out"
     fi
     sleep "$wait"
     place_raven
