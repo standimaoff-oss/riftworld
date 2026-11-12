@@ -3584,6 +3584,22 @@ public final class SeaProbeCommand {
                     }
                     spawned = 1;
                     ravenPos = String.format("%.2f,%.2f,%.2f", fx, fy, fz);
+                    // Контрольная фигура: ванильная свинья рядом с вороном. Если её
+                    // видно в кадре, а ворона нет — дело в типе/рендерере ворона;
+                    // если не видно и её — камера смотрит не туда.
+                    try {
+                        var pig = net.minecraft.world.entity.EntityType.PIG.create(level);
+                        if (pig != null) {
+                            pig.setPos(dx - 0.5D, (double) dy + 1.5D, dz - 0.5D);
+                            pig.setNoAi(true);
+                            pig.setNoGravity(true);
+                            pig.setDeltaMovement(0.0D, 0.0D, 0.0D);
+                            pig.hurtMarked = false;
+                            level.addFreshEntity(pig);
+                        }
+                    } catch (Exception ignored) {
+                        // Контрольная фигура — не критично.
+                    }
                     // Диагностика: невидимая сущность вообще не рисуется
                     // диспетчером, поэтому проверяем флаги прямо здесь.
                     ravenInvisible = String.valueOf(raven.isInvisible());
@@ -3603,7 +3619,7 @@ public final class SeaProbeCommand {
             // реально стоит на сервере, если сборка вдруг отдаст старый.
             String line = "riftstruct kind=bb_bone_raven_showcase at=" + dx + "," + dy + "," + dz
                     + " model_boxes=0 bones=0 atlas=256 spawned=" + spawned + " blocks=0 sub_air=0"
-                    + " rev=stage128-marker"
+                    + " rev=stage129-control"
                     // Камера стоит в двух блоках по диагонали от птицы и смотрит
                     // точно на её уровень (птица висит на dy + 1,2).
                     + " cam=" + (dx - 2) + "," + (dy + 1) + "," + (dz - 2)
