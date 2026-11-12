@@ -3512,7 +3512,6 @@ public final class SeaProbeCommand {
             int ravenAlive = -1;
             String ravenInvisible = "n/a";
             String ravenNoAi = "n/a";
-            String ravenShared = "n/a";
             // Площадка съёмки находится в далёком углу города, и её чанк часто
             // ещё не загружен: витрина молча возвращала spawned=0, и кадров
             // ворона не было. Форсируем загрузку и ждём её.
@@ -3552,8 +3551,6 @@ public final class SeaProbeCommand {
                     raven.setNoGravity(true);
                     raven.setNoAi(true);
                     raven.setFrozen(true);
-                    // Отладка: рендерер рисует вместо модели красный куб.
-                    raven.setShowcaseDebugCube(true);
                     raven.setDeltaMovement(0.0D, 0.0D, 0.0D);
                     raven.setYRot(35.0F);
                     raven.setYBodyRot(35.0F);
@@ -3580,8 +3577,6 @@ public final class SeaProbeCommand {
                     // диспетчером, поэтому проверяем флаги прямо здесь.
                     ravenInvisible = String.valueOf(raven.isInvisible());
                     ravenNoAi = String.valueOf(raven.isNoAi());
-                    // Флаг общих данных: бит 1 — невидимость.
-                    ravenShared = "skip";
                 }
                 try {
                     int alive = level.getEntitiesOfClass(
@@ -3607,8 +3602,7 @@ public final class SeaProbeCommand {
                     + " raven_pos=" + ravenPos
                     + " alive=" + ravenAlive
                     + " invisible=" + ravenInvisible
-                    + " noai=" + ravenNoAi
-                    + " shared=" + ravenShared;
+                    + " noai=" + ravenNoAi;
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
         }

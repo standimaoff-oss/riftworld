@@ -130,17 +130,6 @@ public class BoneRavenEntity extends Monster {
         return this.frozen;
     }
 
-    /** Отладочный признак: в рендерере вместо модели рисуется красный куб. */
-    private boolean showcaseDebugCube = false;
-
-    public void setShowcaseDebugCube(boolean value) {
-        this.showcaseDebugCube = value;
-    }
-
-    public boolean isShowcaseDebugCube() {
-        return this.showcaseDebugCube;
-    }
-
     public boolean isDeferringToApex() {
         return this.entityData.get(DATA_DEFERRING);
     }

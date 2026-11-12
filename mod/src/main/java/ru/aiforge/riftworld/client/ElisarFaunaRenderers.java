@@ -129,9 +129,7 @@ public final class ElisarFaunaRenderers {
                         // v0.50.0: ворон был микроскопическим (0,36 × 0,30) — в кадре
                         // он читался как несколько пикселей. Теперь модель в
                         // размер птицы, и ворон виден глазом в игре и на фото.
-                        // Тест: увеличенный масштаб — если птица появится в кадре,
-                        // значит модель рисуется, и вопрос только в размере.
-                        "bone_raven", 4.0F, 0.95F, false, false, true));
+                        "bone_raven", 1.15F, 0.95F, false, true, true));
         e.registerEntityRenderer(ModEntities.GHOST_SQUID.get(), c ->
                 new BaseRenderer<>(c, new GhostSquidModel(c.bakeLayer(GhostSquidModel.LAYER_LOCATION)),
                         "ghost_squid", 0.86F, 0.60F, true, true, true));
@@ -176,6 +174,11 @@ public final class ElisarFaunaRenderers {
                 this.addLayer(new EmissiveGlowLayer<>(this,
                         new ResourceLocation(RiftWorld.MODID, "textures/entity/" + id + "_glow.png")));
             }
+        }
+
+        @Override
+        public ResourceLocation getTextureLocation(T entity) {
+            return this.tex;
         }
 
         @Override
@@ -242,8 +245,12 @@ public final class ElisarFaunaRenderers {
         @Nullable
         @Override
         protected RenderType getRenderType(T entity, boolean bodyVisible, boolean translucentFlag, boolean glowing) {
-            if (!bodyVisible && !translucentFlag) return null;
-            if (glowing && !bodyVisible) return RenderType.outline(this.tex);
+            // Внимание: LivingEntityRenderer вызывает getRenderType с
+            // bodyVisible = false, поэтому проверка "if (!bodyVisible) return null"
+            // отключала рендер ВСЕХ существ на BaseRenderer с непрозрачной
+            // текстурой — в том числе костяного ворона. В кадре было пусто.
+            // Теперь ведём себя как ванильный MobRenderer.
+            if (glowing) return RenderType.entityTranslucent(this.tex);
             return (this.translucent || translucentFlag)
                     ? RenderType.entityTranslucent(this.tex)
                     : RenderType.entityCutoutNoCull(this.tex);
