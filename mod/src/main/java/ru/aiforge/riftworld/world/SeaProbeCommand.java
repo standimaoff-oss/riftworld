@@ -3599,11 +3599,11 @@ public final class SeaProbeCommand {
             // реально стоит на сервере, если сборка вдруг отдаст старый.
             String line = "riftstruct kind=bb_bone_raven_showcase at=" + dx + "," + dy + "," + dz
                     + " model_boxes=0 bones=0 atlas=256 spawned=" + spawned + " blocks=0 sub_air=0"
-                    + " rev=stage105-frozen-1.2"
+                    + " rev=stage119-high"
                     // Камера стоит в двух блоках по диагонали от птицы и смотрит
                     // точно на её уровень (птица висит на dy + 1,2).
-                    + " cam=" + (dx - 2) + "," + (dy + 3) + "," + (dz - 2)
-                    + ":" + dx + "," + (dy + 1) + "," + dz
+                    + " cam=" + (dx - 4) + "," + (dy + 4) + "," + (dz - 4)
+                    + ":" + dx + "," + (dy + 2) + "," + dz
                     // look= — цель камеры с десятичной точкой (центр птицы).
                     + " look=" + dx + "," + (dy + 2) + "," + dz
                     + " raven_pos=" + ravenPos
@@ -5984,40 +5984,47 @@ public final class SeaProbeCommand {
     /** Площадка съёмки костяного ворона: ровная земля на уровне города. */
     private static int buildRavenStage(ServerLevel world, int px, int pz) {
         world.getChunk(px >> 4, pz >> 4);
-        int ground = 104;
+        // Площадка снимается в поднебесном просторе над городом: на уровне
+        // города (104-108) вокруг стоят руины и стены, камера упиралась в
+        // них, и в кадр попадал город вместо ворона. Здесь чистое небо со
+        // всех сторон, а тёмный ворон читается силуэтом на светлой площадке.
+        int ground = 118;
         // Убираем всё выше площадки: иначе камера оказывается внутри руин.
-        for (int dx = -10; dx <= 10; ++dx) {
-            for (int dz = -10; dz <= 10; ++dz) {
-                for (int dy = 1; dy <= 12; ++dy) {
+        for (int dx = -12; dx <= 12; ++dx) {
+            for (int dz = -12; dz <= 12; ++dz) {
+                for (int dy = 1; dy <= 16; ++dy) {
                     world.setBlock(new BlockPos(px + dx, ground + dy, pz + dz),
                             net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 2);
                 }
             }
         }
         // Опора: камень до самого низа, чтобы сцена не висела в пустоте.
-        for (int dx = -10; dx <= 10; ++dx) {
-            for (int dz = -10; dz <= 10; ++dz) {
+        for (int dx = -12; dx <= 12; ++dx) {
+            for (int dz = -12; dz <= 12; ++dz) {
                 for (int dy = -6; dy < 0; ++dy) {
                     world.setBlock(new BlockPos(px + dx, ground + dy, pz + dz),
                             net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(), 2);
                 }
             }
         }
-        // Земля: промёрзшая почва и снежный мох — как в лесу Морока.
-        for (int dx = -9; dx <= 9; ++dx) {
-            for (int dz = -9; dz <= 9; ++dz) {
+        // Земля: светлый камень и промёрзшая почва. Светлая площадка нужна,
+        // чтобы тёмный ворон читался на ней силуэтом.
+        for (int dx = -11; dx <= 11; ++dx) {
+            for (int dz = -11; dz <= 11; ++dz) {
+                world.setBlock(new BlockPos(px + dx, ground, pz + dz),
+                        net.minecraft.world.level.block.Blocks.SMOOTH_STONE.defaultBlockState(), 2);
                 world.setBlock(new BlockPos(px + dx, ground - 1, pz + dz),
                         MorokBlocks.FROZEN_SOIL.get().defaultBlockState(), 2);
-                world.setBlock(new BlockPos(px + dx, ground, pz + dz),
-                        MorokBlocks.RIME_GRASS.get().defaultBlockState(), 2);
             }
         }
         // Постамент камеры: игрок на время постановки камеры переключается из
         // режима наблюдателя в обычный (в наблюдателе сервер не шлёт угол
         // камеры, и клиент держит прежний взгляд), а в обычном режиме он
         // падает. С постаментом он стоит на месте, не мешая ворону.
-        for (int dx = -3; dx <= -1; ++dx) {
-            for (int dz = -3; dz <= -1; ++dz) {
+        for (int dx = -5; dx <= -3; ++dx) {
+            for (int dz = -5; dz <= -3; ++dz) {
+                world.setBlock(new BlockPos(px + dx, ground + 4, pz + dz),
+                        net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(), 2);
                 world.setBlock(new BlockPos(px + dx, ground + 3, pz + dz),
                         net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(), 2);
                 world.setBlock(new BlockPos(px + dx, ground + 2, pz + dz),

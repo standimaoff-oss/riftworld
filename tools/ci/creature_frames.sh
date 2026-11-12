@@ -265,16 +265,18 @@ else
   shot_raven() {
     local name=$1 cx=$2 cy=$3 cz=$4 lx=$5 ly=$6 lz=$7 wait=${8:-8}
     local tp_out
-    rq gamemode creative TestPlayer >/dev/null 2>&1 || true
+    # Порядок режимов важен: в spectator сервер НЕ шлёт угол камеры, и
+    # клиент держит прежний взгляд. Поэтому сначала переводим игрока в
+    # spectator, ждём, пока клиент это примет, и только потом телепортируем
+    # его с нужным углом. Раньше было наоборот (creative -> tp -> spectator),
+    # и камера смотрела в сторону: в кадр попадал город вместо ворона.
+    rq gamemode spectator TestPlayer >/dev/null 2>&1 || true
+    sleep 2
     tp_out=$(rq execute in "${SHOT_DIM:-minecraft:overworld}" run tp TestPlayer "$cx" "$cy" "$cz" facing "$lx" "$ly" "$lz" 2>&1 | tr -d '\r')
     echo "    $tp_out"
     if [[ "$tp_out" != *"Teleported"* && "$tp_out" != *"Test passed"* && -n "$tp_out" ]]; then
       echo "::warning title=In-game frames::телепорт камеры для $name не удался: $tp_out"
     fi
-    sleep 2
-    # Клиент уже принял позицию с углом, поэтому возвращаем наблюдателя:
-    # в нём не видно руки игрока и хотбара, а взгляд остаётся прежним.
-    rq gamemode spectator TestPlayer >/dev/null 2>&1 || true
     sleep "$wait"
     # Птицу ставим после того, как клиент встал на постамент: если она
     # появится раньше, клиент успеет уйти из чанка, и сервер перестанет
