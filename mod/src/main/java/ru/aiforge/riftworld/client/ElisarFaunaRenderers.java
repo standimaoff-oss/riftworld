@@ -202,7 +202,7 @@ public final class ElisarFaunaRenderers {
                 com.mojang.blaze3d.vertex.VertexConsumer qv = vc;
                 qp.pushPose();
                 qp.translate(0.0F, 0.5F, 0.0F);
-                com.mojang.math.Matrix4f mtx = qp.last().pose();
+                org.joml.Matrix4f mtx = qp.last().pose();
                 // передняя грань
                 qv.vertex(mtx, -q, -q, 0.0F).color(1.0F, 0.15F, 0.15F, 1.0F).uv(0.0F, 1.0F)
                         .overlayCoords(net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY)
