@@ -3550,6 +3550,29 @@ public final class SeaProbeCommand {
                     raven.hurtMarked = false;
                     level.addFreshEntity(raven);
                     spawned = 1;
+                    raven.setPersistenceRequired();
+                    // Только что созданная сущность ещё не разошлась по
+                    // игрокам: камера снимает кадр сразу, и клиент мог не
+                    // увидеть ворона вовсе. Поэтому переставляем его
+                    // отложенно, через серверную очередь — к тому моменту
+                    // сущность уже в мире и трекинг пересчитан.
+                    raven.getPersistentData().putBoolean("riftworldShowcase", true);
+                    var ravenServer = level.getServer();
+                    if (ravenServer != null) {
+                        final double fx = dx + 0.5D;
+                        final double fy = (double) (dy + 2);
+                        final double fz = dz + 0.5D;
+                        ravenServer.execute(() -> {
+                            raven.setPos(fx, fy, fz);
+                            raven.setDeltaMovement(0.0D, 0.0D, 0.0D);
+                            raven.updateAnchor();
+                            level.getChunk(dx >> 4, dz >> 4);
+                        });
+                    }
+                    // Проверяем сразу: ворон мог не появиться в мире вовсе.
+                    // Через тик обычный деспавн монстра убирает его, если он
+                    // не привязан к игроку и не нужен как PersistentCreature.
+                    raven.setPersistenceRequired();
                     // Печатаем фактическое положение птицы: по нему видно,
                     // стоит ли ворон там, куда целится камера.
                     ravenPos = String.format("%.2f,%.2f,%.2f",

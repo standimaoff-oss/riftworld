@@ -107,10 +107,15 @@ public class BoneRavenEntity extends Monster {
     public void setFrozen(boolean value) {
         this.frozen = value;
         if (value) {
-            this.anchorX = this.getX();
-            this.anchorY = this.getY();
-            this.anchorZ = this.getZ();
+            this.updateAnchor();
         }
+    }
+
+    /** Обновляет якорь замороженной птицы: она держится в этой точке. */
+    public void updateAnchor() {
+        this.anchorX = this.getX();
+        this.anchorY = this.getY();
+        this.anchorZ = this.getZ();
     }
 
     /** Заморожена ли птица. */
