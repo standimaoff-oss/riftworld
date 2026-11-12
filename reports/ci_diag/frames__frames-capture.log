@@ -17,10 +17,10 @@ captured frame-paper-dragon-side
 ::warning title=In-game frames::кадр frame-paper-dragon-head слишком тёмный, переснимаем (4/4)
 ::warning title=In-game frames::кадр frame-paper-dragon-head остался тёмным после четырёх попыток
 captured frame-paper-dragon-head
-  riftstruct kind=bb_bone_raven_showcase at=560,105,560 model_boxes=0 bones=0 atlas=256 spawned=1 blocks=0 sub_air=0 rev=stage105-frozen-1.2 cam=558,108,562:560,106,560 look=560,107,560 raven_pos=560.50,107.00,560.50
+  riftstruct kind=bb_bone_raven_showcase at=560,105,560 model_boxes=0 bones=0 atlas=256 spawned=1 blocks=0 sub_air=0 rev=stage105-frozen-1.2 cam=557,108,557:560,106,560 look=560,107,560 raven_pos=560.50,107.00,560.50
   цель камеры: 560,107,560; ворон: 560.50,107.00,560.50
-    riftcam at=558,108,562 look=560,107,560 yaw=-135.0 pitch=10.0
-    riftstruct kind=bb_bone_raven_showcase at=560,105,560 model_boxes=0 bones=0 atlas=256 spawned=1 blocks=0 sub_air=0 rev=stage105-frozen-1.2 cam=558,108,562:560,106,560 look=560,107,560 raven_pos=560.50,107.00,560.50
+    riftcam at=557,108,557 look=560,107,560 yaw=-45.0 pitch=6.7
+    riftstruct kind=bb_bone_raven_showcase at=560,105,560 model_boxes=0 bones=0 atlas=256 spawned=1 blocks=0 sub_air=0 rev=stage105-frozen-1.2 cam=557,108,557:560,106,560 look=560,107,560 raven_pos=560.50,107.00,560.50
     ворон рядом: Test failed
 
 ::warning title=In-game frames::rcon attempt 1 failed (rc=4), retrying
@@ -40,7 +40,7 @@ Test failed
 ::warning title=In-game frames::кадр frame-bone-raven-three-quarter остался тёмным после четырёх попыток
 captured frame-bone-raven-three-quarter
     riftcam at=564,108,561 look=560,107,560 yaw=-256.0 pitch=6.9
-    riftstruct kind=bb_bone_raven_showcase at=560,105,560 model_boxes=0 bones=0 atlas=256 spawned=1 blocks=0 sub_air=0 rev=stage105-frozen-1.2 cam=558,108,562:560,106,560 look=560,107,560 raven_pos=560.50,107.00,560.50
+    riftstruct kind=bb_bone_raven_showcase at=560,105,560 model_boxes=0 bones=0 atlas=256 spawned=1 blocks=0 sub_air=0 rev=stage105-frozen-1.2 cam=557,108,557:560,106,560 look=560,107,560 raven_pos=560.50,107.00,560.50
     ворон рядом: Test failed
 
 ::warning title=In-game frames::rcon attempt 1 failed (rc=4), retrying
@@ -60,7 +60,7 @@ Test failed
 ::warning title=In-game frames::кадр frame-bone-raven-side остался тёмным после четырёх попыток
 captured frame-bone-raven-side
     riftcam at=561,108,556 look=560,107,560 yaw=14.0 pitch=6.9
-    riftstruct kind=bb_bone_raven_showcase at=560,105,560 model_boxes=0 bones=0 atlas=256 spawned=1 blocks=0 sub_air=0 rev=stage105-frozen-1.2 cam=558,108,562:560,106,560 look=560,107,560 raven_pos=560.50,107.00,560.50
+    riftstruct kind=bb_bone_raven_showcase at=560,105,560 model_boxes=0 bones=0 atlas=256 spawned=1 blocks=0 sub_air=0 rev=stage105-frozen-1.2 cam=557,108,557:560,106,560 look=560,107,560 raven_pos=560.50,107.00,560.50
     ворон рядом: Test failed
 
 ::warning title=In-game frames::rcon attempt 1 failed (rc=4), retrying
