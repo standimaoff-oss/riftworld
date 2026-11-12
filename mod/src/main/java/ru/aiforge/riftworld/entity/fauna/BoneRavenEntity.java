@@ -38,7 +38,7 @@ import ru.aiforge.riftworld.registry.ModItems;
  * Если рядом ({@code <= 24} блоков) за игроком уже охотится {@link MorokEntity},
  * ворон держится высоко в небе и зловеще каркает, не мешая дуэли с хозяевами Пади!
  */
-public class BoneRavenEntity extends net.minecraft.world.entity.Mob implements net.minecraft.world.entity.ai.pathfinder.PathfinderMob {
+public class BoneRavenEntity extends net.minecraft.world.entity.Mob implements net.minecraft.world.entity.ai.PathfinderMob {
     private static final EntityDataAccessor<Integer> DATA_DIVE_TICKS =
             SynchedEntityData.defineId(BoneRavenEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> DATA_DEFERRING =
