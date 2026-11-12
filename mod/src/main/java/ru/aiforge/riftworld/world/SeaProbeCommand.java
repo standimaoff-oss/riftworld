@@ -3555,11 +3555,11 @@ public final class SeaProbeCommand {
                     final double fy = (double) dy + 1.2D;
                     final double fz = dz + 0.5D;
                     raven.setPos(fx, fy, fz);
-                    // noGravity держит птицу в воздухе на заданной высоте
-                    // (с якорем она всё равно стоит на месте, но без гравитации
-                    // клиент получает ровно ту позицию, которую задала витрина).
-                    // setNoAi + setFrozen не дают ворону сменить цель и улететь.
-                    raven.setNoGravity(true);
+                    // Без noGravity: при noGravity Entity#getBoundingBoxForCulling()
+                    // возвращает AABB.ZERO, и клиентский фрустум отсекает птицу —
+                    // рендерер не вызывается вовсе. Птицу удерживает якорь
+                    // (setFrozen -> updateAnchor), а setNoAi не даёт ей сменить
+                    // цель и улететь.
                     raven.setNoAi(true);
                     raven.setFrozen(true);
                     raven.setDeltaMovement(0.0D, 0.0D, 0.0D);
@@ -3603,7 +3603,7 @@ public final class SeaProbeCommand {
             // реально стоит на сервере, если сборка вдруг отдаст старый.
             String line = "riftstruct kind=bb_bone_raven_showcase at=" + dx + "," + dy + "," + dz
                     + " model_boxes=0 bones=0 atlas=256 spawned=" + spawned + " blocks=0 sub_air=0"
-                    + " rev=stage125-nogravity"
+                    + " rev=stage126-anchor"
                     // Камера стоит в двух блоках по диагонали от птицы и смотрит
                     // точно на её уровень (птица висит на dy + 1,2).
                     + " cam=" + (dx - 2) + "," + (dy + 1) + "," + (dz - 2)

@@ -53,6 +53,8 @@ public class BoneRavenEntity extends Monster {
      * через пару секунд.
      */
     private boolean frozen = false;
+    /** Есть ли у птицы заданный якорь (у /summon-птиц его нет). */
+    private boolean hasAnchor = false;
     /** Якорь замороженной птицы: она каждый тик возвращается в эту точку. */
     private double anchorX = 0.0D;
     private double anchorY = 0.0D;
@@ -103,10 +105,18 @@ public class BoneRavenEntity extends Monster {
         return this.entityData.get(DATA_DIVE_TICKS);
     }
 
-    /** Замораживает птицу: она перестаёт летать и бродить. */
+    /**
+     * Замораживает птицу: она перестаёт летать и бродить.
+     *
+     * <p>Заморозка включает якорь: только у явно замороженной птицы он
+     * удерживает позицию. У птиц, поставленных без якоря (например, созданных
+     * командой /summon), якорь по умолчанию (0, 0, 0) — и заморозка уносила
+     * их в начало координат, где они пропадали из кадра.
+     */
     public void setFrozen(boolean value) {
         this.frozen = value;
         if (value) {
+            this.hasAnchor = true;
             this.updateAnchor();
         }
     }
@@ -123,6 +133,7 @@ public class BoneRavenEntity extends Monster {
         this.anchorX = x;
         this.anchorY = y;
         this.anchorZ = z;
+        this.hasAnchor = true;
     }
 
     /** Заморожена ли птица. */
@@ -147,7 +158,14 @@ public class BoneRavenEntity extends Monster {
             // Возвращаем её и в якорь: контроллер полёта продолжает поднимать
             // птицу каждый тик, и она уплывала вверх из кадра.
             this.setDeltaMovement(0.0D, 0.0D, 0.0D);
-            this.setPos(this.anchorX, this.anchorY, this.anchorZ);
+            if (this.hasAnchor) {
+                this.setPos(this.anchorX, this.anchorY, this.anchorZ);
+            } else {
+                // Якоря нет (птица создана командой /summon): удерживать её нечем,
+                // и setPos(0, 0, 0) унёс бы её в начало координат. Просто
+                // гасим движение — птица остаётся на месте или приземляется.
+                this.updateAnchor();
+            }
             return;
         }
 
