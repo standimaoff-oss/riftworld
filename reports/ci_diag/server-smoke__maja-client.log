@@ -33,27 +33,15 @@ Executing steps
  > Running 'listLibraries'
  > Running 'rename'
 Stopping at requested step: /home/runner/.gradle/caches/forge_gradle/mcp_repo/de/oceanlabs/mcp/mcp_config/1.20.1-20230612.114412/joined/rename/output.jar
-[18:37:30] [main/INFO]: Writing debug log file accesstransform.log
-[18:37:30] [main/INFO]: Access Transformer processor running version 8.2.14
-[18:37:30] [main/INFO]: Command line arguments [--inJar, /home/runner/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.23/forge-1.20.1-47.4.23-injected.jar, --outJar, /home/runner/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.23_mapped_official_1.20.1/forge-1.20.1-47.4.23_mapped_official_1.20.1.jar, --logFile, accesstransform.log, --atFile, /home/runner/work/riftworld/riftworld/mod/build/_atJar_4/parent_at.cfg]
-[18:37:30] [main/INFO]: Reading from /home/runner/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.23/forge-1.20.1-47.4.23-injected.jar
-[18:37:30] [main/INFO]: Writing to /home/runner/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.23_mapped_official_1.20.1/forge-1.20.1-47.4.23_mapped_official_1.20.1.jar
-[18:37:30] [main/INFO]: Transformer file /home/runner/work/riftworld/riftworld/mod/build/_atJar_4/parent_at.cfg
-[18:37:30] [main/WARN]: Found existing output jar /home/runner/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.23_mapped_official_1.20.1/forge-1.20.1-47.4.23_mapped_official_1.20.1.jar, overwriting
-[18:37:33] [main/INFO]: JAR transformation complete /home/runner/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.23_mapped_official_1.20.1/forge-1.20.1-47.4.23_mapped_official_1.20.1.jar
+[16:02:16] [main/INFO]: Writing debug log file accesstransform.log
+[16:02:16] [main/INFO]: Access Transformer processor running version 8.2.14
+[16:02:16] [main/INFO]: Command line arguments [--inJar, /home/runner/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.23/forge-1.20.1-47.4.23-injected.jar, --outJar, /home/runner/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.23_mapped_official_1.20.1/forge-1.20.1-47.4.23_mapped_official_1.20.1.jar, --logFile, accesstransform.log, --atFile, /home/runner/work/riftworld/riftworld/mod/build/_atJar_4/parent_at.cfg]
+[16:02:16] [main/INFO]: Reading from /home/runner/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.23/forge-1.20.1-47.4.23-injected.jar
+[16:02:16] [main/INFO]: Writing to /home/runner/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.23_mapped_official_1.20.1/forge-1.20.1-47.4.23_mapped_official_1.20.1.jar
+[16:02:16] [main/INFO]: Transformer file /home/runner/work/riftworld/riftworld/mod/build/_atJar_4/parent_at.cfg
+[16:02:16] [main/WARN]: Found existing output jar /home/runner/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.23_mapped_official_1.20.1/forge-1.20.1-47.4.23_mapped_official_1.20.1.jar, overwriting
+[16:02:18] [main/INFO]: JAR transformation complete /home/runner/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.23_mapped_official_1.20.1/forge-1.20.1-47.4.23_mapped_official_1.20.1.jar
 Creating SRG -> MCP TSRG
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/RiftConfig.java:55: warning: [removal] get() in ModLoadingContext has been deprecated and marked for removal
-        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, CLIENT_SPEC, "riftworld-atmosphere.toml");
-                         ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/net/Net.java:13: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-    public static final SimpleChannel CH = NetworkRegistry.newSimpleChannel(new ResourceLocation(RiftWorld.MODID, "main"), () -> V, V::equals, V::equals);
-                                                                            ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/MajaConfig.java:33: warning: [removal] get() in ModLoadingContext has been deprecated and marked for removal
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, SPEC, "riftworld-maja.toml");
-                         ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/RiftWorld.java:19: warning: [removal] get() in FMLJavaModLoadingContext has been deprecated and marked for removal
-        IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
-                                                ^
 /home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/registry/ModFluids.java:37: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
                 private final ResourceLocation still = new ResourceLocation(RiftWorld.MODID, "block/elisar_water_still");
                                                        ^
@@ -66,87 +54,63 @@ Creating SRG -> MCP TSRG
 /home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/registry/ModFluids.java:117: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
                 private final ResourceLocation flow = new ResourceLocation(RiftWorld.MODID, "block/garden_water_flow");
                                                       ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/flight/Flight.java:57: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-    public static final ResourceKey<Level> TRANSIT_DIM = ResourceKey.create(Registries.DIMENSION, new ResourceLocation(RiftWorld.MODID, "transit"));
-                                                                                                  ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/flight/Flight.java:58: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-    public static final ResourceKey<Level> ELISAR_DIM = ResourceKey.create(Registries.DIMENSION, new ResourceLocation(RiftWorld.MODID, "elisar"));
-                                                                                                 ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/BossColumnRenderer.java:21: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+    private static final ResourceLocation GLB = new ResourceLocation(RiftWorld.MODID, "models/glb/boss_column.glb");
+                                                ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/MorokRenderer.java:29: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+            new ResourceLocation(RiftWorld.MODID, "textures/entity/morok.png");
+            ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/MorokRenderer.java:31: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+            new ResourceLocation(RiftWorld.MODID, "textures/entity/morok_eyes.png");
+            ^
 /home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/GeoMobRenderer.java:28: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
         this.texture = new ResourceLocation(RiftWorld.MODID, texturePath);
                        ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/geo/GeoModel.java:114: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-        ResourceLocation loc = new ResourceLocation("riftworld", "geo/" + name + ".json");
-                               ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/RiftMobRenderer.java:30: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-        this.glb = new ResourceLocation(RiftWorld.MODID, "models/glb/" + model + ".glb");
-                   ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/GlbRenderer.java:37: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-    private static final ResourceLocation WHITE = new ResourceLocation("minecraft", "textures/misc/white.png");
-                                                  ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/GlbAssets.java:66: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-                ResourceLocation id = new ResourceLocation("riftworld", "glb/" + path.getPath().replaceAll("[^a-z0-9_./-]", "_").replace('/', '_') + "_" + i + "_" + (++generation));
-                                      ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/GlbAssets.java:85: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-        ResourceLocation lp = new ResourceLocation(path.getNamespace(), p.substring(0, p.length() - 4) + "_lod1.glb");
-                              ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/model/LiopleurodonBlockbenchModel.java:26: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-			new ModelLayerLocation(new ResourceLocation(RiftWorld.MODID, "liopleurodon_bb"), "main");
-			                       ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/model/fauna/BasaltBeetleModel.java:23: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-			new ModelLayerLocation(new ResourceLocation(RiftWorld.MODID, "basalt_beetle"), "main");
-			                       ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/model/fauna/CrystalGeckoModel.java:23: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-			new ModelLayerLocation(new ResourceLocation(RiftWorld.MODID, "crystal_gecko"), "main");
-			                       ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/model/fauna/AshMothModel.java:23: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-			new ModelLayerLocation(new ResourceLocation(RiftWorld.MODID, "ash_moth"), "main");
-			                       ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/model/fauna/PhantomWolfModel.java:23: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-			new ModelLayerLocation(new ResourceLocation(RiftWorld.MODID, "phantom_wolf"), "main");
-			                       ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/model/fauna/BoneRavenModel.java:23: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-			new ModelLayerLocation(new ResourceLocation(RiftWorld.MODID, "bone_raven"), "main");
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/model/fauna/CoralHermitCrabModel.java:23: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+			new ModelLayerLocation(new ResourceLocation(RiftWorld.MODID, "coral_hermit_crab"), "main");
 			                       ^
 /home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/model/fauna/PorcelainCraneModel.java:23: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
 			new ModelLayerLocation(new ResourceLocation(RiftWorld.MODID, "porcelain_crane"), "main");
 			                       ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/model/fauna/ReefSeahorseModel.java:23: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-			new ModelLayerLocation(new ResourceLocation(RiftWorld.MODID, "reef_seahorse"), "main");
-			                       ^
 /home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/model/fauna/BlossomSnailModel.java:23: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
 			new ModelLayerLocation(new ResourceLocation(RiftWorld.MODID, "blossom_snail"), "main");
-			                       ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/model/fauna/FacetedOwlModel.java:23: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-			new ModelLayerLocation(new ResourceLocation(RiftWorld.MODID, "faceted_owl"), "main");
-			                       ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/model/fauna/AzureFrogModel.java:23: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-			new ModelLayerLocation(new ResourceLocation(RiftWorld.MODID, "azure_frog"), "main");
-			                       ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/model/fauna/GhostSquidModel.java:23: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-			new ModelLayerLocation(new ResourceLocation(RiftWorld.MODID, "ghost_squid"), "main");
-			                       ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/model/fauna/CoralHermitCrabModel.java:23: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-			new ModelLayerLocation(new ResourceLocation(RiftWorld.MODID, "coral_hermit_crab"), "main");
-			                       ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/model/fauna/SizoLeafwingModel.java:23: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-			new ModelLayerLocation(new ResourceLocation(RiftWorld.MODID, "sizo_leafwing"), "main");
-			                       ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/model/fauna/AmethystFoxModel.java:23: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-			new ModelLayerLocation(new ResourceLocation(RiftWorld.MODID, "amethyst_fox"), "main");
 			                       ^
 /home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/model/fauna/SilverSeaSerpentModel.java:23: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
 			new ModelLayerLocation(new ResourceLocation(RiftWorld.MODID, "silver_sea_serpent"), "main");
 			                       ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/model/ElisarFolkModels.java:31: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-            new ResourceLocation(RiftWorld.MODID, "elisar_villager"), "main");
-            ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/model/ElisarFolkModels.java:33: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-            new ResourceLocation(RiftWorld.MODID, "elisar_guard"), "main");
-            ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/model/ElisarFolkModels.java:35: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-            new ResourceLocation(RiftWorld.MODID, "elisar_archer"), "main");
-            ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/model/fauna/AzureFrogModel.java:23: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+			new ModelLayerLocation(new ResourceLocation(RiftWorld.MODID, "azure_frog"), "main");
+			                       ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/model/fauna/BasaltBeetleModel.java:23: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+			new ModelLayerLocation(new ResourceLocation(RiftWorld.MODID, "basalt_beetle"), "main");
+			                       ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/model/fauna/BoneRavenModel.java:23: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+			new ModelLayerLocation(new ResourceLocation(RiftWorld.MODID, "bone_raven"), "main");
+			                       ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/model/fauna/PhantomWolfModel.java:23: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+			new ModelLayerLocation(new ResourceLocation(RiftWorld.MODID, "phantom_wolf"), "main");
+			                       ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/model/fauna/FacetedOwlModel.java:23: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+			new ModelLayerLocation(new ResourceLocation(RiftWorld.MODID, "faceted_owl"), "main");
+			                       ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/model/fauna/AshMothModel.java:23: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+			new ModelLayerLocation(new ResourceLocation(RiftWorld.MODID, "ash_moth"), "main");
+			                       ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/model/fauna/SizoLeafwingModel.java:23: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+			new ModelLayerLocation(new ResourceLocation(RiftWorld.MODID, "sizo_leafwing"), "main");
+			                       ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/model/fauna/CrystalGeckoModel.java:23: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+			new ModelLayerLocation(new ResourceLocation(RiftWorld.MODID, "crystal_gecko"), "main");
+			                       ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/model/fauna/AmethystFoxModel.java:23: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+			new ModelLayerLocation(new ResourceLocation(RiftWorld.MODID, "amethyst_fox"), "main");
+			                       ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/model/fauna/ReefSeahorseModel.java:23: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+			new ModelLayerLocation(new ResourceLocation(RiftWorld.MODID, "reef_seahorse"), "main");
+			                       ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/model/fauna/GhostSquidModel.java:23: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+			new ModelLayerLocation(new ResourceLocation(RiftWorld.MODID, "ghost_squid"), "main");
+			                       ^
 /home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/model/ElisarArmorModels.java:33: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
             new ResourceLocation(RiftWorld.MODID, "aurite_armor"), "inner");
             ^
@@ -159,12 +123,24 @@ Creating SRG -> MCP TSRG
 /home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/model/ElisarArmorModels.java:39: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
             new ResourceLocation(RiftWorld.MODID, "riftcrystal_armor"), "outer");
             ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/RiftcrystalArmorGlowLayer.java:26: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-    private static final ResourceLocation GLOW_TEX = new ResourceLocation(
-                                                     ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/ElisarEye.java:51: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-        return new ResourceLocation(RiftWorld.MODID, "textures/environment/" + n + ".png");
-               ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/model/ElisarFolkModels.java:31: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+            new ResourceLocation(RiftWorld.MODID, "elisar_villager"), "main");
+            ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/model/ElisarFolkModels.java:33: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+            new ResourceLocation(RiftWorld.MODID, "elisar_guard"), "main");
+            ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/model/ElisarFolkModels.java:35: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+            new ResourceLocation(RiftWorld.MODID, "elisar_archer"), "main");
+            ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/model/LiopleurodonBlockbenchModel.java:26: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+			new ModelLayerLocation(new ResourceLocation(RiftWorld.MODID, "liopleurodon_bb"), "main");
+			                       ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/PaperDragonRenderer.java:31: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+    private static final ResourceLocation TEX = new ResourceLocation(RiftWorld.MODID, "textures/entity/paper_dragon.png");
+                                                ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/CrystalClientHandler.java:42: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+    private static final ResourceLocation TEX_SHARD = new ResourceLocation("riftworld", "textures/entity/crystal_shard.png");
+                                                      ^
 /home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/ElisarFolkRenderers.java:20: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
     private static final ResourceLocation VILLAGER_TEX = new ResourceLocation(
                                                          ^
@@ -174,48 +150,6 @@ Creating SRG -> MCP TSRG
 /home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/ElisarFolkRenderers.java:24: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
     private static final ResourceLocation ARCHER_TEX = new ResourceLocation(
                                                        ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/BoneRavenRenderer.java:36: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-            new ResourceLocation(RiftWorld.MODID, "textures/entity/bone_raven.png");
-            ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/BoneRavenRenderer.java:38: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-            new ResourceLocation(RiftWorld.MODID, "textures/entity/bone_raven_glow.png");
-            ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/PaperDragonRenderer.java:31: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-    private static final ResourceLocation TEX = new ResourceLocation(RiftWorld.MODID, "textures/entity/paper_dragon.png");
-                                                ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/ModelItemRenderer.java:76: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-        GlbAssets.Loaded lm = GlbAssets.get(new net.minecraft.resources.ResourceLocation(ru.aiforge.riftworld.RiftWorld.MODID, "models/glb/" + gi.glb() + ".glb"));
-                                            ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/ModelItemRenderer.java:130: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-        net.minecraft.resources.ResourceLocation glbLoc = new net.minecraft.resources.ResourceLocation(
-                                                          ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/CrystalClientHandler.java:42: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-    private static final ResourceLocation TEX_SHARD = new ResourceLocation("riftworld", "textures/entity/crystal_shard.png");
-                                                      ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/ScytheDropRenderer.java:15: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-    static final ResourceLocation GLB = new ResourceLocation(RiftWorld.MODID, "models/glb/scythe.glb");
-                                        ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/ElisarFaunaRenderers.java:166: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-            this.tex = new ResourceLocation(RiftWorld.MODID, "textures/entity/" + id + ".png");
-                       ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/ElisarFaunaRenderers.java:172: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-                        new ResourceLocation(RiftWorld.MODID, "textures/entity/" + id + "_glow.png")));
-                        ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/ShaderCompat.java:38: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-    public static final ResourceLocation WHITE_TEX = new ResourceLocation(RiftWorld.MODID, "textures/misc/white.png");
-                                                     ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/ElisarSky.java:33: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-    public static final ResourceLocation ID = new ResourceLocation(RiftWorld.MODID, "elisar");
-                                              ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/FlightFx.java:44: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-    public static final ResourceLocation TRANSIT_FX = new ResourceLocation(RiftWorld.MODID, "transit");
-                                                      ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/FlightFx.java:45: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-    private static final ResourceLocation CAPSULE = new ResourceLocation(RiftWorld.MODID, "models/glb/capsule.glb");
-                                                    ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/FlightFx.java:68: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-        return new ResourceLocation(RiftWorld.MODID, "textures/environment/" + n + ".png");
-               ^
 /home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/CrystalGeoRenderers.java:34: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
     public static final ResourceLocation BOSS_GLB   = new ResourceLocation(RiftWorld.MODID, "models/glb/rift_obelisk_boss.glb");
                                                       ^
@@ -246,21 +180,27 @@ Creating SRG -> MCP TSRG
 /home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/CrystalGeoRenderers.java:442: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
             new ResourceLocation("riftworld", "textures/block/crystal_block_bright.png");
             ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/LiopleurodonRenderer.java:30: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-            new ResourceLocation("riftworld", "textures/entity/liopleurodon.png");
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/PortalRitualClient.java:73: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+            new ResourceLocation(RiftWorld.MODID, "textures/environment/portal_floor_tile.png");
             ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/SpatialRiftRenderer.java:32: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-            new ResourceLocation(RiftWorld.MODID, "textures/environment/spatial_rift.png");
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/PortalRitualClient.java:75: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+            new ResourceLocation(RiftWorld.MODID, "textures/environment/portal_floor_mandala.png");
             ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/BossColumnRenderer.java:21: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-    private static final ResourceLocation GLB = new ResourceLocation(RiftWorld.MODID, "models/glb/boss_column.glb");
-                                                ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/PortalRitualClient.java:77: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+            new ResourceLocation(RiftWorld.MODID, "textures/environment/portal_open_seal.png");
+            ^
 /home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/PeacefulFaunaRenderers.java:33: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
             new ResourceLocation(RiftWorld.MODID, "textures/entity/sky_dart_fish.png");
             ^
 /home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/PeacefulFaunaRenderers.java:35: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
             new ResourceLocation(RiftWorld.MODID, "textures/entity/blossom_stag.png");
             ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/ElisarFaunaRenderers.java:169: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+            this.tex = new ResourceLocation(RiftWorld.MODID, "textures/entity/" + id + ".png");
+                       ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/ElisarFaunaRenderers.java:175: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+                        new ResourceLocation(RiftWorld.MODID, "textures/entity/" + id + "_glow.png")));
+                        ^
 /home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/ClientHooks.java:127: warning: [removal] ResourceLocation(String) in ResourceLocation has been deprecated and marked for removal
                     new net.minecraft.resources.ResourceLocation("pull"),
                     ^
@@ -309,39 +249,99 @@ Creating SRG -> MCP TSRG
 /home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/ClientHooks.java:220: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
                 new net.minecraft.resources.ResourceLocation(RiftWorld.MODID, "block/rug_trim"));
                 ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/WindowLights.java:58: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-    private static final ResourceLocation GLASS_TEX = new ResourceLocation(RiftWorld.MODID, "block/stained_glass");
-                                                      ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/ModelItemRenderer.java:76: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+        GlbAssets.Loaded lm = GlbAssets.get(new net.minecraft.resources.ResourceLocation(ru.aiforge.riftworld.RiftWorld.MODID, "models/glb/" + gi.glb() + ".glb"));
+                                            ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/ModelItemRenderer.java:130: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+        net.minecraft.resources.ResourceLocation glbLoc = new net.minecraft.resources.ResourceLocation(
+                                                          ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/GlbAssets.java:66: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+                ResourceLocation id = new ResourceLocation("riftworld", "glb/" + path.getPath().replaceAll("[^a-z0-9_./-]", "_").replace('/', '_') + "_" + i + "_" + (++generation));
+                                      ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/GlbAssets.java:85: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+        ResourceLocation lp = new ResourceLocation(path.getNamespace(), p.substring(0, p.length() - 4) + "_lod1.glb");
+                              ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/GlbRenderer.java:37: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+    private static final ResourceLocation WHITE = new ResourceLocation("minecraft", "textures/misc/white.png");
+                                                  ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/ModelBER.java:31: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+        if (r == null) PATHS[k.ordinal()] = r = new ResourceLocation(RiftWorld.MODID, "models/glb/" + k.glb + ".glb");
+                                                ^
 /home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/LaunchCoreRenderer.java:19: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
     private static final ResourceLocation HATCH = new ResourceLocation(RiftWorld.MODID, "models/glb/shaft_hatch.glb");
                                                   ^
 /home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/LaunchCoreRenderer.java:20: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
     private static final ResourceLocation CAPSULE = new ResourceLocation(RiftWorld.MODID, "models/glb/capsule.glb");
                                                     ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/SeaFishRenderer.java:40: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+        return new ResourceLocation("riftworld", "textures/entity/" + modelName(e.variant()) + ".png");
+               ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/FlightFx.java:44: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+    public static final ResourceLocation TRANSIT_FX = new ResourceLocation(RiftWorld.MODID, "transit");
+                                                      ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/FlightFx.java:45: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+    private static final ResourceLocation CAPSULE = new ResourceLocation(RiftWorld.MODID, "models/glb/capsule.glb");
+                                                    ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/FlightFx.java:68: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+        return new ResourceLocation(RiftWorld.MODID, "textures/environment/" + n + ".png");
+               ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/LiopleurodonRenderer.java:30: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+            new ResourceLocation("riftworld", "textures/entity/liopleurodon.png");
+            ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/SpatialRiftRenderer.java:32: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+            new ResourceLocation(RiftWorld.MODID, "textures/environment/spatial_rift.png");
+            ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/RiftMobRenderer.java:30: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+        this.glb = new ResourceLocation(RiftWorld.MODID, "models/glb/" + model + ".glb");
+                   ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/ElisarSky.java:33: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+    public static final ResourceLocation ID = new ResourceLocation(RiftWorld.MODID, "elisar");
+                                              ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/ShaderCompat.java:38: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+    public static final ResourceLocation WHITE_TEX = new ResourceLocation(RiftWorld.MODID, "textures/misc/white.png");
+                                                     ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/ScytheDropRenderer.java:15: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+    static final ResourceLocation GLB = new ResourceLocation(RiftWorld.MODID, "models/glb/scythe.glb");
+                                        ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/ElGranMajaRenderer.java:21: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+    private static final ResourceLocation TEXTURE = new ResourceLocation("riftworld", "textures/entity/el_gran_maja.png");
+                                                    ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/geo/GeoModel.java:114: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+        ResourceLocation loc = new ResourceLocation("riftworld", "geo/" + name + ".json");
+                               ^
 /home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/HollowwatcherRenderer.java:29: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
             new ResourceLocation(RiftWorld.MODID, "textures/entity/hollowwatcher.png");
             ^
 /home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/HollowwatcherRenderer.java:31: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
             new ResourceLocation(RiftWorld.MODID, "textures/entity/hollowwatcher_eyes.png");
             ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/SeaFishRenderer.java:40: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-        return new ResourceLocation("riftworld", "textures/entity/" + modelName(e.variant()) + ".png");
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/RiftcrystalArmorGlowLayer.java:26: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+    private static final ResourceLocation GLOW_TEX = new ResourceLocation(
+                                                     ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/WindowLights.java:58: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+    private static final ResourceLocation GLASS_TEX = new ResourceLocation(RiftWorld.MODID, "block/stained_glass");
+                                                      ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/ElisarEye.java:51: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+        return new ResourceLocation(RiftWorld.MODID, "textures/environment/" + n + ".png");
                ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/ModelBER.java:31: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-        if (r == null) PATHS[k.ordinal()] = r = new ResourceLocation(RiftWorld.MODID, "models/glb/" + k.glb + ".glb");
-                                                ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/PortalRitualClient.java:73: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-            new ResourceLocation(RiftWorld.MODID, "textures/environment/portal_floor_tile.png");
-            ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/PortalRitualClient.java:75: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-            new ResourceLocation(RiftWorld.MODID, "textures/environment/portal_floor_mandala.png");
-            ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/PortalRitualClient.java:77: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-            new ResourceLocation(RiftWorld.MODID, "textures/environment/portal_open_seal.png");
-            ^
-/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/client/MorokRenderer.java:29: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
-            new ResourceLocation(RiftWorld.MODID, "textures/entity/morok.png");
-            ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/flight/Flight.java:57: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+    public static final ResourceKey<Level> TRANSIT_DIM = ResourceKey.create(Registries.DIMENSION, new ResourceLocation(RiftWorld.MODID, "transit"));
+                                                                                                  ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/flight/Flight.java:58: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+    public static final ResourceKey<Level> ELISAR_DIM = ResourceKey.create(Registries.DIMENSION, new ResourceLocation(RiftWorld.MODID, "elisar"));
+                                                                                                 ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/net/Net.java:13: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+    public static final SimpleChannel CH = NetworkRegistry.newSimpleChannel(new ResourceLocation(RiftWorld.MODID, "main"), () -> V, V::equals, V::equals);
+                                                                            ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/MajaConfig.java:33: warning: [removal] get() in ModLoadingContext has been deprecated and marked for removal
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, SPEC, "riftworld-maja.toml");
+                         ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/RiftConfig.java:55: warning: [removal] get() in ModLoadingContext has been deprecated and marked for removal
+        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, CLIENT_SPEC, "riftworld-atmosphere.toml");
+                         ^
+/home/runner/work/riftworld/riftworld/mod/src/main/java/ru/aiforge/riftworld/world/PaperDragonKeeper.java:29: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+    private static final ResourceLocation VIOLET  = new ResourceLocation(RiftWorld.MODID, "violet_hills");
+                                                    ^
 Note: Some input files use or override a deprecated API.
 Note: Recompile with -Xlint:deprecation for details.
 Note: Some input files additionally use or override a deprecated API that is marked for removal.
@@ -357,16 +357,16 @@ Downloading: https://resources.download.minecraft.net/b6/b62ca8ec10d07e6bf5ac8da
 Downloading: https://resources.download.minecraft.net/5f/5ff04807c356f1beed0b86ccf659b44b9983e3fa Asset: icons/icon_16x16.png
 Downloading: https://resources.download.minecraft.net/80/8030dd9dc315c0381d52c4782ea36c6baf6e8135 Asset: icons/icon_256x256.png
 Downloading: https://resources.download.minecraft.net/af/af96f55a90eaf11b327f1b5f8834a051027dc506 Asset: icons/icon_32x32.png
-Downloading: https://resources.download.minecraft.net/f0/f00657542252858a721e715a2e888a9226404e35 Asset: icons/minecraft.icns
 Downloading: https://resources.download.minecraft.net/b8/b80b6e9ff01c78c624df5429e1d3dcd3d5130834 Asset: icons/icon_48x48.png
+Downloading: https://resources.download.minecraft.net/f0/f00657542252858a721e715a2e888a9226404e35 Asset: icons/minecraft.icns
 Downloading: https://resources.download.minecraft.net/95/958d57021d8009de55d6e9e19957a72545e3c30c Asset: icons/snapshot/icon_128x128.png
 Downloading: https://resources.download.minecraft.net/94/949afe72d4d3d785dab52d8baaefeb0e38b3c067 Asset: icons/snapshot/icon_16x16.png
 Downloading: https://resources.download.minecraft.net/9f/9f84f917a09facacf1235eed3fa77789e4554afb Asset: icons/snapshot/icon_256x256.png
 Downloading: https://resources.download.minecraft.net/26/26ad18d9f4ef0a71255459b5f01b738b81dbc7dc Asset: icons/snapshot/icon_32x32.png
-Downloading: https://resources.download.minecraft.net/df/df274fe57c49ef1af6d218703d805db76a5c8af9 Asset: icons/snapshot/icon_48x48.png
 Downloading: https://resources.download.minecraft.net/65/65ebca3306ccd6d7f9d5de8f1cc7a1216d80246d Asset: icons/snapshot/minecraft.icns
 Downloading: https://resources.download.minecraft.net/f8/f8d4768707b20359f2f7660346bd3a84b6ee27b1 Asset: minecraft/font/include/unifont.json
 Downloading: https://resources.download.minecraft.net/a6/a661b5622172ea1ce1fa9ec78fad484d118e5689 Asset: minecraft/font/unifont.zip
+Downloading: https://resources.download.minecraft.net/df/df274fe57c49ef1af6d218703d805db76a5c8af9 Asset: icons/snapshot/icon_48x48.png
 Downloading: https://resources.download.minecraft.net/28/28e516cd27c26786eeebafaf35feffb324d55ded Asset: minecraft/lang/af_za.json
 Downloading: https://resources.download.minecraft.net/7b/7bc980eab09031d3bc3092761566cf367700a9e4 Asset: minecraft/lang/ar_sa.json
 Downloading: https://resources.download.minecraft.net/f3/f349ced601bed65ccff4069f50ac4dbe472462db Asset: minecraft/lang/ast_es.json
@@ -435,8 +435,8 @@ Downloading: https://resources.download.minecraft.net/70/70d5a145c743f460b47a5a7
 Downloading: https://resources.download.minecraft.net/44/445048fa14d0e1d422a40faec38a1721e893d133 Asset: minecraft/lang/ig_ng.json
 Downloading: https://resources.download.minecraft.net/bc/bc92cf8a1aade18b7c892f0381852e6d7f76947e Asset: minecraft/lang/io_en.json
 Downloading: https://resources.download.minecraft.net/ff/ffa47eaa68de59c21768530af46a21e6b9f3165d Asset: minecraft/lang/is_is.json
-Downloading: https://resources.download.minecraft.net/d4/d4de73d63ddfdfe61406815a9479f7e7fab298a4 Asset: minecraft/lang/it_it.json
 Downloading: https://resources.download.minecraft.net/a3/a325c9f6b3ef9f82c8f3c8b8783bb78693c35626 Asset: minecraft/lang/isv.json
+Downloading: https://resources.download.minecraft.net/d4/d4de73d63ddfdfe61406815a9479f7e7fab298a4 Asset: minecraft/lang/it_it.json
 Downloading: https://resources.download.minecraft.net/c3/c387ff7892ec632945829bad546c7ff4381c375f Asset: minecraft/lang/ja_jp.json
 Downloading: https://resources.download.minecraft.net/8a/8aec57a0da19d6cf127d97c260f9d23e2cb6a9bf Asset: minecraft/lang/jbo_en.json
 Downloading: https://resources.download.minecraft.net/ed/ed2ba8beffbbf064a4780b6ef50ee7d1e7998d6e Asset: minecraft/lang/jv_id.json
@@ -472,8 +472,8 @@ Downloading: https://resources.download.minecraft.net/0c/0ce4456a8ec4545a83309e6
 Downloading: https://resources.download.minecraft.net/19/199119216525db86f680a4c07aacb58e2ae3a118 Asset: minecraft/lang/pls.json
 Downloading: https://resources.download.minecraft.net/be/bea44c61c94f2c544cb6406d6f4dae42554d553c Asset: minecraft/lang/pt_br.json
 Downloading: https://resources.download.minecraft.net/d4/d4b84e55fb042e93a88530134dd578648b7dfe0a Asset: minecraft/lang/pt_pt.json
-Downloading: https://resources.download.minecraft.net/1f/1fc7ebedf3c7c5d2b55fbea5ec08dc8261fd3325 Asset: minecraft/lang/qcb_es.json
 Downloading: https://resources.download.minecraft.net/9d/9d1086ee1aa446035bfd0691023118da762bc71c Asset: minecraft/lang/qid.json
+Downloading: https://resources.download.minecraft.net/1f/1fc7ebedf3c7c5d2b55fbea5ec08dc8261fd3325 Asset: minecraft/lang/qcb_es.json
 Downloading: https://resources.download.minecraft.net/08/08c285475b57727d89deeb84d9a85999f17ac07b Asset: minecraft/lang/qya_aa.json
 Downloading: https://resources.download.minecraft.net/ab/ab7e730294a18362b8f3d934bded9eaaea6b81f5 Asset: minecraft/lang/ro_ro.json
 Downloading: https://resources.download.minecraft.net/0a/0aa9ba3813ded68560540010b207a01a7c0c5577 Asset: minecraft/lang/rpr.json
@@ -503,11 +503,11 @@ Downloading: https://resources.download.minecraft.net/28/284475bb8839021b236ff62
 Downloading: https://resources.download.minecraft.net/57/57b375c691cfb3ad0bbeb57b0ffb0c1ff5d07992 Asset: minecraft/lang/val_es.json
 Downloading: https://resources.download.minecraft.net/e6/e671ea7818778e559a4f2ea1f4659590ef5d0534 Asset: minecraft/lang/vec_it.json
 Downloading: https://resources.download.minecraft.net/d9/d9d303dd47ebe318e47be008a61126714035bcb6 Asset: minecraft/lang/vi_vn.json
-Downloading: https://resources.download.minecraft.net/1c/1cd8cc16e6eec6252a521182b5a380049c9addec Asset: minecraft/lang/vro.json
 Downloading: https://resources.download.minecraft.net/a4/a45c90a264abe6ddba595ea2312719dd584c6c69 Asset: minecraft/lang/vp_vl.json
-Downloading: https://resources.download.minecraft.net/44/44b191b96ab4726d9ace1ce1122a7e7fcfa76e82 Asset: minecraft/lang/yi_de.json
+Downloading: https://resources.download.minecraft.net/1c/1cd8cc16e6eec6252a521182b5a380049c9addec Asset: minecraft/lang/vro.json
 Downloading: https://resources.download.minecraft.net/3a/3a483cc2516e2f3414900c3822512a1fb828eec4 Asset: minecraft/lang/yo_ng.json
 Downloading: https://resources.download.minecraft.net/dc/dc7a2a97cd71031e709e3d3c90ee1b511fad1269 Asset: minecraft/lang/zh_cn.json
+Downloading: https://resources.download.minecraft.net/44/44b191b96ab4726d9ace1ce1122a7e7fcfa76e82 Asset: minecraft/lang/yi_de.json
 Downloading: https://resources.download.minecraft.net/23/23b9652ee21795ff8c0eb5b5068ea188003ba709 Asset: minecraft/lang/zh_hk.json
 Downloading: https://resources.download.minecraft.net/7c/7c91a0c17b55fd1bc37b22e54e2191239ed48dea Asset: minecraft/lang/zh_tw.json
 Downloading: https://resources.download.minecraft.net/72/72b5f5312824c686e5d12c2f44f453f1d3c96fb8 Asset: minecraft/lang/zlm_arab.json
@@ -590,8 +590,8 @@ Downloading: https://resources.download.minecraft.net/20/207769920359910280bd391
 Downloading: https://resources.download.minecraft.net/14/14029d584503ceae06997bd88221c59856914d05 Asset: minecraft/sounds/ambient/nether/nether_wastes/addition4.ogg
 Downloading: https://resources.download.minecraft.net/3a/3ae5e229769df9c82e3c23e02e798af8b408edc5 Asset: minecraft/sounds/ambient/nether/nether_wastes/addition5.ogg
 Downloading: https://resources.download.minecraft.net/ae/ae70d4b1d6a7ae76ae987cc205a97a68c6c40036 Asset: minecraft/sounds/ambient/nether/nether_wastes/addition6.ogg
-Downloading: https://resources.download.minecraft.net/30/301664738b532b28ff12304a34e809b07245f1bc Asset: minecraft/sounds/ambient/nether/nether_wastes/addition7.ogg
 Downloading: https://resources.download.minecraft.net/e7/e7bf0b9ceb7461fcbb2915991638566463883fc3 Asset: minecraft/sounds/ambient/nether/nether_wastes/addition8.ogg
+Downloading: https://resources.download.minecraft.net/30/301664738b532b28ff12304a34e809b07245f1bc Asset: minecraft/sounds/ambient/nether/nether_wastes/addition7.ogg
 Downloading: https://resources.download.minecraft.net/68/68a1db001e6de7b926620b43e9080fc8110ffe1f Asset: minecraft/sounds/ambient/nether/nether_wastes/ambience.ogg
 Downloading: https://resources.download.minecraft.net/3b/3be19ca12af51eee46dde06d994ac3f6eb4bb33a Asset: minecraft/sounds/ambient/nether/nether_wastes/dark1.ogg
 Downloading: https://resources.download.minecraft.net/24/241676c23b528442c0c4644574a1ebfe1994290f Asset: minecraft/sounds/ambient/nether/nether_wastes/dark2.ogg
@@ -768,8 +768,8 @@ Downloading: https://resources.download.minecraft.net/e5/e5a53e56c16fbaf4a58eb39
 Downloading: https://resources.download.minecraft.net/10/10b4aeb4a3000d312a50d1a03b6ef685dddc8ec7 Asset: minecraft/sounds/block/bamboo/place4.ogg
 Downloading: https://resources.download.minecraft.net/18/1882fe1f3b4788404e1cd152764345ee3a4495f2 Asset: minecraft/sounds/block/bamboo/place5.ogg
 Downloading: https://resources.download.minecraft.net/21/21a2e6ab55d2cae46bc0cc5762c2869075f1aded Asset: minecraft/sounds/block/bamboo/place6.ogg
-Downloading: https://resources.download.minecraft.net/50/50c9b5b23ecf10df2f0301dc78a2dfa30c084fe7 Asset: minecraft/sounds/block/bamboo/sapling_hit2.ogg
 Downloading: https://resources.download.minecraft.net/79/79f72a74753d81086324b8a826cab0a612bc57a4 Asset: minecraft/sounds/block/bamboo/sapling_hit1.ogg
+Downloading: https://resources.download.minecraft.net/50/50c9b5b23ecf10df2f0301dc78a2dfa30c084fe7 Asset: minecraft/sounds/block/bamboo/sapling_hit2.ogg
 Downloading: https://resources.download.minecraft.net/b7/b72c88ed02173cdef682d3d658544333ef608bd8 Asset: minecraft/sounds/block/bamboo/sapling_hit3.ogg
 Downloading: https://resources.download.minecraft.net/4f/4f1d7eed78371293d49c31c7a39bfdd4b4bd1e51 Asset: minecraft/sounds/block/bamboo/sapling_hit4.ogg
 Downloading: https://resources.download.minecraft.net/df/df131c5832b20f3967463a0bab0e4c8797c25eee Asset: minecraft/sounds/block/bamboo/sapling_hit5.ogg
@@ -788,8 +788,8 @@ Downloading: https://resources.download.minecraft.net/ab/ab411aae137f85c003b9959
 Downloading: https://resources.download.minecraft.net/1f/1fff9fe2769f81cbc68d1e4e44b8b69002d31cf6 Asset: minecraft/sounds/block/bamboo_wood/break1.ogg
 Downloading: https://resources.download.minecraft.net/42/4231b710979dc406cfd24b5da9f6d50cda6a2823 Asset: minecraft/sounds/block/bamboo_wood/break2.ogg
 Downloading: https://resources.download.minecraft.net/7e/7ee1ddfd1f42fd5b06d8cbdb9213c72e575b2594 Asset: minecraft/sounds/block/bamboo_wood/break3.ogg
-Downloading: https://resources.download.minecraft.net/51/51646cd9bdfc091ec589875f1da8786c85ebff79 Asset: minecraft/sounds/block/bamboo_wood/break5.ogg
 Downloading: https://resources.download.minecraft.net/5d/5d8ce0540e1958840cb4d753443f8221d1bdaf1a Asset: minecraft/sounds/block/bamboo_wood/break4.ogg
+Downloading: https://resources.download.minecraft.net/51/51646cd9bdfc091ec589875f1da8786c85ebff79 Asset: minecraft/sounds/block/bamboo_wood/break5.ogg
 Downloading: https://resources.download.minecraft.net/21/21c7c1403ddc62ebf24deca09f92c4b317c88182 Asset: minecraft/sounds/block/bamboo_wood/step1.ogg
 Downloading: https://resources.download.minecraft.net/de/de2a2d344850841901eb41880afc9604c65e819d Asset: minecraft/sounds/block/bamboo_wood/step2.ogg
 Downloading: https://resources.download.minecraft.net/06/065a6eea7962b091faccbaffad8d34f9394779d3 Asset: minecraft/sounds/block/bamboo_wood/step3.ogg
@@ -1015,8 +1015,8 @@ Downloading: https://resources.download.minecraft.net/19/19786806146a50a06d8dbd3
 Downloading: https://resources.download.minecraft.net/87/871634413de37a092d0e5fe7844a37917c27bbf2 Asset: minecraft/sounds/block/chest/close_locked.ogg
 Downloading: https://resources.download.minecraft.net/f9/f993dbcc8cdde669020b9f988f091d997006ce8b Asset: minecraft/sounds/block/chest/open.ogg
 Downloading: https://resources.download.minecraft.net/4e/4ed1f29f3e1378811f7fcc49db743400b8e3284f Asset: minecraft/sounds/block/chest/open_locked.ogg
-Downloading: https://resources.download.minecraft.net/8e/8e5a70a320c58d1ff09270c13b0fa9d5b776f272 Asset: minecraft/sounds/block/chiseled_bookshelf/break2.ogg
 Downloading: https://resources.download.minecraft.net/22/220e698dd673ceccb25cc9e7428fb2ab76c01ddb Asset: minecraft/sounds/block/chiseled_bookshelf/break1.ogg
+Downloading: https://resources.download.minecraft.net/8e/8e5a70a320c58d1ff09270c13b0fa9d5b776f272 Asset: minecraft/sounds/block/chiseled_bookshelf/break2.ogg
 Downloading: https://resources.download.minecraft.net/97/97c5a5b02bdf99e4b3d478423b85491f49876c68 Asset: minecraft/sounds/block/chiseled_bookshelf/break3.ogg
 Downloading: https://resources.download.minecraft.net/fd/fdaaa018976eb3350c7aab42fe060b190f2eaf4d Asset: minecraft/sounds/block/chiseled_bookshelf/break4.ogg
 Downloading: https://resources.download.minecraft.net/57/575f63a30d3e0c623b3d9a5c34eadd73ec7558b3 Asset: minecraft/sounds/block/chiseled_bookshelf/break5.ogg
@@ -1046,8 +1046,8 @@ Downloading: https://resources.download.minecraft.net/aa/aa10d6c0b4941f35b7129ee
 Downloading: https://resources.download.minecraft.net/07/07373cce0250d335443998231c8a9e3ef7531e9f Asset: minecraft/sounds/block/chorus_flower/grow1.ogg
 Downloading: https://resources.download.minecraft.net/f2/f23941bd42028d6fac79a142cb913522f05998c2 Asset: minecraft/sounds/block/chorus_flower/grow2.ogg
 Downloading: https://resources.download.minecraft.net/7e/7e163e93b0799fc8373baa3fdbf44bffcbe540b4 Asset: minecraft/sounds/block/chorus_flower/grow3.ogg
-Downloading: https://resources.download.minecraft.net/a2/a2c1116d40b879a0abccc2f02c0471be91bb6b30 Asset: minecraft/sounds/block/chorus_flower/grow4.ogg
 Downloading: https://resources.download.minecraft.net/b9/b97899f3c27ab46d7bab3edd0d1d73fecf5469e3 Asset: minecraft/sounds/block/composter/empty1.ogg
+Downloading: https://resources.download.minecraft.net/a2/a2c1116d40b879a0abccc2f02c0471be91bb6b30 Asset: minecraft/sounds/block/chorus_flower/grow4.ogg
 Downloading: https://resources.download.minecraft.net/77/77109350e5cf7cfaa0cc1543294dde3d76324645 Asset: minecraft/sounds/block/composter/empty2.ogg
 Downloading: https://resources.download.minecraft.net/e7/e76c482f23201967692b2b8442dd0a52aac48701 Asset: minecraft/sounds/block/composter/empty3.ogg
 Downloading: https://resources.download.minecraft.net/4b/4b9469a8a151cba0d28f14d87723244d8de74950 Asset: minecraft/sounds/block/composter/fill1.ogg
@@ -1055,10 +1055,10 @@ Downloading: https://resources.download.minecraft.net/8a/8a930adbadfc8fe01685953
 Downloading: https://resources.download.minecraft.net/0c/0c6bb010b1b50f592881a1f858d5db5f0a181f22 Asset: minecraft/sounds/block/composter/fill3.ogg
 Downloading: https://resources.download.minecraft.net/9a/9afc4d2fafd6dc6d779dd8cbf4b23bb50c165dc4 Asset: minecraft/sounds/block/composter/fill4.ogg
 Downloading: https://resources.download.minecraft.net/4b/4b736a9adb36eda550acc630b51f32c5ddbca76f Asset: minecraft/sounds/block/composter/fill_success1.ogg
-Downloading: https://resources.download.minecraft.net/b2/b21d524d15e9bf9007bb959ec13640033f06e939 Asset: minecraft/sounds/block/composter/fill_success4.ogg
-Downloading: https://resources.download.minecraft.net/fe/feb0871002430ce84966f81c0a019a2c51be794f Asset: minecraft/sounds/block/composter/ready1.ogg
 Downloading: https://resources.download.minecraft.net/3a/3aafe51655104d95dcf41b55de9731622db1845f Asset: minecraft/sounds/block/composter/fill_success2.ogg
 Downloading: https://resources.download.minecraft.net/d8/d82a2dfe9007742a19637fb82256c8b3bb2248ef Asset: minecraft/sounds/block/composter/fill_success3.ogg
+Downloading: https://resources.download.minecraft.net/b2/b21d524d15e9bf9007bb959ec13640033f06e939 Asset: minecraft/sounds/block/composter/fill_success4.ogg
+Downloading: https://resources.download.minecraft.net/fe/feb0871002430ce84966f81c0a019a2c51be794f Asset: minecraft/sounds/block/composter/ready1.ogg
 Downloading: https://resources.download.minecraft.net/9f/9f0f729bb824c7220788403a331c2c90ae126f23 Asset: minecraft/sounds/block/composter/ready2.ogg
 Downloading: https://resources.download.minecraft.net/70/7017e094d989c29d8759d726382df34301c16a85 Asset: minecraft/sounds/block/composter/ready3.ogg
 Downloading: https://resources.download.minecraft.net/9c/9c55aa1efbb74527aecb5009cd0e658d7978234c Asset: minecraft/sounds/block/composter/ready4.ogg
@@ -1101,8 +1101,8 @@ Downloading: https://resources.download.minecraft.net/30/3074b4ae157b43321c2310d
 Downloading: https://resources.download.minecraft.net/59/5985e73faa571a80ce67ea3ced8f90483bf942d6 Asset: minecraft/sounds/block/decorated_pot/step2.ogg
 Downloading: https://resources.download.minecraft.net/69/6994b2d54e4ce1e6b65efefac0200faffa7386d0 Asset: minecraft/sounds/block/decorated_pot/step3.ogg
 Downloading: https://resources.download.minecraft.net/9b/9be5bd79cec57751d647b70d2502ef7ea23a4791 Asset: minecraft/sounds/block/decorated_pot/step4.ogg
-Downloading: https://resources.download.minecraft.net/bb/bb709bbfde582e0b261b4f8d01e10e35ee41e63b Asset: minecraft/sounds/block/deepslate/break1.ogg
 Downloading: https://resources.download.minecraft.net/ed/ed1727e71588360e17a9ec891e448e2dc7cfe4ea Asset: minecraft/sounds/block/decorated_pot/step5.ogg
+Downloading: https://resources.download.minecraft.net/bb/bb709bbfde582e0b261b4f8d01e10e35ee41e63b Asset: minecraft/sounds/block/deepslate/break1.ogg
 Downloading: https://resources.download.minecraft.net/d8/d80d4bd2f28318f7291baa4fec3f00b4bd56066a Asset: minecraft/sounds/block/deepslate/break2.ogg
 Downloading: https://resources.download.minecraft.net/16/16f63773f4258b983891136c54c32735c59b2c05 Asset: minecraft/sounds/block/deepslate/break3.ogg
 Downloading: https://resources.download.minecraft.net/a7/a7ff95731dd1668bff61898362091cce9c49cdf1 Asset: minecraft/sounds/block/deepslate/break4.ogg
@@ -1292,8 +1292,8 @@ Downloading: https://resources.download.minecraft.net/60/60f36d4415db43cb5a352e7
 Downloading: https://resources.download.minecraft.net/cf/cfc4bbcfc51bcf55414d537325fb27f7357ee6f6 Asset: minecraft/sounds/block/mud/step1.ogg
 Downloading: https://resources.download.minecraft.net/aa/aaec051cc4ddb40c565b9a733365b137faa22d20 Asset: minecraft/sounds/block/mud/step2.ogg
 Downloading: https://resources.download.minecraft.net/4b/4b9732e037f8e2e230fb1c29511a30aa41f86cd7 Asset: minecraft/sounds/block/mud/step3.ogg
-Downloading: https://resources.download.minecraft.net/83/83bf881a30e378efa548382a91d8c83484774fe9 Asset: minecraft/sounds/block/mud/step5.ogg
 Downloading: https://resources.download.minecraft.net/cd/cd908b08236268799b14f34b9cab1a604528861d Asset: minecraft/sounds/block/mud/step4.ogg
+Downloading: https://resources.download.minecraft.net/83/83bf881a30e378efa548382a91d8c83484774fe9 Asset: minecraft/sounds/block/mud/step5.ogg
 Downloading: https://resources.download.minecraft.net/b2/b29410168529ff13fc772aac7fb1071dd2270d4e Asset: minecraft/sounds/block/mud/step6.ogg
 Downloading: https://resources.download.minecraft.net/15/150bbeab1230bd5da5b2b44d16e1d51fea09ef7c Asset: minecraft/sounds/block/mud_bricks/break1.ogg
 Downloading: https://resources.download.minecraft.net/b9/b9f7fff838deb759bbeb0b6d987f7d1f44c81ca2 Asset: minecraft/sounds/block/mud_bricks/break2.ogg
@@ -1432,8 +1432,8 @@ Downloading: https://resources.download.minecraft.net/4c/4cbab94ac2da642d15acfa6
 Downloading: https://resources.download.minecraft.net/37/374bf2477feac69222187fed90d0d314801cb0fa Asset: minecraft/sounds/block/packed_mud/break6.ogg
 Downloading: https://resources.download.minecraft.net/f6/f63f46b220c991a40f63fe772a859b1089a3a721 Asset: minecraft/sounds/block/packed_mud/step1.ogg
 Downloading: https://resources.download.minecraft.net/17/172ea574d280fd698eb484b281ff442503ea0dcf Asset: minecraft/sounds/block/packed_mud/step2.ogg
-Downloading: https://resources.download.minecraft.net/31/319365a293900394b4f0320147765e1013d59a8b Asset: minecraft/sounds/block/packed_mud/step3.ogg
 Downloading: https://resources.download.minecraft.net/c7/c777e4e19b586899ac6fad21282becb91d07623c Asset: minecraft/sounds/block/packed_mud/step4.ogg
+Downloading: https://resources.download.minecraft.net/31/319365a293900394b4f0320147765e1013d59a8b Asset: minecraft/sounds/block/packed_mud/step3.ogg
 Downloading: https://resources.download.minecraft.net/fa/fafd20e6ee99efbce09f861f1e1578573dd8869d Asset: minecraft/sounds/block/packed_mud/step5.ogg
 Downloading: https://resources.download.minecraft.net/05/05568b990472f6921f03f9142b0042fbc343d406 Asset: minecraft/sounds/block/packed_mud/step6.ogg
 Downloading: https://resources.download.minecraft.net/3b/3b6a7430672f147418d8aca9e8675d8e0e177b17 Asset: minecraft/sounds/block/pointed_dripstone/drip_lava1.ogg
@@ -1565,8 +1565,8 @@ Downloading: https://resources.download.minecraft.net/7d/7d3ffb5b997bccfe7d0a54c
 Downloading: https://resources.download.minecraft.net/bf/bfdacd3aba6b53aa62a5cb7491ce2f2ff8211ad7 Asset: minecraft/sounds/block/sculk/step5.ogg
 Downloading: https://resources.download.minecraft.net/3a/3aaf8dbe6d42d12e0219866bb47633b867b56b13 Asset: minecraft/sounds/block/sculk/step6.ogg
 Downloading: https://resources.download.minecraft.net/28/2884757c580d47223172f430177fcdbbe13376d4 Asset: minecraft/sounds/block/sculk_catalyst/break1.ogg
-Downloading: https://resources.download.minecraft.net/f3/f33f3fa973e8e41462a5fab42b6719dae13fff9b Asset: minecraft/sounds/block/sculk_catalyst/break2.ogg
 Downloading: https://resources.download.minecraft.net/df/df6d134c9a9a9ef6648e4b0b27af41dd17347c5e Asset: minecraft/sounds/block/sculk_catalyst/break10.ogg
+Downloading: https://resources.download.minecraft.net/f3/f33f3fa973e8e41462a5fab42b6719dae13fff9b Asset: minecraft/sounds/block/sculk_catalyst/break2.ogg
 Downloading: https://resources.download.minecraft.net/6c/6c5522c8c8614028ea6eda3b6efce5b0d9606dc6 Asset: minecraft/sounds/block/sculk_catalyst/break3.ogg
 Downloading: https://resources.download.minecraft.net/10/109071e508bc91b9ded5d0075036bffd2d979134 Asset: minecraft/sounds/block/sculk_catalyst/break4.ogg
 Downloading: https://resources.download.minecraft.net/4e/4e790ff39c9c69d9f1c281a57e14f3596ffc1d0b Asset: minecraft/sounds/block/sculk_catalyst/break5.ogg
@@ -1664,9 +1664,9 @@ Downloading: https://resources.download.minecraft.net/14/14647c8f94b4bc8c7e891a9
 Downloading: https://resources.download.minecraft.net/80/807eb75a38ac486e9223de57297a992aaf0de6ff Asset: minecraft/sounds/block/soul_sand/step2.ogg
 Downloading: https://resources.download.minecraft.net/47/47114728c39caacaf6f5fa07b7111f2643747409 Asset: minecraft/sounds/block/soul_sand/step3.ogg
 Downloading: https://resources.download.minecraft.net/c3/c328c36b1be22ea6afe6365806f24e0b3a3f3117 Asset: minecraft/sounds/block/soul_sand/step4.ogg
+Downloading: https://resources.download.minecraft.net/1e/1e197317f402ccc3a62f0ce331889a277cb24365 Asset: minecraft/sounds/block/soul_soil/break1.ogg
 Downloading: https://resources.download.minecraft.net/1e/1ec6fc7f6d86ad5bd72d8f64ee5e4425f9af67a5 Asset: minecraft/sounds/block/soul_sand/step5.ogg
 Downloading: https://resources.download.minecraft.net/6b/6be94b5f5daf271e5d8e059eba721f9edecbbc57 Asset: minecraft/sounds/block/soul_soil/break2.ogg
-Downloading: https://resources.download.minecraft.net/1e/1e197317f402ccc3a62f0ce331889a277cb24365 Asset: minecraft/sounds/block/soul_soil/break1.ogg
 Downloading: https://resources.download.minecraft.net/e2/e23c57397e1a7f079ac9afbcf3ee020f4ebc835c Asset: minecraft/sounds/block/soul_soil/break3.ogg
 Downloading: https://resources.download.minecraft.net/60/609fe1ad7765f15a862cd1fb6dcfde7c26f02044 Asset: minecraft/sounds/block/soul_soil/break4.ogg
 Downloading: https://resources.download.minecraft.net/51/51151ce3073683d4054a8f1207ac3d8c0d808fa9 Asset: minecraft/sounds/block/soul_soil/break5.ogg
@@ -1700,8 +1700,8 @@ Downloading: https://resources.download.minecraft.net/d9/d95a39ddb127bdf9bba43a3
 Downloading: https://resources.download.minecraft.net/11/11a0ce995bcc34a60df6eeeedae613b20a30213f Asset: minecraft/sounds/block/stem/step5.ogg
 Downloading: https://resources.download.minecraft.net/f7/f72d7ae413b12a0d05e39d5911006af721521f61 Asset: minecraft/sounds/block/stem/step6.ogg
 Downloading: https://resources.download.minecraft.net/45/45d79642ce7f74e5c11b88bd5145cb2b83f6188d Asset: minecraft/sounds/block/suspicious_gravel/break1.ogg
-Downloading: https://resources.download.minecraft.net/7e/7eea89a71e2d335cd0efb83cb3506f261f4a545f Asset: minecraft/sounds/block/suspicious_gravel/break3.ogg
 Downloading: https://resources.download.minecraft.net/65/657d9fe8078b74d91d7da0a180f7a48d7bf5b9e8 Asset: minecraft/sounds/block/suspicious_gravel/break2.ogg
+Downloading: https://resources.download.minecraft.net/7e/7eea89a71e2d335cd0efb83cb3506f261f4a545f Asset: minecraft/sounds/block/suspicious_gravel/break3.ogg
 Downloading: https://resources.download.minecraft.net/04/04347dfff4ea5df00011f69bf793af2ae39dcdcd Asset: minecraft/sounds/block/suspicious_gravel/break4.ogg
 Downloading: https://resources.download.minecraft.net/2b/2bc95c006342868f27372118772f12e1180e6b28 Asset: minecraft/sounds/block/suspicious_gravel/break5.ogg
 Downloading: https://resources.download.minecraft.net/96/964f80dbb654339dd269121bcd1650356e656073 Asset: minecraft/sounds/block/suspicious_gravel/break6.ogg
@@ -1730,8 +1730,8 @@ Downloading: https://resources.download.minecraft.net/88/880d5e1ebb517f95a560b35
 Downloading: https://resources.download.minecraft.net/7d/7de922538314b6e3490bc3a4f3cb719e61393127 Asset: minecraft/sounds/block/suspicious_sand/step4.ogg
 Downloading: https://resources.download.minecraft.net/61/611f5163b6ba7c995d1ff9822830cb41fd9d140a Asset: minecraft/sounds/block/suspicious_sand/step5.ogg
 Downloading: https://resources.download.minecraft.net/8e/8eaa189e42aad889310e03cc26de676dc8431345 Asset: minecraft/sounds/block/sweet_berry_bush/break1.ogg
-Downloading: https://resources.download.minecraft.net/35/350a9a9620efabf6edf91e75762957953bf6cb81 Asset: minecraft/sounds/block/sweet_berry_bush/break3.ogg
 Downloading: https://resources.download.minecraft.net/a6/a67784e3903cb1e3a2005e7c36c648279b97edd8 Asset: minecraft/sounds/block/sweet_berry_bush/break2.ogg
+Downloading: https://resources.download.minecraft.net/35/350a9a9620efabf6edf91e75762957953bf6cb81 Asset: minecraft/sounds/block/sweet_berry_bush/break3.ogg
 Downloading: https://resources.download.minecraft.net/a9/a9d3b12ba323f0b14a2adbf92f597a803831d6a4 Asset: minecraft/sounds/block/sweet_berry_bush/break4.ogg
 Downloading: https://resources.download.minecraft.net/6d/6d6128196a44038658da3ff257ec2597114cd6c0 Asset: minecraft/sounds/block/sweet_berry_bush/place1.ogg
 Downloading: https://resources.download.minecraft.net/27/27d8af498c6e1a7f5ea26ab746866d10a6230419 Asset: minecraft/sounds/block/sweet_berry_bush/place2.ogg
@@ -1967,8 +1967,8 @@ Downloading: https://resources.download.minecraft.net/bd/bde0f483fb36757e6207767
 Downloading: https://resources.download.minecraft.net/ca/ca9e12d7b01c10932a3d16e33b9e317396c3d2ea Asset: minecraft/sounds/entity/player/hurt/drown1.ogg
 Downloading: https://resources.download.minecraft.net/80/8011c7d566d5a6958832855d7328edba54702076 Asset: minecraft/sounds/entity/player/hurt/drown2.ogg
 Downloading: https://resources.download.minecraft.net/66/66057f99ba11a223e1824ce006b4e2b288b6f895 Asset: minecraft/sounds/entity/player/hurt/drown3.ogg
-Downloading: https://resources.download.minecraft.net/6c/6c5e816813bc17b1d7b65676e1ee29496d88015b Asset: minecraft/sounds/entity/player/hurt/fire_hurt1.ogg
 Downloading: https://resources.download.minecraft.net/d7/d7637457a9290d5e10d965f3bea4a4e19937f87b Asset: minecraft/sounds/entity/player/hurt/drown4.ogg
+Downloading: https://resources.download.minecraft.net/6c/6c5e816813bc17b1d7b65676e1ee29496d88015b Asset: minecraft/sounds/entity/player/hurt/fire_hurt1.ogg
 Downloading: https://resources.download.minecraft.net/ee/ee8edac9e045dbc0417c4f8bec83d291df40da61 Asset: minecraft/sounds/entity/player/hurt/fire_hurt2.ogg
 Downloading: https://resources.download.minecraft.net/d5/d5a6435947ff3b0b2a161cc37d419cd7c49cf8b4 Asset: minecraft/sounds/entity/player/hurt/fire_hurt3.ogg
 Downloading: https://resources.download.minecraft.net/e7/e7b80d7e20d07be914d7361b5ff71a3c3193ef4c Asset: minecraft/sounds/entity/player/hurt/freeze_hurt1.ogg
@@ -2021,8 +2021,8 @@ Downloading: https://resources.download.minecraft.net/78/78244ba4bba775f92e51148
 Downloading: https://resources.download.minecraft.net/ec/eceb70cb374cc410ac23e00fc95ca0404f8a20f4 Asset: minecraft/sounds/entity/shulker/hurt_closed5.ogg
 Downloading: https://resources.download.minecraft.net/ac/accc7a55d92bf4a8509daeb8415b1a36a3646deb Asset: minecraft/sounds/entity/shulker/open1.ogg
 Downloading: https://resources.download.minecraft.net/03/0331eec018c422631e6cb00960eea3e2c5c6e559 Asset: minecraft/sounds/entity/shulker/open2.ogg
-Downloading: https://resources.download.minecraft.net/77/77e87c6b92d268d8dc5a25780340461cda53b99c Asset: minecraft/sounds/entity/shulker/open3.ogg
 Downloading: https://resources.download.minecraft.net/25/25fc442f8a0abf99be8e7f507e63c5866a055c70 Asset: minecraft/sounds/entity/shulker/open4.ogg
+Downloading: https://resources.download.minecraft.net/77/77e87c6b92d268d8dc5a25780340461cda53b99c Asset: minecraft/sounds/entity/shulker/open3.ogg
 Downloading: https://resources.download.minecraft.net/02/02e77c97360b82170ee58723ac2519fcd79b821e Asset: minecraft/sounds/entity/shulker/open5.ogg
 Downloading: https://resources.download.minecraft.net/3f/3f8b9415f67443206f6af52c1471d0de0354d046 Asset: minecraft/sounds/entity/shulker/shoot1.ogg
 Downloading: https://resources.download.minecraft.net/95/95805aac201b6852d0ab35bd2c75cfa64a926447 Asset: minecraft/sounds/entity/shulker/shoot2.ogg
@@ -2038,12 +2038,12 @@ Downloading: https://resources.download.minecraft.net/9f/9f910c27c8cf336f211a758
 Downloading: https://resources.download.minecraft.net/da/da71b9f569cffbd8b4c88dbd30767315aba8067b Asset: minecraft/sounds/entity/snowman/hurt1.ogg
 Downloading: https://resources.download.minecraft.net/50/50bf881d5a1a484f15f009bf0b86703111834516 Asset: minecraft/sounds/entity/snowman/hurt2.ogg
 Downloading: https://resources.download.minecraft.net/9a/9a9d88fc2ba4c56b0089df4441f3a3ac1fcb8b0e Asset: minecraft/sounds/entity/snowman/hurt3.ogg
-Downloading: https://resources.download.minecraft.net/8e/8ea4cfd31d4f286b039a63d52020aa6b5408a763 Asset: minecraft/sounds/entity/squid/ambient1.ogg
 Downloading: https://resources.download.minecraft.net/4e/4ed7023a970b7f6a6d03558c3125fe85fea4ecd8 Asset: minecraft/sounds/entity/squid/ambient2.ogg
 Downloading: https://resources.download.minecraft.net/d9/d997d6bd0a18be2b62c27363878f99540d845825 Asset: minecraft/sounds/entity/squid/ambient3.ogg
 Downloading: https://resources.download.minecraft.net/4a/4a0ce0713583399108fad4698cbe63714fe5898f Asset: minecraft/sounds/entity/squid/ambient4.ogg
-Downloading: https://resources.download.minecraft.net/b2/b212815d8728730de16ff65a3f54a7fd06b98fbc Asset: minecraft/sounds/entity/squid/ambient5.ogg
 Downloading: https://resources.download.minecraft.net/68/68beeda338fdb43c3b7cbbb718e82839e6d07ef3 Asset: minecraft/sounds/entity/squid/death1.ogg
+Downloading: https://resources.download.minecraft.net/b2/b212815d8728730de16ff65a3f54a7fd06b98fbc Asset: minecraft/sounds/entity/squid/ambient5.ogg
+Downloading: https://resources.download.minecraft.net/8e/8ea4cfd31d4f286b039a63d52020aa6b5408a763 Asset: minecraft/sounds/entity/squid/ambient1.ogg
 Downloading: https://resources.download.minecraft.net/a9/a91e1f2cba408d784538d21424e52253864534b6 Asset: minecraft/sounds/entity/squid/death2.ogg
 Downloading: https://resources.download.minecraft.net/3e/3efb22bf9a4ca184f037c309e4f7ece0a9ca53bc Asset: minecraft/sounds/entity/squid/death3.ogg
 Downloading: https://resources.download.minecraft.net/eb/eb93722c9adcccba57bc6e9b19039599e94934c8 Asset: minecraft/sounds/entity/squid/hurt1.ogg
@@ -2100,8 +2100,8 @@ Downloading: https://resources.download.minecraft.net/76/76ed99c31216d33b7c2d3a5
 Downloading: https://resources.download.minecraft.net/19/19e3ddd127884efbbece9806ef8fce3498e03da3 Asset: minecraft/sounds/item/armor/equip_generic1.ogg
 Downloading: https://resources.download.minecraft.net/f6/f64d194a003a43dd37c0fa02dd1ef39c4e22c00a Asset: minecraft/sounds/item/armor/equip_generic2.ogg
 Downloading: https://resources.download.minecraft.net/d9/d9ea46f172ccb92314c86054b2865a9f78cac07f Asset: minecraft/sounds/item/armor/equip_generic3.ogg
-Downloading: https://resources.download.minecraft.net/b7/b7aa52172a204716ff6ac2711b2d0b6e74b47d02 Asset: minecraft/sounds/item/armor/equip_generic5.ogg
 Downloading: https://resources.download.minecraft.net/1e/1e9470b35545a17586f1305a20233acc4e104b04 Asset: minecraft/sounds/item/armor/equip_generic4.ogg
+Downloading: https://resources.download.minecraft.net/b7/b7aa52172a204716ff6ac2711b2d0b6e74b47d02 Asset: minecraft/sounds/item/armor/equip_generic5.ogg
 Downloading: https://resources.download.minecraft.net/b1/b16e70f12f123efd71d652717a473593e9e9d8e0 Asset: minecraft/sounds/item/armor/equip_generic6.ogg
 Downloading: https://resources.download.minecraft.net/7a/7a122f23df31c32c5c2d14e06548a56546b5ea6c Asset: minecraft/sounds/item/armor/equip_gold1.ogg
 Downloading: https://resources.download.minecraft.net/18/185fdb055113e3c1aafc7cc7c9141f2960b17ed3 Asset: minecraft/sounds/item/armor/equip_gold2.ogg
@@ -2379,8 +2379,8 @@ Downloading: https://resources.download.minecraft.net/a5/a5c687f700791afe54a3b94
 Downloading: https://resources.download.minecraft.net/80/802a2c039bfcc76abebde6cbede997eca94c5e1c Asset: minecraft/sounds/mob/bee/hurt3.ogg
 Downloading: https://resources.download.minecraft.net/a4/a49599ccb17bff94074692a3cbfc4643355bafd5 Asset: minecraft/sounds/mob/bee/loop1.ogg
 Downloading: https://resources.download.minecraft.net/c9/c97ad8228e7d9fff827e30243695e5d98259679d Asset: minecraft/sounds/mob/bee/loop2.ogg
-Downloading: https://resources.download.minecraft.net/f4/f4f3b88d93c35e60b5af8ddb0a99d1b466f047b5 Asset: minecraft/sounds/mob/bee/loop4.ogg
 Downloading: https://resources.download.minecraft.net/d7/d79b164ee314385cf178db7247a0601bb07863dd Asset: minecraft/sounds/mob/bee/loop3.ogg
+Downloading: https://resources.download.minecraft.net/f4/f4f3b88d93c35e60b5af8ddb0a99d1b466f047b5 Asset: minecraft/sounds/mob/bee/loop4.ogg
 Downloading: https://resources.download.minecraft.net/ba/baaf01880361c143df0abbbef934e60089bd602f Asset: minecraft/sounds/mob/bee/loop5.ogg
 Downloading: https://resources.download.minecraft.net/25/2506c9b39df178c2ca6a22256220ff7f885a1b43 Asset: minecraft/sounds/mob/bee/pollinate1.ogg
 Downloading: https://resources.download.minecraft.net/8f/8fc8add729c5f3146edcf77755bdb644279dbd07 Asset: minecraft/sounds/mob/bee/pollinate2.ogg
@@ -2466,8 +2466,8 @@ Downloading: https://resources.download.minecraft.net/15/1536358af061e60a4a3d65e
 Downloading: https://resources.download.minecraft.net/fd/fdb82ae44f25f6e2bacbf79a3e12c3ee300f0a42 Asset: minecraft/sounds/mob/cat/ocelot/idle3.ogg
 Downloading: https://resources.download.minecraft.net/73/738bb3c2fab41638ab22dfeede5ddb022c432629 Asset: minecraft/sounds/mob/cat/ocelot/idle4.ogg
 Downloading: https://resources.download.minecraft.net/0a/0acdc21b0f56dbe214ae2574d1f02a0ea2e99877 Asset: minecraft/sounds/mob/cat/purr1.ogg
-Downloading: https://resources.download.minecraft.net/02/02219a4525e2276a2cf78e5ec6b7e141db1e0d4e Asset: minecraft/sounds/mob/cat/purr3.ogg
 Downloading: https://resources.download.minecraft.net/e7/e7dbf103c4d53bc6a565e12cc23e7d07774c1c5a Asset: minecraft/sounds/mob/cat/purr2.ogg
+Downloading: https://resources.download.minecraft.net/02/02219a4525e2276a2cf78e5ec6b7e141db1e0d4e Asset: minecraft/sounds/mob/cat/purr3.ogg
 Downloading: https://resources.download.minecraft.net/a4/a431511c850809ac8aad700e36dbd398f03efe3f Asset: minecraft/sounds/mob/cat/purreow1.ogg
 Downloading: https://resources.download.minecraft.net/25/25587265091588684eb99d4f99fbdfadf6adac1f Asset: minecraft/sounds/mob/cat/purreow2.ogg
 Downloading: https://resources.download.minecraft.net/97/9755895272ef6523b6762463ad6612049f9ce9e9 Asset: minecraft/sounds/mob/cat/stray/idle1.ogg
@@ -2604,8 +2604,8 @@ Downloading: https://resources.download.minecraft.net/68/681e7130a2477bb8310b722
 Downloading: https://resources.download.minecraft.net/1f/1f7d377e9b4eae36f14a789c617a002672f12d4a Asset: minecraft/sounds/mob/evocation_illager/death1.ogg
 Downloading: https://resources.download.minecraft.net/60/60f96185109232213115f5d872bb255e8c7a0c81 Asset: minecraft/sounds/mob/evocation_illager/death2.ogg
 Downloading: https://resources.download.minecraft.net/af/af4b651a46f231b85a168250139279bc40f61d21 Asset: minecraft/sounds/mob/evocation_illager/fangs.ogg
-Downloading: https://resources.download.minecraft.net/f4/f4f7b2865ccaadccca94e83e38018e702457c3d4 Asset: minecraft/sounds/mob/evocation_illager/hurt2.ogg
 Downloading: https://resources.download.minecraft.net/80/80a6c6c1d60532793787e8a66ca2d129ac3fbac3 Asset: minecraft/sounds/mob/evocation_illager/hurt1.ogg
+Downloading: https://resources.download.minecraft.net/f4/f4f7b2865ccaadccca94e83e38018e702457c3d4 Asset: minecraft/sounds/mob/evocation_illager/hurt2.ogg
 Downloading: https://resources.download.minecraft.net/2e/2e07d453eb202ad118188afab747735ee30c4fee Asset: minecraft/sounds/mob/evocation_illager/idle1.ogg
 Downloading: https://resources.download.minecraft.net/65/658ff4745a987397d73d88433beacdd10ed77060 Asset: minecraft/sounds/mob/evocation_illager/idle2.ogg
 Downloading: https://resources.download.minecraft.net/29/29a8dc6ba0be69c30a30554d4df2897e7080e4c6 Asset: minecraft/sounds/mob/evocation_illager/idle3.ogg
@@ -2632,8 +2632,8 @@ Downloading: https://resources.download.minecraft.net/bb/bb861b65ddc45cd04859e15
 Downloading: https://resources.download.minecraft.net/95/9562404ee0e24467f7d2c0d715b1c5dfa16fa9e8 Asset: minecraft/sounds/mob/fox/hurt1.ogg
 Downloading: https://resources.download.minecraft.net/4f/4f3a2c3edf64d8559d3ecd79b0cd14d54ec3d51f Asset: minecraft/sounds/mob/fox/hurt2.ogg
 Downloading: https://resources.download.minecraft.net/d7/d7aa6f32a21b10577d9f8a33a0c67560b9d8131d Asset: minecraft/sounds/mob/fox/hurt3.ogg
-Downloading: https://resources.download.minecraft.net/aa/aaea02b509aae02a380a2e90dd8a6c66b0bccb25 Asset: minecraft/sounds/mob/fox/hurt4.ogg
 Downloading: https://resources.download.minecraft.net/7a/7ab9e39691e28779fd0e9744c56a1054e9614baa Asset: minecraft/sounds/mob/fox/idle1.ogg
+Downloading: https://resources.download.minecraft.net/aa/aaea02b509aae02a380a2e90dd8a6c66b0bccb25 Asset: minecraft/sounds/mob/fox/hurt4.ogg
 Downloading: https://resources.download.minecraft.net/8b/8b84ab7d590fbffbdb6daae5864628e4a3faa4c6 Asset: minecraft/sounds/mob/fox/idle2.ogg
 Downloading: https://resources.download.minecraft.net/2d/2d73def4b1d72718b659c3507e63b4aa468b9ca0 Asset: minecraft/sounds/mob/fox/idle3.ogg
 Downloading: https://resources.download.minecraft.net/91/91fd124f052a3866876408dca9a3e75aca9fcf1f Asset: minecraft/sounds/mob/fox/idle4.ogg
@@ -2691,6 +2691,10 @@ Downloading: https://resources.download.minecraft.net/e3/e38ab0f144bedc8d6482be1
 Downloading: https://resources.download.minecraft.net/c2/c2252e681a1656cf0e05b381cb3afc90088ec379 Asset: minecraft/sounds/mob/frog/tongue4.ogg
 Downloading: https://resources.download.minecraft.net/99/99cd73dda425ee03836c2274a0fcf331139773dc Asset: minecraft/sounds/mob/ghast/affectionate_scream.ogg
 Downloading: https://resources.download.minecraft.net/6f/6f1d403f47725af0f4c42a74cfec00ff59153160 Asset: minecraft/sounds/mob/ghast/charge.ogg
+
+> Task :downloadAssets
+Downloading: https://piston-meta.mojang.com/v1/packages/2b3aa959237269caa09ac97fc3f7eae651315696/5.json
+
 Downloading: https://resources.download.minecraft.net/72/725e5179c72444c6d885e39c27e6b31ed83d58bc Asset: minecraft/sounds/mob/ghast/death.ogg
 Downloading: https://resources.download.minecraft.net/ea/eafa60d7ec34f86e8f07a001ddcdf5c4600bb174 Asset: minecraft/sounds/mob/ghast/fireball4.ogg
 Downloading: https://resources.download.minecraft.net/88/882d092b05faef1cfa6af43d642b9e8843f22756 Asset: minecraft/sounds/mob/ghast/moan1.ogg
@@ -2732,8 +2736,8 @@ Downloading: https://resources.download.minecraft.net/2d/2db61f629e4433bcc711d2f
 Downloading: https://resources.download.minecraft.net/5d/5d1047ea9d5a37a9b6568a5027d809fdbd3bba8c Asset: minecraft/sounds/mob/goat/impact1.ogg
 Downloading: https://resources.download.minecraft.net/58/58df3bb172e31b3e9df0aba6670f6f373bb44f6b Asset: minecraft/sounds/mob/goat/impact2.ogg
 Downloading: https://resources.download.minecraft.net/c3/c35193da8c9f0b0ccd1080bee591c645a8c4ef3c Asset: minecraft/sounds/mob/goat/impact3.ogg
-Downloading: https://resources.download.minecraft.net/61/6136234d8e72559e13a8a9a022e35084bb6acabe Asset: minecraft/sounds/mob/goat/jump1.ogg
 Downloading: https://resources.download.minecraft.net/41/41b34f9f38ee827e734a6a2b6f9e80fc2c83d43d Asset: minecraft/sounds/mob/goat/jump2.ogg
+Downloading: https://resources.download.minecraft.net/61/6136234d8e72559e13a8a9a022e35084bb6acabe Asset: minecraft/sounds/mob/goat/jump1.ogg
 Downloading: https://resources.download.minecraft.net/75/7536d1640c5ada4b4174adb964c3f5cea1e3a45e Asset: minecraft/sounds/mob/goat/pre_ram1.ogg
 Downloading: https://resources.download.minecraft.net/84/84275725de6e8b6a1cb6d6c2bb89011f9352d13a Asset: minecraft/sounds/mob/goat/pre_ram2.ogg
 Downloading: https://resources.download.minecraft.net/d4/d4f4e49b8135bcd9e016f694d7e11661edc239e3 Asset: minecraft/sounds/mob/goat/pre_ram3.ogg
@@ -2742,8 +2746,8 @@ Downloading: https://resources.download.minecraft.net/4a/4a9076788d0ba6484299837
 Downloading: https://resources.download.minecraft.net/98/9848ce82408c4fadae882b1a6e9ef3e3558806d8 Asset: minecraft/sounds/mob/goat/scream2.ogg
 Downloading: https://resources.download.minecraft.net/68/688d0bc3a3d615bb967507b671a6aadd159aea14 Asset: minecraft/sounds/mob/goat/scream3.ogg
 Downloading: https://resources.download.minecraft.net/cd/cd1363565b25051f483e785868da63f554c58618 Asset: minecraft/sounds/mob/goat/scream4.ogg
-Downloading: https://resources.download.minecraft.net/bc/bca1e85a68ebf6d8bf4a9964c801c4cec3f60339 Asset: minecraft/sounds/mob/goat/scream6.ogg
 Downloading: https://resources.download.minecraft.net/76/76331f2c718b54bc1829239910fd616496ef66fa Asset: minecraft/sounds/mob/goat/scream5.ogg
+Downloading: https://resources.download.minecraft.net/bc/bca1e85a68ebf6d8bf4a9964c801c4cec3f60339 Asset: minecraft/sounds/mob/goat/scream6.ogg
 Downloading: https://resources.download.minecraft.net/f2/f29b1768f0f22338e0d26b5b08df674106c1f80c Asset: minecraft/sounds/mob/goat/scream7.ogg
 Downloading: https://resources.download.minecraft.net/2c/2c96e0bf52d5516d8a2f37e7864e78567be9d603 Asset: minecraft/sounds/mob/goat/scream8.ogg
 Downloading: https://resources.download.minecraft.net/db/dbfbaa340a65cb737fedc1ad92ff7829402180bf Asset: minecraft/sounds/mob/goat/scream9.ogg
@@ -2975,8 +2979,8 @@ Downloading: https://resources.download.minecraft.net/4c/4c4bcc6905430286f32a862
 Downloading: https://resources.download.minecraft.net/d5/d5c4316d30feef5213077e3ee24a7f52c5bf6735 Asset: minecraft/sounds/mob/magmacube/big3.ogg
 Downloading: https://resources.download.minecraft.net/a6/a63fd7965328425a0a8111640de19428d841933e Asset: minecraft/sounds/mob/magmacube/big4.ogg
 Downloading: https://resources.download.minecraft.net/86/86a2a7206c769aaa9435aabba70be201cb3e3a6b Asset: minecraft/sounds/mob/magmacube/jump1.ogg
-Downloading: https://resources.download.minecraft.net/5a/5a2449cc3d4a6ad36598847e501f956e5a3528bd Asset: minecraft/sounds/mob/magmacube/jump3.ogg
 Downloading: https://resources.download.minecraft.net/32/3285a993220dcea1fc37e98b9aa9219422c2c095 Asset: minecraft/sounds/mob/magmacube/jump2.ogg
+Downloading: https://resources.download.minecraft.net/5a/5a2449cc3d4a6ad36598847e501f956e5a3528bd Asset: minecraft/sounds/mob/magmacube/jump3.ogg
 Downloading: https://resources.download.minecraft.net/50/500e2543034b4c026fb175d48c47196c5d013fe8 Asset: minecraft/sounds/mob/magmacube/jump4.ogg
 Downloading: https://resources.download.minecraft.net/5c/5c633c345fe4cb87c36ada2fe2b5da1b80601cf3 Asset: minecraft/sounds/mob/magmacube/small1.ogg
 Downloading: https://resources.download.minecraft.net/18/18237686efcaa1bf9084173c99d11ce0d37d4fc5 Asset: minecraft/sounds/mob/magmacube/small2.ogg
@@ -3029,8 +3033,8 @@ Downloading: https://resources.download.minecraft.net/ab/ab9b2f89ff9e86783fbd982
 Downloading: https://resources.download.minecraft.net/ec/ece084962503142ec13e2fc8a398d6d70d53c174 Asset: minecraft/sounds/mob/panda/idle1.ogg
 Downloading: https://resources.download.minecraft.net/68/68b57de25e1eea500216dab0a69130c9dcfd5725 Asset: minecraft/sounds/mob/panda/idle2.ogg
 Downloading: https://resources.download.minecraft.net/23/2384f3fe4459fd2b28caf2162bc855da702b6969 Asset: minecraft/sounds/mob/panda/idle3.ogg
-Downloading: https://resources.download.minecraft.net/b7/b71c0d327fff6aa56c469ca4682ec64d84b6fb20 Asset: minecraft/sounds/mob/panda/nosebreath1.ogg
 Downloading: https://resources.download.minecraft.net/65/6502ebb0102c62f04e062273f51731617533691e Asset: minecraft/sounds/mob/panda/idle4.ogg
+Downloading: https://resources.download.minecraft.net/b7/b71c0d327fff6aa56c469ca4682ec64d84b6fb20 Asset: minecraft/sounds/mob/panda/nosebreath1.ogg
 Downloading: https://resources.download.minecraft.net/dc/dc1e7951a2cf59be3f7d0693e87579f4155744f1 Asset: minecraft/sounds/mob/panda/nosebreath2.ogg
 Downloading: https://resources.download.minecraft.net/0b/0ba37fea9597cd0ea0e42de4b35f52792f4bc630 Asset: minecraft/sounds/mob/panda/nosebreath3.ogg
 Downloading: https://resources.download.minecraft.net/18/185a3f078f752d5f5eca27913b7fc6c27f0a21cc Asset: minecraft/sounds/mob/panda/pant1.ogg
@@ -3078,8 +3082,8 @@ Downloading: https://resources.download.minecraft.net/c3/c3dac3e98f56a72c0a0d6ad
 Downloading: https://resources.download.minecraft.net/83/8335ff3f03e4c27c673780f1c63d59acc1e52409 Asset: minecraft/sounds/mob/parrot/step3.ogg
 Downloading: https://resources.download.minecraft.net/cb/cb2012f3dd27160fe5c10d9c30a6794a26f4ee11 Asset: minecraft/sounds/mob/parrot/step4.ogg
 Downloading: https://resources.download.minecraft.net/19/194dde617e841c3555fdc86420650916bbc81251 Asset: minecraft/sounds/mob/parrot/step5.ogg
-Downloading: https://resources.download.minecraft.net/73/73dd49398ce0797cc69a77b3603867e388e5a05a Asset: minecraft/sounds/mob/phantom/bite2.ogg
 Downloading: https://resources.download.minecraft.net/05/058c46ac658ac3657b31d5395ecec39bf1146b39 Asset: minecraft/sounds/mob/phantom/bite1.ogg
+Downloading: https://resources.download.minecraft.net/73/73dd49398ce0797cc69a77b3603867e388e5a05a Asset: minecraft/sounds/mob/phantom/bite2.ogg
 Downloading: https://resources.download.minecraft.net/62/624df66e9ed5c87743dd8225e122f687369c9540 Asset: minecraft/sounds/mob/phantom/death1.ogg
 Downloading: https://resources.download.minecraft.net/be/be09a1990ef4bf92a4d797c75c856ebae8bc5c22 Asset: minecraft/sounds/mob/phantom/death2.ogg
 Downloading: https://resources.download.minecraft.net/07/075d6480757c1595c5824fe3c88c3381b92d539d Asset: minecraft/sounds/mob/phantom/death3.ogg
@@ -3351,15 +3355,15 @@ Downloading: https://resources.download.minecraft.net/8f/8f7ff84e460ca507f654168
 Downloading: https://resources.download.minecraft.net/a8/a8eb0b1ce4abb53334ab75be82dc465135c4a27a Asset: minecraft/sounds/mob/spider/step2.ogg
 Downloading: https://resources.download.minecraft.net/ef/efa5acfa08b210ba3087b535c40549c0ed8916f0 Asset: minecraft/sounds/mob/spider/step3.ogg
 Downloading: https://resources.download.minecraft.net/7d/7d801582e08be973d1a41469d1b92916278d1e88 Asset: minecraft/sounds/mob/spider/step4.ogg
-Downloading: https://resources.download.minecraft.net/be/beeb561212e9da99cb815a534eeed7d7723af61c Asset: minecraft/sounds/mob/stray/convert2.ogg
 Downloading: https://resources.download.minecraft.net/a0/a0d3ccb8613b58db21d11b4123a0e5cf13d4f99f Asset: minecraft/sounds/mob/stray/convert1.ogg
+Downloading: https://resources.download.minecraft.net/be/beeb561212e9da99cb815a534eeed7d7723af61c Asset: minecraft/sounds/mob/stray/convert2.ogg
 Downloading: https://resources.download.minecraft.net/2f/2fa4c9324dd0cdfa41028f8a56cd9d6664671068 Asset: minecraft/sounds/mob/stray/convert3.ogg
 Downloading: https://resources.download.minecraft.net/db/db71dc06bdc5d40f20f3b896572b2b6ef7bccd7a Asset: minecraft/sounds/mob/stray/death1.ogg
 Downloading: https://resources.download.minecraft.net/d4/d48940aeab2d4068bd157e6810406c882503a813 Asset: minecraft/sounds/mob/stray/death2.ogg
 Downloading: https://resources.download.minecraft.net/a9/a92ffafc8fdf95a553ce0bbf1bc106a3394daca2 Asset: minecraft/sounds/mob/stray/hurt1.ogg
 Downloading: https://resources.download.minecraft.net/b0/b0bdac0097af7d17b88f86f4f19767f0a05c12ae Asset: minecraft/sounds/mob/stray/hurt2.ogg
-Downloading: https://resources.download.minecraft.net/5e/5e64ed082336f118a07fbaa08616c94815546f8a Asset: minecraft/sounds/mob/stray/hurt3.ogg
 Downloading: https://resources.download.minecraft.net/b8/b88bbb3d20be99db054e38b3025c6a730a03a6a7 Asset: minecraft/sounds/mob/stray/hurt4.ogg
+Downloading: https://resources.download.minecraft.net/5e/5e64ed082336f118a07fbaa08616c94815546f8a Asset: minecraft/sounds/mob/stray/hurt3.ogg
 Downloading: https://resources.download.minecraft.net/5a/5ae2932c72fe01bb7de76feea2a5c98cc4f01677 Asset: minecraft/sounds/mob/stray/idle1.ogg
 Downloading: https://resources.download.minecraft.net/a7/a7ec4468b3713051ad2db49da57213fb0ac71c6a Asset: minecraft/sounds/mob/stray/idle2.ogg
 Downloading: https://resources.download.minecraft.net/1e/1e3649a7ed0f8dd3e45f07dc3257240c83333877 Asset: minecraft/sounds/mob/stray/idle3.ogg
@@ -3391,8 +3395,8 @@ Downloading: https://resources.download.minecraft.net/ed/ed94c7c7633e8675857e7a4
 Downloading: https://resources.download.minecraft.net/d7/d76e7053c1e20bfdadf4ef1b2a5861959d9507eb Asset: minecraft/sounds/mob/strider/idle5.ogg
 Downloading: https://resources.download.minecraft.net/86/86711caee7af28f89f8c1ac8f47c24755f67ee0c Asset: minecraft/sounds/mob/strider/idle6.ogg
 Downloading: https://resources.download.minecraft.net/77/775f083130c38a179d6fb8ba3fdb3760344adb0f Asset: minecraft/sounds/mob/strider/retreat1.ogg
-Downloading: https://resources.download.minecraft.net/51/515a65dd950cbf5113aed3aba93cf646b55223ab Asset: minecraft/sounds/mob/strider/retreat3.ogg
 Downloading: https://resources.download.minecraft.net/62/62ae2955970b2ee2313cd75bb618bd786c2ff3f5 Asset: minecraft/sounds/mob/strider/retreat2.ogg
+Downloading: https://resources.download.minecraft.net/51/515a65dd950cbf5113aed3aba93cf646b55223ab Asset: minecraft/sounds/mob/strider/retreat3.ogg
 Downloading: https://resources.download.minecraft.net/2d/2d79efd74077c4974f034306713cafcbf3f38348 Asset: minecraft/sounds/mob/strider/retreat4.ogg
 Downloading: https://resources.download.minecraft.net/16/1605a916de6b04562a9443e444735e9d7fed713d Asset: minecraft/sounds/mob/strider/retreat5.ogg
 Downloading: https://resources.download.minecraft.net/ca/ca7d721293216295a7e9b3774e57c6da0e6c01d2 Asset: minecraft/sounds/mob/strider/step1.ogg
@@ -3531,8 +3535,8 @@ Downloading: https://resources.download.minecraft.net/b5/b54efe431983db40e442fd6
 Downloading: https://resources.download.minecraft.net/27/2714ed98e33dfc1167b6ca08971cb108b23971ed Asset: minecraft/sounds/mob/wandering_trader/yes2.ogg
 Downloading: https://resources.download.minecraft.net/0d/0dc9c8a2206a953c2d3a17ee61c2c676bf92f9eb Asset: minecraft/sounds/mob/wandering_trader/yes3.ogg
 Downloading: https://resources.download.minecraft.net/ca/ca48d4781f090fb582bba4cf70388d96a08f5cd9 Asset: minecraft/sounds/mob/wandering_trader/yes4.ogg
-Downloading: https://resources.download.minecraft.net/72/725c34266cf2402035ae69e44bfe278d8e0200fb Asset: minecraft/sounds/mob/warden/agitated_2.ogg
 Downloading: https://resources.download.minecraft.net/b2/b22e8fc9e5aedae7bb357dac8c61001dc9b1b261 Asset: minecraft/sounds/mob/warden/agitated_1.ogg
+Downloading: https://resources.download.minecraft.net/72/725c34266cf2402035ae69e44bfe278d8e0200fb Asset: minecraft/sounds/mob/warden/agitated_2.ogg
 Downloading: https://resources.download.minecraft.net/fe/fe8d0814b9c92db72aefa54f5b9e632a081a6c06 Asset: minecraft/sounds/mob/warden/agitated_3.ogg
 Downloading: https://resources.download.minecraft.net/4d/4dc37b67b1ea253dfefecb05961b63955edf43e5 Asset: minecraft/sounds/mob/warden/agitated_4.ogg
 Downloading: https://resources.download.minecraft.net/ca/cae91c76129e544d8ffd15b9717e94434172c5a1 Asset: minecraft/sounds/mob/warden/agitated_5.ogg
@@ -3551,8 +3555,8 @@ Downloading: https://resources.download.minecraft.net/a2/a2d53ff09cd03c0919670a2
 Downloading: https://resources.download.minecraft.net/6a/6a1af6f55d85797fdc25ad9f9a79c039f3cf97b7 Asset: minecraft/sounds/mob/warden/ambient_9.ogg
 Downloading: https://resources.download.minecraft.net/e9/e99133adaf45802402f96625ced21564b16f9714 Asset: minecraft/sounds/mob/warden/angry_1.ogg
 Downloading: https://resources.download.minecraft.net/68/682d1cbdf87a4ceaca10a8f48c364e20f7d84d38 Asset: minecraft/sounds/mob/warden/angry_2.ogg
-Downloading: https://resources.download.minecraft.net/17/17667b12735570759b39f11f23b3c26473b4e297 Asset: minecraft/sounds/mob/warden/angry_4.ogg
 Downloading: https://resources.download.minecraft.net/8a/8a36d753eacd3cccb12f073a4efce88217afac56 Asset: minecraft/sounds/mob/warden/angry_3.ogg
+Downloading: https://resources.download.minecraft.net/17/17667b12735570759b39f11f23b3c26473b4e297 Asset: minecraft/sounds/mob/warden/angry_4.ogg
 Downloading: https://resources.download.minecraft.net/b4/b48407c98f814ce43fe725fc7e2cd568d3d8126a Asset: minecraft/sounds/mob/warden/angry_5.ogg
 Downloading: https://resources.download.minecraft.net/9a/9a7b4eb8b497a898879161b955cda21c944af9b5 Asset: minecraft/sounds/mob/warden/angry_6.ogg
 Downloading: https://resources.download.minecraft.net/53/5379211dba68d17e573ce9cbd268634eae24148e Asset: minecraft/sounds/mob/warden/attack_impact_1.ogg
@@ -3617,8 +3621,8 @@ Downloading: https://resources.download.minecraft.net/a4/a4cf4ebe4c475cd6a4852d6
 Downloading: https://resources.download.minecraft.net/72/72a006be3bd693aa23cc2f8e9c9d13ea6f829aa1 Asset: minecraft/sounds/mob/wither/hurt4.ogg
 Downloading: https://resources.download.minecraft.net/22/22ed26394cb6f6b5eeb2ceb54fb50608798d19e8 Asset: minecraft/sounds/mob/wither/idle1.ogg
 Downloading: https://resources.download.minecraft.net/6b/6b2f86a35a3cd88320b55c029d77659915f83239 Asset: minecraft/sounds/mob/wither/idle2.ogg
-Downloading: https://resources.download.minecraft.net/e3/e3f90fb5afaf84475dd31dca6f65378a455d17f7 Asset: minecraft/sounds/mob/wither/idle4.ogg
 Downloading: https://resources.download.minecraft.net/79/79afbeabcdbb063cfa00d544dc00beac8543a581 Asset: minecraft/sounds/mob/wither/idle3.ogg
+Downloading: https://resources.download.minecraft.net/e3/e3f90fb5afaf84475dd31dca6f65378a455d17f7 Asset: minecraft/sounds/mob/wither/idle4.ogg
 Downloading: https://resources.download.minecraft.net/78/78ee5b46b6615191b7a16d259fcbda273762297e Asset: minecraft/sounds/mob/wither/shoot.ogg
 Downloading: https://resources.download.minecraft.net/d8/d8caaead680c20a4f51361587aeddd57a3357a72 Asset: minecraft/sounds/mob/wither/spawn.ogg
 Downloading: https://resources.download.minecraft.net/91/917736d555d124702429e05485e9921ba2420c18 Asset: minecraft/sounds/mob/wither_skeleton/death1.ogg
@@ -3715,8 +3719,8 @@ Downloading: https://resources.download.minecraft.net/c7/c76dea473821e2ae9a1f006
 Downloading: https://resources.download.minecraft.net/40/40b8e244d03ae17483edd4571bd851e10a97050f Asset: minecraft/sounds/mob/zombified_piglin/zpigdeath.ogg
 Downloading: https://resources.download.minecraft.net/a2/a2cfbea288280419ec0c8fb75d8ee5395536ac02 Asset: minecraft/sounds/mob/zombified_piglin/zpighurt1.ogg
 Downloading: https://resources.download.minecraft.net/d1/d1917b9be91d60a40dd0bf804580c1f494e9ae6d Asset: minecraft/sounds/mob/zombified_piglin/zpighurt2.ogg
-Downloading: https://resources.download.minecraft.net/c1/c1c3b7233b080ffc17389af8b68a46b2df798ef1 Asset: minecraft/sounds/music/game/a_familiar_room.ogg
 Downloading: https://resources.download.minecraft.net/fb/fb47d8c0ba3756e2c5066fcd865e866fa209ae2d Asset: minecraft/sounds/music/game/an_ordinary_day.ogg
+Downloading: https://resources.download.minecraft.net/c1/c1c3b7233b080ffc17389af8b68a46b2df798ef1 Asset: minecraft/sounds/music/game/a_familiar_room.ogg
 Downloading: https://resources.download.minecraft.net/86/868c7a7c4d9358d631fa2f9abfc6bbf05d88292d Asset: minecraft/sounds/music/game/ancestry.ogg
 Downloading: https://resources.download.minecraft.net/62/62171ee4d5ed33a224c59f985a6b304860523b17 Asset: minecraft/sounds/music/game/bromeliad.ogg
 Downloading: https://resources.download.minecraft.net/50/50a59a4f56e4046701b758ddbb1c1587efa4cadf Asset: minecraft/sounds/music/game/calm1.ogg
@@ -3724,10 +3728,6 @@ Downloading: https://resources.download.minecraft.net/74/74da65c99aa578486efa7b6
 Downloading: https://resources.download.minecraft.net/14/14ae57a6bce3d4254daa8be2b098c2d99743cc3f Asset: minecraft/sounds/music/game/calm3.ogg
 Downloading: https://resources.download.minecraft.net/ca/cab779f1a15d9fe49bcc975d077717ebd1f87cda Asset: minecraft/sounds/music/game/comforting_memories.ogg
 Downloading: https://resources.download.minecraft.net/3f/3fe4c878450d4dc2bf3ac304e547f20d4efabad8 Asset: minecraft/sounds/music/game/creative/creative1.ogg
-
-> Task :downloadAssets
-Downloading: https://piston-meta.mojang.com/v1/packages/2b3aa959237269caa09ac97fc3f7eae651315696/5.json
-
 Downloading: https://resources.download.minecraft.net/59/591f41a2c5f53bcc60d7ded982fe29e76223a8ca Asset: minecraft/sounds/music/game/creative/creative2.ogg
 Downloading: https://resources.download.minecraft.net/4f/4f8c3f9b4f290f63c78bf3bbaad16906a3ccff29 Asset: minecraft/sounds/music/game/creative/creative3.ogg
 Downloading: https://resources.download.minecraft.net/46/4664de25eb2bfc88ebbd638cfae6934dd968ceaa Asset: minecraft/sounds/music/game/creative/creative4.ogg
@@ -3745,8 +3745,8 @@ Downloading: https://resources.download.minecraft.net/dd/dd85fb564e96ee2dbd4754f
 Downloading: https://resources.download.minecraft.net/5e/5e7d63e75c6e042f452bc5e151276911ef92fed8 Asset: minecraft/sounds/music/game/hal4.ogg
 Downloading: https://resources.download.minecraft.net/c9/c9c4d7988a578eccfc31cb2f04defc40d71ef719 Asset: minecraft/sounds/music/game/infinite_amethyst.ogg
 Downloading: https://resources.download.minecraft.net/aa/aa1d3aace1c481ac32d5827fba287294b6bc99fb Asset: minecraft/sounds/music/game/left_to_bloom.ogg
-Downloading: https://resources.download.minecraft.net/eb/eb065c510ad0810a1096f04c2a6fe692c415bc88 Asset: minecraft/sounds/music/game/nether/crimson_forest/chrysopoeia.ogg
 Downloading: https://resources.download.minecraft.net/71/71cc853556f7ca5784c9e9fc8e0bd6778d13027b Asset: minecraft/sounds/music/game/nether/nether1.ogg
+Downloading: https://resources.download.minecraft.net/eb/eb065c510ad0810a1096f04c2a6fe692c415bc88 Asset: minecraft/sounds/music/game/nether/crimson_forest/chrysopoeia.ogg
 Downloading: https://resources.download.minecraft.net/5a/5a7ce2181203dd558cbd55d02081b9e95a07f16f Asset: minecraft/sounds/music/game/nether/nether2.ogg
 Downloading: https://resources.download.minecraft.net/b0/b0b12118a97ddd733a50e9382e91a21652568641 Asset: minecraft/sounds/music/game/nether/nether3.ogg
 Downloading: https://resources.download.minecraft.net/e2/e2ee9a161e2d6ea2452e5320edf8b4b01b63e350 Asset: minecraft/sounds/music/game/nether/nether4.ogg
@@ -3766,8 +3766,8 @@ Downloading: https://resources.download.minecraft.net/ee/ee92e4ed79b3c4c47eabe71
 Downloading: https://resources.download.minecraft.net/6b/6be4491a5d1a5f0dd68fb36c310ecfe3501cafe1 Asset: minecraft/sounds/music/game/water/dragon_fish.ogg
 Downloading: https://resources.download.minecraft.net/fd/fd8db6a4ceb400e6abafb2a6b3ac53d871910b42 Asset: minecraft/sounds/music/game/water/shuniji.ogg
 Downloading: https://resources.download.minecraft.net/5d/5dd32ce63e2ff412c0c1009255e944fae80b03b0 Asset: minecraft/sounds/music/game/wending.ogg
-Downloading: https://resources.download.minecraft.net/78/783ddccf4681a0c50d3e651f4e6ac27a0f4ea76f Asset: minecraft/sounds/music/menu/menu2.ogg
 Downloading: https://resources.download.minecraft.net/c1/c157c56846f0e50620f808fecd9d069423dd6c41 Asset: minecraft/sounds/music/menu/menu1.ogg
+Downloading: https://resources.download.minecraft.net/78/783ddccf4681a0c50d3e651f4e6ac27a0f4ea76f Asset: minecraft/sounds/music/menu/menu2.ogg
 Downloading: https://resources.download.minecraft.net/87/87722a59c8d488370f3d430cd4c97a3161081785 Asset: minecraft/sounds/music/menu/menu3.ogg
 Downloading: https://resources.download.minecraft.net/15/15f38314274e759c44f50ac641d11bde12474a25 Asset: minecraft/sounds/music/menu/menu4.ogg
 Downloading: https://resources.download.minecraft.net/34/3429a726bdda71c20b84d20fc35693a5eb04f096 Asset: minecraft/sounds/note/banjo.ogg
@@ -3860,12 +3860,12 @@ Downloading: https://resources.download.minecraft.net/ac/ac7a7c8d106e26abc775b1b
 Downloading: https://resources.download.minecraft.net/c1/c109b985a7e6d5d3828c92e00aefa49deca0eb8c Asset: minecraft/sounds/step/gravel3.ogg
 Downloading: https://resources.download.minecraft.net/a4/a47adece748059294c5f563c0fcac02fa0e4bab4 Asset: minecraft/sounds/step/gravel4.ogg
 Downloading: https://resources.download.minecraft.net/d6/d6212a1d5feb88d76b9a83ce5a27ab4e6d4c20bb Asset: minecraft/sounds/step/ladder1.ogg
-Downloading: https://resources.download.minecraft.net/3f/3fee58d7b2c99ddbce962618176637574ae8d67b Asset: minecraft/sounds/step/ladder3.ogg
 Downloading: https://resources.download.minecraft.net/fd/fd446ad40d24edfe4fb789a6065276e164ea4b61 Asset: minecraft/sounds/step/ladder2.ogg
+Downloading: https://resources.download.minecraft.net/3f/3fee58d7b2c99ddbce962618176637574ae8d67b Asset: minecraft/sounds/step/ladder3.ogg
 Downloading: https://resources.download.minecraft.net/f7/f78ede81160002fc0561218c7ecd97e91cccab7c Asset: minecraft/sounds/step/ladder4.ogg
 Downloading: https://resources.download.minecraft.net/e9/e9a1caaddcde79cdac7aa8eabde50d4cfd1bc578 Asset: minecraft/sounds/step/ladder5.ogg
-Downloading: https://resources.download.minecraft.net/98/9813c8185197f4a4296649f27a9d738c4a6dfc78 Asset: minecraft/sounds/step/sand1.ogg
 Downloading: https://resources.download.minecraft.net/bd/bd1750c016f6bab40934eff0b0fb64c41c86e44b Asset: minecraft/sounds/step/sand2.ogg
+Downloading: https://resources.download.minecraft.net/98/9813c8185197f4a4296649f27a9d738c4a6dfc78 Asset: minecraft/sounds/step/sand1.ogg
 Downloading: https://resources.download.minecraft.net/ab/ab07279288fa49215bada5c17627e6a54ad0437c Asset: minecraft/sounds/step/sand3.ogg
 Downloading: https://resources.download.minecraft.net/a4/a474236fb0c75bd65a6010e87dbc000d345fc185 Asset: minecraft/sounds/step/sand4.ogg
 Downloading: https://resources.download.minecraft.net/9f/9fd6d2c633d276b952f2ff2aaa1fa7e5fb5efd2a Asset: minecraft/sounds/step/sand5.ogg
@@ -3942,17 +3942,17 @@ Downloading: https://resources.download.minecraft.net/c1/c106e5ef000809049ce7d56
 > Task :prepareRunClientCompile
 
 > Task :runClient
-2026-11-12 18:38:10,109 main WARN Advanced terminal features are not available in this environment
-[18:38:10] [main/INFO] [cp.mo.mo.Launcher/MODLAUNCHER]: ModLauncher running: args [--launchTarget, forgeclientuserdev, --version, MOD_DEV, --assetIndex, 5, --assetsDir, /home/runner/.gradle/caches/forge_gradle/assets, --gameDir, ., --fml.forgeVersion, 47.4.23, --fml.mcVersion, 1.20.1, --fml.forgeGroup, net.minecraftforge, --fml.mcpVersion, 20230612.114412, --username, TestPlayer, --width, 1920, --height, 1080, --quickPlayMultiplayer, 127.0.0.1:25565]
-[18:38:10] [main/INFO] [cp.mo.mo.Launcher/MODLAUNCHER]: ModLauncher 10.0.9+10.0.9+main.dcd20f30 starting: java version 17.0.21 by Eclipse Adoptium; OS Linux arch amd64 version 7.0.0-1017-azure
-[18:38:10] [main/WARN] [ne.mi.fm.lo.FMLConfig/CORE]: Configuration file /home/runner/work/riftworld/riftworld/ci/maja-run/client/config/fml.toml is not correct. Correcting
-[18:38:10] [main/INFO] [ne.mi.fm.lo.FMLConfig/CORE]: Incorrect key [earlyWindowSkipGLVersions] was corrected from null to []
-[18:38:10] [main/INFO] [ne.mi.fm.lo.FMLConfig/CORE]: Incorrect key [earlyWindowLogHelpMessage] was corrected from null to true
-[18:38:10] [main/INFO] [ne.mi.fm.lo.FMLConfig/CORE]: Incorrect key [earlyWindowSquir] was corrected from null to false
-[18:38:10] [main/INFO] [ne.mi.fm.lo.FMLConfig/CORE]: Incorrect key [earlyWindowShowCPU] was corrected from null to false
-[18:38:10] [main/INFO] [ne.mi.fm.lo.ImmediateWindowHandler/]: Loading ImmediateWindowProvider fmlearlywindow
-[18:38:10] [main/INFO] [EARLYDISPLAY/]: Trying GL version 4.6
-[18:38:10] [main/INFO] [EARLYDISPLAY/]: If this message is the only thing at the bottom of your log before a crash, you probably have a driver issue.
+2026-11-12 16:02:51,356 main WARN Advanced terminal features are not available in this environment
+[16:02:51] [main/INFO] [cp.mo.mo.Launcher/MODLAUNCHER]: ModLauncher running: args [--launchTarget, forgeclientuserdev, --version, MOD_DEV, --assetIndex, 5, --assetsDir, /home/runner/.gradle/caches/forge_gradle/assets, --gameDir, ., --fml.forgeVersion, 47.4.23, --fml.mcVersion, 1.20.1, --fml.forgeGroup, net.minecraftforge, --fml.mcpVersion, 20230612.114412, --username, TestPlayer, --width, 1920, --height, 1080, --quickPlayMultiplayer, 127.0.0.1:25565]
+[16:02:51] [main/INFO] [cp.mo.mo.Launcher/MODLAUNCHER]: ModLauncher 10.0.9+10.0.9+main.dcd20f30 starting: java version 17.0.21 by Eclipse Adoptium; OS Linux arch amd64 version 7.0.0-1017-azure
+[16:02:51] [main/WARN] [ne.mi.fm.lo.FMLConfig/CORE]: Configuration file /home/runner/work/riftworld/riftworld/ci/maja-run/client/config/fml.toml is not correct. Correcting
+[16:02:51] [main/INFO] [ne.mi.fm.lo.FMLConfig/CORE]: Incorrect key [earlyWindowSkipGLVersions] was corrected from null to []
+[16:02:51] [main/INFO] [ne.mi.fm.lo.FMLConfig/CORE]: Incorrect key [earlyWindowLogHelpMessage] was corrected from null to true
+[16:02:51] [main/INFO] [ne.mi.fm.lo.FMLConfig/CORE]: Incorrect key [earlyWindowSquir] was corrected from null to false
+[16:02:51] [main/INFO] [ne.mi.fm.lo.FMLConfig/CORE]: Incorrect key [earlyWindowShowCPU] was corrected from null to false
+[16:02:51] [main/INFO] [ne.mi.fm.lo.ImmediateWindowHandler/]: Loading ImmediateWindowProvider fmlearlywindow
+[16:02:51] [main/INFO] [EARLYDISPLAY/]: Trying GL version 4.6
+[16:02:51] [main/INFO] [EARLYDISPLAY/]: If this message is the only thing at the bottom of your log before a crash, you probably have a driver issue.
 
 Possible solutions:
 A) Make sure Minecraft is set to prefer high performance graphics in the OS and/or driver control panel
@@ -3961,32 +3961,32 @@ C) Try reinstalling your graphics drivers
 D) If still not working after trying all of the above, ask for further help on the Forge forums or Discord
 
 You can safely ignore this message if the game starts up successfully.
-[18:38:11] [main/INFO] [EARLYDISPLAY/]: Trying GL version 4.5
-[18:38:11] [main/INFO] [EARLYDISPLAY/]: Trying GL version 4.4
-[18:38:11] [main/INFO] [EARLYDISPLAY/]: Trying GL version 4.3
-[18:38:11] [main/INFO] [EARLYDISPLAY/]: Trying GL version 4.2
-[18:38:11] [main/INFO] [EARLYDISPLAY/]: Trying GL version 4.1
-[18:38:11] [main/INFO] [EARLYDISPLAY/]: Trying GL version 4.0
-[18:38:11] [main/INFO] [EARLYDISPLAY/]: Trying GL version 3.3
-[18:38:11] [main/INFO] [EARLYDISPLAY/]: Requested GL version 3.3 got version 3.3
-[18:38:11] [main/INFO] [mixin/]: SpongePowered MIXIN Subsystem Version=0.8.5 Source=union:/home/runner/.gradle/caches/modules-2/files-2.1/org.spongepowered/mixin/0.8.5/9d1c0c3a304ae6697ecd477218fa61b850bf57fc/mixin-0.8.5.jar%23120!/ Service=ModLauncher Env=CLIENT
-[18:38:11] [pool-2-thread-1/INFO] [EARLYDISPLAY/]: GL info: llvmpipe (LLVM 20.1.2, 256 bits) GL version 3.3 (Core Profile) Mesa 25.2.8-0ubuntu0.24.04.4, Mesa
-[18:38:12] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file /home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/javafmllanguage/1.20.1-47.4.23/103ee0ecf6e5e4a971ee1ae68384e96fd73b097f/javafmllanguage-1.20.1-47.4.23.jar is missing mods.toml file
-[18:38:12] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file /home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/lowcodelanguage/1.20.1-47.4.23/2531b2da1460bc09c8ec3bf946e641de664b460d/lowcodelanguage-1.20.1-47.4.23.jar is missing mods.toml file
-[18:38:12] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file /home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/mclanguage/1.20.1-47.4.23/eebf4eae01f6fde63717bb38b77f9b6b1b50f8/mclanguage-1.20.1-47.4.23.jar is missing mods.toml file
-[18:38:12] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file /home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/fmlcore/1.20.1-47.4.23/ef56cfb608a4356c3f99dd6a4fa81ce33029bcde/fmlcore-1.20.1-47.4.23.jar is missing mods.toml file
-[18:38:12] [main/INFO] [ne.mi.fm.lo.mo.JarInJarDependencyLocator/]: No dependencies to load found. Skipping!
-[18:38:14] [main/INFO] [cp.mo.mo.LaunchServiceHandler/MODLAUNCHER]: Launching target 'forgeclientuserdev' with arguments [--version, MOD_DEV, --gameDir, ., --assetsDir, /home/runner/.gradle/caches/forge_gradle/assets, --assetIndex, 5, --username, TestPlayer, --width, 1920, --height, 1080, --quickPlayMultiplayer, 127.0.0.1:25565]
-[18:38:17] [Datafixer Bootstrap/INFO] [mojang/DataFixerBuilder]: 188 Datafixer optimizations took 205 milliseconds
-[18:38:19] [Render thread/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/home/runner/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.23_mapped_official_1.20.1/forge-1.20.1-47.4.23_mapped_official_1.20.1.jar%23181!/assets/.mcassetsroot' uses unexpected schema
-[18:38:19] [Render thread/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/home/runner/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.23_mapped_official_1.20.1/forge-1.20.1-47.4.23_mapped_official_1.20.1.jar%23181!/data/.mcassetsroot' uses unexpected schema
-[18:38:19] [Render thread/INFO] [mojang/YggdrasilAuthenticationService]: Environment: authHost='https://authserver.mojang.com', accountsHost='https://api.mojang.com', sessionHost='https://sessionserver.mojang.com', servicesHost='https://api.minecraftservices.com', name='PROD'
-[18:38:19] [Render thread/INFO] [minecraft/Minecraft]: Setting user: TestPlayer
-[18:38:19] [Render thread/INFO] [minecraft/Minecraft]: Backend library: LWJGL version 3.3.1 build 7
-[18:38:20] [modloading-worker-0/INFO] [ne.mi.co.ForgeMod/FORGEMOD]: Forge mod loading, version 47.4.23, for MC 1.20.1 with MCP 20230612.114412
-[18:38:20] [modloading-worker-0/INFO] [ne.mi.co.MinecraftForge/FORGE]: MinecraftForge v47.4.23 Initialized
-[18:38:21] [Render thread/INFO] [ne.mi.ga.ForgeGameTestHooks/]: Enabled Gametest Namespaces: [riftworld]
-[18:38:21] [Render thread/ERROR] [mojang/Narrator]: Error while loading the narrator
+[16:02:51] [main/INFO] [EARLYDISPLAY/]: Trying GL version 4.5
+[16:02:51] [main/INFO] [EARLYDISPLAY/]: Trying GL version 4.4
+[16:02:51] [main/INFO] [EARLYDISPLAY/]: Trying GL version 4.3
+[16:02:51] [main/INFO] [EARLYDISPLAY/]: Trying GL version 4.2
+[16:02:51] [main/INFO] [EARLYDISPLAY/]: Trying GL version 4.1
+[16:02:51] [main/INFO] [EARLYDISPLAY/]: Trying GL version 4.0
+[16:02:51] [main/INFO] [EARLYDISPLAY/]: Trying GL version 3.3
+[16:02:53] [main/INFO] [EARLYDISPLAY/]: Requested GL version 3.3 got version 3.3
+[16:02:53] [pool-2-thread-1/INFO] [EARLYDISPLAY/]: GL info: llvmpipe (LLVM 20.1.2, 256 bits) GL version 3.3 (Core Profile) Mesa 25.2.8-0ubuntu0.24.04.4, Mesa
+[16:02:53] [main/INFO] [mixin/]: SpongePowered MIXIN Subsystem Version=0.8.5 Source=union:/home/runner/.gradle/caches/modules-2/files-2.1/org.spongepowered/mixin/0.8.5/9d1c0c3a304ae6697ecd477218fa61b850bf57fc/mixin-0.8.5.jar%23120!/ Service=ModLauncher Env=CLIENT
+[16:02:53] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file /home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/javafmllanguage/1.20.1-47.4.23/103ee0ecf6e5e4a971ee1ae68384e96fd73b097f/javafmllanguage-1.20.1-47.4.23.jar is missing mods.toml file
+[16:02:53] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file /home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/lowcodelanguage/1.20.1-47.4.23/2531b2da1460bc09c8ec3bf946e641de664b460d/lowcodelanguage-1.20.1-47.4.23.jar is missing mods.toml file
+[16:02:53] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file /home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/mclanguage/1.20.1-47.4.23/eebf4eae01f6fde63717bb38b77f9b6b1b50f8/mclanguage-1.20.1-47.4.23.jar is missing mods.toml file
+[16:02:53] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file /home/runner/.gradle/caches/modules-2/files-2.1/net.minecraftforge/fmlcore/1.20.1-47.4.23/ef56cfb608a4356c3f99dd6a4fa81ce33029bcde/fmlcore-1.20.1-47.4.23.jar is missing mods.toml file
+[16:02:53] [main/INFO] [ne.mi.fm.lo.mo.JarInJarDependencyLocator/]: No dependencies to load found. Skipping!
+[16:02:55] [main/INFO] [cp.mo.mo.LaunchServiceHandler/MODLAUNCHER]: Launching target 'forgeclientuserdev' with arguments [--version, MOD_DEV, --gameDir, ., --assetsDir, /home/runner/.gradle/caches/forge_gradle/assets, --assetIndex, 5, --username, TestPlayer, --width, 1920, --height, 1080, --quickPlayMultiplayer, 127.0.0.1:25565]
+[16:02:58] [Datafixer Bootstrap/INFO] [mojang/DataFixerBuilder]: 188 Datafixer optimizations took 156 milliseconds
+[16:02:59] [Render thread/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/home/runner/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.23_mapped_official_1.20.1/forge-1.20.1-47.4.23_mapped_official_1.20.1.jar%23181!/assets/.mcassetsroot' uses unexpected schema
+[16:02:59] [Render thread/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/home/runner/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.23_mapped_official_1.20.1/forge-1.20.1-47.4.23_mapped_official_1.20.1.jar%23181!/data/.mcassetsroot' uses unexpected schema
+[16:02:59] [Render thread/INFO] [mojang/YggdrasilAuthenticationService]: Environment: authHost='https://authserver.mojang.com', accountsHost='https://api.mojang.com', sessionHost='https://sessionserver.mojang.com', servicesHost='https://api.minecraftservices.com', name='PROD'
+[16:02:59] [Render thread/INFO] [minecraft/Minecraft]: Setting user: TestPlayer
+[16:02:59] [Render thread/INFO] [minecraft/Minecraft]: Backend library: LWJGL version 3.3.1 build 7
+[16:03:00] [modloading-worker-0/INFO] [ne.mi.co.ForgeMod/FORGEMOD]: Forge mod loading, version 47.4.23, for MC 1.20.1 with MCP 20230612.114412
+[16:03:00] [modloading-worker-0/INFO] [ne.mi.co.MinecraftForge/FORGE]: MinecraftForge v47.4.23 Initialized
+[16:03:01] [Render thread/INFO] [ne.mi.ga.ForgeGameTestHooks/]: Enabled Gametest Namespaces: [riftworld]
+[16:03:01] [Render thread/ERROR] [mojang/Narrator]: Error while loading the narrator
 com.mojang.text2speech.Narrator$InitializeException: Failed to load library flite
 	at com.mojang.text2speech.NarratorLinux$FliteLibrary.loadNative(NarratorLinux.java:69) ~[text2speech-1.17.9.jar:?] {}
 	at com.mojang.text2speech.NarratorLinux.<init>(NarratorLinux.java:18) ~[text2speech-1.17.9.jar:?] {}
@@ -4100,118 +4100,118 @@ Native library (linux-x86-64/libflite.so) not found in resource path (/home/runn
 		at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:26) ~[modlauncher-10.0.9.jar:?] {}
 		at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:23) ~[modlauncher-10.0.9.jar:?] {}
 		at cpw.mods.bootstraplauncher.BootstrapLauncher.main(BootstrapLauncher.java:141) ~[bootstraplauncher-1.1.2.jar:?] {}
-[18:38:21] [Render thread/INFO] [minecraft/ReloadableResourceManager]: Reloading ResourceManager: vanilla, mod_resources
-[18:38:21] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Configuration file /home/runner/work/riftworld/riftworld/ci/maja-run/client/config/forge-client.toml is not correct. Correcting
-[18:38:21] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key client was corrected from null to its default, SimpleCommentedConfig:{}. 
-[18:38:21] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key client.alwaysSetupTerrainOffThread was corrected from null to its default, false. 
-[18:38:21] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key client.experimentalForgeLightPipelineEnabled was corrected from null to its default, false. 
-[18:38:21] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key client.showLoadWarnings was corrected from null to its default, true. 
-[18:38:21] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key client.useCombinedDepthStencilAttachment was corrected from null to its default, false. 
-[18:38:21] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key client.compressLanIPv6Addresses was corrected from null to its default, true. 
-[18:38:21] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key client.calculateAllNormals was corrected from null to its default, false. 
-[18:38:21] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key client.stabilizeDirectionGetNearest was corrected from null to its default, true. 
-[18:38:21] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key client.allowMipmapLowering was corrected from null to its default, false. 
-[18:38:21] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Configuration file /home/runner/work/riftworld/riftworld/ci/maja-run/client/config/riftworld-atmosphere.toml is not correct. Correcting
-[18:38:21] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key morok was corrected from null to its default, SimpleCommentedConfig:{}. 
-[18:38:21] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key morok.fogNearBlocks was corrected from null to its default, 6.5. 
-[18:38:21] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key morok.fogFarBlocks was corrected from null to its default, 54.0. 
-[18:38:21] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key morok.color was corrected from null to its default, #C9D6D8. 
-[18:38:21] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key morok.colorStrength was corrected from null to its default, 0.94. 
-[18:38:21] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Configuration file /home/runner/work/riftworld/riftworld/ci/maja-run/client/config/riftworld-maja.toml is not correct. Correcting
-[18:38:21] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key maja was corrected from null to its default, SimpleCommentedConfig:{}. 
-[18:38:21] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key maja.allowIslandEating was corrected from null to its default, true. 
-[18:38:22] [Worker-Main-3/INFO] [minecraft/UnihexProvider]: Found unifont_all_no_pua-15.0.06.hex, loading
-[18:38:23] [Forge Version Check/INFO] [ne.mi.fm.VersionChecker/]: [forge] Starting version check at https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json
-[18:38:23] [Forge Version Check/INFO] [ne.mi.fm.VersionChecker/]: [forge] Found status: OUTDATED Current: 47.4.23 Target: 47.4.28
-[18:38:24] [riftworld-blacktide-warmup/INFO] [RiftWorld/Blacktide/]: Loaded blacktide.nbt (248x176x228) in 991 ms
-[18:38:26] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:stripped_frostbriar_wood#inventory:
+[16:03:01] [Render thread/INFO] [minecraft/ReloadableResourceManager]: Reloading ResourceManager: vanilla, mod_resources
+[16:03:01] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Configuration file /home/runner/work/riftworld/riftworld/ci/maja-run/client/config/forge-client.toml is not correct. Correcting
+[16:03:01] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key client was corrected from null to its default, SimpleCommentedConfig:{}. 
+[16:03:01] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key client.alwaysSetupTerrainOffThread was corrected from null to its default, false. 
+[16:03:01] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key client.experimentalForgeLightPipelineEnabled was corrected from null to its default, false. 
+[16:03:01] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key client.showLoadWarnings was corrected from null to its default, true. 
+[16:03:01] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key client.useCombinedDepthStencilAttachment was corrected from null to its default, false. 
+[16:03:01] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key client.compressLanIPv6Addresses was corrected from null to its default, true. 
+[16:03:01] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key client.calculateAllNormals was corrected from null to its default, false. 
+[16:03:01] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key client.stabilizeDirectionGetNearest was corrected from null to its default, true. 
+[16:03:01] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key client.allowMipmapLowering was corrected from null to its default, false. 
+[16:03:01] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Configuration file /home/runner/work/riftworld/riftworld/ci/maja-run/client/config/riftworld-atmosphere.toml is not correct. Correcting
+[16:03:01] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key morok was corrected from null to its default, SimpleCommentedConfig:{}. 
+[16:03:01] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key morok.fogNearBlocks was corrected from null to its default, 6.5. 
+[16:03:01] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key morok.fogFarBlocks was corrected from null to its default, 54.0. 
+[16:03:01] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key morok.color was corrected from null to its default, #C9D6D8. 
+[16:03:01] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key morok.colorStrength was corrected from null to its default, 0.94. 
+[16:03:01] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Configuration file /home/runner/work/riftworld/riftworld/ci/maja-run/client/config/riftworld-maja.toml is not correct. Correcting
+[16:03:01] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key maja was corrected from null to its default, SimpleCommentedConfig:{}. 
+[16:03:01] [modloading-worker-0/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key maja.allowIslandEating was corrected from null to its default, true. 
+[16:03:01] [Worker-Main-2/INFO] [minecraft/UnihexProvider]: Found unifont_all_no_pua-15.0.06.hex, loading
+[16:03:03] [Forge Version Check/INFO] [ne.mi.fm.VersionChecker/]: [forge] Starting version check at https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json
+[16:03:03] [Forge Version Check/INFO] [ne.mi.fm.VersionChecker/]: [forge] Found status: OUTDATED Current: 47.4.23 Target: 47.4.28
+[16:03:03] [riftworld-blacktide-warmup/INFO] [RiftWorld/Blacktide/]: Loaded blacktide.nbt (248x176x228) in 618 ms
+[16:03:04] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:stripped_frostbriar_wood#inventory:
     minecraft:textures/atlas/blocks.png:riftworld:block/stripped_frostbriar_wood
     minecraft:textures/atlas/blocks.png:riftworld:block/stripped_frostbriar_wood_top
-[18:38:26] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:stripped_frostbriar_wood#axis=y:
+[16:03:04] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:stripped_frostbriar_wood#axis=y:
     minecraft:textures/atlas/blocks.png:riftworld:block/stripped_frostbriar_wood
     minecraft:textures/atlas/blocks.png:riftworld:block/stripped_frostbriar_wood_top
-[18:38:26] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:stripped_frostbriar_wood#axis=z:
+[16:03:04] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:stripped_frostbriar_wood#axis=z:
     minecraft:textures/atlas/blocks.png:riftworld:block/stripped_frostbriar_wood
     minecraft:textures/atlas/blocks.png:riftworld:block/stripped_frostbriar_wood_top
-[18:38:26] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:stripped_frostbriar_wood#axis=x:
+[16:03:04] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:stripped_frostbriar_wood#axis=x:
     minecraft:textures/atlas/blocks.png:riftworld:block/stripped_frostbriar_wood
     minecraft:textures/atlas/blocks.png:riftworld:block/stripped_frostbriar_wood_top
-[18:38:26] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:rotwood_door#inventory:
+[16:03:04] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:rotwood_door#inventory:
     minecraft:textures/atlas/blocks.png:riftworld:item/rotwood_door
-[18:38:26] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:frostbriar_door#inventory:
+[16:03:04] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:frostbriar_door#inventory:
     minecraft:textures/atlas/blocks.png:riftworld:item/frostbriar_door
-[18:38:26] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:rotwood_wood#inventory:
+[16:03:04] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:rotwood_wood#inventory:
     minecraft:textures/atlas/blocks.png:riftworld:block/rotwood_wood
     minecraft:textures/atlas/blocks.png:riftworld:block/rotwood_wood_top
-[18:38:26] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:frostbriar_wood#axis=z:
+[16:03:04] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:frostbriar_wood#axis=z:
     minecraft:textures/atlas/blocks.png:riftworld:block/frostbriar_wood
     minecraft:textures/atlas/blocks.png:riftworld:block/frostbriar_wood_top
-[18:38:26] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:frostbriar_wood#axis=y:
+[16:03:04] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:frostbriar_wood#axis=y:
     minecraft:textures/atlas/blocks.png:riftworld:block/frostbriar_wood
     minecraft:textures/atlas/blocks.png:riftworld:block/frostbriar_wood_top
-[18:38:26] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:rotwood_wood#axis=x:
+[16:03:04] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:rotwood_wood#axis=x:
     minecraft:textures/atlas/blocks.png:riftworld:block/rotwood_wood
     minecraft:textures/atlas/blocks.png:riftworld:block/rotwood_wood_top
-[18:38:26] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:stripped_rotwood_wood#axis=z:
+[16:03:04] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:stripped_rotwood_wood#axis=z:
     minecraft:textures/atlas/blocks.png:riftworld:block/stripped_rotwood_wood
     minecraft:textures/atlas/blocks.png:riftworld:block/stripped_rotwood_wood_top
-[18:38:26] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:stripped_rotwood_wood#inventory:
+[16:03:04] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:stripped_rotwood_wood#inventory:
     minecraft:textures/atlas/blocks.png:riftworld:block/stripped_rotwood_wood
     minecraft:textures/atlas/blocks.png:riftworld:block/stripped_rotwood_wood_top
-[18:38:26] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:frostbriar_wood#axis=x:
+[16:03:04] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:frostbriar_wood#axis=x:
     minecraft:textures/atlas/blocks.png:riftworld:block/frostbriar_wood
     minecraft:textures/atlas/blocks.png:riftworld:block/frostbriar_wood_top
-[18:38:26] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:stripped_rotwood_wood#axis=y:
+[16:03:04] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:stripped_rotwood_wood#axis=y:
     minecraft:textures/atlas/blocks.png:riftworld:block/stripped_rotwood_wood
     minecraft:textures/atlas/blocks.png:riftworld:block/stripped_rotwood_wood_top
-[18:38:26] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:rotwood_wood#axis=z:
+[16:03:04] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:rotwood_wood#axis=z:
     minecraft:textures/atlas/blocks.png:riftworld:block/rotwood_wood
     minecraft:textures/atlas/blocks.png:riftworld:block/rotwood_wood_top
-[18:38:26] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:stripped_rotwood_wood#axis=x:
+[16:03:04] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:stripped_rotwood_wood#axis=x:
     minecraft:textures/atlas/blocks.png:riftworld:block/stripped_rotwood_wood
     minecraft:textures/atlas/blocks.png:riftworld:block/stripped_rotwood_wood_top
-[18:38:26] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:frostbriar_wood#inventory:
+[16:03:04] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:frostbriar_wood#inventory:
     minecraft:textures/atlas/blocks.png:riftworld:block/frostbriar_wood
     minecraft:textures/atlas/blocks.png:riftworld:block/frostbriar_wood_top
-[18:38:26] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:rotwood_wood#axis=y:
+[16:03:04] [Worker-Main-3/WARN] [minecraft/ModelManager]: Missing textures in model riftworld:rotwood_wood#axis=y:
     minecraft:textures/atlas/blocks.png:riftworld:block/rotwood_wood
     minecraft:textures/atlas/blocks.png:riftworld:block/rotwood_wood_top
-[18:38:28] [Render thread/WARN] [minecraft/SoundEngine]: Missing sound for event: minecraft:item.goat_horn.play
-[18:38:28] [Render thread/WARN] [minecraft/SoundEngine]: Missing sound for event: minecraft:entity.goat.screaming.horn_break
+[16:03:06] [Render thread/WARN] [minecraft/SoundEngine]: Missing sound for event: minecraft:item.goat_horn.play
+[16:03:06] [Render thread/WARN] [minecraft/SoundEngine]: Missing sound for event: minecraft:entity.goat.screaming.horn_break
 [ALSOFT] (EE) Failed to set real-time priority for thread: Operation not permitted (1)
-[18:38:28] [Render thread/INFO] [mojang/Library]: OpenAL initialized on device No Output
-[18:38:28] [Render thread/INFO] [minecraft/SoundEngine]: Sound engine started
-[18:38:28] [Render thread/INFO] [minecraft/TextureAtlas]: Created: 1024x1024x0 minecraft:textures/atlas/blocks.png-atlas
-[18:38:28] [Render thread/INFO] [minecraft/TextureAtlas]: Created: 256x256x0 minecraft:textures/atlas/signs.png-atlas
-[18:38:28] [Render thread/INFO] [minecraft/TextureAtlas]: Created: 512x512x0 minecraft:textures/atlas/banner_patterns.png-atlas
-[18:38:28] [Render thread/INFO] [minecraft/TextureAtlas]: Created: 512x512x0 minecraft:textures/atlas/shield_patterns.png-atlas
-[18:38:28] [Render thread/INFO] [minecraft/TextureAtlas]: Created: 1024x1024x0 minecraft:textures/atlas/armor_trims.png-atlas
-[18:38:28] [Render thread/INFO] [minecraft/TextureAtlas]: Created: 256x256x0 minecraft:textures/atlas/chest.png-atlas
-[18:38:28] [Render thread/INFO] [minecraft/TextureAtlas]: Created: 128x64x0 minecraft:textures/atlas/decorated_pot.png-atlas
-[18:38:28] [Render thread/INFO] [minecraft/TextureAtlas]: Created: 512x256x0 minecraft:textures/atlas/beds.png-atlas
-[18:38:28] [Render thread/INFO] [minecraft/TextureAtlas]: Created: 512x256x0 minecraft:textures/atlas/shulker_boxes.png-atlas
-[18:38:28] [Render thread/WARN] [minecraft/ShaderInstance]: Shader rendertype_entity_translucent_emissive could not find sampler named Sampler2 in the specified shader program.
-[18:38:28] [Render thread/INFO] [minecraft/TextureAtlas]: Created: 256x256x0 minecraft:textures/atlas/particles.png-atlas
-[18:38:28] [Render thread/INFO] [minecraft/TextureAtlas]: Created: 256x256x0 minecraft:textures/atlas/paintings.png-atlas
-[18:38:28] [Render thread/INFO] [minecraft/TextureAtlas]: Created: 128x128x0 minecraft:textures/atlas/mob_effects.png-atlas
-[18:38:28] [Render thread/INFO] [minecraft/ConnectScreen]: Connecting to 127.0.0.1, 25565
-[18:38:30] [Render thread/INFO] [ne.mi.re.GameData/REGISTRIES]: Injecting existing registry data into this CLIENT instance
-[18:38:31] [Netty Epoll Client IO #0/INFO] [ne.mi.ne.NetworkHooks/]: Connected to a modded server.
-[18:38:35] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 2 advancements
-[18:38:35] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Your game mode has been updated to Spectator Mode
+[16:03:06] [Render thread/INFO] [mojang/Library]: OpenAL initialized on device No Output
+[16:03:06] [Render thread/INFO] [minecraft/SoundEngine]: Sound engine started
+[16:03:06] [Render thread/INFO] [minecraft/TextureAtlas]: Created: 1024x1024x0 minecraft:textures/atlas/blocks.png-atlas
+[16:03:06] [Render thread/INFO] [minecraft/TextureAtlas]: Created: 256x256x0 minecraft:textures/atlas/signs.png-atlas
+[16:03:06] [Render thread/INFO] [minecraft/TextureAtlas]: Created: 512x512x0 minecraft:textures/atlas/shield_patterns.png-atlas
+[16:03:06] [Render thread/INFO] [minecraft/TextureAtlas]: Created: 512x512x0 minecraft:textures/atlas/banner_patterns.png-atlas
+[16:03:06] [Render thread/INFO] [minecraft/TextureAtlas]: Created: 1024x1024x0 minecraft:textures/atlas/armor_trims.png-atlas
+[16:03:06] [Render thread/INFO] [minecraft/TextureAtlas]: Created: 128x64x0 minecraft:textures/atlas/decorated_pot.png-atlas
+[16:03:06] [Render thread/INFO] [minecraft/TextureAtlas]: Created: 256x256x0 minecraft:textures/atlas/chest.png-atlas
+[16:03:06] [Render thread/INFO] [minecraft/TextureAtlas]: Created: 512x256x0 minecraft:textures/atlas/beds.png-atlas
+[16:03:06] [Render thread/INFO] [minecraft/TextureAtlas]: Created: 512x256x0 minecraft:textures/atlas/shulker_boxes.png-atlas
+[16:03:06] [Render thread/WARN] [minecraft/ShaderInstance]: Shader rendertype_entity_translucent_emissive could not find sampler named Sampler2 in the specified shader program.
+[16:03:06] [Render thread/INFO] [minecraft/TextureAtlas]: Created: 256x256x0 minecraft:textures/atlas/particles.png-atlas
+[16:03:06] [Render thread/INFO] [minecraft/TextureAtlas]: Created: 256x256x0 minecraft:textures/atlas/paintings.png-atlas
+[16:03:06] [Render thread/INFO] [minecraft/TextureAtlas]: Created: 128x128x0 minecraft:textures/atlas/mob_effects.png-atlas
+[16:03:07] [Render thread/INFO] [minecraft/ConnectScreen]: Connecting to 127.0.0.1, 25565
+[16:03:08] [Render thread/INFO] [ne.mi.re.GameData/REGISTRIES]: Injecting existing registry data into this CLIENT instance
+[16:03:09] [Netty Epoll Client IO #0/INFO] [ne.mi.ne.NetworkHooks/]: Connected to a modded server.
+[16:03:12] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 2 advancements
+[16:03:12] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Your game mode has been updated to Spectator Mode
 [riftworld] geo el_gran_maja: костей 13, деталей 14, атлас 4096x4096
 [riftworld] geo liopleurodon: костей 16, деталей 17, атлас 1024x1024
 [riftworld] paper dragon: позвоночник из 72 узлов рисуется, сегментов на кольцо 14
-[18:39:45] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Your game mode has been updated to Creative Mode
-[18:39:55] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Your game mode has been updated to Survival Mode
-[18:39:55] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Your game mode has been updated to Creative Mode
+[16:04:20] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Your game mode has been updated to Creative Mode
+[16:04:29] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Your game mode has been updated to Survival Mode
+[16:04:30] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Your game mode has been updated to Creative Mode
 [riftworld] geo jelly: костей 20, деталей 21, атлас 128x128
-[riftworld] geo ray: костей 9, деталей 10, атлас 128x128
-[riftworld] geo gold: костей 9, деталей 10, атлас 128x128
+[riftworld] geo striped: костей 9, деталей 10, атлас 128x128
 [riftworld] geo silver: костей 9, деталей 10, атлас 128x128
-[18:40:57] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Your game mode has been updated to Spectator Mode
-[riftworld] geo turtle: костей 11, деталей 12, атлас 128x128
-[18:42:11] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Your game mode has been updated to Creative Mode
-[18:49:15] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Your game mode has been updated to Survival Mode
-[18:49:26] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 30 advancements
-[18:49:34] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] TestPlayer was killed whilst fighting Elisar Guard
+[riftworld] geo ray: костей 9, деталей 10, атлас 128x128
+[16:05:31] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Your game mode has been updated to Spectator Mode
+[riftworld] geo surgeon: костей 9, деталей 10, атлас 128x128
+[16:06:45] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Your game mode has been updated to Creative Mode
+[16:13:32] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Your game mode has been updated to Survival Mode
+[16:13:47] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 30 advancements
+[16:13:54] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] TestPlayer was killed whilst fighting Elisar Guard
