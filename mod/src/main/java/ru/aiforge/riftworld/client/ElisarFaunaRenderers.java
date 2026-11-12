@@ -195,7 +195,7 @@ public final class ElisarFaunaRenderers {
                     RAVEN_LOG.info(
                             "RAVEN RENDER count={} pos={},{},{} visible={} type={}",
                             ravenRenderCount, entity.getX(), entity.getY(), entity.getZ(),
-                            entity.isVisible(), entity.getType().toString());
+                            entity.isInvisible(), entity.getType().toString());
                 }
             }
             super.render(entity, entityYaw, partialTicks, poseStack, buffer, packedLight);
