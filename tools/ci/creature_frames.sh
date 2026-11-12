@@ -267,12 +267,6 @@ else
     local sum_out
     sum_out=$(rq execute in riftworld:elisar run summon riftworld:bone_raven 560.5 120.2 560.5 '{NoAI:1b,NoGravity:1b,Silent:1b}' 2>&1 | tr -d '\r')
     echo "    $sum_out"
-    # Контрольная фигура: ванильная свинья рядом с вороном. Если её видно,
-    # а ворона нет — дело в типе/рендерере ворона; если не видно и её —
-    # камера смотрит не туда.
-    local pig_out
-    pig_out=$(rq execute in riftworld:elisar run summon minecraft:pig 559.5 120.5 559.5 '{NoAI:1b,NoGravity:1b,Silent:1b}' 2>&1 | tr -d '\r')
-    echo "    $pig_out"
     # Проверяем, что ворон реально стоит рядом с площадкой.
     local near
     near=$(rq execute in riftworld:elisar positioned "$TX" "$TY" "$TZ" if entity '@e[type=riftworld:bone_raven]' 2>&1 | tr -d '\r' || true)
