@@ -86,7 +86,7 @@ public final class BoneRavenRenderer extends EntityRenderer<BoneRavenEntity> {
         poseStack.mulPose(Axis.YP.rotationDegrees(180.0F - bodyYaw));
         poseStack.mulPose(Axis.XP.rotationDegrees(pitch * 0.6F));
         poseStack.mulPose(Axis.ZP.rotationDegrees(Mth.clamp(yawDelta * 1.4F, -16.0F, 16.0F)));
-        float scale = model.renderScale * EXTRA_SCALE;
+        float scale = model.renderScale;
         poseStack.scale(scale, -scale, scale);
 
         // Анимация костей из geo-файла (махи крыльев и прочее).
@@ -97,7 +97,7 @@ public final class BoneRavenRenderer extends EntityRenderer<BoneRavenEntity> {
         RenderType type = model.translucent
                 ? RenderType.entityTranslucent(TEXTURE)
                 : RenderType.entityCutoutNoCull(TEXTURE);
-        model.render(poseStack, buffer.getBuffer(type), light, OverlayTexture.NO_OVERLAY);
+        model.root.render(poseStack, buffer.getBuffer(type), light, OverlayTexture.NO_OVERLAY);
         poseStack.popPose();
     }
 }
