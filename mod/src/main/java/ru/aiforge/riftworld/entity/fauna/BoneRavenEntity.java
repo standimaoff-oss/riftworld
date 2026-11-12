@@ -53,6 +53,10 @@ public class BoneRavenEntity extends Monster {
      * через пару секунд.
      */
     private boolean frozen = false;
+    /** Якорь замороженной птицы: она каждый тик возвращается в эту точку. */
+    private double anchorX = 0.0D;
+    private double anchorY = 0.0D;
+    private double anchorZ = 0.0D;
     private int apexCheckTimer = 0;
 
     public BoneRavenEntity(EntityType<? extends BoneRavenEntity> type, Level level) {
@@ -102,6 +106,11 @@ public class BoneRavenEntity extends Monster {
     /** Замораживает птицу: она перестаёт летать и бродить. */
     public void setFrozen(boolean value) {
         this.frozen = value;
+        if (value) {
+            this.anchorX = this.getX();
+            this.anchorY = this.getY();
+            this.anchorZ = this.getZ();
+        }
     }
 
     /** Заморожена ли птица. */
@@ -120,7 +129,10 @@ public class BoneRavenEntity extends Monster {
         if (this.frozen) {
             // Замороженная птица стоит на месте: ни цели, ни блуждания,
             // ни сноса гравитацией. Иначе она уходила из кадра за секунды.
+            // Возвращаем её и в якорь: контроллер полёта продолжает поднимать
+            // птицу каждый тик, и она уплывала вверх из кадра.
             this.setDeltaMovement(0.0D, 0.0D, 0.0D);
+            this.setPos(this.anchorX, this.anchorY, this.anchorZ);
             return;
         }
 
