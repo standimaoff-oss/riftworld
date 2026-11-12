@@ -3547,12 +3547,12 @@ public final class SeaProbeCommand {
                     // вверх (root +24, body -15 модельных единиц = +0.56 блока),
                     // поэтому тушка целиком оказывается над площадкой.
                     final double fx = dx + 0.5D;
-                    // Точка сущности: geo-модель ворона (bone_raven.json) с
-                    // pivot корня (0,0,0) и телом на -15 по Y-down, поэтому в
-                    // мире тело оказывается на 0.94 блока выше точки сущности.
-                    // Ставим точку на dy + 0.2: тело примерно на уровне камеры
-                    // (dy + 1), и птица целиком читается в кадре.
-                    final double fy = (double) dy + 0.2D;
+                    // Точка сущности: geo-модель ворона (bone_raven.json) имеет
+                    // render_scale 0.5, pivot корня (0,0,0) и тело на -15 по
+                    // Y-down, поэтому в мире тело оказывается на 0.47 блока выше
+                    // точки сущности. Ставим точку на dy + 0.6: тело на 0.07 выше
+                    // поверхности площадки, лапы почти касаются камня.
+                    final double fy = (double) dy + 0.6D;
                     final double fz = dz + 0.5D;
                     raven.setPos(fx, fy, fz);
                     // Без noGravity: при noGravity Entity#getBoundingBoxForCulling()
@@ -3584,22 +3584,6 @@ public final class SeaProbeCommand {
                     }
                     spawned = 1;
                     ravenPos = String.format("%.2f,%.2f,%.2f", fx, fy, fz);
-                    // Контрольная фигура: ванильная свинья рядом с вороном. Если её
-                    // видно в кадре, а ворона нет — дело в типе/рендерере ворона;
-                    // если не видно и её — камера смотрит не туда.
-                    try {
-                        var pig = net.minecraft.world.entity.EntityType.PIG.create(level);
-                        if (pig != null) {
-                            pig.setPos(dx - 0.5D, (double) dy + 1.5D, dz - 0.5D);
-                            pig.setNoAi(true);
-                            pig.setNoGravity(true);
-                            pig.setDeltaMovement(0.0D, 0.0D, 0.0D);
-                            pig.hurtMarked = false;
-                            level.addFreshEntity(pig);
-                        }
-                    } catch (Exception ignored) {
-                        // Контрольная фигура — не критично.
-                    }
                     // Диагностика: невидимая сущность вообще не рисуется
                     // диспетчером, поэтому проверяем флаги прямо здесь.
                     ravenInvisible = String.valueOf(raven.isInvisible());
@@ -3619,13 +3603,14 @@ public final class SeaProbeCommand {
             // реально стоит на сервере, если сборка вдруг отдаст старый.
             String line = "riftstruct kind=bb_bone_raven_showcase at=" + dx + "," + dy + "," + dz
                     + " model_boxes=0 bones=0 atlas=256 spawned=" + spawned + " blocks=0 sub_air=0"
-                    + " rev=stage129-control"
+                    + " rev=stage130-final"
                     // Камера стоит в двух блоках по диагонали от птицы и смотрит
                     // точно на её уровень (птица висит на dy + 1,2).
                     + " cam=" + (dx - 2) + "," + (dy + 1) + "," + (dz - 2)
-                    + ":" + dx + "," + (dy + 1) + "," + dz
-                    // look= — цель камеры: тело ворона (точка +0.56 блока).
-                    + " look=" + dx + "," + (dy + 1) + "," + dz
+                    + ":" + dx + "," + (dy) + "," + dz
+                    // look= — цель камеры: уровень площадки; тело ворона на
+                    // 0.07 выше него, поэтому птица попадает чуть выше центра.
+                    + " look=" + dx + "," + (dy) + "," + dz
                     + " raven_pos=" + ravenPos
                     + " alive=" + ravenAlive
                     + " invisible=" + ravenInvisible
@@ -6027,14 +6012,6 @@ public final class SeaProbeCommand {
                     world.setBlock(new BlockPos(px + dx, ground + dy, pz + dz),
                             net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(), 2);
                 }
-            }
-        }
-        // Красный маркер перед камерой: он виден в кадре как ориентир, что
-        // съёмка вообще обновляется и камера стоит там, где задумано.
-        for (int dx = -1; dx <= 1; ++dx) {
-            for (int dz = -1; dz <= 1; ++dz) {
-                world.setBlock(new BlockPos(px + dx - 2, ground + 1, pz + dz - 2),
-                        net.minecraft.world.level.block.Blocks.RED_CONCRETE.defaultBlockState(), 2);
             }
         }
         // Земля: светлый камень и промёрзшая почва. Светлая площадка нужна,

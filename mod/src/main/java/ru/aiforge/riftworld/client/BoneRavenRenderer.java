@@ -32,10 +32,8 @@ public final class BoneRavenRenderer extends EntityRenderer<BoneRavenEntity> {
     private static final ResourceLocation TEXTURE =
             new ResourceLocation(RiftWorld.MODID, "textures/entity/bone_raven.png");
 
-    private static int RENDER_COUNT = 0;
-
     /** Дополнительный масштаб поверх render_scale из geo-файла. */
-    private static final float EXTRA_SCALE = 4.0F;
+    private static final float EXTRA_SCALE = 1.0F;
 
     public BoneRavenRenderer(EntityRendererProvider.Context ctx) {
         super(ctx);
@@ -63,11 +61,6 @@ public final class BoneRavenRenderer extends EntityRenderer<BoneRavenEntity> {
         GeoModel model = GeoModel.of("bone_raven");
         if (model == null) return;
 
-        RENDER_COUNT++;
-        if (RENDER_COUNT % 10 == 1) {
-            System.out.println("[riftworld] raven render #" + RENDER_COUNT + " pos=" + entity.getX()
-                    + "," + entity.getY() + "," + entity.getZ() + " scale=" + model.renderScale);
-        }
         float bodyYaw = Mth.rotLerp(partialTicks, entity.yRotO, entity.getYRot());
         float pitch = Mth.lerp(partialTicks, entity.xRotO, entity.getXRot());
         float yawDelta = Mth.wrapDegrees(entity.getYRot() - entity.yRotO);
