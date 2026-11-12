@@ -181,6 +181,26 @@ public final class ElisarFaunaRenderers {
             return this.tex;
         }
 
+        /** Отладочный счётчик: сколько раз рендерер вызвали для ворона. */
+        private static int ravenRenderCount = 0;
+        private static final org.slf4j.Logger RAVEN_LOG =
+                com.mojang.logging.LogUtils.getLogger();
+
+        @Override
+        public void render(T entity, float entityYaw, float partialTicks, PoseStack poseStack,
+                           MultiBufferSource buffer, int packedLight) {
+            if (entity instanceof ru.aiforge.riftworld.entity.fauna.BoneRavenEntity) {
+                ravenRenderCount++;
+                if (ravenRenderCount % 60 == 1) {
+                    RAVEN_LOG.info(
+                            "RAVEN RENDER count={} pos={},{},{} visible={} type={}",
+                            ravenRenderCount, entity.getX(), entity.getY(), entity.getZ(),
+                            entity.isVisible(), entity.getType().toString());
+                }
+            }
+            super.render(entity, entityYaw, partialTicks, poseStack, buffer, packedLight);
+        }
+
         @Override
         protected void scale(T entity, PoseStack poseStack, float partialTick) {
             poseStack.scale(this.modelScale, this.modelScale, this.modelScale);
