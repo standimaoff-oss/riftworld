@@ -3611,9 +3611,7 @@ public final class SeaProbeCommand {
                     raven.setNoAi(true);
                     // Заморозка: без неё ворон каждые 35 тиков улетал на
                     // случайную точку и через пару секунд исчезал из кадра.
-                    if (raven instanceof ru.aiforge.riftworld.entity.fauna.BoneRavenEntity frozenRaven) {
-                        frozenRaven.setFrozen(true);
-                    }
+                    raven.setFrozen(true);
                     raven.setDeltaMovement(0.0D, 0.0D, 0.0D);
                     raven.setYRot(35.0F);
                     raven.setYBodyRot(35.0F);
