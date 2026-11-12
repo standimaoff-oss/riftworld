@@ -46,6 +46,13 @@ public class BoneRavenEntity extends Monster {
 
     private int diveCooldown = 80;
     private boolean dealtDiveHit = false;
+    /**
+     * Заморозка для съёмки кадров: пока птица заморожена, она не летит,
+     * не блуждает и не меняет позу. Витрина выставляет флаг, и ворон
+     * остаётся ровно там, куда поставили, — иначе он уходил из кадра
+     * через пару секунд.
+     */
+    private boolean frozen = false;
     private int apexCheckTimer = 0;
 
     public BoneRavenEntity(EntityType<? extends BoneRavenEntity> type, Level level) {
@@ -92,6 +99,16 @@ public class BoneRavenEntity extends Monster {
         return this.entityData.get(DATA_DIVE_TICKS);
     }
 
+    /** Замораживает птицу: она перестаёт летать и бродить. */
+    public void setFrozen(boolean value) {
+        this.frozen = value;
+    }
+
+    /** Заморожена ли птица. */
+    public boolean isFrozen() {
+        return this.frozen;
+    }
+
     public boolean isDeferringToApex() {
         return this.entityData.get(DATA_DEFERRING);
     }
@@ -100,6 +117,12 @@ public class BoneRavenEntity extends Monster {
     public void tick() {
         super.tick();
         if (this.level().isClientSide) return;
+        if (this.frozen) {
+            // Замороженная птица стоит на месте: ни цели, ни блуждания,
+            // ни сноса гравитацией. Иначе она уходила из кадра за секунды.
+            this.setDeltaMovement(0.0D, 0.0D, 0.0D);
+            return;
+        }
 
         if (this.diveCooldown > 0) --this.diveCooldown;
         int dive = this.getDiveTicks();
