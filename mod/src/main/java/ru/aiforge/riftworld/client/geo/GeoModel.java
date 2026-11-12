@@ -189,7 +189,10 @@ public final class GeoModel {
                 bones.add(new Bone(part, part.xRot, part.yRot, part.zRot, axis, amp, speed, phase));
                 byName.put(boneName, part);
             }
-            long cubeCount = baked.getAllParts().map(part -> (long) part.cubes.size()).sum();
+            long cubeCount = 0L;
+            for (JsonObject b : jsonBones) {
+                if (b.has("cubes")) cubeCount += b.getAsJsonArray("cubes").size();
+            }
             System.out.println("[riftworld] geo " + name + ": костей " + bones.size() + ", деталей "
                     + baked.getAllParts().count() + ", кубов " + cubeCount + ", атлас " + tw + "x" + th);
             return new GeoModel(baked, tw, th, scale, translucent, bones, byName);
