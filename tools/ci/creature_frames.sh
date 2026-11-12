@@ -128,6 +128,12 @@ shot() {
   # увозил камеру в океан, и кадр получался пустым небом.
   rq execute in "${SHOT_DIM:-minecraft:overworld}" run tp TestPlayer "$cx" "$cy" "$cz" facing "$lx" "$ly" "$lz" >/dev/null || true
   sleep "$wait"
+  capture "$name" "$wait"
+}
+
+# capture <name> [wait] — снимок окна клиента без телепорта.
+capture() {
+  local name=$1 wait=${2:-6}
   local wid
   wid=$(xdotool search --onlyvisible --name Minecraft | head -1 || true)
   [ -n "$wid" ] || fail "Minecraft window not found"
@@ -233,25 +239,33 @@ else
   RX=$(echo "$RAVEN_INFO" | sed -n 's/.*cam=\([^:]*\):.*/\1/p' | cut -d, -f1)
   RY=$(echo "$RAVEN_INFO" | sed -n 's/.*cam=\([^:]*\):.*/\1/p' | cut -d, -f2)
   RZ=$(echo "$RAVEN_INFO" | sed -n 's/.*cam=\([^:]*\):.*/\1/p' | cut -d, -f3)
-  TX=$(echo "$RAVEN_INFO" | sed -n 's/.*cam=[^:]*:\(.*\)/\1/p' | cut -d, -f1)
-  TY=$(echo "$RAVEN_INFO" | sed -n 's/.*cam=[^:]*:\(.*\)/\1/p' | cut -d, -f2)
-  TZ=$(echo "$RAVEN_INFO" | sed -n 's/.*cam=[^:]*:\(.*\)/\1/p' | cut -d, -f3)
+  # Цель камеры — центр птицы: в витрине она печатается полем look=.
+  TX=$(echo "$RAVEN_INFO" | sed -n 's/.*look=\([^ ]*\).*/\1/p' | cut -d, -f1)
+  TY=$(echo "$RAVEN_INFO" | sed -n 's/.*look=\([^ ]*\).*/\1/p' | cut -d, -f2)
+  TZ=$(echo "$RAVEN_INFO" | sed -n 's/.*look=\([^ ]*\).*/\1/p' | cut -d, -f3)
+  # Для целочисленных смещений нужен целый якорь птицы.
+  AX=$(( ${TX%.*} ))
+  AY=$(( ${TY%.*} ))
+  AZ=$(( ${TZ%.*} ))
   SHOT_DIM=riftworld:elisar
-  # Камера стоит в шести блоках от птицы: ворон маленький (0,65 × 0,75),
-  # и с прежней дистанции он занимал несколько пикселей.
-  # Перед КАЖДЫМ кадром витрина ставит птицу заново: ворон летает, и пока
-  # шла пауза съёмки, он уходил из кадра. Камера стоит в четырёх-пяти
-  # блоках — ворон маленький (0,65 × 0,75), и с прежней дистанции он
-  # занимал в кадре несколько пикселей.
+  # Порядок важен: сначала клиент телепортируется и подгружает чанк
+  # площадки, потом витрина ставит птицу, и только потом снимается кадр.
+  # Если ворона поставить до телепорта, клиент успевает уйти из чанка,
+  # и сервер перестаёт отправлять ему птицу — в кадре её нет.
   place_raven() {
     rq execute in riftworld:elisar positioned 560 108 560 run riftstruct bb_bone_raven_showcase >/dev/null 2>&1 || true
   }
-  place_raven
-  shot frame-bone-raven-three-quarter "$RX" "$RY" "$RZ" "$TX" "$TY" "$TZ" 8
-  place_raven
-  shot frame-bone-raven-side "$((TX + 3))" "$((TY + 1))" "$((TZ + 1))" "$TX" "$TY" "$TZ" 6
-  place_raven
-  shot frame-bone-raven-head "$((TX + 1))" "$((TY + 1))" "$((TZ - 2))" "$TX" "$TY" "$TZ" 6
+  shot_raven() {
+    local name=$1 cx=$2 cy=$3 cz=$4 lx=$5 ly=$6 lz=$7 wait=${8:-8}
+    rq execute in "${SHOT_DIM:-minecraft:overworld}" run tp TestPlayer "$cx" "$cy" "$cz" facing "$lx" "$ly" "$lz" >/dev/null || true
+    sleep "$wait"
+    place_raven
+    sleep 3
+    capture "$name" 1
+  }
+  shot_raven frame-bone-raven-three-quarter "$RX" "$RY" "$RZ" "$TX" "$TY" "$TZ" 8
+  shot_raven frame-bone-raven-side "$((AX + 3))" "$((AY + 1))" "$((AZ + 1))" "$TX" "$TY" "$TZ" 8
+  shot_raven frame-bone-raven-head "$((AX + 1))" "$((AY + 1))" "$((AZ - 2))" "$TX" "$TY" "$TZ" 8
 fi
 
 # v0.49.0: ДРАКОН ДОЛЖЕН ДВИГАТЬСЯ НА ДАЛЁКОМ РАССТОЯНИИ.

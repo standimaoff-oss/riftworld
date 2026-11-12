@@ -3553,8 +3553,12 @@ public final class SeaProbeCommand {
             String line = "riftstruct kind=bb_bone_raven_showcase at=" + dx + "," + dy + "," + dz
                     + " model_boxes=0 bones=0 atlas=256 spawned=" + spawned + " blocks=0 sub_air=0"
                     + " rev=stage105-frozen-1.2"
-                    + " cam=" + (dx - 2) + "," + (dy + 2) + "," + (dz + 2)
-                    + ":" + dx + "," + (dy + 1) + "," + dz;
+                    // Камера стоит в двух блоках по диагонали от птицы и смотрит
+                    // точно на её уровень (птица висит на dy + 1,2).
+                    + " cam=" + (dx - 1) + "," + (dy + 2) + "," + (dz + 1)
+                    + ":" + dx + "," + (dy + 1) + "," + dz
+                    // look= — цель камеры с десятичной точкой (центр птицы).
+                    + " look=" + (dx + 0.5D) + "," + (dy + 1.2D) + "," + (dz + 0.5D);
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
         }
