@@ -3509,6 +3509,7 @@ public final class SeaProbeCommand {
             int dy = buildRavenStage(level, dx, dz);
             int spawned = 0;
             String ravenPos = "none";
+            int ravenAlive = -1;
             // Площадка съёмки находится в далёком углу города, и её чанк часто
             // ещё не загружен: витрина молча возвращала spawned=0, и кадров
             // ворона не было. Форсируем загрузку и ждём её.
@@ -3571,6 +3572,18 @@ public final class SeaProbeCommand {
                             raven.setAnchor(fx, fy, fz);
                             level.getChunk(dx >> 4, dz >> 4);
                         });
+                    // Считаем птиц в мире: если их ноль, значит ворон не
+                    // добавился или сразу исчез, и никакая камера его не
+                    // покажет. Число печатается рядом с остальным отчётом.
+                    try {
+                        int alive = level.getEntitiesOfClass(
+                                ru.aiforge.riftworld.entity.fauna.BoneRavenEntity.class,
+                                new net.minecraft.world.phys.AABB(
+                                        new BlockPos(dx, dy, dz)).inflate(40.0D)).size();
+                        ravenAlive = alive;
+                    } catch (Exception ignored) {
+                        ravenAlive = -1;
+                    }
                     }
                     // Проверяем сразу: ворон мог не появиться в мире вовсе.
                     // Через тик обычный деспавн монстра убирает его, если он
@@ -3593,7 +3606,8 @@ public final class SeaProbeCommand {
                     + ":" + dx + "," + (dy + 1) + "," + dz
                     // look= — цель камеры с десятичной точкой (центр птицы).
                     + " look=" + dx + "," + (dy + 2) + "," + dz
-                    + " raven_pos=" + ravenPos;
+                    + " raven_pos=" + ravenPos
+                    + " alive=" + ravenAlive;
             src.sendSuccess(() -> Component.literal(line), false);
             return 1;
         }
