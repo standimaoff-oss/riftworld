@@ -3507,6 +3507,7 @@ public final class SeaProbeCommand {
             // у Смотрителя Пращи, но без деревьев перед объективом.
             int dx = 560, dz = 560;
             int dy = buildRavenStage(level, dx, dz);
+            int spawned = 0;
             String ravenPos = "none";
             int ravenAlive = -1;
             // Площадка съёмки находится в далёком углу города, и её чанк часто
@@ -3532,10 +3533,45 @@ public final class SeaProbeCommand {
                         new net.minecraft.world.phys.AABB(new BlockPos(dx, dy, dz)).inflate(90.0))) {
                     old.discard();
                 }
-                // Птицу создаёт клиентский скрипт командой /summon: сущность,
-                // добавленная через addFreshEntity, до клиента доходила не
-                // всегда, и в кадре вместо ворона был пустой подиум.
-                // Здесь только считаем, сколько воронов сейчас в мире.
+                // Птицу ставим здесь: сущность, созданная командой /summon,
+                // улетала — ворон каждые 35 тиков меняет цель, и без AI
+                // он улетал точно так же.
+                var raven = ru.aiforge.riftworld.registry.ModEntities.BONE_RAVEN.get().create(level);
+                if (raven != null) {
+                    // Точка сущности на один блок ниже площадки: тело модели
+                    // смещено вверх (root +24, body -15 модельных единиц),
+                    // и при dy + 1 ворон оказывался выше камеры и уходил
+                    // из верхнего края кадра.
+                    final double fx = dx + 0.5D;
+                    final double fy = (double) (dy - 1);
+                    final double fz = dz + 0.5D;
+                    raven.setPos(fx, fy, fz);
+                    raven.setNoGravity(true);
+                    raven.setNoAi(true);
+                    raven.setFrozen(true);
+                    raven.setDeltaMovement(0.0D, 0.0D, 0.0D);
+                    raven.setYRot(35.0F);
+                    raven.setYBodyRot(35.0F);
+                    raven.setXRot(0.0F);
+                    raven.hurtMarked = false;
+                    level.addFreshEntity(raven);
+                    raven.setPersistenceRequired();
+                    raven.setAnchor(fx, fy, fz);
+                    // Переставляем отложенно: только что созданная сущность
+                    // ещё не разошлась по игрокам, и клиент мог не увидеть
+                    // ворона вовсе.
+                    var ravenServer = level.getServer();
+                    if (ravenServer != null) {
+                        ravenServer.execute(() -> {
+                            raven.setPos(fx, fy, fz);
+                            raven.setDeltaMovement(0.0D, 0.0D, 0.0D);
+                            raven.setAnchor(fx, fy, fz);
+                            level.getChunk(dx >> 4, dz >> 4);
+                        });
+                    }
+                    spawned = 1;
+                    ravenPos = String.format("%.2f,%.2f,%.2f", fx, fy, fz);
+                }
                 try {
                     int alive = level.getEntitiesOfClass(
                             ru.aiforge.riftworld.entity.fauna.BoneRavenEntity.class,
@@ -3545,19 +3581,11 @@ public final class SeaProbeCommand {
                 } catch (Exception ignored) {
                     ravenAlive = -1;
                 }
-                // raven_pos — где должен стоять ворон: скрипт ставит его
-                // туда командой /summon.
-                // Точка сущности на один блок ниже площадки: тело модели
-                // смещено вверх (root +24, body -15 модельных единиц), и
-                // при dy + 1 ворон оказывался выше камеры и уходил из
-                // верхнего края кадра.
-                ravenPos = String.format("%.2f,%.2f,%.2f",
-                        dx + 0.5D, (double) (dy - 1), dz + 0.5D);
             }
             // rev= печатает версию кода витрины: по нему видно, какой jar
             // реально стоит на сервере, если сборка вдруг отдаст старый.
             String line = "riftstruct kind=bb_bone_raven_showcase at=" + dx + "," + dy + "," + dz
-                    + " model_boxes=0 bones=0 atlas=256 stage=ready blocks=0 sub_air=0"
+                    + " model_boxes=0 bones=0 atlas=256 spawned=" + spawned + " blocks=0 sub_air=0"
                     + " rev=stage119-high"
                     // Камера стоит в двух блоках по диагонали от птицы и смотрит
                     // точно на её уровень (птица висит на dy + 1,2).

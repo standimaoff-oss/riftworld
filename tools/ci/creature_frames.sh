@@ -226,7 +226,7 @@ shot frame-paper-dragon-head 208 106.3 -2.3 208 106.1 -0.6 7
 # камера не уезжала за две тысячи блоков от клиента (иначе кадр чёрный).
 RAVEN_INFO=$(rq execute in riftworld:elisar positioned 560 108 560 run riftstruct bb_bone_raven_showcase 2>&1 | tr -d '\r')
 echo "  $RAVEN_INFO"
-if [[ "$RAVEN_INFO" != *"stage=ready"* ]]; then
+if [[ "$RAVEN_INFO" != *"spawned=1"* ]]; then
   echo "::warning title=In-game frames::витрина ворона не собралась: $RAVEN_INFO"
 else
   rq execute in riftworld:elisar run forceload add 552 552 568 568 >/dev/null 2>&1 || true
@@ -261,16 +261,9 @@ else
     # добавляет сущность через addFreshEntity, и клиент иногда не
     # получает её (пакет трекинга не доходит), поэтому в кадре пусто.
     # /summon создаёт сущность обычным серверным путём, и клиент её видит.
-    local summon_out
-    summon_out=$(rq execute in riftworld:elisar run summon riftworld:bone_raven "$TX" "$TY" "$TZ" \
-      '{NoAI:1b,NoGravity:1b,PersistenceRequired:1b}' 2>&1 | tr -d '\r')
-    echo "    summon: $summon_out"
-    # Если /summon с NBT не сработал (частая беда команды execute), пробуем
-    # без NBT — птицу тут же замораживает витрина.
-    if [[ "$summon_out" != *"Summoned"* && "$summon_out" != *"Test passed"* ]]; then
-      summon_out=$(rq execute in riftworld:elisar run summon riftworld:bone_raven "$TX" "$TY" "$TZ" 2>&1 | tr -d '\r')
-      echo "    summon без NBT: $summon_out"
-    fi
+    # Птицу ставит серверная витрина (она же замораживает её). Команда
+    # /summon тут не нужна: ворон, созданный ею, улетал — он каждые 35
+    # тиков меняет цель, и без заморозки уходил из кадра за секунды.
     # Проверяем, что ворон реально стоит рядом с площадкой.
     local near
     near=$(rq execute in riftworld:elisar positioned "$TX" "$TY" "$TZ" if entity '@e[type=riftworld:bone_raven]' 2>&1 | tr -d '\r' || true)
