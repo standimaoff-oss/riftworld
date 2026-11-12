@@ -45,8 +45,18 @@ public final class BoneRavenRenderer extends EntityRenderer<BoneRavenEntity> {
         return TEXTURE;
     }
 
+    private static int SHOULD_COUNT = 0;
+    private static int RENDER_COUNT = 0;
+
     @Override
     public boolean shouldRender(BoneRavenEntity entity, Frustum frustum, double x, double y, double z) {
+        SHOULD_COUNT++;
+        if (SHOULD_COUNT % 30 == 1) {
+            System.out.println("[riftworld] raven shouldRender #" + SHOULD_COUNT + " pos="
+                    + entity.getX() + "," + entity.getY() + "," + entity.getZ()
+                    + " alive=" + entity.isAlive() + " invis=" + entity.isInvisible()
+                    + " bbox=" + entity.getBoundingBox());
+        }
         // Проверяем расстояние, а не бокс сущности: у ворона в витрине может
         // стоять noGravity, и тогда getBoundingBoxForCulling() отдаёт
         // AABB.ZERO, по которому фрустум не видит птицу вовсе.
@@ -58,6 +68,11 @@ public final class BoneRavenRenderer extends EntityRenderer<BoneRavenEntity> {
     public void render(BoneRavenEntity entity, float entityYaw, float partialTicks,
                        PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
         if (entity.isInvisible()) return;
+        RENDER_COUNT++;
+        if (RENDER_COUNT % 30 == 1) {
+            System.out.println("[riftworld] raven render #" + RENDER_COUNT + " pos="
+                    + entity.getX() + "," + entity.getY() + "," + entity.getZ());
+        }
         GeoModel model = GeoModel.of("bone_raven");
         if (model == null) return;
 
