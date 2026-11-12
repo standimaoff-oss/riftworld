@@ -124,12 +124,9 @@ public final class ElisarFaunaRenderers {
                         "reef_seahorse", 0.42F, 0.20F, false, false, false));
 
         // Ворон вернулся в v0.49.0: костяной ворон Пади снова летает.
-        e.registerEntityRenderer(ModEntities.BONE_RAVEN.get(), c ->
-                new BaseRenderer<>(c, new BoneRavenModel(c.bakeLayer(BoneRavenModel.LAYER_LOCATION)),
-                        // v0.50.0: ворон был микроскопическим (0,36 × 0,30) — в кадре
-                        // он читался как несколько пикселей. Теперь модель в
-                        // размер птицы, и ворон виден глазом в игре и на фото.
-                        "bone_raven", 2.5F, 0.95F, false, true, true));
+        // v0.50.0: собственный рендерер — через общий LivingEntityRenderer
+        // (BaseRenderer) птица не попадала в кадр, хотя рендерер вызывался.
+        e.registerEntityRenderer(ModEntities.BONE_RAVEN.get(), BoneRavenRenderer::new);
         e.registerEntityRenderer(ModEntities.GHOST_SQUID.get(), c ->
                 new BaseRenderer<>(c, new GhostSquidModel(c.bakeLayer(GhostSquidModel.LAYER_LOCATION)),
                         "ghost_squid", 0.86F, 0.60F, true, true, true));
@@ -179,26 +176,6 @@ public final class ElisarFaunaRenderers {
         @Override
         public ResourceLocation getTextureLocation(T entity) {
             return this.tex;
-        }
-
-        /** Отладочный счётчик: сколько раз рендерер вызвали для ворона. */
-        private static int ravenRenderCount = 0;
-        private static final org.slf4j.Logger RAVEN_LOG =
-                com.mojang.logging.LogUtils.getLogger();
-
-        @Override
-        public void render(T entity, float entityYaw, float partialTicks, PoseStack poseStack,
-                           MultiBufferSource buffer, int packedLight) {
-            if (entity instanceof ru.aiforge.riftworld.entity.fauna.BoneRavenEntity) {
-                ravenRenderCount++;
-                if (ravenRenderCount % 60 == 1) {
-                    RAVEN_LOG.info(
-                            "RAVEN RENDER count={} pos={},{},{} visible={} type={}",
-                            ravenRenderCount, entity.getX(), entity.getY(), entity.getZ(),
-                            entity.isInvisible(), entity.getType().toString());
-                }
-            }
-            super.render(entity, entityYaw, partialTicks, poseStack, buffer, packedLight);
         }
 
         @Override

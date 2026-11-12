@@ -52,7 +52,7 @@ public class BoneRavenModel extends FaunaBaseModel<BoneRavenEntity> {
 		PartDefinition root = partdefinition.addOrReplaceChild("root", CubeListBuilder.create(), PartPose.offset(0.0F, 24.0F, 0.0F));
 
 		PartDefinition body = root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(404, 32).addBox(-4.0F, -6.1F, -6.1F, 8.0F, 3.0F, 3.0F, new CubeDeformation(0.0F))
-		.texOffs(100, 32).addBox(-3.5F, 0.7F, 0.0F, 7.0F, 3.0F, 4.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, -36.0F, 1.0F));
+		.texOffs(100, 32).addBox(-3.5F, 0.7F, 0.0F, 7.0F, 3.0F, 4.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, -15.0F, 1.0F));
 
 		PartDefinition rib_low_r_4_r1 = body.addOrReplaceChild("rib_low_r_4_r1", CubeListBuilder.create().texOffs(470, 32).addBox(-0.5F, -4.2F, -0.5F, 1.0F, 5.0F, 1.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(4.0F, 2.0F, 2.2F, 2.0246F, 0.9151F, 0.0F));
 
@@ -207,7 +207,7 @@ public class BoneRavenModel extends FaunaBaseModel<BoneRavenEntity> {
 
 		PartDefinition leg_l = root.addOrReplaceChild("leg_l", CubeListBuilder.create().texOffs(22, 46).addBox(-2.1F, 10.2F, -3.8F, 3.0F, 2.0F, 2.0F, new CubeDeformation(0.0F))
 		.texOffs(144, 32).addBox(-1.1F, 11.2F, -8.8F, 1.0F, 1.0F, 6.0F, new CubeDeformation(0.0F))
-		.texOffs(50, 46).addBox(-1.1F, 11.2F, -2.3F, 1.0F, 1.0F, 3.0F, new CubeDeformation(0.0F)), PartPose.offset(-3.0F, -16.0F, 3.0F));
+		.texOffs(50, 46).addBox(-1.1F, 11.2F, -2.3F, 1.0F, 1.0F, 3.0F, new CubeDeformation(0.0F)), PartPose.offset(-3.0F, -12.2F, 3.0F));
 
 		PartDefinition leg_l_toe_3_r1 = leg_l.addOrReplaceChild("leg_l_toe_3_r1", CubeListBuilder.create().texOffs(162, 32).addBox(-0.5F, -0.5F, -3.0F, 1.0F, 1.0F, 6.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(-1.8679F, 11.7F, -5.5189F, 0.0F, 0.4363F, 0.0F));
 
@@ -219,7 +219,7 @@ public class BoneRavenModel extends FaunaBaseModel<BoneRavenEntity> {
 
 		PartDefinition leg_r = root.addOrReplaceChild("leg_r", CubeListBuilder.create().texOffs(36, 46).addBox(-0.9F, 10.2F, -3.8F, 3.0F, 2.0F, 2.0F, new CubeDeformation(0.0F))
 		.texOffs(198, 32).addBox(0.1F, 11.2F, -8.8F, 1.0F, 1.0F, 6.0F, new CubeDeformation(0.0F))
-		.texOffs(62, 46).addBox(0.1F, 11.2F, -2.3F, 1.0F, 1.0F, 3.0F, new CubeDeformation(0.0F)), PartPose.offset(3.0F, -16.0F, 3.0F));
+		.texOffs(62, 46).addBox(0.1F, 11.2F, -2.3F, 1.0F, 1.0F, 3.0F, new CubeDeformation(0.0F)), PartPose.offset(3.0F, -12.2F, 3.0F));
 
 		PartDefinition leg_r_toe_3_r1 = leg_r.addOrReplaceChild("leg_r_toe_3_r1", CubeListBuilder.create().texOffs(216, 32).addBox(-0.5F, -0.5F, -3.0F, 1.0F, 1.0F, 6.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(1.8679F, 11.7F, -5.5189F, 0.0F, -0.4363F, 0.0F));
 
@@ -233,6 +233,15 @@ public class BoneRavenModel extends FaunaBaseModel<BoneRavenEntity> {
 	}
 
 	@Override
+	/**
+	 * Корень модели для прямой отрисовки собственным рендерером.
+	 * LivingEntityRenderer не подходит: он зовёт setupAnim и рисует модель
+	 * через EntityModel, а для ворона модель уходит из кадра.
+	 */
+	public ModelPart rootModel() {
+		return this.root;
+	}
+
 	protected ModelPart rootPart() {
 		return this.root;
 	}
