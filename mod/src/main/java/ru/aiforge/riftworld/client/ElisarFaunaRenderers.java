@@ -195,15 +195,27 @@ public final class ElisarFaunaRenderers {
                 com.mojang.blaze3d.vertex.VertexConsumer vc =
                         buffer.getBuffer(RenderType.entitySolid(new ResourceLocation(RiftWorld.MODID,
                                 "textures/entity/bone_raven.png")));
-                // Простой куб 1x1x1 из ModelPart не нужен: рисуем через ModelPart.
-                net.minecraft.client.model.geom.ModelPart box =
-                        net.minecraft.client.model.geom.builders.CubeListBuilder.create()
-                                .texOffs(0, 0)
-                                .addBox(-0.5F, -0.5F, -0.5F, 1.0F, 1.0F, 1.0F,
-                                        new net.minecraft.client.model.geom.builders.CubeDeformation(0.0F))
-                                .build();
-                box.render(cubePose, vc, packedLight, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY,
-                        1.0F, 0.2F, 0.2F, 1.0F);
+                // Отладочный квад: четыре вершины вручную, без ModelPart —
+                // так видно, доходит ли сущность до рендера вообще.
+                float q = 0.5F;
+                com.mojang.blaze3d.vertex.PoseStack qp = cubePose;
+                com.mojang.blaze3d.vertex.VertexConsumer qv = vc;
+                qp.last().pushPose();
+                qp.last().translate(0.0F, 0.5F, 0.0F);
+                // передняя грань
+                qv.vertex(qp.last(), -q, -q, 0.0F).color(1.0F, 0.15F, 0.15F, 1.0F).uv(0.0F, 1.0F)
+                        .overlayCoords(net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY)
+                        .uv2(packedLight).endVertex();
+                qv.vertex(qp.last(),  q, -q, 0.0F).color(1.0F, 0.15F, 0.15F, 1.0F).uv(1.0F, 1.0F)
+                        .overlayCoords(net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY)
+                        .uv2(packedLight).endVertex();
+                qv.vertex(qp.last(),  q,  q, 0.0F).color(1.0F, 0.15F, 0.15F, 1.0F).uv(1.0F, 0.0F)
+                        .overlayCoords(net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY)
+                        .uv2(packedLight).endVertex();
+                qv.vertex(qp.last(), -q,  q, 0.0F).color(1.0F, 0.15F, 0.15F, 1.0F).uv(0.0F, 0.0F)
+                        .overlayCoords(net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY)
+                        .uv2(packedLight).endVertex();
+                qp.last().popPose();
                 poseStack.popPose();
                 return;
             }
