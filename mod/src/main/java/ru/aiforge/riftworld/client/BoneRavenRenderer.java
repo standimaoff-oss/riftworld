@@ -38,7 +38,7 @@ public final class BoneRavenRenderer extends EntityRenderer<BoneRavenEntity> {
             new ResourceLocation(RiftWorld.MODID, "textures/entity/bone_raven_glow.png");
 
     /** Размер модели: 1.0 = ванильный блок на 16 модельных единиц. */
-    private static final float MODEL_SCALE = 1.6F;
+    private static final float MODEL_SCALE = 4.0F;
 
     /**
      * Вертикальное смещение точки отрисовки (в блоках, вверх положительно).
@@ -76,10 +76,19 @@ public final class BoneRavenRenderer extends EntityRenderer<BoneRavenEntity> {
         return entity.distanceToSqr(x, y, z) <= maxDistance * maxDistance;
     }
 
+    private static int renderCount = 0;
+
     @Override
     public void render(BoneRavenEntity entity, float entityYaw, float partialTicks,
                        PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
         if (entity.isInvisible()) return;
+        renderCount++;
+        if (renderCount % 60 == 1) {
+            com.mojang.logging.LogUtils.getLogger().info(
+                    "RAVEN RENDER count={} pos={},{},{} yaw={} noai={} grav={}",
+                    renderCount, entity.getX(), entity.getY(), entity.getZ(),
+                    entity.getYRot(), entity.isNoAi(), entity.isNoGravity());
+        }
 
         // Поза: крылья машут, корпус слегка качается — как в living-рендере.
         this.model.setupAnim(entity, 0.0F, 0.0F, entity.tickCount + partialTicks,
