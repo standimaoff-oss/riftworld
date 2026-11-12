@@ -241,23 +241,6 @@ public class BoneRavenModel extends FaunaBaseModel<BoneRavenEntity> {
 		return this.root;
 	}
 
-	/** Диагностика: сколько частей в модели (для проверки, что bakeLayer отдал полную). */
-	public int partCount() {
-		return this.root.getAllParts().size();
-	}
-
-	/** Диагностика: габариты корня модели в модельных единицах (xyz min/max). */
-	public float[] rootBounds() {
-		float[] out = new float[6];
-		java.util.Iterator<ModelPart> it = this.root.getAllParts().iterator();
-		int i = 0;
-		while (it.hasNext() && i < 6) {
-			ModelPart part = it.next();
-			out[i++] = part.x;
-		}
-		return out;
-	}
-
 	protected ModelPart rootPart() {
 		return this.root;
 	}

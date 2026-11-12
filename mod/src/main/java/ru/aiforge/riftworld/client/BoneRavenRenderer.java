@@ -85,10 +85,9 @@ public final class BoneRavenRenderer extends EntityRenderer<BoneRavenEntity> {
         renderCount++;
         if (renderCount % 10 == 1) {
             com.mojang.logging.LogUtils.getLogger().info(
-                    "RAVEN RENDER count={} pos={},{},{} yaw={} noai={} grav={} parts={}",
+                    "RAVEN RENDER count={} pos={},{},{} yaw={} noai={} grav={}",
                     renderCount, entity.getX(), entity.getY(), entity.getZ(),
-                    entity.getYRot(), entity.isNoAi(), entity.isNoGravity(),
-                    this.model.partCount());
+                    entity.getYRot(), entity.isNoAi(), entity.isNoGravity());
         }
 
         // Поза: крылья машут, корпус слегка качается — как в living-рендере.
