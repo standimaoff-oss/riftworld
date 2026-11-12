@@ -258,12 +258,15 @@ else
     info=$(rq execute in riftworld:elisar positioned 560 108 560 run riftstruct bb_bone_raven_showcase 2>&1 | tr -d '\r')
     echo "    $info"
     # Птицу ставим ещё и ванильной командой /summon. Серверная витрина
-    # добавляет сущность через addFreshEntity, и клиент иногда не
-    # получает её (пакет трекинга не доходит), поэтому в кадре пусто.
-    # /summon создаёт сущность обычным серверным путём, и клиент её видит.
-    # Птицу ставит серверная витрина (она же замораживает её). Команда
-    # /summon тут не нужна: ворон, созданный ею, улетал — он каждые 35
-    # тиков меняет цель, и без заморозки уходил из кадра за секунды.
+    # добавляет сущность через addFreshEntity, и клиент её точно видит не
+    # всегда (в прогонах клиентский лог не содержал ни одного вызова
+    # рендерера — сущность до клиента не доходила). /summon создаёт
+    # сущность обычным серверным путём, и клиент её видит всегда.
+    # NoAI + NoGravity: ворон не улетает и не падает (tick() самого ворона
+    # при isNoAi() держит его на якоре).
+    local sum_out
+    sum_out=$(rq execute in riftworld:elisar run summon riftworld:bone_raven 560.5 120.2 560.5 '{NoAI:1b,NoGravity:1b,Silent:1b}' 2>&1 | tr -d '\r')
+    echo "    $sum_out"
     # Проверяем, что ворон реально стоит рядом с площадкой.
     local near
     near=$(rq execute in riftworld:elisar positioned "$TX" "$TY" "$TZ" if entity '@e[type=riftworld:bone_raven]' 2>&1 | tr -d '\r' || true)
