@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -112,19 +113,19 @@ public final class SeaProbeCommand {
         // всегда: клиент снимал не то, куда целились. Серверный lookAt
         // поворачивает надёжно, и команда печатает, где оказалась камера.
         e.getDispatcher().register(Commands.literal("riftcam").requires(s2 -> s2.hasPermission(2))
-                .then(Commands.argument("x", com.mojang.brigadier.arguments.IntegerArgumentType.integer())
-                        .then(Commands.argument("y", com.mojang.brigadier.arguments.IntegerArgumentType.integer())
-                                .then(Commands.argument("z", com.mojang.brigadier.arguments.IntegerArgumentType.integer())
-                                        .then(Commands.argument("lx", com.mojang.brigadier.arguments.IntegerArgumentType.integer())
-                                                .then(Commands.argument("ly", com.mojang.brigadier.arguments.IntegerArgumentType.integer())
-                                                        .then(Commands.argument("lz", com.mojang.brigadier.arguments.IntegerArgumentType.integer())
+                .then(Commands.argument("x", IntegerArgumentType.integer())
+                        .then(Commands.argument("y", IntegerArgumentType.integer())
+                                .then(Commands.argument("z", IntegerArgumentType.integer())
+                                        .then(Commands.argument("lx", IntegerArgumentType.integer())
+                                                .then(Commands.argument("ly", IntegerArgumentType.integer())
+                                                        .then(Commands.argument("lz", IntegerArgumentType.integer())
                                                                 .executes(c -> camera(c.getSource(),
-                                                                        com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "x"),
-                                                                        com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "y"),
-                                                                        com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "z"),
-                                                                        com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "lx"),
-                                                                        com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "ly"),
-                                                                        com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "lz")))))))));
+                                                                        IntegerArgumentType.getInteger(c, "x"),
+                                                                        IntegerArgumentType.getInteger(c, "y"),
+                                                                        IntegerArgumentType.getInteger(c, "z"),
+                                                                        IntegerArgumentType.getInteger(c, "lx"),
+                                                                        IntegerArgumentType.getInteger(c, "ly"),
+                                                                        IntegerArgumentType.getInteger(c, "lz"))))))))));
         // Рев 13.6: /riftdtat — что DT реально поставил в точке посадки. Один вызов RCON вместо
         // сотен «execute if block»: считает все блоки аддона вокруг корня.
         e.getDispatcher().register(Commands.literal("riftdtat").requires(s2 -> s2.hasPermission(2))
