@@ -84,10 +84,12 @@ public final class BoneRavenRenderer extends EntityRenderer<BoneRavenEntity> {
         if (entity.isInvisible()) return;
         renderCount++;
         if (renderCount % 10 == 1) {
+            float[] b = this.model.rootBounds();
             com.mojang.logging.LogUtils.getLogger().info(
-                    "RAVEN RENDER count={} pos={},{},{} yaw={} noai={} grav={}",
+                    "RAVEN RENDER count={} pos={},{},{} yaw={} noai={} grav={} parts={} bounds={},{},{}..{},{},{}",
                     renderCount, entity.getX(), entity.getY(), entity.getZ(),
-                    entity.getYRot(), entity.isNoAi(), entity.isNoGravity());
+                    entity.getYRot(), entity.isNoAi(), entity.isNoGravity(),
+                    this.model.partCount(), b[0], b[1], b[2], b[3], b[4], b[5]);
         }
 
         // Поза: крылья машут, корпус слегка качается — как в living-рендере.

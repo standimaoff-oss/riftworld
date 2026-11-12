@@ -241,6 +241,20 @@ public class BoneRavenModel extends FaunaBaseModel<BoneRavenEntity> {
 		return this.root;
 	}
 
+	/** Диагностика: сколько частей в модели (для проверки, что bakeLayer отдал полную). */
+	public int partCount() {
+		return this.root.getAllParts().size();
+	}
+
+	/** Диагностика: габариты корня модели в модельных единицах. */
+	public float[] rootBounds() {
+		net.minecraft.world.phys.AABB box = this.root.getAllParts().stream()
+				.map(part -> part.getBoundingBox())
+				.reduce(net.minecraft.world.phys.AABB.ZERO, net.minecraft.world.phys.AABB::union);
+		return new float[] { (float) box.minX, (float) box.minY, (float) box.minZ,
+				(float) box.maxX, (float) box.maxY, (float) box.maxZ };
+	}
+
 	protected ModelPart rootPart() {
 		return this.root;
 	}
