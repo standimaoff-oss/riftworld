@@ -183,6 +183,33 @@ public final class ElisarFaunaRenderers {
             return this.tex;
         }
 
+        /** Отладочный куб: рисуется вместо модели, если у сущности взведён флаг. */
+        @Override
+        public void render(T entity, float yaw, float partialTick, PoseStack poseStack,
+                           MultiBufferSource buffer, int packedLight) {
+            if (entity instanceof ru.aiforge.riftworld.entity.fauna.BoneRavenEntity raven
+                    && raven.isShowcaseDebugCube()) {
+                poseStack.pushPose();
+                poseStack.translate(0.0F, 0.5F, 0.0F);
+                PoseStack cubePose = poseStack;
+                com.mojang.blaze3d.vertex.VertexConsumer vc =
+                        buffer.getBuffer(RenderType.entitySolid(new ResourceLocation(RiftWorld.MODID,
+                                "textures/entity/bone_raven.png")));
+                // Простой куб 1x1x1 из ModelPart не нужен: рисуем через ModelPart.
+                net.minecraft.client.model.geom.ModelPart box =
+                        net.minecraft.client.model.quads.CubeListBuilder.create()
+                                .texOffs(0, 0)
+                                .addBox(-0.5F, -0.5F, -0.5F, 1.0F, 1.0F, 1.0F,
+                                        new net.minecraft.client.model.geom.builders.CubeDeformation(0.0F))
+                                .build();
+                box.render(cubePose, vc, packedLight, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY,
+                        1.0F, 0.2F, 0.2F, 1.0F);
+                poseStack.popPose();
+                return;
+            }
+            super.render(entity, yaw, partialTick, poseStack, buffer, packedLight);
+        }
+
         @Override
         protected void scale(T entity, PoseStack poseStack, float partialTick) {
             poseStack.scale(this.modelScale, this.modelScale, this.modelScale);

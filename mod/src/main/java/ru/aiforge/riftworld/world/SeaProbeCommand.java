@@ -3549,6 +3549,8 @@ public final class SeaProbeCommand {
                     raven.setNoGravity(true);
                     raven.setNoAi(true);
                     raven.setFrozen(true);
+                    // Отладка: рендерер рисует вместо модели красный куб.
+                    raven.setShowcaseDebugCube(true);
                     raven.setDeltaMovement(0.0D, 0.0D, 0.0D);
                     raven.setYRot(35.0F);
                     raven.setYBodyRot(35.0F);
