@@ -3547,10 +3547,12 @@ public final class SeaProbeCommand {
                     // вверх (root +24, body -15 модельных единиц = +0.56 блока),
                     // поэтому тушка целиком оказывается над площадкой.
                     final double fx = dx + 0.5D;
-                    // +0.4 блока: тело модели на +0.56, лапы на +0.56-0.76 =
-                    // -0.20. При fy = dy лапы уходили в пол, поэтому чуть
-                    // приподнимаем точку — вся птица оказывается над камнем.
-                    final double fy = (double) dy + 0.4D;
+                    // Модель ворона: root +24 (1.5 блока вниз), body -36
+                    // (2.25 блока вверх) => тело на 0.75 блока ВЫШЕ точки
+                    // сущности. Значит точку ставим на dy + 1: тело оказывается
+                    // на 0.25 блока над площадкой, лапы (root +24, leg -16 =>
+                    // +8) на 0.5 блока вниз от корня, то есть тоже над камнем.
+                    final double fy = (double) dy + 1.0D;
                     final double fz = dz + 0.5D;
                     raven.setPos(fx, fy, fz);
                     raven.setNoGravity(true);
@@ -3597,7 +3599,7 @@ public final class SeaProbeCommand {
             // реально стоит на сервере, если сборка вдруг отдаст старый.
             String line = "riftstruct kind=bb_bone_raven_showcase at=" + dx + "," + dy + "," + dz
                     + " model_boxes=0 bones=0 atlas=256 spawned=" + spawned + " blocks=0 sub_air=0"
-                    + " rev=stage120-lifted"
+                    + " rev=stage121-body"
                     // Камера стоит в двух блоках по диагонали от птицы и смотрит
                     // точно на её уровень (птица висит на dy + 1,2).
                     + " cam=" + (dx - 2) + "," + (dy + 2) + "," + (dz - 2)
