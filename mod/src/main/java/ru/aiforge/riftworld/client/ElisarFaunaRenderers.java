@@ -200,22 +200,23 @@ public final class ElisarFaunaRenderers {
                 float q = 0.5F;
                 com.mojang.blaze3d.vertex.PoseStack qp = cubePose;
                 com.mojang.blaze3d.vertex.VertexConsumer qv = vc;
-                qp.last().pushPose();
-                qp.last().translate(0.0F, 0.5F, 0.0F);
+                qp.pushPose();
+                qp.translate(0.0F, 0.5F, 0.0F);
+                com.mojang.math.Matrix4f mtx = qp.last().pose();
                 // передняя грань
-                qv.vertex(qp.last(), -q, -q, 0.0F).color(1.0F, 0.15F, 0.15F, 1.0F).uv(0.0F, 1.0F)
+                qv.vertex(mtx, -q, -q, 0.0F).color(1.0F, 0.15F, 0.15F, 1.0F).uv(0.0F, 1.0F)
                         .overlayCoords(net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY)
                         .uv2(packedLight).endVertex();
-                qv.vertex(qp.last(),  q, -q, 0.0F).color(1.0F, 0.15F, 0.15F, 1.0F).uv(1.0F, 1.0F)
+                qv.vertex(mtx,  q, -q, 0.0F).color(1.0F, 0.15F, 0.15F, 1.0F).uv(1.0F, 1.0F)
                         .overlayCoords(net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY)
                         .uv2(packedLight).endVertex();
-                qv.vertex(qp.last(),  q,  q, 0.0F).color(1.0F, 0.15F, 0.15F, 1.0F).uv(1.0F, 0.0F)
+                qv.vertex(mtx,  q,  q, 0.0F).color(1.0F, 0.15F, 0.15F, 1.0F).uv(1.0F, 0.0F)
                         .overlayCoords(net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY)
                         .uv2(packedLight).endVertex();
-                qv.vertex(qp.last(), -q,  q, 0.0F).color(1.0F, 0.15F, 0.15F, 1.0F).uv(0.0F, 0.0F)
+                qv.vertex(mtx, -q,  q, 0.0F).color(1.0F, 0.15F, 0.15F, 1.0F).uv(0.0F, 0.0F)
                         .overlayCoords(net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY)
                         .uv2(packedLight).endVertex();
-                qp.last().popPose();
+                qp.popPose();
                 poseStack.popPose();
                 return;
             }
