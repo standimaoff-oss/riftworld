@@ -38,7 +38,7 @@ public final class BoneRavenRenderer extends EntityRenderer<BoneRavenEntity> {
             new ResourceLocation(RiftWorld.MODID, "textures/entity/bone_raven_glow.png");
 
     /** Размер модели: 1.0 = ванильный блок на 16 модельных единиц. */
-    private static final float MODEL_SCALE = 2.2F;
+    private static final float MODEL_SCALE = 8.0F;
 
     /**
      * Вертикальное смещение точки отрисовки (в блоках, вверх положительно).
@@ -83,7 +83,7 @@ public final class BoneRavenRenderer extends EntityRenderer<BoneRavenEntity> {
                        PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
         if (entity.isInvisible()) return;
         renderCount++;
-        if (renderCount % 60 == 1) {
+        if (renderCount % 10 == 1) {
             com.mojang.logging.LogUtils.getLogger().info(
                     "RAVEN RENDER count={} pos={},{},{} yaw={} noai={} grav={}",
                     renderCount, entity.getX(), entity.getY(), entity.getZ(),
@@ -108,7 +108,7 @@ public final class BoneRavenRenderer extends EntityRenderer<BoneRavenEntity> {
         // делается ДО масштабирования — иначе он умножается на MODEL_SCALE, и
         // при масштабе 4 птица улетала на 2.4 блока вверх, за верхний край
         // кадра, и её не было видно.
-        poseStack.translate(0.0D, VERTICAL_OFFSET, 0.0D);
+        poseStack.translate(2.0D, VERTICAL_OFFSET, 0.0D);
         poseStack.scale(MODEL_SCALE, -MODEL_SCALE, MODEL_SCALE);
 
         int light = LightTexture.pack(Math.max(4, LightTexture.block(packedLight)),
