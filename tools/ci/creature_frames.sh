@@ -261,8 +261,16 @@ else
     # добавляет сущность через addFreshEntity, и клиент иногда не
     # получает её (пакет трекинга не доходит), поэтому в кадре пусто.
     # /summon создаёт сущность обычным серверным путём, и клиент её видит.
-    rq execute in riftworld:elisar run summon riftworld:bone_raven "$TX" "$TY" "$TZ" \
-      '{NoAI:1b,NoGravity:1b,PersistenceRequired:1b,Silent:1b,Health:20.0f,Invulnerable:1b}' >/dev/null 2>&1 || true
+    local summon_out
+    summon_out=$(rq execute in riftworld:elisar run summon riftworld:bone_raven "$TX" "$TY" "$TZ" \
+      '{NoAI:1b,NoGravity:1b,PersistenceRequired:1b}' 2>&1 | tr -d '\r')
+    echo "    summon: $summon_out"
+    # Если /summon с NBT не сработал (частая беда команды execute), пробуем
+    # без NBT — птицу тут же замораживает витрина.
+    if [[ "$summon_out" != *"Summoned"* && "$summon_out" != *"Test passed"* ]]; then
+      summon_out=$(rq execute in riftworld:elisar run summon riftworld:bone_raven "$TX" "$TY" "$TZ" 2>&1 | tr -d '\r')
+      echo "    summon без NBT: $summon_out"
+    fi
     # Проверяем, что ворон реально стоит рядом с площадкой.
     local near
     near=$(rq execute in riftworld:elisar positioned "$TX" "$TY" "$TZ" if entity '@e[type=riftworld:bone_raven]' 2>&1 | tr -d '\r' || true)
