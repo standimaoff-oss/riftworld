@@ -3567,8 +3567,10 @@ public final class SeaProbeCommand {
                     raven.setYRot(0.0F);
                     raven.setYBodyRot(0.0F);
                     raven.setDeltaMovement(0.0D, 0.0D, 0.0D);
-                    raven.setYRot(35.0F);
-                    raven.setYBodyRot(35.0F);
+                    // Разворот к объективу: камера стоит в (dx-2, dz-2), то есть
+                    // к юго-западу от ворона, и птица должна смотреть туда.
+                    raven.setYRot(225.0F);
+                    raven.setYBodyRot(225.0F);
                     raven.setXRot(0.0F);
                     raven.hurtMarked = false;
                     level.addFreshEntity(raven);
@@ -3607,14 +3609,14 @@ public final class SeaProbeCommand {
             // реально стоит на сервере, если сборка вдруг отдаст старый.
             String line = "riftstruct kind=bb_bone_raven_showcase at=" + dx + "," + dy + "," + dz
                     + " model_boxes=0 bones=0 atlas=256 spawned=" + spawned + " blocks=0 sub_air=0"
-                    + " rev=stage134-angle"
+                    + " rev=stage135-eye"
                     // Камера стоит в двух блоках по диагонали от птицы и смотрит
                     // точно на её уровень (птица висит на dy + 1,2).
-                    + " cam=" + (dx - 2) + "," + (dy + 0) + "," + (dz - 2)
+                    + " cam=" + (dx - 2) + "," + (dy + 2) + "," + (dz - 2)
                     + ":" + dx + "," + (dy) + "," + dz
                     // look= — цель камеры: уровень площадки; тело ворона на
                     // 0.07 выше него, поэтому птица попадает чуть выше центра.
-                    + " look=" + dx + "," + (dy + 1) + "," + dz
+                    + " look=" + dx + "," + (dy + 2) + "," + dz
                     + " raven_pos=" + ravenPos
                     + " alive=" + ravenAlive
                     + " invisible=" + ravenInvisible
