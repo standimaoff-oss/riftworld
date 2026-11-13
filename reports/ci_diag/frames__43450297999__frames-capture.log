@@ -1,0 +1,49 @@
+::notice title=CI packages::все пакеты для headless-клиента на месте
+::warning title=In-game frames::кадр frame-paper-dragon-three-quarter слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-paper-dragon-three-quarter слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-paper-dragon-three-quarter слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-paper-dragon-three-quarter слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-paper-dragon-three-quarter остался тёмным после четырёх попыток
+captured frame-paper-dragon-three-quarter
+::warning title=In-game frames::кадр frame-paper-dragon-side слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-paper-dragon-side слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-paper-dragon-side слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-paper-dragon-side слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-paper-dragon-side остался тёмным после четырёх попыток
+captured frame-paper-dragon-side
+::warning title=In-game frames::кадр frame-paper-dragon-head слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-paper-dragon-head слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-paper-dragon-head слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-paper-dragon-head слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-paper-dragon-head остался тёмным после четырёх попыток
+captured frame-paper-dragon-head
+  riftstruct kind=bb_bone_raven_showcase at=560,119,560 model_boxes=0 bones=0 atlas=256 spawned=1 blocks=0 sub_air=0 rev=stage140-release cam=558,120,558 cam_side=562,120,562 cam_head=562,120,558:560,119,560 look=560,120,560 raven_pos=560.50,119.60,560.50 alive=1 invisible=false noai=true
+  цель камеры: 560,120,560; ворон: 560.50,119.60,560.50
+    Teleported TestPlayer to 558.500000, 120.000000, 558.500000
+    riftstruct kind=bb_bone_raven_showcase at=560,119,560 model_boxes=0 bones=0 atlas=256 spawned=1 blocks=0 sub_air=0 rev=stage140-release cam=558,120,558 cam_side=562,120,562 cam_head=562,120,558:560,119,560 look=560,120,560 raven_pos=560.50,119.60,560.50 alive=1 invisible=false noai=true
+    ворон рядом: Test passed, count: 1
+::warning title=In-game frames::кадр frame-bone-raven-three-quarter слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-bone-raven-three-quarter слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-bone-raven-three-quarter слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-bone-raven-three-quarter слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-bone-raven-three-quarter остался тёмным после четырёх попыток
+captured frame-bone-raven-three-quarter
+    Teleported TestPlayer to 562.500000, 120.000000, 562.500000
+    riftstruct kind=bb_bone_raven_showcase at=560,119,560 model_boxes=0 bones=0 atlas=256 spawned=1 blocks=0 sub_air=0 rev=stage140-release cam=558,120,558 cam_side=562,120,562 cam_head=562,120,558:560,119,560 look=560,120,560 raven_pos=560.50,119.60,560.50 alive=1 invisible=false noai=true
+    ворон рядом: Test passed, count: 1
+::warning title=In-game frames::кадр frame-bone-raven-side слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-bone-raven-side слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-bone-raven-side слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-bone-raven-side слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-bone-raven-side остался тёмным после четырёх попыток
+captured frame-bone-raven-side
+    Teleported TestPlayer to 562.500000, 120.000000, 558.500000
+    riftstruct kind=bb_bone_raven_showcase at=560,119,560 model_boxes=0 bones=0 atlas=256 spawned=1 blocks=0 sub_air=0 rev=stage140-release cam=558,120,558 cam_side=562,120,562 cam_head=562,120,558:560,119,560 look=560,120,560 raven_pos=560.50,119.60,560.50 alive=1 invisible=false noai=true
+    ворон рядом: Test passed, count: 1
+::warning title=In-game frames::кадр frame-bone-raven-head слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-bone-raven-head слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-bone-raven-head слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-bone-raven-head слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-bone-raven-head остался тёмным после четырёх попыток
+captured frame-bone-raven-head
+::error title=In-game frames::Paper dragon position could not be read: 
