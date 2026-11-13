@@ -268,6 +268,16 @@ def main() -> None:
 
     # 2f. Рецепты брони — ванильные раскладки
     rec_dir = DATA / "riftworld/recipes"
+
+    # Ванильные раскладки брони 1.20.1 (data/minecraft/recipes, 1.20.1):
+    # одинаковы для кожи и металлов, отличается только материал.
+    VANILLA_ARMOR_LAYOUT = {
+        "helmet": ["XXX", "X X"],
+        "chestplate": ["X X", "XXX", "XXX"],
+        "leggings": ["XXX", "X X", "X X"],
+        "boots": ["X X", "X X"],
+    }
+
     for set_name in ARMOR_SETS:
         for part in ARMOR_PARTS:
             rp = rec_dir / f"{set_name}_{part}.json"
@@ -279,6 +289,21 @@ def main() -> None:
                 f"{rp.name}: pattern rows must be plain strings")
             assert rjson.get("result", {}).get("item") == f"riftworld:{set_name}_{part}", (
                 f"{rp.name}: wrong result item")
+            # Раскладка должна совпадать с ванильной
+            assert pat == VANILLA_ARMOR_LAYOUT[part], (
+                f"{rp.name}: pattern {pat} must equal vanilla 1.20.1 "
+                f"{VANILLA_ARMOR_LAYOUT[part]}")
+            # Каждый символ раскладки обязан быть объявлен в key, иначе
+            # Minecraft падает с "Pattern references symbol 'L' but it's not
+            # defined in the key" и рецепт не грузится вообще.
+            keys = rjson.get("key") or {}
+            assert isinstance(keys, dict) and keys, f"{rp.name}: key must be a non-empty object"
+            used = set("".join(pat)) - {" "}
+            missing = used - set(keys)
+            assert not missing, (
+                f"{rp.name}: pattern uses {sorted(missing)} but key defines {sorted(keys)}")
+            # Ровно один ингредиент на комплект
+            assert len(keys) == 1, f"{rp.name}: expected exactly one ingredient, got {sorted(keys)}"
 
     # 2g. Переводы
     for lang in ("en_us.json", "ru_ru.json"):
@@ -368,6 +393,26 @@ def main() -> None:
         rp = rec_dir / req_rec
         assert rp.exists(), f"Missing recipe {req_rec}"
         json.loads(rp.read_text(encoding="utf-8"))
+
+    # 6a. ЛЮБОЙ shaped-рецепт мода: каждый символ раскладки обязан быть
+    # объявлен в key. Иначе сервер падает при загрузке рецептов с
+    # "Pattern references symbol 'L' but it's not defined in the key"
+    # и рецепт молча не работает.
+    for rp in sorted(rec_dir.glob("*.json")):
+        rj = json.loads(rp.read_text(encoding="utf-8"))
+        if rj.get("type") != "minecraft:crafting_shaped":
+            continue
+        pat = rj.get("pattern")
+        if pat is None:
+            continue
+        rows = pat if isinstance(pat, list) else [pat]
+        keys = rj.get("key") or {}
+        assert isinstance(keys, dict), f"{rp.name}: key must be an object"
+        used = set("".join(rows)) - {" "}
+        missing = used - set(keys)
+        assert not missing, (
+            f"{rp.name}: pattern uses {sorted(missing)} but key defines {sorted(keys)} "
+            f"— Minecraft would refuse to load this recipe")
 
     # 7. Check the strict 4-biome riftcrystal_ore rule & settlement population hook
     cg_src = (JAVA / "world/ElisarChunkGenerator.java").read_text(encoding="utf-8")

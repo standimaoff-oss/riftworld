@@ -170,7 +170,14 @@ function buildSlots() {
     d.appendChild(c); d.appendChild(sp);
     d.onclick = () => {
       state.part = p.id;
-      if (state.mode !== 'icon') setMode('icon');
+      // В режиме «Слои» выбор детали тоже важен: шлем/нагрудник/ботинки
+      // лежат в layer_1, поножи — в layer_2. Переключаем слой под выбранную
+      // деталь, чтобы превью показывало именно её.
+      if (state.mode === 'layer') {
+        state.layer = (p.id === 'leggings') ? 'layer_2' : 'layer_1';
+        buildLayers();
+      }
+      if (state.mode !== 'icon' && state.mode !== 'layer') setMode('icon');
       else { buildSlots(); update(); }
     };
     box.appendChild(d);
@@ -503,8 +510,14 @@ function drawPreview() {
   if (!m) return;
 
   const tex = layerMode ? null : buildTextureFromPixels();
+  // Показываем ту карту, которую выбрал пользователь (слой 1 или слой 2).
+  // Но поножи в ванилле всегда лежат в layer_2, а шлем/нагрудник/ботинки — в layer_1,
+  // поэтому для поножей берём layer_2, а для остальных — выбранный слой
+  // (если выбран слой 2 и часть — поножи, всё равно layer_2).
   const layerBuf = layerMode
-    ? (state.layers[state.set][state.layer === 'layer_1' && state.part === 'leggings' ? 'layer_2' : 'layer_1'])
+    ? (state.part === 'leggings'
+        ? state.layers[state.set]['layer_2']
+        : state.layers[state.set][state.layer === 'layer_2' ? 'layer_2' : 'layer_1'])
     : null;
   const a = state.spin ? state.spinAngle : 0.6;
   const cos = Math.cos(a), sin = Math.sin(a);

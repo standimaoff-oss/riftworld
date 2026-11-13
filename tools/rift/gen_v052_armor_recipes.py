@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
 """v0.52.0 — рецепты брони мода.
 
-Раскладки — РОВНО ванильные (как у leather/diamond/netherite брони Minecraft),
-подменён только материал. Ничего нового не изобретаем:
+Раскладки — РОВНО ванильные 1.20.1 (leather/diamond/netherite брони),
+подменён только материал. Ванильные раскладки (data/minecraft/recipes):
 
-  шлем      "MMM" / "MMM"            (для кожи — "LLL" / " L ")
-  нагрудник "MMM" / "MMM" / "MMM"    (для кожи — "L L" / "LLL" / "LLL")
-  поножи    "MMM" / "MMM" / " L "     (для кожи — "LLL" / " L " / " L ")
-  ботинки   "L L" / "L L"
+    шлем       "XXX" / "X X"
+    нагрудник  "X X" / "XXX" / "XXX"
+    поножи     "XXX" / "X X" / "X X"
+    ботинки   "X X" / "X X"
+
+Ключ в раскладке — один символ "X" (в ванилле он тоже "X"), и в key он
+обязан присутствовать: Minecraft ругается "Pattern references symbol 'L'
+but it's not defined in the key", если символ раскладки не объявлен.
 
 Запуск: python3 tools/rift/gen_v052_armor_recipes.py
 """
@@ -19,76 +23,52 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 RECIPES = ROOT / "mod/src/main/resources/data/riftworld/recipes"
 
-# материал -> (id предмета, ключ в рецепте, item-тег для «кожи»)
+# материал -> item-идентификатор ингредиента
 SETS = {
-    "leather": ("minecraft:leather", "L"),
-    "aurite": ("riftworld:aurite_ingot", "M"),
-    "riftcrystal": ("riftworld:riftcrystal", "M"),
+    "leather": "minecraft:leather",
+    "aurite": "riftworld:aurite_ingot",
+    "riftcrystal": "riftworld:riftcrystal",
 }
 
-# раскладки по частям (ванильные). Кожа и «полные» комплекты различаются:
-# у кожи в шлеме/нагруднике/поножах есть характерные вырезы.
-# Формат — список строк, каждая строка = ряд раскладки (как в ванильных JSON).
-LAYOUT_METAL = {
+# Ванильная раскладка 1.20.1 (одинакова для кожи и металлов).
+# Символ ключа — "X", как в ванильных рецептах.
+LAYOUT = {
     "helmet": [
-        "MMM",
-        "MMM",
+        "XXX",
+        "X X",
     ],
     "chestplate": [
-        "MMM",
-        "MMM",
-        "MMM",
+        "X X",
+        "XXX",
+        "XXX",
     ],
     "leggings": [
-        "MMM",
-        "MMM",
-        " L ",
+        "XXX",
+        "X X",
+        "X X",
     ],
     "boots": [
-        "L L",
-        "L L",
+        "X X",
+        "X X",
     ],
 }
 
-LAYOUT_LEATHER = {
-    "helmet": [
-        "LLL",
-        "LLL",
-        " L ",
-    ],
-    "chestplate": [
-        "L L",
-        "LLL",
-        "LLL",
-    ],
-    "leggings": [
-        "LLL",
-        "LLL",
-        " L ",
-    ],
-    "boots": [
-        "L L",
-        "L L",
-    ],
-}
-
-
-def compact(rows):
-    """Убирает полностью пустые строки — так же, как это делает ванильный JSON."""
-    return [r for r in rows if r.strip()]
+KEY = "X"
 
 
 def main() -> None:
     RECIPES.mkdir(parents=True, exist_ok=True)
     made = 0
-    for set_name, (material, key) in SETS.items():
-        layout = LAYOUT_LEATHER if set_name == "leather" else LAYOUT_METAL
-        for part, rows in layout.items():
-            pat = compact(rows)
+    for set_name, material in SETS.items():
+        for part, rows in LAYOUT.items():
+            # страховка: каждый символ раскладки обязан быть объявлен в key
+            used = set("".join(rows))
+            assert used <= {KEY, " "}, f"{set_name}_{part}: символы {used - {KEY, ' '}} без ключа"
             data = {
                 "type": "minecraft:crafting_shaped",
-                "pattern": pat,
-                "key": {key: {"item": material}},
+                "category": "equipment",
+                "pattern": rows,
+                "key": {KEY: {"item": material}},
                 "result": {"item": f"riftworld:{set_name}_{part}", "count": 1},
             }
             path = RECIPES / f"{set_name}_{part}.json"
