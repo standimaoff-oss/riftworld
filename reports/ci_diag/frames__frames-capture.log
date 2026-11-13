@@ -1,6 +1,6 @@
 ::notice title=CI packages::все пакеты для headless-клиента на месте
 capturing the v0.52.0 armour...
-  riftstruct kind=bb_armor_showcase at=600,120,600 spawned=1 blocks=0 sub_air=0 rev=stage141-armour cam=596,122,596 cam_side=604,122,604 cam_quarter=604,122,596 cam_front=600,122,595 look=600,121,600 helmet=[Riftcrystal Helmet] chestplate=[Riftcrystal Chestplate] leggings=[Riftcrystal Leggings] boots=[Riftcrystal Boots]
+  riftstruct kind=bb_armor_showcase at=600,120,600 spawned=1 blocks=0 sub_air=0 rev=stage143-armour cam=596,122,596 cam_side=604,122,604 cam_quarter=604,122,596 cam_front=600,122,595 look=600,121,600 helmet=[Riftcrystal Helmet] chestplate=[Riftcrystal Chestplate] leggings=[Riftcrystal Leggings] boots=[Riftcrystal Boots]
   манекен: 600,121,600; камера: 600,122,595
 ::warning title=In-game frames::кадр frame-v052-armor-riftcrystal-front слишком тёмный, переснимаем (1/4)
 ::warning title=In-game frames::кадр frame-v052-armor-riftcrystal-front слишком тёмный, переснимаем (2/4)
@@ -67,4 +67,17 @@ captured frame-bone-raven-side
 ::warning title=In-game frames::кадр frame-bone-raven-head слишком тёмный, переснимаем (4/4)
 ::warning title=In-game frames::кадр frame-bone-raven-head остался тёмным после четырёх попыток
 captured frame-bone-raven-head
-::error title=In-game frames::Paper dragon position could not be read: 
+::warning title=In-game frames::позицию дракона прочитать не удалось, снимаем по точке спавна
+  paper dragon at 232,148,0
+::warning title=In-game frames::кадр frame-paper-dragon-far-a слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-paper-dragon-far-a слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-paper-dragon-far-a слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-paper-dragon-far-a слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-paper-dragon-far-a остался тёмным после четырёх попыток
+captured frame-paper-dragon-far-a
+::warning title=In-game frames::кадр frame-paper-dragon-far-close слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-paper-dragon-far-close слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-paper-dragon-far-close слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-paper-dragon-far-close слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-paper-dragon-far-close остался тёмным после четырёх попыток
+captured frame-paper-dragon-far-close
