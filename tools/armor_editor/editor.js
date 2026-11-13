@@ -14,7 +14,7 @@ const PARTS = [
   { id: 'boots',     name: 'Ботинки',   file: 'boots' },
 ];
 
-const state = {
+var state = {
   set: 'leather',
   part: 'helmet',
   // pixels[set][part] = Uint8ClampedArray(16*16*4)
@@ -32,8 +32,8 @@ const state = {
 };
 
 // ---------------------------------------------------------------- инициализация
-const imgs = {};        // референсные картинки (ванильные иконки)
-const models3d = {};    // 3D-модели брони
+var imgs = {};        // референсные картинки (ванильные иконки)
+var models3d = {};    // 3D-модели брони
 
 function px(img, x, y) {
   const c = document.createElement('canvas');
@@ -146,9 +146,157 @@ function buildSwatches() {
 }
 
 // ---------------------------------------------------------------- холст
+// ---------------------------------------------------------------- холст
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d', { willReadFrequently: true });
+const overlay = document.getElementById('overlay');
+const octx = overlay.getContext('2d');
+
+
+
+
+
+
+
+function canvasPos(ev) {
+  const r = canvas.getBoundingClientRect();
+  const x = Math.floor((ev.clientX - r.left) / (r.width / 16));
+  const y = Math.floor((ev.clientY - r.top) / (r.height / 16));
+  return [x, y];
+}
+
+function wireCanvas() {
+  const onDown = (ev) => {
+    ev.preventDefault();
+    const [x, y] = canvasPos(ev);
+    const data = curPixels(state);
+    const rgba = hexToRGBA(state.color, state.alpha);
+    state.drag = { x, y, x0: x, y0: y };
+    if (state.tool === 'brush' || state.tool === 'eraser') {
+      const c = state.tool === 'eraser' ? [0, 0, 0, 0] : rgba;
+      stamp(state, data, x, y, c);
+    } else if (state.tool === 'bucket') {
+      bucketFill(data, x, y, rgba);
+    } else if (state.tool === 'pick') {
+      const c = getPixel(data, x, y);
+      if (c[3] > 0) {
+        state.color = '#' + c.slice(0, 3).map(v => v.toString(16).padStart(2, '0')).join('');
+        state.alpha = c[3];
+        document.getElementById('color').value = state.color;
+        document.getElementById('alpha').value = state.alpha;
+        document.getElementById('alphaVal').textContent = Math.round(c[3] / 255 * 100) + '%';
+      }
+      state.tool = 'brush';
+      syncTools();
+    }
+    update();
+  };
+  const onMove = (ev) => {
+    if (!state.drag) return;
+    const [x, y] = canvasPos(ev);
+    const data = curPixels(state);
+    const rgba = hexToRGBA(state.color, state.alpha);
+    const d = state.drag;
+    if (state.tool === 'brush' || state.tool === 'eraser') {
+      const c = state.tool === 'eraser' ? [0, 0, 0, 0] : rgba;
+      drawLine(state, data, d.x, d.y, x, y, c);
+      d.x = x; d.y = y;
+    } else if (state.tool === 'line') {
+      // предпросход: рисуем на копии
+      previewDrag(data, x, y);
+    }
+    update();
+  };
+  const onUp = (ev) => {
+    if (!state.drag) return;
+    const [x, y] = canvasPos(ev);
+    const data = curPixels(state);
+    const rgba = hexToRGBA(state.color, state.alpha);
+    if (state.tool === 'line') {
+      drawLine(state, data, state.drag.x0, state.drag.y0, x, y, rgba);
+    } else if (state.tool === 'rect') {
+      rect(state, data, state.drag.x0, state.drag.y0, x, y, rgba);
+    }
+    state.drag = null;
+    update();
+  };
+  canvas.addEventListener('pointerdown', onDown);
+  canvas.addEventListener('pointermove', onMove);
+  window.addEventListener('pointerup', onUp);
+}
+
+let dragBackup = null;
+function previewDrag(data, x, y) {
+  if (!dragBackup) dragBackup = data.slice();
+  data.set(dragBackup);
+  drawLine(state, data, state.drag.x0, state.drag.y0, x, y, hexToRGBA(state.color, state.alpha));
+}
+
+function wireTools() {
+  document.querySelectorAll('.tool[data-tool]').forEach(b => {
+    b.onclick = () => { state.tool = b.dataset.tool; syncTools(); };
+  });
+  document.getElementById('btnMirror').onclick = () => {
+    state.mirror = !state.mirror;
+    document.getElementById('btnMirror').classList.toggle('active', state.mirror);
+    update();
+  };
+  document.getElementById('btnClear').onclick = () => {
+    const d = curPixels(state);
+    d.fill(0);
+    update();
+  };
+  document.getElementById('btnPrevSpin').onclick = () => {
+    state.spin = !state.spin;
+    document.getElementById('btnPrevSpin').classList.toggle('active', state.spin);
+    drawPreview();
+  };
+  document.getElementById('color').oninput = e => { state.color = e.target.value; };
+  document.getElementById('alpha').oninput = e => {
+    state.alpha = +e.target.value;
+    document.getElementById('alphaVal').textContent = Math.round(state.alpha / 255 * 100) + '%';
+  };
+  document.getElementById('brushSize').oninput = e => {
+    state.brush = +e.target.value;
+    document.getElementById('brushVal').textContent = state.brush + ' px';
+  };
+  document.getElementById('zoom').oninput = e => {
+    state.zoom = +e.target.value;
+    document.getElementById('zoomVal').textContent = state.zoom + '×';
+    resizeCanvas();
+    update();
+  };
+  document.getElementById('grid').onchange = () => update();
+  document.getElementById('btnExport').onclick = doExport;
+  document.getElementById('btnCopy').onclick = doCopy;
+  document.getElementById('btnReset').onclick = () => {
+    if (!confirm('Сбросить весь комплект «' + SETS.find(s => s.id === state.set).name + '» к ванильным иконкам?')) return;
+    const s = SETS.find(x => x.id === state.set);
+    for (const p of PARTS) {
+      const im = imgs[`${s.id}_${p.id}`];
+      state.pixels[s.id][p.id] = px(im, 0, 0).data;
+    }
+    update();
+    setStatus('комплект сброшен');
+  };
+}
+
+function syncTools() {
+  document.querySelectorAll('.tool[data-tool]').forEach(b =>
+    b.classList.toggle('active', b.dataset.tool === state.tool));
+}
+
+function resizeCanvas() {
+  const z = state.zoom;
+  canvas.style.width = (16 * z) + 'px';
+  canvas.style.height = (16 * z) + 'px';
+  overlay.style.width = (16 * z) + 'px';
+  overlay.style.height = (16 * z) + 'px';
+}
+
 // ---------------------------------------------------------------- отрисовка
 function update() {
-  const data = curPixels();
+  const data = curPixels(state);
   const im = ctx.createImageData(16, 16);
   im.data.set(data);
   ctx.putImageData(im, 0, 0);
@@ -294,7 +442,7 @@ function quadPoints(name, x0, y0, z0, x1, y1, z1) {
 // какой цвет грани брать. Разложим нарисованные пиксели по частоте
 // (тёмное = тело, светлое = блик) и подставим в грани по UV-индексу.
 function buildTextureFromPixels() {
-  const data = curPixels();
+  const data = curPixels(state);
   const pal = new Map(); // цвет -> сколько раз
   for (let i = 0; i < 256; i++) {
     const c = [data[i * 4], data[i * 4 + 1], data[i * 4 + 2], data[i * 4 + 3]];

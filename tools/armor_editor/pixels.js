@@ -2,18 +2,17 @@
    Вынесены отдельно от DOM, чтобы их можно было прогнать тестами в node. */
 'use strict';
 
-const state = {
-  set: 'leather', part: 'helmet', pixels: {}, tool: 'brush',
-  color: '#b8b8b8', alpha: 255, brush: 1, mirror: false, drag: null,
-};
+// state передаётся снаружи (см. editor.js). Здесь он не объявляется:
+// два `const state` в одной странице — это SyntaxError, из-за которого
+// падает весь скрипт, а с ним и вся страница.
 
-function curPixels() { return state.pixels[state.set][state.part]; }
+function curPixels(state) { return state.pixels[state.set][state.part]; }
 
 function hexToRGBA(hex, a) {
   const n = parseInt(hex.slice(1), 16);
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255, a];
 }
-function setPixel(data, x, y, rgba) {
+function setPixel(state, data, x, y, rgba) {
   if (x < 0 || y < 0 || x >= 16 || y >= 16) return;
   if (state.mirror) { const mx = 15 - x; write(data, mx, y, rgba); }
   write(data, x, y, rgba);
@@ -44,19 +43,19 @@ function bucketFill(data, x, y, rgba) {
     stack.push([cx + 1, cy], [cx - 1, cy], [cx, cy + 1], [cx, cy - 1]);
   }
 }
-function drawLine(data, x0, y0, x1, y1, rgba) {
+function drawLine(state, data, x0, y0, x1, y1, rgba) {
   const dx = Math.abs(x1 - x0), dy = Math.abs(y1 - y0);
   const sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1;
   let err = dx - dy, x = x0, y = y0;
   for (let n = 0; n < 200; n++) {
-    stamp(data, x, y, rgba);
+    stamp(state, data, x, y, rgba);
     if (x === x1 && y === y1) break;
     const e2 = 2 * err;
     if (e2 > -dy) { err -= dy; x += sx; }
     if (e2 < dx) { err += dx; y += sy; }
   }
 }
-function stamp(data, x, y, rgba) {
+function stamp(state, data, x, y, rgba) {
   const s = state.brush;
   for (let dy = 0; dy < s; dy++) {
     for (let dx = 0; dx < s; dx++) {
@@ -66,10 +65,10 @@ function stamp(data, x, y, rgba) {
     }
   }
 }
-function rect(data, x0, y0, x1, y1, rgba) {
+function rect(state, data, x0, y0, x1, y1, rgba) {
   const ax = Math.min(x0, x1), bx = Math.max(x0, x1);
   const ay = Math.min(y0, y1), by = Math.max(y0, y1);
-  for (let y = ay; y <= by; y++) for (let x = ax; x <= bx; x++) setPixel(data, x, y, rgba);
+  for (let y = ay; y <= by; y++) for (let x = ax; x <= bx; x++) setPixel(state, data, x, y, rgba);
 }
 function pixelsToRows(data) {
   const rows = [];
@@ -88,7 +87,13 @@ function pixelsToRows(data) {
   return rows;
 }
 
-if (typeof module !== 'undefined') {
-  module.exports = { state, curPixels, hexToRGBA, setPixel, write, getPixel, same,
+// Экспорт для node-тестов: функции принимают state первым аргументом.
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+  // Тестовый state — в браузере используется общий из editor.js.
+  const testState = {
+    set: 'leather', part: 'helmet', pixels: {}, tool: 'brush',
+    color: '#b8b8b8', alpha: 255, brush: 1, mirror: false, drag: null,
+  };
+  module.exports = { state: testState, curPixels, hexToRGBA, setPixel, write, getPixel, same,
     bucketFill, drawLine, stamp, rect, pixelsToRows };
 }

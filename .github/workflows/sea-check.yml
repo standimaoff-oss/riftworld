@@ -111,6 +111,11 @@ jobs:
           set -euo pipefail
           python3 tools/armor_editor/build_single.py
           node tools/armor_editor/test_pixels.js
+          # Второй тест гоняет сам одностраничник в node с DOM-заглушкой:
+          # ловит именно те поломки, из-за которых страница молча не работает
+          # (например, дубль `const state` в двух <script> — это SyntaxError,
+          # и весь скрипт падает).
+          node tools/armor_editor/test_page.js
       - name: Collect jars
         shell: bash
         run: |

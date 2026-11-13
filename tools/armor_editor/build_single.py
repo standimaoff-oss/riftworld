@@ -90,7 +90,7 @@ def main() -> None:
     # Вставляем данные и скрипты перед </body>.
     inject = (
         "<script>\n"
-        "const ARMOR_DATA = " + payload + ";\n"
+        "var ARMOR_DATA = " + payload + ";\n"
         "</script>\n"
         "<script>\n" + pixels + "\n</script>\n"
         "<script>\n" + js + "\n</script>\n"
