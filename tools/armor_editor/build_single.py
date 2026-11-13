@@ -25,14 +25,21 @@ def b64(path: pathlib.Path) -> str:
     return base64.b64encode(path.read_bytes()).decode("ascii")
 
 
+LAYERS = ["layer_1", "layer_2"]
+
+
 def build_data() -> dict:
-    """Данные для страницы: иконки (PNG, base64) и 3D-модели (JSON)."""
+    """Данные для страницы: иконки и карты брони (PNG, base64) + 3D-модели (JSON)."""
     out = {"icons": {}, "models": {}}
     for s in SETS:
         for p in PARTS:
             png = DATA / f"{s}_{p}.png"
             if png.exists():
                 out["icons"][f"{s}_{p}"] = b64(png)
+        for L in LAYERS:
+            png = DATA / f"{s}_{L}.png"
+            if png.exists():
+                out["icons"][f"{s}_{L}"] = b64(png)
     for p in PARTS:
         mj = DATA / f"model3d_{p}.json"
         if mj.exists():
@@ -49,41 +56,8 @@ def main() -> None:
     html = html.replace('<script src="pixels.js"></script>\n', "")
     html = html.replace('<script src="editor.js"></script>\n', "")
 
-    # В editor.js init() грузит картинки по URL — заменяем на встроенные данные.
-    js = js.replace(
-        """async function init() {
-  for (const s of SETS) {
-    state.pixels[s.id] = {};
-    for (const p of PARTS) {
-      // ванильная иконка как стартовая основа
-      const img = await loadImage(`data/${s.ref}_${p.file}.png`);
-      imgs[`${s.id}_${p.id}`] = img;
-      const d = px(img, 0, 0);
-      state.pixels[s.id][p.id] = d.data;
-    }
-  }
-  for (const p of PARTS) {
-    const r = await fetch(`data/model3d_${p.file}.json`);
-    models3d[p.id] = await r.json();
-  }""",
-        """async function init() {
-  // Встроенные данные: иконки и 3D-модели приезжают прямо в страницу,
-  // поэтому файл открывается без сервера и без интернета.
-  for (const s of SETS) {
-    state.pixels[s.id] = {};
-    for (const p of PARTS) {
-      const key = `${s.ref}_${p.file}`;
-      const b64png = ARMOR_DATA.icons[key];
-      if (!b64png) continue;
-      const img = await loadImage('data:image/png;base64,' + b64png);
-      imgs[`${s.id}_${p.id}`] = img;
-      state.pixels[s.id][p.id] = px(img, 0, 0).data;
-    }
-  }
-  for (const p of PARTS) {
-    if (ARMOR_DATA.models[p.id]) models3d[p.id] = ARMOR_DATA.models[p.id];
-  }""",
-    )
+    # editor.js сам берёт данные из ARMOR_DATA, если тот есть (одностраничная сборка),
+    # иначе грузит файлы из data/ (обычная разработка). Поэтому init() править не нужно.
 
     payload = json.dumps(build_data(), ensure_ascii=False, separators=(",", ":"))
 
@@ -101,7 +75,7 @@ def main() -> None:
     out = HERE / "riftworld-armor-editor.html"
     out.write_text(html, encoding="utf-8")
     size_kb = out.stat().st_size / 1024
-    print(f"OK: {out} ({size_kb:.0f} KB, иконок: {len(SETS) * len(PARTS)}, моделей: {len(PARTS)})")
+    print(f"OK: {out} ({size_kb:.0f} KB, картинок: {len(SETS) * (len(PARTS) + len(LAYERS))}, моделей: {len(PARTS)})")
 
 
 if __name__ == "__main__":

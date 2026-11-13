@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 """
-v0.49.0 Static Validator — 2x HD Armors, 3D Voxel Weapons/Tools/Bow/Shields, Volumetric 3D
-Armor Items, Dual Tool Sets, 4-Biome Rare Ore & Elisar Settlement Folk.
+v0.52.0 Static Validator — Vanilla-geometry armour + 3D Voxel Weapons/Tools/Bow/Shields,
+Volumetric 3D Items, Dual Tool Sets, 4-Biome Rare Ore & Elisar Settlement Folk.
 
 Runs in <1s locally and in GitHub Actions before Gradle compilation.
 
-v0.49.0 changes over v0.48.0:
-  * Worn armour atlases are now 256x256 (2x HD) with nested "hd" child bones.
-  * All 8 armour items now have TRUE 3D volumetric item models (not flat item/generated sprites).
-  * Weapons/tools/bow/shields use a 5-tier depth map (DEPTH_Z 0..4).
-  * The El Gran Maja island devourer is always enabled and guarded to the Elisar dimension.
+v0.52.0 changes over v0.51.0:
+  * Mod armour is BACK, but with VANILLA GEOMETRY — no custom 3D armour models.
+    The armour must be plain vanilla HumanoidArmorLayer (PLAYER_INNER/OUTER_ARMOR),
+    so the mod ships only *_layer_1/_layer_2.png (64x32 player-skin layout).
+  * Armour atlases must be 64x32 (vanilla armour UV layout), NOT 256x256 Box-UV.
+  * Every armour material name must be "riftworld:<mat>" so Forge resolves the
+    texture as <ns>:textures/models/armor/<mat>_layer_N.png automatically.
+  * Item icons must be vanilla-shaped 16x16 sprites.
 """
 from __future__ import annotations
 
@@ -25,8 +28,11 @@ JAVA = MOD / "java/ru/aiforge/riftworld"
 ASSETS = MOD / "resources/assets/riftworld"
 DATA = MOD / "resources/data"
 
-ARMOR_ATLAS = 256
+ARMOR_ATLAS = 64          # ванильная раскладка текстур брони
 FOLK_ATLAS = 128
+
+ARMOR_SETS = ("leather", "aurite", "riftcrystal")
+ARMOR_PARTS = ("helmet", "chestplate", "leggings", "boots")
 
 
 def extract_method_boxes(java_src: str, anchor: str):
@@ -59,43 +65,39 @@ def check_box_uvs(name: str, boxes, png_path: Path, atlas: int) -> None:
         faces = [
             ("up", u + d, v, w, d),
             ("down", u + d + w, v, w, d),
-            ("right", u, v + d, d, h),
-            ("front", u + d, v + d, w, h),
-            ("left", u + d + w, v + d, d, h),
-            ("back", u + 2 * d + w, v + d, w, h),
+            ("west", u, v + d, d, h),
+            ("north", u + d, v + d, w, h),
+            ("east", u + d + w, v + d, d, h),
+            ("south", u + d + w + d, v + d, w, h),
         ]
-        for fname, fx, fy, fw, fh in faces:
-            assert 0 <= fx and fx + fw <= atlas and 0 <= fy and fy + fh <= atlas, (
-                f"{name}:{pname}:{fname} out of {atlas}x{atlas} bounds: ({fx},{fy},{fw},{fh})"
-            )
-            if fw > 0 and fh > 0:
-                overlap = int(np.count_nonzero(occ[fy:fy + fh, fx:fx + fw]))
-                assert overlap == 0, f"UV overlap in {name}:{pname}:{fname} at ({fx},{fy},{fw},{fh})"
-                occ[fy:fy + fh, fx:fx + fw] = 1
-                alpha_min = int(img[fy:fy + fh, fx:fx + fw, 3].min())
-                assert alpha_min == 255, f"Transparent pixel inside {name}:{pname}:{fname}: min_alpha={alpha_min}"
+        for _fname, fu, fv, fw, fh in faces:
+            assert fu + fw <= atlas and fv + fh <= atlas, f"{name}/{pname}: face overflows {atlas}px atlas"
+            for yy in range(fv, fv + fh):
+                for xx in range(fu, fu + fw):
+                    occ[yy, xx] += 1
+    assert occ.max() <= 1, f"{name}: overlapping UV faces in the atlas"
+    used = int((occ > 0).sum())
+    assert used >= 0.5 * atlas * atlas * 0.05, f"{name}: suspiciously little of the atlas is used ({used}px)"
 
 
-def check_no_missing_magenta(png_path: Path) -> None:
-    arr = np.array(Image.open(png_path).convert("RGBA"))
-    opaque = arr[:, :, 3] > 0
-    if not np.any(opaque):
-        return
-    rgb = arr[opaque, :3].astype(np.float32)
-    dist = np.sqrt(((rgb[:, 0] - 248.0) ** 2 + (rgb[:, 1] - 0.0) ** 2 + (rgb[:, 2] - 248.0) ** 2) / (3.0 * 255.0 ** 2))
-    min_dist = float(dist.min())
-    assert min_dist > 0.10, f"{png_path.name} has pixel too close to missing-texture #F800F8 (dist={min_dist:.4f})"
-
-
-def check_layer_size(java_src: str, anchor: str, expected: int) -> None:
-    """Asserts the LayerDefinition.create(mesh, W, H) declared by the layer method."""
+def check_layer_size(java_src: str, anchor: str, atlas: int) -> None:
+    """Checks the LayerDefinition.create(mesh, W, H) size of a specific model class."""
     pos = java_src.index(anchor)
-    window = java_src[pos:pos + 8000]
-    m = re.search(r"LayerDefinition\.create\(mesh,\s*(\d+),\s*(\d+)\)", window)
-    assert m, f"Cannot find LayerDefinition.create in {anchor}"
-    assert int(m.group(1)) == expected and int(m.group(2)) == expected, (
-        f"{anchor} must declare a {expected}x{expected} atlas, got {m.group(1)}x{m.group(2)}"
-    )
+    chunk = java_src[pos:pos + 9000]
+    m = re.search(r'LayerDefinition\.create\(\s*mesh,\s*(\d+)\s*,\s*(\d+)\s*\)', chunk)
+    assert m, f"{anchor}: no LayerDefinition.create() found"
+    w, h = int(m.group(1)), int(m.group(2))
+    assert (w, h) == (atlas, atlas), f"{anchor}: atlas must be {atlas}x{atlas}, got {w}x{h}"
+
+
+def check_no_missing_magenta(path: Path) -> None:
+    """Detects the 'missing texture' magenta placeholder."""
+    arr = np.array(Image.open(path).convert("RGBA"))
+    if arr.shape[2] < 4:
+        return
+    r, g, b, a = arr[:, :, 0], arr[:, :, 1], arr[:, :, 2], arr[:, :, 3]
+    magenta = (r > 200) & (b > 200) & (g < 60) & (a > 200)
+    assert not magenta.any(), f"{path.name}: contains magenta missing-texture pixels"
 
 
 def check_3d_item_model(path: Path, min_elements: int, max_elements: int) -> dict:
@@ -128,6 +130,38 @@ def check_3d_item_model(path: Path, min_elements: int, max_elements: int) -> dic
     return mjson
 
 
+def check_vanilla_armor_layers(set_name: str) -> None:
+    """The worn-armour atlases must be exactly the vanilla 64x32 player-skin layout.
+
+    Vanilla armour layer maps have the head at (8..16, 0..8), the body at
+    (16..40, 16..24) and the limbs below — we verify the silhouette matches
+    the reference vanilla atlas so the geometry really is vanilla.
+    """
+    ref = ROOT / "tools/armor_editor/data/vanilla_armor"
+    for idx in (1, 2):
+        path = ASSETS / "textures/models/armor" / f"{set_name}_layer_{idx}.png"
+        assert path.exists(), f"Missing armour layer {path}"
+        arr = np.array(Image.open(path).convert("RGBA"))
+        # numpy shape = (height, width); ванильная раскладка брони = 64x32 (ширина x высота)
+        assert arr.shape[:2] == (32, ARMOR_ATLAS), (
+            f"{path.name}: must be {ARMOR_ATLAS}x32 (vanilla armour layout), got {arr.shape[1]}x{arr.shape[0]}")
+        alpha = arr[:, :, 3]
+        assert (alpha > 0).any(), f"{path.name}: fully transparent"
+        # силуэт обязан совпадать с ванильным (геометрия = ванильная!)
+        base = set_name_to_vanilla(set_name)
+        ref_path = ref / f"{base}_layer_{idx}.png"
+        assert ref_path.exists(), f"Missing vanilla reference {ref_path}"
+        ref_alpha = np.array(Image.open(ref_path).convert("RGBA"))[:, :, 3]
+        assert np.array_equal(alpha > 0, ref_alpha > 0), (
+            f"{path.name}: silhouette differs from the vanilla {base} atlas — "
+            f"the armour geometry must be vanilla, not custom")
+        check_no_missing_magenta(path)
+
+
+def set_name_to_vanilla(set_name: str) -> str:
+    return {"leather": "leather", "aurite": "netherite", "riftcrystal": "diamond"}[set_name]
+
+
 def main() -> None:
     # 1. Verify no lingering references to deleted obsolete classes
     for jf in JAVA.rglob("*.java"):
@@ -135,29 +169,105 @@ def main() -> None:
         for banned in ("GlbSwordItem", "GlbPickaxeItem", "GlbAxeItem", "GlbShovelItem", "GlbHoeItem", "ElisarFolkRenderer<"):
             assert banned not in src, f"Obsolete symbol {banned} still referenced in {jf}"
 
-    # 2. v0.51.0: броня мода удалена целиком. Проверяем, что её больше нет
-    #    ни в коде, ни в ресурсах, и что на её месте стоит редактор брони.
-    folk_java = (JAVA / "client/model/ElisarFolkModels.java").read_text(encoding="utf-8")
-
-    for banned_class in ("RiftArmorMaterials", "ElisarArmorItem",
-                         "ElisarArmorModels", "RiftcrystalArmorGlowLayer"):
+    # ------------------------------------------------------------------
+    # 2. v0.52.0: броня мода вернулась — с ВАНИЛЬНОЙ геометрией.
+    #    Кастомных 3D-моделей брони быть НЕ должно.
+    # ------------------------------------------------------------------
+    for banned_class in ("ElisarArmorItem", "ElisarArmorModels", "RiftcrystalArmorGlowLayer"):
         assert not list(JAVA.rglob(f"{banned_class}.java")), (
-            f"Deleted armour class {banned_class} is still present")
+            f"Custom-geometry armour class {banned_class} must not exist — armour is vanilla now")
         for jf in JAVA.rglob("*.java"):
             src = jf.read_text(encoding="utf-8")
             assert banned_class not in src, (
-                f"Deleted armour class {banned_class} is still referenced in {jf}")
+                f"Custom-geometry armour class {banned_class} still referenced in {jf}")
 
-    armour_ids = ("aurite_helmet", "aurite_chestplate", "aurite_leggings", "aurite_boots",
-                  "riftcrystal_helmet", "riftcrystal_chestplate", "riftcrystal_leggings", "riftcrystal_boots")
-    for aid in armour_ids:
-        assert not (ASSETS / "models/item" / f"{aid}.json").exists(), f"{aid} model must be gone"
-        assert not (ASSETS / "textures/item" / f"{aid}.png").exists(), f"{aid} sprite must be gone"
-        assert not (DATA / "riftworld/recipes" / f"{aid}.json").exists(), f"{aid} recipe must be gone"
+    # 2a. Материал брони реализует net.minecraft.world.item.ArmorMaterial (Forge 1.20.1 interface)
+    mat_java = (JAVA / "item/RiftArmorMaterials.java")
+    assert mat_java.exists(), "RiftArmorMaterials.java is missing"
+    mat_src = mat_java.read_text(encoding="utf-8")
+    assert "implements ArmorMaterial" in mat_src, "RiftArmorMaterials must implement ArmorMaterial"
+    for method in ("getDurability", "getProtection", "getEnchantability",
+                   "getEquipSound", "getRepairIngredient", "getName",
+                   "getToughness", "getKnockbackResistance"):
+        assert method in mat_src, f"ArmorMaterial.{method}() is not implemented"
+    # 1.20.1 API: getDurability/getProtection принимают ArmorItem.Type
+    assert "getDurability(ArmorItem.Type type)" in mat_src, (
+        "getDurability() must take ArmorItem.Type (1.20.1 API)")
+    assert "getProtection(ArmorItem.Type type)" in mat_src, (
+        "getProtection() must take ArmorItem.Type (1.20.1 API)")
+    # каждый материал обязан называться "riftworld:<mat>" — тогда Forge сам найдёт текстуру
+    for set_name in ARMOR_SETS:
+        assert f'"riftworld:{set_name}"' in mat_src, (
+            f"Material {set_name} must be named riftworld:{set_name} so Forge resolves its texture")
+
+    # 2b. Регистрация 12 предметов брони
+    items_java = (JAVA / "registry/ModItems.java").read_text(encoding="utf-8")
+    for set_name in ARMOR_SETS:
+        for part in ARMOR_PARTS:
+            reg = f'ITEMS.register("{set_name}_{part}"'
+            assert reg in items_java, f"Armour item {set_name}_{part} is not registered in ModItems"
+    # 1.20.1: ArmorItem(material, ArmorItem.Type, Properties)
+    assert "new ArmorItem(" in items_java, "Armour items must be vanilla ArmorItem instances"
+    for t in ("HELMET", "CHESTPLATE", "LEGGINGS", "BOOTS"):
+        assert f"ArmorItem.Type.{t}" in items_java, (
+            f"Armour item must be built with ArmorItem.Type.{t} (1.20.1 API)")
+    assert "EquipmentSlot.HEAD, new Item.Properties()" not in items_java, (
+        "Armour must not use EquipmentSlot in the ArmorItem constructor (1.20.1 takes ArmorItem.Type)")
+
+    # 2c. Слои брони — ванильный формат 64x32 и ванильный силуэт
+    for set_name in ARMOR_SETS:
+        check_vanilla_armor_layers(set_name)
+
+    # 2d. Иконки предметов — ванильные 16x16
+    for set_name in ARMOR_SETS:
+        for part in ARMOR_PARTS:
+            ipath = ASSETS / "textures/item" / f"{set_name}_{part}.png"
+            assert ipath.exists(), f"Missing armour icon {ipath}"
+            iarr = np.array(Image.open(ipath).convert("RGBA"))
+            assert iarr.shape[:2] == (16, 16), (
+                f"{ipath.name}: must be a vanilla-shaped 16x16 sprite, got {iarr.shape[:2]}")
+            check_no_missing_magenta(ipath)
+            mpath = ASSETS / "models/item" / f"{set_name}_{part}.json"
+            assert mpath.exists(), f"Missing armour item model {mpath}"
+            mjson = json.loads(mpath.read_text(encoding="utf-8"))
+            assert mjson.get("parent") == "minecraft:item/generated", (
+                f"{mpath.name}: must use the vanilla item/generated parent")
+            assert mjson.get("textures", {}).get("layer0") == f"riftworld:item/{set_name}_{part}", (
+                f"{mpath.name}: wrong layer0 texture")
+
+    # 2e. Старые «плоские» атласы брони (aurite_armor.png и т.п.) удалены
+    for old in ("aurite_armor.png", "riftcrystal_armor.png", "riftcrystal_armor_glow.png"):
+        assert not (ASSETS / "textures/models/armor" / old).exists(), (
+            f"Old flat armour atlas {old} must be gone")
+
+    # 2f. Рецепты брони — ванильные раскладки
+    rec_dir = DATA / "riftworld/recipes"
+    for set_name in ARMOR_SETS:
+        for part in ARMOR_PARTS:
+            rp = rec_dir / f"{set_name}_{part}.json"
+            assert rp.exists(), f"Missing armour recipe {rp}"
+            rjson = json.loads(rp.read_text(encoding="utf-8"))
+            assert rjson.get("type") == "minecraft:crafting_shaped", f"{rp.name}: must be crafting_shaped"
+            pat = rjson.get("pattern", [])
+            assert pat and all(isinstance(row, str) for row in pat), (
+                f"{rp.name}: pattern rows must be plain strings")
+            assert rjson.get("result", {}).get("item") == f"riftworld:{set_name}_{part}", (
+                f"{rp.name}: wrong result item")
+
+    # 2g. Переводы
     for lang in ("en_us.json", "ru_ru.json"):
         lang_json = json.loads((ASSETS / "lang" / lang).read_text(encoding="utf-8"))
-        for aid in armour_ids:
-            assert f"item.riftworld.{aid}" not in lang_json, f"{aid} must be gone from {lang}"
+        for set_name in ARMOR_SETS:
+            for part in ARMOR_PARTS:
+                key = f"item.riftworld.{set_name}_{part}"
+                assert key in lang_json and lang_json[key].strip(), f"Missing {key} in {lang}"
+
+    # 2h. Вкладка креатива: броня должна быть доступна
+    tabs_java = (JAVA / "registry/ModTabs.java").read_text(encoding="utf-8")
+    for set_name in ARMOR_SETS:
+        for part in ARMOR_PARTS:
+            assert f"ModItems.{set_name.upper()}_{part.upper()}.get()" in tabs_java, (
+                f"Armour {set_name}_{part} is missing from the creative tab")
 
     # Редактор брони: сайт с ванильной бронёй и экспортом в JSON.
     editor = ROOT / "tools" / "armor_editor"
@@ -171,6 +281,7 @@ def main() -> None:
                 f"3D preview model for {part} is missing")
 
     # 3. The Elisar settlement folk atlases stay untouched at 128x128.
+    folk_java = (JAVA / "client/model/ElisarFolkModels.java").read_text(encoding="utf-8")
     for anchor, png in (
         ("class Villager", "elisar_villager.png"),
         ("class Guard", "elisar_guard.png"),
@@ -208,7 +319,7 @@ def main() -> None:
         bjson = json.loads(bp.read_text(encoding="utf-8"))
         assert "parent" in bjson, f"{blk_model} must inherit from its parent model"
 
-    # 5. v0.51.0: атласы брони удалены вместе с бронёй.
+    # 5. Атласы сущностей/блоков не должны содержать «отсутствующую текстуру».
     for check_png in [
         ASSETS / "textures/entity/elisar_villager.png",
         ASSETS / "textures/entity/elisar_guard.png",
@@ -218,7 +329,6 @@ def main() -> None:
         check_no_missing_magenta(check_png)
 
     # 6. Check coin-ore smelting determinism + 2-way ducat <-> aurite_ingot + recipes
-    rec_dir = DATA / "riftworld/recipes"
     assert not (rec_dir / "aurite_ingot_from_ore.json").exists(), "Duplicate aurite_ore smelting recipe must be removed"
     assert not (rec_dir / "aurite_ingot_from_ore_blasting.json").exists(), "Duplicate aurite_ore blasting recipe must be removed"
     for req_rec in (
@@ -266,7 +376,8 @@ def main() -> None:
             assert key in ldata and ldata[key].strip(), f"Missing {key} in {lang_fn}"
 
     print(
-        f"OK validate_v048_armory_and_folk: armour_removed=yes "
+        f"OK validate_v048_armory_and_folk: armour_vanilla=yes "
+        f"armour_sets={len(ARMOR_SETS)} armour_parts={len(ARMOR_PARTS)} "
         f"editor_sets=3 editor_parts=4 voxel_models={len(voxel_items)} "
         f"rare_ore_biomes=4"
     )

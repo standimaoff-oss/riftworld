@@ -1,5 +1,9 @@
-/* Riftworld — редактор брони: рисуем иконки 16×16, экспортируем JSON.
-   Данные (ванильные иконки и 3D-модели) лежат рядом в data/. */
+/* Riftworld — редактор брони: рисуем иконки 16×16 И ванильные карты брони 64×32,
+   экспортируем JSON. Данные (ванильные иконки, карты брони и 3D-модели) лежат рядом в data/.
+
+   v0.52.0: добавлен режим «слои брони» — это те самые карты 64×32
+   (layer_1 = шлем/нагрудник/ботинки, layer_2 = поножи), из которых моду
+   собирает настоящую надетую броню с ванильной геометрией. */
 'use strict';
 
 const SETS = [
@@ -13,12 +17,29 @@ const PARTS = [
   { id: 'leggings',  name: 'Поножи',    file: 'leggings' },
   { id: 'boots',     name: 'Ботинки',   file: 'boots' },
 ];
+/* Режимы работы. 'icon' — иконка предмета 16×16; 'layer' — карта брони 64×32. */
+const MODES = [
+  { id: 'icon',  name: 'Иконки',   w: 16, h: 16 },
+  { id: 'layer', name: 'Слои',     w: 64, h: 32 },
+];
+/* Слои брони: layer_1 — шлем/нагрудник/ботинки, layer_2 — поножи. */
+const LAYERS = [
+  { id: 'layer_1', name: 'Слой 1 (шлем/нагрудник/ботинки)' },
+  { id: 'layer_2', name: 'Слой 2 (поножи)' },
+];
 
 var state = {
   set: 'leather',
   part: 'helmet',
-  // pixels[set][part] = Uint8ClampedArray(16*16*4)
+  mode: 'icon',        // 'icon' | 'layer'
+  layer: 'layer_1',    // текущая карта брони (в режиме 'layer')
+  // pixels[set][part] = Uint8ClampedArray(16*16*4)   — иконки
   pixels: {},
+  // layers[set][layerId] = Uint8ClampedArray(64*32*4) — карты брони
+  layers: {},
+  // размеры текущего холста
+  size: [16, 16],
+  width: 16,
   tool: 'brush',
   color: '#b8b8b8',
   alpha: 255,
@@ -52,24 +73,48 @@ function loadImage(src) {
   });
 }
 
+/* Одностраничная сборка встраивает данные как ARMOR_DATA (base64);
+   при разработке файлы лежат рядом в data/ и грузятся обычным путём. */
+var EMBEDDED = (typeof ARMOR_DATA !== 'undefined' && ARMOR_DATA) ? ARMOR_DATA : null;
+
+async function loadPng(key) {
+  if (EMBEDDED && EMBEDDED.icons && EMBEDDED.icons[key]) {
+    return await loadImage('data:image/png;base64,' + EMBEDDED.icons[key]);
+  }
+  return await loadImage(`data/${key}.png`);
+}
+
 async function init() {
   for (const s of SETS) {
     state.pixels[s.id] = {};
+    state.layers[s.id] = {};
     for (const p of PARTS) {
       // ванильная иконка как стартовая основа
-      const img = await loadImage(`data/${s.ref}_${p.file}.png`);
+      const img = await loadPng(`${s.ref}_${p.file}`);
       imgs[`${s.id}_${p.id}`] = img;
       const d = px(img, 0, 0);
       state.pixels[s.id][p.id] = d.data;
     }
+    // ванильные карты брони 64×32 — стартовая основа для «слоёв»
+    for (const L of LAYERS) {
+      const li = await loadPng(`${s.ref}_${L.id}`);
+      imgs[`${s.id}_${L.id}`] = li;
+      state.layers[s.id][L.id] = px(li, 0, 0).data;
+    }
   }
   for (const p of PARTS) {
-    const r = await fetch(`data/model3d_${p.file}.json`);
-    models3d[p.id] = await r.json();
+    if (EMBEDDED && EMBEDDED.models && EMBEDDED.models[p.id]) {
+      models3d[p.id] = EMBEDDED.models[p.id];
+    } else {
+      const r = await fetch(`data/model3d_${p.file}.json`);
+      models3d[p.id] = await r.json();
+    }
   }
   buildSets();
   buildSlots();
   buildSwatches();
+  buildModes();
+  buildLayers();
   wireCanvas();
   wireTools();
   update();
@@ -110,7 +155,11 @@ function buildSlots() {
     const sp = document.createElement('span');
     sp.textContent = p.name;
     d.appendChild(c); d.appendChild(sp);
-    d.onclick = () => { state.part = p.id; buildSlots(); update(); };
+    d.onclick = () => {
+      state.part = p.id;
+      if (state.mode !== 'icon') setMode('icon');
+      else { buildSlots(); update(); }
+    };
     box.appendChild(d);
   }
 }
@@ -145,6 +194,66 @@ function buildSwatches() {
   }
 }
 
+// ---------------------------------------------------------------- режимы
+/* curPixels из pixels.js работает по state.pixels[set][part].
+   В режиме «слои» мы рисуем state.layers[set][layer].
+   ВАЖНО: нельзя переопределять саму function curPixels — function-декларации
+   поднимаются (hoisting), и получится бесконечная рекурсия. Поэтому
+   pixels.js экспортирует curPixels как curPixelsBase, а здесь — обёртка. */
+function curPixelsBase(st) { return st.pixels[st.set][st.part]; }
+function curPixels(st) {
+  if (st.mode === 'layer') return st.layers[st.set][st.layer];
+  return curPixelsBase(st);
+}
+
+/** Переключает режим «иконки» / «слои брони». */
+function setMode(mode) {
+  state.mode = mode;
+  const m = MODES.find(x => x.id === mode);
+  state.size = [m.w, m.h];
+  state.width = m.w;
+  state.height = m.h;
+  canvas.width = m.w;
+  canvas.height = m.h;
+  overlay.width = m.w;
+  overlay.height = m.h;
+  resizeCanvas();
+  buildModes();
+  buildLayers();
+  const title = document.getElementById('canvasTitle');
+  if (title) title.textContent = 'Холст ' + m.w + '×' + m.h;
+  update();
+}
+
+function buildModes() {
+  const box = document.getElementById('modes');
+  if (!box) return;
+  box.innerHTML = '';
+  for (const m of MODES) {
+    const b = document.createElement('button');
+    b.className = 'modebtn' + (m.id === state.mode ? ' active' : '');
+    b.textContent = m.name;
+    b.onclick = () => setMode(m.id);
+    box.appendChild(b);
+  }
+}
+
+/** Переключает слой брони (layer_1 / layer_2) — только в режиме «слои». */
+function buildLayers() {
+  const box = document.getElementById('layerpick');
+  if (!box) return;
+  box.innerHTML = '';
+  if (state.mode !== 'layer') { box.style.display = 'none'; return; }
+  box.style.display = '';
+  for (const L of LAYERS) {
+    const b = document.createElement('button');
+    b.className = 'modebtn' + (L.id === state.layer ? ' active' : '');
+    b.textContent = L.id === 'layer_1' ? 'слой 1' : 'слой 2';
+    b.onclick = () => { state.layer = L.id; buildLayers(); update(); };
+    box.appendChild(b);
+  }
+}
+
 // ---------------------------------------------------------------- холст
 // ---------------------------------------------------------------- холст
 const canvas = document.getElementById('canvas');
@@ -160,8 +269,8 @@ const octx = overlay.getContext('2d');
 
 function canvasPos(ev) {
   const r = canvas.getBoundingClientRect();
-  const x = Math.floor((ev.clientX - r.left) / (r.width / 16));
-  const y = Math.floor((ev.clientY - r.top) / (r.height / 16));
+  const x = Math.floor((ev.clientX - r.left) / (r.width / state.width));
+  const y = Math.floor((ev.clientY - r.top) / (r.height / state.height));
   return [x, y];
 }
 
@@ -176,7 +285,7 @@ function wireCanvas() {
       const c = state.tool === 'eraser' ? [0, 0, 0, 0] : rgba;
       stamp(state, data, x, y, c);
     } else if (state.tool === 'bucket') {
-      bucketFill(data, x, y, rgba);
+      bucketFill(state, data, x, y, rgba);
     } else if (state.tool === 'pick') {
       const c = getPixel(data, x, y);
       if (c[3] > 0) {
@@ -288,36 +397,44 @@ function syncTools() {
 
 function resizeCanvas() {
   const z = state.zoom;
-  canvas.style.width = (16 * z) + 'px';
-  canvas.style.height = (16 * z) + 'px';
-  overlay.style.width = (16 * z) + 'px';
-  overlay.style.height = (16 * z) + 'px';
+  const w = state.width, h = state.height;
+  // в режиме карт 64×32 холст шире — масштабируем по ширине, чтобы влезал
+  const zx = (state.mode === 'layer') ? Math.max(4, Math.round(z * 16 / w)) : z;
+  canvas.style.width = (w * zx) + 'px';
+  canvas.style.height = (h * zx) + 'px';
+  overlay.style.width = (w * zx) + 'px';
+  overlay.style.height = (h * zx) + 'px';
 }
 
 // ---------------------------------------------------------------- отрисовка
 function update() {
+  const w = state.width, h = state.height;
   const data = curPixels(state);
-  const im = ctx.createImageData(16, 16);
+  const im = ctx.createImageData(w, h);
   im.data.set(data);
   ctx.putImageData(im, 0, 0);
 
   // сетка
   const g = document.getElementById('grid');
+  octx.clearRect(0, 0, w, h);
   if (g.checked) {
-    octx.clearRect(0, 0, 16, 16);
     octx.fillStyle = 'rgba(255,255,255,.10)';
-    for (let i = 1; i < 16; i++) {
-      octx.fillRect(i, 0, 1 / 16, 16);
-      octx.fillRect(0, i, 16, 1 / 16);
+    for (let i = 1; i < w; i++) {
+      octx.fillRect(i, 0, 1 / w, h);
     }
-  } else {
-    octx.clearRect(0, 0, 16, 16);
+    for (let j = 1; j < h; j++) {
+      octx.fillRect(0, j, w, 1 / h);
+    }
   }
 
   const part = PARTS.find(p => p.id === state.part);
   const set = SETS.find(s => s.id === state.set);
+  const mode = MODES.find(m => m.id === state.mode);
+  const what = state.mode === 'layer'
+    ? `<b>${set.name} — ${LAYERS.find(L => L.id === state.layer).name}</b> — ${w}×${h}.`
+    : `<b>${set.name} ${part.name}</b> — ${w}×${h}.`;
   document.getElementById('slotInfo').innerHTML =
-    `<b>${set.name} ${part.name}</b> — 16×16. Инструмент: ${toolName(state.tool)}, кисть ${state.brush} px.` +
+    what + ` Инструмент: ${toolName(state.tool)}, кисть ${state.brush} px.` +
     (state.mirror ? ' <span class="ok">зеркало включено</span>' : '');
 
   drawPreview();
@@ -469,9 +586,10 @@ function samplePalette(tex, uv) {
 function buildJson() {
   const out = {
     mod: 'riftworld',
-    version: '0.51.0',
+    version: '0.52.0',
     format: 'riftworld-armor-pixelmap/1',
-    note: '16x16 item-иконки брони. 0 = прозрачный пиксель, иначе #RRGGBBAA.',
+    note: 'Иконки 16x16 (parts) и ванильные карты брони 64x32 (layers). ' +
+          '0 = прозрачный пиксель, иначе #RRGGBBAA.',
     sets: {},
   };
   for (const s of SETS) {
@@ -480,10 +598,18 @@ function buildJson() {
       parts[p.id] = {
         name: p.name,
         size: [16, 16],
-        pixels: pixelsToRows(state.pixels[s.id][p.id]),
+        pixels: pixelsToRows(state.pixels[s.id][p.id], 16, 16),
       };
     }
-    out.sets[s.id] = { name: s.name, parts };
+    const layers = {};
+    for (const L of LAYERS) {
+      layers[L.id] = {
+        name: L.name,
+        size: [64, 32],
+        pixels: pixelsToRows(state.layers[s.id][L.id], 64, 32),
+      };
+    }
+    out.sets[s.id] = { name: s.name, parts, layers };
   }
   return out;
 }
@@ -522,6 +648,12 @@ function loop() {
   }
   requestAnimationFrame(loop);
 }
+
+/* Стартовый режим — иконки 16×16; размеры холста должны совпадать
+   с размером буфера, иначе putImageData падает. */
+state.size = [MODES[0].w, MODES[0].h];
+state.width = MODES[0].w;
+state.height = MODES[0].h;
 
 resizeCanvas();
 init().then(() => { loop(); }).catch(e => {

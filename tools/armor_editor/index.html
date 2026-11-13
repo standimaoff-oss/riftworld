@@ -105,17 +105,22 @@
   <div class="card">
     <h2>Комплект</h2>
     <div class="setbtns" id="sets"></div>
+    <h2>Режим</h2>
+    <div class="setbtns" id="modes"></div>
+    <div class="setbtns" id="layerpick" style="display:none;margin-top:6px"></div>
     <h2>Части</h2>
     <div class="grid" id="slots"></div>
     <div class="hint">
       Клик по части — редактировать. <kbd>Ctrl</kbd>+клик — стереть пиксель.<br>
-      Рисуем иконку <b>16×16</b>, как в инвентаре: она станет текстурой брони.
+      <b>Иконки</b> — 16×16, как в инвентаре.<br>
+      <b>Слои</b> — 64×32: настоящая ванильная карта брони (шлем/нагрудник/ботинки
+      в слое 1, поножи в слое 2). Из неё моду делается надетая броня.
     </div>
   </div>
 
   <!-- ЦЕНТР: холст -->
   <div class="card">
-    <h2>Холст 16×16</h2>
+    <h2 id="canvasTitle">Холст 16×16</h2>
     <div class="tools">
       <div class="tool active" data-tool="brush" title="Кисть">✎</div>
       <div class="tool" data-tool="eraser" title="Ластик">▨</div>

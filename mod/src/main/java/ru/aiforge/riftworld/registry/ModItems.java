@@ -1,5 +1,6 @@
 package ru.aiforge.riftworld.registry;
 
+import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.HoeItem;
@@ -195,10 +196,58 @@ public final class ModItems {
     public static final RegistryObject<Item> RIFTCRYSTAL = ITEMS.register("riftcrystal",
             () -> new Item(new Item.Properties().rarity(Rarity.RARE)));
 
-    // v0.51.0: броня мода удалена целиком. Вместо неё — редактор брони
-    // (tools/armor_editor): пользователь рисует иконки 16×16 для кожаной,
-    // незеритовой и алмазной брони и отдаёт JSON, из которого собирается
-    // настоящая броня.
+    // ==========================================================================================
+    // v0.52.0 «Броня с ванильной геометрией»: броня мода возвращена, но теперь
+    // ОНА ВАНИЛЬНАЯ ПО СУТИ. Никаких кастомных 3D-моделей: рендерится штатный
+    // HumanoidArmorLayer (PLAYER_INNER_ARMOR / PLAYER_OUTER_ARMOR) — те же кубы,
+    // та же посадка на тело и та же UV-развёртка, что у ванильной брони.
+    // Текстуры — по ванильному принципу: <материал>_layer_1.png / _layer_2.png
+    // (64×32, раскладка player-skin) в textures/models/armor/.
+    // Три комплекта: кожаный (базовый), ауритовый (средний), рифт-кристалл (тяжёлый).
+    // ==========================================================================================
+
+    // --- Кожаная броня Элисара: дешёвая, доступна сразу ---
+    public static final RegistryObject<Item> LEATHER_HELMET = ITEMS.register("leather_helmet",
+            () -> new ArmorItem(ru.aiforge.riftworld.item.RiftArmorMaterials.LEATHER,
+                    ArmorItem.Type.HELMET, new Item.Properties()));
+    public static final RegistryObject<Item> LEATHER_CHESTPLATE = ITEMS.register("leather_chestplate",
+            () -> new ArmorItem(ru.aiforge.riftworld.item.RiftArmorMaterials.LEATHER,
+                    ArmorItem.Type.CHESTPLATE, new Item.Properties()));
+    public static final RegistryObject<Item> LEATHER_LEGGINGS = ITEMS.register("leather_leggings",
+            () -> new ArmorItem(ru.aiforge.riftworld.item.RiftArmorMaterials.LEATHER,
+                    ArmorItem.Type.LEGGINGS, new Item.Properties()));
+    public static final RegistryObject<Item> LEATHER_BOOTS = ITEMS.register("leather_boots",
+            () -> new ArmorItem(ru.aiforge.riftworld.item.RiftArmorMaterials.LEATHER,
+                    ArmorItem.Type.BOOTS, new Item.Properties()));
+
+    // --- Ауритовая броня: средний комплект из слитков аурита ---
+    public static final RegistryObject<Item> AURITE_HELMET = ITEMS.register("aurite_helmet",
+            () -> new ArmorItem(ru.aiforge.riftworld.item.RiftArmorMaterials.AURITE,
+                    ArmorItem.Type.HELMET, new Item.Properties().rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> AURITE_CHESTPLATE = ITEMS.register("aurite_chestplate",
+            () -> new ArmorItem(ru.aiforge.riftworld.item.RiftArmorMaterials.AURITE,
+                    ArmorItem.Type.CHESTPLATE, new Item.Properties().rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> AURITE_LEGGINGS = ITEMS.register("aurite_leggings",
+            () -> new ArmorItem(ru.aiforge.riftworld.item.RiftArmorMaterials.AURITE,
+                    ArmorItem.Type.LEGGINGS, new Item.Properties().rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> AURITE_BOOTS = ITEMS.register("aurite_boots",
+            () -> new ArmorItem(ru.aiforge.riftworld.item.RiftArmorMaterials.AURITE,
+                    ArmorItem.Type.BOOTS, new Item.Properties().rarity(Rarity.UNCOMMON)));
+
+    // --- Броня рифт-кристалла: тяжёлый комплект из самоцвета ---
+    public static final RegistryObject<Item> RIFTCRYSTAL_HELMET = ITEMS.register("riftcrystal_helmet",
+            () -> new ArmorItem(ru.aiforge.riftworld.item.RiftArmorMaterials.RIFTCRYSTAL,
+                    ArmorItem.Type.HELMET, new Item.Properties().rarity(Rarity.RARE)));
+    public static final RegistryObject<Item> RIFTCRYSTAL_CHESTPLATE = ITEMS.register("riftcrystal_chestplate",
+            () -> new ArmorItem(ru.aiforge.riftworld.item.RiftArmorMaterials.RIFTCRYSTAL,
+                    ArmorItem.Type.CHESTPLATE, new Item.Properties().rarity(Rarity.RARE)));
+    public static final RegistryObject<Item> RIFTCRYSTAL_LEGGINGS = ITEMS.register("riftcrystal_leggings",
+            () -> new ArmorItem(ru.aiforge.riftworld.item.RiftArmorMaterials.RIFTCRYSTAL,
+                    ArmorItem.Type.LEGGINGS, new Item.Properties().rarity(Rarity.RARE)));
+    public static final RegistryObject<Item> RIFTCRYSTAL_BOOTS = ITEMS.register("riftcrystal_boots",
+            () -> new ArmorItem(ru.aiforge.riftworld.item.RiftArmorMaterials.RIFTCRYSTAL,
+                    ArmorItem.Type.BOOTS, new Item.Properties().rarity(Rarity.RARE)));
+
 
     // --- Инструменты: кирка, топор, лопата, мотыга (2 полных набора: аурит и рифт-кристалл) ---
     public static final RegistryObject<Item> AURITE_PICKAXE = ITEMS.register("aurite_pickaxe",

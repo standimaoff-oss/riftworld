@@ -704,5 +704,17 @@
   "block.riftworld.frostbriar_sapling": "Росток терновника",
   "item.riftworld.frostbriar_sapling": "Росток терновника",
   "entity.riftworld.hollowwatcher": "Смотритель Пращи",
-  "item.riftworld.hollowwatcher_spawn_egg": "Яйцо призыва: Смотритель Пращи"
+  "item.riftworld.hollowwatcher_spawn_egg": "Яйцо призыва: Смотритель Пращи",
+  "item.riftworld.leather_helmet": "Кожаный шлем",
+  "item.riftworld.leather_chestplate": "Кожаный нагрудник",
+  "item.riftworld.leather_leggings": "Кожаные поножи",
+  "item.riftworld.leather_boots": "Кожаные ботинки",
+  "item.riftworld.aurite_helmet": "Ауритовый шлем",
+  "item.riftworld.aurite_chestplate": "Ауритовый нагрудник",
+  "item.riftworld.aurite_leggings": "Ауритовые поножи",
+  "item.riftworld.aurite_boots": "Ауритовые ботинки",
+  "item.riftworld.riftcrystal_helmet": "Шлем из рифт-кристалла",
+  "item.riftworld.riftcrystal_chestplate": "Нагрудник из рифт-кристалла",
+  "item.riftworld.riftcrystal_leggings": "Поножи из рифт-кристалла",
+  "item.riftworld.riftcrystal_boots": "Ботинки из рифт-кристалла"
 }

@@ -42,6 +42,16 @@ jobs:
           python tools/rift/validate_v047_fauna.py
           python tools/rift/validate_v048_armory_and_folk.py
           python tools/rift/validate_v049_synched_data.py
+          # v0.52.0: броня с ванильной геометрией. Перегенерируем текстуры и
+          # рецепты и проверяем, что генераторы дают тот же результат, что в репозитории
+          # (иначе коммиты разъедутся с исходниками).
+          PYTHONPATH=.pylibs python tools/rift/gen_v052_vanilla_armor.py
+          python tools/rift/gen_v052_armor_recipes.py
+          git diff --exit-code -- mod/src/main/resources/assets/riftworld/textures/models/armor \
+            mod/src/main/resources/assets/riftworld/textures/item \
+            mod/src/main/resources/assets/riftworld/models/item \
+            mod/src/main/resources/data/riftworld/recipes || {
+            echo "::error::Сгенерированные текстуры/рецепты брони разошлись с закоммиченными"; exit 1; }
           mkdir -p /tmp/maja-unit
           javac -d /tmp/maja-unit mod/src/main/java/ru/aiforge/riftworld/world/DeepOcean.java mod/src/main/java/ru/aiforge/riftworld/world/MajaSafetyPolicy.java tests/java/MajaRulesTest.java tests/java/DeepOceanCoreTest.java mod/src/main/java/ru/aiforge/riftworld/world/OceanWreck.java tests/java/OceanWreckTest.java mod/src/main/java/ru/aiforge/riftworld/world/MajaMotion.java tests/java/MajaMotionTest.java
           java -cp /tmp/maja-unit MajaRulesTest

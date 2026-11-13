@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "MMM",
+    "MMM"
+  ],
+  "key": {
+    "M": {
+      "item": "riftworld:riftcrystal"
+    }
+  },
+  "result": {
+    "item": "riftworld:riftcrystal_helmet",
+    "count": 1
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "MMM",
+    "MMM",
+    " L "
+  ],
+  "key": {
+    "M": {
+      "item": "riftworld:aurite_ingot"
+    }
+  },
+  "result": {
+    "item": "riftworld:aurite_leggings",
+    "count": 1
+  }
+}

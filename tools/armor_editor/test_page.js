@@ -72,10 +72,27 @@ try {
     configurable: true, writable: true,
   });
 } catch (e) { /* node может не дать переопределить — не критично */ }
+/* Заглушка Image: вытаскивает реальный размер PNG из заголовка файла,
+   иначе карты брони 64×32 «схлопнутся» в 16×16 и тест будет врать. */
+function pngSize(b64) {
+  try {
+    const buf = Buffer.from(String(b64).split(',').pop(), 'base64');
+    // PNG: 8 байт сигнатура, затем IHDR: длина(4) тип(4) width(4) height(4)
+    if (buf.length < 24 || buf.readUInt32BE(12) !== 0x49484452) return [16, 16];
+    return [buf.readUInt32BE(16), buf.readUInt32BE(20)];
+  } catch (e) { return [16, 16]; }
+}
 global.Image = class {
   constructor() { this.width = 16; this.height = 16; }
   // onload вызывается синхронно — base64-данные уже внутри страницы
-  set src(v) { this._src = v; if (this.onload) this.onload(); }
+  set src(v) {
+    this._src = v;
+    if (String(v).startsWith('data:image/png;base64,')) {
+      const [w, h] = pngSize(v);
+      this.width = w; this.height = h;
+    }
+    if (this.onload) this.onload();
+  }
   get src() { return this._src; }
 };
 global.Blob = class { constructor() {} };
@@ -123,6 +140,23 @@ setTimeout(() => {
   check('JSON-экспорт показан', elements.jsonOut && elements.jsonOut.textContent.includes('"pixels"'),
     elements.jsonOut ? elements.jsonOut.textContent.slice(0, 80) : 'нет');
   check('превью нарисовано', elements.preview && elements.preview.getContext);
+  // v0.52.0: в JSON должны быть и иконки (parts), и ванильные карты брони (layers)
+  // Полный JSON (предпросмотр в странице обрезан по длине) — получаем из
+  // контекста страницы, а не из node-области: скрипты живут в vm-контексте.
+  const full = vm.runInContext('JSON.stringify(buildJson())', ctx);
+  const fj = JSON.parse(full);
+  check('в JSON есть карты брони 64×32',
+    !!fj.sets && !!fj.sets.leather && !!fj.sets.leather.layers
+      && !!fj.sets.leather.layers.layer_1 && !!fj.sets.leather.layers.layer_2
+      && fj.sets.leather.layers.layer_1.size.join(',') === '64,32'
+      && fj.sets.leather.layers.layer_1.pixels.length === 32
+      && fj.sets.leather.layers.layer_1.pixels[0].length === 64,
+    'layers нет');
+  check('иконки остались 16×16',
+    fj.sets.leather.parts.helmet.size.join(',') === '16,16'
+      && fj.sets.leather.parts.helmet.pixels.length === 16);
+  check('кнопки режимов собраны (2)', elements.modes && elements.modes.children.length === 2,
+    elements.modes ? String(elements.modes.children.length) : 'нет');
 
   console.log(failed ? `\nПРОВАЛЕНО: ${failed}` : '\nСТРАНИЦА ПОДНИМАЕТСЯ');
   process.exit(failed ? 1 : 0);

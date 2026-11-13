@@ -706,5 +706,17 @@
   "block.riftworld.frostbriar_sapling": "Frostbriar Sapling",
   "item.riftworld.frostbriar_sapling": "Frostbriar Sapling",
   "entity.riftworld.hollowwatcher": "Hollowwatcher",
-  "item.riftworld.hollowwatcher_spawn_egg": "Hollowwatcher Spawn Egg"
+  "item.riftworld.hollowwatcher_spawn_egg": "Hollowwatcher Spawn Egg",
+  "item.riftworld.leather_helmet": "Leather Helmet",
+  "item.riftworld.leather_chestplate": "Leather Chestplate",
+  "item.riftworld.leather_leggings": "Leather Leggings",
+  "item.riftworld.leather_boots": "Leather Boots",
+  "item.riftworld.aurite_helmet": "Aurite Helmet",
+  "item.riftworld.aurite_chestplate": "Aurite Chestplate",
+  "item.riftworld.aurite_leggings": "Aurite Leggings",
+  "item.riftworld.aurite_boots": "Aurite Boots",
+  "item.riftworld.riftcrystal_helmet": "Riftcrystal Helmet",
+  "item.riftworld.riftcrystal_chestplate": "Riftcrystal Chestplate",
+  "item.riftworld.riftcrystal_leggings": "Riftcrystal Leggings",
+  "item.riftworld.riftcrystal_boots": "Riftcrystal Boots"
 }

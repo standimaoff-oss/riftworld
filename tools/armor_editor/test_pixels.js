@@ -16,6 +16,23 @@ function fresh() {
   P.state.part = 'helmet';
   P.state.mirror = false;
   P.state.brush = 1;
+  P.state.size = [16, 16];
+  P.state.width = 16;
+  P.state.height = 16;
+  return d;
+}
+
+/** Холст карты брони 64×32. */
+function freshLayer() {
+  const d = new Uint8ClampedArray(64 * 32 * 4);
+  P.state.pixels.leather = { helmet: new Uint8ClampedArray(16 * 16 * 4) };
+  P.state.set = 'leather';
+  P.state.part = 'helmet';
+  P.state.mirror = false;
+  P.state.brush = 1;
+  P.state.size = [64, 32];
+  P.state.width = 64;
+  P.state.height = 32;
   return d;
 }
 
@@ -43,11 +60,11 @@ console.log('зеркало по X');
 console.log('заливка');
 {
   const d = fresh();
-  P.bucketFill(d, 0, 0, [1, 2, 3, 255]);
+  P.bucketFill(P.state, d, 0, 0, [1, 2, 3, 255]);
   check('весь холст залит', P.getPixel(d, 15, 15).join(',') === '1,2,3,255');
   const d2 = fresh();
   P.setPixel(P.state, d2, 5, 5, [50, 50, 50, 255]);
-  P.bucketFill(d2, 0, 0, [1, 2, 3, 255]);
+  P.bucketFill(P.state, d2, 0, 0, [1, 2, 3, 255]);
   check('заливка не переливает через препятствие', P.getPixel(d2, 5, 5).join(',') === '50,50,50,255');
   check('остальное залито', P.getPixel(d2, 0, 0).join(',') === '1,2,3,255');
 }
@@ -91,6 +108,35 @@ console.log('экспорт в JSON');
   check('прозрачный = 0', rows[0][2] === '0');
   check('непрозрачный = #RRGGBBAA', rows[0][0] === '#ff0000ff');
   check('полупрозрачный = #RRGGBBAA', rows[0][1] === '#00ff0080');
+}
+
+console.log('карта брони 64×32');
+{
+  const d = freshLayer();
+  P.setPixel(P.state, d, 63, 31, [12, 34, 56, 255]);
+  check('пиксель в углу 64×32 записан', P.getPixel(d, 63, 31, 64).join(',') === '12,34,56,255');
+  P.setPixel(P.state, d, 64, 0, [1, 1, 1, 255]);
+  check('за правой границей не пишется', P.getPixel(d, 63, 0, 64).join(',') === '0,0,0,0');
+  P.setPixel(P.state, d, 0, 32, [1, 1, 1, 255]);
+  check('за нижней границей не пишется', P.getPixel(d, 0, 31, 64).join(',') === '0,0,0,0');
+  P.state.mirror = true;
+  P.setPixel(P.state, d, 0, 5, [9, 9, 9, 255]);
+  check('зеркало в карте = 63-x', P.getPixel(d, 63, 5, 64).join(',') === '9,9,9,255');
+  P.state.mirror = false;
+}
+
+console.log('экспорт карты брони в JSON');
+{
+  const d = freshLayer();
+  P.setPixel(P.state, d, 0, 0, [255, 0, 0, 255]);
+  P.setPixel(P.state, d, 1, 0, [0, 255, 0, 128]);
+  const rows = P.pixelsToRows(d, 64, 32);
+  check('32 строки', rows.length === 32);
+  check('64 колонки', rows[0].length === 64);
+  check('прозрачный = 0', rows[0][2] === '0');
+  check('непрозрачный = #RRGGBBAA', rows[0][0] === '#ff0000ff');
+  check('полупрозрачный = #RRGGBBAA', rows[0][1] === '#00ff0080');
+  check('размер холста 64×32', P.stateW(P.state) === 64 && P.stateH(P.state) === 32);
 }
 
 console.log(failed ? `\nПРОВАЛЕНО: ${failed}` : '\nВСЕ ТЕСТЫ ПРОШЛИ');

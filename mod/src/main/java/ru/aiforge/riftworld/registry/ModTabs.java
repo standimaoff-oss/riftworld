@@ -31,9 +31,22 @@ public final class ModTabs {
                 out.accept(ModItems.ASTRAL_PRISM.get());
                 out.accept(ModItems.ELISAR_DUCAT.get());
                 // v0.40.0: снаряжение Элисара — металлы, инструменты и оружие.
-                // v0.51.0: броня мода удалена, вкладка обновлена.
+                // v0.52.0: броня вернулась — с ванильной геометрией и текстурами.
                 out.accept(ModItems.AURITE_INGOT.get());
                 out.accept(ModItems.RIFTCRYSTAL.get());
+                // --- броня: кожаная → ауритовая → рифт-кристалл ---
+                out.accept(ModItems.LEATHER_HELMET.get());
+                out.accept(ModItems.LEATHER_CHESTPLATE.get());
+                out.accept(ModItems.LEATHER_LEGGINGS.get());
+                out.accept(ModItems.LEATHER_BOOTS.get());
+                out.accept(ModItems.AURITE_HELMET.get());
+                out.accept(ModItems.AURITE_CHESTPLATE.get());
+                out.accept(ModItems.AURITE_LEGGINGS.get());
+                out.accept(ModItems.AURITE_BOOTS.get());
+                out.accept(ModItems.RIFTCRYSTAL_HELMET.get());
+                out.accept(ModItems.RIFTCRYSTAL_CHESTPLATE.get());
+                out.accept(ModItems.RIFTCRYSTAL_LEGGINGS.get());
+                out.accept(ModItems.RIFTCRYSTAL_BOOTS.get());
                 out.accept(ModItems.AURITE_SWORD.get());
                 out.accept(ModItems.AURITE_PICKAXE.get());
                 out.accept(ModItems.AURITE_AXE.get());
