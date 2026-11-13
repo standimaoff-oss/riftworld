@@ -32,8 +32,13 @@ public final class BoneRavenRenderer extends EntityRenderer<BoneRavenEntity> {
     private static final ResourceLocation TEXTURE =
             new ResourceLocation(RiftWorld.MODID, "textures/entity/bone_raven.png");
 
-    /** Дополнительный масштаб поверх render_scale из geo-файла. */
-    private static final float EXTRA_SCALE = 2.0F;
+    /**
+     * Дополнительный масштаб поверх render_scale из geo-файла.
+     * render_scale в bone_raven.json — 0.5, EXTRA_SCALE 2.6 даёт итоговый
+     * масштаб 1.3: тело птицы около 1.2 блока, крылья — около 2.4.
+     * В кадре витрины это читается целиком, а не пятном вдали.
+     */
+    private static final float EXTRA_SCALE = 2.6F;
 
     public BoneRavenRenderer(EntityRendererProvider.Context ctx) {
         super(ctx);
