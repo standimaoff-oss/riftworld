@@ -184,6 +184,12 @@ jobs:
           else
             gh release create "$TAG" out/*.jar out/SHA256SUMS.txt --title "$TAG" --notes-file "$NOTES" --target "${{ github.sha }}"
           fi
+          # v0.51.0: the armour editor ships with the release — one single-page
+          # HTML with every texture and model embedded, so it opens anywhere.
+          if [ -f tools/armor_editor/riftworld-armor-editor.html ]; then
+            gh release upload "$TAG" tools/armor_editor/riftworld-armor-editor.html --clobber || \
+              echo "::warning::could not upload the armour editor page"
+          fi
           # v0.49.0: the three selected AI concept sheets are part of the release
           # deliverables — ship them next to the jars.
           if [ -d reports/concept_refs_v049 ]; then
