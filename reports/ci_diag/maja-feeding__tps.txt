@@ -1,7 +1,7 @@
-Dim minecraft:overworld (minecraft:overworld): Mean tick time: 6.945 ms. Mean TPS: 20.000
-Dim minecraft:the_nether (minecraft:the_nether): Mean tick time: 0.052 ms. Mean TPS: 20.000
-Dim riftworld:elisar (riftworld:elisar): Mean tick time: 0.300 ms. Mean TPS: 20.000
-Dim minecraft:the_end (minecraft:the_end): Mean tick time: 0.041 ms. Mean TPS: 20.000
-Dim riftworld:transit (riftworld:transit): Mean tick time: 0.030 ms. Mean TPS: 20.000
-Overall: Mean tick time: 7.402 ms. Mean TPS: 20.000
+Dim minecraft:overworld (minecraft:overworld): Mean tick time: 6.023 ms. Mean TPS: 20.000
+Dim minecraft:the_end (minecraft:the_end): Mean tick time: 0.073 ms. Mean TPS: 20.000
+Dim riftworld:elisar (riftworld:elisar): Mean tick time: 0.295 ms. Mean TPS: 20.000
+Dim riftworld:transit (riftworld:transit): Mean tick time: 0.024 ms. Mean TPS: 20.000
+Dim minecraft:the_nether (minecraft:the_nether): Mean tick time: 0.017 ms. Mean TPS: 20.000
+Overall: Mean tick time: 6.469 ms. Mean TPS: 20.000
 
