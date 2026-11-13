@@ -1,17 +1,17 @@
-run 43414688874 / job maja-feeding / ветвь arena/037a840e-riftworld
+run 43412491515 / job maja-feeding / ветвь arena/037a840e-riftworld
 == содержимое ci-out ==
 total 1236
-drwxr-xr-x  2 runner runner    4096 Nov 13 11:24 .
-drwxr-xr-x 14 runner runner    4096 Nov 13 11:23 ..
--rw-r--r--  1 runner runner     134 Nov 13 11:23 done.txt
--rw-r--r--  1 runner runner       0 Nov 13 11:23 errors.txt
--rw-r--r--  1 runner runner   25602 Nov 13 11:24 feeding-server-tail.log
--rw-r--r--  1 runner runner 1194775 Nov 13 11:23 installer.log
--rw-r--r--  1 runner runner   10853 Nov 13 11:23 latest.log
--rw-r--r--  1 runner runner    2517 Nov 13 11:24 maja-feeding.txt
--rw-r--r--  1 runner runner     222 Nov 13 11:23 mods.txt
--rw-r--r--  1 runner runner    1343 Nov 13 11:23 report_server.md
--rw-r--r--  1 runner runner     491 Nov 13 11:23 tps.txt
+drwxr-xr-x  2 runner runner    4096 Nov 13 11:02 .
+drwxr-xr-x 14 runner runner    4096 Nov 13 11:01 ..
+-rw-r--r--  1 runner runner     134 Nov 13 11:02 done.txt
+-rw-r--r--  1 runner runner       0 Nov 13 11:02 errors.txt
+-rw-r--r--  1 runner runner   24876 Nov 13 11:02 feeding-server-tail.log
+-rw-r--r--  1 runner runner 1194924 Nov 13 11:01 installer.log
+-rw-r--r--  1 runner runner   10994 Nov 13 11:02 latest.log
+-rw-r--r--  1 runner runner    2362 Nov 13 11:02 maja-feeding.txt
+-rw-r--r--  1 runner runner     222 Nov 13 11:02 mods.txt
+-rw-r--r--  1 runner runner    1343 Nov 13 11:02 report_server.md
+-rw-r--r--  1 runner runner     491 Nov 13 11:02 tps.txt
 попытка 1: To https://github.com/standimaoff-oss/riftworld
  ! [rejected]        HEAD -> arena/037a840e-riftworld (fetch first)
 error: failed to push some refs to 'https://github.com/standimaoff-oss/riftworld'
@@ -22,4 +22,4 @@ hint: 'git pull' before pushing again.
 hint: See the 'Note about fast-forwards' in 'git push --help' for details.
 From https://github.com/standimaoff-oss/riftworld
  * branch            arena/037a840e-riftworld -> FETCH_HEAD
-   f815864..d238f41  arena/037a840e-riftworld -> origin/arena/037a840e-riftworld
+   50264cc..7982c1d  arena/037a840e-riftworld -> origin/arena/037a840e-riftworld
