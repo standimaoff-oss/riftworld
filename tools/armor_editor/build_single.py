@@ -30,7 +30,7 @@ LAYERS = ["layer_1", "layer_2"]
 
 def build_data() -> dict:
     """Данные для страницы: иконки и карты брони (PNG, base64) + 3D-модели (JSON)."""
-    out = {"icons": {}, "models": {}}
+    out = {"icons": {}, "models": {}, "vanilla": {}}
     for s in SETS:
         for p in PARTS:
             png = DATA / f"{s}_{p}.png"
@@ -44,6 +44,10 @@ def build_data() -> dict:
         mj = DATA / f"model3d_{p}.json"
         if mj.exists():
             out["models"][p] = json.loads(mj.read_text(encoding="utf-8"))
+        # ВАНИЛЬНАЯ геометрия брони — превью в режиме «Слои»
+        vj = DATA / f"vanilla_{p}.json"
+        if vj.exists():
+            out["vanilla"][p] = json.loads(vj.read_text(encoding="utf-8"))
     return out
 
 

@@ -53,8 +53,9 @@ var state = {
 };
 
 // ---------------------------------------------------------------- инициализация
-var imgs = {};        // референсные картинки (ванильные иконки)
-var models3d = {};    // 3D-модели брони
+var imgs = {};        // референсные картинки (ванильные иконки и карты брони)
+var models3d = {};    // 3D-модели брони (старая HD-геометрия — для превью иконок)
+var vanilla3d = {};   // ВАНИЛЬНАЯ геометрия брони — превью в режиме «Слои»
 
 function px(img, x, y) {
   const c = document.createElement('canvas');
@@ -109,6 +110,18 @@ async function init() {
       const r = await fetch(`data/model3d_${p.file}.json`);
       models3d[p.id] = await r.json();
     }
+  }
+  // Ванильные модели брони — для превью в режиме «Слои»:
+  // показываем ровно ту геометрию, которую рендерит HumanoidArmorLayer.
+  for (const p of PARTS) {
+    try {
+      if (EMBEDDED && EMBEDDED.vanilla && EMBEDDED.vanilla[p.id]) {
+        vanilla3d[p.id] = EMBEDDED.vanilla[p.id];
+      } else {
+        const r = await fetch(`data/vanilla_${p.file}.json`);
+        vanilla3d[p.id] = await r.json();
+      }
+    } catch (e) { /* превью просто останется пустым */ }
   }
   buildSets();
   buildSlots();
@@ -483,10 +496,16 @@ function drawPreview() {
   pctx.fillStyle = '#0e1016';
   pctx.fillRect(0, 0, W, H);
 
-  const m = models3d[state.part];
+  // В режиме «Слои» показываем ВАНИЛЬНУЮ геометрию брони с нарисованной
+  // картой 64×32 — ровно то, что увидит игрок.
+  const layerMode = (state.mode === 'layer');
+  const m = layerMode ? (vanilla3d[state.part] || null) : models3d[state.part];
   if (!m) return;
 
-  const tex = buildTextureFromPixels();
+  const tex = layerMode ? null : buildTextureFromPixels();
+  const layerBuf = layerMode
+    ? (state.layers[state.set][state.layer === 'layer_1' && state.part === 'leggings' ? 'layer_2' : 'layer_1'])
+    : null;
   const a = state.spin ? state.spinAngle : 0.6;
   const cos = Math.cos(a), sin = Math.sin(a);
   const S = 26;                       // масштаб
@@ -498,8 +517,8 @@ function drawPreview() {
     const [x0, y0, z0] = el.from, [x1, y1, z1] = el.to;
     for (const [name, f] of Object.entries(el.faces)) {
       const uv = f.uv;
-      // UV в модели: [u1,v1,u2,v2] в пикселях палитры; берём центральный пиксель
-      const c = samplePalette(tex, uv);
+      // UV в модели: [u1,v1,u2,v2] в пикселях палитры/карты; берём центральный пиксель
+      const c = layerMode ? sampleLayer(layerBuf, uv) : samplePalette(tex, uv);
       faces.push({ name, uv, color: c, box: [x0, y0, z0, x1, y1, z1] });
     }
   }
@@ -535,8 +554,9 @@ function drawPreview() {
     pctx.lineWidth = 1;
     pctx.stroke();
   }
-  document.getElementById('previewInfo').textContent =
-    `${m.elements.length} коробов · ${tex.length ? 'ваша текстура' : '—'}`;
+  document.getElementById('previewInfo').textContent = layerMode
+    ? `ванильная геометрия · ${m.elements.length} коробов · ваша карта 64×32`
+    : `${m.elements.length} коробов · ${tex && tex.length ? 'ваша текстура' : '—'}`;
 }
 
 function faceShade(name) {
@@ -569,6 +589,18 @@ function buildTextureFromPixels() {
   }
   const arr = [...pal.entries()].sort((a, b) => b[1] - a[1]).map(e => e[0].split(',').map(Number));
   return arr;
+}
+
+// Цвет пикселя ВАНИЛЬНОЙ карты брони (64×32) по UV грани.
+// uv = [u1, v1, u2, v2] в пикселях карты 64×32 — ровно как в Minecraft.
+function sampleLayer(buf, uv) {
+  if (!buf) return [140, 140, 150];
+  const u = Math.floor((uv[0] + uv[2]) / 2);
+  const v = Math.floor((uv[1] + uv[3]) / 2);
+  if (u < 0 || v < 0 || u >= 64 || v >= 32) return [140, 140, 150];
+  const i = (v * 64 + u) * 4;
+  if (buf[i + 3] === 0) return [90, 90, 100];
+  return [buf[i], buf[i + 1], buf[i + 2]];
 }
 
 // По UV-координатам грани берём цвет из палитры модели.

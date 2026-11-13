@@ -28,8 +28,9 @@ import ru.aiforge.riftworld.registry.ModItems;
  * (см. {@code HumanoidArmorLayer#getArmorResource} в Forge 1.20.1).
  *
  * <p>В 1.20.1 {@link ArmorMaterial} — это интерфейс (record с полями слоёв
- * появился только в 1.20.5+), а {@code getDurability}/{@code getProtection}
- * принимают {@link ArmorItem.Type}.
+ * появился только в 1.20.5+), а методы прочности/защиты принимают
+ * {@link ArmorItem.Type}. Имена методов — Мojang-овские:
+ * {@code getDurabilityForType}, {@code getDefenseForType}, {@code getEnchantmentValue}.
  */
 public final class RiftArmorMaterials {
 
@@ -83,18 +84,21 @@ public final class RiftArmorMaterials {
             this.repairIngredient = repairIngredient;
         }
 
+        /** Mojang-имя 1.20.1: {@code getDurabilityForType} (не {@code getDurability}). */
         @Override
-        public int getDurability(ArmorItem.Type type) {
+        public int getDurabilityForType(ArmorItem.Type type) {
             return BASE_DURABILITY.getOrDefault(type, 13) * this.durabilityMultiplier;
         }
 
+        /** Mojang-имя 1.20.1: {@code getDefenseForType} (не {@code getProtection}). */
         @Override
-        public int getProtection(ArmorItem.Type type) {
+        public int getDefenseForType(ArmorItem.Type type) {
             return this.protection.getOrDefault(type, 0);
         }
 
+        /** Mojang-имя 1.20.1: {@code getEnchantmentValue} (не {@code getEnchantability}). */
         @Override
-        public int getEnchantability() {
+        public int getEnchantmentValue() {
             return this.enchantability;
         }
 

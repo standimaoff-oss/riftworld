@@ -186,19 +186,45 @@ def main() -> None:
     assert mat_java.exists(), "RiftArmorMaterials.java is missing"
     mat_src = mat_java.read_text(encoding="utf-8")
     assert "implements ArmorMaterial" in mat_src, "RiftArmorMaterials must implement ArmorMaterial"
-    for method in ("getDurability", "getProtection", "getEnchantability",
+    # ВНИМАНИЕ: имена методов — Мojang-овские для 1.20.1 (Forge 1.20.1
+    # использует официальные маппинги Mojang, а не yarn).
+    #   getDurabilityForType / getDefenseForType / getEnchantmentValue
+    # Проверка нужна, чтобы в CI ловить несовпадение сигнатур ДО javac.
+    for method in ("getDurabilityForType", "getDefenseForType", "getEnchantmentValue",
                    "getEquipSound", "getRepairIngredient", "getName",
                    "getToughness", "getKnockbackResistance"):
         assert method in mat_src, f"ArmorMaterial.{method}() is not implemented"
-    # 1.20.1 API: getDurability/getProtection принимают ArmorItem.Type
-    assert "getDurability(ArmorItem.Type type)" in mat_src, (
-        "getDurability() must take ArmorItem.Type (1.20.1 API)")
-    assert "getProtection(ArmorItem.Type type)" in mat_src, (
-        "getProtection() must take ArmorItem.Type (1.20.1 API)")
+    # 1.20.1 API: getDurabilityForType/getDefenseForType принимают ArmorItem.Type
+    assert "getDurabilityForType(ArmorItem.Type type)" in mat_src, (
+        "getDurabilityForType() must take ArmorItem.Type (1.20.1 Mojmap API)")
+    assert "getDefenseForType(ArmorItem.Type type)" in mat_src, (
+        "getDefenseForType() must take ArmorItem.Type (1.20.1 Mojmap API)")
+    # yarn-имена в 1.20.1 не существуют — их не должно остаться
+    for wrong in ("getDurability(", "getProtection(", "getEnchantability("):
+        assert wrong not in mat_src, (
+            f"ArmorMaterial: {wrong} is not a 1.20.1 Mojmap method")
     # каждый материал обязан называться "riftworld:<mat>" — тогда Forge сам найдёт текстуру
     for set_name in ARMOR_SETS:
         assert f'"riftworld:{set_name}"' in mat_src, (
             f"Material {set_name} must be named riftworld:{set_name} so Forge resolves its texture")
+
+    # 2a-2. Ровно как в ванильном HumanoidArmorLayer#getArmorLocation (1.20.1):
+    #     "textures/models/armor/" + material.getName() + "_layer_" + (1|2) + ".png"
+    # затем ResourceLocation.decompose(str, ':') режет по ПЕРВОМУ двоеточию:
+    #     "textures/models/armor/riftworld:aurite_layer_1.png"
+    #        -> namespace "riftworld", path "textures/models/armor/aurite_layer_1.png"
+    # Значит getName() обязан быть "riftworld:<mat>" (с двоеточием!), а текстуры лежать
+    # в assets/riftworld/textures/models/armor/<mat>_layer_{1,2}.png
+    for set_name in ARMOR_SETS:
+        for layer in (1, 2):
+            tex = (ASSETS / "textures/models/armor"
+                   / f"{set_name}_layer_{layer}.png")
+            assert tex.exists(), (
+                f"armour texture missing: {tex} (vanilla path from getName())")
+            with Image.open(tex) as im:
+                assert im.size == (64, 32), (
+                    f"{tex.name} must be 64x32 (vanilla player-skin armour layout), "
+                    f"got {im.size}")
 
     # 2b. Регистрация 12 предметов брони
     items_java = (JAVA / "registry/ModItems.java").read_text(encoding="utf-8")
