@@ -2,7 +2,33 @@
 
 # Мод «Разлом» — отчёт по доработкам (Рев 16.49)
 
-Текущая версия: **0.49.0** (Minecraft Forge 1.20.1 / Java 17).
+Текущая версия: **0.50.0** (Minecraft Forge 1.20.1 / Java 17).
+
+## v0.50.0 — Костяной ворон вернулся, броня удлинена, деревья починены
+
+### Смотреть картинки и файлы (GitHub)
+
+**Кадры из игры (настоящий клиент Minecraft):**
+
+- Костяной ворон — три четверти: ++**[https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/ingame/0.50.0/frame-bone-raven-three-quarter.png](https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/ingame/0.50.0/frame-bone-raven-three-quarter.png)**++
+- Костяной ворон — сбоку: ++**[https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/ingame/0.50.0/frame-bone-raven-side.png](https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/ingame/0.50.0/frame-bone-raven-side.png)**++
+- Костяной ворон — спереди, с раскрытыми крыльями: ++**[https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/ingame/0.50.0/frame-bone-raven-head.png](https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/ingame/0.50.0/frame-bone-raven-head.png)**++
+
+**Релиз:** ++**[https://github.com/standimaoff-oss/riftworld/releases/tag/v0.50.0](https://github.com/standimaoff-oss/riftworld/releases/tag/v0.50.0)**++
+
+### Что изменилось в v0.50.0
+
+- **Костяной ворон вернулся в мод** (пользователь отменил его удаление): сущность
+  `net.minecraft.world.entity.PathfinderMob` с управлением полётом, geo-модель
+  `geo/bone_raven.json` (88 костей, 87 кубов) и собственный рендерер
+  `BoneRavenRenderer`. В кадрах витрины птица читается целиком — чёрные крылья,
+  костяной остов, клюв и горящий глаз.
+- **Броня удлинена**: Aurite и Riftcrystal пересобраны в 2× HD — модели выше и
+  вытянутее, текстуры 256×256, UV пересчитаны генератором
+  `tools/rift/gen_v049_hd_armors.py`.
+- **Деревья перекрашены**: листва Морока больше не чёрная — листья получили
+  нормальный зелёный оттенок вместо почти чёрного силуэта.
+- **Пегас и Вендиго по-прежнему удалены** (удаление не отменялось).
 
 ## v0.49.0 — 2× HD броня, объёмные предметы и всегда включённый Эль Гран Маджа
 
@@ -128,6 +154,8 @@
   спавн, рендереры, модели, geo, текстуры и записи в языках.
 - **Костяной ворон удалён**: его полёт выглядел странно — сущность, модель, geo,
   текстуры, яйцо, дроп (костяное маховое перо) и все ссылки в CI.
+  *(Удаление отменено в v0.50.0: ворон вернулся вместе со своим geo, текстурой,
+  яйцом призыва и дропом — см. раздел v0.50.0 выше.)*
 - **Кальмар стал больше**: хитбокс 0.85×1.15 → 1.30×1.75, масштаб рендера
   0.55 → 0.86.
 - **Морской змей**: стал немного крупнее, хвост двигается **напрямую** (вверх-вниз),
