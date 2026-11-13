@@ -19,7 +19,7 @@ Upgrades over v0.48.0 (matched directly against 03_riftworld_weapon_tools_set.pn
      cyan Riftcrystal and a rear handle.
   5) TRUE 3D volumetric [0..16]^3 element models for all 8 armour items, so the
      dropped armours on the showcase pedestals, the held items and the GUI slots
-     render sculpted 3D helmets, cuirasses, greaves and boots instead of flat
+     render sculpted 3D weapons and tools instead of flat
      2D cutouts.
 
 The generator writes:
@@ -864,131 +864,12 @@ def del_box(g, x0, y0, z0, x1, y1, z1):
                 g.pop((x, y, z), None)
 
 
-def build_3d_helmet_grid(is_rc: bool) -> Dict[Tuple[int, int, int], str]:
-    g: Dict[Tuple[int, int, int], str] = {}
-    body = "m"
-    trim = "G" if not is_rc else "w"
-    # Outer helmet shell: x 8..24 (16w), y 6..22 (16h), z 8..24 (16d)
-    set_box(g, 8, 6, 8, 24, 22, 24, body)
-    del_box(g, 10, 6, 10, 22, 20, 22)
-    set_box(g, 10, 7, 20, 22, 18, 22, "k")
-    # Carve the front T-visor opening through z 22..24
-    del_box(g, 10, 14, 22, 22, 16, 24)
-    del_box(g, 14, 6, 22, 18, 15, 24)
-    # Brow band + cheek borders
-    set_box(g, 8, 16, 8, 24, 18, 25, trim)
-    set_box(g, 13, 6, 23, 14, 16, 24, trim)
-    set_box(g, 18, 6, 23, 19, 16, 24, trim)
-    if not is_rc:
-        set_box(g, 14, 17, 7, 18, 24, 25, "G")
-        set_box(g, 15, 18, 8, 17, 25, 25, "H")
-        set_box(g, 7, 15, 11, 8, 19, 20, "G")
-        set_box(g, 24, 15, 11, 25, 19, 20, "G")
-        for ly in (8, 10, 12):
-            set_box(g, 9, ly, 23, 13, ly + 1, 24, "k")
-            set_box(g, 19, ly, 23, 23, ly + 1, 24, "k")
-    else:
-        set_box(g, 11, 14, 21, 21, 16, 22, "G")
-        set_box(g, 12, 15, 21, 20, 16, 22, "H")
-        set_box(g, 15, 8, 21, 17, 15, 22, "G")
-        set_box(g, 15, 22, 9, 17, 25, 23, "G")
-        set_box(g, 15, 24, 11, 17, 26, 21, "H")
-        for step in range(5):
-            set_box(g, 6, 18 + step, 17 - step * 2, 8, 21 + step, 20 - step * 2, "H" if step >= 3 else ("G" if step >= 1 else "C"))
-            set_box(g, 24, 18 + step, 17 - step * 2, 26, 21 + step, 20 - step * 2, "H" if step >= 3 else ("G" if step >= 1 else "C"))
-        g[(11, 11, 23)] = "C"
-        g[(20, 11, 23)] = "C"
-        g[(15, 18, 24)] = "H"
-        g[(16, 18, 24)] = "H"
-    return g
 
 
-def build_3d_chestplate_grid(is_rc: bool) -> Dict[Tuple[int, int, int], str]:
-    g: Dict[Tuple[int, int, int], str] = {}
-    body = "m"
-    set_box(g, 9, 4, 11, 23, 22, 21, body)
-    del_box(g, 11, 4, 13, 21, 22, 19)
-    del_box(g, 13, 19, 19, 19, 22, 21)
-    set_box(g, 3, 14, 10, 10, 22, 22, body)
-    del_box(g, 4, 14, 12, 9, 19, 20)
-    set_box(g, 22, 14, 10, 29, 22, 22, body)
-    del_box(g, 23, 14, 12, 28, 19, 20)
-
-    if not is_rc:
-        set_box(g, 3, 14, 10, 10, 16, 22, "G")
-        set_box(g, 22, 14, 10, 29, 16, 22, "G")
-        set_box(g, 4, 22, 11, 9, 24, 21, "H")
-        set_box(g, 23, 22, 11, 28, 24, 21, "H")
-        set_box(g, 11, 11, 21, 21, 20, 22, "m")
-        for s in range(4):
-            set_box(g, 11 + s, 18 - s, 22, 13 + s, 20 - s, 23, "H" if s == 0 else "G")
-            set_box(g, 19 - s, 18 - s, 22, 21 - s, 20 - s, 23, "H" if s == 0 else "G")
-        set_box(g, 14, 13, 22, 18, 17, 23, "H")
-        set_box(g, 15, 14, 22, 17, 16, 24, "T")
-        set_box(g, 9, 7, 11, 23, 10, 21, "T")
-        set_box(g, 9, 4, 10, 23, 7, 22, "b")
-        set_box(g, 14, 4, 21, 18, 7, 23, "G")
-        set_box(g, 15, 5, 22, 17, 6, 23, "H")
-    else:
-        set_box(g, 4, 22, 14, 7, 27, 18, "G")
-        set_box(g, 4, 25, 15, 6, 28, 17, "H")
-        set_box(g, 25, 22, 14, 28, 27, 18, "G")
-        set_box(g, 26, 25, 15, 28, 28, 17, "H")
-        set_box(g, 5, 16, 21, 7, 21, 23, "G")
-        set_box(g, 25, 16, 21, 27, 21, 23, "G")
-        set_box(g, 15, 7, 21, 17, 19, 23, "H")
-        for ry in (9, 13, 17):
-            set_box(g, 11, ry, 21, 21, ry + 2, 22, "G")
-            set_box(g, 11, ry + 1, 21, 13, ry + 2, 23, "C")
-            set_box(g, 19, ry + 1, 21, 21, ry + 2, 23, "C")
-        set_box(g, 9, 4, 10, 23, 6, 22, "w")
-    return g
 
 
-def build_3d_leggings_grid(is_rc: bool) -> Dict[Tuple[int, int, int], str]:
-    g: Dict[Tuple[int, int, int], str] = {}
-    set_box(g, 9, 19, 12, 23, 24, 20, "b" if not is_rc else "w")
-    del_box(g, 11, 19, 14, 21, 24, 18)
-    set_box(g, 14, 20, 19, 18, 23, 21, "G")
-
-    for lx0, tasset_x in [(9, 8), (17, 23)]:
-        set_box(g, lx0, 4, 12, lx0 + 6, 19, 20, "m")
-        del_box(g, lx0 + 1, 4, 13, lx0 + 5, 19, 19)
-        if not is_rc:
-            set_box(g, lx0, 12, 12, lx0 + 6, 18, 20, "T")
-            del_box(g, lx0 + 1, 12, 13, lx0 + 5, 18, 19)
-            set_box(g, tasset_x, 12, 12, tasset_x + 1, 19, 20, "G")
-            set_box(g, lx0 + 1, 7, 20, lx0 + 5, 12, 22, "G")
-            set_box(g, lx0 + 2, 8, 21, lx0 + 4, 11, 23, "H")
-        else:
-            set_box(g, tasset_x, 12, 12, tasset_x + 1, 19, 20, "w")
-            set_box(g, lx0 + 2, 5, 19, lx0 + 4, 18, 21, "G")
-            set_box(g, lx0 + 1, 7, 20, lx0 + 5, 12, 22, "w")
-            set_box(g, lx0 + 2, 8, 21, lx0 + 4, 11, 23, "H")
-            g[(lx0 + 1, 15, 20)] = "C"
-    return g
 
 
-def build_3d_boots_grid(is_rc: bool) -> Dict[Tuple[int, int, int], str]:
-    g: Dict[Tuple[int, int, int], str] = {}
-    for lx0 in (8, 17):
-        set_box(g, lx0, 4, 11, lx0 + 7, 15, 20, "m")
-        del_box(g, lx0 + 1, 6, 12, lx0 + 6, 15, 19)
-        if not is_rc:
-            set_box(g, lx0, 13, 11, lx0 + 7, 15, 20, "G")
-            del_box(g, lx0 + 1, 13, 12, lx0 + 6, 15, 19)
-            set_box(g, lx0, 4, 11, lx0 + 7, 5, 24, "b")
-            set_box(g, lx0, 5, 19, lx0 + 7, 9, 24, "G")
-            set_box(g, lx0 + 1, 6, 20, lx0 + 6, 9, 24, "H")
-        else:
-            set_box(g, lx0, 13, 11, lx0 + 7, 15, 20, "w")
-            del_box(g, lx0 + 1, 13, 12, lx0 + 6, 15, 19)
-            set_box(g, lx0, 4, 11, lx0 + 7, 9, 24, "b")
-            set_box(g, lx0 + 1, 5, 19, lx0 + 6, 9, 24, "w")
-            set_box(g, lx0 + 3, 5, 20, lx0 + 4, 14, 21, "G")
-            set_box(g, lx0 + 3, 6, 23, lx0 + 4, 9, 25, "H")
-            g[(lx0 + 1, 11, 20)] = "C"
-    return g
 
 
 def project_3d_grid_to_sprite32(grid: Dict[Tuple[int, int, int], str]) -> List[str]:
@@ -1105,8 +986,6 @@ def render_items_showcase(out_png: Path) -> None:
         "aurite_pickaxe", "aurite_axe", "aurite_sword", "aurite_shovel", "aurite_hoe", "elisar_bow", "elisar_shield",
         "riftcrystal_pickaxe", "riftcrystal_axe", "riftcrystal_sword", "riftcrystal_shovel", "riftcrystal_hoe",
         "elisar_bow_pulling_2", "elisar_guard_shield",
-        "aurite_helmet", "aurite_chestplate", "aurite_leggings", "aurite_boots",
-        "riftcrystal_helmet", "riftcrystal_chestplate", "riftcrystal_boots",
     ]
     cols, rows_n = 7, 3
     cell_w, cell_h = 150, 155
@@ -1252,14 +1131,6 @@ def main() -> None:
         "elisar_guard_sword", GUARD_SWORD_ART, GUARD_SWORD_DEPTH, "v048_guard_pal", grd_uv, GUARD_PAL, WEAPON_DISPLAY)
 
     armor_3d_specs = [
-        ("aurite_helmet",           build_3d_helmet_grid(False),     "v048_aurite_pal",      aur_uv, AUR_PAL),
-        ("aurite_chestplate",       build_3d_chestplate_grid(False), "v048_aurite_pal",      aur_uv, AUR_PAL),
-        ("aurite_leggings",         build_3d_leggings_grid(False),   "v048_aurite_pal",      aur_uv, AUR_PAL),
-        ("aurite_boots",            build_3d_boots_grid(False),      "v048_aurite_pal",      aur_uv, AUR_PAL),
-        ("riftcrystal_helmet",      build_3d_helmet_grid(True),      "v048_riftcrystal_pal", rc_uv,  RC_PAL),
-        ("riftcrystal_chestplate",  build_3d_chestplate_grid(True),  "v048_riftcrystal_pal", rc_uv,  RC_PAL),
-        ("riftcrystal_leggings",    build_3d_leggings_grid(True),    "v048_riftcrystal_pal", rc_uv,  RC_PAL),
-        ("riftcrystal_boots",       build_3d_boots_grid(True),       "v048_riftcrystal_pal", rc_uv,  RC_PAL),
     ]
     for aid, agrid, apal_name, auv, apal in armor_3d_specs:
         counts[aid] = emit_3d_armor_item(aid, agrid, apal_name, auv, apal)

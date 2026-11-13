@@ -538,7 +538,7 @@ sleep 6
 shot frame-maja-body 150 228 70 0 202 -45 14
 shot frame-maja-head 0 214 188 0 200 115 12
 
-# ---------------------------------------------------------------- v0.48.0 Armory & Elisar Folk
+# ---------------------------------------------------------------- v0.48.0 Gear & Elisar Folk
 rq execute in riftworld:elisar run time set noon >/dev/null
 rq execute in riftworld:elisar run forceload add 744 744 776 776 >/dev/null 2>&1 || true
 rq execute in riftworld:elisar run tp TestPlayer 760 123 770 0 0 >/dev/null
@@ -547,7 +547,7 @@ rq execute in riftworld:elisar positioned 760 118 760 run riftstruct v40_gear >/
 sleep 8
 rq execute in riftworld:elisar run tp TestPlayer 755.25 118.0 764.2 facing 755.25 119.0 760.5 >/dev/null
 sleep 10
-capture_underwater frame-v049-armors-closeup
+capture_underwater frame-v051-gear-closeup
 
 # Ночной кадр Рифткристала: свечение брони проверяется ночью, но сцена
 # перестала быть абсолютно чёрной — одноцветный кадр бесполезен (и валидатор
@@ -570,11 +570,11 @@ rq execute in riftworld:elisar run tp TestPlayer 764.25 118.0 763.0 facing 764.2
 sleep 8
 capture_underwater frame-v049-tools-closeup
 
-# Dropped-item showcase: lay the volumetric weapon/tool/armor models out on the
+# Dropped-item showcase: lay the volumetric weapon/tool models out on the
 # showcase floor and look straight down at them. This is the most direct proof
 # that the element models sample their palette textures correctly (the v0.49.0
 # regression rendered them as black noise).
-# Dropped-item showcase: lay the volumetric weapon/tool/armor models out on the
+# Dropped-item showcase: lay the volumetric weapon/tool models out on the
 # showcase floor and look straight down at them. This is the most direct proof
 # that the element models sample their palette textures correctly (the v0.49.0
 # regression rendered them as black noise).
@@ -597,12 +597,7 @@ sleep 4
 rq execute in riftworld:elisar run tp TestPlayer 759 120 772 facing 759 119 766 >/dev/null
 sleep 8
 capture_underwater frame-v049-items-dropped-tools
-drop_row 772 aurite_helmet aurite_chestplate aurite_leggings aurite_boots \
-            riftcrystal_helmet riftcrystal_chestplate riftcrystal_leggings riftcrystal_boots
-sleep 4
-rq execute in riftworld:elisar run tp TestPlayer 756 120 778 facing 756 119 772 >/dev/null
-sleep 8
-capture_underwater frame-v049-items-dropped-armour
+# v0.51.0: броня мода удалена — выкладку брони больше не снимаем.
 
 rq execute in riftworld:elisar run tp TestPlayer 760.5 118.0 774.2 facing 760.5 119.0 767.6 >/dev/null
 sleep 10

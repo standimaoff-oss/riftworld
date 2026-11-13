@@ -403,9 +403,7 @@ drop_row 774 aurite_sword aurite_pickaxe aurite_axe aurite_shovel aurite_hoe \
             riftcrystal_sword riftcrystal_pickaxe riftcrystal_axe riftcrystal_shovel riftcrystal_hoe \
             elisar_bow elisar_shield elisar_guard_sword elisar_guard_shield
 look_shot gear-dropped-tools 761 121 767 761 120 774 30
-drop_row 782 aurite_helmet aurite_chestplate aurite_leggings aurite_boots \
-            riftcrystal_helmet riftcrystal_chestplate riftcrystal_leggings riftcrystal_boots
-look_shot gear-dropped-armour 759 121 775 759 120 782 30
+# v0.51.0: броня мода удалена — выкладку брони больше не снимаем.
 # Две стойки в доспехах и две стойки с инструментами — порознь, крупным планом.
 look_shot gear-stands-armour 755.25 119.6 767 755.25 119.3 760.5 30
 look_shot gear-stands-tools  764.25 119.6 767 764.25 119.3 760.5 30
