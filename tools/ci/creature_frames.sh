@@ -295,8 +295,8 @@ else
   # Раньше боковой и головной ракурсы вставали на AY+1, то есть на блок
   # выше птицы, и ворон уезжал вниз кадра.
   shot_raven frame-bone-raven-three-quarter "$RX" "$RY" "$RZ" "$TX" "$TY" "$TZ" 8
-  shot_raven frame-bone-raven-side "$((AX + 1))" "$AY" "$((AZ + 1))" "$TX" "$TY" "$TZ" 8
-  shot_raven frame-bone-raven-head "$((AX + 1))" "$AY" "$((AZ - 1))" "$TX" "$TY" "$TZ" 8
+  shot_raven frame-bone-raven-side "$((AX + 2))" "$AY" "$((AZ + 2))" "$TX" "$TY" "$TZ" 8
+  shot_raven frame-bone-raven-head "$((AX + 2))" "$AY" "$((AZ - 2))" "$TX" "$TY" "$TZ" 8
 fi
 
 # v0.49.0: ДРАКОН ДОЛЖЕН ДВИГАТЬСЯ НА ДАЛЁКОМ РАССТОЯНИИ.
