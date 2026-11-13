@@ -236,9 +236,19 @@ else
   rq execute in riftworld:elisar run time set 6000 >/dev/null || true
   rq execute in riftworld:elisar run weather clear >/dev/null 2>&1 || true
   sleep 16
+  # Точки камер берём из ответа витрины: cam= — общий ракурс,
+  # cam_side= — боковой, cam_head= — головной. Раньше боковой и головной
+  # кадры снимались из вычисленных координат, которые расходились с тем,
+  # где на самом деле стоит птица, и она уезжала вниз кадра.
   RX=$(echo "$RAVEN_INFO" | sed -n 's/.*cam=\([^:]*\):.*/\1/p' | cut -d, -f1)
   RY=$(echo "$RAVEN_INFO" | sed -n 's/.*cam=\([^:]*\):.*/\1/p' | cut -d, -f2)
   RZ=$(echo "$RAVEN_INFO" | sed -n 's/.*cam=\([^:]*\):.*/\1/p' | cut -d, -f3)
+  SX=$(echo "$RAVEN_INFO" | sed -n 's/.*cam_side=\([^ ]*\).*/\1/p' | cut -d, -f1)
+  SY=$(echo "$RAVEN_INFO" | sed -n 's/.*cam_side=\([^ ]*\).*/\1/p' | cut -d, -f2)
+  SZ=$(echo "$RAVEN_INFO" | sed -n 's/.*cam_side=\([^ ]*\).*/\1/p' | cut -d, -f3)
+  HX=$(echo "$RAVEN_INFO" | sed -n 's/.*cam_head=\([^ ]*\).*/\1/p' | cut -d, -f1)
+  HY=$(echo "$RAVEN_INFO" | sed -n 's/.*cam_head=\([^ ]*\).*/\1/p' | cut -d, -f2)
+  HZ=$(echo "$RAVEN_INFO" | sed -n 's/.*cam_head=\([^ ]*\).*/\1/p' | cut -d, -f3)
   # Цель камеры — птица: в витрине она печатается полем look= (целые
   # координаты: ванильная команда /facing разбирает только целые).
   TX=$(echo "$RAVEN_INFO" | sed -n 's/.*look=\([^ ]*\).*/\1/p' | cut -d, -f1)
@@ -295,8 +305,8 @@ else
   # Раньше боковой и головной ракурсы вставали на AY+1, то есть на блок
   # выше птицы, и ворон уезжал вниз кадра.
   shot_raven frame-bone-raven-three-quarter "$RX" "$RY" "$RZ" "$TX" "$TY" "$TZ" 8
-  shot_raven frame-bone-raven-side "$((AX + 2))" "$AY" "$((AZ + 2))" "$TX" "$TY" "$TZ" 8
-  shot_raven frame-bone-raven-head "$((AX + 2))" "$AY" "$((AZ - 2))" "$TX" "$TY" "$TZ" 8
+  shot_raven frame-bone-raven-side "$SX" "$SY" "$SZ" "$TX" "$TY" "$TZ" 8
+  shot_raven frame-bone-raven-head "$HX" "$HY" "$HZ" "$TX" "$TY" "$TZ" 8
 fi
 
 # v0.49.0: ДРАКОН ДОЛЖЕН ДВИГАТЬСЯ НА ДАЛЁКОМ РАССТОЯНИИ.
