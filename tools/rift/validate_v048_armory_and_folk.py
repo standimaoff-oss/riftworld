@@ -135,32 +135,40 @@ def main() -> None:
         for banned in ("GlbSwordItem", "GlbPickaxeItem", "GlbAxeItem", "GlbShovelItem", "GlbHoeItem", "ElisarFolkRenderer<"):
             assert banned not in src, f"Obsolete symbol {banned} still referenced in {jf}"
 
-    # 2. Check 256x256 Box-UV armour atlases & 0 overlaps
-    armor_java = (JAVA / "client/model/ElisarArmorModels.java").read_text(encoding="utf-8")
+    # 2. v0.51.0: броня мода удалена целиком. Проверяем, что её больше нет
+    #    ни в коде, ни в ресурсах, и что на её месте стоит редактор брони.
     folk_java = (JAVA / "client/model/ElisarFolkModels.java").read_text(encoding="utf-8")
 
-    aur_boxes = extract_method_boxes(armor_java, "createAuriteInnerLayer()") + extract_method_boxes(armor_java, "createAuriteOuterLayer()")
-    rc_boxes = extract_method_boxes(armor_java, "createRiftcrystalInnerLayer()") + extract_method_boxes(armor_java, "createRiftcrystalOuterLayer()")
-    check_box_uvs("aurite_armor", aur_boxes, ASSETS / "textures/models/armor/aurite_armor.png", ARMOR_ATLAS)
-    check_box_uvs("riftcrystal_armor", rc_boxes, ASSETS / "textures/models/armor/riftcrystal_armor.png", ARMOR_ATLAS)
-    for anchor in ("createAuriteInnerLayer()", "createAuriteOuterLayer()",
-                   "createRiftcrystalInnerLayer()", "createRiftcrystalOuterLayer()"):
-        check_layer_size(armor_java, anchor, ARMOR_ATLAS)
-    # The 2x HD generator emits an "hd" child bone on every armoured part.
-    assert '"hd"' in armor_java, "ElisarArmorModels.java must contain the 2x HD 'hd' child bone"
-    assert "pauldron_r" in armor_java and "pauldron_l" in armor_java, "Tilted pauldrons must exist"
-    assert "rc_horn_r" in armor_java and "rc_horn_l" in armor_java, "Riftcrystal horns must exist"
+    for banned_class in ("RiftArmorMaterials", "ElisarArmorItem",
+                         "ElisarArmorModels", "RiftcrystalArmorGlowLayer"):
+        assert not list(JAVA.rglob(f"{banned_class}.java")), (
+            f"Deleted armour class {banned_class} is still present")
+        for jf in JAVA.rglob("*.java"):
+            src = jf.read_text(encoding="utf-8")
+            assert banned_class not in src, (
+                f"Deleted armour class {banned_class} is still referenced in {jf}")
 
-    glow_path = ASSETS / "textures/models/armor/riftcrystal_armor_glow.png"
-    assert glow_path.exists()
-    glow_arr = np.array(Image.open(glow_path).convert("RGBA"))
-    assert glow_arr.shape[:2] == (ARMOR_ATLAS, ARMOR_ATLAS) and int(np.count_nonzero(glow_arr[:, :, 3])) >= 40
-    # Eyes-blend glow must stay dim (additive blending) and must never blow out to white.
-    gop = glow_arr[glow_arr[:, :, 3] > 0, :3].astype(np.float32)
-    if gop.size:
-        lum = gop.max(axis=1) / 255.0
-        assert float(lum.min()) >= 0.20 and float(lum.max()) <= 0.55, (
-            f"riftcrystal_armor_glow.png brightness out of the eyes-blend range: {lum.min():.3f}..{lum.max():.3f}")
+    armour_ids = ("aurite_helmet", "aurite_chestplate", "aurite_leggings", "aurite_boots",
+                  "riftcrystal_helmet", "riftcrystal_chestplate", "riftcrystal_leggings", "riftcrystal_boots")
+    for aid in armour_ids:
+        assert not (ASSETS / "models/item" / f"{aid}.json").exists(), f"{aid} model must be gone"
+        assert not (ASSETS / "textures/item" / f"{aid}.png").exists(), f"{aid} sprite must be gone"
+        assert not (DATA / "riftworld/recipes" / f"{aid}.json").exists(), f"{aid} recipe must be gone"
+    for lang in ("en_us.json", "ru_ru.json"):
+        lang_json = json.loads((ASSETS / "lang" / lang).read_text(encoding="utf-8"))
+        for aid in armour_ids:
+            assert f"item.riftworld.{aid}" not in lang_json, f"{aid} must be gone from {lang}"
+
+    # Редактор брони: сайт с ванильной бронёй и экспортом в JSON.
+    editor = ROOT / "tools" / "armor_editor"
+    assert (editor / "index.html").exists(), "armour editor site is missing"
+    assert (editor / "editor.js").exists(), "armour editor script is missing"
+    for sset in ("leather", "netherite", "diamond"):
+        for part in ("helmet", "chestplate", "leggings", "boots"):
+            assert (editor / "data" / f"{sset}_{part}.png").exists(), (
+                f"vanilla {sset} {part} reference icon is missing")
+            assert (editor / "data" / f"model3d_{part}.json").exists(), (
+                f"3D preview model for {part} is missing")
 
     # 3. The Elisar settlement folk atlases stay untouched at 128x128.
     for anchor, png in (
@@ -200,29 +208,8 @@ def main() -> None:
         bjson = json.loads(bp.read_text(encoding="utf-8"))
         assert "parent" in bjson, f"{blk_model} must inherit from its parent model"
 
-    # 5. The 8 armour items must now be TRUE 3D volumetric models, not flat sprites.
-    armor_items = [
-        "aurite_helmet", "aurite_chestplate", "aurite_leggings", "aurite_boots",
-        "riftcrystal_helmet", "riftcrystal_chestplate", "riftcrystal_leggings", "riftcrystal_boots",
-    ]
-    for aid in armor_items:
-        mp = ASSETS / "models/item" / f"{aid}.json"
-        sp = ASSETS / "textures/item" / f"{aid}.png"
-        assert mp.exists() and sp.exists(), f"Missing 3D armour model or sprite for {aid}"
-        mjson = json.loads(mp.read_text(encoding="utf-8"))
-        assert mjson.get("parent") is None and "elements" in mjson, (
-            f"{aid}.json must be a standalone 3D element model")
-        assert "minecraft:item/generated" not in json.dumps(mjson), (
-            f"{aid}.json must not be a flat item/generated sprite model")
-        check_3d_item_model(mp, 20, 200)
-        sarr = np.array(Image.open(sp).convert("RGBA"))
-        assert sarr.shape[:2] == (32, 32), f"{aid}.png must be a crisp 32x32 sprite, got {sarr.shape[:2]}"
-        check_no_missing_magenta(sp)
-
+    # 5. v0.51.0: атласы брони удалены вместе с бронёй.
     for check_png in [
-        ASSETS / "textures/models/armor/aurite_armor.png",
-        ASSETS / "textures/models/armor/riftcrystal_armor.png",
-        ASSETS / "textures/models/armor/riftcrystal_armor_glow.png",
         ASSETS / "textures/entity/elisar_villager.png",
         ASSETS / "textures/entity/elisar_guard.png",
         ASSETS / "textures/entity/elisar_archer.png",
@@ -239,8 +226,6 @@ def main() -> None:
         "elisar_ducat_from_aurite_ingot.json",
         "elisar_bow.json",
         "elisar_shield.json",
-        "aurite_helmet.json", "aurite_chestplate.json", "aurite_leggings.json", "aurite_boots.json",
-        "riftcrystal_helmet.json", "riftcrystal_chestplate.json", "riftcrystal_leggings.json", "riftcrystal_boots.json",
         "aurite_pickaxe.json", "aurite_axe.json", "aurite_sword.json", "aurite_shovel.json", "aurite_hoe.json",
         "riftcrystal_pickaxe.json", "riftcrystal_axe.json", "riftcrystal_sword.json", "riftcrystal_shovel.json", "riftcrystal_hoe.json",
     ):
@@ -281,9 +266,9 @@ def main() -> None:
             assert key in ldata and ldata[key].strip(), f"Missing {key} in {lang_fn}"
 
     print(
-        f"OK validate_v048_armory_and_folk: aurite_boxes={len(aur_boxes)} "
-        f"riftcrystal_boxes={len(rc_boxes)} voxel_models={len(voxel_items)} "
-        f"armor_3d_items={len(armor_items)} atlas={ARMOR_ATLAS}x{ARMOR_ATLAS} rare_ore_biomes=4"
+        f"OK validate_v048_armory_and_folk: armour_removed=yes "
+        f"editor_sets=3 editor_parts=4 voxel_models={len(voxel_items)} "
+        f"rare_ore_biomes=4"
     )
 
 

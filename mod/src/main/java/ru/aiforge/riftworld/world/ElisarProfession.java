@@ -70,7 +70,7 @@ public enum ElisarProfession {
                     new ItemStack(ModItems.AURITE_SWORD.get(), 1),
                     new ItemStack(ModItems.ELISAR_BOW.get(), 1),
                     new ItemStack(ModItems.ELISAR_SHIELD.get(), 1),
-                    new ItemStack(ModItems.AURITE_HELMET.get(), 1));
+                    new ItemStack(ModItems.ELISAR_DUCAT.get(), 8));
         }
     },
 

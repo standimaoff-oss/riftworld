@@ -444,22 +444,7 @@ public final class SeaProbeCommand {
                             (aurite ? ru.aiforge.riftworld.registry.ModItems.AURITE_AXE
                                     : ru.aiforge.riftworld.registry.ModItems.RIFTCRYSTAL_AXE).get()));
         } else {
-            stand.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD,
-                    new net.minecraft.world.item.ItemStack(
-                            (aurite ? ru.aiforge.riftworld.registry.ModItems.AURITE_HELMET
-                                    : ru.aiforge.riftworld.registry.ModItems.RIFTCRYSTAL_HELMET).get()));
-            stand.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST,
-                    new net.minecraft.world.item.ItemStack(
-                            (aurite ? ru.aiforge.riftworld.registry.ModItems.AURITE_CHESTPLATE
-                                    : ru.aiforge.riftworld.registry.ModItems.RIFTCRYSTAL_CHESTPLATE).get()));
-            stand.setItemSlot(net.minecraft.world.entity.EquipmentSlot.LEGS,
-                    new net.minecraft.world.item.ItemStack(
-                            (aurite ? ru.aiforge.riftworld.registry.ModItems.AURITE_LEGGINGS
-                                    : ru.aiforge.riftworld.registry.ModItems.RIFTCRYSTAL_LEGGINGS).get()));
-            stand.setItemSlot(net.minecraft.world.entity.EquipmentSlot.FEET,
-                    new net.minecraft.world.item.ItemStack(
-                            (aurite ? ru.aiforge.riftworld.registry.ModItems.AURITE_BOOTS
-                                    : ru.aiforge.riftworld.registry.ModItems.RIFTCRYSTAL_BOOTS).get()));
+            // v0.51.0: броня мода удалена — манекен показывает только оружие.
             stand.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND,
                     new net.minecraft.world.item.ItemStack(
                             (aurite ? ru.aiforge.riftworld.registry.ModItems.AURITE_SWORD

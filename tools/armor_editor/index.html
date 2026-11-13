@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Riftworld — редактор брони</title>
+<style>
+  :root{
+    --bg:#14161c; --panel:#1c1f27; --panel2:#232733; --line:#2e3340;
+    --ink:#e6e8ee; --dim:#8b93a7; --accent:#6fd3c7; --accent2:#e0a458;
+    --danger:#e06c75;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;height:100%}
+  body{
+    background:var(--bg); color:var(--ink);
+    font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    display:flex; flex-direction:column;
+  }
+  header{
+    display:flex; align-items:center; gap:16px; padding:10px 16px;
+    border-bottom:1px solid var(--line); background:var(--panel);
+    flex-wrap:wrap;
+  }
+  header h1{font-size:16px; margin:0; font-weight:650; letter-spacing:.2px}
+  header h1 small{color:var(--dim); font-weight:400; margin-left:8px}
+  .spacer{flex:1}
+  .pill{
+    background:var(--panel2); border:1px solid var(--line); color:var(--dim);
+    border-radius:999px; padding:3px 10px; font-size:12px;
+  }
+  main{flex:1; display:grid; grid-template-columns:250px 1fr 380px; gap:14px; padding:14px; min-height:0}
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:12px; min-height:0; overflow:auto}
+  .card h2{font-size:12px; text-transform:uppercase; letter-spacing:.9px; color:var(--dim); margin:0 0 10px; font-weight:650}
+  .grid{display:grid; grid-template-columns:repeat(4,1fr); gap:8px}
+  .slot{
+    background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:6px;
+    cursor:pointer; text-align:center; transition:.12s;
+  }
+  .slot:hover{border-color:var(--accent)}
+  .slot.active{border-color:var(--accent); background:#22313a; box-shadow:0 0 0 1px var(--accent) inset}
+  .slot img{width:100%; image-rendering:pixelated; border-radius:4px; background:
+    repeating-conic-gradient(#2a2e38 0% 25%, #232733 0% 50%) 50%/12px 12px; display:block}
+  .slot span{display:block; font-size:10px; color:var(--dim); margin-top:4px; line-height:1.2}
+  .slot.active span{color:var(--ink)}
+  .setbtns{display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap}
+  .setbtn{
+    flex:1 1 auto; background:var(--panel2); border:1px solid var(--line); color:var(--dim);
+    border-radius:7px; padding:7px 9px; cursor:pointer; font-size:12px; font-weight:600;
+  }
+  .setbtn.active{border-color:var(--accent); color:var(--accent); background:#22313a}
+  .row{display:flex; gap:8px; align-items:center; margin-bottom:9px; flex-wrap:wrap}
+  label.lbl{font-size:12px; color:var(--dim); min-width:74px}
+  input[type=color]{width:38px;height:26px;border:1px solid var(--line);border-radius:5px;background:var(--panel2);padding:1px}
+  input[type=range]{flex:1; min-width:90px; accent-color:var(--accent)}
+  button{
+    background:var(--panel2); border:1px solid var(--line); color:var(--ink);
+    border-radius:7px; padding:6px 11px; cursor:pointer; font-size:12px; font-weight:600;
+  }
+  button:hover{border-color:var(--accent)}
+  button.primary{background:var(--accent); color:#0d1416; border-color:var(--accent)}
+  button.primary:hover{filter:brightness(1.1)}
+  button.warn{border-color:var(--danger); color:var(--danger)}
+  .swatches{display:grid; grid-template-columns:repeat(10,1fr); gap:4px; margin-top:6px}
+  .sw{aspect-ratio:1; border-radius:4px; border:1px solid #0006; cursor:pointer}
+  .sw:hover{transform:scale(1.12)}
+  #canvasWrap{position:relative; display:inline-block; line-height:0}
+  #canvas{image-rendering:pixelated; cursor:crosshair; border-radius:8px; background:
+    repeating-conic-gradient(#2a2e38 0% 25%, #232733 0% 50%) 50%/16px 16px; touch-action:none}
+  #overlay{position:absolute; inset:0; pointer-events:none}
+  .tools{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px}
+  .tool{
+    width:32px; height:32px; display:grid; place-items:center; border-radius:7px;
+    background:var(--panel2); border:1px solid var(--line); cursor:pointer; font-size:15px;
+  }
+  .tool.active{border-color:var(--accent); background:#22313a}
+  .tool.wide{width:auto; padding:0 11px; font-size:12px; font-weight:600}
+  pre{
+    background:#0e1016; border:1px solid var(--line); border-radius:8px; padding:9px;
+    font:11px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace; color:#9fb6c9;
+    max-height:230px; overflow:auto; margin:0; white-space:pre-wrap; word-break:break-all;
+  }
+  #preview{width:100%; image-rendering:auto; border-radius:8px; background:#0e1016; border:1px solid var(--line)}
+  .hint{font-size:11px; color:var(--dim); margin-top:8px; line-height:1.5}
+  kbd{background:#0e1016;border:1px solid var(--line);border-radius:4px;padding:0 4px;font-size:10px}
+  .ok{color:var(--accent)} .bad{color:var(--danger)}
+  .flexcol{display:flex; flex-direction:column; gap:12px; min-height:0}
+  @media(max-width:1100px){ main{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+<header>
+  <h1>Riftworld — редактор брони <small>пиксель за пикселем, экспорт в JSON</small></h1>
+  <span class="spacer"></span>
+  <span class="pill" id="status">готово</span>
+  <button id="btnExport" class="primary">Скачать JSON</button>
+  <button id="btnCopy">Копировать JSON</button>
+  <button id="btnReset" class="warn">Сбросить комплект</button>
+</header>
+
+<main>
+  <!-- ЛЕВО: выбор комплекта и части -->
+  <div class="card">
+    <h2>Комплект</h2>
+    <div class="setbtns" id="sets"></div>
+    <h2>Части</h2>
+    <div class="grid" id="slots"></div>
+    <div class="hint">
+      Клик по части — редактировать. <kbd>Ctrl</kbd>+клик — стереть пиксель.<br>
+      Рисуем иконку <b>16×16</b>, как в инвентаре: она станет текстурой брони.
+    </div>
+  </div>
+
+  <!-- ЦЕНТР: холст -->
+  <div class="card">
+    <h2>Холст 16×16</h2>
+    <div class="tools">
+      <div class="tool active" data-tool="brush" title="Кисть">✎</div>
+      <div class="tool" data-tool="eraser" title="Ластик">▨</div>
+      <div class="tool" data-tool="line" title="Линия">╱</div>
+      <div class="tool" data-tool="rect" title="Прямоугольник">▭</div>
+      <div class="tool" data-tool="bucket" title="Заливка">◧</div>
+      <div class="tool" data-tool="pick" title="Пипетка">✚</div>
+      <div class="tool wide" id="btnMirror" title="Отражение по X">⇋ зеркало</div>
+      <div class="tool wide" id="btnClear" title="Очистить">⌫ очистить</div>
+    </div>
+    <div class="row">
+      <label class="lbl">Размер</label>
+      <input type="range" id="zoom" min="8" max="40" value="26">
+      <span class="pill" id="zoomVal">26×</span>
+      <label class="lbl" style="min-width:auto">Кисть</label>
+      <input type="range" id="brushSize" min="1" max="5" value="1">
+      <span class="pill" id="brushVal">1 px</span>
+    </div>
+    <div id="canvasWrap">
+      <canvas id="canvas" width="16" height="16"></canvas>
+      <canvas id="overlay" width="16" height="16" style="position:absolute;left:0;top:0;width:100%;height:100%"></canvas>
+    </div>
+    <div class="hint" id="slotInfo"></div>
+  </div>
+
+  <!-- ПРАВО: палитра, 3D-превью, JSON -->
+  <div class="flexcol">
+    <div class="card">
+      <h2>Цвет</h2>
+      <div class="row">
+        <input type="color" id="color" value="#b8b8b8">
+        <label class="lbl" style="min-width:auto">Прозрачность</label>
+        <input type="range" id="alpha" min="0" max="255" value="255">
+        <span class="pill" id="alphaVal">100%</span>
+      </div>
+      <div class="swatches" id="swatches"></div>
+    </div>
+
+    <div class="card">
+      <h2>3D-превью</h2>
+      <canvas id="preview" width="340" height="300"></canvas>
+      <div class="row" style="margin-top:8px">
+        <button id="btnPrevSpin">Крутить</button>
+        <label class="lbl" style="min-width:auto">Сетка</label>
+        <input type="checkbox" id="grid" checked>
+        <span class="pill" id="previewInfo">—</span>
+      </div>
+      <div class="hint">Преview рисуется из 3D-модели брони (41–58 коробок) с твоей текстурой.</div>
+    </div>
+
+    <div class="card">
+      <h2>Экспорт</h2>
+      <pre id="jsonOut">—</pre>
+      <div class="hint">
+        Формат: <code>pixels</code> — массив 16×16 значений <code>#RRGGBBAA</code> (или <code>0</code> для прозрачного),
+        <code>parts</code> — шлем/нагрудник/поножи/ботинки, <code>set</code> — leather|netherite|diamond.
+        Скинь этот JSON — я соберу из него настоящую броню мода.
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="editor.js"></script>
+</body>
+</html>

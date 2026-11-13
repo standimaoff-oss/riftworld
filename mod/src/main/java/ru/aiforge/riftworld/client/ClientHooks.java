@@ -38,30 +38,9 @@ public final class ClientHooks {
         };
     }
 
-    public static net.minecraftforge.client.extensions.common.IClientItemExtensions armorExt() {
-        return new net.minecraftforge.client.extensions.common.IClientItemExtensions() {
-            @Override
-            public net.minecraft.client.model.HumanoidModel<?> getHumanoidArmorModel(
-                    net.minecraft.world.entity.LivingEntity entity,
-                    net.minecraft.world.item.ItemStack itemStack,
-                    net.minecraft.world.entity.EquipmentSlot armorSlot,
-                    net.minecraft.client.model.HumanoidModel<?> defaultModel) {
-                boolean rc = itemStack.getItem() instanceof ru.aiforge.riftworld.item.ElisarArmorItem a
-                        && a.isRiftcrystal();
-                return ru.aiforge.riftworld.client.model.ElisarArmorModels.getForSlot(
-                        rc
-                                ? ru.aiforge.riftworld.item.RiftArmorMaterials.RIFTCRYSTAL
-                                : ru.aiforge.riftworld.item.RiftArmorMaterials.AURITE,
-                        armorSlot,
-                        defaultModel);
-            }
-        };
-    }
-
     @SubscribeEvent
     public static void layerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions e) {
         e.registerLayerDefinition(LiopleurodonBlockbenchModel.LAYER_LOCATION, LiopleurodonBlockbenchModel::createBodyLayer);
-        ru.aiforge.riftworld.client.model.ElisarArmorModels.registerLayers(e);
         ru.aiforge.riftworld.client.model.ElisarFolkModels.registerLayers(e);
         ElisarFaunaRenderers.registerLayers(e);
     }
@@ -98,23 +77,6 @@ public final class ClientHooks {
         e.registerEntityRenderer(ModEntities.ELISAR_ARCHER.get(), ElisarFolkRenderers.Archer::new);
         // v0.47.0: 15 существ биомной фауны Элисара (Blockbench MCP + многокостные анимации)
         ElisarFaunaRenderers.registerRenderers(e);
-    }
-
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    @SubscribeEvent
-    public static void addLayers(EntityRenderersEvent.AddLayers e) {
-        for (String skin : e.getSkins()) {
-            var pr = e.getSkin(skin);
-            if (pr != null && pr.getModel() instanceof net.minecraft.client.model.HumanoidModel<?>) {
-                ((net.minecraft.client.renderer.entity.LivingEntityRenderer) pr)
-                        .addLayer(new RiftcrystalArmorGlowLayer((net.minecraft.client.renderer.entity.RenderLayerParent) pr));
-            }
-        }
-        var standRenderer = e.getRenderer(net.minecraft.world.entity.EntityType.ARMOR_STAND);
-        if (standRenderer != null) {
-            ((net.minecraft.client.renderer.entity.LivingEntityRenderer) standRenderer)
-                    .addLayer(new RiftcrystalArmorGlowLayer((net.minecraft.client.renderer.entity.RenderLayerParent) standRenderer));
-        }
     }
 
     @SubscribeEvent
@@ -238,7 +200,6 @@ public final class ClientHooks {
     public static void reload(RegisterClientReloadListenersEvent e) {
         e.registerReloadListener((PreparableReloadListener) (ResourceManagerReloadListener) rm -> {
             GlbAssets.clear();
-            ru.aiforge.riftworld.client.model.ElisarArmorModels.clearCache();
         });
     }
 }
