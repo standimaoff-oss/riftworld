@@ -211,6 +211,47 @@ frame_is_dark() {
   return 0
 }
 
+# ------------------------------------------------------- броня v0.52.0
+# Снимаем броню ПЕРВОЙ: кадры существ зависят от живых существ (дракон
+# улетает, ворон темнеет), и их падение обрывало скрипт до брони. Броня
+# стоит на манекене на своей площадке — она статична и всегда на месте.
+# Клиент рисует броню на стойке ровно так же, как на игроке, а игрок в кадре
+# — сам камера (он в режиме наблюдателя, его тела не видно).
+echo "capturing the v0.52.0 armour..."
+ARMOR_INFO=$(rq execute in riftworld:elisar positioned 600 120 600 run riftstruct bb_armor_showcase 2>&1 | tr -d '\r')
+echo "  $ARMOR_INFO"
+if [[ "$ARMOR_INFO" != *"spawned=1"* ]]; then
+  echo "::warning title=In-game frames::витрина брони не собралась: $ARMOR_INFO"
+else
+  rq execute in riftworld:elisar run forceload add 588 588 612 612 >/dev/null 2>&1 || true
+  # Полдень и ясная погода: броня читается на светлом небе и светлой площадке.
+  rq execute in riftworld:elisar run time set 6000 >/dev/null 2>&1 || true
+  rq execute in riftworld:elisar run weather clear >/dev/null 2>&1 || true
+  sleep 14
+
+  # Разбор полей ответа витрины. Значения координат — "x,y,z", поэтому
+  # сплитим по запятой; поле отделяем по первому "=".
+  # armor_field <имя поля> <номер координаты 1..3>
+  armor_field() {
+    local raw
+    raw=$(echo "$ARMOR_INFO" | tr ' ' '\n' | grep -E "^$1=" | head -1 | cut -d= -f2-)
+    echo "$raw" | cut -d, -f"${2:-1}"
+  }
+  # Камера: спереди, в три четверти и сбоку. Манекен стоит в центре площадки.
+  ACX=$(armor_field cam_front 1);   ACY=$(armor_field cam_front 2);   ACZ=$(armor_field cam_front 3)
+  QX=$(armor_field cam_quarter 1);  QY=$(armor_field cam_quarter 2);  QZ=$(armor_field cam_quarter 3)
+  SX=$(armor_field cam_side 1);     SY=$(armor_field cam_side 2);     SZ=$(armor_field cam_side 3)
+  # Цель камеры — манекен (поле look=).
+  TX=$(armor_field look 1); TY=$(armor_field look 2); TZ=$(armor_field look 3)
+  echo "  манекен: $TX,$TY,$TZ; камера: $ACX,$ACY,$ACZ"
+
+  # Витрина стоит в измерении Элисара — камера телепортируется туда же.
+  SHOT_DIM=riftworld:elisar
+  shot frame-v052-armor-riftcrystal-front "$ACX" "$ACY" "$ACZ" "$TX" "$TY" "$TZ" 6
+  shot frame-v052-armor-riftcrystal-three-quarter "$QX" "$QY" "$QZ" "$TX" "$TY" "$TZ" 6
+  shot frame-v052-armor-riftcrystal-side "$SX" "$SY" "$SZ" "$TX" "$TY" "$TZ" 6
+fi
+
 # ---------------------------------------------------------------- paper dragon
 # v0.49.0: Пегас удалён из мода, кадры перенесены на Бумажного дракона.
 rq fill 190 99 -24 226 99 24 minecraft:grass_block >/dev/null
@@ -330,17 +371,30 @@ sleep 14
 # Дракон ЛЕТИТ, поэтому снимать надо по его НАСТОЯЩЕЙ позиции: камера вслепую
 # смотрит в точку спавна и промахивается мимо. Позицию читаем с сервера.
 dragon_pos() {
-  # RCON под нагрузкой периодически рвёт соединение ("connection closed"),
-  # и позиция дракона читалась пустой — скрипт падал, не дойдя до остальных
-  # кадров. Пробуем несколько раз.
+  # Позиция дракона читается с сервера, потому что дракон ЛЕТИТ и вслепую
+  # камера промахивалась мимо. Раньше здесь стоял один запрос без ретраев:
+  # и RCON рвал соединение ("connection closed"), и дракон успевал улететь
+  # из загруженного чанка — тогда ответ был пустым, и весь скрипт падал,
+  # не дойдя до съёмки остальных кадров (брони в том числе).
+  # Поэтому: несколько попыток + запасной вариант «ищем любого дракона».
   local raw i
-  for i in 1 2 3 4 5; do
+  for i in 1 2 3 4 5 6; do
     raw=$(rq data get entity '@e[type=riftworld:paper_dragon,limit=1]' Pos 2>&1 | tr -d '\n' || true)
     if echo "$raw" | grep -q '\['; then
       echo "$raw" | sed -n 's/.*\[\(.*\)\].*/\1/p'
       return 0
     fi
-    sleep 3
+    sleep 4
+  done
+  # Запасной путь: дракон мог улететь, но он всё ещё существует. Ищем его
+  # среди всех загруженных чанков без ограничения по координатам.
+  for i in 1 2 3; do
+    raw=$(rq execute in minecraft:overworld run data get entity @e[type=riftworld:paper_dragon,limit=1,sort=nearest] Pos 2>&1 | tr -d '\n' || true)
+    if echo "$raw" | grep -q '\['; then
+      echo "$raw" | sed -n 's/.*\[\(.*\)\].*/\1/p'
+      return 0
+    fi
+    sleep 4
   done
   echo ""
 }
@@ -612,44 +666,6 @@ capture_underwater frame-v049-items-dropped-tools
 rq execute in riftworld:elisar run tp TestPlayer 760.5 118.0 774.2 facing 760.5 119.0 767.6 >/dev/null
 sleep 10
 capture_underwater frame-v049-elisar-folk
-
-# ------------------------------------------------------- броня v0.52.0
-# Новая броня мода — с ВАНИЛЬНОЙ геометрией (штатный HumanoidArmorLayer)
-# и ванильными текстурами 64x32. Показываем её на манекене вживую: клиент
-# рисует броню на стойке ровно так же, как на игроке, а игрок в кадре — сам
-# камера (он в режиме наблюдателя, его тела не видно).
-echo "capturing the v0.52.0 armour..."
-ARMOR_INFO=$(rq execute in riftworld:elisar positioned 600 120 600 run riftstruct bb_armor_showcase 2>&1 | tr -d '\r')
-echo "  $ARMOR_INFO"
-if [[ "$ARMOR_INFO" != *"spawned=1"* ]]; then
-  echo "::warning title=In-game frames::витрина брони не собралась: $ARMOR_INFO"
-else
-  rq execute in riftworld:elisar run forceload add 588 588 612 612 >/dev/null 2>&1 || true
-  # Полдень и ясная погода: броня читается на светлом небе и светлой площадке.
-  rq execute in riftworld:elisar run time set 6000 >/dev/null 2>&1 || true
-  rq execute in riftworld:elisar run weather clear >/dev/null 2>&1 || true
-  sleep 14
-
-  # Разбор полей ответа витрины. Значения координат — "x,y,z", поэтому
-  # сплитим по запятой; поле отделяем по первому "=".
-  # armor_field <имя поля> <номер координаты 1..3>
-  armor_field() {
-    local raw
-    raw=$(echo "$ARMOR_INFO" | tr ' ' '\n' | grep -E "^$1=" | head -1 | cut -d= -f2-)
-    echo "$raw" | cut -d, -f"${2:-1}"
-  }
-  # Камера: спереди, в три четверти и сбоку. Манекен стоит в центре площадки.
-  ACX=$(armor_field cam_front 1);   ACY=$(armor_field cam_front 2);   ACZ=$(armor_field cam_front 3)
-  QX=$(armor_field cam_quarter 1);  QY=$(armor_field cam_quarter 2);  QZ=$(armor_field cam_quarter 3)
-  SX=$(armor_field cam_side 1);     SY=$(armor_field cam_side 2);     SZ=$(armor_field cam_side 3)
-  # Цель камеры — манекен (поле look=).
-  TX=$(armor_field look 1); TY=$(armor_field look 2); TZ=$(armor_field look 3)
-  echo "  манекен: $TX,$TY,$TZ; камера: $ACX,$ACY,$ACZ"
-
-  shot frame-v052-armor-riftcrystal-front "$ACX" "$ACY" "$ACZ" "$TX" "$TY" "$TZ" 6
-  shot frame-v052-armor-riftcrystal-three-quarter "$QX" "$QY" "$QZ" "$TX" "$TY" "$TZ" 6
-  shot frame-v052-armor-riftcrystal-side "$SX" "$SY" "$SZ" "$TX" "$TY" "$TZ" 6
-fi
 
 echo "captured $SHOT in-game frames"
 [ "$SHOT" -ge 9 ] || fail "Only $SHOT frames captured"
