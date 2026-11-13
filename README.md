@@ -47,13 +47,51 @@
 ### Прочее
 
 - 12 предметов брони (`leather_*`, `aurite_*`, `riftcrystal_*`), рецепты с
-  **ванильными раскладками** (генератор `tools/rift/gen_v052_armor_recipes.py`);
+  **ванильными раскладками** (генератор `tools/rift/gen_v052_armor_recipes.py`).
+  Раскладки — ровно ванильные 1.20.1 (`data/minecraft/recipes`): шлем `XXX`/`X X`,
+  нагрудник `X X`/`XXX`/`XXX`, поножи `XXX`/`X X`/`X X`, ботинки `X X`/`X X`,
+  ключ `X` + `category: equipment`;
 - валидатор `tools/rift/validate_v048_armory_and_folk.py` переписан: он проверяет,
   что силуэт слоёв брони **побайтово совпадает с ванильным** (значит, геометрия
   действительно ванильная), что кастомных 3D-моделей брони нет, что материалы
-  называются `riftworld:<mat>`, и что рецепты/иконки/переводы на месте;
-- редактор брони (`tools/armor_editor`) продолжает работать — он рисует иконки
-  16×16 для тех же трёх комплектов.
+  называются `riftworld:<mat>`, что текстуры `<mat>_layer_{1,2}.png` лежат 64×32
+  ровно по тому пути, который собирает `HumanoidArmorLayer#getArmorLocation`,
+  и что **в каждом shaped-рецепте мода все символы раскладки объявлены в `key`**
+  (иначе Minecraft не грузит рецепт: «Pattern references symbol 'L' but it's not
+  defined in the key» — именно из-за этого падали все серверные пробы CI).
+
+### Имена методов `ArmorMaterial` — Mojmap, а не yarn
+
+Forge 1.20.1 собран на **официальных маппингах Mojang**, поэтому интерфейс
+`net.minecraft.world.item.ArmorMaterial` в 1.20.1 объявляет:
+
+| Правильно (1.20.1) | Не существует |
+|---|---|
+| `getDurabilityForType(ArmorItem.Type)` | `getDurability(...)` |
+| `getDefenseForType(ArmorItem.Type)` | `getProtection(...)` |
+| `getEnchantmentValue()` | `getEnchantability()` |
+
+С yarn-именами javac даёт «method does not override or implement a method from a
+supertype», а с `getEnchantmentValue` в списке — ещё и «ModArmorMaterial is not
+abstract and does not override abstract method».
+
+### Редактор брони: режим «Слои»
+
+Редактор (`tools/armor_editor`) умеет два режима:
+
+- **«Иконки»** — 16×16, как раньше (`parts` в JSON);
+- **«Слои»** — 64×32, настоящая карта брони в ванильной раскладке player-skin
+  (`layers` в JSON: `layer_1` = шлем/нагрудник/ботинки, `layer_2` = поножи).
+
+В режиме «Слои» 3D-превью показывает **ванильную геометрию брони** — те же кубы
+из `PlayerModel.createMesh` (голова 8×8×8 с дилатацией 1.0, «шапка» с
+дилатацией 0.5, тело, руки, ноги с зеркалированием левых), на которые наложена
+нарисованная карта 64×32. То есть превью в редакторе — ровно то, что увидит
+игрок. Генератор моделей превью: `tools/armor_editor/gen_vanilla_preview_model.py`.
+
+Прямая ссылка на редактор v0.52.0:
+
+- ++**[https://github.com/standimaoff-oss/riftworld/releases/download/v0.52.0/riftworld-armor-editor.html](https://github.com/standimaoff-oss/riftworld/releases/download/v0.52.0/riftworld-armor-editor.html)**++
 
 ## v0.51.0 — броня мода удалена, вместо неё редактор брони
 

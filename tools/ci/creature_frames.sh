@@ -603,6 +603,36 @@ rq execute in riftworld:elisar run tp TestPlayer 760.5 118.0 774.2 facing 760.5 
 sleep 10
 capture_underwater frame-v049-elisar-folk
 
+# ------------------------------------------------------- броня v0.52.0
+# Новая броня мода — с ВАНИЛЬНОЙ геометрией (штатный HumanoidArmorLayer)
+# и ванильными текстурами 64x32. Показываем её на игроке вживую: снимаем
+# спереди, сбоку и в три четверти, чтобы было видно, что посадка на тело
+# и развёртка совпадают с ванильной бронёй.
+echo "capturing the v0.52.0 armour..."
+rq execute in riftworld:elisar run tp TestPlayer 760.5 118.0 774.2 facing 760.5 119.0 767.6 >/dev/null
+# Полный комплект рифт-кристалла: шлем, нагрудник, поножи, ботинки.
+# /give кладёт предмет в инвентарь, а /replaceitem — сразу в слот брони,
+# поэтому надеваем именно так (иначе броня не отрисовалась бы на модели).
+for slot_spec in "chestplate riftworld:riftcrystal_chestplate" \
+                 "head riftworld:riftcrystal_helmet" \
+                 "legs riftworld:riftcrystal_leggings" \
+                 "feet riftworld:riftcrystal_boots"; do
+  set -- $slot_spec
+  rq execute in riftworld:elisar run replaceitem entity TestPlayer "$1" with "$2" >/dev/null 2>&1 \
+    || echo "::warning title=In-game frames::could not equip $2"
+done
+sleep 3
+# Площадка и дневной свет, чтобы броня читалась на светлом фоне.
+rq execute in riftworld:elisar run time set 6000 >/dev/null 2>&1 || true
+rq execute in riftworld:elisar run weather clear >/dev/null 2>&1 || true
+rq execute in riftworld:elisar run fill 757 118 771 758 118 772 minecraft:white_concrete >/dev/null 2>&1 || true
+rq execute in riftworld:elisar run fill 757 119 771 758 119 772 minecraft:air >/dev/null 2>&1 || true
+sleep 3
+# Камера смотрит на игрока: сначала спереди и чуть сверху, потом сбоку.
+shot frame-v052-armor-riftcrystal-front 760.5 119.4 778.2 760.5 118.6 772.0 6
+shot frame-v052-armor-riftcrystal-three-quarter 764.2 119.4 776.4 760.5 118.6 772.0 6
+shot frame-v052-armor-riftcrystal-side 766.2 119.4 772.0 760.5 118.6 772.0 6
+
 echo "captured $SHOT in-game frames"
 [ "$SHOT" -ge 9 ] || fail "Only $SHOT frames captured"
 ls -l "$FRAMES"
