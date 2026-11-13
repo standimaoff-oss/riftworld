@@ -1,15 +1,52 @@
-run 43490578028 / job server-smoke / ветвь arena/037a840e-riftworld
+run 43493641650 / job server-smoke / ветвь arena/037a840e-riftworld
 == содержимое ci-out ==
-total 1224
-drwxr-xr-x  2 runner runner    4096 Nov 13 19:20 .
-drwxr-xr-x 14 runner runner    4096 Nov 13 19:19 ..
--rw-r--r--  1 runner runner     134 Nov 13 19:20 done.txt
--rw-r--r--  1 runner runner     409 Nov 13 19:20 errors.txt
--rw-r--r--  1 runner runner 1194775 Nov 13 19:19 installer.log
--rw-r--r--  1 runner runner   26370 Nov 13 19:20 latest.log
--rw-r--r--  1 runner runner     222 Nov 13 19:20 mods.txt
--rw-r--r--  1 runner runner    1752 Nov 13 19:20 report_server.md
--rw-r--r--  1 runner runner     491 Nov 13 19:20 tps.txt
+total 11640
+drwxr-xr-x  2 runner runner    4096 Nov 13 19:58 .
+drwxr-xr-x 14 runner runner    4096 Nov 13 19:44 ..
+-rw-r--r--  1 runner runner   15886 Nov 13 19:58 client-commands.log
+-rw-r--r--  1 runner runner    1580 Nov 13 19:45 deep-ocean.txt
+-rw-r--r--  1 runner runner     134 Nov 13 19:44 done.txt
+-rw-r--r--  1 runner runner    1668 Nov 13 19:59 elisar-law-probe.txt
+-rw-r--r--  1 runner runner       0 Nov 13 19:44 errors.txt
+-rw-r--r--  1 runner runner  141186 Nov 13 19:49 fauna-liopleurodon-motion.png
+-rw-r--r--  1 runner runner   75302 Nov 13 19:50 fauna-liopleurodon-side.png
+-rw-r--r--  1 runner runner  137053 Nov 13 19:49 fauna-liopleurodon.png
+-rw-r--r--  1 runner runner   19845 Nov 13 19:50 fauna-paper-dragon-motion.png
+-rw-r--r--  1 runner runner   22086 Nov 13 19:50 fauna-paper-dragon-side.png
+-rw-r--r--  1 runner runner   19845 Nov 13 19:50 fauna-paper-dragon.png
+-rw-r--r--  1 runner runner    1882 Nov 13 19:45 fauna-server-probes.txt
+-rw-r--r--  1 runner runner   86091 Nov 13 19:50 fauna-trophy-held.png
+-rw-r--r--  1 runner runner  109998 Nov 13 19:50 fauna-trophy-inventory.png
+-rw-r--r--  1 runner runner  522791 Nov 13 19:57 gear-armour-row.png
+-rw-r--r--  1 runner runner  593569 Nov 13 19:58 gear-closeup.png
+-rw-r--r--  1 runner runner 1263728 Nov 13 19:53 gear-dropped-tools.png
+-rw-r--r--  1 runner runner  494686 Nov 13 19:57 gear-elisar-folk.png
+-rw-r--r--  1 runner runner  547526 Nov 13 19:58 gear-riftcrystal-night.png
+-rw-r--r--  1 runner runner  461211 Nov 13 19:54 gear-stands-armour.png
+-rw-r--r--  1 runner runner  456603 Nov 13 19:56 gear-stands-naked.png
+-rw-r--r--  1 runner runner  460444 Nov 13 19:55 gear-stands-nohands.png
+-rw-r--r--  1 runner runner  448874 Nov 13 19:55 gear-stands-tools.png
+-rw-r--r--  1 runner runner 1194772 Nov 13 19:44 installer.log
+-rw-r--r--  1 runner runner   11199 Nov 13 19:44 latest.log
+-rw-r--r--  1 runner runner  529576 Nov 13 19:49 maja-breach-rise.png
+-rw-r--r--  1 runner runner  445597 Nov 13 19:49 maja-breach-start.png
+-rw-r--r--  1 runner runner  308976 Nov 13 19:49 maja-client-front.png
+-rw-r--r--  1 runner runner     458 Nov 13 19:58 maja-client-steps.txt
+-rw-r--r--  1 runner runner  277754 Nov 13 19:49 maja-client-swim-motion.png
+-rw-r--r--  1 runner runner  632697 Nov 13 19:52 maja-client.log
+-rw-r--r--  1 runner runner  505090 Nov 13 19:52 maja-deep-ocean-swim.png
+-rw-r--r--  1 runner runner  626851 Nov 13 19:51 maja-deep-ocean.png
+-rw-r--r--  1 runner runner     255 Nov 13 19:51 maja-natural-diagnostic.txt
+-rw-r--r--  1 runner runner      83 Nov 13 19:46 maja-openbox.log
+-rw-r--r--  1 runner runner    1620 Nov 13 19:45 maja-probes.txt
+-rw-r--r--  1 runner runner    3522 Nov 13 19:46 maja-xvfb.log
+-rw-r--r--  1 runner runner     222 Nov 13 19:44 mods.txt
+-rw-r--r--  1 runner runner  888299 Nov 13 19:52 ocean-wreck-bow.png
+-rw-r--r--  1 runner runner  505484 Nov 13 19:52 ocean-wreck-overview.png
+-rw-r--r--  1 runner runner     210 Nov 13 19:45 ocean-wreck.txt
+-rw-r--r--  1 runner runner      62 Nov 13 19:50 predator-test.txt
+-rw-r--r--  1 runner runner    1343 Nov 13 19:44 report_server.md
+-rw-r--r--  1 runner runner     491 Nov 13 19:44 tps.txt
 попытка 1: To https://github.com/standimaoff-oss/riftworld
  ! [rejected]        HEAD -> arena/037a840e-riftworld (fetch first)
 error: failed to push some refs to 'https://github.com/standimaoff-oss/riftworld'
@@ -20,15 +57,4 @@ hint: 'git pull' before pushing again.
 hint: See the 'Note about fast-forwards' in 'git push --help' for details.
 From https://github.com/standimaoff-oss/riftworld
  * branch            arena/037a840e-riftworld -> FETCH_HEAD
-   8df3466..8e2bac4  arena/037a840e-riftworld -> origin/arena/037a840e-riftworld
-попытка 2: To https://github.com/standimaoff-oss/riftworld
- ! [rejected]        HEAD -> arena/037a840e-riftworld (fetch first)
-error: failed to push some refs to 'https://github.com/standimaoff-oss/riftworld'
-hint: Updates were rejected because the remote contains work that you do not
-hint: have locally. This is usually caused by another repository pushing to
-hint: the same ref. If you want to integrate the remote changes, use
-hint: 'git pull' before pushing again.
-hint: See the 'Note about fast-forwards' in 'git push --help' for details.
-From https://github.com/standimaoff-oss/riftworld
- * branch            arena/037a840e-riftworld -> FETCH_HEAD
-   8e2bac4..31c568c  arena/037a840e-riftworld -> origin/arena/037a840e-riftworld
+   a70e59d..0678b5b  arena/037a840e-riftworld -> origin/arena/037a840e-riftworld

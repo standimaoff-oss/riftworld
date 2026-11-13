@@ -1,0 +1,20 @@
+== v0.49.0: проверка городского закона Элисара на живом сервере ==
+   игрок TestPlayer уже в игре
+   v49_city_ground -> riftstruct kind=v49_city_ground plaza=-28,50 ground=104 road=-36,104,57 spot=-28,104,50 under=Road Cobblestone/Air route=PLAZA points=8 
+   площадь города: -28,104,50 (дорога: -36,104,57)
+-- 1) страж идёт по дороге, а не стоит на месте
+   summon на высоте 104 -> Summoned new Elisar Guard 
+   summon на высоте 104 -> Summoned new Elisar Guard 
+   summon на высоте 104 -> Summoned new Elisar Guard 
+   найдено стражей: 3
+   стражей рядом: 1+ (высота 104)
+   состояние стража: riftstruct kind=v49_guard_patrol error=no_guard 
+   состояние стража: <unreachable: [Errno 111] Connection refused> 
+   позиция стража: Elisar Guard has the following entity data: [-25.61711401477515d, 104.42159999847412d, 60.52803658298348d] -> <unreachable: [Errno 111] Connection refused>
+   OK: страж идёт по патрулю
+-- 2) удар по стражу: предупреждение, но НЕ смерть
+   здоровье стража: <unreachable: [Errno 111] Connection refused> -> <unreachable: [Errno 111] Connection refused>
+   OK: страж выжил и предупредил
+   здоровье игрока после удара: <unreachable: [Errno 111] Connection refused>
+FAIL: Игрок погиб до проверки тюрьмы: <unreachable: [Errno 111] Connection refused>
+--- конец отчёта пробы ---
