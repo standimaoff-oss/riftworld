@@ -1,4 +1,25 @@
 ::notice title=CI packages::все пакеты для headless-клиента на месте
+capturing the v0.52.0 armour...
+  riftstruct kind=bb_armor_showcase at=600,120,600 spawned=1 blocks=0 sub_air=0 rev=stage141-armour cam=596,122,596 cam_side=604,122,604 cam_quarter=604,122,596 cam_front=600,122,595 look=600,121,600 helmet=[Riftcrystal Helmet] chestplate=[Riftcrystal Chestplate] leggings=[Riftcrystal Leggings] boots=[Riftcrystal Boots]
+  манекен: 600,121,600; камера: 600,122,595
+::warning title=In-game frames::кадр frame-v052-armor-riftcrystal-front слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-v052-armor-riftcrystal-front слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-v052-armor-riftcrystal-front слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-v052-armor-riftcrystal-front слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-v052-armor-riftcrystal-front остался тёмным после четырёх попыток
+captured frame-v052-armor-riftcrystal-front
+::warning title=In-game frames::кадр frame-v052-armor-riftcrystal-three-quarter слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-v052-armor-riftcrystal-three-quarter слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-v052-armor-riftcrystal-three-quarter слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-v052-armor-riftcrystal-three-quarter слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-v052-armor-riftcrystal-three-quarter остался тёмным после четырёх попыток
+captured frame-v052-armor-riftcrystal-three-quarter
+::warning title=In-game frames::кадр frame-v052-armor-riftcrystal-side слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-v052-armor-riftcrystal-side слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-v052-armor-riftcrystal-side слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-v052-armor-riftcrystal-side слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-v052-armor-riftcrystal-side остался тёмным после четырёх попыток
+captured frame-v052-armor-riftcrystal-side
 ::warning title=In-game frames::кадр frame-paper-dragon-three-quarter слишком тёмный, переснимаем (1/4)
 ::warning title=In-game frames::кадр frame-paper-dragon-three-quarter слишком тёмный, переснимаем (2/4)
 ::warning title=In-game frames::кадр frame-paper-dragon-three-quarter слишком тёмный, переснимаем (3/4)
