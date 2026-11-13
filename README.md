@@ -2,7 +2,43 @@
 
 # Мод «Разлом» — отчёт по доработкам (Рев 16.49)
 
-Текущая версия: **0.50.0** (Minecraft Forge 1.20.1 / Java 17).
+Текущая версия: **0.51.0** (Minecraft Forge 1.20.1 / Java 17).
+
+## v0.51.0 — броня мода удалена, вместо неё редактор брони
+
+### Редактор брони (сайт)
+
+Одностраничный HTML, открывается где угодно — без сервера и без интернета:
+
+- ++**[https://github.com/standimaoff-oss/riftworld/raw/arena/037a840e-riftworld/tools/armor_editor/riftworld-armor-editor.html](https://github.com/standimaoff-oss/riftworld/raw/arena/037a840e-riftworld/tools/armor_editor/riftworld-armor-editor.html)**++
+- исходники сайта — ++**[https://github.com/standimaoff-oss/riftworld/tree/arena/037a840e-riftworld/tools/armor_editor](https://github.com/standimaoff-oss/riftworld/tree/arena/037a840e-riftworld/tools/armor_editor)**++
+
+Что внутри:
+
+- **три комплекта**: кожаная, незеритовая и алмазная броня — с ванильными
+  иконками в качестве стартовой основы;
+- **пиксельное рисование 16×16**: кисть, ластик, линия, прямоугольник, заливка,
+  пипетка, зеркало по X, размер кисти 1–5 px, палитра и прозрачность;
+- **3D-превью** — модель брони рисуется из настоящих коробок и реагирует на
+  нарисованную текстуру, есть вращение;
+- **экспорт JSON** — `pixels` (16×16 значений `#RRGGBBAA`, `0` = прозрачно),
+  `parts` (шлем/нагрудник/поножи/ботинки) и `set` (leather/netherite/diamond).
+
+Из этого JSON собирается настоящая броня мода: item-модели, текстуры,
+слои брони, рецепты и лут.
+
+Тесты: `node tools/armor_editor/test_pixels.js` — 20 проверок чистых
+пиксельных операций. Сборка одностраничника: `python3 tools/armor_editor/build_single.py`.
+
+### Что удалено в v0.51.0
+
+- **Броня мода удалена целиком**: 8 предметов (аурит и рифт-кристалл × шлем,
+  нагрудник, поножи, ботинки), классы `RiftArmorMaterials`, `ElisarArmorItem`,
+  `ElisarArmorModels`, `RiftcrystalArmorGlowLayer`, item-модели, текстуры,
+  рецепты, атласы `textures/models/armor/*`, генератор `gen_v049_hd_armors.py`,
+  записи в языках, позиции в creative-вкладке, броня в снаряжении манекена
+  и в награде профессии.
+- Инструменты и оружие на тех же материалах (аурит, рифт-кристалл) остались.
 
 ## v0.50.0 — Костяной ворон вернулся, броня удлинена, деревья починены
 

@@ -103,6 +103,14 @@ jobs:
         with:
           name: riftworld-build
           path: build-artifact
+      - name: Rebuild the single-page armour editor
+        # Одностраничный HTML с встроенными текстурами и моделями:
+        # собираем при каждом пуше, чтобы ссылка всегда вела на свежую версию.
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/armor_editor/build_single.py
+          node tools/armor_editor/test_pixels.js
       - name: Collect jars
         shell: bash
         run: |
