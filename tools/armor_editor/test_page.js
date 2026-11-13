@@ -38,6 +38,9 @@ function makeEl(tag) {
     children: [], classList: { add() {}, remove() {}, toggle() {} },
     getContext: () => makeCtx(),
     appendChild(c) { this.children.push(c); return c; },
+    // innerHTML = '' должен очищать содержимое, как в настоящем DOM
+    set innerHTML(v) { if (v === '') this.children.length = 0; this._html = v; },
+    get innerHTML() { return this._html === undefined ? '' : this._html; },
     set onclick(v) { this._onclick = v; },
     get onclick() { return this._onclick; },
     addEventListener() {}, removeEventListener() {},
@@ -140,6 +143,33 @@ setTimeout(() => {
   check('JSON-экспорт показан', elements.jsonOut && elements.jsonOut.textContent.includes('"pixels"'),
     elements.jsonOut ? elements.jsonOut.textContent.slice(0, 80) : 'нет');
   check('превью нарисовано', elements.preview && elements.preview.getContext);
+
+  // v0.52.0: превью в режиме «Слои» должно показывать ВАНИЛЬНУЮ геометрию брони
+  // (координаты PlayerModel.createMesh) и накладывать нарисованную карту 64×32.
+  const van = vm.runInContext('JSON.stringify(vanilla3d)', ctx);
+  const vj = JSON.parse(van);
+  const parts = ['helmet', 'chestplate', 'leggings', 'boots'];
+  check('есть ванильные модели брони для превью',
+    parts.every(p => vj[p] && vj[p].elements && vj[p].elements.length > 0),
+    Object.keys(vj).join(','));
+  // Ванильная геометрия: голова 8×8×8 с дилатацией 1.0 -> from/to ±5
+  const head = vj.helmet && vj.helmet.elements[0];
+  check('ванильный шлем: куб 10×10×10 (голова 8 + inflate 1.0)',
+    head && head.from.join(',') === '-5,23,-5' && head.to.join(',') === '5,33,5',
+    head ? head.from.join(',') + ' .. ' + head.to.join(',') : 'нет');
+  // UV ванильные: голова 0..32, «шапка» 32..64 на той же карте 64×32
+  check('ванильные UV: голова в 0..32, шапка в 32..64',
+    head && head.faces.north.uv.join(',') === '8,8,16,16'
+      && vj.helmet.elements[1].faces.north.uv.join(',') === '40,8,48,16',
+    head ? head.faces.north.uv.join(',') : 'нет');
+  // Превью должно переключаться на ванильную модель в режиме «Слои»
+  vm.runInContext('setMode("layer")', ctx);
+  const info = vm.runInContext('document.getElementById("previewInfo").textContent', ctx);
+  check('превью в режиме «Слои» показывает ванильную геометрию',
+    /ванильная геометрия/.test(info), info);
+  check('превью в режиме «Слои» берёт карту 64×32',
+    /64×32/.test(info), info);
+  vm.runInContext('setMode("icon")', ctx);
   // v0.52.0: в JSON должны быть и иконки (parts), и ванильные карты брони (layers)
   // Полный JSON (предпросмотр в странице обрезан по длине) — получаем из
   // контекста страницы, а не из node-области: скрипты живут в vm-контексте.
