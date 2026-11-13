@@ -447,6 +447,12 @@ DP2=$(dragon_pos || true)
 DX2=$(echo "$DP2" | cut -d, -f1 | tr -d ' ' | cut -d. -f1)
 DY2=$(echo "$DP2" | cut -d, -f2 | tr -d ' ' | cut -d. -f1)
 DZ2=$(echo "$DP2" | cut -d, -f3 | tr -d ' ' | cut -d. -f1)
+if [[ -z "$DX2" ]]; then
+  # Позиция не прочиталась — берём точку, куда мы телепортировали дракона
+  # сервером (DX+5, DZ+5). Без этого DX2 пустой, и арифметика bash
+  # ($((DX2 - 9))) роняет весь скрипт.
+  DX2=$((DX + 5)); DY2=$DY; DZ2=$((DZ + 5))
+fi
 CX2=$((DX2 - 9)); CZ2=$((DZ2 + 3)); CY2=$((DY2 + 1))
 rq execute in minecraft:overworld run tp TestPlayer "$CX2" "$CY2" "$CZ2" facing "$DX2" "$DY2" "$DZ2" >/dev/null
 sleep 5
