@@ -1,0 +1,4 @@
+28:com.google.gson.JsonSyntaxException: Pattern references symbol 'L' but it's not defined in the key
+59:com.google.gson.JsonSyntaxException: Pattern references symbol 'L' but it's not defined in the key
+90:com.google.gson.JsonSyntaxException: Pattern references symbol 'L' but it's not defined in the key
+121:com.google.gson.JsonSyntaxException: Pattern references symbol 'L' but it's not defined in the key
