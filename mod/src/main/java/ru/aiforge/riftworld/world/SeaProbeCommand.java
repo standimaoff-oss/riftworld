@@ -3612,6 +3612,98 @@ public final class SeaProbeCommand {
             return 1;
         }
 
+        if (k.equals("bb_armor_showcase")) {
+            // v0.52.0: витрина новой брони мода. Броня — с ВАНИЛЬНОЙ
+            // геометрией (штатный HumanoidArmorLayer), поэтому показывать
+            // надо на манекене: тот надевает предметы в слоты брони, и клиент
+            // рисует их ровно так же, как броню на игроке.
+            // Площадка — отдельная, чтобы камера не упиралась в руины города.
+            int dx = 600, dz = 600;
+            int dy = buildArmorStage(level, dx, dz);
+            int spawned = 0;
+            String helmName = "none";
+            String chestName = "none";
+            String legsName = "none";
+            String bootsName = "none";
+            int cx = dx >> 4, cz = dz >> 4;
+            try {
+                level.getChunk(cx, cz);
+            } catch (Exception ignored) {
+                // Чанк не успел сгенерироваться — витрина честно вернёт spawned=0.
+            }
+            for (int wait = 0; wait < 40 && !level.hasChunk(cx, cz); wait++) {
+                try {
+                    Thread.sleep(250L);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+            if (level.hasChunk(cx, cz)) {
+                // Старых манекенов убираем: на площадке должен быть ровно один.
+                for (var old : level.getEntitiesOfClass(
+                        net.minecraft.world.entity.decoration.ArmorStand.class,
+                        new net.minecraft.world.phys.AABB(
+                                new BlockPos(dx, dy, dz)).inflate(24.0))) {
+                    old.discard();
+                }
+                var stand = new net.minecraft.world.entity.decoration.ArmorStand(
+                        level, dx + 0.5D, dy, dz + 0.5D);
+                // Показываем манекен целиком, без держателя в руке и без шлема
+                // «на голове» — иначе предметы в слотах брони не рисуются.
+                stand.setNoGravity(true);
+                stand.setNoBasePlate(true);
+                stand.setShowArms(false);
+                stand.setSilent(true);
+                stand.setCustomNameVisible(false);
+                stand.setYRot(215.0F);
+                stand.setYHeadRot(215.0F);
+                stand.setYBodyRot(215.0F);
+                // Полный комплект рифт-кристалла: шлем, нагрудник, поножи,
+                // ботинки. Предметы берём из реестра — те же id, что в игре.
+                var helm = new net.minecraft.world.item.ItemStack(
+                        ru.aiforge.riftworld.registry.ModItems.RIFTCRYSTAL_HELMET.get());
+                var chest = new net.minecraft.world.item.ItemStack(
+                        ru.aiforge.riftworld.registry.ModItems.RIFTCRYSTAL_CHESTPLATE.get());
+                var legs = new net.minecraft.world.item.ItemStack(
+                        ru.aiforge.riftworld.registry.ModItems.RIFTCRYSTAL_LEGGINGS.get());
+                var boots = new net.minecraft.world.item.ItemStack(
+                        ru.aiforge.riftworld.registry.ModItems.RIFTCRYSTAL_BOOTS.get());
+                stand.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, helm);
+                stand.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, chest);
+                stand.setItemSlot(net.minecraft.world.entity.EquipmentSlot.LEGS, legs);
+                stand.setItemSlot(net.minecraft.world.entity.EquipmentSlot.FEET, boots);
+                level.addFreshEntity(stand);
+                var armorServer = level.getServer();
+                if (armorServer != null) {
+                    armorServer.execute(() -> {
+                        stand.setPos(dx + 0.5D, dy, dz + 0.5D);
+                        level.getChunk(dx >> 4, dz >> 4);
+                    });
+                }
+                spawned = 1;
+                helmName = helm.getDisplayName().getString();
+                chestName = chest.getDisplayName().getString();
+                legsName = legs.getDisplayName().getString();
+                bootsName = boots.getDisplayName().getString();
+            }
+            String line = "riftstruct kind=bb_armor_showcase at=" + dx + "," + dy + "," + dz
+                    + " spawned=" + spawned + " blocks=0 sub_air=0"
+                    + " rev=stage140-release"
+                    // Камера: спереди и по диагонали, сбоку и в три четверти.
+                    + " cam=" + (dx - 4) + "," + (dy + 2) + "," + (dz - 4)
+                    + " cam_side=" + (dx + 4) + "," + (dy + 2) + "," + (dz + 4)
+                    + " cam_quarter=" + (dx + 4) + "," + (dy + 2) + "," + (dz - 4)
+                    + " cam_front=" + (dx) + "," + (dy + 2) + "," + (dz - 5)
+                    + " look=" + dx + "," + (dy + 1) + "," + dz
+                    + " helmet=" + helmName
+                    + " chestplate=" + chestName
+                    + " leggings=" + legsName
+                    + " boots=" + bootsName;
+            src.sendSuccess(() -> Component.literal(line), false);
+            return 1;
+        }
+
         if (k.equals("spawn_eggs_audit")) {
             String[] eggIds = {
                     "blossom_stag_spawn_egg", "sky_dart_fish_spawn_egg",
@@ -5982,6 +6074,55 @@ public final class SeaProbeCommand {
      * пустое небо.</p>
      */
     /** Площадка съёмки костяного ворона: ровная земля на уровне города. */
+    /**
+     * v0.52.0 — площадка для съёмки брони мода.
+     *
+     * <p>Светлый каменный подиум в поднебесном просторе: вокруг чистое небо,
+     * поэтому броня читается силуэтом и видно её посадку на манекене.
+     * Камера смотрит с уровня груди, а сам манекен стоит по центру.
+     */
+    private static int buildArmorStage(ServerLevel world, int px, int pz) {
+        world.getChunk(px >> 4, pz >> 4);
+        int ground = 118;
+        // Убираем всё выше площадки: иначе камера оказывается внутри руин.
+        for (int dx = -12; dx <= 12; ++dx) {
+            for (int dz = -12; dz <= 12; ++dz) {
+                for (int dy = 1; dy <= 16; ++dy) {
+                    world.setBlock(new BlockPos(px + dx, ground + dy, pz + dz),
+                            net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 2);
+                }
+            }
+        }
+        // Опора: камень до самого низа, чтобы сцена не висела в пустоте.
+        for (int dx = -12; dx <= 12; ++dx) {
+            for (int dz = -12; dz <= 12; ++dz) {
+                for (int dy = -6; dy < 0; ++dy) {
+                    world.setBlock(new BlockPos(px + dx, ground + dy, pz + dz),
+                            net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(), 2);
+                }
+            }
+        }
+        // Земля: светлый камень. Светлая площадка нужна, чтобы броня читалась
+        // на ней и её было видно целиком.
+        for (int dx = -11; dx <= 11; ++dx) {
+            for (int dz = -11; dz <= 11; ++dz) {
+                world.setBlock(new BlockPos(px + dx, ground, pz + dz),
+                        net.minecraft.world.level.block.Blocks.SMOOTH_STONE.defaultBlockState(), 2);
+                world.setBlock(new BlockPos(px + dx, ground - 1, pz + dz),
+                        net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(), 2);
+            }
+        }
+        // Подиум: ступень, на которой стоит манекен — иначе он оказывается
+        // вровень с полом и ноги брони не читаются.
+        for (int dx = -2; dx <= 2; ++dx) {
+            for (int dz = -2; dz <= 2; ++dz) {
+                world.setBlock(new BlockPos(px + dx, ground + 1, pz + dz),
+                        net.minecraft.world.level.block.Blocks.POLISHED_DEEPSLATE.defaultBlockState(), 2);
+            }
+        }
+        return ground + 2;
+    }
+
     private static int buildRavenStage(ServerLevel world, int px, int pz) {
         world.getChunk(px >> 4, pz >> 4);
         // Площадка снимается в поднебесном просторе над городом: на уровне
