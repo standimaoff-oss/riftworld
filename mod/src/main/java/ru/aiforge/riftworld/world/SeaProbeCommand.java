@@ -3690,7 +3690,7 @@ public final class SeaProbeCommand {
             String line = "riftstruct kind=bb_armor_showcase at=" + dx + "," + dy + "," + dz
                     + " spawned=" + spawned + " blocks=0 sub_air=0"
                     // rev= показывает, какой jar реально стоит на сервере.
-                    + " rev=stage142-armour"
+                    + " rev=stage143-armour"
                     // Камера: спереди и по диагонали, сбоку и в три четверти.
                     + " cam=" + (dx - 4) + "," + (dy + 2) + "," + (dz - 4)
                     + " cam_side=" + (dx + 4) + "," + (dy + 2) + "," + (dz + 4)
