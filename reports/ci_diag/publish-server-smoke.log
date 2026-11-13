@@ -1,52 +1,19 @@
-run 43491711928 / job server-smoke / ветвь arena/037a840e-riftworld
+run 43494866440 / job server-smoke / ветвь arena/037a840e-riftworld
 == содержимое ci-out ==
-total 11692
-drwxr-xr-x  2 runner runner    4096 Nov 13 19:39 .
-drwxr-xr-x 14 runner runner    4096 Nov 13 19:26 ..
--rw-r--r--  1 runner runner   14766 Nov 13 19:39 client-commands.log
--rw-r--r--  1 runner runner    1569 Nov 13 19:27 deep-ocean.txt
--rw-r--r--  1 runner runner     134 Nov 13 19:27 done.txt
--rw-r--r--  1 runner runner    3517 Nov 13 19:40 elisar-law-probe.txt
--rw-r--r--  1 runner runner       0 Nov 13 19:27 errors.txt
--rw-r--r--  1 runner runner  139199 Nov 13 19:31 fauna-liopleurodon-motion.png
--rw-r--r--  1 runner runner   75764 Nov 13 19:31 fauna-liopleurodon-side.png
--rw-r--r--  1 runner runner  136711 Nov 13 19:31 fauna-liopleurodon.png
--rw-r--r--  1 runner runner   19845 Nov 13 19:31 fauna-paper-dragon-motion.png
--rw-r--r--  1 runner runner   22086 Nov 13 19:31 fauna-paper-dragon-side.png
--rw-r--r--  1 runner runner   19845 Nov 13 19:31 fauna-paper-dragon.png
--rw-r--r--  1 runner runner    1882 Nov 13 19:27 fauna-server-probes.txt
--rw-r--r--  1 runner runner   86141 Nov 13 19:31 fauna-trophy-held.png
--rw-r--r--  1 runner runner  109617 Nov 13 19:31 fauna-trophy-inventory.png
--rw-r--r--  1 runner runner  522587 Nov 13 19:37 gear-armour-row.png
--rw-r--r--  1 runner runner  571887 Nov 13 19:38 gear-closeup.png
--rw-r--r--  1 runner runner 1256888 Nov 13 19:34 gear-dropped-tools.png
--rw-r--r--  1 runner runner  486644 Nov 13 19:38 gear-elisar-folk.png
--rw-r--r--  1 runner runner  538862 Nov 13 19:39 gear-riftcrystal-night.png
--rw-r--r--  1 runner runner  461676 Nov 13 19:35 gear-stands-armour.png
--rw-r--r--  1 runner runner  456729 Nov 13 19:37 gear-stands-naked.png
--rw-r--r--  1 runner runner  456439 Nov 13 19:36 gear-stands-nohands.png
--rw-r--r--  1 runner runner  445309 Nov 13 19:36 gear-stands-tools.png
--rw-r--r--  1 runner runner 1194778 Nov 13 19:26 installer.log
--rw-r--r--  1 runner runner   11199 Nov 13 19:27 latest.log
--rw-r--r--  1 runner runner  600124 Nov 13 19:30 maja-breach-rise.png
--rw-r--r--  1 runner runner  471485 Nov 13 19:30 maja-breach-start.png
--rw-r--r--  1 runner runner  294696 Nov 13 19:30 maja-client-front.png
--rw-r--r--  1 runner runner     458 Nov 13 19:39 maja-client-steps.txt
--rw-r--r--  1 runner runner  265470 Nov 13 19:30 maja-client-swim-motion.png
--rw-r--r--  1 runner runner  632940 Nov 13 19:40 maja-client.log
--rw-r--r--  1 runner runner  454292 Nov 13 19:33 maja-deep-ocean-swim.png
--rw-r--r--  1 runner runner  829360 Nov 13 19:32 maja-deep-ocean.png
--rw-r--r--  1 runner runner     255 Nov 13 19:32 maja-natural-diagnostic.txt
--rw-r--r--  1 runner runner      85 Nov 13 19:28 maja-openbox.log
--rw-r--r--  1 runner runner    1628 Nov 13 19:27 maja-probes.txt
--rw-r--r--  1 runner runner    1174 Nov 13 19:28 maja-xvfb.log
--rw-r--r--  1 runner runner     222 Nov 13 19:27 mods.txt
--rw-r--r--  1 runner runner  815856 Nov 13 19:33 ocean-wreck-bow.png
--rw-r--r--  1 runner runner  467054 Nov 13 19:33 ocean-wreck-overview.png
--rw-r--r--  1 runner runner     210 Nov 13 19:27 ocean-wreck.txt
--rw-r--r--  1 runner runner      62 Nov 13 19:31 predator-test.txt
--rw-r--r--  1 runner runner    1343 Nov 13 19:27 report_server.md
--rw-r--r--  1 runner runner     491 Nov 13 19:27 tps.txt
+total 1220
+drwxr-xr-x  2 runner runner    4096 Nov 13 20:05 .
+drwxr-xr-x 14 runner runner    4096 Nov 13 20:04 ..
+-rw-r--r--  1 runner runner      33 Nov 13 20:05 deep-ocean.txt
+-rw-r--r--  1 runner runner     134 Nov 13 20:04 done.txt
+-rw-r--r--  1 runner runner       0 Nov 13 20:04 errors.txt
+-rw-r--r--  1 runner runner    1882 Nov 13 20:05 fauna-server-probes.txt
+-rw-r--r--  1 runner runner 1194778 Nov 13 20:04 installer.log
+-rw-r--r--  1 runner runner   11478 Nov 13 20:04 latest.log
+-rw-r--r--  1 runner runner    1619 Nov 13 20:04 maja-probes.txt
+-rw-r--r--  1 runner runner     222 Nov 13 20:04 mods.txt
+-rw-r--r--  1 runner runner     210 Nov 13 20:05 ocean-wreck.txt
+-rw-r--r--  1 runner runner    1343 Nov 13 20:04 report_server.md
+-rw-r--r--  1 runner runner     491 Nov 13 20:04 tps.txt
 попытка 1: To https://github.com/standimaoff-oss/riftworld
  ! [rejected]        HEAD -> arena/037a840e-riftworld (fetch first)
 error: failed to push some refs to 'https://github.com/standimaoff-oss/riftworld'
@@ -57,4 +24,4 @@ hint: 'git pull' before pushing again.
 hint: See the 'Note about fast-forwards' in 'git push --help' for details.
 From https://github.com/standimaoff-oss/riftworld
  * branch            arena/037a840e-riftworld -> FETCH_HEAD
-   832a449..dc5efd6  arena/037a840e-riftworld -> origin/arena/037a840e-riftworld
+   96b432b..e915021  arena/037a840e-riftworld -> origin/arena/037a840e-riftworld
