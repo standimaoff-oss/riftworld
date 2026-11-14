@@ -2,7 +2,71 @@
 
 # Мод «Разлом» — отчёт по доработкам (Рев 16.49)
 
-Текущая версия: **0.52.0** (Minecraft Forge 1.20.1 / Java 17).
+Текущая версия: **0.53.0** (Minecraft Forge 1.20.1 / Java 17).
+
+## v0.53.0 — инструменты и прочая экипировка: тоже по ванильному принципу
+
+Продолжение v0.52.0: то же, что было сделано с бронёй, теперь сделано с
+инструментами, оружием, луком и щитами.
+
+### Инструменты и оружие — ванильная геометрия, ванильная иконка
+
+- 10 предметов (`aurite`/`riftcrystal` × меч/кирка/топор/лопата/мотыга) получили
+  **ванильную модель** `parent: minecraft:item/handheld` с единственной плоской
+  `layer0` — ровно как у ванильных `diamond_*` / `netherite_*`;
+- **никаких самодельных 3D-моделей**: блок `elements` из моделей удалён
+  полностью — именно из-за него инструменты выглядели «не ванильно»;
+- иконки — **ванильного размера 16×16** (было 32×32 «chunky pixel-art»);
+- текстуры — **настоящие ванильные силуэты**, перекрашенные в палитру мода
+  с сохранением освещения граней: аурит = ванильный diamond (золото),
+  рифт-кристалл = ванильный netherite (бирюза);
+- палитры совпадают с бронёй: aurite hue 0.098 / sat 0.80,
+  riftcrystal hue 0.445 / sat 0.74.
+
+### Лук Элисара — ванильные состояния натяжения
+
+Модель `elisar_bow.json` повторяет ванильный `item/bow.json`: `item/generated`,
+ванильные ракурсы в руке и три `overrides` по предикату `pulling`/`pull`.
+Текстуры `bow`, `bow_pulling_0..2` — ванильные, перекрашенные в палитру мода.
+Натяжение тетивы работает без единой строки кода: клиент сам выбирает
+состояние по предикату.
+
+### Щиты — настоящие ванильные `ShieldItem`
+
+`elisar_shield` и `elisar_guard_shield` наследуют `net.minecraft.world.item.ShieldItem`,
+поэтому 3D-щит в руке рисует **ванильный** `ShieldRenderer`. Раньше он брал
+ванильную текстуру щита — теперь в пространстве имён мода лежат
+`textures/entity/shield_base_nopattern.png` и `shield_base.png`, перекрашенные
+в палитру щита.
+
+- модель: `parent: builtin/entity` + ванильный `override` по предикату
+  `blocking` (состояние блокирования);
+- иконка в инвентаре — плоская 16×16, `item/generated`;
+- `elisar_guard_sword` (меч стражи) — ванильный `handheld`, иконка 16×16.
+
+### Убрано
+
+- `v048_aurite_pal.png`, `v048_riftcrystal_pal.png`, `v048_guard_pal.png` —
+  выдуманные «палитры» 64×64, которыми якобы текстурировались модели;
+- `aurite_hammer` — осиротевшая текстура и модель предмета, который никогда
+  не был зарегистрирован в `ModItems`.
+
+### Как это сделано
+
+Генератор `tools/rift/gen_v052_vanilla_tools.py` идемпотентен (повторный
+запуск даёт byte-identical результат). Исходники ванильных ассетов 1.20.1
+лежат в `tools/rift/vanilla_items/`, pristine-формы экипировки (щиты, меч
+стражи) — в `tools/rift/gear_sources/`, поэтому генерация воспроизводима.
+
+Валидатор `tools/rift/validate_v048_armory_and_folk.py` теперь требует
+ванильные `parent`, плоские `layer0` ровно 16×16, запрещает `elements`,
+проверяет три состояния натяжения лука, `blocking`-override щитов и
+наличие `entity/shield_base_nopattern` в пространстве имён мода.
+
+### Кадры в игре
+
+- ++**[https://github.com/standimaoff-oss/riftworld/releases/download/v0.53.0/frame-v053-items-dropped-tools.png](https://github.com/standimaoff-oss/riftworld/releases/download/v0.53.0/frame-v053-items-dropped-tools.png)**++ — все 14 предметов выложены на пол и сняты сверху
+- ++**[https://github.com/standimaoff-oss/riftworld/releases/download/v0.53.0/frame-v053-tools-closeup.png](https://github.com/standimaoff-oss/riftworld/releases/download/v0.53.0/frame-v053-tools-closeup.png)**++ — витрина стойков с инструментами и оружием
 
 ## v0.52.0 — броня вернулась: ванильная геометрия и ванильные текстуры
 
@@ -179,7 +243,7 @@ abstract and does not override abstract method».
 - Эль Гран Маджа — корпус: ++**[https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/ingame/0.49.0/frame-maja-body.png](https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/ingame/0.49.0/frame-maja-body.png)**++
 - Лиоплеуродон — голова: ++**[https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/ingame/0.49.0/frame-liopleurodon-head.png](https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/ingame/0.49.0/frame-liopleurodon-head.png)**++
 - Броня Aurite и Riftcrystal вблизи: ++**[https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/ingame/0.49.0/frame-v049-armors-closeup.png](https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/ingame/0.49.0/frame-v049-armors-closeup.png)**++
-- Инструменты Aurite: ++**[https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/ingame/0.49.0/frame-v049-tools-closeup.png](https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/ingame/0.49.0/frame-v049-tools-closeup.png)**++
+- Инструменты и оружие (v0.53.0, ванильная геометрия): ++**[https://github.com/standimaoff-oss/riftworld/releases/download/v0.53.0/frame-v053-items-dropped-tools.png](https://github.com/standimaoff-oss/riftworld/releases/download/v0.53.0/frame-v053-items-dropped-tools.png)**++
 - Рифткристал ночью: ++**[https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/ingame/0.49.0/frame-v049-riftcrystal-night-glow.png](https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/ingame/0.49.0/frame-v049-riftcrystal-night-glow.png)**++
 - Жители Элисара: ++**[https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/ingame/0.49.0/frame-v049-elisar-folk.png](https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/ingame/0.49.0/frame-v049-elisar-folk.png)**++
 
