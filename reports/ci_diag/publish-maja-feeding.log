@@ -1,25 +1,14 @@
-run 43494866440 / job maja-feeding / ветвь arena/037a840e-riftworld
+run 43585725471 / job maja-feeding / ветвь arena/037a840e-riftworld
 == содержимое ci-out ==
 total 1236
-drwxr-xr-x  2 runner runner    4096 Nov 13 20:05 .
-drwxr-xr-x 14 runner runner    4096 Nov 13 20:04 ..
--rw-r--r--  1 runner runner     134 Nov 13 20:04 done.txt
--rw-r--r--  1 runner runner       0 Nov 13 20:04 errors.txt
--rw-r--r--  1 runner runner   25016 Nov 13 20:05 feeding-server-tail.log
--rw-r--r--  1 runner runner 1194778 Nov 13 20:04 installer.log
--rw-r--r--  1 runner runner   11134 Nov 13 20:04 latest.log
--rw-r--r--  1 runner runner    2362 Nov 13 20:05 maja-feeding.txt
--rw-r--r--  1 runner runner     222 Nov 13 20:04 mods.txt
--rw-r--r--  1 runner runner    1343 Nov 13 20:04 report_server.md
--rw-r--r--  1 runner runner     491 Nov 13 20:04 tps.txt
-попытка 1: To https://github.com/standimaoff-oss/riftworld
- ! [rejected]        HEAD -> arena/037a840e-riftworld (fetch first)
-error: failed to push some refs to 'https://github.com/standimaoff-oss/riftworld'
-hint: Updates were rejected because the remote contains work that you do not
-hint: have locally. This is usually caused by another repository pushing to
-hint: the same ref. If you want to integrate the remote changes, use
-hint: 'git pull' before pushing again.
-hint: See the 'Note about fast-forwards' in 'git push --help' for details.
-From https://github.com/standimaoff-oss/riftworld
- * branch            arena/037a840e-riftworld -> FETCH_HEAD
-   96b432b..00c6613  arena/037a840e-riftworld -> origin/arena/037a840e-riftworld
+drwxr-xr-x  2 runner runner    4096 Nov 14 10:36 .
+drwxr-xr-x 14 runner runner    4096 Nov 14 10:35 ..
+-rw-r--r--  1 runner runner     134 Nov 14 10:35 done.txt
+-rw-r--r--  1 runner runner       0 Nov 14 10:35 errors.txt
+-rw-r--r--  1 runner runner   24737 Nov 14 10:36 feeding-server-tail.log
+-rw-r--r--  1 runner runner 1194775 Nov 14 10:35 installer.log
+-rw-r--r--  1 runner runner   10855 Nov 14 10:35 latest.log
+-rw-r--r--  1 runner runner    2362 Nov 14 10:36 maja-feeding.txt
+-rw-r--r--  1 runner runner     222 Nov 14 10:35 mods.txt
+-rw-r--r--  1 runner runner    1343 Nov 14 10:35 report_server.md
+-rw-r--r--  1 runner runner     491 Nov 14 10:35 tps.txt
