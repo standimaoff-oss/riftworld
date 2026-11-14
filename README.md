@@ -80,7 +80,9 @@ DEPRECATED: он делал как раз те самодельные 3D-мод�
 ### Кадры в игре
 
 - ++**[https://github.com/standimaoff-oss/riftworld/releases/download/v0.53.0/frame-v053-items-dropped-tools.png](https://github.com/standimaoff-oss/riftworld/releases/download/v0.53.0/frame-v053-items-dropped-tools.png)**++ — все 14 предметов выложены на пол и сняты сверху
+  (в репозитории: ++**[reports/ingame/0.53.0/frame-v053-items-dropped-tools.png](https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/ingame/0.53.0/frame-v053-items-dropped-tools.png)**++)
 - ++**[https://github.com/standimaoff-oss/riftworld/releases/download/v0.53.0/frame-v053-tools-closeup.png](https://github.com/standimaoff-oss/riftworld/releases/download/v0.53.0/frame-v053-tools-closeup.png)**++ — витрина стойков с инструментами и оружием
+  (в репозитории: ++**[reports/ingame/0.53.0/frame-v053-tools-closeup.png](https://github.com/standimaoff-oss/riftworld/blob/arena/037a840e-riftworld/reports/ingame/0.53.0/frame-v053-tools-closeup.png)**++)
 
 ## v0.52.0 — броня вернулась: ванильная геометрия и ванильные текстуры
 
