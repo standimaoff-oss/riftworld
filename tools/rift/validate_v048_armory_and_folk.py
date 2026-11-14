@@ -100,36 +100,6 @@ def check_no_missing_magenta(path: Path) -> None:
     assert not magenta.any(), f"{path.name}: contains magenta missing-texture pixels"
 
 
-def check_3d_item_model(path: Path, min_elements: int, max_elements: int) -> dict:
-    mjson = json.loads(path.read_text(encoding="utf-8"))
-    elems = mjson.get("elements", [])
-    assert isinstance(elems, list) and len(elems) >= min_elements, (
-        f"{path.name}: too few elements ({len(elems)} < {min_elements})")
-    assert len(elems) <= max_elements, f"{path.name}: too many elements ({len(elems)} > {max_elements})"
-    assert "textures" in mjson and mjson["textures"], f"{path.name}: missing textures"
-    for el in elems:
-        frm, to = el["from"], el["to"]
-        for axis in range(3):
-            assert 0.0 <= frm[axis] <= 16.0 and 0.0 <= to[axis] <= 16.0, (
-                f"{path.name}: element out of [0..16]^3: {frm}..{to}")
-            assert frm[axis] < to[axis], f"{path.name}: degenerate element {frm}..{to}"
-        faces = el.get("faces", {})
-        assert faces, f"{path.name}: element without faces"
-        for face in faces.values():
-            uv = face.get("uv")
-            assert uv and len(uv) == 4, f"{path.name}: bad uv {uv}"
-            # Element-model UVs are NORMALISED 0..16, NOT absolute texture pixels.
-            # Minecraft scales them by (texture_width / 16), so absolute pixel
-            # indices make every model render as black noise.
-            assert 0.0 <= uv[0] <= uv[2] <= 16.0 and 0.0 <= uv[1] <= uv[3] <= 16.0, (
-                f"{path.name}: uv out of the 0..16 grid {uv}")
-            assert uv[2] > uv[0] and uv[3] > uv[1], f"{path.name}: degenerate uv {uv}"
-    display = mjson.get("display", {})
-    for key in ("thirdperson_righthand", "thirdperson_lefthand", "firstperson_righthand", "gui", "ground"):
-        assert key in display, f"{path.name}: missing display transform {key}"
-    return mjson
-
-
 def check_vanilla_armor_layers(set_name: str) -> None:
     """The worn-armour atlases must be exactly the vanilla 64x32 player-skin layout.
 
@@ -341,34 +311,110 @@ def main() -> None:
         check_layer_size(folk_java, anchor, FOLK_ATLAS)
         check_box_uvs(png.replace(".png", ""), extract_method_boxes(folk_java, anchor), ASSETS / "textures/entity" / png, FOLK_ATLAS)
 
-    # 4. Check all 3D voxel weapon/tool/bow/shield JSON models & mipmap-proof 64x64 palettes
-    for pal_fn in ("v048_aurite_pal.png", "v048_riftcrystal_pal.png", "v048_guard_pal.png"):
-        pp = ASSETS / "textures/item" / pal_fn
-        assert pp.exists(), f"Missing palette {pp}"
-        parr = np.array(Image.open(pp).convert("RGBA"))
-        assert parr.shape == (64, 64, 4) and int(parr[:, :, 3].min()) == 255, f"{pal_fn} must be 100% opaque 64x64"
-        check_no_missing_magenta(pp)
+    # 4. Инструменты, оружие, лук и щиты — по ВАНИЛЬНОМУ принципу (v0.53.0).
+    #
+    #   * никаких самодельных 3D-моделей: parent = minecraft:item/handheld
+    #     (мечи/топоры/кирки/лопаты/мотыги/лук) или minecraft:item/generated
+    #     (щиты, меч стражи) — ровно как у ванильных предметов;
+    #   * никаких выдуманных палитр "pal": плоская текстура layer0;
+    #   * иконка — ванильного размера 16x16.
+    #
+    # Старые «воксельные» модели (32x32 elements + палитра 64x64) удалены:
+    # именно из-за них инструменты выглядели «не ванильно».
+    assert not (ASSETS / "textures/item/v048_aurite_pal.png").exists(), (
+        "Old flat palette v048_aurite_pal.png must be gone (tools are vanilla now)")
+    assert not (ASSETS / "textures/item/v048_riftcrystal_pal.png").exists(), (
+        "Old flat palette v048_riftcrystal_pal.png must be gone")
+    assert not (ASSETS / "textures/item/v048_guard_pal.png").exists(), (
+        "Old flat palette v048_guard_pal.png must be gone")
 
-    voxel_items = [
+    handheld_items = [
         "aurite_pickaxe", "aurite_axe", "aurite_sword", "aurite_shovel", "aurite_hoe",
-        "riftcrystal_pickaxe", "riftcrystal_axe", "riftcrystal_sword", "riftcrystal_shovel", "riftcrystal_hoe",
-        "elisar_bow", "elisar_bow_pulling_0", "elisar_bow_pulling_1", "elisar_bow_pulling_2",
-        "elisar_shield", "elisar_guard_shield", "elisar_guard_sword",
+        "riftcrystal_pickaxe", "riftcrystal_axe", "riftcrystal_sword",
+        "riftcrystal_shovel", "riftcrystal_hoe",
     ]
-    for vid in voxel_items:
+    for vid in handheld_items:
         mp = ASSETS / "models/item" / f"{vid}.json"
         sp = ASSETS / "textures/item" / f"{vid}.png"
         assert mp.exists() and sp.exists(), f"Missing model or sprite for {vid}"
-        check_3d_item_model(mp, 20, 250)
+        mjson = json.loads(mp.read_text(encoding="utf-8"))
+        assert mjson.get("parent") == "minecraft:item/handheld", (
+            f"{vid}.json must use the vanilla parent minecraft:item/handheld")
+        assert not mjson.get("elements"), (
+            f"{vid}.json must not contain custom 3D elements (vanilla tools are flat)")
+        tex = (mjson.get("textures") or {})
+        assert list(tex.keys()) == ["layer0"], (
+            f"{vid}.json must have exactly one texture layer0, got {list(tex.keys())}")
+        assert tex["layer0"] == f"riftworld:item/{vid}", (
+            f"{vid}.json layer0 must point at its own sprite")
         sarr = np.array(Image.open(sp).convert("RGBA"))
-        assert sarr.shape[:2] == (32, 32), f"{vid}.png must be a crisp 32x32 sprite, got {sarr.shape[:2]}"
+        assert sarr.shape[:2] == (16, 16), (
+            f"{vid}.png must be a vanilla-sized 16x16 sprite, got {sarr.shape[:2]}")
         check_no_missing_magenta(sp)
 
-    for blk_model in ("elisar_shield_blocking.json", "elisar_guard_shield_blocking.json"):
-        bp = ASSETS / "models/item" / blk_model
-        assert bp.exists(), f"Missing {blk_model}"
-        bjson = json.loads(bp.read_text(encoding="utf-8"))
-        assert "parent" in bjson, f"{blk_model} must inherit from its parent model"
+    # Лук — ванильная модель с состояниями натяжения (overrides по предикату
+    # pulling/pull), как у ванильного item/bow.json.
+    bow_model = json.loads((ASSETS / "models/item/elisar_bow.json").read_text(encoding="utf-8"))
+    assert bow_model.get("parent") == "minecraft:item/generated", (
+        "elisar_bow.json must use the vanilla parent minecraft:item/generated")
+    assert not bow_model.get("elements"), "elisar_bow.json must not contain custom 3D elements"
+    overrides = bow_model.get("overrides") or []
+    assert len(overrides) == 3, (
+        f"elisar_bow.json must have the 3 vanilla pulling overrides, got {len(overrides)}")
+    for i, ov in enumerate(overrides):
+        pred = ov.get("predicate") or {}
+        assert pred.get("pulling") == 1, f"bow override {i} must require pulling=1"
+        assert ov.get("model") == f"riftworld:item/elisar_bow_pulling_{i}", (
+            f"bow override {i} must point at elisar_bow_pulling_{i}")
+        pm = ASSETS / ("models/item/elisar_bow_pulling_%d.json" % i)
+        assert pm.exists(), f"Missing elisar_bow_pulling_%d.json" % i
+        pjson = json.loads(pm.read_text(encoding="utf-8"))
+        assert not pjson.get("elements"), "bow pulling models must be flat"
+        psp = ASSETS / ("textures/item/elisar_bow_pulling_%d.png" % i)
+        assert psp.exists(), f"Missing elisar_bow_pulling_%d.png" % i
+        parr = np.array(Image.open(psp).convert("RGBA"))
+        assert parr.shape[:2] == (16, 16), (
+            f"elisar_bow_pulling_{i}.png must be 16x16, got {parr.shape[:2]}")
+
+    # Щиты — наследники ванильного ShieldItem: модель builtin/entity,
+    # состояние блокирования по предикату "blocking", а 3D-текстура в руке
+    # лежит в entity/shield_base_nopattern в пространстве имён мода.
+    for shield in ("elisar_shield", "elisar_guard_shield"):
+        mp = ASSETS / "models/item" / f"{shield}.json"
+        sp = ASSETS / "textures/item" / f"{shield}.png"
+        assert mp.exists() and sp.exists(), f"Missing model or sprite for {shield}"
+        mjson = json.loads(mp.read_text(encoding="utf-8"))
+        assert mjson.get("parent") == "builtin/entity", (
+            f"{shield}.json must use the vanilla parent builtin/entity")
+        assert not mjson.get("elements"), (
+            f"{shield}.json must not contain custom 3D elements")
+        ov = mjson.get("overrides") or []
+        assert len(ov) == 1 and (ov[0].get("predicate") or {}).get("blocking") == 1, (
+            f"{shield}.json must have the vanilla blocking override")
+        blk = ASSETS / "models/item" / f"{shield}_blocking.json"
+        assert blk.exists(), f"Missing {shield}_blocking.json"
+        bjson = json.loads(blk.read_text(encoding="utf-8"))
+        assert "parent" in bjson, f"{shield}_blocking.json must inherit from its parent model"
+        sarr = np.array(Image.open(sp).convert("RGBA"))
+        assert sarr.shape[:2] == (16, 16), (
+            f"{shield}.png must be a vanilla-sized 16x16 icon, got {sarr.shape[:2]}")
+        check_no_missing_magenta(sp)
+        for tex_name in ("shield_base_nopattern.png", "shield_base.png"):
+            tp = ASSETS / "textures/entity" / tex_name
+            assert tp.exists(), (
+                f"Missing {tp} — the vanilla ShieldRenderer needs it in the mod namespace")
+            tarr = np.array(Image.open(tp).convert("RGBA"))
+            assert tarr.shape[:2] == (64, 64), (
+                f"{tex_name} must be a 64x64 vanilla shield texture, got {tarr.shape[:2]}")
+
+    # Меч стражи — как у обычного ванильного предмета: плоский, 16x16.
+    gs_model = json.loads((ASSETS / "models/item/elisar_guard_sword.json").read_text(encoding="utf-8"))
+    assert gs_model.get("parent") == "minecraft:item/handheld", (
+        "elisar_guard_sword.json must use the vanilla parent minecraft:item/handheld")
+    assert not gs_model.get("elements"), "elisar_guard_sword.json must not contain custom 3D elements"
+    gs_sprite = np.array(Image.open(ASSETS / "textures/item/elisar_guard_sword.png").convert("RGBA"))
+    assert gs_sprite.shape[:2] == (16, 16), (
+        f"elisar_guard_sword.png must be 16x16, got {gs_sprite.shape[:2]}")
 
     # 5. Атласы сущностей/блоков не должны содержать «отсутствующую текстуру».
     for check_png in [
@@ -449,7 +495,8 @@ def main() -> None:
     print(
         f"OK validate_v048_armory_and_folk: armour_vanilla=yes "
         f"armour_sets={len(ARMOR_SETS)} armour_parts={len(ARMOR_PARTS)} "
-        f"editor_sets=3 editor_parts=4 voxel_models={len(voxel_items)} "
+        f"editor_sets=3 editor_parts=4 "
+        f"vanilla_tools={len(handheld_items)} vanilla_bow=1 vanilla_shields=2 "
         f"rare_ore_biomes=4"
     )
 

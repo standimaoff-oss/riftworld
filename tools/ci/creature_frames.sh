@@ -656,16 +656,12 @@ rq execute in riftworld:elisar positioned 760 118 760 run riftstruct v40_gear >/
 sleep 6
 rq execute in riftworld:elisar run tp TestPlayer 764.25 118.0 763.0 facing 764.25 119.0 760.5 >/dev/null
 sleep 8
-capture_underwater frame-v049-tools-closeup
+capture_underwater frame-v053-tools-closeup
 
-# Dropped-item showcase: lay the volumetric weapon/tool models out on the
+# Dropped-item showcase (v0.53.0): lay the weapon/tool items out on the
 # showcase floor and look straight down at them. This is the most direct proof
-# that the element models sample their palette textures correctly (the v0.49.0
-# regression rendered them as black noise).
-# Dropped-item showcase: lay the volumetric weapon/tool models out on the
-# showcase floor and look straight down at them. This is the most direct proof
-# that the element models sample their palette textures correctly (the v0.49.0
-# regression rendered them as black noise).
+# that every tool/weapon uses its vanilla flat 16x16 icon with the vanilla
+# minecraft:item/handheld / minecraft:item/generated model.
 # PickupDelay keeps them on the floor, Age:-32768s freezes the idle bob.
 drop_row() {
   local z=$1; shift
@@ -680,11 +676,11 @@ drop_row() {
 }
 drop_row 766 aurite_sword aurite_pickaxe aurite_axe aurite_shovel aurite_hoe \
             riftcrystal_sword riftcrystal_pickaxe riftcrystal_axe riftcrystal_shovel riftcrystal_hoe \
-            elisar_bow elisar_shield
+            elisar_bow elisar_shield elisar_guard_sword elisar_guard_shield
 sleep 4
 rq execute in riftworld:elisar run tp TestPlayer 759 120 772 facing 759 119 766 >/dev/null
 sleep 8
-capture_underwater frame-v049-items-dropped-tools
+capture_underwater frame-v053-items-dropped-tools
 # v0.51.0: броня мода удалена — выкладку брони больше не снимаем.
 
 rq execute in riftworld:elisar run tp TestPlayer 760.5 118.0 774.2 facing 760.5 119.0 767.6 >/dev/null
