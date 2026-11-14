@@ -11,13 +11,13 @@ Summoned new El Gran Maja
 
 maja_pose clear=true reason=none
 
-griefing=false active ticks: 125
+griefing=false active ticks: 128
 griefing=false: El Gran Maja has the following entity data: 1b; El Gran Maja has the following entity data: 0
 El Gran Maja has the following entity data: "idle"; El Gran Maja has the following entity data: 0; El Gran Maja has the following entity data: 1b
 El Gran Maja has the following entity data: "scanning"; El Gran Maja has the following entity data: 0; El Gran Maja has the following entity data: 1b
-El Gran Maja has the following entity data: "breaching"; El Gran Maja has the following entity data: 5056; El Gran Maja has the following entity data: 1b
-El Gran Maja has the following entity data: "breaching"; El Gran Maja has the following entity data: 12968; El Gran Maja has the following entity data: 1b
-El Gran Maja has the following entity data: "breaching"; El Gran Maja has the following entity data: 20796; El Gran Maja has the following entity data: 1b
+El Gran Maja has the following entity data: "breaching"; El Gran Maja has the following entity data: 5820; El Gran Maja has the following entity data: 1b
+El Gran Maja has the following entity data: "breaching"; El Gran Maja has the following entity data: 13735; El Gran Maja has the following entity data: 1b
+El Gran Maja has the following entity data: "breaching"; El Gran Maja has the following entity data: 21652; El Gran Maja has the following entity data: 1b
 El Gran Maja has the following entity data: "finished"; El Gran Maja has the following entity data: 28207; El Gran Maja has the following entity data: 1b
 OK: full medium island job completed with mobGriefing enabled; disabled gate preserved blocks.
 Testing the placement gate (one world edit must stop the titan)...
