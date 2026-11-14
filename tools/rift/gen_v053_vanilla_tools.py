@@ -12,7 +12,7 @@
     перекрашенная в палитру мода с СОХРАНЕНИЕМ освещения граней:
     тёмная грань остаётся тёмной, блик остаётся бликом.
 
-Запуск: python3 tools/rift/gen_v052_vanilla_tools.py
+Запуск: python3 tools/rift/gen_v053_vanilla_tools.py
 """
 from __future__ import annotations
 

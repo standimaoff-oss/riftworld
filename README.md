@@ -53,7 +53,7 @@
 
 ### Как это сделано
 
-Генератор `tools/rift/gen_v052_vanilla_tools.py` идемпотентен (повторный
+Генератор `tools/rift/gen_v053_vanilla_tools.py` идемпотентен (повторный
 запуск даёт byte-identical результат). Исходники ванильных ассетов 1.20.1
 лежат в `tools/rift/vanilla_items/`, pristine-формы экипировки (щиты, меч
 стражи) — в `tools/rift/gear_sources/`, поэтому генерация воспроизводима.

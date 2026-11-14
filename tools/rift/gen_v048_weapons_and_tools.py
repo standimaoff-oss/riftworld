@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 """
+DEPRECATED (v0.53.0): этот генератор делал 3D-модели инструментов с
+выдуманными палитрами v048_*_pal.png. Он больше не используется — ванильные
+плоские модели и текстуры делает tools/rift/gen_v053_vanilla_tools.py.
+Запускать нельзя: он перезапишет ванильные модели обратно.
+
+
 v0.48.0 — From-scratch 3D Voxel Armament & Dual-Ore Tool Set Generator.
 
 Builds pixel-accurate 32x32 voxel matrices AND greedy-merged, interior-face-culled
