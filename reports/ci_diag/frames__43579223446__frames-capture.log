@@ -1,0 +1,209 @@
+::notice title=CI packages::все пакеты для headless-клиента на месте
+capturing the v0.52.0 armour...
+  riftstruct kind=bb_armor_showcase at=600,120,600 spawned=1 blocks=0 sub_air=0 rev=stage144-armour cam=596,122,596 cam_side=604,122,604 cam_quarter=604,122,596 cam_front=600,122,595 look=600,121,600 helmet=[Riftcrystal Helmet] chestplate=[Riftcrystal Chestplate] leggings=[Riftcrystal Leggings] boots=[Riftcrystal Boots]
+  манекен: 600,121,600; камера: 600,122,595
+::warning title=In-game frames::кадр frame-v052-armor-riftcrystal-front слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-v052-armor-riftcrystal-front слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-v052-armor-riftcrystal-front слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-v052-armor-riftcrystal-front слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-v052-armor-riftcrystal-front остался тёмным после четырёх попыток
+captured frame-v052-armor-riftcrystal-front
+::warning title=In-game frames::кадр frame-v052-armor-riftcrystal-three-quarter слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-v052-armor-riftcrystal-three-quarter слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-v052-armor-riftcrystal-three-quarter слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-v052-armor-riftcrystal-three-quarter слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-v052-armor-riftcrystal-three-quarter остался тёмным после четырёх попыток
+captured frame-v052-armor-riftcrystal-three-quarter
+::warning title=In-game frames::кадр frame-v052-armor-riftcrystal-side слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-v052-armor-riftcrystal-side слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-v052-armor-riftcrystal-side слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-v052-armor-riftcrystal-side слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-v052-armor-riftcrystal-side остался тёмным после четырёх попыток
+captured frame-v052-armor-riftcrystal-side
+::warning title=In-game frames::кадр frame-paper-dragon-three-quarter слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-paper-dragon-three-quarter слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-paper-dragon-three-quarter слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-paper-dragon-three-quarter слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-paper-dragon-three-quarter остался тёмным после четырёх попыток
+captured frame-paper-dragon-three-quarter
+::warning title=In-game frames::кадр frame-paper-dragon-side слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-paper-dragon-side слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-paper-dragon-side слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-paper-dragon-side слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-paper-dragon-side остался тёмным после четырёх попыток
+captured frame-paper-dragon-side
+::warning title=In-game frames::кадр frame-paper-dragon-head слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-paper-dragon-head слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-paper-dragon-head слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-paper-dragon-head слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-paper-dragon-head остался тёмным после четырёх попыток
+captured frame-paper-dragon-head
+  riftstruct kind=bb_bone_raven_showcase at=560,119,560 model_boxes=0 bones=0 atlas=256 spawned=1 blocks=0 sub_air=0 rev=stage140-release cam=558,120,558 cam_side=562,120,562 cam_head=562,120,558:560,119,560 look=560,120,560 raven_pos=560.50,119.60,560.50 alive=1 invisible=false noai=true
+  цель камеры: 560,120,560; ворон: 560.50,119.60,560.50
+    Teleported TestPlayer to 558.500000, 120.000000, 558.500000
+    riftstruct kind=bb_bone_raven_showcase at=560,119,560 model_boxes=0 bones=0 atlas=256 spawned=1 blocks=0 sub_air=0 rev=stage140-release cam=558,120,558 cam_side=562,120,562 cam_head=562,120,558:560,119,560 look=560,120,560 raven_pos=560.50,119.60,560.50 alive=1 invisible=false noai=true
+    ворон рядом: Test passed, count: 1
+::warning title=In-game frames::кадр frame-bone-raven-three-quarter слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-bone-raven-three-quarter слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-bone-raven-three-quarter слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-bone-raven-three-quarter слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-bone-raven-three-quarter остался тёмным после четырёх попыток
+captured frame-bone-raven-three-quarter
+    Teleported TestPlayer to 562.500000, 120.000000, 562.500000
+    riftstruct kind=bb_bone_raven_showcase at=560,119,560 model_boxes=0 bones=0 atlas=256 spawned=1 blocks=0 sub_air=0 rev=stage140-release cam=558,120,558 cam_side=562,120,562 cam_head=562,120,558:560,119,560 look=560,120,560 raven_pos=560.50,119.60,560.50 alive=1 invisible=false noai=true
+    ворон рядом: Test passed, count: 1
+::warning title=In-game frames::кадр frame-bone-raven-side слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-bone-raven-side слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-bone-raven-side слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-bone-raven-side слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-bone-raven-side остался тёмным после четырёх попыток
+captured frame-bone-raven-side
+    Teleported TestPlayer to 562.500000, 120.000000, 558.500000
+    riftstruct kind=bb_bone_raven_showcase at=560,119,560 model_boxes=0 bones=0 atlas=256 spawned=1 blocks=0 sub_air=0 rev=stage140-release cam=558,120,558 cam_side=562,120,562 cam_head=562,120,558:560,119,560 look=560,120,560 raven_pos=560.50,119.60,560.50 alive=1 invisible=false noai=true
+    ворон рядом: Test passed, count: 1
+::warning title=In-game frames::кадр frame-bone-raven-head слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-bone-raven-head слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-bone-raven-head слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-bone-raven-head слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-bone-raven-head остался тёмным после четырёх попыток
+captured frame-bone-raven-head
+::warning title=In-game frames::позицию дракона прочитать не удалось, снимаем по точке спавна
+  paper dragon at 232,148,0
+::warning title=In-game frames::кадр frame-paper-dragon-far-a слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-paper-dragon-far-a слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-paper-dragon-far-a слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-paper-dragon-far-a слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-paper-dragon-far-a остался тёмным после четырёх попыток
+captured frame-paper-dragon-far-a
+::warning title=In-game frames::кадр frame-paper-dragon-far-close слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-paper-dragon-far-close слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-paper-dragon-far-close слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-paper-dragon-far-close слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-paper-dragon-far-close остался тёмным после четырёх попыток
+captured frame-paper-dragon-far-close
+::warning title=In-game frames::кадр frame-paper-dragon-far-b слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-paper-dragon-far-b слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-paper-dragon-far-b слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-paper-dragon-far-b слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-paper-dragon-far-b остался тёмным после четырёх попыток
+captured frame-paper-dragon-far-b
+  paper dragon pos after flight: No entity was found::warning title=In-game frames::rcon attempt 1 failed (rc=4), retryingNo entity was found::warning title=In-game frames::rcon attempt 2 failed (rc=4), retryingNo entity was found::warning title=In-game frames::rcon attempt 3 failed (rc=4), retryingNo entity was found::warning title=In-game frames::rcon attempt 4 failed (rc=4), retrying
+ocean attempt 1: The nearest riftworld:maja_ocean is at [1115, 54, 1526] (1889 blocks away)
+ocean centre: 1115 1526
+::warning title=In-game frames::кадр frame-liopleurodon-swim слишком тёмный, переснимаем (1/3)
+::warning title=In-game frames::кадр frame-liopleurodon-swim слишком тёмный, переснимаем (2/3)
+::warning title=In-game frames::кадр frame-liopleurodon-swim слишком тёмный, переснимаем (3/3)
+captured frame-liopleurodon-swim
+::warning title=In-game frames::кадр frame-liopleurodon-side слишком тёмный, переснимаем (1/3)
+::warning title=In-game frames::кадр frame-liopleurodon-side слишком тёмный, переснимаем (2/3)
+::warning title=In-game frames::кадр frame-liopleurodon-side слишком тёмный, переснимаем (3/3)
+captured frame-liopleurodon-side
+::warning title=In-game frames::кадр frame-liopleurodon-head слишком тёмный, переснимаем (1/3)
+::warning title=In-game frames::кадр frame-liopleurodon-head слишком тёмный, переснимаем (2/3)
+::warning title=In-game frames::кадр frame-liopleurodon-head слишком тёмный, переснимаем (3/3)
+captured frame-liopleurodon-head
+  riftstruct kind=v49_hollowwatcher_showcase at=-35,104,50 spawned=1 blocks=1 sub_air=1 staged=1 dim=riftworld:elisar ground=Frozen Soil sky=1 time=6000 cam=-40.5,107.2,45.5:-35,105.7,50
+  hollowwatcher pos: No entity was found
+
+::warning title=In-game frames::rcon attempt 1 failed (rc=4), retrying
+No entity was found
+
+::warning title=In-game frames::rcon attempt 2 failed (rc=4), retrying
+No entity was found
+
+::warning title=In-game frames::rcon attempt 3 failed (rc=4), retrying
+No entity was found
+
+::warning title=In-game frames::rcon attempt 4 failed (rc=4), retrying
+::warning title=In-game frames::кадр frame-hollowwatcher-three-quarter слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-three-quarter слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-three-quarter слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-three-quarter слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-three-quarter остался тёмным после четырёх попыток
+captured frame-hollowwatcher-three-quarter
+::warning title=In-game frames::кадр frame-hollowwatcher-face слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-face слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-face слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-face слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-face остался тёмным после четырёх попыток
+captured frame-hollowwatcher-face
+::warning title=In-game frames::кадр frame-hollowwatcher-tall слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-tall слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-tall слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-tall слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-tall остался тёмным после четырёх попыток
+captured frame-hollowwatcher-tall
+::warning title=In-game frames::кадр frame-hollowwatcher-daylight слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-daylight слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-daylight слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-daylight слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-daylight остался тёмным после четырёх попыток
+captured frame-hollowwatcher-daylight
+::warning title=In-game frames::кадр frame-hollowwatcher-night слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-night слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-night слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-night слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-hollowwatcher-night остался тёмным после четырёх попыток
+captured frame-hollowwatcher-night
+::warning title=In-game frames::кадр frame-maja-body слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-maja-body слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-maja-body слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-maja-body слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-maja-body остался тёмным после четырёх попыток
+captured frame-maja-body
+::warning title=In-game frames::кадр frame-maja-head слишком тёмный, переснимаем (1/4)
+::warning title=In-game frames::кадр frame-maja-head слишком тёмный, переснимаем (2/4)
+::warning title=In-game frames::кадр frame-maja-head слишком тёмный, переснимаем (3/4)
+::warning title=In-game frames::кадр frame-maja-head слишком тёмный, переснимаем (4/4)
+::warning title=In-game frames::кадр frame-maja-head остался тёмным после четырёх попыток
+captured frame-maja-head
+::warning title=In-game frames::кадр frame-v051-gear-closeup слишком тёмный, переснимаем (1/3)
+::warning title=In-game frames::кадр frame-v051-gear-closeup слишком тёмный, переснимаем (2/3)
+::warning title=In-game frames::кадр frame-v051-gear-closeup слишком тёмный, переснимаем (3/3)
+captured frame-v051-gear-closeup
+::warning title=In-game frames::кадр frame-v049-riftcrystal-night-glow слишком тёмный, переснимаем (1/3)
+::warning title=In-game frames::кадр frame-v049-riftcrystal-night-glow слишком тёмный, переснимаем (2/3)
+::warning title=In-game frames::кадр frame-v049-riftcrystal-night-glow слишком тёмный, переснимаем (3/3)
+captured frame-v049-riftcrystal-night-glow
+::warning title=In-game frames::кадр frame-v049-tools-closeup слишком тёмный, переснимаем (1/3)
+::warning title=In-game frames::кадр frame-v049-tools-closeup слишком тёмный, переснимаем (2/3)
+::warning title=In-game frames::кадр frame-v049-tools-closeup слишком тёмный, переснимаем (3/3)
+captured frame-v049-tools-closeup
+::warning title=In-game frames::кадр frame-v049-items-dropped-tools слишком тёмный, переснимаем (1/3)
+::warning title=In-game frames::кадр frame-v049-items-dropped-tools слишком тёмный, переснимаем (2/3)
+::warning title=In-game frames::кадр frame-v049-items-dropped-tools слишком тёмный, переснимаем (3/3)
+captured frame-v049-items-dropped-tools
+::warning title=In-game frames::кадр frame-v049-elisar-folk слишком тёмный, переснимаем (1/3)
+::warning title=In-game frames::кадр frame-v049-elisar-folk слишком тёмный, переснимаем (2/3)
+::warning title=In-game frames::кадр frame-v049-elisar-folk слишком тёмный, переснимаем (3/3)
+captured frame-v049-elisar-folk
+captured 27 in-game frames
+total 16636
+-rw-r--r-- 1 runner runner  310139 Nov 14 09:27 frame-bone-raven-head.png
+-rw-r--r-- 1 runner runner  339087 Nov 14 09:25 frame-bone-raven-side.png
+-rw-r--r-- 1 runner runner  320860 Nov 14 09:24 frame-bone-raven-three-quarter.png
+-rw-r--r-- 1 runner runner  908927 Nov 14 09:47 frame-hollowwatcher-daylight.png
+-rw-r--r-- 1 runner runner  626876 Nov 14 09:43 frame-hollowwatcher-face.png
+-rw-r--r-- 1 runner runner 1051044 Nov 14 09:49 frame-hollowwatcher-night.png
+-rw-r--r-- 1 runner runner  755380 Nov 14 09:45 frame-hollowwatcher-tall.png
+-rw-r--r-- 1 runner runner  929223 Nov 14 09:41 frame-hollowwatcher-three-quarter.png
+-rw-r--r-- 1 runner runner  561564 Nov 14 09:38 frame-liopleurodon-head.png
+-rw-r--r-- 1 runner runner  550489 Nov 14 09:38 frame-liopleurodon-side.png
+-rw-r--r-- 1 runner runner  527174 Nov 14 09:37 frame-liopleurodon-swim.png
+-rw-r--r-- 1 runner runner  149742 Nov 14 09:51 frame-maja-body.png
+-rw-r--r-- 1 runner runner  150456 Nov 14 09:53 frame-maja-head.png
+-rw-r--r-- 1 runner runner  820650 Nov 14 09:31 frame-paper-dragon-far-a.png
+-rw-r--r-- 1 runner runner  874974 Nov 14 09:36 frame-paper-dragon-far-b.png
+-rw-r--r-- 1 runner runner  961399 Nov 14 09:32 frame-paper-dragon-far-close.png
+-rw-r--r-- 1 runner runner 1021414 Nov 14 09:23 frame-paper-dragon-head.png
+-rw-r--r-- 1 runner runner 1293964 Nov 14 09:21 frame-paper-dragon-side.png
+-rw-r--r-- 1 runner runner 1253326 Nov 14 09:20 frame-paper-dragon-three-quarter.png
+-rw-r--r-- 1 runner runner  307190 Nov 14 09:57 frame-v049-elisar-folk.png
+-rw-r--r-- 1 runner runner  484649 Nov 14 09:56 frame-v049-items-dropped-tools.png
+-rw-r--r-- 1 runner runner  593233 Nov 14 09:55 frame-v049-riftcrystal-night-glow.png
+-rw-r--r-- 1 runner runner  339121 Nov 14 09:55 frame-v049-tools-closeup.png
+-rw-r--r-- 1 runner runner  387177 Nov 14 09:54 frame-v051-gear-closeup.png
+-rw-r--r-- 1 runner runner  460255 Nov 14 09:15 frame-v052-armor-riftcrystal-front.png
+-rw-r--r-- 1 runner runner  543845 Nov 14 09:18 frame-v052-armor-riftcrystal-side.png
+-rw-r--r-- 1 runner runner  467083 Nov 14 09:17 frame-v052-armor-riftcrystal-three-quarter.png
+OK: real client frames saved to ci-out/frames
