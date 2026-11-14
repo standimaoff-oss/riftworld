@@ -41,6 +41,9 @@ public final class ClientHooks {
     @SubscribeEvent
     public static void layerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions e) {
         e.registerLayerDefinition(LiopleurodonBlockbenchModel.LAYER_LOCATION, LiopleurodonBlockbenchModel::createBodyLayer);
+        // v0.53.0: ванильная геометрия щита Элисара (plate + handle).
+        e.registerLayerDefinition(ru.aiforge.riftworld.client.model.ShieldItemModel.LAYER_LOCATION,
+                ru.aiforge.riftworld.client.model.ShieldItemModel::createBodyLayer);
         ru.aiforge.riftworld.client.model.ElisarFolkModels.registerLayers(e);
         ElisarFaunaRenderers.registerLayers(e);
     }

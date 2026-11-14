@@ -155,25 +155,29 @@ def shrink_to_vanilla_icon(src: Path, dst: Path) -> None:
 
 
 def write_shield_models(item_id: str) -> None:
-    """Модель щита — ванильная.
+    """Модель щита — ванильная плоская иконка + состояние блокирования.
 
-    Ванильный щит — это "builtin/entity": меш строится кодом (ShieldRenderer),
-    а текстура берётся из entity/shield_base_nopattern в пространстве имён
-    мода. Модель предмета нужна для инвентаря и для состояния блокирования
-    (предикат "blocking" регистрируется в ClientHooks).
+    В Forge 1.20.1 ванильный рендерер щита рисует только minecraft:shield,
+    поэтому кастомный щит рисует собственный рендерер
+    (ru.aiforge.riftworld.client.ShieldItemRenderer) — с ванильной геометрией
+    и текстурой entity/<имя>_base_nopattern. Модель предмета нужна для
+    инвентаря и для состояния "blocking" (предикат, который регистрируется
+    в ClientHooks).
     """
-    base = json.loads((VANILLA / "shield_model.json").read_text(encoding="utf-8"))
-    blocking = json.loads((VANILLA / "shield_blocking_model.json").read_text(encoding="utf-8"))
-
-    data = dict(base)
-    data["overrides"] = [
-        {"predicate": {"blocking": 1}, "model": f"riftworld:item/{item_id}_blocking"},
-    ]
+    data = {
+        "parent": "minecraft:item/generated",
+        "textures": {"layer0": f"riftworld:item/{item_id}"},
+        "overrides": [
+            {"predicate": {"blocking": 1}, "model": f"riftworld:item/{item_id}_blocking"},
+        ],
+    }
     (ITEM_MODEL / f"{item_id}.json").write_text(
         json.dumps(data, indent=2) + "\n", encoding="utf-8")
 
-    block = dict(blocking)
-    block["overrides"] = []
+    block = {
+        "parent": "minecraft:item/generated",
+        "textures": {"layer0": f"riftworld:item/{item_id}"},
+    }
     (ITEM_MODEL / f"{item_id}_blocking.json").write_text(
         json.dumps(block, indent=2) + "\n", encoding="utf-8")
 
@@ -260,9 +264,12 @@ def main() -> None:
     # в пространстве имён мода. Перекрашиваем её в палитру щита.
     for item_id, pal_name in SHIELD_ENTITY:
         pal = PALETTES[pal_name]
-        for vanilla_name in ("shield_base_nopattern", "shield_base"):
+        # Имя текстуры — как у ванильного щита и как у mOres:
+        # <имя предмета>_base / <имя предмета>_base_nopattern.
+        for vanilla_name, suffix in (("shield_base_nopattern", "_base_nopattern"),
+                                     ("shield_base", "_base")):
             recolor(VANILLA / f"{vanilla_name}.png",
-                    ENTITY_TEX / f"{vanilla_name}.png",
+                    ENTITY_TEX / f"{item_id}{suffix}.png",
                     pal["hue"], pal["sat"], pal["lo"], pal["hi"])
 
     # Прочая экипировка: своя форма, но ванильный размер и палитра мода.

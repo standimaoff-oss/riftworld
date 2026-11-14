@@ -384,28 +384,36 @@ def main() -> None:
         sp = ASSETS / "textures/item" / f"{shield}.png"
         assert mp.exists() and sp.exists(), f"Missing model or sprite for {shield}"
         mjson = json.loads(mp.read_text(encoding="utf-8"))
-        assert mjson.get("parent") == "builtin/entity", (
-            f"{shield}.json must use the vanilla parent builtin/entity")
+        assert mjson.get("parent") == "minecraft:item/generated", (
+            f"{shield}.json must use the vanilla parent minecraft:item/generated")
         assert not mjson.get("elements"), (
             f"{shield}.json must not contain custom 3D elements")
         ov = mjson.get("overrides") or []
         assert len(ov) == 1 and (ov[0].get("predicate") or {}).get("blocking") == 1, (
             f"{shield}.json must have the vanilla blocking override")
+        assert ov[0].get("model") == f"riftworld:item/{shield}_blocking", (
+            f"{shield}.json blocking override must point at {shield}_blocking")
         blk = ASSETS / "models/item" / f"{shield}_blocking.json"
         assert blk.exists(), f"Missing {shield}_blocking.json"
         bjson = json.loads(blk.read_text(encoding="utf-8"))
-        assert "parent" in bjson, f"{shield}_blocking.json must inherit from its parent model"
+        assert bjson.get("parent") == "minecraft:item/generated", (
+            f"{shield}_blocking.json must use the vanilla parent minecraft:item/generated")
+        assert not bjson.get("elements"), (
+            f"{shield}_blocking.json must not contain custom 3D elements")
         sarr = np.array(Image.open(sp).convert("RGBA"))
         assert sarr.shape[:2] == (16, 16), (
             f"{shield}.png must be a vanilla-sized 16x16 icon, got {sarr.shape[:2]}")
         check_no_missing_magenta(sp)
-        for tex_name in ("shield_base_nopattern.png", "shield_base.png"):
-            tp = ASSETS / "textures/entity" / tex_name
+        # 3D-текстура щита в руке: entity/<имя>_base и _base_nopattern,
+        # ровно как у ванильного щита (entity/shield_base_nopattern).
+        for suffix in ("_base.png", "_base_nopattern.png"):
+            tp = ASSETS / "textures/entity" / f"{shield}{suffix}"
             assert tp.exists(), (
                 f"Missing {tp} — the vanilla ShieldRenderer needs it in the mod namespace")
             tarr = np.array(Image.open(tp).convert("RGBA"))
             assert tarr.shape[:2] == (64, 64), (
-                f"{tex_name} must be a 64x64 vanilla shield texture, got {tarr.shape[:2]}")
+                f"{shield}{suffix} must be a 64x64 vanilla shield texture, got {tarr.shape[:2]}")
+            check_no_missing_magenta(tp)
 
     # Меч стражи — как у обычного ванильного предмета: плоский, 16x16.
     gs_model = json.loads((ASSETS / "models/item/elisar_guard_sword.json").read_text(encoding="utf-8"))
