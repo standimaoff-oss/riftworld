@@ -37,7 +37,7 @@ public class ShieldItemRenderer extends BlockEntityWithoutLevelRenderer {
 
     public ShieldItemRenderer(BlockEntityRenderDispatcher dispatcher, EntityModelSet models) {
         super(dispatcher, models);
-        this.model = new ShieldItemModel(models.getModelPart(ShieldItemModel.LAYER_LOCATION));
+        this.model = new ShieldItemModel(models.bakeLayer(ShieldItemModel.LAYER_LOCATION));
     }
 
     /** Единственный экземпляр — его отдаёт {@link #getCustomRenderer()}. */
