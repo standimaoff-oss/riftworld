@@ -111,11 +111,14 @@ jobs:
           for try in 1 2 3 4 5; do
             git push origin "HEAD:${{ github.ref_name }}" && exit 0
             sleep 10
-            git fetch origin "refs/heads/${{ github.ref_name }}"
-            git reset --mixed FETCH_HEAD
+            # fetch/reset могут упасть, если ветвь двигается прямо сейчас.
+            # Под set -e любая такая ошибка убила бы всю джобу, поэтому
+            # гасим её и просто пробуем снова.
+            git fetch origin "refs/heads/${{ github.ref_name }}" || continue
+            git reset --mixed FETCH_HEAD || continue
             git add -A "reports/ingame/$VER"
             git diff --cached --quiet && { echo "nothing new"; exit 0; }
-            git commit -m "Capture v$VER in-game frames [skip ci]"
+            git commit -m "Capture v$VER in-game frames [skip ci]" || continue
           done
           echo "НЕ УДАЛОСЬ запушить кадры за 5 попыток"
           exit 1

@@ -114,13 +114,23 @@ for try in 1 2 3 4 5; do
     # отдельную папку, а после синхронизации кладём обратно.
     rm -rf /tmp/publish_keep && mkdir -p /tmp/publish_keep
     if [ -d reports/ci_diag ]; then cp -a reports/ci_diag /tmp/publish_keep/; fi
-    git checkout FETCH_HEAD -- . >>"$DIAG" 2>&1 || true
-    git reset --soft FETCH_HEAD >>"$DIAG" 2>&1 || echo "reset не удался" >>"$DIAG"
+    # checkout может упасть, если в удалённом дереве нет файла, который есть
+    # локально ("pathspec did not match"). set -e тогда убивал бы весь скрипт
+    # на первой же неудаче — поэтому ошибку гасим явно.
+    git checkout FETCH_HEAD -- . >>"$DIAG" 2>&1 || echo "checkout не удался" >>"$DIAG"
+    # reset --soft двигает HEAD на удалённый коммит, сохраняя индекс.
+    # Если он падает, продолжать бессмысленно: следующий push снова будет
+    # отклонён. Тогда просто повторяем попытку с новым fetch.
+    if ! git reset --soft FETCH_HEAD >>"$DIAG" 2>&1; then
+        echo "reset не удался" >>"$DIAG"
+        sleep 10
+        continue
+    fi
     if [ -d /tmp/publish_keep/ci_diag ]; then
         cp -a /tmp/publish_keep/ci_diag/. reports/ci_diag/ 2>/dev/null || true
     fi
-    publish_files
-    add_all
+    publish_files || true
+    add_all || true
     if git diff --cached --quiet; then
         echo "после синхронизации нечего публиковать" >>"$DIAG"
         exit 0
