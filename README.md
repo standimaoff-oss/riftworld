@@ -93,6 +93,18 @@ abstract and does not override abstract method».
 
 - ++**[https://github.com/standimaoff-oss/riftworld/releases/download/v0.52.0/riftworld-armor-editor.html](https://github.com/standimaoff-oss/riftworld/releases/download/v0.52.0/riftworld-armor-editor.html)**++
 
+### Броня в игре (настоящие кадры с Forge-сервера)
+
+Снято вживую: манекен в полном комплекте рифт-кристалла на площадке
+в поднебесном просторе, камера — штатный клиент Minecraft.
+
+- ++**[https://github.com/standimaoff-oss/riftworld/releases/download/v0.52.0/frame-v052-armor-riftcrystal-front.png](https://github.com/standimaoff-oss/riftworld/releases/download/v0.52.0/frame-v052-armor-riftcrystal-front.png)**++ — спереди
+- ++**[https://github.com/standimaoff-oss/riftworld/releases/download/v0.52.0/frame-v052-armor-riftcrystal-three-quarter.png](https://github.com/standimaoff-oss/riftworld/releases/download/v0.52.0/frame-v052-armor-riftcrystal-three-quarter.png)**++ — в три четверти
+- ++**[https://github.com/standimaoff-oss/riftworld/releases/download/v0.52.0/frame-v052-armor-riftcrystal-side.png](https://github.com/standimaoff-oss/riftworld/releases/download/v0.52.0/frame-v052-armor-riftcrystal-side.png)**++ — сбоку
+
+Витрина сделана серверной командой `riftstruct bb_armor_showcase`: она ставит
+манекен в полном комплекте брони мода и печатает координаты камер.
+
 ## v0.51.0 — броня мода удалена, вместо неё редактор брони
 
 ### Редактор брони (сайт)
