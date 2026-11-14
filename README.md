@@ -31,17 +31,28 @@
 Натяжение тетивы работает без единой строки кода: клиент сам выбирает
 состояние по предикату.
 
-### Щиты — настоящие ванильные `ShieldItem`
+### Щиты — ванильная геометрия и свой рендерер
 
-`elisar_shield` и `elisar_guard_shield` наследуют `net.minecraft.world.item.ShieldItem`,
-поэтому 3D-щит в руке рисует **ванильный** `ShieldRenderer`. Раньше он брал
-ванильную текстуру щита — теперь в пространстве имён мода лежат
-`textures/entity/shield_base_nopattern.png` и `shield_base.png`, перекрашенные
-в палитру щита.
+`elisar_shield` и `elisar_guard_shield` наследуют
+`net.minecraft.world.item.ShieldItem`.
 
-- модель: `parent: builtin/entity` + ванильный `override` по предикату
-  `blocking` (состояние блокирования);
-- иконка в инвентаре — плоская 16×16, `item/generated`;
+Выяснилось важное: в Forge 1.20.1 ванильный рендерер щита рисует **только**
+предмет `minecraft:shield` (`BuiltinModelItemRenderer` → `stack.isOf(Items.SHIELD)`),
+а ванильная модель `builtin/entity`/`item/shield` для кастомного щита не
+работает — кастомный щит без собственного рендерера в руке просто пустой.
+Именно поэтому в v0.48.0 и пришлось делать самодельные 3D-модели.
+
+Теперь у мода свой рендерер, но с **ванильной геометрией**:
+
+- `ShieldItemModel` — ровно ванильная геометрия щита: «plate» 12×22×1
+  (UV 0,0) и «handle» 2×6×6 (UV 26,0) — те же кубы и те же UV-координаты,
+  что у `ShieldEntityModel`;
+- `ShieldItemRenderer` — `BlockEntityWithoutLevelRenderer`, который рисует щит
+  текстурой `textures/entity/<имя>_base_nopattern.png` в палитре мода
+  (аурит — золото, рифт-кристалл — бирюза), как это делают моды с
+  кастомными щитами;
+- модель предмета — плоская ванильная иконка `item/generated` 16×16
+  плюс состояние `blocking`;
 - `elisar_guard_sword` (меч стражи) — ванильный `handheld`, иконка 16×16.
 
 ### Убрано
@@ -57,6 +68,9 @@
 запуск даёт byte-identical результат). Исходники ванильных ассетов 1.20.1
 лежат в `tools/rift/vanilla_items/`, pristine-формы экипировки (щиты, меч
 стражи) — в `tools/rift/gear_sources/`, поэтому генерация воспроизводима.
+Старый генератор v0.48.0 (`gen_v048_weapons_and_tools.py`) помечен
+DEPRECATED: он делал как раз те самодельные 3D-модели с выдуманными
+палитрами, которых в моде больше нет.
 
 Валидатор `tools/rift/validate_v048_armory_and_folk.py` теперь требует
 ванильные `parent`, плоские `layer0` ровно 16×16, запрещает `elements`,
