@@ -30,6 +30,8 @@ public final class ModTabs {
                 out.accept(ModItems.CRYSTAL_AEGIS.get());
                 out.accept(ModItems.ASTRAL_PRISM.get());
                 out.accept(ModItems.ELISAR_DUCAT.get());
+                // v0.54.0: слиток монетного серебра — промежуточное звено руда → слиток → монета.
+                out.accept(ModItems.DUCAT_INGOT.get());
                 // v0.40.0: снаряжение Элисара — металлы, инструменты и оружие.
                 // v0.52.0: броня вернулась — с ванильной геометрией и текстурами.
                 out.accept(ModItems.AURITE_INGOT.get());

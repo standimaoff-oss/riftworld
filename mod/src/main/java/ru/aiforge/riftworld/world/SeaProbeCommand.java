@@ -107,6 +107,14 @@ public final class SeaProbeCommand {
                 .then(Commands.argument("kind", com.mojang.brigadier.arguments.StringArgumentType.word())
                         .executes(c -> probeStruct(c.getSource(),
                                 com.mojang.brigadier.arguments.StringArgumentType.getString(c, "kind")))));
+        // v0.54.0: /riftprofession — точные профессии жителей Элисара.
+        //   /riftprofession            — сводка: список профессий и сколько жителей рядом.
+        //   /riftprofession <профессия> — назначить профессию ближайшему жителю.
+        e.getDispatcher().register(Commands.literal("riftprofession").requires(s2 -> s2.hasPermission(2))
+                .executes(c -> professionInfo(c.getSource()))
+                .then(Commands.argument("name", com.mojang.brigadier.arguments.StringArgumentType.word())
+                        .executes(c -> setProfession(c.getSource(),
+                                com.mojang.brigadier.arguments.StringArgumentType.getString(c, "name")))));
         // Рев 13.6: /riftdtat — что DT реально поставил в точке посадки. Один вызов RCON вместо
         // сотен «execute if block»: считает все блоки аддона вокруг корня.
         e.getDispatcher().register(Commands.literal("riftdtat").requires(s2 -> s2.hasPermission(2))
@@ -1950,6 +1958,84 @@ public final class SeaProbeCommand {
             if (Math.abs(tc[0] - lx) <= 8 && Math.abs(tc[1] - lz) <= 8) return true;
         }
         return false;
+    }
+
+    /**
+     * v0.54.0 — сводка по профессиям жителей Элисара.
+     *
+     * <p>Показывает список точных профессий (с русскими названиями) и то, как
+     * они распределены среди жителей рядом с игроком.</p>
+     */
+    private static int professionInfo(CommandSourceStack src) {
+        ServerLevel level = src.getLevel();
+        BlockPos at = BlockPos.containing(src.getPosition());
+        var profs = ru.aiforge.riftworld.world.ElisarProfession.values();
+        var counts = new java.util.LinkedHashMap<String, Integer>();
+        for (var p : profs) {
+            counts.put(p.name(), 0);
+        }
+        int total = 0;
+        for (var v : level.getEntitiesOfClass(ru.aiforge.riftworld.entity.ElisarVillagerEntity.class,
+                new net.minecraft.world.phys.AABB(at.getX() - 48, at.getY() - 24, at.getZ() - 48,
+                        at.getX() + 48, at.getY() + 24, at.getZ() + 48))) {
+            ++total;
+            counts.merge(v.profession().name(), 1, Integer::sum);
+        }
+        StringBuilder names = new StringBuilder();
+        StringBuilder dist = new StringBuilder();
+        for (var p : profs) {
+            if (names.length() > 0) {
+                names.append(' ');
+                dist.append(' ');
+            }
+            names.append(p.name()).append('(').append(p.displayName()).append(')');
+            dist.append(p.name()).append('=').append(counts.get(p.name()));
+        }
+        src.sendSuccess(() -> Component.literal("riftprofession professions=[" + names
+                + "] nearby_villagers=" + total + " distribution=[" + dist + "]"), false);
+        return 1;
+    }
+
+    /**
+     * v0.54.0 — назначить профессию ближайшему жителю.
+     *
+     * <p>Нужно, чтобы город Элисара можно было наполнить осмысленным составом:
+     * например, поставить Кузнеца у кузни, а Рыбака — у причала.</p>
+     */
+    private static int setProfession(CommandSourceStack src, String name) {
+        ServerLevel level = src.getLevel();
+        BlockPos at = BlockPos.containing(src.getPosition());
+        ru.aiforge.riftworld.world.ElisarProfession prof;
+        try {
+            prof = ru.aiforge.riftworld.world.ElisarProfession.valueOf(
+                    name.toUpperCase(java.util.Locale.ROOT));
+        } catch (IllegalArgumentException ex) {
+            src.sendFailure(Component.literal("riftprofession: unknown profession '" + name
+                    + "'. Try: MASON, SMITH, ARMOURER, HERBALIST, FISHER, BAKER, SCULPTOR, MERCHANT"));
+            return 0;
+        }
+        // Ищем ближайшего жителя в радиусе 16 блоков.
+        ru.aiforge.riftworld.entity.ElisarVillagerEntity best = null;
+        double bestD = Double.MAX_VALUE;
+        for (var v : level.getEntitiesOfClass(ru.aiforge.riftworld.entity.ElisarVillagerEntity.class,
+                new net.minecraft.world.phys.AABB(at.getX() - 16, at.getY() - 8, at.getZ() - 16,
+                        at.getX() + 16, at.getY() + 8, at.getZ() + 16))) {
+            double d = v.distanceToSqr(src.getPosition());
+            if (d < bestD) {
+                bestD = d;
+                best = v;
+            }
+        }
+        if (best == null) {
+            src.sendFailure(Component.literal("riftprofession: no villager within 16 blocks"));
+            return 0;
+        }
+        best.setProfession(prof);
+        int offers = best.getOffers().size();
+        src.sendSuccess(() -> Component.literal("riftprofession: villager at "
+                + best.getX() + "," + best.getY() + "," + best.getZ()
+                + " is now " + prof.name() + " (" + prof.displayName() + "), offers=" + offers), false);
+        return 1;
     }
 
     /**
@@ -4409,10 +4495,14 @@ public final class SeaProbeCommand {
             };
             var ducat = ru.aiforge.riftworld.registry.ModItems.ELISAR_DUCAT.get();
             var aurIngot = ru.aiforge.riftworld.registry.ModItems.AURITE_INGOT.get();
+            var ducatIngot = ru.aiforge.riftworld.registry.ModItems.DUCAT_INGOT.get();
             var stick = net.minecraft.world.item.Items.STICK;
             var str = net.minecraft.world.item.Items.STRING;
             var plank = ElisarBlocks.SIZO_PLANKS.get().asItem();
 
+            // v0.54.0: «2 дуката -> ауритовый слиток» и «ауритовый слиток -> дукаты»
+            // больше НЕ существуют — это был бесконечный цикл печати денег.
+            // Проверяем, что крафта-обратки действительно нет.
             var toIngot = eval3x3.apply(new net.minecraft.world.item.Item[]{ducat, ducat, null, null, null, null, null, null, null});
             var toDucats = eval3x3.apply(new net.minecraft.world.item.Item[]{aurIngot, null, null, null, null, null, null, null, null});
             var craftBow = eval3x3.apply(new net.minecraft.world.item.Item[]{null, aurIngot, str, stick, null, str, null, aurIngot, str});
@@ -4422,23 +4512,47 @@ public final class SeaProbeCommand {
             var grd = ru.aiforge.riftworld.registry.ModEntities.ELISAR_GUARD.get().create(level);
             var arc = ru.aiforge.riftworld.registry.ModEntities.ELISAR_ARCHER.get().create(level);
             int offers = vil != null ? vil.getOffers().size() : 0;
+            // v0.54.0: житель должен и продавать, и покупать — считаем раздельно.
+            // Раскладка сделки: costA — что отдаёт игрок, result — что получает игрок.
+            int sellOffers = 0;
+            int buyOffers = 0;
+            if (vil != null) {
+                for (var off : vil.getOffers()) {
+                    if (off.getResult().isEmpty()) {
+                        continue;
+                    }
+                    if (off.getResult().is(ducat) && !off.getCostA().is(ducat)) {
+                        ++buyOffers;   // торговец платит дукатами за товар игрока
+                    } else if (off.getCostA().is(ducat)) {
+                        ++sellOffers;  // торговец продаёт товар за дукаты
+                    }
+                }
+            }
             boolean grdOk = grd != null && grd.isLeftHanded()
                     && grd.getMainHandItem().is(ru.aiforge.riftworld.registry.ModItems.ELISAR_GUARD_SWORD.get())
                     && grd.getOffhandItem().is(ru.aiforge.riftworld.registry.ModItems.ELISAR_GUARD_SHIELD.get());
             boolean arcOk = arc != null && arc.isLeftHanded()
                     && arc.getMainHandItem().is(ru.aiforge.riftworld.registry.ModItems.ELISAR_BOW.get());
-            boolean recOk = toIngot.is(aurIngot) && toIngot.getCount() == 1
-                    && toDucats.is(ducat) && toDucats.getCount() == 2
+            boolean recOk = toIngot.isEmpty() && toDucats.isEmpty()
                     && craftBow.is(ru.aiforge.riftworld.registry.ModItems.ELISAR_BOW.get())
                     && craftShield.is(ru.aiforge.riftworld.registry.ModItems.ELISAR_SHIELD.get());
+            // Монетная цепочка: слиток -> монета переплавкой.
+            var coinFromIngot = rm.getRecipeFor(net.minecraft.world.item.crafting.RecipeType.SMELTING,
+                    new net.minecraft.world.SimpleContainer(new net.minecraft.world.item.ItemStack(ducatIngot)), level)
+                    .map(r -> r.assemble(new net.minecraft.world.SimpleContainer(1), regAcc))
+                    .orElse(net.minecraft.world.item.ItemStack.EMPTY);
+            boolean chainOk = coinFromIngot.is(ducat);
             String line = "riftstruct kind=v48_armory_probe"
                     + " recipes_ok=" + recOk
+                    + " chain_ok=" + chainOk
                     + " villager_offers=" + offers
+                    + " sell_offers=" + sellOffers
+                    + " buy_offers=" + buyOffers
                     + " guard_equipped=" + grdOk
                     + " archer_equipped=" + arcOk
                     + " rare_ore_biomes=4(crystal_rifts,violet_hills,morok_hollow,mist_keep)";
             src.sendSuccess(() -> Component.literal(line), false);
-            return (recOk && offers >= 6 && grdOk && arcOk) ? 1 : 0;
+            return (recOk && chainOk && offers >= 8 && sellOffers >= 3 && buyOffers >= 3 && grdOk && arcOk) ? 1 : 0;
         }
 
         if (k.equals("v39_morok")) {
@@ -5302,6 +5416,11 @@ public final class SeaProbeCommand {
             return 1;
         }
 
+        // v0.54.0: /riftstruct profession — то же самое, что /riftprofession.
+        if (k.equals("profession")) {
+            return professionInfo(src);
+        }
+
         if (k.equals("v29_crafting_and_coin_ore")) {
             var rm = level.getRecipeManager();
             var regAcc = level.registryAccess();
@@ -5373,7 +5492,9 @@ public final class SeaProbeCommand {
             });
             if (rGilded.is(ru.aiforge.riftworld.registry.ModItems.GILDED_PAPER.get()) && rGilded.getCount() == 1) ++passedCrafts;
 
-            // 7) Монетная руда (ducat_ore и deepslate_ducat_ore) -> выплавляется в печи И плавильне в elisar_ducat!
+            // 7) v0.54.0: монетная цепочка руда -> слиток -> монета.
+            // ducat_ore переплавляется в ducat_ingot, а ducat_ingot — в elisar_ducat.
+            // Прямого пути руда -> монета больше нет: монеты нельзя получить из руды напрямую.
             var smelt1 = rm.getRecipeFor(net.minecraft.world.item.crafting.RecipeType.SMELTING,
                     new net.minecraft.world.SimpleContainer(new net.minecraft.world.item.ItemStack(ElisarBlocks.DUCAT_ORE.get())), level)
                     .map(r -> r.assemble(new net.minecraft.world.SimpleContainer(1), regAcc))
@@ -5382,8 +5503,60 @@ public final class SeaProbeCommand {
                     new net.minecraft.world.SimpleContainer(new net.minecraft.world.item.ItemStack(ElisarBlocks.DEEPSLATE_DUCAT_ORE.get())), level)
                     .map(r -> r.assemble(new net.minecraft.world.SimpleContainer(1), regAcc))
                     .orElse(net.minecraft.world.item.ItemStack.EMPTY);
-            if (smelt1.is(ru.aiforge.riftworld.registry.ModItems.ELISAR_DUCAT.get())) ++passedCrafts;
-            if (blast1.is(ru.aiforge.riftworld.registry.ModItems.ELISAR_DUCAT.get())) ++passedCrafts;
+            var coin1 = rm.getRecipeFor(net.minecraft.world.item.crafting.RecipeType.SMELTING,
+                    new net.minecraft.world.SimpleContainer(new net.minecraft.world.item.ItemStack(ru.aiforge.riftworld.registry.ModItems.DUCAT_INGOT.get())), level)
+                    .map(r -> r.assemble(new net.minecraft.world.SimpleContainer(1), regAcc))
+                    .orElse(net.minecraft.world.item.ItemStack.EMPTY);
+            var coin2 = rm.getRecipeFor(net.minecraft.world.item.crafting.RecipeType.BLASTING,
+                    new net.minecraft.world.SimpleContainer(new net.minecraft.world.item.ItemStack(ru.aiforge.riftworld.registry.ModItems.DUCAT_INGOT.get())), level)
+                    .map(r -> r.assemble(new net.minecraft.world.SimpleContainer(1), regAcc))
+                    .orElse(net.minecraft.world.item.ItemStack.EMPTY);
+            // Ссылка на старую цепочку: руда больше не плавится сразу в монету.
+            var directCoin = rm.getRecipeFor(net.minecraft.world.item.crafting.RecipeType.SMELTING,
+                    new net.minecraft.world.SimpleContainer(new net.minecraft.world.item.ItemStack(ElisarBlocks.DUCAT_ORE.get())), level)
+                    .map(r -> r.assemble(new net.minecraft.world.SimpleContainer(1), regAcc))
+                    .orElse(net.minecraft.world.item.ItemStack.EMPTY);
+            var ingotOk = smelt1.is(ru.aiforge.riftworld.registry.ModItems.DUCAT_INGOT.get())
+                    && blast1.is(ru.aiforge.riftworld.registry.ModItems.DUCAT_INGOT.get());
+            var coinOk = coin1.is(ru.aiforge.riftworld.registry.ModItems.ELISAR_DUCAT.get())
+                    && coin2.is(ru.aiforge.riftworld.registry.ModItems.ELISAR_DUCAT.get());
+            var noShortcut = !directCoin.is(ru.aiforge.riftworld.registry.ModItems.ELISAR_DUCAT.get());
+            if (ingotOk) ++passedCrafts;
+            if (coinOk) ++passedCrafts;
+            if (noShortcut) ++passedCrafts;
+
+            // 8) v0.54.0: экономика — ни одна профессия не покупает то, что сама продаёт,
+            // нет кросс-профессиональных циклов, и закупочная цена не выше продажной.
+            boolean econOk = true;
+            int econChecked = 0;
+            var soldBy = new java.util.LinkedHashMap<String, java.util.List<String>>();
+            var boughtBy = new java.util.LinkedHashMap<String, java.util.List<String>>();
+            for (var prof : ru.aiforge.riftworld.world.ElisarProfession.values()) {
+                var sellNames = new java.util.ArrayList<String>();
+                for (var st : prof.goods()) {
+                    sellNames.add(st.getItem().toString());
+                }
+                var buyNames = new java.util.ArrayList<String>();
+                for (var st : prof.buys()) {
+                    buyNames.add(st.getItem().toString());
+                    // торговец не должен скупать то, что сам продаёт
+                    if (sellNames.contains(st.getItem().toString())) {
+                        econOk = false;
+                    }
+                }
+                soldBy.put(prof.name(), sellNames);
+                boughtBy.put(prof.name(), buyNames);
+                econChecked++;
+            }
+            if (!ru.aiforge.riftworld.world.ElisarEconomy.noCrossProfessionCycle(soldBy, boughtBy)) {
+                econOk = false;
+            }
+            if (!ru.aiforge.riftworld.world.ElisarEconomy.pricesSafe(
+                    ru.aiforge.riftworld.world.ElisarEconomy.buyPrice(ru.aiforge.riftworld.world.ElisarEconomy.BLOCK_BASE, 1),
+                    ru.aiforge.riftworld.world.ElisarEconomy.sellPrice(ru.aiforge.riftworld.world.ElisarEconomy.BLOCK_BASE, 1))) {
+                econOk = false;
+            }
+            if (econOk) ++passedCrafts;
 
             // Витрина Монетной руды (ducat_ore, deepslate_ducat_ore, aurite_ore), печей, верстака и блоков крафта для кадра 143!
             int gx = 890, gy = 144, gz = 760;
@@ -5414,11 +5587,11 @@ public final class SeaProbeCommand {
                 level.setBlock(new BlockPos(gx - 5, gy + 2, gz), ElisarBlocks.LANTERN.get().defaultBlockState(), 2);
             }
 
-            int metric = (passedCrafts == 8) ? 800 : 0;
+            int metric = (passedCrafts == 11) ? 800 : 0;
             int camX = gx, camY = gy + 4, camZ = gz + 7;
             int lkX = gx, lkY = gy + 1, lkZ = gz;
             String line = "riftstruct kind=v29_crafting_and_coin_ore at=" + gx + "," + (gy + 2) + "," + gz
-                    + " passed_crafts=" + passedCrafts + "/8"
+                    + " passed_crafts=" + passedCrafts + "/11"
                     + " gilded_3x3=" + rGilded.is(ru.aiforge.riftworld.registry.ModItems.GILDED_PAPER.get())
                     + " ducat_smelt=" + smelt1.is(ru.aiforge.riftworld.registry.ModItems.ELISAR_DUCAT.get())
                     + " blocks=" + metric + " sub_air=0"

@@ -241,6 +241,18 @@ BROW_DARK = hex_rgba("#3B241A")
 EYE_WHITE = hex_rgba("#F6F3EF")
 EYE_GREEN = hex_rgba("#24721F")
 
+# v0.54.0: «нос упал вниз» — морда переделана по ванильному жителю.
+# Ваниль (1.20.1 VillagerModel): голова texOffs(0,0) 8x10x8, нос — отдельный куб
+# texOffs(24,0) addBox(-1,-1,-6, 2,4,2) + PartPose.offset(0,-2,0).
+# На лицевой текстуре ванили БРОВЬ = строка 5, ГЛАЗА = строка 6, а строки 7..9 —
+# чистая кожа: РТА НЕТ, потому что нос — объёмный куб и перекрывает низ лица.
+#
+# Ванильный нос тёмный и заметно выступает:
+#   фронт  = (144, 94, 67), бок = (117, 71, 47) — заметно темнее кожи лица.
+SNOUT_FRONT = hex_rgba("#905E43")
+SNOUT_SIDE = hex_rgba("#75472F")
+SNOUT_TOP = hex_rgba("#A8714F")
+
 LILAC_HI = hex_rgba("#C29BB3")
 LILAC = hex_rgba("#AD839D")
 LILAC_SH = hex_rgba("#916A84")
@@ -272,33 +284,50 @@ FLETCH_SH = hex_rgba("#C8C3C6")
 
 
 def paint_villager_cranium(face: str, w: int, h: int) -> np.ndarray:
+    """Лицо жителя — по ванильной раскладке.
+
+    Ваниль: бровь на строке 5, глаза на строке 6, ниже — чистая кожа.
+    Рот НЕ рисуется: нижние три строки лица перекрывает объёмный нос-куб.
+    Раньше рот был нарисован на строке 7 — прямо под носом, из-за чего нос
+    визуально «падал вниз» на рот.
+    """
     arr = solid_face(SKIN, 101, 0.025, 0.96)(face, w, h)
     if face == "front":  # 8x10
-        fill_rect(arr, 1, 0, 6, 4, SKIN_HI, 102, 0.02)
-        # Continuous dark brown unibrow at y=4 (x=1..6)
-        fill_rect(arr, 1, 4, 6, 1, BROW_DARK)
-        # Crisp emerald-green eyes with outer white sclera at y=5
-        put_px(arr, 1, 5, EYE_WHITE)
-        put_px(arr, 2, 5, EYE_GREEN)
-        put_px(arr, 3, 5, SKIN_SH)
-        put_px(arr, 4, 5, SKIN_SH)
-        put_px(arr, 5, 5, EYE_GREEN)
-        put_px(arr, 6, 5, EYE_WHITE)
-        # Cheek & mouth shading around the 3D nose
-        fill_rect(arr, 1, 6, 6, 3, SKIN, 103, 0.02)
-        put_px(arr, 2, 7, SKIN_DARK)
-        put_px(arr, 5, 7, SKIN_DARK)
-        fill_rect(arr, 1, 9, 6, 1, SKIN_SH)
+        # Лоб чуть светлее — как у ванили.
+        fill_rect(arr, 1, 0, 6, 5, SKIN_HI, 102, 0.02)
+        # Сплошная тёмная бровь на строке 5 (как у ванильного жителя).
+        fill_rect(arr, 1, 5, 6, 1, BROW_DARK)
+        # Глаза на строке 6: зрачок + белок по краям.
+        put_px(arr, 1, 6, EYE_WHITE)
+        put_px(arr, 2, 6, EYE_GREEN)
+        put_px(arr, 3, 6, SKIN_SH)
+        put_px(arr, 4, 6, SKIN_SH)
+        put_px(arr, 5, 6, EYE_GREEN)
+        put_px(arr, 6, 6, EYE_WHITE)
+        # Под глазами — только кожа. Никакого рта: его место занимает нос-куб.
+        fill_rect(arr, 1, 7, 6, 3, SKIN, 103, 0.02)
     elif face == "up":
         fill_rect(arr, 1, 1, w - 2, h - 2, SKIN_HI, 104, 0.02)
     return arr
 
 
 def paint_villager_nose(face: str, w: int, h: int) -> np.ndarray:
-    arr = solid_face(SKIN_SH, 105, 0.02, 0.96)(face, w, h)
+    """Нос-куб: тёмный выступающий пятачок, как у ванильного жителя.
+
+    Ваниль рисует нос отдельным тёмным кубом — именно он создаёт ощущение
+    объёмного носа. Светлый нос сливается с лицом, и кажется, что нос «упал».
+    """
+    arr = solid_face(SNOUT_SIDE, 105, 0.02, 0.94)(face, w, h)
     if face == "front":
-        fill_rect(arr, 0, 0, w, max(1, h - 1), SKIN)
-        fill_rect(arr, 0, h - 1, w, 1, SKIN_DARK)
+        # Пятачок: светлее боков, но всё равно темнее кожи лица.
+        fill_rect(arr, 0, 0, w, max(1, h - 1), SNOUT_FRONT)
+        fill_rect(arr, 0, h - 1, w, 1, SNOUT_SIDE)
+        # Ноздри в нижней части — читаются как настоящий нос.
+        if w >= 2 and h >= 3:
+            put_px(arr, 0, h - 2, SNOUT_SIDE)
+            put_px(arr, w - 1, h - 2, SNOUT_SIDE)
+    elif face == "up":
+        fill_rect(arr, 0, 0, w, h, SNOUT_TOP)
     return arr
 
 

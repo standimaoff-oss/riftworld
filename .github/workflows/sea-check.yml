@@ -54,10 +54,13 @@ jobs:
             echo "::error::Сгенерированные текстуры/рецепты брони разошлись с закоммиченными"; exit 1; }
           mkdir -p /tmp/maja-unit
           javac -d /tmp/maja-unit mod/src/main/java/ru/aiforge/riftworld/world/DeepOcean.java mod/src/main/java/ru/aiforge/riftworld/world/MajaSafetyPolicy.java tests/java/MajaRulesTest.java tests/java/DeepOceanCoreTest.java mod/src/main/java/ru/aiforge/riftworld/world/OceanWreck.java tests/java/OceanWreckTest.java mod/src/main/java/ru/aiforge/riftworld/world/MajaMotion.java tests/java/MajaMotionTest.java
+          # v0.54.0: экономика Элисара — чистая арифметика цен, тестируется без Forge.
+          javac -d /tmp/maja-unit mod/src/main/java/ru/aiforge/riftworld/world/ElisarEconomy.java tests/java/ElisarEconomyTest.java
           java -cp /tmp/maja-unit MajaRulesTest
           java -cp /tmp/maja-unit DeepOceanCoreTest
           java -cp /tmp/maja-unit OceanWreckTest
           java -cp /tmp/maja-unit MajaMotionTest
+          java -cp /tmp/maja-unit ElisarEconomyTest
       - uses: gradle/actions/setup-gradle@v4
       - name: Compile and package both mods
         shell: bash

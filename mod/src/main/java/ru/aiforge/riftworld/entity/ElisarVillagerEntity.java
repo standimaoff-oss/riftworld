@@ -1,6 +1,9 @@
 package ru.aiforge.riftworld.entity;
 
 import javax.annotation.Nullable;
+
+import java.util.List;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -40,6 +43,7 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.phys.AABB;
 import ru.aiforge.riftworld.registry.ElisarBlocks;
 import ru.aiforge.riftworld.registry.ModItems;
+import ru.aiforge.riftworld.world.ElisarEconomy;
 import ru.aiforge.riftworld.world.ElisarLaw;
 import ru.aiforge.riftworld.world.ElisarProfession;
 import ru.aiforge.riftworld.world.ElisarWitness;
@@ -58,6 +62,18 @@ public final class ElisarVillagerEntity extends PathfinderMob implements Npc, Me
     private ElisarProfession profession;
     /** Тик последнего предупреждения (чтобы не кричать каждый тик). */
     private int lastWarnTick = -100;
+    /**
+     * v0.54.0 — плавающие множители цен.
+     *
+     * <p>{@link #buyFactor} — множитель закупочной цены: падает, когда товар
+     * много скупают. {@link #sellFactor} — множитель продажной цены: растёт,
+     * когда товар много продают. Вместе они удерживают баланс спроса и
+     * предложения без ручного вмешательства.</p>
+     */
+    private float buyFactor = 1.0F;
+    private float sellFactor = 1.0F;
+    /** Накопительный счётчик сделок по товару — для плавной подстройки цен. */
+    private final java.util.Map<String, Integer> tradeCounts = new java.util.HashMap<>();
 
     public ElisarVillagerEntity(EntityType<? extends ElisarVillagerEntity> type, Level level) {
         super(type, level);
@@ -67,6 +83,16 @@ public final class ElisarVillagerEntity extends PathfinderMob implements Npc, Me
         }
         // Профессия выбирается устойчиво: одна и та же «душа» всегда одна и та же.
         this.profession = ElisarProfession.forSeed(this.getUUID().hashCode() & 0x7FFFFFFF);
+        // v0.54.0: сразу надеваем профессиональную одежду и даём имя —
+        // иначе житель выглядит безымянным и без профессии, пока кто-то
+        // не вызовет setProfession() вручную.
+        this.applyProfession();
+    }
+
+    /** Надеть профессиональную одежду и показать имя профессии. */
+    private void applyProfession() {
+        this.profession.dress(this);
+        this.setCustomName(net.minecraft.network.chat.Component.literal(this.profession.displayName()));
     }
 
     /** Профессия жителя. */
@@ -78,8 +104,7 @@ public final class ElisarVillagerEntity extends PathfinderMob implements Npc, Me
     public void setProfession(ElisarProfession profession) {
         this.profession = profession;
         this.offers = null;
-        this.profession.dress(this);
-        this.setCustomName(net.minecraft.network.chat.Component.literal(profession.displayName()));
+        this.applyProfession();
     }
 
     public static AttributeSupplier.Builder attributes() {
@@ -218,25 +243,152 @@ public final class ElisarVillagerEntity extends PathfinderMob implements Npc, Me
         // Внимание: конструктор MerchantOffer(costA, costB, result, maxUses, xp, price)
         // — ШЕСТЬ аргументов. Пятиаргументная форма (costA, result, ...) продаёт
         // ВТОРОЙ предмет, поэтому цену и товар нельзя путать местами.
-        list.add(new MerchantOffer(
-                ducat.copyWithCount(1), ItemStack.EMPTY,
-                new ItemStack(ElisarBlocks.SIZO_PLANKS.get(), 12), 16, 2, 0.05F));
-        list.add(new MerchantOffer(
-                ducat.copyWithCount(2), ItemStack.EMPTY,
-                new ItemStack(ModItems.AURITE_INGOT.get(), 1), 24, 3, 0.05F));
-        list.add(new MerchantOffer(
-                ducat.copyWithCount(3), ItemStack.EMPTY,
-                new ItemStack(Items.BREAD, 5), 16, 2, 0.05F));
-        // Товары профессии: у каждого ремесленника свой набор.
-        int idx = 0;
-        for (ItemStack goods : this.profession.goods()) {
-            int price = 3 + idx * 3;
+        //
+        // Базовый набор пропускается, если профессия уже продаёт такой же товар:
+        // иначе в списке торговли появляются два одинаковых предложения.
+        List<ItemStack> professionGoods = this.profession.goods();
+        if (!overlaps(new ItemStack(ElisarBlocks.SIZO_PLANKS.get()), professionGoods)) {
             list.add(new MerchantOffer(
-                    ducat.copyWithCount(price), ItemStack.EMPTY,
+                    ducat.copyWithCount(1), ItemStack.EMPTY,
+                    new ItemStack(ElisarBlocks.SIZO_PLANKS.get(), 12), 16, 2, 0.05F));
+        }
+        if (!overlaps(new ItemStack(ModItems.AURITE_INGOT.get()), professionGoods)) {
+            list.add(new MerchantOffer(
+                    ducat.copyWithCount(2), ItemStack.EMPTY,
+                    new ItemStack(ModItems.AURITE_INGOT.get(), 1), 24, 3, 0.05F));
+        }
+        if (!overlaps(new ItemStack(Items.BREAD), professionGoods)) {
+            list.add(new MerchantOffer(
+                    ducat.copyWithCount(3), ItemStack.EMPTY,
+                    new ItemStack(Items.BREAD, 5), 16, 2, 0.05F));
+        }
+
+        // ---------------------------------------------------------------------------------
+        // v0.54.0: «живая» торговля — торговец и продаёт, и покупает.
+        //
+        // ПРОДАЖА (торговец → игрок): цена = базовая цена категории × редкость / 2,
+        // умноженная на плавающий множитель sellFactor. Покупатель всегда платит
+        // столько же или больше, чем получает дукат — маржа торговца положительна.
+        // ---------------------------------------------------------------------------------
+        int idx = 0;
+        for (ItemStack goods : professionGoods) {
+            int base = categoryPrice(goods);
+            int rarity = rarityOf(goods);
+            int price = ElisarEconomy.apply(this.sellFactor,
+                    ElisarEconomy.sellPrice(base, rarity));
+            list.add(new MerchantOffer(
+                    ducat.copyWithCount(Math.max(1, price)), ItemStack.EMPTY,
                     goods.copy(), 12 + idx * 2, 4 + idx, 0.08F));
             idx++;
         }
+
+        // ---------------------------------------------------------------------------------
+        // ПОКУПКА (игрок → торговец): торговец платит дукатами за принесённый товар.
+        //
+        // ВАЖНО, как это устроено в ванильном MerchantOffer:
+        //   costA  — что игрок ОТДАЁт торговцу (его товар);
+        //   costB  — пусто;
+        //   result — что игрок ПОЛУЧАЕТ (дукаты). Именно result показывается
+        //            в слоте результата, и по нему игрок забирает монеты.
+        // Если положить дукаты в costB, а result оставить пустым, слот результата
+        // будет пустым и сделку невозможно завершить.
+        //
+        // Цена закупки ВСЕГДА ниже цены продажи (маржа), а товар закупки не должен
+        // совпадать с товаром продажи — иначе игрок крутит цикл в ноль или печатает
+        // дукаты из воздуха. Проверку делает overlaps() ниже.
+        // ---------------------------------------------------------------------------------
+        int buyIdx = 0;
+        for (ItemStack want : this.profession.buys()) {
+            if (overlaps(want, professionGoods)) {
+                continue; // не даём торговцу скупать то, что он же и продаёт
+            }
+            int base = categoryPrice(want);
+            int rarity = rarityOf(want);
+            int unit = ElisarEconomy.apply(this.buyFactor,
+                    ElisarEconomy.buyPrice(base, rarity));
+            int count = Math.max(1, want.getCount());
+            // Торговец платит за весь стек сразу: цена за штуку × количество.
+            int payout = Math.max(1, unit * count);
+            list.add(new MerchantOffer(
+                    want.copy(), ItemStack.EMPTY,
+                    ducat.copyWithCount(payout), 8 + buyIdx * 2, 3 + buyIdx, 0.06F));
+            buyIdx++;
+        }
         return list;
+    }
+
+    /**
+     * Есть ли этот предмет среди продаваемых?
+     *
+     * <p>Страховка от «торговец покупает то, что сам же продаёт»: такой цикл
+     * либо обнуляет сделку, либо печатает дукаты из воздуха.</p>
+     */
+    private static boolean overlaps(ItemStack item, List<ItemStack> sold) {
+        for (ItemStack s : sold) {
+            if (s.is(item.getItem())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Базовая цена категории товара.
+     *
+     * <p>Категория определяется по самому предмету, а не по профессии: так
+     * цены остаются осмысленными, если игрок приносит нестандартный товар.</p>
+     */
+    private static int categoryPrice(ItemStack stack) {
+        if (stack.is(Items.BREAD) || stack.is(Items.CAKE) || stack.is(Items.HONEY_BOTTLE)
+                || stack.is(Items.POTION)) {
+            return ElisarEconomy.FOOD_BASE;
+        }
+        // Оружие и щиты. В 1.20.1 общих Items.SWORD нет — только материалные
+        // (IRON_SWORD, DIAMOND_SWORD), поэтому мечи ловим по тегу, а луки
+        // и арбалеты — по конкретным предметам: тегов BOWS/CROSSBOWS в 1.20.1 нет.
+        if (stack.is(net.minecraft.tags.ItemTags.SWORDS)
+                || stack.is(Items.BOW) || stack.is(Items.CROSSBOW)
+                || stack.is(ModItems.ELISAR_BOW.get())
+                || stack.is(ModItems.ELISAR_SHIELD.get())
+                || stack.is(ModItems.ELISAR_GUARD_SHIELD.get())
+                || stack.is(ModItems.ELISAR_GUARD_SWORD.get())) {
+            return ElisarEconomy.WEAPON_BASE;
+        }
+        // Инструменты: кирка, топор, лопата, грабли, удочка.
+        if (stack.is(net.minecraft.tags.ItemTags.PICKAXES)
+                || stack.is(net.minecraft.tags.ItemTags.AXES)
+                || stack.is(net.minecraft.tags.ItemTags.SHOVELS)
+                || stack.is(net.minecraft.tags.ItemTags.HOES)
+                || stack.is(Items.FISHING_ROD)) {
+            return ElisarEconomy.TOOL_BASE;
+        }
+        // Драгоценные — раньше слитков, иначе бриллиант получил бы цену слитка.
+        if (stack.is(ModItems.RIFTCRYSTAL.get()) || stack.is(Items.DIAMOND)
+                || stack.is(Items.EMERALD)) {
+            return ElisarEconomy.RIFTCRYSTAL_BASE;
+        }
+        if (stack.is(ModItems.DUCAT_INGOT.get())) {
+            return ElisarEconomy.INGOT_WORTH;
+        }
+        if (stack.is(ModItems.AURITE_INGOT.get()) || stack.is(Items.IRON_INGOT)
+                || stack.is(Items.GOLD_INGOT)) {
+            return ElisarEconomy.AURITE_INGOT_BASE;
+        }
+        return ElisarEconomy.BLOCK_BASE;
+    }
+
+    /** Множитель редкости товара — определяет, во сколько раз дороже базовой цены. */
+    private static int rarityOf(ItemStack stack) {
+        if (stack.is(ModItems.RIFTCRYSTAL.get()) || stack.is(Items.DIAMOND)
+                || stack.is(Items.EMERALD) || stack.is(ModItems.GILDED_PAPER.get())) {
+            return ElisarEconomy.RARITY_RARE;
+        }
+        if (stack.is(ModItems.AURITE_INGOT.get()) || stack.is(ModItems.DUCAT_INGOT.get())
+                || stack.is(ModItems.ELISAR_DUCAT.get()) || stack.is(Items.IRON_INGOT)
+                || stack.is(Items.GOLD_INGOT)) {
+            return ElisarEconomy.RARITY_UNCOMMON;
+        }
+        return ElisarEconomy.RARITY_COMMON;
     }
 
     @Override
@@ -257,6 +409,16 @@ public final class ElisarVillagerEntity extends PathfinderMob implements Npc, Me
         return this.offers;
     }
 
+    /** Текущий множитель закупочной цены (падает, когда товар много скупают). */
+    public float buyFactor() {
+        return this.buyFactor;
+    }
+
+    /** Текущий множитель продажной цены (растёт, когда товар много продают). */
+    public float sellFactor() {
+        return this.sellFactor;
+    }
+
     @Override
     public void overrideOffers(MerchantOffers offers) {
         this.offers = offers;
@@ -267,10 +429,52 @@ public final class ElisarVillagerEntity extends PathfinderMob implements Npc, Me
         offer.increaseUses();
         this.ambientSoundTime = -this.getAmbientSoundInterval();
         this.playSound(SoundEvents.VILLAGER_YES, this.getSoundVolume(), this.getVoicePitch());
-        if (!this.level().isClientSide && offer.shouldRewardExp()) {
-            int xp = 3 + this.random.nextInt(4);
-            this.level().addFreshEntity(new ExperienceOrb(this.level(), this.getX(), this.getY() + 0.5D, this.getZ(), xp));
+        if (!this.level().isClientSide) {
+            this.adjustPrices(offer);
+            if (offer.shouldRewardExp()) {
+                int xp = 3 + this.random.nextInt(4);
+                this.level().addFreshEntity(new ExperienceOrb(this.level(), this.getX(), this.getY() + 0.5D, this.getZ(), xp));
+            }
         }
+    }
+
+    /**
+     * v0.54.0 — подстройка цен после сделки.
+     *
+     * <p>Раскладка сделки в ванильном MerchantOffer: {@code costA} — что игрок
+     * отдаёт, {@code result} — что игрок получает.</p>
+     * <ul>
+     *   <li>Игрок <b>продал</b> торговцу товар (result — дукаты): закупочная цена
+     *       падает — товара на рынке стало больше.</li>
+     *   <li>Игрок <b>купил</b> у торговца (costA — дукаты, result — товар):
+     *       продажная цена растёт — предложение истощается.</li>
+     * </ul>
+     * <p>Обе цены зажаты сверху и снизу, поэтому экономика не может ни рухнуть,
+     * ни взорваться.</p>
+     */
+    private void adjustPrices(MerchantOffer offer) {
+        ItemStack costA = offer.getCostA();
+        ItemStack result = offer.getResult();
+        boolean playerSoldToMerchant = !result.isEmpty()
+                && result.is(ModItems.ELISAR_DUCAT.get())
+                && !costA.is(ModItems.ELISAR_DUCAT.get());
+        boolean playerBoughtFromMerchant = !costA.isEmpty()
+                && costA.is(ModItems.ELISAR_DUCAT.get())
+                && !result.isEmpty();
+
+        if (playerSoldToMerchant) {
+            String key = costA.getItem().getDescriptionId();
+            int n = this.tradeCounts.merge(key, 1, Integer::sum);
+            this.buyFactor = ElisarEconomy.priceFactor(this.buyFactor, n);
+            this.sellFactor = ElisarEconomy.sellFactor(this.sellFactor, n);
+        } else if (playerBoughtFromMerchant) {
+            String key = result.getItem().getDescriptionId();
+            int n = this.tradeCounts.merge(key, 1, Integer::sum);
+            this.sellFactor = ElisarEconomy.sellFactor(this.sellFactor, n);
+            this.buyFactor = ElisarEconomy.priceFactor(this.buyFactor, n);
+        }
+        // Пересобрать предложения: цены изменились.
+        this.offers = null;
     }
 
     @Override
@@ -317,6 +521,14 @@ public final class ElisarVillagerEntity extends PathfinderMob implements Npc, Me
             tag.put("Offers", this.offers.createTag());
         }
         tag.putString("Profession", this.profession.name());
+        // v0.54.0: плавающие цены и счётчики сделок переживают перезапуск мира.
+        tag.putFloat("BuyFactor", this.buyFactor);
+        tag.putFloat("SellFactor", this.sellFactor);
+        if (!this.tradeCounts.isEmpty()) {
+            CompoundTag counts = new CompoundTag();
+            this.tradeCounts.forEach(counts::putInt);
+            tag.put("TradeCounts", counts);
+        }
     }
 
     @Override
@@ -328,8 +540,23 @@ public final class ElisarVillagerEntity extends PathfinderMob implements Npc, Me
         if (tag.contains("Profession", 8)) {
             try {
                 this.profession = ElisarProfession.valueOf(tag.getString("Profession"));
+                // v0.54.0: при загрузке мира профессия восстанавливается
+                // вместе с одеждой и именем — иначе житель остаётся «голым».
+                this.applyProfession();
             } catch (IllegalArgumentException ignored) {
                 // неизвестная профессия из старого мира — оставляем текущую
+            }
+        }
+        if (tag.contains("BuyFactor", 99)) {
+            this.buyFactor = tag.getFloat("BuyFactor");
+        }
+        if (tag.contains("SellFactor", 99)) {
+            this.sellFactor = tag.getFloat("SellFactor");
+        }
+        if (tag.contains("TradeCounts", 10)) {
+            CompoundTag counts = tag.getCompound("TradeCounts");
+            for (String key : counts.getAllKeys()) {
+                this.tradeCounts.put(key, counts.getInt(key));
             }
         }
     }

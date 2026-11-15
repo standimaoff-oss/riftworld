@@ -433,12 +433,71 @@ def main() -> None:
     ]:
         check_no_missing_magenta(check_png)
 
-    # 6. Check coin-ore smelting determinism + 2-way ducat <-> aurite_ingot + recipes
+    # 5a. v0.54.0: «нос упал вниз» — раскладка лица как у ванильного жителя.
+    # Голова addBox(-4,-10,-4, 8,10,8) -> фронт-лицо UV (9,9) 8x10.
+    # Ваниль (1.20.1): бровь на строке 5, глаза на строке 6, строки 7..9 — чистая
+    # кожа, потому что низ лица перекрывает объёмный нос-куб. Раньше рот был
+    # нарисован на строке 7 — прямо под носом, и нос выглядел «упавшим на рот».
+    for folk_png, folk_name in (
+        (ASSETS / "textures/entity/elisar_villager.png", "villager"),
+        (ASSETS / "textures/entity/elisar_guard.png", "guard"),
+        (ASSETS / "textures/entity/elisar_archer.png", "archer"),
+    ):
+        folk = np.array(Image.open(folk_png).convert("RGBA"))
+        fx, fy = 1 + 8, 1 + 8  # фронт-лицо головы: texOffs(1,1), D=8
+        face = folk[fy:fy + 10, fx:fx + 8]
+        alpha = face[:, :, 3] > 32
+        assert alpha.all(), f"{folk_name}: лицевая текстура головы должна быть полностью непрозрачной"
+        # Бровь — самая тёмная горизонтальная полоса, и она должна быть на строке 5.
+        lum = face[:, :, :3].astype(np.int32).sum(axis=2)
+        dark = lum < 200
+        brow_rows = [r for r in range(10) if dark[r].sum() >= 4]
+        assert brow_rows == [5], f"{folk_name}: бровь должна быть на строке 5, а не {brow_rows}"
+        # Глаза — зелёные пиксели, строка 6.
+        face_rgb = face[:, :, :3].astype(np.int32)
+        green = (face_rgb[:, :, 1] > face_rgb[:, :, 0] + 25) & (face_rgb[:, :, 1] > face_rgb[:, :, 2] + 15)
+        eye_rows = sorted({int(r) for r in range(10) if green[r].any()})
+        assert eye_rows == [6], f"{folk_name}: глаза должны быть на строке 6, а не {eye_rows}"
+        # Строки 7..9 — чистая кожа: ни тёмного рта, ни зелёных глаз.
+        for r in (7, 8, 9):
+            assert not dark[r].any(), f"{folk_name}: на строке {r} не должно быть тёмного рта"
+            assert not green[r].any(), f"{folk_name}: на строке {r} не должно быть зелёных пикселей"
+        # Нос-куб: фронт UV (37,3) 2x4 — тёмный пятачок, заметно темнее кожи.
+        snout = folk[3:7, 37:39, :3].astype(np.int32)
+        skin = face[0:4, 0:4, :3].astype(np.int32)
+        assert snout.sum() < skin.sum(), f"{folk_name}: нос должен быть темнее кожи лица"
+        assert tuple(snout[0, 0]) == (144, 94, 67), \
+            f"{folk_name}: цвет пятачка должен совпадать с ванильным (144,94,67), получено {tuple(snout[0, 0])}"
+
+    # 5b. v0.54.0: слиток монетного серебра — модель, текстура и вклад в креатив-таб.
+    assert (ASSETS / "models/item/ducat_ingot.json").exists(), "Нет модели ducat_ingot"
+    assert (ASSETS / "textures/item/ducat_ingot.png").exists(), "Нет текстуры ducat_ingot"
+    ingot_sprite = np.array(Image.open(ASSETS / "textures/item/ducat_ingot.png").convert("RGBA"))
+    assert ingot_sprite.shape[:2] == (16, 16), (
+        f"ducat_ingot.png must be 16x16, got {ingot_sprite.shape[:2]}")
+    ingot_json = json.loads((ASSETS / "models/item/ducat_ingot.json").read_text(encoding="utf-8"))
+    assert ingot_json.get("parent") == "minecraft:item/generated", (
+        "ducat_ingot.json must use the vanilla parent minecraft:item/generated")
+
+    # 6. Check coin-ore smelting determinism + the two-step coin chain + recipes
     assert not (rec_dir / "aurite_ingot_from_ore.json").exists(), "Duplicate aurite_ore smelting recipe must be removed"
     assert not (rec_dir / "aurite_ingot_from_ore_blasting.json").exists(), "Duplicate aurite_ore blasting recipe must be removed"
-    for req_rec in (
+    # v0.54.0: циклы печати денег удалены. Раньше можно было выплавить монету
+    # из руды напрямую, а потом и обратно обменять дукаты на слиток —
+    # бесконечный цикл печати денег. Теперь монетная цепочка ровно двухступенчатая:
+    # руда -> ducat_ingot -> elisar_ducat.
+    for dead_rec in (
         "aurite_ingot_from_ducats.json",
         "elisar_ducat_from_aurite_ingot.json",
+    ):
+        assert not (rec_dir / dead_rec).exists(), \
+            f"Money-printing recipe {dead_rec} must be removed (ore -> ingot -> coin only)"
+    for req_rec in (
+        # монетная цепочка: руда -> слиток -> монета
+        "ducat_ore_smelting.json", "ducat_ore_blasting.json",
+        "deepslate_ducat_ore_smelting.json", "deepslate_ducat_ore_blasting.json",
+        "elisar_ducat_from_ducat_ingot.json", "elisar_ducat_from_ducat_ingot_blasting.json",
+        "aurite_ore_smelting.json", "aurite_ore_blasting.json",
         "elisar_bow.json",
         "elisar_shield.json",
         "aurite_pickaxe.json", "aurite_axe.json", "aurite_sword.json", "aurite_shovel.json", "aurite_hoe.json",
@@ -447,6 +506,17 @@ def main() -> None:
         rp = rec_dir / req_rec
         assert rp.exists(), f"Missing recipe {req_rec}"
         json.loads(rp.read_text(encoding="utf-8"))
+
+    # 6b. v0.54.0: у smelting/blasting поле "result" ОБЯЗАТЕЛЬНО строка.
+    # В 1.20.1 SimpleCookingSerializer читает результат как getAsString(json, "result"),
+    # поэтому объект с "count" рецепт не загрузит (сервер упадёт на рецептах).
+    for rp in sorted(rec_dir.glob("*.json")):
+        rj = json.loads(rp.read_text(encoding="utf-8"))
+        if rj.get("type") not in ("minecraft:smelting", "minecraft:blasting", "minecraft:smoking",
+                                  "minecraft:campfire_cooking"):
+            continue
+        assert isinstance(rj.get("result"), str), \
+            f"{rp.name}: smelting/blasting result must be a plain item-id string"
 
     # 6a. ЛЮБОЙ shaped-рецепт мода: каждый символ раскладки обязан быть
     # объявлен в key. Иначе сервер падает при загрузке рецептов с
