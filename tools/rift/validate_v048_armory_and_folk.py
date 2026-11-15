@@ -510,6 +510,21 @@ def main() -> None:
                 raise AssertionError(
                     f"{java_file.name}:{line}: хвостовая запятая в List/Set/Map.of — javac не соберёт")
 
+    # 5e. То же с переменными: одно имя в методе нельзя объявлять дважды.
+    for java_file in list(java_dir.glob("Elisar*.java")) + list((ROOT / "tests/java").glob("Elisar*.java")):
+        text = java_file.read_text(encoding="utf-8")
+        for m in re.finditer(r"public static void main\(String\[\] args\)\s*\{(.*)\n    \}",
+                             text, re.S):
+            body = m.group(1)
+            names = re.findall(r"^        (?:int|float|long|boolean|String)\s+(\w+)\s*(?:=|;)",
+                               body, re.M)
+            seen = set()
+            for name in names:
+                if name in seen:
+                    raise AssertionError(
+                        f"{java_file.name}: переменная '{name}' объявлена в main дважды — javac не соберёт")
+                seen.add(name)
+
     # 6. Check coin-ore smelting determinism + the two-step coin chain + recipes
     assert not (rec_dir / "aurite_ingot_from_ore.json").exists(), "Duplicate aurite_ore smelting recipe must be removed"
     assert not (rec_dir / "aurite_ingot_from_ore_blasting.json").exists(), "Duplicate aurite_ore blasting recipe must be removed"

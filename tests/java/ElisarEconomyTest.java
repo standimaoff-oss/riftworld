@@ -142,8 +142,8 @@ public final class ElisarEconomyTest {
             check(!ElisarProfessionData.buys(prof).isEmpty(), "у профессии " + prof + " должны быть закупки");
 
             java.util.List<String> sellNames = new java.util.ArrayList<>(ElisarProfessionData.goods(prof));
-            for (String bought : ElisarProfessionData.buys(prof)) {
-                check(!sellNames.contains(bought),
+            for (String boughtId : ElisarProfessionData.buys(prof)) {
+                check(!sellNames.contains(boughtId),
                         "профессия " + prof + " покупает то, что сама продаёт");
             }
         }
