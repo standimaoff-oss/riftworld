@@ -68,5 +68,13 @@ Killed Silver Sea Serpent
 Observed sea_scale drop from silver_sea_serpent.
 OK: all 15 v0.47.0 fauna entities spawned, ticked, and dropped trophies cleanly.
 Verifying v0.48.0 armory recipes, Villager ducat trades, Guard & Archer equipment, and live AI.
-v48_armory_probe: riftstruct kind=v48_armory_probe recipes_ok=true chain_ok=true villager_offers=9 sell_offers=6 buy_offers=3 guard_equipped=true archer_equipped=true rare_ore_biomes=4(crystal_rifts,violet_hills,morok_hollow,mist_keep)
-v29_crafting_and_coin_ore: riftstruct kind=v29_crafting_and_coin_ore at=890,146,760 passed_crafts=10/11 gilded_3x3=true ducat_ingot_smelt=true ducat_coin_smelt=true no_direct_coin=true econ_ok=true self_ok=true cross_ok=true price_ok=true econ_profs=8 bad= blocks=0 sub_air=0 cam=890,148,767:890,145,760
+v48_armory_probe: riftstruct kind=v48_armory_probe recipes_ok=true chain_ok=true villager_offers=10 sell_offers=7 buy_offers=3 guard_equipped=true archer_equipped=true rare_ore_biomes=4(crystal_rifts,violet_hills,morok_hollow,mist_keep)
+v29_crafting_and_coin_ore: riftstruct kind=v29_crafting_and_coin_ore at=890,146,760 passed_crafts=10/10 gilded_3x3=true ducat_ingot_smelt=true ducat_coin_smelt=true no_direct_coin=true econ_ok=true self_ok=true cross_ok=true price_ok=true econ_profs=8 bad= blocks=800 sub_air=0 cam=890,148,767:890,145,760
+riftprofession: riftprofession professions=[MASON(Каменщик) SMITH(Кузнец) ARMOURER(Оружейник) HERBALIST(Травница) FISHER(Рыбак) BAKER(Пекарь) SCULPTOR(Скульптор) MERCHANT(Скупщик)] nearby_villagers=0 distribution=[MASON=0 SMITH=0 ARMOURER=0 HERBALIST=0 FISHER=0 BAKER=0 SCULPTOR=0 MERCHANT=0]
+Summoned new Пекарь
+
+Summoned new Elisar Guard
+
+Summoned new Elisar Archer
+
+OK: v0.48.0 armory, dual tool sets, and 3 Elisar settlement folk verified on live Forge server.
