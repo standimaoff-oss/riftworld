@@ -54,8 +54,11 @@ jobs:
             echo "::error::Сгенерированные текстуры/рецепты брони разошлись с закоммиченными"; exit 1; }
           mkdir -p /tmp/maja-unit
           javac -d /tmp/maja-unit mod/src/main/java/ru/aiforge/riftworld/world/DeepOcean.java mod/src/main/java/ru/aiforge/riftworld/world/MajaSafetyPolicy.java tests/java/MajaRulesTest.java tests/java/DeepOceanCoreTest.java mod/src/main/java/ru/aiforge/riftworld/world/OceanWreck.java tests/java/OceanWreckTest.java mod/src/main/java/ru/aiforge/riftworld/world/MajaMotion.java tests/java/MajaMotionTest.java
+          # v0.55.0: торговые списки профессий без Minecraft — генерируются из
+          # ElisarProfession, поэтому проверяем, что копия не разошлась.
+          python tools/rift/gen_elisar_profession_data.py --check
           # v0.54.0: экономика Элисара — чистая арифметика цен, тестируется без Forge.
-          javac -d /tmp/maja-unit mod/src/main/java/ru/aiforge/riftworld/world/ElisarEconomy.java tests/java/ElisarEconomyTest.java
+          javac -d /tmp/maja-unit mod/src/main/java/ru/aiforge/riftworld/world/ElisarEconomy.java mod/src/main/java/ru/aiforge/riftworld/world/ElisarProfessionData.java tests/java/ElisarEconomyTest.java
           java -cp /tmp/maja-unit MajaRulesTest
           java -cp /tmp/maja-unit DeepOceanCoreTest
           java -cp /tmp/maja-unit OceanWreckTest

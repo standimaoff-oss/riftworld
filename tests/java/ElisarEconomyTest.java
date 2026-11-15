@@ -1,5 +1,5 @@
 import ru.aiforge.riftworld.world.ElisarEconomy;
-import ru.aiforge.riftworld.world.ElisarProfession;
+import ru.aiforge.riftworld.world.ElisarProfessionData;
 
 /**
  * v0.54.0 — проверка экономики Элисара.
@@ -133,39 +133,32 @@ public final class ElisarEconomyTest {
         //    никто не покупает то, что сам же продаёт, и между профессиями
         //    нет кросс-циклов. Иначе торговля печатает дукаты из воздуха.
         // ------------------------------------------------------------------
-        for (ElisarProfession prof : ElisarProfession.values()) {
-            check(!prof.goods().isEmpty(), "у профессии " + prof + " должны быть продажи");
-            check(!prof.buys().isEmpty(), "у профессии " + prof + " должны быть закупки");
+        // Торговые списки берём из ElisarProfessionData — это те же данные,
+        // что у живых профессий, но без Minecraft, поэтому тест собирается
+        // обычным javac. Сверить, что файл не разошёлся с исходником,
+        // помогает tools/rift/gen_elisar_profession_data.py --check.
+        for (String prof : ElisarProfessionData.professions()) {
+            check(!ElisarProfessionData.goods(prof).isEmpty(), "у профессии " + prof + " должны быть продажи");
+            check(!ElisarProfessionData.buys(prof).isEmpty(), "у профессии " + prof + " должны быть закупки");
 
-            java.util.List<String> sellNames = new java.util.ArrayList<>();
-            for (net.minecraft.world.item.ItemStack st : prof.goods()) {
-                sellNames.add(st.getItem().toString());
-            }
-            for (net.minecraft.world.item.ItemStack st : prof.buys()) {
-                check(!sellNames.contains(st.getItem().toString()),
+            java.util.List<String> sellNames = new java.util.ArrayList<>(ElisarProfessionData.goods(prof));
+            for (String bought : ElisarProfessionData.buys(prof)) {
+                check(!sellNames.contains(bought),
                         "профессия " + prof + " покупает то, что сама продаёт");
             }
         }
 
         java.util.Map<String, java.util.List<String>> realSold = new java.util.LinkedHashMap<>();
         java.util.Map<String, java.util.List<String>> realBought = new java.util.LinkedHashMap<>();
-        for (ElisarProfession prof : ElisarProfession.values()) {
-            java.util.List<String> sell = new java.util.ArrayList<>();
-            for (net.minecraft.world.item.ItemStack st : prof.goods()) {
-                sell.add(st.getItem().toString());
-            }
-            java.util.List<String> buy = new java.util.ArrayList<>();
-            for (net.minecraft.world.item.ItemStack st : prof.buys()) {
-                buy.add(st.getItem().toString());
-            }
-            realSold.put(prof.name(), sell);
-            realBought.put(prof.name(), buy);
+        for (String prof : ElisarProfessionData.professions()) {
+            realSold.put(prof, new java.util.ArrayList<>(ElisarProfessionData.goods(prof)));
+            realBought.put(prof, new java.util.ArrayList<>(ElisarProfessionData.buys(prof)));
         }
         // noCrossProfessionCycle возвращает true, когда цикла НЕТ.
         check(ElisarEconomy.noCrossProfessionCycle(realSold, realBought),
                 "в настоящих профессиях не должно быть кросс-профессиональных циклов");
 
         System.out.println("OK: маржа торговцев, потолки цен, монетный курс, "
-                + "отсутствие циклов и " + ElisarProfession.values().length + " профессий");
+                + "отсутствие циклов и " + ElisarProfessionData.professions().size() + " профессий");
     }
 }
