@@ -367,9 +367,6 @@ public final class ElisarVillagerEntity extends PathfinderMob implements Npc, Me
                 || stack.is(Items.EMERALD)) {
             return ElisarEconomy.RIFTCRYSTAL_BASE;
         }
-        if (stack.is(ModItems.DUCAT_INGOT.get())) {
-            return ElisarEconomy.INGOT_WORTH;
-        }
         if (stack.is(ModItems.AURITE_INGOT.get()) || stack.is(Items.IRON_INGOT)
                 || stack.is(Items.GOLD_INGOT)) {
             return ElisarEconomy.AURITE_INGOT_BASE;
@@ -383,7 +380,7 @@ public final class ElisarVillagerEntity extends PathfinderMob implements Npc, Me
                 || stack.is(Items.EMERALD) || stack.is(ModItems.GILDED_PAPER.get())) {
             return ElisarEconomy.RARITY_RARE;
         }
-        if (stack.is(ModItems.AURITE_INGOT.get()) || stack.is(ModItems.DUCAT_INGOT.get())
+        if (stack.is(ModItems.AURITE_INGOT.get())
                 || stack.is(ModItems.ELISAR_DUCAT.get()) || stack.is(Items.IRON_INGOT)
                 || stack.is(Items.GOLD_INGOT)) {
             return ElisarEconomy.RARITY_UNCOMMON;
@@ -500,9 +497,15 @@ public final class ElisarVillagerEntity extends PathfinderMob implements Npc, Me
         return false;
     }
 
+    /**
+     * v0.55.0: вместо ванильного «да» жителя — звон монет Элисара.
+     *
+     * <p>Так сделка слышна: игрок понимает, что монеты перешли из рук в
+     * руки, ещё не открывая окно торговли.</p>
+     */
     @Override
     public SoundEvent getNotifyTradeSound() {
-        return SoundEvents.VILLAGER_YES;
+        return ru.aiforge.riftworld.registry.ModSounds.COIN.get();
     }
 
     @Override
@@ -678,6 +681,18 @@ public final class ElisarVillagerEntity extends PathfinderMob implements Npc, Me
                         this.workplace.getX() + 0.5 + Math.cos(this.idleTicks * 0.03) * 6.0,
                         this.workplace.getY() + 1.5,
                         this.workplace.getZ() + 0.5 + Math.sin(this.idleTicks * 0.03) * 6.0);
+                // v0.55.0: кузнец и оружейник слышат свой молот — мастер работает
+                // на месте, и это слышно. Звук редкий, чтобы не надоедать.
+                if (this.idleTicks % 45 == 0) {
+                    ElisarProfession prof = this.villager.profession();
+                    if (prof == ElisarProfession.SMITH || prof == ElisarProfession.ARMOURER) {
+                        this.villager.level().playSound(null,
+                                this.villager.getX(), this.villager.getY(), this.villager.getZ(),
+                                ru.aiforge.riftworld.registry.ModSounds.HAMMER.get(),
+                                net.minecraft.sounds.SoundSource.NEUTRAL, 0.45F,
+                                0.92F + this.villager.getRandom().nextFloat() * 0.16F);
+                    }
+                }
                 if (this.idleTicks > 600) {
                     this.workplace = null;
                 }

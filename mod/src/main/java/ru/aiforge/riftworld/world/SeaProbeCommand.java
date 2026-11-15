@@ -4503,7 +4503,7 @@ public final class SeaProbeCommand {
             };
             var ducat = ru.aiforge.riftworld.registry.ModItems.ELISAR_DUCAT.get();
             var aurIngot = ru.aiforge.riftworld.registry.ModItems.AURITE_INGOT.get();
-            var ducatIngot = ru.aiforge.riftworld.registry.ModItems.DUCAT_INGOT.get();
+            var ducatIngot = ru.aiforge.riftworld.registry.ModItems.AURITE_INGOT.get(); // слиток-монетный вход
             var stick = net.minecraft.world.item.Items.STICK;
             var str = net.minecraft.world.item.Items.STRING;
             var plank = ElisarBlocks.SIZO_PLANKS.get().asItem();
@@ -5500,8 +5500,8 @@ public final class SeaProbeCommand {
             });
             if (rGilded.is(ru.aiforge.riftworld.registry.ModItems.GILDED_PAPER.get()) && rGilded.getCount() == 1) ++passedCrafts;
 
-            // 7) v0.54.0: монетная цепочка руда -> слиток -> монета.
-            // ducat_ore переплавляется в ducat_ingot, а ducat_ingot — в elisar_ducat.
+            // 7) v0.55.0: монетная цепочка руда -> ауритовый слиток -> монета.
+            // ducat_ore переплавляется в aurite_ingot, а aurite_ingot — в elisar_ducat.
             // Прямого пути руда -> монета больше нет: монеты нельзя получить из руды напрямую.
             var smelt1 = rm.getRecipeFor(net.minecraft.world.item.crafting.RecipeType.SMELTING,
                     new net.minecraft.world.SimpleContainer(new net.minecraft.world.item.ItemStack(ElisarBlocks.DUCAT_ORE.get())), level)
@@ -5512,11 +5512,11 @@ public final class SeaProbeCommand {
                     .map(r -> r.assemble(new net.minecraft.world.SimpleContainer(1), regAcc))
                     .orElse(net.minecraft.world.item.ItemStack.EMPTY);
             var coin1 = rm.getRecipeFor(net.minecraft.world.item.crafting.RecipeType.SMELTING,
-                    new net.minecraft.world.SimpleContainer(new net.minecraft.world.item.ItemStack(ru.aiforge.riftworld.registry.ModItems.DUCAT_INGOT.get())), level)
+                    new net.minecraft.world.SimpleContainer(new net.minecraft.world.item.ItemStack(ru.aiforge.riftworld.registry.ModItems.AURITE_INGOT.get())), level)
                     .map(r -> r.assemble(new net.minecraft.world.SimpleContainer(1), regAcc))
                     .orElse(net.minecraft.world.item.ItemStack.EMPTY);
             var coin2 = rm.getRecipeFor(net.minecraft.world.item.crafting.RecipeType.BLASTING,
-                    new net.minecraft.world.SimpleContainer(new net.minecraft.world.item.ItemStack(ru.aiforge.riftworld.registry.ModItems.DUCAT_INGOT.get())), level)
+                    new net.minecraft.world.SimpleContainer(new net.minecraft.world.item.ItemStack(ru.aiforge.riftworld.registry.ModItems.AURITE_INGOT.get())), level)
                     .map(r -> r.assemble(new net.minecraft.world.SimpleContainer(1), regAcc))
                     .orElse(net.minecraft.world.item.ItemStack.EMPTY);
             // Ссылка на старую цепочку: руда больше не плавится сразу в монету.
@@ -5524,8 +5524,8 @@ public final class SeaProbeCommand {
                     new net.minecraft.world.SimpleContainer(new net.minecraft.world.item.ItemStack(ElisarBlocks.DUCAT_ORE.get())), level)
                     .map(r -> r.assemble(new net.minecraft.world.SimpleContainer(1), regAcc))
                     .orElse(net.minecraft.world.item.ItemStack.EMPTY);
-            var ingotOk = smelt1.is(ru.aiforge.riftworld.registry.ModItems.DUCAT_INGOT.get())
-                    && blast1.is(ru.aiforge.riftworld.registry.ModItems.DUCAT_INGOT.get());
+            var ingotOk = smelt1.is(ru.aiforge.riftworld.registry.ModItems.AURITE_INGOT.get())
+                    && blast1.is(ru.aiforge.riftworld.registry.ModItems.AURITE_INGOT.get());
             var coinOk = coin1.is(ru.aiforge.riftworld.registry.ModItems.ELISAR_DUCAT.get())
                     && coin2.is(ru.aiforge.riftworld.registry.ModItems.ELISAR_DUCAT.get());
             var noShortcut = !directCoin.is(ru.aiforge.riftworld.registry.ModItems.ELISAR_DUCAT.get());
@@ -5621,7 +5621,7 @@ public final class SeaProbeCommand {
             String line = "riftstruct kind=v29_crafting_and_coin_ore at=" + gx + "," + (gy + 2) + "," + gz
                     + " passed_crafts=" + passedCrafts + "/10"
                     + " gilded_3x3=" + rGilded.is(ru.aiforge.riftworld.registry.ModItems.GILDED_PAPER.get())
-                    + " ducat_ingot_smelt=" + smelt1.is(ru.aiforge.riftworld.registry.ModItems.DUCAT_INGOT.get())
+                    + " ducat_ingot_smelt=" + smelt1.is(ru.aiforge.riftworld.registry.ModItems.AURITE_INGOT.get())
                     + " ducat_coin_smelt=" + coin1.is(ru.aiforge.riftworld.registry.ModItems.ELISAR_DUCAT.get())
                     + " no_direct_coin=" + noShortcut
                     + " " + econDiag

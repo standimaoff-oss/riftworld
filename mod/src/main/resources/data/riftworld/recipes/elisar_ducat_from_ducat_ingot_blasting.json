@@ -1,9 +1,0 @@
-{
-  "type": "minecraft:blasting",
-  "ingredient": {
-    "item": "riftworld:ducat_ingot"
-  },
-  "result": "riftworld:elisar_ducat",
-  "experience": 0.7,
-  "cookingtime": 100
-}

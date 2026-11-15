@@ -112,6 +112,39 @@ public final class ElisarSettlementKeeper {
             if (existing == 0) {
                 spawnSquad(level, anchorX, anchorZ, 2, 1, 1, MobSpawnType.STRUCTURE);
             }
+            // v0.55.0: рынок. Прилавки с торговцами строятся один раз на площадь
+            // и помечаются, чтобы не ставить их заново каждый тик.
+            buildMarketOnce(level, anchorX, anchorZ);
+        }
+    }
+
+    /**
+     * v0.55.0: развернуть рынок у площади — один раз на площадь.
+     *
+     * <p>Отмечаем площадь блоком-меткой, чтобы не строить рынок заново:
+     * иначе торговцы и прилавки копились бы при каждом посещении.</p>
+     */
+    private static void buildMarketOnce(ServerLevel level, int anchorX, int anchorZ) {
+        CityPlan plan = CityPlan.get();
+        for (CityPlan.Plaza plaza : plan.plazas) {
+            int px = (int) Math.round(plaza.x());
+            int pz = (int) Math.round(plaza.z());
+            if (px != anchorX || pz != anchorZ) continue;
+            if (!level.hasChunk(px >> 4, pz >> 4)) return;
+            int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, px, pz);
+            if (y <= level.getMinBuildHeight() + 2 || y >= level.getMaxBuildHeight() - 4) return;
+            // Журнал обстроенных площадей: рынок строится один раз.
+            ElisarMarketData market = ElisarMarketData.get(level);
+            if (market.isBuilt(px, pz)) return;
+            int placed = ElisarMarketKeeper.build(level, px, pz, y);
+            if (placed > 0) {
+                market.markBuilt(px, pz);
+                // Колокол рынка: площадь ожила, торговцы встали за прилавки.
+                level.playSound(null, px + 0.5D, y + 1.0D, pz + 0.5D,
+                        ru.aiforge.riftworld.registry.ModSounds.MARKET_BELL.get(),
+                        net.minecraft.sounds.SoundSource.BLOCKS, 0.9F, 1.0F);
+            }
+            return;
         }
     }
 

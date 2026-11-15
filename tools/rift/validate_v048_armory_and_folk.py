@@ -469,15 +469,34 @@ def main() -> None:
         assert tuple(snout[0, 0]) == (144, 94, 67), \
             f"{folk_name}: цвет пятачка должен совпадать с ванильным (144,94,67), получено {tuple(snout[0, 0])}"
 
-    # 5b. v0.54.0: слиток монетного серебра — модель, текстура и вклад в креатив-таб.
-    assert (ASSETS / "models/item/ducat_ingot.json").exists(), "Нет модели ducat_ingot"
-    assert (ASSETS / "textures/item/ducat_ingot.png").exists(), "Нет текстуры ducat_ingot"
-    ingot_sprite = np.array(Image.open(ASSETS / "textures/item/ducat_ingot.png").convert("RGBA"))
+    # 5b. v0.55.0: монетного слитка больше нет. Цепочка: руда -> aurite_ingot -> монета.
+    assert not (ASSETS / "models/item/ducat_ingot.json").exists(), \
+        "Монетный слиток удалён — модели ducat_ingot быть не должно"
+    assert not (ASSETS / "textures/item/ducat_ingot.png").exists(), \
+        "Монетный слиток удалён — текстуры ducat_ingot быть не должно"
+    # Ауритовый слиток остаётся: из него переплавкой делается монета.
+    assert (ASSETS / "models/item/aurite_ingot.json").exists(), "Нет модели aurite_ingot"
+    assert (ASSETS / "textures/item/aurite_ingot.png").exists(), "Нет текстуры aurite_ingot"
+    ingot_sprite = np.array(Image.open(ASSETS / "textures/item/aurite_ingot.png").convert("RGBA"))
     assert ingot_sprite.shape[:2] == (16, 16), (
-        f"ducat_ingot.png must be 16x16, got {ingot_sprite.shape[:2]}")
-    ingot_json = json.loads((ASSETS / "models/item/ducat_ingot.json").read_text(encoding="utf-8"))
+        f"aurite_ingot.png must be 16x16, got {ingot_sprite.shape[:2]}")
+    ingot_json = json.loads((ASSETS / "models/item/aurite_ingot.json").read_text(encoding="utf-8"))
     assert ingot_json.get("parent") == "minecraft:item/generated", (
-        "ducat_ingot.json must use the vanilla parent minecraft:item/generated")
+        "aurite_ingot.json must use the vanilla parent minecraft:item/generated")
+
+    # 5c. v0.55.0: две новые руды рифт-кристалла — текстуры, модели и лут.
+    for ore in ("deepslate_riftcrystal_ore", "riftcrystal_ore_glow"):
+        tex = ASSETS / "textures/block" / (ore + ".png")
+        assert tex.exists(), f"Нет текстуры руды {ore}"
+        sprite = np.array(Image.open(tex).convert("RGBA"))
+        assert sprite.shape[:2] == (16, 16), (
+            f"{ore}.png must be 16x16, got {sprite.shape[:2]}")
+        assert (ASSETS / "models/block" / (ore + ".json")).exists(), f"Нет модели блока {ore}"
+        assert (ASSETS / "models/item" / (ore + ".json")).exists(), f"Нет модели предмета {ore}"
+        assert (ASSETS / "blockstates" / (ore + ".json")).exists(), f"Нет blockstate {ore}"
+        loot = DATA / "riftworld/loot_tables/blocks" / (ore + ".json")
+        assert loot.exists(), f"Нет лут-таблицы {ore}"
+        json.loads(loot.read_text(encoding="utf-8"))
 
     # 6. Check coin-ore smelting determinism + the two-step coin chain + recipes
     assert not (rec_dir / "aurite_ingot_from_ore.json").exists(), "Duplicate aurite_ore smelting recipe must be removed"
@@ -485,10 +504,12 @@ def main() -> None:
     # v0.54.0: циклы печати денег удалены. Раньше можно было выплавить монету
     # из руды напрямую, а потом и обратно обменять дукаты на слиток —
     # бесконечный цикл печати денег. Теперь монетная цепочка ровно двухступенчатая:
-    # руда -> ducat_ingot -> elisar_ducat.
+    # руда -> aurite_ingot -> elisar_ducat.
     for dead_rec in (
         "aurite_ingot_from_ducats.json",
         "elisar_ducat_from_aurite_ingot.json",
+        "elisar_ducat_from_ducat_ingot.json",
+        "elisar_ducat_from_ducat_ingot_blasting.json",
     ):
         assert not (rec_dir / dead_rec).exists(), \
             f"Money-printing recipe {dead_rec} must be removed (ore -> ingot -> coin only)"
@@ -496,8 +517,10 @@ def main() -> None:
         # монетная цепочка: руда -> слиток -> монета
         "ducat_ore_smelting.json", "ducat_ore_blasting.json",
         "deepslate_ducat_ore_smelting.json", "deepslate_ducat_ore_blasting.json",
-        "elisar_ducat_from_ducat_ingot.json", "elisar_ducat_from_ducat_ingot_blasting.json",
+        "aurite_ingot_to_ducat.json", "aurite_ingot_to_ducat_blasting.json",
         "aurite_ore_smelting.json", "aurite_ore_blasting.json",
+        "deepslate_riftcrystal_from_ore.json", "deepslate_riftcrystal_from_ore_blasting.json",
+        "glow_riftcrystal_from_ore.json", "glow_riftcrystal_from_ore_blasting.json",
         "elisar_bow.json",
         "elisar_shield.json",
         "aurite_pickaxe.json", "aurite_axe.json", "aurite_sword.json", "aurite_shovel.json", "aurite_hoe.json",

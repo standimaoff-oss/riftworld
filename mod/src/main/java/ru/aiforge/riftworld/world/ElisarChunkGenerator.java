@@ -1063,6 +1063,9 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         BlockState aurite = st(ElisarBlocks.AURITE_ORE);
         // v0.40.0: редкая руда рифт-кристалла — только 2–3 места в Элисаре и понемногу.
         BlockState riftcrystalOre = st(ElisarBlocks.RIFTCRYSTAL_ORE);
+        // v0.55.0: ещё две руды рифт-кристалла.
+        BlockState deepslateRiftcrystal = st(ElisarBlocks.DEEPSLATE_RIFTCRYSTAL_ORE);
+        BlockState glowRiftcrystal = st(ElisarBlocks.RIFTCRYSTAL_ORE_GLOW);
         BlockState ducatOre = st(ElisarBlocks.DUCAT_ORE);
         // Рев 14: у биома 07 своя зелёная палитра (референс — яркая трава и дубы, а не кремовый Элисар)
         BlockState gardenGrass = st(ElisarBlocks.GARDEN_GRASS);
@@ -1283,6 +1286,11 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                             // Гнёзда рифт-кристалла (место 1 из 3): в тёмном сланце нижней половины разлома.
                             if (s.is(riftSlate.getBlock()) && vnoise(x * 0.42, z * 0.42 + y * 0.05, 727) > 0.955 && hash(x, y, z) < 0.16) {
                                 s = riftcrystalOre;
+                                // v0.55.0: изредка такая же жила светится — тёмный разлом
+                                // пронизан редким светящимся рифт-кристаллом.
+                                if (vnoise(x * 0.61, z * 0.61 - y * 0.11, 917) > 0.972) {
+                                    s = glowRiftcrystal;
+                                }
                             }
                         } else if (c.isl.kind == 7) {
                             // Рев 15: обрыв яруса Фиолетовых холмов — каменная стенка террасы
@@ -1318,6 +1326,12 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                             if (morok && s.is(stone.getBlock()) && y <= c.bottom + 9
                                     && vnoise(x * 0.38, z * 0.38 + y * 0.03, 907) > 0.962 && hash(x, y, z) < 0.14) {
                                 s = riftcrystalOre;
+                            }
+                            // v0.55.0: сланцевая руда рифт-кристалла — глубже обычной,
+                            // в самой толще камня под островом. Кристаллы тусклые.
+                            if (s.is(stone.getBlock()) && y <= c.bottom + 3 && y >= c.bottom - 12
+                                    && vnoise(x * 0.29 + y * 0.06, z * 0.29, 613) > 0.945 && hash(x, y, z) < 0.13) {
+                                s = deepslateRiftcrystal;
                             }
                         }
                         chunk.setBlockState(mp.set(x, y, z), s, false);

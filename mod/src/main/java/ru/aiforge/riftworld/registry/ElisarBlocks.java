@@ -105,6 +105,13 @@ public final class ElisarBlocks {
     // и понемногу: отдельные гнёзда, а не жилы.
     public static final RegistryObject<Block> RIFTCRYSTAL_ORE = ModBlocks.reg("riftcrystal_ore",
             () -> new Block(p(MapColor.DIAMOND, 4.5F, SoundType.STONE).requiresCorrectToolForDrops().lightLevel(s -> 7)));
+    // v0.55.0: две новые руды рифт-кристалла.
+    // Сланцевая — в глубоком камне Элисара, кристаллы тусклые.
+    public static final RegistryObject<Block> DEEPSLATE_RIFTCRYSTAL_ORE = ModBlocks.reg("deepslate_riftcrystal_ore",
+            () -> new Block(p(MapColor.DIAMOND, 5.0F, SoundType.DEEPSLATE).requiresCorrectToolForDrops().lightLevel(s -> 5)));
+    // Светящаяся жила — редкая, в разломах: блок сам светится.
+    public static final RegistryObject<Block> RIFTCRYSTAL_ORE_GLOW = ModBlocks.reg("riftcrystal_ore_glow",
+            () -> new Block(p(MapColor.DIAMOND, 5.0F, SoundType.STONE).requiresCorrectToolForDrops().lightLevel(s -> 12)));
     // мини-биом «Туманный данж» (рев 5): обломчатый серо-зелёный камень утёсов, частичные блоки для почти сломанной руины
     public static final RegistryObject<Block> KEEP_STONE = cube("keep_stone", MapColor.TERRACOTTA_LIGHT_GRAY, 2.2F, SoundType.STONE);
     public static final RegistryObject<Block> KEEP_STONE_CRACKED = cube("keep_stone_cracked", MapColor.TERRACOTTA_LIGHT_GRAY, 2.2F, SoundType.STONE);

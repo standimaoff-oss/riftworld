@@ -33,6 +33,8 @@ public final class RiftWorld {
         ModBlockEntities.TYPES.register(bus);
         ModTabs.TABS.register(bus);
         ru.aiforge.riftworld.registry.ModParticles.PARTICLES.register(bus);
+        // v0.55.0: звуки Элисара (горн, монета, колокол рынка, молот).
+        ru.aiforge.riftworld.registry.ModSounds.SOUNDS.register(bus);
         // Рев 14.41: аддон Dynamic Trees должен РЕАЛЬНО сажать деревья в нашем измерении —
         // для этого ему нужен свой поиск грунта (см. DtGround). Ставим здесь, пока DT ещё не
         // успел закэшировать стандартный GroundFinder по heightmap.

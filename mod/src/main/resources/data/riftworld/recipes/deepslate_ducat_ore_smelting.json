@@ -3,7 +3,7 @@
   "ingredient": {
     "item": "riftworld:deepslate_ducat_ore"
   },
-  "result": "riftworld:ducat_ingot",
+  "result": "riftworld:aurite_ingot",
   "experience": 1.0,
   "cookingtime": 200
 }

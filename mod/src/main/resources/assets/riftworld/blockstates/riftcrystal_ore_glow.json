@@ -1,0 +1,22 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "riftworld:block/riftcrystal_ore_glow",
+        "y": 0
+      },
+      {
+        "model": "riftworld:block/riftcrystal_ore_glow",
+        "y": 90
+      },
+      {
+        "model": "riftworld:block/riftcrystal_ore_glow",
+        "y": 180
+      },
+      {
+        "model": "riftworld:block/riftcrystal_ore_glow",
+        "y": 270
+      }
+    ]
+  }
+}

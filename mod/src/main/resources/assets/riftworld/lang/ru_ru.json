@@ -717,7 +717,6 @@
   "item.riftworld.riftcrystal_chestplate": "Нагрудник из рифт-кристалла",
   "item.riftworld.riftcrystal_leggings": "Поножи из рифт-кристалла",
   "item.riftworld.riftcrystal_boots": "Ботинки из рифт-кристалла",
-  "item.riftworld.ducat_ingot": "Монетный слиток",
   "profession.riftworld.mason": "Каменщик",
   "profession.riftworld.smith": "Кузнец",
   "profession.riftworld.armourer": "Оружейник",
@@ -725,5 +724,13 @@
   "profession.riftworld.fisher": "Рыбак",
   "profession.riftworld.baker": "Пекарь",
   "profession.riftworld.sculptor": "Скульптор",
-  "profession.riftworld.merchant": "Скупщик"
+  "profession.riftworld.merchant": "Скупщик",
+  "block.riftworld.deepslate_riftcrystal_ore": "Глубокосланцевая руда рифт-кристалла",
+  "block.riftworld.riftcrystal_ore_glow": "Светящаяся руда рифт-кристалла",
+  "profession.riftworld.hunter": "Охотник",
+  "profession.riftworld.banker": "Банкир",
+  "profession.riftworld.tanner": "Кожевник",
+  "profession.riftworld.brewer": "Пивовар",
+  "profession.riftworld.jeweller": "Ювелир",
+  "profession.riftworld.carter": "Возчик"
 }

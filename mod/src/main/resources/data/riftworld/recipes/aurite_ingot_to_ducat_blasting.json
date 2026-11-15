@@ -1,7 +1,7 @@
 {
-  "type": "minecraft:smelting",
+  "type": "minecraft:blasting",
   "ingredient": {
-    "item": "riftworld:ducat_ingot"
+    "item": "riftworld:aurite_ingot"
   },
   "result": "riftworld:elisar_ducat",
   "experience": 0.7,

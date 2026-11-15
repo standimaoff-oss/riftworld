@@ -109,8 +109,8 @@ public enum ElisarProfession {
             // скупал, появился бы кросс-профессиональный цикл обмена.
             return List.of(
                     new ItemStack(Items.CHAINMAIL_CHESTPLATE, 1),
-                    new ItemStack(Items.LEATHER, 4),
-                    new ItemStack(Items.FLINT, 4));
+                    new ItemStack(Items.FLINT, 4),
+                    new ItemStack(Items.IRON_INGOT, 2));
         }
     },
 
@@ -234,16 +234,194 @@ public enum ElisarProfession {
                     new ItemStack(ModItems.ELISAR_DUCAT.get(), 4),
                     new ItemStack(ModItems.GILDED_PAPER.get(), 1),
                     new ItemStack(Items.EMERALD, 1),
-                    new ItemStack(Items.DIAMOND, 1));
+                    new ItemStack(Items.REDSTONE, 8));
         }
 
         @Override
         public List<ItemStack> buys() {
-            // Изумруд Скупщик САМ продаёт — покупать его у себя нельзя.
+            // Изумруд и слиток Скупщик САМ продаёт — покупать их у себя нельзя.
+            // Берёт только то, что не продаёт никто.
             return List.of(
-                    new ItemStack(ModItems.DUCAT_INGOT.get(), 1),
                     new ItemStack(Items.RAW_GOLD, 2),
-                    new ItemStack(Items.QUARTZ, 4));
+                    new ItemStack(Items.COAL, 8),
+                    new ItemStack(Items.BONE_BLOCK, 4));
+        }
+    },
+
+    /**
+     * v0.55.0: Охотник — добыча зверя и мяса.
+     *
+     * <p>Продаёт мясо, кожу и трофеи; покупает у игрока зелья силы и зелья
+     * невидимости — то, что охотник сам не добывает.</p>
+     */
+    HUNTER("Охотник", 0x5E6B3A, 0x3E4726) {
+        @Override
+        public void dress(LivingEntity villager) {
+            villager.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.LEATHER_HELMET));
+            villager.setItemSlot(EquipmentSlot.CHEST, new ItemStack(Items.LEATHER_CHESTPLATE));
+            villager.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.BOW));
+        }
+
+        @Override
+        public List<ItemStack> goods() {
+            return List.of(
+                    new ItemStack(Items.RABBIT, 4),
+                    new ItemStack(Items.MUTTON, 4),
+                    new ItemStack(Items.RABBIT_HIDE, 4),
+                    new ItemStack(Items.FEATHER, 8));
+        }
+
+        @Override
+        public List<ItemStack> buys() {
+            // Стрелы, кожа и мясо уже продаются другими (Кожевник, Мясник) —
+            // покупать их здесь нельзя, иначе появляется цикл.
+            return List.of(
+                    new ItemStack(Items.ARROW, 16),
+                    new ItemStack(Items.BONE, 4),
+                    new ItemStack(Items.STRING, 8));
+        }
+    },
+
+    /**
+     * v0.55.0: Банкир — меняет монеты на товары и обратно.
+     *
+     * <p>Единственный торговец, который принимает и выдаёт сами монеты:
+     * игрок может разменять {@code elisar_ducat} на ауритовые слитки и
+     * обратно. Курс фиксирован, поэтому арбитраж невозможен.</p>
+     */
+    BANKER("Банкир", 0x2E4A6B, 0x1E3145) {
+        @Override
+        public void dress(LivingEntity villager) {
+            villager.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.BLUE_WOOL));
+            villager.setItemSlot(EquipmentSlot.CHEST, new ItemStack(Items.CHAINMAIL_CHESTPLATE));
+            villager.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.WRITABLE_BOOK));
+        }
+
+        @Override
+        public List<ItemStack> goods() {
+            return List.of(
+                    new ItemStack(ModItems.AURITE_INGOT.get(), 2),
+                    new ItemStack(Items.GOLD_INGOT, 2),
+                    new ItemStack(Items.EMERALD, 1),
+                    new ItemStack(Items.REDSTONE, 4));
+        }
+
+        @Override
+        public List<ItemStack> buys() {
+            // Банкир принимает сырьё для монет: сырое золото и золотые самородки.
+            // Сам монетный слиток не покупает — его и так продаёт.
+            return List.of(
+                    new ItemStack(Items.RAW_GOLD, 2),
+                    new ItemStack(Items.GOLD_NUGGET, 8),
+                    new ItemStack(Items.NETHERITE_SCRAP, 1));
+        }
+    },
+
+    /** v0.55.0: Кожевник — выделывает кожу и шкуры. */
+    TANNER("Кожевник", 0x8A6640, 0x5E442B) {
+        @Override
+        public void dress(LivingEntity villager) {
+            villager.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.BROWN_WOOL));
+            villager.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.LEATHER));
+        }
+
+        @Override
+        public List<ItemStack> goods() {
+            return List.of(
+                    new ItemStack(Items.LEATHER, 8),
+                    new ItemStack(Items.RABBIT_FOOT, 4),
+                    new ItemStack(Items.RABBIT_HIDE, 4),
+                    new ItemStack(Items.LEATHER_HELMET, 1));
+        }
+
+        @Override
+        public List<ItemStack> buys() {
+            // Кожевник берёт сырьё и расходники: угли, нить и землю.
+            return List.of(
+                    new ItemStack(Items.CHARCOAL, 4),
+                    new ItemStack(Items.STRING, 8),
+                    new ItemStack(Items.DIRT, 8));
+        }
+    },
+
+    /** v0.55.0: Пивовар — варит зелья и продаёт их. */
+    BREWER("Пивовар", 0xC08A3E, 0x8A6026) {
+        @Override
+        public void dress(LivingEntity villager) {
+            villager.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.BROWN_WOOL));
+            villager.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.BREWING_STAND));
+        }
+
+        @Override
+        public List<ItemStack> goods() {
+            return List.of(
+                    new ItemStack(Items.BREWING_STAND, 1),
+                    new ItemStack(Items.BAKED_POTATO, 6),
+                    new ItemStack(Items.HAY_BLOCK, 2),
+                    new ItemStack(Items.WHEAT, 12));
+        }
+
+        @Override
+        public List<ItemStack> buys() {
+            // Пивовар покупает солод, хмель и бутылки — их никто не продаёт.
+            return List.of(
+                    new ItemStack(Items.WHEAT_SEEDS, 4),
+                    new ItemStack(Items.NETHER_WART, 4),
+                    new ItemStack(Items.GLASS_BOTTLE, 6));
+        }
+    },
+
+    /** v0.55.0: Ювелир — работает с самоцветами. */
+    JEWELLER("Ювелир", 0x8C6BB0, 0x5E4878) {
+        @Override
+        public void dress(LivingEntity villager) {
+            villager.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.CYAN_WOOL));
+            villager.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.AMETHYST_SHARD));
+        }
+
+        @Override
+        public List<ItemStack> goods() {
+            return List.of(
+                    new ItemStack(Items.AMETHYST_SHARD, 4),
+                    new ItemStack(Items.CALCITE, 8),
+                    new ItemStack(Items.LAPIS_LAZULI, 6),
+                    new ItemStack(Items.QUARTZ_BLOCK, 1));
+        }
+
+        @Override
+        public List<ItemStack> buys() {
+            // Золото, алмазы и красная пыль — их не продаёт никто.
+            return List.of(
+                    new ItemStack(Items.DIAMOND, 1),
+                    new ItemStack(Items.GOLD_NUGGET, 4),
+                    new ItemStack(Items.STICK, 8));
+        }
+    },
+
+    /** v0.55.0: Возчик — перевозит товары по городу. */
+    CARTER("Возчик", 0x7A6A4A, 0x544834) {
+        @Override
+        public void dress(LivingEntity villager) {
+            villager.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.TURTLE_HELMET));
+            villager.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.SADDLE));
+        }
+
+        @Override
+        public List<ItemStack> goods() {
+            return List.of(
+                    new ItemStack(Items.SADDLE, 1),
+                    new ItemStack(Items.LEAD, 4),
+                    new ItemStack(Items.MINECART, 1),
+                    new ItemStack(Items.OAK_BOAT, 1));
+        }
+
+        @Override
+        public List<ItemStack> buys() {
+            // Возчик берёт верёвку, сундуки и железо — это не ремесленный товар.
+            return List.of(
+                    new ItemStack(Items.STRING, 8),
+                    new ItemStack(Items.CHEST, 1),
+                    new ItemStack(Items.IRON_INGOT, 2));
         }
     };
 

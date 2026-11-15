@@ -61,17 +61,9 @@ public final class ModItems {
     public static final RegistryObject<Item> ELISAR_DUCAT = ITEMS.register("elisar_ducat",
             () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)));
 
-    /**
-     * v0.54.0: Слиток монетного серебра — промежуточное звено монетной цепочки.
-     *
-     * <p>Полная цепочка: {@code ducat_ore} → переплавка → {@code ducat_ingot}
-     * → переплавка → {@code elisar_ducat} (монета). Раньше руда плавилась сразу
-     * в монету, и монеты можно было выплавлять из чего угодно — экономика
-     * Элисара схлопывалась. Теперь ценность добывается в два шага, а монета
-     * получается только из слитка.</p>
-     */
-    public static final RegistryObject<Item> DUCAT_INGOT = ITEMS.register("ducat_ingot",
-            () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)));
+    // v0.55.0: промежуточный «монетный слиток» удалён. Теперь цепочка
+    // ровно в два шага: ауритовая руда (или блок руды) → переплавка →
+    // ауритовый слиток → переплавка → elisar_ducat (монета).
 
     // v0.26.0: Крафтовая особая бумага для приручения Бумажного Дракона (окрашивает его 2 уса!),
     // кастомное Драконье седло Элисара и Горн Дракона (призыв с небес даже вне зоны симуляции)
