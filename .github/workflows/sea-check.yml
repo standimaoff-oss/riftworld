@@ -68,8 +68,9 @@ jobs:
           python tools/rift/gen_elisar_profession_data.py --check
           # v0.54.0: экономика Элисара — чистая арифметика цен, тестируется без Forge.
           echo "::notice::stage=javac-elisar"
-          javac -d /tmp/maja-unit mod/src/main/java/ru/aiforge/riftworld/world/ElisarEconomy.java mod/src/main/java/ru/aiforge/riftworld/world/ElisarProfessionData.java tests/java/ElisarEconomyTest.java
+          javac -d /tmp/maja-unit mod/src/main/java/ru/aiforge/riftworld/world/ElisarEconomy.java mod/src/main/java/ru/aiforge/riftworld/world/ElisarProfessionData.java tests/java/ElisarEconomyTest.java 2>&1 | tee /tmp/javac-elisar.log
           echo "::notice::stage=junit-run"
+          echo "::error::javac elisar log: $(cat /tmp/javac-elisar.log | head -20 | tr '\n' ' ' | cut -c1-900)"
           java -cp /tmp/maja-unit MajaRulesTest
           java -cp /tmp/maja-unit DeepOceanCoreTest
           java -cp /tmp/maja-unit OceanWreckTest
