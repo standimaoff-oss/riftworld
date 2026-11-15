@@ -26,22 +26,22 @@ public final class ModSounds {
     /** Гудение горна и переплавки. */
     public static final RegistryObject<SoundEvent> SMELTING =
             SOUNDS.register("elisar_smelting",
-                    () -> new SoundEvent(new ResourceLocation(RiftWorld.MODID, "elisar_smelting")));
+                    () -> new SoundEvent(new ResourceLocation(RiftWorld.MODID, "elisar_smelting"), 1.0F, false));
 
     /** Звон монет при сделке с торговцем. */
     public static final RegistryObject<SoundEvent> COIN =
             SOUNDS.register("elisar_coin",
-                    () -> new SoundEvent(new ResourceLocation(RiftWorld.MODID, "elisar_coin")));
+                    () -> new SoundEvent(new ResourceLocation(RiftWorld.MODID, "elisar_coin"), 1.0F, false));
 
     /** Колокол рынка. */
     public static final RegistryObject<SoundEvent> MARKET_BELL =
             SOUNDS.register("elisar_market_bell",
-                    () -> new SoundEvent(new ResourceLocation(RiftWorld.MODID, "elisar_market_bell")));
+                    () -> new SoundEvent(new ResourceLocation(RiftWorld.MODID, "elisar_market_bell"), 1.0F, false));
 
     /** Удар молота кузнеца. */
     public static final RegistryObject<SoundEvent> HAMMER =
             SOUNDS.register("elisar_hammer",
-                    () -> new SoundEvent(new ResourceLocation(RiftWorld.MODID, "elisar_hammer")));
+                    () -> new SoundEvent(new ResourceLocation(RiftWorld.MODID, "elisar_hammer"), 1.0F, false));
 
     private ModSounds() {
     }
