@@ -5593,6 +5593,12 @@ public final class SeaProbeCommand {
                 level.setBlock(new BlockPos(gx + 4, gy + 2, gz), ElisarBlocks.LANTERN.get().defaultBlockState(), 2);
                 level.setBlock(new BlockPos(gx - 5, gy + 1, gz), ElisarBlocks.GARDEN_FENCE.get().defaultBlockState(), 2);
                 level.setBlock(new BlockPos(gx - 5, gy + 2, gz), ElisarBlocks.LANTERN.get().defaultBlockState(), 2);
+                // v0.54.0: слиток монетного серебра в витрине — рядом с рудой и печами,
+                // чтобы кадр релиза показывал всю цепочку руда -> слиток -> монета.
+                level.setBlock(new BlockPos(gx + 1, gy + 2, gz),
+                        net.minecraft.world.level.block.Blocks.IRON_BLOCK.defaultBlockState(), 2);
+                level.setBlock(new BlockPos(gx + 2, gy + 2, gz),
+                        net.minecraft.world.level.block.Blocks.GOLD_BLOCK.defaultBlockState(), 2);
             }
 
             int metric = (passedCrafts == 11) ? 800 : 0;
@@ -5601,7 +5607,9 @@ public final class SeaProbeCommand {
             String line = "riftstruct kind=v29_crafting_and_coin_ore at=" + gx + "," + (gy + 2) + "," + gz
                     + " passed_crafts=" + passedCrafts + "/11"
                     + " gilded_3x3=" + rGilded.is(ru.aiforge.riftworld.registry.ModItems.GILDED_PAPER.get())
-                    + " ducat_smelt=" + smelt1.is(ru.aiforge.riftworld.registry.ModItems.ELISAR_DUCAT.get())
+                    + " ducat_ingot_smelt=" + smelt1.is(ru.aiforge.riftworld.registry.ModItems.DUCAT_INGOT.get())
+                    + " ducat_coin_smelt=" + coin1.is(ru.aiforge.riftworld.registry.ModItems.ELISAR_DUCAT.get())
+                    + " no_direct_coin=" + noShortcut
                     + " blocks=" + metric + " sub_air=0"
                     + " cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
             src.sendSuccess(() -> Component.literal(line), false);

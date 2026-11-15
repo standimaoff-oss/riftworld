@@ -60,6 +60,27 @@ log "v48_armory_probe: $ARMORY_PROBE"
 [[ "$ARMORY_PROBE" == *"recipes_ok=true"* ]] || fail "v0.48.0 recipes check failed: $ARMORY_PROBE"
 [[ "$ARMORY_PROBE" == *"guard_equipped=true"* ]] || fail "v0.48.0 guard equipment failed: $ARMORY_PROBE"
 [[ "$ARMORY_PROBE" == *"archer_equipped=true"* ]] || fail "v0.48.0 archer equipment failed: $ARMORY_PROBE"
+# v0.54.0: торговец должен и продавать, и покупать; монетная цепочка — двухступенчатая.
+[[ "$ARMORY_PROBE" == *"chain_ok=true"* ]] || fail "v0.54.0 coin chain (ingot -> coin) failed: $ARMORY_PROBE"
+[[ "$ARMORY_PROBE" == *"sell_offers="* ]] || fail "v0.54.0 sell offers missing: $ARMORY_PROBE"
+[[ "$ARMORY_PROBE" == *"buy_offers="* ]] || fail "v0.54.0 buy offers missing: $ARMORY_PROBE"
+SELL_OFFERS=$(sed -n 's/.*sell_offers=\([0-9]*\).*/\1/p' <<<"$ARMORY_PROBE")
+BUY_OFFERS=$(sed -n 's/.*buy_offers=\([0-9]*\).*/\1/p' <<<"$ARMORY_PROBE")
+[[ -n "$SELL_OFFERS" && "$SELL_OFFERS" -ge 3 ]] || fail "v0.54.0 villager sells too little: $ARMORY_PROBE"
+[[ -n "$BUY_OFFERS" && "$BUY_OFFERS" -ge 3 ]] || fail "v0.54.0 villager buys too little: $ARMORY_PROBE"
+
+# v0.54.0: монетная цепочка и экономика на живом сервере.
+ECON_PROBE=$(rq execute in minecraft:overworld run riftstruct v29_crafting_and_coin_ore)
+log "v29_crafting_and_coin_ore: $ECON_PROBE"
+[[ "$ECON_PROBE" == *"passed_crafts=11/11"* ]] || fail "v0.54.0 coin chain / economy probe failed: $ECON_PROBE"
+[[ "$ECON_PROBE" == *"ducat_ingot_smelt=true"* ]] || fail "v0.54.0 ore -> ingot smelting failed: $ECON_PROBE"
+[[ "$ECON_PROBE" == *"ducat_coin_smelt=true"* ]] || fail "v0.54.0 ingot -> coin smelting failed: $ECON_PROBE"
+[[ "$ECON_PROBE" == *"no_direct_coin=true"* ]] || fail "v0.54.0 direct ore -> coin shortcut still exists: $ECON_PROBE"
+
+# v0.54.0: точные профессии — команда показывает состав и назначает профессию.
+PROF_PROBE=$(rq execute in minecraft:overworld run riftprofession)
+log "riftprofession: $PROF_PROBE"
+[[ "$PROF_PROBE" == *"MASON"* && "$PROF_PROBE" == *"MERCHANT"* ]] || fail "v0.54.0 profession list failed: $PROF_PROBE"
 for folk in elisar_villager elisar_guard elisar_archer; do
   rq summon "riftworld:$folk" 40 200 0 '{PersistenceRequired:1b,NoGravity:1b,Tags:["v048_folk"]}' | tee -a "$LOG"
   sleep 0.3
