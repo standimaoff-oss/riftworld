@@ -92,9 +92,13 @@ public enum ModelKind {
     LANTERN_HANG("lantern_hang", 0, 0, 0, 1, Block.box(5, 5, 5, 11, 16, 11)),
     LANTERN_POST("lantern_post", 0, 0, 0, 2, Block.box(5, 0, 5, 11, 16, 11)),
     LANTERN_WALL("lantern_wall", 0, 0, 0, 1, Block.box(5, 5, 4, 11, 16, 16)),
-    PAINTING_ISLANDS("painting_islands", 0, 0, 0, 2, Block.box(1, 1, 14, 15, 16, 16)),
-    PAINTING_PORTRAIT("painting_portrait", 0, 0, 0, 2, Block.box(1, 1, 14, 15, 16, 16)),
-    PAINTING_EYE("painting_eye", 0, 1, 0, 2, Block.box(0, 0, 14, 16, 2, 16)),
+    // v0.55.0: картины переделаны в квадрат 16x16 (ровно один блок) —
+    // рамка и полотно занимают всю грань блока, поэтому хитбокс тоже
+    // на всю грань: раньше он был узкой полоской, и картину нельзя было
+    // сломать (а у painting_eye он вообще был высотой в два блока).
+    PAINTING_ISLANDS("painting_islands", 0, 0, 0, 1, Block.box(0, 0, 12, 16, 16, 14)),
+    PAINTING_PORTRAIT("painting_portrait", 0, 0, 0, 1, Block.box(0, 0, 12, 16, 16, 14)),
+    PAINTING_EYE("painting_eye", 0, 1, 0, 1, Block.box(0, 0, 12, 16, 16, 14)),
     KITCHEN_STOVE("kitchen_stove", 0, 0, 0, 2, Block.box(0, 0, 1, 16, 14, 16)),
     KITCHEN_COUNTER("kitchen_counter", 0, 0, 0, 1, Block.box(0, 0, 2, 16, 15, 16)),
     DISH_CUPBOARD("dish_cupboard", 0, 0, 0, 2, Block.box(0, 0, 8, 16, 16, 16)),
