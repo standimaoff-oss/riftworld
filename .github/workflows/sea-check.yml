@@ -36,15 +36,14 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
+          exec > >(tee validate-step.log) 2>&1
           python -m pip install numpy pillow
-          {
-            python reports/el_gran_maja_model/validate_el_gran_maja_model.py
-            python reports/el_gran_maja_model/validate_collision_bounds.py
-            python tools/rift/validate_reference_fauna.py
-            python tools/rift/validate_v047_fauna.py
-            python tools/rift/validate_v048_armory_and_folk.py
-            python tools/rift/validate_v049_synched_data.py
-          } 2>&1 | tee validate-step.log
+          python reports/el_gran_maja_model/validate_el_gran_maja_model.py
+          python reports/el_gran_maja_model/validate_collision_bounds.py
+          python tools/rift/validate_reference_fauna.py
+          python tools/rift/validate_v047_fauna.py
+          python tools/rift/validate_v048_armory_and_folk.py
+          python tools/rift/validate_v049_synched_data.py
 
           # v0.52.0: броня с ванильной геометрией. Перегенерируем текстуры и
           # рецепты и проверяем, что генераторы дают тот же результат, что в репозитории
@@ -69,14 +68,15 @@ jobs:
           java -cp /tmp/maja-unit MajaMotionTest
           java -cp /tmp/maja-unit ElisarEconomyTest
       - name: Expose validation errors in check annotations
-        # Логи через API отдают EOF, поэтому ошибки валидации выкладываем
-        # в аннотации — их читать можно.
+        # Логи через API отдают EOF, поэтому ошибки выкладываем в аннотации —
+        # их читать можно.
         if: failure()
         shell: bash
         run: |
           python - <<'PYCODE'
           import glob
-          for path in ('validate-step.log', 'build-ci.log', 'mod/build-ci.log'):
+          for path in ('validate-step.log', 'build-ci.log', 'mod/build-ci.log',
+                       'javac-step.log'):
               try:
                   text = open(path, errors='replace').read()
               except OSError:
@@ -86,6 +86,15 @@ jobs:
                           or 'Traceback' in line or 'FAILURE' in line
                           or 'error:' in line or 'Exception' in line):
                       print('::error title=Validation diagnostic::' + line[:1500])
+          # Показываем хвост любого лога: иногда причина видна только в нём.
+          for path in ('validate-step.log', 'javac-step.log'):
+              try:
+                  text = open(path, errors='replace').read()
+              except OSError:
+                  continue
+              tail = text.strip().splitlines()[-12:]
+              for line in tail:
+                  print('::notice title=' + path + '::' + line[:600])
           PYCODE
       - uses: gradle/actions/setup-gradle@v4
       - name: Compile and package both mods
