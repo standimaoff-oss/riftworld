@@ -126,6 +126,17 @@ def parse_professions() -> list[tuple[str, list[str], list[str]]]:
     return profs
 
 
+def _java_list(exprs: list[str], blocks: dict[str, str], items: dict[str, str]) -> str:
+    """Список строк для List.of(...) — без запятой перед закрывающей скобкой."""
+    if not exprs:
+        return ""
+    lines = []
+    for i, expr in enumerate(exprs):
+        comma = "," if i < len(exprs) - 1 else ""
+        lines.append(f'                "{item_id(expr, blocks, items)}"{comma}\n')
+    return "".join(lines)
+
+
 def item_id(expr: str, blocks: dict[str, str], items: dict[str, str]) -> str:
     if expr.startswith("Items."):
         return "minecraft:" + expr[len("Items."):].lower()
@@ -151,13 +162,13 @@ def build() -> str:
 
     out = [HEADER]
     for name, goods, buys in profs:
+        # List.of() не допускает запятой перед закрывающей скобкой —
+        # элементы разделяем запятыми, последний без запятой.
         out.append(f'        GOODS.put("{name}", List.of(\n')
-        for expr in goods:
-            out.append(f'                "{item_id(expr, blocks, items)}",\n')
+        out.append(_java_list(goods, blocks, items))
         out.append("        ));\n")
         out.append(f'        BUYS.put("{name}", List.of(\n')
-        for expr in buys:
-            out.append(f'                "{item_id(expr, blocks, items)}",\n')
+        out.append(_java_list(buys, blocks, items))
         out.append("        ));\n")
     out.append("    }\n}\n")
     return "".join(out)

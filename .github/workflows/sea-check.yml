@@ -45,32 +45,24 @@ jobs:
             python tools/rift/validate_v048_armory_and_folk.py
             python tools/rift/validate_v049_synched_data.py
           } 2>&1 | tee validate-step.log
-          echo "::error::Validators finished; see validate-step.log for details"
 
           # v0.52.0: броня с ванильной геометрией. Перегенерируем текстуры и
           # рецепты и проверяем, что генераторы дают тот же результат, что в репозитории
           # (иначе коммиты разъедутся с исходниками).
-          echo "::notice::stage=armor-gen"
           PYTHONPATH=.pylibs python tools/rift/gen_v052_vanilla_armor.py
           python tools/rift/gen_v052_armor_recipes.py
-          echo "::notice::stage=armor-diff"
           git diff --exit-code -- mod/src/main/resources/assets/riftworld/textures/models/armor \
             mod/src/main/resources/assets/riftworld/textures/item \
             mod/src/main/resources/assets/riftworld/models/item \
             mod/src/main/resources/data/riftworld/recipes || {
             echo "::error::Сгенерированные текстуры/рецепты брони разошлись с закоммиченными"; exit 1; }
           mkdir -p /tmp/maja-unit
-          echo "::notice::stage=javac-maja"
           javac -d /tmp/maja-unit mod/src/main/java/ru/aiforge/riftworld/world/DeepOcean.java mod/src/main/java/ru/aiforge/riftworld/world/MajaSafetyPolicy.java tests/java/MajaRulesTest.java tests/java/DeepOceanCoreTest.java mod/src/main/java/ru/aiforge/riftworld/world/OceanWreck.java tests/java/OceanWreckTest.java mod/src/main/java/ru/aiforge/riftworld/world/MajaMotion.java tests/java/MajaMotionTest.java
           # v0.55.0: торговые списки профессий без Minecraft — генерируются из
           # ElisarProfession, поэтому проверяем, что копия не разошлась.
-          echo "::notice::stage=profdata-check"
           python tools/rift/gen_elisar_profession_data.py --check
           # v0.54.0: экономика Элисара — чистая арифметика цен, тестируется без Forge.
-          echo "::notice::stage=javac-elisar"
-          javac -d /tmp/maja-unit mod/src/main/java/ru/aiforge/riftworld/world/ElisarEconomy.java mod/src/main/java/ru/aiforge/riftworld/world/ElisarProfessionData.java tests/java/ElisarEconomyTest.java > /tmp/javac-elisar.log 2>&1 || true
-          echo "::notice::stage=junit-run"
-          echo "::error::javac elisar log: $(head -c 1500 /tmp/javac-elisar.log | tr '\n' ' ')"
+          javac -d /tmp/maja-unit mod/src/main/java/ru/aiforge/riftworld/world/ElisarEconomy.java mod/src/main/java/ru/aiforge/riftworld/world/ElisarProfessionData.java tests/java/ElisarEconomyTest.java
           java -cp /tmp/maja-unit MajaRulesTest
           java -cp /tmp/maja-unit DeepOceanCoreTest
           java -cp /tmp/maja-unit OceanWreckTest

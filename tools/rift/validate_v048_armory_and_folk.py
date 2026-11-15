@@ -498,6 +498,18 @@ def main() -> None:
         assert loot.exists(), f"Нет лут-таблицы {ore}"
         json.loads(loot.read_text(encoding="utf-8"))
 
+    # 5d. v0.55.0: в Java-коде профессий не должно быть хвостовых запятых
+    # внутри List.of/Set.of/Map.of — javac на этом падает с
+    # «illegal start of expression», и ошибка всплывает только в CI.
+    java_dir = ROOT / "mod/src/main/java/ru/aiforge/riftworld/world"
+    for java_file in list(java_dir.glob("Elisar*.java")) + list((ROOT / "tests/java").glob("Elisar*.java")):
+        text = java_file.read_text(encoding="utf-8")
+        for m in re.finditer(r"(?:List|Set|Map)\.of\(([^()]*?)\)", text, re.S):
+            if re.search(r",\s*$", m.group(1)):
+                line = text[:m.start()].count("\n") + 1
+                raise AssertionError(
+                    f"{java_file.name}:{line}: хвостовая запятая в List/Set/Map.of — javac не соберёт")
+
     # 6. Check coin-ore smelting determinism + the two-step coin chain + recipes
     assert not (rec_dir / "aurite_ingot_from_ore.json").exists(), "Duplicate aurite_ore smelting recipe must be removed"
     assert not (rec_dir / "aurite_ingot_from_ore_blasting.json").exists(), "Duplicate aurite_ore blasting recipe must be removed"
