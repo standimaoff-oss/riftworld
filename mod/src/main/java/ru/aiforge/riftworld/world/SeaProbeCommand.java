@@ -5536,6 +5536,10 @@ public final class SeaProbeCommand {
             // 8) v0.54.0: экономика — ни одна профессия не покупает то, что сама продаёт,
             // нет кросс-профессиональных циклов, и закупочная цена не выше продажной.
             boolean econOk = true;
+            boolean econSelfOk = true;
+            boolean econCrossOk = true;
+            boolean econPriceOk = true;
+            String econBad = "";
             int econChecked = 0;
             var soldBy = new java.util.LinkedHashMap<String, java.util.List<String>>();
             var boughtBy = new java.util.LinkedHashMap<String, java.util.List<String>>();
@@ -5550,6 +5554,8 @@ public final class SeaProbeCommand {
                     // торговец не должен скупать то, что сам продаёт
                     if (sellNames.contains(st.getItem().toString())) {
                         econOk = false;
+                        econSelfOk = false;
+                        econBad = econBad + " self:" + prof.name() + ":" + st.getItem();
                     }
                 }
                 soldBy.put(prof.name(), sellNames);
@@ -5558,13 +5564,21 @@ public final class SeaProbeCommand {
             }
             if (!ru.aiforge.riftworld.world.ElisarEconomy.noCrossProfessionCycle(soldBy, boughtBy)) {
                 econOk = false;
+                econCrossOk = false;
+                econBad = econBad + " cross_cycle";
             }
             if (!ru.aiforge.riftworld.world.ElisarEconomy.pricesSafe(
                     ru.aiforge.riftworld.world.ElisarEconomy.buyPrice(ru.aiforge.riftworld.world.ElisarEconomy.BLOCK_BASE, 1),
                     ru.aiforge.riftworld.world.ElisarEconomy.sellPrice(ru.aiforge.riftworld.world.ElisarEconomy.BLOCK_BASE, 1))) {
                 econOk = false;
+                econPriceOk = false;
+                econBad = econBad + " price";
             }
             if (econOk) ++passedCrafts;
+            // Диагностика: видно, какой именно инвариант нарушен.
+            String econDiag = "econ_ok=" + econOk
+                    + " self_ok=" + econSelfOk + " cross_ok=" + econCrossOk + " price_ok=" + econPriceOk
+                    + " econ_profs=" + econChecked + " bad=" + econBad;
 
             // Витрина Монетной руды (ducat_ore, deepslate_ducat_ore, aurite_ore), печей, верстака и блоков крафта для кадра 143!
             int gx = 890, gy = 144, gz = 760;
@@ -5610,6 +5624,7 @@ public final class SeaProbeCommand {
                     + " ducat_ingot_smelt=" + smelt1.is(ru.aiforge.riftworld.registry.ModItems.DUCAT_INGOT.get())
                     + " ducat_coin_smelt=" + coin1.is(ru.aiforge.riftworld.registry.ModItems.ELISAR_DUCAT.get())
                     + " no_direct_coin=" + noShortcut
+                    + " " + econDiag
                     + " blocks=" + metric + " sub_air=0"
                     + " cam=" + camX + "," + camY + "," + camZ + ":" + lkX + "," + lkY + "," + lkZ;
             src.sendSuccess(() -> Component.literal(line), false);
