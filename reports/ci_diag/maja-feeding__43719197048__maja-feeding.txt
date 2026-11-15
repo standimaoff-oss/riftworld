@@ -1,0 +1,43 @@
+maja_island x=1690 z=2627 radius=23.38 reach=31.12 base=129.22 anchor_x=1690 anchor_y=85 anchor_z=2420
+body: Marked [101, 140] chunks in riftworld:elisar from [101, 140] to [110, 161] to be force loaded
+island: Marked [103, 162] chunks in riftworld:elisar from [103, 161] to [108, 166] to be force loaded
+candidate y=85: maja_pose clear=false reason=block(1642,79,2504:Block{riftworld:elisar_stone_mossy})
+candidate y=91: maja_pose clear=false reason=block(1642,79,2504:Block{riftworld:elisar_stone_mossy})
+candidate y=79: maja_pose clear=false reason=block(1642,79,2504:Block{riftworld:elisar_stone_mossy})
+candidate y=97: maja_pose clear=false reason=block(1642,79,2504:Block{riftworld:elisar_stone_mossy})
+candidate y=73: maja_pose clear=false reason=block(1642,79,2504:Block{riftworld:elisar_stone_mossy})
+candidate y=134: maja_pose clear=true reason=none
+Summoned new El Gran Maja
+
+maja_pose clear=true reason=none
+
+griefing=false active ticks: 126
+griefing=false: El Gran Maja has the following entity data: 1b; El Gran Maja has the following entity data: 0
+El Gran Maja has the following entity data: "idle"; El Gran Maja has the following entity data: 0; El Gran Maja has the following entity data: 1b
+El Gran Maja has the following entity data: "scan_blocked"; El Gran Maja has the following entity data: 0; El Gran Maja has the following entity data: 1b
+FAILED: feeding cancelled
+[15Nov2026 13:32:27.184] [RCON Client /127.0.0.1 #18/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[15Nov2026 13:32:29.230] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[15Nov2026 13:32:29.231] [RCON Client /127.0.0.1 #19/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[15Nov2026 13:32:29.273] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[15Nov2026 13:32:29.274] [RCON Client /127.0.0.1 #20/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[15Nov2026 13:32:29.315] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[15Nov2026 13:32:29.316] [RCON Client /127.0.0.1 #21/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[15Nov2026 13:32:29.360] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[15Nov2026 13:32:29.363] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Rcon: Teleported El Gran Maja to 1690.500000, 134.000000, 2420.500000]
+[15Nov2026 13:32:29.363] [RCON Client /127.0.0.1 #22/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[15Nov2026 13:32:29.403] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[15Nov2026 13:32:29.403] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: [Rcon: Gamerule mobGriefing is now set to: true]
+[15Nov2026 13:32:29.404] [RCON Client /127.0.0.1 #23/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[15Nov2026 13:32:29.444] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[15Nov2026 13:32:29.445] [RCON Client /127.0.0.1 #24/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[15Nov2026 13:32:29.487] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[15Nov2026 13:32:29.488] [RCON Client /127.0.0.1 #25/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[15Nov2026 13:32:29.530] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[15Nov2026 13:32:29.531] [RCON Client /127.0.0.1 #26/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[15Nov2026 13:32:33.581] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[15Nov2026 13:32:33.582] [RCON Client /127.0.0.1 #27/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[15Nov2026 13:32:33.618] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[15Nov2026 13:32:33.619] [RCON Client /127.0.0.1 #28/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
+[15Nov2026 13:32:33.658] [RCON Listener #1/INFO] [net.minecraft.server.rcon.thread.GenericThread/]: Thread RCON Client /127.0.0.1 started
+[15Nov2026 13:32:33.659] [RCON Client /127.0.0.1 #29/INFO] [net.minecraft.server.rcon.thread.RconClient/]: Thread RCON Client /127.0.0.1 shutting down
