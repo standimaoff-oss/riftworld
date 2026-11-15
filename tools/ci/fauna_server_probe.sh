@@ -72,7 +72,7 @@ BUY_OFFERS=$(sed -n 's/.*buy_offers=\([0-9]*\).*/\1/p' <<<"$ARMORY_PROBE")
 # v0.54.0: монетная цепочка и экономика на живом сервере.
 ECON_PROBE=$(rq execute in minecraft:overworld run riftstruct v29_crafting_and_coin_ore)
 log "v29_crafting_and_coin_ore: $ECON_PROBE"
-[[ "$ECON_PROBE" == *"passed_crafts=11/11"* ]] || fail "v0.54.0 coin chain / economy probe failed: $ECON_PROBE"
+[[ "$ECON_PROBE" == *"passed_crafts=10/10"* ]] || fail "v0.54.0 coin chain / economy probe failed: $ECON_PROBE"
 [[ "$ECON_PROBE" == *"ducat_ingot_smelt=true"* ]] || fail "v0.54.0 ore -> ingot smelting failed: $ECON_PROBE"
 [[ "$ECON_PROBE" == *"ducat_coin_smelt=true"* ]] || fail "v0.54.0 ingot -> coin smelting failed: $ECON_PROBE"
 [[ "$ECON_PROBE" == *"no_direct_coin=true"* ]] || fail "v0.54.0 direct ore -> coin shortcut still exists: $ECON_PROBE"

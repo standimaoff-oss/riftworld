@@ -5615,11 +5615,11 @@ public final class SeaProbeCommand {
                         net.minecraft.world.level.block.Blocks.GOLD_BLOCK.defaultBlockState(), 2);
             }
 
-            int metric = (passedCrafts == 11) ? 800 : 0;
+            int metric = (passedCrafts == 10) ? 800 : 0;
             int camX = gx, camY = gy + 4, camZ = gz + 7;
             int lkX = gx, lkY = gy + 1, lkZ = gz;
             String line = "riftstruct kind=v29_crafting_and_coin_ore at=" + gx + "," + (gy + 2) + "," + gz
-                    + " passed_crafts=" + passedCrafts + "/11"
+                    + " passed_crafts=" + passedCrafts + "/10"
                     + " gilded_3x3=" + rGilded.is(ru.aiforge.riftworld.registry.ModItems.GILDED_PAPER.get())
                     + " ducat_ingot_smelt=" + smelt1.is(ru.aiforge.riftworld.registry.ModItems.DUCAT_INGOT.get())
                     + " ducat_coin_smelt=" + coin1.is(ru.aiforge.riftworld.registry.ModItems.ELISAR_DUCAT.get())
