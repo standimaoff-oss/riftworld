@@ -92,7 +92,7 @@ public final class ElisarVillagerEntity extends PathfinderMob implements Npc, Me
     /** Надеть профессиональную одежду и показать имя профессии. */
     private void applyProfession() {
         this.profession.dress(this);
-        this.setCustomName(net.minecraft.network.chat.Component.literal(this.profession.displayName()));
+        this.setCustomName(this.profession.label());
     }
 
     /** Профессия жителя. */

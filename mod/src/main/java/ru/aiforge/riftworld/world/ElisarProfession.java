@@ -286,8 +286,17 @@ public enum ElisarProfession {
      */
     public abstract List<ItemStack> buys();
 
+    /**
+     * Локализованное название профессии.
+     *
+     * <p>Ключ перевода {@code profession.riftworld.<профессия>} есть и в русском,
+     * и в английском файле; если ключа нет — показываем встроенное название.</p>
+     */
     public Component label() {
-        return Component.literal(this.displayName);
+        String key = "profession.riftworld." + name().toLowerCase(java.util.Locale.ROOT);
+        var translated = Component.translatable(key);
+        // translatable без ключа показывает сам ключ — тогда отдаём встроенное имя.
+        return translated.getString().equals(key) ? Component.literal(this.displayName) : translated;
     }
 
     /**

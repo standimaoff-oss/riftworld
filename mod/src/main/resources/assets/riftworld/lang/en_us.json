@@ -718,5 +718,14 @@
   "item.riftworld.riftcrystal_helmet": "Riftcrystal Helmet",
   "item.riftworld.riftcrystal_chestplate": "Riftcrystal Chestplate",
   "item.riftworld.riftcrystal_leggings": "Riftcrystal Leggings",
-  "item.riftworld.riftcrystal_boots": "Riftcrystal Boots"
+  "item.riftworld.riftcrystal_boots": "Riftcrystal Boots",
+  "item.riftworld.ducat_ingot": "Ducat Ingot",
+  "profession.riftworld.mason": "Mason",
+  "profession.riftworld.smith": "Blacksmith",
+  "profession.riftworld.armourer": "Armourer",
+  "profession.riftworld.herbalist": "Herbalist",
+  "profession.riftworld.fisher": "Fisher",
+  "profession.riftworld.baker": "Baker",
+  "profession.riftworld.sculptor": "Sculptor",
+  "profession.riftworld.merchant": "Merchant"
 }
