@@ -35,13 +35,18 @@ jobs:
       - name: Check model, animation envelopes and island safety rules
         shell: bash
         run: |
+          set -o pipefail
           python -m pip install numpy pillow
-          python reports/el_gran_maja_model/validate_el_gran_maja_model.py
-          python reports/el_gran_maja_model/validate_collision_bounds.py
-          python tools/rift/validate_reference_fauna.py
-          python tools/rift/validate_v047_fauna.py
-          python tools/rift/validate_v048_armory_and_folk.py
-          python tools/rift/validate_v049_synched_data.py
+          {
+            python reports/el_gran_maja_model/validate_el_gran_maja_model.py
+            python reports/el_gran_maja_model/validate_collision_bounds.py
+            python tools/rift/validate_reference_fauna.py
+            python tools/rift/validate_v047_fauna.py
+            python tools/rift/validate_v048_armory_and_folk.py
+            python tools/rift/validate_v049_synched_data.py
+          } 2>&1 | tee validate-step.log
+          echo "::error::Validators finished; see validate-step.log for details"
+
           # v0.52.0: броня с ванильной геометрией. Перегенерируем текстуры и
           # рецепты и проверяем, что генераторы дают тот же результат, что в репозитории
           # (иначе коммиты разъедутся с исходниками).
@@ -64,6 +69,25 @@ jobs:
           java -cp /tmp/maja-unit OceanWreckTest
           java -cp /tmp/maja-unit MajaMotionTest
           java -cp /tmp/maja-unit ElisarEconomyTest
+      - name: Expose validation errors in check annotations
+        # Логи через API отдают EOF, поэтому ошибки валидации выкладываем
+        # в аннотации — их читать можно.
+        if: failure()
+        shell: bash
+        run: |
+          python - <<'PYCODE'
+          import glob
+          for path in ('validate-step.log', 'build-ci.log', 'mod/build-ci.log'):
+              try:
+                  text = open(path, errors='replace').read()
+              except OSError:
+                  continue
+              for line in text.splitlines():
+                  if (' error' in line.lower() or 'assert' in line.lower()
+                          or 'Traceback' in line or 'FAILURE' in line
+                          or 'error:' in line or 'Exception' in line):
+                      print('::error title=Validation diagnostic::' + line[:1500])
+          PYCODE
       - uses: gradle/actions/setup-gradle@v4
       - name: Compile and package both mods
         shell: bash
