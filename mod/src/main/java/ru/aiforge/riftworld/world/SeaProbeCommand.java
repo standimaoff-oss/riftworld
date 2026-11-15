@@ -1991,8 +1991,12 @@ public final class SeaProbeCommand {
             names.append(p.name()).append('(').append(p.displayName()).append(')');
             dist.append(p.name()).append('=').append(counts.get(p.name()));
         }
-        src.sendSuccess(() -> Component.literal("riftprofession professions=[" + names
-                + "] nearby_villagers=" + total + " distribution=[" + dist + "]"), false);
+        // Строку собираем ДО лямбды: sendSuccess ждёт Supplier, а изменяемые
+        // локальные переменные (total, dist) из лямбды брать нельзя.
+        final int found = total;
+        final String info = "riftprofession professions=[" + names
+                + "] nearby_villagers=" + found + " distribution=[" + dist + "]";
+        src.sendSuccess(() -> Component.literal(info), false);
         return 1;
     }
 
@@ -2015,7 +2019,7 @@ public final class SeaProbeCommand {
             return 0;
         }
         // Ищем ближайшего жителя в радиусе 16 блоков.
-        ru.aiforge.riftworld.entity.ElisarVillagerEntity best = null;
+        ru.aiforge.riftworld.entity.ElisarVillagerEntity nearest = null;
         double bestD = Double.MAX_VALUE;
         for (var v : level.getEntitiesOfClass(ru.aiforge.riftworld.entity.ElisarVillagerEntity.class,
                 new net.minecraft.world.phys.AABB(at.getX() - 16, at.getY() - 8, at.getZ() - 16,
@@ -2023,18 +2027,22 @@ public final class SeaProbeCommand {
             double d = v.distanceToSqr(src.getPosition());
             if (d < bestD) {
                 bestD = d;
-                best = v;
+                nearest = v;
             }
         }
-        if (best == null) {
+        if (nearest == null) {
             src.sendFailure(Component.literal("riftprofession: no villager within 16 blocks"));
             return 0;
         }
+        final var best = nearest;
         best.setProfession(prof);
-        int offers = best.getOffers().size();
-        src.sendSuccess(() -> Component.literal("riftprofession: villager at "
+        final int offers = best.getOffers().size();
+        // Строку собираем ДО лямбды: best переприсваивается в цикле и не является
+        // effectively final, поэтому из лямбды его брать нельзя.
+        final String info = "riftprofession: villager at "
                 + best.getX() + "," + best.getY() + "," + best.getZ()
-                + " is now " + prof.name() + " (" + prof.displayName() + "), offers=" + offers), false);
+                + " is now " + prof.name() + " (" + prof.displayName() + "), offers=" + offers;
+        src.sendSuccess(() -> Component.literal(info), false);
         return 1;
     }
 
