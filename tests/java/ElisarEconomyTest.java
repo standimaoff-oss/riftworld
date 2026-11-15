@@ -117,7 +117,8 @@ public final class ElisarEconomyTest {
         sold.put("SMITH", java.util.List.of("aurite_ingot"));
         bought.put("SMITH", java.util.List.of("raw_iron"));
         sold.put("ARMOURER", java.util.List.of("aurite_sword"));
-        bought.put("ARMOURER", java.util.List.of("leather"));
+        // List.of() неизменяемый, а список нужно будет дополнить ниже.
+        bought.put("ARMOURER", new java.util.ArrayList<>(java.util.List.of("leather")));
         check(ElisarEconomy.noCrossProfessionCycle(sold, bought),
                 "чистый набор профессий не должен давать цикла");
 
