@@ -178,32 +178,32 @@ captured frame-v053-items-dropped-tools
 ::warning title=In-game frames::кадр frame-v049-elisar-folk слишком тёмный, переснимаем (3/3)
 captured frame-v049-elisar-folk
 captured 27 in-game frames
-total 16676
--rw-r--r-- 1 runner runner  312266 Nov 15 10:13 frame-bone-raven-head.png
--rw-r--r-- 1 runner runner  333973 Nov 15 10:12 frame-bone-raven-side.png
--rw-r--r-- 1 runner runner  318650 Nov 15 10:11 frame-bone-raven-three-quarter.png
--rw-r--r-- 1 runner runner  909866 Nov 15 10:33 frame-hollowwatcher-daylight.png
--rw-r--r-- 1 runner runner  627624 Nov 15 10:30 frame-hollowwatcher-face.png
--rw-r--r-- 1 runner runner 1050361 Nov 15 10:35 frame-hollowwatcher-night.png
--rw-r--r-- 1 runner runner  748445 Nov 15 10:31 frame-hollowwatcher-tall.png
--rw-r--r-- 1 runner runner  931702 Nov 15 10:28 frame-hollowwatcher-three-quarter.png
--rw-r--r-- 1 runner runner  562876 Nov 15 10:25 frame-liopleurodon-head.png
--rw-r--r-- 1 runner runner  574914 Nov 15 10:24 frame-liopleurodon-side.png
--rw-r--r-- 1 runner runner  595196 Nov 15 10:23 frame-liopleurodon-swim.png
--rw-r--r-- 1 runner runner  150454 Nov 15 10:37 frame-maja-body.png
--rw-r--r-- 1 runner runner  143445 Nov 15 10:39 frame-maja-head.png
--rw-r--r-- 1 runner runner  826850 Nov 15 10:17 frame-paper-dragon-far-a.png
--rw-r--r-- 1 runner runner  814723 Nov 15 10:22 frame-paper-dragon-far-b.png
--rw-r--r-- 1 runner runner  922802 Nov 15 10:18 frame-paper-dragon-far-close.png
--rw-r--r-- 1 runner runner 1019646 Nov 15 10:09 frame-paper-dragon-head.png
--rw-r--r-- 1 runner runner 1312298 Nov 15 10:08 frame-paper-dragon-side.png
--rw-r--r-- 1 runner runner 1250251 Nov 15 10:06 frame-paper-dragon-three-quarter.png
--rw-r--r-- 1 runner runner  308495 Nov 15 10:43 frame-v049-elisar-folk.png
--rw-r--r-- 1 runner runner  596306 Nov 15 10:41 frame-v049-riftcrystal-night-glow.png
--rw-r--r-- 1 runner runner  384321 Nov 15 10:40 frame-v051-gear-closeup.png
--rw-r--r-- 1 runner runner  473733 Nov 15 10:02 frame-v052-armor-riftcrystal-front.png
--rw-r--r-- 1 runner runner  551202 Nov 15 10:05 frame-v052-armor-riftcrystal-side.png
--rw-r--r-- 1 runner runner  481889 Nov 15 10:03 frame-v052-armor-riftcrystal-three-quarter.png
--rw-r--r-- 1 runner runner  484750 Nov 15 10:42 frame-v053-items-dropped-tools.png
--rw-r--r-- 1 runner runner  335490 Nov 15 10:42 frame-v053-tools-closeup.png
+total 16892
+-rw-r--r-- 1 runner runner  312440 Nov 15 11:00 frame-bone-raven-head.png
+-rw-r--r-- 1 runner runner  333645 Nov 15 10:59 frame-bone-raven-side.png
+-rw-r--r-- 1 runner runner  318622 Nov 15 10:58 frame-bone-raven-three-quarter.png
+-rw-r--r-- 1 runner runner  908677 Nov 15 11:20 frame-hollowwatcher-daylight.png
+-rw-r--r-- 1 runner runner  626853 Nov 15 11:17 frame-hollowwatcher-face.png
+-rw-r--r-- 1 runner runner 1048502 Nov 15 11:22 frame-hollowwatcher-night.png
+-rw-r--r-- 1 runner runner  754078 Nov 15 11:19 frame-hollowwatcher-tall.png
+-rw-r--r-- 1 runner runner  931891 Nov 15 11:15 frame-hollowwatcher-three-quarter.png
+-rw-r--r-- 1 runner runner  575130 Nov 15 11:12 frame-liopleurodon-head.png
+-rw-r--r-- 1 runner runner  561665 Nov 15 11:11 frame-liopleurodon-side.png
+-rw-r--r-- 1 runner runner  648962 Nov 15 11:10 frame-liopleurodon-swim.png
+-rw-r--r-- 1 runner runner  149892 Nov 15 11:25 frame-maja-body.png
+-rw-r--r-- 1 runner runner  149282 Nov 15 11:26 frame-maja-head.png
+-rw-r--r-- 1 runner runner  953676 Nov 15 11:04 frame-paper-dragon-far-a.png
+-rw-r--r-- 1 runner runner  815110 Nov 15 11:09 frame-paper-dragon-far-b.png
+-rw-r--r-- 1 runner runner  956002 Nov 15 11:06 frame-paper-dragon-far-close.png
+-rw-r--r-- 1 runner runner 1026210 Nov 15 10:56 frame-paper-dragon-head.png
+-rw-r--r-- 1 runner runner 1298165 Nov 15 10:55 frame-paper-dragon-side.png
+-rw-r--r-- 1 runner runner 1249965 Nov 15 10:53 frame-paper-dragon-three-quarter.png
+-rw-r--r-- 1 runner runner  307418 Nov 15 11:30 frame-v049-elisar-folk.png
+-rw-r--r-- 1 runner runner  596125 Nov 15 11:28 frame-v049-riftcrystal-night-glow.png
+-rw-r--r-- 1 runner runner  386341 Nov 15 11:27 frame-v051-gear-closeup.png
+-rw-r--r-- 1 runner runner  475232 Nov 15 10:49 frame-v052-armor-riftcrystal-front.png
+-rw-r--r-- 1 runner runner  547298 Nov 15 10:51 frame-v052-armor-riftcrystal-side.png
+-rw-r--r-- 1 runner runner  484335 Nov 15 10:50 frame-v052-armor-riftcrystal-three-quarter.png
+-rw-r--r-- 1 runner runner  486125 Nov 15 11:29 frame-v053-items-dropped-tools.png
+-rw-r--r-- 1 runner runner  335358 Nov 15 11:29 frame-v053-tools-closeup.png
 OK: real client frames saved to ci-out/frames
