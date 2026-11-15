@@ -77,6 +77,9 @@ public final class ElisarFaunaUtil {
     /** Valuable crystal / ore blocks sniffed out by a trusted Amethyst Fox. */
     public static boolean isValuableCrystalOrOre(BlockState state) {
         return state.is(ElisarBlocks.RIFTCRYSTAL_ORE.get())
+                // v0.55.0: две новые руды рифт-кристалла — тоже ценная находка.
+                || state.is(ElisarBlocks.DEEPSLATE_RIFTCRYSTAL_ORE.get())
+                || state.is(ElisarBlocks.RIFTCRYSTAL_ORE_GLOW.get())
                 || state.is(ElisarBlocks.DUCAT_ORE.get())
                 || state.is(ElisarBlocks.DEEPSLATE_DUCAT_ORE.get())
                 || state.is(ElisarBlocks.AURITE_ORE.get())

@@ -379,6 +379,9 @@ public final class MajaIslandDevourer {
                 || s.is(ElisarBlocks.GRASS.get()) || s.is(ElisarBlocks.SOIL.get())
                 || s.is(ElisarBlocks.CRUST.get()) || s.is(ElisarBlocks.MOSS.get())
                 || s.is(ElisarBlocks.DUCAT_ORE.get()) || s.is(ElisarBlocks.RIFTCRYSTAL_ORE.get())
+                // v0.55.0: ещё две руды рифт-кристалла — тоже природная порода.
+                || s.is(ElisarBlocks.DEEPSLATE_RIFTCRYSTAL_ORE.get())
+                || s.is(ElisarBlocks.RIFTCRYSTAL_ORE_GLOW.get())
                 || s.is(ElisarBlocks.TALL_GRASS.get())
                 || s.is(ElisarBlocks.FLOWERS.get()) || s.is(ElisarBlocks.AMBRA_LOG.get())
                 || s.is(ElisarBlocks.AMBRA_LEAVES.get())) return true;
