@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "axis=y": {
+      "model": "riftworld:block/stripped_rotten_morok_wood"
+    },
+    "axis=x": {
+      "model": "riftworld:block/stripped_rotten_morok_wood_horizontal",
+      "x": 90
+    },
+    "axis=z": {
+      "model": "riftworld:block/stripped_rotten_morok_wood_horizontal",
+      "x": 90,
+      "y": 90
+    }
+  }
+}

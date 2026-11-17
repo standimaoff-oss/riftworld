@@ -5127,6 +5127,7 @@ public final class SeaProbeCommand {
 
         if (k.equals("v31_morok_gallery")) {
             // v0.31.0: «Мороковая Падь» — витрина всех 27 блоков биома + предметы + переводы + крафты.
+            // v0.55.0: + 15 блоков гнилого/тернового дерева (второй ряд витрины).
             int tx = 1160, ty = 136, tz = 780;
             Block[] all = {
                     MorokBlocks.MOROK_LOG.get(), MorokBlocks.STRIPPED_MOROK_LOG.get(),
@@ -5139,16 +5140,25 @@ public final class SeaProbeCommand {
                     MorokBlocks.PALE_MOSS_CARPET.get(), MorokBlocks.ICE_FANG.get(), MorokBlocks.BONE_BRAMBLE.get(),
                     MorokBlocks.CRACKED_RIME_BRICKS.get(), MorokBlocks.CRACKED_RIME_BRICKS_STAIRS.get(),
                     MorokBlocks.CRACKED_RIME_BRICKS_SLAB.get(), MorokBlocks.CRACKED_RIME_BRICKS_WALL.get(),
-                    MorokBlocks.RIME_BRICK_PILLAR.get(), MorokBlocks.FOG_LANTERN.get()
+                    MorokBlocks.RIME_BRICK_PILLAR.get(), MorokBlocks.FOG_LANTERN.get(),
+                    // v0.55.0 — гнилое дерево и терновые элементы.
+                    MorokBlocks.ROTTEN_MOROK_LOG.get(), MorokBlocks.STRIPPED_ROTTEN_MOROK_LOG.get(),
+                    MorokBlocks.ROTTEN_MOROK_WOOD.get(), MorokBlocks.STRIPPED_ROTTEN_MOROK_WOOD.get(),
+                    MorokBlocks.ROTTEN_MOROK_PLANKS.get(), MorokBlocks.ROTTEN_MOROK_STAIRS.get(),
+                    MorokBlocks.ROTTEN_MOROK_SLAB.get(), MorokBlocks.ROTTEN_MOROK_FENCE.get(),
+                    MorokBlocks.ROTTEN_MOROK_FENCE_GATE.get(), MorokBlocks.ROTTEN_MOROK_DOOR.get(),
+                    MorokBlocks.ROTTEN_MOROK_TRAPDOOR.get(), MorokBlocks.ROTTEN_MOROK_PRESSURE_PLATE.get(),
+                    MorokBlocks.ROTTEN_MOROK_BUTTON.get(), MorokBlocks.THORN_MOROK_DOOR.get(),
+                    MorokBlocks.THORN_MOROK_TRAPDOOR.get()
             };
             int placed = 0, itemOk = 0, langOk = 0;
             if (level instanceof ServerLevel) {
                 // постамент: сплошная плита мёрзлой земли под всей витриной (а не парящие кубики)
                 for (int bx = tx - 15; bx <= tx + 17; ++bx) {
-                    for (int bz = tz - 1; bz <= tz + 9; ++bz) {
+                    for (int bz = tz - 1; bz <= tz + 13; ++bz) {
                         level.setBlock(new BlockPos(bx, ty, bz), MorokBlocks.FROZEN_SOIL.get().defaultBlockState(), 2);
                         level.setBlock(new BlockPos(bx, ty - 1, bz), MorokBlocks.RIME_GRASS.get().defaultBlockState(), 2);
-                        if (bz == tz + 9) {
+                        if (bz == tz + 13) {
                             level.setBlock(new BlockPos(bx, ty + 1, bz), MorokBlocks.CRACKED_RIME_BRICKS.get().defaultBlockState(), 2);
                         }
                     }

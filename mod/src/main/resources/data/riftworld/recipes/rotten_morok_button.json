@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "building",
+  "pattern": [
+    "P"
+  ],
+  "key": {
+    "P": {
+      "item": "riftworld:rotten_morok_planks"
+    }
+  },
+  "result": {
+    "item": "riftworld:rotten_morok_button",
+    "count": 1
+  }
+}

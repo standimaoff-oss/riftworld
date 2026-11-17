@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "riftworld:block/rotten_morok_planks_slab"
+    },
+    "type=top": {
+      "model": "riftworld:block/rotten_morok_planks_slab_top"
+    }
+  }
+}

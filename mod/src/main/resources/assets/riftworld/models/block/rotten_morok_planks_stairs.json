@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/stairs",
+  "textures": {
+    "bottom": "riftworld:block/rotten_morok_planks",
+    "top": "riftworld:block/rotten_morok_planks",
+    "side": "riftworld:block/rotten_morok_planks"
+  }
+}

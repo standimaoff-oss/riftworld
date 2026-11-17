@@ -98,6 +98,18 @@ def write_png(path: pathlib.Path, pixels):
 
 
 # ---------------------------------------------------------------- helpers
+def stable_seed(name: str, salt: int = 0) -> int:
+    """Стабильный сид по имени.
+
+    Встроенный hash() для строк рандомизируется при каждом запуске Python
+    (PYTHONHASHSEED), поэтому текстуры получались разными от прогона к
+    прогону. Здесь — обычный sha1, он не меняется никогда.
+    """
+    import hashlib
+    digest = hashlib.sha1(f"{name}:{salt}".encode("utf-8")).digest()
+    return int.from_bytes(digest[:4], "big")
+
+
 def hx(s):
     s = s.lstrip("#")
     return tuple(int(s[i:i + 2], 16) for i in (0, 2, 4))
@@ -205,6 +217,13 @@ TEXTURE_JOBS = [
     ("morok_log_top.png", "rotwood_log_top.png", ROT_CORE, dict()),
     ("stripped_morok_log.png", "stripped_rotwood_log.png", ROT_CORE, dict()),
     ("stripped_morok_log_top.png", "stripped_rotwood_log_top.png", ROT_CORE, dict()),
+    # v0.56.0: «дерево» — это внутренность бревна. Модели rotwood_wood и
+    # stripped_rotwood_wood ссылались на несуществующие текстуры — блок был
+    # фиолетовым в мире и пустым в инвентаре.
+    ("morok_log.png", "rotwood_wood.png", ROT_BARK, dict(cracks=True)),
+    ("morok_log_top.png", "rotwood_wood_top.png", ROT_CORE, dict()),
+    ("stripped_morok_log.png", "stripped_rotwood_wood.png", ROT_CORE, dict()),
+    ("stripped_morok_log_top.png", "stripped_rotwood_wood_top.png", ROT_CORE, dict()),
     ("morok_planks.png", "rotwood_planks.png", ROT_PLANKS, dict()),
     ("morok_leaves.png", "rotwood_leaves.png", ROT_LEAVES, dict(solid=True)),
     ("morok_sapling.png", "rotwood_sapling.png", ROT_LEAVES, dict()),
@@ -216,6 +235,11 @@ TEXTURE_JOBS = [
     ("morok_log_top.png", "frostbriar_log_top.png", BRIAR_CORE, dict(rime=0.10)),
     ("stripped_morok_log.png", "stripped_frostbriar_log.png", BRIAR_CORE, dict(rime=0.10)),
     ("stripped_morok_log_top.png", "stripped_frostbriar_log_top.png", BRIAR_CORE, dict(rime=0.10)),
+    # v0.56.0: те же недостающие текстуры «дерева» для морозного терновника.
+    ("morok_log.png", "frostbriar_wood.png", BRIAR_BARK, dict(cracks=True)),
+    ("morok_log_top.png", "frostbriar_wood_top.png", BRIAR_CORE, dict(rime=0.10)),
+    ("stripped_morok_log.png", "stripped_frostbriar_wood.png", BRIAR_CORE, dict(rime=0.10)),
+    ("stripped_morok_log_top.png", "stripped_frostbriar_wood_top.png", BRIAR_CORE, dict(rime=0.10)),
     ("morok_planks.png", "frostbriar_planks.png", BRIAR_PLANKS, dict()),
     ("morok_leaves.png", "frostbriar_leaves.png", BRIAR_LEAVES, dict(solid=True, rime=0.12)),
     ("morok_sapling.png", "frostbriar_sapling.png", BRIAR_LEAVES, dict()),
@@ -234,11 +258,11 @@ def gen_textures():
             continue
         px = recolor(read_png(src), stops)
         if opts.get("cracks"):
-            px = add_cracks(px, seed=abs(hash(dst_name)) & 0x7FFF, density=0.5)
+            px = add_cracks(px, seed=stable_seed(dst_name, 1), density=0.5)
         if opts.get("solid"):
             px = solid(px)
         if opts.get("rime"):
-            px = rime_specks(px, density=opts.get("rime", 0.10), seed=(abs(hash(dst_name)) >> 3) & 0x7FFF)
+            px = rime_specks(px, density=opts.get("rime", 0.10), seed=stable_seed(dst_name, 2))
         write_png(TEX / dst_name, px)
         made.append(dst_name)
     return made

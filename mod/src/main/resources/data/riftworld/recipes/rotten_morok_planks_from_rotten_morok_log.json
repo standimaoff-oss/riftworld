@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "group": "planks",
+  "ingredients": [
+    {
+      "item": "riftworld:rotten_morok_log"
+    }
+  ],
+  "result": {
+    "item": "riftworld:rotten_morok_planks",
+    "count": 4
+  }
+}

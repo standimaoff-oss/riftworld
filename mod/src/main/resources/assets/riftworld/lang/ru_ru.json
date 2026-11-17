@@ -732,5 +732,20 @@
   "profession.riftworld.tanner": "Кожевник",
   "profession.riftworld.brewer": "Пивовар",
   "profession.riftworld.jeweller": "Ювелир",
-  "profession.riftworld.carter": "Возчик"
+  "profession.riftworld.carter": "Возчик",
+  "block.riftworld.rotten_morok_log": "Гнилое бревно",
+  "block.riftworld.stripped_rotten_morok_log": "Обтёсанное гнилое бревно",
+  "block.riftworld.rotten_morok_wood": "Гнилая древесина",
+  "block.riftworld.stripped_rotten_morok_wood": "Обтёсанная гнилая древесина",
+  "block.riftworld.rotten_morok_planks": "Гнилые доски",
+  "block.riftworld.rotten_morok_planks_stairs": "Гнилые ступени",
+  "block.riftworld.rotten_morok_planks_slab": "Гнилая плита",
+  "block.riftworld.rotten_morok_fence": "Гнилый забор",
+  "block.riftworld.rotten_morok_fence_gate": "Гнилая калитка",
+  "block.riftworld.rotten_morok_door": "Гнилая дверь",
+  "block.riftworld.rotten_morok_trapdoor": "Гнилый люк",
+  "block.riftworld.rotten_morok_pressure_plate": "Гнилая нажимная плита",
+  "block.riftworld.rotten_morok_button": "Гнилая кнопка",
+  "block.riftworld.thorn_morok_door": "Терновая дверь",
+  "block.riftworld.thorn_morok_trapdoor": "Терновый люк"
 }

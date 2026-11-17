@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/pressure_plate",
+  "textures": {
+    "texture": "riftworld:block/rotten_morok_planks"
+  }
+}

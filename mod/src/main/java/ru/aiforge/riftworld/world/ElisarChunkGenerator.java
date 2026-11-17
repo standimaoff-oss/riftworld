@@ -2136,6 +2136,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
      *   <li><b>обычная бледная сосна</b> (1x1, 9–17 блоков) — основная масса;</li>
      *   <li><b>сухостой</b> — обломанный ствол без кроны, иногда с косой веткой;</li>
      *   <li><b>поваленный ствол</b> — бревно на земле вдоль X или Z, 4–7 блоков;</li>
+     *   <li><b>гнилое дерево</b> — тёмный трухлявый ствол без кроны, у корня пень;</li>
      *   <li><b>колючки</b> {@code bone_bramble} — 2–4 блока в высоту, растут кущами;</li>
      *   <li><b>ледяные клыки</b> {@code ice_fang} — одиночные и группами до 3 блоков.</li>
      * </ul>
@@ -2144,6 +2145,8 @@ public class ElisarChunkGenerator extends ChunkGenerator {
      */
     private static void morokTrees(WorldGenLevel level, ChunkAccess chunk, int x0, int z0) {
         BlockState log = MorokBlocks.MOROK_LOG.get().defaultBlockState();
+        // v0.55.0: часть деревьев в пади сгнила — тёмный трухлявый ствол.
+        BlockState rottenLog = MorokBlocks.ROTTEN_MOROK_LOG.get().defaultBlockState();
         BlockState leaves = MorokBlocks.MOROK_LEAVES.get().defaultBlockState();
         // v0.49.0: у Пади появились СВОИ деревья — гнилая роща и морозный
         // терновник. Раньше весь бор был перекрашенной ванильной сосной, и лес
@@ -2169,10 +2172,13 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                         && MorokHollow.inside(x + 0.5, z + 0.5);
                 // v0.39.1: полоса колючек была 2.5 % и почти всегда упиралась в склон —
                 // в отчёте за прогон #378 колючек 0 при гейте >= 3. Расширяем полосу.
+                // v0.55.0: гнилое дерево — тёмный трухлявый ствол без кроны.
+                boolean rotten = !MorokHollow.treeHere(x, z) && h > 0.90 && h < 0.945
+                        && MorokHollow.inside(x + 0.5, z + 0.5);
                 boolean brambles = h > 0.78 && h < 0.90 && MorokHollow.inside(x + 0.5, z + 0.5);
                 boolean fangs = Math.floorMod(x, 13) == 6 && Math.floorMod(z, 13) == 6
                         && MorokHollow.inside(x + 0.5, z + 0.5);
-                if (!(big || small || snag || fallen || brambles || fangs)) continue;
+                if (!(big || small || snag || fallen || rotten || brambles || fangs)) continue;
 
                 int top = MorokHollow.groundOf(chunk, mp, x, z);
                 if (top == Integer.MIN_VALUE) continue;
@@ -2242,6 +2248,26 @@ public class ElisarChunkGenerator extends ChunkGenerator {
                         int cx = x + sx;
                         if (cx >= x0 && cx <= x0 + 15) {
                             chunk.setBlockState(mp.set(cx, by, z), rotLog.setValue(net.minecraft.world.level.block.RotatedPillarBlock.AXIS,
+                                    net.minecraft.core.Direction.Axis.X), false);
+                        }
+                    }
+                    continue;
+                }
+                if (rotten) {
+                    // Гнилый ствол: чуть выше сухостоя, тёмный, с мхом на стволе.
+                    int hh = 5 + (int) Math.round(hash(x, z, 925) * 4);
+                    for (int y = 1; y <= hh; ++y) {
+                        chunk.setBlockState(mp.set(x, top + y, z), rottenLog, false);
+                    }
+                    // Пень у корня и мох на нижних блоках — гниль съела низ.
+                    chunk.setBlockState(mp.set(x, top + 1, z), moss, false);
+                    if (hash(x, z, 926) < 0.45) {
+                        int by = top + hh - 1;
+                        int sx = hash(x, z, 927) < 0.5 ? 1 : -1;
+                        int cx = x + sx;
+                        if (cx >= x0 && cx <= x0 + 15) {
+                            chunk.setBlockState(mp.set(cx, by, z), rottenLog.setValue(
+                                    net.minecraft.world.level.block.RotatedPillarBlock.AXIS,
                                     net.minecraft.core.Direction.Axis.X), false);
                         }
                     }
@@ -2328,6 +2354,78 @@ public class ElisarChunkGenerator extends ChunkGenerator {
             }
     }
 
+    /**
+     * v0.55.0: заросшая засгона в Мороковой Пади.
+     *
+     * <p>В пади есть старые засгоны: сруб на четыре бревна, заколоченная
+     * дверь и колючки снаружи. Часть засгонов сгнила — стоят с гнилой
+     * дверью, часть заросла терновой. И то и другое нужно найти в мире,
+     * иначе новые блоки не попадут в игру.</p>
+     *
+     * <p>Ставится редко: одна засгона на ~300 колонок пади.</p>
+     */
+    private static void morokShelter(WorldGenLevel level, ChunkAccess chunk, int x0, int z0) {
+        BlockState rottenPlanks = MorokBlocks.ROTTEN_MOROK_PLANKS.get().defaultBlockState();
+        BlockState rottenLog = MorokBlocks.ROTTEN_MOROK_LOG.get().defaultBlockState();
+        BlockState fence = MorokBlocks.ROTTEN_MOROK_FENCE.get().defaultBlockState();
+        BlockState bramble = MorokBlocks.BONE_BRAMBLE.get().defaultBlockState();
+        BlockState moss = MorokBlocks.PALE_MOSS_BLOCK.get().defaultBlockState();
+        BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
+
+        for (int dx = 0; dx < 16; ++dx) {
+            for (int dz = 0; dz < 16; ++dz) {
+                int x = x0 + dx, z = z0 + dz;
+                if (!MorokHollow.inside(x + 0.5, z + 0.5)) continue;
+                // Засгона ставится только в центре колонки, чтобы сруб не разъезжался.
+                if (Math.floorMod(x, 8) != 4 || Math.floorMod(z, 8) != 4) continue;
+                if (hash(x, z, 941) > 0.0035) continue;   // ~одна засгона на 285 колонок
+
+                int top = MorokHollow.groundOf(chunk, mp, x, z);
+                if (top == Integer.MIN_VALUE) continue;
+                if (top + 4 > level.getMaxBuildHeight() - 2) continue;
+
+                // Пол: гнилые доски.
+                for (int fx = -1; fx <= 1; ++fx) {
+                    for (int fz = -1; fz <= 1; ++fz) {
+                        chunk.setBlockState(mp.set(x + fx, top + 1, z + fz), rottenPlanks, false);
+                    }
+                }
+                // Стены из гнилых брёвен по четырём углам.
+                for (int fx = -1; fx <= 1; fx += 2) {
+                    for (int fz = -1; fz <= 1; fz += 2) {
+                        for (int y = 2; y <= 3; ++y) {
+                            chunk.setBlockState(mp.set(x + fx, top + y, z + fz), rottenLog, false);
+                        }
+                    }
+                }
+                // Крыша — перекрытие брёвнами.
+                for (int fx = -1; fx <= 1; ++fx) {
+                    for (int fz = -1; fz <= 1; ++fz) {
+                        chunk.setBlockState(mp.set(x + fx, top + 4, z + fz), rottenLog, false);
+                    }
+                }
+                // Дверь: гнилая или терновая — пополам.
+                boolean thorn = hash(x, z, 942) < 0.5;
+                BlockState door = (thorn ? MorokBlocks.THORN_MOROK_DOOR : MorokBlocks.ROTTEN_MOROK_DOOR)
+                        .get().defaultBlockState()
+                        .setValue(net.minecraft.world.level.block.DoorBlock.FACING,
+                                net.minecraft.core.Direction.NORTH)
+                        .setValue(net.minecraft.world.level.block.DoorBlock.HALF,
+                                net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER);
+                BlockState doorTop = door.setValue(net.minecraft.world.level.block.DoorBlock.HALF,
+                        net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER);
+                chunk.setBlockState(mp.set(x, top + 2, z - 1), door, false);
+                chunk.setBlockState(mp.set(x, top + 3, z - 1), doorTop, false);
+                // Колючки снаружи — из них эта дверь и «терновая».
+                chunk.setBlockState(mp.set(x + 1, top + 2, z - 2), bramble, false);
+                chunk.setBlockState(mp.set(x - 1, top + 2, z - 2), bramble, false);
+                // Мох на полу и забор-обвалинкой вокруг.
+                chunk.setBlockState(mp.set(x + 2, top + 1, z), moss, false);
+                chunk.setBlockState(mp.set(x - 2, top + 1, z), fence, false);
+            }
+        }
+    }
+
     @Override
     public void applyBiomeDecoration(WorldGenLevel level, ChunkAccess chunk, StructureManager sm) {
         CityPlan plan = CityPlan.get();
@@ -2336,6 +2434,7 @@ public class ElisarChunkGenerator extends ChunkGenerator {
         placeOceanWreck(chunk, x0, z0, plan.ocean);
         BoundingBox box = new BoundingBox(x0, MIN_Y, z0, x0 + 15, MIN_Y + HEIGHT - 1, z0 + 15);
         morokTrees(level, chunk, x0, z0);
+        morokShelter(level, chunk, x0, z0);
         StructureTemplateManager stm = level.getLevel().getServer().getStructureManager();
         RandomSource rnd = RandomSource.create(chunk.getPos().toLong());
         java.util.Set<CityPlan.Plot> plots = new java.util.LinkedHashSet<>();

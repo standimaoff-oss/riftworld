@@ -134,6 +134,47 @@ public final class MorokBlocks {
     public static final RegistryObject<PlantBlock> MOROK_SAPLING =
             ModBlocks.reg("morok_sapling", () -> new PlantBlock(plantProps()));
 
+    // ------------------------------------------------------------------ гнилое дерево
+    // v0.55.0: часть стволов в Мороковой Пади сгнила. Гнилое дерево темнее
+    // бледного, обросло мхом и костяной трухой — и из него сколотили двери
+    // в старых засгонах. Терновая дверь — та же гнилая древесина, но с
+    // колючками: заросшие падь входы, которые лучше не открывать.
+    // Порядок важен: сначала обтёсанное, потом гнилое — гнилое ссылается
+    // на обтёсанное (как и бледное дерево выше).
+    public static final RegistryObject<RotatedPillarBlock> STRIPPED_ROTTEN_MOROK_LOG =
+            woodPillar("stripped_rotten_morok_log", MapColor.COLOR_BROWN);
+    public static final RegistryObject<RotatedPillarBlock> STRIPPED_ROTTEN_MOROK_WOOD =
+            woodPillar("stripped_rotten_morok_wood", MapColor.COLOR_BROWN);
+    public static final RegistryObject<RotatedPillarBlock> ROTTEN_MOROK_LOG =
+            strippableWood("rotten_morok_log", MapColor.COLOR_BROWN, STRIPPED_ROTTEN_MOROK_LOG);
+    public static final RegistryObject<RotatedPillarBlock> ROTTEN_MOROK_WOOD =
+            strippableWood("rotten_morok_wood", MapColor.COLOR_BROWN, STRIPPED_ROTTEN_MOROK_WOOD);
+
+    public static final RegistryObject<Block> ROTTEN_MOROK_PLANKS =
+            cube("rotten_morok_planks", MapColor.COLOR_BROWN, 2.0F, SoundType.WOOD);
+    public static final RegistryObject<StairBlock> ROTTEN_MOROK_STAIRS =
+            stairs("rotten_morok_planks_stairs", ROTTEN_MOROK_PLANKS);
+    public static final RegistryObject<SlabBlock> ROTTEN_MOROK_SLAB =
+            slab("rotten_morok_planks_slab", MapColor.COLOR_BROWN, SoundType.WOOD);
+    public static final RegistryObject<FenceBlock> ROTTEN_MOROK_FENCE =
+            woodFence("rotten_morok_fence", MapColor.COLOR_BROWN);
+    public static final RegistryObject<FenceGateBlock> ROTTEN_MOROK_FENCE_GATE =
+            woodGate("rotten_morok_fence_gate", MapColor.COLOR_BROWN);
+    public static final RegistryObject<DoorBlock> ROTTEN_MOROK_DOOR =
+            woodDoor("rotten_morok_door", MapColor.COLOR_BROWN);
+    public static final RegistryObject<TrapDoorBlock> ROTTEN_MOROK_TRAPDOOR =
+            woodTrapdoor("rotten_morok_trapdoor", MapColor.COLOR_BROWN);
+    public static final RegistryObject<PressurePlateBlock> ROTTEN_MOROK_PRESSURE_PLATE =
+            woodPlate("rotten_morok_pressure_plate", MapColor.COLOR_BROWN);
+    public static final RegistryObject<ButtonBlock> ROTTEN_MOROK_BUTTON =
+            woodButton("rotten_morok_button", MapColor.COLOR_BROWN);
+
+    // Терновые: гнилая дверь, заросшая колючками. Люк — тоже.
+    public static final RegistryObject<DoorBlock> THORN_MOROK_DOOR =
+            woodDoor("thorn_morok_door", MapColor.COLOR_BROWN);
+    public static final RegistryObject<TrapDoorBlock> THORN_MOROK_TRAPDOOR =
+            woodTrapdoor("thorn_morok_trapdoor", MapColor.COLOR_BROWN);
+
     // ------------------------------------------------------------------ v0.49.0: два своих дерева Пади
     // «Гнилая роща» (Rotwood): тёмное, узловатое, с чёрной древесиной и густой
     // кроной — основа ночного леса Пади. «Морозный терновник» (Frostbriar):

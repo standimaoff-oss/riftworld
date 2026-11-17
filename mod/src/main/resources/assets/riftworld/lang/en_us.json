@@ -734,5 +734,20 @@
   "profession.riftworld.tanner": "Tanner",
   "profession.riftworld.brewer": "Brewer",
   "profession.riftworld.jeweller": "Jeweller",
-  "profession.riftworld.carter": "Carter"
+  "profession.riftworld.carter": "Carter",
+  "block.riftworld.rotten_morok_log": "Rotten Morok Log",
+  "block.riftworld.stripped_rotten_morok_log": "Stripped Rotten Morok Log",
+  "block.riftworld.rotten_morok_wood": "Rotten Morok Wood",
+  "block.riftworld.stripped_rotten_morok_wood": "Stripped Rotten Morok Wood",
+  "block.riftworld.rotten_morok_planks": "Rotten Planks",
+  "block.riftworld.rotten_morok_planks_stairs": "Rotten Planks Stairs",
+  "block.riftworld.rotten_morok_planks_slab": "Rotten Planks Slab",
+  "block.riftworld.rotten_morok_fence": "Rotten Fence",
+  "block.riftworld.rotten_morok_fence_gate": "Rotten Fence Gate",
+  "block.riftworld.rotten_morok_door": "Rotten Door",
+  "block.riftworld.rotten_morok_trapdoor": "Rotten Trapdoor",
+  "block.riftworld.rotten_morok_pressure_plate": "Rotten Pressure Plate",
+  "block.riftworld.rotten_morok_button": "Rotten Button",
+  "block.riftworld.thorn_morok_door": "Thorned Door",
+  "block.riftworld.thorn_morok_trapdoor": "Thorned Trapdoor"
 }

@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/fence_gate_wall",
+  "textures": {
+    "texture": "riftworld:block/rotten_morok_planks"
+  }
+}
