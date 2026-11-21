@@ -38,7 +38,7 @@ rq() {
       return 0
     }
     case "$out" in
-      *"connection closed"*|*"Broken pipe"*|*"Connection reset"*)
+      *"connection closed"*|*"Broken pipe"*|*"Connection reset"*|*"Connection refused"*|*"Errno 111"*|*"unreachable"*)
         echo "[$(date -u +%H:%M:%S)] RCON оборвался, повтор $attempt/3" >> "$OUT/client-commands.log"
         sleep 3
         attempt=$((attempt + 1))

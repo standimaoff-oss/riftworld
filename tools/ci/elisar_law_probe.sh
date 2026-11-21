@@ -46,7 +46,10 @@ rq() {
       return 0
     }
     case "$out" in
-      *"connection closed"*|*"Broken pipe"*|*"Connection reset"*)
+      *"connection closed"*|*"Broken pipe"*|*"Connection reset"*|*"Connection refused"*|*"Errno 111"*|*"unreachable"*)
+        # Errno 111 (Connection refused) — это тоже оборванная связь: клиент
+        # или RCON не успел переподключиться после перезапуска сервера.
+        # Раньше этот случай не попадал в список и ронял проверку целиком.
         log "   RCON оборвался (попытка $attempt/3), повторяем"
         sleep 3
         attempt=$((attempt + 1))

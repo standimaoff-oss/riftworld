@@ -29,7 +29,8 @@ rq() {
   local attempt=1 out=""
   while [ "$attempt" -le 3 ]; do
     out=$(python3 tools/rcon.py --password "${RCON_PW:-riftci}" --log "" --timeout 90 "$@" 2>&1 || true)
-    if [[ "$out" != *"connection closed"* && "$out" != *"Broken pipe"* && "$out" != *"Connection reset"* ]]; then
+    if [[ "$out" != *"connection closed"* && "$out" != *"Broken pipe"* && "$out" != *"Connection reset"* \
+          && "$out" != *"Connection refused"* && "$out" != *"Errno 111"* && "$out" != *"unreachable"* ]]; then
       printf '%s' "$out"
       return 0
     fi
