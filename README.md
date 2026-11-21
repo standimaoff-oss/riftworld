@@ -48,8 +48,8 @@
 
 Контрольные суммы (SHA-256):
 
-- `riftworld-0.56.0.jar` — `824119dfca0bac6248a51232309a212b1d836af7764e92186c108c3f94e207c3`
-- `riftworld-dt-0.56.0.jar` — `21d460f3193946f75875619113ea5813afcdf2f49a0b1d83f3edabeeba038690`
+- `riftworld-0.56.0.jar` — `10223290043727ca74e09efe564f2c1375dce8d5a18ce470b21ff27f501e3928`
+- `riftworld-dt-0.56.0.jar` — `ecd8632ce39bcf8fd654eb7dee12641d78692dca0120b140c13908e757d640aa`
 
 ## v0.54.0 — лица жителей, точные профессии и живая экономика Элисара
 
