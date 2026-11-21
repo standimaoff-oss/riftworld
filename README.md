@@ -46,6 +46,11 @@
 - Мод: ++**[https://github.com/standimaoff-oss/riftworld/releases/download/v0.56.0/riftworld-0.56.0.jar](https://github.com/standimaoff-oss/riftworld/releases/download/v0.56.0/riftworld-0.56.0.jar)**++
 - Dynamic Trees: ++**[https://github.com/standimaoff-oss/riftworld/releases/download/v0.56.0/riftworld-dt-0.56.0.jar](https://github.com/standimaoff-oss/riftworld/releases/download/v0.56.0/riftworld-dt-0.56.0.jar)**++
 
+Контрольные суммы (SHA-256):
+
+- `riftworld-0.56.0.jar` — `851e9931b0a8240296e0741e5497f100016b8d6b29f0f823c861d6662bbf4a1d`
+- `riftworld-dt-0.56.0.jar` — `b839447904307128e0900e1b50c81f41ce205bd3721c46abf43473e624d777ac`
+
 ## v0.54.0 — лица жителей, точные профессии и живая экономика Элисара
 
 Рев 16.50: торговля перестала быть декорацией. Теперь у каждого жителя есть
