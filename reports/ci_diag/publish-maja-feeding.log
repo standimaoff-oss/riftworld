@@ -1,14 +1,14 @@
-run 44086756435 / job maja-feeding / ветвь arena/037a840e-riftworld
+run 44925775521 / job maja-feeding / ветвь arena/037a840e-riftworld
 == содержимое ci-out ==
 total 1236
-drwxr-xr-x  2 runner runner    4096 Nov 17 12:53 .
-drwxr-xr-x 14 runner runner    4096 Nov 17 12:52 ..
--rw-r--r--  1 runner runner     134 Nov 17 12:52 done.txt
--rw-r--r--  1 runner runner       0 Nov 17 12:52 errors.txt
--rw-r--r--  1 runner runner   25017 Nov 17 12:53 feeding-server-tail.log
--rw-r--r--  1 runner runner 1194930 Nov 17 12:52 installer.log
--rw-r--r--  1 runner runner   11135 Nov 17 12:52 latest.log
--rw-r--r--  1 runner runner    2362 Nov 17 12:53 maja-feeding.txt
--rw-r--r--  1 runner runner     222 Nov 17 12:52 mods.txt
--rw-r--r--  1 runner runner    1343 Nov 17 12:52 report_server.md
--rw-r--r--  1 runner runner     491 Nov 17 12:52 tps.txt
+drwxr-xr-x  2 runner runner    4096 Nov 21 16:43 .
+drwxr-xr-x 14 runner runner    4096 Nov 21 16:42 ..
+-rw-r--r--  1 runner runner     134 Nov 21 16:42 done.txt
+-rw-r--r--  1 runner runner       0 Nov 21 16:42 errors.txt
+-rw-r--r--  1 runner runner   24736 Nov 21 16:43 feeding-server-tail.log
+-rw-r--r--  1 runner runner 1194927 Nov 21 16:42 installer.log
+-rw-r--r--  1 runner runner   10854 Nov 21 16:42 latest.log
+-rw-r--r--  1 runner runner    2362 Nov 21 16:43 maja-feeding.txt
+-rw-r--r--  1 runner runner     222 Nov 21 16:42 mods.txt
+-rw-r--r--  1 runner runner    1343 Nov 21 16:42 report_server.md
+-rw-r--r--  1 runner runner     491 Nov 21 16:42 tps.txt
