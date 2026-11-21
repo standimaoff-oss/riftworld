@@ -89,6 +89,40 @@ add_all() {
     return 0
 }
 
+# v0.56.0: пересчитываем контрольные суммы под фактические джобы, которые
+# уедут в релиз. Иначе SHA256SUMS.txt и *.sha256 расходятся с тем, что
+# скачивают пользователи, — jar пересобирается CI и меняет хеш.
+refresh_sums() {
+    [ -d release ] || return 0
+    local tmp=""
+    for j in release/riftworld-*.jar; do
+        [ -f "$j" ] || continue
+        case "$j" in
+            *dt-*) ;;
+            *) tmp="$tmp $j" ;;
+        esac
+    done
+    for j in release/riftworld-dt-*.jar; do
+        [ -f "$j" ] || continue
+        tmp="$tmp $j"
+    done
+    [ -n "$tmp" ] || return 0
+    # сводный файл со всеми джобами
+    ( cd release && sha256sum $(for f in $tmp; do basename "$f"; done) | sed 's|  |  release/|' > SHA256SUMS.txt )
+    # и пофайловые — по принятому в репозитории формату. Только для версий,
+    # где есть и мод, и аддон: у старых сборок аддона нет.
+    for j in $tmp; do
+        base=$(basename "$j")
+        case "$base" in *dt-*) continue ;; esac
+        ver=${base#riftworld-}; ver=${ver%%.jar}
+        [ -f "release/riftworld-dt-$ver.jar" ] || continue
+        ( cd release && sha256sum "$base" "riftworld-dt-$ver.jar" > "riftworld-$ver.sha256" )
+    done
+    git add -A release
+    return 0
+}
+refresh_sums
+
 add_all
 git diff --cached --quiet && { echo 'нечего публиковать после копирования'; exit 0; }
 git commit -q -m "Add in-game screenshots and jars [skip ci]"

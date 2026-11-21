@@ -239,9 +239,15 @@ tasks.named('jar', Jar).configure {
                 'Implementation-Title'    : project.name,
                 'Implementation-Version'  : project.jar.archiveVersion,
                 'Implementation-Vendor'   : mod_authors,
-                'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+                // v0.56.0: фиксированная отметка времени вместо new Date().
+                // Иначе каждая сборка даёт свой SHA-256, и контрольные суммы
+                // релиза устаревают на следующем же прогоне CI.
+                'Implementation-Timestamp': '2026-01-01T00:00:00Z'
         ])
     }
+    // Побайтово воспроизводимая сборка: то же содержимое -> тот же хеш.
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
 
     // This is the preferred method to reobfuscate your jar file
     finalizedBy 'reobfJar'
@@ -283,6 +289,9 @@ tasks.register('dtJar', Jar) {
     archiveBaseName = 'riftworld-dt'
     destinationDirectory = layout.buildDirectory.dir('libs')
     from sourceSets.dtaddon.output
+    // v0.56.0: то же — воспроизводимая сборка аддона.
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
     manifest {
         attributes([
                 'Specification-Title'     : 'riftworlddt',
